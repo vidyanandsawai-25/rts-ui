@@ -1,13 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import * as Icons from "lucide-react";
-import { Clock, CreditCard, Scale, UserCheck } from "lucide-react";
+import { Clock, CreditCard, LoaderCircle, Scale, UserCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { useLanguage } from "@/components/Providers/LanguageProvider";
+import {
+  getInternalRtsServiceHref,
+  navigateExternalServiceTab,
+  openExternalServiceTab,
+  prepareExternalServiceNavigation,
+} from "@/lib/utils/rts/service-navigation";
+import { createExternalServiceApplicationAction } from "@/app/[locale]/service/dashboard/actions";
 import type { Language } from "@/types/language.type";
 import { Modal } from "./Modal";
 import { Button } from "./ActionButton";
@@ -35,6 +42,7 @@ type Department = {
 };
 
 const ICONS = Icons as unknown as Record<string, LucideIcon>;
+const EXTERNAL_TAB_BLOCKED_MESSAGE = "Your browser blocked the external service tab. Please allow pop-ups and try again.";
 
 interface ServiceGridProps {
   departments: Department[];
@@ -70,7 +78,7 @@ export default function ServiceGrid({
   deptId,
   services,
   lang,
-  upicId,
+  upicId: _upicId,
 }: ServiceGridProps) {
   const { language } = useLanguage();
   const activeLang = safeLang(lang ?? language);
@@ -80,6 +88,7 @@ export default function ServiceGrid({
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
+  const [isCreatingExternalApplication, startExternalTransition] = useTransition();
 
   const getTransText = (mr: string, hi: string, en: string) => {
     if (activeLang === "mr") return mr;
@@ -109,52 +118,49 @@ export default function ServiceGrid({
 
   const handleApplyClick = (service: Service) => {
     const externalUrl = typeof service.serviceUrl === "string" ? service.serviceUrl.trim() : "";
+    const locale = params.locale && ["en", "hi", "mr"].includes(params.locale) ? params.locale : "en";
 
     if (externalUrl) {
-      if (!/^https?:\/\//i.test(externalUrl)) {
+      const navigation = prepareExternalServiceNavigation(externalUrl);
+
+      if (!navigation.ok && navigation.reason === "invalid-url") {
         setApplyError(t("invalidServiceUrl"));
         return;
       }
 
-      try {
-        new URL(externalUrl);
-        const activeUpicId =
-          upicId?.trim() ||
-          (typeof window !== "undefined"
-            ? new URLSearchParams(window.location.search).get("upicNo")?.trim()
-            : undefined);
-        let destination = externalUrl;
+      const externalTab = openExternalServiceTab();
+      if (!externalTab) {
+        setApplyError(EXTERNAL_TAB_BLOCKED_MESSAGE);
+        return;
+      }
 
-        const expectsUpic = externalUrl.includes("upicNo=") || /([?&][^?&=]+)=$/.test(externalUrl);
+      startExternalTransition(async () => {
+        const result = await createExternalServiceApplicationAction(Number(service.id));
 
-        if (expectsUpic) {
-          if (!activeUpicId) {
-            setApplyError(t("missingUpic"));
+        if (!result.success) {
+          externalTab.close();
+          if (result.errorCode === "login-required") {
+            router.push(`/${locale}/service/login?externalServiceId=${encodeURIComponent(service.id)}`);
             return;
           }
-          if (externalUrl.includes("upicNo=")) {
-            destination = externalUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(activeUpicId)}`);
-          } else {
-            destination = externalUrl.replace(/([?&][^?&=]+)=$/, `$1=${encodeURIComponent(activeUpicId)}`);
-          }
+
+          setApplyError(
+            result.errorCode === "missing-upic" ? t("missingUpic") : result.error
+          );
+          return;
         }
 
         saveDeptServiceContext(service);
         setIsDetailsOpen(false);
         setSelectedServiceId(null);
-        window.location.assign(destination);
-      } catch {
-        setApplyError(t("invalidServiceUrl"));
-      }
+        navigateExternalServiceTab(externalTab, result.destination);
+      });
       return;
     }
 
     saveDeptServiceContext(service);
     const deptToUseId = dept?.id ?? service.__deptId;
-    const locale = params.locale && ["en", "hi", "mr"].includes(params.locale) ? params.locale : "en";
-    const serviceHref = deptToUseId
-      ? `/${locale}/service/${service.id}?deptId=${encodeURIComponent(deptToUseId)}`
-      : `/${locale}/service/${service.id}`;
+    const serviceHref = getInternalRtsServiceHref(locale, service.id, deptToUseId);
 
     setIsDetailsOpen(false);
     setSelectedServiceId(null);
@@ -358,8 +364,16 @@ export default function ServiceGrid({
                       }
                     }}
                     className="font-extrabold"
+                    disabled={isCreatingExternalApplication}
                   >
-                    {t("applyProcess")} &rarr;
+                    {isCreatingExternalApplication ? (
+                      <span className="inline-flex items-center gap-2">
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                        {t("applyProcess")}
+                      </span>
+                    ) : (
+                      <>{t("applyProcess")} &rarr;</>
+                    )}
                   </Button>
                 </div>
               </div>

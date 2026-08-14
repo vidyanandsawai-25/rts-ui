@@ -12,6 +12,9 @@ import type {
 
 export type { UploadRtsDocumentItem, UploadRtsDocumentPayload } from "@/types/rts/rts-application.types";
 
+const RTS_DOCUMENT_UPLOAD_DEPARTMENT_ID = 5;
+const RTS_DOCUMENT_UPLOAD_MODULE_ID = 1005;
+
 async function getMultipartAuthHeaders(): Promise<Record<string, string>> {
   const cookieStore = await cookies();
   const headers: Record<string, string> = {
@@ -40,6 +43,20 @@ async function getMultipartAuthHeaders(): Promise<Record<string, string>> {
   return headers;
 }
 
+async function getRtsCitizenHeaders(): Promise<Record<string, string>> {
+  const cookieStore = await cookies();
+  const rtsSession = cookieStore.get("rts_session")?.value?.trim();
+
+  if (!rtsSession) {
+    throw new Error("RTS citizen session is missing");
+  }
+
+  return {
+    Accept: "*/*",
+    "X-RTS-Session": rtsSession,
+  };
+}
+
 export async function uploadRtsDocument(
   payload: UploadRtsDocumentPayload
 ): Promise<UploadRtsDocumentItem> {
@@ -48,10 +65,9 @@ export async function uploadRtsDocument(
 
   const formData = new FormData();
   formData.append("File", payload.file, payload.file.name);
-  formData.append("OwnerUserId", String(payload.ownerUserId ?? 0));
   formData.append("DocumentType", payload.documentType ?? "");
-  formData.append("DepartmentId", String(payload.departmentId ?? 0));
-  formData.append("ModuleId", String(payload.moduleId ?? 0));
+  formData.append("DepartmentId", String(RTS_DOCUMENT_UPLOAD_DEPARTMENT_ID));
+  formData.append("ModuleId", String(RTS_DOCUMENT_UPLOAD_MODULE_ID));
   formData.append("IsPrimaryDocument", String(payload.isPrimaryDocument ?? false));
 
   const response = await serverFetch(`${baseUrl.replace(/\/$/, "")}/documents/upload`, {
@@ -80,14 +96,39 @@ export async function uploadRtsDocument(
   return data.items;
 }
 
-export async function viewRtsDocument(documentGuid: string): Promise<Response> {
+export async function viewAdminRtsDocument(documentGuid: string): Promise<Response> {
   return apiClient.fetch(`/documents/${encodeURIComponent(documentGuid)}/view`, {
     cache: "no-store",
   });
 }
 
-export async function downloadRtsDocument(documentGuid: string): Promise<Response> {
+export async function downloadAdminRtsDocument(documentGuid: string): Promise<Response> {
   return apiClient.fetch(`/documents/${encodeURIComponent(documentGuid)}/download`, {
     cache: "no-store",
   });
+}
+
+async function fetchCitizenRtsDocument(
+  documentGuid: string,
+  action: "view" | "download"
+): Promise<Response> {
+  const baseUrl = getAppConfig().api.baseUrl?.trim();
+  if (!baseUrl) throw new Error("API base URL is not configured");
+
+  return serverFetch(
+    `${baseUrl.replace(/\/$/, "")}/rts/documents/${encodeURIComponent(documentGuid)}/${action}`,
+    {
+      method: "GET",
+      headers: await getRtsCitizenHeaders(),
+      cache: "no-store",
+    }
+  );
+}
+
+export async function viewCitizenRtsDocument(documentGuid: string): Promise<Response> {
+  return fetchCitizenRtsDocument(documentGuid, "view");
+}
+
+export async function downloadCitizenRtsDocument(documentGuid: string): Promise<Response> {
+  return fetchCitizenRtsDocument(documentGuid, "download");
 }

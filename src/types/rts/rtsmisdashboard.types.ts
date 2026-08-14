@@ -37,6 +37,7 @@ export interface RtsMisDashboardUserApplicationItem {
   sla: number;
   submittedDate: string;
   status: string;
+  remark?: string | null;
 }
 
 export interface RtsMisDashboardData {
@@ -61,8 +62,9 @@ export type RtsMisDashboardModuleName = '' | 'RTS' | 'AapleSarkar' | 'Offline';
 export interface RtsMisDashboardRequest {
   Flag: RtsMisDashboardFlag;
   UpicId: string;
+  ApplicationNo: string;
   // The backend contract uses this spelling, so preserve it in the request type.
-  DeparmentId: number;
+  DeparmentId: number | null;
   DeparmentName: string;
   ModuleName: RtsMisDashboardModuleName;
 }

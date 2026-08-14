@@ -32,6 +32,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect');
+  const externalServiceId = searchParams.get('externalServiceId');
   const [isPending, startTransition] = useTransition();
 
   React.useEffect(() => {
@@ -212,17 +213,27 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
     }
 
     startTransition(async () => {
-      const res = await verifyCitizenOtpAction(otp);
+      const res = await verifyCitizenOtpAction(otp, externalServiceId ?? undefined);
       if (res.success) {
         setInfo(t('messages.loginSuccess'));
+        if (res.externalDestination) {
+          window.open(res.externalDestination, '_blank', 'noopener,noreferrer');
+          return;
+        }
+
         let targetUrl = redirectUrl || `/${locale}/service/dashboard`;
-        const cleanUpic = (upicId || '').trim().toUpperCase();
-        if (cleanUpic) {
-          if (targetUrl.includes('upicNo=')) {
-            targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
-          } else {
-            const sep = targetUrl.includes('?') ? '&' : '?';
-            targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
+        if (externalServiceId) {
+          const errorCode = res.serviceRedirectError || 'service-unavailable';
+          targetUrl = `/${locale}/service/dashboard?serviceRedirectError=${encodeURIComponent(errorCode)}`;
+        } else {
+          const cleanUpic = (upicId || '').trim().toUpperCase();
+          if (cleanUpic) {
+            if (targetUrl.includes('upicNo=')) {
+              targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
+            } else {
+              const sep = targetUrl.includes('?') ? '&' : '?';
+              targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
+            }
           }
         }
         router.push(targetUrl);

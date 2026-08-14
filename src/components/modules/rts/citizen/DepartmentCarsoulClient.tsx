@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import DepartmentCarousel from "@/components/common/DepartmentCarousel";
 import ServiceGrid from "@/components/common/ServiceGrid";
 import { useLanguage } from "@/components/Providers/LanguageProvider";
@@ -16,13 +17,12 @@ import {
   Eye,
   LayoutDashboard,
   Download,
-  UserCheck,
   GitCommit,
   Paperclip,
 } from "lucide-react";
 import TableHeader from "@/components/common/TableHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { Drawer } from "@/components/common/Drawer";
+import RtsCitizenViewDetailsDrawer from "@/components/modules/rts/citizen/RtsCitizenViewDetailsDrawer";
 import {
   Button,
   ViewButton,
@@ -33,7 +33,10 @@ import {
   getApplicationDetailAction,
   type RtsApplicationDetailData,
 } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
-import { getDocumentDownloadUrl, getDocumentViewUrl } from "@/lib/api/rts/rts-document-utils";
+import {
+  getCitizenRtsDocumentDownloadUrl,
+  getCitizenRtsDocumentViewUrl,
+} from "@/lib/api/rts/rtsdocument.client";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
@@ -65,13 +68,6 @@ type DepartmentCarsoulClientProps = {
   userApplications: RtsMisDashboardUserApplicationItem[];
   upicId?: string;
 };
-
-const UI = {
-  available: { en: "Available Services", hi: "Available Services", mr: "Available Services" },
-  found: { en: "Services Found", hi: "Services Found", mr: "Services Found" },
-  clear: { en: "Clear", hi: "Clear", mr: "Clear" },
-  searchResults: { en: "Search Results", hi: "Search Results", mr: "Search Results" },
-} as const;
 
 const normalize = (v: string) => v.toLowerCase().replace(/\s+/g, " ").trim();
 
@@ -136,6 +132,7 @@ function CitizenApplicationDrawerBody({
   app: CitizenApplication;
   lang: Language;
 }) {
+  const t = useTranslations('rts.citizenDashboard');
   const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewingDoc, setViewingDoc] = useState<{
@@ -148,7 +145,6 @@ function CitizenApplicationDrawerBody({
 
   useEffect(() => {
     if (isMock) {
-      setLoading(false);
       return;
     }
 
@@ -178,68 +174,44 @@ function CitizenApplicationDrawerBody({
       <div className="p-5 space-y-5">
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-3">
           <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
-            {lang === "mr" ? "अर्जाचा तपशील" : lang === "hi" ? "आवेदन का विवरण" : "Application Details"}
+            {t('applicationDetails')}
           </h4>
           <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-slate-700">
             <div>
               <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-                {lang === "mr" ? "अर्ज क्रमांक" : lang === "hi" ? "आवेदन क्रमांक" : "Application Number"}
+                {t('applicationNumber')}
               </span>
               <span className="text-slate-900 font-extrabold">{app.applicationNo}</span>
             </div>
             <div>
               <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-                {lang === "mr" ? "सादर तारीख" : lang === "hi" ? "जमा तारीख" : "Submitted Date"}
+                {t('submittedDate')}
               </span>
               <span className="text-slate-900 font-extrabold">{formatSubmittedDate(app.submittedDate, lang)}</span>
             </div>
             <div>
               <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-                {lang === "mr" ? "हमी कालावधी (SLA)" : lang === "hi" ? "SLA समय सीमा" : "SLA Timeline"}
+                {t('slaTimeline')}
               </span>
               <span className="text-blue-700 font-extrabold">
-                {app.sla} {lang === "mr" ? "दिवस" : lang === "hi" ? "दिन" : "Days"}
+                {app.sla} {t('days')}
               </span>
             </div>
             <div>
               <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-                {lang === "mr" ? "स्थिती" : lang === "hi" ? "स्थिति" : "Status"}
+                {t('status')}
               </span>
               {app.normalizedStatus === "approved" ? (
-                <StatusBadge value activeLabel={lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved"} />
+                <StatusBadge value activeLabel={t('approved')} />
               ) : app.normalizedStatus === "rejected" ? (
-                <StatusBadge value={false} inactiveLabel={lang === "mr" ? "नामंजूर" : lang === "hi" ? "अस्वीकृत" : "Rejected"} />
+                <StatusBadge value={false} inactiveLabel={t('rejected')} />
               ) : (
-                <StatusBadge variant="pending" label={lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"} />
+                <StatusBadge variant="pending" label={t('pending')} />
               )}
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4.5 space-y-3 shadow-sm">
-          <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider flex items-center gap-2">
-            <UserCheck className="w-3.5 h-3.5 text-blue-600" />
-            <span>{lang === "mr" ? "सेवा तपशील (Static/Mock)" : lang === "hi" ? "सेवा विवरण (Static/Mock)" : "Service Details (Static/Mock)"}</span>
-          </h4>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <span className="block text-[10px] text-slate-400 font-medium">Service Name</span>
-              <span className="font-bold text-slate-800">{app.serviceName}</span>
-            </div>
-            <div>
-              <span className="block text-[10px] text-slate-400 font-medium">Category</span>
-              <span className="font-bold text-slate-800">Municipal Services</span>
-            </div>
-            <div>
-              <span className="block text-[10px] text-slate-400 font-medium">Applicant Name</span>
-              <span className="font-bold text-slate-800">Citizen Application</span>
-            </div>
-            <div>
-              <span className="block text-[10px] text-slate-400 font-medium">Payment Status</span>
-              <span className="font-bold text-emerald-600">Paid / Verified</span>
-            </div>
-          </div>
-        </div>
       </div>
     );
   }
@@ -247,7 +219,7 @@ function CitizenApplicationDrawerBody({
   if (loading) {
     return (
       <div className="p-8 text-center text-xs text-slate-400 font-medium">
-        Loading application details...
+        {t('loadingApplicationDetails')}
       </div>
     );
   }
@@ -255,18 +227,18 @@ function CitizenApplicationDrawerBody({
   const documents = [
     ...(detail?.documents ?? []).map((d, idx) => ({
       id: d.documentId || idx + 1,
-      label: d.documentName || "Document Attachment",
+      label: d.documentName || t('documentAttachment'),
       guid: d.documentGuid || "",
-      size: d.fileSizeBytes ? `${(d.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : "Attachment",
+      size: d.fileSizeBytes ? `${(d.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : t('attachment'),
     })),
     ...(detail?.answerGroups ?? [])
       .flatMap((g) => g.answers)
       .filter((a) => a.documentGuid)
       .map((a, idx) => ({
         id: a.fieldDefinitionId || idx + 1,
-        label: a.label || "Document Attachment",
+        label: a.label || t('documentAttachment'),
         guid: a.documentGuid || "",
-        size: "Attachment",
+        size: t('attachment'),
       })),
   ];
 
@@ -274,39 +246,39 @@ function CitizenApplicationDrawerBody({
     <div className="p-5 space-y-5">
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-4.5 space-y-3">
         <h4 className="text-[10px] font-black uppercase text-slate-800 tracking-wider">
-          {lang === "mr" ? "अर्जाचा तपशील" : lang === "hi" ? "आवेदन का विवरण" : "Application Summary"}
+          {t('applicationSummary')}
         </h4>
         <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-slate-700">
           <div>
             <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-              {lang === "mr" ? "अर्ज क्रमांक" : lang === "hi" ? "आवेदन क्रमांक" : "Application Number"}
+              {t('applicationNumber')}
             </span>
             <span className="text-slate-900 font-extrabold">{app.applicationNo}</span>
           </div>
           <div>
             <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-              {lang === "mr" ? "सादर तारीख" : lang === "hi" ? "जमा तारीख" : "Submitted Date"}
+              {t('submittedDate')}
             </span>
             <span className="text-slate-900 font-extrabold">{formatSubmittedDate(app.submittedDate, lang)}</span>
           </div>
           <div>
             <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-              {lang === "mr" ? "हमी कालावधी (SLA)" : lang === "hi" ? "SLA समय सीमा" : "SLA Timeline"}
+              {t('slaTimeline')}
             </span>
             <span className="text-blue-700 font-extrabold">
-              {app.sla} {lang === "mr" ? "दिवस" : lang === "hi" ? "दिन" : "Days"}
+              {app.sla} {t('days')}
             </span>
           </div>
           <div>
             <span className="block text-[9px] text-slate-500 font-bold uppercase mb-0.5">
-              {lang === "mr" ? "स्थिती" : lang === "hi" ? "स्थिति" : "Status"}
+                {t('status')}
             </span>
             {app.normalizedStatus === "approved" ? (
-              <StatusBadge value activeLabel={lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved"} />
+                <StatusBadge value activeLabel={t('approved')} />
             ) : app.normalizedStatus === "rejected" ? (
-              <StatusBadge value={false} inactiveLabel={lang === "mr" ? "नामंजूर" : lang === "hi" ? "अस्वीकृत" : "Rejected"} />
+                <StatusBadge value={false} inactiveLabel={t('rejected')} />
             ) : (
-              <StatusBadge variant="pending" label={lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"} />
+                <StatusBadge variant="pending" label={t('pending')} />
             )}
           </div>
         </div>
@@ -316,7 +288,7 @@ function CitizenApplicationDrawerBody({
       <div className="bg-white border border-slate-200 rounded-xl p-4.5 space-y-3 shadow-sm">
         <h4 className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase border-b border-slate-100 pb-2">
           <Paperclip className="w-4 h-4 text-blue-600" />
-          Uploaded Attachments & Documents ({documents.length})
+          {t('uploadedDocuments', { count: documents.length })}
         </h4>
         {documents.length > 0 ? (
           <div className="space-y-2.5">
@@ -345,22 +317,22 @@ function CitizenApplicationDrawerBody({
                         size="xs"
                         onClick={() =>
                           setViewingDoc({
-                            fileUrl: getDocumentViewUrl(doc.guid),
+                            fileUrl: getCitizenRtsDocumentViewUrl(doc.guid),
                             fileName: `${doc.label.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
                             label: doc.label,
                           })
                         }
                       >
-                        View
+                        {t('view')}
                       </ViewButton>
                       <Button
                         type="button"
                         variant="secondary"
                         size="xs"
                         icon={Download}
-                        onClick={() => window.open(getDocumentDownloadUrl(doc.guid), "_blank")}
+                        onClick={() => window.open(getCitizenRtsDocumentDownloadUrl(doc.guid), "_blank")}
                       >
-                        Download
+                        {t('download')}
                       </Button>
                     </>
                   )}
@@ -370,7 +342,7 @@ function CitizenApplicationDrawerBody({
           </div>
         ) : (
           <p className="text-xs text-slate-400 font-medium text-center py-2">
-            No uploaded document attachments found for this application.
+            {t('noUploadedDocuments')}
           </p>
         )}
       </div>
@@ -379,10 +351,10 @@ function CitizenApplicationDrawerBody({
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
           <h4 className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase">
             <GitCommit className="w-4 h-4 text-blue-600" />
-            Approval Workflow Timeline
+            {t('approvalWorkflow')}
           </h4>
           <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
-            {detail?.approvalStages?.length || 0} Stages
+            {t('stages', { count: detail?.approvalStages?.length || 0 })}
           </span>
         </div>
 
@@ -404,7 +376,7 @@ function CitizenApplicationDrawerBody({
           />
         ) : (
           <p className="text-xs text-slate-400 font-medium text-center py-2">
-            No approval workflow stages recorded for this application.
+            {t('noApprovalStages')}
           </p>
         )}
       </div>
@@ -416,6 +388,7 @@ function CitizenApplicationDrawerBody({
           fileUrl={viewingDoc.fileUrl}
           fileName={viewingDoc.fileName}
           label={viewingDoc.label}
+          loadPreviewAsBlob
         />
       )}
     </div>
@@ -429,6 +402,8 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
 
   const { language } = useLanguage();
   const lang = safeLang(language);
+  const t = useTranslations('rts.citizenDashboard');
+  const tCommon = useTranslations('common');
   const localePrefix = `/${lang}`;
 
   const [activeDrawerApp, setActiveDrawerApp] = useState<CitizenApplication | null>(null);
@@ -459,8 +434,8 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
     return (
       <div className="space-y-5">
         <TableHeader
-          title={lang === "mr" ? "माझा नागरिक डॅशबोर्ड" : lang === "hi" ? "मेरा नागरिक डैशबोर्ड" : "Citizen Dashboard"}
-          subtitle={lang === "mr" ? "तुमचे सादर केलेले सर्व अर्ज आणि लोकसेवा हक्क (SLA) प्रगती" : lang === "hi" ? "आपके सभी जमा किए गए आवेदन और लोक सेवा अधिकार (SLA) प्रगति" : "Track all your submitted applications and Right to Service (SLA) statuses"}
+          title={t('dashboardTitle')}
+          subtitle={t('dashboardSubtitle')}
           icon={LayoutDashboard}
         />
 
@@ -468,7 +443,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l-xl" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === "mr" ? "एकूण अर्ज" : lang === "hi" ? "कुल आवेदन" : "Total Applications"}</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('totalApplications')}</p>
               <p className="mt-0.5 text-xl font-extrabold text-slate-900">{totalSubmissionsCount}</p>
             </div>
             <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-blue-50/50 text-blue-600 group-hover:scale-105 transition-transform shrink-0">
@@ -479,7 +454,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600 rounded-l-xl" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === "mr" ? "मंजूर अर्ज" : lang === "hi" ? "स्वीकृत आवेदन" : "Approved"}</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('approvedApplications')}</p>
               <p className="mt-0.5 text-xl font-extrabold text-emerald-600">{approvedCount}</p>
             </div>
             <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-emerald-50/50 text-emerald-600 group-hover:scale-105 transition-transform shrink-0">
@@ -490,7 +465,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500 rounded-l-xl" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === "mr" ? "प्रलंबित अर्ज" : lang === "hi" ? "लंबित आवेदन" : "Pending"}</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('pendingApplications')}</p>
               <p className="mt-0.5 text-xl font-extrabold text-amber-600">{pendingCount}</p>
             </div>
             <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-amber-50/50 text-amber-500 group-hover:scale-105 transition-transform shrink-0">
@@ -501,7 +476,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-600 rounded-l-xl" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === "mr" ? "नामंजूर अर्ज" : lang === "hi" ? "नामंजूर आवेदन" : "Rejected"}</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('rejectedApplications')}</p>
               <p className="mt-0.5 text-xl font-extrabold text-rose-600">{rejectedCount}</p>
             </div>
             <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-rose-50/50 text-rose-600 group-hover:scale-105 transition-transform shrink-0">
@@ -515,10 +490,10 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
             <div className="space-y-0.5">
               <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
                 <FileText className="w-4 h-4 text-blue-600" />
-                <span>{lang === "mr" ? "तुमचे अर्ज आणि हमी कालावधी" : lang === "hi" ? "आपके आवेदन एवं गारंटी समय सीमा" : "Your Applications & SLA Timeline"}</span>
+                <span>{t('applicationsTimeline')}</span>
               </h3>
               <p className="text-[10px] text-slate-500 font-semibold">
-                {lang === "mr" ? "अधिनियमानुसार प्रत्येक सेवेचा हमी कालावधी निश्चित आहे." : lang === "hi" ? "अधिनियम के तहत प्रत्येक सेवा की गारंटी समय सीमा तय है।" : "Each municipal service is bound by legal Right to Service delivery timelines."}
+                {t('timelineDescription')}
               </p>
             </div>
             <div className="relative w-full sm:w-64">
@@ -529,7 +504,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={lang === "mr" ? "अर्ज आयडी किंवा नावाने शोधा..." : lang === "hi" ? "आईडी या नाम से खोजें..." : "Search by ID or service name..."}
+                placeholder={t('searchPlaceholder')}
                 className="w-full pl-8.5 pr-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold placeholder-slate-400 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-slate-50/30"
               />
             </div>
@@ -538,18 +513,18 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
           {filteredSubmissions.length === 0 ? (
             <div className="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-8 text-center text-slate-400 text-xs font-semibold">
               <AlertCircle className="w-5 h-5 mx-auto text-slate-350 mb-1" />
-              <p>{lang === "mr" ? "कोणताही अर्ज आढळला नाही." : lang === "hi" ? "कोई आवेदन नहीं मिला।" : "No applications found."}</p>
+              <p>{t('noApplications')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-left border-collapse text-xs font-semibold text-slate-700">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-100/70 text-[10px] text-slate-600 font-bold uppercase tracking-wider">
-                    <th className="py-2 px-3 rounded-l-lg">{lang === "mr" ? "अर्ज आयडी व सेवा" : lang === "hi" ? "आवेदन आईडी और सेवा" : "Application ID & Service"}</th>
-                    <th className="py-2 px-3">{lang === "mr" ? "सादर तारीख" : lang === "hi" ? "सबमिट तारीख" : "Submitted Date"}</th>
-                    <th className="py-2 px-3">{lang === "mr" ? "हमी कालावधी (SLA)" : lang === "hi" ? "गारंटी समय सीमा (SLA)" : "SLA Timeline"}</th>
-                    <th className="py-2 px-3">{lang === "mr" ? "सद्य स्थिती" : lang === "hi" ? "स्थिति" : "Status & Stage"}</th>
-                    <th className="py-2 px-3 text-right rounded-r-lg">{lang === "mr" ? "कृती" : lang === "hi" ? "कार्रवाई" : "Actions"}</th>
+                    <th className="py-2 px-3 rounded-l-lg">{t('applicationAndService')}</th>
+                    <th className="py-2 px-3">{t('submittedDate')}</th>
+                    <th className="py-2 px-3">{t('slaTimeline')}</th>
+                    <th className="py-2 px-3">{t('statusAndStage')}</th>
+                    <th className="py-2 px-3 text-right rounded-r-lg">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -567,17 +542,17 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                         <td className="py-2.5 px-3 text-slate-600">{formatSubmittedDate(app.submittedDate, lang)}</td>
                         <td className="py-2.5 px-3">
                           <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50/70 text-blue-700 border border-blue-100">
-                            {app.sla} {lang === "mr" ? "दिवस" : lang === "hi" ? "दिन" : "Days"}
+                            {app.sla} {t('days')}
                           </span>
                         </td>
                         <td className="py-2.5 px-3">
                           <div className="flex items-center gap-2">
                             {isAppApproved ? (
-                              <StatusBadge value={true} activeLabel={lang === "mr" ? "मंजूर" : lang === "hi" ? "स्वीकृत" : "Approved"} />
+                              <StatusBadge value={true} activeLabel={t('approved')} />
                             ) : isAppRejected ? (
-                              <StatusBadge value={false} inactiveLabel={lang === "mr" ? "नामंजूर" : lang === "hi" ? "नामंजूर" : "Rejected"} />
+                              <StatusBadge value={false} inactiveLabel={t('rejected')} />
                             ) : (
-                              <StatusBadge variant="pending" label={lang === "mr" ? "प्रलंबित" : lang === "hi" ? "लंबित" : "Pending"} />
+                              <StatusBadge variant="pending" label={t('pending')} />
                             )}
                           </div>
                         </td>
@@ -587,7 +562,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                             className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-all bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg cursor-pointer"
                           >
                             <Eye size={12} />
-                            <span>{lang === "mr" ? "तपशील पहा" : lang === "hi" ? "विवरण देखें" : "View Details"}</span>
+                            <span>{t('viewDetails')}</span>
                           </button>
                         </td>
                       </tr>
@@ -600,38 +575,13 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
         </div>
 
         {activeDrawerApp && (
-          <Drawer
-            open={!!activeDrawerApp}
+          <RtsCitizenViewDetailsDrawer
+            application={activeDrawerApp}
+            language={lang}
             onClose={() => setActiveDrawerApp(null)}
-            width="md"
-            title={
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-                  <FileText size={16} />
-                </div>
-                <div className="space-y-0.5">
-                  <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-200/60 px-2 py-0.5 rounded">
-                    {activeDrawerApp.applicationNo}
-                  </span>
-                  <h2 className="text-sm font-black text-slate-800 leading-snug">
-                    {lang === "mr" && activeDrawerApp.serviceNameLocal
-                      ? activeDrawerApp.serviceNameLocal
-                      : activeDrawerApp.serviceName}
-                  </h2>
-                </div>
-              </div>
-            }
-            footer={
-              <button
-                onClick={() => setActiveDrawerApp(null)}
-                className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-black text-xs px-4.5 py-2 rounded-xl transition-colors cursor-pointer border border-slate-200"
-              >
-                {lang === "mr" ? "बंद करा" : lang === "hi" ? "बंद करें" : "Close"}
-              </button>
-            }
           >
             <CitizenApplicationDrawerBody app={activeDrawerApp} lang={lang} />
-          </Drawer>
+          </RtsCitizenViewDetailsDrawer>
         )}
       </div>
     );
@@ -651,7 +601,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
     return matchedDepts.filter((department) => allLabels(department.name).some((label) => normalize(label) === qNorm));
   }, [matchedDepts, qNorm]);
 
-  const results = useMemo(() => {
+  const results = (() => {
     if (!qNorm) return [] as SearchService[];
 
     const addMeta = (department: Department, service: Service): SearchService => ({
@@ -679,7 +629,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
     );
 
     return Array.from(new Map([...deptServices, ...serviceMatches].map((service) => [service.id, service])).values());
-  }, [departments, exactDeptMatches, lang, matchedDepts, qNorm]);
+  })();
 
   const selectedDeptId = deptFromUrl;
 
@@ -722,7 +672,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                 : 'border-gray-200 bg-white text-gray-700 hover:border-teal-300 hover:bg-teal-50'
             } ${qNorm ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
           >
-            <span className="whitespace-nowrap">{lang === "mr" ? "डॅशबोर्ड" : lang === "hi" ? "डैशबोर्ड" : "Dashboard"}</span>
+            <span className="whitespace-nowrap">{t('dashboard')}</span>
           </button>
 
           {departments.map((department) => {
@@ -768,7 +718,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     <h2 className="truncate px-2 text-sm font-semibold text-gray-700 sm:text-base md:text-lg">
                       {exactDeptMatches.length === 1
                         ? `---- ${pickLangText(exactDeptMatches[0].name, lang)} ----`
-                        : `${UI.searchResults[lang]} - \"${qRaw}\"`}
+                        : `${t('searchResults')} - \"${qRaw}\"`}
                     </h2>
                   ) : (
                     <h2 className="truncate px-2 text-sm font-semibold text-gray-700 sm:text-base md:text-lg">
@@ -781,8 +731,8 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                   <div className="h-2 w-2 rounded-full bg-green-500" />
                   <span>
                     {qNorm
-                      ? `${results.length} ${UI.found[lang]}`
-                      : `${activeDeptObj?.services.length ?? 0} ${UI.available[lang]}`}
+                      ? `${results.length} ${t('servicesFound')}`
+                      : `${activeDeptObj?.services.length ?? 0} ${t('availableServices')}`}
                   </span>
                 </div>
 
@@ -791,7 +741,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     onClick={() => router.replace(`${localePrefix}/service/dashboard`, { scroll: false })}
                     className="shrink-0 self-center rounded-lg border bg-white px-3 py-1.5 text-xs hover:bg-gray-50 sm:self-auto"
                   >
-                    {UI.clear[lang]}
+                    {tCommon('buttons.clear')}
                   </button>
                 ) : null}
               </div>

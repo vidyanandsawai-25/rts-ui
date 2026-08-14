@@ -111,8 +111,8 @@ export interface CreateRtsApplicationPayload {
   userId?: number;
   sessionId: string;
   ownerId?: number;
-  applicationStatus?: string;
-  remark?: string;
+  applicationStatus?: string | null;
+  remark?: string | null;
   fieldValues: RtsApplicationFieldValuePayload[];
 }
 
@@ -164,7 +164,6 @@ export interface GetRtsApplicationApprovalListParams {
 
 export interface UploadRtsDocumentPayload {
   file: File;
-  ownerUserId?: number;
   documentType?: string;
   departmentId?: number;
   moduleId?: number;

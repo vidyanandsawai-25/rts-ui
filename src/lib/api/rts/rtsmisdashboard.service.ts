@@ -15,7 +15,8 @@ export async function getRtsMisDashboardData(
   const requestPayload: RtsMisDashboardRequest = {
     Flag: payload.Flag?.toLowerCase() === 'user' ? 'user' : 'admin',
     UpicId: payload.UpicId ?? '',
-    DeparmentId: payload.DeparmentId ?? 0,
+    ApplicationNo: payload.ApplicationNo?.trim() ?? '',
+    DeparmentId: payload.DeparmentId ?? null,
     DeparmentName: payload.DeparmentName?.trim() ?? '',
     ModuleName: payload.ModuleName ?? '',
   };

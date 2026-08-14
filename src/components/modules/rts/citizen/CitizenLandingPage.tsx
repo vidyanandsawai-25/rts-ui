@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -16,8 +16,16 @@ import {
   Clock,
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
+import { createExternalServiceApplicationAction } from '@/app/[locale]/service/dashboard/actions';
+import {
+  getInternalRtsServiceHref,
+  navigateExternalServiceTab,
+  openExternalServiceTab,
+  prepareExternalServiceNavigation,
+} from '@/lib/utils/rts/service-navigation';
 import type { DepartmentDTO } from '@/types/rts-citizen.types';
 import { CitizenJourneyHero } from './CitizenJourneyHero';
+import ApplicationAndTrackingDrawer from './ApplicationAndTrackingDrawer';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -68,11 +76,14 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   const locale = useLocale();
   const t = useTranslations('rts.landing');
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<string>('');
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [isCreatingExternalApplication, setIsCreatingExternalApplication] = useState(false);
   const totalServiceCount = useMemo(
     () => departments.reduce((acc, d) => acc + d.services.length, 0),
     [departments]
@@ -93,6 +104,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         services: (dept.services || []).map((svc) => ({
           id: svc.id,
           name: pickLang(svc.name, locale),
+          serviceUrl: svc.serviceUrl ?? null,
           sla: svc.sla,
           fees: svc.fees,
           feesRequired: svc.feesRequired,
@@ -106,6 +118,19 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     (department) => String(department.id) === String(searchParams.get('deptId') ?? '')
   );
   const resolvedActiveTab = activeTab || requestedDepartment?.id || (deptCards[0]?.id ?? '');
+  const isTrackingOpen = searchParams.get('applicaAndtracking') === 'true';
+
+  const updateTrackingDrawerRoute = (open: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (open) {
+      params.set('applicaAndtracking', 'true');
+    } else {
+      params.delete('applicaAndtracking');
+    }
+
+    const query = params.toString();
+    router.push(query ? `${pathname}?${query}` : pathname);
+  };
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   const handleActionClick = () => {
@@ -116,15 +141,70 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     }
   };
 
-  const handleServiceClick = (serviceName: string, serviceId?: string) => {
-    if (!serviceId) return;
+  const saveDeptServiceContext = (
+    department: (typeof deptCards)[number],
+    service: (typeof deptCards)[number]['services'][number]
+  ) => {
+    localStorage.setItem('selectedDeptId', String(department.id));
+    localStorage.setItem('selectedDeptName', JSON.stringify(department.title));
+    localStorage.setItem('selectedServiceName', JSON.stringify(service.name));
+    localStorage.setItem('selectedDeptServicesCount', String(department.services.length));
+  };
 
-    // Check if service requires login (PropertyTax, Trade License, Water Supply)
-    const deptOfService = deptCards.find((d) =>
-      d.services.some((s) => String(s.id) === String(serviceId))
-    );
-    const deptName = deptOfService ? deptOfService.title : '';
+  const handleServiceClick = async (
+    department: (typeof deptCards)[number],
+    service: (typeof deptCards)[number]['services'][number]
+  ) => {
+    const serviceName = service.name;
+    const serviceId = service.id;
+    const deptName = department.title;
+    const externalUrl = service.serviceUrl?.trim() ?? '';
 
+    if (externalUrl) {
+      const initialNavigation = prepareExternalServiceNavigation(externalUrl);
+      if (!initialNavigation.ok && initialNavigation.reason === 'invalid-url') {
+        setApplyError('This service has an invalid external URL. Please contact the administrator.');
+        return;
+      }
+
+      if (!isLoggedIn) {
+        router.push(`/${locale}/service/login?externalServiceId=${encodeURIComponent(serviceId)}`);
+        return;
+      }
+
+      const externalTab = openExternalServiceTab();
+      if (!externalTab) {
+        setApplyError('Your browser blocked the external service tab. Please allow pop-ups and try again.');
+        return;
+      }
+
+      setIsCreatingExternalApplication(true);
+      try {
+        const result = await createExternalServiceApplicationAction(Number(serviceId));
+        if (!result.success) {
+          externalTab.close();
+          if (result.errorCode === 'login-required') {
+            router.push(`/${locale}/service/login?externalServiceId=${encodeURIComponent(serviceId)}`);
+            return;
+          }
+
+          setApplyError(result.error);
+          return;
+        }
+
+        saveDeptServiceContext(department, service);
+        setIsDetailsOpen(false);
+        setSelectedServiceId(null);
+        navigateExternalServiceTab(externalTab, result.destination);
+      } finally {
+        setIsCreatingExternalApplication(false);
+      }
+      return;
+    }
+
+    const internalHref = getInternalRtsServiceHref(locale, serviceId, String(department.id));
+
+    // Keep the existing login requirement for internal Property Tax, Trade License, and Water services.
     const s = serviceName.toLowerCase();
     const d = deptName.toLowerCase();
 
@@ -159,9 +239,12 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     const requiresLogin = isPropertyTax || isTrade || isWater;
 
     if (requiresLogin && !isLoggedIn) {
-      router.push(`/${locale}/service/login?redirect=/${locale}/service/${serviceId}`);
+      router.push(`/${locale}/service/login?redirect=${encodeURIComponent(internalHref)}`);
     } else {
-      router.push(`/${locale}/service/${serviceId}`);
+      saveDeptServiceContext(department, service);
+      setIsDetailsOpen(false);
+      setSelectedServiceId(null);
+      router.push(internalHref);
     }
   };
 
@@ -179,6 +262,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   // ── Quick Actions ──────────────────────────────────────────────────────────
   const quickActions = [
     {
+      id: 'apply',
       label: t('quickAccess.actions.apply.label'),
       description: t('quickAccess.actions.apply.description'),
       icon: <FileEdit className="w-5 h-5 text-blue-600" />,
@@ -187,6 +271,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       hoverClass: 'hover:border-blue-200 hover:bg-blue-50/50',
     },
     {
+      id: 'download',
       label: t('quickAccess.actions.download.label'),
       description: t('quickAccess.actions.download.description'),
       icon: <Download className="w-5 h-5 text-purple-600" />,
@@ -195,6 +280,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       hoverClass: 'hover:border-purple-200 hover:bg-purple-50/50',
     },
     {
+      id: 'pay',
       label: t('quickAccess.actions.pay.label'),
       description: t('quickAccess.actions.pay.description'),
       icon: <CreditCard className="w-5 h-5 text-orange-600" />,
@@ -203,6 +289,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       hoverClass: 'hover:border-orange-200 hover:bg-orange-50/50',
     },
     {
+      id: 'appeal',
       label: t('quickAccess.actions.appeal.label'),
       description: t('quickAccess.actions.appeal.description'),
       icon: <Scale className="w-5 h-5 text-red-600" />,
@@ -211,6 +298,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       hoverClass: 'hover:border-rose-200 hover:bg-rose-50/50',
     },
     {
+      id: 'grievance',
       label: t('quickAccess.actions.grievance.label'),
       description: t('quickAccess.actions.grievance.description'),
       icon: <MessageSquare className="w-5 h-5 text-teal-600" />,
@@ -219,6 +307,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       hoverClass: 'hover:border-teal-200 hover:bg-teal-50/50',
     },
     {
+      id: 'track',
       label: t('quickAccess.actions.track.label'),
       description: t('quickAccess.actions.track.description'),
       icon: <Search className="w-5 h-5 text-indigo-600" />,
@@ -286,7 +375,13 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 <button
                   key={action.label}
                   type="button"
-                  onClick={handleActionClick}
+                  onClick={() => {
+                    if (action.id === 'track') {
+                      updateTrackingDrawerRoute(true);
+                      return;
+                    }
+                    handleActionClick();
+                  }}
                   className={`group relative flex min-h-[80px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-2.5 text-center transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:min-h-[78px] sm:items-start sm:text-left ${action.hoverClass}`}
                 >
                   <span
@@ -368,6 +463,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                         key={`${item.dept.id}-${item.id}`}
                         type="button"
                         onClick={() => {
+                          setApplyError(null);
                           setSelectedServiceId(item.id);
                           setIsDetailsOpen(true);
                         }}
@@ -473,6 +569,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                             key={item.id}
                             type="button"
                             onClick={() => {
+                              setApplyError(null);
                               setSelectedServiceId(item.id);
                               setIsDetailsOpen(true);
                             }}
@@ -523,12 +620,14 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           let serviceName = '';
           let deptName = '';
           let serviceItem: (typeof deptCards)[number]['services'][number] | null = null;
+          let departmentItem: (typeof deptCards)[number] | null = null;
           for (const dept of deptCards) {
             const svc = dept.services.find((s) => s.id === selectedServiceId);
             if (svc) {
               serviceName = svc.name;
               deptName = dept.title;
               serviceItem = svc;
+              departmentItem = dept;
               break;
             }
           }
@@ -557,12 +656,18 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               onClose={() => {
                 setIsDetailsOpen(false);
                 setSelectedServiceId(null);
+                setApplyError(null);
               }}
               title={serviceName || t('serviceDetails.title')}
               subtitle={deptName}
               maxWidth="md"
             >
               <div className="space-y-5">
+                {applyError && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                    {applyError}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 shrink-0">
@@ -626,6 +731,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                     onClick={() => {
                       setIsDetailsOpen(false);
                       setSelectedServiceId(null);
+                      setApplyError(null);
                     }}
                     className="font-bold"
                   >
@@ -635,19 +741,32 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                     variant="primary"
                     size="md"
                     onClick={() => {
-                      setIsDetailsOpen(false);
-                      setSelectedServiceId(null);
-                      handleServiceClick(serviceName, selectedServiceId);
+                      if (serviceItem && departmentItem) {
+                        void handleServiceClick(departmentItem, serviceItem);
+                      }
                     }}
                     className="font-extrabold"
+                    disabled={isCreatingExternalApplication}
                   >
-                    {t('serviceDetails.apply')} &rarr;
+                    {isCreatingExternalApplication ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Icons.LoaderCircle className="h-4 w-4 animate-spin" />
+                        {t('serviceDetails.apply')}
+                      </span>
+                    ) : (
+                      <>{t('serviceDetails.apply')} &rarr;</>
+                    )}
                   </Button>
                 </div>
               </div>
             </Modal>
           );
         })()}
+
+      <ApplicationAndTrackingDrawer
+        open={isTrackingOpen}
+        onClose={() => updateTrackingDrawerRoute(false)}
+      />
     </div>
   );
 }

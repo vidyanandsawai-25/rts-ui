@@ -28,6 +28,8 @@ import withReactContent from "sweetalert2-react-content";
 import { isConditionMet } from "@/lib/utils/rts/conditions";
 import { VALIDATION_RULES } from "@/lib/utils/validationRegistry";
 
+const DEFAULT_INDIAN_MOBILE_PATTERN = "^[7-9][0-9]{9}$";
+
 import { type FormField, type NormalizeRule, type CustomValidate, type InputMode } from "@/types/rts/form.types";
 import { type SaveDraftValuesRequest } from "@/types/rts.types";
 import { useLanguage } from "@/components/Providers/LanguageProvider";
@@ -319,23 +321,26 @@ export default function DynamicServiceFormClient({
     const validation = field?.validation || {};
     const key = field?.validationKey;
     const rule = key ? VALIDATION_RULES[key] : undefined;
+    const isMobileField = String(field?.type ?? "").toLowerCase() === "tel";
+    const configuredPattern = validation.pattern ?? field?.pattern ?? rule?.pattern;
+    const hasConfiguredPattern = typeof configuredPattern === "string" && configuredPattern.trim().length > 0;
 
     return {
-      pattern: validation.pattern ?? field?.pattern ?? rule?.pattern,
+      pattern: hasConfiguredPattern ? configuredPattern : isMobileField ? DEFAULT_INDIAN_MOBILE_PATTERN : undefined,
       minLength: validation.minLength ?? field?.minLength ?? rule?.minLength,
       maxLength: validation.maxLength ?? field?.maxLength ?? rule?.maxLength,
-      exactLength: validation.exactLength ?? field?.exactLength ?? rule?.exactLength,
+      exactLength: validation.exactLength ?? field?.exactLength ?? rule?.exactLength ?? (isMobileField ? 10 : undefined),
       min: validation.min ?? field?.min ?? rule?.min,
       max: validation.max ?? field?.max ?? rule?.max,
       minDate: validation.minDate,
       maxDate: validation.maxDate,
       minTime: validation.minTime,
       maxTime: validation.maxTime,
-      allow: validation.allow ?? field?.allow ?? rule?.allow,
+      allow: validation.allow ?? field?.allow ?? rule?.allow ?? (isMobileField ? "numeric" : undefined),
       normalize: validation.normalize ?? field?.normalize ?? rule?.normalize,
       customValidate: validation.customValidate ?? field?.customValidate ?? rule?.customValidate,
-      inputMode: validation.inputMode ?? field?.inputMode ?? rule?.inputMode,
-      message: validation.message ?? rule?.message,
+      inputMode: validation.inputMode ?? field?.inputMode ?? rule?.inputMode ?? (isMobileField ? "numeric" : undefined),
+      message: validation.message ?? rule?.message ?? (isMobileField ? "Enter a valid 10-digit mobile number starting with 7, 8, or 9." : undefined),
     };
   };
 

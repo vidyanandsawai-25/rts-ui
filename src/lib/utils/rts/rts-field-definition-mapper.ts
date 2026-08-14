@@ -7,6 +7,8 @@ import type {
 } from "@/types/rts/field-definition.types";
 import type { ServiceFormConfig } from "@/types/rts/form.types";
 
+const DEFAULT_INDIAN_MOBILE_PATTERN = "^[7-9][0-9]{9}$";
+
 type ParsedValidationRules = {
   pattern?: string;
   min?: number;
@@ -580,6 +582,8 @@ function mapApiFieldTypeToOldType(apiType: string) {
     case "email":
       return "email";
     case "mobile":
+    case "tel":
+    case "phone":
       return "tel";
     case "aadhaar":
     case "aadhar":
@@ -699,6 +703,7 @@ function mapApiItemToOldField(item: RtsFieldDefinitionApiItem) {
     parsedValidation?.maxFileSizeMb ??
     parseFileValidationMaxSizeMb(parsedValidation ? null : item?.validationRules);
   const message = parsedValidation?.message;
+  const isMobileField = oldType === "tel";
   const isNumericLikeField =
     oldType === "number" || String(item?.fieldType || "").toLowerCase() === "year";
 
@@ -719,6 +724,17 @@ function mapApiItemToOldField(item: RtsFieldDefinitionApiItem) {
   if (accept) validation.accept = accept;
   if (typeof maxFileSizeMb === "number") validation.maxFileSizeMb = maxFileSizeMb;
   if (message) validation.message = message;
+
+  // The current field-definition API returns `tel` without validation rules.
+  // Supply the standard Indian mobile rules until the API provides explicit ones.
+  if (isMobileField) {
+    validation.pattern ??= DEFAULT_INDIAN_MOBILE_PATTERN;
+    validation.exactLength ??= 10;
+    validation.maxLength ??= 10;
+    validation.allow ??= "numeric";
+    validation.inputMode ??= "numeric";
+    validation.message ??= "Enter a valid 10-digit mobile number starting with 7, 8, or 9.";
+  }
 
   if (hasRule(item?.validationRules, "decimal")) {
     validation.allow = "decimal";

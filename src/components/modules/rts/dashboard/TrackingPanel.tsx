@@ -1,606 +1,179 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import {
-  Search,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  Calendar,
-  MessageSquare,
-  User,
-} from "lucide-react";
-import { Button } from "@/components/common/Button";
-import { Input } from "@/components/common/Input";
-import { Progress } from "@/components/common/progress";
-import { useLanguage } from "@/components/Providers/LanguageProvider";
+import { useEffect, useMemo, useState } from "react";
+import { Download, FileText, GitCommit, Paperclip, Search } from "lucide-react";
 
-interface TrackingPanelProps {
-  authUser?: any;
+import { Button, DocumentViewerModal, Input, ViewButton } from "@/components/common";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { ApprovalStagesTimeline } from "@/components/modules/rts";
+import { getApplicationDetailAction, type RtsApplicationDetailData } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
+import { getCitizenMisApplications } from "@/app/[locale]/service/dashboard/actions";
+import {
+  getCitizenRtsDocumentDownloadUrl,
+  getCitizenRtsDocumentViewUrl,
+} from "@/lib/api/rts/rtsdocument.client";
+import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+
+function normalizedStatus(status: string): "approved" | "rejected" | "pending" {
+  const value = status.toLowerCase();
+  if (value.includes("approved")) return "approved";
+  if (value.includes("rejected") || value.includes("failed") || value.includes("discarded")) return "rejected";
+  return "pending";
 }
 
-type Lang = "en" | "hi" | "mr";
-const safeLang = (v: unknown): Lang => (v === "hi" || v === "mr" || v === "en" ? (v as Lang) : "en");
+function formatSubmittedDate(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(date);
+}
 
-const TXT: Record<
-  Lang,
-  {
-    yourApplications: string;
-    showingOf: (shown: number, total: number) => string;
+export function TrackingPanel() {
+  const [applications, setApplications] = useState<RtsMisDashboardUserApplicationItem[]>([]);
+  const [applicationNo, setApplicationNo] = useState("");
+  const [selectedApplication, setSelectedApplication] = useState<RtsMisDashboardUserApplicationItem | null>(null);
+  const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [viewingDocument, setViewingDocument] = useState<{ fileUrl: string; fileName: string; label: string } | null>(null);
 
-    placeholder: string;
-    tryLabel: string;
-
-    pleaseEnter: string;
-    notFound: string;
-
-    applicant: string;
-    submitted: string;
-
-    applicationIdLabel: string;
-    overallProgress: string;
-
-    approvalStages: string;
-    officer: string;
-    remark: string;
-
-    approved: string;
-    pending: string;
-    rejected: string;
-
-    approvedTitle: string;
-    approvedMsg: string;
-
-    trackAria: string;
-  }
-> = {
-  en: {
-    yourApplications: "Your Applications",
-    showingOf: (shown, total) => `Showing ${shown} of ${total} applications`,
-    placeholder: "Enter Application ID",
-    tryLabel: "Try:",
-    pleaseEnter: "Please enter Application ID.",
-    notFound: "Application not found. Please check your Application ID.",
-    applicant: "Applicant",
-    submitted: "Submitted",
-    applicationIdLabel: "Application ID",
-    overallProgress: "Overall Progress",
-    approvalStages: "Approval Stages",
-    officer: "Officer",
-    remark: "Remark",
-    approved: "Approved",
-    pending: "Pending",
-    rejected: "Rejected",
-    approvedTitle: "🎉 Application Approved!",
-    approvedMsg: "Your application has been successfully processed.",
-    trackAria: "Track application",
-  },
-  hi: {
-    yourApplications: "आपके आवेदन",
-    showingOf: (shown, total) => `${total} में से ${shown} आवेदन दिखाए जा रहे हैं`,
-    placeholder: "आवेदन आईडी दर्ज करें",
-    tryLabel: "ट्राय करें:",
-    pleaseEnter: "कृपया आवेदन आईडी दर्ज करें।",
-    notFound: "आवेदन नहीं मिला। कृपया आवेदन आईडी जाँचें।",
-    applicant: "आवेदक",
-    submitted: "जमा",
-    applicationIdLabel: "आवेदन आईडी",
-    overallProgress: "कुल प्रगति",
-    approvalStages: "स्वीकृति चरण",
-    officer: "अधिकारी",
-    remark: "टिप्पणी",
-    approved: "स्वीकृत",
-    pending: "लंबित",
-    rejected: "अस्वीकृत",
-    approvedTitle: "🎉 आवेदन स्वीकृत!",
-    approvedMsg: "आपका आवेदन सफलतापूर्वक प्रोसेस हो गया है।",
-    trackAria: "आवेदन ट्रैक करें",
-  },
-  mr: {
-    yourApplications: "तुमचे अर्ज",
-    showingOf: (shown, total) => `${total} पैकी ${shown} अर्ज दाखवत आहे`,
-    placeholder: "अर्ज आयडी टाका",
-    tryLabel: "ट्राय करा:",
-    pleaseEnter: "कृपया अर्ज आयडी प्रविष्ट करा.",
-    notFound: "अर्ज सापडला नाही. कृपया अर्ज आयडी तपासा.",
-    applicant: "अर्जदार",
-    submitted: "सादर",
-    applicationIdLabel: "अर्ज आयडी",
-    overallProgress: "एकूण प्रगती",
-    approvalStages: "मंजुरी टप्पे",
-    officer: "अधिकारी",
-    remark: "टिप",
-    approved: "मंजूर",
-    pending: "प्रलंबित",
-    rejected: "नामंजूर",
-    approvedTitle: "🎉 अर्ज मंजूर!",
-    approvedMsg: "तुमचा अर्ज यशस्वीरित्या प्रक्रिया झाला आहे.",
-    trackAria: "अर्ज ट्रॅक करा",
-  },
-};
-
-// Mock tracking data for demo (base EN)
-const mockTrackingData: Record<string, any> = {
-  APP2024001: {
-    id: "APP2024001",
-    type: "Birth Certificate",
-    applicantName: "Rajesh Kumar",
-    submittedDate: "2024-11-10 10:30 AM",
-    currentStage: 3,
-    progress: 100,
-    status: "approved",
-    stages: [
-      {
-        stage: 1,
-        name: "Document Verification",
-        officer: "Priya Sharma",
-        status: "approved",
-        date: "2024-11-10",
-        time: "02:15 PM",
-        remark: "All documents verified successfully. Birth hospital records matched.",
-      },
-      {
-        stage: 2,
-        name: "Department Review",
-        officer: "Anil Deshmukh",
-        status: "approved",
-        date: "2024-11-12",
-        time: "11:45 AM",
-        remark: "Application approved by department head. All details are correct.",
-      },
-      {
-        stage: 3,
-        name: "Final Approval",
-        officer: "Dr. Sunita Patil",
-        status: "approved",
-        date: "2024-11-14",
-        time: "04:30 PM",
-        remark: "Certificate approved and ready for download. Visit office or download online.",
-      },
-    ],
-  },
-  APP2024002: {
-    id: "APP2024002",
-    type: "Property Tax Payment",
-    applicantName: "Meena Joshi",
-    submittedDate: "2024-11-15 09:15 AM",
-    currentStage: 2,
-    progress: 66,
-    status: "pending",
-    stages: [
-      {
-        stage: 1,
-        name: "Payment Verification",
-        officer: "Ramesh Pawar",
-        status: "approved",
-        date: "2024-11-15",
-        time: "03:20 PM",
-        remark: "Payment of ₹15,000 verified successfully through online portal.",
-      },
-      {
-        stage: 2,
-        name: "Records Update",
-        officer: "Kavita Rane",
-        status: "pending",
-        date: "-",
-        time: "-",
-        remark: "Under review. Tax records being updated in municipal database.",
-      },
-      {
-        stage: 3,
-        name: "Receipt Generation",
-        officer: "-",
-        status: "pending",
-        date: "-",
-        time: "-",
-        remark: "Awaiting completion of previous stage.",
-      },
-    ],
-  },
-};
-
-// Optional i18n for mock-only strings (service/stage/remark)
-const MOCK_I18N: Record<
-  string,
-  {
-    type: Record<Lang, string>;
-    stages: Array<{
-      name: Record<Lang, string>;
-      remark: Record<Lang, string>;
-    }>;
-  }
-> = {
-  APP2024001: {
-    type: { en: "Birth Certificate", hi: "जन्म प्रमाणपत्र", mr: "जन्म प्रमाणपत्र" },
-    stages: [
-      {
-        name: { en: "Document Verification", hi: "दस्तावेज़ सत्यापन", mr: "कागदपत्र पडताळणी" },
-        remark: {
-          en: "All documents verified successfully. Birth hospital records matched.",
-          hi: "सभी दस्तावेज़ सफलतापूर्वक सत्यापित हो गए। अस्पताल रिकॉर्ड मिलान हो गया।",
-          mr: "सर्व कागदपत्रे यशस्वीरित्या पडताळली. रुग्णालय नोंदी जुळल्या.",
-        },
-      },
-      {
-        name: { en: "Department Review", hi: "विभागीय समीक्षा", mr: "विभागीय परीक्षण" },
-        remark: {
-          en: "Application approved by department head. All details are correct.",
-          hi: "विभाग प्रमुख द्वारा आवेदन स्वीकृत। सभी विवरण सही हैं।",
-          mr: "विभाग प्रमुखांनी अर्ज मंजूर केला. सर्व तपशील बरोबर आहेत.",
-        },
-      },
-      {
-        name: { en: "Final Approval", hi: "अंतिम स्वीकृति", mr: "अंतिम मंजुरी" },
-        remark: {
-          en: "Certificate approved and ready for download. Visit office or download online.",
-          hi: "प्रमाणपत्र स्वीकृत है और डाउनलोड के लिए तैयार है। कार्यालय जाएँ या ऑनलाइन डाउनलोड करें।",
-          mr: "प्रमाणपत्र मंजूर असून डाउनलोडसाठी तयार आहे. कार्यालयात भेट द्या किंवा ऑनलाइन डाउनलोड करा.",
-        },
-      },
-    ],
-  },
-  APP2024002: {
-    type: { en: "Property Tax Payment", hi: "संपत्ति कर भुगतान", mr: "मालमत्ता कर भरणा" },
-    stages: [
-      {
-        name: { en: "Payment Verification", hi: "भुगतान सत्यापन", mr: "भरणा पडताळणी" },
-        remark: {
-          en: "Payment of ₹15,000 verified successfully through online portal.",
-          hi: "₹15,000 का भुगतान ऑनलाइन पोर्टल के माध्यम से सफलतापूर्वक सत्यापित हुआ।",
-          mr: "₹15,005 चा भरणा ऑनलाइन पोर्टलद्वारे यशस्वीरित्या पडताळला.",
-        },
-      },
-      {
-        name: { en: "Records Update", hi: "रिकॉर्ड अपडेट", mr: "नोंदी अद्ययावत" },
-        remark: {
-          en: "Under review. Tax records being updated in municipal database.",
-          hi: "समीक्षा में। नगर निगम डेटाबेस में कर रिकॉर्ड अपडेट हो रहे हैं।",
-          mr: "परीक्षण सुरू आहे. महानगरपालिका डेटाबेसमध्ये कर नोंदी अद्ययावत होत आहेत.",
-        },
-      },
-      {
-        name: { en: "Receipt Generation", hi: "रसीद निर्माण", mr: "पावती निर्मिती" },
-        remark: {
-          en: "Awaiting completion of previous stage.",
-          hi: "पिछले चरण के पूर्ण होने की प्रतीक्षा है।",
-          mr: "मागील टप्पा पूर्ण होण्याची प्रतीक्षा आहे.",
-        },
-      },
-    ],
-  },
-};
-
-export function TrackingPanel({ authUser }: TrackingPanelProps) {
-  const { language } = useLanguage();
-  const lang = safeLang(language);
-  const t = TXT[lang];
-
-  const [applicationId, setApplicationId] = useState("");
-  const [trackingData, setTrackingData] = useState<any>(null);
-  const [searchError, setSearchError] = useState("");
-  const [userApplications, setUserApplications] = useState<any[]>([]);
-
-  // Load user's applications from localStorage (client-side safe)
   useEffect(() => {
-    if (!authUser) return;
-    if (typeof window === "undefined") return;
+    let cancelled = false;
+
+    getCitizenMisApplications()
+      .then((items) => {
+        if (!cancelled) setApplications(items);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Unable to load your applications.");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const documents = useMemo(
+    () => [
+      ...(detail?.documents ?? []).map((document, index) => ({
+        id: document.documentId || index + 1,
+        label: document.documentName || "Document Attachment",
+        guid: document.documentGuid || "",
+        size: document.fileSizeBytes ? `${(document.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : "Attachment",
+      })),
+      ...(detail?.answerGroups ?? [])
+        .flatMap((group) => group.answers)
+        .filter((answer) => answer.documentGuid)
+        .map((answer, index) => ({
+          id: answer.fieldDefinitionId || index + 1,
+          label: answer.label || "Document Attachment",
+          guid: answer.documentGuid || "",
+          size: "Attachment",
+        })),
+    ],
+    [detail]
+  );
+
+  const openApplication = async (candidate: RtsMisDashboardUserApplicationItem) => {
+    setApplicationNo(candidate.applicationNo);
+    setSelectedApplication(candidate);
+    setDetail(null);
+    setError("");
+    setLoading(true);
 
     try {
-      const stored = JSON.parse(window.localStorage.getItem("rtsApplications") || "{}");
-      const userUpicId = authUser?.userData?.upicId;
-      const apps = Object.values(stored).filter((app: any) => app.userUpicId === userUpicId);
-      setUserApplications(apps as any[]);
-    } catch (err) {
-      console.error("Error reading applications from localStorage", err);
-    }
-  }, [authUser]);
-
-  const displayTrackingData = useMemo(() => {
-    if (!trackingData) return null;
-    if (trackingData.__source !== "mock") return trackingData;
-
-    const i18n = MOCK_I18N[trackingData.id];
-    if (!i18n) return trackingData;
-
-    return {
-      ...trackingData,
-      type: i18n.type[lang] ?? trackingData.type,
-      stages: (trackingData.stages ?? []).map((s: any, idx: number) => ({
-        ...s,
-        name: i18n.stages[idx]?.name?.[lang] ?? s.name,
-        remark: i18n.stages[idx]?.remark?.[lang] ?? s.remark,
-      })),
-    };
-  }, [trackingData, lang]);
-
-  const handleTrackApplication = () => {
-    setSearchError("");
-
-    if (!applicationId.trim()) {
-      setSearchError(t.pleaseEnter);
-      setTrackingData(null);
-      return;
-    }
-
-    const id = applicationId.toUpperCase();
-
-    // Read from localStorage safely
-    let realData: any = null;
-    if (typeof window !== "undefined") {
-      try {
-        const stored = JSON.parse(window.localStorage.getItem("rtsApplications") || "{}");
-        realData = stored[id];
-      } catch (err) {
-        console.error("Error parsing localStorage", err);
+      const response = await getApplicationDetailAction(candidate.applicationNo);
+      if (!response) {
+        setError("Application details are unavailable.");
+        return;
       }
+      setDetail(response);
+    } catch {
+      setError("Application details are unavailable.");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (realData) {
-      setTrackingData({
-        id: realData.id,
-        type: realData.serviceName,
-        applicantName: realData.applicantName,
-        submittedDate: realData.submittedDate,
-        currentStage: realData.currentStage,
-        progress: realData.progress,
-        status: realData.status,
-        stages: realData.stages,
-        __source: "local",
-      });
+  const trackApplication = () => {
+    const match = applications.find((application) => application.applicationNo.toLowerCase() === applicationNo.trim().toLowerCase());
+    if (!match) {
+      setSelectedApplication(null);
+      setDetail(null);
+      setError("Application not found in your applications.");
       return;
     }
-
-    // Fallback: mock data
-    const data = mockTrackingData[id];
-    if (data) {
-      setTrackingData({ ...data, __source: "mock" });
-    } else {
-      setTrackingData(null);
-      setSearchError(t.notFound);
-    }
+    void openApplication(match);
   };
-
-  const getStatusIcon = (status: string) => {
-    if (status === "approved") return <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />;
-    if (status === "pending") return <Clock className="w-4 h-4 text-orange-500 flex-shrink-0" />;
-    return <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />;
-  };
-
-  const getStatusBadge = (status: string) => {
-    if (status === "approved") {
-      return (
-        <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs whitespace-nowrap">
-          {t.approved}
-        </span>
-      );
-    }
-    if (status === "pending") {
-      return (
-        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs whitespace-nowrap">
-          {t.pending}
-        </span>
-      );
-    }
-    return (
-      <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs whitespace-nowrap">
-        {t.rejected}
-      </span>
-    );
-  };
-
-  const handleClickYourApplication = (app: any) => {
-    setApplicationId(app.id);
-    setTrackingData({
-      id: app.id,
-      type: app.serviceName,
-      applicantName: app.applicantName,
-      submittedDate: app.submittedDate,
-      currentStage: app.currentStage,
-      progress: app.progress,
-      status: app.status,
-      stages: app.stages,
-      __source: "local",
-    });
-    setSearchError("");
-  };
-
-  const td = displayTrackingData;
 
   return (
-    <div className="w-full">
-      <div className="space-y-3">
-        {/* Your Applications (if any) */}
-        {authUser && userApplications.length > 0 && (
-          <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-2 border-teal-300 rounded-lg p-3 mb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <User className="w-5 h-5 text-teal-600" />
-              <h3 className="text-sm font-semibold text-gray-800">{t.yourApplications}</h3>
-            </div>
-
-            <div className="space-y-2">
-              {userApplications.slice(0, 5).map((app: any) => (
-                <div
-                  key={app.id}
-                  onClick={() => handleClickYourApplication(app)}
-                  className="bg-white rounded-lg p-2.5 border border-teal-200 hover:border-teal-400 hover:shadow-md transition-all cursor-pointer"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-xs font-semibold text-gray-900 font-mono truncate">{app.id}</p>
-                        {getStatusBadge(app.status)}
-                      </div>
-                      <p className="text-xs text-gray-700 truncate">{app.serviceName}</p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">{app.submittedDate}</p>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <div className="text-xs font-semibold text-teal-600">{app.progress}%</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {userApplications.length > 5 && (
-                <p className="text-[10px] text-gray-500 text-center pt-1">
-                  {t.showingOf(5, userApplications.length)}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Search Section */}
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            placeholder={t.placeholder}
-            value={applicationId}
-            onChange={(e) => setApplicationId(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleTrackApplication()}
-            className="flex-1 h-10 text-sm border-2 border-purple-300 focus:border-purple-500"
-          />
-          <Button
-            onClick={handleTrackApplication}
-            aria-label={t.trackAria}
-            className="h-10 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-xs flex-shrink-0"
-            type="button"
-          >
-            <Search className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Sample IDs */}
-        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500 p-2.5 rounded">
-          <p className="text-xs text-blue-800 break-words">
-            <strong>{t.tryLabel}</strong> APP2024001, APP2024002
-          </p>
-        </div>
-
-        {/* Error */}
-        {searchError && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-2.5 rounded">
-            <p className="text-xs text-red-800 break-words">{searchError}</p>
-          </div>
-        )}
-
-        {/* Tracking Result */}
-        {td && (
-          <div className="space-y-3">
-            {/* Application Header */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-3 border-2 border-purple-200">
-              <div className="space-y-3">
-                <div>
-                  <h3 className="text-sm text-gray-800 mb-1 break-words">{td.type}</h3>
-                  <p className="text-xs text-gray-600 break-words">
-                    {t.applicant}: <strong>{td.applicantName}</strong>
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5 break-words">
-                    {t.submitted}: {td.submittedDate}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-600 mb-1">{t.applicationIdLabel}</p>
-                  <div className="bg-white px-2.5 py-1.5 rounded border-2 border-purple-300 font-mono text-xs break-all">
-                     {td.id}
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress */}
-              <div className="space-y-1.5 mt-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-700">{t.overallProgress}</span>
-                  <span className="font-bold text-purple-700">{td.progress}%</span>
-                </div>
-                <Progress value={td.progress} className="h-2" />
-              </div>
-            </div>
-
-            {/* Stages */}
-            <div className="space-y-2.5 px-0.5">
-              <h4 className="text-sm text-gray-800 flex items-center gap-1.5 px-1">
-                <span className="w-4 sm:w-6 h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 rounded flex-shrink-0" />
-                <span className="whitespace-nowrap text-xs sm:text-sm">{t.approvalStages}</span>
-                <span className="flex-1 h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 rounded" />
-              </h4>
-
-              {td.stages.map((stage: any, index: number) => (
-                <div
-                  key={stage.stage}
-                  className={`relative bg-white rounded-lg p-2.5 sm:p-3 border-2 transition-all ${
-                    stage.status === "approved"
-                      ? "border-green-300 shadow-md"
-                      : stage.status === "pending"
-                      ? "border-orange-300 shadow-md"
-                      : "border-gray-200"
-                  }`}
-                >
-                  {/* Stage badge */}
-                  <div className="absolute -top-2 -left-2 w-6 h-6 sm:w-7 sm:h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-xs shadow-lg">
-                    {stage.stage}
-                  </div>
-
-                  <div className="ml-4 sm:ml-5 mr-0.5">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          {getStatusIcon(stage.status)}
-                          <h5 className="text-xs text-gray-900 break-words leading-tight">{stage.name}</h5>
-                        </div>
-                        <p className="text-xs text-gray-600 break-words leading-tight">
-                          {t.officer}: <strong>{stage.officer}</strong>
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0">{getStatusBadge(stage.status)}</div>
-                    </div>
-
-                    {/* Date & time */}
-                    <div className="flex items-center gap-2 sm:gap-3 mb-2 text-xs text-gray-600 flex-wrap">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
-                        <span className="text-xs">{stage.date}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-pink-500 flex-shrink-0" />
-                        <span className="text-xs">{stage.time}</span>
-                      </div>
-                    </div>
-
-                    {/* Remark */}
-                    <div className="bg-gradient-to-r from-gray-50 to-purple-50 rounded-lg p-2 sm:p-2.5 border border-purple-100">
-                      <div className="flex items-start gap-1.5 sm:gap-2">
-                        <MessageSquare className="w-3.5 h-3.5 text-purple-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-600 mb-0.5">{t.remark}:</p>
-                          <p className="text-xs text-gray-800 leading-relaxed break-words">{stage.remark}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* connector line */}
-                  {index < td.stages.length - 1 && (
-                    <div className="absolute left-3 sm:left-3.5 bottom-0 w-0.5 h-2.5 bg-gradient-to-b from-purple-300 to-transparent translate-y-full" />
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Final message */}
-            {td.status === "approved" && (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-3">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <h5 className="text-sm text-green-800 mb-0.5 break-words">{t.approvedTitle}</h5>
-                    <p className="text-xs text-green-700 leading-relaxed break-words">{t.approvedMsg}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <Input
+          value={applicationNo}
+          onChange={(event) => setApplicationNo(event.target.value)}
+          onKeyDown={(event) => event.key === "Enter" && trackApplication()}
+          placeholder="Enter application number"
+          className="flex-1"
+        />
+        <Button type="button" onClick={trackApplication} aria-label="Track application">
+          <Search className="h-4 w-4" />
+        </Button>
       </div>
+
+      {applications.length > 0 && !selectedApplication && (
+        <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-3">
+          {applications.map((application) => (
+            <button
+              key={application.applicationNo}
+              type="button"
+              onClick={() => void openApplication(application)}
+              className="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2 text-left transition hover:border-blue-300 hover:bg-blue-50"
+            >
+              <span className="min-w-0">
+                <span className="block truncate text-xs font-bold text-slate-800">{application.serviceName}</span>
+                <span className="block text-[11px] font-medium text-slate-500">{application.applicationNo}</span>
+              </span>
+              <span className="shrink-0 text-[11px] font-semibold text-slate-500">{application.status}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {error && <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">{error}</p>}
+      {loading && <p className="py-8 text-center text-xs font-medium text-slate-500">Loading application details...</p>}
+
+      {selectedApplication && detail && !loading && (
+        <div className="space-y-5">
+          <section className="rounded-xl border border-slate-200 bg-slate-50 p-4.5">
+            <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-800">Application Summary</h4>
+            <div className="mt-3 grid grid-cols-2 gap-3.5 text-xs font-bold text-slate-700">
+              <div><span className="block text-[9px] font-bold uppercase text-slate-500">Application Number</span>{selectedApplication.applicationNo}</div>
+              <div><span className="block text-[9px] font-bold uppercase text-slate-500">Submitted Date</span>{formatSubmittedDate(selectedApplication.submittedDate)}</div>
+              <div><span className="block text-[9px] font-bold uppercase text-slate-500">SLA Timeline</span><span className="text-blue-700">{selectedApplication.sla} Days</span></div>
+              <div>
+                <span className="mb-1 block text-[9px] font-bold uppercase text-slate-500">Status</span>
+                {normalizedStatus(selectedApplication.status) === "approved" ? <StatusBadge value activeLabel="Approved" /> : normalizedStatus(selectedApplication.status) === "rejected" ? <StatusBadge value={false} inactiveLabel="Rejected" /> : <StatusBadge variant="pending" label="Pending" />}
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
+            <h4 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase text-slate-800"><Paperclip className="h-4 w-4 text-blue-600" />Submitted Documents ({documents.length})</h4>
+            {documents.length ? documents.map((document) => (
+              <div key={`${document.id}-${document.guid}`} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs">
+                <div className="flex min-w-0 items-center gap-3"><FileText className="h-4 w-4 shrink-0 text-blue-600" /><span className="truncate font-bold text-slate-800">{document.label}</span></div>
+                {document.guid && <div className="flex shrink-0 gap-2"><ViewButton size="xs" onClick={() => setViewingDocument({ fileUrl: getCitizenRtsDocumentViewUrl(document.guid), fileName: `${document.label.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`, label: document.label })}>View</ViewButton><Button type="button" size="xs" variant="secondary" icon={Download} onClick={() => window.open(getCitizenRtsDocumentDownloadUrl(document.guid), "_blank")}>Download</Button></div>}
+              </div>
+            )) : <p className="py-2 text-center text-xs font-medium text-slate-400">No uploaded document attachments found for this application.</p>}
+          </section>
+
+          <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
+            <h4 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase text-slate-800"><GitCommit className="h-4 w-4 text-blue-600" />Approval Workflow Timeline</h4>
+            {detail.approvalStages?.length ? <ApprovalStagesTimeline stages={detail.approvalStages.map((stage) => ({ id: stage.approvalFlowStageId, stageName: stage.stageName, stageOrder: stage.stageOrder, status: stage.status, remark: stage.remark || undefined, userName: stage.userName || undefined, firstName: stage.firstName || undefined, lastName: stage.lastName || undefined, createdDate: stage.createdDate || undefined }))} completedCount={detail.completedStages || 0} currentStageIndex={detail.approvalStages.findIndex((stage) => stage.isCurrentStage)} /> : <p className="py-2 text-center text-xs font-medium text-slate-400">No approval workflow stages recorded for this application.</p>}
+          </section>
+        </div>
+      )}
+
+      {viewingDocument && <DocumentViewerModal isOpen onClose={() => setViewingDocument(null)} fileUrl={viewingDocument.fileUrl} fileName={viewingDocument.fileName} label={viewingDocument.label} loadPreviewAsBlob />}
     </div>
   );
 }

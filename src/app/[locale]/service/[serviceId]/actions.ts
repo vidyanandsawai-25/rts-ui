@@ -87,16 +87,7 @@ export async function submitRtsApplicationAction(
 
     const uploadResult = await uploadRtsDocument({
       file,
-      ownerUserId: ownerId,
       documentType: fileField.fieldLabel || fileField.fieldName,
-      departmentId:
-        input.departmentId == null || input.departmentId === ""
-          ? undefined
-          : Number(input.departmentId),
-      moduleId:
-        input.serviceId == null || input.serviceId === ""
-          ? undefined
-          : Number(input.serviceId),
       isPrimaryDocument: true,
     });
 
