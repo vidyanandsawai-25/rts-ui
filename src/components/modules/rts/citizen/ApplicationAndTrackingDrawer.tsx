@@ -164,7 +164,6 @@ export default function ApplicationAndTrackingDrawer({
   const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
 
   const searchApplications = async () => {
     const normalizedSearchValue = searchValue.trim();
@@ -177,7 +176,6 @@ export default function ApplicationAndTrackingDrawer({
     setSelectedApplication(null);
     setDetail(null);
     setError("");
-    setHasSearched(true);
     setLoading(true);
 
     try {
@@ -228,7 +226,6 @@ export default function ApplicationAndTrackingDrawer({
     setDetail(null);
     setError("");
     setLoading(false);
-    setHasSearched(false);
     onClose();
   };
 
@@ -279,7 +276,7 @@ export default function ApplicationAndTrackingDrawer({
             </div>
           </div>
 
-          {hasSearched && !selectedApplication && !loading && (
+          {!selectedApplication && (
             <aside className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800">
               <p className="font-semibold">{COPY.searchHelpTitle}</p>
               <p className="mt-0.5">{COPY.searchHelp}</p>
