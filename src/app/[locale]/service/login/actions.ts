@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { requestOtp } from '@/lib/api/otp.service';
 import { fetchCitizenPropertiesFromApi, type CitizenProperty } from '@/lib/api/citizen-property.service';
 import { createRtsCitizenSession, logoutRtsCitizenSession } from '@/lib/api/rts/rtscitizensession.service';
+import { createTrackedExternalServiceNavigation } from '@/lib/utils/rts/external-service-application';
 
 const OTP_TTL_MS = 2 * 60 * 1000;
 
@@ -79,7 +80,7 @@ export async function sendCitizenOtpAction(
   }
 }
 
-export async function verifyCitizenOtpAction(otp: string) {
+export async function verifyCitizenOtpAction(otp: string, externalServiceId?: string) {
   if (!/^\d{6}$/.test(otp)) {
     return { success: false, error: 'Please enter a valid 6-digit OTP.' };
   }
@@ -185,7 +186,23 @@ export async function verifyCitizenOtpAction(otp: string) {
   c.delete('rts_otp_code');
   c.delete('rts_otp_expires_at');
 
-  return { success: true };
+  const requestedServiceId = Number(externalServiceId);
+  if (!Number.isInteger(requestedServiceId) || requestedServiceId <= 0) {
+    return { success: true };
+  }
+
+  const tracking = await createTrackedExternalServiceNavigation(requestedServiceId, {
+    sessionId,
+    name: citizenProfile.name,
+    ownerId: citizenProfile.ownerId,
+    upicId: citizenProfile.upicId,
+  });
+
+  if (!tracking.success) {
+    return { success: true, serviceRedirectError: tracking.errorCode };
+  }
+
+  return { success: true, externalDestination: tracking.destination };
 }
 
 export async function logoutCitizenAction() {

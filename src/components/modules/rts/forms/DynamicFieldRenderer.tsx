@@ -21,6 +21,8 @@ const LocationPicker = dynamic(() => import("@/components/common/LocationPicker"
   ssr: false,
 });
 
+const DEFAULT_INDIAN_MOBILE_PATTERN = "^[7-9][0-9]{9}$";
+
 function t(label: LangLabel | undefined, lang: "en" | "hi" | "mr") {
   if (!label) return "";
   return (label as any)?.[lang] ?? (label as any)?.en ?? "";
@@ -87,14 +89,22 @@ const getFieldRules = (field: FieldConfig) => {
   const validation = (field as any).validation || {};
   const key = (field as any).validationKey;
   const rule = key ? REGISTRY_RULES[key] : undefined;
+  const isMobileField = field.type === "tel";
+  const configuredPattern = validation.pattern ?? field.pattern ?? rule?.pattern;
+  const hasConfiguredPattern = typeof configuredPattern === "string" && configuredPattern.trim().length > 0;
   const normalize = mergeNormalizeRules(
     validation.normalize ?? (field as any).normalize ?? rule?.normalize
   );
-  const allow = validation.allow ?? (field as any).allow ?? rule?.allow;
+  const allow = validation.allow ?? (field as any).allow ?? rule?.allow ?? (isMobileField ? "numeric" : undefined);
   const inputMode =
-    validation.inputMode ?? (field as any).inputMode ?? rule?.inputMode;
-  const maxLength =
+    validation.inputMode ?? (field as any).inputMode ?? rule?.inputMode ?? (isMobileField ? "numeric" : undefined);
+  const exactLength =
     validation.exactLength ??
+    (field as any).exactLength ??
+    rule?.exactLength ??
+    (isMobileField ? 10 : undefined);
+  const maxLength =
+    exactLength ??
     validation.maxLength ??
     (field as any).exactLength ??
     (field as any).maxLength ??
@@ -114,7 +124,20 @@ const getFieldRules = (field: FieldConfig) => {
   const maxTime = validation.maxTime;
   const accept = validation.accept;
 
-  return { inputMode, allow, normalize, maxLength, min, max, minDate, maxDate, minTime, maxTime, accept };
+  return {
+    inputMode,
+    allow,
+    normalize,
+    pattern: hasConfiguredPattern ? configuredPattern : isMobileField ? DEFAULT_INDIAN_MOBILE_PATTERN : undefined,
+    maxLength,
+    min,
+    max,
+    minDate,
+    maxDate,
+    minTime,
+    maxTime,
+    accept,
+  };
 };
 
 const sanitizeValue = (rawValue: string, field: FieldConfig) => {
@@ -682,7 +705,7 @@ export default function DynamicFieldRenderer(props: {
   // ---------------------------
   const f = field as TextField;
   const isTextarea = f.type === "textarea";
-  const { inputMode, maxLength, min, max, minDate, maxDate, minTime, maxTime } = getFieldRules(f);
+  const { inputMode, maxLength, min, max, minDate, maxDate, minTime, maxTime, pattern } = getFieldRules(f);
   const htmlType = f.type === "text" ? "text" : (f.type as any);
   const minProp =
     htmlType === "date" || htmlType === "datetime-local" || htmlType === "month"
@@ -726,7 +749,7 @@ export default function DynamicFieldRenderer(props: {
           maxLength={typeof maxLength === "number" ? maxLength : undefined}
           min={minProp}
           max={maxProp}
-          pattern={(f as any)?.validation?.pattern}
+          pattern={pattern}
           placeholder={placeholderText}
           className={getControlClass(hasError, "h-[40px] py-2")}
           onChange={(e: any) => updateValue(f.id, sanitizeValue(e.target.value, f), f)}

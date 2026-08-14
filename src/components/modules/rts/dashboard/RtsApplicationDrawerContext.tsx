@@ -16,7 +16,7 @@ import { Badge, Drawer } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import type { RtsApplicationProcessData } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 
-import { getDocumentDownloadUrl } from '@/lib/api/rts/rts-document-utils';
+import { getAdminRtsDocumentDownloadUrl } from '@/lib/api/rts/rtsdocument.client';
 
 export interface RtsApplicationViewDrawerRecord {
   appId: string;
@@ -32,6 +32,7 @@ interface ApplicationDrawerContentProps {
   record: RtsApplicationViewDrawerRecord;
   data: RtsApplicationProcessData | null;
   onOpenFullDetails?: () => void;
+  onOpenReadOnlyDetails?: () => void;
   onOpenDocument: (documentGuid: string) => void;
 }
 
@@ -41,6 +42,7 @@ interface RtsApplicationViewDrawerProps {
   data: RtsApplicationProcessData | null;
   onClose: () => void;
   onOpenFullDetails?: () => void;
+  onOpenReadOnlyDetails?: () => void;
   onOpenDocument: (documentGuid: string) => void;
 }
 
@@ -53,10 +55,13 @@ interface DisplayDocument {
   downloadUrl: string;
 }
 
-function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenDocument }: ApplicationDrawerContentProps) {
+function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadOnlyDetails, onOpenDocument }: ApplicationDrawerContentProps) {
+  const tProcess = useTranslations('rts.applicationDashboard.processDrawer');
   const detail = data?.details ?? null;
   const stages = data?.stages ?? null;
   const loading = !data;
+  const normalizedStatus = record.applicationStatus.trim().toLowerCase();
+  const hasFinalApplicationStatus = normalizedStatus.includes('approved') || normalizedStatus.includes('reject');
 
   // Real document list from viewDetails.documents or answerGroups
   const rawDocs = [
@@ -79,7 +84,7 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenDocum
         guid: doc.guid,
         fileName: `${doc.label.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
         fileSize: doc.size,
-        downloadUrl: getDocumentDownloadUrl(doc.guid),
+        downloadUrl: getAdminRtsDocumentDownloadUrl(doc.guid),
       });
     }
   }
@@ -97,28 +102,28 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenDocum
         <section className="rounded-xl border border-slate-200 bg-white p-4.5 sm:p-5 shadow-sm space-y-4">
           <h3 className="flex items-center gap-2 text-xs font-bold text-blue-900 uppercase border-b border-slate-100 pb-2">
             <UserCheck className="h-4 w-4 text-blue-600 shrink-0" />
-            Application Overview & SLA Status
+            {tProcess('overviewTitle')}
           </h3>
           <div className="grid grid-cols-2 gap-3.5 text-xs font-medium">
             <div className="min-w-0">
-              <span className="block text-[10px] uppercase font-semibold text-slate-400">Application No</span>
+              <span className="block text-[10px] uppercase font-semibold text-slate-400">{tProcess('applicationNumber')}</span>
               <span className="font-extrabold text-slate-900 text-xs sm:text-sm truncate block" title={record.appId}>
                 {record.appId}
               </span>
             </div>
             <div className="min-w-0">
-              <span className="block text-[10px] uppercase font-semibold text-slate-400">Applicant Name</span>
+              <span className="block text-[10px] uppercase font-semibold text-slate-400">{tProcess('applicantName')}</span>
               <span className="font-bold text-slate-800 truncate block" title={record.citizenName}>
                 {record.citizenName}
               </span>
             </div>
             <div className="min-w-0">
-              <span className="block text-[10px] uppercase font-semibold text-slate-400">Submitted Date</span>
+              <span className="block text-[10px] uppercase font-semibold text-slate-400">{tProcess('submittedDate')}</span>
               <span className="font-bold text-slate-800">{record.submittedDate}</span>
             </div>
             <div className="min-w-0">
-              <span className="block text-[10px] uppercase font-semibold text-slate-400">SLA Timeline</span>
-              <span className="font-extrabold text-blue-700">{record.slaLimit} Days</span>
+              <span className="block text-[10px] uppercase font-semibold text-slate-400">{tProcess('slaTimeline')}</span>
+              <span className="font-extrabold text-blue-700">{tProcess('days', { count: record.slaLimit })}</span>
             </div>
           </div>
         </section>
@@ -128,10 +133,10 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenDocum
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-800">
               <Paperclip className="h-4 w-4 text-blue-600 shrink-0" />
-              Uploaded Documents & Attachments
+              {tProcess('uploadedDocuments')}
             </h3>
             <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-              {documents.length} Files Attached
+              {tProcess('attachmentsCount', { count: documents.length })}
             </span>
           </div>
 
@@ -168,11 +173,11 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenDocum
                     <ViewButton
                       size="xs"
                       onClick={() => onOpenDocument(doc.guid)}
-                      aria-label={`View ${doc.label}`}
-                      title={`View ${doc.label}`}
+                      aria-label={tProcess('viewDocument', { name: doc.label })}
+                      title={tProcess('viewDocument', { name: doc.label })}
                       className="rounded-lg px-3 text-[11px]"
                     >
-                      View
+                      {tProcess('view')}
                     </ViewButton>
 
                     <Button
@@ -180,12 +185,12 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenDocum
                       variant="secondary"
                       size="xs"
                       onClick={() => handleDownload(doc)}
-                      aria-label={`Download ${doc.label}`}
-                      title={`Download ${doc.label}`}
+                      aria-label={tProcess('downloadDocument', { name: doc.label })}
+                      title={tProcess('downloadDocument', { name: doc.label })}
                       className="rounded-lg px-3 text-[11px]"
                       icon={Download}
                     >
-                      Download
+                      {tProcess('download')}
                     </Button>
                   </div>
                 </div>
@@ -193,7 +198,7 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenDocum
             </div>
           ) : (
             <div className="py-6 text-center text-xs font-medium text-slate-400">
-              No uploaded documents attached to this application.
+              {tProcess('noUploadedDocuments')}
             </div>
           )}
         </section>
@@ -203,10 +208,10 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenDocum
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-800">
               <GitCommit className="size-5 text-blue-600 shrink-0" />
-              Approval Workflow Timeline
+              {tProcess('approvalWorkflow')}
             </h3>
             <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-              {stages?.approvalStages.length || 0} Stages Recorded
+              {tProcess('stagesRecorded', { count: stages?.approvalStages.length || 0 })}
             </span>
           </div>
 
@@ -222,6 +227,10 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenDocum
                 stageOrder: stg.stageOrder,
                 status: stg.status,
                 remark: stg.remark || undefined,
+                userName: stg.userName || undefined,
+                firstName: stg.firstName || undefined,
+                lastName: stg.lastName || undefined,
+                createdDate: stg.createdDate || undefined,
                 assignedToName: stg.assignedToName || undefined,
               }))}
               completedCount={stages.completedStages || 0}
@@ -232,33 +241,48 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenDocum
             />
           ) : (
             <div className="py-6 text-center text-xs font-medium text-slate-400">
-              No approval workflow stages recorded for this application.
+              {tProcess('noApprovalStages')}
             </div>
           )}
         </section>
 
-        {/* ================= SECTION 3: FULL DETAILS & DECISION ACTION BANNER ================= */}
-        {onOpenFullDetails && (
+        {hasFinalApplicationStatus && onOpenReadOnlyDetails ? (
+          <section className="space-y-3.5 rounded-xl border border-emerald-200/90 bg-emerald-50/70 p-4.5 shadow-sm sm:p-5">
+            <div className="flex items-center gap-2 text-emerald-950">
+              <Shield className="h-4.5 w-4.5 shrink-0 text-emerald-600" />
+              <h4 className="text-xs font-extrabold uppercase tracking-wide">{tProcess('fullDetailTitle')}</h4>
+            </div>
+            <p className="text-[11.5px] font-medium leading-relaxed text-emerald-800/90">{tProcess('fullDetailDescription')}</p>
+            <Button
+              variant="secondary"
+              icon={Eye}
+              onClick={onOpenReadOnlyDetails}
+              className="w-auto justify-center rounded-xl border-emerald-200 bg-white py-2.5 text-xs font-bold text-emerald-800 shadow-sm hover:bg-emerald-100"
+            >
+              {tProcess('viewFullDetails')}
+            </Button>
+          </section>
+        ) : onOpenFullDetails ? (
           <section className="rounded-xl border border-blue-200/90 bg-blue-50/80 p-4.5 sm:p-5 space-y-3.5 shadow-sm">
             <div className="flex items-center gap-2 text-blue-950">
               <Shield className="h-4.5 w-4.5 text-blue-600 shrink-0" />
               <h4 className="text-xs font-extrabold uppercase tracking-wide">
-                Need Full Field Values & Officer Decision Workflow?
+                {tProcess('processBannerTitle')}
               </h4>
             </div>
             <p className="text-[11.5px] text-blue-800/90 font-medium leading-relaxed">
-              Open complete application form fields, document verification checklist, and decision controls.
+              {tProcess('processBannerDescription')}
             </p>
             <Button
               variant="primary"
               icon={Eye}
               onClick={onOpenFullDetails}
-              className="w-full justify-center py-2.5 text-xs font-bold rounded-xl shadow-sm"
+              className="w-auto justify-center py-2.5 text-xs font-bold rounded-xl shadow-sm"
             >
-              View Complete Application Details & Process
+              {tProcess('processButton')}
             </Button>
           </section>
-        )}
+        ) : null}
       </div>
 
     </div>
@@ -279,6 +303,7 @@ export default function RtsApplicationViewDrawer({
   data,
   onClose,
   onOpenFullDetails,
+  onOpenReadOnlyDetails,
   onOpenDocument,
 }: RtsApplicationViewDrawerProps) {
   const tCommon = useTranslations('common');
@@ -342,6 +367,7 @@ export default function RtsApplicationViewDrawer({
             record={record}
             data={data}
             onOpenFullDetails={onOpenFullDetails}
+            onOpenReadOnlyDetails={onOpenReadOnlyDetails}
             onOpenDocument={onOpenDocument}
           />
         </div>

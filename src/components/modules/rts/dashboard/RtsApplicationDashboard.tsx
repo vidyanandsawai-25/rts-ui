@@ -28,14 +28,19 @@ import {
 import type { Column } from '@/components/common/MasterTable';
 import RtsApplicationViewDrawer from './RtsApplicationDrawerContext';
 import RtsApplicationProcessDrawer from './RtsApplicationProcessDrawer';
+import RtsApplicationFullDetailView from './RtsApplicationFullDetailView';
 import RtsApplicationDocumentView from './RtsApplicationDocumentView';
 import type {
   AdminApplicationGridRow,
   ApplicationsDashboardKpis,
   RtsApplicationProcessData,
+  RtsApplicationFullDetailData,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import { toApplicationFilterSlug } from '@/lib/utils/rts/application-filter-slug';
-import { getDocumentDownloadUrl, getDocumentViewUrl } from '@/lib/api/rts/rts-document-utils';
+import {
+  getAdminRtsDocumentDownloadUrl,
+  getAdminRtsDocumentViewUrl,
+} from '@/lib/api/rts/rtsdocument.client';
 import type { RtsApplicationDocumentItem } from '@/types/rts/application-approval.types';
 import type { RtsDepartmentApiItem } from '@/types/rts/departments.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
@@ -52,6 +57,10 @@ interface RtsApplicationDashboardProps {
     mode: 'view' | 'process';
     record: AdminApplicationGridRow;
     data: RtsApplicationProcessData;
+  } | {
+    mode: 'fullDetail';
+    record: AdminApplicationGridRow;
+    data: RtsApplicationFullDetailData;
   } | {
     mode: 'document';
     document: RtsApplicationDocumentItem;
@@ -185,6 +194,11 @@ export default function RtsApplicationDashboard({
       doc: '',
     });
   }, [drawer, pathname, updateDrawerUrl]);
+
+  const openFullDetails = useCallback(() => {
+    if (drawer?.mode !== 'view') return;
+    updateDrawerUrl({ view: '', process: '', fullDetail: String(drawer.record.applicationId), doc: '' });
+  }, [drawer, updateDrawerUrl]);
 
   const closeProcess = useCallback(() => {
     const storedParent = window.sessionStorage.getItem('rts-application-process-parent');
@@ -643,6 +657,25 @@ export default function RtsApplicationDashboard({
         data={drawer?.mode === 'view' ? drawer.data : null}
         onClose={() => updateDrawerUrl({ view: '', process: '', doc: '' })}
         onOpenFullDetails={openProcess}
+        onOpenReadOnlyDetails={openFullDetails}
+        onOpenDocument={openDocument}
+      />
+
+      <RtsApplicationFullDetailView
+        key={drawer?.mode === 'fullDetail' ? drawer.record.applicationId : 'no-full-detail-drawer'}
+        open={drawer?.mode === 'fullDetail'}
+        record={
+          drawer?.mode === 'fullDetail'
+            ? {
+                applicationId: drawer.record.applicationId,
+                appId: drawer.record.applicationNo,
+                serviceName: drawer.record.serviceName,
+                applicationStatus: drawer.record.currentStatus || 'Pending',
+              }
+            : null
+        }
+        data={drawer?.mode === 'fullDetail' ? drawer.data : null}
+        onClose={() => updateDrawerUrl({ fullDetail: '', doc: '' })}
         onOpenDocument={openDocument}
       />
 
@@ -671,8 +704,8 @@ export default function RtsApplicationDashboard({
       {drawer?.mode === 'document' && drawer.document.documentGuid && (
         <RtsApplicationDocumentView
           open
-          fileUrl={getDocumentViewUrl(drawer.document.documentGuid)}
-          downloadUrl={getDocumentDownloadUrl(drawer.document.documentGuid)}
+          fileUrl={getAdminRtsDocumentViewUrl(drawer.document.documentGuid)}
+          downloadUrl={getAdminRtsDocumentDownloadUrl(drawer.document.documentGuid)}
           fileName={drawer.document.documentName || 'Document'}
           label={drawer.document.documentName || undefined}
         />

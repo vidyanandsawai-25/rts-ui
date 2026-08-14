@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import {
   Check,
   CheckCircle2,
@@ -11,6 +11,7 @@ import {
   Download,
   FileText,
   GitCommit,
+  LoaderCircle,
   Paperclip,
   Pencil,
   RotateCcw,
@@ -39,7 +40,8 @@ import {
   verifyApprovalDocumentsAction,
   type RtsApplicationProcessData,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
-import { getDocumentDownloadUrl } from '@/lib/api/rts/rts-document-utils';
+import { getAdminRtsDocumentDownloadUrl, getAdminRtsDocumentViewUrl } from '@/lib/api/rts/rtsdocument.client';
+import { hasApprovalOfficerAccess } from '@/lib/utils/rts/approval-officer-access';
 import type {
   RtsApplicationApprovalFieldValuePayload,
   RtsApplicationViewDetailField,
@@ -165,6 +167,11 @@ export default function RtsApplicationProcessDrawer({
   const [initialFieldValues, setInitialFieldValues] = useState<Record<string, string>>(() => getInitialFieldValues(data));
   const [editedFieldValues, setEditedFieldValues] = useState<Record<string, string>>(() => getInitialFieldValues(data));
   const [isSubmittingDecision, startDecisionTransition] = useTransition();
+  const [documentPreviewUrl, setDocumentPreviewUrl] = useState<string | null>(null);
+  const [documentPreviewType, setDocumentPreviewType] = useState<'image' | 'file' | null>(null);
+  const [documentPreviewError, setDocumentPreviewError] = useState<string | null>(null);
+  const [isDocumentPreviewLoading, setIsDocumentPreviewLoading] = useState(false);
+  const accessToastKey = useRef<string | null>(null);
 
   const applicationId = record?.applicationId;
 
@@ -200,9 +207,28 @@ export default function RtsApplicationProcessDrawer({
   const stages = data?.stages ?? null;
 
   const verification = data?.verification ?? null;
+  const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
   const availableActions = verification
     ? ACTIONS.filter((action) => verification[action.key])
     : [];
+
+  useEffect(() => {
+    if (!open || !verification || hasOfficerAccess) {
+      accessToastKey.current = null;
+      return;
+    }
+
+    const toastKey = `${verification.applicationId}:${verification.stageId}:${data?.currentUserId ?? 'anonymous'}`;
+    if (accessToastKey.current === toastKey) return;
+
+    accessToastKey.current = toastKey;
+    toast.error(
+      t('officerProcessUnauthorized', {
+        name: data?.currentUserName || t('user'),
+        stageName: verification.stageName,
+      })
+    );
+  }, [data?.currentUserId, data?.currentUserName, hasOfficerAccess, open, t, verification]);
 
   const expandAll = () => {
     setOpenGroups(Object.fromEntries(fieldGroups.map((group) => [group.title, true])));
@@ -219,6 +245,55 @@ export default function RtsApplicationProcessDrawer({
   const isFieldDataChanged = Object.keys(editedFieldValues).some(
     (fieldId) => editedFieldValues[fieldId] !== initialFieldValues[fieldId]
   );
+
+  useEffect(() => {
+    if (!open || !activeDocument?.isUploaded || !activeDocument.guid) {
+      // Reset browser-preview state when the drawer has no active uploaded document.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDocumentPreviewUrl(null);
+      setDocumentPreviewType(null);
+      setDocumentPreviewError(null);
+      setIsDocumentPreviewLoading(false);
+      return;
+    }
+
+    let active = true;
+    let objectUrl: string | null = null;
+
+    setDocumentPreviewUrl(null);
+    setDocumentPreviewType(null);
+    setDocumentPreviewError(null);
+    setIsDocumentPreviewLoading(true);
+
+    void (async () => {
+      try {
+        const response = await fetch(getAdminRtsDocumentViewUrl(activeDocument.guid), { credentials: 'same-origin' });
+        if (!response.ok) throw new Error(`Document preview request failed (${response.status}).`);
+
+        const blob = await response.blob();
+        if (!blob.size) throw new Error('The document preview is empty.');
+
+        if (!active) return;
+
+        if (blob.type.toLowerCase().startsWith('image/')) {
+          objectUrl = URL.createObjectURL(blob);
+          setDocumentPreviewUrl(objectUrl);
+          setDocumentPreviewType('image');
+        } else {
+          setDocumentPreviewType('file');
+        }
+      } catch {
+        if (active) setDocumentPreviewError(t('previewUnavailable'));
+      } finally {
+        if (active) setIsDocumentPreviewLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [activeDocument?.guid, activeDocument?.isUploaded, open, t]);
 
   const closeDrawer = () => {
     setOpenGroups({});
@@ -237,6 +312,11 @@ export default function RtsApplicationProcessDrawer({
   const submitDecision = (actionKey: 'canVerifyDocument' | 'canApprove' | 'canReject' | 'canReturn') => {
     if (!applicationId) return;
 
+    if (!hasOfficerAccess) {
+      toast.error(t('officerAccessDenied'));
+      return;
+    }
+
     if (!officerRemark.trim()) {
       toast.error(t('remarkRequired'));
       return;
@@ -252,7 +332,11 @@ export default function RtsApplicationProcessDrawer({
             : await revertApprovalApplicationAction(applicationId, officerRemark);
 
       if (!result.success) {
-        toast.error(result.message || t('actionFailed'));
+        toast.error(
+          result.errorCode === 'OFFICER_ACCESS_DENIED'
+            ? t('officerAccessDenied')
+            : result.message || t('actionFailed')
+        );
         return;
       }
 
@@ -275,6 +359,11 @@ export default function RtsApplicationProcessDrawer({
   const submitFieldUpdates = () => {
     if (!applicationId || !data?.details) return;
 
+    if (!hasOfficerAccess) {
+      toast.error(t('officerAccessDenied'));
+      return;
+    }
+
     if (!officerRemark.trim()) {
       toast.error(t('remarkRequired'));
       return;
@@ -294,7 +383,11 @@ export default function RtsApplicationProcessDrawer({
       const result = await verifyAndCorrectApprovalAction(applicationId, officerRemark, fieldValue);
 
       if (!result.success) {
-        toast.error(result.message || t('actionFailed'));
+        toast.error(
+          result.errorCode === 'OFFICER_ACCESS_DENIED'
+            ? t('officerAccessDenied')
+            : result.message || t('actionFailed')
+        );
         return;
       }
 
@@ -315,35 +408,42 @@ export default function RtsApplicationProcessDrawer({
       hideHeader
       bodyClassName="relative overflow-hidden"
       footer={
-        <div className="flex w-full flex-wrap items-center justify-between gap-1">
-          <div className="flex flex-wrap items-center justify-start gap-2">
-            {availableActions.map((action) => (
-              <Button
-                key={action.key}
-                type="button"
-                size="xs"
-                variant={action.variant}
-                icon={action.icon}
-                disabled={isSubmittingDecision}
-                onClick={() => {
-                  if (
-                    action.key === 'canVerifyDocument' ||
-                    action.key === 'canApprove' ||
-                    action.key === 'canReject' ||
-                    action.key === 'canReturn'
-                  ) {
-                    submitDecision(action.key);
-                    return;
-                  }
-                  notifyActionUnavailable();
-                }}
-                className="rounded-lg px-3 text-xs font-bold"
-              >
-                {t(action.labelKey)}
-              </Button>
-            ))}
+        <div className="flex w-full items-end justify-between gap-4">
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+            {verification && !hasOfficerAccess && (
+              <p className="text-xs font-medium text-amber-700">{t('officerAccessDenied')}</p>
+            )}
+            <div className="flex flex-wrap items-center justify-start gap-2">
+              {availableActions.map((action) => (
+                <Button
+                  key={action.key}
+                  type="button"
+                  size="xs"
+                  variant={action.variant}
+                  icon={action.icon}
+                  disabled={isSubmittingDecision || !hasOfficerAccess}
+                  title={!hasOfficerAccess ? t('officerAccessDenied') : undefined}
+                  onClick={() => {
+                    if (
+                      action.key === 'canVerifyDocument' ||
+                      action.key === 'canApprove' ||
+                      action.key === 'canReject' ||
+                      action.key === 'canReturn'
+                    ) {
+                      submitDecision(action.key);
+                      return;
+                    }
+                    notifyActionUnavailable();
+                  }}
+                  className="rounded-lg px-3 text-xs font-bold"
+                >
+                  {t(action.labelKey)}
+                </Button>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center">
+
+          <div className="ml-auto flex shrink-0 items-center">
             <Button variant="secondary" onClick={closeDrawer} size="xs" className="rounded-lg px-5 text-xs font-bold">
               {tCommon('buttons.close')}
             </Button>
@@ -382,8 +482,9 @@ export default function RtsApplicationProcessDrawer({
               {t('loading')}
             </div>
           ) : (
-            <div className="grid min-h-0 grid-cols-1 gap-2 xl:h-full xl:grid-cols-[28rem_minmax(0,1fr)]">
-              <aside className="space-y-2 xl:self-start">
+            <div className="grid min-h-0 grid-cols-1 gap-2 xl:h-full xl:items-stretch xl:grid-cols-[28rem_minmax(0,1fr)]">
+              <aside className="xl:h-full xl:min-h-0 xl:self-stretch">
+                <div className="space-y-2 xl:h-full xl:min-h-0 xl:overflow-y-auto xl:pr-1">
                 <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
                   <div className="mb-2 flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
                     <div className="flex items-center gap-2">
@@ -395,7 +496,7 @@ export default function RtsApplicationProcessDrawer({
                         <ViewButton size="xs" onClick={() => onOpenDocument(activeDocument.guid)} className="rounded-lg px-2 text-[11px]">
                           {t('view')}
                         </ViewButton>
-                        <Button type="button" size="xs" variant="secondary" icon={Download} onClick={() => window.open(getDocumentDownloadUrl(activeDocument.guid), '_blank')} className="rounded-lg px-2 text-[11px]">
+                        <Button type="button" size="xs" variant="secondary" icon={Download} onClick={() => window.open(getAdminRtsDocumentDownloadUrl(activeDocument.guid), '_blank')} className="rounded-lg px-2 text-[11px]">
                           {t('download')}
                         </Button>
                       </div>
@@ -408,8 +509,20 @@ export default function RtsApplicationProcessDrawer({
                   ) : activeDocument ? (
                     <div className="space-y-2">
                       <div className="relative overflow-hidden rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-slate-50 p-3">
-                        <div className="flex min-h-28 items-center justify-center rounded-lg border border-dashed border-blue-200 bg-white/80">
-                          <FileText className="h-9 w-9 text-blue-500" />
+                        <div className="flex min-h-48 items-center justify-center rounded-lg border border-dashed border-blue-200 bg-white/80">
+                          {isDocumentPreviewLoading ? (
+                            <LoaderCircle className="h-7 w-7 animate-spin text-blue-500" />
+                          ) : documentPreviewType === 'image' && documentPreviewUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={documentPreviewUrl} alt={activeDocument.name} className="h-45 w-full object-contain" />
+                          ) : documentPreviewError ? (
+                            <p className="px-4 text-center text-[11px] font-semibold text-slate-500">{documentPreviewError}</p>
+                          ) : (
+                            <div className="flex flex-col items-center gap-1.5 px-4 text-center">
+                              <FileText className="h-8 w-8 text-rose-500" />
+                              <p className="line-clamp-2 text-[11px] font-bold text-slate-600" title={activeDocument.name}>{activeDocument.name}</p>
+                            </div>
+                          )}
                         </div>
                         {documents.length > 1 && (
                           <>
@@ -432,14 +545,14 @@ export default function RtsApplicationProcessDrawer({
                           </>
                         )}
                       </div>
-                      <div className="flex min-w-0 items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center justify-between gap-0.5">
                         <p className="truncate text-xs font-extrabold text-slate-800" title={activeDocument.name}>{activeDocument.name}</p>
                         <span className="mr-2.5 shrink-0 text-[11px] font-semibold text-slate-400">
                           {t('documentPosition', { current: Math.min(activeDocumentIndex, documents.length - 1) + 1, total: documents.length })}
                         </span>
                       </div>
                       <div>
-                        <p className={`mt-1 text-[11px] font-bold ${activeDocument.isUploaded ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <p className={`text-[11px] font-bold ${activeDocument.isUploaded ? 'text-emerald-600' : 'text-rose-600'}`}>
                           {activeDocument.isUploaded ? t('uploaded') : activeDocument.isRequired ? t('requiredMissing') : t('optionalMissing')}
                         </p>
                       </div>
@@ -465,6 +578,10 @@ export default function RtsApplicationProcessDrawer({
                         stageOrder: stage.stageOrder,
                         status: stage.status,
                         remark: stage.remark,
+                        userName: stage.userName,
+                        firstName: stage.firstName,
+                        lastName: stage.lastName,
+                        createdDate: stage.createdDate,
                       }))}
                       completedCount={stages.completedStages}
                       currentStageIndex={(() => {
@@ -475,7 +592,7 @@ export default function RtsApplicationProcessDrawer({
                   )}
                 </section>
 
-                <section className="rounded-xl border border-blue-200 bg-white p-4 shadow-sm">
+                <section className="rounded-xl border border-blue-200 bg-white p-4 shadow-sm mb-1">
                   <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3">
                     <Shield className="h-4 w-4 text-blue-600" />
                     <h2 className="text-xs font-extrabold uppercase tracking-wide text-slate-800">{t('allowedWorkflowActions')}</h2>
@@ -486,13 +603,16 @@ export default function RtsApplicationProcessDrawer({
                     rows={4}
                     className="min-h-24 text-xs"
                     value={officerRemark}
+                    disabled={!hasOfficerAccess || isSubmittingDecision}
                     onChange={(event) => setOfficerRemark(event.target.value)}
                     placeholder={t('remarkPlaceholder')}
                   />
+
                 </section>
+                </div>
               </aside>
 
-              <section className="min-w-0 rounded-md border border-slate-200 bg-white p-5 shadow-sm xl:flex xl:h-full xl:min-h-0 xl:flex-col">
+              <section className="min-w-0 rounded-md border border-slate-200 bg-white p-5 shadow-sm xl:flex xl:h-full xl:min-h-0 xl:self-stretch xl:flex-col">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-blue-600" />
@@ -508,6 +628,8 @@ export default function RtsApplicationProcessDrawer({
                         size="xs"
                         variant="edit"
                         icon={Pencil}
+                        disabled={!hasOfficerAccess || isSubmittingDecision}
+                        title={!hasOfficerAccess ? t('officerAccessDenied') : undefined}
                         onClick={() => setIsEditing((editing) => !editing)}
                         className="ml-2 rounded-lg"
                       >
@@ -520,7 +642,8 @@ export default function RtsApplicationProcessDrawer({
                         size="xs"
                         variant="primary"
                         icon={Save}
-                        disabled={isSubmittingDecision}
+                        disabled={isSubmittingDecision || !hasOfficerAccess}
+                        title={!hasOfficerAccess ? t('officerAccessDenied') : undefined}
                         onClick={submitFieldUpdates}
                         className="rounded-lg"
                       >
@@ -583,7 +706,7 @@ export default function RtsApplicationProcessDrawer({
                                       fullWidth
                                       // label={field.fieldLabel}
                                       value={editedFieldValues[field.fieldDefinitionId.toString()] ?? ''}
-                                      disabled={!isEditing}
+                                      disabled={!isEditing || !hasOfficerAccess}
                                       onChange={(event) => setEditedFieldValues((values) => ({
                                         ...values,
                                         [field.fieldDefinitionId.toString()]: event.target.value,

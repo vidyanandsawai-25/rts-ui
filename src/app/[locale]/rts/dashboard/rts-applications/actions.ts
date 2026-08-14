@@ -18,7 +18,11 @@ import {
   verifyAndSendToApprove,
   verifyApprovalDocuments,
 } from '@/lib/api/rts/rts-application-approval.service';
-import { getUserIdFromCookies } from '@/lib/utils/auth-session';
+import {
+  getCurrentApprovalOfficerUserId,
+  hasApprovalOfficerAccess,
+} from '@/lib/utils/rts/approval-officer-access';
+import { getUsernameFromCookieStore } from '@/lib/utils/cookie';
 import { submitApplicationWorkflowAction } from '@/lib/api/rts/rts-workflow.service';
 import type {
   RtsApplicationApprovalStage,
@@ -87,6 +91,8 @@ export interface RtsApplicationDetailData {
 }
 
 export interface RtsApplicationProcessData {
+  currentUserId: number | null;
+  currentUserName: string | null;
   details: RtsApplicationViewDetailsItem | null;
   stages: RtsApplicationApprovalStagesItem | null;
   verification: RtsApplicationVerificationItem | null;
@@ -97,10 +103,24 @@ export interface RtsApplicationProcessData {
   };
 }
 
+export interface RtsApplicationFullDetailData {
+  details: RtsApplicationViewDetailsItem | null;
+  stages: RtsApplicationApprovalStagesItem | null;
+  errors: {
+    details: string | null;
+    stages: string | null;
+  };
+}
+
 export interface RtsApplicationApprovalActionResult {
   success: boolean;
   message?: string;
+  errorCode?: 'OFFICER_ACCESS_DENIED';
 }
+
+type ApprovalActorResolution =
+  | { authorized: true; updatedBy: number }
+  | { authorized: false; result: RtsApplicationApprovalActionResult };
 
 function getProcessSectionResult<T>(result: PromiseSettledResult<T>): { data: T | null; error: string | null } {
   if (result.status === 'fulfilled') {
@@ -117,8 +137,14 @@ function getProcessSectionResult<T>(result: PromiseSettledResult<T>): { data: T 
 export async function getRtsApplicationProcessDataAction(
   applicationId: number
 ): Promise<RtsApplicationProcessData> {
+  const cookieStore = await cookies();
+  const currentUserId = getCurrentApprovalOfficerUserId(cookieStore);
+  const currentUserName = getUsernameFromCookieStore(cookieStore) ?? null;
+
   if (!Number.isInteger(applicationId) || applicationId <= 0) {
     return {
+      currentUserId,
+      currentUserName,
       details: null,
       stages: null,
       verification: null,
@@ -141,6 +167,8 @@ export async function getRtsApplicationProcessDataAction(
   const verification = getProcessSectionResult(verificationResult);
 
   return {
+    currentUserId,
+    currentUserName,
     details: details.data,
     stages: stages.data,
     verification: verification.data,
@@ -150,6 +178,60 @@ export async function getRtsApplicationProcessDataAction(
       verification: verification.error,
     },
   };
+}
+
+/** Loads read-only application details and workflow stages without officer permissions. */
+export async function getRtsApplicationFullDetailDataAction(
+  applicationId: number
+): Promise<RtsApplicationFullDetailData> {
+  if (!Number.isInteger(applicationId) || applicationId <= 0) {
+    return {
+      details: null,
+      stages: null,
+      errors: {
+        details: 'Invalid application ID.',
+        stages: 'Invalid application ID.',
+      },
+    };
+  }
+
+  const [detailsResult, stagesResult] = await Promise.allSettled([
+    getApprovalApplicationDetails(applicationId),
+    getApprovalApplicationStages(applicationId),
+  ]);
+  const details = getProcessSectionResult(detailsResult);
+  const stages = getProcessSectionResult(stagesResult);
+
+  return {
+    details: details.data,
+    stages: stages.data,
+    errors: {
+      details: details.error,
+      stages: stages.error,
+    },
+  };
+}
+
+async function resolveApprovalActor(applicationId: number): Promise<ApprovalActorResolution> {
+  const cookieStore = await cookies();
+  const currentUserId = getCurrentApprovalOfficerUserId(cookieStore);
+
+  if (!currentUserId) {
+    return {
+      authorized: false,
+      result: { success: false, errorCode: 'OFFICER_ACCESS_DENIED' },
+    };
+  }
+
+  const verification = await getApprovalApplicationVerification(applicationId);
+  if (!hasApprovalOfficerAccess(currentUserId, verification.officerId)) {
+    return {
+      authorized: false,
+      result: { success: false, errorCode: 'OFFICER_ACCESS_DENIED' },
+    };
+  }
+
+  return { authorized: true, updatedBy: currentUserId };
 }
 
 async function submitApprovalDecision(
@@ -168,11 +250,12 @@ async function submitApprovalDecision(
   }
 
   try {
-    const cookieStore = await cookies();
-    const updatedBy = getUserIdFromCookies(cookieStore) ?? 0;
+    const actor = await resolveApprovalActor(applicationId);
+    if (!actor.authorized) return actor.result;
+
     const result = await submit({
       isActive: true,
-      updatedBy,
+      updatedBy: actor.updatedBy,
       remark: normalizedRemark,
       status,
     });
@@ -254,14 +337,15 @@ export async function verifyAndCorrectApprovalAction(
   }
 
   try {
-    const cookieStore = await cookies();
-    const updatedBy = getUserIdFromCookies(cookieStore) ?? 0;
+    const actor = await resolveApprovalActor(applicationId);
+    if (!actor.authorized) return actor.result;
+
     const result = await verifyAndCorrectApproval(applicationId, {
       isActive: true,
-      updatedBy,
+      updatedBy: actor.updatedBy,
       remark: normalizedRemark,
       status: 'Corrected',
-      fieldValue: fieldValue.map((field) => ({ ...field, updatedBy })),
+      fieldValue: fieldValue.map((field) => ({ ...field, updatedBy: actor.updatedBy })),
     });
 
     revalidatePath('/rts/dashboard/rts-applications');

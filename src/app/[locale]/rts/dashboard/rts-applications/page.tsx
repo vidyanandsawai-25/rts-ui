@@ -2,6 +2,7 @@ import RtsApplicationDashboard from '@/components/modules/rts/dashboard/RtsAppli
 import { toApplicationFilterSlug } from '@/lib/utils/rts/application-filter-slug';
 import {
   getRtsApplicationFilterOptionsAction,
+  getRtsApplicationFullDetailDataAction,
   getRtsApplicationsDashboardAction,
   getRtsApplicationProcessDataAction,
 } from './actions';
@@ -77,16 +78,20 @@ export default async function RtsApplicationDashboardPage({
 
   const requestedDocumentGuid = readQuery(query, 'doc', 'Doc')?.trim() ?? '';
   const requestedProcess = parseProcessRoute(readQuery(query, 'process', 'Process'));
+  const requestedFullDetailId = getPositiveApplicationId(readQuery(query, 'fullDetail', 'FullDetail'));
   const requestedViewId = getPositiveApplicationId(readQuery(query, 'view', 'View'));
-  const drawerApplicationId = requestedProcess?.applicationId ?? requestedViewId;
+  const drawerApplicationId = requestedProcess?.applicationId ?? requestedFullDetailId ?? requestedViewId;
   const drawerRow = drawerApplicationId
     ? result.rows.find((row) => row.applicationId === drawerApplicationId) ?? null
     : null;
-  const drawerData = drawerRow
+  const processDrawerData = drawerRow && (requestedProcess || requestedViewId)
     ? await getRtsApplicationProcessDataAction(drawerRow.applicationId)
     : null;
-  const currentStageSlug = drawerData?.verification?.stageName
-    ? toApplicationFilterSlug(drawerData.verification.stageName)
+  const fullDetailDrawerData = drawerRow && requestedFullDetailId
+    ? await getRtsApplicationFullDetailDataAction(drawerRow.applicationId)
+    : null;
+  const currentStageSlug = processDrawerData?.verification?.stageName
+    ? toApplicationFilterSlug(processDrawerData.verification.stageName)
     : '';
 
   const drawer = requestedDocumentGuid
@@ -99,18 +104,24 @@ export default async function RtsApplicationDashboardPage({
       }
     : requestedProcess &&
         drawerRow &&
-        drawerData &&
+        processDrawerData &&
         requestedProcess.stageSlug === currentStageSlug
       ? {
           mode: 'process' as const,
           record: drawerRow,
-          data: drawerData,
+          data: processDrawerData,
         }
-      : requestedViewId && drawerRow && drawerData
+      : requestedFullDetailId && drawerRow && fullDetailDrawerData
+        ? {
+            mode: 'fullDetail' as const,
+            record: drawerRow,
+            data: fullDetailDrawerData,
+          }
+      : requestedViewId && drawerRow && processDrawerData
         ? {
             mode: 'view' as const,
             record: drawerRow,
-            data: drawerData,
+            data: processDrawerData,
           }
         : null;
 

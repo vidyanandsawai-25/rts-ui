@@ -9,7 +9,7 @@ import { User, Landmark } from 'lucide-react';
 
 import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { UserProfileDropdown, Drawer } from '@/components/common';
-import { TrackingPanel } from '@/components/modules/rts/dashboard/TrackingPanel';
+import ApplicationAndTrackingDrawer from '@/components/modules/rts/citizen/ApplicationAndTrackingDrawer';
 import {
   logoutCitizenAction,
   switchCitizenPropertyAction,
@@ -190,22 +190,10 @@ export function CitizenHeader({
         </div>
       </div>
 
-      {/* Applications Drawer */}
-      <Drawer
+      <ApplicationAndTrackingDrawer
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title={
-          <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-bold text-gray-800">{t('applicationsTitle')}</h3>
-          </div>
-        }
-        width="lg"
-      >
-        <div className="p-4 sm:p-6 bg-slate-50 min-h-full">
-          <TrackingPanel authUser={{ mobile }} />
-        </div>
-      </Drawer>
+      />
 
       {/* Properties Drawer */}
       <Drawer

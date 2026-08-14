@@ -1,10 +1,10 @@
-import { WelcomeLandingPage } from "@/components/modules";
+import { redirect } from "next/navigation";
 
-export default async function RtsRootPage() {
-  return (
-    <WelcomeLandingPage
-      translationKey="menu.rts"
-      iconName="Timer"
-    />
-  );
+interface RtsRootPageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function RtsRootPage({ params }: RtsRootPageProps) {
+  const { locale } = await params;
+  redirect(`/${locale}/rts/dashboard/rts-applications`);
 }

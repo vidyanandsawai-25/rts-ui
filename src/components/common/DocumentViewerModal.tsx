@@ -15,6 +15,7 @@ export interface DocumentViewerModalProps {
   wardNo?: string;
   propertyNo?: string;
   partitionNo?: string;
+  loadPreviewAsBlob?: boolean;
 }
 
 /**
@@ -31,6 +32,7 @@ export function DocumentViewerModal({
   wardNo,
   propertyNo,
   partitionNo,
+  loadPreviewAsBlob = false,
 }: DocumentViewerModalProps) {
   const t = useTranslations("quickDataEntry");
   const searchParams = useSearchParams();
@@ -46,14 +48,17 @@ export function DocumentViewerModal({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
   const [detectedType, setDetectedType] = useState<"pdf" | "image" | "unsupported" | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const dragStart = useRef({ x: 0, y: 0 });
   const modalRef = useRef<HTMLDivElement>(null);
   const pdfIframeRef = useRef<HTMLIFrameElement>(null);
+  const sourceUrl = loadPreviewAsBlob ? previewUrl : fileUrl;
 
   // Fast-path synchronous guess for initial render / SSR
   const getInitialGuess = useCallback(() => {
-    if (!fileUrl) return null;
-    const lowerUrl = fileUrl.toLowerCase();
+    if (!sourceUrl) return null;
+    const lowerUrl = sourceUrl.toLowerCase();
     const lowerName = fileName.toLowerCase();
     
     if (lowerUrl.includes(".pdf") || lowerUrl.startsWith("data:application/pdf") || lowerName.endsWith(".pdf")) {
@@ -71,15 +76,45 @@ export function DocumentViewerModal({
       return "image";
     }
     return null;
-  }, [fileUrl, fileName]);
+  }, [sourceUrl, fileName]);
 
   const initialGuess = getInitialGuess();
-  const isDetecting = detectedType === null && initialGuess === null;
+  const isLoadingPreview = loadPreviewAsBlob && !previewUrl && !previewError;
+  const isDetecting = !previewError && (isLoadingPreview || (detectedType === null && initialGuess === null));
 
   const currentType = detectedType || initialGuess || "image";
   const isPdf = currentType === "pdf";
   const isImage = currentType === "image";
   const isUnsupported = currentType === "unsupported";
+
+  useEffect(() => {
+    if (!loadPreviewAsBlob || !isOpen || !fileUrl) return;
+
+    let active = true;
+    let objectUrl: string | null = null;
+    setPreviewUrl(null);
+    setPreviewError(null);
+
+    void (async () => {
+      try {
+        const response = await fetch(fileUrl, { credentials: "same-origin" });
+        if (!response.ok) throw new Error(`Document preview request failed (${response.status}).`);
+
+        const blob = await response.blob();
+        if (!blob.size) throw new Error("The document preview is empty.");
+
+        objectUrl = URL.createObjectURL(blob);
+        if (active) setPreviewUrl(objectUrl);
+      } catch (error) {
+        if (active) setPreviewError(error instanceof Error ? error.message : "The document could not be previewed.");
+      }
+    })();
+
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [fileUrl, isOpen, loadPreviewAsBlob]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -90,7 +125,7 @@ export function DocumentViewerModal({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDetectedType(null);
-    if (!fileUrl) return;
+    if (!sourceUrl) return;
     
     const initial = getInitialGuess();
     if (initial) {
@@ -101,7 +136,7 @@ export function DocumentViewerModal({
     let active = true;
     const detect = async () => {
       try {
-        const response = await fetch(fileUrl);
+        const response = await fetch(sourceUrl);
         const blob = await response.blob();
         
         if (blob.type) {
@@ -152,7 +187,7 @@ export function DocumentViewerModal({
     return () => {
       active = false;
     };
-  }, [fileUrl, fileName, getInitialGuess]);
+  }, [sourceUrl, fileName, getInitialGuess]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -257,7 +292,7 @@ export function DocumentViewerModal({
               </style>
             </head>
             <body>
-              <img src="${fileUrl}" alt="${fileName || "Document"}" />
+              <img src="${sourceUrl ?? fileUrl}" alt="${fileName || "Document"}" />
             </body>
           </html>
         `);
@@ -298,14 +333,14 @@ export function DocumentViewerModal({
           pdfIframe.contentWindow.focus();
           pdfIframe.contentWindow.print();
         } else {
-          window.open(fileUrl, "_blank");
+          window.open(sourceUrl ?? fileUrl, "_blank");
         }
       } catch {
         // Cross-origin restriction — open in new tab as fallback
-        window.open(fileUrl, "_blank");
+        window.open(sourceUrl ?? fileUrl, "_blank");
       }
     }
-  }, [isImage, isPdf, fileUrl, fileName]);
+  }, [isImage, isPdf, fileUrl, fileName, sourceUrl]);
 
   if (!isOpen || !mounted || !fileUrl) return null;
 
@@ -349,7 +384,7 @@ export function DocumentViewerModal({
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
     const link = document.createElement("a");
-    link.href = fileUrl;
+    link.href = sourceUrl ?? fileUrl;
     link.download = fileName || "download";
     document.body.appendChild(link);
     link.click();
@@ -515,11 +550,11 @@ export function DocumentViewerModal({
               <p className="text-xs text-gray-500">{t("discount.detectingDocumentType")}</p>
             </div>
           ) : isPdf ? (
-            <div className="w-full h-full p-2 bg-white">
+            <div className="w-full h-full bg-white">
               <iframe
                 ref={pdfIframeRef}
-                src={`${fileUrl}#toolbar=0`}
-                className="w-full h-full border-0 rounded-lg bg-white"
+                src={sourceUrl ?? ''}
+                className="w-full h-full border-0 bg-white"
                 title={fileName}
               />
             </div>
@@ -538,7 +573,7 @@ export function DocumentViewerModal({
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={fileUrl}
+                src={sourceUrl ?? ""}
                 alt={fileName}
                 style={{
                   transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
@@ -546,6 +581,19 @@ export function DocumentViewerModal({
                 }}
                 className="max-w-full max-h-full object-contain pointer-events-none select-none"
               />
+            </div>
+          ) : previewError ? (
+            <div className="flex flex-col items-center justify-center gap-3 p-8 text-center text-gray-500">
+              <FileText className="h-12 w-12 text-rose-500" />
+              <p className="max-w-sm text-sm font-bold text-gray-800">{previewError}</p>
+              <button
+                type="button"
+                onClick={handleDownload}
+                className="inline-flex items-center gap-2 px-4 h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-xs transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {t("discount.downloadToView")}
+              </button>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center p-8 text-center text-gray-500 bg-white rounded-lg border border-dashed border-gray-300 max-w-sm w-full mx-4 shadow-sm">

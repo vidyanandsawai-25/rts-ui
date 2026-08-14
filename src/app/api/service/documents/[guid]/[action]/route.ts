@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 import {
-  downloadAdminRtsDocument,
-  viewAdminRtsDocument,
+  downloadCitizenRtsDocument,
+  viewCitizenRtsDocument,
 } from "@/lib/api/rts/rtsdocument.service";
 
 const DOCUMENT_ACTIONS = new Set(["view", "download"]);
@@ -20,8 +20,8 @@ export async function GET(
   try {
     const backendResponse =
       action === "view"
-        ? await viewAdminRtsDocument(guid)
-        : await downloadAdminRtsDocument(guid);
+        ? await viewCitizenRtsDocument(guid)
+        : await downloadCitizenRtsDocument(guid);
 
     if (!backendResponse.ok) {
       return NextResponse.json(
@@ -43,7 +43,7 @@ export async function GET(
 
     return new NextResponse(backendResponse.body, { headers });
   } catch (error) {
-    console.error("Failed to proxy RTS document:", error);
+    console.error("Failed to proxy RTS citizen document:", error);
     return NextResponse.json(
       { message: "The document service is temporarily unavailable." },
       { status: 502 }

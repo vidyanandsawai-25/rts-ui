@@ -138,6 +138,10 @@ export interface RtsApplicationApprovalStage {
   stageName: string;
   status: string;
   remark: string | null;
+  userName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  createdDate?: string | null;
   isCurrentStage: boolean;
   assignedToName?: string | null;
   assignedToRole?: string | null;
