@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { Input, Select, ValidationMessage, TextArea, SearchSelect } from "@/components/common";
+import { Input, ValidationMessage, TextArea } from "@/components/common";
+import { SearchSelectPaginated } from "@/components/common/SearchSelectPaginated";
 import { Label } from "@/components/common/label";
 import { Checkbox } from "@/components/common/checkbox";
 import { BulkUpdateFieldConfig, SelectOption } from "@/types/common-details-update/common-details-update.types";
@@ -14,16 +15,25 @@ interface DynamicFormFieldProps {
   submitted: boolean;
   error?: string;
   dropdownOptions?: SelectOption[];
+  isLoading?: boolean;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: (searchQuery?: string) => void;
+  onSearchChange?: (searchQuery: string) => void;
 }
-
-
 
 export const DynamicFormField = ({
   config,
   value,
   onChange,
+  submitted,
   error,
   dropdownOptions = [],
+  isLoading = false,
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMore,
+  onSearchChange,
 }: DynamicFormFieldProps) => {
   const locale = useLocale();
 
@@ -34,11 +44,15 @@ export const DynamicFormField = ({
 
   const placeholder = config.placeholder ?? "";
   
-  const isInvalid = Boolean(error);
-  const errorMessage = error || "";
+  // Check for required fields - treat 0 as valid, only empty/null/undefined as invalid
+  const isMissingRequired =
+    submitted && config.isRequired && (value === "" || value === null || value === undefined);
+
+  const isInvalid = Boolean(error) || Boolean(isMissingRequired);
+  const errorMessage = error || (isMissingRequired ? `${displayName} is required` : "");
 
   const fieldElement = useMemo(() => {
-    switch (config.controlType) {
+    switch (config.controlType as string) {
       case "textarea":
         return (
           <TextArea
@@ -52,24 +66,20 @@ export const DynamicFormField = ({
         );
 
       case "dropdown":
-        return (
-          <Select
-            value={String(value ?? "")}
-            onChange={(_, val) => onChange(config.fieldName, val)}
-            options={dropdownOptions}
-            placeholder={placeholder || `Select ${displayName}`}
-            disabled={config.isReadonly}
-          />
-        );
-
+      case "select":
       case "searchselect":
         return (
-          <SearchSelect
+          <SearchSelectPaginated
             value={String(value ?? "")}
             onChange={(_, val) => onChange(config.fieldName, val)}
             options={dropdownOptions}
             placeholder={placeholder || `Select ${displayName}`}
             disabled={config.isReadonly}
+            isLoading={isLoading}
+            hasMore={hasMore}
+            isLoadingMore={isLoadingMore}
+            onLoadMore={onLoadMore}
+            onSearchChange={onSearchChange}
           />
         );
 
@@ -156,7 +166,7 @@ export const DynamicFormField = ({
           />
         );
     }
-  }, [config, value, onChange, placeholder, dropdownOptions, displayName]);
+  }, [config, value, onChange, placeholder, dropdownOptions, displayName, isLoading, hasMore, isLoadingMore, onLoadMore, onSearchChange]);
 
   if (config.controlType === "checkbox") {
     return <div className="py-1">{fieldElement}</div>;

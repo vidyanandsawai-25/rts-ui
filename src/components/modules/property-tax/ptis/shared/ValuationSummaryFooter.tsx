@@ -81,18 +81,18 @@ export async function ValuationSummaryFooter({
   // 5. RV/CV DATA
   const isCV = oldValRVBadge?.label === tVal('oldTotalCv') || Boolean(comparisonData?.cv);
   const valLabel = isCV ? tVal('cv') : tVal('rv');
-  const rvOrCvData = comparisonData?.rv || comparisonData?.cv;
+  const rvOrCvData = isCV ? comparisonData?.cv : comparisonData?.rv;
   const oldValRV = rvOrCvData ? rvOrCvData.old : Number(oldValRVBadge?.value ?? 0);
   const newValRV = rvOrCvData ? rvOrCvData.new : Number(newValRVBadge?.value ?? 0);
   const valDiffRV = rvOrCvData ? rvOrCvData.change : newValRV - oldValRV;
 
   // 6. TAX DATA
-  const oldTax = comparisonData?.tax ? comparisonData.tax.old : Number(oldTaxBadge?.value ?? 0);
-  const newTax = comparisonData?.tax ? comparisonData.tax.new : Number(newTaxBadge?.value ?? 0);
-  const taxDiff = comparisonData?.tax ? comparisonData.tax.change : newTax - oldTax;
+  const oldTax = comparisonData?.tax && !isCV ? comparisonData.tax.old : Number(oldTaxBadge?.value ?? 0);
+  const newTax = comparisonData?.tax && !isCV ? comparisonData.tax.new : Number(newTaxBadge?.value ?? 0);
+  const taxDiff = comparisonData?.tax && !isCV ? comparisonData.tax.change : newTax - oldTax;
 
-  // ALV Card is hidden unless explicitly present with non-zero values in comparison data
-  const hasALVCard = Boolean(
+  // ALV Card is hidden unless explicitly present with non-zero values in comparison data, and always hidden for Capital Valuation (isCV is true)
+  const hasALVCard = !isCV && Boolean(
     comparisonData?.alv && (comparisonData.alv.old !== 0 || comparisonData.alv.new !== 0)
   );
 

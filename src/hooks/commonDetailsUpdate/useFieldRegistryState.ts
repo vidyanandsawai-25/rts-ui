@@ -76,7 +76,7 @@ export const useFieldRegistryState = (
   const refreshFieldsList = useCallback(async () => {
     if (!actions.getFieldRegistriesAction) return;
   
-    const res = await actions.getFieldRegistriesAction(1, 1000);
+    const res = await actions.getFieldRegistriesAction(pageNumber, pageSize);
     if (res.success && res.data) {
       const data = res.data;
       if (data && "items" in data) {
@@ -85,7 +85,7 @@ export const useFieldRegistryState = (
       }
     }
     
-  }, [actions.getFieldRegistriesAction]);
+  }, [actions.getFieldRegistriesAction, pageNumber, pageSize]);
 
   useEffect(() => {
     refreshFieldsList();
@@ -104,13 +104,14 @@ export const useFieldRegistryState = (
     }
   }, [initialFields]);
 
-  const formState = useFieldRegistryForm(fields, refreshFieldsList, initialSchemas, initialSourceTables, initialSourceTableFields, {
-    addFieldRegistryAction: actions.addFieldRegistryAction,
-    getFieldRegistryTablesAction: actions.getFieldRegistryTablesAction,
-    getFieldRegistryColumnsAction: actions.getFieldRegistryColumnsAction,
-    getSourceTablesAction: actions.getSourceTablesAction,
-    getSourceTableFieldsAction: actions.getSourceTableFieldsAction
-  });
+  const formState = useFieldRegistryForm(fields, refreshFieldsList, initialSchemas, initialSourceTables, initialSourceTableFields);
+
+  const toggleFieldStatus = async (code: string, isActive: boolean) => {
+    if (actions.setFieldRegistryStatusAction) {
+      return await actions.setFieldRegistryStatusAction(code, isActive);
+    }
+    return { success: false, error: "Action not available" };
+  };
 
   return {
     fields, setFields,
@@ -122,6 +123,7 @@ export const useFieldRegistryState = (
     pageNumber, setPageNumber,
     pageSize, setPageSize,
     totalCount,
+    toggleFieldStatus,
     setFieldRegistryStatusAction: actions.setFieldRegistryStatusAction,
   };
 };

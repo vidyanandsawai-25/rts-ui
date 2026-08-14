@@ -8,10 +8,23 @@ import {
     GeoSequencingWardWiseResponse
 } from "@/types/automation-dashboard/geo-sequencing/geo-sequencing.type";
 
-export async function automationGetGeoSequencingGrid(workflowStageId?: string | number): Promise<GeoSequencingItems | null> {
-    const url = workflowStageId !== undefined && workflowStageId !== null
-        ? `/AutomationDashboard/GeoSequencingGrid?workflowStageId=${workflowStageId}`
-        : `/AutomationDashboard/GeoSequencingGrid`;
+export async function automationGetGeoSequencingGrid(
+    workflowStageId?: string | number,
+    propertyTypeId?: string | null,
+    propertyTypeCategoryId?: string | null
+): Promise<GeoSequencingItems | null> {
+    const params = new URLSearchParams();
+    if (workflowStageId !== undefined && workflowStageId !== null) {
+        params.append("workflowStageId", workflowStageId.toString());
+    }
+    if (propertyTypeId) {
+        params.append("PropertyTypeId", propertyTypeId);
+    }
+    if (propertyTypeCategoryId) {
+        params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
+    }
+
+    const url = `/AutomationDashboard/GeoSequencingGrid?${params.toString()}`;
 
     const response = await apiClient.get<GeoSequencingGridResponse>(url,{ cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
@@ -25,8 +38,8 @@ export async function automationGetGeoSequencingWardWiseSummary(
     workflowStageId?: string | number,
     pageNumber: number = 1,
     pageSize: number = 10,
-    propertyTypeCategoryId?: string | null,
-    categoryId?: string | null
+    propertyTypeId?: string | null,
+    propertyTypeCategoryId?: string | null
 ): Promise<GeoSequencingWardWiseItems | null> {
     const params = new URLSearchParams({
         zoneId: zoneId.toString(),
@@ -37,11 +50,11 @@ export async function automationGetGeoSequencingWardWiseSummary(
     if (workflowStageId !== undefined && workflowStageId !== null) {
         params.append("workflowStageId", workflowStageId.toString());
     }
+    if (propertyTypeId) {
+        params.append("PropertyTypeId", propertyTypeId);
+    }
     if (propertyTypeCategoryId) {
         params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
-    }
-    if (categoryId) {
-        params.append("PropertyTypeId", categoryId);
     }
 
     const response = await apiClient.get<GeoSequencingWardWiseResponse>(

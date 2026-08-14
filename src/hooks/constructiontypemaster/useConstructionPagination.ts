@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface UseConstructionPaginationProps {
@@ -42,6 +42,40 @@ export function useConstructionPagination({
     },
     [locale]
   );
+
+  useEffect(() => {
+    const currentPage = pageNumber || 1;
+    const currentPageSize = pageSize || 10;
+
+    const maxPage = Math.max(
+      1,
+      Math.ceil(totalCount / currentPageSize)
+    );
+
+    if (currentPage > maxPage) {
+      startTransition(() => {
+        router.push(
+          buildUrl(
+            maxPage,
+            currentPageSize,
+            currentSearchTerm,
+            sortBy,
+            sortOrder
+          )
+        );
+      });
+    }
+  }, [
+    pageNumber,
+    pageSize,
+    totalCount,
+    currentSearchTerm,
+    sortBy,
+    sortOrder,
+    router,
+    buildUrl,
+    startTransition,
+  ]);
 
   const changePage = useCallback((p: number): void => {
     const params = new URLSearchParams();

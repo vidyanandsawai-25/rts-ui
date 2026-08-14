@@ -576,6 +576,24 @@ export function ViewButton(
 }
 
 
+export function DownloadIconButton(
+  { ["aria-label"]: ariaLabel, className = "", ...props }: Omit<ButtonProps, "icon" | "variant">
+): React.ReactElement {
+  return (
+    <Button
+      variant="secondary"
+      icon={Download}
+      size="sm"
+      aria-label={ariaLabel ?? "Download"}
+      className={cn(
+        "text-green-600 hover:bg-green-50 border-green-400 focus:ring-green-300",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
 export function CloseIconButton({
   title = "Close",
   onClick,

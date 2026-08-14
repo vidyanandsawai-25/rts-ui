@@ -167,10 +167,24 @@ export async function deletePropertyDetailsAction(propertyId: number): Promise<A
     const result = await deletePropertyDetails(propertyId);
     return result;
   } catch (error) {
-    if (
+    const normalizedMessage = (error instanceof Error ? error.message : '').toLowerCase();
+    const isMissingDetailsMessage = [
+      'not found',
+      'no record',
+      'not present',
+      'not exist',
+      'no floor',
+      'no detail',
+      'not available',
+      'empty',
+    ].some((needle) => normalizedMessage.includes(needle));
+
+    const isNotFoundError =
       (error instanceof ApiError && error.statusCode === 404) ||
-      (error instanceof Error && error.message.toLowerCase().includes("not found"))
-    ) {
+      (error instanceof ApiError && error.statusCode === 400 && isMissingDetailsMessage) ||
+      (error instanceof Error && !(error instanceof ApiError) && isMissingDetailsMessage);
+
+    if (isNotFoundError) {
       return { success: true, data: null };
     }
     return { success: false, error: await getActionErrorMessage(error) };
@@ -204,8 +218,12 @@ export async function validateFloorCompatibilityAction(
     );
     const validUseDescs = new Set<string>();
     (validUses || []).forEach((u) => {
-      const desc = String(u.description || '').trim().toLowerCase();
-      const code = String(u.typeOfUseCode || u.code || '').trim().toLowerCase();
+      const desc = String(u.description || '')
+        .trim()
+        .toLowerCase();
+      const code = String(u.typeOfUseCode || u.code || '')
+        .trim()
+        .toLowerCase();
       if (desc) validUseDescs.add(desc);
       if (code) validUseDescs.add(code);
       if (code && desc) validUseDescs.add(`${code} - ${desc}`);
@@ -238,12 +256,12 @@ export async function validateFloorCompatibilityAction(
       // Neglect floor use check if floor is Open Plot
       if (isActualOpenPlot) continue;
 
-      const floorUseId = String(
-        floor.typeOfUseId ?? floor.useId ?? ''
-      ).trim();
+      const floorUseId = String(floor.typeOfUseId ?? floor.useId ?? '').trim();
       const floorUseDesc = String(
         floor.use ?? floor.usageDescription ?? floor.typeOfUseDescription ?? ''
-      ).trim().toLowerCase();
+      )
+        .trim()
+        .toLowerCase();
 
       if (!floorUseId && !floorUseDesc) continue;
 
@@ -266,4 +284,3 @@ export async function validateFloorCompatibilityAction(
     return { success: false, error: await getActionErrorMessage(error) };
   }
 }
-

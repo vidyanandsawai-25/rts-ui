@@ -1,0 +1,466 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+"use client";
+
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { toast } from "sonner";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useDebounce } from "@/hooks/useDebounce";
+import { exportToExcel } from "@/lib/utils/automation-dashboard/export/excelExport";
+import {
+  UpdateHistoryItem,
+  UpdateHistoryDetailItem,
+  CommonDetailsUpdateActions,
+  UpdateHistoryFilterParams
+} from "@/types/common-details-update/common-details-update.types";
+import { PagedResponse } from "@/types/common.types";
+import {
+  getUpdateHistoryAction,
+  getUpdateHistoryDetailAction,
+  exportUpdateHistoryAction
+} from "@/app/[locale]/property-tax/common-details-update/actions";
+
+interface UseJobsAuditOptions {
+  initialData?: PagedResponse<UpdateHistoryItem> | UpdateHistoryItem[] | null;
+  initialUpdateHistoryDetail?: PagedResponse<UpdateHistoryDetailItem> | null;
+  actions?: Partial<CommonDetailsUpdateActions>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: (key: string, values?: any) => string;
+  updateUrlParams?: (newParams: Record<string, string | number | undefined | null>) => void;
+}
+
+export const useJobsAudit = ({
+  initialData = null,
+  initialUpdateHistoryDetail = null,
+  actions,
+  t,
+  updateUrlParams: providedUpdateUrlParams,
+}: UseJobsAuditOptions) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const auditPage = Number(searchParams.get("auditPage")) || 1;
+  const auditPageSize = Number(searchParams.get("auditPageSize")) || 5;
+  const auditUser = searchParams.get("auditUser") || "all";
+  const auditSearch = searchParams.get("auditSearch") || "";
+
+  const [searchTerm, setSearchTerm] = useState<string>(auditSearch);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [isModalExporting, setIsModalExporting] = useState<boolean>(false);
+
+  const [selectedRow, setSelectedRow] = useState<UpdateHistoryItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalDetailsData, setModalDetailsData] = useState<UpdateHistoryDetailItem[]>([]);
+  const [modalPage, setModalPage] = useState<number>(1);
+  const [modalPageSize, setModalPageSize] = useState<number>(10);
+  const [modalTotalCount, setModalTotalCount] = useState<number>(0);
+  const [modalTotalPages, setModalTotalPages] = useState<number>(1);
+  const [modalSearchTerm, setModalSearchTerm] = useState<string>("");
+  const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(false);
+  const [userOptionsState, setUserOptionsState] = useState<{ label: string; value: string }[]>([]);
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedModalSearchTerm = useDebounce(modalSearchTerm, 1000);
+
+  const getUpdateHistoryDetailFn = actions?.getUpdateHistoryDetailAction || getUpdateHistoryDetailAction;
+  const getUpdateHistoryFn = actions?.getUpdateHistoryAction || getUpdateHistoryAction;
+  const exportUpdateHistoryFn = actions?.exportUpdateHistoryAction || exportUpdateHistoryAction;
+
+  const updateUrlParams = useCallback((params: Record<string, string | number | null | undefined>) => {
+    if (providedUpdateUrlParams) {
+      providedUpdateUrlParams(params);
+      return;
+    }
+    const newParams = new URLSearchParams(searchParams.toString());
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === "" || (key === 'auditUser' && value === 'all')) {
+        newParams.delete(key);
+      } else {
+        newParams.set(key, String(value));
+      }
+    });
+    // Preserve tab
+    newParams.set("tab", "auditMonitor");
+    router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+  }, [searchParams, pathname, router, providedUpdateUrlParams]);
+
+  const itemsList = useMemo(() => {
+    if (!initialData) return [];
+    if (Array.isArray(initialData)) return initialData;
+    return initialData.items || [];
+  }, [initialData]);
+
+  const totalCount = useMemo(() => {
+    if (!initialData) return 0;
+    if (Array.isArray(initialData)) return initialData.length;
+    return initialData.totalCount || 0;
+  }, [initialData]);
+
+  const data = useMemo(() => {
+    return itemsList.slice(0, auditPageSize);
+  }, [itemsList, auditPageSize]);
+
+  // Sync debounced search term to URL
+  useEffect(() => {
+    if (debouncedSearchTerm !== auditSearch) {
+      updateUrlParams({ auditPage: 1, auditSearch: debouncedSearchTerm });
+    }
+  }, [debouncedSearchTerm, auditSearch, updateUrlParams]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchTerm(val);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    updateUrlParams({ auditPage: newPage });
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    updateUrlParams({ auditPage: 1, auditPageSize: newSize });
+  };
+
+  const handleUserChange = (user: string) => {
+    updateUrlParams({ auditPage: 1, auditUser: user });
+  };
+
+  // Extract distinct users for user filter dropdown
+  useEffect(() => {
+    let isMounted = true;
+    const extractUsers = async () => {
+      const usersSet = new Set<string>();
+
+      itemsList.forEach((item) => {
+        const u = item.doneBy || item.username || item.createdBy || item.user;
+        if (u && typeof u === "string") usersSet.add(u.trim());
+      });
+
+      try {
+        const response = await getUpdateHistoryFn({ PageSize: 1000 });
+        if (response.success && response.data?.items) {
+          response.data.items.forEach((item: UpdateHistoryItem) => {
+            const u = item.doneBy || item.username || item.createdBy || item.user;
+            if (u && typeof u === "string") usersSet.add(u.trim());
+          });
+        }
+      } catch {
+        // Fallback to local data users
+      }
+
+      if (isMounted) {
+        const options = Array.from(usersSet).map((u) => ({ label: u, value: u }));
+        setUserOptionsState(options);
+      }
+    };
+
+    extractUsers();
+    return () => {
+      isMounted = false;
+    };
+  }, [itemsList, getUpdateHistoryFn]);
+
+  const userOptions = useMemo(() => {
+    return [
+      { label: t("jobsAudit.filters.allUsers"), value: "all" },
+      ...userOptionsState,
+    ];
+  }, [userOptionsState, t]);
+
+  // Fetch modal details from server
+  const fetchModalDetails = useCallback(
+    async (activityId: string, page: number, size: number, search: string) => {
+      setIsLoadingDetails(true);
+      try {
+        const response = await getUpdateHistoryDetailFn(activityId, page, size, search);
+        if (response.success && response.data) {
+          setModalDetailsData(response.data.items || []);
+          setModalTotalCount(response.data.totalCount || 0);
+          setModalTotalPages(response.data.totalPages || 1);
+        } else {
+          setModalDetailsData([]);
+          setModalTotalCount(0);
+          setModalTotalPages(1);
+        }
+      } catch {
+        setModalDetailsData([]);
+        setModalTotalCount(0);
+        setModalTotalPages(1);
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    },
+    [getUpdateHistoryDetailFn]
+  );
+
+  const handleViewClick = useCallback(
+    (row: UpdateHistoryItem) => {
+      setSelectedRow(row);
+      setIsModalOpen(true);
+      setModalPage(1);
+      setModalSearchTerm("");
+
+      const targetId = row.id != null ? String(row.id) : String(row.activityId || "");
+      if (targetId) {
+        updateUrlParams({ activityId: targetId });
+        fetchModalDetails(targetId, 1, modalPageSize, "");
+      }
+    },
+    [updateUrlParams, fetchModalDetails, modalPageSize]
+  );
+
+  // Reset modal page to 1 on debounced search change
+  useEffect(() => {
+    setModalPage(1);
+  }, [debouncedModalSearchTerm]);
+
+  // Sync modal details when open
+  useEffect(() => {
+    const targetId = selectedRow ? (selectedRow.id != null ? String(selectedRow.id) : String(selectedRow.activityId || "")) : "";
+    if (isModalOpen && targetId) {
+      fetchModalDetails(
+        targetId,
+        modalPage,
+        modalPageSize,
+        debouncedModalSearchTerm
+      );
+    }
+  }, [
+    isModalOpen,
+    selectedRow,
+    modalPage,
+    modalPageSize,
+    debouncedModalSearchTerm,
+    fetchModalDetails,
+  ]);
+
+  // Initial SSR sync for id / activityId in URL search params
+  useEffect(() => {
+    const targetId = searchParams.get("id") || searchParams.get("activityId");
+    if (targetId && initialUpdateHistoryDetail) {
+      const row = itemsList.find((item) => String(item.id) === targetId || String(item.activityId) === targetId);
+      if (row) {
+        setSelectedRow(row);
+        setIsModalOpen(true);
+        setModalDetailsData(initialUpdateHistoryDetail.items || []);
+        setModalTotalCount(initialUpdateHistoryDetail.totalCount || 0);
+        setModalTotalPages(initialUpdateHistoryDetail.totalPages || 1);
+      }
+    }
+  }, [searchParams, itemsList, initialUpdateHistoryDetail]);
+
+  const handleExportAudit = async (params: UpdateHistoryFilterParams) => {
+    try {
+      const result = await exportUpdateHistoryFn(params);
+      if (result.success && result.data) {
+        const byteCharacters = atob(result.data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Audit_History_${new Date().toISOString().split("T")[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success(t("messages.excelDownloadSuccess"));
+      } else {
+        toast.error(
+          ("error" in result ? result.error : "") || t("messages.somethingWrong")
+        );
+      }
+    } catch {
+      toast.error(t("messages.somethingWrong"));
+    }
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await handleExportAudit({
+        SearchTerm: auditSearch,
+        DoneBy: auditUser !== "all" ? auditUser : undefined,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Build the modal table data (flattened from details)
+  const buildModalTableData = useCallback(() => {
+    return modalDetailsData.flatMap((detail) => {
+      let oldVals: Record<string, unknown> = {};
+      let newVals: Record<string, unknown> = {};
+
+      const parseVal = (val: unknown) => {
+        if (!val) return {};
+        if (typeof val === "object") return val;
+        if (typeof val === "string") {
+          try {
+            const parsed = JSON.parse(val);
+            if (typeof parsed === "object" && parsed !== null) return parsed;
+          } catch (_err) {
+            // Ignore parse error
+          }
+        }
+        return null;
+      };
+
+      const parsedOld = parseVal(detail.oldValue);
+      const parsedNew = parseVal(detail.newValue);
+
+      if (parsedOld && parsedNew) {
+        oldVals = parsedOld;
+        newVals = parsedNew;
+      } else if (detail.updatedColumns) {
+        // Fallback if not valid JSON objects
+        const cols = String(detail.updatedColumns).split(",");
+        if (cols.length === 1) {
+          oldVals = { [cols[0]]: detail.oldValue };
+          newVals = { [cols[0]]: detail.newValue };
+        } else {
+          oldVals = { Value: detail.oldValue };
+          newVals = { Value: detail.newValue };
+        }
+      }
+
+      const allKeys = Array.from(new Set([...Object.keys(oldVals), ...Object.keys(newVals)]));
+
+      return allKeys.map((key) => ({
+        id: `${detail.property}-${key}`,
+        property: detail.property || `${detail.wardNo}-${detail.propertyNo}-${detail.partitionNo}`,
+        field: key,
+        oldValue: oldVals[key] !== undefined && oldVals[key] !== null ? String(oldVals[key]) : "-",
+        newValue: newVals[key] !== undefined && newVals[key] !== null ? String(newVals[key]) : "-",
+      }));
+    });
+  }, [modalDetailsData]);
+
+  const modalTableData = useMemo(() => {
+    return buildModalTableData();
+  }, [buildModalTableData]);
+
+  const handleModalPageChange = (newPage: number) => {
+    setModalPage(newPage);
+  };
+
+  const handleModalPageSizeChange = (newSize: number) => {
+    setModalPage(1);
+    setModalPageSize(newSize);
+  };
+
+  const handleModalExport = useCallback(async () => {
+    const targetId = selectedRow ? (selectedRow.id != null ? String(selectedRow.id) : String(selectedRow.activityId || "")) : "";
+    if (!targetId || !selectedRow) {
+      toast.error(t("messages.somethingWrong"));
+      return;
+    }
+
+    try {
+      const fetchCount = modalTotalCount || 10000;
+      const res = await getUpdateHistoryDetailFn(
+        targetId,
+        1,
+        fetchCount,
+        debouncedModalSearchTerm
+      );
+
+      const exportDataItems = res.success && res.data?.items ? res.data.items : modalDetailsData;
+
+      const excelColumns = [
+        { header: "Sr. No.", key: "srNo" },
+        { header: t("jobsAudit.modal.property") || "Property", key: "propertyNo" },
+        { header: "Partition No", key: "partitionNo" },
+        { header: t("jobsAudit.modal.oldValue") || "Old Value", key: "oldValue" },
+        { header: t("jobsAudit.modal.newValue") || "New Value", key: "newValue" },
+      ];
+
+      const modalTableExportData = exportDataItems.map((item: Record<string, unknown>, index: number) => ({
+        srNo: index + 1,
+        propertyNo: item.propertyNo || item.propertyNumber || "-",
+        partitionNo: item.partitionNo || item.partitionNumber || "-",
+        oldValue: item.oldValue || "-",
+        newValue: item.newValue || "-",
+      }));
+
+      await exportToExcel({
+        data: modalTableExportData,
+        columns: excelColumns,
+        fileName: `Update_Details_${selectedRow.updateCode || selectedRow.activityId || selectedRow.id}_${new Date().toISOString().split("T")[0]}`,
+        reportTitle: `${t("jobsAudit.modal.updateDetailsPrefix")} (${selectedRow.updateCode || selectedRow.activityId || selectedRow.id})`,
+        reportSubtitle: `${t("jobsAudit.modal.updatedBy")}: ${selectedRow.doneBy || selectedRow.username || "-"} | ${t("jobsAudit.modal.date")}: ${selectedRow.createdDate || selectedRow.doneOn ? new Date((selectedRow.createdDate || selectedRow.doneOn) as string | number | Date).toLocaleString() : "-"}`,
+      });
+
+      toast.success(t("messages.excelDownloadSuccess"));
+    } catch {
+      toast.error(t("messages.somethingWrong"));
+    }
+  }, [
+    selectedRow,
+    getUpdateHistoryDetailFn,
+    modalTotalCount,
+    debouncedModalSearchTerm,
+    modalDetailsData,
+    t,
+  ]);
+
+  const onModalExportClick = async () => {
+    setIsModalExporting(true);
+    try {
+      await handleModalExport();
+    } finally {
+      setIsModalExporting(false);
+    }
+  };
+
+  return {
+    auditPage,
+    auditPageSize,
+    auditUser,
+    auditSearch,
+    searchTerm,
+    setSearchTerm,
+    handleSearchChange,
+    handlePageChange,
+    handlePageSizeChange,
+    handleUserChange,
+    userOptions,
+    totalCount,
+    data,
+    itemsList,
+    selectedRow,
+    setSelectedRow,
+    isModalOpen,
+    setIsModalOpen,
+    modalDetailsData,
+    modalPage,
+    setModalPage,
+    modalPageSize,
+    setModalPageSize,
+    modalTotalCount,
+    modalTotalPages,
+    modalSearchTerm,
+    setModalSearchTerm,
+    isLoadingDetails,
+    userOptionsState,
+    isExporting,
+    isModalExporting,
+    handleExport,
+    onModalExportClick,
+    modalTableData,
+    handleModalPageChange,
+    handleModalPageSizeChange,
+    handleViewClick,
+    handleExportAudit,
+    handleModalExport,
+    fetchModalDetails,
+    updateUrlParams,
+  };
+};
+

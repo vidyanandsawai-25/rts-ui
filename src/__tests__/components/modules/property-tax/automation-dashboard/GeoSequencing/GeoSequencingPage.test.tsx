@@ -25,6 +25,7 @@ vi.mock('next/navigation', () => ({
     values: vi.fn(),
     toString: vi.fn(() => ''),
   }),
+  usePathname: () => '/',
 }));
 
 // Mock next-intl
@@ -63,10 +64,10 @@ describe('GeoSequencingPage Component', () => {
           underConstruction: 10,
         },
         assessmentStatusBreakdown: {
-          assessed: { structureCount: 300, unitCount: 600 },
-          unassessed: { structureCount: 100, unitCount: 150 },
-          newlyAssessedFound: { structureCount: 50, unitCount: 100 },
-          assessmentInProcess: { structureCount: 50, unitCount: 50 },
+          assessed: { statusId: 1, structureCount: 300, unitCount: 600 },
+          unassessed: { statusId: 2, structureCount: 100, unitCount: 150 },
+          newlyAssessedFound: { statusId: 3, structureCount: 50, unitCount: 100 },
+          assessmentInProcess: { statusId: 4, structureCount: 50, unitCount: 50 },
         },
       },
     ],
@@ -84,10 +85,10 @@ describe('GeoSequencingPage Component', () => {
         underConstruction: 10,
       },
       assessmentStatusBreakdown: {
-        assessed: { structureCount: 300, unitCount: 600 },
-        unassessed: { structureCount: 100, unitCount: 150 },
-        newlyAssessedFound: { structureCount: 50, unitCount: 100 },
-        assessmentInProcess: { structureCount: 50, unitCount: 50 },
+        assessed: { statusId: 1, structureCount: 300, unitCount: 600 },
+        unassessed: { statusId: 2, structureCount: 100, unitCount: 150 },
+        newlyAssessedFound: { statusId: 3, structureCount: 50, unitCount: 100 },
+        assessmentInProcess: { statusId: 4, structureCount: 50, unitCount: 50 },
       },
     },
   };

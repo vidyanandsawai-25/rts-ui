@@ -15,7 +15,7 @@ export const usePropertyOptions = (props: PropertyFormViewProps) => {
     [propertyCategoryList]);
 
     const propertyDescriptionOptions = useMemo(() => 
-        propertyDescriptionList.map((item) => ({ label: item.propertyDescription, value: String(item.id) })),
+        propertyDescriptionList.map((item) => ({ label: item.type ? `${item.type} - ${item.propertyDescription}` : item.propertyDescription, value: String(item.id) })),
     [propertyDescriptionList]);
 
     const moujaOptions = useMemo(() => 

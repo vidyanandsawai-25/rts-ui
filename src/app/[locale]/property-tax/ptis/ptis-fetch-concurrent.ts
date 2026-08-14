@@ -47,15 +47,35 @@ export async function fetchPropertyDetailsConcurrently(
 
   const isRateableTab = !valuationTab || valuationTab === 'rateable';
 
-  const rateableValuePromise = propertyId ? getRateableValue(propertyId) : Promise.resolve(null);
+  let rateableValuePromise: Promise<Awaited<ReturnType<typeof getRateableValue>> | null> = Promise.resolve(null);
+  let capitalValuePromise: Promise<Awaited<ReturnType<typeof getCapitalValue>> | null> = Promise.resolve(null);
+  let dualMethodPromise: Promise<Awaited<ReturnType<typeof getDualMethod>> | null> = Promise.resolve(null);
 
-  const capitalValuePromise =
-    propertyId && (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
-      ? getCapitalValue(propertyId)
-      : Promise.resolve(null);
-
-  const dualMethodPromise =
-    propertyId && valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null);
+  if (propertyId) {
+    switch (valuationTab) {
+      case 'capital': {
+        capitalValuePromise = getCapitalValue(propertyId);
+        break;
+      }
+      case 'rateable': {
+        rateableValuePromise = getRateableValue(propertyId);
+        break;
+      }
+      case 'dual': {
+        dualMethodPromise = getDualMethod(propertyId);
+        if (showDetailsParam) {
+          rateableValuePromise = getRateableValue(propertyId);
+          capitalValuePromise = getCapitalValue(propertyId);
+        }
+        break;
+      }
+      default: {
+        // Default to rateable for apartment or other tabs
+        rateableValuePromise = getRateableValue(propertyId);
+        break;
+      }
+    }
+  }
 
   // Chain taxDetails fetching to run after calculation actions resolve, as the calculation generates the tax details.
   const taxDetailsPromise = propertyId
@@ -66,11 +86,19 @@ export async function fetchPropertyDetailsConcurrently(
       ]).then(() => fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam))
     : Promise.resolve(null);
 
-  // PropertyComparison API call is triggered on Rateable tab during SSR
-  const comparisonPromise =
-    propertyId && isRateableTab
-      ? getPropertyComparisonAction(propertyId)
-      : Promise.resolve(null);
+  // PropertyComparison API call is triggered on Rateable and Dual tabs during SSR
+  // Chain comparison fetching to run after calculation actions resolve, as the calculation generates the comparison data.
+  const comparisonPromise = propertyId
+    ? Promise.all([
+        rateableValuePromise.catch(() => null),
+        capitalValuePromise.catch(() => null),
+        dualMethodPromise.catch(() => null),
+      ]).then(() =>
+        isRateableTab || valuationTab === 'dual'
+          ? getPropertyComparisonAction(propertyId)
+          : Promise.resolve(null)
+      )
+    : Promise.resolve(null);
 
   // Chain the rule logs fetching to run only after all calculation actions resolve.
   const ruleLogsPromise = propertyId

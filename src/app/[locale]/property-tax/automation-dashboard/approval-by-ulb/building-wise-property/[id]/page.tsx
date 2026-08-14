@@ -8,6 +8,7 @@ interface BuildingWisePropertyPageProps {
     searchParams: Promise<{
         pageNumber?: string;
         pageSize?: string;
+        searchTerm?: string;
     }>;
 }
 
@@ -18,8 +19,9 @@ export default async function BuildingWisePropertyPage({ params, searchParams }:
     const propertyNo = resolvedParams.id;
     const pageNumber = resolvedSearchParams.pageNumber ? parseInt(resolvedSearchParams.pageNumber) : 1;
     const pageSize = resolvedSearchParams.pageSize ? parseInt(resolvedSearchParams.pageSize) : 10;
+    const searchTerm = resolvedSearchParams.searchTerm;
 
-    const summaryResponse = await getPropertyWiseDataAction(propertyNo, pageNumber, pageSize);
+    const summaryResponse = await getPropertyWiseDataAction(propertyNo, pageNumber, pageSize, searchTerm);
     const serverData = summaryResponse.success && summaryResponse.data ? summaryResponse.data : null;
     
     return (

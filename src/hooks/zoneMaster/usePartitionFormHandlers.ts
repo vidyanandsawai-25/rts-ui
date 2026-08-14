@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { Floor } from "@/types/floor.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 
 interface UsePartitionFormHandlersProps {
   form: PartitionFormState;
@@ -9,6 +10,7 @@ interface UsePartitionFormHandlersProps {
   errors: PartitionFormErrors;
   setErrors: React.Dispatch<React.SetStateAction<PartitionFormErrors>>;
   floors: Floor[];
+  allProperties: ZonePropertyItem[];
 }
 
 export function usePartitionFormHandlers({
@@ -17,6 +19,7 @@ export function usePartitionFormHandlers({
   errors,
   setErrors,
   floors,
+  allProperties,
 }: UsePartitionFormHandlersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -25,19 +28,25 @@ export function usePartitionFormHandlers({
   // Handle property selection - SSR approach: Update URL parameter
   const handlePropertySelect = useCallback((_e: React.ChangeEvent<HTMLSelectElement>, value: string) => {
     const propertyId = value ? parseInt(value, 10) : null;
-    
-    // Update URL with propertyId parameter for SSR
+    const selectedProperty = propertyId ? allProperties.find((p) => p.id === propertyId) : null;
+
+    // Update URL with propertyId + propertyNo parameters for SSR
     const params = new URLSearchParams(searchParams.toString());
     if (propertyId) {
       params.set("partitionPropertyId", String(propertyId));
     } else {
       params.delete("partitionPropertyId");
     }
+    if (selectedProperty?.propertyNo) {
+      params.set("partitionPropertyNo", selectedProperty.propertyNo);
+    } else {
+      params.delete("partitionPropertyNo");
+    }
     router.push(`${pathname}?${params.toString()}`);
-    
+
     // Clear error for mainPropertyId
     setErrors({ ...errors, mainPropertyId: undefined });
-  }, [errors, router, pathname, searchParams, setErrors]);
+  }, [errors, router, pathname, searchParams, setErrors, allProperties]);
 
   // Handle From Floor selection
   const handleFromFloorChange = useCallback((_e: React.ChangeEvent<HTMLSelectElement>, value: string) => {

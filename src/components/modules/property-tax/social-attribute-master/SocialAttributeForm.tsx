@@ -111,6 +111,8 @@ export default function SocialAttributeForm({
           showError={showError}
           t={t}
           parentAttributes={parentAttributes}
+          isEdit={isEdit}
+          isActive={isActive}
         />
 
         <ValidationSection tCommon={tCommon} />

@@ -40,11 +40,13 @@ type ActionResult<T> = {
  */
 export async function getAssessmentGridAction(
     workflowStageId?: string | number,
-    type: AssessmentGridType = "Total"
+    type: AssessmentGridType = "Total",
+    propertyTypeId?: string | number,
+    propertyTypeCategoryId?: string | number
 ): Promise<ActionResult<AssessmentGridItems>> {
     try {
-        logger.info("getAssessmentGridAction: Fetching assessment grid data", { workflowStageId, type });
-        const data = await automationGetAssessmentGrid(workflowStageId, type);        
+        logger.info("getAssessmentGridAction: Fetching assessment grid data", { workflowStageId, type, propertyTypeId, propertyTypeCategoryId });
+        const data = await automationGetAssessmentGrid(workflowStageId, type, propertyTypeId, propertyTypeCategoryId);        
         return { success: true, data };
     } catch (error) {
         logger.error("Failed to fetch assessment grid data", { workflowStageId, type }, error);
@@ -159,4 +161,3 @@ export async function getPropertyAssessmentStatusAction(
         return { success: false, error: t("errors.fetchPropertyAssessmentStatus") || "Failed to fetch assessment status", statusCode: 500 };
     }
 }
-

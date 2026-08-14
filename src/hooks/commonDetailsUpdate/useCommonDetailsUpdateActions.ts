@@ -261,8 +261,8 @@ export const useCommonDetailsUpdateActions = (
       const result = await actions.getAllZonesAction();
       if (result.success && result.data) {
         const items = result.data.items || [];
-        const options: SelectOption[] = items.map((zone: { id: number; zoneNo: string }) => ({
-          label: zone.zoneNo,
+        const options: SelectOption[] = items.map((zone: { id: number; zoneNo: string; description?: string | null }) => ({
+          label: zone.description || zone.zoneNo,
           value: String(zone.id),
         }));
         onSuccess(options);
@@ -288,7 +288,21 @@ export const useCommonDetailsUpdateActions = (
 
       if (result.success && result.data) {
         const response = result.data as BulkUpdateResponse;
-        const successMessage = response.message || t("messages.updateSuccess");
+        let successMessage = response.message || t("messages.updateSuccess");
+        
+        // Enhance default backend message format: "Processed X update item(s): Y properties updated successfully"
+        const match = successMessage.match(/Processed (\d+) update item\(s\):\s*(\d+) properties updated successfully/i);
+        if (match) {
+          const numProperties = Array.isArray(payload) 
+            ? payload[0]?.propertyIds?.length 
+            : payload.propertyIds?.length;
+
+          successMessage = t("messages.processedGroupsSuccess", {
+            groups: match[1],
+            properties: numProperties !== undefined ? String(numProperties) : match[2]
+          });
+        }
+        
         toast.success(successMessage);
 
         if (response.items?.failedCount > 0) {

@@ -19,6 +19,7 @@ import {
   getScopeOptionsServer,
   getScopeCategoryOptionsServer,
   importExcelServer,
+  validateExcelServer,
   exportExcelServer,
   getFieldRegistriesServer,
   setFieldRegistryStatusServer,
@@ -28,6 +29,7 @@ import {
   addBulkUpdateDefinitionServer,
   exportUpdateHistoryServer,
   getUpdateHistoryServer,
+  getUpdateHistoryDetailServer,
 } from "@/lib/api/common-details-update/common-details-update.service";
 import type { WingItem, ScopeOption } from "@/lib/api/common-details-update/common-details-update.service";
 import { getWards } from "@/lib/api/ward.services";
@@ -51,7 +53,11 @@ import {
   FieldRegistryTable,
   FieldRegistryColumn,
   ExcelImportResponse,
+  ExcelValidationResponse,
   BulkUpdateDefinitionPayload,
+  UpdateHistoryFilterParams,
+  UpdateHistoryItem,
+  UpdateHistoryDetailItem,
 } from "@/types/common-details-update/common-details-update.types";
 import { createLogger } from "@/lib/utils/server-logger";
 
@@ -68,10 +74,31 @@ export async function getMenuItemsAction(): Promise<BulkUpdateMaster[]> {
   }
 }
 
-export async function getDynamicOptionsAction(apiPath: string): Promise<ActionResult<unknown>> {
+export async function getDynamicOptionsAction(
+  apiPath: string,
+  queryParams?: { SearchTerm?: string; PageSize?: number; PageNumber?: number; [key: string]: unknown }
+): Promise<ActionResult<unknown>> {
   try {
     const { apiClient } = await import("@/services/api.service");
-    const sanitizedPath = apiPath.replace(/^\/?api\//i, '/');
+    let sanitizedPath = apiPath.replace(/^\/?api\//i, '/');
+
+    if (queryParams) {
+      const searchParams = new URLSearchParams();
+      if (queryParams.SearchTerm !== undefined && queryParams.SearchTerm !== null && queryParams.SearchTerm !== "") {
+        searchParams.append("SearchTerm", String(queryParams.SearchTerm));
+      }
+      if (queryParams.PageSize !== undefined && queryParams.PageSize !== null) {
+        searchParams.append("PageSize", String(queryParams.PageSize));
+      }
+      if (queryParams.PageNumber !== undefined && queryParams.PageNumber !== null) {
+        searchParams.append("PageNumber", String(queryParams.PageNumber));
+      }
+      const qStr = searchParams.toString();
+      if (qStr) {
+        sanitizedPath += (sanitizedPath.includes("?") ? "&" : "?") + qStr;
+      }
+    }
+
     const response = await apiClient.get<unknown>(sanitizedPath);
 
     if (!response.success) {
@@ -108,12 +135,10 @@ export async function getFilteredPropertiesAction(
   params: PropertyFilterParams
 ): Promise<ActionResult<PagedResponse<PropertyPreviewRow>>> {
   try {
-    logger.info("getFilteredPropertiesAction: Called with params", { params });
     const data = await getPropertiesForFilterServer(params);
     logger.info("getFilteredPropertiesAction: Success", { itemCount: data?.items?.length || 0 });
     return { success: true, data };
   } catch (error) {
-    logger.error("getFilteredPropertiesAction: Failed", { params }, error);
     if (error instanceof ApiError) {
       return { success: false, error: error.message, statusCode: error.statusCode };
     }
@@ -139,6 +164,8 @@ export async function getPreviewListByCategoryAction(
     return { success: false, error: t("messages.fetchPropertiesFailed"), statusCode: 500 };
   }
 }
+
+
 
 export async function fetchWardsAction(
   pageNumber: number,
@@ -212,13 +239,13 @@ export async function getAllWardsAction(zoneId?: number): Promise<ActionResult<P
   }
 }
 
-export async function getAllZonesAction(): Promise<ActionResult<PagedResponse<{ id: number; zoneNo: string }>>> {
+export async function getAllZonesAction(): Promise<ActionResult<PagedResponse<{ id: number; zoneNo: string; description: string | null }>>> {
   try {
     const data = await getZones(1, -1); // PageSize=-1 to get all zones
     return {
       success: true,
       data: {
-        items: data.items.map(zone => ({ id: zone.id, zoneNo: zone.zoneNo })),
+        items: data.items.map(zone => ({ id: zone.id, zoneNo: zone.zoneNo, description: zone.description || null })),
         totalCount: data.totalCount,
         pageNumber: data.pageNumber,
         pageSize: data.pageSize,
@@ -461,6 +488,41 @@ export async function getScopeCategoryOptionsAction(
   }
 }
 
+function formatExcelError(rawMessage: string, t: (key: string) => string): string {
+  const rawMsg = (rawMessage || "").toLowerCase();
+
+  if (
+    rawMsg.includes("missing required column") ||
+    rawMsg.includes("wrong update group") ||
+    rawMsg.includes("column") ||
+    rawMsg.includes("wardno") ||
+    rawMsg.includes("propertyno") ||
+    rawMsg.includes("partitionno") ||
+    rawMsg.includes("match")
+  ) {
+    return t("messages.wrongUpdateGroup");
+  }
+  if (
+    rawMsg.includes("empty") ||
+    rawMsg.includes("no data") ||
+    rawMsg.includes("no rows") ||
+    rawMsg.includes("nodatarows")
+  ) {
+    return t("messages.noDataRows");
+  }
+  if (
+    rawMsg.includes("file format") ||
+    rawMsg.includes("invalid file") ||
+    rawMsg.includes("wrong file") ||
+    rawMsg.includes("extension") ||
+    rawMsg.includes("format")
+  ) {
+    return t("messages.wrongFileType");
+  }
+
+  return t("excelUpload.validations.validationFailedMsg");
+}
+
 export async function importExcelAction(
   formData: FormData
 ): Promise<ActionResult<ExcelImportResponse>> {
@@ -469,25 +531,46 @@ export async function importExcelAction(
     return { success: true, data: result };
   } catch (error) {
     logger.error("Excel import execution failed", {}, error);
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message, statusCode: error.statusCode };
-    }
     const t = await getTranslations("commonDetailsUpdate");
-    return { success: false, error: t("messages.somethingWrong"), statusCode: 500 };
+    if (error instanceof ApiError) {
+      const errorMessage = formatExcelError(error.message, t);
+      return { success: false, error: errorMessage, statusCode: error.statusCode };
+    }
+    return { success: false, error: t("excelUpload.validations.bulkUpdateFailedMsg"), statusCode: 500 };
+  }
+}
+
+export async function validateExcelAction(
+  formData: FormData
+): Promise<ActionResult<ExcelValidationResponse>> {
+  try {
+    const result = await validateExcelServer(formData);
+    return { success: true, data: result };
+  } catch (error) {
+    logger.error("Excel validate execution failed", {}, error);
+    const t = await getTranslations("commonDetailsUpdate");
+    if (error instanceof ApiError) {
+      const errorMessage = formatExcelError(error.message, t);
+      return { success: false, error: errorMessage, statusCode: error.statusCode };
+    }
+    return { success: false, error: t("excelUpload.validations.validationFailedMsg"), statusCode: 500 };
   }
 }
 
 export async function exportExcelAction(
-  wardId: string,
-  updateCode: string,
-  fromPropertyNo?: string,
-  toPropertyNo?: string
+  params: {
+    updateCode: string;
+    wardId?: string;
+    fromPropertyNo?: string;
+    toPropertyNo?: string;
+    propertyNo?: string;
+  }
 ): Promise<ActionResult<string>> {
   try {
-    const base64 = await exportExcelServer(wardId, updateCode, fromPropertyNo, toPropertyNo);
+    const base64 = await exportExcelServer(params);
     return { success: true, data: base64 };
   } catch (error) {
-    logger.error("Excel export execution failed", { wardId, updateCode }, error);
+    logger.error("Excel export execution failed", { wardId: params.wardId, updateCode: params.updateCode }, error);
     if (error instanceof ApiError) {
       return { success: false, error: error.message, statusCode: error.statusCode };
     }
@@ -570,8 +653,8 @@ export async function addBulkUpdateDefinitionAction(
 }
 
 export async function getUpdateHistoryAction(
-  params: import("@/types/common-details-update/common-details-update.types").UpdateHistoryFilterParams
-): Promise<ActionResult<import("@/types/common.types").PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>>> {
+  params: UpdateHistoryFilterParams
+): Promise<ActionResult<PagedResponse<UpdateHistoryItem>>> {
   try {
     const data = await getUpdateHistoryServer(params);
     return { success: true, data };
@@ -583,8 +666,25 @@ export async function getUpdateHistoryAction(
   }
 }
 
+export async function getUpdateHistoryDetailAction(
+  activityId: string,
+  pageNumber?: number,
+  pageSize?: number,
+  searchTerm?: string
+): Promise<ActionResult<PagedResponse<UpdateHistoryDetailItem>>> {
+  try {
+    const data = await getUpdateHistoryDetailServer(activityId, pageNumber, pageSize, searchTerm);
+    return { success: true, data };
+  } catch (error) {
+    logger.error("Failed to fetch update history details", { activityId, pageNumber, pageSize, searchTerm }, error);
+    if (error instanceof ApiError) return { success: false, error: error.message, statusCode: error.statusCode };
+    const t = await getTranslations("commonDetailsUpdate");
+    return { success: false, error: t("messages.somethingWrong"), statusCode: 500 };
+  }
+}
+
 export async function exportUpdateHistoryAction(
-  params: import("@/types/common-details-update/common-details-update.types").UpdateHistoryFilterParams
+  params: UpdateHistoryFilterParams
 ): Promise<ActionResult<string>> {
   try {
     const data = await exportUpdateHistoryServer(params);

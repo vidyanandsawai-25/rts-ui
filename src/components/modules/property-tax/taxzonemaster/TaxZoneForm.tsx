@@ -11,6 +11,7 @@ import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone-master/taxzone/
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
 import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE, isAllZeros } from "@/lib/utils/validation-rules";
+import { getUserIdFromCookie } from "@/lib/utils/cookie";
 import { StatusToggleCard } from "./StatusToggleCard";
 import { FormFieldsSection } from "./FormFieldsSection";
 import { MandatoryFieldsNotice } from "./MandatoryFieldsNotice";
@@ -50,8 +51,8 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
 
   const handleClose = useCallback(() => {
     setOpen(false);
-    router.back();
-  }, [router]);
+    router.push(`/${locale}/property-tax/taxzone-master/taxzone`);
+  }, [router, locale]);
 
   const validate = useCallback((data: TaxZoneFormModel) => {
     const e: Record<string, string> = {};
@@ -151,6 +152,15 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
       fd.append("remark", formData.remark);
       fd.append("isActive", String(formData.isActive));
       fd.append("locale", locale);
+
+      const userId = getUserIdFromCookie();
+      if (userId) {
+        if (isEdit) {
+          fd.append("updatedBy", String(userId));
+        } else {
+          fd.append("createdBy", String(userId));
+        }
+      }
 
       const res = await saveTaxZone(isEdit ? String(formData.id) : "", fd);
 

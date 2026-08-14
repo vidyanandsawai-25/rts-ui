@@ -18,6 +18,10 @@ interface SocietyContactFieldsProps {
     t: (key: string) => string;
     managerMobileInput: ReturnType<typeof useDigitInputs>;
     secretaryMobileInput: ReturnType<typeof useDigitInputs>;
+    managerMobileCountryCode: string;
+    setManagerMobileCountryCode: (val: string) => void;
+    secretaryMobileCountryCode: string;
+    setSecretaryMobileCountryCode: (val: string) => void;
     managerEmail: string;
     setManagerEmail: (email: string) => void;
     secretaryEmail: string;
@@ -39,6 +43,10 @@ export const SocietyContactFields = ({
     t,
     managerMobileInput,
     secretaryMobileInput,
+    managerMobileCountryCode,
+    setManagerMobileCountryCode,
+    secretaryMobileCountryCode,
+    setSecretaryMobileCountryCode,
     managerEmail,
     setManagerEmail,
     secretaryEmail,
@@ -105,13 +113,27 @@ export const SocietyContactFields = ({
                 <Label htmlFor="secretary-mobile-0" className="text-xs font-semibold text-gray-700">
                     {t('society.secretaryMobile')}
                 </Label>
-                <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
+                <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value) && (secretaryMobileCountryCode ?? '91').length !== 1)
                     ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
                     : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-200'
                     }`}>
-                    <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-                        {t('society.countryCode')}
-                    </span>
+                    <div className={`flex items-center justify-center px-1 h-7 bg-white border rounded text-xs font-semibold text-gray-900 shrink-0 focus-within:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value) && (secretaryMobileCountryCode ?? '91').length !== 1) ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300' : 'border-gray-300 focus-within:border-purple-500 focus-within:ring-purple-300'}`}>
+                        <span className="pointer-events-none">+</span>
+                        <Input
+                            naked
+                            type="text"
+                            maxLength={2}
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            title={t('society.countryCode')}
+                            className="w-[16px] bg-transparent outline-none p-0 m-0 leading-none text-center"
+                            value={secretaryMobileCountryCode ?? '91'}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '');
+                                setSecretaryMobileCountryCode(val);
+                            }}
+                        />
+                    </div>
                     <div id="secretary-mobile-container" className="flex gap-0.5 flex-1 h-full items-center">
                         {Array.from({ length: SOCIETY_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
                             <Input
@@ -134,8 +156,8 @@ export const SocietyContactFields = ({
                                 onBlur={secretaryMobileInput.handleBlur}
                                 ref={secretaryMobileInput.setRef(i)}
                                 naked
-                                error={showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) ? 'error' : undefined}
-                                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
+                                error={showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value) && (secretaryMobileCountryCode ?? '91').length !== 1) ? 'error' : undefined}
+                                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value) && (secretaryMobileCountryCode ?? '91').length !== 1)
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
                                     } ${secretaryMobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
@@ -143,13 +165,15 @@ export const SocietyContactFields = ({
                         ))}
                     </div>
                 </div>
-                {showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) && (
+                {showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value) && (secretaryMobileCountryCode ?? '91').length !== 1) && (
                     <span className="text-xs text-red-500">
-                        {secretaryMobileInput.value && kycValidators.hasRepeatedSequence(secretaryMobileInput.value.replace(/\D/g, ''), 5)
-                            ? t('society.validation.invalidRepeatedSequence')
-                            : (secretaryMobileInput.value && !/^[6-9]/.test(secretaryMobileInput.value.replace(/\D/g, '')))
-                                ? t('society.validation.invalidMobileStart')
-                                : t('society.validation.invalidMobile')}
+                        {(secretaryMobileCountryCode ?? '91').length === 1
+                            ? t('society.validation.countryCodeLength')
+                            : secretaryMobileInput.value && kycValidators.hasRepeatedSequence(secretaryMobileInput.value.replace(/\D/g, ''), 5)
+                                ? t('society.validation.invalidRepeatedSequence')
+                                : (secretaryMobileInput.value && !/^[6-9]/.test(secretaryMobileInput.value.replace(/\D/g, '')))
+                                    ? t('society.validation.invalidMobileStart')
+                                    : t('society.validation.invalidMobile')}
                     </span>
                 )}
             </div>
@@ -159,13 +183,27 @@ export const SocietyContactFields = ({
                 <Label htmlFor="manager-mobile-0" className="text-xs font-semibold text-gray-700">
                     {t('society.managerMobileNo')}
                 </Label>
-                <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value))
+                <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value) && (managerMobileCountryCode ?? '91').length !== 1)
                     ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
                     : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-200'
                     }`}>
-                    <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
-                        {t('society.countryCode')}
-                    </span>
+                    <div className={`flex items-center justify-center px-1 h-7 bg-white border rounded text-xs font-semibold text-gray-900 shrink-0 focus-within:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value) && (managerMobileCountryCode ?? '91').length !== 1) ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300' : 'border-gray-300 focus-within:border-purple-500 focus-within:ring-purple-300'}`}>
+                        <span className="pointer-events-none">+</span>
+                        <Input
+                            naked
+                            type="text"
+                            maxLength={2}
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            title={t('society.countryCode')}
+                            className="w-[16px] bg-transparent outline-none p-0 m-0 leading-none text-center"
+                            value={managerMobileCountryCode ?? '91'}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '');
+                                setManagerMobileCountryCode(val);
+                            }}
+                        />
+                    </div>
                     <div id="manager-mobile-container" className="flex gap-0.5 flex-1 h-full items-center">
                         {Array.from({ length: SOCIETY_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
                             <Input
@@ -188,8 +226,8 @@ export const SocietyContactFields = ({
                                 onBlur={managerMobileInput.handleBlur}
                                 ref={managerMobileInput.setRef(i)}
                                 naked
-                                error={showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value)) ? 'error' : undefined}
-                                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value))
+                                error={showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value) && (managerMobileCountryCode ?? '91').length !== 1) ? 'error' : undefined}
+                                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value) && (managerMobileCountryCode ?? '91').length !== 1)
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
                                     } ${managerMobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
@@ -197,13 +235,15 @@ export const SocietyContactFields = ({
                         ))}
                     </div>
                 </div>
-                {showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value)) && (
+                {showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value) && (managerMobileCountryCode ?? '91').length !== 1) && (
                     <span className="text-xs text-red-500">
-                        {managerMobileInput.value && kycValidators.hasRepeatedSequence(managerMobileInput.value.replace(/\D/g, ''), 5)
-                            ? t('society.validation.invalidRepeatedSequence')
-                            : (managerMobileInput.value && !/^[6-9]/.test(managerMobileInput.value.replace(/\D/g, '')))
-                                ? t('society.validation.invalidMobileStart')
-                                : t('society.validation.invalidMobile')}
+                        {(managerMobileCountryCode ?? '91').length === 1
+                            ? t('society.validation.countryCodeLength')
+                            : managerMobileInput.value && kycValidators.hasRepeatedSequence(managerMobileInput.value.replace(/\D/g, ''), 5)
+                                ? t('society.validation.invalidRepeatedSequence')
+                                : (managerMobileInput.value && !/^[6-9]/.test(managerMobileInput.value.replace(/\D/g, '')))
+                                    ? t('society.validation.invalidMobileStart')
+                                    : t('society.validation.invalidMobile')}
                     </span>
                 )}
             </div>

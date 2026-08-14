@@ -1554,9 +1554,22 @@ export async function createBulkBuildingPropertiesAction(
   }
 }
 
+interface MaxPartitionResponse {
+  success: boolean;
+  message?: string;
+  items?: {
+    wardNo: string;
+    propertyNo: string;
+    category: string;
+    maxPartitionNo: string;
+  } | null;
+  errors?: unknown;
+  correlationId?: string | null;
+}
+
 /**
  * Fetches the next partition number for a given ward and property.
- * API: GET /api/Property?WardId={wardId}&PropertyNo={propertyNo}&PageNumber=1&PageSize=-1&SortBy=PropertySeqNo&SortOrder=desc
+ * API: GET /api/Property/getmaxpartition?wardId={wardId}&propertyNo={propertyNo}
  * Used for SSR to auto-calculate the next partition number.
  */
 export async function getNextPartitionNumberAction(
@@ -1576,47 +1589,24 @@ export async function getNextPartitionNumberAction(
       return { success: false, error: "Invalid property number" };
     }
 
-    // Build query parameters to fetch ALL partitions for this ward and propertyNo.
-    // We can't rely on the API's sort + PageSize=1 to hand us the highest partitionNo:
-    // Id order (insertion order) doesn't always match partitionNo order (partitions can be
-    // created/deleted out of sequence), so fetching everything and computing the max
-    // partitionNo ourselves is the only reliable approach.
     const queryParams = new URLSearchParams({
-      WardId: String(wardId),
-      PropertyNo: propertyNo.trim(),
-      PageNumber: "1",
-      PageSize: "-1",
-      SortBy: "PropertySeqNo",
-      SortOrder: "desc",
-      MarkedForDeletion: "false",
+      wardId: String(wardId),
+      propertyNo: propertyNo.trim(),
     });
 
-    const url = `/Property?${queryParams.toString()}`;
+    const url = `/Property/getmaxpartition?${queryParams.toString()}`;
 
-    const response = await apiClient.get<ZonePropertyListResponse>(url);
+    const response = await apiClient.get<MaxPartitionResponse>(url);
 
     if (!response.success || !response.data) {
-      return { success: false, error: response.error || "Failed to fetch properties" };
+      return { success: false, error: response.error || "Failed to fetch max partition" };
     }
 
-    const items = response.data.items || [];
+    const maxPartitionNo = parseInt(response.data.items?.maxPartitionNo || "0", 10);
+    const nextPartition = (isNaN(maxPartitionNo) ? 0 : maxPartitionNo) + 1;
 
-    // If no items found, this is the first partition for this property
-    if (items.length === 0) {
-      return { success: true, data: 1 };
-    }
-
-    // Compute the highest partitionNo across all returned items
-    const highestPartition = items.reduce((max, item) => {
-      const partition = parseInt(item.partitionNo || "0", 10);
-      return isNaN(partition) ? max : Math.max(max, partition);
-    }, 0);
-
-    // Next partition number is highest + 1
-    const nextPartition = highestPartition + 1;
-
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: nextPartition,
     };
   } catch (error) {

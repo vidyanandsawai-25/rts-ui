@@ -13,6 +13,7 @@ interface PropertyDashboardHeaderProps {
     division: string;
     searchTerm: string;
     setSearchTerm: (term: string) => void;
+    onSearch: () => void;
     stage?: string;
     columnName?: string;
 
@@ -48,6 +49,7 @@ export const PropertyDashboardHeader = ({
     division,
     searchTerm,
     setSearchTerm,
+    onSearch,
     stage = 'geoSequencing',
     columnName,
 
@@ -134,10 +136,11 @@ export const PropertyDashboardHeader = ({
 
             {/* Toolbar Section */}
             <div className="px-4 py-3 flex items-center justify-between bg-white">
-                <div className="w-[25%]">
+                <div className="w-[30%]">
                     <SearchInput
                         value={searchTerm}
                         onChange={setSearchTerm}
+                        onEnter={onSearch}
                         placeholder={t('header.searchPlaceholder')}
                         className="w-full mb-0"
                     />

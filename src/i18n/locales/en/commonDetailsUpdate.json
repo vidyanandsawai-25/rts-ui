@@ -30,9 +30,9 @@
       }
     },
     "fieldList": {
-      "title": "Select Fields to Update",
-      "subtitle": "Only active fields allowed to general users are shown below.",
-      "enabledFieldList": "Enabled Field List",
+      "title": "Select Group to Update",
+      "subtitle": "Only active groups are shown below.",
+      "enabledFieldList": "Enabled Group List",
       "available": "available",
       "selected": "selected",
       "noApproval": "No Approval",
@@ -55,7 +55,7 @@
     },
     "filter": {
       "title": "Property Filter",
-      "zoneNumber": "Zone Number",
+      "zoneNumber": "Zone Name",
       "selectZone": "Select Zone",
       "wardNumber": "Ward Number",
       "selectWard": "Select Ward",
@@ -106,7 +106,9 @@
       "clear": "Clear",
       "updating": "Updating...",
       "selectMenuPrompt": "Select a field to update from the left panel",
-      "noFields": "No fields are configured for this update type. Please activate a field from the Field Registry."
+      "noFields": "No fields are configured for this update type. Please activate a field from the Field Registry.",
+      "remarks": "Remarks",
+      "remarksPlaceholder": "Enter remarks..."
     },
     "fieldRegistry": {
       "title": "Authorized User Workflow",
@@ -116,7 +118,7 @@
         "title": "Add Field from Database",
         "subtitle": "Authenticated user can add a database field into the registry, define user-facing name and then activate it.",
         "sourceModule": "Source Module",
-        "sourceTable": "Source Name",
+        "sourceTable": "Source Table",
         "databaseColumn": "Database Column",
         "userFacingName": "User-facing Field Name",
         "fieldType": "Field Type",
@@ -129,10 +131,10 @@
         "saveFields": "Save Fields",
         "selectSchema": "Select Schema",
         "selectTable": "Select Table",
-        "updateCode": "Update Name",
-        "updateNameEnglish": "Update Name (English)",
-        "updateNamePlaceholder": "e.g., Update Name",
-        "updateNameMarathi": "Update Name (Marathi)",
+        "updateCode": "Group Name",
+        "updateNameEnglish": "Group Name (English)",
+        "updateNamePlaceholder": "e.g., Group Name",
+        "updateNameMarathi": "Group Name (Marathi)",
         "referenceTableName": "Reference Table Name",
         "displaySequence": "Display Sequence",
         "description": "Purpose of Update",
@@ -178,13 +180,13 @@
         "all": "All"
       },
       "stats": {
-        "totalEligible": "Total Eligible Fields",
-        "activeFields": "Active Fields",
+        "totalEligible": "Total Eligible Group",
+        "activeFields": "Active Group",
         "generalUserAllowed": "General User Allowed",
         "approvalRequired": "Approval Required"
       },
       "table": {
-        "updateName": "Update Name",
+        "updateName": "Group Name",
         "fieldName": "Field Name",
         "action": "Action",
         "active": "Active"
@@ -196,7 +198,7 @@
       "editDrawer": {
         "title": "Edit Field Registry",
         "updateFieldsBtn": "Update Fields",
-        "updateName": "Update Name",
+        "updateName": "Group Name",
         "englishNamePlaceholder": "English Name",
         "fieldConfigurations": "Field Configurations",
         "fillRequiredFieldsMsg": "Please fill all required master fields",
@@ -214,6 +216,10 @@
       "guideline": "Guideline"
     },
     "messages": {
+      "downloadWithDataCriteria": "Please select the criteria to download with data",
+      "wrongUpdateGroup": "Wrong update group, it does not match with this Excel sheet.",
+      "wrongFileType": "Wrong file format, please upload a valid Excel sheet.",
+      "clearedSuccessfully": "Cleared successfully",
       "fetchMenuFailed": "Failed to load update options",
       "fetchFieldConfigFailed": "Failed to load field configuration",
       "fetchPropertiesFailed": "Failed to load properties",
@@ -229,6 +235,7 @@
       "updateCodeRequired": "Update type is required",
       "propertiesRequired": "Please select at least one property",
       "updateSuccess": "Properties updated successfully",
+      "processedGroupsSuccess": "Processed {groups} group for update and {properties} properties were updated successfully",
       "updateFailed": "Failed to update properties",
       "selectProperties": "Please select at least one property to update",
       "selectUpdateType": "Please select an update type",
@@ -243,7 +250,7 @@
       "partialUpdate": "{success} properties updated, {failed} failed",
       "noPropertiesFound": "No properties found for the selected filters",
       "cannotDeselectIndividual": "Cannot deselect individual records when 'Select All' is active. Please clear selection first.",
-      "invalidFormat": "Invalid format in some fields",
+      "invalidFormat": "Invalid value for the selected field. Please check and try again.",
       "fetchingAllProperties": "Fetching all properties to update...",
       "missingWardOrField": "Missing Ward ID or Enabled Field selection",
       "downloadingExcel": "Downloading Excel file...",
@@ -254,7 +261,7 @@
       "excelProcessSuccess": "Excel uploaded and processed successfully!",
       "definitionAlreadyExists": "A bulk update definition with code '{code}' already exists.",
       "pleaseSelectField": "Please select a field first.",
-      "noDataRows": "The uploaded file has no data rows or does not match the selected field.",
+      "noDataRows": "Your uploaded file is empty, please upload a file with data.",
       "loadingTabData": "Loading tab data...",
       "downloadingTemplate": "Downloading template...",
       "uploadFailed": "Failed to upload Excel",
@@ -263,7 +270,15 @@
       "selectAtLeastOneFieldName": "Please select at least one field name",
       "statusUpdateNotAvailable": "Status update action is not available",
       "statusSetActive": "{name} set to Active",
-      "statusSetInactive": "{name} set to Inactive"
+      "statusSetInactive": "{name} set to Inactive",
+      "missingParameters": "Missing required parameters",
+      "unauthorized": "Unauthorized access",
+      "excelImportError": "Failed to process Excel import",
+      "excelExportError": "Failed to process Excel export",
+      "backendApiError": "Backend API Error",
+      "fetchFailed": "Failed to fetch data from the server",
+      "actionFailed": "Action failed to execute",
+      "notFound": "Resource not found"
     },
     "status": {
       "active": "Active",
@@ -306,16 +321,20 @@
       "filters": {
         "user": "User",
         "allUsers": "All Users",
-        "searchPlaceholder": "Search field, property, user, remarks"
+        "searchPlaceholder": "Search field, user, remarks"
       },
       "columns": {
-        "id": "Activity ID",
+        "id": "Activity ID / Job ID",
         "date": "Date & Time",
-        "wardNo": "Ward No",
-        "propertyNo": "Property No",
-        "updatedColumns": "Updated Columns",
-        "username": "User",
-        "remarks": "Remarks",
+        "activityType": "Activity Type",
+        "updateName": "Field / Operation",
+        "records": "Records",
+        "doneBy": "Done By",
+        "startTime": "Start Time",
+        "endTime": "End Time",
+        "duration": "Duration",
+        "status": "Status",
+        "remarks": "Error / Remarks",
         "ipAddress": "IP / Device",
         "action": "Action",
         "view": "View"
@@ -338,38 +357,84 @@
         "date": "Date & Time",
         "ipDevice": "IP / Device",
         "remarks": "Remarks / Error",
+        "property": "Property",
         "field": "Field",
         "oldValue": "Old Value",
         "newValue": "New Value",
-        "updateDetailsPrefix": "Update Details"
+        "updateDetailsPrefix": "Update Details",
+        "searchPlaceholder": "Search By Property No and field.",
+        "exportExcel": "Download Excel"
       }
     },
     "excelUpload": {
       "title": "Excel Upload",
       "subtitle": "Upload property-wise field values when each property requires a different value.",
       "bulkUploadBadge": "Bulk upload",
-      "infoAlertTitle": "Excel upload uses only active fields from Field Registry.",
-      "infoAlertDesc": "Download template after selecting enabled fields. System validates property numbers, field access, value format and approval requirement before import.",
+      "infoAlertTitle": "Excel upload uses only active Group from Field Registry.",
+      "infoAlertDesc": "Download template after selecting enabled Group. System validates property numbers, field access, value format and approval requirement before import.",
       "actionSectionTitle": "Excel Upload for Field Update",
-      "actionSectionDesc": "Use this when each property has different values. Download template from activated fields, upload Excel and validate rows before update.",
+      "actionSectionDesc": "Use this when each property has different values. Download template from activated Group, upload Excel and validate rows before update.",
       "viewGuidelinesBtn": "View Guidelines",
       "downloadTemplateBtn": "Download Template",
       "chooseExcelFileBtn": "Choose Excel File",
       "validateExcelBtn": "Validate Excel",
       "templateColumnsTitle": "Template Columns",
+      "propertyCriteriaTitle": "Select Property Criteria for Download",
+      "propertyCriteriaSubtitle": "Select criteria to download a pre-populated Excel template with data.",
       "previewTitle": "Eligibility Validation Preview",
       "previewDesc": "Review the columns and rows imported from the Excel spreadsheet",
       "guidelineModalTitle": "Excel Upload Guidelines",
-      "guidelineModalIntro": "Please follow these guidelines when uploading properties via Excel:",
-      "batchProcessingTitle": "Batch Processing:",
+      "guidelineModalIntro": "Please follow these guidelines when downloading and uploading properties through Excel:",
+      "downloadEmptyTitle": "Download Empty Template:",
+      "downloadEmptyDesc": "Uncheck the “Download with Data” checkbox to download an empty template containing only the column headers.",
+      "downloadDataTitle": "Download With Data:",
+      "downloadDataDesc": "Check the “Download with Data” checkbox to download a template pre-populated with the current property data based on the selected property criteria.",
+      "selectCorrectGroupTitle": "Select the Correct Group:",
+      "selectCorrectGroupDesc": "Make sure the correct group is selected before uploading the Excel file.",
+      "batchProcessingTitle": "Separate Batches:",
       "batchProcessingDesc": "Upload properties with partition numbers and properties without partition numbers in separate batches.",
-      "consistencyTitle": "Consistency:",
-      "consistencyDesc": "Do not mix properties with and without partition numbers in a single Excel file to avoid validation errors.",
+      "consistencyTitle": "Do Not Mix:",
+      "consistencyDesc": "Do not include properties with and without partition numbers in the same Excel file, as this may cause validation errors.",
       "emptyData": "No data available",
       "loadingData": "Loading data...",
       "inactiveStatus": "Inactive",
       "noFileChosen": "No file chosen",
-      "okButton": "OK"
+      "okButton": "OK",
+      "downloadWithData": "Download with data",
+      "uploadedData": "Uploaded Data",
+      "validations": {
+        "selectFieldFirst": "Please select a field first.",
+        "selectFileFirst": "Please select an Excel file first.",
+        "downloading": "Downloading template...",
+        "downloadFailed": "Failed to download template.",
+        "validatingExcel": "Validating Excel file...",
+        "excelValidatedMsg": "Excel file validated successfully!",
+        "validationFailedMsg": "Validation failed for the Excel file.",
+        "processingBulkUpdate": "Processing bulk update...",
+        "bulkUpdateSuccessMsg": "Excel uploaded and processed successfully!",
+        "bulkUpdateFailedMsg": "Failed to process bulk update.",
+        "validationErrorsMsg": "{errors} out of {total} uploaded rows contain errors."
+      },
+      "stats": {
+        "totalRows": "Total Rows",
+        "valid": "Valid",
+        "rejected": "Rejected",
+        "status": "Status",
+        "notUploaded": "Not Uploaded",
+        "validatedWithErrors": "Validated (Errors)",
+        "validated": "Validated"
+      },
+      "remarksModal": {
+        "title": "Confirmation",
+        "remarkLabel": "Remarks",
+        "remarkPlaceholder": "Enter remarks...",
+        "skipBtn": "Skip",
+        "confirmBtn": "Confirm"
+      },
+      "table": {
+        "propertyNo": "PropertyNo",
+        "validationRemark": "Validation Remark"
+      }
     }
   }
 }

@@ -2,18 +2,26 @@ import { useState } from 'react';
 import { PropertySocietyDetailsApiItem } from '@/types/property-society-details.types';
 import { SOCIETY_VALIDATION_RULES } from '@/lib/utils/society-validation/society-validation';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
+import { extractCountryCode } from '@/lib/utils/kyc-validation/country-code.utils';
 
 export const useSocietyFormState = (societyData: PropertySocietyDetailsApiItem | null) => {
+    const parsedManagerMobile = extractCountryCode(societyData?.managerMobileNo);
+    const parsedSecretaryMobile = extractCountryCode(societyData?.secretaryMobileNo);
+
     // Use useDigitInputs hook for mobile number fields
     const managerMobileInput = useDigitInputs(
         SOCIETY_VALIDATION_RULES.MOBILE_LENGTH,
-        societyData?.managerMobileNo ?? ''
+        parsedManagerMobile.mobileNo
     );
 
     const secretaryMobileInput = useDigitInputs(
         SOCIETY_VALIDATION_RULES.MOBILE_LENGTH,
-        societyData?.secretaryMobileNo ?? ''
+        parsedSecretaryMobile.mobileNo
     );
+
+    // Country code state management
+    const [managerMobileCountryCode, setManagerMobileCountryCode] = useState(parsedManagerMobile.countryCode);
+    const [secretaryMobileCountryCode, setSecretaryMobileCountryCode] = useState(parsedSecretaryMobile.countryCode);
 
     // Email state management
     const [managerEmail, setManagerEmail] = useState(societyData?.managerEmailId ?? '');
@@ -39,6 +47,10 @@ export const useSocietyFormState = (societyData: PropertySocietyDetailsApiItem |
     const [hasChanges, setHasChanges] = useState(false);
 
     return {
+        managerMobileCountryCode,
+        setManagerMobileCountryCode,
+        secretaryMobileCountryCode,
+        setSecretaryMobileCountryCode,
         managerMobileInput,
         secretaryMobileInput,
         managerEmail,

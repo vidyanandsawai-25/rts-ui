@@ -16,6 +16,7 @@ import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-da
 import { ExportDropdown } from './ExportDropdown';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
+import { getAssessmentStatusNavigationParams } from '@/lib/utils/automation-dashboard/assessmentStatusNavigation';
 
 interface DataEntryQualityCheckProps {
     serverData: DataEntryGridItems | null;
@@ -80,7 +81,41 @@ const DataEntryQualityCheck: React.FC<DataEntryQualityCheckProps> = ({ serverDat
                 const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/quality-check${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
                 const typeIdParam = getPropertyTypeIdParam(columnKey);
-                const query = `?stage=dataEntryQC&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
+
+                let structureUnitParam = '';
+                let assessmentTypeParam = '';
+                let targetWorkflowStageId = workflowStageId;
+
+                // Internal Survey column
+                if (columnKey === 'isStruct') {
+                    structureUnitParam = '&Structure=true&Unit=false';
+                    targetWorkflowStageId = '2'; // Internal Survey
+                } else if (columnKey === 'isUnit') {
+                    structureUnitParam = '&Structure=false&Unit=true';
+                    targetWorkflowStageId = '2'; // Internal Survey
+                }
+                // Data Entry column
+                else if (columnKey === 'deCompStruct') {
+                    structureUnitParam = '&Structure=true&Unit=false';
+                    targetWorkflowStageId = workflowStageId || '3'; // Quality Check / Data Entry
+                } else if (columnKey === 'deCompUnit') {
+                    structureUnitParam = '&Structure=false&Unit=true';
+                    targetWorkflowStageId = workflowStageId || '3'; // Quality Check / Data Entry
+                } else if (columnKey === 'dePendStruct') {
+                    structureUnitParam = '&PendingStructure=true';
+                    targetWorkflowStageId = workflowStageId || '3';
+                } else if (columnKey === 'dePendUnit') {
+                    structureUnitParam = '&PendingUnit=true';
+                    targetWorkflowStageId = workflowStageId || '3';
+                }
+
+                const assessmentParams = getAssessmentStatusNavigationParams(columnKey, row);
+                if (assessmentParams.isAssessmentStatusColumn) {
+                    assessmentTypeParam = assessmentParams.assessmentTypeParam;
+                    structureUnitParam = assessmentParams.structureUnitParam;
+                }
+
+                const query = `?stage=dataEntryQC&source=division&column=${columnKey}&returnUrl=${returnUrl}${targetWorkflowStageId ? `&workflowStageId=${targetWorkflowStageId}` : ''}${zoneNoParam}${typeIdParam}${assessmentTypeParam}${structureUnitParam}`;
                 router.push(`${basePath}/property-details-dashboard/${actualZoneId}${query}`);
             }
         );
@@ -134,6 +169,10 @@ const DataEntryQualityCheck: React.FC<DataEntryQualityCheckProps> = ({ serverDat
             newlyUnit: zone.assessmentStatusBreakdown?.newlyAssessedFound?.unitCount ?? 0,
             inprocessStruct: zone.assessmentStatusBreakdown?.assessmentInProcess?.structureCount ?? 0,
             inprocessUnit: zone.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
+            assessedStatusId: zone.assessmentStatusBreakdown?.assessed?.statusId,
+            unassessedStatusId: zone.assessmentStatusBreakdown?.unassessed?.statusId,
+            newlyAssessedStatusId: zone.assessmentStatusBreakdown?.newlyAssessedFound?.statusId,
+            inprocessStatusId: zone.assessmentStatusBreakdown?.assessmentInProcess?.statusId,
         }));
 
         const totalRow = serverData.totalRow ? {
@@ -180,6 +219,10 @@ const DataEntryQualityCheck: React.FC<DataEntryQualityCheckProps> = ({ serverDat
             newlyUnit: serverData.totalRow.assessmentStatusBreakdown?.newlyAssessedFound?.unitCount ?? 0,
             inprocessStruct: serverData.totalRow.assessmentStatusBreakdown?.assessmentInProcess?.structureCount ?? 0,
             inprocessUnit: serverData.totalRow.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
+            assessedStatusId: serverData.totalRow.assessmentStatusBreakdown?.assessed?.statusId,
+            unassessedStatusId: serverData.totalRow.assessmentStatusBreakdown?.unassessed?.statusId,
+            newlyAssessedStatusId: serverData.totalRow.assessmentStatusBreakdown?.newlyAssessedFound?.statusId,
+            inprocessStatusId: serverData.totalRow.assessmentStatusBreakdown?.assessmentInProcess?.statusId,
         } : null;
 
         return totalRow ? [...mappedZones, totalRow] : mappedZones;

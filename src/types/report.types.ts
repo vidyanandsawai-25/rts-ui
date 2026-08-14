@@ -59,6 +59,7 @@ export interface PropertySummary {
   propertyNo: string;
   partitionNo: string;
   ownerName: string;
+  propertyTypeId?: number;
 }
 
 export type ReportParamValues = Record<string, string>;
@@ -170,7 +171,7 @@ export interface ReportParamsPanelCopy {
     networkError: string;
     failedToQueue: string;
   };
-  queuedSuccess: string;
+
   reportQueued: string;
   buttons: {
     reset: string;
@@ -270,4 +271,23 @@ export interface ReportJobsListProps {
   reportDefinitions: ReportDefinition[];
   /** Called when user clicks the Preview button — passes requestId */
   onPreview?: (requestId: string) => void;
+}
+
+export interface PropertySelectionDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  properties: PropertySummary[];
+  propLoading: boolean;
+  selectionMode: string;
+  fromProperty: string;
+  toProperty: string;
+  selectedProperties: string[];
+  setSelectedProperties: React.Dispatch<React.SetStateAction<string[]>>;
+  zoneLabel: string;
+  wardLabel: string;
+  propertyTypeMap: Map<number, string>;
+  isPending: boolean;
+  onGenerate: () => void;
+  propSearchQuery: string;
+  setPropSearchQuery: React.Dispatch<React.SetStateAction<string>>;
 }

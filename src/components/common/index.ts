@@ -128,6 +128,9 @@ export type { ContextMenuProps, ContextMenuItem } from './ContextMenu';
 export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';
 
+export { TruncatedText } from './TruncatedText';
+export type { TruncatedTextProps } from './TruncatedText';
+
 export { LoadingPage } from './LoadingPage';
 export type { LoadingPageProps } from './LoadingPage';
 

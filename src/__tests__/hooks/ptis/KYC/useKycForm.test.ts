@@ -390,20 +390,22 @@ describe('useKycForm', () => {
       });
 
       await waitFor(() => {
-        expect(kycActions.updatePropertyKycAction).toHaveBeenCalledWith(
-          123,
-          expect.objectContaining({
-            propertyId: 123,
-            ownerTypeId: 1,
-            ownerName: 'John Doe',
-            emailId: 'changed@example.com',
-            mobileNo: '9876543210',
-            adharCardNo: '223456789012',
-            pinCode: '123456',
-          }),
-          'en'
-        );
+        expect(kycActions.updatePropertyKycAction).toHaveBeenCalled();
       });
+
+      expect(kycActions.updatePropertyKycAction).toHaveBeenCalledWith(
+        123,
+        expect.objectContaining({
+          propertyId: 123,
+          ownerTypeId: 1,
+          ownerName: 'John Doe',
+          emailId: 'changed@example.com',
+          mobileNo: '+919876543210',
+          adharCardNo: '223456789012',
+          pinCode: '123456',
+        }),
+        'en'
+      );
     });
 
     it('should show success toast and refresh on successful submission', async () => {

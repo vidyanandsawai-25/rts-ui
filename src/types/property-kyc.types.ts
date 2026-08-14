@@ -52,8 +52,10 @@ export type KycFormData = Partial<
     | 'location'
     | 'pinCode'
   >
->;
-
+> & {
+  mobileCountryCode?: string;
+  alternateMobileCountryCode?: string;
+};
 
 export type {
   OwnerTypeApiItem,

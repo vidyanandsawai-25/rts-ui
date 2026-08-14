@@ -49,6 +49,10 @@ export type DataEntryData = {
     newlyUnit: string | number;
     inprocessStruct: string | number;
     inprocessUnit: string | number;
+    assessedStatusId?: number;
+    unassessedStatusId?: number;
+    newlyAssessedStatusId?: number;
+    inprocessStatusId?: number;
 };
 
 export const getDataEntryColumns = (
@@ -158,10 +162,10 @@ export const getDataEntryHeaderRows = (level: 'division' | 'ward', t: any): Head
             { label: renderHeader(t('dataEntryQualityCheck.columns.qualityAnalyst'), false, false, isWard), colSpan: 5, align: 'center', headerClassName: 'bg-[#fefce8]' }, // yellow-50
             { label: renderHeader(t('dataEntryQualityCheck.columns.propertyType'), false, false, isWard), colSpan: 5, align: 'center', headerClassName: 'bg-[#fdf2f8]' }, // pink-50
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.assessedProperties'), false, false, isWard), colSpan: 2, align: 'center', headerClassName: 'bg-[#ecfdf5]' }, // emerald-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.unassessedProperties'), false, false, isWard), colSpan: 2, align: 'center', headerClassName: 'bg-[#fff7ed]' }, // orange-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.newlyAssessedFound'), false, false, isWard), colSpan: 2, align: 'center', headerClassName: 'bg-[#f0fdfa]' }, // teal-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.assessmentInprocess'), false, false, isWard), colSpan: 2, align: 'center', headerClassName: 'bg-[#ecfeff]' }, // cyan-50
+            { label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('dataEntryQualityCheck.columns.assessed')}<br />{t('dataEntryQualityCheck.columns.properties')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-green-50' },
+            { label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('dataEntryQualityCheck.columns.unassessed')}<br />{t('dataEntryQualityCheck.columns.properties')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-orange-50' },
+            { label: <div className="font-bold text-[15px] text-slate-700 text-center"><span className="whitespace-nowrap">{t('dataEntryQualityCheck.columns.newlyAssessed')}</span><br />{t('dataEntryQualityCheck.columns.found')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-emerald-50' },
+            { label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('dataEntryQualityCheck.columns.assessment')}<br />{t('dataEntryQualityCheck.columns.inprocess')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-orange-50' },
         ],
         [
             { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#f0fdfa]' },
@@ -190,17 +194,17 @@ export const getDataEntryHeaderRows = (level: 'division' | 'ward', t: any): Head
             { label: renderHeader(t('dataEntryQualityCheck.columns.publicUtility'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fdf2f8]' },
             { label: renderHeader(t('dataEntryQualityCheck.columns.underConstruction'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fdf2f8]' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#ecfdf5]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#ecfdf5]' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-green-50' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-green-50' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fff7ed]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fff7ed]' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#f0fdfa]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#f0fdfa]' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#ecfeff]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#ecfeff]' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50' },
         ]
     ];
 };

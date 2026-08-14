@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { usePartitionFormHandlers } from "@/hooks/zoneMaster/usePartitionFormHandlers";
 import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { Floor } from "@/types/floor.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 
 // Mock router push
 const mockPush = vi.fn();
@@ -51,6 +52,10 @@ describe("usePartitionFormHandlers", () => {
 
   const initialErrors: PartitionFormErrors = {};
 
+  const mockProperties: ZonePropertyItem[] = [
+    { id: 1, propertyNo: "68" } as ZonePropertyItem,
+  ];
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockPush.mockClear();
@@ -64,6 +69,7 @@ describe("usePartitionFormHandlers", () => {
         errors: initialErrors,
         setErrors: mockSetErrors,
         floors: mockFloors,
+        allProperties: mockProperties,
       })
     );
 
@@ -74,7 +80,7 @@ describe("usePartitionFormHandlers", () => {
     });
 
     // Check that router.push was called with the correct URL
-    expect(mockPush).toHaveBeenCalledWith("/property-tax/zone-master?partitionPropertyId=1");
+    expect(mockPush).toHaveBeenCalledWith("/property-tax/zone-master?partitionPropertyId=1&partitionPropertyNo=68");
     // Check that errors were cleared
     expect(mockSetErrors).toHaveBeenCalledWith({
       ...initialErrors,
@@ -90,6 +96,7 @@ describe("usePartitionFormHandlers", () => {
         errors: initialErrors,
         setErrors: mockSetErrors,
         floors: mockFloors,
+        allProperties: mockProperties,
       })
     );
 
@@ -111,6 +118,7 @@ describe("usePartitionFormHandlers", () => {
         errors: initialErrors,
         setErrors: mockSetErrors,
         floors: mockFloors,
+        allProperties: mockProperties,
       })
     );
 
@@ -142,6 +150,7 @@ describe("usePartitionFormHandlers", () => {
         errors: initialErrors,
         setErrors: mockSetErrors,
         floors: mockFloors,
+        allProperties: mockProperties,
       })
     );
 
@@ -165,6 +174,7 @@ describe("usePartitionFormHandlers", () => {
         errors: initialErrors,
         setErrors: mockSetErrors,
         floors: mockFloors,
+        allProperties: mockProperties,
       })
     );
 
@@ -197,6 +207,7 @@ describe("usePartitionFormHandlers", () => {
         errors: errorsWithMessages,
         setErrors: mockSetErrors,
         floors: mockFloors,
+        allProperties: mockProperties,
       })
     );
 

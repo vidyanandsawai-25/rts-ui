@@ -15,8 +15,8 @@
       "excelupload": "एक्सेल अपलोड"
     },
     "propertyCriteria": {
-      "title": "प्रॉपर्टी मानदंड चुनें",
-      "subtitle": "पहले मानदंड चुनें। चयनित मानदंड के लिए केवल आवश्यक पैरामीटर ही दिखाए जाएंगे।",
+      "title": "प्रॉपर्टी चुनने का विकल्प",
+      "subtitle": "सबसे पहले विकल्प चुनें। आपके चयन के अनुसार आवश्यक जानकारी भरने के लिए फ़ील्ड दिखाए जाएंगे।",
       "selectionCriteria": "प्रॉपर्टी चयन मानदंड",
       "matchedProperties": "मेल खाने वाली संपत्तियां",
       "inputParameters": "इनपुट पैरामीटर",
@@ -67,10 +67,9 @@
       "selectZoneNode": "झोन / नोड चुनें"
     },
     "fieldList": {
-      "title": "2. अपडेट करने के लिए फ़ील्ड चुनें",
-      "subtitle": "वे फ़ील्ड चुनें जिन्हें आप चयनित संपत्तियों के लिए अपडेट करना चाहते हैं।",
-      "refreshFields": "फ़ील्ड रीफ़्रेश करें",
-      "enabledFieldList": "सक्षम फ़ील्ड सूची",
+      "title": "अपडेट करने के लिए ग्रुप चुनें",
+      "subtitle": "नीचे केवल सक्रिय ग्रुप दिखाए गए हैं।",
+      "enabledFieldList": "सक्रिय ग्रुप की सूची",
       "available": "उपलब्ध",
       "approval": "अनुमोदन",
       "noApproval": "कोई अनुमोदन नहीं",
@@ -106,8 +105,10 @@
       "update": "अपडेट करें",
       "clear": "साफ करें",
       "updating": "अपडेट हो रहा है...",
-      "selectMenuPrompt": "बाएं पैनल से अपडेट करने के लिए फ़ील्ड चुनें",
-      "noFields": "इस अपडेट प्रकार के लिए कोई फ़ील्ड कॉन्फ़िगर नहीं की गई है। कृपया फ़ील्ड रजिस्ट्री से किसी फ़ील्ड को सक्रिय करें।"
+      "selectMenuPrompt": "बाएं पैनल से अपडेट करने के लिए एक फ़ील्ड चुनें",
+      "noFields": "इस अपडेट प्रकार के लिए कोई फ़ील्ड कॉन्फ़िगर नहीं किया गया है। कृपया फ़ील्ड रजिस्ट्री से कोई फ़ील्ड सक्रिय करें।",
+      "remarks": "टिप्पणी",
+      "remarksPlaceholder": "टिप्पणी दर्ज करें..."
     },
     "fieldRegistry": {
       "title": "अधिकृत उपयोगकर्ता कार्यप्रवाह",
@@ -117,7 +118,7 @@
         "title": "डेटाबेस से फ़ील्ड जोड़ें",
         "subtitle": "प्रमाणित उपयोगकर्ता डेटाबेस फ़ील्ड को रजिस्ट्री में जोड़ सकता है, उपयोगकर्ता-सामना करने वाला नाम परिभाषित कर सकता है और फिर इसे सक्रिय कर सकता है।",
         "sourceModule": "स्रोत मॉड्यूल",
-        "sourceTable": "स्रोत का नाम",
+        "sourceTable": "स्रोत टेबल",
         "databaseColumn": "डेटाबेस कॉलम",
         "userFacingName": "उपयोगकर्ता-सामना करने वाला फ़ील्ड नाम",
         "fieldType": "फ़ील्ड प्रकार",
@@ -130,10 +131,10 @@
         "saveFields": "फ़ील्ड सहेजें",
         "selectSchema": "स्कीमा चुनें",
         "selectTable": "टेबल चुनें",
-        "updateCode": "अपडेट का नाम",
-        "updateNameEnglish": "अपडेट नाम (अंग्रेजी)",
-        "updateNamePlaceholder": "उदा., अपडेट नाम",
-        "updateNameMarathi": "अपडेट नाम (मराठी)",
+        "updateCode": "समूह का नाम",
+        "updateNameEnglish": "समूह का नाम (अंग्रेजी)",
+        "updateNamePlaceholder": "उदा., समूह का नाम",
+        "updateNameMarathi": "समूह का नाम (मराठी)",
         "referenceTableName": "संदर्भ टेबल नाम",
         "displaySequence": "डिस्प्ले अनुक्रम",
         "description": "अद्यतन का उद्देश्य",
@@ -179,13 +180,13 @@
         "all": "सभी"
       },
       "stats": {
-        "totalEligible": "कुल पात्र फ़ील्ड",
-        "activeFields": "सक्रिय फ़ील्ड",
+        "totalEligible": "कुल पात्र समूह",
+        "activeFields": "सक्रिय समूह",
         "generalUserAllowed": "सामान्य उपयोगकर्ता अनुमत",
         "approvalRequired": "अनुमोदन आवश्यक है"
       },
       "table": {
-        "updateName": "अपडेट नाम",
+        "updateName": "समूह का नाम",
         "fieldName": "फ़ील्ड नाम",
         "action": "कार्रवाई",
         "active": "सक्रिय"
@@ -197,7 +198,7 @@
       "editDrawer": {
         "title": "फ़ील्ड रजिस्ट्री संपादित करें",
         "updateFieldsBtn": "फ़ील्ड अपडेट करें",
-        "updateName": "अपडेट नाम",
+        "updateName": "समूह का नाम",
         "englishNamePlaceholder": "अंग्रेजी नाम",
         "fieldConfigurations": "फ़ील्ड कॉन्फ़िगरेशन",
         "fillRequiredFieldsMsg": "कृपया सभी आवश्यक मास्टर फ़ील्ड भरें",
@@ -215,6 +216,10 @@
       "guideline": "मार्गदर्शिका"
     },
     "messages": {
+      "downloadWithDataCriteria": "डेटा डाउनलोड करने के लिए कृपया विकल्प चुनें",
+      "wrongUpdateGroup": "गलत अपडेट समूह, यह इस एक्सेल शीट से मेल नहीं खाता है।",
+      "wrongFileType": "गलत फ़ाइल स्वरूप, कृपया एक वैध एक्सेल शीट अपलोड करें।",
+      "clearedSuccessfully": "सफलतापूर्वक साफ़ किया गया",
       "fetchMenuFailed": "अपडेट विकल्प लोड करने में विफल",
       "fetchFieldConfigFailed": "फ़ील्ड कॉन्फ़िगरेशन लोड करने में विफल",
       "fetchPropertiesFailed": "संपत्तियां लोड करने में विफल",
@@ -230,6 +235,7 @@
       "updateCodeRequired": "अपडेट प्रकार आवश्यक है",
       "propertiesRequired": "कृपया कम से कम एक संपत्ति चुनें",
       "updateSuccess": "संपत्तियां सफलतापूर्वक अपडेट की गईं",
+      "processedGroupsSuccess": "अपडेट के लिए {groups} समूहों को प्रोसेस किया गया और {properties} संपत्तियों को सफलतापूर्वक अपडेट किया गया",
       "updateFailed": "संपत्तियां अपडेट करने में विफल",
       "selectProperties": "अपडेट करने के लिए कम से कम एक संपत्ति चुनें",
       "selectUpdateType": "कृपया अपडेट प्रकार चुनें",
@@ -244,7 +250,7 @@
       "partialUpdate": "{success} संपत्तियां अपडेट हुईं, {failed} विफल",
       "noPropertiesFound": "चुने गए फ़िल्टर के लिए कोई संपत्ति नहीं मिली",
       "cannotDeselectIndividual": "'सभी चुनें' सक्रिय होने पर व्यक्तिगत रिकॉर्ड को अनचुना करने की अनुमति नहीं है। कृपया पहले चयन को साफ़ करें।",
-      "invalidFormat": "कुछ फ़ील्ड में अमान्य प्रारूप",
+      "invalidFormat": "चयनित फ़ील्ड में दर्ज जानकारी सही नहीं है। कृपया जाँच करें और फिर से प्रयास करें.",
       "fetchingAllProperties": "अपडेट के लिए सभी संपत्तियां प्राप्त की जा रही हैं...",
       "missingWardOrField": "वार्ड आईडी या सक्षम फ़ील्ड चयन गायब है",
       "downloadingExcel": "एक्सेल फ़ाइल डाउनलोड हो रही है...",
@@ -255,7 +261,7 @@
       "excelProcessSuccess": "एक्सेल सफलतापूर्वक अपलोड और प्रोसेस हुआ!",
       "definitionAlreadyExists": "इस नाम से एक बल्क अपडेट परिभाषा पहले से मौजूद है।",
       "pleaseSelectField": "कृपया पहले एक फ़ील्ड चुनें।",
-      "noDataRows": "अपलोड की गई फ़ाइल में कोई डेटा पंक्ति नहीं है या यह चयनित फ़ील्ड से मेल नहीं खाती है।",
+      "noDataRows": "आपकी अपलोड की गई फ़ाइल खाली है, कृपया डेटा के साथ एक फ़ाइल अपलोड करें।",
       "loadingTabData": "टैब डेटा लोड हो रहा है...",
       "downloadingTemplate": "टेम्पलेट डाउनलोड हो रहा है...",
       "uploadFailed": "एक्सेल अपलोड करने में विफल",
@@ -264,7 +270,15 @@
       "selectAtLeastOneFieldName": "कृपया कम से कम एक फ़ील्ड नाम चुनें",
       "statusUpdateNotAvailable": "स्थिति अद्यतन कार्रवाई उपलब्ध नहीं है",
       "statusSetActive": "{name} सक्रिय पर सेट किया गया",
-      "statusSetInactive": "{name} निष्क्रिय पर सेट किया गया"
+      "statusSetInactive": "{name} निष्क्रिय पर सेट किया गया",
+      "missingParameters": "आवश्यक पैरामीटर गायब हैं",
+      "unauthorized": "अनधिकृत पहुंच",
+      "excelImportError": "एक्सेल आयात प्रक्रिया विफल रही",
+      "excelExportError": "एक्सेल निर्यात प्रक्रिया विफल रही",
+      "backendApiError": "बैकएंड एपीआई त्रुटि",
+      "fetchFailed": "सर्वर से डेटा प्राप्त करने में विफल",
+      "actionFailed": "कार्रवाई निष्पादित करने में विफल",
+      "notFound": "संसाधन नहीं मिला"
     },
     "status": {
       "active": "सक्रिय",
@@ -307,16 +321,20 @@
       "filters": {
         "user": "उपयोगकर्ता",
         "allUsers": "सभी उपयोगकर्ता",
-        "searchPlaceholder": "खोज फ़ील्ड, संपत्ति, उपयोगकर्ता, टिप्पणियाँ"
+        "searchPlaceholder": "खोज फ़ील्ड, उपयोगकर्ता, टिप्पणियाँ"
       },
       "columns": {
-        "id": "गतिविधि आईडी",
+        "id": "गतिविधि आईडी / जॉब आईडी",
         "date": "दिनांक और समय",
-        "wardNo": "वार्ड नं",
-        "propertyNo": "प्रॉपर्टी नं",
-        "updatedColumns": "अद्यतन कॉलम",
-        "username": "उपयोगकर्ता",
-        "remarks": "टिप्पणियाँ",
+        "activityType": "गतिविधि प्रकार",
+        "updateName": "फ़िल्ड / ऑपरेशन",
+        "records": "रिकॉर्ड्स",
+        "doneBy": "द्वारा किया गया",
+        "startTime": "प्रारंभ समय",
+        "endTime": "समाप्ति समय",
+        "duration": "अवधि",
+        "status": "स्थिति",
+        "remarks": "त्रुटि / टिप्पणी",
         "ipAddress": "आईपी / डिवाइस",
         "action": "कार्रवाई",
         "view": "देखें"
@@ -339,10 +357,13 @@
         "date": "दिनांक और समय",
         "ipDevice": "आईपी / डिवाइस",
         "remarks": "टिप्पणियाँ / त्रुटि",
+        "property": "संपत्ति",
         "field": "फ़ील्ड",
         "oldValue": "पुराना मान",
         "newValue": "नया मान",
-        "updateDetailsPrefix": "अपडेट विवरण"
+        "updateDetailsPrefix": "अपडेट विवरण",
+        "searchPlaceholder": "संपत्ति, फ़ील्ड, पुराना/नया मान खोजें...",
+        "exportExcel": "एक्सेल डाउनलोड करें"
       }
     },
     "excelUpload": {
@@ -361,16 +382,57 @@
       "previewTitle": "पात्रता सत्यापन पूर्वावलोकन",
       "previewDesc": "एक्सेल स्प्रेडशीट से आयातित कॉलम और पंक्तियों की समीक्षा करें",
       "guidelineModalTitle": "एक्सेल अपलोड दिशा-निर्देश",
-      "guidelineModalIntro": "कृपया एक्सेल के माध्यम से संपत्तियों को अपलोड करते समय इन दिशा-निर्देशों का पालन करें:",
-      "batchProcessingTitle": "बैच प्रोसेसिंग:",
-      "batchProcessingDesc": "विभाजन संख्या वाली संपत्तियों और बिना विभाजन संख्या वाली संपत्तियों को अलग-अलग बैच में अपलोड करें।",
-      "consistencyTitle": "निरंतरता:",
-      "consistencyDesc": "सत्यापन त्रुटियों से बचने के लिए एक ही एक्सेल फ़ाइल में विभाजन संख्या वाली और बिना विभाजन संख्या वाली संपत्तियों को न मिलाएं।",
+      "guidelineModalIntro": "Please follow these guidelines when downloading and uploading properties through Excel:",
+      "downloadEmptyTitle": "Download Empty Template:",
+      "downloadEmptyDesc": "Uncheck the “Download with Data” checkbox to download an empty template containing only the column headers.",
+      "downloadDataTitle": "Download With Data:",
+      "downloadDataDesc": "Check the “Download with Data” checkbox to download a template pre-populated with the current property data based on the selected property criteria.",
+      "selectCorrectGroupTitle": "Select the Correct Group:",
+      "selectCorrectGroupDesc": "Make sure the correct group is selected before uploading the Excel file.",
+      "batchProcessingTitle": "Separate Batches:",
+      "batchProcessingDesc": "Upload properties with partition numbers and properties without partition numbers in separate batches.",
+      "consistencyTitle": "Do Not Mix:",
+      "consistencyDesc": "Do not include properties with and without partition numbers in the same Excel file, as this may cause validation errors.",
       "emptyData": "कोई डेटा उपलब्ध नहीं",
       "loadingData": "डेटा लोड हो रहा है...",
       "inactiveStatus": "निष्क्रिय",
       "noFileChosen": "कोई फ़ाइल नहीं चुनी गई",
-      "okButton": "ठीक है"
+      "okButton": "ठीक है",
+      "downloadWithData": "डेटा के साथ डाउनलोड करें",
+      "uploadedData": "अपलोड किया गया डेटा",
+      "validations": {
+        "selectFieldFirst": "कृपया पहले एक फ़ील्ड चुनें।",
+        "selectFileFirst": "कृपया पहले एक एक्सेल फ़ाइल चुनें।",
+        "downloading": "टैम्प्लेट डाउनलोड हो रहा है...",
+        "downloadFailed": "टैम्प्लेट डाउनलोड करने में विफल।",
+        "validatingExcel": "एक्सेल फ़ाइल का सत्यापन किया जा रहा है...",
+        "excelValidatedMsg": "एक्सेल फ़ाइल सफलतापूर्वक सत्यापित हुई!",
+        "validationFailedMsg": "एक्सेल फ़ाइल का सत्यापन विफल रहा।",
+        "processingBulkUpdate": "थोक अपडेट संसाधित किया जा रहा है...",
+        "bulkUpdateSuccessMsg": "एक्सेल अपलोड और संसाधित किया गया!",
+        "bulkUpdateFailedMsg": "थोक अपडेट संसाधित करने में विफल।",
+        "validationErrorsMsg": "अपलोड किए गए {total} में से {errors} रिकॉर्ड में त्रुटियाँ हैं।"
+      },
+      "stats": {
+        "totalRows": "कुल पंक्तियाँ",
+        "valid": "वैध",
+        "rejected": "अस्वीकृत",
+        "status": "स्थिति",
+        "notUploaded": "अपलोड नहीं किया गया",
+        "validatedWithErrors": "सत्यापित (त्रुटियों के साथ)",
+        "validated": "सत्यापित"
+      },
+      "remarksModal": {
+        "title": "पुष्टिकरण",
+        "remarkLabel": "टिप्पणी",
+        "remarkPlaceholder": "टिप्पणी दर्ज करें...",
+        "skipBtn": "छोड़ें",
+        "confirmBtn": "पुष्टि करें"
+      },
+      "table": {
+        "propertyNo": "संपत्ति क्रमांक",
+        "validationRemark": "सत्यापन टिप्पणी"
+      }
     }
   }
 }

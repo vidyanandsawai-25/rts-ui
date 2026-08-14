@@ -15,6 +15,7 @@ import {
 import { ScopeOption } from "@/lib/api/common-details-update/common-details-update.service";
 import { PagedResponse } from "@/types/common.types";
 import { useCommonDetailsUpdateActions } from "@/hooks/commonDetailsUpdate/useCommonDetailsUpdateActions";
+import { useBindApiOptions } from "@/hooks/commonDetailsUpdate/useBindApiOptions";
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
@@ -47,47 +48,39 @@ const fetchAndMergeProperties = async (
   loadFn: (params: PropertyFilterByCategoryParams, onSuccess: (data: PagedResponse<PropertyPreviewRow>) => void) => Promise<void>
 ): Promise<{ items: PropertyPreviewRow[], totalCount: number }> => {
   if (!codes.length) return { items: [], totalCount: 0 };
-  
-  const fetchPromises = codes.map(code => {
-    return new Promise<PagedResponse<PropertyPreviewRow>>((resolve, reject) => {
+
+  const mergedProperties: PropertyPreviewRow[] = [];
+  let finalTotalCount = 0;
+
+  for (const code of codes) {
+    await new Promise<void>((resolve, reject) => {
       loadFn(
         { ...baseParams, UpdateCode: code } as PropertyFilterByCategoryParams,
-        (data) => resolve(data)
+        (data) => {
+          finalTotalCount = data.totalCount;
+          data.items.forEach(newItem => {
+            const existingIndex = mergedProperties.findIndex(p => p.id === newItem.id);
+            if (existingIndex !== -1) {
+              const existing = mergedProperties[existingIndex];
+              const merged = { ...existing };
+              for (const key in newItem) {
+                const newVal = newItem[key];
+                if (newVal !== null && newVal !== undefined && newVal !== '-' && newVal !== '') {
+                  merged[key] = newVal;
+                }
+              }
+              mergedProperties[existingIndex] = merged;
+            } else {
+              mergedProperties.push(newItem);
+            }
+          });
+          resolve();
+        }
       ).catch(reject);
     });
-  });
-
-  const results = await Promise.all(fetchPromises);
-  
-  let mergedProperties: PropertyPreviewRow[] = [];
-  let total = 0;
-
-  if (results.length > 0 && results[0]) {
-    mergedProperties = results[0].items.map(item => ({...item}));
-    total = results[0].totalCount;
-
-    for (let i = 1; i < results.length; i++) {
-      const currentResult = results[i];
-      if (currentResult && currentResult.items) {
-        currentResult.items.forEach(newItem => {
-          const existingIndex = mergedProperties.findIndex(p => p.id === newItem.id);
-          if (existingIndex !== -1) {
-            const existing = mergedProperties[existingIndex];
-            const merged = { ...existing };
-            for (const key in newItem) {
-              const newVal = newItem[key];
-              if (newVal !== null && newVal !== undefined && newVal !== '-' && newVal !== '') {
-                merged[key] = newVal;
-              }
-            }
-            mergedProperties[existingIndex] = merged;
-          }
-        });
-      }
-    }
   }
 
-  return { items: mergedProperties, totalCount: total };
+  return { items: mergedProperties, totalCount: finalTotalCount };
 };
 
 export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
@@ -131,6 +124,8 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
   );
   const [loadingConfigs, setLoadingConfigs] = useState(false);
 
+  const { optionsMap, loadingMap, loadingMoreMap, hasMoreMap, onLoadMore, onSearchChange } = useBindApiOptions(fieldConfigs);
+
   let defaultWardId = initialWardId || "";
   if (initialWardNo && wardsData?.items) {
     const ward = (wardsData.items as any[]).find((w) => w.wardNo === initialWardNo || w.label === initialWardNo);
@@ -148,10 +143,11 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     wingId: initialWing || "",
     propertyTypeId: "",
   });
+
+  const [resetKey, setResetKey] = useState(0);
   const [filterSubmitted, setFilterSubmitted] = useState(false);
   const [_wings, setWings] = useState<WingOption[]>([]);
 
-  // ΓöÇΓöÇ Scope Options ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const [scopeOptions, setScopeOptions] = useState<ScopeOption[]>(
     props.initialScopeOptions || []
   );
@@ -174,7 +170,6 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
 
   const [loadingScopeOptions, setLoadingScopeOptions] = useState(false);
 
-  // ΓöÇΓöÇ Dropdown Options ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   // Initialize ward options from server-loaded data
   const [wardOptions, setWardOptions] = useState<SelectOption[]>(() => {
     const items = wardsData?.items || [];
@@ -222,7 +217,6 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     searchParams.get("toPropertySearch") || ""
   );
 
-  // ΓöÇΓöÇ Properties ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const [properties, setProperties] = useState<PropertyPreviewRow[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   // Initialize page/pageSize/searchTerm from URL params
@@ -234,13 +228,11 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
   const [loadingProperties, setLoadingProperties] = useState(false);
   const [loadingShowProperties, setLoadingShowProperties] = useState(false);
 
-  // ΓöÇΓöÇ Selection ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<Set<number>>(
     new Set()
   );
   const [isSelectAllAcrossPages, setIsSelectAllAcrossPages] = useState(false);
 
-  // ΓöÇΓöÇ Form ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const [formValues, setFormValues] = useState<
     Record<string, string | number | boolean>
   >({});
@@ -273,13 +265,16 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
   // Synchronize selected codes when URL searchParams change (e.g. Tab change or Clear params)
   // window.history.replaceState does not trigger this, so manual checkbox clicks won't be reverted.
   useEffect(() => {
+    const tab = searchParams.get("tab") || "updateFields";
+    if (tab === "fieldRegistry" || tab === "auditMonitor") return;
+
     const fieldParam = searchParams.get("field");
     if (!fieldParam) {
       if (activeMenuItems && activeMenuItems.length > 0 && activeMenuItems[0]?.updateCode) {
         const defaultCode = activeMenuItems[0].updateCode;
         setSelectedCodes([defaultCode]);
         setSelectedCode(defaultCode);
-        
+
         // Update URL
         const params = new URLSearchParams(searchParams.toString());
         params.set("field", defaultCode);
@@ -323,7 +318,6 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     }
   }, [searchParams, activeMenuItems, pathname, loadFieldConfigs]);
 
-  // ΓöÇΓöÇ URL Sync Helper ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const updateUrlParams = useCallback((updates: Record<string, string | number | undefined>) => {
     // Skip URL update during initial mount to prevent "Cannot call startTransition while rendering"
     if (isInitialMountRef.current) return;
@@ -365,10 +359,12 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     return () => clearTimeout(timer);
   }, []);
 
+  const prevTabRef = useRef(searchParams.get("tab"));
+
   // Reset state when switching away from this tab
   useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab === "fieldRegistry") {
+    const currentTab = searchParams.get("tab");
+    if (currentTab !== prevTabRef.current) {
       setFilterValues({ zoneId: "", wardId: "", fromPropertyNo: "", toPropertyNo: "", wingId: "", propertyTypeId: "" });
       setFilterSubmitted(false);
       setProperties([]);
@@ -380,6 +376,8 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
       setPropertyOptions([]);
       setFromPropertyOptions([]);
       setToPropertyOptions([]);
+
+      prevTabRef.current = currentTab;
     }
   }, [searchParams]);
 
@@ -387,7 +385,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     if (props.initialScopeOptions && props.initialScopeOptions.length > 0) {
       return;
     }
-     
+
     setLoadingScopeOptions(true);
     const fromPtis = searchParams.get("from") === "ptis";
     loadScopeOptions((options) => {
@@ -454,7 +452,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     if (!selectedCode || !menuItems.length) return;
 
     initialLoadRef.current = true;
-     
+
     setLoadingConfigs(true);
 
     loadFieldConfigs(selectedCode, (configs) => {
@@ -570,7 +568,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
           });
         }
       } else {
-         
+
         setLoadingPropertyOptions(true);
         loadPropertiesByWard(Number(initialWardId), selectedCode, (options) => {
           setPropertyOptions(options);
@@ -607,7 +605,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
       prevSelectedCodeRef.current = selectedCode;
 
       // Get the wing label from the selected wing option
-      
+
 
       // Determine the parameters to send based on scope
       let searchCategory = 2;
@@ -711,9 +709,9 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
       fieldConfigs.every((f) => {
         if (f.controlType === "checkbox") return true;
         const val = formValues[f.fieldName];
-        
+
         const isProvided = val !== undefined && val !== "" && val !== null;
-        
+
         if (f.isRequired && !isProvided) {
           return false;
         }
@@ -728,7 +726,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
             // Ignore invalid regex
           }
         }
-        
+
         return true;
       }),
     [fieldConfigs, formValues]
@@ -751,7 +749,6 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     return errors;
   }, [fieldConfigs, formValues, formSubmitted, locale, t]);
 
-  // ΓöÇΓöÇ Check if Show button should be enabled ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const canShowProperties = useMemo(() => {
     if (!activeScopeDetails) return false;
 
@@ -775,42 +772,48 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     return Object.values(filterValues).some(v => v !== undefined && v !== null && v !== "");
   }, [filterValues]);
 
-  // ΓöÇΓöÇ Handlers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleMenuSelect = useCallback(
-    async (code: string) => {
-      // Toggle logic for selectedCodes
-      let newCodes = [...selectedCodes];
-      if (newCodes.includes(code)) {
-        newCodes = newCodes.filter(c => c !== code);
-      } else {
-        newCodes.push(code);
+    async (code: string, isMultiSelect: boolean = false) => {
+      // Prevent unchecking the last selected group (in both single and multi-select modes)
+      if (selectedCodes.length === 1 && selectedCodes[0] === code) {
+        return;
       }
-      
+
+      let newCodes = [code];
+
+      if (isMultiSelect) {
+        if (selectedCodes.includes(code)) {
+          newCodes = selectedCodes.filter(c => c !== code);
+        } else {
+          newCodes = [...selectedCodes, code];
+        }
+      }
+
       setSelectedCodes(newCodes);
-      
+
       // Update URL to match selected codes
       if (newCodes.length > 0) {
         setSelectedCode(newCodes[0]); // Keep selectedCode pointing to the first one for backwards compatibility
         const params = new URLSearchParams(searchParams.toString());
         params.set("field", newCodes.join(","));
         const newUrl = `${pathname}?${params.toString()}`;
-        if (typeof window !== "undefined") {
-          window.history.replaceState(null, "", newUrl);
-        }
+        startTransition(() => {
+          router.replace(newUrl, { scroll: false });
+        });
       } else {
         setSelectedCode("");
         const params = new URLSearchParams(searchParams.toString());
         params.delete("field");
         const newUrl = `${pathname}?${params.toString()}`;
-        if (typeof window !== "undefined") {
-          window.history.replaceState(null, "", newUrl);
-        }
+        startTransition(() => {
+          router.replace(newUrl, { scroll: false });
+        });
       }
 
       // Fetch configs for all selected codes
       setLoadingConfigs(true);
 
-      const fetchPromises = newCodes.map(c => 
+      const fetchPromises = newCodes.map(c =>
         new Promise<BulkUpdateFieldConfig[]>((resolve) => {
           loadFieldConfigs(c, resolve);
         })
@@ -827,7 +830,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
             uniqueConfigs.push(config);
           }
         }
-        
+
         setFieldConfigs(uniqueConfigs);
 
         // Build default form values and merge with existing values so users don't lose typed data
@@ -872,7 +875,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
       Number(zoneIdToUse),
       Number(wardIdToUse),
       page,
-      100, // PageSize=100
+      100,
       searchTermToUse || undefined,
       undefined,
       (data: any) => {
@@ -980,11 +983,11 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     const searchTermToUse = queryOverride !== undefined ? queryOverride : toPropertySearchTerm;
 
     await loadPropertiesByCategory(
-      4, // SearchCategory=4 for To Property selection
+      4,
       filterValues.zoneId ? Number(filterValues.zoneId) : undefined,
       Number(filterValues.wardId),
       page,
-      100, // PageSize=100
+      100,
       searchTermToUse || undefined,
       fromPropertyToUse,
       (data: any) => {
@@ -1047,6 +1050,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
         scopeId: selectedScopeId ?? undefined,
         wardId,
         fromProperty: undefined,
+        PropertyNo: undefined,
         toProperty: undefined,
         wing: undefined,
         pageNumber: undefined,
@@ -1097,6 +1101,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
       zoneId: zoneId || undefined,
       wardId: undefined,
       fromProperty: undefined,
+      PropertyNo: undefined,
       toProperty: undefined,
       pageNumber: undefined,
       pageSize: undefined,
@@ -1136,7 +1141,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     setSelectedPropertyIds(new Set());
     setIsSelectAllAcrossPages(false);
     setPropertiesPage(1);
-    
+
     setPropertyOptions([]);
     // Reset pagination state for dropdown
     setPropertyDropdownPage(1);
@@ -1150,6 +1155,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
       zoneId: undefined,
       wardId: undefined,
       fromProperty: undefined,
+      PropertyNo: undefined,
       toProperty: undefined,
       wing: undefined,
       pageNumber: undefined,
@@ -1204,14 +1210,17 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
   const handleFromPropertyChange = useCallback((val: string) => {
     setFilterValues((prev) => ({ ...prev, fromPropertyNo: val, toPropertyNo: "" }));
     setToPropertySearchTerm("");
-    
+
+    const isSinglePropertyScope = activeScopeDetails?.options.includes("Property No");
+
     updateUrlParams({
-      fromProperty: val || undefined,
+      fromProperty: !isSinglePropertyScope ? (val || undefined) : undefined,
+      PropertyNo: isSinglePropertyScope ? (val || undefined) : undefined,
       toProperty: undefined,
       pageNumber: filterSubmitted && totalCount > 0 ? propertiesPage : undefined,
       pageSize: filterSubmitted && totalCount > 0 ? propertiesPageSize : undefined,
     });
-  }, [updateUrlParams, filterSubmitted, propertiesPage, propertiesPageSize, totalCount]);
+  }, [updateUrlParams, filterSubmitted, propertiesPage, propertiesPageSize, totalCount, activeScopeDetails]);
 
   const handleToPropertyChange = useCallback((val: string) => {
     setFilterValues((prev) => ({ ...prev, toPropertyNo: val }));
@@ -1276,7 +1285,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
       setIsSelectAllAcrossPages(false);
     }
 
-    
+
 
     let searchCategory = 2; // Default to Ward/Sector
     let propertyNo = undefined;
@@ -1321,13 +1330,15 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
           if (data.totalCount > 0) {
             toast.success(t("messages.propertiesLoaded", { count: data.totalCount }));
           } else {
-            toast.info(t("messages.noPropertiesFound"));
+            toast.error(t("messages.noPropertiesFound"));
           }
         }
         // Sync filter values to URL after successfully loading properties
         updateUrlParams({
+          zoneId: filterValues.zoneId || undefined,
           wardId: filterValues.wardId || undefined,
-          fromProperty: filterValues.fromPropertyNo || undefined,
+          fromProperty: !activeScopeDetails?.options.includes("Property No") ? (filterValues.fromPropertyNo || undefined) : undefined,
+          PropertyNo: activeScopeDetails?.options.includes("Property No") ? (filterValues.fromPropertyNo || undefined) : undefined,
           toProperty: filterValues.toPropertyNo || undefined,
           wing: filterValues.wingId || undefined,
           pageNumber: data.totalCount > 0 ? pageNum : undefined,
@@ -1350,7 +1361,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     if (!isDifferent) return;
 
     if (prevCodes.length === 0 && selectedCodes.length > 0) {
-      return; 
+      return;
     }
 
     if (filterSubmitted && canShowProperties && selectedCodes.length > 0) {
@@ -1361,7 +1372,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     }
   }, [selectedCodes, filterSubmitted, canShowProperties, handleShowProperties, propertiesPage, propertiesPageSize]);
 
-  const handleBack = useCallback(() => {
+  const handleBack = useCallback((showToast: boolean = true) => {
     setFilterValues({ zoneId: "", wardId: "", fromPropertyNo: "", toPropertyNo: "", wingId: "", propertyTypeId: "" });
     setFilterSubmitted(false);
     setProperties([]);
@@ -1378,12 +1389,20 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     setToPropertySearchTerm("");
     setSelectedCode("");
     setSelectedCodes([]);
+    setLoadingProperties(false);
+    setLoadingShowProperties(false);
+
+    if (showToast) {
+      toast.success(t("messages.clearedSuccessfully"));
+    }
+
+    setResetKey(prev => prev + 1);
 
     // Clear URL parameters
     startTransition(() => {
       router.replace(pathname, { scroll: false });
     });
-  }, [pathname, router]);
+  }, [pathname, router, t]);
 
   const handleSelectAll = useCallback(() => {
     if (isSelectAllAcrossPages || allSelected) {
@@ -1397,7 +1416,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
 
   const handlePropertySelect = useCallback((id: number, checked: boolean) => {
     if (isSelectAllAcrossPages) {
-      toast.warning(t("messages.cannotDeselectIndividual") );
+      toast.warning(t("messages.cannotDeselectIndividual"));
       return;
     }
     setSelectedPropertyIds((prev) => {
@@ -1490,7 +1509,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     // If 'selectAllAcrossPages' is true, we must load ALL property IDs based on the current filter criteria
     if (isSelectAllAcrossPages) {
       const toastId = toast.loading(t("messages.fetchingAllProperties"));
-      
+
       let wingLabel = "";
       if (filterValues.wingId && allWingOptions) {
         const wingOpt = allWingOptions.find(w => w.value === filterValues.wingId);
@@ -1519,19 +1538,19 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
             reject(new Error("No action available"));
             return;
           }
-          
+
           actions.getFilteredPropertiesAction({
-              scopeId: selectedScopeId || 0,
-              zoneId: filterValues.zoneId || undefined,
-              wardId: filterValues.wardId,
-              fromPropertyNo: fromNo,
-              toPropertyNo: toNo,
-              wingId: wingLabel || undefined,
-              propertyTypeId: filterValues.propertyTypeId || undefined,
-              updateCode: selectedCode,
-              page: 1,
-              pageSize: -1,
-            })
+            scopeId: selectedScopeId || 0,
+            zoneId: filterValues.zoneId || undefined,
+            wardId: filterValues.wardId,
+            fromPropertyNo: fromNo,
+            toPropertyNo: toNo,
+            wingId: wingLabel || undefined,
+            propertyTypeId: filterValues.propertyTypeId || undefined,
+            updateCode: selectedCode,
+            page: 1,
+            pageSize: -1,
+          })
             .then(res => {
               if (res.success && res.data && res.data.items) {
                 idsToUpdate = res.data.items.map((p: { id: number }) => p.id);
@@ -1564,7 +1583,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
 
       const relevantConfigs = fieldConfigs.filter(f => f.bulkUpdateMasterId === menuItem?.id);
       const filteredUpdateData: Record<string, string | number | boolean> = {};
-      
+
       if (relevantConfigs.length > 0) {
         relevantConfigs.forEach(f => {
           if (formValues[f.fieldName] !== undefined) {
@@ -1572,20 +1591,33 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
           }
         });
       }
-      
+
       const updateDataToSend = relevantConfigs.length > 0 ? filteredUpdateData : formValues;
-      
+
       return { apiRoute, code, updateDataToSend };
     });
 
     let hasSuccess = false;
 
     // Prepare the array of payloads to send in a single API call
-    const payloadsToSend = payloadsToUpdate.map(payload => ({
-      updateCode: payload.code,
-      propertyIds: idsToUpdate,
-      updateData: payload.updateDataToSend,
-    }));
+    const payloadsToSend = payloadsToUpdate
+      .filter(payload => {
+        // Only send payloads that have at least one non-empty value
+        return Object.values(payload.updateDataToSend).some(
+          v => v !== "" && v !== null && v !== undefined
+        );
+      })
+      .map(payload => ({
+        updateCode: payload.code,
+        propertyIds: idsToUpdate,
+        updateData: payload.updateDataToSend,
+        remarks: formValues["remarks"] ? String(formValues["remarks"]) : undefined
+      }));
+
+    if (payloadsToSend.length === 0) {
+      toast.error(t("messages.noDataToUpdate"));
+      return;
+    }
 
     const apiRoute = payloadsToUpdate[0]?.apiRoute || "/CommonDetails/update";
 
@@ -1729,11 +1761,17 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     formSubmitted,
     isFormValid,
     saving,
+    optionsMap,
+    bindApiLoadingMap: loadingMap,
+    bindApiLoadingMoreMap: loadingMoreMap,
+    bindApiHasMoreMap: hasMoreMap,
+    handleBindApiLoadMore: onLoadMore,
+    handleBindApiSearchChange: onSearchChange,
     handleFormValueChange,
     handleFormClear,
     handleSubmitBulkUpdate,
-    // Pagination info
     paginationInfo,
+    resetKey,
     // Actions prop
     actions: props.actions,
   };

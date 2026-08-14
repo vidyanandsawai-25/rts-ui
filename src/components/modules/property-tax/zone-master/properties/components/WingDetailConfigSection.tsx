@@ -7,6 +7,10 @@ import { Option } from "@/components/common";
 import { PreviewButton } from "@/components/common/ActionButtons";
 import { CODE_SANITIZE } from "@/lib/utils/validation-rules";
 
+const NO_OF_FLATS_PER_FLOOR_MAX_LENGTH = 2;
+const FLAT_START_MAX_LENGTH = 5;
+const INCREMENTED_BY_MAX_LENGTH = 5;
+
 interface WingDetailConfigSectionProps {
   form: PartitionFormState;
   setForm: React.Dispatch<React.SetStateAction<PartitionFormState>>;
@@ -135,12 +139,14 @@ export function WingDetailConfigSection({
           type="number"
           value={form.noOfFlatOnOneFloor}
           onChange={(e) => {
-            setForm({ ...form, noOfFlatOnOneFloor: e.target.value });
+            const value = e.target.value.slice(0, NO_OF_FLATS_PER_FLOOR_MAX_LENGTH);
+            setForm({ ...form, noOfFlatOnOneFloor: value });
             setErrors({ ...errors, noOfFlatOnOneFloor: undefined });
           }}
           placeholder={t("partitionForm.wing.placeholders.noOfFlatOnOneFloor")}
           disabled={loading || form.generationType === "VC"}
           min="1"
+          maxLength={NO_OF_FLATS_PER_FLOOR_MAX_LENGTH}
         />
         <ValidationMessage
           message={errors.noOfFlatOnOneFloor}
@@ -158,12 +164,14 @@ export function WingDetailConfigSection({
             type="number"
             value={form.flatStart}
             onChange={(e) => {
-              setForm({ ...form, flatStart: e.target.value });
+              const value = e.target.value.slice(0, FLAT_START_MAX_LENGTH);
+              setForm({ ...form, flatStart: value });
               setErrors({ ...errors, flatStart: undefined });
             }}
             placeholder={t("partitionForm.wing.placeholders.flatStart")}
             disabled={loading}
             min="0"
+            maxLength={FLAT_START_MAX_LENGTH}
           />
           <ValidationMessage
             message={errors.flatStart}
@@ -179,12 +187,14 @@ export function WingDetailConfigSection({
             type="number"
             value={form.incrementedBy}
             onChange={(e) => {
-              setForm({ ...form, incrementedBy: e.target.value });
+              const value = e.target.value.slice(0, INCREMENTED_BY_MAX_LENGTH);
+              setForm({ ...form, incrementedBy: value });
               setErrors({ ...errors, incrementedBy: undefined });
             }}
             placeholder={t("partitionForm.wing.placeholders.incrementedBy")}
             disabled={loading || form.generationType === "HC"}
             min="1"
+            maxLength={INCREMENTED_BY_MAX_LENGTH}
           />
           <ValidationMessage
             message={errors.incrementedBy}

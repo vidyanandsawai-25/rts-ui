@@ -68,7 +68,9 @@
         "searchKeyMaxLength": "कमाल लांबी 20 वर्ण आहे",
         "searchKeyFormat": "केवळ अक्षर, संख्या आणि + - वर्ण अनुमत आहेत",
         "sequenceInvalid": "शोध क्रम 0 किंवा अधिक असावा",
-        "mustBeActive": "बांधकाम प्रकार जतन करण्यासाठी सक्रिय असणे आवश्यक आहे"
+        "mustBeActive": "बांधकाम प्रकार जतन करण्यासाठी सक्रिय असणे आवश्यक आहे",
+        "constructionCodeNumbersOnlyNotAllowed": "कृपया किमान एक अक्षर असलेला वैध बांधकाम प्रकार प्रविष्ट करा.",
+        "descriptionNumbersOnlyNotAllowed": "कृपया किमान एक अक्षर असलेले वैध वर्णन प्रविष्ट करा."
       },
       "status": {
         "label": "सक्रिय स्थिती",

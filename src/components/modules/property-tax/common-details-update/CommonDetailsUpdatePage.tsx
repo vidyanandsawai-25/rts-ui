@@ -47,6 +47,13 @@ export default function CommonDetailsUpdatePage(
     if (pNo) params.set("propertyNo", pNo);
     if (partNo) params.set("partitionNo", partNo);
 
+// addFieldRegistryAction,
+//     updateFieldRegistryAction,
+//     getFieldRegistryTablesAction,
+//     getFieldRegistryColumnsAction,
+//     setFieldRegistryStatusAction,
+
+
     router.push(`/${locale}/property-tax/ptis?${params.toString()}`);
   };
 
@@ -62,9 +69,17 @@ export default function CommonDetailsUpdatePage(
     setActiveTab(newTab);
 
     if (typeof window !== "undefined") {
-      const params = new URLSearchParams();
-      params.set("tab", newTab);
-      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+      const newParams = new URLSearchParams(searchParams.toString());
+      newParams.set("tab", newTab);
+      
+      // Remove all filter/data params when navigating between tabs to ensure a clean state
+      for (const key of Array.from(newParams.keys())) {
+        if (key !== "tab" && key !== "from") {
+          newParams.delete(key);
+        }
+      }
+      
+      router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     }
 
     setTimeout(() => {
@@ -197,7 +212,7 @@ export default function CommonDetailsUpdatePage(
               </TabPanel>
 
               {/* Field Registry Tab */}
-              <TabPanel value="fieldRegistry" className="flex-1 min-h-0 overflow-auto">
+              <TabPanel value="fieldRegistry" className="flex-1 min-h-0 mt-2 overflow-auto">
                 <FieldRegistry
                   t={t}
                   initialFields={props.initialFieldRegistries || props.menuItems}
@@ -213,15 +228,22 @@ export default function CommonDetailsUpdatePage(
 
               {/* Audit & Monitor Tab */}
               <TabPanel value="auditMonitor" className="flex-1 min-h-0 overflow-auto">
-                <JobsAudit initialData={props.initialUpdateHistory} actions={props.actions} />
+                <JobsAudit 
+                  initialData={props.initialUpdateHistory} 
+                  initialUpdateHistoryDetail={props.initialUpdateHistoryDetail}
+                  actions={props.actions} 
+                />
               </TabPanel>
 
               {/* Excel Upload Tab */}
-              <TabPanel value="excelupload" className="flex-1 min-h-0 overflow-auto">
+              <TabPanel value="excelupload" className="flex-1 min-h-0 mt-2 overflow-auto">
                 <ExcelUpload 
                   initialExcelTemplateFields={Array.isArray(props.initialFieldRegistries) 
                     ? props.initialFieldRegistries 
                     : (props.initialFieldRegistries?.items || props.menuItems || [])}
+                  updateData={updateData}
+                  actions={props.actions}
+                  locale={locale}
                 />
               </TabPanel>
             </>

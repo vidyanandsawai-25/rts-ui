@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { FloorData } from '@/types/room-details.types';
+import { isApartmentCategory } from '@/lib/utils/ptis/category-helpers';
 
 interface UseFloorAreaValidationProps {
   localFloors: FloorData[];
@@ -12,6 +13,7 @@ interface UseFloorAreaValidationProps {
   plotAreaSqM: number;
   floorLookup?: unknown[];
   initialFloors?: FloorData[];
+  propertyCategoryName?: string | null;
 }
 
 /**
@@ -106,7 +108,12 @@ export const useFloorAreaValidation = ({
   plotAreaSqM,
   floorLookup: _floorLookup,
   initialFloors,
+  propertyCategoryName,
 }: UseFloorAreaValidationProps) => {
+  const isApartment = useMemo(() => {
+    return isApartmentCategory(propertyCategoryName);
+  }, [propertyCategoryName]);
+
   // Use initialFloors if localFloors is not yet populated to avoid flash of incorrect calculations
   const activeFloors = useMemo(() => {
     return localFloors.length > 0 ? localFloors : (initialFloors || []);
@@ -238,6 +245,7 @@ export const useFloorAreaValidation = ({
 
   // 11. Construction Validation
   const isFloorAreaExceeded = useMemo(() => {
+    if (isApartment) return false;
     if (selectedFloorType !== 'Construction') return false;
     if (!selectedFloor && !isAddingNewFloor) return false;
 
@@ -251,10 +259,11 @@ export const useFloorAreaValidation = ({
     if (isEditingGroundFloor && grandTotalGroundUtilizedAreaSqM > roundedPlotArea) return true;
 
     return false;
-  }, [selectedFloorType, selectedFloor, isAddingNewFloor, isEditingGroundFloor, plotAreaSqM, enteredConstructionAreaSqM, grandTotalGroundUtilizedAreaSqM]);
+  }, [isApartment, selectedFloorType, selectedFloor, isAddingNewFloor, isEditingGroundFloor, plotAreaSqM, enteredConstructionAreaSqM, grandTotalGroundUtilizedAreaSqM]);
 
   // 12. Open Space Validation: Open Space Area + Ground Floor Area ("G - तळमजला") ≤ Total Plot Area
   const isOpenSpaceAreaExceeded = useMemo(() => {
+    if (isApartment) return false;
     if (selectedFloorType !== 'OpenPlot') return false;
     if (!selectedFloor && !isAddingNewFloor) return false;
 
@@ -264,15 +273,16 @@ export const useFloorAreaValidation = ({
     if (grandTotalGroundUtilizedAreaSqM > roundedPlotArea) return true;
 
     return false;
-  }, [selectedFloorType, selectedFloor, isAddingNewFloor, plotAreaSqM, enteredOpenSpaceAreaSqM, grandTotalGroundUtilizedAreaSqM]);
+  }, [isApartment, selectedFloorType, selectedFloor, isAddingNewFloor, plotAreaSqM, enteredOpenSpaceAreaSqM, grandTotalGroundUtilizedAreaSqM]);
 
   const isAreaExceeded = useMemo(() => {
     return isFloorAreaExceeded || isOpenSpaceAreaExceeded;
   }, [isFloorAreaExceeded, isOpenSpaceAreaExceeded]);
 
   const isPlotAreaZeroOrNegative = useMemo(() => {
+    if (isApartment) return false;
     return plotAreaSqM <= 0;
-  }, [plotAreaSqM]);
+  }, [isApartment, plotAreaSqM]);
 
   return {
     totalConstructionAreaSqM: totalAllFloorsConstructionAreaSqM,

@@ -128,6 +128,7 @@ export default function PropertyPartitionForm({
     errors,
     setErrors,
     floors,
+    allProperties,
   });
 
   // Use hooks for validation
@@ -288,6 +289,7 @@ export default function PropertyPartitionForm({
 
     const params = new URLSearchParams(searchParams.toString());
     params.delete("partitionPropertyId");
+    params.delete("partitionPropertyNo");
     router.push(`${pathname}?${params.toString()}`);
 
     onClose();

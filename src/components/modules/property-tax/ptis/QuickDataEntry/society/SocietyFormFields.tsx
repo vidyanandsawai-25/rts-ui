@@ -6,6 +6,10 @@ interface SocietyFormFieldsProps {
     t: (key: string) => string;
     managerMobileInput: ReturnType<typeof useDigitInputs>;
     secretaryMobileInput: ReturnType<typeof useDigitInputs>;
+    managerMobileCountryCode: string;
+    setManagerMobileCountryCode: (val: string) => void;
+    secretaryMobileCountryCode: string;
+    setSecretaryMobileCountryCode: (val: string) => void;
     managerEmail: string;
     setManagerEmail: (email: string) => void;
     secretaryEmail: string;
@@ -40,6 +44,10 @@ export const SocietyFormFields = ({
     t,
     managerMobileInput,
     secretaryMobileInput,
+    managerMobileCountryCode,
+    setManagerMobileCountryCode,
+    secretaryMobileCountryCode,
+    setSecretaryMobileCountryCode,
     managerEmail,
     setManagerEmail,
     secretaryEmail,
@@ -89,6 +97,10 @@ export const SocietyFormFields = ({
                 t={t}
                 managerMobileInput={managerMobileInput}
                 secretaryMobileInput={secretaryMobileInput}
+                managerMobileCountryCode={managerMobileCountryCode}
+                setManagerMobileCountryCode={setManagerMobileCountryCode}
+                secretaryMobileCountryCode={secretaryMobileCountryCode}
+                setSecretaryMobileCountryCode={setSecretaryMobileCountryCode}
                 managerEmail={managerEmail}
                 setManagerEmail={setManagerEmail}
                 secretaryEmail={secretaryEmail}

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft, MapPin } from 'lucide-react';
@@ -14,6 +14,7 @@ import {
     getPropertyTypeIdParam,
     GeoSequencingData
 } from '../CommonGeoSequencingColumns';
+import { SortConfig } from '@/lib/utils/automation-dashboard/sortUtils';
 import { GeoSequencingWardWiseItems, GeoSequencingWard } from '@/types/automation-dashboard/geo-sequencing/geo-sequencing.type';
 import { useFormattedDate } from '@/hooks/automation-dashboard/useFormattedDate';
 import { AutomationTable } from '@/components/common/AutomationTable';
@@ -21,6 +22,7 @@ import { DashboardFilterBar } from '@/components/modules/property-tax/automation
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
+import { getAssessmentStatusNavigationParams } from '@/lib/utils/automation-dashboard/assessmentStatusNavigation';
 
 interface GeoSequencingWardWiseDashboardProps {
     zoneId: string;
@@ -88,11 +90,40 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
 
             const typeIdParam = getPropertyTypeIdParam(columnKey);
 
-            const query = `?stage=geoSequencing&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
+            let structureUnitParam = '';
+            let assessmentTypeParam = '';
+            if (columnKey === 'geoStruct') {
+                structureUnitParam = '&Structure=true&Unit=false';
+            } else if (columnKey === 'geoUnit') {
+                structureUnitParam = '&Structure=false&Unit=true';
+            }
+
+            const assessmentParams = getAssessmentStatusNavigationParams(columnKey, row);
+            if (assessmentParams.isAssessmentStatusColumn) {
+                assessmentTypeParam = assessmentParams.assessmentTypeParam;
+                structureUnitParam = assessmentParams.structureUnitParam;
+            }
+
+            const query = `?stage=geoSequencing&source=ward&column=${columnKey}&wardWise=true&zoneId=${zoneId}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}${assessmentTypeParam}${structureUnitParam}`;
             router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
         }
     ), [t, locale, zoneId, workflowStageId, basePath, router, zoneNo]);
-    const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'ward'), [t]);
+
+    const [sortConfig, setSortConfig] = useState<SortConfig<GeoSequencingData> | null>(null);
+
+    const handleSort = (key: keyof GeoSequencingData) => {
+        setSortConfig((current) => {
+            if (!current || current.key !== key) {
+                return { key, direction: 'asc' };
+            }
+            if (current.direction === 'asc') {
+                return { key, direction: 'desc' };
+            }
+            return null;
+        });
+    };
+
+    const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'ward', sortConfig, handleSort), [t, sortConfig]);
 
     const tableData = useMemo<GeoSequencingData[]>(() => {
         if (!summaryData?.wardData) return [];
@@ -120,6 +151,10 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
             newlyUnit: ward.assessmentStatusBreakdown?.newlyAssessedFound?.unitCount ?? 0,
             inprocessStruct: ward.assessmentStatusBreakdown?.assessmentInProcess?.structureCount ?? 0,
             inprocessUnit: ward.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
+            assessedStatusId: ward.assessmentStatusBreakdown?.assessed?.statusId,
+            unassessedStatusId: ward.assessmentStatusBreakdown?.unassessed?.statusId,
+            newlyAssessedStatusId: ward.assessmentStatusBreakdown?.newlyAssessedFound?.statusId,
+            inprocessStatusId: ward.assessmentStatusBreakdown?.assessmentInProcess?.statusId,
         }));
 
         if (summaryData.totalRow) {
@@ -143,6 +178,10 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
                 newlyUnit: total.assessmentStatusBreakdown?.newlyAssessedFound?.unitCount ?? 0,
                 inprocessStruct: total.assessmentStatusBreakdown?.assessmentInProcess?.structureCount ?? 0,
                 inprocessUnit: total.assessmentStatusBreakdown?.assessmentInProcess?.unitCount ?? 0,
+                assessedStatusId: total.assessmentStatusBreakdown?.assessed?.statusId,
+                unassessedStatusId: total.assessmentStatusBreakdown?.unassessed?.statusId,
+                newlyAssessedStatusId: total.assessmentStatusBreakdown?.newlyAssessedFound?.statusId,
+                inprocessStatusId: total.assessmentStatusBreakdown?.assessmentInProcess?.statusId,
             });
         }
         return mappedWards;

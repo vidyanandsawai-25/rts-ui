@@ -1,0 +1,63 @@
+'use client';
+import { ApplyButton, ClearButton } from '@/components/common';
+import type { ReportParamsPanelCopy } from '@/types/report.types';
+
+interface ReportPanelActionBarProps {
+  isPending: boolean;
+  loadingParameters: boolean;
+  selectionMode: string;
+  fromProperty: string;
+  toProperty: string;
+  hasViewedProperties: boolean;
+  copy: ReportParamsPanelCopy;
+  handleResetAll: () => void;
+  handleSubmit: () => void;
+  setIsPropertyDrawerOpen: (open: boolean) => void;
+  setHasViewedProperties: (viewed: boolean) => void;
+}
+
+export function ReportPanelActionBar({
+  isPending,
+  loadingParameters,
+  selectionMode,
+  fromProperty,
+  toProperty,
+  hasViewedProperties,
+  copy,
+  handleResetAll,
+  handleSubmit,
+  setIsPropertyDrawerOpen,
+  setHasViewedProperties,
+}: ReportPanelActionBarProps) {
+  return (
+    <div className="flex gap-2.5 mt-2 pt-3 border-t border-gray-100">
+      <ClearButton
+        type="button"
+        size="md"
+        label={copy.buttons.reset}
+        onClick={handleResetAll}
+        disabled={isPending || loadingParameters}
+      />
+      <ApplyButton
+        type="button"
+        size="md"
+        label={copy.buttons.generate}
+        isLoading={isPending}
+        onClick={() => handleSubmit()}
+        disabled={isPending || loadingParameters || (selectionMode === 'range' && !hasViewedProperties)}
+        className="w-auto min-w-[150px] rounded-xl py-2.5 font-bold tracking-wide shadow-md hover:shadow-lg active:scale-95 transition-all duration-150"
+      />
+      <ApplyButton
+        type="button"
+        size="md"
+        label="Show Properties"
+        onClick={() => {
+          setIsPropertyDrawerOpen(true);
+          setHasViewedProperties(true);
+        }}
+        disabled={selectionMode !== 'range' || !fromProperty || !toProperty}
+        className="w-auto min-w-[150px] rounded-xl py-2.5 font-bold tracking-wide shadow-md hover:shadow-lg active:scale-95 transition-all duration-150"
+      />
+    </div>
+  );
+}

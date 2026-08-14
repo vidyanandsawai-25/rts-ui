@@ -28,11 +28,13 @@ type ActionResult<T> = {
  * @returns An object containing success status, data, and optional error message.
  */
 export async function getInternalSurveyGridAction(
-    workflowStageId?: string | number
+    workflowStageId?: string | number,
+    propertyTypeId?: string | null,
+    propertyTypeCategoryId?: string | null
 ): Promise<ActionResult<InternalSurveyGridItems>> {
     try {
-        logger.info("getInternalSurveyGridAction: Fetching internal survey grid data", { workflowStageId });
-        const data = await automationGetInternalSurveyGrid(workflowStageId);
+        logger.info("getInternalSurveyGridAction: Fetching internal survey grid data", { workflowStageId, propertyTypeId, propertyTypeCategoryId });
+        const data = await automationGetInternalSurveyGrid(workflowStageId, propertyTypeId, propertyTypeCategoryId);
         return { success: true, data };
     } catch (error) {
         logger.error("Failed to fetch internal survey grid data", { workflowStageId }, error);
@@ -56,12 +58,12 @@ export async function getInternalSurveyWardWiseSummaryAction(
     workflowStageId?: string | number,
     pageNumber: number = 1,
     pageSize: number = 10,
-    propertyTypeCategoryId?: string | null,
-    categoryId?: string | null
+    propertyTypeId?: string | null,
+    propertyTypeCategoryId?: string | null
 ): Promise<ActionResult<InternalSurveyWardWiseItems>> {
     try {
-        logger.info("getInternalSurveyWardWiseSummaryAction: Fetching ward-wise summary", { zoneId, workflowStageId, pageNumber, pageSize, propertyTypeCategoryId, categoryId });
-        const data = await automationGetInternalSurveyWardWiseSummary(zoneId, workflowStageId, pageNumber, pageSize, propertyTypeCategoryId, categoryId);
+        logger.info("getInternalSurveyWardWiseSummaryAction: Fetching ward-wise summary", { zoneId, workflowStageId, pageNumber, pageSize, propertyTypeId, propertyTypeCategoryId });
+        const data = await automationGetInternalSurveyWardWiseSummary(zoneId, workflowStageId, pageNumber, pageSize, propertyTypeId, propertyTypeCategoryId);
         return { success: true, data };
     } catch (error) {
         logger.error("Failed to fetch internal survey ward-wise summary data", { zoneId, workflowStageId, pageNumber, pageSize }, error);

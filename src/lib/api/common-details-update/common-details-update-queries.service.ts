@@ -64,10 +64,7 @@ export async function getBulkUpdateMenuServer(): Promise<BulkUpdateMaster[]> {
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.fetchMenuFailed"),
-      "getBulkUpdateMenuServer"
-    );
+      response.statusCode || 500, response.error || t("messages.fetchMenuFailed"), "");
   } catch (error) {
     throw error;
   }
@@ -190,10 +187,7 @@ export async function getBulkUpdateFieldConfigServer(
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.fetchFieldConfigFailed"),
-      "getBulkUpdateFieldConfigServer"
-    );
+      response.statusCode || 500, response.error || t("messages.fetchFieldConfigFailed"), "");
   } catch (error) {
     logger.error("Failed to fetch field configs", { updateCode, error });
     throw error;
@@ -312,8 +306,7 @@ export async function getPropertiesForFilterServer(
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.fetchPropertiesFailed"),
+      response.statusCode || 500, response.error || t("messages.fetchPropertiesFailed"),
       "getPropertiesForFilterServer"
     );
   } catch (error) {
@@ -326,7 +319,11 @@ export async function getPreviewListByCategoryServer(
   params: PropertyFilterByCategoryParams
 ): Promise<PagedResponse<PropertyPreviewRow>> {
   const queryParams = new URLSearchParams();
-  queryParams.append("UpdateCode", params.UpdateCode);
+  if (Array.isArray(params.UpdateCode)) {
+    params.UpdateCode.forEach(code => queryParams.append("UpdateCode", code));
+  } else {
+    queryParams.append("UpdateCode", params.UpdateCode);
+  }
   queryParams.append("SearchCategory", String(params.SearchCategory));
   queryParams.append("WardId", String(params.WardId));
   if (params.SearchTerm !== undefined) {
@@ -400,10 +397,7 @@ export async function getPreviewListByCategoryServer(
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.fetchPropertiesFailed"),
-      "getPreviewListByCategoryServer"
-    );
+      response.statusCode || 500, response.error || t("messages.fetchPropertiesFailed"), "");
   } catch (error) {
     logger.error("getPreviewListByCategoryServer: Error", {}, error);
     throw error;
@@ -430,8 +424,7 @@ export async function getWardsPagedServer(
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.fetchWardsFailed"),
+      response.statusCode || 500, response.error || t("messages.fetchWardsFailed"),
       "getWardsPagedServer"
     );
   } catch (error) {
@@ -891,28 +884,51 @@ export async function getFieldRegistryColumnsServer(
   }
 }
 
-export async function exportExcelServer(
-  wardId: string,
-  updateCode: string,
-  fromPropertyNo?: string,
-  toPropertyNo?: string
-): Promise<string> {
+export async function exportExcelServer(params: {
+  updateCode?: string;
+  wardId?: string;
+  fromPropertyNo?: string;
+  toPropertyNo?: string;
+  propertyNo?: string;
+  partitionNo?: string;
+  withData?: boolean | string;
+  [key: string]: any;
+}): Promise<string> {
   const cookieStore = await cookies();
   const authToken = cookieStore.get("auth_token")?.value;
 
   if (!authToken) {
     const t = await getTranslations("commonDetailsUpdate");
-    throw new ApiError(401, t("messages.unauthorized") || "Unauthorized", "exportExcelServer");
+    throw new ApiError(401, t("messages.unauthorized") || "Unauthorized", "");
   }
 
   const config = getAppConfig();
-  const params = new URLSearchParams();
-  params.append("WardId", wardId);
-  params.append("UpdateCode", updateCode);
-  if (fromPropertyNo) params.append("FromPropertyNo", fromPropertyNo);
-  if (toPropertyNo) params.append("ToPropertyNo", toPropertyNo);
+  const queryParams = new URLSearchParams();
 
-  const backendUrl = `${config.api.baseUrl.replace(/\/$/, "")}/CommonDetails/export-excel?${params.toString()}`;
+  const updateCode = params.updateCode || params.UpdateCode || params.fieldCode || params.field;
+  if (updateCode) queryParams.append("UpdateCode", String(updateCode));
+
+  const wardId = params.wardId || params.WardId;
+  if (wardId) queryParams.append("WardId", String(wardId));
+
+  const fromPropertyNo = params.fromPropertyNo || params.FromPropertyNo || params.fromProperty || params.FromProperty;
+  if (fromPropertyNo) queryParams.append("FromPropertyNo", String(fromPropertyNo));
+
+  const toPropertyNo = params.toPropertyNo || params.ToPropertyNo || params.toProperty || params.ToProperty;
+  if (toPropertyNo) queryParams.append("ToPropertyNo", String(toPropertyNo));
+
+  const propertyNo = params.propertyNo || params.PropertyNo;
+  if (propertyNo) queryParams.append("PropertyNo", String(propertyNo));
+
+  const partitionNo = params.partitionNo || params.PartitionNo;
+  if (partitionNo) queryParams.append("PartitionNo", String(partitionNo));
+
+  const withData = params.withData ?? params.WithData;
+  if (withData !== undefined && withData !== null && withData !== "") {
+    queryParams.append("WithData", String(withData));
+  }
+
+  const backendUrl = `${config.api.baseUrl.replace(/\/$/, "")}/CommonDetails/export-excel?${queryParams.toString()}`;
 
   logger.info("exportExcelServer: Proxying request", { backendUrl });
 
@@ -924,7 +940,16 @@ export async function exportExcelServer(
   });
 
   if (!response.ok) {
-    throw new ApiError(response.status, `Backend API error: ${response.statusText}`, "exportExcelServer");
+    let errorMsg = `Backend API error: ${response.statusText}`;
+    try {
+      const errorJson = await response.json();
+      if (errorJson && (errorJson.message || errorJson.error)) {
+        errorMsg = errorJson.message || errorJson.error;
+      }
+    } catch {
+      // ignore json parse error
+    }
+    throw new ApiError(response.status, errorMsg, "");
   }
 
   const fileBuffer = await response.arrayBuffer();
@@ -940,12 +965,14 @@ export async function getUpdateHistoryServer(
     const { apiClient } = await import("@/services/api.service");
 
     const urlParams = new URLSearchParams();
-    if (params.UpdateName) urlParams.append("UpdateName", params.UpdateName);
-    if (params.WardNo) urlParams.append("WardNo", params.WardNo);
-    if (params.PropertyNo) urlParams.append("PropertyNo", params.PropertyNo);
-    if (params.PartitionNo) urlParams.append("PartitionNo", params.PartitionNo);
-    if (params.UpdatedColumns) urlParams.append("UpdatedColumns", params.UpdatedColumns);
-    if (params.Username) urlParams.append("Username", params.Username);
+    if (params.Id !== undefined) urlParams.append("Id", params.Id.toString());
+    if (params.ActivityId) urlParams.append("ActivityId", params.ActivityId);
+    if (params.ActivityType) urlParams.append("ActivityType", params.ActivityType);
+    if (params.ActivityStatus) urlParams.append("ActivityStatus", params.ActivityStatus);
+    if (params.CreatedDateFrom) urlParams.append("CreatedDateFrom", params.CreatedDateFrom);
+    if (params.CreatedDateTo) urlParams.append("CreatedDateTo", params.CreatedDateTo);
+    if (params.DoneBy) urlParams.append("DoneBy", params.DoneBy);
+    if (params.Remarks) urlParams.append("Remarks", params.Remarks);
     if (params.PageNumber) urlParams.append("PageNumber", params.PageNumber.toString());
     if (params.PageSize) urlParams.append("PageSize", params.PageSize.toString());
     if (params.SearchTerm) urlParams.append("SearchTerm", params.SearchTerm);
@@ -954,7 +981,7 @@ export async function getUpdateHistoryServer(
     if (params.FilterLogic) urlParams.append("FilterLogic", params.FilterLogic);
 
     const queryString = urlParams.toString();
-    const url = `/CommonDetails/update-history${queryString ? `?${queryString}` : ""}`;
+    const url = `/CommonDetails/update-activity${queryString ? `?${queryString}` : ""}`;
 
     const response = await apiClient.get<ApiWrappedResponse<PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>>>(url);
 
@@ -966,9 +993,48 @@ export async function getUpdateHistoryServer(
       return normalizePagedResponse(response.data as unknown as PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>);
     }
 
-    throw new ApiError(500, response.message || "Failed to fetch update history", "getUpdateHistoryServer");
+    throw new ApiError(500, response.message || "Failed to fetch update history", "");
   } catch (error) {
     logger.error("Error fetching update history", { params } as any, error);
+    throw error;
+  }
+}
+
+export async function getUpdateHistoryDetailServer(
+  activityId: string,
+  pageNumber?: number,
+  pageSize?: number,
+  searchTerm?: string
+): Promise<PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem>> {
+  try {
+    const { apiClient } = await import("@/services/api.service");
+
+    const urlParams = new URLSearchParams();
+    if (activityId) {
+      urlParams.append("activityid", activityId);
+    }
+    urlParams.append("PageSize", String(pageSize ?? 10));
+    urlParams.append("PageNumber", String(pageNumber ?? 1));
+    if (searchTerm && searchTerm.trim()) {
+      urlParams.append("SearchTerm", searchTerm.trim());
+    }
+
+    const queryString = urlParams.toString();
+    const url = `/CommonDetails/update-history?${queryString}`;
+
+    const response = await apiClient.get<ApiWrappedResponse<PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem>>>(url);
+
+    if (response.success && response.data) {
+      const data = response.data as unknown as Record<string, unknown>;
+      if (data.items && typeof data.items === 'object' && Array.isArray((data.items as any).items)) {
+        return normalizePagedResponse(data.items as PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem>);
+      }
+      return normalizePagedResponse(response.data as unknown as PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem>);
+    }
+
+    throw new ApiError(500, response.message || "Failed to fetch update history details", "");
+  } catch (error) {
+    logger.error("Error fetching update history details", { activityId, pageNumber, pageSize, searchTerm } as any, error);
     throw error;
   }
 }
@@ -981,23 +1047,25 @@ export async function exportUpdateHistoryServer(
 
   if (!authToken) {
     const t = await getTranslations("commonDetailsUpdate");
-    throw new ApiError(401, t("messages.unauthorized") || "Unauthorized", "exportUpdateHistoryServer");
+    throw new ApiError(401, t("messages.unauthorized") || "Unauthorized", "");
   }
 
   try {
     const { apiClient } = await import("@/services/api.service");
 
     const urlParams = new URLSearchParams();
-    if (params.UpdateName) urlParams.append("UpdateName", params.UpdateName);
-    if (params.WardNo) urlParams.append("WardNo", params.WardNo);
-    if (params.PropertyNo) urlParams.append("PropertyNo", params.PropertyNo);
-    if (params.PartitionNo) urlParams.append("PartitionNo", params.PartitionNo);
-    if (params.UpdatedColumns) urlParams.append("UpdatedColumns", params.UpdatedColumns);
-    if (params.Username) urlParams.append("Username", params.Username);
+    if (params.Id !== undefined) urlParams.append("Id", params.Id.toString());
+    if (params.ActivityId) urlParams.append("ActivityId", params.ActivityId);
+    if (params.ActivityType) urlParams.append("ActivityType", params.ActivityType);
+    if (params.ActivityStatus) urlParams.append("ActivityStatus", params.ActivityStatus);
+    if (params.CreatedDateFrom) urlParams.append("CreatedDateFrom", params.CreatedDateFrom);
+    if (params.CreatedDateTo) urlParams.append("CreatedDateTo", params.CreatedDateTo);
+    if (params.DoneBy) urlParams.append("DoneBy", params.DoneBy);
+    if (params.Remarks) urlParams.append("Remarks", params.Remarks);
     if (params.SearchTerm) urlParams.append("SearchTerm", params.SearchTerm);
 
     const queryString = urlParams.toString();
-    const url = `/CommonDetails/update-history/export-excel${queryString ? `?${queryString}` : ""}`;
+    const url = `/CommonDetails/update-activity/export-excel${queryString ? `?${queryString}` : ""}`;
 
     const response = await apiClient.fetch(url, { method: "GET" }, true);
     
@@ -1010,7 +1078,7 @@ export async function exportUpdateHistoryServer(
         const errText = await response.text().catch(() => "");
         if (errText) errorMsg = errText;
       }
-      throw new ApiError(response.status, errorMsg, "exportUpdateHistoryServer");
+      throw new ApiError(response.status, errorMsg, "");
     }
 
     const contentType = response.headers.get("content-type") || "";
@@ -1021,7 +1089,7 @@ export async function exportUpdateHistoryServer(
         const data = await clonedResponse.json();
         if (data && data.data) return data.data;
         if (typeof data === "string") return data;
-        throw new ApiError(500, data.message || "Failed to export update history", "exportUpdateHistoryServer");
+        throw new ApiError(500, data.message || "Failed to export update history", "");
       } catch (e) {
         // If it throws SyntaxError, it's not actually JSON!
         // Ignore the error and fall through to reading the arrayBuffer from the original response.

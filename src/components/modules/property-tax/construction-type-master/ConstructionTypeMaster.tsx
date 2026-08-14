@@ -133,11 +133,17 @@ export function ConstructionTypeMaster({
           actionLabel={t("list.buttons.add")}
           onActionClick={() => {
             startTransition(() => {
-                router.push(`/${locale}/property-tax/constructiontype/add`);
+              router.push(`/${locale}/property-tax/constructiontype/add`);
             });
           }}
           rightContent={
-            <div className="flex w-full justify-end">
+            <div
+              className={
+                locale === "en"
+                  ? "flex w-[23rem] max-[899px]:w-full justify-end"
+                  : "flex w-full justify-end"
+              }
+            >
               <SearchInput
                 value={search}
                 onChange={handleSearchChange}

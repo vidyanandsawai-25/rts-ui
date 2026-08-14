@@ -140,6 +140,24 @@
     "loading": "Loading...",
     "selectZoneFirst": "Select zone first",
     "selectWardFirst": "Select ward first",
+    "selectMode": "Select mode",
+    "wardWise": "Ward Wise",
+    "fromToProperty": "From - To Property",
+    "individualProperty": "Individual Property",
+    "propertyDescription": "Property Description",
+    "selectDescription": "Select description",
+    "assessmentType": "Assessment Type",
+    "selectAssessmentType": "Select assessment type",
+    "propertyDemand": "Property Demand",
+    "greaterThan": "Greater Than",
+    "lessThan": "Less Than",
+    "top": "Top",
+    "enterAmount": "Enter amount",
+    "eg1": "e.g. 1",
+    "eg10": "e.g. 10",
+    "egPropertyNo": "e.g. 101 or 101/A/1",
+    "propertiesSelected": "properties selected",
+    "viewEdit": "View / Edit",
     "validation": {
       "financialYearRequired": "Financial year is required.",
       "zoneRequired": "Zone is required.",
@@ -148,7 +166,7 @@
       "networkError": "Network error. Please try again.",
       "failedToQueue": "Failed to queue report"
     },
-    "queuedSuccess": "Report queued! It will appear in the jobs list when ready.",
+
     "reportQueued": "Report \"{name}\" request submitted successfully.",
     "buttons": {
       "reset": "Reset",

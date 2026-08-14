@@ -1,8 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { ArrowUpDown, ArrowUp } from 'lucide-react';
-import { formatIndianNumber } from '@/lib/utils/numberUtils';
+
 import { getCommonDivisionColumn, getCommonSrColumn } from '../CommonColumns/CommonColumns';
 import type { Column, HeaderCell } from '@/components/common/AutomationTable';
+import type { SortConfig } from '@/lib/utils/automation-dashboard/sortUtils';
+import { renderSortableHeader, ViewType } from '../CommonColumns/SortHeader';
+import { formatIndianNumber } from '@/lib/utils/numberUtils';
+
 
 export type GeoSequencingData = {
     sr: number | string;
@@ -23,16 +25,18 @@ export type GeoSequencingData = {
     newlyUnit: string | number;
     inprocessStruct: string | number;
     inprocessUnit: string | number;
+    assessedStatusId?: number;
+    unassessedStatusId?: number;
+    newlyAssessedStatusId?: number;
+    inprocessStatusId?: number;
     isTotal?: boolean;
     wardId?: number;
     zoneId?: number;
     zoneNo?: string;
 };
 
-type ViewType = 'zone' | 'ward';
-
 export const getGeoSequencingSharedColumns = (
-    _t: any,
+    _t: (key: string) => string,
     viewType: ViewType,
     onRowClick?: (id: string, row: GeoSequencingData) => void,
     linkHref?: (id: string) => string,
@@ -90,27 +94,12 @@ export const getGeoSequencingSharedColumns = (
     return baseColumns;
 };
 
-const SortIcon = () => (
-    <ArrowUpDown className="inline-block ml-1 w-3 h-3 text-slate-400 opacity-60" />
-);
-
-const ActiveSortIcon = () => (
-    <ArrowUp className="inline-block ml-1 w-3 h-3 text-slate-500" />
-);
-
-const renderHeader = (title: string, showSort: boolean = true, activeSort: boolean = false) => (
-    <div className="flex items-center justify-center gap-1 font-bold text-[14px] text-slate-700">
-        {title} {showSort && (activeSort ? <ActiveSortIcon /> : <SortIcon />)}
-    </div>
-);
-
-const renderLeftHeader = (title: string, showSort: boolean = true, activeSort: boolean = false) => (
-    <div className="flex items-center justify-start gap-1 font-bold text-[15px] text-slate-700 uppercase">
-        {title} {showSort && (activeSort ? <ActiveSortIcon /> : <SortIcon />)}
-    </div>
-);
-
-export const getGeoSequencingSharedHeaderRows = (t: any, viewType: ViewType): HeaderCell[][] => {
+export const getGeoSequencingSharedHeaderRows = (
+    t: (key: string) => string,
+    viewType: ViewType,
+    sortConfig?: SortConfig<GeoSequencingData> | null,
+    onSort?: (key: keyof GeoSequencingData) => void
+): HeaderCell[][] => {
     const topRow: HeaderCell[] = [
         {
             label: <div className="font-bold text-[15px] text-slate-700 uppercase">{t('geoSequencing.columns.sr')}</div>,
@@ -119,7 +108,7 @@ export const getGeoSequencingSharedHeaderRows = (t: any, viewType: ViewType): He
             headerClassName: 'bg-slate-50 min-w-[40px]'
         },
         {
-            label: renderLeftHeader(viewType === 'zone' ? t('geoSequencing.columns.division') : t('geoSequencing.columns.wardNo'), true, true),
+            label: renderSortableHeader(viewType === 'zone' ? t('geoSequencing.columns.division') : t('geoSequencing.columns.wardNo'), 'division', sortConfig, onSort, true, viewType),
             rowSpan: 2,
             align: 'left',
             headerClassName: 'bg-slate-50 min-w-[180px] cursor-pointer hover:bg-slate-100 transition-colors'
@@ -128,7 +117,7 @@ export const getGeoSequencingSharedHeaderRows = (t: any, viewType: ViewType): He
 
     if (viewType === 'zone') {
         topRow.push({
-            label: renderHeader(t('geoSequencing.columns.registeredProperties'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.registeredProperties'), 'registered', sortConfig, onSort, false, viewType),
             rowSpan: 2,
             align: 'center',
             headerClassName: 'bg-emerald-50/50 min-w-[100px] cursor-pointer hover:bg-emerald-100/50 transition-colors'
@@ -176,77 +165,77 @@ export const getGeoSequencingSharedHeaderRows = (t: any, viewType: ViewType): He
 
     const bottomRow: HeaderCell[] = [
         {
-            label: renderHeader(t('geoSequencing.columns.structure'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.structure'), 'geoStruct', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer'
         },
         {
-            label: renderHeader(t('geoSequencing.columns.unit'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.unit'), 'geoUnit', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer'
         },
         {
-            label: renderHeader(t('geoSequencing.columns.residential'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.residential'), 'propRes', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer'
         },
         {
-            label: renderHeader(t('geoSequencing.columns.nonResidential'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.nonResidential'), 'propNonRes', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer'
         },
         {
-            label: renderHeader(t('geoSequencing.columns.mixed'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.mixed'), 'propMixed', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer'
         },
         {
-            label: renderHeader(t('geoSequencing.columns.publicUtility'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.publicUtility'), 'propPublic', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer'
         },
         {
-            label: renderHeader(t('geoSequencing.columns.underConstruction'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.underConstruction'), 'propUnder', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer'
         },
         {
-            label: renderHeader(t('geoSequencing.columns.structure'), false, false),
-            align: 'center',
-            headerClassName: 'bg-green-50'
-        },
-        {
-            label: renderHeader(t('geoSequencing.columns.units'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.structure'), 'assessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-green-50 hover:bg-green-100 transition-colors cursor-pointer'
         },
         {
-            label: renderHeader(t('geoSequencing.columns.structure'), false, false),
+            label: renderSortableHeader(t('geoSequencing.columns.units'), 'assessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-orange-50'
+            headerClassName: 'bg-green-50 hover:bg-green-100 transition-colors cursor-pointer'
         },
         {
-            label: renderHeader(t('geoSequencing.columns.units'), true, false),
-            align: 'center',
-            headerClassName: 'bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer'
-        },
-        {
-            label: renderHeader(t('geoSequencing.columns.structure'), true, false),
-            align: 'center',
-            headerClassName: 'bg-emerald-50 hover:bg-emerald-100 transition-colors cursor-pointer'
-        },
-        {
-            label: renderHeader(t('geoSequencing.columns.unit'), true, false),
-            align: 'center',
-            headerClassName: 'bg-emerald-50 hover:bg-emerald-100 transition-colors cursor-pointer'
-        },
-        {
-            label: renderHeader(t('geoSequencing.columns.structure'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.structure'), 'unassessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer'
         },
         {
-            label: renderHeader(t('geoSequencing.columns.unit'), true, false),
+            label: renderSortableHeader(t('geoSequencing.columns.units'), 'unassessUnit', sortConfig, onSort, false, viewType),
+            align: 'center',
+            headerClassName: 'bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer'
+        },
+        {
+            label: renderSortableHeader(t('geoSequencing.columns.structure'), 'newlyStruct', sortConfig, onSort, false, viewType),
+            align: 'center',
+            headerClassName: 'bg-emerald-50 hover:bg-emerald-100 transition-colors cursor-pointer'
+        },
+        {
+            label: renderSortableHeader(t('geoSequencing.columns.unit'), 'newlyUnit', sortConfig, onSort, false, viewType),
+            align: 'center',
+            headerClassName: 'bg-emerald-50 hover:bg-emerald-100 transition-colors cursor-pointer'
+        },
+        {
+            label: renderSortableHeader(t('geoSequencing.columns.structure'), 'inprocessStruct', sortConfig, onSort, false, viewType),
+            align: 'center',
+            headerClassName: 'bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer'
+        },
+        {
+            label: renderSortableHeader(t('geoSequencing.columns.unit'), 'inprocessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
             headerClassName: 'bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer'
         }
@@ -257,11 +246,11 @@ export const getGeoSequencingSharedHeaderRows = (t: any, viewType: ViewType): He
 
 export const getPropertyTypeIdParam = (columnKey: string): string => {
     switch (columnKey) {
-        case 'propRes': return '&propertyTypeId=1';
-        case 'propNonRes': return '&propertyTypeId=2';
-        case 'propMixed': return '&propertyTypeId=3';
-        case 'propPublic': return '&propertyTypeId=5';
-        case 'propUnder': return '&propertyTypeId=6';
+        case 'propRes': return '&PropertyTypeCategoryId=1';
+        case 'propNonRes': return '&PropertyTypeCategoryId=2';
+        case 'propMixed': return '&PropertyTypeCategoryId=3';
+        case 'propPublic': return '&PropertyTypeCategoryId=5';
+        case 'propUnder': return '&PropertyTypeCategoryId=6';
         default: return '';
     }
 };

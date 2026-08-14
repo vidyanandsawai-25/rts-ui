@@ -9,10 +9,26 @@ import {
   PendingAssessmentResponse
 } from "@/types/automation-dashboard/assessment/assessmentgrid.type";
 
-export async function automationGetAssessmentGrid(workflowStageId?: string | number, type: AssessmentGridType = "Total"): Promise<AssessmentGridItems | null> {
-  const url = workflowStageId !== undefined && workflowStageId !== null
-    ? `/AutomationDashboard/AssessmentGrid?workflowStageId=${workflowStageId}&type=${type}`
-    : `/AutomationDashboard/AssessmentGrid?type=${type}`;
+export async function automationGetAssessmentGrid(
+  workflowStageId?: string | number,
+  type: AssessmentGridType = "Total",
+  propertyTypeId?: string | number,
+  propertyTypeCategoryId?: string | number
+): Promise<AssessmentGridItems | null> {
+  const params = new URLSearchParams();
+  params.append("type", type);
+  
+  if (workflowStageId !== undefined && workflowStageId !== null) {
+    params.append("workflowStageId", workflowStageId.toString());
+  }
+  if (propertyTypeId !== undefined && propertyTypeId !== null && propertyTypeId !== 'All') {
+    params.append("PropertyTypeId", propertyTypeId.toString());
+  }
+  if (propertyTypeCategoryId !== undefined && propertyTypeCategoryId !== null && propertyTypeCategoryId !== 'All') {
+    params.append("PropertyTypeCategoryId", propertyTypeCategoryId.toString());
+  }
+
+  const url = `/AutomationDashboard/AssessmentGrid?${params.toString()}`;
 
   const response = await apiClient.get<AssessmentGridResponse>(url, { cache: "force-cache" });
   const t = await getTranslations("automationDashboard");

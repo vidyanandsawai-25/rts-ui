@@ -5,15 +5,17 @@ import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-da
 
 interface Props {
     params: Promise<{ locale: string }>;
-    searchParams: Promise<{ workflowStageId?: string, isFilter?: string }>;
+    searchParams: Promise<{ workflowStageId?: string; isFilter?: string; propertyTypeId?: string; propertyTypeCategoryId?: string; }>;
 }
 
 export default async function InternalSurveyPageServer(props: Props) {    
     const resolvedParams = await props.searchParams;
     const workflowStageId = resolvedParams?.workflowStageId;
+    const propertyTypeId = resolvedParams?.propertyTypeId;
+    const propertyTypeCategoryId = resolvedParams?.propertyTypeCategoryId;
 
     const [dataResult] = await Promise.all([
-        getInternalSurveyGridAction(workflowStageId)
+        getInternalSurveyGridAction(workflowStageId, propertyTypeId, propertyTypeCategoryId)
     ]);
 
     let propertyDescriptions: PropertyTypeMasterItem[] = [];

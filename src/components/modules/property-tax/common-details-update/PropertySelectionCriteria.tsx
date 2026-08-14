@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { SearchSelect, ValidationMessage, SaveButton, CancelButton } from "@/components/common";
+import { SearchSelect, SaveButton, CancelButton } from "@/components/common";
 import { PropertyRangeFields } from "./PropertyRangeFields";
 
 interface PropertySelectionCriteriaProps {
@@ -49,6 +49,10 @@ interface PropertySelectionCriteriaProps {
   toPropertySearchTerm?: string;
   onToPropertySearchChange?: (val: string) => void;
   loadingToPropertyOptions?: boolean;
+  hideActionButtons?: boolean;
+  fieldClassName?: string;
+  renderChildrenInline?: boolean;
+  children?: React.ReactNode;
 }
 
 export const PropertySelectionCriteria = ({
@@ -96,9 +100,13 @@ export const PropertySelectionCriteria = ({
   toPropertySearchTerm,
   onToPropertySearchChange,
   loadingToPropertyOptions,
+  hideActionButtons,
+  fieldClassName,
+  renderChildrenInline = false,
+  children,
 }: PropertySelectionCriteriaProps) => {
   return (
-    <div className="grid grid-cols-12 gap-4 items-start relative z-50">
+    <div className="grid grid-cols-12 gap-x-2 items-start relative z-50">
       <div className="col-span-12 lg:col-span-2 relative z-[60]">
         <div className="block text-sm font-medium mb-1.5 text-slate-700">
           {t("propertyCriteria.selectionCriteria")}
@@ -130,10 +138,6 @@ export const PropertySelectionCriteria = ({
             placeholder={t("filter.selectZone")} // Add translation
             required
           />
-          <ValidationMessage
-            visible={filterSubmitted && !filterValues.zoneId}
-            message={t("messages.zoneRequired")}
-          />
         </div>
       )}
 
@@ -150,10 +154,6 @@ export const PropertySelectionCriteria = ({
             placeholder={t("filter.selectWard")}
             required
             disabled={activeScopeDetails?.options.includes("Zone") && !filterValues.zoneId}
-          />
-          <ValidationMessage
-            visible={filterSubmitted && !filterValues.wardId}
-            message={t("messages.wardRequired")}
           />
         </div>
       )}
@@ -175,10 +175,6 @@ export const PropertySelectionCriteria = ({
             }
             placeholder={t("filter.selectPropertyType")}
             required
-          />
-          <ValidationMessage
-            visible={filterSubmitted && !filterValues.propertyTypeId}
-            message={t("messages.propertyTypeRequired")}
           />
         </div>
       )}
@@ -213,22 +209,34 @@ export const PropertySelectionCriteria = ({
         toPropertySearchTerm={toPropertySearchTerm}
         onToPropertySearchChange={onToPropertySearchChange}
         loadingToPropertyOptions={loadingToPropertyOptions}
+        fieldClassName={fieldClassName}
       />
 
-      <div className="col-span-12 lg:col-span-2 flex gap-2 shrink-0 items-end mt-6">
-        <SaveButton
-          label={loadingShowProperties ? t("loading.message") : t("filter.show")}
-          onClick={handleShowProperties}
-          disabled={loadingShowProperties || !canShowProperties}
-          size="sm"
-        />
-        <CancelButton
-          label={t("filter.clear")}
-          onClick={handleFilterCancel}
-          size="sm"
-          disabled={!hasAnyFilterValue}
-        />
-      </div>
+      {!hideActionButtons && (
+        <div className="col-span-12 lg:col-span-2 flex gap-2 shrink-0 items-end mt-6">
+          <SaveButton
+            label={loadingShowProperties ? t("loading.message") : t("filter.show")}
+            onClick={handleShowProperties}
+            disabled={loadingShowProperties || !canShowProperties}
+            size="sm"
+          />
+          <CancelButton
+            label={t("filter.clear")}
+            onClick={handleFilterCancel}
+            size="sm"
+            disabled={!hasAnyFilterValue}
+          />
+        </div>
+      )}
+
+      {children && !renderChildrenInline && (
+        <div className="col-span-12 mt-2 pt-2 border-t border-gray-100 flex items-center gap-x-2 flex-wrap">
+          {children}
+        </div>
+      )}
+      {children && renderChildrenInline && (
+        <>{children}</>
+      )}
     </div>
   );
 };

@@ -151,7 +151,7 @@ export function buildParamsCopy(t: Translator): ReportParamsPanelCopy {
       networkError: t('params.validation.networkError'),
       failedToQueue: t('params.validation.failedToQueue'),
     },
-    queuedSuccess: t('params.queuedSuccess'),
+
     reportQueued: t.raw('params.reportQueued'),
     buttons: {
       reset: t('params.buttons.reset'),

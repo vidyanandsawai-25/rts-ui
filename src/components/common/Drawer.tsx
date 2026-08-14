@@ -13,6 +13,7 @@ interface DrawerProps {
   open: boolean;
   onClose: () => void;
   title?: React.ReactNode;
+  headerActions?: React.ReactNode;
   className?: string;
   bodyClassName?: string;
   description?: string;
@@ -26,6 +27,7 @@ export function Drawer({
   open,
   onClose,
   title,
+  headerActions,
   width = "md",
   children,
   footer,
@@ -282,6 +284,7 @@ export function Drawer({
 
             <div className="flex items-center gap-3">
               {renderWarningPill()}
+              {headerActions}
               <button
                 onClick={onClose}
                 className="

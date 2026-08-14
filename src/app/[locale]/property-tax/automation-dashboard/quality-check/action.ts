@@ -28,11 +28,13 @@ type ActionResult<T> = {
  * @returns An object containing success status, data, and optional error message.
  */
 export async function getDataEntryGridAction(
-    workflowStageId?: string | number
+    workflowStageId?: string | number,
+    propertyTypeId?: string | null,
+    propertyTypeCategoryId?: string | null
 ): Promise<ActionResult<DataEntryGridItems>> {
     try {
-        logger.info("getDataEntryGridAction: Fetching data entry grid data", { workflowStageId });
-        const data = await automationGetDataEntryGrid(workflowStageId);
+        logger.info("getDataEntryGridAction: Fetching data entry grid data", { workflowStageId, propertyTypeId, propertyTypeCategoryId });
+        const data = await automationGetDataEntryGrid(workflowStageId, propertyTypeId, propertyTypeCategoryId);
         return { success: true, data };
     } catch (error) {
         logger.error("Failed to fetch data entry grid data", { workflowStageId }, error);
@@ -56,12 +58,12 @@ export async function getDataEntryWardWiseSummaryAction(
     workflowStageId?: string | number,
     pageNumber: number = 1,
     pageSize: number = 10,
-    propertyTypeCategoryId?: string | null,
-    categoryId?: string | null
+    propertyTypeId?: string | null,
+    propertyTypeCategoryId?: string | null
 ): Promise<ActionResult<DataEntryWardWiseSummaryItems>> {
     try {
-        logger.info("getDataEntryWardWiseSummaryAction: Fetching ward-wise summary", { zoneId, workflowStageId, pageNumber, pageSize, propertyTypeCategoryId, categoryId });
-        const data = await automationGetDataEntryWardWiseSummary(zoneId, workflowStageId, pageNumber, pageSize, propertyTypeCategoryId, categoryId);
+        logger.info("getDataEntryWardWiseSummaryAction: Fetching ward-wise summary", { zoneId, workflowStageId, pageNumber, pageSize, propertyTypeId, propertyTypeCategoryId });
+        const data = await automationGetDataEntryWardWiseSummary(zoneId, workflowStageId, pageNumber, pageSize, propertyTypeId, propertyTypeCategoryId);
         return { success: true, data };
     } catch (error) {
         logger.error("Failed to fetch data entry ward-wise summary data", { zoneId, workflowStageId, pageNumber, pageSize }, error);

@@ -55,10 +55,11 @@ export async function createTaxZone(data: TaxZoneFormModel): Promise<void> {
     taxZoneType: data.taxZoneType?.trim() || "",
     remark: data.remark?.trim() || "",
     isActive: data.isActive,
+    ...(data.createdBy != null ? { createdBy: data.createdBy } : {}),
   };
- 
+
   const response = await apiClient.post<void>("/TaxZone", payload);
- 
+
   if (!response.success) {
     throw new ApiError(
       response.statusCode || 500,
@@ -76,6 +77,7 @@ export async function updateTaxZone(data: TaxZoneFormModel): Promise<void> {
     taxZoneType: data.taxZoneType?.trim() || "",
     remark: data.remark?.trim() || "",
     isActive: data.isActive,
+    ...(data.updatedBy != null ? { updatedBy: data.updatedBy } : {}),
   };
  
   const response = await apiClient.put<void>(`/TaxZone/${data.id}`, payload);

@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { KycDetails, KycFormData } from '@/types/property-kyc.types';
 import { kycValidators, enhancedKycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
+import { extractCountryCode } from '@/lib/utils/kyc-validation/country-code.utils';
 
 /**
  * Hook for KYC form validation logic
@@ -60,8 +61,10 @@ export const useKycFormValidation = (
       (formData.addressEnglish ?? '') !== initialAddressEnglish ||
       (formData.location ?? '') !== (KycDetailsData?.location ?? '') ||
       String(formData.pinCode ?? '') !== String(KycDetailsData?.pinCode ?? '') ||
-      mobileInput.value !== (KycDetailsData?.mobileNo ?? '').replace(/\D/g, '') ||
-      alternateMobileInput.value !== (KycDetailsData?.alternateMobileNo ?? '').replace(/\D/g, '') ||
+      (formData.mobileCountryCode ?? '91') !== extractCountryCode(KycDetailsData?.mobileNo).countryCode ||
+      mobileInput.value !== extractCountryCode(KycDetailsData?.mobileNo).mobileNo ||
+      (formData.alternateMobileCountryCode ?? '91') !== extractCountryCode(KycDetailsData?.alternateMobileNo).countryCode ||
+      alternateMobileInput.value !== extractCountryCode(KycDetailsData?.alternateMobileNo).mobileNo ||
       aadharInput.value !== ((KycDetailsData?.adharCardNo ?? KycDetailsData?.aadharCardNo) ?? '').replace(/\D/g, '')
     );
   }, [formData, mobileInput.value, alternateMobileInput.value, aadharInput.value, KycDetailsData]);
@@ -106,8 +109,8 @@ export const useKycFormValidation = (
     const isPinCodeValid = kycValidators.isValidPinCode(pinCode);
 
     // Check mobile and aadhar validity
-    const isMobileValid = kycValidators.isValidMobile(mobileInput.value);
-    const isAlternateMobileValid = kycValidators.isValidMobile(alternateMobileInput.value);
+    const isMobileValid = kycValidators.isValidMobile(mobileInput.value) && (!mobileInput.value || (formData.mobileCountryCode || '91').length === 2);
+    const isAlternateMobileValid = kycValidators.isValidMobile(alternateMobileInput.value) && (!alternateMobileInput.value || (formData.alternateMobileCountryCode || '91').length === 2);
     const isAadharValid = kycValidators.isValidAadhar(aadharInput.value);
 
     return (

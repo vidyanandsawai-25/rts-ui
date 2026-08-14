@@ -60,6 +60,7 @@ interface EditPageProps {
     scopeId?: string;
     zoneId?: string;
     sourceid?: string;
+    sourceTable?: string;
     auditPage?: string;
     auditPageSize?: string;
     auditUser?: string;
@@ -100,23 +101,24 @@ function sanitizeParams(raw: Awaited<EditPageProps["searchParams"]>) {
   const zoneId = raw.zoneId?.trim() || "";
   const tab = raw.tab?.trim() || "updateFields";
   const sourceid = raw.sourceid?.trim() || "";
+  const sourceTable = raw.sourceTable?.trim() || "";
   const auditPage = Math.max(MIN_PAGE, Math.min(MAX_PAGE, Number(raw.auditPage) || 1));
   const auditPageSize = Math.max(MIN_PAGE, Math.min(MAX_PAGE_SIZE, Number(raw.auditPageSize) || 10));
   const auditUser = raw.auditUser?.trim() || "";
   const auditSearch = raw.auditSearch?.trim() || "";
 
-  return { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, auditPage, auditPageSize, auditUser, auditSearch };
+  return { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, sourceTable, auditPage, auditPageSize, auditUser, auditSearch };
 }
 
 export default async function EditPage(props: EditPageProps) {
   const { updateCode: rawUpdateCode } = await props.params;
   const updateCode = decodeURIComponent(rawUpdateCode);
-  const { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, auditPage, auditPageSize, auditUser, auditSearch } = sanitizeParams(await props.searchParams);
+  const { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, sourceTable, auditPage, auditPageSize, auditUser, auditSearch } = sanitizeParams(await props.searchParams);
 
   const menuItems = await getMenuItemsAction();
   const defaultCode = selectedField || (menuItems[0]?.updateCode || "");
 
-  const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, editData, initialSourceTables, initialSourceTableFields, initialUpdateHistory] = await Promise.all([
+  const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, editData, initialSourceTables, initialUpdateHistory] = await Promise.all([
     getAllWardsAction(),
     getAllWingsAction(),
     getFieldRegistriesServer(pageNumber, pageSize).catch(() => ({
@@ -148,14 +150,44 @@ export default async function EditPage(props: EditPageProps) {
     }) : Promise.resolve([]),
     getFieldRegistriesServer(undefined, undefined, updateCode).catch(() => null),
     getSourceTablesServer().catch(() => []),
-    sourceid ? getSourceTableFieldsServer(Number(sourceid)).catch(() => []) : Promise.resolve([]),
     getUpdateHistoryServer({
       PageNumber: auditPage,
       PageSize: auditPageSize,
-      Username: auditUser,
+      DoneBy: auditUser,
       SearchTerm: auditSearch,
     }).catch(() => null),
   ]);
+
+  const initialEditData = editData && "items" in editData ? (editData.items?.[0] || null) : (Array.isArray(editData) ? editData[0] : null);
+
+  let actualSourceId = sourceid || sourceTable;
+  if (!actualSourceId && initialEditData) {
+    const referenceTableName = initialEditData.targetTable || initialEditData.referenceTableName;
+    if (referenceTableName) {
+      const parts = referenceTableName.split('.');
+      const tableName = parts[parts.length - 1];
+      
+      const LEGACY_TABLE_MAPPING: Record<string, string> = {
+        "PropertyMast": "Property Tax Property Information",
+        "PropertyDetails": "Property Tax PropertyDetails",
+      };
+      const mappedTableName = LEGACY_TABLE_MAPPING[tableName] || tableName;
+
+      const normalizedMapped = mappedTableName.toLowerCase().replace(/[\s_]/g, '');
+      const normalizedTable = tableName.toLowerCase().replace(/[\s_]/g, '');
+
+      const foundTable = (initialSourceTables || []).find((t: { id: number; tableName?: string }) => {
+        if (!t.tableName) return false;
+        const tName = t.tableName.toLowerCase().replace(/[\s_]/g, '');
+        return tName === normalizedMapped || tName === normalizedTable || String(t.id) === tableName;
+      });
+      if (foundTable) {
+        actualSourceId = String(foundTable.id);
+      }
+    }
+  }
+
+  const initialSourceTableFields = actualSourceId ? await getSourceTableFieldsServer(Number(actualSourceId)).catch(() => []) : [];
 
   const wardsData = wardsResult.success && wardsResult.data ? wardsResult.data : {
     items: [],
@@ -176,8 +208,6 @@ export default async function EditPage(props: EditPageProps) {
     hasPrevious: false,
     hasNext: false,
   };
-
-  const initialEditData = editData && "items" in editData ? (editData.items?.[0] || null) : (Array.isArray(editData) ? editData[0] : null);
 
   const actions = {
     getFieldConfigsAction,

@@ -68,7 +68,9 @@
         "searchKeyMaxLength": "Maximum length is 20 characters",
         "searchKeyFormat": "Only letters, numbers and + - characters are allowed",
         "sequenceInvalid": "Search sequence must be 0 or greater",
-        "mustBeActive": "Construction Type must be active to save"
+        "mustBeActive": "Construction Type must be active to save",
+        "constructionCodeNumbersOnlyNotAllowed": "Please enter a valid construction code containing at least one alphabet.",
+        "descriptionNumbersOnlyNotAllowed":"Please enter a valid description containing at least one alphabet."
       },
       "status": {
         "label": "Active Status",

@@ -74,11 +74,12 @@ export async function getBuildingWiseDataAction(
 export async function getPropertyWiseDataAction(
     propertyNo: string,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    searchType?: string
 ): Promise<ActionResult<PropertyWisePagination>> {
     try {
-        logger.info("getPropertyWiseDataAction: Fetching property-wise data", { propertyNo, pageNumber, pageSize });
-        const data = await getPropertyWiseData(propertyNo, pageNumber, pageSize);
+        logger.info("getPropertyWiseDataAction: Fetching property-wise data", { propertyNo, pageNumber, pageSize, searchType });
+        const data = await getPropertyWiseData(propertyNo, pageNumber, pageSize, searchType);
         return { success: true, data };
     } catch (error) {
         logger.error("Failed to fetch property-wise data", { propertyNo, pageNumber, pageSize }, error);

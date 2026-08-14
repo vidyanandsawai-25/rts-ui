@@ -39,8 +39,8 @@ export const PropertyReportDrawer = ({ isOpen: _isOpen, onClose: _onClose, prope
     const propertyId = params?.propertyId as string;
     const division = searchParams.get('division') || 'DI';
     const zoneId = searchParams.get('zoneId') || division;
-    const stage = searchParams.get('stage') || 'geoSequencing';
-    const workflowStageId = searchParams.get('workflowStageId');
+    // const stage = searchParams.get('stage') || 'geoSequencing';
+    // const workflowStageId = searchParams.get('workflowStageId');
     const locale = useLocale();
 
     // Find the property data dynamically
@@ -53,16 +53,13 @@ export const PropertyReportDrawer = ({ isOpen: _isOpen, onClose: _onClose, prope
     const [isViewerOpen, setIsViewerOpen] = useState(false);
     const [viewerFileUrl, setViewerFileUrl] = useState('');
     const [viewerFileName, setViewerFileName] = useState('');
-
-    const source = searchParams.get('source') || 'division';
-
+    
     const handleClose = () => {
         setActiveDocTab(null);
         setIsViewerOpen(false);
-        const sourceParam = source ? `&source=${source}` : '';
-        const returnUrlParam = searchParams.get('returnUrl') ? `&returnUrl=${encodeURIComponent(searchParams.get('returnUrl')!)}` : '';
-        // Go back to the dashboard page under /property-details-dashboard/[zoneId]
-        router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${zoneId}?division=${division}&stage=${stage}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${sourceParam}${returnUrlParam}`);
+        const pathZoneId = params?.zoneId as string;
+        const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
+        router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${pathZoneId || zoneId}?${currentParams.toString()}`);
     };
 
     const openDocumentViewer = (tab: 'karakarni' | 'additional') => {

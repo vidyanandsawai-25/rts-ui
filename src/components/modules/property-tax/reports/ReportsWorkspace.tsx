@@ -14,7 +14,6 @@ import { ReportGenerateView } from './ReportGenerateView';
 import { ReportGeneratingOverlay } from './ReportGeneratingOverlay';
 import { ReportPreviewOverlay } from './ReportPreviewOverlay';
 
-
 export function ReportsWorkspace({
   jobsCopy,
   workspaceCopy,
@@ -27,6 +26,7 @@ export function ReportsWorkspace({
   fetchProperties,
   initialJobs,
   fetchJobs,
+  fetchReportParameters,
   createReportRequest,
 }: ReportsWorkspaceProps) {
   const { jobs, isLoading, refresh } = useReportJobs(initialJobs, fetchJobs);
@@ -203,6 +203,7 @@ export function ReportsWorkspace({
             financialYears={financialYears ?? []}
             fetchWards={fetchWards ?? (() => Promise.resolve([]))}
             fetchProperties={fetchProperties ?? (() => Promise.resolve([]))}
+            fetchReportParameters={fetchReportParameters}
             onCategoryClick={handleCategoryClick}
             onSelectReport={handleSelectReport}
             onQueued={handleQueued}

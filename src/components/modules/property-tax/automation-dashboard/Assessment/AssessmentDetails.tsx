@@ -17,6 +17,8 @@ import { Send, ChevronDown } from 'lucide-react';
 import { getAssessmentColumns, getAssessmentHeaderRows } from './AssessmentColumns';
 import { AssessmentGridItems, AssessmentRow } from '@/types/automation-dashboard/assessment/assessmentgrid.type';
 import { Column } from '@/components/common';
+import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
+import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 
 type TabType = 'Total' | 'Assessed' | 'Unassessed' | 'Rented';
 
@@ -130,7 +132,7 @@ const TopFilters = ({ activeTab, onTabChange, t }: { activeTab: TabType, onTabCh
     );
 };
 
-const TopBar = ({ activeTab, onTabChange, t, exportConfig }: { activeTab: TabType, onTabChange: (t: TabType) => void, t: (key: string) => string, exportConfig: ExportConfig<Record<string, unknown>> }) => {
+const TopBar = ({ activeTab, onTabChange, t, tDashboard, exportConfig, propertyDescriptions }: { activeTab: TabType, onTabChange: (t: TabType) => void, t: (key: string) => string, tDashboard: (key: string) => string, exportConfig: ExportConfig<Record<string, unknown>>, propertyDescriptions?: PropertyTypeMasterItem[] }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const { isPending, handleSearch } = useDashboardSearch(searchTerm);
     const router = useRouter();
@@ -177,17 +179,19 @@ const TopBar = ({ activeTab, onTabChange, t, exportConfig }: { activeTab: TabTyp
                     {t('sendToApprove')}
                 </Button>
 
+                <DashboardFilterBar t={tDashboard} propertyDescriptions={propertyDescriptions} />
                 <ExportDropdown config={exportConfig} />
             </div>
         </div>
     );
 };
 
-const AssessmentDetailsContent = ({ serverData }: { serverData?: AssessmentGridItems | null }) => {
+const AssessmentDetailsContent = ({ serverData, propertyDescriptions }: { serverData?: AssessmentGridItems | null, propertyDescriptions?: PropertyTypeMasterItem[] }) => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
     const t = useTranslations('automationDashboard.assessment');
+    const tDashboard = useTranslations('automationDashboard');
     const locale = useLocale();
 
     const currentTab = searchParams.get('tab') as TabType | null;
@@ -227,7 +231,7 @@ const AssessmentDetailsContent = ({ serverData }: { serverData?: AssessmentGridI
                 headerRows={getAssessmentHeaderRows(activeTab, t)}
                 headerExtra={
                     <div className="flex items-center gap-2 w-full">
-                        <TopBar activeTab={activeTab} onTabChange={handleTabChange} t={t} exportConfig={exportConfig} />
+                        <TopBar activeTab={activeTab} onTabChange={handleTabChange} t={t} tDashboard={tDashboard} exportConfig={exportConfig} propertyDescriptions={propertyDescriptions} />
                     </div>
                 }
                 containerClassName="h-full"
@@ -247,9 +251,9 @@ const AssessmentDetailsContent = ({ serverData }: { serverData?: AssessmentGridI
     );
 };
 
-const AssessmentDetails = ({ serverData }: { serverData?: AssessmentGridItems | null }) => {
+const AssessmentDetails = ({ serverData, propertyDescriptions }: { serverData?: AssessmentGridItems | null, propertyDescriptions?: PropertyTypeMasterItem[] }) => {
     return (
-        <AssessmentDetailsContent serverData={serverData} />
+        <AssessmentDetailsContent serverData={serverData} propertyDescriptions={propertyDescriptions} />
     );
 };
 

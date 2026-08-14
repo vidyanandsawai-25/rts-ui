@@ -18,6 +18,8 @@ interface FormFieldsSectionProps {
   showError: (field: keyof SocialAttributeFormModel) => boolean;
   t: (key: string) => string;
   parentAttributes: SocialAttribute[];
+  isEdit: boolean;
+  isActive: boolean;
 }
 
 export const FormFieldsSection = ({
@@ -34,7 +36,11 @@ export const FormFieldsSection = ({
   showError,
   t,
   parentAttributes,
+  isEdit,
+  isActive,
 }: FormFieldsSectionProps) => {
+  const areFieldsDisabled = !isActive;
+
   const dataTypeOptions = useMemo(
     () => [
       { label: t('form.fields.dataType.placeholder'), value: '' },
@@ -43,6 +49,36 @@ export const FormFieldsSection = ({
       { label: t('form.fields.dataType.options.integer'), value: 'INT' },
       { label: t('form.fields.dataType.options.text'), value: 'TEXT' },
       { label: t('form.fields.dataType.options.date'), value: 'DATE' },
+    ],
+    [t]
+  );
+
+  const unitOptions = useMemo(
+    () => [
+      { label: t('form.fields.unit.placeholder') || 'Select Unit', value: '' },
+      { label: 'Litre - L', value: 'Litre' },
+      { label: 'Millilitre - mL', value: 'Millilitre' },
+      { label: 'Kilolitre - kL', value: 'Kilolitre' },
+      { label: 'Watt - W', value: 'Watt' },
+      { label: 'Kilowatt - kW', value: 'Kilowatt' },
+      { label: 'Megawatt - MW', value: 'Megawatt' },
+      { label: 'Kilowatt Hour - kWh', value: 'Kilowatt Hour' },
+      { label: 'Meter - m', value: 'Meter' },
+      { label: 'Centimeter - cm', value: 'Centimeter' },
+      { label: 'Millimeter - mm', value: 'Millimeter' },
+      { label: 'Kilometer - km', value: 'Kilometer' },
+      { label: 'Feet - ft', value: 'Feet' },
+      { label: 'Inch - in', value: 'Inch' },
+      { label: 'Square Meter - m²', value: 'Square Meter' },
+      { label: 'Square Feet - ft²', value: 'Square Feet' },
+      { label: 'Cubic Meter - m³', value: 'Cubic Meter' },
+      { label: 'Cubic Feet - ft³', value: 'Cubic Feet' },
+      { label: 'Kilogram - kg', value: 'Kilogram' },
+      { label: 'Gram - g', value: 'Gram' },
+      { label: 'Ton - t', value: 'Ton' },
+      { label: 'Number - No.', value: 'Number' },
+      { label: 'Percentage - %', value: 'Percentage' },
+      { label: 'Star - Star', value: 'Star' },
     ],
     [t]
   );
@@ -73,6 +109,7 @@ export const FormFieldsSection = ({
         onBlur={handleBlur}
         fullWidth
         className="text-gray-700"
+        disabled={isEdit || areFieldsDisabled}
       />
       <ValidationMessage
         message={errors.socialAttributeCode}
@@ -90,6 +127,7 @@ export const FormFieldsSection = ({
         onBlur={handleBlur}
         fullWidth
         className="text-gray-700"
+        disabled={areFieldsDisabled}
       />
       <ValidationMessage
         message={errors.socialAttributeName}
@@ -110,29 +148,39 @@ export const FormFieldsSection = ({
           selectSize="md"
           className="w-full text-gray-700"
           ariaLabel={t('form.fields.dataType.label') || 'Data Type'}
+          disabled={areFieldsDisabled}
         />
         <ValidationMessage message={errors.dataType} visible={showError('dataType')} />
       </div>
 
       {/* Unit */}
-      <Input
-        name="unit"
-        label={t('form.fields.unit.label')}
-        placeholder={t('form.fields.unit.placeholder')}
-        value={formData.unit}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        fullWidth
-        className="text-gray-700"
-      />
-      <ValidationMessage message={errors.unit} visible={showError('unit')} />
+      <div className="flex flex-col gap-1.5 w-full">
+        <label className="text-sm font-medium text-slate-700">{t('form.fields.unit.label')}</label>
+        <Select
+          name="unit"
+          value={formData.unit}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          options={unitOptions}
+          selectSize="md"
+          className="w-full text-gray-700"
+          ariaLabel={t('form.fields.unit.label') || 'Unit'}
+          disabled={areFieldsDisabled}
+        />
+        <ValidationMessage message={errors.unit} visible={showError('unit')} />
+      </div>
 
       {/* Is Child Attribute Toggle */}
       <div className="flex items-center justify-between border-t border-slate-200 pt-3">
         <div>
           <div className="text-sm font-medium text-slate-700">{t('form.fields.isChild.label')}</div>
         </div>
-        <ToggleSwitch checked={isChild} onChange={handleToggleIsChild} showPopup={false} />
+        <ToggleSwitch
+          checked={isChild}
+          onChange={handleToggleIsChild}
+          showPopup={false}
+          disabled={areFieldsDisabled}
+        />
       </div>
 
       {/* Parent Attribute & Conditional field (Required when parent true) */}
@@ -151,6 +199,7 @@ export const FormFieldsSection = ({
               selectSize="md"
               className="w-full text-gray-700"
               ariaLabel={t('form.fields.parentAttribute.label') || 'Parent Attribute'}
+              disabled={areFieldsDisabled}
             />
           </div>
 
@@ -165,6 +214,7 @@ export const FormFieldsSection = ({
                 checked={formData.isRequiredWhenParentTrue}
                 onChange={handleToggleIsRequiredWhenParentTrue}
                 showPopup={false}
+                disabled={areFieldsDisabled}
               />
             </div>
           )}
@@ -182,6 +232,7 @@ export const FormFieldsSection = ({
           checked={formData.isDiscountApplicable}
           onChange={handleToggleIsDiscountApplicable}
           showPopup={false}
+          disabled={areFieldsDisabled}
         />
       </div>
 
@@ -195,6 +246,7 @@ export const FormFieldsSection = ({
             checked={formData.isPhotoRequired}
             onChange={handleToggleIsPhotoRequired}
             showPopup={false}
+            disabled={areFieldsDisabled}
           />
         </div>
         <div className="flex items-center justify-between">
@@ -205,6 +257,7 @@ export const FormFieldsSection = ({
             checked={formData.isDocumentRequired}
             onChange={handleToggleIsDocumentRequired}
             showPopup={false}
+            disabled={areFieldsDisabled}
           />
         </div>
       </div>

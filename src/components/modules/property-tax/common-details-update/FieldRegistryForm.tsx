@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Database, Lock } from 'lucide-react';
+import { Database } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -10,7 +10,6 @@ import {
   MultiSelect,
   SaveButton,
 } from '@/components/common';
-import { Checkbox } from '@/components/common/checkbox';
 
 import { useFieldRegistryState } from '@/hooks/commonDetailsUpdate/useFieldRegistryState';
 
@@ -19,14 +18,17 @@ interface FieldRegistryFormProps {
   state: ReturnType<typeof useFieldRegistryState>;
 }
 
+const LEGACY_TABLE_MAPPING: Record<string, string> = {
+  "PropertyMast": "Property Tax Property Information",
+  "PropertyDetails": "Property Tax PropertyDetails",
+};
+
 export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
   const {
     sourceTable,
     setSourceTable,
     updateCode,
     setUpdateCode,
-    approvalRequired,
-    setApprovalRequired,
     fieldConfigs,
     updateFieldConfig,
     tables,
@@ -36,10 +38,20 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
     handleAddFieldToRegistry,
   } = state;
 
-  const tableOptions = useMemo(
-    () => tables.map((t) => ({ label: t.tableName, value: String(t.id) })),
-    [tables]
-  );
+  const tableOptions = useMemo(() => {
+    const options = tables.map((t) => ({ label: t.tableName, value: String(t.id) }));
+    if (sourceTable && !options.some(o => o.value === sourceTable)) {
+      const matchedTable = tables.find(t =>
+        t.tableName && (
+          t.tableName.toLowerCase() === sourceTable.toLowerCase() ||
+          t.tableName.toLowerCase().replace(/[\s_]/g, '') === sourceTable.toLowerCase().replace(/[\s_]/g, '')
+        )
+      );
+      const displayLabel = matchedTable ? matchedTable.tableName : (LEGACY_TABLE_MAPPING[sourceTable] || sourceTable);
+      options.push({ label: displayLabel, value: sourceTable });
+    }
+    return options;
+  }, [tables, sourceTable]);
   const columnOptions = useMemo(() => {
     return sourceTableFields.map((col) => ({
       value: col.tableFieldName,
@@ -67,10 +79,6 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap shrink-0">
-              <Lock className="w-3 h-3 shrink-0" />
-              <span>{t('fieldRegistry.authenticatedUserOnly')}</span>
-            </div>
             <SaveButton
               size="xs"
               type="button"
@@ -82,8 +90,8 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
         </div>
       </div>
 
-      <CardContent className="p-2 bg-blue-50/30">
-        <div className="flex flex-wrap gap-4 items-end mb-3">
+      <CardContent className="p-2 pb-0 bg-blue-50/30">
+        <div className="flex flex-wrap gap-4 items-end pb-3">
           <div className="w-[250px]">
             <div className="block text-sm font-medium mb-1.5 text-slate-700">
               {t('fieldRegistry.addFieldFromDb.sourceTable')}
@@ -113,12 +121,24 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
                       fieldName: val,
                     });
 
-                    if (newFirstVal && (!updateCode || updateCode === oldFirstVal)) {
-                      setUpdateCode(newFirstVal);
+                    if (val.length === 0) {
+                      // If user unselected everything, clear updateCode if it matched the last selected
+                      if (updateCode === oldFirstVal) {
+                        setUpdateCode('');
+                      }
+                    } else if (newFirstVal) {
+                      // If user selected something new or changed the first selected item
+                      if (!updateCode || updateCode === oldFirstVal) {
+                        setUpdateCode(newFirstVal);
+                      }
                     }
                   }}
-                  options={columnOptions}
-                  placeholder={t('fieldRegistry.addFieldFromDb.selectFieldName') || 'Select Field Name'}
+                  options={[
+                    ...columnOptions.filter(o => config.fieldName.includes(o.value)),
+                    ...columnOptions.filter(o => !config.fieldName.includes(o.value))
+                  ]}
+                  placeholder={config.fieldName && config.fieldName.length > 0 ? config.fieldName.join(", ") : t('fieldRegistry.addFieldFromDb.selectFieldName') || 'Select Field Name'}
+                  selectSize="sm"
                   disabled={submitting || !sourceTable}
                   className="text-sm [&>button]:h-9 [&>button]:py-1.5 [&>button:disabled]:opacity-60 [&>div.absolute]:!max-h-65 [&>div.absolute>div[role=listbox]]:!max-h-40"
                 />
@@ -139,16 +159,6 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
               className="w-full h-9 text-slate-900"
               disabled={submitting}
             />
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-slate-700 font-medium select-none h-9">
-            <Checkbox
-              checked={approvalRequired}
-              onCheckedChange={(checked) => setApprovalRequired(Boolean(checked))}
-              disabled={submitting}
-              className="data-[state=checked]:bg-white data-[state=checked]:border-blue-500 data-[state=checked]:text-blue-500"
-            />
-            {t('fieldRegistry.addFieldFromDb.isApprovalRequired')}
           </div>
         </div>
       </CardContent>

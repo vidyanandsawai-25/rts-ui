@@ -1,10 +1,13 @@
 import { useCallback, useEffect, RefObject } from 'react';
 import { PropertySocietyDetailsApiItem } from '@/types/property-society-details.types';
+import { extractCountryCode } from '@/lib/utils/kyc-validation/country-code.utils';
 
 export const useSocietyChanges = ({
     formRef,
     managerMobileDigits,
     secretaryMobileDigits,
+    managerMobileCountryCode,
+    secretaryMobileCountryCode,
     landOwnerName,
     builderName,
     societyName,
@@ -21,6 +24,8 @@ export const useSocietyChanges = ({
     formRef: RefObject<HTMLFormElement | null>;
     managerMobileDigits: string[];
     secretaryMobileDigits: string[];
+    managerMobileCountryCode: string;
+    secretaryMobileCountryCode: string;
     landOwnerName: string;
     builderName: string;
     societyName: string;
@@ -37,8 +42,8 @@ export const useSocietyChanges = ({
     
     const checkFormChanges = useCallback(() => {
         if (!formRef.current) return;
-        const managerMobileStr = managerMobileDigits.join("");
-        const secretaryMobileStr = secretaryMobileDigits.join("");
+        const parsedManagerMobile = extractCountryCode(societyData?.managerMobileNo);
+        const parsedSecretaryMobile = extractCountryCode(societyData?.secretaryMobileNo);
 
         const isChanged =
             landOwnerName.trim() !== (societyData?.landOwnerName ?? "") ||
@@ -48,16 +53,20 @@ export const useSocietyChanges = ({
             societyEmail.trim() !== (societyData?.societyEmailId ?? "") ||
             managerName.trim() !== (societyData?.managerName ?? "") ||
             managerEmail.trim() !== (societyData?.managerEmailId ?? "") ||
-            managerMobileStr !== (societyData?.managerMobileNo ?? "") ||
+            (managerMobileCountryCode || '91') !== parsedManagerMobile.countryCode ||
+            managerMobileDigits.join("") !== parsedManagerMobile.mobileNo ||
             secretaryName.trim() !== (societyData?.secretaryName ?? "") ||
             secretaryEmail.trim() !== (societyData?.secretaryEmailId ?? "") ||
-            secretaryMobileStr !== (societyData?.secretaryMobileNo ?? "") ||
+            (secretaryMobileCountryCode || '91') !== parsedSecretaryMobile.countryCode ||
+            secretaryMobileDigits.join("") !== parsedSecretaryMobile.mobileNo ||
             (wingId ?? null) !== (societyData?.wingId ?? null);
 
         setHasChanges(isChanged);
     }, [
         managerMobileDigits, 
         secretaryMobileDigits, 
+        managerMobileCountryCode,
+        secretaryMobileCountryCode,
         landOwnerName, 
         builderName, 
         societyName, 

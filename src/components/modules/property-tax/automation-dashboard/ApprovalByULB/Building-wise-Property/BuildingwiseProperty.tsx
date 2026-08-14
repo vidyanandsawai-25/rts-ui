@@ -20,7 +20,18 @@ const BuildingwiseProperty = ({ propertyNo, serverData }: BuildingwisePropertyPr
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const t = useTranslations("automationDashboard");
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchTerm, setSearchTerm] = useState(searchParams.get('searchTerm') || "");
+
+    const handleSearch = useCallback(() => {
+        const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
+        if (searchTerm.trim()) {
+            currentParams.set('searchTerm', searchTerm.trim());
+        } else {
+            currentParams.delete('searchTerm');
+        }
+        currentParams.set('pageNumber', '1');
+        router.push(`?${currentParams.toString()}`);
+    }, [searchTerm, searchParams, router]);
 
     const returnUrl = searchParams.get('returnUrl');
     const noticeNo = searchParams.get('noticeNo');
@@ -87,6 +98,11 @@ const BuildingwiseProperty = ({ propertyNo, serverData }: BuildingwisePropertyPr
                             placeholder={t('approvalByULB.buildingWiseProperty.searchPlaceholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleSearch();
+                                }
+                            }}
                             className="w-full pl-8 pr-3 py-1.5 text-[13px] border border-slate-300 rounded outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 text-slate-700 bg-white"
                         />
                     </div>

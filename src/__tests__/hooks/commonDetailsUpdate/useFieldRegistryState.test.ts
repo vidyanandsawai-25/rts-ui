@@ -149,7 +149,7 @@ describe('useFieldRegistryState', () => {
       await result.current.refreshFieldsList();
     });
 
-    expect(mockAction).toHaveBeenCalledWith(1, 1000);
+    expect(mockAction).toHaveBeenCalledWith(1, 10);
     expect(result.current.fields).toEqual([{ id: 2, fieldName: 'refreshed' }]);
     expect(result.current.totalCount).toBe(1);
   });

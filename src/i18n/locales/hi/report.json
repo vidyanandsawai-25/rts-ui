@@ -140,6 +140,24 @@
     "loading": "लोड हो रहा है...",
     "selectZoneFirst": "पहले क्षेत्र चुनें",
     "selectWardFirst": "पहले वार्ड चुनें",
+    "selectMode": "मोड चुनें",
+    "wardWise": "वार्ड के अनुसार",
+    "fromToProperty": "से - तक संपत्ति",
+    "individualProperty": "व्यक्तिगत संपत्ति",
+    "propertyDescription": "संपत्ति विवरण",
+    "selectDescription": "विवरण चुनें",
+    "assessmentType": "मूल्यांकन प्रकार",
+    "selectAssessmentType": "मूल्यांकन प्रकार चुनें",
+    "propertyDemand": "संपत्ति मांग",
+    "greaterThan": "से अधिक",
+    "lessThan": "से कम",
+    "top": "शीर्ष",
+    "enterAmount": "राशि दर्ज करें",
+    "eg1": "उदा. 1",
+    "eg10": "उदा. 10",
+    "egPropertyNo": "उदा. 101 या 101/A/1",
+    "propertiesSelected": "संपत्तियां चुनी गईं",
+    "viewEdit": "देखें / संपादित करें",
     "validation": {
       "financialYearRequired": "वित्तीय वर्ष आवश्यक है।",
       "zoneRequired": "क्षेत्र आवश्यक है।",
@@ -148,7 +166,7 @@
       "networkError": "नेटवर्क त्रुटि। कृपया पुनः प्रयास करें।",
       "failedToQueue": "रिपोर्ट को कतार में डालने में विफल"
     },
-    "queuedSuccess": "रिपोर्ट कतार में है! तैयार होने पर वह कार्य सूची में दिखाई देगी।",
+
     "reportQueued": "रिपोर्ट \"{name}\" का अनुरोध सफलतापूर्वक सबमिट किया गया।",
     "buttons": {
       "reset": "रीसेट करें",

@@ -152,7 +152,7 @@ export function useApplicableTaxes({
     const rawTaxes = [
       ...(items[0]?.applicableTaxes || []),
       ...(items[0]?.exemptedTaxes || [])
-    ];
+    ].sort((a, b) => a.taxId - b.taxId);
     return rawTaxes.filter(item => {
       if (!item.isActive) return false;
       const matchesSearch = item.taxHead.toLowerCase().includes(searchQuery.toLowerCase());

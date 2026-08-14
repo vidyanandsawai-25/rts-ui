@@ -68,7 +68,9 @@
         "searchKeyMaxLength": "अधिकतम लंबाई 20 वर्ण है",
         "searchKeyFormat": "केवल अक्षर, संख्याएं और + - वर्ण अनुमत हैं",
         "sequenceInvalid": "खोज क्रम 0 या अधिक होना चाहिए",
-        "mustBeActive": "निर्माण प्रकार सहेजने के लिए सक्रिय होना चाहिए"
+        "mustBeActive": "निर्माण प्रकार सहेजने के लिए सक्रिय होना चाहिए",
+        "constructionCodeNumbersOnlyNotAllowed": "कृपया एक मान्य निर्माण प्रकार दर्ज करें जिसमें कम से कम एक अक्षर हो।",
+        "descriptionNumbersOnlyNotAllowed": "कृपया एक मान्य विवरण दर्ज करें जिसमें कम से कम एक अक्षर हो।"
       },
       "status": {
         "label": "सक्रिय स्थिति",

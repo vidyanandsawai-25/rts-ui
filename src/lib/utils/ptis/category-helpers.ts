@@ -17,3 +17,16 @@ export const isPlotCategory = (category?: string | null): boolean => {
   const normalized = category.toLowerCase().trim();
   return normalized === 'plot' || normalized === 'open plot';
 };
+
+/**
+ * Determines whether a property category represents an Apartment type.
+ *
+ * @param category - The category string from property details (e.g. 'Apartment', 'Residential Apartment')
+ * @returns `true` if the category represents an Apartment property
+ */
+export const isApartmentCategory = (category?: string | null): boolean => {
+  if (!category) return false;
+  const normalized = category.toLowerCase().trim();
+  return normalized === 'apartment' || normalized.includes('apartment');
+};
+

@@ -6,7 +6,7 @@ import { getAutomationWorkflowCardsAction } from "../action";
 import { getPropertyTypeMasterAction } from "../property-details-dashboard/[zoneId]/action";
 
 interface Props {
-    searchParams: Promise<{ workflowStageId?: string; isFilter?: string }>;
+    searchParams: Promise<{ workflowStageId?: string; isFilter?: string; propertyTypeId?: string; propertyTypeCategoryId?: string; }>;
 }
 
 export default async function GeoSequencingPageServer({ searchParams }: Props) {
@@ -23,9 +23,11 @@ export default async function GeoSequencingPageServer({ searchParams }: Props) {
     }
 
     const isFilterOpen = resolvedParams?.isFilter === 'true';
+    const propertyTypeId = resolvedParams?.propertyTypeId;
+    const propertyTypeCategoryId = resolvedParams?.propertyTypeCategoryId;
 
     const [dataResult, propertyTypeResult] = await Promise.all([
-        getGeoSequencingGridAction(workflowStageId),
+        getGeoSequencingGridAction(workflowStageId, propertyTypeId, propertyTypeCategoryId),
         isFilterOpen ? getPropertyTypeMasterAction(1, -1) : Promise.resolve({ success: true, data: null })
     ]);
 

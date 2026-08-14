@@ -1,7 +1,7 @@
 import { apiClient } from "@/services/api.service";
 import { getTranslations } from "next-intl/server";
 import { ApiError } from "@/lib/utils/api";
-import { BulkUpdatePayload, BulkUpdateResponse, CreateFieldRegistryDto, ActionResult, ExcelImportResponse, BulkUpdateDefinitionPayload } from "@/types/common-details-update/common-details-update.types";
+import { BulkUpdatePayload, BulkUpdateResponse, CreateFieldRegistryDto, ActionResult, ExcelImportResponse, ExcelValidationResponse, BulkUpdateDefinitionPayload } from "@/types/common-details-update/common-details-update.types";
 import { createLogger } from "@/lib/utils/server-logger";
 import { cookies } from "next/headers";
 import { getAppConfig } from "@/config/app.config";
@@ -26,10 +26,7 @@ export async function addBulkUpdateDefinitionServer(
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.somethingWrong"),
-      "addBulkUpdateDefinitionServer"
-    );
+      response.statusCode || 500, response.error || t("messages.somethingWrong"), "");
   } catch (error) {
     logger.error("addBulkUpdateDefinitionServer: Failed", { error });
     if (error instanceof ApiError) {
@@ -66,10 +63,7 @@ export async function executeBulkUpdateServer(
       error: response.error 
     });
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.updateFailed"),
-      "executeBulkUpdateServer"
-    );
+      response.statusCode || 500, response.error || t("messages.updateFailed"), "");
   }
 
   // Handle wrapped response format
@@ -89,11 +83,20 @@ export async function executeBulkUpdateServer(
   }
 
   const t = await getTranslations("commonDetailsUpdate");
+  let errorMessage = t("messages.updateFailed");
+
+  if (data) {
+    if (Array.isArray(data.errors) && data.errors.length > 0) {
+      errorMessage = data.errors.join("\n");
+    } else if (typeof data.message === "string" && data.message.trim()) {
+      errorMessage = data.message;
+    }
+  }
+
   throw new ApiError(
-    500,
-    t("messages.updateFailed"),
-    "executeBulkUpdateServer"
-  );
+    400,
+    errorMessage
+  , "");
 }
 
 export async function addFieldRegistryServer(
@@ -114,10 +117,7 @@ export async function addFieldRegistryServer(
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.somethingWrong"),
-      "addFieldRegistryServer"
-    );
+      response.statusCode || 500, response.error || t("messages.somethingWrong"), "");
   } catch (error) {
     logger.error("addFieldRegistryServer: Failed", { error });
     if (error instanceof ApiError) {
@@ -136,7 +136,7 @@ export async function importExcelServer(
 
   if (!authToken) {
     const t = await getTranslations("commonDetailsUpdate");
-    throw new ApiError(401, t("messages.unauthorized") || "Unauthorized", "importExcelServer");
+    throw new ApiError(401, t("messages.unauthorized") || "Unauthorized", "");
   }
 
   const config = getAppConfig();
@@ -159,7 +159,7 @@ export async function importExcelServer(
       const errData = JSON.parse(responseText);
       errorMsg = errData.error || errData.message || errorMsg;
     } catch {}
-    throw new ApiError(response.status, errorMsg, "importExcelServer");
+    throw new ApiError(response.status, errorMsg, "");
   }
 
   try {
@@ -167,7 +167,62 @@ export async function importExcelServer(
     return {
       success: data.success ?? true,
       message: data.message || "",
+      items: data.items || data.data || data.result || (data.rows ? { columns: data.columns, rows: data.rows, totalRows: data.totalRows, flaggedRowCount: data.flaggedRowCount } : undefined),
       errors: data.errors || null,
+      successCount: data.successCount,
+      failedCount: data.failedCount,
+    };
+  } catch {
+    return {
+      success: true,
+      message: responseText,
+      errors: null,
+    };
+  }
+}
+
+export async function validateExcelServer(
+  formData: FormData
+): Promise<ExcelValidationResponse> {
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get("auth_token")?.value;
+
+  if (!authToken) {
+    const t = await getTranslations("commonDetailsUpdate");
+    throw new ApiError(401, t("messages.unauthorized") || "Unauthorized", "");
+  }
+
+  const config = getAppConfig();
+  const backendUrl = `${config.api.baseUrl.replace(/\/$/, "")}/CommonDetails/import-excel-validate`;
+
+  logger.info("validateExcelServer: Proxying validate request", { backendUrl });
+
+  const response = await fetch(backendUrl, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${authToken}`,
+    },
+    body: formData,
+  });
+
+  const responseText = await response.text();
+  if (!response.ok) {
+    let errorMsg = `Validate failed with status ${response.status}`;
+    try {
+      const errData = JSON.parse(responseText);
+      errorMsg = errData.error || errData.message || errorMsg;
+    } catch {}
+    throw new ApiError(response.status, errorMsg, "");
+  }
+
+  try {
+    const data = JSON.parse(responseText);
+    return {
+      success: data.success ?? true,
+      message: data.message || "",
+      items: data.items || data.data || data.result || (data.rows ? { columns: data.columns, rows: data.rows, totalRows: data.totalRows, flaggedRowCount: data.flaggedRowCount } : undefined),
+      errors: data.errors || null,
+      correlationId: data.correlationId || null,
     };
   } catch {
     return {
@@ -219,8 +274,8 @@ export async function setFieldRegistryStatusServer(
 
     return {
       success: false,
-      error: response.error || "Failed to update field registry status",
-      statusCode: response.statusCode || 500
+      error: postResponse.error || response.error || "Failed to update field registry status",
+      statusCode: postResponse.statusCode || response.statusCode || 500
     };
   } catch (error) {
     logger.error("setFieldRegistryStatusServer: Error", { updateCode, isActive, error });
@@ -253,8 +308,7 @@ export async function updateFieldRegistryServer(
 
     const t = await getTranslations("commonDetailsUpdate");
     throw new ApiError(
-      response.statusCode || 500,
-      response.error || t("messages.somethingWrong"),
+      response.statusCode || 500, response.error || t("messages.somethingWrong"),
       "updateFieldRegistryServer"
     );
   } catch (error) {

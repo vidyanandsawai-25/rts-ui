@@ -4,6 +4,8 @@ export interface TaxZoneFormModel {
   taxZoneType: string;
   remark: string;
   isActive: boolean; // ✅ added
+  createdBy?: number | null;
+  updatedBy?: number | null;
 }
 
 export interface TaxZone extends Record<string, unknown> {

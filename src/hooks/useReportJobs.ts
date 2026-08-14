@@ -54,7 +54,7 @@ export function useReportJobs(
       if (fetchJobs) {
         list = await fetchJobs(25);
       } else {
-        const res = await fetch('/api/report-requests?take=25');
+        const res = await fetch('/api/report-requests?take=25', { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch jobs');
         list = (await res.json()) as ReportJob[];
       }

@@ -22,7 +22,7 @@ export function WorkflowTabButton({ tab, isActive, icon: Icon, colors }: Workflo
 
     return (
         <div
-            className={`w-full h-24 min-w-0 transition-all duration-300 rounded-xl p-2 border-2 relative overflow-hidden bg-white group hover:shadow-lg hover:-translate-y-0.5 flex flex-col ${isActive ? "shadow-lg" : "shadow-sm border-slate-300"
+            className={`w-full  h-24 min-w-0 transition-all duration-300 rounded-xl p-1 border-2 relative overflow-hidden bg-white group hover:shadow-lg hover:-translate-y-0.5 flex flex-col ${isActive ? "shadow-lg" : "shadow-sm border-slate-300"
                 }`}
             style={
                 isActive

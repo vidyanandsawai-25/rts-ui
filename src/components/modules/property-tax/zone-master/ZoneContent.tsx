@@ -298,6 +298,7 @@ export default function ZoneContent({
             const params = new URLSearchParams(searchParams.toString());
             params.delete("createPartition");
             params.delete("partitionPropertyId");
+            params.delete("partitionPropertyNo");
             router.push(`${pathname}?${params.toString()}`);
           }}
           onSuccess={() => {

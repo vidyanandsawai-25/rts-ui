@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect, @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useTransition } from "react";
 import { toast } from "sonner";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -12,7 +12,7 @@ import {
   CommonDetailsUpdateActions,
   BulkUpdateDefinitionPayload
 } from "@/types/common-details-update/common-details-update.types";
-import { addBulkUpdateDefinitionAction } from "@/app/[locale]/property-tax/common-details-update/actions";
+import { addBulkUpdateDefinitionAction, updateFieldRegistryAction } from "@/app/[locale]/property-tax/common-details-update/actions";
 
 interface FieldConfigForm {
   fieldName: string[];
@@ -31,7 +31,7 @@ export const useFieldRegistryForm = (
   initialSchemas: FieldRegistrySchema[] = [],
   initialSourceTables: FieldRegistryTable[] = [],
   initialSourceTableFields: SourceTableField[] = [],
-  actions: Partial<CommonDetailsUpdateActions> = {}
+  actions?: CommonDetailsUpdateActions
 ) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -71,8 +71,28 @@ export const useFieldRegistryForm = (
     setSourceTableFields(initialSourceTableFields);
   }, [initialSourceTableFields]);
 
-  const [loadingTables, setLoadingTables] = useState(false);
-  const [loadingColumns, setLoadingColumns] = useState(false);
+  useEffect(() => {
+    if (actions?.getSourceTablesAction) {
+      actions.getSourceTablesAction().then((res) => {
+        if (res?.success && res?.data) {
+          setTables(res.data as FieldRegistryTable[]);
+        }
+      });
+    }
+  }, [actions]);
+
+  useEffect(() => {
+    if (sourceTable && actions?.getSourceTableFieldsAction) {
+      actions.getSourceTableFieldsAction(Number(sourceTable)).then((res) => {
+        if (res?.success && res?.data) {
+          setSourceTableFields(res.data as SourceTableField[]);
+        }
+      });
+    }
+  }, [sourceTable, actions]);
+
+  const [loadingTables, _setLoadingTables] = useState(false);
+  const [loadingColumns, _setLoadingColumns] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const schemas = initialSchemas;
@@ -92,11 +112,13 @@ export const useFieldRegistryForm = (
   };
 
   const setSourceTable = (val: string) => {
+    if (val === sourceTable && searchParams.get("sourceTable") === val) return;
     setSourceTableState(val);
     setFieldConfigs(prev => prev.map(config => ({ ...config, fieldName: [], isRequired: false })));
     
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
+      if (params.get("sourceTable") === val) return;
       if (val) params.set("sourceTable", val); else params.delete("sourceTable");
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }
@@ -108,7 +130,7 @@ export const useFieldRegistryForm = (
       {
         fieldName: [],
         displayName: "",
-        controlType: "",
+        controlType: "",        
         dataType: "",
         placeholder: "",
         isRequired: false,
@@ -129,51 +151,6 @@ export const useFieldRegistryForm = (
       setFieldConfigs(fieldConfigs.filter((_, i) => i !== index));
     }
   };
-
-  const { getSourceTablesAction, getSourceTableFieldsAction } = actions;
-
-  useEffect(() => {
-    const loadTables = async () => {
-      if (!getSourceTablesAction) return;
-      setLoadingTables(true);
-      try {
-        const res = await getSourceTablesAction();
-        if (res.success && res.data) {
-          setTables(res.data as any);
-        } else {
-          setTables([]);
-        }
-      } catch {
-        setTables([]);
-      } finally {
-        setLoadingTables(false);
-      }
-    };
-    loadTables();
-  }, [getSourceTablesAction]);
-  useEffect(() => {
-    if (!sourceTable) {
-      setSourceTableFields([]);
-      return;
-    }
-    const loadColumns = async () => {
-      if (!getSourceTableFieldsAction) return;
-      setLoadingColumns(true);
-      try {
-        const res = await getSourceTableFieldsAction(Number(sourceTable));
-        if (res.success && res.data) {
-          setSourceTableFields(res.data as any);
-        } else {
-          setSourceTableFields([]);
-        }
-      } catch {
-        setSourceTableFields([]);
-      } finally {
-        setLoadingColumns(false);
-      }
-    };
-    loadColumns();
-  }, [sourceTable, getSourceTableFieldsAction]);
 
   const handleAddFieldToRegistry = async () => {
     if (
@@ -267,5 +244,6 @@ export const useFieldRegistryForm = (
     loadingSchemas, loadingTables, loadingColumns, submitting,
     handleAddFieldToRegistry,
     handleEdit,
+    updateFieldRegistry: updateFieldRegistryAction,
   };
 };

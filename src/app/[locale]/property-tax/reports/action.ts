@@ -2,10 +2,54 @@
 
 import { getReportDefinitions, getReportParameters, getZones, getWardsByZone, getPropertiesByWard } from '@/lib/api/report.service';
 import { getFinancialYearsPaged } from '@/lib/api/financial-year.service';
+import { getPropertyTypes } from '@/lib/api/property-type-crud.service';
 import { apiClient } from '@/services/api.service';
 import type { ReportDefinition, ReportParameterDefinition, ZoneSummary, WardSummary, PropertySummary, ReportJob } from '@/types/report.types';
 import type { FinancialYear } from '@/types/financialYear.types';
+import type { PropertyType } from '@/types/property-type.types';
 import { cookies } from 'next/headers';
+
+export async function getPropertyTypesAction(): Promise<PropertyType[]> {
+  try {
+    return await getPropertyTypes();
+  } catch {
+    return [];
+  }
+}
+
+export async function getAssessmentTypesAction(): Promise<Array<{ id: number; name: string }>> {
+  try {
+    const res = await apiClient.get<import('@/types/common.types').PagedResponse<Record<string, unknown>>>('/PropertyAssessmentStatus?PageSize=-1&IsActive=true');
+    if (res.success && res.data?.items && Array.isArray(res.data.items) && res.data.items.length > 0) {
+      return res.data.items.map((item) => ({
+        id: Number(item.id ?? 0),
+        name: String(item.statusName ?? item.assessmentType ?? item.name ?? item.description ?? item.id),
+      }));
+    }
+  } catch {
+    // Fallback
+  }
+
+  try {
+    const res2 = await apiClient.get<import('@/types/common.types').PagedResponse<Record<string, unknown>>>('/AssessmentTypeMaster?PageSize=-1&IsActive=true');
+    if (res2.success && res2.data?.items && Array.isArray(res2.data.items) && res2.data.items.length > 0) {
+      return res2.data.items.map((item) => ({
+        id: Number(item.id ?? 0),
+        name: String(item.assessmentType ?? item.name ?? item.statusName ?? item.description ?? item.id),
+      }));
+    }
+  } catch {
+    // Fallback
+  }
+
+  return [
+    { id: 1, name: 'General Assessment (सर्वसाधारण आकारणी)' },
+    { id: 2, name: 'Re-Assessment (पुनराकारणी)' },
+    { id: 3, name: 'New Assessment (नवीन आकारणी)' },
+    { id: 4, name: 'Revision Assessment (सुधारित आकारणी)' },
+  ];
+}
+
 
 export async function getReportDefinitionsAction(): Promise<ReportDefinition[]> {
   try {
@@ -263,10 +307,19 @@ export async function createReportRequestAction(
     const cookieStore = await cookies();
     const userId = cookieStore.get('user_id')?.value;
 
-    const enrichedParameters = {
+    const enrichedParameters: Record<string, string> = {
       ...parameters,
       ...(userId ? { userId: userId } : {}),
     };
+
+    // Remove empty parameters so SSRS treats them as NULL and bypasses strict filters
+    Object.keys(enrichedParameters).forEach(key => {
+      if (enrichedParameters[key] === '') {
+        delete enrichedParameters[key];
+      }
+    });
+
+
 
     const result = await apiClient.post<{ reportRequestId: string; status: string }>('/Report/request', {
       reportCode,

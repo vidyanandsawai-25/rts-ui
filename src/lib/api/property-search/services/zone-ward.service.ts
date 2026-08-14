@@ -133,3 +133,41 @@ async function fetchWardPagesForZone(
     });
   });
 }
+
+export async function fetchAllWards(): Promise<WardApiResponse[]> {
+  try {
+    const response = await apiClient.get<{ items: unknown[] }>(
+      "/Ward?PageSize=-1",
+      zoneCacheOptions
+    );
+
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to fetch all wards",
+        "Get all wards failed"
+      );
+    }
+
+    if (!response.data || !Array.isArray(response.data.items)) {
+      return [];
+    }
+
+    return response.data.items
+      .filter(isWardShape)
+      .map(normalizeWard)
+      .filter((ward) => ward.isActive)
+      .sort((a, b) => {
+        if (a.sequenceNo !== null && b.sequenceNo !== null && a.sequenceNo !== b.sequenceNo) {
+          return a.sequenceNo - b.sequenceNo;
+        }
+        return (a.wardNo ?? a.description ?? "").localeCompare(b.wardNo ?? b.description ?? "", "mr", {
+          numeric: true,
+          sensitivity: "base",
+        });
+      });
+  } catch (error) {
+    logger.error("Failed to fetch all wards", { error: error as Error });
+    return [];
+  }
+}

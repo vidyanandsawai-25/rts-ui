@@ -95,7 +95,7 @@ export const SocietyGeneralFields = ({
                             if (finalVal.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
                                 setLandOwnerName(finalVal);
                             }
-                        }}                     
+                        }}
                     />
                 </Tooltip>
                 {showError('landOwnerName', !landOwnerName || societyValidators.isValidPersonName(landOwnerName)) && (

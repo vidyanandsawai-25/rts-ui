@@ -95,20 +95,25 @@ export const useFloorDataHandlers = (params: {
   });
 
 
-  const getSafeTranslation = useCallback((key: string, fallback: string) => {
+  const getSafeTranslation = useCallback((key: string, fallback: string, values?: Record<string, any>) => {
     try {
-      const res = t(key);
-      if (
-        !res ||
-        res.includes('quickDataEntry.') ||
-        res.includes('DataEntry.') ||
-        res.includes('floor.errors.') ||
-        res.includes('floor.ok') ||
-        res.startsWith('MISSING_MESSAGE')
-      ) {
-        return fallback;
+      const tFn = t as any;
+      if (typeof tFn?.has === 'function' && tFn.has(key)) {
+        const res = values ? t(key, values) : t(key);
+        if (
+          !res ||
+          res.includes('quickDataEntry.') ||
+          res.includes('DataEntry.') ||
+          res.includes('floor.errors.') ||
+          res.includes('floor.ok') ||
+          res.startsWith('MISSING_MESSAGE') ||
+          res.startsWith('FORMATTING_ERROR')
+        ) {
+          return fallback;
+        }
+        return res;
       }
-      return res;
+      return fallback;
     } catch {
       return fallback;
     }
@@ -119,7 +124,19 @@ export const useFloorDataHandlers = (params: {
 
     if (selectedFloorType === 'OpenPlot' && isOpenSpaceAreaExceeded) {
       const availArea = parseFloat(Number(availableRemainingOpenSpaceAreaSqM || 0).toFixed(2));
-      const msg = `Open Space Area cannot exceed the available remaining area (${availArea} Sq.M).\n\nPlot Area: ${parseFloat(Number(plotAreaSqM || 0).toFixed(2))} Sq M\nTotal Construction Area: ${parseFloat(Number(totalConstructionAreaSqM || 0).toFixed(2))} Sq M\nAlready Utilized Open Space Area: ${parseFloat(Number(alreadyUtilizedOpenSpaceAreaSqM || 0).toFixed(2))} Sq M\nAttempted Open Space Area: ${parseFloat(Number(enteredOpenSpaceAreaSqM || 0).toFixed(2))} Sq M\nRemaining Area for Open Space: ${availArea} Sq M\n\nPlease enter an Open Space area less than or equal to the remaining area.`;
+      const attemptedArea = parseFloat(Number(enteredOpenSpaceAreaSqM || 0).toFixed(2));
+      const diffArea = parseFloat(Math.max(0, attemptedArea - availArea).toFixed(2));
+
+      const headerMsg = getSafeTranslation('floor.openSpaceAreaExceeded', `Open Space Area cannot exceed the available remaining area (${availArea} Sq.M).`, { area: String(availArea) });
+      const plotAreaLbl = getSafeTranslation('floor.plotAreaLabel', 'Plot Area:');
+      const totalConLbl = getSafeTranslation('floor.totalConstructionAreaLabel', 'Total Construction Area:');
+      const utilizedOpenLbl = getSafeTranslation('floor.alreadyUtilizedOpenSpaceAreaLabel', 'Already Utilized Open Space Area:');
+      const attemptedOpenLbl = getSafeTranslation('floor.attemptedOpenSpaceAreaLabel', 'Attempted Open Space Area:');
+      const remainingOpenLbl = getSafeTranslation('floor.remainingAreaForOpenSpaceLabel', 'Remaining Area for Open Space:');
+      const exceededLbl = getSafeTranslation('floor.exceededAreaLabel', 'Exceeded Area (Difference):');
+      const footerMsg = getSafeTranslation('floor.pleaseEnterOpenSpaceAreaLessThanRemaining', 'Please enter an Open Space area less than or equal to the remaining area.');
+
+      const msg = `${headerMsg}\n\n${plotAreaLbl} ${parseFloat(Number(plotAreaSqM || 0).toFixed(2))} Sq M\n${totalConLbl} ${parseFloat(Number(totalConstructionAreaSqM || 0).toFixed(2))} Sq M\n${utilizedOpenLbl} ${parseFloat(Number(alreadyUtilizedOpenSpaceAreaSqM || 0).toFixed(2))} Sq M\n${attemptedOpenLbl} ${attemptedArea} Sq M\n${remainingOpenLbl} ${availArea} Sq M\n${exceededLbl} ${diffArea} Sq M\n\n${footerMsg}`;
 
       confirm({
         variant: 'warning',
@@ -133,7 +150,18 @@ export const useFloorDataHandlers = (params: {
 
     if (selectedFloorType === 'Construction' && isFloorAreaExceeded) {
       const availArea = parseFloat(Number(availableRemainingConstructionAreaSqM || 0).toFixed(2));
-      const msg = `Floor Built-up Area cannot exceed the available remaining area (${availArea} Sq.M).\n\nPlot Area: ${parseFloat(Number(plotAreaSqM || 0).toFixed(2))} Sq M\nAlready Utilized Open Space Area: ${parseFloat(Number(totalOpenSpaceAreaSqM || 0).toFixed(2))} Sq M\nEntered Floor Built-up Area: ${parseFloat(Number(enteredFloorAreaSqM || 0).toFixed(2))} Sq M\nRemaining Area: ${availArea} Sq M\n\nPlease enter a Construction area less than or equal to the remaining area.`;
+      const enteredArea = parseFloat(Number(enteredFloorAreaSqM || 0).toFixed(2));
+      const diffArea = parseFloat(Math.max(0, enteredArea - availArea).toFixed(2));
+
+      const headerMsg = getSafeTranslation('floor.floorAreaExceeded', `Floor Built-up Area cannot exceed the available remaining area (${availArea} Sq.M).`, { area: String(availArea) });
+      const plotAreaLbl = getSafeTranslation('floor.plotAreaLabel', 'Plot Area:');
+      const utilizedOpenLbl = getSafeTranslation('floor.alreadyUtilizedOpenSpaceAreaLabel', 'Already Utilized Open Space Area:');
+      const enteredFloorLbl = getSafeTranslation('floor.enteredFloorBuiltupAreaLabel', 'Entered Floor Built-up Area:');
+      const remainingLbl = getSafeTranslation('floor.remainingAreaLabel', 'Remaining Area:');
+      const exceededLbl = getSafeTranslation('floor.exceededAreaLabel', 'Exceeded Area (Difference):');
+      const footerMsg = getSafeTranslation('floor.pleaseEnterConstructionAreaLessThanRemaining', 'Please enter a Construction area less than or equal to the remaining area.');
+
+      const msg = `${headerMsg}\n\n${plotAreaLbl} ${parseFloat(Number(plotAreaSqM || 0).toFixed(2))} Sq M\n${utilizedOpenLbl} ${parseFloat(Number(totalOpenSpaceAreaSqM || 0).toFixed(2))} Sq M\n${enteredFloorLbl} ${enteredArea} Sq M\n${remainingLbl} ${availArea} Sq M\n${exceededLbl} ${diffArea} Sq M\n\n${footerMsg}`;
 
       confirm({
         variant: 'warning',

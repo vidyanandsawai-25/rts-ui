@@ -12,6 +12,7 @@ interface EnabledFieldListProps {
   selectedCodes: string[];
   handleMenuSelect: (code: string) => void;
   locale: string;
+  selectionType?: 'single' | 'multi';
 }
 
 export const EnabledFieldList = ({
@@ -20,18 +21,19 @@ export const EnabledFieldList = ({
   selectedCodes,
   handleMenuSelect,
   locale,
+  selectionType = 'single',
 }: EnabledFieldListProps) => {
   return (
-    <div className="flex flex-col min-h-0 border border-blue-200 rounded-xl bg-white overflow-hidden w-full lg:w-4/12">
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-[#F8FAFF] shrink-0">
+    <div className="flex flex-col min-h-0 border border-blue-200 rounded-xl bg-white overflow-hidden w-full  h-full">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-blue-200 bg-[#F8FAFF] shrink-0">
         <div>
           <h3 className="text-sm font-semibold text-[#1E3A8A]">{t('fieldList.title')}</h3>
           <p className="text-xs text-gray-500 mt-0.5">{t('fieldList.subtitle')}</p>
         </div>
       </div>
 
-      <div className="p-4 flex-1 overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between mb-3 shrink-0">
+      <div className="p-4 py-2 flex-1 overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between mb-2 shrink-0">
           <p className="text-sm font-medium text-gray-700">{t('fieldList.enabledFieldList')}</p>
           <span className="text-sm text-gray-500">
             {filteredMenuItems.length} {t('fieldList.available')}
@@ -79,13 +81,14 @@ export const EnabledFieldList = ({
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 ml-2 shrink-0">
-                  <Checkbox 
-                    checked={isSelected} 
-                    onCheckedChange={() => handleMenuSelect(item.updateCode)}
-                    className="data-[state=checked]:bg-white data-[state=checked]:border-blue-500 data-[state=checked]:text-blue-500" 
-                  />
-                </div>
+                {selectionType === 'multi' && (
+                  <div className="flex items-center gap-2 ml-2 shrink-0">
+                    <Checkbox 
+                      checked={isSelected} 
+                      className="pointer-events-none data-[state=checked]:bg-white border-blue-100 data-[state=checked]:border-blue-500 data-[state=checked]:text-blue-500" 
+                    />
+                  </div>
+                )}
               </div>
             );
           })}

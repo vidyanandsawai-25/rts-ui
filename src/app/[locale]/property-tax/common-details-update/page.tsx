@@ -25,6 +25,7 @@ import {
   addBulkUpdateDefinitionAction,
   getUpdateHistoryAction,
   exportUpdateHistoryAction,
+  getUpdateHistoryDetailAction,
   getExcelTemplateFieldsAction
 } from "./actions";
 import {
@@ -35,6 +36,7 @@ import {
   getSourceTablesServer,
   getSourceTableFieldsServer,
   getUpdateHistoryServer,
+  getUpdateHistoryDetailServer,
 } from "@/lib/api/common-details-update/common-details-update.service";
 
 export const dynamic = "force-dynamic";
@@ -57,10 +59,12 @@ interface PageProps {
     scopeId?: string;
     zoneId?: string;
     sourceid?: string;
+    sourceTable?: string;
     auditPage?: string;
     auditPageSize?: string;
     auditUser?: string;
     auditSearch?: string;
+    activityId?: string;
   }>;
 }
 
@@ -97,22 +101,23 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
   const scopeId = raw.scopeId?.trim() || "";
   const zoneId = raw.zoneId?.trim() || "";
   const sourceid = raw.sourceid?.trim() || "";
+  const sourceTable = raw.sourceTable?.trim() || "";
   const auditPage = Math.max(MIN_PAGE, Math.min(MAX_PAGE, Number(raw.auditPage) || 1));
-  const auditPageSize = Math.max(MIN_PAGE, Math.min(MAX_PAGE_SIZE, Number(raw.auditPageSize) || 5));
+  const auditPageSize = Math.max(MIN_PAGE, Math.min(MAX_PAGE_SIZE, Number(raw.auditPageSize) || 10));
   const auditUser = raw.auditUser?.trim() || "";
   const auditSearch = raw.auditSearch?.trim() || "";
+  const activityId = raw.activityId?.trim() || "";
 
-  return { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, auditPage, auditPageSize, auditUser, auditSearch };
+  return { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, sourceTable, auditPage, auditPageSize, auditUser, auditSearch, activityId };
 }
 
 export default async function Page({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, auditPage, auditPageSize, auditUser, auditSearch } = sanitizeParams(params);
+  const { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, sourceTable, auditPage, auditPageSize, auditUser, auditSearch, activityId } = sanitizeParams(await searchParams);
 
   const menuItems = await getMenuItemsAction();
   const defaultCode = selectedField || (menuItems[0]?.updateCode || "");
 
-  const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, initialSourceTables, initialSourceTableFields, initialExcelTemplateFieldsResult, initialUpdateHistory] = await Promise.all([
+  const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, initialSourceTables, initialExcelTemplateFieldsResult, initialUpdateHistory, initialUpdateHistoryDetail] = await Promise.all([
     getAllWardsAction(),
     getAllWingsAction(),
     getFieldRegistriesServer(pageNumber, pageSize).catch(() => ({
@@ -143,15 +148,18 @@ export default async function Page({ searchParams }: PageProps) {
       return unique;
     }) : Promise.resolve([]),
     getSourceTablesServer().catch(() => []),
-    sourceid ? getSourceTableFieldsServer(Number(sourceid)).catch(() => []) : Promise.resolve([]),
     getExcelTemplateFieldsAction().catch(() => ({ success: false, data: [] })),
     getUpdateHistoryServer({
       PageNumber: auditPage,
       PageSize: auditPageSize,
-      Username: auditUser,
+      DoneBy: auditUser,
       SearchTerm: auditSearch,
     }).catch(() => null),
+    activityId ? getUpdateHistoryDetailServer(activityId).catch(() => null) : Promise.resolve(null),
   ]);
+
+  const actualSourceId = sourceid || sourceTable;
+  const initialSourceTableFields = actualSourceId ? await getSourceTableFieldsServer(Number(actualSourceId)).catch(() => []) : [];
 
   const wardsData = wardsResult.success && wardsResult.data ? wardsResult.data : {
     items: [],
@@ -198,6 +206,7 @@ export default async function Page({ searchParams }: PageProps) {
     addBulkUpdateDefinitionAction,
     getUpdateHistoryAction,
     exportUpdateHistoryAction,
+    getUpdateHistoryDetailAction,
   };
 
   return (
@@ -227,6 +236,7 @@ export default async function Page({ searchParams }: PageProps) {
       setFieldRegistryStatusAction={setFieldRegistryStatusAction}
       initialEditData={null}
       initialUpdateHistory={initialUpdateHistory}
+      initialUpdateHistoryDetail={initialUpdateHistoryDetail}
       actions={actions}
     />
   );

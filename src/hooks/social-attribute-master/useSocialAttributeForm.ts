@@ -9,11 +9,10 @@ import {
   updateSocialAttributeAction,
 } from '@/app/[locale]/property-tax/social-attribute-master/action';
 import { SocialAttributeFormModel, SocialAttribute } from '@/types/social-attribute.types';
-import { CODE_SANITIZE, validateForm, commonValidations } from '@/lib/utils/validation';
+import { validateForm, commonValidations } from '@/lib/utils/validation';
 import {
   SOCIAL_ATTRIBUTE_CODE_MAX,
   SOCIAL_ATTRIBUTE_NAME_MAX,
-  UNIT_MAX,
 } from '@/components/modules/property-tax/social-attribute-master/constants';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 
@@ -83,10 +82,12 @@ export function useSocialAttributeForm({
             maxLength: 'form.validation.codeMaxLength',
           })(val);
           if (baseErr) return baseErr;
-
           const strVal = String(val ?? '')
             .trim()
             .toUpperCase();
+          if (strVal && /[0-9]/.test(strVal)) {
+            return t('form.validation.codeFormat');
+          }
           const isDuplicate = existingAttributes.some(
             (attr) => attr.id !== id && attr.socialAttributeCode.trim().toUpperCase() === strVal
           );
@@ -117,7 +118,7 @@ export function useSocialAttributeForm({
         },
         unit: (val: unknown) => {
           const strVal = String(val ?? '').trim();
-          if (strVal && !/^[\p{L}\p{M}\p{N}]+$/u.test(strVal)) {
+          if (strVal && !/^[\p{L}\p{M}\p{N}.%²³\s]+$/u.test(strVal)) {
             return t('form.validation.unitFormat');
           }
           return undefined;
@@ -141,19 +142,14 @@ export function useSocialAttributeForm({
 
       let sanitizedValue = value;
       if (name === 'socialAttributeName') {
-        sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}\s\-]/gu, '');
+        sanitizedValue = value.replace(/[^\p{L}\p{M}\s\-()]/gu, '');
         if (sanitizedValue.length > SOCIAL_ATTRIBUTE_NAME_MAX) {
           sanitizedValue = sanitizedValue.substring(0, SOCIAL_ATTRIBUTE_NAME_MAX);
         }
       } else if (name === 'socialAttributeCode') {
-        sanitizedValue = value.replace(CODE_SANITIZE, '').toUpperCase();
+        sanitizedValue = value.replace(/[^A-Za-z_]/g, '').toUpperCase();
         if (sanitizedValue.length > SOCIAL_ATTRIBUTE_CODE_MAX) {
           sanitizedValue = sanitizedValue.substring(0, SOCIAL_ATTRIBUTE_CODE_MAX);
-        }
-      } else if (name === 'unit') {
-        sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}]/gu, '');
-        if (sanitizedValue.length > UNIT_MAX) {
-          sanitizedValue = sanitizedValue.substring(0, UNIT_MAX);
         }
       }
 

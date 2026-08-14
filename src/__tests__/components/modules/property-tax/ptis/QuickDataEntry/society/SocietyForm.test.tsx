@@ -545,25 +545,27 @@ describe('SocietyForm', () => {
             fireEvent.click(submitButton);
 
             await waitFor(() => {
-                expect(updatePropertySocietyDetailsAction).toHaveBeenCalledWith(
-                    'en',
-                    123,
-                    expect.objectContaining({
-                        propertyId: 123,
-                        societyDetailId: 1,
-                        societyName: 'Test Society',
-                        societyAddress: '123 Test Street',
-                        managerName: 'John Manager',
-                        managerEmailId: 'manager@test.com',
-                        managerMobileNo: '9876543210',
-                        secretaryName: 'Jane Secretary',
-                        secretaryEmailId: 'secretary@test.com',
-                        secretaryMobileNo: '9876543211',
-                        landOwnerName: 'New Owner',
-                        builderName: 'Builder Name',
-                    })
-                );
+                expect(updatePropertySocietyDetailsAction).toHaveBeenCalled();
             });
+
+            expect(updatePropertySocietyDetailsAction).toHaveBeenCalledWith(
+                'en',
+                123,
+                expect.objectContaining({
+                    propertyId: 123,
+                    societyDetailId: 1,
+                    societyName: 'Test Society',
+                    societyAddress: '123 Test Street',
+                    managerName: 'John Manager',
+                    managerEmailId: 'manager@test.com',
+                    managerMobileNo: '+919876543210',
+                    secretaryName: 'Jane Secretary',
+                    secretaryEmailId: 'secretary@test.com',
+                    secretaryMobileNo: '+919876543211',
+                    landOwnerName: 'New Owner',
+                    builderName: 'Builder Name',
+                })
+            );
         });
 
         it('should use propertyIdSearch when societyData is null', async () => {
@@ -586,14 +588,16 @@ describe('SocietyForm', () => {
             fireEvent.click(submitButton);
 
             await waitFor(() => {
-                expect(updatePropertySocietyDetailsAction).toHaveBeenCalledWith(
-                    'en',
-                    456,
-                    expect.objectContaining({
-                        propertyId: 456,
-                    })
-                );
+                expect(updatePropertySocietyDetailsAction).toHaveBeenCalled();
             });
+
+            expect(updatePropertySocietyDetailsAction).toHaveBeenCalledWith(
+                'en',
+                456,
+                expect.objectContaining({
+                    propertyId: 456,
+                })
+            );
         });
     });
 });

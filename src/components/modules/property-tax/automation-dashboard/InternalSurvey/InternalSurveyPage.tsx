@@ -16,6 +16,8 @@ import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-da
 import { ExportDropdown } from './ExportDropdown';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
+import { applyTableSort, SortConfig } from '@/lib/utils/automation-dashboard/sortUtils';
+import { getAssessmentStatusNavigationParams } from '@/lib/utils/automation-dashboard/assessmentStatusNavigation';
 interface InternalSurveyPageProps {
     serverData: InternalSurveyGridItems | null;
     propertyDescriptions?: PropertyTypeMasterItem[];
@@ -79,13 +81,55 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData, pro
                 const zoneNoParam = row.zoneNo ? `&zoneNo=${row.zoneNo}` : '';
                 const returnUrl = encodeURIComponent(`/${locale}/property-tax/automation-dashboard/internal-survey${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
                 const typeIdParam = getPropertyTypeIdParam(columnKey);
-                const query = `?stage=internalSurvey&source=division&column=${columnKey}&returnUrl=${returnUrl}${workflowStageId ? `&workflowStageId=${workflowStageId}` : ''}${zoneNoParam}${typeIdParam}`;
+
+                let structureUnitParam = '';
+                let assessmentTypeParam = '';
+                let targetWorkflowStageId = workflowStageId;
+
+                // Geo-Sequencing Properties
+                if (columnKey === 'geoStruct') {
+                    structureUnitParam = '&Structure=true&Unit=false';
+                    targetWorkflowStageId = '1'; // Geo-Sequencing
+                } else if (columnKey === 'geoUnit') {
+                    structureUnitParam = '&Structure=false&Unit=true';
+                    targetWorkflowStageId = '1'; // Geo-Sequencing
+                }
+                // Survey Properties
+                else if (columnKey === 'surveyStruct') {
+                    structureUnitParam = '&Structure=true&Unit=false';
+                    targetWorkflowStageId = workflowStageId || '2'; // Internal Survey
+                } else if (columnKey === 'surveyUnit') {
+                    structureUnitParam = '&Structure=false&Unit=true';
+                    targetWorkflowStageId = workflowStageId || '2'; // Internal Survey
+                }
+
+                const assessmentParams = getAssessmentStatusNavigationParams(columnKey, row);
+                if (assessmentParams.isAssessmentStatusColumn) {
+                    assessmentTypeParam = assessmentParams.assessmentTypeParam;
+                    structureUnitParam = assessmentParams.structureUnitParam;
+                }
+
+                const query = `?stage=internalSurvey&source=division&column=${columnKey}&returnUrl=${returnUrl}${targetWorkflowStageId ? `&workflowStageId=${targetWorkflowStageId}` : ''}${zoneNoParam}${typeIdParam}${assessmentTypeParam}${structureUnitParam}`;
                 router.push(`${basePath}/property-details-dashboard/${zoneId}${query}`);
             }
         );
     }, [t, router, basePath, workflowStageId, locale]);
 
-    const headerRows = useMemo(() => getInternalSurveyHeaderRows(t), [t]);
+    const [sortConfig, setSortConfig] = useState<SortConfig<InternalSurveyTableRow> | null>(null);
+
+    const handleSort = (key: keyof InternalSurveyTableRow) => {
+        setSortConfig((current) => {
+            if (!current || current.key !== key) {
+                return { key, direction: 'asc' };
+            }
+            if (current.direction === 'asc') {
+                return { key, direction: 'desc' };
+            }
+            return null;
+        });
+    };
+
+    const headerRows = useMemo(() => getInternalSurveyHeaderRows(t, 'zone', sortConfig, handleSort), [t, sortConfig]);
 
     const tableData: InternalSurveyTableRow[] = useMemo(() => {
         if (!serverData) return [];
@@ -114,11 +158,21 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData, pro
             inprocessStruct: data.assessmentInprocess?.structure ?? 0,
             inprocessUnit: data.assessmentInprocess?.unit ?? 0,
             photoCount: data.photoCount ?? 0,
+            assessedStatusId: data.assessedProperties?.statusId,
+            unassessedStatusId: data.unassessedProperties?.statusId,
+            newlyAssessedStatusId: data.newlyAssessedFound?.statusId,
+            inprocessStatusId: data.assessmentInprocess?.statusId,
         }));
+
+        const sortedData = sortConfig ? applyTableSort([...mappedData], sortConfig) : mappedData;
+
+        sortedData.forEach((row, index) => {
+            row.sr = (index + 1).toString();
+        });
 
         if (serverData.totalRow) {
             const total = serverData.totalRow;
-            mappedData.push({
+            sortedData.push({
                 sr: t('internalSurvey.total'),
                 division: '',
                 isTotal: true,
@@ -140,11 +194,15 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData, pro
                 inprocessStruct: total.assessmentInprocess?.structure ?? 0,
                 inprocessUnit: total.assessmentInprocess?.unit ?? 0,
                 photoCount: total.photoCount ?? 0,
+                assessedStatusId: total.assessedProperties?.statusId,
+                unassessedStatusId: total.unassessedProperties?.statusId,
+                newlyAssessedStatusId: total.newlyAssessedFound?.statusId,
+                inprocessStatusId: total.assessmentInprocess?.statusId,
             });
         }
 
-        return mappedData;
-    }, [serverData, t]);
+        return sortedData;
+    }, [serverData, t, sortConfig]);
 
     const exportConfig = useMemo<ExportConfig<InternalSurveyTableRow>>(() => {
         const { exportColumns, exportHeaderRows } = adaptTableConfigToExport(columns, headerRows);
