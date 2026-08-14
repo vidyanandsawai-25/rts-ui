@@ -88,6 +88,7 @@ export async function processBulkOperations(
 
     let createdCount = 0;
     let updatedCount = 0;
+    let apiErrorMessage: string | undefined;
 
     // Execute bulk create
     if (createPayloadVars.length > 0) {
@@ -96,6 +97,7 @@ export async function processBulkOperations(
             createdCount = createPayloadVars.length;
         } else {
             errorCount += createPayloadVars.length;
+            if (result?.message) apiErrorMessage = result.message;
         }
     }
 
@@ -106,6 +108,7 @@ export async function processBulkOperations(
             updatedCount = updatePayloadVars.length;
         } else {
             errorCount += updatePayloadVars.length;
+            if (result?.message && !apiErrorMessage) apiErrorMessage = result.message;
         }
     }
 
@@ -125,7 +128,7 @@ export async function processBulkOperations(
         parts.push(`${errorCount} ${tW('common.messages.failed')}`);
         message = tW('common.messages.bulkOperationPartialSuccess', { message: parts.join(', ') });
     } else if (errorCount > 0) {
-        message = tW('common.messages.bulkOperationFailed');
+        message = apiErrorMessage || tW('common.messages.bulkOperationFailed');
     } else {
         message = tW('common.messages.noChangesDetectedBulk');
     }

@@ -21,7 +21,8 @@ export default async function AddRatePage({ searchParams }: PageProps) {
   
   // Get matrix pagination params from URL
   const matrixPage = Number(params?.matrixPage) || 1;
-  const matrixPageSize = Number(params?.matrixPageSize) || 10;
+  const rawMatrixPageSize = Number(params?.matrixPageSize);
+  const matrixPageSize = [100, 150, 200].includes(rawMatrixPageSize) ? rawMatrixPageSize : 100;
   
   // Get filter values from URL
   const selectedZone = params?.zone;

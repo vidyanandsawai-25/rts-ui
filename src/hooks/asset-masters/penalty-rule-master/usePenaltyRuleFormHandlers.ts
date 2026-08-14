@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { PenaltyRuleFormModel } from "@/types/asset-masters/penalty-rule-master.types";
 import { savePenaltyRule } from "@/app/[locale]/assets/configuration/master-data/penalty-rule-master/action";
-import { sanitizeText } from "@/lib/utils/sanitization";
-import { CODE_SANITIZE } from "@/lib/utils/validation";
+import { CODE_SANITIZE, ASSET_MASTER_NAME_SANITIZE } from "@/lib/utils/asset-validation-rules";
 
 interface UsePenaltyRuleFormHandlersProps {
   formData: PenaltyRuleFormModel;
@@ -58,11 +57,22 @@ export function usePenaltyRuleFormHandlers({
     if (name === "penaltyCode") {
       sanitizedValue = value.toUpperCase().replace(CODE_SANITIZE, "").slice(0, 20);
     } else if (name === "penaltyName") {
-      sanitizedValue = sanitizeText(value, 100);
+      sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+      if (sanitizedValue.length > 100) {
+        sanitizedValue = sanitizedValue.substring(0, 100);
+      }
+    } else if (name === "penaltyValue") {
+      const oldValue = String(formData.penaltyValue);
+      if (value.length >= oldValue.length) {
+        const maxVal = formData.calculationType === "Percentage" ? 999 : 9999999999999.99;
+        if (Number(value) > maxVal) {
+          return;
+        }
+      }
     }
     setFormData((p) => ({ ...p, [name]: sanitizedValue }));
     setErrors((p) => ({ ...p, [name]: "" }));
-  }, [setFormData, setErrors]);
+  }, [formData.calculationType, formData.penaltyValue, setFormData, setErrors]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -115,7 +125,6 @@ export function usePenaltyRuleFormHandlers({
         setOpen(false);
         startTransition(() => {
           router.push(`/${locale}/assets/configuration/master-data/penalty-rule-master`);
-          router.refresh();
         });
         return;
       }

@@ -62,6 +62,42 @@ export function normalizeOffsetData(raw: Record<string, unknown>): OffsetData {
 }
 
 /**
+ * Efficiently extracts CC and OC issue dates from root fields or propertyCertificates array in a single loop.
+ */
+export function extractCertificateDates(raw: Record<string, unknown>): { ccDate: string | null; ocDate: string | null } {
+  let ccDate = (raw.ccDate as string) || (raw.ccIssueDate as string) || null;
+  let ocDate = (raw.ocDate as string) || (raw.ocIssueDate as string) || null;
+
+  if (ccDate && ocDate) {
+    return { ccDate: String(ccDate), ocDate: String(ocDate) };
+  }
+
+  const certs = raw.propertyCertificates;
+  if (Array.isArray(certs)) {
+    for (let i = 0; i < certs.length; i++) {
+      const c = certs[i] as Record<string, unknown>;
+      if (!c || !c.issueDate) continue;
+
+      const typeCode = String(c.certificateTypeCode || '').toUpperCase();
+      const typeId = Number(c.certificateTypeId);
+
+      if (!ccDate && (typeCode === 'CC' || typeId === 1)) {
+        ccDate = String(c.issueDate);
+      } else if (!ocDate && (typeCode === 'OC' || typeId === 2)) {
+        ocDate = String(c.issueDate);
+      }
+
+      if (ccDate && ocDate) break;
+    }
+  }
+
+  return {
+    ccDate: ccDate ? String(ccDate) : null,
+    ocDate: ocDate ? String(ocDate) : null,
+  };
+}
+
+/**
  * Normalizes a polymorphic room object from API responses.
  */
 export function normalizeRoomData(raw: Record<string, unknown>): RoomData {
@@ -208,6 +244,9 @@ export function normalizeFloorData(
     builtupAreaSqFt: getString(raw.builtupAreaSqFt) || getString(raw.builtupAreaSqFeet) || '0.00',
     builtupAreaSqM: getString(raw.builtupAreaSqM) || getString(raw.builtupAreaSqMeter) || '0.00',
     isTaxable: (() => {
+      if (raw.isTaxable !== undefined && raw.isTaxable !== null && raw.isTaxable !== '') {
+        return (raw.isTaxable === 'Yes' || raw.isTaxable === true || raw.isTaxable === 1 || raw.isTaxable === '1') ? 'Yes' : 'No';
+      }
       if (isOpenPlotVal) {
         const rawPlotCode = String(
           raw.typeOfUseCode ||
@@ -222,9 +261,12 @@ export function normalizeFloorData(
           return 'No';
         }
       }
-      return (raw.isTaxable === 'Yes' || raw.isTaxable === true || raw.isTaxable === 1 || raw.isTaxable === '1') ? 'Yes' : 'No';
+      return 'Yes';
     })(),
     updateBuildingPermission: raw.updateBuildingPermission ? String(raw.updateBuildingPermission) : ((raw.propertyCertificates && Array.isArray(raw.propertyCertificates) && raw.propertyCertificates.length > 0) ? 'Yes' : 'No'),
+
+    // Extract CC Date and OC Date from root or propertyCertificates in a single pass
+    ...extractCertificateDates(raw),
 
     // Renter details root level mappings for forms/UI state
     renterName: getString(raw.renterName) || getString(raw.renterNameEnglish) || getString(firstRenter?.renterName) || getString(firstRenter?.renterNameEnglish) || '',

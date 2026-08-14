@@ -67,6 +67,7 @@ export async function updatePolicyConfiguration(data: PolicyConfigurationFormMod
     allowedValues: data.allowedValues ?? null,
     isActive: data.isActive,
     createdBy: data.createdBy ?? 0,
+    updatedBy: data.updatedBy ?? 0
   };
 
   const response = await apiClient.put<void>(`/PolicyConfiguration/${data.id}`, payload);
@@ -76,19 +77,6 @@ export async function updatePolicyConfiguration(data: PolicyConfigurationFormMod
       response.statusCode || 500,
       "",
       response.error || "Update policy configuration failed"
-    );
-  }
-}
-
-/** DELETE */
-export async function deletePolicyConfiguration(id: string | number): Promise<void> {
-  const response = await apiClient.delete<void>(`/PolicyConfiguration/${id}`);
-
-  if (!response.success) {
-    throw new ApiError(
-      response.statusCode || 500,
-      "",
-      response.error || `Delete policy configuration ${id} failed`
     );
   }
 }

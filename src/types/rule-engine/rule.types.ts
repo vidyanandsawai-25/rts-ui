@@ -50,6 +50,7 @@ export interface RuleItem {
   skipRuleIds?: number[];
   exclusionReason?: string;
   skipRules?: SkipRuleRef[];
+  propertyRuleEvaluationMasterId?: number;
   ruleScopeName?: string;
   subRules?: {
     id: string;

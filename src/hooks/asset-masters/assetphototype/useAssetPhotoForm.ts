@@ -79,7 +79,7 @@ export function useAssetPhotoForm({
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === "displayOrder") {
-      const val = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "").substring(0, 4);
+      const val = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "").substring(0, 5);
       setDisplayOrderValue(val);
       setFormData(p => ({ ...p, displayOrder: val === "" ? Number.NaN : Number(val) }));
     } else {
@@ -92,7 +92,7 @@ export function useAssetPhotoForm({
     setTouched(p => ({ ...p, [name]: true }));
     let sanitized = sanitizeFieldValue(name, value);
     if (name === "displayOrder") {
-      sanitized = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "").substring(0, 4);
+      sanitized = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "").substring(0, 5);
       setDisplayOrderValue(sanitized);
     }
     const updated = { ...formData, [name]: name === "displayOrder" ? (sanitized === "" ? Number.NaN : Number(sanitized)) : sanitized };
@@ -135,7 +135,6 @@ export function useAssetPhotoForm({
       }
       toast.success(res.message || t(isEdit ? "success.updated" : "success.created", { code: formData.photoTypeCode }));
       onSuccess();
-      router.refresh();
       closeAndRoute();
     } finally {
       setIsSubmitting(false);

@@ -16,7 +16,7 @@ interface DrawerProps {
   className?: string;
   bodyClassName?: string;
   description?: string;
-  width?: "sm" | "md" | "lg" | "xl";
+  width?: "sm" | "md" | "lg" | "xl" | "2xl";
   children: React.ReactNode;
   footer?: React.ReactNode;
   hideHeader?: boolean;
@@ -204,6 +204,7 @@ export function Drawer({
     md: "w-[90vw] md:w-[520px]",
     lg: "w-[95vw] md:w-[900px] lg:w-[900px] xl:w-[900px]",
     xl: "w-[97vw] md:w-[1000px] lg:w-[1200px] xl:w-[1400px]",
+    "2xl": "w-[97vw] md:w-[1000px] lg:w-[1200px] xl:w-[1600px]",
   }[width];
 
   const responsiveValidationClasses = `

@@ -149,17 +149,23 @@ export const ptisMapper = {
   },
 
   mapOldFloorDetails: (items: OldFloorDetailApiResponse[]): OldFloorDetailsData[] => {
-    return items.map((item) => ({
-      floor: (item.floorDescription as string) || '',
-      subFloor: (item.subFloorDescription as string) || '',
-      assessmentYear: (item.oldAssessmentYear as string) || '',
-      year: item.constructionYear?.toString() || item.oldConstructionYear?.toString() || '',
-      constructionType: (item.constructionTypeDescription as string) || '',
-      typeOfUse: (item.typeOfUseDescription as string) || '',
-      subType: (item.subTypeOfUseDescription as string) || '',
-      carpetArea: `${item.oldCarpetAreaSqFeet ?? item.carpetAreaSqFeet ?? 0} / ${item.oldCarpetAreaSqMeter ?? item.carpetAreaSqMeter ?? 0}`,
-      builtupArea: `${item.oldBuiltupAreaSqFeet ?? item.builtupAreaSqFeet ?? 0} / ${item.oldBuiltupAreaSqMeter ?? item.builtupAreaSqMeter ?? 0}`,
-    }));
+    return items.map((item) => {
+      const wardPropPartNo = [item.oldWardNo, item.oldPropertyNo, item.oldPartitionNo]
+        .filter(Boolean)
+        .join(' - ');
+      return {
+        wardPropPartNo,
+        floor: (item.floorDescription as string) || '',
+        subFloor: (item.subFloorDescription as string) || '',
+        assessmentYear: (item.oldAssessmentYear as string) || '',
+        year: item.constructionYear?.toString() || item.oldConstructionYear?.toString() || '',
+        constructionType: (item.constructionTypeDescription as string) || '',
+        typeOfUse: (item.typeOfUseDescription as string) || '',
+        subType: (item.subTypeOfUseDescription as string) || '',
+        carpetArea: `${item.oldCarpetAreaSqFeet ?? item.carpetAreaSqFeet ?? 0} / ${item.oldCarpetAreaSqMeter ?? item.carpetAreaSqMeter ?? 0}`,
+        builtupArea: `${item.oldBuiltupAreaSqFeet ?? item.builtupAreaSqFeet ?? 0} / ${item.oldBuiltupAreaSqMeter ?? item.builtupAreaSqMeter ?? 0}`,
+      };
+    });
   },
 
   mapDiscountDetails: ptisSocialMapper.mapDiscountDetails,

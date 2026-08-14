@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Input, SearchSelect } from '@/components/common';
+import { Tooltip } from '@/components/common/Tooltip';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 import { sanitizePlotNo, sanitizeSurveyNo, sanitizeSubZoneNo } from '@/lib/utils/input-sanitization';
@@ -43,15 +44,19 @@ export const PlotDetailsFields = ({
                 <Label htmlFor="pd-mouja" className="text-xs font-semibold text-gray-700">
                     {t('property.mouja')}
                 </Label>
-                <SearchSelect
-                    id="pd-mouja"
-                    name="mouja"
-                    options={moujaOptions}
-                    value={moujaId?.toString() ?? ''}
-                    placeholder={t('property.select')}
-                    onChange={handleMoujaChange}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
+                <Tooltip content={moujaOptions.find(opt => opt.value === moujaId?.toString())?.label || ''} placement="top">
+                    <div className="w-full">
+                        <SearchSelect
+                            id="pd-mouja"
+                            name="mouja"
+                            options={moujaOptions}
+                            value={moujaId?.toString() ?? ''}
+                            placeholder={t('property.select')}
+                            onChange={handleMoujaChange}
+                            className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        />
+                    </div>
+                </Tooltip>
             </div>
 
             {/* Sub Zone No */}
@@ -59,24 +64,26 @@ export const PlotDetailsFields = ({
                 <Label htmlFor="pd-subzone" className="text-xs font-semibold text-gray-700">
                     {t('property.subZoneNo')}
                 </Label>
-                <Input
-                    id="pd-subzone"
-                    name="subZoneNo"
-                    placeholder="SZ-12"
-                    value={subZoneNo}
-                    maxLength={PROPERTY_VALIDATION_RULES.SUB_ZONE_NO_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showSubZoneNoError && !propertyValidators.isValidSubZoneNo(subZoneNo)
-                        ? 'border-red-300 focus:border-red-500'
-                        : ''
-                        }`}
-                    onChange={(e) => {
-                        const sanitized = sanitizeSubZoneNo(e.target.value);
-                        setSubZoneNo(sanitized);
-                        if (sanitized) setShowSubZoneNoError(true);
-                    }}
-                    onKeyDown={preventEnterSubmit}
-                    onBlur={() => setShowSubZoneNoError(true)}
-                />
+                <Tooltip content={subZoneNo} placement="top">
+                    <Input
+                        id="pd-subzone"
+                        name="subZoneNo"
+                        placeholder="SZ-12"
+                        value={subZoneNo}
+                        maxLength={PROPERTY_VALIDATION_RULES.SUB_ZONE_NO_MAX_LENGTH}
+                        className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showSubZoneNoError && !propertyValidators.isValidSubZoneNo(subZoneNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                            }`}
+                        onChange={(e) => {
+                            const sanitized = sanitizeSubZoneNo(e.target.value);
+                            setSubZoneNo(sanitized);
+                            if (sanitized) setShowSubZoneNoError(true);
+                        }}
+                        onKeyDown={preventEnterSubmit}
+                        onBlur={() => setShowSubZoneNoError(true)}
+                    />
+                </Tooltip>
                 {showSubZoneNoError && !propertyValidators.isValidSubZoneNo(subZoneNo) && (
                     <span className="text-xs text-red-500 block">
                         {t('property.validation.invalidSubZoneNo')}
@@ -89,24 +96,26 @@ export const PlotDetailsFields = ({
                 <Label htmlFor="pd-survey" className="text-xs font-semibold text-gray-700">
                     {t('property.surveyNo')}
                 </Label>
-                <Input
-                    id="pd-survey"
-                    name="surveyNo"
-                    placeholder="45/2B"
-                    value={surveyNo}
-                    maxLength={PROPERTY_VALIDATION_RULES.SURVEY_NO_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showSurveyNoError && !propertyValidators.isValidSurveyNo(surveyNo)
-                        ? 'border-red-300 focus:border-red-500'
-                        : ''
-                        }`}
-                    onChange={(e) => {
-                        const sanitized = sanitizeSurveyNo(e.target.value);
-                        setSurveyNo(sanitized);
-                        if (sanitized) setShowSurveyNoError(true);
-                    }}
-                    onKeyDown={preventEnterSubmit}
-                    onBlur={() => setShowSurveyNoError(true)}
-                />
+                <Tooltip content={surveyNo} placement="top">
+                    <Input
+                        id="pd-survey"
+                        name="surveyNo"
+                        placeholder="45/2B"
+                        value={surveyNo}
+                        maxLength={PROPERTY_VALIDATION_RULES.SURVEY_NO_MAX_LENGTH}
+                        className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showSurveyNoError && !propertyValidators.isValidSurveyNo(surveyNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                            }`}
+                        onChange={(e) => {
+                            const sanitized = sanitizeSurveyNo(e.target.value);
+                            setSurveyNo(sanitized);
+                            if (sanitized) setShowSurveyNoError(true);
+                        }}
+                        onKeyDown={preventEnterSubmit}
+                        onBlur={() => setShowSurveyNoError(true)}
+                    />
+                </Tooltip>
                 {showSurveyNoError && !propertyValidators.isValidSurveyNo(surveyNo) && (
                     <span className="text-xs text-red-500 block">
                         {t('property.validation.invalidSurveyNo')}
@@ -119,25 +128,27 @@ export const PlotDetailsFields = ({
                 <Label htmlFor="pd-plot" className="text-xs font-semibold text-gray-700">
                     {t('property.plotNo')}
                 </Label>
-                <Input
-                    id="pd-plot"
-                    name="plotNo"
-                    placeholder={t('property.plotNoPlaceholder')}
-                    value={plotNo}
-                    maxLength={PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showPlotNoError && !propertyValidators.isValidPlotNo(plotNo)
-                        ? 'border-red-300 focus:border-red-500'
-                        : ''
-                        }`}
-                    onChange={(e) => {
-                        const sanitized = sanitizePlotNo(e.target.value);
-                        const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH);
-                        setPlotNo(limited);
-                        if (limited) setShowPlotNoError(true);
-                    }}
-                    onKeyDown={preventEnterSubmit}
-                    onBlur={() => setShowPlotNoError(true)}
-                />
+                <Tooltip content={plotNo} placement="top">
+                    <Input
+                        id="pd-plot"
+                        name="plotNo"
+                        placeholder={t('property.plotNoPlaceholder')}
+                        value={plotNo}
+                        maxLength={PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH}
+                        className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showPlotNoError && !propertyValidators.isValidPlotNo(plotNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                            }`}
+                        onChange={(e) => {
+                            const sanitized = sanitizePlotNo(e.target.value);
+                            const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH);
+                            setPlotNo(limited);
+                            if (limited) setShowPlotNoError(true);
+                        }}
+                        onKeyDown={preventEnterSubmit}
+                        onBlur={() => setShowPlotNoError(true)}
+                    />
+                </Tooltip>
                 {showPlotNoError && !propertyValidators.isValidPlotNo(plotNo) && (
                     <span className="text-xs text-red-500">
                         {t('property.validation.invalidPlotNo') || 'Invalid plot number. Only alphanumeric, -, and / allowed (max 10 characters).'}

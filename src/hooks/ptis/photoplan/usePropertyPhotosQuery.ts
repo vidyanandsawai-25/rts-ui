@@ -74,12 +74,12 @@ export function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
   });
 }
 
-import { getPhotoSlotsAction } from '@/app/[locale]/property-tax/ptis/media-fetch.action';
+import { getPhotoSlotsAction, getPropertyPhotosAction } from '@/app/[locale]/property-tax/ptis/media-fetch.action';
 
 export function usePropertyPhotosQuery(
   propertyId?: number,
   isPanelOpen?: boolean,
-  _isDrawerOpen?: boolean,
+  isDrawerOpen?: boolean,
   initialPhotoSlots: PropertyPhotoTypeWithStatusDto[] = [],
   initialPhotos: PropertyPhotoDto[] = []
 ): UsePropertyPhotosQueryResult {
@@ -99,7 +99,6 @@ export function usePropertyPhotosQuery(
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
 
   useEffect(() => {
     if (!propertyId) {
@@ -129,30 +128,49 @@ export function usePropertyPhotosQuery(
   }, [loading]);
 
   useEffect(() => {
-    if (!propertyId || !isPanelOpen) return;
+    const shouldFetch = !!propertyId && (!!isPanelOpen || !!isDrawerOpen);
+    if (!shouldFetch) return;
 
-    const cacheValid = isCacheValid(propertyId);
+    const cacheValid = isCacheValid(propertyId!);
     let isSubscribed = true;
-    
+
     if (!cacheValid) {
       setLoading(true);
-      getPhotoSlotsAction(propertyId)
-        .then((res) => {
+      setError(null);
+
+      Promise.all([
+        getPhotoSlotsAction(propertyId!),
+        getPropertyPhotosAction(propertyId!),
+      ])
+        .then(([slotsRes, photosRes]) => {
           if (!isSubscribed) return;
-          if (res.success && res.data) {
-            setPhotoSlots(res.data);
-            propertyMediaCache.set(propertyId, {
-              photoSlots: res.data,
-              photos: propertyMediaCache.get(propertyId)?.photos || [],
-              timestamp: Date.now(),
-            });
-            evictOldestCacheEntry();
-          } else {
-            setError(res.error || 'Failed to load photo categories');
+
+          if (!slotsRes.success || !photosRes.success) {
+            const errMessage =
+              (!slotsRes.success ? slotsRes.error : null) ||
+              (!photosRes.success ? photosRes.error : null) ||
+              'Failed to load property media';
+            setError(errMessage);
+            return;
           }
+
+          const slots = slotsRes.data || [];
+          const fetchedPhotos = photosRes.data || [];
+
+          setPhotoSlots(slots);
+          setPhotos(fetchedPhotos);
+
+          propertyMediaCache.set(propertyId!, {
+            photoSlots: slots,
+            photos: fetchedPhotos,
+            timestamp: Date.now(),
+          });
+          evictOldestCacheEntry();
         })
-        .catch(() => {
-          if (isSubscribed) setError('Failed to load photo categories');
+        .catch((err) => {
+          if (isSubscribed) {
+            setError(err instanceof Error ? err.message : 'Failed to load property media');
+          }
         })
         .finally(() => {
           if (isSubscribed) setLoading(false);
@@ -162,33 +180,45 @@ export function usePropertyPhotosQuery(
     return () => {
       isSubscribed = false;
     };
-  }, [propertyId, isPanelOpen]);
+  }, [propertyId, isPanelOpen, isDrawerOpen, initialPhotoSlots, initialPhotos]);
 
   const refetch = useCallback(async () => {
     if (!propertyId) return;
     setLoading(true);
     setError(null);
     try {
-      const slotsRes = await getPhotoSlotsAction(propertyId);
+      const [slotsRes, photosRes] = await Promise.all([
+        getPhotoSlotsAction(propertyId),
+        getPropertyPhotosAction(propertyId),
+      ]);
 
-      if (slotsRes.success && slotsRes.data) {
-        setPhotoSlots(slotsRes.data);
-      } else {
-        setError(slotsRes.error || 'Failed to load photo categories');
+      if (!slotsRes.success || !photosRes.success) {
+        const errMessage =
+          (!slotsRes.success ? slotsRes.error : null) ||
+          (!photosRes.success ? photosRes.error : null) ||
+          'Failed to reload property media';
+        setError(errMessage);
+        return;
       }
 
+      const fetchedSlots = slotsRes.data || [];
+      const fetchedPhotos = photosRes.data || [];
+
+      setPhotoSlots(fetchedSlots);
+      setPhotos(fetchedPhotos);
+
       propertyMediaCache.set(propertyId, {
-        photoSlots: slotsRes.success ? (slotsRes.data ?? photoSlots) : photoSlots,
-        photos,
+        photoSlots: fetchedSlots,
+        photos: fetchedPhotos,
         timestamp: Date.now(),
       });
       evictOldestCacheEntry();
-    } catch {
-      setError('Failed to load photo categories');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reload property media');
     } finally {
       setLoading(false);
     }
-  }, [propertyId, photoSlots, photos]);
+  }, [propertyId]);
 
   return {
     loading,

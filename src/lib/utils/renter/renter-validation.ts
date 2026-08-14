@@ -147,12 +147,7 @@ export const validateRenterForm = (
   }
 
   // ─── Agreement No ─────────────────────────────────────────────────────────
-  if (!details.agreementId || !details.agreementId.trim()) {
-    errors.push({
-      field: 'agreementId',
-      message: 'Agreement No is required.',
-    });
-  } else {
+  if (details.agreementId && details.agreementId.trim()) {
     const agreementIdVal = details.agreementId.trim();
 
     if (!/^[A-Za-z0-9_-]+$/.test(agreementIdVal)) {
@@ -198,13 +193,13 @@ export const validateRenterForm = (
   } else {
     const nameVal = details.renterName;
     const trimmedName = nameVal.trim();
-    const primaryRegex = /^[A-Za-z\u0900-\u097F]+(?:\s[A-Za-z\u0900-\u097F]+)*$/;
+    const primaryRegex = /^[A-Za-z\u0900-\u097F]+(?:\s+[A-Za-z\u0900-\u097F]+)*$/;
 
     if (trimmedName.length < 3) {
       errors.push({ field: 'renterName', message: 'Renter Name must be at least 3 characters.' });
     } else if (nameVal.length > 100) {
       errors.push({ field: 'renterName', message: 'Renter Name cannot exceed 100 characters.' });
-    } else if (!primaryRegex.test(nameVal)) {
+    } else if (!primaryRegex.test(trimmedName)) {
       errors.push({
         field: 'renterName',
         message: 'Renter Name should contain only alphabets and spaces.',

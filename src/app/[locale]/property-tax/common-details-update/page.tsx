@@ -1,5 +1,41 @@
 import CommonDetailsUpdatePage from "@/components/modules/property-tax/common-details-update/CommonDetailsUpdatePage";
-import { getMenuItemsAction, getAllWardsAction, getAllWingsAction } from "./actions";
+import {
+  getMenuItemsAction,
+  getAllWardsAction,
+  getAllWingsAction,
+  setFieldRegistryStatusAction,
+  getFieldConfigsAction,
+  getFilteredPropertiesAction,
+  getPreviewListByCategoryAction,
+  getWingsAction,
+  executeBulkUpdateAction,
+  getPropertiesByWardAction,
+  getPropertiesByCategoryAction,
+  getScopeOptionsAction,
+  getScopeCategoryOptionsAction,
+  getAllZonesAction,
+  getFieldRegistriesAction,
+  addFieldRegistryAction,
+  getFieldRegistryTablesAction,
+  getFieldRegistryColumnsAction,
+  updateFieldRegistryAction,
+  exportExcelAction,
+  getSourceTablesAction,
+  getSourceTableFieldsAction,
+  addBulkUpdateDefinitionAction,
+  getUpdateHistoryAction,
+  exportUpdateHistoryAction,
+  getExcelTemplateFieldsAction
+} from "./actions";
+import {
+  getFieldRegistriesServer,
+  getFieldRegistrySchemasServer,
+  getScopeOptionsServer,
+  getBulkUpdateFieldConfigServer,
+  getSourceTablesServer,
+  getSourceTableFieldsServer,
+  getUpdateHistoryServer,
+} from "@/lib/api/common-details-update/common-details-update.service";
 
 export const dynamic = "force-dynamic";
 
@@ -8,31 +44,33 @@ interface PageProps {
     tab?: string;
     field?: string;
     wardId?: string;
+    wardNo?: string;
     fromProperty?: string;
     toProperty?: string;
     wing?: string;
     page?: string;
+    pageNumber?: string;
     pageSize?: string;
     q?: string;
     propertyNo?: string;
     partitionNo?: string;
     scopeId?: string;
     zoneId?: string;
+    sourceid?: string;
+    auditPage?: string;
+    auditPageSize?: string;
+    auditUser?: string;
+    auditSearch?: string;
   }>;
 }
 
-/** Pagination constraints */
 const MIN_PAGE = 1;
 const MAX_PAGE = 10_000;
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 100;
 
-/**
- * Sanitizes and clamps all query-string parameters before they reach the
- * client component.
- */
 function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
-  const rawPage = parseInt(raw.page ?? "", 10);
+  const rawPage = parseInt(raw.pageNumber ?? raw.page ?? "", 10);
   const pageNumber = Number.isFinite(rawPage)
     ? Math.min(Math.max(rawPage, MIN_PAGE), MAX_PAGE)
     : MIN_PAGE;
@@ -45,7 +83,8 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
   const searchTerm = raw.q?.trim() || "";
   const selectedField = raw.field?.trim() || "";
   const wardId = raw.wardId?.trim() || "";
-  
+  const wardNo = raw.wardNo?.trim() || "";
+
   const rawPropertyNo = raw.propertyNo?.trim() || "";
   const rawPartitionNo = raw.partitionNo?.trim() || "";
   const hasPartition = rawPartitionNo !== "" && rawPartitionNo !== "0";
@@ -57,21 +96,61 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
   const tab = raw.tab?.trim() || "updateFields";
   const scopeId = raw.scopeId?.trim() || "";
   const zoneId = raw.zoneId?.trim() || "";
+  const sourceid = raw.sourceid?.trim() || "";
+  const auditPage = Math.max(MIN_PAGE, Math.min(MAX_PAGE, Number(raw.auditPage) || 1));
+  const auditPageSize = Math.max(MIN_PAGE, Math.min(MAX_PAGE_SIZE, Number(raw.auditPageSize) || 5));
+  const auditUser = raw.auditUser?.trim() || "";
+  const auditSearch = raw.auditSearch?.trim() || "";
 
-  return { pageNumber, pageSize, searchTerm, selectedField, wardId, fromProperty, toProperty, wing, tab, scopeId, zoneId };
+  return { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, auditPage, auditPageSize, auditUser, auditSearch };
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  const { pageNumber, pageSize, searchTerm, selectedField, wardId, fromProperty, toProperty, wing, tab, scopeId, zoneId } = sanitizeParams(params);
+  const { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, auditPage, auditPageSize, auditUser, auditSearch } = sanitizeParams(params);
 
-  // Fetch menu items - throw error to trigger error boundary
   const menuItems = await getMenuItemsAction();
+  const defaultCode = selectedField || (menuItems[0]?.updateCode || "");
 
-  // Fetch supporting data in parallel
-  const [wardsResult, wingsResult] = await Promise.all([
+  const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, initialSourceTables, initialSourceTableFields, initialExcelTemplateFieldsResult, initialUpdateHistory] = await Promise.all([
     getAllWardsAction(),
     getAllWingsAction(),
+    getFieldRegistriesServer(pageNumber, pageSize).catch(() => ({
+      items: [],
+      totalCount: 0,
+      pageNumber,
+      pageSize,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false
+    })),
+    getFieldRegistrySchemasServer().catch(() => []),
+    getScopeOptionsServer().catch(() => []),
+    defaultCode ? Promise.all(
+      defaultCode.split(',').map(code =>
+        getBulkUpdateFieldConfigServer(code.trim()).catch(() => [])
+      )
+    ).then(results => {
+      const flat = results.flat();
+      const unique = [];
+      const seen = new Set<string>();
+      for (const item of flat) {
+        if (!seen.has(item.fieldName)) {
+          seen.add(item.fieldName);
+          unique.push(item);
+        }
+      }
+      return unique;
+    }) : Promise.resolve([]),
+    getSourceTablesServer().catch(() => []),
+    sourceid ? getSourceTableFieldsServer(Number(sourceid)).catch(() => []) : Promise.resolve([]),
+    getExcelTemplateFieldsAction().catch(() => ({ success: false, data: [] })),
+    getUpdateHistoryServer({
+      PageNumber: auditPage,
+      PageSize: auditPageSize,
+      Username: auditUser,
+      SearchTerm: auditSearch,
+    }).catch(() => null),
   ]);
 
   const wardsData = wardsResult.success && wardsResult.data ? wardsResult.data : {
@@ -94,13 +173,48 @@ export default async function Page({ searchParams }: PageProps) {
     hasNext: false,
   };
 
+  const actions = {
+    getFieldConfigsAction,
+    getFilteredPropertiesAction,
+    getPreviewListByCategoryAction,
+    getWingsAction,
+    executeBulkUpdateAction,
+    getAllWardsAction,
+    getPropertiesByWardAction,
+    getPropertiesByCategoryAction,
+    getAllWingsAction,
+    getScopeOptionsAction,
+    getScopeCategoryOptionsAction,
+    getAllZonesAction,
+    getFieldRegistriesAction,
+    addFieldRegistryAction,
+    updateFieldRegistryAction,
+    getFieldRegistryTablesAction,
+    getFieldRegistryColumnsAction,
+    setFieldRegistryStatusAction,
+    exportExcelAction,
+    getSourceTablesAction,
+    getSourceTableFieldsAction,
+    addBulkUpdateDefinitionAction,
+    getUpdateHistoryAction,
+    exportUpdateHistoryAction,
+  };
+
   return (
     <CommonDetailsUpdatePage
       menuItems={menuItems}
       wardsData={wardsData}
       wingsData={wingsData}
-      initialField={selectedField}
+      initialFieldRegistries={initialFieldRegistries}
+      initialSchemas={initialSchemas}
+      initialScopeOptions={initialScopeOptions}
+      initialFieldConfigs={initialFieldConfigs}
+      initialSourceTables={initialSourceTables}
+      initialSourceTableFields={initialSourceTableFields}
+      initialExcelTemplateFields={('data' in initialExcelTemplateFieldsResult ? initialExcelTemplateFieldsResult.data : []) || []}
+      initialField={defaultCode}
       initialWardId={wardId}
+      initialWardNo={wardNo}
       initialFromProperty={fromProperty}
       initialToProperty={toProperty}
       initialWing={wing}
@@ -110,6 +224,10 @@ export default async function Page({ searchParams }: PageProps) {
       initialTab={tab}
       initialScopeId={scopeId}
       initialZoneId={zoneId}
+      setFieldRegistryStatusAction={setFieldRegistryStatusAction}
+      initialEditData={null}
+      initialUpdateHistory={initialUpdateHistory}
+      actions={actions}
     />
   );
 }

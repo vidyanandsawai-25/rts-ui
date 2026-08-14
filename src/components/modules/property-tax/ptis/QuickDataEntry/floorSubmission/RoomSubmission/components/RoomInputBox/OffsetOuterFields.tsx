@@ -23,7 +23,7 @@ interface OffsetOuterFieldsProps {
   calculatedArea: number;
 }
 
-export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
+export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps & { floorData?: Record<string, unknown> }> = ({
   formData,
   handleInputChange,
   isEditMode,
@@ -38,14 +38,25 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
   currentRoomOffsets,
   setCurrentRoomOffsets,
   calculatedArea,
+  floorData,
 }) => {
   const { confirm } = useConfirm();
 
+  const isOpenSpace =
+    floorData?.selectedFloorType === 'OpenPlot' ||
+    floorData?.isOpenPlot === true ||
+    String(floorData?.floorId) === '77' ||
+    String(floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+    String(floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+    String(floorData?.floor || '').toLowerCase().includes('open plot') ||
+    String(floorData?.floorDescription || '').toLowerCase().includes('open plot') ||
+    String(floorData?.floor || '').toLowerCase().includes('open space') ||
+    String(floorData?.floorDescription || '').toLowerCase().includes('open space');
 
   return (
     <>
       {/* Offset */}
-      <div 
+      <div
         ref={(el) => {
           if (focusRefs?.current && el) {
             const btn = el.querySelector('input[role="combobox"]') as HTMLElement | null;
@@ -53,7 +64,7 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
             focusRefs.current['offset'] = btn;
           }
         }}
-        className={cn("px-1 flex-shrink-0 flex flex-col justify-center", formData.offsetMinus === 'Yes' && isEditMode ? 'cursor-pointer' : '')} 
+        className={cn("px-1 flex-shrink-0 flex flex-col justify-center", formData.offsetMinus === 'Yes' && isEditMode ? 'cursor-pointer' : '')}
         style={{ width: COLUMN_WIDTHS.offset }}
         onClick={() => {
           if (formData.offsetMinus === 'Yes' && isEditMode && !offsetModalOpen) {
@@ -79,7 +90,7 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
               }, 100);
             } else {
               setCurrentRoomOffsets([]); handleInputChange('offsetMinus', value);
-              setTimeout(() => { 
+              setTimeout(() => {
                 const outerInput = focusRefs?.current['outer'] as HTMLElement | null;
                 if (outerInput) {
                   outerInput.focus();
@@ -95,28 +106,30 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps> = ({
         />
       </div>
 
-      <div 
-        ref={(el) => {
-          if (focusRefs?.current && el) {
-            const btn = el.querySelector('input[role="combobox"]') as HTMLElement | null;
-            // eslint-disable-next-line react-hooks/immutability
-            focusRefs.current['outer'] = btn;
-          }
-        }}
-        className="flex flex-col justify-center flex-shrink-0 px-1" 
-        style={{ width: COLUMN_WIDTHS.outer }}
-      >
-        <SearchSelect
-          id="room-outer-select"
-          name="outer"
-          options={[{ label: 'No', value: 'No' }, { label: 'Yes', value: 'Yes' }]}
-          value={formData.outer}
-          onChange={(_, value) => { handleInputChange('outer', value); setTimeout(() => { focusRefs?.current['submit']?.focus(); }, 100); }}
-          disabled={!isEditMode || offsetModalOpen}
-          className="w-full h-[40px]"
-          disableSearch={true}
-        />
-      </div>
+      {!isOpenSpace && (
+        <div
+          ref={(el) => {
+            if (focusRefs?.current && el) {
+              const btn = el.querySelector('input[role="combobox"]') as HTMLElement | null;
+              // eslint-disable-next-line react-hooks/immutability
+              focusRefs.current['outer'] = btn;
+            }
+          }}
+          className="flex flex-col justify-center flex-shrink-0 px-1"
+          style={{ width: COLUMN_WIDTHS.outer }}
+        >
+          <SearchSelect
+            id="room-outer-select"
+            name="outer"
+            options={[{ label: 'No', value: 'No' }, { label: 'Yes', value: 'Yes' }]}
+            value={formData.outer}
+            onChange={(_, value) => { handleInputChange('outer', value); setTimeout(() => { focusRefs?.current['submit']?.focus(); }, 100); }}
+            disabled={!isEditMode || offsetModalOpen}
+            className="w-full h-[40px]"
+            disableSearch={true}
+          />
+        </div>
+      )}
     </>
   );
 };

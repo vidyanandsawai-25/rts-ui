@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState, useTransition, useEffect, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useMemo, useTransition, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { useToast } from "@/components/common";
 import { getColumns } from "@/components/modules/assets/configuration/master-data/owning-department/OwningDepartmentColumns";
 import { deleteOwningDepartmentAction } from "@/app/[locale]/assets/configuration/master-data/owning-department/action";
-import { useSearchNavigation } from "@/hooks/useSearchNavigation";
+import { useOwningDepartmentSearch } from "@/hooks/asset-masters/owning-department/useOwningDepartmentSearch";
 import type { OwningDepartment, OwningDepartmentMasterProps } from "@/types/asset-masters/owning-department.types";
 
 export function useOwningDepartmentList({
@@ -17,7 +17,6 @@ export function useOwningDepartmentList({
   totalPages,
   sortBy,
   sortOrder,
-  searchTerm = "",
 }: OwningDepartmentMasterProps) {
   const router = useRouter();
   const { confirm } = useConfirm();
@@ -27,26 +26,11 @@ export function useOwningDepartmentList({
   const toast = useToast();
   const [isPending, startTransition] = useTransition();
 
-  const [search, setSearch] = useState(searchTerm ?? "");
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearch(searchTerm ?? "");
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  const pathname = usePathname();
-  const isSubRoute = pathname !== `/${locale}/assets/configuration/master-data/owning-department`.replace(/\/+/g, "/");
-
-  useSearchNavigation({
-    search,
-    currentSearchTerm: searchTerm ?? "",
+  const { search, currentSearchTerm, handleSearchChange } = useOwningDepartmentSearch({
     pageSize,
     locale,
     sortBy,
     sortOrder,
-    basePath: "/assets/configuration/master-data/owning-department",
-    startTransition: isSubRoute ? () => {} : startTransition,
   });
 
   useEffect(() => {
@@ -103,10 +87,10 @@ export function useOwningDepartmentList({
     (columnKey: string) => {
       startTransition(() => {
         const nextOrder = sortBy === columnKey && sortOrder === "asc" ? "desc" : "asc";
-        router.push(buildUrl(pageNumber, pageSize, search, columnKey, nextOrder));
+        router.push(buildUrl(pageNumber, pageSize, currentSearchTerm, columnKey, nextOrder));
       });
     },
-    [sortBy, sortOrder, pageNumber, pageSize, search, buildUrl, router]
+    [sortBy, sortOrder, pageNumber, pageSize, currentSearchTerm, buildUrl, router]
   );
 
   const columns = useMemo(
@@ -124,19 +108,19 @@ export function useOwningDepartmentList({
   const changePage = useCallback(
     (p: number) => {
       startTransition(() => {
-        router.push(buildUrl(p, pageSize, search, sortBy, sortOrder));
+        router.push(buildUrl(p, pageSize, currentSearchTerm, sortBy, sortOrder));
       });
     },
-    [pageSize, search, sortBy, sortOrder, buildUrl, router]
+    [pageSize, currentSearchTerm, sortBy, sortOrder, buildUrl, router]
   );
 
   const changePageSize = useCallback(
     (size: number) => {
       startTransition(() => {
-        router.push(buildUrl(1, size, search, sortBy, sortOrder));
+        router.push(buildUrl(1, size, currentSearchTerm, sortBy, sortOrder));
       });
     },
-    [search, sortBy, sortOrder, buildUrl, router]
+    [currentSearchTerm, sortBy, sortOrder, buildUrl, router]
   );
 
   const handleDelete = useCallback(
@@ -178,7 +162,7 @@ export function useOwningDepartmentList({
     tCommon,
     isPending,
     search,
-    setSearch,
+    handleSearchChange,
     columns,
     changePage,
     changePageSize,

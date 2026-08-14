@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { FloorDetailsTable } from '@/components/common/FloorDetailsTable';
+import { FloorDetailsTable } from '@/components/common';
 import type { TaxDetailsData, PendingTaxRow, TaxRow, PendingYearTaxDetail } from '@/types/ptisMain-taxdetails.types';
 import {
   getTaxDetailsFloorColumns,
@@ -38,6 +38,16 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
         });
       });
     });
+
+    if (policies.length > 0) {
+      const hasTotal = Array.from(namesSet).some((name) =>
+        name.trim().toLowerCase().includes('taxtotal')
+      );
+      if (!hasTotal) {
+        namesSet.add('TAXTOTAL');
+      }
+    }
+
     return Array.from(namesSet);
   }, [initialTaxDetails]);
 
@@ -60,8 +70,9 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
     const policies = initialTaxDetails?.policies || [];
     return policies
       .filter((policy) => {
-        if (policies.length <= 1) return true;
         const code = (policy.policyCode || policy.policyName || '').toUpperCase();
+        if (code === 'ARREARS') return false;
+        if (policies.length <= 1) return true;
         if (
           (code.includes('CC') || code.includes('COMMENCEMENT')) &&
           (!policy.taxAmounts || policy.taxAmounts.length === 0) &&
@@ -84,8 +95,19 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
         policy.taxAmounts?.forEach((item) => {
           if (item.taxName) {
             row[item.taxName] = item.taxAmount;
+            row[item.taxName.trim().toLowerCase()] = item.taxAmount;
           }
         });
+
+        // Fallback for TAXTOTAL from policy.taxTotal
+        if (policy.taxTotal !== undefined && policy.taxTotal !== null) {
+          const lowerTotalVal = (row['taxtotal'] as number | undefined);
+          if (lowerTotalVal === undefined || lowerTotalVal === 0) {
+            row['TAXTOTAL'] = policy.taxTotal;
+            row['TaxTotal'] = policy.taxTotal;
+            row['taxtotal'] = policy.taxTotal;
+          }
+        }
 
         return row as unknown as TaxRow;
       });
@@ -96,22 +118,36 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
     const rows: PendingTaxRow[] = [];
     const seenRowKeys = new Set<string>();
 
-    const netTaxPolicy = policies.find(
-      (p) => (p.policyCode || p.policyName || '').toUpperCase() === 'NETTAX'
+    // 1st Row: Arrears summary row (replaces NETTAX row in Arrears tab)
+    const arrearsPolicy = policies.find(
+      (p) => (p.policyCode || p.policyName || '').toUpperCase() === 'ARREARS'
     );
-    if (netTaxPolicy) {
-      rows.push({
-        id: 'NETTAX-ANCHOR',
-        policyCode: 'NETTAX',
-        yearCode: '',
-        taxTotal: netTaxPolicy.taxTotal,
-        taxAmounts: netTaxPolicy.taxAmounts,
-        isNetTax: true,
+
+    if (arrearsPolicy && arrearsPolicy.pendingYears && arrearsPolicy.pendingYears.length > 0) {
+      arrearsPolicy.pendingYears.forEach((pYear, yIdx) => {
+        const baseKey = `Arrears-${pYear.yearCode || yIdx}`;
+        seenRowKeys.add(baseKey);
+        rows.push({
+          id: baseKey,
+          policyCode: 'Arrears',
+          yearCode: pYear.yearCode,
+          taxTotal: pYear.taxTotal,
+          taxAmounts: pYear.taxAmounts,
+        });
       });
-      seenRowKeys.add('NETTAX-ANCHOR');
+    } else {
+      rows.push({
+        id: 'ARREARS-ZERO-ROW',
+        policyCode: 'Arrears',
+        yearCode: '',
+        taxTotal: 0,
+        taxAmounts: arrearsPolicy?.taxAmounts || [],
+      });
+      seenRowKeys.add('ARREARS-ZERO-ROW');
     }
 
-    const allPendingItems: {
+    // Subsequent Rows: Certificate pending year rows (OC, CC, Electric Bill, etc.)
+    const certPendingItems: {
       pYear: PendingYearTaxDetail;
       policyCode: string;
       pIdx: number;
@@ -120,19 +156,20 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
     }[] = [];
 
     policies.forEach((policy, pIdx) => {
-      if (policy.pendingYears && policy.pendingYears.length > 0) {
+      const codeUpper = (policy.policyCode || policy.policyName || '').toUpperCase();
+      if (codeUpper !== 'NETTAX' && codeUpper !== 'ARREARS' && policy.pendingYears && policy.pendingYears.length > 0) {
         policy.pendingYears.forEach((pYear, yIdx) => {
           const itemPolicyCode =
             (pYear as unknown as { policyCode?: string; PolicyCode?: string }).policyCode ||
             (pYear as unknown as { policyCode?: string; PolicyCode?: string }).PolicyCode ||
             policy.policyCode ||
             policy.policyName ||
-            'CC';
+            'OC';
 
           const yearMatch = (pYear.yearCode || '').match(/\d{4}/);
           const startYear = yearMatch ? parseInt(yearMatch[0], 10) : 0;
 
-          allPendingItems.push({
+          certPendingItems.push({
             pYear,
             policyCode: itemPolicyCode,
             pIdx,
@@ -143,10 +180,10 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
       }
     });
 
-    // Sort pending items chronologically by financial start year ASCENDING (less year first)
-    allPendingItems.sort((a, b) => a.startYear - b.startYear);
+    // Sort certificate pending items chronologically by financial start year ASCENDING
+    certPendingItems.sort((a, b) => a.startYear - b.startYear);
 
-    allPendingItems.forEach(({ pYear, policyCode, pIdx, yIdx }) => {
+    certPendingItems.forEach(({ pYear, policyCode, pIdx, yIdx }) => {
       const baseKey = `${policyCode}-${pYear.yearCode}`;
       if (!seenRowKeys.has(baseKey)) {
         seenRowKeys.add(baseKey);
@@ -175,7 +212,7 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
 
   return (
     <div
-      className="w-full tax-details-container overflow-x-auto max-h-[300px] overflow-y-auto"
+      className="w-full overflow-x-auto tax-details-container"
       data-testid="master-table"
     >
       {activeTab === 'current' ? (
@@ -185,8 +222,10 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
           emptyMessage={t('noTaxDetailsAvailable')}
           showExpandColumn={false}
           showScrollButtons={false}
+          showBorder={false}
+          containerClassName="max-h-[300px] overflow-y-auto relative rounded-b-xl border-0 shadow-none"
           tableClassName="w-full border-collapse"
-          theadClassName="bg-[#1e3a8a] text-white border-b border-blue-700/60 shadow-xs"
+          theadClassName="bg-[#1e3a8a] text-white border-b border-blue-700/60 shadow-xs sticky top-0 z-20"
         />
       ) : (
         <FloorDetailsTable<PendingTaxRow>
@@ -195,8 +234,10 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
           emptyMessage={t('noArrearsTaxDetailsAvailable')}
           showExpandColumn={false}
           showScrollButtons={false}
+          showBorder={false}
+          containerClassName="max-h-[300px] overflow-y-auto relative rounded-b-xl border-0 shadow-none"
           tableClassName="w-full border-collapse"
-          theadClassName="bg-[#1e3a8a] text-white border-b border-blue-700/60 shadow-xs"
+          theadClassName="bg-[#1e3a8a] text-white border-b border-blue-700/60 shadow-xs sticky top-0 z-20"
         />
       )}
     </div>

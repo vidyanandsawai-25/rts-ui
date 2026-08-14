@@ -1,6 +1,6 @@
 "use server";
 
-import { getPropertiesByWard, getPropertyCountByWard, createProperty, createBulkProperties, createPropertyRange, getNextPropertyNumber } from "@/lib/api/zone-property.service";
+import { getPropertiesByWard, getPropertyCountByWard, createProperty, createBulkProperties, createPropertyRange, getNextPropertyNumber, searchPropertiesByCategory } from "@/lib/api/zone-property.service";
 import { getPropertyCategories } from "@/lib/api/property-category.service";
 import { getPropertyTypesPaged } from "@/lib/api/property-type-crud.service";
 import { getTaxZonePagedServer } from "@/lib/api/taxZoning/taxzoning.service";
@@ -65,7 +65,7 @@ export async function fetchPropertiesPagedAction(
       throw new ApiError(400, "Invalid ward ID", "Validation failed");
     }
 
-    const result = await getPropertiesByWard(pageNumber, pageSize, wardId, searchTerm);
+    const result = await searchPropertiesByCategory(pageNumber, pageSize, wardId, searchTerm);
     const visibleItems = excludeMarkedForDeletion(result.items || []);
 
     return {

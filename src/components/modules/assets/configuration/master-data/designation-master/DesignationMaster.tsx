@@ -11,10 +11,14 @@ import { deleteDesignationAction } from "@/app/[locale]/assets/configuration/mas
 import TableHeader from "@/components/common/TableHeader";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { PageContainer, SearchInput, Select } from "@/components/common";
+
+
 import { getDesignationColumns } from "./DesignationColumns";
 import { useDesignationSearch } from "@/hooks/asset-masters/designation/useDesignationSearch";
 import { useDesignationPagination } from "@/hooks/asset-masters/designation/useDesignationPagination";
 import { DesignationProps, Designation } from "@/types/asset-masters/designation.types";
+import { getErrorMessage } from "@/hooks/asset-masters/designation/validation";
+
 
 export function DesignationMaster({
   data,
@@ -61,13 +65,7 @@ export function DesignationMaster({
   const columns = getDesignationColumns(t, tCommon, sortBy, sortOrder, handleSort);
 
   const { changePage, handlePageSizeChange, paginationInfo } = useDesignationPagination({
-    pageNumber,
-    pageSize,
-    totalCount,
-    locale,
-    currentSearchTerm,
-    sortBy,
-    sortOrder,
+    pageNumber, pageSize, totalCount, locale, currentSearchTerm, sortBy, sortOrder,
   });
 
   React.useEffect(() => {
@@ -97,44 +95,29 @@ export function DesignationMaster({
     }
   }, [pageNumber, pageSize, totalPages, locale, router]);
 
-  const handleEdit = useCallback(
-    (row: Designation) => {
-      router.push(`/${locale}/assets/configuration/master-data/designation-master/edit/${row.id}`);
-    },
-    [router, locale]
-  );
+  const handleEdit = useCallback((row: Designation) => {
+    router.push(`/${locale}/assets/configuration/master-data/designation-master/edit/${row.id}`);
+  }, [router, locale]);
 
-  const handleDelete = useCallback(
-    (row: Designation) => {
-      confirm({
-        variant: "delete",
-        title: `${t("list.table.designationCode")}: ${row.designationCode}`,
-        description: `${t("delete.confirmDescription")}`,
-        meta: {
-          name: row.designationName,
-        },
-        onConfirm: async () => {
-          const fd = new FormData();
-          fd.append("id", String(row.id));
-          const result = await deleteDesignationAction(fd);
-          if (result.success) {
-            toast.success(
-              t("success.deleted", { code: row.designationCode })
-            );
-            router.refresh();
-          } else {
-            const errorMessage = result.message ||
-              (result.statusCode === 409 ? t("apiErrors.inUse") :
-                result.statusCode === 400 ? t("apiErrors.invalidData") :
-                  result.statusCode === 404 ? t("apiErrors.notFound") :
-                    tCommon("errors.deleteError"));
-            toast.error(errorMessage);
-          }
-        },
-      });
-    },
-    [confirm, router, t, tCommon]
-  );
+  const handleDelete = useCallback((row: Designation) => {
+    confirm({
+      variant: "delete",
+      title: `${t("list.table.designationCode")}: ${row.designationCode}`,
+      description: `${t("delete.confirmDescription")}`,
+      meta: { name: row.designationName },
+      onConfirm: async () => {
+        const fd = new FormData();
+        fd.append("id", String(row.id));
+        const result = await deleteDesignationAction(fd);
+        if (result.success) {
+          toast.success(t("success.deleted", { code: row.designationCode }));
+          router.refresh();
+        } else {
+          toast.error(getErrorMessage(result.message, result.statusCode, t, tCommon, t("list.title")));
+        }
+      },
+    });
+  }, [confirm, router, t, tCommon]);
 
   const { start, end, total } = paginationInfo;
 
@@ -193,18 +176,9 @@ export function DesignationMaster({
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
                 <Select
-                  value={
-                    [10, 20, 30, 40, 50].includes(pageSize)
-                      ? String(pageSize)
-                      : pageSize > 50
-                        ? "50"
-                        : "10"
-                  }
+                  value={[10, 20, 30, 40, 50].includes(pageSize) ? String(pageSize) : pageSize > 50 ? "50" : "10"}
                   onChange={(e) => handlePageSizeChange(e.target.value)}
-                  options={[10, 20, 30, 40, 50].map((s) => ({
-                    label: String(s),
-                    value: String(s),
-                  }))}
+                  options={[10, 20, 30, 40, 50].map((s) => ({ label: String(s), value: String(s) }))}
                   selectSize="sm"
                   className="w-20"
                   ariaLabel={tCommon("table.rowsPerPage") || "Rows per page"}
@@ -218,3 +192,4 @@ export function DesignationMaster({
     </PageContainer>
   );
 }
+

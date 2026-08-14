@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { IBackendRateMaster, IZoneDescription, RateCategory } from "@/types/RVRateMaster";
 import type { MatrixRow } from "./useMatrixState";
 
@@ -45,6 +45,8 @@ export function useMatrixDataSync({
   isOpenPlot = false,
 }: MatrixDataSyncProps) {
 
+  const hasSyncedRef = useRef(false);
+
   // Sync matrixData with defaultMatrixData when pagination changes
   useEffect(() => {
     if (defaultMatrixData.length > 0) {
@@ -55,7 +57,7 @@ export function useMatrixDataSync({
   // Process backendRates prop to populate matrix data (edit/delete mode)
   useEffect(() => {
     const isEditMode = mode === 'edit' || mode === 'delete';
-    if (!isEditMode) return;
+    if (!isEditMode || hasSyncedRef.current) return;
 
     if (!selectedZone || !selectedUseGroup || !assessmentYear) {
       setMatrixData(defaultMatrixData);
@@ -64,6 +66,8 @@ export function useMatrixDataSync({
     }
 
     const ratesToUse = (backendRates?.length) ? backendRates : fetchedBackendRates;
+    if (!ratesToUse || ratesToUse.length === 0) return;
+
     setShowMatrix(true);
 
     if (ratesToUse?.length) {
@@ -100,7 +104,7 @@ export function useMatrixDataSync({
           ...rateCategories.reduce(
             (acc, cat) => {
               const columnKey = cat.constructionCode || cat.constructionId;
-              const rateValue = rateValues[cat.constructionId] ?? 0;
+              const rateValue = rateValues[cat.constructionId];
               return { ...acc, [columnKey]: rateValue };
             },
             {}
@@ -108,21 +112,24 @@ export function useMatrixDataSync({
         };
       });
       setMatrixData(updatedMatrix);
+      hasSyncedRef.current = true;
     } else {
       const activeZones = paginatedZoneDescriptions.length > 0 ? paginatedZoneDescriptions : zoneDescriptions;
       const zeroMatrix = activeZones.map((z, idx) => ({
         id: idx + 1,
         zoneNo: z.zoneNo,
         taxZoneId: z.taxZoneId,
-        ...rateCategories.reduce((acc, cat) => ({ ...acc, [cat.constructionCode || cat.constructionId]: 0 }), {}),
+        ...rateCategories.reduce((acc, cat) => ({ ...acc, [cat.constructionCode || cat.constructionId]: undefined }), {}),
       }));
       setMatrixData(zeroMatrix);
+      hasSyncedRef.current = true;
     }
   }, [fetchedBackendRates, backendRates, selectedZone, selectedUseGroup, assessmentYear, rateUnit, mode, paginatedZoneDescriptions, zoneDescriptions, rateCategories, defaultMatrixData, setMatrixData, setShowMatrix, setRateFrequency, isOpenPlot]);
 
-  // Reset initialization flag when filters change
+  // Reset initialization flag and sync flag when filters change
   useEffect(() => {
     allZoneEditsInitializedRef.current = false;
+    hasSyncedRef.current = false;
     setAllZoneEdits({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedZone, selectedUseGroup, assessmentYear, backendRates, setAllZoneEdits]);
@@ -157,7 +164,7 @@ export function useMatrixDataSync({
 
         if (matchingRate) {
           const rateValue = rateUnit === 'SqFeet' ? matchingRate.rateSquareFeet : matchingRate.rateSquareMeter;
-          if (rateValue !== undefined && rateValue > 0) {
+          if (rateValue !== undefined && rateValue !== null) {
             zoneEdits[key] = rateValue;
           }
         }

@@ -14,6 +14,7 @@ export interface AssessmentClassification {
 export interface AssessmentZoneData {
   zoneId: number | null;
   zoneName: string;
+  zoneNo: string;
   totalStructure: number;
   totalUnit: number;
   classifications: AssessmentClassification[];
@@ -28,7 +29,7 @@ export interface AssessmentGridItems {
 export interface AssessmentGridResponse {
   success: boolean;
   message: string;
-  items: AssessmentGridItems | null;
+  items: AssessmentGridItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }
@@ -36,8 +37,10 @@ export interface AssessmentGridResponse {
 export interface AssessmentRow {
     [key: string]: unknown;
     id: string;
+    zoneId?: number | null;
     sr?: number | string;
     zoneName?: string;
+    zoneNo?: string;
     totalStructure?: number | string;
     totalUnit?: number | string;
     type: string;
@@ -77,6 +80,8 @@ export interface PendingAssessmentQcChecklist {
 export interface PendingAssessmentProperty {
   propertyId: number;
   propertyNo: string;
+  wardNo?: string;
+  wardId?: number;
   category: string;
   propertyDescription: string;
   propertyType: string;
@@ -106,7 +111,7 @@ export interface PendingAssessmentItems {
 export interface PendingAssessmentResponse {
   success: boolean;
   message: string;
-  items: PendingAssessmentItems | null;
+  items: PendingAssessmentItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }

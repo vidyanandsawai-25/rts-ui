@@ -10,7 +10,8 @@ export const getPreviewColumns = (
     {
       key: "propertyNo" as keyof PropertyPreviewRow,
       label: t("columns.propertyNo") || "Property No.",
-      headerClassName: "p-2 text-[12px]",
+      headerClassName: "p-2 text-[12px] whitespace-nowrap text-center",
+      cellClassName: "whitespace-nowrap text-center",
       render: (_, row) => {
         const ward = String(row.wardNo || "").trim();
         const prop = String(row.propertyNo || "").trim();
@@ -27,15 +28,21 @@ export const getPreviewColumns = (
   ];
 
   if (fieldConfigs && fieldConfigs.length > 0) {
+    const seenKeys = new Set<string>();
+
     fieldConfigs.forEach((config) => {
       // The API returns currentValues which we flatten, converting PascalCase keys to camelCase
       // Convert PascalCase fieldName to camelCase to match flattened keys
       const camelKey = config.fieldName.charAt(0).toLowerCase() + config.fieldName.slice(1);
       
+      if (seenKeys.has(camelKey)) return;
+      seenKeys.add(camelKey);
+      
       base.push({
         key: camelKey as keyof PropertyPreviewRow,
         label: config.displayName,
-        headerClassName: "p-2 text-[12px]",
+        headerClassName: "p-2 text-[12px] whitespace-nowrap text-center",
+        cellClassName: "whitespace-nowrap text-center",
         // Custom render to handle dynamic keys from flattened currentValues
         render: (
           _value: PropertyPreviewRow[keyof PropertyPreviewRow] | undefined, 

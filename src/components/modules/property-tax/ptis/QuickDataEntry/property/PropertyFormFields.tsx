@@ -3,6 +3,7 @@ import { BasicPropertyFields } from './BasicPropertyFields';
 import { AdditionalPropertyFields } from './AdditionalPropertyFields';
 import { PlotDetailsFields } from './PlotDetailsFields';
 import { AreaDetailsFields } from './AreaDetailsFields';
+import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
 
 interface PropertyFormFieldsProps {
     t: (key: string) => string;
@@ -37,8 +38,10 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
         checkFormChanges
     } = props;
 
-    const selectedCategoryLabel = categoryOptions.find(opt => opt.value === categoryId?.toString())?.label?.toLowerCase();
-    const isIndividual = selectedCategoryLabel === 'individual';
+    const selectedCategoryObj = categoryOptions.find(opt => opt.value === categoryId?.toString());
+    const categoryName = selectedCategoryObj?.label || propertyData?.categoryName || '';
+    const isIndividual = categoryName.toLowerCase() === 'individual';
+    const isPlotCategory = checkIsPlotCategory(categoryName);
 
     return (
         <div className="grid grid-cols-12 gap-x-4 gap-y-3">
@@ -70,6 +73,7 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
             <AreaDetailsFields
                 t={t}
                 propertyData={propertyData}
+                isPlotCategory={isPlotCategory}
             />
         </div>
     );

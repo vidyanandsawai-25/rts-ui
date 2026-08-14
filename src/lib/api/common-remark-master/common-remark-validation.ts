@@ -35,7 +35,11 @@ export function validateRemarkType(remarkType?: string): string | null {
 /**
  * Shared validator for customRemarkType
  */
-export function validateCustomRemarkType(customRemarkType: string, remarkType: string): string | null {
+export function validateCustomRemarkType(
+  customRemarkType: string,
+  remarkType: string,
+  existingCategories?: Array<{ categoryName: string }> | string[]
+): string | null {
   if (remarkType === "Other") {
     const ct = (customRemarkType || "").trim();
     if (!ct) {
@@ -55,6 +59,16 @@ export function validateCustomRemarkType(customRemarkType: string, remarkType: s
     }
     if (!DESCRIPTION_REGEX.test(ct)) {
       return "form.validation.customRemarkTypeFormat";
+    }
+    if (existingCategories && existingCategories.length > 0) {
+      const lowerCt = ct.toLowerCase();
+      const isDuplicate = existingCategories.some((cat) => {
+        const name = typeof cat === "string" ? cat : cat.categoryName;
+        return (name || "").trim().toLowerCase() === lowerCt;
+      });
+      if (isDuplicate) {
+        return "form.validation.customRemarkTypeExists";
+      }
     }
   }
   return null;

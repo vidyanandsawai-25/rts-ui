@@ -413,7 +413,7 @@ export async function uploadUlbImageAction(
 
     // Map result to match UlbImageMasterUploadResponseDto structure
     const responseDto: UlbImageMasterUploadResponseDto = {
-      ulbImageMasterId: masterEntity.id,
+      ulbImageMasterId: masterEntity.id ?? (masterEntity as UlbImageMasterDto & { ulbImageMasterId?: number }).ulbImageMasterId,
       documentGuid: uploadResult.documentGuid,
       documentId: uploadResult.documentId,
       documentBindingId: uploadResult.documentBindingId || null,

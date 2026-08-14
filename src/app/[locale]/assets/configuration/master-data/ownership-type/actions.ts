@@ -8,6 +8,9 @@ import { cookies } from "next/headers";
 import { createLogger } from "@/lib/utils/server-logger";
 import { handleActionError } from "@/lib/utils/asset-utils/actions.utils";
 
+import { cleanErrorMessage } from "@/lib/utils/api-error-handler";
+import { ApiError } from "@/lib/utils/api";
+
 const logger = createLogger("OwnershipType");
 
 export async function fetchOwnershipTypePagedServerAction(
@@ -43,8 +46,8 @@ export async function createOwnershipTypeAction(formData: OwnershipTypeFormModel
   try {
     const userId = getUserIdFromCookies(await cookies()) ?? 1;
     const result = await ownershipTypeService.create({
-      ownershipTypeName: formData.ownershipTypeName,
-      description: formData.description,
+      ownershipTypeName: formData.ownershipTypeName ? String(formData.ownershipTypeName).trim() : "",
+      description: formData.description ? String(formData.description).trim() : "",
       isActive: formData.isActive,
       createdBy: userId,
       updatedBy: userId,
@@ -54,8 +57,14 @@ export async function createOwnershipTypeAction(formData: OwnershipTypeFormModel
       revalidatePath(`/${locale}/assets/configuration/master-data/ownership-type`, "page");
     }
     return { success: true, createdId: result.id };
-  } catch (error) {
-    return handleActionError(error, "messages.createFailed");
+  } catch (error: unknown) {
+    const rawMsg = error instanceof ApiError
+      ? (error.responseText || error.message)
+      : (error instanceof Error ? error.message : String(error));
+    if (rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
+      return { success: false, error: "duplicate" };
+    }
+    return { success: false, error: cleanErrorMessage(rawMsg, "Failed to save ownership type") };
   }
 }
 
@@ -65,8 +74,8 @@ export async function updateOwnershipTypeAction(formData: OwnershipTypeFormModel
     const userId = getUserIdFromCookies(await cookies()) ?? 1;
     
     const result = await ownershipTypeService.update(formData.id, {
-      ownershipTypeName: formData.ownershipTypeName,
-      description: formData.description,
+      ownershipTypeName: formData.ownershipTypeName ? String(formData.ownershipTypeName).trim() : "",
+      description: formData.description ? String(formData.description).trim() : "",
       isActive: formData.isActive,
       updatedBy: userId,
     });
@@ -75,8 +84,14 @@ export async function updateOwnershipTypeAction(formData: OwnershipTypeFormModel
       revalidatePath(`/${locale}/assets/configuration/master-data/ownership-type`, "page");
     }
     return { success: true, updatedId: result.id };
-  } catch (error) {
-    return handleActionError(error, "messages.updateFailed");
+  } catch (error: unknown) {
+    const rawMsg = error instanceof ApiError
+      ? (error.responseText || error.message)
+      : (error instanceof Error ? error.message : String(error));
+    if (rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
+      return { success: false, error: "duplicate" };
+    }
+    return { success: false, error: cleanErrorMessage(rawMsg, "Failed to save ownership type") };
   }
 }
 

@@ -64,7 +64,7 @@ const messages = {
         yearRequired: "Finance Year is required",
         rateRequired: "Yearly Rate is required",
         rateInvalid: "Yearly Rate must be a valid positive number",
-        rateMaxDigits: "Yearly Rate cannot exceed 5 digits",
+        rateMaxDigits: "Yearly Rate cannot exceed 6 digits",
       },
       messages: {
         createSuccess: "Water Rate created successfully",
@@ -154,9 +154,9 @@ describe("WaterRateForm", () => {
       expect(screen.getByPlaceholderText("e.g., 1500")).toHaveAttribute("required");
     });
 
-    it("yearly rate input has maxLength of 5", () => {
+    it("yearly rate input has maxLength of 6", () => {
       setup();
-      expect(screen.getByPlaceholderText("e.g., 1500")).toHaveAttribute("maxLength", "5");
+      expect(screen.getByPlaceholderText("e.g., 1500")).toHaveAttribute("maxLength", "6");
     });
 
     it("yearly rate input type is text with inputMode numeric", () => {
@@ -220,18 +220,18 @@ describe("WaterRateForm", () => {
       expect(input).toHaveValue("1500");
     });
 
-    it("accepts exactly 5 digits", () => {
+    it("accepts exactly 6 digits", () => {
       setup();
       const input = screen.getByPlaceholderText("e.g., 1500");
-      fireEvent.change(input, { target: { value: "99999" } });
-      expect(input).toHaveValue("99999");
+      fireEvent.change(input, { target: { value: "999999" } });
+      expect(input).toHaveValue("999999");
     });
 
-    it("truncates input to 5 digits", () => {
+    it("truncates input to 6 digits", () => {
       setup();
       const input = screen.getByPlaceholderText("e.g., 1500");
-      fireEvent.change(input, { target: { value: "123456" } });
-      expect(input).toHaveValue("12345");
+      fireEvent.change(input, { target: { value: "1234567" } });
+      expect(input).toHaveValue("123456");
     });
 
     it("strips alphabetic characters", () => {

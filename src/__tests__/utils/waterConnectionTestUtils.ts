@@ -279,6 +279,7 @@ export const waterConnectionMessages = {
         applicableCharges: 'Charges',
         status: 'Status',
         perMonth: '/month',
+        perYear: '/year',
       },
       status: {
         active: 'Active',
@@ -352,7 +353,8 @@ export const waterConnectionMessages = {
   },
   common: {
     buttons: { cancel: 'Cancel' },
-    actions: { save: 'Save', update: 'Update' },
+    actions: { save: 'Save', update: 'Update', loading: 'Loading...' },
+    messages: { noData: 'No Data' },
     note: { mandatory: 'Fields marked * are mandatory' },
     table: {
       actions: {
@@ -362,3 +364,4 @@ export const waterConnectionMessages = {
     },
   },
 };
+

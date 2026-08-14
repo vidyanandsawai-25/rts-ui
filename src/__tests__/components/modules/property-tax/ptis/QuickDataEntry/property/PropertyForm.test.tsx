@@ -2,7 +2,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import PropertyFormView from '@/components/modules/property-tax/ptis/QuickDataEntry/property/PropertyForm';
 import { toast } from 'sonner';
-import { updatePropertyBasicDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/action';
+import {
+  updatePropertyBasicDetailsAction,
+  deletePropertyDetailsAction,
+} from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/action';
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
@@ -65,6 +68,7 @@ vi.mock('sonner', () => ({
 // Mock the action
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/action', () => ({
   updatePropertyBasicDetailsAction: vi.fn(),
+  deletePropertyDetailsAction: vi.fn(),
 }));
 
 const mockMoujaMaster = [
@@ -350,6 +354,48 @@ describe('PropertyFormView', () => {
 
     const categoryInput = screen.getByLabelText(/Category/i);
     expect(categoryInput).not.toBeDisabled();
+  });
+
+  it('calls deletePropertyDetailsAction when category is changed and user confirms', async () => {
+    (deletePropertyDetailsAction as Mock).mockResolvedValue({ success: true });
+    (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
+
+    const mockCategoriesWithApartment = [
+      ...mockPropertyCategories,
+      { id: 2, propertyCategoryName: 'Apartment', isActive: true, createdDate: '', updatedDate: null },
+    ];
+
+    render(
+      <PropertyFormView
+        MoujaMaster={mockMoujaMaster}
+        propertyCategories={mockCategoriesWithApartment}
+        propertyDescriptions={mockPropertyDescriptions}
+        propertyData={mockPropertyData as never}
+        locale="en"
+        taxZones={[]}
+      />
+    );
+
+    const categoryInput = screen.getByLabelText(/Category/i);
+    fireEvent.focus(categoryInput);
+
+    const option = screen.getByText('Apartment');
+    fireEvent.mouseDown(option);
+
+    const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(deletePropertyDetailsAction).toHaveBeenCalledWith(mockPropertyData.propertyId);
+      expect(updatePropertyBasicDetailsAction).toHaveBeenCalledWith(
+        'en',
+        mockPropertyData.propertyId,
+        expect.objectContaining({
+          categoryId: 2,
+        })
+      );
+      expect(toast.success).toHaveBeenCalledWith("Property basic details updated successfully");
+    });
   });
 
   describe('Edge Cases', () => {

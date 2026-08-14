@@ -61,10 +61,29 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     [propertyCategory.categoryName]
   );
 
-  // Auto-select OpenPlot if category is Plot, otherwise default to Construction
+  // 2. URL and Navigation
+  const urlSync = useFloorUrlSync();
+  const { searchParams, updateUrlParams, router, locale, propertyId } = urlSync;
+
+  const drawerParam = searchParams?.get('drawer');
+  const initialFloorType: 'Construction' | 'OpenPlot' =
+    isPlotCategory || drawerParam === 'OpenPlot' ? 'OpenPlot' : 'Construction';
+
+  // Auto-select OpenPlot if category is Plot or drawer URL param is OpenPlot
   const [selectedFloorTypeState, setSelectedFloorTypeState] = useState<'Construction' | 'OpenPlot'>(
-    isPlotCategory ? 'OpenPlot' : 'Construction'
+    initialFloorType
   );
+
+  useEffect(() => {
+    const drawer = searchParams?.get('drawer');
+    if (drawer === 'OpenPlot') {
+      setSelectedFloorTypeState('OpenPlot');
+    } else if (drawer === 'Construction') {
+      if (!isPlotCategory) {
+        setSelectedFloorTypeState('Construction');
+      }
+    }
+  }, [searchParams, isPlotCategory]);
 
   const selectedFloorType = isPlotCategory
     ? 'OpenPlot'
@@ -103,10 +122,6 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     }
   }, [openPlotRecord, props.initialPlotArea]);
 
-  // 2. URL and Navigation
-  const urlSync = useFloorUrlSync();
-  const { searchParams, updateUrlParams, router, locale, propertyId } = urlSync;
-
   const syncResult = useFloorSync({
     props,
     isAddingNewFloor,
@@ -123,6 +138,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     selectedFloorType,
   });
   const mappedInitialFloors = syncResult?.mappedInitialFloors || [];
+  const resetRestoredSessionFormRef = syncResult?.resetRestoredSessionFormRef;
 
   // Area validations & computations extracted to useFloorAreaValidation hook
   const {
@@ -204,18 +220,15 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     }
   }, [selectedFloorType, isAddingNewFloor, editingFloorForm.floorId, props.constructionTypeData, props.floorData, editingFloorForm.constructionTypeId, editingFloorForm.conTyp, setEditingFloorForm]);
 
-  // Auto-populate remaining area for new Open Space records immediately on opening the tab
+  // Auto-population disabled to keep Open Space form blank on select/open
+  /*
   useEffect(() => {
     if (!isAddingNewFloor) {
       hasAutoPopulatedOpenSpaceRef.current = false;
       return;
     }
-
     if (selectedFloorType === 'OpenPlot' && isAddingNewFloor) {
-      if (hasAutoPopulatedOpenSpaceRef.current) {
-        return;
-      }
-
+      if (hasAutoPopulatedOpenSpaceRef.current) return;
       const currentArea = parseFloat(String(editingFloorForm.areaSqM || '0')) || 0;
       const currentLen = parseFloat(String(editingFloorForm.length || '0')) || 0;
       if (currentArea === 0 && currentLen === 0 && availableRemainingOpenSpaceAreaSqM > 0) {
@@ -230,6 +243,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
       }
     }
   }, [selectedFloorType, isAddingNewFloor, availableRemainingOpenSpaceAreaSqM, setEditingFloorForm, editingFloorForm.areaSqM, editingFloorForm.length]);
+  */
 
   // 2. URL and Navigation already initialized at the top of the hook
 
@@ -254,13 +268,20 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     t: t,
     INITIAL_FORM_STATE: INITIAL_FORM_STATE as unknown as FloorData,
     selectedFloorType: selectedFloorType,
+    resetRestoredSessionFormRef,
     // validation fields
+    plotAreaSqM,
     isOpenSpaceAreaExceeded,
     isFloorAreaExceeded,
     availableRemainingOpenSpaceAreaSqM,
     availableRemainingConstructionAreaSqM,
     isGroundFloorAreaExceeded,
     isOpenSpaceNegative,
+    totalOpenSpaceAreaSqM,
+    totalConstructionAreaSqM,
+    alreadyUtilizedOpenSpaceAreaSqM,
+    enteredFloorAreaSqM,
+    enteredOpenSpaceAreaSqM,
   });
 
   const { handleSave, handleDeleteFloor, handleOpenRenterManagement, isSaving, isDeleting } = handlers;
@@ -358,6 +379,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     selectedFloorType,
     setSelectedFloorType: (type: 'Construction' | 'OpenPlot') => {
       setSelectedFloorTypeState(type);
+      updateUrlParams({ drawer: type === 'OpenPlot' ? 'OpenPlot' : 'Construction' });
       hasAutoPopulatedOpenSpaceRef.current = false;
       if (selectedFloor) {
         const isPlot = isRecordOpenPlot(selectedFloor);

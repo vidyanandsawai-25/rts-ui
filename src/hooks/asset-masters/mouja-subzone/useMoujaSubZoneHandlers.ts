@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { Mouja, SubZoneDetails } from "@/types/asset-masters/mouja-subzone.types";
 import { deleteMoujaAction, deleteSubZoneAction } from "@/app/[locale]/assets/configuration/master-data/mouja-subzone/action";
+import { getErrorMessage } from "./validation";
+
 
 interface UseMoujaSubZoneHandlersProps {
   pushUrl: (params: Record<string, string | number | undefined>) => void;
@@ -33,6 +35,8 @@ export function useMoujaSubZoneHandlers({
   const t = useTranslations("moujaSubzone");
   const tCommon = useTranslations("common");
   const { confirm } = useConfirm();
+
+
 
   const handleMoujaSort = useCallback((col: string) => {
     startTransition(() => pushUrl({
@@ -84,13 +88,11 @@ export function useMoujaSubZoneHandlers({
           if (String(row.id) === selectedMoujaId) {
             setSubZoneSearch("");
             pushUrl({ moujaId: "", subZoneSearch: "", subZonePn: 1 });
-          } else {
-            router.refresh();
+          } else if (selectedMoujaId) {
+            pushUrl({ moujaId: selectedMoujaId, subZoneSearch: "", subZonePn: 1 });
           }
         } else {
-          const rawMsg = (result.message || "").replace(/\.$/, "");
-          const translated = t(`apiErrors.${rawMsg}` as never);
-          toast.error(translated !== `apiErrors.${rawMsg}` ? translated : (result.statusCode === 409 ? t("apiErrors.inUse") : tCommon("errors.deleteError")));
+          toast.error(getErrorMessage(result.message, result.statusCode, t, tCommon, t("list.moujaTitle")));
         }
       },
     });
@@ -122,11 +124,9 @@ export function useMoujaSubZoneHandlers({
         const result = await deleteSubZoneAction(fd);
         if (result.success) {
           toast.success(t("success.subZoneDeleted"));
-          router.refresh();
+          pushUrl({ moujaId: selectedMoujaId ?? "", subZoneSearch: "", subZonePn: 1 });
         } else {
-          const rawMsg = (result.message || "").replace(/\.$/, "");
-          const translated = t(`apiErrors.${rawMsg}` as never);
-          toast.error(translated !== `apiErrors.${rawMsg}` ? translated : (result.statusCode === 409 ? t("apiErrors.inUse") : tCommon("errors.deleteError")));
+          toast.error(getErrorMessage(result.message, result.statusCode, t, tCommon, t("list.subZoneTitle")));
         }
       },
     });
@@ -144,3 +144,9 @@ export function useMoujaSubZoneHandlers({
     handleDeleteSubZone,
   };
 }
+
+
+
+
+
+

@@ -93,6 +93,8 @@ export function getAssetPhotoTypeColumns(
       label: createSortableLabel(t("list.table.photoTypeCode"), "photoTypeCode"),
       width: "20%",
       align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
@@ -100,6 +102,8 @@ export function getAssetPhotoTypeColumns(
       label: createSortableLabel(t("list.table.photoTypeName"), "photoTypeName"),
       width: "20%",
       align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
@@ -107,6 +111,8 @@ export function getAssetPhotoTypeColumns(
       label: createSortableLabel(t("list.table.description"), "description"),
       width: "20%",
       align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
       render: (value) => (typeof value === "string" ? value : "-"),
     },
     {
@@ -114,6 +120,8 @@ export function getAssetPhotoTypeColumns(
       label: createSortableLabel(t("list.table.displayOrder"), "displayOrder"),
       width: "10%",
       align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
       render: (value) => (value != null ? String(value) : "-"),
     },
     {
@@ -121,6 +129,8 @@ export function getAssetPhotoTypeColumns(
       label: t("list.table.assetCategoryAndType"),
       width: "20%",
       align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
       render: (_, row) => {
         const parts = [];
         if (row.assetCategoryName) parts.push(row.assetCategoryName);
@@ -133,6 +143,8 @@ export function getAssetPhotoTypeColumns(
       label: t("list.table.isSubUnit"),
       width: "10%",
       align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
       render: (value) => (
         <StatusBadge
           value={Boolean(value)}
@@ -146,6 +158,8 @@ export function getAssetPhotoTypeColumns(
       label: t("list.table.isRequired"),
       width: "10%",
       align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
       render: (value) => (
         <StatusBadge
           value={Boolean(value)}
@@ -159,6 +173,8 @@ export function getAssetPhotoTypeColumns(
       label: t("list.table.status"),
       width: "10%",
       align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
       isStatus: true,
     },
   ];

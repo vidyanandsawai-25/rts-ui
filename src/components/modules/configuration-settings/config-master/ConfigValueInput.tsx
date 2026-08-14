@@ -15,6 +15,7 @@ interface ConfigValueInputProps {
   disabled?: boolean;
   error?: string;
   className?: string;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 export function ConfigValueInput({
@@ -27,6 +28,7 @@ export function ConfigValueInput({
   disabled,
   error,
   className,
+  inputRef,
 }: ConfigValueInputProps) {
   const t = useTranslations('configMaster');
   
@@ -95,6 +97,7 @@ export function ConfigValueInput({
   const isDecimalType = dataType === 'decimal';
   return (
     <Input
+      ref={inputRef}
       placeholder={t('modals.addValue.form.placeholders.value')}
       value={value}
       onChange={(e) => {
@@ -119,6 +122,7 @@ export function ConfigValueInput({
       }}
       className={cn(error ? 'border-red-500' : '', className)}
       disabled={disabled}
+      autoComplete="off"
     />
   );
 }

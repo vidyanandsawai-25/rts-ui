@@ -245,12 +245,12 @@ describe("DepreciationMaster", () => {
       const maxInput = screen.getByPlaceholderText("Enter max");
       const addButton = screen.getByRole("button", { name: /Add Range/i });
 
-      await user.type(minInput, "10");
+      await user.type(minInput, "0");
       await user.type(maxInput, "999");
       await user.click(addButton);
 
       await waitFor(() => {
-        expect(addRangeAction).toHaveBeenCalledWith("en", { minYear: 10, maxYear: 999 });
+        expect(addRangeAction).toHaveBeenCalledWith("en", { minYear: 0, maxYear: 999 });
       });
     });
 
@@ -281,13 +281,13 @@ describe("DepreciationMaster", () => {
       const maxInput = screen.getByPlaceholderText("Enter max");
       const addButton = screen.getByRole("button", { name: /Add Range/i });
 
-      await user.type(minInput, "20");
+      await user.type(minInput, "0");
       await user.type(maxInput, "30");
       await user.click(addButton);
 
       await waitFor(() => {
         expect(addRangeAction).toHaveBeenCalledWith("en", {
-          minYear: 20,
+          minYear: 0,
           maxYear: 30,
         });
       });
@@ -301,7 +301,7 @@ describe("DepreciationMaster", () => {
       const maxInput = screen.getByPlaceholderText("Enter max");
       const addButton = screen.getByRole("button", { name: /Add Range/i });
 
-      await user.type(minInput, "20");
+      await user.type(minInput, "0");
       await user.type(maxInput, "30");
       await user.click(addButton);
 
@@ -320,7 +320,7 @@ describe("DepreciationMaster", () => {
       const maxInput = screen.getByPlaceholderText("Enter max");
       const addButton = screen.getByRole("button", { name: /Add Range/i });
 
-      await user.type(minInput, "20");
+      await user.type(minInput, "0");
       await user.type(maxInput, "30");
       await user.click(addButton);
 
@@ -396,7 +396,7 @@ describe("DepreciationMaster", () => {
       const maxInput = screen.getByPlaceholderText("Enter max");
       const addButton = screen.getByRole("button", { name: /Add Range/i });
 
-      await user.type(minInput, "20");
+      await user.type(minInput, "0");
       await user.type(maxInput, "30");
       await user.click(addButton);
 

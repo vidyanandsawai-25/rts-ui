@@ -12,9 +12,13 @@ import { deleteAssetRoomTypeAction } from "@/app/[locale]/assets/configuration/m
 import TableHeader from "@/components/common/TableHeader";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { PageContainer, SearchInput, Select } from "@/components/common";
+
+
 import { getAssetRoomTypeColumns } from "./AssetRoomTypeColumns";
 import { useAssetRoomSearch } from "@/hooks/asset-masters/assetroomtype/useAssetRoomSearch";
 import { useAssetRoomPagination } from "@/hooks/asset-masters/assetroomtype/useAssetRoomPagination";
+import { getErrorMessage } from "@/hooks/asset-masters/assetroomtype/validation";
+
 
 export function AssetRoomTypeMaster({
   data,
@@ -31,6 +35,8 @@ export function AssetRoomTypeMaster({
   const locale = useLocale();
 
   const { confirm } = useConfirm();
+
+
 
   const { search, currentSearchTerm, handleSearchChange } = useAssetRoomSearch({
     pageSize,
@@ -93,44 +99,29 @@ export function AssetRoomTypeMaster({
 
   const columns = getAssetRoomTypeColumns(t, tCommon, sortBy, sortOrder, handleSort);
 
-  const handleEdit = useCallback(
-    (row: AssetRoomType) => {
-      router.push(`/${locale}/assets/configuration/master-data/asset-room-type/edit/${row.id}`);
-    },
-    [router, locale]
-  );
+  const handleEdit = useCallback((row: AssetRoomType) => {
+    router.push(`/${locale}/assets/configuration/master-data/asset-room-type/edit/${row.id}`);
+  }, [router, locale]);
 
-  const handleDelete = useCallback(
-    (row: AssetRoomType) => {
-      confirm({
-        variant: "delete",
-        title: `${t("list.table.roomTypeCode")}: ${row.roomTypeCode}`,
-        description: `${t("delete.confirmDescription")}`,
-        meta: {
-          name: row.roomTypeName,
-        },
-        onConfirm: async () => {
-          const fd = new FormData();
-          fd.append("id", String(row.id));
-          const result = await deleteAssetRoomTypeAction(fd);
-          if (result.success) {
-            toast.success(
-              t("success.deleted", { code: row.roomTypeCode })
-            );
-            router.refresh();
-          } else {
-            const errorMessage = result.message ||
-              (result.statusCode === 409 ? t("apiErrors.inUse") :
-                result.statusCode === 400 ? t("apiErrors.validationError") :
-                  result.statusCode === 404 ? t("apiErrors.notFound") :
-                    tCommon("errors.deleteError"));
-            toast.error(errorMessage);
-          }
-        },
-      });
-    },
-    [confirm, router, t, tCommon]
-  );
+  const handleDelete = useCallback((row: AssetRoomType) => {
+    confirm({
+      variant: "delete",
+      title: `${t("list.table.roomTypeCode")}: ${row.roomTypeCode}`,
+      description: `${t("delete.confirmDescription")}`,
+      meta: { name: row.roomTypeName },
+      onConfirm: async () => {
+        const fd = new FormData();
+        fd.append("id", String(row.id));
+        const result = await deleteAssetRoomTypeAction(fd);
+        if (result.success) {
+          toast.success(t("success.deleted", { code: row.roomTypeCode }));
+          router.refresh();
+        } else {
+          toast.error(getErrorMessage(result.message, result.statusCode, t, tCommon, t("list.title")));
+        }
+      },
+    });
+  }, [confirm, router, t, tCommon]);
 
   const { start, end, total } = paginationInfo;
   return (
@@ -195,3 +186,5 @@ export function AssetRoomTypeMaster({
     </PageContainer>
   );
 }
+
+

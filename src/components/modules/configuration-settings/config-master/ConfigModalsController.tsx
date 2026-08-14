@@ -79,6 +79,7 @@ export function ConfigModalsController({
         isOpen={isAddCategoryOpen}
         onClose={closeModals}
         onSuccess={closeModals}
+        categories={categories}
         initialData={activeCategoryForEdit}
       />
       <AddConfigKeyModal

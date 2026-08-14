@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { apiClient } from "@/services/api.service";
 import { getTranslations } from "next-intl/server";
 import { ApiError, normalizePagedResponse } from "@/lib/utils/api";
@@ -9,6 +10,7 @@ import {
   WardOption,
   WingOption,
   PropertyFilterParams,
+  PropertyFilterByCategoryParams,
   FieldRegistrySchema,
   FieldRegistryTable,
   FieldRegistryColumn,
@@ -51,12 +53,12 @@ export async function getBulkUpdateMenuServer(): Promise<BulkUpdateMaster[]> {
       
       // API returns {success, message, items: [...], errors, correlationId}
       if (data.items && Array.isArray(data.items)) {
-        return data.items as BulkUpdateMaster[];
+        return (data.items as BulkUpdateMaster[]).filter((item) => item.isActive !== false);
       }
       
       // Fallback: data itself is the array
       if (Array.isArray(data)) {
-        return data as unknown as BulkUpdateMaster[];
+        return (data as unknown as BulkUpdateMaster[]).filter((item) => item.isActive !== false);
       }
     }
 
@@ -68,6 +70,54 @@ export async function getBulkUpdateMenuServer(): Promise<BulkUpdateMaster[]> {
     );
   } catch (error) {
     throw error;
+  }
+}
+
+export async function getSourceTablesServer(): Promise<{ id: number; tableName: string }[]> {
+  try {
+    const response = await apiClient.get<ApiWrappedResponse<{ id: number; tableName: string }[]>>(
+      `/CommonDetails/source-tables`
+    );
+
+    if (response.success && response.data) {
+      const data = response.data as unknown as Record<string, unknown>;
+      
+      if (data.items && Array.isArray(data.items)) {
+        return data.items as { id: number; tableName: string }[];
+      }
+      
+      if (Array.isArray(data)) {
+        return data as { id: number; tableName: string }[];
+      }
+    }
+    return [];
+  } catch (error) {
+    logger.error("Failed to fetch source tables", {}, error);
+    return [];
+  }
+}
+
+export async function getSourceTableFieldsServer(sourceTableId: number): Promise<{ id: number; tableFieldName: string }[]> {
+  try {
+    const response = await apiClient.get<ApiWrappedResponse<{ id: number; tableFieldName: string }[]>>(
+      `/CommonDetails/source-table-fields/${sourceTableId}`
+    );
+
+    if (response.success && response.data) {
+      const data = response.data as unknown as Record<string, unknown>;
+      
+      if (data.items && Array.isArray(data.items)) {
+        return data.items as { id: number; tableFieldName: string }[];
+      }
+      
+      if (Array.isArray(data)) {
+        return data as { id: number; tableFieldName: string }[];
+      }
+    }
+    return [];
+  } catch (error) {
+    logger.error("Failed to fetch source table fields", { sourceTableId }, error);
+    return [];
   }
 }
 
@@ -272,6 +322,94 @@ export async function getPropertiesForFilterServer(
   }
 }
 
+export async function getPreviewListByCategoryServer(
+  params: PropertyFilterByCategoryParams
+): Promise<PagedResponse<PropertyPreviewRow>> {
+  const queryParams = new URLSearchParams();
+  queryParams.append("UpdateCode", params.UpdateCode);
+  queryParams.append("SearchCategory", String(params.SearchCategory));
+  queryParams.append("WardId", String(params.WardId));
+  if (params.SearchTerm !== undefined) {
+    queryParams.append("SearchTerm", String(params.SearchTerm));
+  }
+  if (params.PropertyNo !== undefined) {
+    queryParams.append("PropertyNo", String(params.PropertyNo));
+  }
+  if (params.PartitionNo !== undefined) {
+    queryParams.append("PartitionNo", String(params.PartitionNo));
+  }
+  if (params.PropertyFrom !== undefined) {
+    queryParams.append("PropertyFrom", String(params.PropertyFrom));
+  }
+  if (params.PropertyTo !== undefined) {
+    queryParams.append("PropertyTo", String(params.PropertyTo));
+  }
+  if (params.PageNumber !== undefined) {
+    queryParams.append("PageNumber", String(params.PageNumber));
+  }
+  if (params.PageSize !== undefined) {
+    queryParams.append("PageSize", String(params.PageSize));
+  }
+
+  const url = `/CommonDetails/filter-properties-by-category?${queryParams.toString()}`;
+
+  try {
+    const response = await apiClient.get<PagedResponse<PropertyPreviewRow>>(url);
+
+    if (response.data !== undefined) {
+      const data = response.data as unknown as Record<string, unknown>;
+      
+      // API wraps response in {success, message, items, errors, correlationId}
+      // where "items" is actually the PagedResponse
+      if (data.items && typeof data.items === 'object' && !Array.isArray(data.items)) {
+        const pagedResponse = data.items as PagedResponse<PropertyPreviewRow>;
+        if (pagedResponse.items && Array.isArray(pagedResponse.items)) {
+          return {
+            ...pagedResponse,
+            items: flattenCurrentValues(pagedResponse.items),
+          };
+        }
+      }
+      
+      // Handle direct array response
+      if (Array.isArray(data)) {
+        return {
+          items: flattenCurrentValues(data as unknown as PropertyPreviewRow[]),
+          totalCount: data.length,
+          pageNumber: 1,
+          pageSize: data.length,
+          totalPages: 1,
+          hasPrevious: false,
+          hasNext: false,
+        };
+      }
+      
+      // Handle standard PagedResponse format
+      const typedData = data as unknown as PagedResponse<PropertyPreviewRow>;
+      if (typedData.items && Array.isArray(typedData.items)) {
+        return {
+          ...typedData,
+          items: flattenCurrentValues(typedData.items),
+        };
+      }
+      
+      logger.warn("getPreviewListByCategoryServer: Unexpected data shape", {
+        dataKeys: Object.keys(data),
+      });
+    }
+
+    const t = await getTranslations("commonDetailsUpdate");
+    throw new ApiError(
+      response.statusCode || 500,
+      response.error || t("messages.fetchPropertiesFailed"),
+      "getPreviewListByCategoryServer"
+    );
+  } catch (error) {
+    logger.error("getPreviewListByCategoryServer: Error", {}, error);
+    throw error;
+  }
+}
+
 export async function getWardsPagedServer(
   pageNumber: number,
   pageSize: number
@@ -446,6 +584,132 @@ export async function getPropertiesByWardServer(
   }
 }
 
+export interface SearchByCategoryPropertyItem {
+  propertyId: number;
+  taxZoneId?: number;
+  zoneId?: number;
+  zoneNo?: string;
+  wardId?: number;
+  wardNo?: string;
+  propertyNo: string;
+  partitionNo?: string;
+  mobileNo?: string;
+  upicId?: string;
+  propertyTypeId?: number;
+  partType?: string;
+  categoryId?: number;
+  propertyCategoryName?: string;
+  isWing?: boolean;
+  propertyAssessmentStatusId?: number;
+}
+
+/**
+ * Fetches properties by category, zone, ward and page size/number.
+ * Uses GET /Property/search-by-category
+ */
+export async function getPropertiesByCategoryServer(
+  searchCategory: number,
+  zoneId: number | undefined,
+  wardId: number,
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string,
+  propertyFrom?: string
+): Promise<PagedResponse<SearchByCategoryPropertyItem>> {
+  const params = new URLSearchParams({
+    SearchCategory: searchCategory.toString(),
+    WardId: wardId.toString(),
+    pageNumber: pageNumber.toString(),
+    pageSize: pageSize.toString(),
+  });
+
+  if (zoneId && zoneId > 0) {
+    params.set("ZoneId", zoneId.toString());
+  }
+
+  if (propertyFrom && propertyFrom.trim() !== "") {
+    params.set("PropertyFrom", propertyFrom.trim());
+  }
+
+  if (searchTerm && searchTerm.trim() !== "") {
+    params.set("SearchTerm", searchTerm.trim());
+    params.set("PropertyNo", searchTerm.trim());
+    params.set("q", searchTerm.trim());
+  }
+
+  try {
+    logger.info("getPropertiesByCategoryServer: Fetching properties", { searchCategory, zoneId, wardId, pageNumber, pageSize, searchTerm, propertyFrom });
+    const response = await apiClient.get<unknown>(`/Property/search-by-category?${params.toString()}`);
+    
+    if (response.success && response.data) {
+      const data = response.data as Record<string, unknown>;
+      let itemsArray: SearchByCategoryPropertyItem[] = [];
+      let totalCount = 0;
+      let pageNum = pageNumber;
+      let pSize = pageSize;
+      let totalP = 1;
+      let hasPrev = false;
+      let hasNxt = false;
+
+      if (Array.isArray(data.items)) {
+        itemsArray = data.items as SearchByCategoryPropertyItem[];
+        totalCount = (data.totalCount as number) || itemsArray.length;
+        pageNum = (data.pageNumber as number) || pageNumber;
+        pSize = (data.pageSize as number) || pageSize;
+        totalP = (data.totalPages as number) || 1;
+        hasPrev = Boolean(data.hasPrevious);
+        hasNxt = Boolean(data.hasNext);
+      } else if (data.items && typeof data.items === 'object') {
+        const nestedData = data.items as Record<string, unknown>;
+        if (Array.isArray(nestedData.items)) {
+          itemsArray = nestedData.items as SearchByCategoryPropertyItem[];
+          totalCount = (nestedData.totalCount as number) || itemsArray.length;
+          pageNum = (nestedData.pageNumber as number) || pageNumber;
+          pSize = (nestedData.pageSize as number) || pageSize;
+          totalP = (nestedData.totalPages as number) || 1;
+          hasPrev = Boolean(nestedData.hasPrevious);
+          hasNxt = Boolean(nestedData.hasNext);
+        }
+      } else if (Array.isArray(response.data)) {
+        itemsArray = response.data as SearchByCategoryPropertyItem[];
+        totalCount = itemsArray.length;
+      }
+
+      return {
+        items: itemsArray,
+        totalCount,
+        pageNumber: pageNum,
+        pageSize: pSize,
+        totalPages: totalP,
+        hasPrevious: hasPrev,
+        hasNext: hasNxt,
+      };
+    }
+    
+    return {
+      items: [],
+      totalCount: 0,
+      pageNumber: 1,
+      pageSize: 0,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false,
+    };
+  } catch (error) {
+    logger.error("Failed to fetch properties by category", { searchCategory, zoneId, wardId, pageNumber, pageSize, error });
+    return {
+      items: [],
+      totalCount: 0,
+      pageNumber: 1,
+      pageSize: 0,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false,
+    };
+  }
+}
+
+
 
 /**
  * Fetches all wings using GET /Wing?PageSize=-1.
@@ -504,6 +768,52 @@ export async function getAllWingsServer(): Promise<PagedResponse<WingItem>> {
       hasPrevious: false,
       hasNext: false,
     };
+  }
+}
+
+export async function getFieldRegistriesServer(
+  pageNumber?: number,
+  pageSize?: number,
+  updateCode?: string
+): Promise<PagedResponse<BulkUpdateMaster> | BulkUpdateMaster[]> {
+  try {
+    const params = new URLSearchParams();
+    if (pageNumber != null) params.append("PageNumber", String(pageNumber));
+    if (pageSize != null) params.append("PageSize", String(pageSize));
+    if (updateCode) params.append("UpdateCode", updateCode);
+
+    const response = await apiClient.get<PagedResponse<BulkUpdateMaster> | ApiWrappedResponse<BulkUpdateMaster[]>>(
+      `/FieldRegistry/GetFieldRegistries?${params.toString()}`
+    );
+
+    if (response.success && response.data) {
+      const data = response.data;
+      if (data && typeof data === "object" && "items" in data) {
+        return data as PagedResponse<BulkUpdateMaster>;
+      }
+      if (Array.isArray(data)) {
+        return data as unknown as BulkUpdateMaster[];
+      }
+    }
+
+    const responseFallback = await apiClient.get<PagedResponse<BulkUpdateMaster> | ApiWrappedResponse<BulkUpdateMaster[]>>(
+      `/FieldRegistry/GetFieldRegistries`
+    );
+
+    if (responseFallback.success && responseFallback.data) {
+      const data = responseFallback.data;
+      if (data && typeof data === "object" && "items" in data) {
+        return data as PagedResponse<BulkUpdateMaster>;
+      }
+      if (Array.isArray(data)) {
+        return data as unknown as BulkUpdateMaster[];
+      }
+    }
+    
+    return [];
+  } catch (error) {
+    logger.error("Failed to fetch field registries", { error });
+    return [];
   }
 }
 
@@ -623,3 +933,105 @@ export async function exportExcelServer(
 }
 
 
+export async function getUpdateHistoryServer(
+  params: import("@/types/common-details-update/common-details-update.types").UpdateHistoryFilterParams
+): Promise<PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>> {
+  try {
+    const { apiClient } = await import("@/services/api.service");
+
+    const urlParams = new URLSearchParams();
+    if (params.UpdateName) urlParams.append("UpdateName", params.UpdateName);
+    if (params.WardNo) urlParams.append("WardNo", params.WardNo);
+    if (params.PropertyNo) urlParams.append("PropertyNo", params.PropertyNo);
+    if (params.PartitionNo) urlParams.append("PartitionNo", params.PartitionNo);
+    if (params.UpdatedColumns) urlParams.append("UpdatedColumns", params.UpdatedColumns);
+    if (params.Username) urlParams.append("Username", params.Username);
+    if (params.PageNumber) urlParams.append("PageNumber", params.PageNumber.toString());
+    if (params.PageSize) urlParams.append("PageSize", params.PageSize.toString());
+    if (params.SearchTerm) urlParams.append("SearchTerm", params.SearchTerm);
+    if (params.SortBy) urlParams.append("SortBy", params.SortBy);
+    if (params.SortOrder) urlParams.append("SortOrder", params.SortOrder);
+    if (params.FilterLogic) urlParams.append("FilterLogic", params.FilterLogic);
+
+    const queryString = urlParams.toString();
+    const url = `/CommonDetails/update-history${queryString ? `?${queryString}` : ""}`;
+
+    const response = await apiClient.get<ApiWrappedResponse<PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>>>(url);
+
+    if (response.success && response.data) {
+      const data = response.data as unknown as Record<string, unknown>;
+      if (data.items && typeof data.items === 'object' && Array.isArray((data.items as any).items)) {
+        return normalizePagedResponse(data.items as PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>);
+      }
+      return normalizePagedResponse(response.data as unknown as PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>);
+    }
+
+    throw new ApiError(500, response.message || "Failed to fetch update history", "getUpdateHistoryServer");
+  } catch (error) {
+    logger.error("Error fetching update history", { params } as any, error);
+    throw error;
+  }
+}
+
+export async function exportUpdateHistoryServer(
+  params: import("@/types/common-details-update/common-details-update.types").UpdateHistoryFilterParams
+): Promise<string> {
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get("auth_token")?.value;
+
+  if (!authToken) {
+    const t = await getTranslations("commonDetailsUpdate");
+    throw new ApiError(401, t("messages.unauthorized") || "Unauthorized", "exportUpdateHistoryServer");
+  }
+
+  try {
+    const { apiClient } = await import("@/services/api.service");
+
+    const urlParams = new URLSearchParams();
+    if (params.UpdateName) urlParams.append("UpdateName", params.UpdateName);
+    if (params.WardNo) urlParams.append("WardNo", params.WardNo);
+    if (params.PropertyNo) urlParams.append("PropertyNo", params.PropertyNo);
+    if (params.PartitionNo) urlParams.append("PartitionNo", params.PartitionNo);
+    if (params.UpdatedColumns) urlParams.append("UpdatedColumns", params.UpdatedColumns);
+    if (params.Username) urlParams.append("Username", params.Username);
+    if (params.SearchTerm) urlParams.append("SearchTerm", params.SearchTerm);
+
+    const queryString = urlParams.toString();
+    const url = `/CommonDetails/update-history/export-excel${queryString ? `?${queryString}` : ""}`;
+
+    const response = await apiClient.fetch(url, { method: "GET" }, true);
+    
+    if (!response.ok) {
+      let errorMsg = "Failed to export update history";
+      try {
+        const errBody = await response.json();
+        errorMsg = errBody.message || errBody.error || errorMsg;
+      } catch (e) {
+        const errText = await response.text().catch(() => "");
+        if (errText) errorMsg = errText;
+      }
+      throw new ApiError(response.status, errorMsg, "exportUpdateHistoryServer");
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    
+    if (contentType.includes("application/json")) {
+      const clonedResponse = response.clone();
+      try {
+        const data = await clonedResponse.json();
+        if (data && data.data) return data.data;
+        if (typeof data === "string") return data;
+        throw new ApiError(500, data.message || "Failed to export update history", "exportUpdateHistoryServer");
+      } catch (e) {
+        // If it throws SyntaxError, it's not actually JSON!
+        // Ignore the error and fall through to reading the arrayBuffer from the original response.
+      }
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    return Buffer.from(arrayBuffer).toString("base64");
+  } catch (error) {
+    logger.error("Error exporting update history", { params } as any, error);
+    throw error;
+  }
+}

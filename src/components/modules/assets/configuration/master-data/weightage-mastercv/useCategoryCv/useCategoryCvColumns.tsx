@@ -1,13 +1,69 @@
 "use client";
 
+import React from "react";
 import { Column } from "@/components/common/MasterTable";
 import { UseFactorCVMaster, UseType } from "@/types/useCategoryCvFactor.types";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { MatrixCellInput } from "@/components/common/MatrixCellInput";
-import { SortableColumnHeader, SortDirection } from "@/components/common/SortableColumnHeader";
+import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/common/ActionButton";
 import { Badge } from "@/components/common/Badge";
 import { toast } from "sonner";
+
+/**
+ * Renders a sortable column header with sort icon matching Floor Weightage header style.
+ */
+function SortableHeader({
+  label,
+  columnKey,
+  sortBy,
+  sortOrder,
+  onSort,
+  tCommon,
+}: {
+  label: string;
+  columnKey: string;
+  sortBy?: string;
+  sortOrder?: string;
+  onSort: (key: string) => void;
+  tCommon: (key: string) => string;
+}): React.ReactElement {
+  const isActive = sortBy === columnKey;
+  const isAsc = isActive && sortOrder === "asc";
+  const isDesc = isActive && sortOrder === "desc";
+
+  const renderSortButton = () => {
+    if (isAsc) {
+      return (
+        <SortAscButton
+          onClick={() => onSort(columnKey)}
+          aria-label={`${tCommon("table.sort.verb")} ${label} ${tCommon("table.sort.ascending")}`}
+        />
+      );
+    }
+    if (isDesc) {
+      return (
+        <SortDescButton
+          onClick={() => onSort(columnKey)}
+          aria-label={`${tCommon("table.sort.verb")} ${label} ${tCommon("table.sort.descending")}`}
+        />
+      );
+    }
+    return (
+      <SortDefaultButton
+        onClick={() => onSort(columnKey)}
+        aria-label={`${tCommon("table.sort.by")} ${label}`}
+      />
+    );
+  };
+
+  return (
+    <div className="flex items-center gap-1 justify-start w-full">
+      <span>{label}</span>
+      {renderSortButton()}
+    </div>
+  );
+}
 
 export const getTypeOfUseColumns = (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,7 +71,7 @@ export const getTypeOfUseColumns = (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tW: (key: string, values?: Record<string, any>) => string,
     handleTypeRowClick: (row: UseType) => void,
-    _tCommon: (key: string) => string,
+    tCommon: (key: string) => string,
     leftSortBy?: string,
     leftSortOrder?: string,
     onLeftSort?: (key: string) => void
@@ -28,15 +84,14 @@ export const getTypeOfUseColumns = (
     const createSortableLabel = (label: string, dataKey: string) => {
         const apiSortKey = sortableColumns[dataKey];
         if (onLeftSort && apiSortKey) {
-            let sortDir: SortDirection = null;
-            if (leftSortBy === apiSortKey) {
-                sortDir = (leftSortOrder === "asc" || leftSortOrder === "desc") ? leftSortOrder : null;
-            }
             return (
-                <SortableColumnHeader
+                <SortableHeader
                     label={label}
-                    sortDirection={sortDir}
-                    onSort={() => onLeftSort(apiSortKey)}
+                    columnKey={apiSortKey}
+                    sortBy={leftSortBy}
+                    sortOrder={leftSortOrder}
+                    onSort={onLeftSort}
+                    tCommon={tCommon}
                 />
             );
         }
@@ -71,7 +126,7 @@ export const getTypeOfUseColumns = (
                     className="!h-auto !p-0 !bg-transparent text-blue-600 hover:underline hover:!bg-transparent text-left w-full py-1 font-normal justify-start"
                     onClick={() => handleTypeRowClick(row)}
                 >
-                    <span className="w-full text-left whitespace-normal break-words">{String(value || '')}</span>
+                    <span className="w-full text-left break-all line-clamp-2" title={String(value || '')}>{String(value || '')}</span>
                 </Button>
             ),
         },
@@ -100,7 +155,7 @@ export const getUseFactorColumns = (
     editableRows: Record<string, UseFactorCVMaster>,
     handleCellChange: (rowId: string, columnId: string, value: number) => void,
     getRowUid: (row: UseFactorCVMaster) => string,
-    _tCommon: (key: string) => string,
+    tCommon: (key: string) => string,
     sortBy?: string,
     sortOrder?: string,
     onSort?: (key: string) => void,
@@ -108,24 +163,23 @@ export const getUseFactorColumns = (
     assessmentYearOptions: { label: string; value: string }[] = []
 ): Column<UseFactorCVMaster>[] => {
     const sortableColumns: Record<string, string> = {
-        typeOfUseCode: "TypeOfUseId",
-        typeOfUseDescription: "TypeOfUseId",
-        subTypeOfUseDescription: "SubTypeOfUseId",
-        fromYear: "YearRangeCVId",
+        typeOfUseCode: "TypeOfUseCode",
+        typeOfUseDescription: "TypeOfUseDescription",
+        subTypeOfUseDescription: "SubTypeOfUseDescription",
+        fromYear: "FromYear",
     };
 
     const createSortableLabel = (label: string, dataKey: string) => {
         const apiSortKey = sortableColumns[dataKey];
         if (onSort && apiSortKey) {
-            let sortDir: SortDirection = null;
-            if (sortBy === apiSortKey) {
-                sortDir = (sortOrder === "asc" || sortOrder === "desc") ? sortOrder : null;
-            }
             return (
-                <SortableColumnHeader
+                <SortableHeader
                     label={label}
-                    sortDirection={sortDir}
-                    onSort={() => onSort(apiSortKey)}
+                    columnKey={apiSortKey}
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={onSort}
+                    tCommon={tCommon}
                 />
             );
         }
@@ -136,16 +190,19 @@ export const getUseFactorColumns = (
         {
             key: "typeOfUseCode",
             label: createSortableLabel(t('columns.typeOfUseCode'), "typeOfUseCode"),
-            width: "20%",
+            width: "15%",
             render: (value, row) => {
-                if (value && typeof value === "string" && value !== "-") return value;
-                const opt = typeOfUseOptions.find(o => o.value === String(row.typeOfUseId));
-                if (opt) {
-                    const parts = opt.label.split(" - ");
-                    if (parts.length > 1) return parts[0].trim();
-                    return opt.label;
+                let code = "-";
+                if (value && typeof value === "string" && value !== "-") {
+                    code = value;
+                } else {
+                    const opt = typeOfUseOptions.find(o => o.value === String(row.typeOfUseId));
+                    if (opt) {
+                        const parts = opt.label.split(" - ");
+                        code = parts.length > 1 ? parts[0].trim() : opt.label;
+                    }
                 }
-                return "-";
+                return <span className="break-all block">{code}</span>;
             },
         },
         {
@@ -153,21 +210,28 @@ export const getUseFactorColumns = (
             label: createSortableLabel(t('columns.typeOfUse'), "typeOfUseDescription"),
             width: "20%",
             render: (value, row) => {
-                if (value && typeof value === "string" && value !== "-") return value;
-                const opt = typeOfUseOptions.find(o => o.value === String(row.typeOfUseId));
-                if (opt) {
-                    const parts = opt.label.split(" - ");
-                    if (parts.length > 1) return parts.slice(1).join(" - ").trim();
-                    return opt.label;
+                let desc = "-";
+                if (value && typeof value === "string" && value !== "-") {
+                    desc = value;
+                } else {
+                    const opt = typeOfUseOptions.find(o => o.value === String(row.typeOfUseId));
+                    if (opt) {
+                        const parts = opt.label.split(" - ");
+                        desc = parts.length > 1 ? parts.slice(1).join(" - ").trim() : opt.label;
+                    }
                 }
-                return "-";
+                return <span className="break-all block">{desc}</span>;
             },
         },
         {
             key: "subTypeOfUseDescription",
             label: createSortableLabel(t('columns.subType'), "subTypeOfUseDescription"),
-            width: "20%",
-            render: (value) => (value as string) || "-",
+            width: "25%",
+            render: (value) => (
+                <span className="break-all block" title={String(value || '')}>
+                    {(value as string) || "-"}
+                </span>
+            ),
         },
         {
             key: "factor",
@@ -224,3 +288,4 @@ export const getUseFactorColumns = (
         },
     ];
 };
+

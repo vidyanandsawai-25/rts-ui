@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -50,13 +49,13 @@ export function PtisBackButton() {
         console.error('Failed to read ptis_search_state from sessionStorage:', err);
       }
     }
-    const target = `/${locale}/property-tax/search-property${cached ? `?${cached}` : ''
-      }`;
+    const target = `/${locale}/property-tax/search-property${cached ? `?${cached}` : ''}`;
     router.push(target);
   };
 
-  const targetUrl = `/${locale}/property-tax/search-property${resolvedSearchState ? `?${resolvedSearchState}` : ''
-    }`;
+  const targetUrl = `/${locale}/property-tax/search-property${
+    resolvedSearchState ? `?${resolvedSearchState}` : ''
+  }`;
 
   return (
     <Tooltip content={t('buttons.backToSearch') || 'Back to Search Property'} placement="top">
@@ -131,7 +130,10 @@ export function PtisFooterDropdowns({
     { label: t('footerControls.action.options.apply'), value: 'apply' },
     { label: t('footerControls.action.options.remove_retention'), value: 'remove_retention' },
     { label: t('footerControls.action.options.remove_hearing'), value: 'remove_hearing' },
-    { label: t('footerControls.action.options.remove_appeal_committee'), value: 'remove_appeal_committee' },
+    {
+      label: t('footerControls.action.options.remove_appeal_committee'),
+      value: 'remove_appeal_committee',
+    },
     { label: t('footerControls.action.options.remove_remission'), value: 'remove_remission' },
     { label: t('footerControls.action.options.remove_all_appeals'), value: 'remove_all_appeals' },
   ];
@@ -151,15 +153,18 @@ export function PtisFooterDropdowns({
   const QC_STATUS_OPTIONS = isCurrentlyLoading
     ? [{ label: 'Loading...', value: '', disabled: true }]
     : (workflowStages || [])
-      .filter((s) => s.isActive)
-      .map((stage) => ({
-        label: stage.stageName,
-        value: stage.stageName,
-      }));
+        .filter((s) => s.isActive)
+        .map((stage) => ({
+          label: stage.stageName,
+          value: stage.stageName,
+        }));
 
   const handleSaveWorkflowDetail = async (stageName: string, stageId: number) => {
     if (!propertyId) {
-      toast.error(t('error.propertyIdMissing') || 'Property ID is missing. Please search and select a property first.');
+      toast.error(
+        t('error.propertyIdMissing') ||
+          'Property ID is missing. Please search and select a property first.'
+      );
       return;
     }
 
@@ -246,8 +251,8 @@ export function PtisFooterDropdowns({
       />
 
       <FooterSelect
-        label="QC Status"
-        placeholder="QC Status"
+        label={t('footerControls.qcStatus.label')}
+        placeholder={t('footerControls.qcStatus.placeholder')}
         value={qcStatus}
         onChange={handleQcStatusChange}
         options={QC_STATUS_OPTIONS}
@@ -258,18 +263,19 @@ export function PtisFooterDropdowns({
 
       {(qcStatus === 'Assessment' || qcStatus === 'QC Done') && (
         <div className="flex items-center gap-1 px-2.5 h-8.5 md:h-9 bg-emerald-600 border border-emerald-700 text-white text-[10px] font-bold rounded-lg shrink-0 shadow-sm transition-all duration-300 animate-in fade-in slide-in-from-right-4">
-          <span>✅ {t('footerControls.qcDoneLabel') || 'QC Done'}</span>
+          <span>✅ {t('footerControls.qcDoneLabel')}</span>
         </div>
       )}
 
-      <button type="button"
+      <button
+        type="button"
         onClick={() => {
           setIsTrackingModalOpen(true);
         }}
         className="h-8.5 md:h-9 px-3 inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/70 text-blue-600 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-100 hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 shrink-0 cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-100/50 text-xs font-semibold"
       >
         <Route className="w-4 h-4" />
-        Track Status
+        {t('footerControls.trackStatus')}
       </button>
 
       <PropertyTrackingModal

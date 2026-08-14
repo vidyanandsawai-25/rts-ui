@@ -28,11 +28,11 @@ export function useMatrixDataBuilder({
   matrixStorageKey,
   allZoneEdits,
 }: MatrixDataBuilderProps): MatrixRow[] {
-  
+
   return useMemo(() => {
     const activeZones = paginatedZoneDescriptions || zoneDescriptions;
-    
-    // In add mode, always return zeros
+
+    // In add mode, always return undefined
     if (mode === 'add' && !id && !editData && !bulkEditData) {
       return activeZones.map((z, idx) => {
         const baseData = {
@@ -41,7 +41,7 @@ export function useMatrixDataBuilder({
           taxZoneId: z.taxZoneId,
           ...rateCategories
             .filter(cat => cat.constructionId !== "zoneNo" && cat.constructionId !== "zoneDescription")
-            .reduce((acc, cat) => ({ ...acc, [cat.constructionCode || cat.constructionId]: 0 }), {} as Record<string, number>),
+            .reduce((acc, cat) => ({ ...acc, [cat.constructionCode || cat.constructionId]: undefined }), {} as Record<string, number | undefined>),
         };
         const edits = allZoneEdits[z.zoneNo] || {};
         return { ...baseData, ...edits };
@@ -72,18 +72,18 @@ export function useMatrixDataBuilder({
 
     // Create from editData/bulkEditData
     return activeZones.map((z, idx) => {
-      const rateValues: Record<string, number> = {};
+      const rateValues: Record<string, number | undefined> = {};
       if (bulkEditData?.length) {
         bulkEditData.forEach((data: IRateMaster) => {
           if (data.zoneNo === z.zoneNo) {
             data.rates?.forEach((rate: IRateValue) => {
-              rateValues[rate.rateCategory] = rate.ratePerSqMtr ?? 0;
+              rateValues[rate.rateCategory] = rate.ratePerSqMtr ?? undefined;
             });
           }
         });
       } else if (editData && editData.zoneNo === z.zoneNo) {
         editData.rates?.forEach((rate: IRateValue) => {
-          rateValues[rate.rateCategory] = rate.ratePerSqMtr ?? 0;
+          rateValues[rate.rateCategory] = rate.ratePerSqMtr ?? undefined;
         });
       }
       const baseData = {
@@ -93,9 +93,9 @@ export function useMatrixDataBuilder({
         ...rateCategories.reduce(
           (acc, cat) => {
             const key = cat.constructionCode || cat.constructionId;
-            return { ...acc, [key]: rateValues[key] ?? 0 };
+            return { ...acc, [key]: rateValues[key] };
           },
-          {} as Record<string, number>
+          {} as Record<string, number | undefined>
         ),
       };
       const edits = allZoneEdits[z.zoneNo] || {};

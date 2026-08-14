@@ -51,10 +51,13 @@ export function NonApartmentPartitionSection({
         <div>
           <Input
             label={t("partitionForm.toPartition")}
-            type="number"
+            type="text"
+            inputMode="numeric"
+            maxLength={2}
             value={form.toPartition}
             onChange={(e) => {
-              setForm({ ...form, toPartition: e.target.value });
+              const value = e.target.value.replace(/\D/g, "").slice(0, 2);
+              setForm({ ...form, toPartition: value });
               setErrors({ ...errors, toPartition: undefined });
             }}
             placeholder={t("partitionForm.placeholders.toPartition")}

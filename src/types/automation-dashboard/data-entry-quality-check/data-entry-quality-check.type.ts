@@ -46,6 +46,7 @@ export interface DataEntryAssessmentStatusBreakdown {
 export interface DataEntryGridData {
   divisionId: number | null;
   divisionName: string;
+  zoneNo?: string;
   structure: number;
   unit: number;
   internalSurvey: DataEntryStructureUnitProp;
@@ -65,7 +66,7 @@ export interface DataEntryGridItems {
 export interface DataEntryGridResponse {
   success: boolean;
   message: string;
-  items: DataEntryGridItems | null;
+  items: DataEntryGridItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }
@@ -73,6 +74,7 @@ export interface DataEntryGridResponse {
 export interface DataEntryWardData {
   wardId: number | null;
   wardNo: string;
+  zoneNo?: string;
   structure: number;
   unit: number;
   internalSurvey: DataEntryStructureUnitProp;
@@ -97,7 +99,7 @@ export interface DataEntryWardWiseSummaryItems {
 export interface DataEntryWardWiseSummaryResponse {
   success: boolean;
   message: string;
-  items: DataEntryWardWiseSummaryItems | null;
+  items: DataEntryWardWiseSummaryItems[] | null;
   errors: unknown | null;
   correlationId: string | null;
 }

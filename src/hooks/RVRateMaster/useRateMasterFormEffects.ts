@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import type { RateCategory } from "@/types/RVRateMaster";
 
@@ -7,7 +7,7 @@ type MatrixRow = {
   zone?: string;
   zoneNo?: string;
   taxZoneId?: number;
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | null | undefined;
 };
 
 interface RateMasterFormEffectsProps {
@@ -78,11 +78,11 @@ export function useRateMasterFormEffects({
           }
         });
 
-        // Add newly configured columns with default value of 0
+        // Add newly configured columns with default value of undefined
         localRateCategories.forEach(cat => {
           const colKey = cat.constructionCode || cat.constructionId;
           if (newRow[colKey] === undefined) {
-            newRow[colKey] = 0;
+            newRow[colKey] = undefined;
           }
         });
         return newRow;
@@ -91,21 +91,20 @@ export function useRateMasterFormEffects({
   }, [localRateCategories, showMatrix, setMatrixData, matrixData.length]);
 
   // 3. Show toast alerts when filters match existing rates (only in add mode)
-  const hasShownToastRef = useRef(false);
+  // Using Sonner's built-in toast ID deduplication to guarantee only one toast
+  // is shown regardless of how many times the effect fires.
+  const TOAST_ID = 'rates-already-exist';
 
-  // Reset toast shown flag when filters change
+  // Show toast when existing rates are found — id deduplication prevents stacking
   useEffect(() => {
-    hasShownToastRef.current = false;
+    if (isOpenPlot) return;
+    if (!isEditMode && existingRateFound) {
+      toast.error(t('messages.validationRatesAlreadyExist'), { id: TOAST_ID });
+    }
+  }, [existingRateFound, isEditMode, t, isOpenPlot]);
+
+  // Dismiss only when the user actively changes filters (not during async re-checks)
+  useEffect(() => {
+    toast.dismiss(TOAST_ID);
   }, [selectedZone, selectedUseGroup, assessmentYear]);
-
-  useEffect(() => {
-    if (isOpenPlot) return; // bypass for open plot
-    if (!isEditMode && existingRateFound && !hasShownToastRef.current) {
-      toast.error(t('messages.validationRatesAlreadyExist'));
-      hasShownToastRef.current = true;
-    }
-    if (!existingRateFound) {
-      hasShownToastRef.current = false;
-    }
-  }, [existingRateFound, isEditMode, t, selectedZone, selectedUseGroup, assessmentYear, isOpenPlot]);
 }

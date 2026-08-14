@@ -25,6 +25,7 @@ export function GisMapCard({ image, hasCoords = true, onClick, onMouseEnter, onM
     >
       <ImageWithFallback
         src={hasCoords ? (image?.src ?? '') : ''}
+        documentGuid={image?.documentGuid}
         alt={image?.alt || 'GIS Map View'}
         className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
         width={400}

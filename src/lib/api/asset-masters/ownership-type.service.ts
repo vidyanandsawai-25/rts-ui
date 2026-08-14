@@ -53,13 +53,39 @@ export const ownershipTypeService = {
     if (params?.IsActive !== undefined) q.set('IsActive', String(params.IsActive));
 
     const queryString = q.toString();
-    return handleMasterDataApiRequest(
+    const result = await handleMasterDataApiRequest(
       () => apiClient.get<OwnershipTypePagedResponse>(
         queryString ? `/OwnershipType?${queryString}` : '/OwnershipType',
         { cache: 'no-store' }
       ),
       'Failed to fetch ownership types'
     );
+
+    if (result && Array.isArray(result.items)) {
+      const filteredItems = result.items.filter((item: OwnershipTypeApiRecord) => {
+        const rec = item as unknown as Record<string, unknown>;
+        const keys = [
+          "MarkedForDeletion", "markedForDeletion",
+          "IsMarkedForDelete", "isMarkedForDelete",
+          "IsMarkedForDeletion", "isMarkedForDeletion",
+          "IsMarkForDelete", "isMarkForDelete",
+          "IsDeleted", "isDeleted"
+        ];
+        for (const k of keys) {
+          const val = rec[k];
+          if (val === true || val === 1 || val === "1") return false;
+          if (typeof val === "string" && val.toLowerCase() === "true") return false;
+        }
+        return true;
+      });
+      return {
+        ...result,
+        items: filteredItems,
+        totalCount: result.totalCount,
+      };
+    }
+
+    return result;
   },
 
   /**

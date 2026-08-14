@@ -19,10 +19,10 @@ interface UpdateFieldsTabContentProps {
 export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
   const { updateData } = props;
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Section 1: Property Selection Criteria */}
       <div className="border border-blue-200 rounded-xl bg-white overflow-visible">
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-[#F8FAFF]">
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-[#F8FAFF] rounded-t-xl">
           <div>
             <h3 className="text-sm font-semibold text-[#1E3A8A]">
               {props.t("propertyCriteria.title")}
@@ -36,7 +36,7 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
           </Badge>
         </div>
 
-        <div className="p-4">
+        <div className="p-2">
           <PropertySelectionCriteria
             t={props.t}
             selectedScopeId={updateData.selectedScopeId}
@@ -51,6 +51,7 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             handleWardChange={updateData.handleWardChange}
             wardOptions={updateData.wardOptions}
             propertyTypeOptions={updateData.propertyTypeOptions}
+            propertyOptions={updateData.propertyOptions}
             fromPropertyOptions={updateData.fromPropertyOptions}
             toPropertyOptions={updateData.toPropertyOptions}
             handlePropertyDropdownFocus={updateData.handlePropertyDropdownFocus}
@@ -59,35 +60,45 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             loadingPropertyOptions={updateData.loadingPropertyOptions}
             isPropertyDropdownDisabled={!updateData.filterValues.wardId}
             filterSubmitted={updateData.filterSubmitted}
-            loadingProperties={updateData.loadingProperties}
+            loadingShowProperties={updateData.loadingShowProperties}
             canShowProperties={updateData.canShowProperties}
             handleShowProperties={updateData.handleShowProperties}
             handleFilterCancel={updateData.handleBack}
             hasAnyFilterValue={updateData.hasAnyFilterValue}
+            hasMore={updateData.propertyDropdownHasMore}
+            onLoadMore={updateData.handleLoadMorePropertyOptions}
+            isLoadingMore={updateData.loadingMorePropertyOptions}
+            propertySearchTerm={updateData.propertySearchTerm}
+            onPropertySearchChange={updateData.handlePropertyDropdownSearch}
+            fromHasMore={updateData.fromPropertyDropdownHasMore}
+            onFromLoadMore={updateData.handleLoadMoreFromPropertyOptions}
+            isFromLoadingMore={updateData.loadingMoreFromPropertyOptions}
+            fromPropertySearchTerm={updateData.fromPropertySearchTerm}
+            onFromPropertySearchChange={updateData.handleFromPropertyDropdownSearch}
+            loadingFromPropertyOptions={updateData.loadingFromPropertyOptions}
+            toHasMore={updateData.toPropertyDropdownHasMore}
+            onToLoadMore={updateData.handleLoadMoreToPropertyOptions}
+            isToLoadingMore={updateData.loadingMoreToPropertyOptions}
+            toPropertySearchTerm={updateData.toPropertySearchTerm}
+            onToPropertySearchChange={updateData.handleToPropertyDropdownSearch}
+            loadingToPropertyOptions={updateData.loadingToPropertyOptions}
           />
         </div>
       </div>
 
       {/* Lower Section: Flex Layout */}
-      <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-480px)] min-h-[500px]">
+      <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-490px)] min-h-[350px]">
         {/* Left: Enabled Field List */}
         <EnabledFieldList
           t={props.t}
-          isFieldListCollapsed={props.isFieldListCollapsed}
-          setIsFieldListCollapsed={props.setIsFieldListCollapsed}
           filteredMenuItems={updateData.filteredMenuItems}
-          selectedCode={updateData.selectedCode}
+          selectedCodes={updateData.selectedCodes}
           handleMenuSelect={updateData.handleMenuSelect}
           locale={props.locale}
         />
 
         {/* Center: Property Preview Grid */}
-        <div
-          className={cn(
-            "flex flex-col min-h-0 h-full overflow-hidden transition-all duration-300",
-            props.isFieldListCollapsed ? "w-full lg:w-6/12" : "flex-1"
-          )}
-        >
+        <div className="flex flex-col min-h-0 h-full overflow-hidden transition-all duration-300 flex-1">
           <PropertyPreviewGrid
             t={props.t}
             properties={updateData.properties}
@@ -112,6 +123,7 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             wardId={updateData.filterValues.wardId}
             fromPropertyNo={updateData.filterValues.fromPropertyNo}
             toPropertyNo={updateData.filterValues.toPropertyNo}
+            
           />
         </div>
 
@@ -128,15 +140,17 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             fieldConfigs={updateData.fieldConfigs}
             loadingConfigs={updateData.loadingConfigs}
             formValues={updateData.formValues}
+            formErrors={updateData.formErrors}
             formSubmitted={updateData.formSubmitted}
             saving={updateData.saving}
-            selectedCount={updateData.selectedPropertyIds.size}
+            selectedCount={updateData.allSelected ? updateData.totalCount : updateData.selectedPropertyIds.size}
             onFieldChange={updateData.handleFormValueChange}
             onUpdate={updateData.handleSubmitBulkUpdate}
             onClear={updateData.handleFormClear}
             showValidationStatus={false}
             matchedProperties={updateData.totalCount}
             selectedFieldsCount={updateData.selectedCode ? 1 : 0}
+            
           />
         </div>
       </div>

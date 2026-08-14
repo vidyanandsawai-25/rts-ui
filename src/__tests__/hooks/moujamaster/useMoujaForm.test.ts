@@ -122,6 +122,24 @@ describe("useMoujaForm", () => {
       expect(result.current.errors.moujaNo).toBeUndefined();
     });
 
+    it("should accept valid moujaNo with decimal values", () => {
+      const { result } = renderHook(() => useMoujaForm(mockProps));
+
+      act(() => {
+        result.current.handleChange({
+          target: { name: "moujaNo", value: "12.5" },
+        } as React.ChangeEvent<HTMLInputElement>);
+      });
+
+      act(() => {
+        result.current.handleBlur({
+          target: { name: "moujaNo", value: "12.5" },
+        } as React.FocusEvent<HTMLInputElement>);
+      });
+
+      expect(result.current.errors.moujaNo).toBeUndefined();
+    });
+
     it("should accept valid moujaName", () => {
       const { result } = renderHook(() => useMoujaForm(mockProps));
 

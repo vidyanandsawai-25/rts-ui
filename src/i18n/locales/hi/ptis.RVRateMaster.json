@@ -42,7 +42,8 @@
     "deleteRates": "दरें हटाएं",
     "downloadTemplate": "टेम्पलेट डाउनलोड करें",
     "uploadExcel": "एक्सेल अपलोड करें",
-    "configureUseTypes": "उपयोग प्रकार कॉन्फ़िगर करें"
+    "configureUseTypes": "उपयोग प्रकार कॉन्फ़िगर करें",
+    "generateRateMatrix": "दर मैट्रिक्स उत्पन्न करें"
   },
   "messages": {
     "csvOnly": "कृपया केवल वैध CSV फ़ाइल अपलोड करें। Excel (.xlsx) फ़ाइलें समर्थित नहीं हैं।",
@@ -89,7 +90,7 @@
     "validationSelectValidFinanceYear": "कृपया वैध वित्तीय वर्ष चुनें",
     "validationEnterRateValue": "कृपया कम से कम एक दर मान दर्ज करें",
     "validationDeleteRecordsFirst": "पहले {year} वित्तीय वर्ष के रिकॉर्ड हटाएं, और फिर अन्य वर्ष के लिए दरें बनाने के लिए आगे बढ़ें।",
-    "validationFetchUpdateFailed": "अपडेट के लिए दरें प्राप्त करने में विफल",
+    "validationFetchUpdateFailed": "इस संयोजन के लिए - दर अनुभाग, उपयोग समूह और वर्ष श्रेणी के लिए दरें मौजूद नहीं हैं। कृपया पहले दरें जोड़ें और फिर अपडेट करें।",
     "noRatesToUpdate": "अपडेट करने के लिए कोई दर मान कॉन्फ़िगर नहीं है। कृपया पहले दर मान दर्ज करें।",
     "validationDownloadTemplateFailed": "टेम्पलेट डाउनलोड करने में विफल",
     "validationUploadValidFile": "कृपया एक मान्य CSV या Excel फ़ाइल अपलोड करें",
@@ -99,12 +100,18 @@
     "validationFileEmpty": "फ़ाइल खाली या अवैध है",
     "validationParseFailed": "फ़ाइल पार्स करने में विफल। कृपया प्रारूप की जाँच करें।",
     "validationReadFileFailed": "फ़ाइल पढ़ने में विफल",
+    "validationCorrectTemplate": "कृपया सही एक्सेल टेम्पलेट अपलोड करें",
+    "confirmCloseTitle": "क्या आप दरें जोड़ना जारी रखना चाहते हैं?",
+    "confirmCloseConfirm": "जारी रखें",
+    "confirmCloseCancel": "रद्द करें",
     "noRatesAvailable": "कोई दरें उपलब्ध नहीं हैं",
     "noRatesMatch": "चयनित फिल्टर से कोई डेटा मेल नहीं खाता। कृपया अपने मानदंड समायोजित करें या नई दरें उत्पन्न करें।",
     "rateExceedsMaximum": "दर मूल्य {max} से अधिक नहीं हो सकता। कृपया एक वैध दर दर्ज करें।",
     "rateValueInvalid": "दर मूल्य वैध होना चाहिए। कृपया एक वैध दर मूल्य दर्ज करें।",
     "cannotChangeConfiguredValue": "कॉन्फ़िगर किया गया मान बदलना संभव नहीं है। कृपया नीति कॉन्फ़िगरेशन में अपडेट करें।",
-    "rateFrequencyMismatch": "RateMonthlyOrYearly नीति के लिए दर आवृत्ति बेमेल.:-नीति {configured} के रूप में कॉन्फ़िगर की गई है, लेकिन वर्तमान दरें {existing} के रूप में दर्ज हैं। कृपया नीति कॉन्फ़िगरेशन अपडेट करें या नई दरें कॉन्फ़िगर करने से पहले मौजूदा दरें हटाएं।"
+    "rateFrequencyMismatch": "RateMonthlyOrYearly नीति के लिए दर आवृत्ति बेमेल.:-नीति {configured} के रूप में कॉन्फ़िगर की गई है, लेकिन वर्तमान दरें {existing} के रूप में दर्ज हैं। कृपया नीति कॉन्फ़िगरेशन अपडेट करें या नई दरें कॉन्फ़िगर करने से पहले मौजूदा दरें हटाएं।",
+    "multipliersCleared": "गुणक हटा दिए गए। केवल चयनित उपयोग समूह प्रदर्शित हो रहा है।",
+    "multiplierConflictRemovedSuccess": "{removed} के लिए परस्पर विरोधी गुणक हटा दिए गए। {groups} के लिए गुणक जोड़ दिए गए।"
   },
   "sections": {
     "copyRatesTitle": "दरें कॉपी करें",
@@ -149,7 +156,9 @@
     "configureUseTypeTitle": "उपयोग प्रकार कॉन्फ़िगर करें",
     "configureUseTypeDescription": "क्या आप OP, पार्किंग श्रेणी वाले उपयोग प्रकार के लिए विभिन्न उपयोग समूह कॉन्फ़िगर करना चाहते हैं?",
     "confirmYes": "हाँ",
-    "confirmNo": "नहीं"
+    "confirmNo": "नहीं",
+    "confirmMultiplierUpdateTitle": "गुणक अद्यतन की पुष्टि करें",
+    "confirmMultiplierUpdateDescription": "गुणक वाले उपयोग समूहों के लिए दरें पहले से मौजूद हैं -({groups}), क्या आप मौजूदा दरों को अपडेट करना चाहते हैं?"
   },
   "configureRates": {
     "title": "उपयोग समूह कॉन्फ़िगर करें",

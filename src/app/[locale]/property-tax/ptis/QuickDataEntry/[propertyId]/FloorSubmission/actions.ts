@@ -20,6 +20,8 @@ import {
     saveRenterDetails,
     updateRenterDetails,
     deleteRenterDetails,
+    deleteRenterDetailsRecord,
+    deleteRenterMastRecord,
     applyDataEntrySameAs,
     type ApplyDataEntrySameAsPayload,
     type ApplyDataEntrySameAsResponse,
@@ -255,6 +257,38 @@ export const deleteFloorSubmissionNoRedirectAction = async (submissionId: number
         return { success: true, data: undefined };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : "quickDataEntry.floorSubmission.errors.deleteFailed" };
+    }
+};
+
+/**
+ * Deletes a RenterDetails record by ID.
+ * Endpoint: DELETE /api/RenterDetails/{id}
+ */
+export const deleteRenterDetailsAction = async (id: number | string, locale: string = "en", propertyId?: string | number): Promise<ActionResult<unknown>> => {
+    try {
+        const data = await deleteRenterDetailsRecord(id);
+        if (locale) {
+            revalidatePath(getRevalidatePath(locale, propertyId), "page");
+        }
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : "quickDataEntry.floorSubmission.errors.deleteRenterDetailsFailed" };
+    }
+};
+
+/**
+ * Deletes a RenterMast record by ID.
+ * Endpoint: DELETE /api/RenterMast/{id}
+ */
+export const deleteRenterMastAction = async (id: number | string, locale: string = "en", propertyId?: string | number): Promise<ActionResult<unknown>> => {
+    try {
+        const data = await deleteRenterMastRecord(id);
+        if (locale) {
+            revalidatePath(getRevalidatePath(locale, propertyId), "page");
+        }
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : "quickDataEntry.floorSubmission.errors.deleteRenterMastFailed" };
     }
 };
 

@@ -17,6 +17,7 @@ export interface TextAreaProps
   error?: boolean;
   errorMessage?: string;
   showCharCount?: boolean;
+  charCountLabel?: string;
 }
 /**
  * TextArea component for multi-line text input in forms.
@@ -38,6 +39,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
       error,
       errorMessage,
       showCharCount,
+      charCountLabel,
       maxLength,
       value,
       defaultValue,
@@ -130,8 +132,10 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           )}
 
           {showCharCount && (
-            <p className="text-xs text-gray-500 ml-auto">
-              {maxLength ? `${currentLength}/${maxLength}` : currentLength}
+            <p className={cn("text-xs ml-auto", maxLength && currentLength >= maxLength ? "text-amber-600 font-semibold" : "text-gray-500")}>
+              {maxLength
+                ? `${currentLength} / ${maxLength}${charCountLabel ? ` ${charCountLabel}` : ''}`
+                : `${currentLength}${charCountLabel ? ` ${charCountLabel}` : ''}`}
             </p>
           )}
         </div>

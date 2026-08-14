@@ -76,9 +76,12 @@ export function buildPropertySearchPayload(
     Number.isFinite(propertyAssessmentStatusId) &&
     propertyAssessmentStatusId > 0;
 
+  const workflowStageId = parseInt(searchCriteria.typeFilter, 10);
+
   const payload: PropertySearchCriteriaPayload = {
     zoneId: searchCriteria.zoneId || undefined,
     wardId: searchCriteria.wardId || undefined,
+    workflowStageId: Number.isFinite(workflowStageId) && workflowStageId > 0 ? workflowStageId : undefined,
     dashboardFilter: resolveDashboardFilter(
       selectedStatus,
       searchCriteria.typeFilter,

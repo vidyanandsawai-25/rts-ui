@@ -8,9 +8,11 @@
     },
     "tabs": {
       "updateFields": "फील्ड अपडेट करा",
-      "fieldRegistry": "FIELD REGISTRY",
+      "fieldRegistry": "फील्ड रजिस्ट्री",
       "excelUpload": "एक्सेल अपलोड",
-      "jobsAudit": "जॉब्स आणि ऑडिट"
+      "jobsAudit": "जॉब्स आणि ऑडिट",
+      "auditMonitor": "ऑडिट आणि मॉनिटर",
+      "excelupload": "एक्सेल अपलोड"
     },
     "propertyCriteria": {
       "title": "मालमत्ता निकष निवडा",
@@ -35,7 +37,8 @@
       "validationReady": "पडताळणीसाठी तयार",
       "fieldsSelected": "निवडलेली फील्ड",
       "matchedProperties": "जुळलेल्या मालमत्ता",
-      "validationSummary": "{fields} फील्ड निवडली असून {properties} जुळलेल्या मालमत्ता आहेत."
+      "validationSummary": "{fields} फील्ड निवडली असून {properties} जुळलेल्या मालमत्ता आहेत.",
+      "fieldRequired": "{field} आवश्यक आहे"
     },
     "menu": {
       "title": "अपडेट करण्यासाठी फील्ड निवडा",
@@ -43,7 +46,7 @@
     },
     "filter": {
       "title": "मालमत्ता फिल्टर",
-      "zoneNumber": "झोन क्रमांक",
+      "zoneNumber": "झोन नंबर",
       "selectZone": "झोन निवडा",
       "wardNumber": "प्रभाग क्रमांक",
       "selectWard": "प्रभाग निवडा",
@@ -70,7 +73,8 @@
       "enabledFieldList": "सक्षम फील्ड सूची",
       "available": "उपलब्ध",
       "approval": "मंजुरी",
-      "noApproval": "कोणतीही मंजुरी नाही"
+      "noApproval": "कोणतीही मंजुरी नाही",
+      "selected": "निवडलेले:"
     },
     "preview": {
       "title": "पूर्वावलोकन यादी",
@@ -79,13 +83,15 @@
       "selectFilters": "मालमत्ता लोड करण्यासाठी फिल्टर लागू करा",
       "loading": "मालमत्ता लोड होत आहे...",
       "selectAll": "सर्व निवडा",
+      "selectRow": "मालमत्ता {id} निवडा",
       "property": "मालमत्ता",
       "properties": "मालमत्ता",
       "selected": "निवडली",
       "showing": "दाखवत आहे",
       "of": "च्या",
       "entries": "नोंदी",
-      "searchPlaceholder": "मालमत्ता शोधा..."
+      "searchPlaceholder": "मालमत्ता क्र. किंवा विभाजन क्र. ने शोधा...",
+      "fetchingAllPropertiesForUpdate": "अद्यतनासाठी सर्व मालमत्ता प्राप्त करत आहे..."
     },
     "columns": {
       "wardNo": "वॉर्ड क्र.",
@@ -101,7 +107,7 @@
       "clear": "साफ करा",
       "updating": "अपडेट होत आहे...",
       "selectMenuPrompt": "डाव्या पॅनेलमधून अपडेट करण्यासाठी फील्ड निवडा",
-      "noFields": "या अपडेट प्रकारासाठी कोणतेही फील्ड कॉन्फिगर केलेले नाही"
+      "noFields": "या अपडेट प्रकारासाठी कोणतेही फील्ड कॉन्फिगर केलेले नाही. कृपया फील्ड रजिस्ट्रीमधून एखादे फील्ड सक्रिय करा."
     },
     "fieldRegistry": {
       "title": "अधिकृत वापरकर्ता वर्कफ्लो",
@@ -111,7 +117,7 @@
         "title": "डेटाबेसमधून फील्ड जोडा",
         "subtitle": "अधिकृत वापरकर्ता रजिस्ट्रीमध्ये डेटाबेस फील्ड जोडू शकतो, वापरकर्ता-दर्शनी नाव परिभाषित करू शकतो आणि नंतर ते सक्रिय करू शकतो.",
         "sourceModule": "स्रोत मॉड्यूल",
-        "sourceTable": "स्रोत टेबल",
+        "sourceTable": "स्रोताचे नाव",
         "databaseColumn": "डेटाबेस कॉलम",
         "userFacingName": "वापरकर्ता-दर्शनी फील्ड नाव",
         "fieldType": "फील्ड प्रकार",
@@ -124,30 +130,49 @@
         "saveFields": "फील्ड जतन करा",
         "selectSchema": "स्कीमा निवडा",
         "selectTable": "टेबल निवडा",
-        "updateCode": "अपडेट कोड",
+        "updateCode": "अपडेटचे नाव",
         "updateNameEnglish": "अपडेट नाव (इंग्रजी)",
+        "updateNamePlaceholder": "उदा., अपडेट नाव",
         "updateNameMarathi": "अपडेट नाव (मराठी)",
         "referenceTableName": "संदर्भ टेबल नाव",
-        "sequenceNo": "अनुक्रम क्र.",
-        "description": "वर्णन",
+        "displaySequence": "डिस्प्ले अनुक्रम",
+        "description": "अद्यतनाचे उद्दिष्ट",
         "category": "श्रेणी",
         "selectCategory": "श्रेणी निवडा",
         "fieldConfiguration": "फील्ड कॉन्फिगरेशन",
         "fieldName": "फील्ड नाव",
-        "displayName": "दर्शविलेले नाव",
-        "displayNameMarathi": "दर्शविलेले नाव (मराठी)",
+        "selectFieldName": "फील्ड नाव निवडा",
+        "selectModuleAndTableFirst": "प्रथम मॉड्यूल आणि टेबल निवडा",
+        "noColumnsAvailable": "पर्याय उपलब्ध नाहीत",
+        "displayName": "वापरकर्ता-दर्शनी फील्ड नाव",
+        "displayNameMarathi": "वापरकर्ता-दर्शनी फील्ड नाव (स्वयंचलित)",
         "controlType": "नियंत्रण प्रकार",
         "selectControlType": "नियंत्रण प्रकार निवडा",
         "dataType": "डेटा प्रकार",
         "selectDataType": "डेटा प्रकार निवडा",
         "placeholder": "प्लेसहोल्डर",
         "maxLength": "कमाल लांबी",
-        "isApprovalRequired": "मंजुरी आवश्यक आहे का"
+        "isApprovalRequired": "मंजुरी आवश्यक आहे",
+        "isRequired": "आवश्यक",
+        "isActive": "सक्रिय आहे"
+      },
+      "categories": {
+        "allCategories": "सर्व श्रेणी",
+        "propertyIdentity": "मालमत्ता ओळख",
+        "location": "स्थान",
+        "ownerContact": "मालक संपर्क",
+        "ownerDetails": "मालक तपशील",
+        "occupierDetails": "भोगवटादार तपशील",
+        "buildingDetails": "इमारत तपशील",
+        "assessment": "आकारणी",
+        "taxDetails": "कर तपशील",
+        "collection": "वसुली",
+        "notice": "नोटीस"
       },
       "filters": {
         "category": "श्रेणी",
         "status": "स्थिती",
-        "searchPlaceholder": "फील्ड / डेटाबेस नाव शोधा",
+        "searchPlaceholder": "फील्ड / अपडेट नाव शोधा",
         "allCategories": "सर्व श्रेणी",
         "active": "सक्रिय",
         "inactive": "निष्क्रिय",
@@ -160,12 +185,25 @@
         "approvalRequired": "मंजुरी आवश्यक"
       },
       "table": {
+        "updateName": "अपडेट नाव",
         "fieldName": "फील्ड नाव",
+        "action": "कृती",
         "active": "सक्रिय"
       },
       "emptyState": {
         "title": "अद्याप कोणतीही फील्ड नोंदणीकृत नाही",
         "description": "डेटाबेसमधून फील्ड जोडण्यासाठी वरील फॉर्म वापरा"
+      },
+      "editDrawer": {
+        "title": "फील्ड रजिस्ट्री संपादित करा",
+        "updateFieldsBtn": "फील्ड अपडेट करा",
+        "updateName": "अपडेट नाव",
+        "englishNamePlaceholder": "इंग्रजी नाव",
+        "fieldConfigurations": "फील्ड कॉन्फिगरेशन",
+        "fillRequiredFieldsMsg": "कृपया सर्व आवश्यक मास्टर फील्ड भरा",
+        "selectFieldNameMsg": "कृपया सर्व कॉन्फिगरेशनसाठी फील्ड नाव निवडा",
+        "updateSuccessMsg": "फील्ड रजिस्ट्री यशस्वीरित्या अपडेट केली!",
+        "updateFailedMsg": "फील्ड रजिस्ट्री अपडेट करण्यात अयशस्वी"
       }
     },
     "buttons": {
@@ -173,7 +211,8 @@
       "export": "निर्यात करा",
       "backToPTIS": "पीटीआयएस वर परत जा",
       "uploadExcel": "एक्सेल अपलोड करा",
-      "downloadExcel": "एक्सेल डाउनलोड करा"
+      "downloadExcel": "एक्सेल डाउनलोड करा",
+      "guideline": "मार्गदर्शक तत्त्वे"
     },
     "messages": {
       "fetchMenuFailed": "अपडेट पर्याय लोड करण्यात अयशस्वी",
@@ -198,11 +237,34 @@
       "invalidRange": "मालमत्ता क्र. पासून, मालमत्ता क्र. पर्यंत पेक्षा कमी किंवा समान असणे आवश्यक आहे",
       "noPropertiesToExport": "निर्यात करण्यासाठी कोणतीही मालमत्ता नाही",
       "exportSuccess": "यशस्वीरित्या निर्यात केले",
+      "exportFailed": "निर्यात अयशस्वी झाले",
       "somethingWrong": "काहीतरी चुकले. कृपया पुन्हा प्रयत्न करा.",
       "configLoadFailed": "कॉन्फिगरेशन लोड करण्यात अयशस्वी",
       "propertiesLoaded": "{count} मालमत्ता यशस्वीरित्या लोड झाल्या",
       "partialUpdate": "{success} मालमत्ता अपडेट झाल्या, {failed} अयशस्वी",
-      "noPropertiesFound": "निवडलेल्या फिल्टरसाठी कोणतीही मालमत्ता आढळली नाही"
+      "noPropertiesFound": "निवडलेल्या फिल्टरसाठी कोणतीही मालमत्ता आढळली नाही",
+      "cannotDeselectIndividual": "'सर्व निवडा' सक्रिय असताना व्यक्तिगत रेकॉर्ड्स अनिवडण्याची अनुमती नाही. कृपया प्रथम निवड पुसून टाका.",
+      "invalidFormat": "काही फील्डमध्ये अवैध स्वरूप",
+      "fetchingAllProperties": "अपडेटसाठी सर्व मालमत्ता प्राप्त करत आहे...",
+      "missingWardOrField": "वॉर्ड आयडी किंवा सक्षम फील्ड निवड गहाळ आहे",
+      "downloadingExcel": "एक्सेल फाईल डाउनलोड होत आहे...",
+      "excelDownloadSuccess": "एक्सेल फाईल यशस्वीरित्या डाउनलोड झाली!",
+      "excelExportFailed": "एक्सेल निर्यात अयशस्वी झाले",
+      "selectEnabledFieldFirst": "कृपया प्रथम एक सक्षम फील्ड निवडा",
+      "uploadingExcel": "एक्सेल फाईल अपलोड आणि प्रक्रिया केली जात आहे...",
+      "excelProcessSuccess": "एक्सेल यशस्वीरित्या अपलोड आणि प्रक्रिया केले!",
+      "definitionAlreadyExists": "या नावाने एक बल्क अपडेट व्याख्या आधीपासून अस्तित्वात आहे.",
+      "pleaseSelectField": "कृपया प्रथम एक फील्ड निवडा.",
+      "noDataRows": "अपलोड केलेल्या फाईलमध्ये कोणतीही डेटा पंक्ती नाही किंवा ती निवडलेल्या फील्डशी जुळत नाही.",
+      "loadingTabData": "टॅब डेटा लोड होत आहे...",
+      "downloadingTemplate": "टेम्पलेट डाउनलोड होत आहे...",
+      "uploadFailed": "एक्सेल अपलोड करण्यात अयशस्वी",
+      "fieldSavedSuccessfully": "फील्ड यशस्वीरित्या जतन केले!",
+      "saveFailed": "फील्ड जतन करण्यात अयशस्वी",
+      "selectAtLeastOneFieldName": "कृपया किमान एक फील्ड नाव निवडा",
+      "statusUpdateNotAvailable": "स्थिती अद्यतन कृती उपलब्ध नाही",
+      "statusSetActive": "{name} सक्रिय वर सेट केले",
+      "statusSetInactive": "{name} निष्क्रिय वर सेट केले"
     },
     "status": {
       "active": "सक्रिय",
@@ -218,6 +280,97 @@
       "errorId": "त्रुटी आयडी: {id}",
       "goHome": "होमवर जा",
       "tryAgain": "पुन्हा प्रयत्न करा"
+    },
+    "guideline": {
+      "title": "ही स्क्रीन कशी काम करते",
+      "updateFieldsLabel": "फील्ड अपडेट करा",
+      "updateFieldsDesc": "निकष निवडा आणि सक्षम फील्ड अपडेट करा.",
+      "fieldRegistryLabel": "फील्ड रजिस्ट्री",
+      "fieldRegistryDesc": "प्रशासक उपलब्ध फील्ड कॉन्फिगर करतो.",
+      "excelUploadLabel": "एक्सेल अपलोड",
+      "excelUploadDesc": "मालमत्ता-वार मूल्ये अपलोड करा.",
+      "auditMonitorLabel": "ऑडिट आणि मॉनिटर",
+      "auditMonitorDesc": "बल्क जॉब्स आणि क्रियाकलाप लॉगचे निरीक्षण करा।"
+    },
+    "jobsAudit": {
+      "title": "ऑडिट आणि ऍक्सेस मॉनिटर",
+      "description": "बॅकग्राउंड अपडेट जॉब्सची अंमलबजावणी आणि फील्ड-स्तरीय वापरकर्ता प्रवेशाचे निरीक्षण करा.",
+      "exportAudit": "ऑडिट निर्यात करा",
+      "stats": {
+        "totalRecords": "एकूण नोंदी",
+        "totalJobs": "एकूण नोकऱ्या",
+        "completed": "पूर्ण झाले",
+        "running": "चालू आहे",
+        "failed": "अयशस्वी / त्रुटी",
+        "approvalPending": "मंजुरी प्रलंबित"
+      },
+      "filters": {
+        "user": "वापरकर्ता",
+        "allUsers": "सर्व वापरकर्ते",
+        "searchPlaceholder": "फील्ड, मालमत्ता, वापरकर्ता, टिप्पण्या शोधा"
+      },
+      "columns": {
+        "id": "क्रियाकलाप आयडी",
+        "date": "तारीख आणि वेळ",
+        "wardNo": "प्रभाग क्र",
+        "propertyNo": "मालमत्ता क्र",
+        "updatedColumns": "अद्यतनित स्तंभ",
+        "username": "वापरकर्ता",
+        "remarks": "टिप्पण्या",
+        "ipAddress": "आयपी / डिव्हाइस",
+        "action": "क्रिया",
+        "view": "पहा"
+      },
+      "excelUpload": {
+        "validations": {
+          "selectFieldFirst": "कृपया प्रथम टेम्पलेट स्तंभ (फील्ड) निवडा.",
+          "chooseFileFirst": "कृपया प्रथम एक्सेल फाईल निवडा.",
+          "clearFileBeforeSwitch": "फील्ड बदलण्यापूर्वी कृपया निवडलेली एक्सेल फाईल व्हॅलिडेट करा किंवा साफ करा.",
+          "uploading": "एक्सेल अपलोड आणि व्हॅलिडेट करत आहे...",
+          "success": "{count} मालमत्ता यशस्वीरित्या अपडेट झाल्या",
+          "failed": "{count} मालमत्ता अपडेट करण्यात अयशस्वी",
+          "downloadSuccess": "टेम्पलेट यशस्वीरित्या डाउनलोड केले",
+          "downloadFailed": "टेम्पलेट डाउनलोड करण्यात अयशस्वी"
+        }
+      },
+      "modal": {
+        "updateName": "अद्यतन नाव",
+        "updatedBy": "यांनी अपडेट केले",
+        "date": "तारीख आणि वेळ",
+        "ipDevice": "आयपी / डिव्हाइस",
+        "remarks": "टिप्पण्या / त्रुटी",
+        "field": "फील्ड",
+        "oldValue": "जुने मूल्य",
+        "newValue": "नवीन मूल्य",
+        "updateDetailsPrefix": "अद्यतन तपशील"
+      }
+    },
+    "excelUpload": {
+      "title": "एक्सेल अपलोड",
+      "subtitle": "जेव्हा प्रत्येक मालमत्तेसाठी भिन्न मूल्य आवश्यक असते तेव्हा मालमत्ता-निहाय मूल्य अपलोड करा.",
+      "bulkUploadBadge": "बल्क अपलोड",
+      "infoAlertTitle": "एक्सेल अपलोड फील्ड रजिस्ट्रीमधून फक्त सक्रिय फील्ड वापरतो.",
+      "infoAlertDesc": "सक्षम फील्ड निवडल्यानंतर टेम्पलेट डाउनलोड करा. आयात करण्यापूर्वी सिस्टम मालमत्ता क्रमांक, फील्ड प्रवेश, मूल्य स्वरूप आणि मंजुरीची आवश्यकता प्रमाणित करते.",
+      "actionSectionTitle": "फील्ड अपडेटसाठी एक्सेल अपलोड",
+      "actionSectionDesc": "जेव्हा प्रत्येक मालमत्तेची भिन्न मूल्ये असतील तेव्हा हे वापरा. सक्रिय फील्डवरून टेम्पलेट डाउनलोड करा, एक्सेल अपलोड करा आणि अपडेट करण्यापूर्वी पंक्ती प्रमाणित करा.",
+      "viewGuidelinesBtn": "मार्गदर्शक तत्त्वे पहा",
+      "downloadTemplateBtn": "टेम्पलेट डाउनलोड करा",
+      "chooseExcelFileBtn": "एक्सेल फाईल निवडा",
+      "validateExcelBtn": "एक्सेल प्रमाणित करा",
+      "templateColumnsTitle": "टेम्पलेट स्तंभ",
+      "previewTitle": "पात्रता पडताळणी पूर्वावलोकन",
+      "previewDesc": "एक्सेल स्प्रेडशीटमधून आयात केलेल्या स्तंभ आणि पंक्तींचे पुनरावलोकन करा",
+      "guidelineModalTitle": "एक्सेल अपलोड मार्गदर्शक तत्त्वे",
+      "guidelineModalIntro": "कृपया एक्सेलद्वारे मालमत्ता अपलोड करताना या मार्गदर्शक तत्त्वांचे अनुसरण करा:",
+      "batchProcessingTitle": "बॅच प्रक्रिया:",
+      "batchProcessingDesc": "विभाजन क्रमांक असलेल्या मालमत्ता आणि विभाजन क्रमांक नसलेल्या मालमत्ता वेगवेगळ्या बॅचमध्ये अपलोड करा.",
+      "consistencyTitle": "सुसंगतता:",
+      "consistencyDesc": "पडताळणी त्रुटी टाळण्यासाठी एकाच एक्सेल फाईलमध्ये विभाजन क्रमांक असलेल्या आणि नसलेल्या मालमत्ता मिसळू नका.",
+      "emptyData": "कोणताही डेटा उपलब्ध नाही",
+      "loadingData": "डेटा लोड होत आहे...",
+      "inactiveStatus": "निष्क्रिय",
+      "noFileChosen": "कोणतीही फाईल निवडलेली नाही",
+      "okButton": "ठीक आहे"
     }
   }
 }

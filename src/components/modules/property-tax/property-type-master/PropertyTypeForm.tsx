@@ -167,6 +167,8 @@ export default function PropertyTypeForm({
               showError={showError}
               categories={categories}
               t={t}
+              isActive={isActive}
+              isEdit={isEdit}
             />
             <ValidationSection tCommon={tCommon} />
           </div>
@@ -176,6 +178,7 @@ export default function PropertyTypeForm({
             typeOfUseList={typeOfUseList}
             selectedTypeOfUseIds={selectedTypeOfUseIds}
             initialTypeOfUseIds={initialIds}
+            selectedTypeValue={formData.type}
             onToggle={toggleTypeOfUse}
             onSelectAll={handleSelectAll}
             onClearAll={handleClearAll}

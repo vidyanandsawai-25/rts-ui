@@ -26,7 +26,7 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
   
   // For zone pagination: pageSize refers to number of ZONES, not records
   const zonePage = Number(params?.page) || 1;
-  const zonePageSize = Number(params?.pageSize) || 10;
+  const zonePageSize = Number(params?.pageSize) || 50;
 
   // Fetch all master data in one call (for mapping, fetch all zones, not just paginated)
   const [

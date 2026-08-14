@@ -8,7 +8,7 @@ import { BuildingDetailPane } from "./BuildingDetailPane";
 import { ValidationErrorBanner } from "./ValidationErrorBanner";
 import { mapTypeNameToKey } from "@/lib/utils/building-helpers";
 
-import { SaveDetailsConfirmModal } from "./SaveDetailsConfirmModal";
+import { SaveDetailsConfirmModal, formatDateToDDMMYYYY } from "./SaveDetailsConfirmModal";
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { AlertCircle } from "lucide-react";
@@ -236,30 +236,11 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
 
                 const detailsList: string[] = [];
                 if (hasNum) detailsList.push(`${t("building.number") || "Number"}: ${cert.number}`);
-                if (hasDt) detailsList.push(`${t("building.date") || "Date"}: ${cert.date}`);
+                if (hasDt) detailsList.push(`${t("building.date") || "Date"}: ${formatDateToDDMMYYYY(cert.date)}`);
 
                 confirm({
                     title: t("building.confirmDeleteCertificateTitle") || "Delete Certificate & Data",
-                    description: (
-                        <span className="flex flex-col gap-1 items-center text-center -my-1">
-                            <span className="text-xs text-gray-700 font-medium leading-snug">
-                                {t("building.confirmToggleOffWarning") || "You have an attached certificate with details:"}
-                            </span>
-                            <span className="bg-blue-50 border border-blue-200 rounded-xl py-1.5 px-3 text-center my-0.5 shadow-2xs w-full max-w-[340px] flex flex-col gap-0.5 items-center">
-                                <span className="font-bold text-blue-950 block text-xs leading-tight">
-                                    {displayName}
-                                </span>
-                                {detailsList.map((detail, idx) => (
-                                    <span key={idx} className="text-xs text-blue-800 font-semibold block leading-tight">
-                                        {detail}
-                                    </span>
-                                ))}
-                            </span>
-                            <span className="text-xs text-gray-700 font-medium leading-snug">
-                                {t("building.confirmToggleOffDesc") || "Disabling this will delete the certificate data and attachment. Do you want to delete this certificate?"}
-                            </span>
-                        </span>
-                    ) as unknown as string,
+                    description: `${t("building.confirmToggleOffWarning") || "You have an attached certificate with details:"}\n${displayName}${detailsList.length > 0 ? ` (${detailsList.join(", ")})` : ""}\n\n${t("building.confirmToggleOffDesc") || "Disabling this will delete the certificate data and attachment. Do you want to delete this certificate?"}`,
                     confirmText: t("building.confirmDeleteCertificateOk") || "Yes, Delete",
                     cancelText: t("building.confirmDeleteCertificateCancel") || "No, Cancel",
                     variant: "delete",
@@ -362,7 +343,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         setConfirmData({
             certificateName: displayName || "",
             certificateNumber: activeCert.number || "",
-            certificateDate: activeCert.date || "",
+            certificateDate: formatDateToDDMMYYYY(activeCert.date),
             targetFloors,
             isPropertyWideGlobal,
             onConfirm: onConfirmAction

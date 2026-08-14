@@ -46,14 +46,18 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
         return cleanOpt === desc || (code && cleanOpt === `${code} - ${desc}`) || (id && cleanOpt === `${id} - ${desc}`);
       });
       if (!item) return false;
-      // Only filter by category for OpenPlot; Construction shows all
+      // OpenPlot: only show categories 2 & 3
       if (selectedFloorType === 'OpenPlot') {
         const itemCategoryId = item.typeOfUseCategoryId !== undefined && item.typeOfUseCategoryId !== null
           ? Number(item.typeOfUseCategoryId)
           : null;
         return itemCategoryId === 2 || itemCategoryId === 3;
       }
-      return true;
+      // Construction: filter out Open Plot specific categories (categories 3 & 4)
+      const catId = item.typeOfUseCategoryId !== undefined && item.typeOfUseCategoryId !== null
+        ? Number(item.typeOfUseCategoryId)
+        : null;
+      return catId !== 2 && catId !== 3 && catId !== 4;
     });
   }, [useOptions, useLookup, selectedFloorType]);
 
@@ -77,9 +81,23 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
                   'constructionCode',
                   editingFloorForm.constructionTypeId,
                   getConstructionDescription
-                )
+                ).filter(opt => {
+                  if (selectedFloorType === 'Construction') {
+                    const lblStr = String(opt.label).toLowerCase();
+                    const valStr = String(opt.value).toLowerCase();
+                    return !lblStr.includes('open plot') && valStr !== '11';
+                  }
+                  return true;
+                })
               ]}
-              value={String(editingFloorForm.constructionTypeId ?? '')}
+              value={
+                selectedFloorType === 'Construction' &&
+                  (String(editingFloorForm.conTyp || '').toLowerCase().includes('open plot') ||
+                    String(editingFloorForm.constructionTypeDescription || '').toLowerCase().includes('open plot') ||
+                    String(editingFloorForm.constructionTypeId || '') === '11')
+                  ? ''
+                  : String(editingFloorForm.constructionTypeId ?? '')
+              }
               onChange={(_name, value) => {
                 const desc = getConstructionDescription(value, constructionLookup);
                 setEditingFloorForm((prev: FloorData) => ({
@@ -127,7 +145,12 @@ export const UsageSection: React.FC<UsageSectionProps & { selectedFloorType?: 'C
                 'description',
                 'typeOfUseCode',
                 editingFloorForm.typeOfUseId,
-                getUseDescription
+                (val: string, lookup: LookupData[]): string => {
+                  return (
+                    getUseDescription(val, lookup) ||
+                    String(editingFloorForm.use || editingFloorForm.usageDescription || editingFloorForm.typeOfUseDescription || '')
+                  );
+                }
               )
             ]}
             value={String(editingFloorForm.typeOfUseId ?? '')}

@@ -244,6 +244,7 @@ export interface RateFormProps {
     isConfigured: boolean;
   };
   isOpenPlot?: boolean;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 export interface RateMasterClientProps {

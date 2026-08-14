@@ -5,6 +5,7 @@ import { ToggleSwitch, ValidationMessage } from "@/components/common";
 import { cn } from "@/lib/utils/cn";
 
 interface StatusToggleSectionProps {
+  statusToggleRef?: React.RefObject<HTMLButtonElement | null>;
   isEdit: boolean;
   isActive: boolean;
   handleToggleStatus: () => void;
@@ -14,6 +15,7 @@ interface StatusToggleSectionProps {
 }
 
 export const StatusToggleSection = ({
+  statusToggleRef,
   isEdit,
   isActive,
   handleToggleStatus,
@@ -52,7 +54,7 @@ export const StatusToggleSection = ({
             </div>
           </div>
         </div>
-        <ToggleSwitch checked={isActive} onChange={handleToggleStatus} showPopup={false} />
+        <ToggleSwitch ref={statusToggleRef} checked={isActive} onChange={handleToggleStatus} showPopup={false} />
       </div>
       {error && <ValidationMessage message={error} visible={true} />}
     </div>

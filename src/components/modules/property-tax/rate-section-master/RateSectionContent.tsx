@@ -112,6 +112,8 @@ export default function RateSectionContent({
     params.delete("action");
     params.delete("addRateSection");
     params.set("zone", newRateId);
+    params.set("wardpage", "1");
+    params.delete("wardq");
     
     // Calculate the page where the new rate section will appear
     // New rate sections are added at the end (highest ID), so they'll be on the last page

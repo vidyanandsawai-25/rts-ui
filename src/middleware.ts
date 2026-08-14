@@ -62,13 +62,14 @@ export default function middleware(request: NextRequest) {
   const accessToken = request.cookies.get(AUTH_COOKIES.AUTH_TOKEN)?.value;
   const refreshToken = request.cookies.get(AUTH_COOKIES.REFRESH_TOKEN)?.value;
   const sessionExpiresAt = request.cookies.get(AUTH_COOKIES.SESSION_EXPIRES_AT)?.value;
+  const hasLoggedInCookie = request.cookies.get(AUTH_COOKIES.IS_LOGGED_IN)?.value === 'true';
   const sessionState = getSessionValidityFromTokens(
     accessToken,
     refreshToken,
     sessionExpiresAt
   );
   const isLoggedIn = sessionState === 'active';
-  const sessionExpired = sessionState === 'expired';
+  const sessionExpired = sessionState === 'expired' || hasLoggedInCookie;
 
   const isLoginRoute = pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
   const sessionExpiredLogin =

@@ -75,27 +75,36 @@ export function LeftPanel({
               {t("noRanges") || "No ranges available"}
             </div>
           ) : (
-            ranges.map((r) => (
-              <button
-                key={r.id}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onSelectRange(r.id);
-                }}
-                className={`w-full p-2 text-center rounded-lg border transition-all text-xs ${selectedRangeId === r.id
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                  : "bg-gray-50 text-gray-700 border-gray-100 hover:bg-gray-100"
+            ranges.map((r) => {
+              const now = new Date();
+              // Financial year starts in April (month index 3)
+              const currentYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+              const yearFrom = currentYear - r.min;
+              const yearTo = currentYear - r.max;
+              return (
+                <button
+                  key={r.id}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onSelectRange(r.id);
+                  }}
+                  className={`w-full p-2 text-center rounded-lg border transition-all text-xs flex flex-col items-center justify-center ${
+                    selectedRangeId === r.id
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                      : "bg-gray-50 text-gray-700 border-gray-100 hover:bg-gray-100"
                   }`}
-              >
-                <div className="font-semibold">{r.min} - {r.max}</div>
-              </button>
-            ))
+                >
+                  <div className="font-semibold">{r.min} - {r.max}</div>
+                  <div className="text-[10px] opacity-80 mt-0.5">({yearFrom}-{yearTo})</div>
+                </button>
+              );
+            })
           )}
         </div>
 
         <DeleteButton
-          onClick={(e) => {
+          onClick={(e) =>  {
             e.preventDefault();
             e.stopPropagation();
             onDeleteRange();

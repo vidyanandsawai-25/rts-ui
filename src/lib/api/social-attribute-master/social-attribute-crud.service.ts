@@ -135,6 +135,8 @@ export async function createSocialAttribute(data: SocialAttributeFormModel): Pro
       parentAttributeId: data.parentAttributeId != null ? Number(data.parentAttributeId) : null,
       isRequiredWhenParentTrue: Boolean(data.isRequiredWhenParentTrue),
       isDiscountApplicable: Boolean(data.isDiscountApplicable),
+      isPhotoRequired: Boolean(data.isPhotoRequired),
+      isDocumentRequired: Boolean(data.isDocumentRequired),
       isActive: data.isActive,
       createdBy: data.createdBy ?? 1,
     };
@@ -163,6 +165,8 @@ export async function updateSocialAttribute(data: SocialAttributeFormModel): Pro
       parentAttributeId: data.parentAttributeId != null ? Number(data.parentAttributeId) : null,
       isRequiredWhenParentTrue: Boolean(data.isRequiredWhenParentTrue),
       isDiscountApplicable: Boolean(data.isDiscountApplicable),
+      isPhotoRequired: Boolean(data.isPhotoRequired),
+      isDocumentRequired: Boolean(data.isDocumentRequired),
       isActive: data.isActive,
       updatedBy: data.updatedBy ?? 1,
     };

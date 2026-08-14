@@ -42,6 +42,7 @@ describe('InventoryCategory Server Actions', () => {
       const formData = new FormData();
       formData.append('code', 'CODE1');
       formData.append('name', 'Name 1');
+      formData.append('group', '1');
       formData.append('isActive', 'true');
 
       const result = await saveInventoryCategoryAction('', formData);
@@ -56,6 +57,7 @@ describe('InventoryCategory Server Actions', () => {
       const formData = new FormData();
       formData.append('code', 'CODE2');
       formData.append('name', 'Name 2');
+      formData.append('group', '1');
       formData.append('isActive', 'true');
 
       const result = await saveInventoryCategoryAction('10', formData);

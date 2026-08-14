@@ -16,6 +16,7 @@ import type { PagedResponse, ApartmentQCDetail } from '@/types/apartmentQC.types
 import type { RateableValueResponse } from '@/types/rateableValue.types';
 import type { CapitalValueResponse } from '@/types/capitalValue.types';
 import type { DualMethodResponse } from '@/types/dualMethod.types';
+import type { PropertyComparisonResponse } from '@/types/propertyComparison.types';
 import type {
   KYCDetailsData,
   SocietyDetailsData,
@@ -52,7 +53,8 @@ type ConcurrentResultsTuple = [
   { success: boolean; data?: { items?: PropertyRuleLogItem[] } } | null,
   WaybackRelease[] | null,
   ActionResult<TabHeaderInfoData> | null,
-  ActionResult<MappedPropertyItem[]> | null
+  ActionResult<MappedPropertyItem[]> | null,
+  ActionResult<PropertyComparisonResponse> | null
 ];
 
 
@@ -84,6 +86,7 @@ export async function mapPtisFetchResults({
   resolvedWardId: number | undefined;
   showFloorParam: boolean;
   showOldTaxParam: boolean;
+  showOldTaxInfo?: boolean;
   showMapDetailsParam: boolean;
   showDetailsParam: boolean;
   searchParams: Record<string, string | string[] | undefined>;
@@ -91,12 +94,12 @@ export async function mapPtisFetchResults({
   propertyIdParam: number | undefined;
   wardOptions: SearchSelectOption[];
 }) {
-  const results = detailResults.length > 0 ? detailResults : Array(18).fill(null);
+  const results = detailResults.length > 0 ? detailResults : Array(19).fill(null);
   const [
     aptData, rateableRes, capitalRes, kycResult, societyResult,
     buildingPermissionResult, oldDetailsResult, oldFloorResult, oldTaxesResult,
     discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes,
-    waybackReleasesRes, tabHeaderInfoResult, mappedPropertiesResult
+    waybackReleasesRes, tabHeaderInfoResult, mappedPropertiesResult, comparisonResult
   ] = results as unknown as ConcurrentResultsTuple;
 
   const emptyPaged: PagedResponse<ApartmentQCDetail> = { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false };
@@ -106,76 +109,117 @@ export async function mapPtisFetchResults({
     commercial: emptyPaged,
     residential: emptyPaged,
   };
-  const rateableResult = rateableRes;
-  const capitalResult = capitalRes;
+
+  const rawPropertyData = propertyListResult?.success && propertyListResult.data ? propertyListResult.data : [];
+  const propertyOptions = buildPropertyOptions(rawPropertyData);
 
   const { kycDetails, societyDetails, oldDetails, oldFloorTableData, oldTaxesData } = buildDetailsFromResults(
-    kycResult, societyResult, oldDetailsResult, oldFloorResult, oldTaxesResult
+    kycResult,
+    societyResult,
+    oldDetailsResult,
+    oldFloorResult,
+    oldTaxesResult
   );
+
   const buildingPermission = buildingPermissionResult?.success && buildingPermissionResult.data
-    ? { ...defaultBuildingPermission, ...buildingPermissionResult.data } : defaultBuildingPermission;
+    ? { ...defaultBuildingPermission, ...buildingPermissionResult.data }
+    : defaultBuildingPermission;
+
   const discountDetails = discountResult?.success && discountResult.data
-    ? { ...defaultDiscountData, ...discountResult.data } : defaultDiscountData;
-  const initialPhotoSlots = photoSlotsRes?.success && photoSlotsRes.data ? photoSlotsRes.data : [];
-  const initialPhotos = photosRes?.success && photosRes.data ? photosRes.data : [];
-  const constYear = propertyDetailsResult.success ? propertyDetailsResult.propertyDetails?.constructionYear : undefined;
-  const startYear = constYear && !isNaN(parseInt(constYear, 10)) ? Math.max(2015, parseInt(constYear, 10) - 1) : null;
-  const waybackReleases = startYear ? (waybackReleasesRes || []).filter((r: WaybackRelease) => r.year >= startYear) : (waybackReleasesRes || []);
-  const latStr = propertyDetailsResult.success ? propertyDetailsResult.propertyDetails?.latitude : undefined;
-  const latitude = latStr && Number.isFinite(parseFloat(latStr)) ? parseFloat(latStr) : undefined;
-  const lngStr = propertyDetailsResult.success ? propertyDetailsResult.propertyDetails?.longitude : undefined;
-  const longitude = lngStr && Number.isFinite(parseFloat(lngStr)) ? parseFloat(lngStr) : undefined;
+    ? { ...defaultDiscountData, ...discountResult.data }
+    : defaultDiscountData;
+
+  const initialPhotoSlots = photoSlotsRes?.success && Array.isArray(photoSlotsRes.data)
+    ? photoSlotsRes.data
+    : [];
+
+  const initialPhotos = photosRes?.success && Array.isArray(photosRes.data)
+    ? photosRes.data
+    : [];
+
+  const waybackReleases = Array.isArray(waybackReleasesRes) ? waybackReleasesRes : [];
+
+  const parseCoord = (val: unknown): number | undefined => {
+    if (typeof val === 'number' && Number.isFinite(val) && val !== 0) return val;
+    if (typeof val === 'string' && val.trim() !== '') {
+      const parsed = parseFloat(val);
+      if (Number.isFinite(parsed) && parsed !== 0) return parsed;
+    }
+    return undefined;
+  };
+
+  const searchLatParam = searchParams?.latitude ?? searchParams?.lat;
+  const searchLngParam = searchParams?.longitude ?? searchParams?.lng;
+
+  const rawPropObj = propertyDetailsResult?.propertyDetails as unknown as Record<string, unknown> | undefined;
+  const rawDataObj = (Array.isArray(rawPropertyData) ? rawPropertyData[0] : rawPropertyData) as unknown as Record<string, unknown> | undefined;
+
+  const latitude =
+    parseCoord(searchLatParam) ??
+    parseCoord(rawPropObj?.latitude) ??
+    parseCoord(rawPropObj?.Latitude) ??
+    parseCoord(rawDataObj?.latitude) ??
+    parseCoord(rawDataObj?.Latitude);
+
+  const longitude =
+    parseCoord(searchLngParam) ??
+    parseCoord(rawPropObj?.longitude) ??
+    parseCoord(rawPropObj?.Longitude) ??
+    parseCoord(rawDataObj?.longitude) ??
+    parseCoord(rawDataObj?.Longitude);
+
+  const mappedPropertiesData = mappedPropertiesResult?.success && Array.isArray(mappedPropertiesResult.data)
+    ? mappedPropertiesResult.data
+    : [];
+
+  const rateableResult = rateableRes ?? undefined;
+  const capitalResult = capitalRes ?? undefined;
+
   const dualSectionData = valuationTab === 'dual' && resolvedPropertyId
     ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails, rateableRes, capitalRes, dualResult)
     : undefined;
-  const mappedPropertiesData = mappedPropertiesResult?.success && Array.isArray(mappedPropertiesResult.data)
-    ? mappedPropertiesResult.data : [];
-  const taxDetails = taxDetailsRes || { rateableTaxDetails: undefined, capitalTaxDetails: undefined, rateableTaxError: undefined, capitalTaxError: undefined };
-  let rawPropertyData = propertyListResult?.success && propertyListResult.data ? propertyListResult.data : [];
 
-  if (propertyDetailsResult.success && propertyDetailsResult.propertyDetails && propertyDetailsResult.propertyId) {
-    const details = propertyDetailsResult.propertyDetails;
-    const exists = rawPropertyData.some(
-      (p) =>
-        p.propertyNo === details.propertyNo &&
-        normalizePartition(p.partitionNo) === normalizePartition(details.partitionNo)
-    );
-    if (!exists) {
-      rawPropertyData = [
-        {
-          propertyId: propertyDetailsResult.propertyId!,
-          propertyNo: details.propertyNo,
-          partitionNo: details.partitionNo || '',
-          upicId: details.upicId || '',
-          ownerName: details.ownerName || '',
-          address: '',
-          displayProperty: details.propertyNo,
-        },
-        ...rawPropertyData,
-      ];
-    }
-  }
+  const taxDetails = taxDetailsRes ?? {
+    rateableTaxDetails: null,
+    capitalTaxDetails: null,
+    rateableTaxError: undefined,
+    capitalTaxError: undefined,
+  };
 
-  const propertyOptions = buildPropertyOptions(rawPropertyData);
-
-  // URL Normalization check
   let shouldRedirect = false;
   let redirectUrl = '';
-  const hasFullParams = searchParams?.wardNo && searchParams?.propertyNo && searchParams?.wardId && searchParams?.propertyId;
 
-  if (propertyDetailsResult.success && propertyDetailsResult.propertyId && (!hasFullParams || !propertyIdParam)) {
+  const hasMissingParams = Boolean(resolvedPropertyId) && (!searchParams?.propertyNo || !searchParams?.wardNo);
+  const isIdMismatch = Boolean(resolvedPropertyId) && (!propertyIdParam || propertyIdParam !== resolvedPropertyId);
+
+  if (resolvedPropertyId && (isIdMismatch || hasMissingParams)) {
+    const matchedProp = rawPropertyData.find(p => p.propertyId === resolvedPropertyId);
+    const finalPropNo = matchedProp?.propertyNo || propertyDetailsResult.propertyDetails?.propertyNo;
+    const finalPartNo = matchedProp?.partitionNo ?? propertyDetailsResult.propertyDetails?.partitionNo;
+    const finalWardNo = propertyDetailsResult.wardNo || propertyDetailsResult.propertyDetails?.wardNo;
+    const finalWardId = resolvedWardId || propertyDetailsResult.wardId;
+
     const newParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(searchParams)) {
-      if (value == null) continue;
-      const values = Array.isArray(value) ? value : [value];
-      values.forEach((v) => newParams.append(key, v));
+    if (searchParams) {
+      Object.entries(searchParams).forEach(([k, v]) => {
+        if (typeof v === 'string') newParams.set(k, v);
+      });
     }
-    newParams.set('propertyId', propertyDetailsResult.propertyId.toString());
-    if (propertyDetailsResult.wardId) newParams.set('wardId', propertyDetailsResult.wardId.toString());
-    if (propertyDetailsResult.wardNo) newParams.set('wardNo', propertyDetailsResult.wardNo);
-    if (propertyDetailsResult.propertyDetails.propertyNo) newParams.set('propertyNo', propertyDetailsResult.propertyDetails.propertyNo);
-    const rawPart = propertyDetailsResult.propertyDetails.partitionNo;
-    newParams.set('partitionNo', rawPart && rawPart.trim() !== '' ? rawPart : '0');
+    newParams.set('propertyId', resolvedPropertyId.toString());
+
+    if (finalPropNo && !searchParams?.propertyNo) {
+      newParams.set('propertyNo', finalPropNo);
+    }
+    if (finalPartNo !== undefined && finalPartNo !== null && searchParams?.partitionNo === undefined) {
+      newParams.set('partitionNo', normalizePartition(finalPartNo));
+    }
+    if (finalWardNo && !searchParams?.wardNo) {
+      newParams.set('wardNo', finalWardNo);
+    }
+    if (finalWardId && !searchParams?.wardId) {
+      newParams.set('wardId', finalWardId.toString());
+    }
+
     shouldRedirect = true;
     redirectUrl = `/${locale}/property-tax/ptis?${newParams.toString()}`;
   }
@@ -201,6 +245,7 @@ export async function mapPtisFetchResults({
     apartmentData,
     rateableResult,
     capitalResult,
+    comparisonResult,
     dualSectionData,
     initialPhotoSlots,
     initialPhotos,

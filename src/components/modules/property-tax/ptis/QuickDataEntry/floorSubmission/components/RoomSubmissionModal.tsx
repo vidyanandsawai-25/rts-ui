@@ -81,13 +81,15 @@ export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps)
                 </Tooltip>
             )
         },
-        {
-            key: 'conYr',
-            label: t('roomSubmission.table.conYr'),
-            headerClassName: "text-blue-900 text-sm text-center",
-            cellClassName: "text-center",
-            render: (_, row) => <span className="text-sm">{row.conYr || row.constructionYear || '-'}</span>
-        },
+        ...(!isOpenPlot ? [
+            {
+                key: 'conYr',
+                label: t('roomSubmission.table.conYr'),
+                headerClassName: "text-blue-900 text-sm text-center",
+                cellClassName: "text-center",
+                render: (_: unknown, row: FloorData & Record<string, unknown>) => <span className="text-sm">{row.conYr || row.constructionYear || '-'}</span>
+            }
+        ] : []),
         {
             key: 'asstYr',
             label: t('roomSubmission.table.asstYr'),
@@ -175,7 +177,7 @@ export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps)
                 return <span className="text-sm">{area}</span>;
             }
         }
-    ], [areaUnit, t]);
+    ], [areaUnit, isOpenPlot, t]);
 
     const drawerTitle = (
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">

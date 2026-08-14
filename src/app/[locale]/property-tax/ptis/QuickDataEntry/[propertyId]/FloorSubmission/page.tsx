@@ -139,7 +139,7 @@ export default async function FloorSubmissionPage({
     ] = await Promise.all([
         (shouldLoadAll || asString(sp.loadFloor) === 'true') ? getFloorDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadConstruction) === 'true') ? getConstructionTypeDataAction() : Promise.resolve([]),
-        (shouldLoadAll || asString(sp.loadUsage) === 'true') ? getTypeOfUseDataAction(resolvedPropertyTypeId) : Promise.resolve([]),
+        getTypeOfUseDataAction(resolvedPropertyTypeId),
         // shouldLoadOpenPlotCategory ? getOpenPlotCategoryDataAction() : Promise.resolve([]),
         getOpenPlotCategoryDataAction(),
         (shouldLoadAll || asString(sp.loadSubFloor) === 'true') ? getSubFloorDataAction() : Promise.resolve([]),
@@ -194,11 +194,21 @@ export default async function FloorSubmissionPage({
             ...initialPropertyData,
             categoryId: propertyBasicDetails.categoryId,
             categoryName: propertyBasicDetails.categoryName,
+            propertyTypeId: propertyBasicDetails.propertyTypeId,
+            propertyDescription: propertyBasicDetails.propertyDescription,
+            wingNo: propertyBasicDetails.wingNo,
+            wingId: propertyBasicDetails.wingId,
+            wingName: propertyBasicDetails.wingName,
         };
     } else if (propertyBasicDetails) {
         initialPropertyData = {
             categoryId: propertyBasicDetails.categoryId,
             categoryName: propertyBasicDetails.categoryName,
+            propertyTypeId: propertyBasicDetails.propertyTypeId,
+            propertyDescription: propertyBasicDetails.propertyDescription,
+            wingNo: propertyBasicDetails.wingNo,
+            wingId: propertyBasicDetails.wingId,
+            wingName: propertyBasicDetails.wingName,
         };
     }
 

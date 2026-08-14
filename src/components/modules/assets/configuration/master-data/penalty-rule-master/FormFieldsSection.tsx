@@ -86,6 +86,7 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
           name="penaltyValue"
           type="number"
           min={0}
+          step="any"
           label={t("form.fields.value.label")}
           required
           value={String(formData.penaltyValue)}
@@ -105,6 +106,7 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
           name="gracePeriodDays"
           type="number"
           min={0}
+          max={100}
           label={t("form.fields.gracePeriod.label")}
           required
           value={String(formData.gracePeriodDays)}

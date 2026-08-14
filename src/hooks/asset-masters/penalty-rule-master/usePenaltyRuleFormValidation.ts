@@ -2,10 +2,10 @@
 
 import { useCallback } from "react";
 import type { PenaltyRuleFormModel } from "@/types/asset-masters/penalty-rule-master.types";
-import { validateForm, commonValidations, isAllZeros } from "@/lib/utils/validation";
+import { validateForm } from "@/lib/utils/validation";
+import { isAllZeros, CODE_REGEX, ASSET_MASTER_NAME_REGEX } from "@/lib/utils/asset-validation-rules";
 
 interface UsePenaltyRuleFormValidationProps {
-  isEdit: boolean;
   submittedOnce: boolean;
   touched: Record<string, boolean>;
   errors: Partial<Record<keyof PenaltyRuleFormModel, string>>;
@@ -13,7 +13,6 @@ interface UsePenaltyRuleFormValidationProps {
 }
 
 export function usePenaltyRuleFormValidation({
-  isEdit,
   submittedOnce,
   touched,
   errors,
@@ -22,23 +21,24 @@ export function usePenaltyRuleFormValidation({
   const validate = useCallback(
     (data: PenaltyRuleFormModel): Partial<Record<keyof PenaltyRuleFormModel, string>> => {
       const schema = {
-        penaltyCode: commonValidations.masterCode(t, 20, {
-          required: "form.validation.codeRequired",
-          format: "form.validation.codeFormat",
-          maxLength: "form.validation.codeMaxLength",
-        }),
+        penaltyCode: (value: unknown) => {
+          const strVal = String(value ?? '').trim();
+          if (!strVal) return t("form.validation.codeRequired");
+          if (strVal.length > 20) return t("form.validation.codeMaxLength", { count: 20 });
+          if (isAllZeros(strVal)) return t('form.validation.invalidFormat', { default: 'Invalid format' });
+          if (!CODE_REGEX.test(strVal)) return t("form.validation.codeFormat");
+          return undefined;
+        },
         penaltyName: (value: unknown) => {
-          const standardError = commonValidations.masterDescription(t, 100, {
-            required: "form.validation.descriptionRequired",
-            format: "form.validation.descriptionFormat",
-            maxLength: "form.validation.descriptionMaxLength",
-          })(value);
-
-          if (standardError) return standardError;
-
           const strVal = String(value ?? "").trim();
-          if (isAllZeros(strVal)) {
-            return t("form.validation.descriptionFormat");
+          if (!strVal) {
+            return t("form.validation.nameRequired");
+          }
+          if (strVal.length > 100) {
+            return t("form.validation.nameMaxLength", { count: 100 });
+          }
+          if (isAllZeros(strVal) || !ASSET_MASTER_NAME_REGEX.test(strVal)) {
+            return t("form.validation.nameFormat");
           }
           return undefined;
         },
@@ -57,8 +57,11 @@ export function usePenaltyRuleFormValidation({
           if (!Number.isFinite(num) || num < 0) {
             return t("form.validation.valueInvalid");
           }
-          if (data.calculationType === "Percentage" && num > 100) {
+          if (data.calculationType === "Percentage" && num > 999) {
             return t("form.validation.valuePercentageInvalid");
+          }
+          if (data.calculationType !== "Percentage" && num > 9999999999999.99) {
+            return t("form.validation.valueAmountInvalid");
           }
           return undefined;
         },
@@ -70,14 +73,16 @@ export function usePenaltyRuleFormValidation({
           if (!Number.isFinite(num) || num < 0 || !Number.isInteger(num)) {
             return t("form.validation.gracePeriodInvalid");
           }
+          if (num > 100) {
+            return t("form.validation.gracePeriodLimitInvalid");
+          }
           return undefined;
         },
-        isActive: commonValidations.masterActiveStatus(t, isEdit, "form.validation.mustBeActive"),
       };
 
       return validateForm(data, schema) as Partial<Record<keyof PenaltyRuleFormModel, string>>;
     },
-    [t, isEdit]
+    [t]
   );
 
   const showError = useCallback(

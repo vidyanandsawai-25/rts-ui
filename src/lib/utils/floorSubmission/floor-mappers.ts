@@ -186,7 +186,7 @@ export const mapFormToPayload = (params: {
       | 'Construction'
       | 'OpenPlot'
       | undefined,
-    isOpenPlot: Boolean(params.isPlotCategory && isOpenSpace),
+    isOpenPlot: formData.isOpenPlot !== undefined ? Boolean(formData.isOpenPlot) : false,
     length: isOpenSpace ? (formData.length ? Number(formData.length) : null) : null,
     width: isOpenSpace ? (formData.width ? Number(formData.width) : null) : null,
     lengthMtr: isOpenSpace ? (formData.length ? Number(formData.length) : null) : null,

@@ -121,4 +121,108 @@ describe("validateBuildingForm - CC and OC date rules (floorwise & propertywide)
         expect(result.isValid).toBe(true);
         expect(result.fieldErrors?.[2]?.date).toBeUndefined();
     });
+
+    it("fails validation when OC date is before floor construction year in floor scope", () => {
+        const state: BuildingPermissionState = {
+            3: {
+                certificateTypeId: 3,
+                certificateTypeName: "Occupancy Certificate (OC)",
+                enabled: true,
+                number: "OC-12345",
+                date: "2021-06-01",
+                documentGuid: "guid-oc",
+                displayOrder: 2,
+            },
+        };
+
+        const floors = [
+            {
+                propertyDetailsId: 10,
+                propertyId: 1,
+                constructionYear: "2023",
+                isSelected: true,
+                certificateApplicable: true,
+            },
+        ];
+
+        const result = validateBuildingForm(state, mockT, {
+            activeScope: "Floor",
+            activeFloorId: 10,
+            floors,
+        });
+
+        expect(result.isValid).toBe(false);
+        expect(result.fieldErrors?.[3]?.date).toBe("validation.dateBeforeConstructionYear");
+    });
+
+    it("fails validation when CC date is before minimum floor construction year in property scope", () => {
+        const state: BuildingPermissionState = {
+            2: {
+                certificateTypeId: 2,
+                certificateTypeName: "Commencement Certificate (CC)",
+                enabled: true,
+                number: "CC-12345",
+                date: "2020-01-01",
+                documentGuid: "guid-cc",
+                displayOrder: 1,
+            },
+        };
+
+        const floors = [
+            {
+                propertyDetailsId: 10,
+                propertyId: 1,
+                constructionYear: "2022",
+                isSelected: false,
+                certificateApplicable: true,
+            },
+            {
+                propertyDetailsId: 11,
+                propertyId: 1,
+                constructionYear: "2024",
+                isSelected: false,
+                certificateApplicable: true,
+            },
+        ];
+
+        const result = validateBuildingForm(state, mockT, {
+            activeScope: "Property",
+            floors,
+        });
+
+        expect(result.isValid).toBe(false);
+        expect(result.fieldErrors?.[2]?.date).toBe("validation.dateBeforeConstructionYear");
+    });
+
+    it("passes validation when Electric Bill date is greater than or equal to construction year", () => {
+        const state: BuildingPermissionState = {
+            4: {
+                certificateTypeId: 4,
+                certificateTypeName: "Electric Bill",
+                enabled: true,
+                number: "985472136",
+                date: "2023-12-31",
+                documentGuid: "guid-eb",
+                displayOrder: 3,
+            },
+        };
+
+        const floors = [
+            {
+                propertyDetailsId: 10,
+                propertyId: 1,
+                constructionYear: "2023",
+                isSelected: true,
+                certificateApplicable: true,
+            },
+        ];
+
+        const result = validateBuildingForm(state, mockT, {
+            activeScope: "Floor",
+            activeFloorId: 10,
+            floors,
+        });
+
+        expect(result.isValid).toBe(true);
+    });
 });

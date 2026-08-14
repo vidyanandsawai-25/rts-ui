@@ -1,22 +1,18 @@
 "use client";
 
-import { Settings, CheckCircle2, Upload } from "lucide-react";
+import { Settings, CheckCircle2 } from "lucide-react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   SaveButton,
-  CancelButton,
-  Button,
-  Input
+  CancelButton
 } from "@/components/common";
 import { BulkUpdateFieldConfig, BulkUpdateMaster, SelectOption } from "@/types/common-details-update/common-details-update.types";
 import { DynamicFormField } from "./DynamicFormField";
-import { useState, useRef } from "react";
-import { toast } from "sonner";
-import { importExcelAction } from "@/app/[locale]/property-tax/common-details-update/actions";
-import { logger } from "@/lib/utils/logger";
+import { cn } from "@/lib/utils/cn";
+import { useBindApiOptions } from "@/hooks/commonDetailsUpdate/useBindApiOptions";
 
 interface BulkUpdateFormProps {
   t: (key: string, values?: Record<string, string | number>) => string;
@@ -24,13 +20,13 @@ interface BulkUpdateFormProps {
   fieldConfigs: BulkUpdateFieldConfig[];
   loadingConfigs: boolean;
   formValues: Record<string, string | number | boolean>;
+  formErrors?: Record<string, string>;
   formSubmitted: boolean;
   saving: boolean;
   selectedCount: number;
   onFieldChange: (fieldName: string, value: string | number | boolean) => void;
   onUpdate: () => void;
   onClear: () => void;
-  // New props for validation status display
   showValidationStatus?: boolean;
   matchedProperties?: number;
   selectedFieldsCount?: number;
@@ -42,6 +38,7 @@ export const BulkUpdateForm = ({
   fieldConfigs,
   loadingConfigs,
   formValues,
+  formErrors = {},
   formSubmitted,
   saving,
   selectedCount,
@@ -50,58 +47,15 @@ export const BulkUpdateForm = ({
   onClear,
   showValidationStatus = false,
   matchedProperties = 0,
-  selectedFieldsCount = 0,
+  selectedFieldsCount = 0
 }: BulkUpdateFormProps) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!selectedMenuItem?.updateCode) {
-      toast.error("Please select an enabled field first");
-      return;
-    }
-
-    setUploading(true);
-    const loadingToastId = toast.loading("Uploading and processing Excel file...");
-
-    try {
-      const formData = new FormData();
-      formData.append("File", file);
-      formData.append("UpdateCode", selectedMenuItem.updateCode);
-
-      const res = await importExcelAction(formData);
-      toast.dismiss(loadingToastId);
-
-      if (!res.success) {
-        toast.error(res.error || "Upload failed");
-        return;
-      }
-
-      const data = res.data;
-      if (data?.success === false) {
-        toast.error(data.message || "Update failed: Row error(s)");
-      } else {
-        toast.success(data?.message || "Excel uploaded and processed successfully!");
-        if (fileInputRef.current) fileInputRef.current.value = "";
-      }
-    } catch (error) {
-      logger.error("BulkUpdateForm: Excel import failed", { error: error as Error });
-      toast.dismiss(loadingToastId);
-      toast.error("An unexpected error occurred during import");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
-
+  
+  const { optionsMap } = useBindApiOptions(fieldConfigs);
   return (
     <Card
       variant="default"
       padding="none"
-      className="border border-blue-200 rounded-xl shadow-sm flex flex-col h-full"
+      className="border border-blue-200 rounded-xl shadow-sm flex flex-col h-full min-h-0"
     >
       <CardHeader className="flex items-center justify-between px-4 py-3 border-b bg-[#F8FAFF] rounded-t-xl mb-0 shrink-0">
         <div className="flex items-center gap-2">
@@ -111,28 +65,6 @@ export const BulkUpdateForm = ({
           </CardTitle>
         </div>
         <div className="flex items-center gap-2">
-          {selectedMenuItem && (
-            <>
-              <Input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept=".xlsx, .xls"
-                className="hidden"
-              />
-              <Button
-                variant="primary"
-                size="xs"
-                icon={Upload}
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                isLoading={uploading}
-                className="h-7 py-1 px-2.5 text-xs rounded-md"
-              >
-                {t("buttons.uploadExcel")}
-              </Button>
-            </>
-          )}
           {showValidationStatus && selectedFieldsCount > 0 && (
             <span className="text-xs text-gray-500">
               {selectedFieldsCount} {t("newValues.fieldsSelected")}
@@ -151,7 +83,7 @@ export const BulkUpdateForm = ({
           </div>
         )}
 
-        {selectedMenuItem && loadingConfigs && (
+        {selectedMenuItem && loadingConfigs && fieldConfigs.length === 0 && (
           <div className="flex items-center justify-center h-full py-10">
             <p className="text-sm text-gray-400 animate-pulse">{t("loading.message")}</p>
           </div>
@@ -163,10 +95,9 @@ export const BulkUpdateForm = ({
           </div>
         )}
 
-        {selectedMenuItem && !loadingConfigs && fieldConfigs.length > 0 && (
-          <div className="space-y-3">
+        {selectedMenuItem && (!loadingConfigs || fieldConfigs.length > 0) && fieldConfigs.length > 0 && (
+          <div className={cn("space-y-3 transition-opacity", loadingConfigs ? "opacity-50 pointer-events-none" : "")}>
             {fieldConfigs.map((config) => {
-              // Force dropdown for title fields if they are missing options or misconfigured
               let overrideConfig = config;
               let options: SelectOption[] = [];
 
@@ -198,6 +129,9 @@ export const BulkUpdateForm = ({
                   { label: "श्री.", value: "श्री." },
                   { label: "श्रीमती", value: "श्रीमती" }
                 ];
+              } else if (config.bindApi) {
+                overrideConfig = { ...config, controlType: "dropdown" };
+                options = optionsMap[config.fieldName] || [];
               }
 
               return (
@@ -207,6 +141,7 @@ export const BulkUpdateForm = ({
                   value={formValues[overrideConfig.fieldName] ?? ""}
                   onChange={onFieldChange}
                   submitted={formSubmitted}
+                  error={formErrors[overrideConfig.fieldName]}
                   dropdownOptions={options}
                 />
               );
@@ -240,17 +175,15 @@ export const BulkUpdateForm = ({
 
           <div className="flex items-center justify-end gap-3 mt-2">
             <CancelButton
-              type="button"
+              size="sm"
               label={t("form.clear")}
               onClick={onClear}
-              className="px-6 min-w-[120px]"
             />
             <SaveButton
-              type="button"
+              size="sm"
               label={saving ? t("form.updating") : t("form.update")}
               onClick={onUpdate}
               disabled={saving || selectedFieldsCount === 0 || selectedCount === 0}
-              className="px-6 min-w-[120px]"
             />
           </div>
         </div>

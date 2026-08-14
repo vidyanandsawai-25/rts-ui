@@ -3,16 +3,20 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveInventoryCategoryAction } from "@/app/[locale]/assets/configuration/master-data/inventory-category/actions";
 import type { InventoryCategoryFormModel } from "@/types/asset-masters/inventory-category.types";
+import { mapInventoryCategoryApiError } from "./validation";
+import { getSafeMessage } from "@/lib/utils/asset-utils/createSafeMasterTranslator";
 
 interface UseInventoryCategorySubmitProps {
   isEdit: boolean;
   locale: string;
   formData: InventoryCategoryFormModel;
-  validate: (data: InventoryCategoryFormModel) => Record<string, string>;
-  setErrors: (errors: Record<string, string>) => void;
+  validate: (data: InventoryCategoryFormModel) => Partial<Record<keyof InventoryCategoryFormModel, string>>;
+  setErrors: (errors: Partial<Record<keyof InventoryCategoryFormModel, string>>) => void;
   setTouched: (touched: Record<string, boolean>) => void;
+  setSubmittedOnce?: (submitted: boolean) => void;
   setOpen: (open: boolean) => void;
   t: (key: string) => string;
+  tCommon: (key: string) => string;
 }
 
 export function useInventoryCategorySubmit({
@@ -22,14 +26,17 @@ export function useInventoryCategorySubmit({
   validate,
   setErrors,
   setTouched,
+  setSubmittedOnce,
   setOpen,
   t,
+  tCommon,
 }: UseInventoryCategorySubmitProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (setSubmittedOnce) setSubmittedOnce(true);
 
     setTouched({
       code: true,
@@ -42,7 +49,13 @@ export function useInventoryCategorySubmit({
     setErrors(v);
 
     if (Object.keys(v).length) {
-      toast.error(t("validation.fixErrors"));
+      const fixErrorsMsg =
+        getSafeMessage(tCommon, "validation.fixErrors") ||
+        getSafeMessage(t, "validation.fixErrors") ||
+        getSafeMessage(t, "form.validation.fixErrors") ||
+        getSafeMessage(t, "errors.fixErrors") ||
+        "Please fix validation errors before submitting";
+      toast.error(fixErrorsMsg);
       return;
     }
 
@@ -72,16 +85,13 @@ export function useInventoryCategorySubmit({
       }
 
       if (res && !res.ok) {
+        toast.error(mapInventoryCategoryApiError(res, t, tCommon));
         if (res.error === "duplicate") {
+          const dupMsg = t("validation.duplicateRecord") || t("errors.duplicateRecord") || "Already exists";
           setErrors({
-            code: t("errors.duplicateRecord"),
-            name: t("errors.duplicateRecord"),
+            code: dupMsg,
+            name: dupMsg,
           });
-          toast.error(t("validation.duplicateError"));
-        } else if (res.error === "invalid_id") {
-          toast.error(t("messages.invalidIdError"));
-        } else {
-          toast.error(res.error || t("messages.error"));
         }
         return;
       }
@@ -97,3 +107,4 @@ export function useInventoryCategorySubmit({
 
   return { handleSubmit, isSubmitting };
 }
+

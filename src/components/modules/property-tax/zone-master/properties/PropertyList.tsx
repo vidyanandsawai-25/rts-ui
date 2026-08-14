@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Building2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -54,9 +54,17 @@ export default function PropertyList({
     const t = useTranslations("zoneMaster");
     const tCommon = useTranslations("common");
 
+    const [pendingAction, setPendingAction] = useState<
+        "createProperty" | "createPartition" | "deleteProperty" | null
+    >(null);
 
-
-
+    // Reset the pending loader once the URL actually changes (drawer opened/closed)
+    const searchParamsKey = searchParams.toString();
+    const [prevSearchParamsKey, setPrevSearchParamsKey] = useState(searchParamsKey);
+    if (searchParamsKey !== prevSearchParamsKey) {
+        setPrevSearchParamsKey(searchParamsKey);
+        setPendingAction(null);
+    }
     const {
         localSearch,
         handleSearchChange,
@@ -96,6 +104,7 @@ export default function PropertyList({
     );
 
     const handleCreateProperty = useCallback(() => {
+        setPendingAction("createProperty");
         const params = new URLSearchParams(searchParams.toString());
         if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
         params.set("createProperty", "");
@@ -103,6 +112,7 @@ export default function PropertyList({
     }, [router, pathname, searchParams, selectedWardId]);
 
     const handleCreatePartition = useCallback(() => {
+        setPendingAction("createPartition");
         const params = new URLSearchParams(searchParams.toString());
         if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
         params.set("createPartition", "");
@@ -110,6 +120,7 @@ export default function PropertyList({
     }, [router, pathname, searchParams, selectedWardId]);
 
     const handleOpenDeleteDrawer = useCallback(() => {
+        setPendingAction("deleteProperty");
         const params = new URLSearchParams(searchParams.toString());
         if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
         params.set("deleteProperty", "");
@@ -187,19 +198,22 @@ export default function PropertyList({
                             size="sm"
                             label={t("propertyList.createProperty")}
                             onClick={handleCreateProperty}
-                            disabled={selectedWardId === null}
+                            disabled={selectedWardId === null || pendingAction !== null}
+                            isLoading={pendingAction === "createProperty"}
                         />
                         <AddButton
                             size="sm"
                             label={t("propertyList.createPartition")}
                             onClick={handleCreatePartition}
-                            disabled={selectedWardId === null}
+                            disabled={selectedWardId === null || pendingAction !== null}
+                            isLoading={pendingAction === "createPartition"}
                         />
 
                         <DeleteLabelButton
                             label={t("propertyList.deleteButton")}
                             onClick={handleOpenDeleteDrawer}
-                            disabled={selectedWardId === null}
+                            disabled={selectedWardId === null || pendingAction !== null}
+                            isLoading={pendingAction === "deleteProperty"}
                         />
                     </div>
                 </div>

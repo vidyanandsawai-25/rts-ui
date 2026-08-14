@@ -135,6 +135,8 @@ export interface OperationScope {
   mobileNumbers?: string[];
   fromPropertyId?: number;
   toPropertyId?: number;
+  wardNames?: string[];
+  zoneNames?: string[];
 }
 
 export interface EligibleCountPayload {

@@ -29,25 +29,35 @@ vi.mock("@/app/[locale]/assets/configuration/master-data/ownership-type/actions"
 }));
 
 vi.mock("@/components/modules/assets/configuration/master-data/ownership-type-master/FormFieldsSection", () => ({
-  FormFieldsSection: ({ formData, onChange }: any) => (
+  FormFieldsSection: ({ formData, onChange, nameRef }: any) => (
     <div data-testid="form-fields">
-      <input data-testid="name-input" name="ownershipTypeName" value={formData.ownershipTypeName || ""} onChange={onChange} />
+      <input ref={nameRef} data-testid="name-input" name="ownershipTypeName" value={formData.ownershipTypeName || ""} onChange={onChange} />
       <input data-testid="description-input" name="description" value={formData.description || ""} onChange={onChange} />
     </div>
   ),
 }));
 
 vi.mock("@/components/modules/assets/configuration/master-data/ownership-type-master/StatusToggleCard", () => ({
-  StatusToggleCard: () => <div data-testid="status-toggle-card" />,
+  StatusToggleCard: ({ statusToggleRef }: any) => <button ref={statusToggleRef} data-testid="status-toggle-button">Status Toggle</button>,
 }));
 vi.mock("@/components/modules/assets/configuration/master-data/ownership-type-master/MandatoryFieldsNotice", () => ({
   MandatoryFieldsNotice: () => <div data-testid="mandatory-fields-notice" />,
 }));
 
-vi.mock("@/components/common", () => ({
-  SaveButton: ({ onClick, type, label }: any) => <button data-testid="save-button" onClick={onClick} type={type}>{label}</button>,
-  CancelButton: ({ onClick }: any) => <button data-testid="cancel-button" onClick={onClick}>Cancel</button>,
-}));
+vi.mock("@/components/common", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/components/common")>();
+  const ReactModule = await import("react");
+  const ToggleSwitchComp = ReactModule.forwardRef(({ onChange }: any, ref: any) => (
+    <button ref={ref} data-testid="status-toggle-button" type="button" onClick={onChange}>Toggle</button>
+  ));
+  ToggleSwitchComp.displayName = "ToggleSwitchComp";
+  return {
+    ...actual,
+    SaveButton: ({ onClick, type, label }: any) => <button data-testid="save-button" onClick={onClick} type={type}>{label}</button>,
+    CancelButton: ({ onClick }: any) => <button data-testid="cancel-button" onClick={onClick}>Cancel</button>,
+    ToggleSwitch: ToggleSwitchComp,
+  };
+});
 
 vi.mock("@/components/common/Drawer", () => ({
   Drawer: ({ open, children, footer }: any) => open ? (<div data-testid="drawer"><div data-testid="drawer-content">{children}</div><div data-testid="drawer-footer">{footer}</div></div>) : null,
@@ -81,5 +91,21 @@ describe("OwnershipTypeForm", () => {
       expect(actions.createOwnershipTypeAction).not.toHaveBeenCalled();
       expect(toast.error).toHaveBeenCalledWith("errors.validationError");
     });
+  });
+
+  it("auto-focuses name input in add mode and status toggle in edit mode after 150ms delay", () => {
+    vi.useFakeTimers();
+
+    const { unmount } = render(<OwnershipTypeForm initialData={null} />);
+    vi.advanceTimersByTime(150);
+    expect(screen.getByTestId("name-input")).toHaveFocus();
+    unmount();
+
+    const initialData = { id: 1, ownershipTypeName: "Private", description: "Desc", isActive: true };
+    render(<OwnershipTypeForm id={1} initialData={initialData as any} />);
+    vi.advanceTimersByTime(150);
+    expect(screen.getByTestId("status-toggle-button")).toHaveFocus();
+
+    vi.useRealTimers();
   });
 });

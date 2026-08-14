@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { OwningDepartmentFormModel } from "@/types/asset-masters/owning-department.types";
 import { saveOwningDepartment } from "@/app/[locale]/assets/configuration/master-data/owning-department/action";
-import { sanitizeText } from "@/lib/utils/sanitization";
+import { ASSET_MASTER_NAME_SANITIZE, DESCRIPTION_SANITIZE } from "@/lib/utils/asset-validation-rules";
 
 interface UseOwningDepartmentFormHandlersProps {
   formData: OwningDepartmentFormModel;
@@ -55,9 +55,15 @@ export function useOwningDepartmentFormHandlers({
     const { name, value } = e.target;
     let sanitizedValue = value;
     if (name === "owningDepartmentName") {
-      sanitizedValue = sanitizeText(value, 100);
+      sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+      if (sanitizedValue.length > 100) {
+        sanitizedValue = sanitizedValue.substring(0, 100);
+      }
     } else if (name === "description") {
-      sanitizedValue = sanitizeText(value, 100);
+      sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+      if (sanitizedValue.length > 100) {
+        sanitizedValue = sanitizedValue.substring(0, 100);
+      }
     }
     setFormData((p) => ({ ...p, [name]: sanitizedValue }));
     setErrors((p) => ({ ...p, [name]: "" }));
@@ -111,7 +117,6 @@ export function useOwningDepartmentFormHandlers({
         setOpen(false);
         startTransition(() => {
           router.push(`/${locale}/assets/configuration/master-data/owning-department`);
-          router.refresh();
         });
         return;
       }

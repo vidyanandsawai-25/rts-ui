@@ -24,17 +24,27 @@ export async function fetchGstMasterPagedServerAction(
   sortBy?: string,
   sortOrder?: string
 ): Promise<PagedResponse<GstMaster>> {
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) {
+    throw new ApiError(401, "you are unauthorized", "Unauthorized");
+  }
   return getGstMastersPaged(pageNumber, pageSize, searchTerm, sortBy, sortOrder);
 }
 
 export async function getGstMasterByIdAction(id: number | string): Promise<GstMaster> {
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) {
+    throw new ApiError(401, "you are unauthorized", "Unauthorized");
+  }
   const numericId = Number(id);
-  if (!Number.isFinite(numericId) || numericId <= 0) {
-    throw new ApiError(400, "Valid GST master ID is required", "Validation failed");
+  if (id == null || !Number.isInteger(numericId) || numericId <= 0) {
+    throw new ApiError(400, "Valid GST Master ID is required", "Validation failed");
   }
 
   const result = await getGstMasterById(numericId);
-  if (!result) throw new ApiError(404, "GST master not found", "Not Found");
+  if (!result) throw new ApiError(404, "GST Master not found", "Not Found");
   return result;
 }
 
@@ -47,7 +57,8 @@ export async function saveGstMaster(id: string, formData: FormData) {
 
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) return { ok: false, error: "you are unauthorized" };
 
     locale = String(formData.get("locale") ?? "").trim();
     if (!locale || !locales.includes(locale as (typeof locales)[number])) return { ok: false, error: "invalid_locale" };
@@ -139,14 +150,21 @@ export async function updateGstMasterAction(data: GstMasterFormModel) {
 }
 
 export async function deleteGstMasterAction(formData: FormData) {
-  const id = Number(formData.get("id") ?? 0);
-  if (!id) return { success: false, message: "Valid GST master ID is required", statusCode: 400 };
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
+
+  const rawId = formData.get("id");
+  const numericId = Number(rawId);
+  if (rawId == null || !Number.isInteger(numericId) || numericId <= 0) {
+    return { success: false, message: "Valid GST Master ID is required", statusCode: 400 };
+  }
   try {
-    await deleteGstMaster(id);
+    await deleteGstMaster(numericId);
     for (const locale of locales) revalidatePath(`/${locale}${PAGE_PATH}`, "page");
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) return { success: false, message: error.responseText, statusCode: error.statusCode };
-    return { success: false, message: error instanceof Error ? error.message : "Delete GST master failed" };
+    return { success: false, message: error instanceof Error ? error.message : "Delete GST Master failed" };
   }
 }

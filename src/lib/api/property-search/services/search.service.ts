@@ -28,6 +28,9 @@ function buildSearchParams(criteria: PropertySearchCriteriaPayload): string {
       String(criteria.propertyAssessmentStatusId)
     );
   }
+  if (criteria.workflowStageId) {
+    params.set("WorkflowStageId", String(criteria.workflowStageId));
+  }
   if (criteria.propertyNoFrom)
     params.set("PropertyNoFrom", criteria.propertyNoFrom);
   if (criteria.propertyNoTo) params.set("PropertyNoTo", criteria.propertyNoTo);

@@ -88,6 +88,7 @@ export interface PropertySearchCriteriaPayload {
   wardId?: number | null;
   categoryId?: number;
   propertyAssessmentStatusId?: number;
+  workflowStageId?: number;
   propertyNoFrom?: string;
   propertyNoTo?: string;
   oldPropertyNo?: string;

@@ -2,8 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getAppConfig } from '@/config/app.config';
 import { logger } from '@/lib/utils/logger';
+import { getTranslations } from 'next-intl/server';
 
 export async function GET(request: NextRequest) {
+  let t;
+  try {
+    t = await getTranslations('commonDetailsUpdate');
+  } catch (_err) {
+    // Fallback if translations fail
+    t = (key: string) => key;
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const wardId = searchParams.get('WardId');
@@ -11,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     if (!wardId || !updateCode) {
       return NextResponse.json(
-        { error: 'Missing required parameters: WardId and UpdateCode' },
+        { error: t('messages.missingParameters') },
         { status: 400 }
       );
     }
@@ -21,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     if (!authToken) {
       return NextResponse.json(
-        { error: 'Unauthorized: No authentication token found' },
+        { error: t('messages.unauthorized') },
         { status: 401 }
       );
     }
@@ -45,7 +54,7 @@ export async function GET(request: NextRequest) {
         statusText: response.statusText
       });
       return NextResponse.json(
-        { error: `Backend API error: ${response.statusText}` },
+        { error: `${t('messages.backendApiError')}: ${response.statusText}` },
         { status: response.status }
       );
     }
@@ -67,7 +76,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error('[Common Details Excel Export] Unexpected error', { error: error as Error });
     return NextResponse.json(
-      { error: 'Internal server error during Excel export' },
+      { error: t('messages.excelExportError') },
       { status: 500 }
     );
   }

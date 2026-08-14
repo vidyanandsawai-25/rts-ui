@@ -24,7 +24,7 @@ function withFixedWidth(
   const { tooltip, ...rest } = column;
   const label = tooltip ? (
     <Tooltip content={tooltip} placement="top">
-      <span className="cursor-help">{column.label}</span>
+      <span className="cursor-default">{column.label}</span>
     </Tooltip>
   ) : (
     column.label
@@ -94,7 +94,7 @@ function PropertyNoPartitionCell({ row, t }: { row: SearchResult; t: Translator 
       )}
       {oldProp ? (
         <Tooltip content={oldProp} placement="top">
-          <span className="text-xs font-medium text-slate-700 cursor-help border-b border-dashed border-slate-400 max-w-full truncate block px-1">
+          <span className="text-xs font-medium text-slate-700 cursor-default border-b border-dashed border-slate-400 max-w-full truncate block px-1">
             {oldProp}
           </span>
         </Tooltip>
@@ -184,14 +184,24 @@ export function buildPropertySearchColumns(
         key: "upicId",
         label: t("columns.upicId"),
         tooltip: t("columns.upicId"),
-        render: (value, row) => (
-          <UpicLinkCell
-            upicId={String(value ?? "")}
-            propertyId={row.propertyId}
-            locale={locale}
-            copyLabel={t("columns.upicId")}
-          />
-        ),
+        render: (value, row) => {
+          const displayWard = row.ward?.trim() || "";
+          const wardOpt = allWardOptions.find(
+            (opt) => opt.label.startsWith(`${displayWard} - `) || opt.label === displayWard
+          );
+          return (
+            <UpicLinkCell
+              upicId={String(value ?? "")}
+              propertyId={row.propertyId}
+              wardNo={row.ward}
+              wardId={row.wardId ? Number(row.wardId) : wardOpt?.id}
+              propertyNo={row.propertyNo}
+              partitionNo={row.partitionNo}
+              locale={locale}
+              copyLabel={t("columns.upicId")}
+            />
+          );
+        },
       },
       COLUMN_WIDTHS.upicId
     ),

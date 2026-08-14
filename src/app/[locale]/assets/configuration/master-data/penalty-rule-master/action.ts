@@ -24,17 +24,27 @@ export async function fetchPenaltyRuleMasterPagedServerAction(
   sortBy?: string,
   sortOrder?: string
 ): Promise<PagedResponse<PenaltyRule>> {
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) {
+    throw new ApiError(401, "you are unauthorized", "Unauthorized");
+  }
   return getPenaltyRulesPaged(pageNumber, pageSize, searchTerm, sortBy, sortOrder);
 }
 
 export async function getPenaltyRuleByIdAction(id: number | string): Promise<PenaltyRule> {
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) {
+    throw new ApiError(401, "you are unauthorized", "Unauthorized");
+  }
   const numericId = Number(id);
-  if (!Number.isFinite(numericId) || numericId <= 0) {
-    throw new ApiError(400, "Valid penalty rule master ID is required", "Validation failed");
+  if (id == null || !Number.isInteger(numericId) || numericId <= 0) {
+    throw new ApiError(400, "Valid Penalty Rule Master ID is required", "Validation failed");
   }
 
   const result = await getPenaltyRuleById(numericId);
-  if (!result) throw new ApiError(404, "Penalty rule master not found", "Not Found");
+  if (!result) throw new ApiError(404, "Penalty Rule Master not found", "Not Found");
   return result;
 }
 
@@ -48,7 +58,8 @@ export async function savePenaltyRule(id: string, formData: FormData) {
 
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) return { ok: false, error: "you are unauthorized" };
 
     locale = String(formData.get("locale") ?? "").trim();
     if (!locale || !locales.includes(locale as (typeof locales)[number])) return { ok: false, error: "invalid_locale" };
@@ -70,10 +81,12 @@ export async function savePenaltyRule(id: string, formData: FormData) {
 
     const penaltyValue = Number(penaltyValueRaw);
     if (!Number.isFinite(penaltyValue) || penaltyValue < 0) return { ok: false, error: "invalid_penaltyValue" };
-    if (calculationType === "Percentage" && penaltyValue > 100) return { ok: false, error: "invalid_penaltyValue" };
+    if (calculationType === "Percentage" && penaltyValue > 999) return { ok: false, error: "invalid_penaltyValue" };
+    if (calculationType !== "Percentage" && penaltyValue > 9999999999999.99) return { ok: false, error: "invalid_penaltyValue" };
 
     const gracePeriodDays = Number(gracePeriodDaysRaw);
     if (!Number.isFinite(gracePeriodDays) || gracePeriodDays < 0 || !Number.isInteger(gracePeriodDays)) return { ok: false, error: "invalid_gracePeriodDays" };
+    if (gracePeriodDays > 100) return { ok: false, error: "invalid_gracePeriodDays" };
 
     const isActive = String(formData.get("isActive") ?? "true").toLowerCase() === "true";
 
@@ -141,14 +154,21 @@ export async function updatePenaltyRuleAction(data: PenaltyRuleFormModel) {
 }
 
 export async function deletePenaltyRuleAction(formData: FormData) {
-  const id = Number(formData.get("id") ?? 0);
-  if (!id) return { success: false, message: "Valid penalty rule ID is required", statusCode: 400 };
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
+
+  const rawId = formData.get("id");
+  const numericId = Number(rawId);
+  if (rawId == null || !Number.isInteger(numericId) || numericId <= 0) {
+    return { success: false, message: "Valid Penalty Rule Master ID is required", statusCode: 400 };
+  }
   try {
-    await deletePenaltyRule(id);
+    await deletePenaltyRule(numericId);
     for (const locale of locales) revalidatePath(`/${locale}${PAGE_PATH}`, "page");
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) return { success: false, message: error.responseText, statusCode: error.statusCode };
-    return { success: false, message: error instanceof Error ? error.message : "Delete penalty rule failed" };
+    return { success: false, message: error instanceof Error ? error.message : "Delete Penalty Rule Master failed" };
   }
 }

@@ -2,12 +2,14 @@ import { cookies } from 'next/headers';
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { appConfig } from '@/config/app.config';
 import { getUserIdFromCookies } from '@/lib/utils/cookie';
+import { ApiError } from '@/lib/utils/api';
 
 export type ActionResponse<T> = {
   success: boolean;
   message?: string;
   data?: T;
   validationErrors?: Record<string, string>;
+  statusCode?: number;
 };
 
 export async function getAuthToken(): Promise<string | undefined> {
@@ -33,7 +35,16 @@ export async function performAction<T>(
     }
     return { success: true, data };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'messages.errorOccurred';
-    return { success: false, message };
+    let message = 'messages.errorOccurred';
+    let statusCode: number | undefined;
+
+    if (error instanceof ApiError) {
+      statusCode = error.statusCode;
+      message = error.responseText || error.message;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return { success: false, message, statusCode };
   }
 }

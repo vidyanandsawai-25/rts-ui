@@ -6,15 +6,17 @@ import { type AppRouterInstance } from 'next/dist/shared/lib/app-router-context.
 import { toast } from 'sonner';
 import { FloorData } from '@/types/room-details.types';
 import { FloorSubmissionPayload, EditSidebarProps } from '@/types/floor-details.types';
-import { LookupData } from '@/types/common-details.types';
 import { ConfirmOptions } from '@/components/common';
 import { mapFormToPayload } from '@/lib/utils/floorSubmission/floor-mappers';
 import { createOptimisticFloor, getOptimisticFloorsList, parseServerError } from '@/lib/utils/floorSubmission/floor-optimistic.utils';
-import { submitFloorSubmissionNoRedirectAction, updateFloorSubmissionNoRedirectAction, } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+import {
+  submitFloorSubmissionNoRedirectAction,
+  updateFloorSubmissionNoRedirectAction,
+  deleteRenterDetailsAction,
+  deleteRenterMastAction,
+} from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 import { useFloorDeletion } from './useFloorDeletion';
 import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
-
-// Use deletion hook
 
 export const useFloorDataHandlers = (params: {
   props: EditSidebarProps;
@@ -36,28 +38,42 @@ export const useFloorDataHandlers = (params: {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
   INITIAL_FORM_STATE: FloorData;
   selectedFloorType?: 'Construction' | 'OpenPlot';
+  resetRestoredSessionFormRef?: () => void;
   // Area validation fields
+  plotAreaSqM?: number;
   isOpenSpaceAreaExceeded?: boolean;
   isFloorAreaExceeded?: boolean;
   availableRemainingOpenSpaceAreaSqM?: number;
   availableRemainingConstructionAreaSqM?: number;
   isGroundFloorAreaExceeded?: boolean;
   isOpenSpaceNegative?: boolean;
+  totalOpenSpaceAreaSqM?: number;
+  totalConstructionAreaSqM?: number;
+  alreadyUtilizedOpenSpaceAreaSqM?: number;
+  enteredFloorAreaSqM?: number;
+  enteredOpenSpaceAreaSqM?: number;
 }) => {
   const {
     props, editingFloorForm, selectedFloor, isAddingNewFloor,
     setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, localFloors, setLocalFloors, setFormErrors,
     startTransition,
     router, locale, propertyId, confirm, t, INITIAL_FORM_STATE, selectedFloorType,
+    resetRestoredSessionFormRef,
+    plotAreaSqM = 0,
     isOpenSpaceAreaExceeded = false,
     isFloorAreaExceeded = false,
     availableRemainingOpenSpaceAreaSqM = 0,
     availableRemainingConstructionAreaSqM = 0,
     isGroundFloorAreaExceeded = false,
-    isOpenSpaceNegative = false
+    isOpenSpaceNegative = false,
+    totalOpenSpaceAreaSqM = 0,
+    totalConstructionAreaSqM = 0,
+    alreadyUtilizedOpenSpaceAreaSqM = 0,
+    enteredFloorAreaSqM = 0,
+    enteredOpenSpaceAreaSqM = 0,
   } = params;
 
-  const { floorData: floorLookup, constructionTypeData: constructionLookup, useData: useLookup, subFloorData: subFloorLookup, subTypeData } = props;
+  const { floorData: floorLookup, constructionTypeData: constructionLookup } = props;
 
   // Separate loading states
   const [isSaving, setIsSaving] = useState(false);
@@ -78,35 +94,87 @@ export const useFloorDataHandlers = (params: {
     INITIAL_FORM_STATE,
   });
 
+
+  const getSafeTranslation = useCallback((key: string, fallback: string) => {
+    try {
+      const res = t(key);
+      if (
+        !res ||
+        res.includes('quickDataEntry.') ||
+        res.includes('DataEntry.') ||
+        res.includes('floor.errors.') ||
+        res.includes('floor.ok') ||
+        res.startsWith('MISSING_MESSAGE')
+      ) {
+        return fallback;
+      }
+      return res;
+    } catch {
+      return fallback;
+    }
+  }, [t]);
+
   const handleSave = useCallback(async () => {
-    if (isSavingRef.current) return;
+    if (isSaving || isSavingRef.current) return;
 
     if (selectedFloorType === 'OpenPlot' && isOpenSpaceAreaExceeded) {
-      toast.error(t('floor.openSpaceAreaExceeded', { area: parseFloat(Number(availableRemainingOpenSpaceAreaSqM || 0).toFixed(2)) }), { duration: 6000 });
+      const availArea = parseFloat(Number(availableRemainingOpenSpaceAreaSqM || 0).toFixed(2));
+      const msg = `Open Space Area cannot exceed the available remaining area (${availArea} Sq.M).\n\nPlot Area: ${parseFloat(Number(plotAreaSqM || 0).toFixed(2))} Sq M\nTotal Construction Area: ${parseFloat(Number(totalConstructionAreaSqM || 0).toFixed(2))} Sq M\nAlready Utilized Open Space Area: ${parseFloat(Number(alreadyUtilizedOpenSpaceAreaSqM || 0).toFixed(2))} Sq M\nAttempted Open Space Area: ${parseFloat(Number(enteredOpenSpaceAreaSqM || 0).toFixed(2))} Sq M\nRemaining Area for Open Space: ${availArea} Sq M\n\nPlease enter an Open Space area less than or equal to the remaining area.`;
+
+      confirm({
+        variant: 'warning',
+        title: getSafeTranslation('floor.errors.areaExceededTitle', 'Plot Area Limit Exceeded'),
+        description: msg,
+        confirmText: getSafeTranslation('floor.ok', 'OK'),
+        onConfirm: () => { },
+      });
       return;
     }
 
     if (selectedFloorType === 'Construction' && isFloorAreaExceeded) {
-      toast.error(t('floor.floorAreaExceeded', { area: parseFloat(Number(availableRemainingConstructionAreaSqM || 0).toFixed(2)) }), { duration: 6000 });
+      const availArea = parseFloat(Number(availableRemainingConstructionAreaSqM || 0).toFixed(2));
+      const msg = `Floor Built-up Area cannot exceed the available remaining area (${availArea} Sq.M).\n\nPlot Area: ${parseFloat(Number(plotAreaSqM || 0).toFixed(2))} Sq M\nAlready Utilized Open Space Area: ${parseFloat(Number(totalOpenSpaceAreaSqM || 0).toFixed(2))} Sq M\nEntered Floor Built-up Area: ${parseFloat(Number(enteredFloorAreaSqM || 0).toFixed(2))} Sq M\nRemaining Area: ${availArea} Sq M\n\nPlease enter a Construction area less than or equal to the remaining area.`;
+
+      confirm({
+        variant: 'warning',
+        title: getSafeTranslation('floor.errors.areaExceededTitle', 'Plot Area Limit Exceeded'),
+        description: msg,
+        confirmText: getSafeTranslation('floor.ok', 'OK'),
+        onConfirm: () => { },
+      });
       return;
     }
 
     if (!selectedFloorType && isGroundFloorAreaExceeded) {
-      toast.error(t('floor.groundFloorAreaExceeded'), { duration: 6000 });
+      const msg = getSafeTranslation('floor.groundFloorAreaExceeded', 'Total Ground Floor Construction Area cannot exceed Total Plot Area.');
+      confirm({
+        variant: 'warning',
+        title: getSafeTranslation('floor.errors.areaExceededTitle', 'Plot Area Limit Exceeded'),
+        description: msg,
+        confirmText: getSafeTranslation('floor.ok', 'OK'),
+        onConfirm: () => { },
+      });
       return;
     }
 
     if (isOpenSpaceNegative) {
-      toast.error(t('floor.openSpaceNegative'), { duration: 6000 });
+      const msg = getSafeTranslation('floor.openSpaceNegative', 'Open Space Area cannot be negative.');
+      confirm({
+        variant: 'warning',
+        title: getSafeTranslation('floor.errors.areaExceededTitle', 'Plot Area Limit Exceeded'),
+        description: msg,
+        confirmText: getSafeTranslation('floor.ok', 'OK'),
+        onConfirm: () => { },
+      });
       return;
     }
 
     const enteredRooms = parseInt(String(editingFloorForm.rooms || editingFloorForm.noOfRooms || 0), 10);
     const roomDetailsCount = Array.isArray(editingFloorForm.roomWiseSubmissionDetails)
       ? editingFloorForm.roomWiseSubmissionDetails.filter((r: any) => {
-          const area = Number(r.area || r.areaSqMtr || r.totalAreaSqMtr || r.total || r.carpetArea || 0);
-          return area > 0;
-        }).length
+        const area = Number(r.area || r.areaSqMtr || r.totalAreaSqMtr || r.total || r.carpetArea || 0);
+        return area > 0;
+      }).length
       : 0;
 
     if (enteredRooms > 0 && roomDetailsCount > 0 && enteredRooms !== roomDetailsCount) {
@@ -140,7 +208,7 @@ export const useFloorDataHandlers = (params: {
       description: isAddingNewFloor ? t('floor.addConfirmText') : t('floor.updateConfirmText'),
       confirmText: isAddingNewFloor ? t('floor.addConfirmButton') : t('floor.updateConfirmButton'),
       onConfirm: async () => {
-
+        if (isSavingRef.current) return;
         isSavingRef.current = true;
         setIsSaving(true);
         const previousFloors = [...localFloors];
@@ -148,88 +216,146 @@ export const useFloorDataHandlers = (params: {
           const isPlotCategory = checkIsPlotCategory(props.initialPropertyData?.categoryName as string);
           const payload: FloorSubmissionPayload = mapFormToPayload({
             formData: editingFloorForm,
-            floorLookup: floorLookup as LookupData[],
-            subFloorLookup: subFloorLookup as LookupData[],
-            constructionLookup: constructionLookup as LookupData[],
-            useLookup: useLookup as LookupData[],
-            subTypeLookup: (subTypeData as LookupData[]) || [],
-            propertyId: Number(props.initialPropertyID || 0),
+            floorLookup,
+            subFloorLookup: props.subFloorData,
+            constructionLookup,
+            useLookup: props.useData,
+            subTypeLookup: props.subTypeData,
+            propertyId,
             isAddingNew: isAddingNewFloor,
             existingFloorId: selectedFloor?.id,
-            selectedFloorType: selectedFloorType,
-            isPlotCategory: isPlotCategory,
+            selectedFloorType,
+            isPlotCategory,
           });
 
-          // Optimistic Update
-          const optimisticFloor = createOptimisticFloor(editingFloorForm, isAddingNewFloor, selectedFloor?.id);
-          setLocalFloors(getOptimisticFloorsList(localFloors, optimisticFloor, isAddingNewFloor));
+          // Create optimistic floor object
+          const optimisticFloor = createOptimisticFloor(
+            editingFloorForm,
+            isAddingNewFloor,
+            selectedFloor?.id
+          );
 
-          const response = isAddingNewFloor
-            ? await submitFloorSubmissionNoRedirectAction(payload, locale, propertyId)
-            : await updateFloorSubmissionNoRedirectAction(Number(selectedFloor?.id || 0), payload, locale, propertyId);
+          // Optimistically update UI
+          const updatedFloors = getOptimisticFloorsList(
+            localFloors,
+            optimisticFloor,
+            isAddingNewFloor
+          );
+          setLocalFloors(updatedFloors);
 
-          if (!response.success) {
-            setLocalFloors(previousFloors);
-            throw new Error(parseServerError(response.error, t));
+          // Perform actual Server Action call
+          const isEditing = !isAddingNewFloor && (selectedFloor?.id || editingFloorForm.id);
+          const targetFloorId = selectedFloor?.id || editingFloorForm.id;
+          const wasRenterActive = selectedFloor?.renter === 'Yes' || selectedFloor?.renterYesNo === true;
+          const isRenterNowNo = editingFloorForm.renter === 'No' || editingFloorForm.renterYesNo === false;
+
+          if (isEditing && wasRenterActive && isRenterNowNo) {
+            try {
+              let hasDeleted = false;
+              if (selectedFloor?.renterDetails && selectedFloor.renterDetails.length > 0) {
+                for (const item of selectedFloor.renterDetails) {
+                  if (item.id && Number(item.id) > 0) {
+                    await deleteRenterDetailsAction(item.id, locale, propertyId);
+                    hasDeleted = true;
+                  }
+                }
+              }
+              if (selectedFloor?.renterMast && selectedFloor.renterMast.length > 0) {
+                for (const item of selectedFloor.renterMast) {
+                  if (item.id && Number(item.id) > 0) {
+                    await deleteRenterMastAction(item.id, locale, propertyId);
+                    hasDeleted = true;
+                  }
+                }
+              }
+              if (!hasDeleted && targetFloorId && Number(targetFloorId) > 0) {
+                await deleteRenterDetailsAction(targetFloorId, locale, propertyId);
+                await deleteRenterMastAction(targetFloorId, locale, propertyId);
+              }
+            } catch (_err) {
+              // Best-effort cleanup before floor update
+            }
           }
 
-          // Clear session storage for saved floor
+          const response = isEditing
+            ? await updateFloorSubmissionNoRedirectAction(
+              Number(selectedFloor?.id || editingFloorForm.id),
+              payload,
+              locale,
+              propertyId
+            )
+            : await submitFloorSubmissionNoRedirectAction(payload, locale, propertyId);
+
+          if (!response || !response.success) {
+            setLocalFloors(previousFloors);
+            const serverMsg = parseServerError(response?.error, t);
+            toast.error(serverMsg);
+            setIsSaving(false);
+            isSavingRef.current = false;
+            return;
+          }
+
+          toast.success(
+            isAddingNewFloor
+              ? t('floor.floorAddSuccess') || 'Floor added successfully'
+              : t('floor.floorUpdateSuccess') || 'Floor updated successfully'
+          );
+
+          // Clear temporary renter session data & in-memory cached session form
           try {
-            const savedFloorId = selectedFloor?.id || 'new';
-            sessionStorage.removeItem(`renter_data_${savedFloorId}`);
             sessionStorage.removeItem('renter_data_new');
+            if (selectedFloor?.id) {
+              sessionStorage.removeItem(`renter_data_${selectedFloor.id}`);
+            }
             sessionStorage.removeItem('editingFloorForm');
           } catch (_e) { }
 
-          if (isAddingNewFloor) {
-            setIsAddingNewFloor(false);
-            setSelectedFloor(null);
-            setEditingFloorForm(INITIAL_FORM_STATE);
-          } else {
-            setSelectedFloor(null);
-            setEditingFloorForm(INITIAL_FORM_STATE);
-          }
-          toast.success(t(isAddingNewFloor ? 'floor.floorAddedSuccess' : 'floor.floorUpdatedSuccess'));
-
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('floorSaved'));
+          if (resetRestoredSessionFormRef) {
+            resetRestoredSessionFormRef();
           }
 
+          // Reset selection state and update URL silently inside transition
           startTransition(() => {
-            if (typeof window !== 'undefined') {
-              try {
-                const url = new URL(window.location.href);
-                url.searchParams.delete('floorId');
-                url.searchParams.delete('drawer');
-                router.replace(url.pathname + url.search);
-              } catch (_e) {
-                // Safe fallback for mock test environments (like JSDOM/Vitest)
-                router.replace(window.location.pathname || '/');
-              }
-            }
+            setSelectedFloor(null);
+            setIsAddingNewFloor(true);
+            setEditingFloorForm(INITIAL_FORM_STATE);
+            setFormErrors({});
+
+            // Trigger quiet router refresh
+            router.refresh();
+
+            // Reset isSaving after transition completes
+            setIsSaving(false);
+            isSavingRef.current = false;
           });
-        } catch (error: unknown) {
-          if (error instanceof Error && error.message === 'NEXT_REDIRECT') throw error;
+        } catch (error) {
           setLocalFloors(previousFloors);
-          toast.error(error instanceof Error ? error.message : t('floor.unexpectedError'));
-        } finally {
-          isSavingRef.current = false;
+          const catchMsg = parseServerError(error, t);
+          toast.error(catchMsg);
           setIsSaving(false);
+          isSavingRef.current = false;
         }
       },
     });
-  }, [isAddingNewFloor, editingFloorForm, selectedFloor, props.initialPropertyID, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, router, t, confirm, INITIAL_FORM_STATE, setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, startTransition, localFloors, setLocalFloors, locale, propertyId, setFormErrors, selectedFloorType]);
+  }, [
+    isSaving, selectedFloorType, isOpenSpaceAreaExceeded, isFloorAreaExceeded, isGroundFloorAreaExceeded, isOpenSpaceNegative,
+    availableRemainingOpenSpaceAreaSqM, availableRemainingConstructionAreaSqM, plotAreaSqM, totalOpenSpaceAreaSqM, totalConstructionAreaSqM,
+    alreadyUtilizedOpenSpaceAreaSqM, enteredFloorAreaSqM, enteredOpenSpaceAreaSqM, confirm, t, editingFloorForm, setFormErrors,
+    constructionLookup, isAddingNewFloor, localFloors, props, floorLookup, selectedFloor, locale, propertyId, setLocalFloors,
+    startTransition, setSelectedFloor, setIsAddingNewFloor, setEditingFloorForm, INITIAL_FORM_STATE, router
+  ]);
 
   const handleOpenRenterManagement = useCallback(async (formToUse?: FloorData) => {
     const currentForm = formToUse || editingFloorForm;
     if (!currentForm.floor) {
-      setFormErrors((prev) => ({ ...prev, floor: t('floor.selectFloorFirst') }));
-      toast.error(t('floor.selectFloorFirst'));
+      setFormErrors((prev) => ({ ...prev, floor: t('floor.selectFloorFirst') || 'Please select floor first' }));
+      toast.error(t('floor.selectFloorFirst') || 'Please select floor first');
       return;
     }
 
     try {
       sessionStorage.setItem('editingFloorForm', JSON.stringify(currentForm));
+      sessionStorage.setItem('renter_return_focus', 'true');
     } catch {
       // Session staging is best-effort before navigating to renter screen.
     }
@@ -237,9 +363,15 @@ export const useFloorDataHandlers = (params: {
     const floorIdParam = currentForm.id ? String(currentForm.id) : 'new';
     const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     params.set('floorId', floorIdParam);
+    if (selectedFloorType === 'OpenPlot' || currentForm.isOpenPlot || String(currentForm.floorId) === '77' || String(currentForm.floor) === '77') {
+      params.set('drawer', 'OpenPlot');
+    } else {
+      params.set('drawer', currentForm.id ? 'edit' : 'add');
+    }
     const renterManagementUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission/Renter?${params.toString()}`;
     router.push(renterManagementUrl);
-  }, [editingFloorForm, t, setFormErrors, router, locale, propertyId]);
+  }, [editingFloorForm, t, setFormErrors, router, locale, propertyId, selectedFloorType]);
+
 
   return {
     handleSave,

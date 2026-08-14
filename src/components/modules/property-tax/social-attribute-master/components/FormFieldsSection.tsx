@@ -12,6 +12,8 @@ interface FormFieldsSectionProps {
   handleToggleIsChild: () => void;
   handleToggleIsRequiredWhenParentTrue: () => void;
   handleToggleIsDiscountApplicable: () => void;
+  handleToggleIsPhotoRequired: () => void;
+  handleToggleIsDocumentRequired: () => void;
   errors: Partial<Record<keyof SocialAttributeFormModel, string>>;
   showError: (field: keyof SocialAttributeFormModel) => boolean;
   t: (key: string) => string;
@@ -26,6 +28,8 @@ export const FormFieldsSection = ({
   handleToggleIsChild,
   handleToggleIsRequiredWhenParentTrue,
   handleToggleIsDiscountApplicable,
+  handleToggleIsPhotoRequired,
+  handleToggleIsDocumentRequired,
   errors,
   showError,
   t,
@@ -34,11 +38,11 @@ export const FormFieldsSection = ({
   const dataTypeOptions = useMemo(
     () => [
       { label: t('form.fields.dataType.placeholder'), value: '' },
-      { label: 'DECIMAL', value: 'DECIMAL' },
-      { label: 'BIT', value: 'BIT' },
-      { label: 'INTEGER', value: 'INT' },
-      { label: 'TEXT', value: 'TEXT' },
-      { label: 'DATE', value: 'DATE' },
+      { label: t('form.fields.dataType.options.decimal'), value: 'DECIMAL' },
+      { label: t('form.fields.dataType.options.bit'), value: 'BIT' },
+      { label: t('form.fields.dataType.options.integer'), value: 'INT' },
+      { label: t('form.fields.dataType.options.text'), value: 'TEXT' },
+      { label: t('form.fields.dataType.options.date'), value: 'DATE' },
     ],
     [t]
   );
@@ -179,6 +183,30 @@ export const FormFieldsSection = ({
           onChange={handleToggleIsDiscountApplicable}
           showPopup={false}
         />
+      </div>
+
+      {/* Photo Required & Document Required (Side-by-side) */}
+      <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-3">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium text-slate-700">
+            {t('form.fields.isPhotoRequired.label')}
+          </div>
+          <ToggleSwitch
+            checked={formData.isPhotoRequired}
+            onChange={handleToggleIsPhotoRequired}
+            showPopup={false}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium text-slate-700">
+            {t('form.fields.isDocumentRequired.label')}
+          </div>
+          <ToggleSwitch
+            checked={formData.isDocumentRequired}
+            onChange={handleToggleIsDocumentRequired}
+            showPopup={false}
+          />
+        </div>
       </div>
     </div>
   );

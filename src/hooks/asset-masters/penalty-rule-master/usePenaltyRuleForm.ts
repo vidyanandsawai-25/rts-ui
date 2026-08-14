@@ -32,7 +32,6 @@ export function usePenaltyRuleForm({ initialData }: UsePenaltyRuleFormProps) {
   } = usePenaltyRuleFormState({ initialData });
 
   const { validate, showError } = usePenaltyRuleFormValidation({
-    isEdit,
     submittedOnce,
     touched,
     errors,

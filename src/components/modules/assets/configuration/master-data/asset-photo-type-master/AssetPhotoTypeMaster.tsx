@@ -12,9 +12,13 @@ import { deleteAssetPhotoTypeAction } from "@/app/[locale]/assets/configuration/
 import TableHeader from "@/components/common/TableHeader";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { PageContainer, SearchInput, Select } from "@/components/common";
+
+
 import { getAssetPhotoTypeColumns } from "./AssetPhotoTypeColumns";
 import { useAssetPhotoSearch } from "@/hooks/asset-masters/assetphototype/useAssetPhotoSearch";
 import { useAssetPhotoPagination } from "@/hooks/asset-masters/assetphototype/useAssetPhotoPagination";
+import { getErrorMessage } from "@/hooks/asset-masters/assetphototype/validation";
+
 
 export function AssetPhotoTypeMaster({
   data,
@@ -31,6 +35,8 @@ export function AssetPhotoTypeMaster({
   const locale = useLocale();
 
   const { confirm } = useConfirm();
+
+
 
   const { search, currentSearchTerm, handleSearchChange } = useAssetPhotoSearch({
     pageSize,
@@ -93,44 +99,29 @@ export function AssetPhotoTypeMaster({
 
   const columns = getAssetPhotoTypeColumns(t, tCommon, sortBy, sortOrder, handleSort);
 
-  const handleEdit = useCallback(
-    (row: AssetPhotoType) => {
-      router.push(`/${locale}/assets/configuration/master-data/asset-photo-type/edit/${row.id}`);
-    },
-    [router, locale]
-  );
+  const handleEdit = useCallback((row: AssetPhotoType) => {
+    router.push(`/${locale}/assets/configuration/master-data/asset-photo-type/edit/${row.id}`);
+  }, [router, locale]);
 
-  const handleDelete = useCallback(
-    (row: AssetPhotoType) => {
-      confirm({
-        variant: "delete",
-        title: `${t("list.table.photoTypeCode")}: ${row.photoTypeCode}`,
-        description: `${t("delete.confirmDescription")}`,
-        meta: {
-          name: row.photoTypeName,
-        },
-        onConfirm: async () => {
-          const fd = new FormData();
-          fd.append("id", String(row.id));
-          const result = await deleteAssetPhotoTypeAction(fd);
-          if (result.success) {
-            toast.success(
-              t("success.deleted", { code: row.photoTypeCode })
-            );
-            router.refresh();
-          } else {
-            const errorMessage = result.message ||
-              (result.statusCode === 409 ? t("apiErrors.inUse") :
-                result.statusCode === 400 ? t("apiErrors.validationError") :
-                  result.statusCode === 404 ? t("apiErrors.notFound") :
-                    tCommon("errors.deleteError"));
-            toast.error(errorMessage);
-          }
-        },
-      });
-    },
-    [confirm, router, t, tCommon]
-  );
+  const handleDelete = useCallback((row: AssetPhotoType) => {
+    confirm({
+      variant: "delete",
+      title: `${t("list.table.photoTypeCode")}: ${row.photoTypeCode}`,
+      description: `${t("delete.confirmDescription")}`,
+      meta: { name: row.photoTypeName },
+      onConfirm: async () => {
+        const fd = new FormData();
+        fd.append("id", String(row.id));
+        const result = await deleteAssetPhotoTypeAction(fd);
+        if (result.success) {
+          toast.success(t("success.deleted", { code: row.photoTypeCode }));
+          router.refresh();
+        } else {
+          toast.error(getErrorMessage(result.message, result.statusCode, t, tCommon, t("list.title")));
+        }
+      },
+    });
+  }, [confirm, router, t, tCommon]);
 
   const { start, end, total } = paginationInfo;
   return (
@@ -195,3 +186,5 @@ export function AssetPhotoTypeMaster({
     </PageContainer>
   );
 }
+
+

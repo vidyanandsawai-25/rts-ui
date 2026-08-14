@@ -319,7 +319,7 @@
     "selectPropertyType": "संपत्ति प्रकार चुनें",
     "category": "संपत्ति की श्रेणी",
     "selectCategory": "श्रेणी चुनें",
-    "taxZoneId": "कर क्षेत्र आईडी",
+    "taxZoneId": "कर क्षेत्र",
     "selectTaxZone": "कर क्षेत्र चुनें",
     "bulkCreateMode": "थोक निर्माण मोड",
     "bulkCreateDescription": "एक साथ कई संपत्तियां बनाएं",

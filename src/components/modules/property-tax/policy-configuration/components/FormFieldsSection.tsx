@@ -1,7 +1,6 @@
 import { Input, TextArea, ValidationMessage, Select } from "@/components/common";
 import type { PolicyConfigurationFormModel } from "@/types/policy-configuration.types";
 import {
-  POLICY_CATEGORIES,
   BIT_OPTIONS,
   getPlaceholderForDataType,
   getInputTypeForDataType,
@@ -19,6 +18,9 @@ interface FormFieldsSectionProps {
   isEdit?: boolean;
 }
 
+const READONLY_INPUT_CLASS =
+  "disabled:opacity-100 disabled:text-gray-700 disabled:font-normal disabled:bg-gray-100 disabled:cursor-not-allowed";
+
 export function FormFieldsSection({
   formData,
   errors,
@@ -30,6 +32,8 @@ export function FormFieldsSection({
   t,
   isEdit,
 }: FormFieldsSectionProps) {
+  const readonlyInputClass = isEdit ? READONLY_INPUT_CLASS : undefined;
+
   const valuePlaceholder = formData.dataType
     ? getPlaceholderForDataType(formData.dataType)
     : t("form.fields.policyValue.placeholder");
@@ -49,7 +53,9 @@ export function FormFieldsSection({
         .filter(Boolean)
         .map((v) => ({ label: v, value: v }));
     }
-    if (isBitType) return BIT_OPTIONS;
+    if (isBitType) {
+      return [...BIT_OPTIONS];
+    }
     return null;
   })();
 
@@ -73,20 +79,22 @@ export function FormFieldsSection({
             placeholder={t("form.fields.policyCode.placeholder")}
             fullWidth
             disabled={isEdit}
+            className={readonlyInputClass}
           />
           <ValidationMessage message={errors.policyCode} visible={showError("policyCode")} />
         </div>
         <div>
-          <Select
+          <Input
             name="category"
             label={t("form.fields.category.label")}
             required
-            options={POLICY_CATEGORIES}
             value={formData.category}
-            onChange={onSelectChange}
-            onBlur={onSelectBlur}
+            onChange={onChange}
+            onBlur={onBlur}
             placeholder={t("form.fields.category.placeholder")}
-            error={showError("category") ? errors.category : undefined}
+            fullWidth
+            disabled={isEdit}
+            className={readonlyInputClass}
           />
           <ValidationMessage message={errors.category} visible={showError("category")} />
         </div>
@@ -103,6 +111,8 @@ export function FormFieldsSection({
           onBlur={onBlur}
           placeholder={t("form.fields.displayName.placeholder")}
           fullWidth
+          disabled={isEdit}
+          className={readonlyInputClass}
         />
         <ValidationMessage message={errors.displayName} visible={showError("displayName")} />
       </div>
@@ -120,27 +130,12 @@ export function FormFieldsSection({
           rows={3}
           error={showError("description")}
           errorMessage={errors.description}
+          disabled={isEdit}
+          className={readonlyInputClass}
         />
       </div>
 
-      {/* Row 4: Data Type + Unit */}
-      <div className="grid grid-cols-2 gap-4">
-     <div>
-          {/* Unit: optional for all data types */}
-          <Input
-            name="unit"
-            label={t("form.fields.unit.label")}
-            value={formData.unit}
-            onChange={onChange}
-            onBlur={onBlur}
-            placeholder={t("form.fields.unit.placeholder")}
-            fullWidth
-          />
-        </div>
-      </div>
-
-
-      {/* Row 5: Policy Value + Default Value */}
+      {/* Row 4: Policy Value + Default Value */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           {useDropdown ? (
@@ -174,7 +169,7 @@ export function FormFieldsSection({
         </div>
 
         <div>
-          {useDropdown ? (
+          {useDropdown && !isEdit ? (
              <div className="[&_ul[role='listbox']]:!top-full [&_ul[role='listbox']]:!bottom-auto [&_ul[role='listbox']]:!mt-1 [&_ul[role='listbox']]:!mb-0">
             <Select
               name="defaultValue"
@@ -186,6 +181,8 @@ export function FormFieldsSection({
               onBlur={onSelectBlur}
               placeholder={dropdownPlaceholder}
               error={showError("defaultValue") ? errors.defaultValue : undefined}
+              disabled={isEdit}
+              className={readonlyInputClass}
             />
               </div>
           ) : (
@@ -199,9 +196,26 @@ export function FormFieldsSection({
               onBlur={onBlur}
               placeholder={defaultValuePlaceholder}
               fullWidth
+              disabled={isEdit}
+              className={readonlyInputClass}
             />
           )}
           <ValidationMessage message={errors.defaultValue} visible={showError("defaultValue")} />
+        </div>
+      </div>
+
+      {/* Row 5: Unit */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Input
+            name="unit"
+            label={t("form.fields.unit.label")}
+            value={formData.unit}
+            onChange={onChange}
+            onBlur={onBlur}
+            placeholder={t("form.fields.unit.placeholder")}
+            fullWidth
+          />
         </div>
       </div>
  </div>

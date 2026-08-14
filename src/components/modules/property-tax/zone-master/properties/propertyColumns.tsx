@@ -38,25 +38,18 @@ export function getPropertyColumns({
         (pageNumber - 1) * pageSize + rowIndex + 1,
     },
     {
-      key: "wardNo",
-      label: t("propertyList.columns.wardNo"),
-      width: "100px",
-      render: (_: unknown, row: Record<string, unknown>) => {
-        const ward = wards.find((w) => w.id === row.wardId);
-        return ward?.wardNo || "-";
-      },
-    },
-    {
       key: "propertyNo",
       label: t("propertyList.columns.propertyNo"),
-      width: "120px",
-      render: (value: unknown) => (value as string) || "-",
-    },
-    {
-      key: "partitionNo",
-      label: t("propertyList.columns.partitionNo"),
-      width: "120px",
-      render: (value: unknown) => (value as string) || "-",
+      width: "200px",
+      render: (_: unknown, row: Record<string, unknown>) => {
+        const ward = wards.find((w) => w.id === row.wardId);
+        const parts = [
+          ward?.wardNo,
+          row.propertyNo as string | undefined,
+          row.partitionNo as string | undefined,
+        ].filter(Boolean);
+        return parts.length ? parts.join("-") : "-";
+      },
     },
     {
       key: "categoryId",

@@ -39,7 +39,7 @@ export function usePropertyMedia({
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
   const [showMoreImages, setShowMoreImages] = useState(false);
-  const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave } = useImageHoverPreview();
+  const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave, resetHoverPreview } = useImageHoverPreview();
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
 
@@ -49,6 +49,7 @@ export function usePropertyMedia({
   useEffect(() => {
     if (propertyId !== prevPropertyIdRef.current) {
       prevPropertyIdRef.current = propertyId;
+      resetHoverPreview();
       setFullyLoadedIds(new Set());
       if (propertyId && propertyMediaCache.has(propertyId)) {
         setPhotos(propertyMediaCache.get(propertyId)!.photos);
@@ -56,21 +57,23 @@ export function usePropertyMedia({
         setPhotos(initialPhotos);
       }
     }
-  }, [propertyId, initialPhotos]);
+  }, [propertyId, initialPhotos, resetHoverPreview]);
 
   useEffect(() => {
     if (!arePhotosEqual(initialPhotos, prevPhotosRef.current)) {
+      resetHoverPreview();
       setPhotos(initialPhotos);
       prevPhotosRef.current = initialPhotos;
     }
-  }, [initialPhotos]);
+  }, [initialPhotos, resetHoverPreview]);
 
   useEffect(() => {
     if (!areSlotsEqual(initialPhotoSlots, prevSlotsRef.current)) {
+      resetHoverPreview();
       setFullyLoadedIds(new Set());
       prevSlotsRef.current = initialPhotoSlots;
     }
-  }, [initialPhotoSlots]);
+  }, [initialPhotoSlots, resetHoverPreview]);
 
   const categories = useMemo(
     () => mapSlotsToCategories(initialPhotoSlots, photos, fullyLoadedIds, t),
@@ -79,6 +82,7 @@ export function usePropertyMedia({
 
   const handleCategoriesChange = useCallback(
     (newCats: PhotoCategory[]) => {
+      resetHoverPreview();
       const updated: PropertyPhotoDto[] = [];
       newCats.forEach((c) =>
         c.images.forEach((img) => {
@@ -127,7 +131,7 @@ export function usePropertyMedia({
         evictOldestCacheEntry();
       }
     },
-    [propertyId, initialPhotoSlots, onPhotosChange, onPhotoSlotsChange]
+    [propertyId, initialPhotoSlots, onPhotosChange, onPhotoSlotsChange, resetHoverPreview]
   );
 
   const [photoPlanCategory, propertyPhotoCategory] = useMemo(
@@ -173,6 +177,13 @@ export function usePropertyMedia({
     };
   }, [gisCategory, t, hasCoords, initialLatitude, initialLongitude, initialWaybackReleases]);
 
+  const signatureCategory = useMemo(
+    () => findCategory(categories, ['SIGNATURE', 'OWNER_SIGNATURE'], ['signature', 'owner signature']),
+    [categories]
+  );
+
+  const signaturePhoto = signatureCategory?.images?.[0];
+
   const photoPlanPhoto = photoPlanCategory?.images && photoPlanCategory.images.length > 0
     ? photoPlanCategory.images[photoPlanCategory.images.length - 1]
     : undefined;
@@ -182,7 +193,7 @@ export function usePropertyMedia({
     const all = categories.flatMap((c) => c.images);
     return all.filter((img) => {
       const code = img.photoTypeCode?.toUpperCase() || '';
-      if (code === 'FLOOR' || code === 'GIS' || code === 'CHANGE_DETECTION') return false;
+      if (code === 'FLOOR' || code === 'GIS' || code === 'CHANGE_DETECTION' || code.includes('SIGNATURE')) return false;
       if (propertyPhoto && img.propertyPhotoId === propertyPhoto.propertyPhotoId) return false;
       if (photoPlanPhoto && img.propertyPhotoId === photoPlanPhoto.propertyPhotoId) return false;
       return true;
@@ -211,6 +222,9 @@ export function usePropertyMedia({
     handleImageHover,
     handleImageLeave,
     cancelImageLeave,
+    resetHoverPreview,
+    signatureCategory,
+    signaturePhoto,
     t,
   };
 }

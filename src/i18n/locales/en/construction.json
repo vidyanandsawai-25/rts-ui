@@ -89,7 +89,7 @@
     "apiErrors": {
       "duplicateCode": "Construction code already exists. Please use a different code.",
       "duplicateDescription": "Description already exists. Please use a different description.",
-      "duplicateRecord": "Please check Construction Code and Description - duplicates not allowed.",
+      "duplicateRecord": "Please check Construction Type and Description - duplicates not allowed.",
       "validationError": "Invalid data provided. Please check all fields.",
       "invalidData": "Invalid data provided. Please check all fields.",
       "notFound": "Construction type not found.",

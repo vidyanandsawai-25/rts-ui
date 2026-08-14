@@ -8,6 +8,7 @@ interface BackendRuleDto {
   ruleName?: string;
   ruleScopeId?: number;
   ruleScopeName?: string;
+  propertyRuleEvaluationMasterId?: number;
   subRules?: RuleItem['subRules'];
   isEnabled?: boolean;
   conditionsJson?: string;
@@ -43,6 +44,7 @@ interface RuleResponseData {
   ruleName?: string;
   ruleScopeId?: number;
   ruleScopeName?: string;
+  propertyRuleEvaluationMasterId?: number;
   subRules?: RuleItem['subRules'];
   isEnabled?: boolean;
   conditionsJson?: string;
@@ -71,6 +73,7 @@ function mapBackendDtoToRuleItem(dto: BackendRuleDto): RuleItem {
     ruleName: dto.ruleName || '',
     ruleScopeId: dto.ruleScopeId || 0,
     ruleScopeName: dto.ruleScopeName,
+    propertyRuleEvaluationMasterId: dto.propertyRuleEvaluationMasterId,
     subRules: dto.subRules,
     isActive: dto.isEnabled !== undefined ? !!dto.isEnabled : dtoWithActive.isActive !== undefined ? !!dtoWithActive.isActive : false,
     conditionsJson: dto.conditionsJson ?? '',
@@ -97,7 +100,8 @@ function mapRuleItemToBackendPayload(item: RuleItem, userId: number = 1) {
     ruleCode: item.ruleCode || '',
     ruleName: item.ruleName,
     description: item.description || '',
-    ruleScopeId: item.ruleScopeId,
+    ruleScopeId: item.ruleScopeId || 0,
+    propertyRuleEvaluationMasterId: item.propertyRuleEvaluationMasterId || 0,
     ruleCategory: item.ruleCategory,
     conditionsJson: item.conditionsJson,
     effectJson: item.effectJson,
@@ -111,6 +115,7 @@ function mapRuleItemToBackendPayload(item: RuleItem, userId: number = 1) {
     stopProcessing: item.stopProcessing,
     skipRuleIds: item.skipRuleIds,
     exclusionReason: item.exclusionReason,
+    ...(item.ruleJson ? { ruleJson: item.ruleJson } : {}),
   };
 }
 

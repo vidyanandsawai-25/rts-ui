@@ -83,7 +83,7 @@ export function WorkflowTabButton({ tab, isActive, icon: Icon, colors }: Workflo
             {/* Active: thick left bar */}
             {isActive && (
                 <div
-                    className="absolute left-0 top-0 bottom-0 w-2.5 rounded-l-xl z-10 shadow-sm"
+                    className="absolute left-0 top-0 bottom-0 w-2.5 rounded-l-xl z-10 shadow-sm "
                     style={{ backgroundColor: colors.iconBgActive }}
                     aria-hidden
                 />

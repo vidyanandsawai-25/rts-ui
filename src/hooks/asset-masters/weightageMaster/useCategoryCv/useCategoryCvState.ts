@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useRef, useCallback } from "react";
 import { UseFactorCVMaster } from "@/types/useCategoryCvFactor.types";
 
@@ -11,12 +9,44 @@ export function useCategoryCvState(
     currentSelectedYear: string, 
     currentTypeOfUse: string
 ) {
-    const [selectedYear, setSelectedYear] = useState<string>(currentSelectedYear);
-    const [editableRows, setEditableRows] = useState<Record<string, UseFactorCVMaster>>({});
-    const [selectedTypeId, setSelectedTypeId] = useState<number | null>(currentTypeOfUse ? Number(currentTypeOfUse) : null);
-    const [typeOfUseId, setTypeOfUseId] = useState<string>(currentTypeOfUse);
-    const [factorValue, setFactorValue] = useState<string>("0.00");
+    const [userYear, setUserYear] = useState<string | null>(null);
+    const [prevCurrentYear, setPrevCurrentYear] = useState<string>(currentSelectedYear);
 
+    if (prevCurrentYear !== currentSelectedYear) {
+        setPrevCurrentYear(currentSelectedYear);
+        setUserYear(null);
+    }
+
+    const selectedYear = userYear ?? currentSelectedYear;
+    const setSelectedYear = useCallback((year: string | ((prev: string) => string)) => {
+        setUserYear((prev) => typeof year === "function" ? year(prev ?? currentSelectedYear) : year);
+    }, [currentSelectedYear]);
+
+    const [editableRows, setEditableRows] = useState<Record<string, UseFactorCVMaster>>({});
+    
+    const [userTypeOfUseId, setUserTypeOfUseId] = useState<string | null>(null);
+    const [prevCurrentTypeOfUse, setPrevCurrentTypeOfUse] = useState<string>(currentTypeOfUse);
+
+    if (prevCurrentTypeOfUse !== currentTypeOfUse) {
+        setPrevCurrentTypeOfUse(currentTypeOfUse);
+        setUserTypeOfUseId(null);
+    }
+
+    const typeOfUseId = userTypeOfUseId ?? currentTypeOfUse;
+    const setTypeOfUseId = useCallback((val: string | ((prev: string) => string)) => {
+        setUserTypeOfUseId((prev) => typeof val === "function" ? val(prev ?? currentTypeOfUse) : val);
+    }, [currentTypeOfUse]);
+
+    const selectedTypeId = typeOfUseId ? Number(typeOfUseId) : null;
+    const setSelectedTypeId = useCallback((val: number | null | ((prev: number | null) => number | null)) => {
+        setUserTypeOfUseId((prev) => {
+            const currentNum = prev ? Number(prev) : (currentTypeOfUse ? Number(currentTypeOfUse) : null);
+            const nextNum = typeof val === "function" ? val(currentNum) : val;
+            return nextNum ? String(nextNum) : "";
+        });
+    }, [currentTypeOfUse]);
+
+    const [factorValue, setFactorValue] = useState<string>("0.00");
     const [isUpdating, setIsUpdating] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isGeneratingAll, setIsGeneratingAll] = useState(false);

@@ -66,7 +66,7 @@ describe("Designation API Service", () => {
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
 
       const result = await getDesignationsPaged(1, 10, "query", "designationCode", "asc");
-      expect(apiClient.get).toHaveBeenCalledWith("/AmsDesignation?PageNumber=1&PageSize=10&MarkedForDeletion=false&SearchTerm=query&SortBy=designationCode&SortOrder=asc");
+      expect(apiClient.get).toHaveBeenCalledWith("/AssetDesignation?PageNumber=1&PageSize=10&MarkedForDeletion=false&SearchTerm=query&SortBy=designationCode&SortOrder=asc");
       expect(result).toEqual(mockApiResponse.data);
     });
   });
@@ -80,7 +80,7 @@ describe("Designation API Service", () => {
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
 
       const result = await getDesignationById(1);
-      expect(apiClient.get).toHaveBeenCalledWith("/AmsDesignation/1");
+      expect(apiClient.get).toHaveBeenCalledWith("/AssetDesignation/1");
       expect(result).toEqual(mockApiResponse.data);
     });
 
@@ -107,7 +107,7 @@ describe("Designation API Service", () => {
       };
 
       const result = await createDesignation(payload);
-      expect(apiClient.post).toHaveBeenCalledWith("/AmsDesignation", {
+      expect(apiClient.post).toHaveBeenCalledWith("/AssetDesignation", {
         ...payload,
         createdBy: null,
       });
@@ -134,7 +134,7 @@ describe("Designation API Service", () => {
       };
 
       const result = await updateDesignation(payload);
-      expect(apiClient.put).toHaveBeenCalledWith("/AmsDesignation/1", {
+      expect(apiClient.put).toHaveBeenCalledWith("/AssetDesignation/1", {
         ...payload,
         updatedBy: null,
       });
@@ -150,7 +150,7 @@ describe("Designation API Service", () => {
       vi.mocked(apiClient.delete).mockResolvedValue(mockApiResponse);
 
       await deleteDesignation(1);
-      expect(apiClient.delete).toHaveBeenCalledWith("/AmsDesignation/1");
+      expect(apiClient.delete).toHaveBeenCalledWith("/AssetDesignation/1");
     });
   });
 });

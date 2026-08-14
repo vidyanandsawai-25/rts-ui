@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { Tooltip } from '@/components/common';
+// import { Tooltip } from '@/components/ui/tooltip'; // adjust import path as needed
 
 interface SummaryCardData {
   label: string;
@@ -16,59 +18,69 @@ interface TaxSummaryCardsProps {
   cards: SummaryCardData[];
 }
 
+// Higher contrast - white bg + darker text + colored left border for identity
 const colorMap = {
   sky: {
-    text: 'text-blue-700',
-    lightText: 'text-blue-600',
-    bg: 'bg-blue-100/80',
-    border: 'border-blue-200',
-    dot: 'bg-blue-500',
+    text: 'text-sky-900',
+    label: 'text-sky-800',
+    bg: 'bg-white',
+    border: 'border-sky-300',
+    leftBar: 'bg-sky-600',
   },
   purple: {
-    text: 'text-purple-700',
-    lightText: 'text-purple-600',
-    bg: 'bg-purple-100/80',
-    border: 'border-purple-200',
-    dot: 'bg-purple-500',
+    text: 'text-purple-900',
+    label: 'text-purple-800',
+    bg: 'bg-white',
+    border: 'border-purple-300',
+    leftBar: 'bg-purple-600',
   },
   amber: {
-    text: 'text-orange-700',
-    lightText: 'text-orange-600',
-    bg: 'bg-orange-100/80',
-    border: 'border-orange-200',
-    dot: 'bg-orange-500',
+    text: 'text-orange-900',
+    label: 'text-orange-800',
+    bg: 'bg-white',
+    border: 'border-orange-300',
+    leftBar: 'bg-orange-600',
   },
   emerald: {
-    text: 'text-emerald-700',
-    lightText: 'text-emerald-600',
-    bg: 'bg-emerald-100/80',
-    border: 'border-emerald-200',
-    dot: 'bg-emerald-500',
+    text: 'text-emerald-900',
+    label: 'text-emerald-800',
+    bg: 'bg-white',
+    border: 'border-emerald-300',
+    leftBar: 'bg-emerald-600',
   },
 };
 
-const getDiffColor = (diff: string | number) => {
+type DiffState = 'increase' | 'decrease' | 'neutral';
+
+const getDiffState = (diff: string | number): DiffState => {
   if (typeof diff === 'number') {
-    if (diff > 0) return 'text-emerald-600 bg-emerald-100 border-emerald-200';
-    if (diff < 0) return 'text-rose-600 bg-rose-100 border-rose-200';
-    return 'text-gray-500 bg-gray-100 border-gray-200';
+    if (diff > 0) return 'increase';
+    if (diff < 0) return 'decrease';
+    return 'neutral';
   }
   const normalized = diff.trim();
-  if (normalized.startsWith('+')) return 'text-emerald-600 bg-emerald-100 border-emerald-200';
-  if (normalized.startsWith('-')) return 'text-rose-600 bg-rose-100 border-rose-200';
-  return 'text-gray-500 bg-gray-100 border-gray-200';
+  if (normalized.startsWith('+')) return 'increase';
+  if (normalized.startsWith('-')) return 'decrease';
+  return 'neutral';
 };
 
-const getDiffIcon = (diff: string | number) => {
-  if (typeof diff === 'number') {
-    if (diff > 0) return <ArrowUp className="w-3 h-3" />;
-    if (diff < 0) return <ArrowDown className="w-3 h-3" />;
-    return <Minus className="w-3 h-3" />;
-  }
-  const normalized = diff.trim();
-  if (normalized.startsWith('+')) return <ArrowUp className="w-3 h-3" />;
-  if (normalized.startsWith('-')) return <ArrowDown className="w-3 h-3" />;
-  return <Minus className="w-3 h-3" />;
+// WCAG AA compliant pill colors
+const diffColorMap: Record<DiffState, string> = {
+  increase: 'text-emerald-900 bg-emerald-100 border-emerald-400',
+  decrease: 'text-rose-900 bg-rose-100 border-rose-400',
+  neutral: 'text-slate-800 bg-slate-100 border-slate-400',
+};
+
+const diffIconMap: Record<DiffState, React.ReactNode> = {
+  increase: <ArrowUp className="w-3 h-3" strokeWidth={3} aria-hidden="true" />,
+  decrease: <ArrowDown className="w-3 h-3" strokeWidth={3} aria-hidden="true" />,
+  neutral: <Minus className="w-3 h-3" strokeWidth={3} aria-hidden="true" />,
+};
+
+const diffLabelMap: Record<DiffState, string> = {
+  increase: 'Increased by',
+  decrease: 'Decreased by',
+  neutral: 'No change',
 };
 
 const getDiffValue = (diff: string | number) => {
@@ -84,22 +96,60 @@ const DiffPill = ({
   difference: string | number;
   unit?: string;
   className?: string;
-}) => (
-  <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${getDiffColor(difference)} ${className}`}>
-    {getDiffIcon(difference)}
-    <span>
-      {getDiffValue(difference)}
-      {unit ? ` ${unit}` : ''}
-    </span>
-  </div>
-);
+}) => {
+  const state = getDiffState(difference);
+  const value = getDiffValue(difference);
+
+  return (
+    <div
+      className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${diffColorMap[state]} ${className}`}
+      role="status"
+      aria-label={`${diffLabelMap[state]} ${value}${unit ? ` ${unit}` : ''}`}
+    >
+      {diffIconMap[state]}
+      <span>
+        {value}
+        {unit ? ` ${unit}` : ''}
+      </span>
+    </div>
+  );
+};
+
+/* ---------- Truncated value with Tooltip ---------- */
+const TruncatedValue = ({
+  displayValue,
+  tooltipValue,
+  className,
+}: {
+  displayValue: string;
+  tooltipValue?: string;
+  className?: string;
+}) => {
+  const fullValue = tooltipValue ?? displayValue;
+
+  return (
+    <Tooltip content={<div className="whitespace-normal break-words text-left">{fullValue}</div>} placement="top">
+      <span
+        tabIndex={0}
+        title={fullValue}
+        className={`truncate cursor-help outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1 rounded-sm ${className ?? ''}`}
+      >
+        {displayValue}
+      </span>
+    </Tooltip>
+  );
+};
 
 export function TaxSummaryCards({ cards }: TaxSummaryCardsProps) {
   const t = useTranslations('reassessment');
   const changedStatus = t('summaryCards.changedStatus');
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+    <div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2"
+      role="list"
+      aria-label="Tax reassessment summary"
+    >
       {cards.map((card, index) => {
         const colors = colorMap[card.color];
         const differenceText = String(card.difference);
@@ -111,29 +161,48 @@ export function TaxSummaryCards({ cards }: TaxSummaryCardsProps) {
           normalizedDiff === changedStatus.toLowerCase() ||
           differenceText.trim().toUpperCase() === 'CHANGED';
 
+        const oldValueDisplay = `${card.oldValue}${isAreaCard && card.unit ? ` ${card.unit}` : ''}`;
+        const newValueDisplay = `${card.newValue}${isAreaCard && card.unit ? ` ${card.unit}` : ''}`;
+
         return (
           <div
             key={`${card.label}-${index}`}
-            className={`relative rounded-lg border ${colors.border} ${colors.bg} px-2.5 py-1.5 transition-all duration-200 hover:shadow-sm hover:border-gray-300`}
+            role="listitem"
+            aria-label={`${card.label}: from ${oldValueDisplay} to ${newValueDisplay}`}
+            className={`relative overflow-hidden rounded-lg border ${colors.border} ${colors.bg} pl-3 pr-2.5 py-1.5 transition-all duration-200 hover:shadow-sm hover:border-gray-400`}
           >
+            {/* Colored left accent bar - identifies category without hurting contrast */}
+            <div
+              className={`absolute left-0 top-0 bottom-0 w-1 ${colors.leftBar}`}
+              aria-hidden="true"
+            />
+
             {/* Label row */}
             <div className="flex items-center justify-between mb-0.5 gap-1">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <div className={`w-1 h-2.5 rounded-full ${colors.dot} flex-shrink-0`} />
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${colors.text}`}>
-                  {card.label}
-                </span>
-              </div>
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${colors.label} truncate`}>
+                {card.label}
+              </span>
 
               {/* Status pill for use card */}
               {isUseCard && (
-                <div className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border flex-shrink-0 ${
-                  isChangedStatus
-                    ? 'bg-amber-100 text-amber-700 border-amber-200'
-                    : 'bg-gray-100 text-gray-600 border-gray-200'
-                }`}>
-                  {isChangedStatus ? changedStatus : differenceText}
-                </div>
+                isChangedStatus ? (
+                  <span
+                    className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border flex-shrink-0 bg-amber-100 text-amber-900 border-amber-400"
+                    role="status"
+                  >
+                    {changedStatus}
+                  </span>
+                ) : (
+                  <Tooltip content={differenceText} placement="top">
+                    <span
+                      tabIndex={0}
+                      className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border flex-shrink-0 bg-slate-100 text-slate-800 border-slate-400 max-w-[120px] truncate cursor-help outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+                      role="status"
+                    >
+                      {differenceText}
+                    </span>
+                  </Tooltip>
+                )
               )}
 
               {/* Difference - top right for tax card only */}
@@ -146,31 +215,35 @@ export function TaxSummaryCards({ cards }: TaxSummaryCardsProps) {
             <div className="flex items-center gap-1">
               {/* Old */}
               <div className="flex items-center gap-1 flex-1 min-w-0">
-                <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
                   {t('summaryCards.oldLabel')}:
                 </span>
-                <span className="text-xs font-semibold text-gray-800 truncate">
-                  {card.oldValue}{isAreaCard && card.unit ? ` ${card.unit}` : ''}
-                </span>
+                <TruncatedValue
+                  displayValue={oldValueDisplay}
+                  tooltipValue={oldValueDisplay}
+                  className="text-xs font-semibold text-slate-900"
+                />
               </div>
 
               {/* Arrow */}
-              <span className="text-gray-400 text-[10px]">→</span>
+              <span className="text-slate-500 text-[10px] font-bold" aria-hidden="true">→</span>
 
               {/* New */}
               <div className="flex items-center gap-1 flex-1 min-w-0">
-                <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
                   {t('summaryCards.newLabel')}:
                 </span>
-                <span className={`text-xs font-bold ${colors.text} truncate`}>
-                  {card.newValue}{isAreaCard && card.unit ? ` ${card.unit}` : ''}
-                </span>
+                <TruncatedValue
+                  displayValue={newValueDisplay}
+                  tooltipValue={newValueDisplay}
+                  className={`text-xs font-bold ${colors.text}`}
+                />
               </div>
 
               {/* Difference - bottom row for area and RV cards */}
               {!isUseCard && !isTaxCard && (
                 <>
-                  <div className="w-px h-6 bg-gray-200/50 mx-0.5" />
+                  <div className="w-px h-6 bg-slate-300 mx-0.5" aria-hidden="true" />
                   <DiffPill
                     difference={card.difference}
                     unit={isAreaCard ? card.unit : undefined}

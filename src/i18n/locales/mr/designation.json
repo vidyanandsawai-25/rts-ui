@@ -55,7 +55,7 @@
     },
     "validation": {
       "designationCodeRequired": "पदनाम कोड आवश्यक आहे",
-      "designationCodeMaxLength": "जास्तीत जास्त लांबी ५० अक्षरे असावी",
+      "designationCodeMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
       "designationCodeFormat": "केवळ अक्षरे, अंक आणि अंडरस्कोरची परवानगी आहे",
       "designationNameRequired": "पदनाम नाव आवश्यक आहे",
       "designationNameMaxLength": "जास्तीत जास्त लांबी १०० अक्षरे असावी",
@@ -65,7 +65,8 @@
       "owningDepartmentRequired": "विभाग आवश्यक आहे",
       "mustBeActive": "जतन करण्यासाठी पदनाम सक्रिय असणे आवश्यक आहे",
       "descriptionMaxLength": "जास्तीत जास्त लांबी {count} अक्षरे असावी",
-      "descriptionFormat": "अवैध वर्णन स्वरूप"
+      "descriptionFormat": "अवैध वर्णन स्वरूप",
+      "invalidFormat": "अवैध स्वरूप"
     }
   },
   "delete": {
@@ -73,10 +74,12 @@
   },
   "apiErrors": {
     "duplicateRecord": "कृपया पदनाम कोड तपासा - डुप्लिकेट रेकॉर्डला परवानगी नाही.",
+    "A record with the same details already exists": "समान तपशीलांचे रेकॉर्ड आधीपासूनच अस्तित्वात आहे.",
     "notFound": "पदनाम आढळला नाही.",
     "inUse": "हे पदनाम निष्क्रिय/डिलीट करता येत नाही कारण ते इतर रेकॉर्डमध्ये वापरले गेले आहे.",
     "invalidData": "अवैध डेटा प्रदान केला आहे. कृपया सर्व फील्ड तपासा.",
-    "operationFailed": "ऑपरेशन यशस्वी झाले नाही. कृपया नंतर पुन्हा प्रयत्न करा."
+    "operationFailed": "ऑपरेशन यशस्वी झाले नाही. कृपया नंतर पुन्हा प्रयत्न करा.",
+    "referencedIn": "{tables} तक्त्यात वापरलेले असल्याने हा {entity} निष्क्रिय किंवा डिलीट करता येत नाही."
   },
   "success": {
     "created": "नवीन पदनाम यशस्वीरित्या तयार केले: {code}",

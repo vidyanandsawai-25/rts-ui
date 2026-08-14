@@ -26,7 +26,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({
     username, 
     ulbName,
     userProfile,
-    profileError,
+    profileError: _profileError,
     sessionId,
     clientIp,
 }) => {
@@ -95,13 +95,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({
 
             {/* Body */}
             <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-                {/* Profile Error Warning */}
-                {profileError && (
-                    <div className="mb-4 p-2 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-800 flex gap-2 items-start">
-                        <Shield className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                        <p>{profileError}</p>
-                    </div>
-                )}
+
                 {/* User ID & Code */}
                 <div className="flex items-start gap-3">
                     <Hash className="w-4 h-4 text-gray-400 mt-0.5" />

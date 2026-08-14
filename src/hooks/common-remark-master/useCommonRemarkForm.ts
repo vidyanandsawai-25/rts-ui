@@ -69,7 +69,7 @@ export function useCommonRemarkForm({
     const isCustomMode = data.remarkType === "Other";
 
     if (isCustomMode) {
-      const customRemarkTypeErr = validateCustomRemarkType(customTypeVal, data.remarkType);
+      const customRemarkTypeErr = validateCustomRemarkType(customTypeVal, data.remarkType, categoryList);
       if (customRemarkTypeErr) {
         e.customRemarkType = t(customRemarkTypeErr) || "Invalid custom remark type.";
       }
@@ -91,7 +91,7 @@ export function useCommonRemarkForm({
     }
 
     return e;
-  }, [t, isEdit]);
+  }, [t, isEdit, categoryList]);
 
   const showError = useCallback((field: string) =>
     touched[field] && !!errors[field],
@@ -198,10 +198,11 @@ export function useCommonRemarkForm({
 
         if (res && !res.ok) {
           if (res.error === "duplicate") {
+            const dupMsg = t("form.validation.customRemarkTypeExists") || t("apiErrors.duplicateRecord") || "This remark type already exists.";
             setErrors({
-              customRemarkType: t("apiErrors.duplicateRecord") || "This remark type already exists.",
+              customRemarkType: dupMsg,
             });
-            toast.error(t("apiErrors.duplicateRecord") || "This remark type already exists.");
+            toast.error(dupMsg);
           } else {
             const rawMessage = res.message || "";
             const cleanMsg = getCleanErrorMessage(rawMessage);

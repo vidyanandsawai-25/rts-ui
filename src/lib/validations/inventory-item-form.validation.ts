@@ -1,6 +1,6 @@
 import type { InventoryConditionFormModel } from "@/types/asset-masters/inventory-condition.types";
 import type { InventoryNameFormModel } from "@/types/asset-masters/inventory-name.types";
-import { isAllZeros, CODE_REGEX, DESCRIPTION_REGEX, ASSET_INVENTORY_NAME_REGEX } from "@/lib/utils/validation-rules";
+import { isAllZeros, CODE_REGEX, DESCRIPTION_REGEX, ASSET_MASTER_NAME_REGEX } from "@/lib/utils/asset-validation-rules";
 
 export function validateInventoryConditionForm(
   data: InventoryConditionFormModel,
@@ -18,7 +18,7 @@ export function validateInventoryConditionForm(
       e.conditionName = t("configuration.masterData.form.errors.nameRequired");
     } else if (nameStr.length > 50) {
       e.conditionName = t("configuration.masterData.form.errors.nameTooLong50");
-    } else if (!ASSET_INVENTORY_NAME_REGEX.test(nameStr)) {
+    } else if (!ASSET_MASTER_NAME_REGEX.test(nameStr)) {
       e.conditionName = t("configuration.masterData.form.errors.nameFormat");
     }
     const factorNum = Number(data.conditionFactor);
@@ -63,7 +63,7 @@ export function validateInventoryNameForm(
       e.subTypeName = tCommon("validation.nameAllZeros");
     } else if (nameStr.length > 50) {
       e.subTypeName = t("configuration.masterData.form.errors.nameTooLong50");
-    } else if (!ASSET_INVENTORY_NAME_REGEX.test(nameStr)) {
+    } else if (!ASSET_MASTER_NAME_REGEX.test(nameStr)) {
       e.subTypeName = tCommon("validation.nameFormat");
     }
 

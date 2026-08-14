@@ -1,18 +1,21 @@
 'use client';
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Settings, Users, Shield } from 'lucide-react';
+import { Settings, Users, Shield, AlertCircle } from 'lucide-react';
 import { Tabs, TabList, Tab, TabPanel, TableHeader, PageContainer } from '@/components/common';
 import { UserConfigurationClientProps } from '@/types/user-management';
+import { useTranslations } from 'next-intl';
 
 export function UserConfigurationClient({
   userManagement,
   roleDesignationMaster,
   translations,
+  fetchError,
 }: UserConfigurationClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const tCommon = useTranslations('common');
 
   const activeTab = searchParams.get('tab') || 'users';
 
@@ -34,6 +37,18 @@ export function UserConfigurationClient({
     <PageContainer>
       <div className="space-y-3 overflow-x-hidden">
         <TableHeader icon={Settings} title={translations.title} subtitle={translations.subtitle} />
+
+        {fetchError && (
+          <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <AlertCircle className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
+            <div>
+              <p className="text-sm font-semibold">
+                {tCommon('messages.fetchError') || 'Error fetching data'}
+              </p>
+              <p className="text-xs text-red-700 mt-1 font-mono">{fetchError}</p>
+            </div>
+          </div>
+        )}
 
         <Tabs
           value={activeTab}

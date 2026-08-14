@@ -36,7 +36,8 @@ export default function RateMasterView({
   const t = useTranslations("ptis_RVRateMaster");
   const tCommon = useTranslations("common");
   const pageNumber = Number(searchParams?.get("page")) || 1;
-  const pageSize = Number(searchParams?.get("pageSize")) || 10;
+  const rawPageSize = Number(searchParams?.get("pageSize"));
+  const pageSize = [50, 100, 150, 200, 250].includes(rawPageSize) ? rawPageSize : 50;
   const zoneRemarksMap = useMemo(() => {
     const map = new Map<string, string>();
     zoneDescriptions.forEach(zone => {
@@ -174,6 +175,7 @@ export default function RateMasterView({
             onDownloadRates={handleDownloadRates}
             isDownloadDisabled={isDownloadDisabled || isDrawerOpen}
             isActionDisabled={!!frequencyMismatch || isDrawerOpen}
+            isDeleteDisabled={isDrawerOpen}
             t={t}
           />
         </div>

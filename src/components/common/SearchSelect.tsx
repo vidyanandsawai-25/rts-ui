@@ -122,6 +122,10 @@ export interface SearchSelectProps {
    * Optional prop to hide default options until the user has typed a query.
    */
   showOptionsOnlyOnType?: boolean;
+  /**
+   * Whether to open the dropdown when input is focused. Defaults to true.
+   */
+  openOnFocus?: boolean;
 }
 
 /** Helper to normalize string for forgiving/flexible option matching. */
@@ -159,6 +163,7 @@ export function SearchSelect({
   strictMode = true,
   emptyMessage,
   showOptionsOnlyOnType = false,
+  openOnFocus = true,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -478,7 +483,7 @@ export function SearchSelect({
           onFocus={() => {
             isFocused.current = true;
             onInputFocus?.();
-            if (!disabled) {
+            if (!disabled && openOnFocus) {
               setIsOpen(true);
               onSearchChange?.(search);
             }
@@ -554,7 +559,7 @@ export function SearchSelect({
 
               return (
                 <li
-                  key={opt.value}
+                  key={`${opt.value}-${index}`}
                   id={`${accessibleId}-option-${index}`}
                   role="option"
                   aria-selected={isSelected}

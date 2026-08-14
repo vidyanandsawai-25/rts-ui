@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Input, SearchSelect } from '@/components/common';
+import { Input, SearchSelect, PTISTransliteratedSearchSelect } from '@/components/common';
+import { Tooltip } from '@/components/common/Tooltip';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem, TaxZoneItem } from '@/types/property-basic-details.types';
 
@@ -63,17 +64,21 @@ export const AdditionalPropertyFields = ({
                 <Label htmlFor="pd-taxzone" className="text-xs font-semibold text-gray-700">
                     {t('property.taxZoneNo')}
                 </Label>
-                <SearchSelect
-                    id="pd-taxzone"
-                    options={taxZoneOptions}
-                    placeholder={t('property.selectTaxZonePlaceholder') || 'Select Tax Zone'}
-                    value={taxZoneId}
-                    onChange={handleTaxZoneChange}
-                    className={`h-9 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showTaxZoneNoError && !taxZoneId
-                        ? 'border-red-300 focus:border-red-500'
-                        : ''
-                        }`}
-                />
+                <Tooltip content={taxZoneNo} placement="top">
+                    <div className="w-full">
+                        <SearchSelect
+                            id="pd-taxzone"
+                            options={taxZoneOptions}
+                            placeholder={t('property.selectTaxZonePlaceholder') || 'Select Tax Zone'}
+                            value={taxZoneId}
+                            onChange={handleTaxZoneChange}
+                            className={`h-9 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showTaxZoneNoError && !taxZoneId
+                                ? 'border-red-300 focus:border-red-500'
+                                : ''
+                                }`}
+                        />
+                    </div>
+                </Tooltip>
                 <input type="hidden" name="taxZoneId" value={taxZoneId} />
                 <input type="hidden" name="taxZoneNo" value={taxZoneNo} />
                 {showTaxZoneNoError && !taxZoneId && (
@@ -88,15 +93,17 @@ export const AdditionalPropertyFields = ({
                 <Label htmlFor="pd-ratesection" className="text-xs font-semibold text-gray-700">
                     {t('property.rateSectionDescription') || 'Rate Section Name'}
                 </Label>
-                <Input
-                    readOnly
-                    id="pd-ratesection"
-                    name="rateSectionDescription"
-                    placeholder={t('property.rateSectionPlaceholder') || 'Enter Rate Section Name'}
-                    defaultValue={propertyData?.rateSectionDescription ?? ''}
-                    onKeyDown={preventEnterSubmit}
-                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
-                />
+                <Tooltip content={propertyData?.rateSectionDescription ?? ''} placement="top">
+                    <Input
+                        readOnly
+                        id="pd-ratesection"
+                        name="rateSectionDescription"
+                        placeholder={t('property.rateSectionPlaceholder') || 'Enter Rate Section Name'}
+                        defaultValue={propertyData?.rateSectionDescription ?? ''}
+                        onKeyDown={preventEnterSubmit}
+                        className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
+                    />
+                </Tooltip>
             </div>
 
             {/* UPIC ID */}
@@ -104,15 +111,17 @@ export const AdditionalPropertyFields = ({
                 <Label htmlFor="pd-upic" className="text-xs font-extrabold text-gray-700">
                     {t('property.upicId')}
                 </Label>
-                <Input
-                    id="pd-upic"
-                    name="upicId"
-                    readOnly
-                    placeholder="UPIC2024001234"
-                    defaultValue={propertyData?.upicId ?? ''}
-                    onKeyDown={preventEnterSubmit}
-                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
-                />
+                <Tooltip content={propertyData?.upicId ?? ''} placement="top">
+                    <Input
+                        id="pd-upic"
+                        name="upicId"
+                        readOnly
+                        placeholder="UPIC2024001234"
+                        defaultValue={propertyData?.upicId ?? ''}
+                        onKeyDown={preventEnterSubmit}
+                        className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
+                    />
+                </Tooltip>
             </div>
 
             {/* Property Description */}
@@ -120,7 +129,7 @@ export const AdditionalPropertyFields = ({
                 <Label htmlFor="pd-description" className="text-xs font-semibold text-gray-700">
                     {t('property.propertyDescription')}
                 </Label>
-                <SearchSelect
+                <PTISTransliteratedSearchSelect
                     id="pd-description"
                     name="propertyDescription"
                     options={propertyDescriptionOptions}

@@ -14,12 +14,21 @@ const logger = createLogger("InventoryModel");
 
 export async function saveInventoryModelAction(id: string, formData: FormData) {
   try {
-    const userId = getUserIdFromCookies(await cookies()) ?? 0;
+    const userId = getUserIdFromCookies(await cookies());
+    if (!userId) {
+      return { ok: false, error: "Unauthorized" };
+    }
     const isEdit = !!id;
+
+    const rawGroupId = Number(formData.get("group"));
+    if (!Number.isFinite(rawGroupId) || rawGroupId <= 0) {
+      return { ok: false, error: "invalid_inventoryItemNameId" };
+    }
+    const inventoryItemNameId = rawGroupId;
 
     const record = {
       modelName: formData.get("name") as string,
-      inventoryItemNameId: Number(formData.get("group")),
+      inventoryItemNameId,
       description: formData.get("description") as string,
       displayOrder: 1,
       isActive: formData.get("isActive") === "true",

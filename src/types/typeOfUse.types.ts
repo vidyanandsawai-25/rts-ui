@@ -6,7 +6,9 @@ export type UseGroupIconKey =
   | "factory"
   | "school"
   | "leaf"
-  | "map";
+  | "map"
+  | "plots"
+  | "parking";
 
 // Translation function type for next-intl
 export type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;

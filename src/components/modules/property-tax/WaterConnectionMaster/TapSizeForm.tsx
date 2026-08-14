@@ -24,8 +24,9 @@ import {
   updateTapSizeAction,
 } from "@/app/[locale]/property-tax/water-connection-master/actions";
 import {
-  ALPHANUMERIC_WITH_SPACES_REGEX,
-  ALPHANUMERIC_WITH_SPACES_SANITIZE,
+  POSITIVE_INTEGER_REGEX,
+  LETTERS_ONLY_REGEX,
+  LETTERS_ONLY_SANITIZE,
 } from "@/lib/utils/validation-rules";
 
 const MAX_NAME = 5;
@@ -61,13 +62,13 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
       const errs: Partial<Record<keyof TapSizeFormModel, string>> = {};
       if (!data.sizeName.trim())
         errs.sizeName = t("validation.sizeNameRequired");
-      else if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(data.sizeName.trim()))
+      else if (!POSITIVE_INTEGER_REGEX.test(data.sizeName.trim()))
         errs.sizeName = t("validation.sizeNameInvalid");
       else if (data.sizeName.trim().length > MAX_NAME)
         errs.sizeName = t("validation.sizeNameLength", { count: MAX_NAME });
       if (!data.unit.trim())
         errs.unit = t("validation.unitRequired");
-      else if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(data.unit.trim()))
+      else if (!LETTERS_ONLY_REGEX.test(data.unit.trim()))
         errs.unit = t("validation.unitInvalid");
       else if (data.unit.trim().length > MAX_UNIT)
         errs.unit = t("validation.unitLength", { count: MAX_UNIT });
@@ -82,12 +83,16 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
    const handleChange = (field: keyof TapSizeFormModel, value: string | boolean) => {
-   if ((field === "sizeName" || field === "unit") && typeof value === "string") {
-     value = value
-       .normalize("NFC")
-       .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
-       .replace(/\s+/g, " ")
-       .trim();
+   if (typeof value === "string") {
+     let sanitizedValue = value.normalize("NFC");
+     
+     if (field === "sizeName") {
+       sanitizedValue = sanitizedValue.replace(/[^0-9]/g, "");
+     } else if (field === "unit") {
+       sanitizedValue = sanitizedValue.replace(LETTERS_ONLY_SANITIZE, "");
+     }
+     
+     value = sanitizedValue.replace(/\s+/g, " ").trimStart();
    }
    setFormData((prev) => ({ ...prev, [field]: value }));
  };

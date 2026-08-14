@@ -12,8 +12,8 @@
     "rangesAllYears": "सभी वर्षों की रेंज",
     "noRangesFound": "कोई रेंज नहीं मिली",
     "deleteRange": "रेंज हटाएं",
-    "deleteRangeConfirmTitle": "रेंज हटाएं?",
-    "deleteRangeConfirmDesc": "आयु {age} के लिए {min}-{max} रेंज हटाएं?",
+    "deleteRangeConfirmTitle": "रेंज हटाएं !!",
+    "deleteRangeConfirmDesc": "क्या आप वाकई इस रेंज {min}-{max} को हटाना चाहते हैं?",
     "cancel": "रद्द करें",
     "updateRates": "रेंज अपडेट करें",
     "changesReverted": "परिवर्तन वापस लिए गए",
@@ -51,7 +51,9 @@
       "mustBe9999OrLess": "9999 या उससे कम होना चाहिए",
       "mustBe100OrLess": "100 या उससे कम होना चाहिए",
       "mustBe999OrLess": "999 या उससे कम होना चाहिए",
-      "mustBe99OrLess": "99 या उससे कम होना चाहिए"
+      "mustBe99OrLess": "99 या उससे कम होना चाहिए",
+      "gapMin": "आयु सीमा में अंतराल है। अपेक्षित न्यूनतम आयु {expectedMin} है।",
+      "gapMax": "आयु सीमा में अंतराल है। अपेक्षित अधिकतम आयु {expectedMax} है।"
     },
     "error": {
       "title": "कुछ गलत हो गया",

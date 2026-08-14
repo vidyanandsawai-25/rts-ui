@@ -22,6 +22,8 @@ interface UseDepreciationHandlersParams {
   effectiveSelectedRangeId: string | null;
   pendingChanges: Record<number, number>;
   setPendingChanges: React.Dispatch<React.SetStateAction<Record<number, number>>>;
+  pendingNewRecords: Record<string, { minYear: number; maxYear: number; constructionTypeId: number; rate: number }>;
+  setPendingNewRecords: React.Dispatch<React.SetStateAction<Record<string, { minYear: number; maxYear: number; constructionTypeId: number; rate: number }>>>;
   setLocalRateOverrides: React.Dispatch<React.SetStateAction<Record<string, Record<number, number>>>>;
   setSaving: React.Dispatch<React.SetStateAction<boolean>>;
   setMinValue: React.Dispatch<React.SetStateAction<string>>;
@@ -33,6 +35,7 @@ interface UseDepreciationHandlersParams {
   maxValue: string;
 }
 
+
 export function useDepreciationHandlers({
   t,
   locale,
@@ -42,6 +45,8 @@ export function useDepreciationHandlers({
   effectiveSelectedRangeId,
   pendingChanges,
   setPendingChanges,
+  pendingNewRecords,
+  setPendingNewRecords,
   setLocalRateOverrides,
   setSaving,
   setMinValue,
@@ -55,7 +60,7 @@ export function useDepreciationHandlers({
   const { confirm } = useConfirm();
   const router = useRouter();
   const pathname = usePathname();
-  const { validateMinMax, sanitizeInput, checkOverlap } = useDepreciationValidation(t);
+  const { validateMinMax, sanitizeInput, checkOverlap, checkGap } = useDepreciationValidation(t);
 
   const buildUrl = useCallback(
     (page: number, size: number) => {
@@ -84,13 +89,14 @@ export function useDepreciationHandlers({
     try {
       refreshPage();
       setPendingChanges({});
+      setPendingNewRecords({});
       setLocalRateOverrides({});
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : t("errors.load"));
     } finally {
       setSaving(false);
     }
-  }, [t, refreshPage, setSaving, setPendingChanges, setLocalRateOverrides]);
+  }, [t, refreshPage, setSaving, setPendingChanges, setLocalRateOverrides, setPendingNewRecords]);
 
   const handleCellChange = useCallback(
     (rowId: string, colId: string, value: string | number) => {
@@ -121,31 +127,48 @@ export function useDepreciationHandlers({
           ...prev,
           [targetRecord.id]: numValue,
         }));
+      } else {
+        const newKey = `new_${range.min}_${range.max}_${colId}`;
+        setPendingNewRecords((prev) => ({
+          ...prev,
+          [newKey]: {
+            minYear: range.min,
+            maxYear: range.max,
+            constructionTypeId: Number(colId),
+            rate: numValue,
+          },
+        }));
       }
     },
-    [ranges, dbRows, setLocalRateOverrides, setPendingChanges]
+    [ranges, dbRows, setLocalRateOverrides, setPendingChanges, setPendingNewRecords]
   );
 
   const handleUpdateRates = useCallback(async () => {
     const changeCount = Object.keys(pendingChanges).length;
-    if (changeCount === 0) {
+    const newRecordCount = Object.keys(pendingNewRecords).length;
+    if (changeCount === 0 && newRecordCount === 0) {
       toast.info(t("messages.noChanges"));
       return;
     }
 
-    setSaving(true);
-    const tid = toast.loading(t("messages.updating", { count: changeCount }));
-    try {
-      const res = await syncDepreciationRatesAction(locale, dbRows, pendingChanges);
-      if (!res.success) throw new Error(res.error);
-      toast.success(t("success.updated"), { id: tid });
-      await reloadData();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : t("errors.update"), { id: tid });
-    } finally {
-      setSaving(false);
-    }
-  }, [pendingChanges, locale, dbRows, t, setSaving, reloadData]);
+    confirm({
+      variant: "update",
+      onConfirm: async () => {
+        setSaving(true);
+        const tid = toast.loading(t("messages.updating", { count: changeCount + newRecordCount }));
+        try {
+          const res = await syncDepreciationRatesAction(locale, dbRows, pendingChanges, pendingNewRecords);
+          if (!res.success) throw new Error(res.error);
+          toast.success(t("success.updated"), { id: tid });
+          await reloadData();
+        } catch (err: unknown) {
+          toast.error(err instanceof Error ? err.message : t("errors.update"), { id: tid });
+        } finally {
+          setSaving(false);
+        }
+      },
+    });
+  }, [pendingChanges, pendingNewRecords, locale, dbRows, t, setSaving, reloadData, confirm]);
 
   const handleMinChange = useCallback(
     (value: string) => {
@@ -178,6 +201,16 @@ export function useDepreciationHandlers({
       return;
     }
 
+    const gapResult = checkGap(Number(minValue), Number(maxValue), ranges);
+    if (gapResult !== null) {
+      if (gapResult.field === 'max') {
+        setMaxError(t("errors.gapMax", { expectedMax: gapResult.expectedValue }));
+      } else {
+        setMinError(t("errors.gapMin", { expectedMin: gapResult.expectedValue }));
+      }
+      return;
+    }
+
     setSaving(true);
     const tid = toast.loading(t("messages.creatingRange"));
     try {
@@ -197,7 +230,7 @@ export function useDepreciationHandlers({
     } finally {
       setSaving(false);
     }
-  }, [minValue, maxValue, ranges, locale, t, validateMinMax, checkOverlap, setMinError, setMaxError, setSaving, setMinValue, setMaxValue, reloadData]);
+  }, [minValue, maxValue, ranges, locale, t, validateMinMax, checkOverlap, checkGap, setMinError, setMaxError, setSaving, setMinValue, setMaxValue, reloadData]);
 
   const handleDeleteRange = useCallback(async () => {
     if (!effectiveSelectedRangeId) return;

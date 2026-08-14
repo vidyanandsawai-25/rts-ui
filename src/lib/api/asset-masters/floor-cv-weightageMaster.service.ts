@@ -99,9 +99,15 @@ export async function getFloorFactorCVMasterWithPagination(
       params.append("SortOrder", sortOrder.trim());
     }
 
-    const response = await apiClient.get<PagedResponse<FloorFactorCVMaster>>(
+    let response = await apiClient.get<PagedResponse<FloorFactorCVMaster>>(
       `/asset-management/floor-factor-cv?${params.toString()}`
     );
+
+    if (!response.success) {
+      response = await apiClient.get<PagedResponse<FloorFactorCVMaster>>(
+        `/FloorFactorCVMaster?${params.toString()}`
+      );
+    }
 
     if (!response.success) {
       throw new ApiError(
@@ -141,7 +147,9 @@ export async function createFloorWeightageCv(payload: FloorFactorCVMasterCreate)
       yearRangeCVId: payload.yearRangeCVId,
     };
 
-    return await apiClient.post<unknown>('/asset-management/floor-factor-cv', requestPayload);
+    const res = await apiClient.post<unknown>('/asset-management/floor-factor-cv', requestPayload);
+    if (res.success) return res;
+    return await apiClient.post<unknown>('/FloorFactorCVMaster', requestPayload);
   } catch (error) {
     throw error;
   }
@@ -167,7 +175,12 @@ export async function bulkCreateFloorWeightageCv(
       yearRangeCVId: factor.yearRangeCVId,
     }));
 
-    return await apiClient.post<unknown>('/asset-management/floor-factor-cv/Bulk', requestPayload);
+    try {
+      const res = await apiClient.post<unknown>('/asset-management/floor-factor-cv/Bulk', requestPayload);
+      if (res.success) return res;
+    } catch {}
+
+    return await apiClient.post<unknown>('/FloorFactorCVMaster/Bulk', requestPayload);
   } catch (error) {
     throw error;
   }
@@ -196,10 +209,18 @@ export async function bulkUpdateFloorFactorCVMaster(
       }
     }));
 
-    const response = await apiClient.put<unknown>(
-      '/asset-management/floor-factor-cv/Bulk',
-      requestPayload
-    );
+    let response;
+    try {
+      response = await apiClient.put<unknown>(
+        '/asset-management/floor-factor-cv/Bulk',
+        requestPayload
+      );
+    } catch {
+      response = await apiClient.put<unknown>(
+        '/FloorFactorCVMaster/Bulk',
+        requestPayload
+      );
+    }
 
     if (!response.success) {
       throw new ApiError(
@@ -233,7 +254,11 @@ export async function getAssessmentYearsPagedServerCV(
 
   const queryString = params.toString();
   const endpoint = queryString ? `/asset-management/assessment-year-range-cv?${queryString}` : '/asset-management/assessment-year-range-cv';
-  const response = await apiClient.get<AssessmentYearPagedResponseCV>(endpoint);
+  let response = await apiClient.get<AssessmentYearPagedResponseCV>(endpoint);
+  if (!response.success) {
+    const fallbackEndpoint = queryString ? `/AssessmentYearRangeCV?${queryString}` : '/AssessmentYearRangeCV';
+    response = await apiClient.get<AssessmentYearPagedResponseCV>(fallbackEndpoint);
+  }
 
   if (!response.success) {
     throw new ApiError(
@@ -312,8 +337,13 @@ export async function getFloorPaged(
   }
 
   const queryString = params.toString();
-  const endpoint = queryString ? `/asset-management/floor?${queryString}` : '/asset-management/floor';
-  const response = await apiClient.get<FloorPagedResponse>(endpoint);
+  const endpoint = queryString ? `/Floor?${queryString}` : '/Floor';
+  let response = await apiClient.get<FloorPagedResponse>(endpoint);
+
+  if (!response.success) {
+    const fallbackEndpoint = queryString ? `/asset-management/floor?${queryString}` : '/asset-management/floor';
+    response = await apiClient.get<FloorPagedResponse>(fallbackEndpoint);
+  }
 
   if (!response.success) {
     throw new ApiError(
@@ -350,4 +380,4 @@ export async function getFloorPaged(
   }
 
   return data;
-}
+}

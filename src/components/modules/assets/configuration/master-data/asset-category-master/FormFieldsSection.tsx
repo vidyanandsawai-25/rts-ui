@@ -1,8 +1,14 @@
 
+import React from "react";
 import { Checkbox } from "@/components/common/checkbox";
 import { Input } from "@/components/common/Input";
 import { TextArea } from "@/components/common/Textarea";
+import { ValidationMessage } from "@/components/common/ValidationMessage";
 import type { FormFieldsSectionProps } from "@/types/asset-masters/asset-category.types";
+
+interface ExtendedFormFieldsSectionProps extends FormFieldsSectionProps {
+  codeRef?: React.RefObject<HTMLInputElement | null>;
+}
 
 export function FormFieldsSection({
   formData,
@@ -13,51 +19,61 @@ export function FormFieldsSection({
   onCheckboxChange,
   t,
   isPending = false,
-}: FormFieldsSectionProps) {
+  codeRef,
+}: ExtendedFormFieldsSectionProps) {
   return (
-    <div className="space-y-6">
-      <Input
-        name="code"
-        label={t("labels.code")}
-        required
-        value={formData.code}
-        placeholder={t("placeholders.code")}
-        onChange={onChange}
-        onBlur={onBlur}
-        disabled={isPending}
-        maxLength={15}
-        error={showError("code") ? errors.code : undefined}
-        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+    <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
+      <div>
+        <Input
+          ref={codeRef}
+          name="code"
+          label={t("labels.code")}
+          required
+          value={formData.code}
+          placeholder={t("placeholders.code")}
+          onChange={onChange}
+          onBlur={onBlur}
+          disabled={isPending}
+          maxLength={15}
+          error={showError("code") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.code} visible={showError("code")} />
+      </div>
 
-      <Input
-        name="name"
-        label={t("labels.name")}
-        required
-        value={formData.name}
-        placeholder={t("placeholders.name")}
-        onChange={onChange}
-        onBlur={onBlur}
-        disabled={isPending}
-        maxLength={50}
-        error={showError("name") ? errors.name : undefined}
-        className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <Input
+          name="name"
+          label={t("labels.name")}
+          required
+          value={formData.name}
+          placeholder={t("placeholders.name")}
+          onChange={onChange}
+          onBlur={onBlur}
+          disabled={isPending}
+          maxLength={50}
+          error={showError("name") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.name} visible={showError("name")} />
+      </div>
 
-      <TextArea
-        name="description"
-        label={t("labels.description")}
-        rows={4}
-        value={formData.description}
-        placeholder={t("placeholders.description")}
-        onChange={onChange}
-        onBlur={onBlur}
-        disabled={isPending}
-        maxLength={500}
-        error={showError("description") ? true : false}
-        errorMessage={showError("description") ? errors.description : undefined}
-        className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-      />
+      <div>
+        <TextArea
+          name="description"
+          label={t("labels.description")}
+          rows={4}
+          value={formData.description}
+          placeholder={t("placeholders.description")}
+          onChange={onChange}
+          onBlur={onBlur}
+          disabled={isPending}
+          maxLength={500}
+          error={showError("description") ? true : false}
+          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.description} visible={showError("description")} />
+      </div>
 
       {/* Category Configuration Options */}
       <div className="space-y-4 pt-4 border-t border-slate-200">
@@ -66,27 +82,27 @@ export function FormFieldsSection({
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
             <div className="font-medium text-slate-900 text-sm">{t("labels.isMovable")}</div>
-            <Checkbox checked={!!formData.isMovable} onCheckedChange={(v) => onCheckboxChange("isMovable", !!v)} disabled={isPending} />
+            <Checkbox checked={!!formData.isMovable} onCheckedChange={(v) => onCheckboxChange("isMovable", !!v)} disabled={isPending} className={!!formData.isMovable ? "bg-slate-800 border-slate-800 text-white [&_svg]:stroke-[3] [&_svg]:text-white" : ""} />
           </div>
 
           <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
             <div className="font-medium text-slate-900 text-sm">{t("labels.hasFloorDetails")}</div>
-            <Checkbox checked={!!formData.hasFloorDetails} onCheckedChange={(v) => onCheckboxChange("hasFloorDetails", !!v)} disabled={isPending} />
+            <Checkbox checked={!!formData.hasFloorDetails} onCheckedChange={(v) => onCheckboxChange("hasFloorDetails", !!v)} disabled={isPending} className={!!formData.hasFloorDetails ? "bg-slate-800 border-slate-800 text-white [&_svg]:stroke-[3] [&_svg]:text-white" : ""} />
           </div>
 
           <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
             <div className="font-medium text-slate-900 text-sm">{t("labels.hasInventory")}</div>
-            <Checkbox checked={!!formData.hasInventory} onCheckedChange={(v) => onCheckboxChange("hasInventory", !!v)} disabled={isPending} />
+            <Checkbox checked={!!formData.hasInventory} onCheckedChange={(v) => onCheckboxChange("hasInventory", !!v)} disabled={isPending} className={!!formData.hasInventory ? "bg-slate-800 border-slate-800 text-white [&_svg]:stroke-[3] [&_svg]:text-white" : ""} />
           </div>
 
           <div className={`rounded-xl p-3 border flex items-center justify-between ${formData.hasInventory ? "border-gray-200 bg-gray-50" : "border-gray-100 bg-gray-50/50 opacity-60"}`}>
             <div className="font-medium text-slate-900 text-sm">{t("labels.isInventoryMandatory")}</div>
-            <Checkbox checked={!!formData.isInventoryMandatory} onCheckedChange={(v) => onCheckboxChange("isInventoryMandatory", !!v)} disabled={isPending || !formData.hasInventory} />
+            <Checkbox checked={!!formData.isInventoryMandatory} onCheckedChange={(v) => onCheckboxChange("isInventoryMandatory", !!v)} disabled={isPending || !formData.hasInventory} className={!!formData.isInventoryMandatory ? "bg-slate-800 border-slate-800 text-white [&_svg]:stroke-[3] [&_svg]:text-white" : ""} />
           </div>
 
           <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
             <div className="font-medium text-slate-900 text-sm">{t("labels.hasLegalCompliance")}</div>
-            <Checkbox checked={!!formData.hasLegalCompliance} onCheckedChange={(v) => onCheckboxChange("hasLegalCompliance", !!v)} disabled={isPending} />
+            <Checkbox checked={!!formData.hasLegalCompliance} onCheckedChange={(v) => onCheckboxChange("hasLegalCompliance", !!v)} disabled={isPending} className={!!formData.hasLegalCompliance ? "bg-slate-800 border-slate-800 text-white [&_svg]:stroke-[3] [&_svg]:text-white" : ""} />
           </div>
         </div>
 
@@ -108,3 +124,4 @@ export function FormFieldsSection({
     </div>
   );
 }
+

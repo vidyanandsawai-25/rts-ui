@@ -96,6 +96,10 @@
     "invalidDisplayOrder": "Display order must be a positive integer",
     "remarks": "Remarks",
     "remarksPlaceholder": "Enter any remarks...",
+    "chooseFile": "Choose a file",
+    "orDragDrop": "or drag & drop it here",
+    "allowedFormatsSubtitle": "Supports JPEG, JPG, PNG (Max 5MB)",
+    "uploadingAndSaving": "Uploading & saving image...",
     "nameRequired": "Name is required",
     "invalidNameFormat": "Only letters, numbers, spaces, hyphens, and underscores are allowed",
     "imageUnavailable": "Image Unavailable",
@@ -151,6 +155,7 @@
     "uploadInstructions": "Upload Instructions",
     "allowedFormats": "Allowed formats: JPEG, JPG, PNG",
     "maxFileSize": "Maximum file size: 5 MB",
+    "invalidImage": "Please upload a valid image file",
     "photoLegibilityNote": "Ensure the photo is clear and legible",
     "panMode": "Pan Mode",
     "zoomIn": "Zoom In",
@@ -407,12 +412,14 @@
     "interest": "Interest",
     "netTotal": "Net Total",
     "noTaxDetails": "No tax details available",
+    "taxDetails": "Tax Details",
     "noMapDetails": "No map details available",
     "latitude": "Latitude",
     "longitude": "Longitude",
     "mappingCategory": "Map Category",
     "oldPropPartNo": "Old Prop.No-Part.No",
     "oldWardPropPartNo": "Old ward-prop-part No",
+    "wardPropPartNo": "Ward-prop-part No",
     "oldPlotAreaSqMtr": "Old Plot Area (Sq. Mtr)",
     "oldConstAreaSqMtr": "Old Const. Area (Sq. Mtr)"
   },
@@ -462,7 +469,8 @@
     "showOldTax": "Show Old Tax",
     "hideOldTax": "Hide Old Tax",
     "showMapDetails": "Show Map Details",
-    "hideMapDetails": "Hide Map Details"
+    "hideMapDetails": "Hide Map Details",
+    "propertyMapping": "Property Mapping"
   },
   "loading": {
     "message": "Loading Property Details",
@@ -565,9 +573,11 @@
       "tax": "Tax",
       "yes": "YES",
       "no": "NO",
+      "fullChange": "Full Change:",
       "m2Unit": "m²",
       "cv": "CV",
       "rv": "RV",
+      "alv": "ALV",
       "oldTotalRv": "[Old] Total RV",
       "oldTotalAlv": "[Old] Total ALV",
       "oldTotalCv": "[Old] Total CV",
@@ -652,7 +662,12 @@
       "confirmText": "Yes",
       "cancelText": "No"
     },
-    "qcDoneLabel": "QC Done"
+    "qcStatus": {
+      "label": "QC Status",
+      "placeholder": "QC Status"
+    },
+    "qcDoneLabel": "QC Done",
+    "trackStatus": "Track Status"
   },
   "footerActions": {
     "R_SAVE": "Save",

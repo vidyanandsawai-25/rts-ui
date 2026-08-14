@@ -137,7 +137,7 @@ export const TimelapseMap = React.memo(function TimelapseMap({
         mapInstance.invalidateSize({ animate: false });
         mapInstance.setView([lat, lng], 17);
 
-        const boundsPadding = 0.003;
+        const boundsPadding = 0.05;
         const maxBounds = L.latLngBounds(
           [lat - boundsPadding, lng - boundsPadding],
           [lat + boundsPadding, lng + boundsPadding]

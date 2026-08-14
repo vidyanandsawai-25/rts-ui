@@ -24,10 +24,10 @@ export default async function EditPage({ params }: PageProps) {
 
   const groups = categoriesResult.success && categoriesResult.data
     ? (categoriesResult.data.records
-      ?.filter((r: Record<string, unknown>) => r.status === 'Active')
+      ?.filter((r: Record<string, unknown>) => r.status !== 'Inactive' && r.isActive !== false)
       .map((r: Record<string, unknown>) => ({
         id: String(r.id),
-        name: r.name,
+        name: String(r.subTypeName || r.name || r.subTypeCode || r.code || r.id),
         status: 'Active',
       })) || [])
     : [];

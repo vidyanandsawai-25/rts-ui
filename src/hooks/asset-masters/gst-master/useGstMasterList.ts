@@ -2,13 +2,13 @@
 
 import React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { useToast } from "@/components/common";
 import type { GstMasterProps, GstMaster } from "@/types/asset-masters/gst-master.types";
 import { getGstMasterColumns } from "@/components/modules/assets/configuration/master-data/gst-master/GstMasterColumns";
 import { deleteGstMasterAction } from "@/app/[locale]/assets/configuration/master-data/gst-master/action";
-import { useSearchNavigation } from "@/hooks/useSearchNavigation";
+import { useGstMasterSearch } from "@/hooks/asset-masters/gst-master/useGstMasterSearch";
 
 export function useGstMasterList({
   pageNumber,
@@ -17,7 +17,6 @@ export function useGstMasterList({
   totalPages,
   sortBy,
   sortOrder,
-  searchTerm,
 }: GstMasterProps) {
   const router = useRouter();
   const locale = useLocale();
@@ -26,27 +25,12 @@ export function useGstMasterList({
   const { confirm } = useConfirm();
   const toast = useToast();
   const [isPending, startTransition] = React.useTransition();
-  const [search, setSearch] = React.useState(searchTerm ?? "");
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearch(searchTerm ?? "");
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  const pathname = usePathname();
-  const isSubRoute = pathname !== `/${locale}/assets/configuration/master-data/gst-master`.replace(/\/+/g, "/");
-
-  useSearchNavigation({
-    search,
-    currentSearchTerm: searchTerm ?? "",
+  const { search, currentSearchTerm, handleSearchChange } = useGstMasterSearch({
     pageSize,
     locale,
     sortBy,
     sortOrder,
-    basePath: "/assets/configuration/master-data/gst-master",
-    startTransition: isSubRoute ? () => {} : startTransition,
   });
 
   React.useEffect(() => {
@@ -103,10 +87,10 @@ export function useGstMasterList({
     (columnKey: string) => {
       startTransition(() => {
         const nextOrder = sortBy === columnKey && sortOrder === "asc" ? "desc" : "asc";
-        router.push(buildUrl(pageNumber, pageSize, search, columnKey, nextOrder));
+        router.push(buildUrl(pageNumber, pageSize, currentSearchTerm, columnKey, nextOrder));
       });
     },
-    [sortBy, sortOrder, pageNumber, pageSize, search, buildUrl, router]
+    [sortBy, sortOrder, pageNumber, pageSize, currentSearchTerm, buildUrl, router]
   );
 
   const columns = React.useMemo(
@@ -124,19 +108,19 @@ export function useGstMasterList({
   const changePage = React.useCallback(
     (p: number) => {
       startTransition(() => {
-        router.push(buildUrl(p, pageSize, search, sortBy, sortOrder));
+        router.push(buildUrl(p, pageSize, currentSearchTerm, sortBy, sortOrder));
       });
     },
-    [pageSize, search, sortBy, sortOrder, buildUrl, router]
+    [pageSize, currentSearchTerm, sortBy, sortOrder, buildUrl, router]
   );
 
   const changePageSize = React.useCallback(
     (size: number) => {
       startTransition(() => {
-        router.push(buildUrl(1, size, search, sortBy, sortOrder));
+        router.push(buildUrl(1, size, currentSearchTerm, sortBy, sortOrder));
       });
     },
-    [search, sortBy, sortOrder, buildUrl, router]
+    [currentSearchTerm, sortBy, sortOrder, buildUrl, router]
   );
 
   const handleDelete = React.useCallback(
@@ -174,7 +158,7 @@ export function useGstMasterList({
     tCommon,
     isPending,
     search,
-    setSearch,
+    handleSearchChange,
     columns,
     changePage,
     changePageSize,

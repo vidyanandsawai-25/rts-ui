@@ -168,6 +168,8 @@ export function useFloorCvBulkOps({
                 originalRow.factorWithLift !== newFactorWithLift ||
                 originalRow.factorWithoutLift !== newFactorWithoutLift;
 
+            const effectiveYearRangeId = Number(selectedYear) || originalRow.yearRangeCVID || originalRow.yearRangeCVId || 0;
+
             if (hasChanges) {
                 if (originalRow.id === 0) {
                     createPayloadVars.push({
@@ -175,7 +177,7 @@ export function useFloorCvBulkOps({
                         floorId: originalRow.floorId,
                         factorWithLift: newFactorWithLift,
                         factorWithoutLift: newFactorWithoutLift,
-                        yearRangeCVId: originalRow.yearRangeCVID ?? originalRow.yearRangeCVId ?? 0,
+                        yearRangeCVId: effectiveYearRangeId,
                     });
                     createdUids.push(rowUid);
                 } else {
@@ -186,7 +188,7 @@ export function useFloorCvBulkOps({
                             floorId: originalRow.floorId,
                             factorWithLift: newFactorWithLift,
                             factorWithoutLift: newFactorWithoutLift,
-                            yearRangeCVId: originalRow.yearRangeCVID ?? originalRow.yearRangeCVId ?? 0,
+                            yearRangeCVId: effectiveYearRangeId,
                         }
                     });
                 }
@@ -196,6 +198,7 @@ export function useFloorCvBulkOps({
         try {
             let createdCount = 0;
             let updatedCount = 0;
+            let lastErrorMessage = "";
 
             if (createPayloadVars.length > 0) {
                 const result = await bulkCreateFloorFactorCVMasterAction(createPayloadVars);
@@ -204,6 +207,9 @@ export function useFloorCvBulkOps({
                     setSessionCreatedUids((prev) => new Set([...prev, ...createdUids]));
                 } else {
                     errorCount += createPayloadVars.length;
+                    if (result && !result.success && result.message) {
+                        lastErrorMessage = result.message;
+                    }
                 }
             }
 
@@ -213,6 +219,9 @@ export function useFloorCvBulkOps({
                     updatedCount = updatePayloadVars.length;
                 } else {
                     errorCount += updatePayloadVars.length;
+                    if (result && !result.success && result.message) {
+                        lastErrorMessage = result.message;
+                    }
                 }
             }
 
@@ -238,7 +247,7 @@ export function useFloorCvBulkOps({
                 clearFilters();
                 setTimeout(() => { refreshPage(); }, 1500);
             } else if (errorCount > 0) {
-                addToast("error", tW("common.messages.bulkOperationFailed"));
+                addToast("error", lastErrorMessage || tW("common.messages.bulkOperationFailed"));
             } else {
                 addToast("info", tW("common.messages.noChangesDetectedBulk"));
             }

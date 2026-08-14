@@ -1,5 +1,8 @@
-
 {
+  "renter": {
+    "loadingScreen": "किराएदार स्क्रीन लोड हो रही है...",
+    "loadingEngine": "किराया इंजन लोड हो रहा है..."
+  },
   "commonbuttonmessages": {
     "update": "अपडेट",
     "UpdateChanges": "अपडेट करें",
@@ -304,6 +307,7 @@
   },
   "property": {
     "title": "संपत्ति जानकारी",
+    "pageInProgress": "यह पृष्ठ प्रगति पर है",
     "division": "विभाग",
     "divisionPlaceholder": "डिवीजन दर्ज करें",
     "mouja": "मौजा",
@@ -334,6 +338,8 @@
     "builtupAreaSqMeter": "बिल्टअप क्षेत्रफल (वर्ग मी.)",
     "totalCarpetAreaWithUnit": "कुल कार्पेट क्षेत्रफल (वर्ग फुट / वर्ग मी.)",
     "buildupAreaWithUnit": "कुल बिल्टअप क्षेत्रफल (वर्ग फुट / वर्ग मी.)",
+    "oldCarpetAreaWithUnit": "पुराना कार्पेट क्षेत्रफल (वर्ग फुट / वर्ग मी.)",
+    "oldBuildupAreaWithUnit": "पुराना बिल्टअप क्षेत्रफल (वर्ग फुट / वर्ग मी.)",
     "selectType": "प्रकार चुनें",
     "select": "चुनें",
     "residential": "आवासीय",
@@ -366,6 +372,13 @@
     "updateConfirmTitle": "अपडेट की पुष्टि करें",
     "updateConfirmText": "क्या आप सुनिश्चित हैं कि आप संपत्ति के विवरण को अपडेट करना चाहते हैं?",
     "updateConfirmButton": "हाँ, अपडेट करें",
+    "categoryChangeConfirmTitle": "श्रेणी बदलने की पुष्टि करें",
+    "categoryChangeConfirmText": "श्रेणी बदलने से सभी मंजिल, कमरा सबमिशन और किरायेदार के विवरण हटा दिए जाएंगे। क्या आप वास्तव में आगे बढ़ना चाहते हैं?",
+    "categoryChangeConfirmButton": "हाँ, श्रेणी बदलें",
+    "propertyDescriptionChangeConfirmTitle": "संपत्ति विवरण परिवर्तन की पुष्टि करें",
+    "propertyDescriptionChangeConfirmText": "आपने संपत्ति विवरण बदल दिया है। मौजूदा मंजिल विवरण पिछले संपत्ति विवरण से जुड़े हुए हैं। सहेजने से पहले कृपया मंजिल रिकॉर्ड अपडेट करें या हटाएं। क्या आप जारी रखना चाहते हैं?",
+    "propertyDescriptionChangeConfirmButton": "हाँ, जारी रखें",
+    "propertyDescriptionFloorIncompatible": "संपत्ति विवरण बदल दिया गया है। एक या अधिक मौजूदा मंजिल रिकॉर्ड में ऐसा उपयोग शामिल है जो चयनित संपत्ति विवरण के लिए मान्य नहीं है। कृपया असंगत मंजिल रिकॉर्ड अपडेट करें या हटाएं।",
     "updateSuccess": "संपत्ति के बुनियादी विवरण सफलतापूर्वक अपडेट किए गए",
     "updateError": "अपडेट के दौरान एक त्रुटि हुई。",
     "updateButton": "अपडेट करें",
@@ -424,7 +437,8 @@
       "oldConstructionTypeIdInvalid": "निर्माण का प्रकार अमान्य है",
       "oldTypeOfUseIdInvalid": "उपयोग का प्रकार अमान्य है",
       "invalidIds": "अमान्य आईडी प्रदान की गई",
-      "invalidCarpetArea": "कार्पेट क्षेत्रफल 0 से अधिक एक वैध संख्या होनी चाहिए"
+      "invalidCarpetArea": "कार्पेट क्षेत्रफल 0 से अधिक एक वैध संख्या होनी चाहिए",
+      "invalidCharacters": "इनपुट में अमान्य वर्ण हैं। टेक्स्ट फ़ॉर्मेटिंग वर्णों की अनुमति नहीं है।"
     },
     "errors": {
       "failedToConnect": {
@@ -440,6 +454,7 @@
       "fetchPropertyCategories": "संपत्ति श्रेणियाँ लाने में विफल",
       "fetchWingMaster": "विंग मास्टर लाने में विफल",
       "updatePropertyBasicDetails": "संपत्ति के बुनियादी विवरण अपडेट करने में विफल",
+      "deletePropertyDetails": "मौजूदा मंजिल, कमरा और किरायेदार विवरण हटाने में विफल",
       "fetchCvTaxDetails": "सीवी कर विवरण प्राप्त करने में विफल",
       "fetchTaxZones": "कर क्षेत्र लाने में विफल",
       "unauthorized": "अनधिकृत: टोकन समाप्त हो गया है या अमान्य है। कृपया फिर से लॉग इन करें।",
@@ -661,6 +676,8 @@
     "reUploadDocument": "दस्तावेज़ पुनः अपलोड करें",
     "buildingPermit": "भवन अनुमति",
     "buildCompletionCertificate": "भवन पूर्णता प्रमाणपत्र",
+    "ccDate": "सीसी दिनांक",
+    "ocDate": "ओसी दिनांक",
     "savingFirst": "प्रमाणपत्र शुरू करने के लिए पहले विवरण सहेजा जा रहा है...",
     "saveFirst": "कृपया पहले भवन अनुमति विवरण सहेजें।",
     "deleteSuccess": "फ़ाइल सफलतापूर्वक हटा दी गई!",
@@ -881,6 +898,7 @@
     "subTyp": "उप प्रकार",
     "subType": "उप प्रकार",
     "renter": "किरायेदार",
+    "updateBuildingPermission": "भवन अनुमति अपडेट करें?",
     "renterManagement": "किरायेदार प्रबंधन",
     "renterSection": {
       "management": "किरायेदार प्रबंधन",
@@ -1046,7 +1064,10 @@
       "areaUpdatedSuccess": "क्षेत्रफल सफलतापूर्वक अपडेट किया गया।",
       "areaAddedSuccess": "क्षेत्रफल सफलतापूर्वक जोड़ा गया।",
       "failedToSaveArea": "क्षेत्रफल सहेजने में विफल।",
-      "selectOpenPlotCategory": "कृपया एक खुला प्लॉट श्रेणी चुनें।"
+      "selectOpenPlotCategory": "कृपया एक खुला प्लॉट श्रेणी चुनें।",
+      "areaExceededTitle": "भूखंड क्षेत्र सीमा समाप्त",
+      "constructionYearRequired": "निर्माण वर्ष आवश्यक है",
+      "assessmentYearRequired": "मूल्यांकन वर्ष आवश्यक है"
     },
     "deleteConfirmTitle": "क्या आप सुनिश्चित हैं?",
     "deleteConfirmText": "क्या आप इस मंज़िल को हटाना चाहते हैं?",
@@ -1102,6 +1123,7 @@
     "openSpaceNegative": "खुला स्थान क्षेत्र ऋणात्मक नहीं हो सकता। कृपया भूतल निर्माण क्षेत्र कम करें।",
     "openSpaceAreaExceeded": "खुला स्थान क्षेत्र उपलब्ध शेष क्षेत्र ({area} वर्ग मीटर) से अधिक नहीं हो सकता।",
     "floorAreaExceeded": "मंजिल निर्मित क्षेत्र उपलब्ध शेष क्षेत्र ({area} वर्ग मीटर) से अधिक नहीं हो सकता।",
+    "ok": "ठीक है",
     "unexpectedError": "एक अप्रत्याशित त्रुटि हुई।",
     "roomSubmissionModal": {
       "title": "कक्ष सबमिशन सुविधा",
@@ -1204,6 +1226,18 @@
     "unsavedChangesDesc": "आपके पास छूट और सामाजिक डेटा टैब में अनसहेजे गए बदलाव हैं। क्या आप उन्हें छोड़ना चाहते हैं, या संपादन जारी रखना चाहते हैं?",
     "continueButton": "संपादन जारी रखें",
     "discardConfirmButton": "बदलाव छोड़ें",
+    "deleteDiscount": "छूट और डेटा हटाएं",
+    "confirmToggleOffWarning": "आपके पास सक्रिय विवरण हैं:",
+    "confirmDeleteDiscountTitle": "छूट और डेटा हटाएं",
+    "confirmDeleteDiscountDesc": "क्या आप वाकई इस छूट और इसके सभी संबद्ध डेटा को हटाना चाहते हैं?",
+    "confirmDeleteDiscountOk": "हाँ, हटाएँ",
+    "confirmDeleteDiscountCancel": "नहीं, रद्द करें",
+    "deleteSuccess": "विवरण और संबंधित डेटा सफलतापूर्वक हटा दिया गया!",
+    "deleteSocialDetail": "विवरण और डेटा हटाएं",
+    "confirmDeleteAttributeTitle": "सामाजिक विवरण और डेटा हटाएं",
+    "confirmDeleteAttributeDesc": "क्या आप वाकई इस सामाजिक विवरण और इसके सभी संबद्ध डेटा को हटाना चाहते हैं?",
+    "confirmDeleteAttributeOk": "हाँ, हटाएँ",
+    "confirmDeleteAttributeCancel": "नहीं, रद्द करें",
     "socialAttributes": {
       "HAS_FAMILY_PLANNING": "परिवार नियोजन लाभ",
       "IS_GREEN_PROPERTY": "हरित संपत्ति",
@@ -1588,6 +1622,7 @@
       "dateBefore1900": "तारीख 01-01-1900 से पहले की नहीं हो सकती",
       "occupancyDateAfterCommencement": "ओसी दिनांक सीसी दिनांक के बाद होना चाहिए",
       "commencementDateBeforeOccupancy": "सीसी दिनांक ओसी दिनांक से पहले होना चाहिए",
+      "dateBeforeConstructionYear": "तारीख निर्माण वर्ष ({year}) से अधिक या बराबर होनी चाहिए",
       "documentRequired": "दस्तावेज़ आवश्यक है"
     }
   },

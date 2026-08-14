@@ -52,6 +52,8 @@ export function useSocialAttributeForm({
     parentAttributeId: initialData?.parentAttributeId ?? null,
     isRequiredWhenParentTrue: initialData?.isRequiredWhenParentTrue ?? false,
     isDiscountApplicable: initialData?.isDiscountApplicable ?? false,
+    isPhotoRequired: initialData?.isPhotoRequired ?? false,
+    isDocumentRequired: initialData?.isDocumentRequired ?? false,
     isActive: initialData?.isActive ?? true,
   });
 
@@ -249,6 +251,8 @@ export function useSocialAttributeForm({
       formData.parentAttributeId !== (initialData?.parentAttributeId ?? null) ||
       formData.isRequiredWhenParentTrue !== (initialData?.isRequiredWhenParentTrue ?? false) ||
       formData.isDiscountApplicable !== (initialData?.isDiscountApplicable ?? false) ||
+      formData.isPhotoRequired !== (initialData?.isPhotoRequired ?? false) ||
+      formData.isDocumentRequired !== (initialData?.isDocumentRequired ?? false) ||
       formData.isActive !== (initialData?.isActive ?? true);
 
     if (isDirty) {
@@ -327,6 +331,20 @@ export function useSocialAttributeForm({
     }));
   }, []);
 
+  const handleToggleIsPhotoRequired = useCallback((): void => {
+    setFormData((p) => ({
+      ...p,
+      isPhotoRequired: !p.isPhotoRequired,
+    }));
+  }, []);
+
+  const handleToggleIsDocumentRequired = useCallback((): void => {
+    setFormData((p) => ({
+      ...p,
+      isDocumentRequired: !p.isDocumentRequired,
+    }));
+  }, []);
+
   return {
     formData,
     errors,
@@ -342,6 +360,8 @@ export function useSocialAttributeForm({
     handleToggleIsChild,
     handleToggleIsRequiredWhenParentTrue,
     handleToggleIsDiscountApplicable,
+    handleToggleIsPhotoRequired,
+    handleToggleIsDocumentRequired,
     handleCancel,
     showError,
     t,

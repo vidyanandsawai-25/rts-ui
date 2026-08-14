@@ -59,6 +59,7 @@ vi.mock("@/components/common", () => ({
       {data.map((row, idx) => <div key={idx}>{row.label}</div>)}
     </div>
   ),
+  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   EyeIconButton: ({ onClick, isAutoScrolling }: MockEyeIconButtonProps) => (
     <button onClick={onClick}>
       {isAutoScrolling ? "Stop Auto Scroll" : "Start Auto Scroll"}

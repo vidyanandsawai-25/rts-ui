@@ -9,6 +9,7 @@ import type {
   PropertyPhotoUploadResponseDto,
   PropertyPhotoGalleryDto
 } from "@/types/photoplan.types";
+import { getAppConfig } from "@/config/app.config";
 
 interface BackendApiResponseWrapper<T> {
   success: boolean;
@@ -47,22 +48,23 @@ export const photoPlanService = {
     propertyId: number,
     photoTypeId: number,
     propertyPhotoId: number,
-    _referenceTableIdGuid?: string,
+    _displayOrder?: number,
     remarks?: string,
     photoTypeCode?: string
   ): Promise<ApiResponse<PropertyPhotoUploadResponseDto>> {
     try {
+      const isNew = propertyPhotoId <= 0 || propertyPhotoId === 9998 || propertyPhotoId === 9999;
+
       const uploadParams: DocumentUploadParams = {
         departmentId: DEPARTMENT_ID.PTIS,
         moduleId: MODULE_ID.PropertyPhoto,
         bindingPurpose: remarks || "Photo",
         documentType: photoTypeCode || String(photoTypeId),
-        isPrimaryDocument: true
+        isPrimaryDocument: true,
+        referenceTableName: REFERENCE_TABLE.PropertyPhoto
       };
 
-      uploadParams.referenceTableName = REFERENCE_TABLE.PropertyPhoto;
-
-      if (propertyPhotoId > 0 && propertyPhotoId !== 9998 && propertyPhotoId !== 9999) {
+      if (!isNew) {
         uploadParams.referenceTableId = propertyPhotoId;
         uploadParams.referencePropertyName = "PropertyPhotoId";
       } else {
@@ -124,61 +126,125 @@ export const photoPlanService = {
     _photoTypeId: number,
     propertyPhotoId: number,
     _referenceTableIdGuid?: string,
-    remarks?: string
+    remarks?: string,
+    photoTypeCode?: string
   ): Promise<ApiResponse<PropertyPhotoUploadResponseDto>> {
     try {
+      // Determine if this propertyPhotoId looks like a real PropertyPhoto row
+      // or if it's actually the propertyId / a placeholder.
+      const isLikelyPropertyId = propertyPhotoId === propertyId
+        || propertyPhotoId <= 0
+        || propertyPhotoId === 9998
+        || propertyPhotoId === 9999;
+
       const uploadParams: DocumentUploadParams = {
         departmentId: DEPARTMENT_ID.PTIS,
         moduleId: MODULE_ID.PropertyPhoto,
         referenceTableName: REFERENCE_TABLE.PropertyPhoto,
-        referencePropertyName: "PropertyPhotoId",
-        referenceTableId: propertyPhotoId,
         bindingPurpose: remarks || "Photo",
-        documentType: DOCUMENT_TYPE.Photo,
+        documentType: photoTypeCode || DOCUMENT_TYPE.Photo,
         isPrimaryDocument: true
       };
 
-      const uploadResponse = await uploadDocument(file, uploadParams);
+      if (isLikelyPropertyId) {
+        // The stored propertyPhotoId is actually a propertyId or placeholder.
+        // Use PropertyId reference so the backend's OnAfterUploadAsync
+        // dynamically creates the PropertyPhoto row.
+        uploadParams.referenceTableId = propertyId;
+        uploadParams.referencePropertyName = "PropertyId";
+      } else {
+        // Looks like a real PropertyPhotoId — try it first.
+        uploadParams.referenceTableId = propertyPhotoId;
+        uploadParams.referencePropertyName = "PropertyPhotoId";
+      }
+
+      let uploadResponse;
+      try {
+        uploadResponse = await uploadDocument(file, uploadParams);
+      } catch (firstError: unknown) {
+        // If the PropertyPhotoId reference failed (row doesn't exist),
+        // fall back to PropertyId reference.
+        const errMsg = firstError instanceof Error ? firstError.message : String(firstError);
+        const isNotFoundError = errMsg.includes("not found")
+          || errMsg.includes("does not exist")
+          || errMsg.includes("No '")
+          || errMsg.includes("row exists");
+
+        if (!isLikelyPropertyId && isNotFoundError) {
+          uploadParams.referenceTableId = propertyId;
+          uploadParams.referencePropertyName = "PropertyId";
+          uploadResponse = await uploadDocument(file, uploadParams);
+        } else {
+          throw firstError;
+        }
+      }
 
       if (!uploadResponse.documentGuid) {
         throw new Error("Failed to retrieve document GUID from upload.");
       }
 
+      // Best-effort cleanup of the old document
       if (oldDocumentGuid && oldDocumentGuid !== uploadResponse.documentGuid) {
-        // Best-effort cleanup of the replaced document.
-        await deleteDocument(oldDocumentGuid);
+        try {
+          await deleteDocument(oldDocumentGuid);
+        } catch {
+          // Non-critical: old document cleanup can fail silently
+        }
       }
 
-      // Fetch the updated photos for the property to retrieve the new PropertyPhotoId
-      const photosResponse = await this.getPhotosByProperty(propertyId);
-      if (!photosResponse.success || !photosResponse.data) {
-        throw new Error(photosResponse.error || "Failed to retrieve photos list to identify the new photo ID.");
-      }
+      // Best-effort: try to find the newly created/updated photo to get the
+      // real PropertyPhotoId. If this lookup fails, we still return success
+      // using the upload response data directly.
+      let resolvedPropertyPhotoId = propertyPhotoId;
+      let resolvedPhotoTypeId = _photoTypeId;
+      let resolvedDisplayOrder: number | undefined;
+      let resolvedRemarks = remarks || "";
+      let resolvedDocumentBindingId = uploadResponse.documentBindingId || 0;
+      let resolvedDocumentGuid = uploadResponse.documentGuid;
 
-      const newPhoto = photosResponse.data.find(
-        (p) => p.documentGuid === uploadResponse.documentGuid || p.documentBindingId === uploadResponse.documentBindingId
-      );
+      try {
+        const photosResponse = await this.getPhotosByProperty(propertyId);
+        if (photosResponse.success && photosResponse.data) {
+          // Try multiple matching strategies
+          const newPhoto = photosResponse.data.find(
+            (p) => p.documentGuid === uploadResponse.documentGuid
+          ) || photosResponse.data.find(
+            (p) => uploadResponse.documentBindingId && p.documentBindingId === uploadResponse.documentBindingId
+          ) || photosResponse.data.find(
+            (p) => p.photoTypeId === _photoTypeId
+              && p.propertyPhotoId !== propertyPhotoId
+              && p.documentGuid
+          );
 
-      if (!newPhoto) {
-        throw new Error("Replaced photo not found in property photo records.");
+          if (newPhoto) {
+            resolvedPropertyPhotoId = newPhoto.propertyPhotoId;
+            resolvedPhotoTypeId = newPhoto.photoTypeId;
+            resolvedDisplayOrder = newPhoto.displayOrder;
+            resolvedRemarks = newPhoto.remarks || remarks || "";
+            resolvedDocumentBindingId = newPhoto.documentBindingId || resolvedDocumentBindingId;
+            resolvedDocumentGuid = newPhoto.documentGuid || resolvedDocumentGuid;
+          }
+        }
+      } catch {
+        // Lookup failure is non-critical — the upload already succeeded.
       }
 
       return {
         success: true,
         data: {
-          propertyPhotoId: newPhoto.propertyPhotoId,
-          documentGuid: newPhoto.documentGuid || uploadResponse.documentGuid,
+          propertyPhotoId: resolvedPropertyPhotoId,
+          documentGuid: resolvedDocumentGuid,
           documentId: uploadResponse.documentId,
-          documentBindingId: newPhoto.documentBindingId || uploadResponse.documentBindingId || 0,
-          propertyId: newPhoto.propertyId,
-          photoTypeId: newPhoto.photoTypeId,
-          displayOrder: newPhoto.displayOrder,
-          remarks: newPhoto.remarks || remarks || "",
+          documentBindingId: resolvedDocumentBindingId,
+          propertyId: propertyId,
+          photoTypeId: resolvedPhotoTypeId,
+          displayOrder: resolvedDisplayOrder,
+          remarks: resolvedRemarks,
           fileName: file.name,
           fileSizeBytes: file.size,
           storagePath: uploadResponse.storagePath ?? "",
-          viewUrl: `/api/documents/${newPhoto.documentGuid || uploadResponse.documentGuid}/view`,
-          downloadUrl: `/api/documents/${newPhoto.documentGuid || uploadResponse.documentGuid}/download`
+          viewUrl: `/api/documents/${resolvedDocumentGuid}/view`,
+          downloadUrl: `/api/documents/${resolvedDocumentGuid}/download`
         }
       };
     } catch (error: unknown) {
@@ -234,5 +300,140 @@ export const photoPlanService = {
     return response.success && response.data
       ? { success: response.data.success, statusCode: response.statusCode, data: response.data.items, message: response.data.message || response.message }
       : { success: false, statusCode: response.statusCode, error: response.error, message: response.message };
+  },
+
+  // 10. GET - Authenticate and launch the CAD drawing tool
+  async launchDrawingTool(params: {
+    propertyId: number;
+    councilName: string;
+    returnUrl: string;
+    ptisUsername?: string;
+    ptisDisplayName?: string;
+    ptisUserId?: string;
+    wardNo?: string;
+    propertyNo?: string;
+    partitionNo?: string | null;
+  }): Promise<{ success: boolean; launchUrl?: string; error?: string }> {
+    try {
+      const { propertyId, councilName, returnUrl, ptisUsername, ptisDisplayName, ptisUserId, wardNo, propertyNo, partitionNo } = params;
+
+      const safeDecode = (val?: string) => {
+        if (!val) return '';
+        try {
+          return decodeURIComponent(val.replace(/\+/g, ' '));
+        } catch {
+          return val;
+        }
+      };
+
+      const finalPtisUsername = safeDecode(ptisUsername || 'ADMIN');
+      const finalPtisDisplayName = safeDecode(ptisDisplayName || 'Admin scipl');
+      const finalPtisUserId = safeDecode(ptisUserId || '1');
+
+      const loginCouncilName = councilName || 'THANE_Survey';
+      const apiCouncilName = councilName === 'THANE_Survey' ? 'THANE_survey' : (councilName || 'THANE_survey');
+
+      // 1. Authenticate user
+      let loginRes = await fetch('https://apiptisplanapp.tabamc.in/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: process.env.PHOTO_PLAN_API_USERNAME || 'tejas.d',
+          password: process.env.PHOTO_PLAN_API_PASSWORD || '123456',
+          councilName: loginCouncilName
+        })
+      });
+
+      if (!loginRes.ok) {
+        loginRes = await fetch('https://apiptisplanapp.tabamc.in/api/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: process.env.PHOTO_PLAN_API_USERNAME || 'tejas.d',
+            password: process.env.PHOTO_PLAN_API_PASSWORD || '123456',
+            councilName: loginCouncilName
+          })
+        });
+      }
+
+      if (!loginRes.ok) {
+        throw new Error(`Failed to authenticate drawing tool API: ${loginRes.status}`);
+      }
+      const loginData = await loginRes.json();
+      const token = loginData.token || loginData.access_token || (loginData.data && loginData.data.token);
+
+      if (!token) {
+         throw new Error('Failed to retrieve authentication token.');
+      }
+
+      // 2. Retrieve launch URL for property from /api/plans/ptis/launch
+      const isProd = process.env.NODE_ENV === 'production';
+      const defaultReturnBase = isProd
+        ? (process.env.PHOTO_PLAN_PROD_RETURN_URL || 'https://ptisthane.scipl.info')
+        : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+
+      let safeReturnUrl = returnUrl;
+      if (!safeReturnUrl) {
+        safeReturnUrl = `${defaultReturnBase}/en/property-tax/ptis`;
+      } else if (safeReturnUrl.startsWith('/')) {
+        safeReturnUrl = `${defaultReturnBase}${safeReturnUrl}`;
+      }
+
+      const rawApiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || getAppConfig().api.baseUrl || '';
+      const ptisBackendUri = rawApiUrl.replace(/\/api\/?$/, '');
+
+      const cleanPartition = (!partitionNo || partitionNo.trim() === '' || partitionNo.trim() === '-') ? '' : partitionNo.trim();
+
+      const queryParams = new URLSearchParams({
+        councilName: apiCouncilName,
+        wardNo: wardNo || '',
+        propertyNo: propertyNo || '',
+        partitionNo: cleanPartition,
+        mode: 'draw',
+        returnUrl: safeReturnUrl,
+        ptisBackendUri: ptisBackendUri,
+        ptisUsername: finalPtisUsername,
+        ptisDisplayName: finalPtisDisplayName,
+        ptisUserId: finalPtisUserId,
+        propertyId: String(propertyId),
+      });
+
+      const launchRes = await fetch(`https://apiptisplanapp.tabamc.in/api/plans/ptis/launch?${queryParams.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!launchRes.ok) {
+        let errMsg = `Failed to launch drawing tool API: ${launchRes.status}`;
+        try {
+          const errData = await launchRes.json();
+          if (errData && errData.error) {
+            errMsg = errData.error;
+          } else if (errData && errData.message) {
+            errMsg = errData.message;
+          }
+        } catch {}
+        throw new Error(errMsg);
+      }
+      const launchData = await launchRes.json();
+      const launchUrl = launchData.launchUrl || launchData.url || (launchData.data && launchData.data.launchUrl);
+
+      if (!launchUrl) {
+        throw new Error('Launch URL not found in response.');
+      }
+
+      return { success: true, launchUrl };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An error occurred while launching drawing tool.',
+      };
+    }
   }
 };

@@ -7,7 +7,7 @@ import { logger } from "@/lib/utils/logger";
 /** Fetches all asset photo types from the API */
 export async function getAssetPhotoTypes(): Promise<AssetPhotoType[]> {
   try {
-    const response = await apiClient.get<PagedResponse<AssetPhotoType>>("/master/asset-photo-types?MarkedForDeletion=false");
+    const response = await apiClient.get<PagedResponse<AssetPhotoType>>("/asset-management/photo-type?MarkedForDeletion=false");
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch asset photo types", "Get asset photo types failed");
     }
@@ -36,7 +36,7 @@ export async function getAssetPhotoPaged(
     if (sortBy?.trim()) params.append("SortBy", sortBy.trim());
     if (sortOrder?.trim()) params.append("SortOrder", sortOrder.trim());
 
-    const response = await apiClient.get<PagedResponse<AssetPhotoType>>(`/master/asset-photo-types?${params.toString()}`);
+    const response = await apiClient.get<PagedResponse<AssetPhotoType>>(`/asset-management/photo-type?${params.toString()}`);
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch paged asset photo types", "Get paged asset photo types failed");
     }
@@ -57,7 +57,7 @@ export async function getAssetPhotoTypeById(photoTypeId: number): Promise<AssetP
     if (typeof photoTypeId !== "number" || photoTypeId <= 0 || !Number.isFinite(photoTypeId)) {
       throw new ApiError(400, "Valid Asset Photo Type ID is required", "Invalid ID");
     }
-    const response = await apiClient.get<AssetPhotoType>(`/master/asset-photo-types/${encodeURIComponent(String(photoTypeId))}`);
+    const response = await apiClient.get<AssetPhotoType>(`/asset-management/photo-type/${encodeURIComponent(String(photoTypeId))}`);
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch asset photo type", `Get asset photo type ${photoTypeId} failed`);
     }
@@ -86,7 +86,7 @@ export async function createAssetPhotoType(data: AssetPhotoTypeFormModel): Promi
       isRequired: data.isRequired,
       isSubUnit: data.isSubUnit,
     };
-    const response = await apiClient.post<unknown>("/master/asset-photo-types", payload);
+    const response = await apiClient.post<unknown>("/asset-management/photo-type", payload);
     if (!response.success) {
       const errorMsg = response.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
@@ -122,7 +122,7 @@ export async function updateAssetPhotoType(data: AssetPhotoTypeFormModel): Promi
       isRequired: data.isRequired,
       isSubUnit: data.isSubUnit,
     };
-    const response = await apiClient.put<unknown>(`/master/asset-photo-types/${encodeURIComponent(String(data.id))}`, payload);
+    const response = await apiClient.put<unknown>(`/asset-management/photo-type/${encodeURIComponent(String(data.id))}`, payload);
     if (!response.success) {
       const errorMsg = response.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
@@ -145,7 +145,8 @@ export async function deleteAssetPhotoType(id: number): Promise<void> {
     if (typeof id !== "number" || id <= 0 || !Number.isFinite(id)) {
       throw new ApiError(400, "Valid Asset Photo Type ID is required", "Validation failed");
     }
-    const response = await apiClient.delete<void>(`/master/asset-photo-types/${encodeURIComponent(String(id))}`);
+    const response = await apiClient.delete<void>(`/asset-management/photo-type/${encodeURIComponent(String(id))}`);
+
     if (!response.success) {
       const errorMsg = response.error || "";
       const lowerMsg = errorMsg.toLowerCase();

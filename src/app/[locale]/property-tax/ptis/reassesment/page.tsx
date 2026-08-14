@@ -72,6 +72,9 @@ export default async function ReassessmentPage({
   return (
     <div className="p-4">
       <ReassesmentScreen
+        wardId={wardId}
+        propertyNo={propertyNo}
+        partitionNo={partitionNo}
         oldFloorDetails={data?.oldFloorDetails}
         newFloorDetails={data?.newFloorDetails}
         taxColumns={data?.taxColumns}

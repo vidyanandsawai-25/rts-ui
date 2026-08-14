@@ -70,7 +70,7 @@ export function getAssetTypeColumns(
   sortOrder?: string,
   onSort?: (field: string) => void
 ): Column<MasterDataRecord>[] {
-  const sortableColumns = ["typeCode", "typeName"];
+  const sortableColumns = ["typeCode", "typeName", "description"];
 
   const createSortableLabel = (label: string, key: string) => {
     if (onSort && sortableColumns.includes(key)) {
@@ -91,7 +91,7 @@ export function getAssetTypeColumns(
   return [
     {
       key: "id",
-      width: "18%",
+      width: "15%",
       label: createSortableLabel(t("labels.code"), "typeCode"),
       render: (_, r) => (
         <Badge variant="secondary" size="sm">
@@ -101,20 +101,25 @@ export function getAssetTypeColumns(
     },
     {
       key: "name",
-      width: "48%",
+      width: "28%",
       label: createSortableLabel(t("labels.name"), "typeName"),
       render: (_, r) => (
-        <div>
-          <div className="font-semibold text-sm text-slate-800">{r.name}</div>
-          <div className="text-xs text-slate-500 line-clamp-1">
-            {r.description}
-          </div>
+        <div className="font-semibold text-sm text-slate-800">{r.name}</div>
+      ),
+    },
+    {
+      key: "description",
+      width: "37%",
+      label: createSortableLabel(t("labels.description"), "description"),
+      render: (_, r) => (
+        <div className="text-xs text-slate-600 line-clamp-2">
+          {r.description || "-"}
         </div>
       ),
     },
     {
       key: "status",
-      width: "18%",
+      width: "15%",
       label: t("labels.status"),
       isStatus: true,
       render: (_, r) => <StatusBadge value={r.status} />,

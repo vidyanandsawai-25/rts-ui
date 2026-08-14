@@ -133,3 +133,9 @@ export async function getTaxZones(
   return handleApiResponse(response, t("property.errors.fetchTaxZones")).items ?? [];
 }
 
+/* ---------------- DELETE ALL DETAILS BY PROPERTY ID ---------------- */
+export async function deletePropertyDetails(propertyId: number): Promise<ActionResult<null>> {
+  const response = await apiClient.delete<ActionResult<null>>(`/DataEntry/ByPropertyId/${propertyId}`);
+  const t = await getTranslations("quickDataEntry");
+  return handleApiResponse(response, t("property.errors.deletePropertyDetails"));
+}

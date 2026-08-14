@@ -40,21 +40,30 @@ export function parseApiError(
 ): string {
   if (!responseText) return defaultKey;
 
+  const trimmed = responseText.trim();
+  if (BANK_API_ERROR_MAP[trimmed]) return BANK_API_ERROR_MAP[trimmed];
+
   try {
-    const parsed = JSON.parse(responseText) as Record<string, unknown>;
+    const parsed = JSON.parse(trimmed) as Record<string, unknown>;
 
     if (parsed.errors && typeof parsed.errors === 'object') {
       const [, messages] = Object.entries(parsed.errors)[0] ?? [];
       let code: string | undefined;
 
-      if (typeof messages === 'string') code = messages;
-      else if (Array.isArray(messages) && typeof messages[0] === 'string') code = messages[0];
+      if (typeof messages === 'string') code = messages.trim();
+      else if (Array.isArray(messages) && typeof messages[0] === 'string')
+        code = messages[0].trim();
 
       if (code && BANK_API_ERROR_MAP[code]) return BANK_API_ERROR_MAP[code];
+      if (code) return code;
     }
 
     const flat = (parsed.message || parsed.error || parsed.code) as string | undefined;
-    if (typeof flat === 'string' && BANK_API_ERROR_MAP[flat]) return BANK_API_ERROR_MAP[flat];
+    if (typeof flat === 'string') {
+      const flatTrimmed = flat.trim();
+      if (BANK_API_ERROR_MAP[flatTrimmed]) return BANK_API_ERROR_MAP[flatTrimmed];
+      if (flatTrimmed) return flatTrimmed;
+    }
   } catch {}
 
   return defaultKey;
@@ -87,7 +96,7 @@ export function handleActionError<T = void>(
 
   return {
     success: false,
-    error: fallbackMessage,
+    error: error instanceof Error ? error.message : fallbackMessage,
   };
 }
 

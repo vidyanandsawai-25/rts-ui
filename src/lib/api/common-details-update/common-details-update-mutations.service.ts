@@ -1,16 +1,48 @@
 import { apiClient } from "@/services/api.service";
 import { getTranslations } from "next-intl/server";
 import { ApiError } from "@/lib/utils/api";
-import { BulkUpdatePayload, BulkUpdateResponse, CreateFieldRegistryDto, ActionResult, ExcelImportResponse } from "@/types/common-details-update/common-details-update.types";
+import { BulkUpdatePayload, BulkUpdateResponse, CreateFieldRegistryDto, ActionResult, ExcelImportResponse, BulkUpdateDefinitionPayload } from "@/types/common-details-update/common-details-update.types";
 import { createLogger } from "@/lib/utils/server-logger";
 import { cookies } from "next/headers";
 import { getAppConfig } from "@/config/app.config";
 
 const logger = createLogger("BulkUpdateMutations");
 
+export async function addBulkUpdateDefinitionServer(
+  payload: BulkUpdateDefinitionPayload
+): Promise<ActionResult<unknown>> {
+  try {
+    logger.info("addBulkUpdateDefinitionServer: Registering new bulk update definition", { 
+      updateName: payload.updateName,
+      tableId: payload.tableId,
+      fieldsCount: payload.tableFieldIds.length
+    });
+
+    const response = await apiClient.post<unknown>("/CommonDetails/bulk-update-definitions", payload);
+
+    if (response.success) {
+      return { success: true, data: response.data };
+    }
+
+    const t = await getTranslations("commonDetailsUpdate");
+    throw new ApiError(
+      response.statusCode || 500,
+      response.error || t("messages.somethingWrong"),
+      "addBulkUpdateDefinitionServer"
+    );
+  } catch (error) {
+    logger.error("addBulkUpdateDefinitionServer: Failed", { error });
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message, statusCode: error.statusCode };
+    }
+    const t = await getTranslations("commonDetailsUpdate");
+    return { success: false, error: t("messages.somethingWrong"), statusCode: 500 };
+  }
+}
+
 export async function executeBulkUpdateServer(
   apiRoute: string,
-  payload: BulkUpdatePayload
+  payload: BulkUpdatePayload | BulkUpdatePayload[]
 ): Promise<BulkUpdateResponse> {
   // Use provided apiRoute or default to /CommonDetails/update
   let endpoint = apiRoute || "/CommonDetails/update";
@@ -19,8 +51,8 @@ export async function executeBulkUpdateServer(
   endpoint = endpoint.replace(/^\/api\//, '/');
   
   logger.info("executeBulkUpdateServer: Starting bulk update", { 
-    updateCode: payload.updateCode, 
-    propertyCount: payload.propertyIds.length,
+    updateCode: Array.isArray(payload) ? "batch" : payload.updateCode, 
+    propertyCount: Array.isArray(payload) ? payload.length : payload.propertyIds?.length,
     endpoint,
     originalApiRoute: apiRoute
   });
@@ -143,6 +175,95 @@ export async function importExcelServer(
       message: responseText,
       errors: null,
     };
+  }
+}
+
+export async function setFieldRegistryStatusServer(
+  updateCode: string,
+  isActive: boolean
+): Promise<ActionResult<{ success: boolean; message: string }>> {
+  try {
+    logger.info("setFieldRegistryStatusServer: Setting status via PATCH", { updateCode, isActive });
+
+    const response = await apiClient.patch<{ success?: boolean; message?: string }>(
+      `/FieldRegistry/SetFieldRegistryStatus/${encodeURIComponent(updateCode)}?isActive=${isActive}`,
+      {}
+    );
+
+    if (response.success) {
+      const data = response.data as Record<string, unknown>;
+      return {
+        success: true,
+        data: {
+          success: Boolean(data?.success ?? true),
+          message: String(data?.message || "Status updated successfully")
+        }
+      };
+    }
+
+    const postResponse = await apiClient.post<{ success?: boolean; message?: string }>(
+      `/FieldRegistry/SetFieldRegistryStatus/${encodeURIComponent(updateCode)}?isActive=${isActive}`,
+      {}
+    );
+
+    if (postResponse.success) {
+      const data = postResponse.data as Record<string, unknown>;
+      return {
+        success: true,
+        data: {
+          success: Boolean(data?.success ?? true),
+          message: String(data?.message || "Status updated successfully")
+        }
+      };
+    }
+
+    return {
+      success: false,
+      error: response.error || "Failed to update field registry status",
+      statusCode: response.statusCode || 500
+    };
+  } catch (error) {
+    logger.error("setFieldRegistryStatusServer: Error", { updateCode, isActive, error });
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message, statusCode: error.statusCode };
+    }
+    return { success: false, error: "Failed to update field registry status", statusCode: 500 };
+  }
+}
+
+export async function updateFieldRegistryServer(
+  updateCode: string,
+  payload: CreateFieldRegistryDto & { isActive?: boolean }
+): Promise<ActionResult<unknown>> {
+  try {
+    logger.info("updateFieldRegistryServer: Updating field registry", { 
+      updateCode,
+      updateName: payload.updateName,
+      referenceTableName: payload.referenceTableName
+    });
+
+    const response = await apiClient.put<unknown>(
+      `/FieldRegistry/UpdateFieldRegistry/${encodeURIComponent(updateCode)}`,
+      payload
+    );
+
+    if (response.success) {
+      return { success: true, data: response.data };
+    }
+
+    const t = await getTranslations("commonDetailsUpdate");
+    throw new ApiError(
+      response.statusCode || 500,
+      response.error || t("messages.somethingWrong"),
+      "updateFieldRegistryServer"
+    );
+  } catch (error) {
+    logger.error("updateFieldRegistryServer: Failed", { error });
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message, statusCode: error.statusCode };
+    }
+    const t = await getTranslations("commonDetailsUpdate");
+    return { success: false, error: t("messages.somethingWrong"), statusCode: 500 };
   }
 }
 

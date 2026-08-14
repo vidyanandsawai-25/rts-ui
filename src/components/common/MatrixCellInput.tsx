@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils/cn";
 import React from "react";
  
 export interface MatrixCellInputProps {
-  value: number;
+  value?: number;
   rowId: string;
   columnId: string;
   metaLabel?: string;
@@ -18,10 +18,12 @@ export interface MatrixCellInputProps {
   maxValue?: number;
   /** Number of decimal places (default: 2) */
   decimalPlaces?: number;
-  onCellChange?: (rowId: string, columnId: string, value: number) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onCellChange?: (rowId: string, columnId: string, value: any) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   /** Optional callback when user tries to type a value exceeding max digits */
   onMaxExceeded?: () => void;
+  allowZero?: boolean;
 }
  
 export const MatrixCellInput = ({
@@ -38,10 +40,17 @@ export const MatrixCellInput = ({
   onCellChange,
   onKeyDown,
   onMaxExceeded,
+  allowZero = false,
 }: MatrixCellInputProps): React.ReactElement => {
   // Helper to format value for display
-  const formatValue = React.useCallback((val: number): string => {
+  const formatValue = React.useCallback((val: number | undefined): string => {
+    if (val === undefined) {
+      return "";
+    }
     if (val === 0) {
+      if (allowZero) {
+        return allowDecimals ? (0).toFixed(decimalPlaces) : "0";
+      }
       return readOnly ? "0" : "";
     }
     if (allowDecimals) {
@@ -50,25 +59,25 @@ export const MatrixCellInput = ({
       return formatted;
     }
     return String(Math.floor(val));
-  }, [readOnly, allowDecimals, decimalPlaces]);
+  }, [readOnly, allowDecimals, decimalPlaces, allowZero]);
 
   // Safely convert value to number to handle undefined, null, or string values
-  const safeValue = typeof value === 'number' && !Number.isNaN(value) ? value : Number(value) || 0;
+  const safeValue = typeof value === 'number' && !Number.isNaN(value) ? value : (allowZero ? undefined : 0);
   
   const [localValue, setLocalValue] = React.useState<string>(
     formatValue(safeValue)
   );
   const [isFocused, setIsFocused] = React.useState(false);
-  const previousValueRef = React.useRef<number>(safeValue);
+  const previousValueRef = React.useRef<number | undefined>(safeValue);
   // Update local value when prop value changes from external source (not from our own edits)
   React.useEffect(() => {
-    const currentSafeValue = typeof value === 'number' && !Number.isNaN(value) ? value : Number(value) || 0;
+    const currentSafeValue = typeof value === 'number' && !Number.isNaN(value) ? value : (allowZero ? undefined : 0);
     // Only sync if value actually changed AND we're not focused
     if (!isFocused && currentSafeValue !== previousValueRef.current) {
       setLocalValue(formatValue(currentSafeValue));
     }
     previousValueRef.current = currentSafeValue;
-  }, [value, isFocused, formatValue]);
+  }, [value, isFocused, formatValue, allowZero]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -109,12 +118,14 @@ export const MatrixCellInput = ({
     setLocalValue(inputValue);
     
     // Convert to number for onCellChange call
-    const numValue = inputValue === "" ? 0 : Number(inputValue);
+    const numValue = inputValue === "" ? undefined : Number(inputValue);
     
     // Ensure we send a valid number to onCellChange
-    const safeNumValue = Number.isNaN(numValue) || numValue < 0 ? 0 : Math.min(numValue, maxValue);
+    const safeNumValue = numValue === undefined || Number.isNaN(numValue) || numValue < 0 
+      ? undefined 
+      : Math.min(numValue, maxValue);
     
-    onCellChange?.(rowId, columnId, safeNumValue);
+    onCellChange?.(rowId, columnId, allowZero ? safeNumValue : (safeNumValue ?? 0));
   };
 
   const handleFocus = () => {
@@ -123,16 +134,17 @@ export const MatrixCellInput = ({
 
   const handleBlur = () => {
     setIsFocused(false);
-    const numValue = localValue === "" ? 0 : Number(localValue);
-    if (Number.isNaN(numValue)) {
+    const numValue = localValue === "" ? undefined : Number(localValue);
+    if (numValue === undefined || Number.isNaN(numValue)) {
+      setLocalValue("");
+      onCellChange?.(rowId, columnId, allowZero ? undefined : 0);
+    } else if (numValue === 0 && !allowZero) {
       setLocalValue("");
       onCellChange?.(rowId, columnId, 0);
-    } else if (numValue === 0) {
-      setLocalValue("");
     } else {
-      const clamped = Math.min(allowDecimals ? numValue : Math.floor(numValue), maxValue);
+      const clamped = Math.min(allowDecimals ? (numValue ?? 0) : Math.floor(numValue ?? 0), maxValue);
       setLocalValue(allowDecimals ? clamped.toFixed(decimalPlaces) : String(clamped));
-      if (clamped !== numValue) onCellChange?.(rowId, columnId, clamped);
+      if (clamped !== value) onCellChange?.(rowId, columnId, clamped);
     }
   };
 
@@ -149,10 +161,11 @@ export const MatrixCellInput = ({
     // Call the parent's onKeyDown if provided
     onKeyDown?.(e);
   };
- 
+
   // Determine cell styling based on current input value
-  const currentNumValue = localValue === "" ? 0 : Number(localValue);
-  const valueBasedClass = currentNumValue > 0
+  const currentNumValue = localValue === "" ? undefined : Number(localValue);
+  const isFilled = currentNumValue !== undefined && (currentNumValue > 0 || (currentNumValue === 0 && allowZero));
+  const valueBasedClass = isFilled
     ? "bg-blue-50 text-blue-800 border-blue-300"
     : "bg-gray-50 text-gray-500 border-gray-200";
 
@@ -160,7 +173,7 @@ export const MatrixCellInput = ({
   const placeholderValue = "0";
  
   return (
-<input
+    <input
       type="number"
       min="0"
       max={maxValue}

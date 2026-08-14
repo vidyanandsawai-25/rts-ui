@@ -65,7 +65,14 @@
         },
         "dataType": {
           "label": "Data Type",
-          "placeholder": "Select Data Type"
+          "placeholder": "Select Data Type",
+          "options": {
+            "decimal": "DECIMAL (e.g. 10.5)",
+            "bit": "BIT (True/False)",
+            "integer": "INTEGER (e.g. 10)",
+            "text": "TEXT (e.g. Text Value)",
+            "date": "DATE (e.g. 2026-08-15)"
+          }
         },
         "unit": {
           "label": "Unit",
@@ -84,6 +91,12 @@
         },
         "isDiscountApplicable": {
           "label": "Discount Applicable"
+        },
+        "isPhotoRequired": {
+          "label": "Photo Required"
+        },
+        "isDocumentRequired": {
+          "label": "Document Required"
         },
         "isChild": {
           "label": "Is Child Attribute"

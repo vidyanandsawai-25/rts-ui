@@ -12,6 +12,7 @@ interface FormFieldsSectionProps {
   errors: Partial<Record<keyof AssessmentYearRangeFormModel, string>>;
   showError: (field: keyof AssessmentYearRangeFormModel) => boolean;
   t: (key: string) => string;
+  disabled?: boolean;
 }
 
 export const FormFieldsSection = ({
@@ -22,6 +23,7 @@ export const FormFieldsSection = ({
   errors,
   showError,
   t,
+  disabled = false,
 }: FormFieldsSectionProps) => {
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
@@ -40,6 +42,7 @@ export const FormFieldsSection = ({
         type="text"
         inputMode="numeric"
         maxLength={4}
+        disabled={disabled}
       />
       <ValidationMessage
         message={errors.fromYear}
@@ -61,6 +64,7 @@ export const FormFieldsSection = ({
         type="text"
         inputMode="numeric"
         maxLength={4}
+        disabled={disabled}
       />
       <ValidationMessage
         message={errors.toYear}

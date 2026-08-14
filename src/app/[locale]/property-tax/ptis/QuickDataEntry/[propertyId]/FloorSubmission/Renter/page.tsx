@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { setRequestLocale } from 'next-intl/server';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import RenterDetailsForm from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/Renter/RenterDetailsForm';
 import { 
     getFloorByIdAction, 
@@ -39,6 +39,7 @@ function parseFloorResponse(rawFloorResponse: unknown): Record<string, unknown> 
 export default async function RenterDetailsPage({ params, searchParams }: RenterDetailsPageProps) {
     const { locale, propertyId } = await params;
     setRequestLocale(locale);
+    const t = await getTranslations('quickDataEntry');
     const resolvedParams = await searchParams;
     
     const floorId = resolvedParams.floorId || '';
@@ -106,7 +107,7 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
 
     return (
         <PageContainer>
-            <Suspense fallback={<div className="p-8 flex items-center justify-center">Loading Renter Screen...</div>}>
+            <Suspense fallback={<div className="p-8 flex items-center justify-center">{t('renter.loadingScreen')}</div>}>
                 <div className="flex flex-col flex-1 w-full">
                     <RenterDetailsForm 
                         initialData={initialFloorData} 

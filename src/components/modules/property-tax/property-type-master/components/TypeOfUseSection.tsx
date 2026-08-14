@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Input, Select } from "@/components/common";
 import { SelectAllButton, ClearButton } from "@/components/common/ActionButtons";
@@ -13,6 +13,7 @@ interface TypeOfUseSectionProps {
   typeOfUseList: UseType[];
   selectedTypeOfUseIds: Set<number>;
   initialTypeOfUseIds: Set<number>;
+  selectedTypeValue?: string;
   onToggle: (touId: number) => void;
   onSelectAll: () => void;
   onClearAll: () => void;
@@ -24,14 +25,31 @@ export const TypeOfUseSection = ({
   typeOfUseList,
   selectedTypeOfUseIds,
   initialTypeOfUseIds,
+  selectedTypeValue,
   onToggle,
   onSelectAll,
   onClearAll,
   t,
 }: TypeOfUseSectionProps) => {
-  // --- Search & filter state (SSR-safe, no useEffect) ---
+  // --- Search & filter state ---
   const [touSearchTerm, setTouSearchTerm] = useState("");
-  const [selectedTouType, setSelectedTouType] = useState<string>("ALL");
+  const [manualTouType, setManualTouType] = useState<string>("ALL");
+  const [prevSelectedTypeValue, setPrevSelectedTypeValue] = useState<string | undefined>(undefined);
+
+  // Sync manual filter with left-side form selection, but allow manual overrides afterwards
+  if (selectedTypeValue !== prevSelectedTypeValue) {
+    setPrevSelectedTypeValue(selectedTypeValue);
+    const normalizedType = String(selectedTypeValue ?? "").trim().toUpperCase();
+    const syncableTypes = new Set(["R", "C", "I", "N"]);
+    
+    if (syncableTypes.has(normalizedType)) {
+      setManualTouType(normalizedType);
+    } else {
+      setManualTouType("ALL");
+    }
+  }
+
+  const effectiveTouType = manualTouType;
 
   // Sanitize search input
   const sanitizeSearchText = (value: string) => {
@@ -53,7 +71,7 @@ export const TypeOfUseSection = ({
         item.typeOfUseCode.toLowerCase().includes(touSearchTerm.toLowerCase());
 
       const matchesType =
-        selectedTouType === "ALL" || item.type === selectedTouType;
+        effectiveTouType === "ALL" || item.type === effectiveTouType;
 
       return matchesSearch && matchesType;
     });
@@ -67,7 +85,7 @@ export const TypeOfUseSection = ({
       if (!aIsInitial && bIsInitial) return 1;
       return 0; // Preserve original order for items in same category
     });
-  }, [typeOfUseList, touSearchTerm, selectedTouType, initialTypeOfUseIds]);
+  }, [typeOfUseList, touSearchTerm, effectiveTouType, initialTypeOfUseIds]);
 
   return (
     <div className="flex flex-col h-full min-h-[300px] max-h-[750px] md:min-h-[400px] lg:min-h-[500px] overflow-y-auto">
@@ -114,13 +132,13 @@ export const TypeOfUseSection = ({
                 {t("form.typeOfUseSection.typeLabel")}
               </label>
               <Select
-                value={selectedTouType}
+                value={effectiveTouType}
                 placeholder={t("form.typeOfUseSection.allTypes")}
                 options={touTypeOptions.map((type) => ({
                   label: type === "ALL" ? t("form.typeOfUseSection.allTypes") : type,
                   value: type,
                 }))}
-                onChange={(_, value) => setSelectedTouType(value)}
+                onChange={(_, value) => setManualTouType(value)}
               />
             </div>
           </div>

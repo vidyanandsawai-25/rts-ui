@@ -155,6 +155,7 @@ describe('Rule Service API Tests', () => {
         ruleName: 'Test Rule',
         description: 'A mock rule description',
         ruleScopeId: 1,
+        propertyRuleEvaluationMasterId: 0,
         ruleCategory: 'TAX',
         conditionsJson: '{"id":"cond-1","logicalOperator":"AND","conditions":[],"groups":[]}',
         effectJson: '{"effectType":"Decrease %","value":10,"isPercentage":true}',
@@ -164,6 +165,10 @@ describe('Rule Service API Tests', () => {
         isActive: true,
         createdBy: 42,
         updatedBy: 42,
+        priority: undefined,
+        stopProcessing: undefined,
+        skipRuleIds: undefined,
+        exclusionReason: undefined,
       });
       expect(result.success).toBe(true);
       expect(result.data?.id).toBe(102);

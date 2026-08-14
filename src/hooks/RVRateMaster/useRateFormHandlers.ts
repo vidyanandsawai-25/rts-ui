@@ -7,7 +7,7 @@ type MatrixRow = {
   id: number;
   zone?: string;
   zoneNo?: string;
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | null | undefined;
 };
 
 interface RateFormHandlersProps {
@@ -29,7 +29,7 @@ interface RateFormHandlersProps {
   matrixStorageKey: string;
   locale: string;
   onClose?: () => void;
-  router: { replace: (url: string) => void };
+  router: { replace: (url: string) => void; refresh: () => void; };
   confirm: (options: ConfirmOptions) => void;
   buildCompleteMatrixForSubmission: () => MatrixRow[];
   handleBulkCreate: (data: MatrixRow[]) => Promise<{ success: boolean } | undefined>;
@@ -71,7 +71,7 @@ export function useRateFormHandlers(props: RateFormHandlersProps) {
     mode, id, selectedZone, selectedUseGroup, assessmentYear, existingRateFound,
     rateCategories, useGroupOptions, zoneOptions, zoneDescriptions, assessmentYears,
     assessmentYearRanges, confirm, buildCompleteMatrixForSubmission, handleBulkCreate,
-    handleBulkUpdate, handleDelete, handleClose, t, isOpenPlot
+    handleBulkUpdate, handleDelete, handleClose, t, isOpenPlot, router
   });
 
   const copyHandlers = useRateCopyHandlers({

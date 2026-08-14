@@ -1,4 +1,15 @@
 
+export interface TaxApplicabilityPropertyData {
+  propertyId: number;
+  propertyDetailId: number;
+  financeYearId: number;
+  financeYear?: string;
+  floorId: number;
+  subFloorId: number | null;
+  typeOfUseId: number;
+  typeOfUseCode: string;
+  typeOfUseDescription: string;
+}
 
 export interface AssessmentYearRangeItem {
   id: number;
@@ -9,11 +20,14 @@ export interface AssessmentYearRangeItem {
   updatedDate?: string | null;
 }
 
-export interface TypeOfUseGroupItem {
+export interface TypeOfUseItem {
   id: number;
-  typeOfUseGroupCode: string;
-  groupName: string;
-  groupIcon: string;
+  typeOfUseCode: string;
+  description: string;
+  type: string;
+  typeOfUseGroupId: number | null;
+  searchSequence: number | null;
+  typeOfUseCategoryId: number | null;
   isActive: boolean;
   createdDate?: string;
   updatedDate?: string | null;
@@ -31,7 +45,7 @@ export interface PagedResponse<T> {
 
 export interface ApplicableTaxesPageProps {
   asseYearsResponse: PagedResponse<AssessmentYearRangeItem> | null;
-  useGroupsResponse: PagedResponse<TypeOfUseGroupItem> | null;
+  useGroupsResponse: PagedResponse<TypeOfUseItem> | null;
   valuationTab: string;
 }
 
@@ -50,7 +64,7 @@ export type TaxApplicabilityItem = {
 export interface TaxApplicabilityData {
   propertyId: number;
   financialYearId: number;
-  typeOfUseGroupId: number;
+  typeOfUseId: number;
   applicableCount: number;
   exemptedCount: number;
   applicableTaxes: TaxApplicabilityItem[];
@@ -67,12 +81,11 @@ export interface TaxApplicabilityWrapper {
 
 export interface ApplicableTaxesProps {
   asseYearsResponse: PagedResponse<AssessmentYearRangeItem> | null;
-  useGroupsResponse: PagedResponse<TypeOfUseGroupItem> | null;
+  useGroupsResponse: PagedResponse<TypeOfUseItem> | null;
   valuationTab: string;
   taxApplicabilityPagedResponse: PagedResponse<TaxApplicabilityData> | null;
+  taxApplicabilityPropertyData?: TaxApplicabilityPropertyData[] | null;
+  initialAsseYear?: string;
+  initialTypeOfUse?: string;
 }
-
-export interface TabNavigationProps {
-  applicableCount: number;
-  exemptedCount: number;
-}
+

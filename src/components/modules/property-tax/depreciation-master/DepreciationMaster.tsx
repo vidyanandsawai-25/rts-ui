@@ -26,6 +26,9 @@ export default function DepreciationMaster({
   /* ----------------------------- State ----------------------------- */
   const [saving, setSaving] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<Record<number, number>>({});
+  const [pendingNewRecords, setPendingNewRecords] = useState<
+    Record<string, { minYear: number; maxYear: number; constructionTypeId: number; rate: number }>
+  >({});
   const [minValue, setMinValue] = useState("");
   const [maxValue, setMaxValue] = useState("");
   const [minError, setMinError] = useState<string | null>(null);
@@ -106,6 +109,8 @@ export default function DepreciationMaster({
     effectiveSelectedRangeId,
     pendingChanges,
     setPendingChanges,
+    pendingNewRecords,
+    setPendingNewRecords,
     setLocalRateOverrides,
     setSaving,
     setMinValue,
@@ -128,17 +133,25 @@ export default function DepreciationMaster({
     [ranges, ratesByRange]
   );
 
-  const matrixColumns = useMemo(() => {
-    return initialConstructionTypes.map((c) => ({
-      id: String(c.constructionId),
-      label: c.constructionCode,
-      headerClassName: "bg-blue-50 text-blue-900 font-semibold",
-    }));
+  const visibleConstructionTypes = useMemo(() => {
+    return initialConstructionTypes.filter((c) => {
+      const code = c.constructionCode?.toLowerCase() || "";
+      return !["op", "ops", "open plot"].includes(code);
+    });
   }, [initialConstructionTypes]);
 
+  const matrixColumns = useMemo(() => {
+    return visibleConstructionTypes.map((c) => ({
+      id: String(c.constructionId),
+      label: c.constructionCode,
+      unit: "%",
+      headerClassName: "bg-blue-50 text-blue-900 font-semibold",
+    }));
+  }, [visibleConstructionTypes]);
+
   const editableColumnIds = useMemo(() => {
-    return initialConstructionTypes.map((c) => String(c.constructionId));
-  }, [initialConstructionTypes]);
+    return visibleConstructionTypes.map((c) => String(c.constructionId));
+  }, [visibleConstructionTypes]);
 
   return (
     <DepreciationMasterGrid

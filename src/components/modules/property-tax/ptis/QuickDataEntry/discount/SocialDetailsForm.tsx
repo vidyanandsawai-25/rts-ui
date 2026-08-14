@@ -9,6 +9,25 @@ import { SocialSidebar } from "./SocialSidebar";
 import { SocialDetailPane } from "./SocialDetailPane";
 import { SocialValidationErrorBanner } from "./SocialValidationErrorBanner";
 import { getLocalizedName } from "@/lib/utils/social-details";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+import { SocialAttributeHierarchyDto } from "@/types/property-social-details.types";
+
+const checkIfSocialAttributeActiveInInitial = (
+    attributes: SocialAttributeHierarchyDto[] | undefined,
+    targetId: number
+): boolean => {
+    if (!attributes) return false;
+    for (const attr of attributes) {
+        if (attr.id === targetId) {
+            return typeof attr.propertySocialDetailId === "number" && attr.propertySocialDetailId > 0 && attr.bitValue === true;
+        }
+        if (attr.children && attr.children.length > 0) {
+            const found = checkIfSocialAttributeActiveInInitial(attr.children, targetId);
+            if (found) return true;
+        }
+    }
+    return false;
+};
 
 interface SocialDetailsFormProps {
     initialSocialData: PropertySocialInfoResponseDto | null;
@@ -20,6 +39,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
     propertyId
 }) => {
     const t = useTranslations("quickDataEntry");
+    const { confirm } = useConfirm();
     const {
         socialData,
         isSaving,
@@ -31,17 +51,14 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         handleToggleEnabled,
         handlePhotoUpload,
         handlePhotoDelete,
-        handleSave
+        handleDeleteSocialDetail,
+        handleSave,
+        revertSocialAttribute
     } = useSocialDetailsForm(initialSocialData, propertyId);
 
     const [selectedId, setSelectedId] = React.useState<number | null>(null);
     const [searchTerm, setSearchTerm] = React.useState("");
     const [showActiveFirst, setShowActiveFirst] = React.useState(false);
-
-    const handleToggleEnabledWrapped = React.useCallback((id: number, checked: boolean) => {
-        handleToggleEnabled(id, checked);
-        setSelectedId(id);
-    }, [handleToggleEnabled]);
 
     // List of root attributes
     const rootAttributes = React.useMemo(() => {
@@ -78,6 +95,39 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         return filteredAttributes.length > 0 ? filteredAttributes[0].socialAttributeId : null;
     }, [filteredAttributes, selectedId]);
 
+    const handleSelectAttribute = React.useCallback((id: number) => {
+        if (activeSelectedId !== null && activeSelectedId !== id) {
+            revertSocialAttribute(activeSelectedId);
+        }
+        setSelectedId(id);
+    }, [activeSelectedId, revertSocialAttribute]);
+
+    const handleToggleEnabledWrapped = React.useCallback((id: number, checked: boolean) => {
+        const item = socialData[id];
+        const existsAndActiveInDb = checkIfSocialAttributeActiveInInitial(initialSocialData?.socialAttributes, id);
+
+        if (!checked && existsAndActiveInDb) {
+            const displayName = getLocalizedName(item.socialAttributeCode, item.socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2]);
+            confirm({
+                title: t("discount.confirmDeleteAttributeTitle") || "Delete Social Detail & Data",
+                description: `${t("discount.confirmToggleOffWarning") || "You have active details:"}\n${displayName}\n\n${t("discount.confirmDeleteAttributeDesc") || "Are you sure you want to delete this social detail and all its associated data?"}`,
+                confirmText: t("discount.confirmDeleteAttributeOk") || "Yes, Delete",
+                cancelText: t("discount.confirmDeleteAttributeCancel") || "No, Cancel",
+                variant: "delete",
+                onConfirm: async () => {
+                    await handleDeleteSocialDetail(id);
+                    handleSelectAttribute(id);
+                },
+                onCancel: () => {
+                    // Leaves toggle state active/unchanged
+                }
+            });
+        } else {
+            handleToggleEnabled(id, checked);
+            handleSelectAttribute(id);
+        }
+    }, [handleToggleEnabled, socialData, handleDeleteSocialDetail, confirm, t, initialSocialData?.socialAttributes, handleSelectAttribute]);
+
     const selectedAttribute = activeSelectedId !== null ? socialData[activeSelectedId] : null;
     
     const selectedHierarchy = React.useMemo(() => {
@@ -90,7 +140,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
             setShowActiveFirst(false);
         }
         setSearchTerm("");
-        setSelectedId(id);
+        handleSelectAttribute(id);
 
         requestAnimationFrame(() => {
             const card = document.querySelector(`[data-certificate-id="${id}"]`);
@@ -98,7 +148,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 card.scrollIntoView({ behavior: "smooth", block: "center" });
             }
         });
-    }, [showActiveFirst]);
+    }, [showActiveFirst, handleSelectAttribute]);
 
     const handleSaveClick = React.useCallback(async () => {
         const result = await handleSave();
@@ -114,7 +164,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                     return attrId;
                 };
                 const rootParentId = findRootParentId(firstInvalidId);
-                setSelectedId(rootParentId);
+                handleSelectAttribute(rootParentId);
                 requestAnimationFrame(() => {
                     const card = document.querySelector(`[data-certificate-id="${rootParentId}"]`);
                     if (card && typeof card.scrollIntoView === "function") {
@@ -123,7 +173,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 });
             }
         }
-    }, [handleSave, socialData]);
+    }, [handleSave, socialData, handleSelectAttribute]);
 
     const activeIncompleteAttributes = React.useMemo(() => {
         return incompleteAttributes.filter(d => socialData[d.id]?.bitValue === true);
@@ -151,7 +201,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                         attributes={filteredAttributes}
                         socialData={socialData}
                         selectedId={activeSelectedId}
-                        onSelect={setSelectedId}
+                        onSelect={handleSelectAttribute}
                         onToggleEnabled={handleToggleEnabledWrapped}
                         validationErrors={validationErrors}
                         t={t as unknown as {
@@ -170,6 +220,12 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                         onInputChange={handleInputChange}
                         onPhotoUpload={handlePhotoUpload}
                         onPhotoDelete={handlePhotoDelete}
+                        onDeleteSocialDetail={() => {
+                            if (activeSelectedId !== null) {
+                                handleDeleteSocialDetail(activeSelectedId);
+                            }
+                        }}
+                        isSaving={isSaving}
                         validationErrors={validationErrors}
                         isAttributeEnabled={isAttributeEnabled}
                         t={t as unknown as {

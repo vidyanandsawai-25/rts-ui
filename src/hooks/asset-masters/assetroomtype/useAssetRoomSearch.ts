@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
-import { TEXT_SANITIZE } from "@/lib/utils/validation";
+import { TEXT_SANITIZE } from "@/lib/utils/asset-validation-rules";
 
 interface UseAssetRoomSearchProps {
   pageSize: number;

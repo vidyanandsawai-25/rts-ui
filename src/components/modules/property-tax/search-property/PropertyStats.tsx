@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   IndianRupee,
   CheckCircle2,
@@ -17,18 +17,106 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { PropertyStatsProps } from "@/types/property-search";
+import type { MainCardsResponse, WorkflowCardItem, PropertyStatsProps } from "@/types/property-search";
+import { getMainCardsAction, getWorkflowCardsAction } from "@/app/[locale]/property-tax/search-property/action";
+
+
+
+const statsCache: Record<
+  string,
+  { mainCards: MainCardsResponse | null; workflowCards: WorkflowCardItem[] }
+> = {};
 
 export function PropertyStats({
   containerRef,
-  mainCards,
-  workflowCards,
+  mainCards: mainCardsProp,
+  workflowCards: workflowCardsProp,
+  cardFilterParams,
 }: PropertyStatsProps): React.ReactElement {
   const t = useTranslations("propertySearch.stats");
   const tTypeFilter = useTranslations("propertySearch.form.options.typeFilter");
 
-  const formatCount = (num?: number) => (num || 0).toLocaleString("en-IN");
-  const formatDemand = (num?: number) => `₹${(num || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+  const filterKey = cardFilterParams
+    ? `${cardFilterParams.zoneId || 0}-${cardFilterParams.wardId || 0}-${cardFilterParams.propertyAssessmentStatusId || 0}-${cardFilterParams.workflowStageId || 0}-${cardFilterParams.propertyDescriptionId || 0}`
+    : "default";
+
+  const [fetchedCardsMap, setFetchedCardsMap] = useState<Record<string, { mainCards: MainCardsResponse | null; workflowCards: WorkflowCardItem[] }>>({});
+
+  let currentCards: { mainCards: MainCardsResponse | null; workflowCards: WorkflowCardItem[] } | null = null;
+  if (mainCardsProp || workflowCardsProp) {
+    currentCards = { mainCards: mainCardsProp || null, workflowCards: workflowCardsProp || [] };
+  } else if (fetchedCardsMap[filterKey]) {
+    currentCards = fetchedCardsMap[filterKey];
+  } else if (statsCache[filterKey]) {
+    currentCards = statsCache[filterKey];
+  } else if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(`ntis_card_stats_${filterKey}`);
+      if (stored) {
+        currentCards = JSON.parse(stored);
+      }
+    } catch {
+      // Fallback silently
+    }
+  }
+
+  useEffect(() => {
+    if (mainCardsProp || workflowCardsProp) {
+      statsCache[filterKey] = {
+        mainCards: mainCardsProp || null,
+        workflowCards: workflowCardsProp || [],
+      };
+      return;
+    }
+
+    if (statsCache[filterKey] && !fetchedCardsMap[filterKey]) {
+      return;
+    }
+
+    if (!statsCache[filterKey] && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(`ntis_card_stats_${filterKey}`);
+        if (stored) {
+          statsCache[filterKey] = JSON.parse(stored);
+          return;
+        }
+      } catch {}
+    }
+
+    let isMounted = true;
+
+    Promise.all([
+      getMainCardsAction(cardFilterParams),
+      getWorkflowCardsAction(cardFilterParams),
+    ])
+      .then(([mainRes, workflowRes]) => {
+        if (isMounted) {
+          const freshData = { mainCards: mainRes, workflowCards: workflowRes || [] };
+          statsCache[filterKey] = freshData;
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem(`ntis_card_stats_${filterKey}`, JSON.stringify(freshData));
+            } catch {
+              // Fallback silently
+            }
+          }
+          setFetchedCardsMap(prev => ({ ...prev, [filterKey]: freshData }));
+        }
+      })
+      .catch(() => {
+        // Ignore fetch errors
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [mainCardsProp, workflowCardsProp, filterKey, cardFilterParams, fetchedCardsMap]);
+
+  const mainCards = currentCards?.mainCards;
+  const workflowCards = currentCards?.workflowCards;
+
+  const renderCount = (num?: number) => (num || 0).toLocaleString("en-IN");
+  const renderDemand = (num?: number) => `₹${(num || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
   const prev = mainCards?.previouslyRegistered || { structureCount: 0, unitCount: 0, demand: 0 };
   const assessed = mainCards?.assessmentApproved?.assessed || { structureCount: 0, unitCount: 0, demand: 0 };
@@ -75,7 +163,7 @@ export function PropertyStats({
                 {t("structure")}
               </span>
               <span className="text-base font-bold text-gray-900 leading-none mt-0.5">
-                {formatCount(prev.structureCount)}
+                {renderCount(prev.structureCount)}
               </span>
             </div>
             <div className="flex flex-col border-l border-indigo-100 pl-2">
@@ -83,7 +171,7 @@ export function PropertyStats({
                 {t("unit")}
               </span>
               <span className="text-base font-bold text-gray-900 leading-none mt-0.5">
-                {formatCount(prev.unitCount)}
+                {renderCount(prev.unitCount)}
               </span>
             </div>
             <div className="flex flex-col border-l border-indigo-100 pl-2">
@@ -91,7 +179,7 @@ export function PropertyStats({
                 {t("demand")}
               </span>
               <span className="text-base font-bold text-purple-600 leading-none mt-0.5">
-                {formatDemand(prev.demand)}
+                {renderDemand(prev.demand)}
               </span>
             </div>
           </div>
@@ -116,7 +204,7 @@ export function PropertyStats({
                     {t("structure")}
                   </span>
                   <span className="text-sm font-bold text-gray-900 leading-none mt-0.5">
-                    {formatCount(assessed.structureCount)}
+                    {renderCount(assessed.structureCount)}
                   </span>
                 </div>
                 <div className="flex flex-col border-l border-green-200 pl-2">
@@ -124,7 +212,7 @@ export function PropertyStats({
                     {t("units")}
                   </span>
                   <span className="text-sm font-bold text-gray-900 leading-none mt-0.5">
-                    {formatCount(assessed.unitCount)}
+                    {renderCount(assessed.unitCount)}
                   </span>
                 </div>
                 <div className="flex flex-col border-l border-green-200 pl-2">
@@ -132,7 +220,7 @@ export function PropertyStats({
                     {t("demand")}
                   </span>
                   <span className="text-sm font-bold text-green-600 leading-none mt-0.5">
-                    {formatDemand(assessed.demand)}
+                    {renderDemand(assessed.demand)}
                   </span>
                 </div>
               </div>
@@ -145,7 +233,7 @@ export function PropertyStats({
                     {t("structure")}
                   </span>
                   <span className="text-sm font-bold text-gray-900 leading-none mt-0.5">
-                    {formatCount(unassessed.structureCount)}
+                    {renderCount(unassessed.structureCount)}
                   </span>
                 </div>
                 <div className="flex flex-col border-l border-yellow-200 pl-1.5">
@@ -153,7 +241,7 @@ export function PropertyStats({
                     {t("units")}
                   </span>
                   <span className="text-sm font-bold text-gray-900 leading-none mt-0.5">
-                    {formatCount(unassessed.unitCount)}
+                    {renderCount(unassessed.unitCount)}
                   </span>
                 </div>
                 <div className="flex flex-col border-l border-yellow-200 pl-1.5">
@@ -161,7 +249,7 @@ export function PropertyStats({
                     {t("demand")}
                   </span>
                   <span className="text-sm font-bold text-yellow-600 leading-none mt-0.5">
-                    {formatDemand(unassessed.demand)}
+                    {renderDemand(unassessed.demand)}
                   </span>
                 </div>
               </div>
@@ -185,7 +273,7 @@ export function PropertyStats({
                 {t("structure")}
               </span>
               <span className="text-base font-bold text-gray-900 leading-none mt-0.5">
-                {formatCount(revenue.structureCount)}
+                {renderCount(revenue.structureCount)}
               </span>
             </div>
             <div className="flex flex-col border-l border-teal-200 pl-2">
@@ -193,7 +281,7 @@ export function PropertyStats({
                 {t("unit")}
               </span>
               <span className="text-base font-bold text-gray-900 leading-none mt-0.5">
-                {formatCount(revenue.unitCount)}
+                {renderCount(revenue.unitCount)}
               </span>
             </div>
             <div className="flex flex-col border-l border-teal-200 pl-2">
@@ -201,7 +289,7 @@ export function PropertyStats({
                 {t("demand")}
               </span>
               <span className="text-base font-bold text-teal-600 leading-none mt-0.5">
-                {formatDemand(revenue.demand)}
+                {renderDemand(revenue.demand)}
               </span>
             </div>
           </div>
@@ -217,8 +305,8 @@ export function PropertyStats({
               key={def.id}
               title={tTypeFilter(def.stageKey)}
               icon={def.icon}
-              structure={formatCount(stage.structureCount)}
-              unit={formatCount(stage.unitCount)}
+              structure={renderCount(stage.structureCount)}
+              unit={renderCount(stage.unitCount)}
               colorTheme={def.colorTheme}
             />
           );
@@ -237,8 +325,8 @@ function SmallCard({
 }: {
   title: string;
   icon: LucideIcon;
-  structure: string;
-  unit: string;
+  structure: React.ReactNode;
+  unit: React.ReactNode;
   colorTheme: "indigo" | "blue" | "green" | "orange" | "red" | "purple";
 }) {
   const t = useTranslations("propertySearch.stats");

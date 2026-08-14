@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { ValueDisplay } from './components/ValueDisplay';
 import type { OldTaxesData } from '@/types/ptis.types';
+import { MasterTable, Column } from '@/components/common/MasterTable';
 
 interface OldTaxDetailsTableProps {
   oldTaxesData: OldTaxesData | null | undefined;
@@ -14,6 +14,95 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
 }) => {
   const t = useTranslations('ptis');
 
+  // Collect unique tax names (excluding 'taxtotal') to define dynamic columns
+  const uniqueTaxNames = useMemo(() => {
+    if (!oldTaxesData || !oldTaxesData.taxYears) return [];
+    const taxNames = new Set<string>();
+    oldTaxesData.taxYears.forEach((yearData) => {
+      yearData.taxes.forEach((tax) => {
+        const name = tax.taxName;
+        if (name && name.toLowerCase() !== 'taxtotal') {
+          taxNames.add(name);
+        }
+      });
+    });
+    return Array.from(taxNames);
+  }, [oldTaxesData]);
+
+  // Construct table columns
+  const columns = useMemo(() => {
+    const cols: Column<Record<string, unknown>>[] = [
+      {
+        key: 'wardPropPartNo',
+        label: t('fields.wardPropPartNo'),
+        align: 'left',
+        width: '180px',
+      },
+      {
+        key: 'year',
+        label: t('fields.year'),
+        align: 'center',
+        width: '100px',
+      },
+    ];
+
+    // Dynamic tax columns
+    uniqueTaxNames.forEach((taxName) => {
+      cols.push({
+        key: taxName,
+        label: taxName,
+        align: 'right',
+        cellClassName: 'tabular-nums font-medium',
+      });
+    });
+
+    // Last column: Tax Total
+    cols.push({
+      key: 'taxTotal',
+      label: t('fields.taxTotal'),
+      align: 'right',
+      cellClassName: 'tabular-nums font-bold text-slate-900',
+    });
+
+    return cols;
+  }, [uniqueTaxNames, t]);
+
+  // Construct table data
+  const data = useMemo(() => {
+    if (!oldTaxesData || !oldTaxesData.taxYears) return [];
+
+    return oldTaxesData.taxYears.map((yearData) => {
+      const wardNo = yearData.oldWardNo?.toString() ?? '';
+      const propertyNo = yearData.oldPropertyNo ?? '';
+      const partitionNo = yearData.oldPartitionNo?.toString() ?? '';
+      const wardPropPartNo = [wardNo, propertyNo, partitionNo].filter(Boolean).join(' - ');
+
+      const row: Record<string, unknown> = {
+        wardPropPartNo,
+        year: yearData.yearCode || yearData.year,
+      };
+
+      // Initialize unique tax names and taxTotal
+      uniqueTaxNames.forEach((name) => {
+        row[name] = 0;
+      });
+      row['taxTotal'] = 0;
+
+      yearData.taxes.forEach((tax) => {
+        const name = tax.taxName;
+        if (name) {
+          if (name.toLowerCase() === 'taxtotal') {
+            row['taxTotal'] = tax.taxAmount;
+          } else {
+            row[name] = tax.taxAmount;
+          }
+        }
+      });
+
+      return row;
+    });
+  }, [oldTaxesData, uniqueTaxNames]);
+
   if (!showOldTaxInfo) return null;
 
   if (!oldTaxesData || !oldTaxesData.taxYears || oldTaxesData.taxYears.length === 0) {
@@ -25,107 +114,16 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
   }
 
   return (
-    <div className="mt-0.5 space-y-1">
-      {oldTaxesData.taxYears.map((yearData, yearIdx: number) => (
-        <div
-          key={yearIdx}
-          className="bg-gradient-to-br from-blue-50 via-blue-50 to-blue-50 rounded p-1 shadow-sm border border-blue-200"
-        >
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8 gap-1">
-            {/* Year Field */}
-            <div className="relative">
-              <div
-                id={`tax-year-${yearIdx}-label`}
-                className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-              >
-                {t('fields.year')}
-              </div>
-              <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                <ValueDisplay
-                  aria-labelledby={`tax-year-${yearIdx}-label`}
-                  value={yearData.year || ''}
-                  className="font-semibold px-0.5 h-6"
-                />
-              </div>
-            </div>
-
-            {/* Dynamic Taxes */}
-            {yearData.taxes
-              .filter((tax) => Number(tax.taxAmount) !== 0)
-              .map((tax) => (
-                <div key={tax.taxId} className="relative">
-                  <div
-                    id={`tax-${yearIdx}-${tax.taxId}-label`}
-                    title={tax.taxName}
-                    className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none truncate max-w-full"
-                  >
-                    {tax.taxName}
-                  </div>
-                  <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                    <ValueDisplay
-                      aria-labelledby={`tax-${yearIdx}-${tax.taxId}-label`}
-                      value={tax.taxAmount ?? 0}
-                    />
-                  </div>
-                </div>
-              ))}
-
-            {/* Tax Total */}
-            {/* {Number(yearData.taxTotal) !== 0 && (
-              <div className="relative">
-                <div
-                  id={`tax-total-${yearIdx}-label`}
-                  className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-                >
-                  {t('fields.taxTotal')}
-                </div>
-                <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                  <ValueDisplay
-                    aria-labelledby={`tax-total-${yearIdx}-label`}
-                    value={yearData.taxTotal ?? 0}
-                  />
-                </div>
-              </div>
-            )} */}
-
-            {/* Interest */}
-            {/* {Number(yearData.interest) !== 0 && (
-              <div className="relative">
-                <div
-                  id={`tax-interest-${yearIdx}-label`}
-                  className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-                >
-                  {t('fields.interest')}
-                </div>
-                <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                  <ValueDisplay
-                    aria-labelledby={`tax-interest-${yearIdx}-label`}
-                    value={yearData.interest ?? 0}
-                  />
-                </div>
-              </div>
-            )} */}
-
-            {/* Net Total */}
-            {/* {Number(yearData.netTotal) !== 0 && (
-              <div className="relative">
-                <div
-                  id={`tax-net-total-${yearIdx}-label`}
-                  className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-                >
-                  {t('fields.netTotal')}
-                </div>
-                <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                  <ValueDisplay
-                    aria-labelledby={`tax-net-total-${yearIdx}-label`}
-                    value={yearData.netTotal ?? 0}
-                  />
-                </div>
-              </div>
-            )} */}
-          </div>
-        </div>
-      ))}
+    <div className="mt-0.5 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 rounded border border-blue-100 p-0.5 shadow-inner">
+      <div className="rounded overflow-x-auto shadow-sm">
+        <MasterTable<Record<string, unknown>>
+          data={data}
+          columns={columns}
+          emptyText={t('fields.noTaxDetails')}
+          paginationConfig={{ enabled: false }}
+          maxBodyHeightClassName="max-h-[300px]"
+        />
+      </div>
     </div>
   );
 };

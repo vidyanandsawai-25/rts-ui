@@ -23,6 +23,8 @@ interface DiscountPaneProps {
     handleInputChange: (id: number, field: "intValue" | "decimalValue" | "textValue" | "dateValue" | "remark", value: string) => void;
     handleFileUpload: (id: number, file: File) => void;
     handleFileDelete: (id: number) => void;
+    handleDeleteDiscount: (id: number) => void;
+    isSaving: boolean;
 
     t: {
         (key: string, values?: Record<string, string | number | Date>): string;
@@ -47,6 +49,8 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
     handleInputChange,
     handleFileUpload,
     handleFileDelete,
+    handleDeleteDiscount,
+    isSaving,
 
     t
 }) => {
@@ -103,6 +107,12 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                                 handleFileDelete(activeSelectedId);
                             }
                         }}
+                        onDeleteDiscount={() => {
+                            if (activeSelectedId !== null) {
+                                handleDeleteDiscount(activeSelectedId);
+                            }
+                        }}
+                        isSaving={isSaving}
                         validationError={activeSelectedId !== null ? validationErrors[activeSelectedId] : undefined}
                         t={t}
                     />

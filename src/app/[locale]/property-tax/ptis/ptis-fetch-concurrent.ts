@@ -17,6 +17,7 @@ import { getCapitalValue } from './CapitalValue.action';
 import { getRateableValue } from './RateableValue.action';
 import { getDualMethod } from './DualMethod.action';
 import { fetchTaxDetailsByTab } from './TaxDetails/fetchTaxDetails';
+import { getPropertyComparisonAction } from './PropertyComparison.action';
 
 export async function fetchPropertyDetailsConcurrently(
   propertyId: number,
@@ -44,33 +45,45 @@ export async function fetchPropertyDetailsConcurrently(
   const isDiscountTab = activeTab === 'discountdetails';
   const isOldDetailsTab = activeTab === 'olddetails';
 
+  const isRateableTab = !valuationTab || valuationTab === 'rateable';
+
   const rateableValuePromise = propertyId ? getRateableValue(propertyId) : Promise.resolve(null);
 
   const capitalValuePromise =
-    isPropertyTab && propertyId && (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
+    propertyId && (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
       ? getCapitalValue(propertyId)
       : Promise.resolve(null);
 
   const dualMethodPromise =
     propertyId && valuationTab === 'dual' ? getDualMethod(propertyId) : Promise.resolve(null);
 
+  // Chain taxDetails fetching to run after calculation actions resolve, as the calculation generates the tax details.
   const taxDetailsPromise = propertyId
-    ? fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam)
-    : Promise.resolve(null);
-
-  // Chain the rule logs fetching to run only after all calculation actions resolve.
-  // This avoids the race condition where rule logs are queried before calculation creates them.
-  const ruleLogsPromise = propertyId
     ? Promise.all([
         rateableValuePromise.catch(() => null),
         capitalValuePromise.catch(() => null),
         dualMethodPromise.catch(() => null),
-        taxDetailsPromise.catch(() => null),
-      ])
-        .then(async () => {
-          return propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null);
-        })
-        .catch(() => null)
+      ]).then(() => fetchTaxDetailsByTab(propertyId, valuationTab, showDetailsParam))
+    : Promise.resolve(null);
+
+  // PropertyComparison API call is triggered on Rateable tab during SSR
+  const comparisonPromise =
+    propertyId && isRateableTab
+      ? getPropertyComparisonAction(propertyId)
+      : Promise.resolve(null);
+
+  // Chain the rule logs fetching to run only after all calculation actions resolve.
+  const ruleLogsPromise = propertyId
+    ? Promise.all([
+      rateableValuePromise.catch(() => null),
+      capitalValuePromise.catch(() => null),
+      dualMethodPromise.catch(() => null),
+      taxDetailsPromise.catch(() => null),
+    ])
+      .then(async () => {
+        return propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null);
+      })
+      .catch(() => null)
     : Promise.resolve(null);
 
   const kycPromise = isKycTab ? fetchKycDetailsOnlyAction(propertyId) : Promise.resolve(null);
@@ -111,25 +124,25 @@ export async function fetchPropertyDetailsConcurrently(
   return Promise.all([
     wardId && propertyNo && (isPropertyTab || isSocietyTab)
       ? getApartmentQCDataAction(
-          wardId,
-          propertyNo,
-          appartmentTab,
-          pageNumber,
-          pageSize,
-          searchTerm,
-          propertyId,
-          {
-            wing: filterWing || undefined,
-            flatOrShopNo: filterFlatOrShopNo || undefined,
-            apartmentType: filterApartmentType || undefined,
-            propertyType: filterPropertyType || undefined,
-          },
-          {
-            sortBy: sortBy || undefined,
-            sortOrder: sortOrder || undefined,
-          },
-          partitionNo
-        )
+        wardId,
+        propertyNo,
+        appartmentTab,
+        pageNumber,
+        pageSize,
+        searchTerm,
+        propertyId,
+        {
+          wing: filterWing || undefined,
+          flatOrShopNo: filterFlatOrShopNo || undefined,
+          apartmentType: filterApartmentType || undefined,
+          propertyType: filterPropertyType || undefined,
+        },
+        {
+          sortBy: sortBy || undefined,
+          sortOrder: sortOrder || undefined,
+        },
+        partitionNo
+      )
       : Promise.resolve(null),
     rateableValuePromise,
     capitalValuePromise,
@@ -148,5 +161,6 @@ export async function fetchPropertyDetailsConcurrently(
     Promise.resolve(null),
     headerInfoPromise,
     mappedPropertiesPromise,
+    comparisonPromise,
   ]);
 }

@@ -145,7 +145,7 @@ export async function bulkLockUnlockPropertiesAction(
 
     return {
       success: true,
-      message: result.message || t("messages.bulkSuccess"),
+      message: result.message || t("messages.bulkSuccessmsg"),
     };
   } catch (error: unknown) {
     const t = await getTranslations("lockUnlock");
@@ -244,7 +244,7 @@ export async function bulkLockUnlockByCategoryAction(
       return { success: false, error: result.message || t("messages.bulkFailed") };
     }
 
-    return { success: true, message: result.message || t("messages.bulkSuccess") };
+    return { success: true, message: result.message || t("messages.bulkSuccessmsg") };
   } catch (error: unknown) {
     const t = await getTranslations("lockUnlock");
     if (error instanceof ApiError) {

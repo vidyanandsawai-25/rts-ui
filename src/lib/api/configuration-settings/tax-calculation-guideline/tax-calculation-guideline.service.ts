@@ -60,7 +60,7 @@ function toUpdatePayload(item: TaxCalculationGuidelineDto): UpdateCertificateTax
  * Returns `null` when no records exist yet.
  */
 export async function getTaxCalculationGuideline(): Promise<TaxCalculationGuidelineDto | TaxCalculationGuidelineDto[] | null> {
-  const response = await apiClient.get<PagedResponse<TaxCalculationGuidelineDto>>(`${ENDPOINT}?pageSize=1000`);
+  const response = await apiClient.get<PagedResponse<TaxCalculationGuidelineDto>>(`${ENDPOINT}?pageSize=-1`);
   if (!response.success) {
     if (response.statusCode === 404) return null;
     throw new ApiError(

@@ -7,12 +7,16 @@ import { assetCategoryService } from "@/lib/api/asset-masters/asset-category-cru
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { cleanErrorMessage } from "@/lib/utils/api-error-handler";
 import { createLogger } from "@/lib/utils/server-logger";
+import { ApiError } from "@/lib/utils/api";
 
 const logger = createLogger("AssetCategory");
 
 export async function saveAssetCategoryAction(id: string, formData: FormData) {
   try {
-    const userId = getUserIdFromCookies(await cookies()) ?? 0;
+    const userId = getUserIdFromCookies(await cookies());
+    if (!userId) {
+      return { ok: false, error: "Unauthorized" };
+    }
     const isEdit = !!id;
 
     const record = {
@@ -42,11 +46,13 @@ export async function saveAssetCategoryAction(id: string, formData: FormData) {
 
     return { ok: true, mode: isEdit ? "update" : "create" };
   } catch (error: unknown) {
-    const errMessage = error instanceof Error ? error.message : String(error);
-    if (errMessage.toLowerCase().includes("duplicate")) {
+    const rawMsg = error instanceof ApiError
+      ? (error.responseText || error.message)
+      : (error instanceof Error ? error.message : String(error));
+    if (rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
       return { ok: false, error: "duplicate" };
     }
-    return { ok: false, error: cleanErrorMessage(errMessage, "Failed to save asset category") };
+    return { ok: false, error: cleanErrorMessage(rawMsg, "Failed to save asset category") };
   }
 }
 

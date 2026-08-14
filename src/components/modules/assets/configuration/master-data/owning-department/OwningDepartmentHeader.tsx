@@ -3,19 +3,18 @@
 import { Settings } from "lucide-react";
 import { SearchInput } from "@/components/common";
 import { AddButton } from "@/components/common/ActionButtons";
-import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 import { useRouter } from "next/navigation";
 
 interface OwningDepartmentHeaderProps {
   search: string;
-  setSearch: (val: string) => void;
+  handleSearchChange: (val: string) => void;
   locale: string;
   t: (key: string) => string;
 }
 
 export function OwningDepartmentHeader({
   search,
-  setSearch,
+  handleSearchChange,
   locale,
   t,
 }: OwningDepartmentHeaderProps) {
@@ -33,7 +32,7 @@ export function OwningDepartmentHeader({
       <div className="flex w-full max-w-xl items-center gap-3">
         <SearchInput
           value={search}
-          onChange={(value) => setSearch(value.replace(TEXT_SANITIZE, ""))}
+          onChange={handleSearchChange}
           placeholder={t("searchPlaceholder")}
           className="mb-0 w-full"
         />

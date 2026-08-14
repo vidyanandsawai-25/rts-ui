@@ -7,6 +7,7 @@ import {
   getDesignationsAction,
 } from './actions';
 import { executeConditionalFetches } from '@/lib/utils/fetch-helpers';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 
 interface UserManagementPageProps {
   params: Promise<{ locale: string }>;
@@ -60,6 +61,20 @@ export default async function UserManagementPage({
   const searchTerm = sp?.search?.trim() || undefined;
   const status = getStatusFilter(sp?.status);
 
+  const errorState = {
+    fetchError: undefined as string | undefined,
+    statusCode: undefined as number | undefined,
+  };
+
+  const handleFetchError = (err: { message?: string; statusCode?: number }) => {
+    if (!errorState.fetchError && err.message) {
+      errorState.fetchError = getCleanErrorMessage(err.message);
+    }
+    if (!errorState.statusCode && err.statusCode) {
+      errorState.statusCode = err.statusCode;
+    }
+  };
+
   const fetchData = await executeConditionalFetches({
     users: {
       condition: isUsersTab,
@@ -74,6 +89,7 @@ export default async function UserManagementPage({
         hasNext: false,
       },
       errorMessage: t('errors.apiConnection.fetchUsersFailed'),
+      onError: handleFetchError,
     },
 
     roles: {
@@ -81,6 +97,7 @@ export default async function UserManagementPage({
       fetcher: () => getUserRolesAction(),
       fallback: [],
       errorMessage: t('errors.apiConnection.fetchRolesFailed'),
+      onError: handleFetchError,
     },
 
     departments: {
@@ -88,6 +105,7 @@ export default async function UserManagementPage({
       fetcher: () => getDepartmentsAction(),
       fallback: [],
       errorMessage: t('errors.apiConnection.fetchDepartmentsFailed'),
+      onError: handleFetchError,
     },
 
     designations: {
@@ -95,6 +113,7 @@ export default async function UserManagementPage({
       fetcher: () => getDesignationsAction(),
       fallback: [],
       errorMessage: t('errors.apiConnection.fetchDesignationsFailed'),
+      onError: handleFetchError,
     },
   });
 
@@ -113,6 +132,8 @@ export default async function UserManagementPage({
         departments: fetchData.departments || [],
         designations: fetchData.designations || [],
       }}
+      fetchError={errorState.fetchError}
+      statusCode={errorState.statusCode}
     />
   );
 }

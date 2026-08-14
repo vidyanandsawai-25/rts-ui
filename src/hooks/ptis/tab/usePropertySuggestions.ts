@@ -5,6 +5,7 @@ import { ptisSuggestionsClient } from '@/lib/api/ptis/tab/ptis-suggestions-clien
 export function usePropertySuggestions(
   wardId: number | null | undefined,
   debouncedSearchText: string,
+  debouncedPartitionSearchText: string,
   draftPropertyId: string | null | undefined,
   initialProperties: PropertyListItem[] = []
 ) {
@@ -34,7 +35,7 @@ export function usePropertySuggestions(
     }, 0);
 
     let propNo = debouncedSearchText;
-    let partNo = '';
+    let partNo = debouncedPartitionSearchText;
     if (debouncedSearchText.includes('-')) {
       const parts = debouncedSearchText.split('-');
       propNo = parts[0];
@@ -77,7 +78,7 @@ export function usePropertySuggestions(
       active = false;
       clearTimeout(timer);
     };
-  }, [debouncedSearchText, wardId, draftPropertyId, initialProperties]);
+  }, [debouncedSearchText, debouncedPartitionSearchText, wardId, draftPropertyId, initialProperties]);
 
   return {
     propertiesList,

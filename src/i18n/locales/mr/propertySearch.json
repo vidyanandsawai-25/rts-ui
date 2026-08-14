@@ -177,6 +177,11 @@
       "rateableValueBetweenRequired": "दोन्ही रक्कम भरा.",
       "rateableValueRangeInvalid": "रेटेबल व्हॅल्यू 'To' रक्कम 'From' पेक्षा जास्त किंवा समान असावी.",
       "capitalValueBetweenRequired": "दोन्ही रक्कम भरा.",
+      "capitalValueRangeInvalid": "भांडवल मूल्य 'To' रक्कम 'From' पेक्षा जास्त किंवा समान असावी.",
+      "capitalValueInvalid": "भांडवल मूल्यमध्ये फक्त धन संख्या असणे आवश्यक आहे.",
+      "totalTaxRangeInvalid": "एकूण कर 'To' रक्कम 'From' पेक्षा जास्त किंवा समान असावी.",
+      "totalTaxInvalid": "एकूण करमध्ये फक्त धन संख्या असणे आवश्यक आहे.",
+      "totalTaxBetweenRequired": "दोन्ही रक्कम भरा.",
       "rateableValueInvalid": "रेटेबल व्हॅल्यूमध्ये फक्त धन संख्या असणे आवश्यक आहे.",
       "valuationMethodRequired": "कृपया मूल्यांकन पद्धत निवडा.",
       "noSearchCriteria": "शोधण्यापूर्वी किमान एक फिल्टर (झोन, वॉर्ड, मालमत्ता क्र., UPIC ID, धारक नाव, मोबाइल इ.) निवडा."

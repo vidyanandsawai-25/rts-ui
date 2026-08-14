@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Trash2 } from "lucide-react";
 import { Label, TextArea } from "@/components/common";
 import { DiscountAttributeState } from "@/types/discount.types";
 import { DocumentAttachment } from "../building/DocumentAttachment";
@@ -20,6 +20,8 @@ interface DiscountDetailPaneProps {
         (key: string, values?: Record<string, string | number>): string;
         has?: (key: string) => boolean;
     };
+    onDeleteDiscount?: () => void;
+    isSaving?: boolean;
 }
 
 export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
@@ -29,6 +31,8 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     onFileDelete,
     validationError,
     t,
+    onDeleteDiscount,
+    isSaving = false,
 }) => {
     const { confirm } = useConfirm();
     const isActiveDiscount = (item: DiscountAttributeState) =>
@@ -60,6 +64,39 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
             variant: "delete",
             onConfirm: onFileDelete
         });
+    };
+
+    const isDiscountFilled = React.useMemo(() => {
+        if (!data) return false;
+        const hasFile = !!(data.documentGuid || data.fileName || data.pendingFile);
+        const isBitType = data.dataType?.toUpperCase() === "BIT";
+        if (isBitType) {
+            return hasFile || !!data.remark?.trim();
+        }
+        const hasVal = !!(
+            data.intValue !== null && data.intValue !== undefined ||
+            data.decimalValue !== null && data.decimalValue !== undefined ||
+            data.textValue?.trim() || data.dateValue?.trim()
+        );
+        return hasFile || hasVal || !!data.remark?.trim();
+    }, [data]);
+
+    const isUpdateCase = React.useMemo(() => {
+        if (!data) return false;
+        return typeof data.propertySocialDetailId === "number" && data.propertySocialDetailId > 0;
+    }, [data]);
+
+    const handleDeleteDiscountWithConfirm = () => {
+        if (onDeleteDiscount && data) {
+            confirm({
+                title: t("discount.confirmDeleteDiscountTitle") || "Delete Discount & Data",
+                description: `${t("discount.confirmToggleOffWarning") || "You have an active discount with details:"}\n${displayName}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`,
+                confirmText: t("discount.confirmDeleteDiscountOk") || "Yes, Delete",
+                cancelText: t("discount.confirmDeleteDiscountCancel") || "No, Cancel",
+                variant: "delete",
+                onConfirm: onDeleteDiscount
+            });
+        }
     };
     if (!data) {
         return (
@@ -99,7 +136,28 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     const isDisabled = !isActiveDiscount(data);
     const docRequiredMsg = t("common.validation.documentRequired") || "Document is required.";
     const isDocumentInvalid = !!validationError && validationError === docRequiredMsg;
-    const isValueInvalid = !!validationError && !isDocumentInvalid;
+
+    let isRemarkError = false;
+    let isValueInvalid = false;
+
+    if (validationError && !isDocumentInvalid) {
+        if ((data.dataType || "").toUpperCase() === "BIT") {
+            isRemarkError = true;
+        } else if (validationError.includes("500") || validationError.includes("Remark cannot exceed")) {
+            isRemarkError = true;
+        } else if (validationError === (t("property.validation.invalidCharacters") || "Contains invalid characters.")) {
+            const textValueInvalid = (data.dataType || "").toUpperCase() === "VARCHAR" && 
+                                     data.textValue && !/^[^<>]*$/.test(data.textValue);
+            if (textValueInvalid) {
+                isValueInvalid = true;
+            } else {
+                isRemarkError = true;
+            }
+        } else {
+            isValueInvalid = true;
+        }
+    }
+
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
 
     const inputClassName = `h-10 text-sm placeholder:text-gray-400 focus:ring-1 shadow-sm transition-colors font-semibold ${
@@ -166,25 +224,61 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                 </div>
 
                 <div className="space-y-1.5 w-full">
-                    <Label className="text-sm font-bold text-blue-800">
-                        {hasRemark ? t("discount.remark") : "Remark"}
-                    </Label>
+                    <div className="flex items-center justify-between">
+                        <Label className="text-sm font-bold text-blue-800">
+                            {hasRemark ? t("discount.remark") : "Remark"}
+                        </Label>
+                        {(data.remark || "").trim() !== "" && (
+                            <button
+                                type="button"
+                                onClick={() => onInputChange("remark", "")}
+                                disabled={isDisabled}
+                                className="px-2.5 py-0.5 text-[10px] md:text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-red-400 active:bg-red-200 shadow-sm"
+                            >
+                                {t("commonbuttonmessages.clear") || "Clear"}
+                            </button>
+                        )}
+                    </div>
                     <TextArea
                         value={data.remark || ""}
-                        onChange={(e) => onInputChange("remark", e.target.value)}
+                        onChange={(e) => {
+                            const val = e.target.value.replace(/[<>]/g, "");
+                            onInputChange("remark", val);
+                        }}
                         placeholder={hasRemarkPlaceholder ? t("discount.remarkPlaceholder") : "Enter remark..."}
                         disabled={isDisabled}
                         rows={2}
-                        className="resize-none font-semibold"
+                        maxLength={500}
+                        showCharCount
+                        charCountLabel="characters"
+                        className={`resize-y font-semibold ${isRemarkError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
                     />
+                    {isRemarkError && (
+                        <span className="text-red-500 text-[10px] font-semibold mt-1 block">
+                            {validationError}
+                        </span>
+                    )}
                 </div>
             </div>
 
-            <div className="pt-4 border-t border-blue-50 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                    {t("discount.verifyDetailsNote") || "Verify details & file attachment before saving changes."}
-                </span>
+            <div className="pt-2.5 border-t border-blue-50 mt-3 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                        {t("discount.verifyDetailsNote") || "Verify details & file attachment before saving changes."}
+                    </span>
+                </div>
+                {onDeleteDiscount && isDiscountFilled && isUpdateCase && !isDisabled && (
+                    <button
+                        type="button"
+                        disabled={isDisabled || isSaving}
+                        onClick={handleDeleteDiscountWithConfirm}
+                        className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        {t("discount.deleteDiscount") || "Delete Discount & Data"}
+                    </button>
+                )}
             </div>
         </div>
     );

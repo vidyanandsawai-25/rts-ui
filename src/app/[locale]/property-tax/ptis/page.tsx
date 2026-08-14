@@ -39,7 +39,12 @@ interface PtisPageProps {
   >;
 }
 
+import { cookies } from 'next/headers';
+import { getMediaPanelVisibleFromCookieStore } from '@/lib/utils/cookie';
+
 export default async function PtisPage({ params, searchParams }: PtisPageProps) {
+  const cookieStore = await cookies();
+  const isMediaPanelVisible = getMediaPanelVisibleFromCookieStore(cookieStore);
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
   const { locale } = resolvedParams;
@@ -61,7 +66,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     criticalError, resolvedPropertyId, resolvedWardId,
     propertyDetailsResult, rawPropertyData, propertyOptions, wardOptions,
     kycDetails, societyDetails, buildingPermission, oldDetails, oldFloorTableData,
-    oldTaxesData, discountDetails, apartmentData, rateableResult, capitalResult,
+    oldTaxesData, discountDetails, apartmentData, rateableResult, capitalResult, comparisonResult,
     dualSectionData, initialPhotoSlots, initialPhotos, showFloorParam,
     showOldTaxParam, showMapDetailsParam, showDetailsParam, rateableTaxDetails, capitalTaxDetails,
     rateableTaxError, capitalTaxError, activeTab, hasAppliedRules,
@@ -94,6 +99,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     searchParams: resolvedSearchParams as Record<string, string | string[] | undefined>,
     rateableResult,
     capitalResult,
+    comparisonResult,
     dualSectionData,
     initialData,
     rateableTaxDetails,
@@ -106,11 +112,11 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   // Only fetch reassessment data when the reassessment tab is active
   const isReassessmentTabActive = valuationTab === 'reassessment';
   const reassessmentSection = isReassessmentTabActive ? (
-    <ReassessmentPage 
+    <ReassessmentPage
       params={params}
-      wardId={resolvedWardId} 
-      propertyNo={propertyNo} 
-      partitionNo={partitionNo} 
+      wardId={resolvedWardId}
+      propertyNo={propertyNo}
+      partitionNo={partitionNo}
     />
   ) : null;
 
@@ -139,6 +145,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           initialLatitude={latitude}
           initialLongitude={longitude}
           initialWaybackReleases={waybackReleases}
+          initialVisible={isMediaPanelVisible}
         >
           <div className="flex flex-col gap-2 w-full">
             <PropertyTabSection
@@ -186,7 +193,15 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
                 currentWorkflow?.success ? currentWorkflow.data?.workflowStageId : undefined
               }
               propertyNo={propertyNo}
-              ownerName={kycDetails.propertyHolderName || ''}
+              ownerName={
+                kycDetails?.propertyHolderName ||
+                kycDetails?.propertyHolderNameMarathi ||
+                kycDetails?.propertyHolderNameEnglish ||
+                ((kycDetails as unknown) as Record<string, unknown>)?.ownerName as string ||
+                tabHeaderInfo?.ownerName ||
+                ((rawPropertyData as unknown) as Array<Record<string, unknown>>)?.find((p) => p.propertyId === resolvedPropertyId || p.propertyNo === propertyNo)?.ownerName as string ||
+                ''
+              }
             />
           }
           categoryId={propertyDetailsResult.propertyDetails.categoryId}

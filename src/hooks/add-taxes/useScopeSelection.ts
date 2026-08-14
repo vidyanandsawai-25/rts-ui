@@ -563,7 +563,7 @@ export function useScopeSelection(
       } else if (selectedScope === 'property') {
         scopeData.propertyIds = [];
         const rawText = (selectionData['Search Property'] || [])[0] || getSelectedJoined('property no') || getSelectedJoined('building') || searchParams.get('propertyid') || '';
-        if (rawText && !/^\d+$/.test(rawText)) {
+        if (rawText && !/^\d{1,8}$/.test(rawText)) {
           scopeData.searchText = rawText;
         } else if (rawText) {
           scopeData.propertyIds = [Number(rawText)];
@@ -683,7 +683,7 @@ export function useScopeSelection(
       } else if (selectedScope === 'property') {
         scopeData.propertyIds = [];
         const rawText = (selectionData['Search Property'] || [])[0] || getSelectedJoined('property no') || getSelectedJoined('building') || searchParams.get('propertyid') || '';
-        if (rawText && !/^\d+$/.test(rawText)) {
+        if (rawText && !/^\d{1,8}$/.test(rawText)) {
           scopeData.searchText = rawText;
         } else if (rawText) {
           scopeData.propertyIds = [Number(rawText)];

@@ -45,7 +45,8 @@
       "descriptionFormat": "विवरण में अमान्य वर्ण हैं",
       "descriptionMaxLength": "विवरण {count} वर्णों से अधिक नहीं हो सकता",
       "mandatoryNotice": "<b>*</b> चिन्हित क्षेत्र अनिवार्य हैं",
-      "fixErrors": "कृपया फॉर्म में त्रुटियों को सुधारें"
+      "fixErrors": "कृपया फॉर्म में त्रुटियों को सुधारें",
+      "invalidFormat": "अमान्य प्रारूप"
     },
     "messages": {
       "createSuccess": "स्वामित्व विभाग सफलतापूर्वक बनाया गया",

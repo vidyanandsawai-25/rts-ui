@@ -42,7 +42,8 @@
     "deleteRates": "दर हटवा",
     "downloadTemplate": "टेम्प्लेट डाउनलोड करा",
     "uploadExcel": "एक्सेल अपलोड करा",
-    "configureUseTypes": "वापर प्रकार कॉन्फिगर करा"
+    "configureUseTypes": "वापर प्रकार कॉन्फिगर करा",
+    "generateRateMatrix": "दर मॅट्रिक्स तयार करा"
   },
   "messages": {
     "csvOnly": "कृपया वैध CSV फाइल अपलोड करा. Excel (.xlsx) फाइल्स समर्थित नाहीत.",
@@ -89,7 +90,7 @@
     "validationSelectValidFinanceYear": "कृपया वैध आर्थिक वर्ष निवडा",
     "validationEnterRateValue": "कृपया किमान एक दर मूल्य प्रविष्ट करा",
     "validationDeleteRecordsFirst": "प्रथम {year} आर्थिक वर्षाचे रेकॉर्ड हटवा, आणि नंतर इतर वर्षाचे दर तयार करण्यास पुढे जा.",
-    "validationFetchUpdateFailed": "अद्यतनासाठी दर प्राप्त करण्यात अयशस्वी",
+    "validationFetchUpdateFailed": "या जोडणीसाठी - दर विभाग, वापर गट आणि वर्ष श्रेणी साठी दर उपलब्ध नाहीत. कृपया प्रथम दर जोडा आणि नंतर अद्यतनित करा.",
     "noRatesToUpdate": "अद्यतनासाठी कोणतीही दर मूल्ये कॉन्फिगर केलेली नाहीत. कृपया प्रथम दर मूल्ये प्रविष्ट करा.",
     "validationDownloadTemplateFailed": "टेम्प्लेट डाउनलोड करण्यास अयशस्वी",
     "validationUploadValidFile": "कृपया वैध CSV किंवा Excel फाइल अपलोड करा",
@@ -99,12 +100,18 @@
     "validationFileEmpty": "फाइल रिकामी किंवा अवैध आहे",
     "validationParseFailed": "फाइल पार्स करण्यास अयशस्वी. कृपया फॉरमॅट तपासा.",
     "validationReadFileFailed": "फाइल वाचण्यास अयशस्वी",
+    "validationCorrectTemplate": "कृपया योग्य एक्सेल टेम्पलेट अपलोड करा",
+    "confirmCloseTitle": "तुम्हाला दर जोडणे सुरू ठेवायचे आहे का?",
+    "confirmCloseConfirm": "सुरू ठेवा",
+    "confirmCloseCancel": "रद्द करा",
     "noRatesAvailable": "कोणतेही दर उपलब्ध नाहीत",
     "noRatesMatch": "निवडलेल्या निकषांनुसार डेटा आढळला नाही. कृपया निकष तपासा किंवा नवीन दर तयार करा.",
     "rateExceedsMaximum": "दर मूल्य {max} पेक्षा जास्त असू शकत नाही. कृपया वैध दर प्रविष्ट करा.",
     "rateValueInvalid": "दर मूल्य वैध असणे आवश्यक आहे. कृपया वैध दर मूल्य प्रविष्ट करा.",
     "cannotChangeConfiguredValue": "कॉन्फिगर केलेले मूल्य बदलता येत नाही. कृपया पॉलिसी कॉन्फिगरेशनमध्ये अपडेट करा.",
-    "rateFrequencyMismatch": "RateMonthlyOrYearly पॉलिसीसाठी दर वारंवारता जुळत नाही.:-पॉलिसी {configured} म्हणून कॉन्फिगर केली आहे, परंतु सध्याचे दर {existing} म्हणून प्रविष्ट केले आहेत. कृपया पॉलिसी कॉन्फिगरेशन अपडेट करा किंवा नवीन दर कॉन्फिगर करण्यापूर्वी विद्यमान दर हटवा."
+    "rateFrequencyMismatch": "RateMonthlyOrYearly पॉलिसीसाठी दर वारंवारता जुळत नाही.:-पॉलिसी {configured} म्हणून कॉन्फिगर केली आहे, परंतु सध्याचे दर {existing} म्हणून प्रविष्ट केले आहेत. कृपया पॉलिसी कॉन्फिगरेशन अपडेट करा किंवा नवीन दर कॉन्फिगर करण्यापूर्वी विद्यमान दर हटवा.",
+    "multipliersCleared": "गुणक हटवले. फक्त निवडलेला वापर गट दाखवला जात आहे.",
+    "multiplierConflictRemovedSuccess": "{removed} साठीचे परस्परविरोधी गुणक काढले. {groups} साठीचे गुणक जोडले."
   },
   "sections": {
     "copyRatesTitle": "दर कॉपी करा",
@@ -149,7 +156,9 @@
     "configureUseTypeTitle": "वापर प्रकार कॉन्फिगर करा",
     "configureUseTypeDescription": "तुम्ही OP, पार्किंग ही श्रेणी असलेल्या वापर प्रकारासाठी वेगवेगळे वापर गट कॉन्फिगर करू इच्छिता का?",
     "confirmYes": "होय",
-    "confirmNo": "नाही"
+    "confirmNo": "नाही",
+    "confirmMultiplierUpdateTitle": "गुणक अद्यतनाची पुष्टी करा",
+    "confirmMultiplierUpdateDescription": "गुणकामधील वापर गटांसाठी आधीच दर अस्तित्वात आहेत -({groups}), तुम्हाला अस्तित्वात असलेले दर अद्ययावत करायचे आहेत का?"
   },
   "configureRates": {
     "title": "वापर गट कॉन्फिगर करा",

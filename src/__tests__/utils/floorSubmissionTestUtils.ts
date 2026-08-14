@@ -36,7 +36,15 @@ export const createMockEditSidebarProps = (
   wardNo: '1',
   propertyNo: '123',
   partitionNo: '0',
-  initialPropertyData: {},
+  initialPropertyData: {
+    plotAreaSqMeter: 1000,
+    plotAreaSqFeet: 10764,
+  },
+  initialPlotArea: {
+    length: 100,
+    width: 10,
+    totalPlotArea: 1000,
+  },
   initialPropertyID: 123,
   initialFloors: [],
   initialFloorDetails: null,

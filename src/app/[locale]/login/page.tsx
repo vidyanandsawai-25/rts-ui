@@ -23,12 +23,19 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
   let errorMessage = '';
   const errParam = resolvedSearchParams?.error;
   const msgParam = resolvedSearchParams?.message;
+  const reqVerParam = resolvedSearchParams?.requireVerification;
   const errStr =
     typeof errParam === 'string' ? errParam : Array.isArray(errParam) ? errParam[0] : undefined;
   const msgStr =
     typeof msgParam === 'string' ? msgParam : Array.isArray(msgParam) ? msgParam[0] : undefined;
+  const reqVerStr =
+    typeof reqVerParam === 'string'
+      ? reqVerParam
+      : Array.isArray(reqVerParam)
+        ? reqVerParam[0]
+        : undefined;
 
-  const i18nSuffix = resolveLoginPageErrorI18nSuffix(errStr, msgStr);
+  const i18nSuffix = resolveLoginPageErrorI18nSuffix(errStr, msgStr, reqVerStr);
   if (i18nSuffix) {
     try {
       errorMessage = t(`errors.${i18nSuffix}`);

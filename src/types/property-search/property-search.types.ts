@@ -172,6 +172,7 @@ export interface PropertySearchProps {
   pageSize: number;
   mainCards?: MainCardsResponse | null;
   workflowCards?: WorkflowCardItem[] | null;
+  cardFilterParams?: CardFilterParams;
   zoneOptions: ZoneOption[];
   wardOptions: WardOption[];
   allWardOptions: WardOption[];
@@ -191,6 +192,7 @@ export interface PropertyStatsProps {
   onStatusClick: (status: PropertyStatus) => void;
   mainCards?: MainCardsResponse | null;
   workflowCards?: WorkflowCardItem[] | null;
+  cardFilterParams?: CardFilterParams;
   disabled?: boolean;
   containerRef?: RefObject<HTMLDivElement | null>;
 }
@@ -264,6 +266,10 @@ export interface LookupInputProps {
 export interface UpicLinkCellProps {
   upicId: string;
   propertyId: number;
+  wardNo?: string;
+  wardId?: number;
+  propertyNo?: string;
+  partitionNo?: string;
   locale: string;
   copyLabel: string;
 }
@@ -363,6 +369,11 @@ export type SearchValidationKey =
   | "rateableValueBetweenRequired"
   | "rateableValueRangeInvalid"
   | "capitalValueBetweenRequired"
+  | "capitalValueRangeInvalid"
+  | "capitalValueInvalid"
+  | "totalTaxRangeInvalid"
+  | "totalTaxInvalid"
+  | "totalTaxBetweenRequired"
   | "rateableValueInvalid"
   | "valuationMethodRequired"
   | "noSearchCriteria";

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
@@ -155,8 +155,9 @@ describe('LoginForm', () => {
     expect(formData?.get('locale')).toBe('en');
   });
 
-  it('toggles password visibility when password is non-empty', async () => {
-    const user = userEvent.setup();
+  it('toggles password visibility when password is non-empty and auto-unviews after timeout', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
     const passwordInput = screen.getByPlaceholderText(String(enLogin.passwordPlaceholder));
@@ -173,6 +174,16 @@ describe('LoginForm', () => {
     expect(
       screen.getByRole('button', { name: String(enLogin.hidePassword) })
     ).toBeInTheDocument();
+
+    // Fast forward timer by 5 seconds
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+    await waitFor(() => {
+      expect(passwordInput).toHaveAttribute('type', 'password');
+    });
+
+    vi.useRealTimers();
   });
 
   it('maps INVALID_CREDENTIALS from action state to translated message', async () => {

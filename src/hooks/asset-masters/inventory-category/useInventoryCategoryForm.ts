@@ -1,13 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type React from "react";
-import type { InventoryCategoryFormModel } from "@/types/asset-masters/inventory-category.types";
-import { CODE_SANITIZE, ASSET_MASTER_TEXT_SANITIZE, ASSET_INVENTORY_NAME_SANITIZE } from "@/lib/utils/validation-rules";
-
-const CODE_MAX = 15;
+import type { InventoryCategoryFormModel, InventoryCategoryGroupOption } from "@/types/asset-masters/inventory-category.types";
+import { sanitizeFieldValue } from "./validation";
 
 export function useInventoryCategoryForm(
   initialData: InventoryCategoryFormModel | null,
-  validate: (data: InventoryCategoryFormModel) => Record<string, string>
+  validate: (data: InventoryCategoryFormModel) => Partial<Record<keyof InventoryCategoryFormModel, string>>,
+  groups?: InventoryCategoryGroupOption[]
 ) {
   const [formData, setFormData] = useState<InventoryCategoryFormModel>(
     initialData ?? {
@@ -21,40 +20,57 @@ export function useInventoryCategoryForm(
     }
   );
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submittedOnce, setSubmittedOnce] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<keyof InventoryCategoryFormModel, string>>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const categoryOptions = useMemo(() => {
+    return (groups || [])
+      .filter((g) => g.id !== "all" && (g.status !== "Inactive" || g.id === String(formData.group ?? "")))
+      .map((g) => ({ label: g.name, value: g.id }));
+  }, [groups, formData.group]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    let newValue = value;
+    const sanitized = sanitizeFieldValue(name, value);
 
-    if (name === "code") {
-      if (newValue.length > CODE_MAX) return;
-      newValue = newValue.replace(CODE_SANITIZE, "");
-    }
-
-    if (name === "name") {
-      newValue = newValue.replace(ASSET_INVENTORY_NAME_SANITIZE, "");
-    }
-
-    if (name === "description") {
-      newValue = newValue.replace(ASSET_MASTER_TEXT_SANITIZE, "");
-    }
-    
-    if (typeof newValue === "string" && newValue.length > 0 && ["code", "name", "description"].includes(name)) {
-      newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
-    }
-
-    setFormData((p) => ({ ...p, [name]: newValue }));
-    setErrors((p) => ({ ...p, [name]: "" }));
+    setFormData((p) => ({ ...p, [name]: sanitized }));
+    setErrors((p) => {
+      const err = { ...p };
+      delete err[name as keyof InventoryCategoryFormModel];
+      return err;
+    });
   }, []);
+
+  const handleSelectChange = useCallback((field: keyof InventoryCategoryFormModel, value: string) => {
+    setTouched((p) => ({ ...p, [field]: true }));
+    const updated = { ...formData, [field]: value };
+    setFormData(updated);
+
+    const fieldErrors = validate(updated);
+    setErrors((p) => {
+      const err = { ...p };
+      if (fieldErrors[field]) err[field] = fieldErrors[field];
+      else delete err[field];
+      return err;
+    });
+  }, [formData, validate]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
 
-    const fieldErrors = validate({ ...formData, [name]: value });
-    setErrors((p) => ({ ...p, [name]: fieldErrors[name] }));
+    const sanitized = sanitizeFieldValue(name, value);
+    const updated = { ...formData, [name]: sanitized };
+    setFormData(updated);
+
+    const fieldErrors = validate(updated);
+    setErrors((p) => {
+      const err = { ...p };
+      const field = name as keyof InventoryCategoryFormModel;
+      if (fieldErrors[field]) err[field] = fieldErrors[field]; else delete err[field];
+      return err;
+    });
   }, [formData, validate]);
 
   const handleToggleStatus = useCallback((checked?: boolean | unknown) => {
@@ -68,8 +84,13 @@ export function useInventoryCategoryForm(
     setErrors,
     touched,
     setTouched,
+    submittedOnce,
+    setSubmittedOnce,
     handleChange,
+    handleSelectChange,
     handleBlur,
     handleToggleStatus,
+    categoryOptions,
   };
 }
+

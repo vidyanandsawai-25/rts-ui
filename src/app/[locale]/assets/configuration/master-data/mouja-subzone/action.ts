@@ -42,6 +42,11 @@ export async function fetchMoujasPagedServerAction(
   sortOrder?: string
 ): Promise<PagedResponse<Mouja>> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      throw new ApiError(401, "you are unauthorized", "Unauthorized");
+    }
     const MAX_PAGE_SIZE = 100;
     const MAX_PAGE_NUMBER = 10000;
     if (
@@ -73,7 +78,7 @@ export async function createMoujaAction(
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
-      return { success: false, message: "User session required", statusCode: 401 };
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
     data.createdBy = userId;
     const msg = await createMouja(data);
@@ -97,7 +102,7 @@ export async function updateMoujaAction(
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
-      return { success: false, message: "User session required", statusCode: 401 };
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
     data.updatedBy = userId;
     const msg = await updateMouja(data);
@@ -117,15 +122,19 @@ export async function updateMoujaAction(
 export async function deleteMoujaAction(
   formData: FormData
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
-  const rawId = formData.get("id");
-  const id = typeof rawId === "string" ? parseInt(rawId, 10) : 0;
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
 
-  if (!id || id <= 0) {
+  const rawId = formData.get("id");
+  const numericId = Number(rawId);
+
+  if (rawId == null || !Number.isInteger(numericId) || numericId <= 0) {
     return { success: false, message: "Valid Mouja ID is required", statusCode: 400 };
   }
 
   try {
-    await deleteMouja(id);
+    await deleteMouja(numericId);
     revalidateMoujaSubZoneRoutes();
     return { success: true, message: "Mouja deleted successfully" };
   } catch (error) {
@@ -138,10 +147,11 @@ export async function deleteMoujaAction(
 
 export async function fetchMoujaByIdAction(id: number): Promise<Mouja> {
   try {
-    if (!id || id <= 0) {
+    const numericId = Number(id);
+    if (id == null || !Number.isInteger(numericId) || numericId <= 0) {
       throw new ApiError(400, "Valid Mouja ID is required", "Validation failed");
     }
-    const result = await getMoujaById(id);
+    const result = await getMoujaById(numericId);
     if (!result) {
       throw new ApiError(404, "Mouja not found", "Not Found");
     }
@@ -181,6 +191,11 @@ export async function fetchSubZonesPagedServerAction(
   sortOrder?: string
 ): Promise<PagedResponse<SubZoneDetails>> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      throw new ApiError(401, "you are unauthorized", "Unauthorized");
+    }
     const MAX_PAGE_SIZE = 100;
     const MAX_PAGE_NUMBER = 10000;
     if (
@@ -212,7 +227,7 @@ export async function createSubZoneAction(
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
-      return { success: false, message: "User session required", statusCode: 401 };
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
     data.createdBy = userId;
     const msg = await createSubZone(data);
@@ -236,7 +251,7 @@ export async function updateSubZoneAction(
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
-      return { success: false, message: "User session required", statusCode: 401 };
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
     data.updatedBy = userId;
     const msg = await updateSubZone(data);
@@ -256,15 +271,19 @@ export async function updateSubZoneAction(
 export async function deleteSubZoneAction(
   formData: FormData
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
-  const rawId = formData.get("id");
-  const id = typeof rawId === "string" ? parseInt(rawId, 10) : 0;
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
 
-  if (!id || id <= 0) {
+  const rawId = formData.get("id");
+  const numericId = Number(rawId);
+
+  if (rawId == null || !Number.isInteger(numericId) || numericId <= 0) {
     return { success: false, message: "Valid SubZone ID is required", statusCode: 400 };
   }
 
   try {
-    await deleteSubZone(id);
+    await deleteSubZone(numericId);
     revalidateMoujaSubZoneRoutes();
     return { success: true, message: "SubZone deleted successfully" };
   } catch (error) {
@@ -277,10 +296,11 @@ export async function deleteSubZoneAction(
 
 export async function fetchSubZoneByIdAction(id: number): Promise<SubZoneDetails> {
   try {
-    if (!id || id <= 0) {
+    const numericId = Number(id);
+    if (id == null || !Number.isInteger(numericId) || numericId <= 0) {
       throw new ApiError(400, "Valid SubZone ID is required", "Validation failed");
     }
-    const result = await getSubZoneById(id);
+    const result = await getSubZoneById(numericId);
     if (!result) {
       throw new ApiError(404, "SubZone not found", "Not Found");
     }

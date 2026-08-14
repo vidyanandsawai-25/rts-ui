@@ -1,17 +1,27 @@
 import { PagedResponse } from "../common.types";
 
 export interface BulkUpdateMaster {
-  id: number;
+  id?: number;
+  masterId?: number;
   updateCode: string;
   updateName: string;
   updateNameMarathi: string;
-  iconName: string;
-  targetTable: string;
+  iconName?: string;
+  targetTable?: string;
+  referenceTableName?: string;
   isActive: boolean;
   displaySequence: number;
-  apiRoute: string;
+  apiRoute?: string;
   description?: string;
-  category?: string | null;
+  isApprovalRequired?: boolean;
+  fieldConfigs?: BulkUpdateFieldConfig[];
+}
+
+export interface BulkUpdateDefinitionPayload {
+  updateName: string;
+  tableId: number;
+  tableFieldIds: number[];
+  isApprovalRequired: boolean;
 }
 
 export interface BulkUpdateFieldConfig {
@@ -19,7 +29,6 @@ export interface BulkUpdateFieldConfig {
   bulkUpdateMasterId: number;
   fieldName: string;
   displayName: string;
-  displayNameMarathi: string;
   controlType: 'textbox' | 'textarea' | 'dropdown' | 'searchselect' | 'checkbox' | 'number' | 'year' | 'date' | 'file';
   dataType: string;
   placeholder?: string | null;
@@ -28,8 +37,9 @@ export interface BulkUpdateFieldConfig {
   validationRegex?: string | null;
   defaultValue?: string | null;
   sequenceNo: number;
+  displayNameMarathi?: string | null;
   isActive: boolean;
-  isReadonly: boolean;
+  isReadonly?: boolean;
   bindApi?: string | null;
 }
 
@@ -51,6 +61,19 @@ export interface PropertyFilterParams {
   updateCode?: string;
   page?: number;
   pageSize?: number;
+}
+
+export interface PropertyFilterByCategoryParams {
+  UpdateCode: string;
+  SearchCategory: number;
+  WardId: number;
+  PropertyNo?: string;
+  PartitionNo?: string;
+  PropertyFrom?: string;
+  PropertyTo?: string;
+  PageNumber?: number;
+  PageSize?: number;
+  SearchTerm?: string;
 }
 
 export interface BulkUpdatePayload {
@@ -76,6 +99,9 @@ export interface ExcelImportResponse {
   success: boolean;
   message: string;
   errors?: string[] | null;
+  successCount?: number;
+  failedCount?: number;
+  items?: Record<string, unknown>[];
 }
 
 export type SelectOption = {
@@ -104,12 +130,28 @@ export interface PropertyFilterFormValues {
   propertyTypeId: string;
 }
 
+export interface ScopeOption {
+  id: number;
+  name: string;
+  displayName: string;
+  description: string;
+  options: string[];
+}
+
 export interface CommonDetailsUpdatePageProps {
   menuItems: BulkUpdateMaster[];
   wardsData: PagedResponse<WardOption> | PagedResponse<{ id: number; wardNo: string }>;
   wingsData?: PagedResponse<{ id: number; wingNo: string; sequenceNo: number; isActive: boolean }>;
+  initialFieldRegistries?: PagedResponse<BulkUpdateMaster> | BulkUpdateMaster[];
+  initialExcelTemplateFields?: BulkUpdateMaster[];
+  initialSchemas?: FieldRegistrySchema[];
+  initialScopeOptions?: ScopeOption[];
+  initialFieldConfigs?: BulkUpdateFieldConfig[];
+  initialSourceTables?: FieldRegistryTable[];
+  initialSourceTableFields?: SourceTableField[];
   initialField?: string;
   initialWardId?: string;
+  initialWardNo?: string;
   initialFromProperty?: string;
   initialToProperty?: string;
   initialWing?: string;
@@ -119,6 +161,18 @@ export interface CommonDetailsUpdatePageProps {
   initialTab?: string;
   initialScopeId?: string;
   initialZoneId?: string;
+  setFieldRegistryStatusAction?: (updateCode: string, isActive: boolean) => Promise<ActionResult<unknown>>;
+  editUpdateCode?: string;
+  initialEditData?: BulkUpdateMaster | null;
+  initialUpdateHistory?: PagedResponse<UpdateHistoryItem> | null;
+  actions?: Partial<CommonDetailsUpdateActions>;
+}
+
+export interface CommonDetailsUpdateActions {
+  addBulkUpdateDefinitionAction?: (payload: BulkUpdateDefinitionPayload) => Promise<ActionResult<unknown>>;
+  exportUpdateHistoryAction?: (params: UpdateHistoryFilterParams) => Promise<ActionResult<string>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: ((...args: any[]) => Promise<any>) | undefined;
 }
 
 export type ActionResult<T> =
@@ -130,15 +184,20 @@ export interface FieldRegistrySchema {
 }
 
 export interface FieldRegistryTable {
-  schemaName: string;
+  id?: number;
   tableName: string;
+}
+
+export interface SourceTableField {
+  id: number;
+  tableFieldName: string;
 }
 
 export interface FieldRegistryColumn {
   columnName: string;
   fieldName?: string;
   displayName?: string;
-  displayNameMarathi?: string;
+  displayNameMarathi?: string | null;
   controlType?: string;
   dataType?: string;
   placeholder?: string | null;
@@ -153,23 +212,19 @@ export interface FieldRegistryColumn {
 export interface CreateFieldRegistryDto {
   updateCode: string;
   updateName: string;
-  updateNameMarathi: string;
-  iconName?: string;
-  referenceTableName: string;
+  updateNameMarathi?: string | null;
+  referenceTableName?: string | null;
+  description?: string | null;
   displaySequence: number;
   apiRoute: string;
-  description?: string | null;
-  category?: string | null;
   isApprovalRequired: boolean;
   isActive: boolean;
-  createdBy?: number | null;
   fieldConfigs: FieldRegistryFieldConfigDto[];
 }
 
 export interface FieldRegistryFieldConfigDto {
   fieldName: string;
   displayName: string;
-  displayNameMarathi: string;
   controlType: string;
   dataType: string;
   placeholder?: string | null;
@@ -179,5 +234,36 @@ export interface FieldRegistryFieldConfigDto {
   defaultValue?: string | null;
   bindApi?: string | null;
   sequenceNo?: number;
+}
+
+export interface UpdateHistoryItem {
+  id: number;
+  updateName: string;
+  wardNo: string;
+  propertyNo: string;
+  partitionNo: string;
+  oldValue: string;
+  newValue: string;
+  updatedColumns: string;
+  remarks: string | null;
+  ipAddress: string;
+  username: string;
+  updatedDate: string;
+  [key: string]: unknown;
+}
+
+export interface UpdateHistoryFilterParams {
+  UpdateName?: string;
+  WardNo?: string;
+  PropertyNo?: string;
+  PartitionNo?: string;
+  UpdatedColumns?: string;
+  Username?: string;
+  PageNumber?: number;
+  PageSize?: number;
+  SearchTerm?: string;
+  SortBy?: string;
+  SortOrder?: string;
+  FilterLogic?: string;
 }
 

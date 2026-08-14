@@ -507,18 +507,18 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
         {(hasFooter || isPaginationEnabled || isPageSizeEnabled) && (
           <div
             className={cn(
-              'bg-[#F8FAFF] border-t border-[#DCEAFF] rounded-b-xl px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm',
+              'bg-[#F8FAFF] border-t border-[#DCEAFF] rounded-b-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-sm',
               footerClassName
             )}
           >
             {/* LEFT SIDE: Custom Content OR Info Text + PageSize */}
             <div
-              className={cn('flex items-center gap-4 text-sm text-[#6B7280]', footerLeftClassName)}
+              className={cn('flex flex-wrap items-center gap-3 text-sm text-[#6B7280]', footerLeftClassName)}
             >
               {footerLeftContent
                 ? footerLeftContent
                 : (isPaginationEnabled || isPageSizeEnabled) && (
-                    <div data-testid="pagination-info" className="flex items-center gap-2">
+                    <div data-testid="pagination-info" className="flex flex-wrap items-center gap-2">
                       {/* Show counts only if pagination enabled */}
 
                       {isPaginationEnabled && (
@@ -553,7 +553,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
             {/* RIGHT SIDE: Custom Content + Pagination Controls */}
             <div
               className={cn(
-                'flex items-center justify-between md:justify-end gap-2 w-full md:w-auto',
+                'flex flex-wrap items-center justify-end gap-2 max-w-full overflow-x-auto',
                 footerRightClassName
               )}
             >
@@ -565,13 +565,13 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                 typeof pageNumber === 'number' &&
                 typeof totalPages === 'number' &&
                 onPageChange && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1 max-w-full">
                     <PrevPageButton
                       disabled={pageNumber <= 1}
                       onClick={() => onPageChange(pageNumber - 1)}
                     />
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-1">
                       <FirstPageButton
                         disabled={pageNumber === 1}
                         onClick={() => onPageChange(1)}

@@ -10,7 +10,8 @@ export function validateMatrixHasRates(
   return matrixData.some(row => 
     rateCategories.some(cat => {
       const key = cat.constructionCode || cat.constructionId;
-      return Number(row[key]) > 0;
+      const val = row[key];
+      return val !== undefined && val !== null && val !== "" && !isNaN(Number(val)) && Number(val) >= 0;
     })
   );
 }
@@ -27,7 +28,7 @@ export function parseMatrixData(
     rateCategories.forEach(cat => {
       const key = String(cat.constructionCode || cat.constructionId).trim();
       const val = row[key];
-      parsedRow[key] = val === '' || val === null || val === undefined ? 0 : Number(val);
+      parsedRow[key] = val === '' || val === null || val === undefined ? undefined : Number(val);
     });
     return parsedRow;
   });

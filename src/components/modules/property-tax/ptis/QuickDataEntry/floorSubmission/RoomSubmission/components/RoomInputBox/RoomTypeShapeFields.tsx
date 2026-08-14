@@ -16,7 +16,7 @@ interface RoomTypeShapeFieldsProps {
   isUtilityCategory?: boolean;
 }
 
-export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
+export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps & { floorData?: Record<string, unknown> }> = ({
   formData,
   handleInputChange,
   isEditMode,
@@ -24,6 +24,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
   t,
   roomTypeData,
   isUtilityCategory: _isUtilityCategory,
+  floorData,
 }) => {
   const setRoomNoRef = (el: HTMLElement | null) => {
     if (focusRefs.current) {
@@ -32,7 +33,16 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
     }
   };
 
-
+  const isOpenSpace =
+    floorData?.selectedFloorType === 'OpenPlot' ||
+    floorData?.isOpenPlot === true ||
+    String(floorData?.floorId) === '77' ||
+    String(floorData?.conTyp || '').toLowerCase().includes('open plot') ||
+    String(floorData?.constructionType || '').toLowerCase().includes('open plot') ||
+    String(floorData?.floor || '').toLowerCase().includes('open plot') ||
+    String(floorData?.floorDescription || '').toLowerCase().includes('open plot') ||
+    String(floorData?.floor || '').toLowerCase().includes('open space') ||
+    String(floorData?.floorDescription || '').toLowerCase().includes('open space');
 
   return (
     <>
@@ -59,27 +69,29 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
       </div>
 
       {/* Room Type */}
-      <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomType }}>
-        <RoomTypeSelect
-          value={formData.utilities}
-          roomTypeData={roomTypeData}
-          onChange={(value, id) => {
-            handleInputChange('utilities', value);
-            if (id) {
-              handleInputChange('roomTypeId', String(id));
-            } else {
-              handleInputChange('roomTypeId', '');
-            }
-            setTimeout(() => { focusRefs?.current['shape']?.focus(); (focusRefs?.current['shape'] as HTMLElement)?.click(); }, 100);
-          }}
-          disabled={!isEditMode}
-          className="w-full h-[40px]"
-        />
-      </div>
+      {!isOpenSpace && (
+        <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomType }}>
+          <RoomTypeSelect
+            value={formData.utilities}
+            roomTypeData={roomTypeData}
+            onChange={(value, id) => {
+              handleInputChange('utilities', value);
+              if (id) {
+                handleInputChange('roomTypeId', String(id));
+              } else {
+                handleInputChange('roomTypeId', '');
+              }
+              setTimeout(() => { focusRefs?.current['shape']?.focus(); (focusRefs?.current['shape'] as HTMLElement)?.click(); }, 100);
+            }}
+            disabled={!isEditMode}
+            className="w-full h-[40px]"
+          />
+        </div>
+      )}
 
-      <div 
-        className="flex flex-col justify-center flex-shrink-0 px-1" 
-        style={{ width: COLUMN_WIDTHS.shape }}
+      <div
+        className="flex flex-col justify-center flex-1 min-w-[120px] px-1"
+        style={{ minWidth: '110px' }}
         onKeyDownCapture={(e) => {
           if (e.key === 'Tab' && !e.shiftKey) {
             const selectBtn = e.currentTarget.querySelector('input[role="combobox"]');

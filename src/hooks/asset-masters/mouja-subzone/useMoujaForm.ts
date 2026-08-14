@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { createMoujaAction, updateMoujaAction } from "@/app/[locale]/assets/configuration/master-data/mouja-subzone/action";
 import { MoujaFormModel, Mouja } from "@/types/asset-masters/mouja-subzone.types";
-import { sanitizeMoujaFieldValue, validateMoujaForm } from "./validation";
+import { sanitizeMoujaFieldValue, validateMoujaForm, getErrorMessage } from "./validation";
 
 interface UseMoujaFormProps {
   id: number | null;
@@ -90,31 +90,18 @@ export function useMoujaForm({
     if (result.errors) {
       for (const val of Object.values(result.errors)) {
         if (val) {
-          const translationKey = `apiErrors.${val}` as never;
-          const translated = t(translationKey);
-          if (translated !== translationKey) {
-            return translated;
-          }
+          const cleanVal = val.replace(/\.$/, "");
+          const translationKey = `apiErrors.${cleanVal}` as never;
+          try {
+            const translated = t(translationKey);
+            if (translated && translated !== translationKey && !translated.includes(translationKey)) {
+              return translated;
+            }
+          } catch {}
         }
       }
     }
-    if (result.message) {
-      const cleanMsg = result.message.replace(/\.$/, "");
-      const translationKey = `apiErrors.${cleanMsg}` as never;
-      const translated = t(translationKey);
-      if (translated !== translationKey) {
-        return translated;
-      }
-    }
-    const errorMap: Record<number, string> = {
-      409: t("apiErrors.duplicateRecord"),
-      404: t("apiErrors.notFound"),
-      401: tCommon("errors.unauthorized"),
-      403: tCommon("errors.unauthorized"),
-    };
-    const code = result.statusCode ?? 0;
-    if (errorMap[code]) return errorMap[code];
-    return t("apiErrors.operationFailed");
+    return getErrorMessage(result.message, result.statusCode, t, tCommon, t("list.moujaTitle"));
   }, [t, tCommon]);
 
   const [open, setOpen] = useState(true);
@@ -158,7 +145,6 @@ export function useMoujaForm({
       ));
 
       onSuccess();
-      router.refresh();
       closeAndRoute();
     } finally {
       setIsSubmitting(false);

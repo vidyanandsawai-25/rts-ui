@@ -5,6 +5,7 @@ import { AssessmentYearRangeFormModel } from "@/types/asset-masters/assessment-y
 import type React from "react";
 
 interface FormFieldsSectionProps {
+  fromYearRef?: React.RefObject<HTMLInputElement | null>;
   fromYearValue: string;
   toYearValue: string;
   handleYearChange: (field: "fromYear" | "toYear", value: string) => void;
@@ -15,6 +16,7 @@ interface FormFieldsSectionProps {
 }
 
 export const FormFieldsSection = ({
+  fromYearRef,
   fromYearValue,
   toYearValue,
   handleYearChange,
@@ -26,6 +28,7 @@ export const FormFieldsSection = ({
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       <Input
+        ref={fromYearRef}
         name="fromYear"
         label={t("form.fields.fromYear.label")}
         required

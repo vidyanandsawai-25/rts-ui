@@ -13,17 +13,20 @@ export async function automationGetGeoSequencingGrid(workflowStageId?: string | 
         ? `/AutomationDashboard/GeoSequencingGrid?workflowStageId=${workflowStageId}`
         : `/AutomationDashboard/GeoSequencingGrid`;
 
-    const response = await apiClient.get<GeoSequencingGridResponse>(url);
+    const response = await apiClient.get<GeoSequencingGridResponse>(url,{ cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchGeoSequencingGrid") || "Failed to fetch geo sequencing grid data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchGeoSequencingGrid") || "Failed to fetch geo sequencing grid data");
+    return responseData.items?.[0] ?? null;
 }
 
 export async function automationGetGeoSequencingWardWiseSummary(
     zoneId: string | number,
     workflowStageId?: string | number,
     pageNumber: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    propertyTypeCategoryId?: string | null,
+    categoryId?: string | null
 ): Promise<GeoSequencingWardWiseItems | null> {
     const params = new URLSearchParams({
         zoneId: zoneId.toString(),
@@ -34,11 +37,18 @@ export async function automationGetGeoSequencingWardWiseSummary(
     if (workflowStageId !== undefined && workflowStageId !== null) {
         params.append("workflowStageId", workflowStageId.toString());
     }
+    if (propertyTypeCategoryId) {
+        params.append("PropertyTypeCategoryId", propertyTypeCategoryId);
+    }
+    if (categoryId) {
+        params.append("PropertyTypeId", categoryId);
+    }
 
     const response = await apiClient.get<GeoSequencingWardWiseResponse>(
         `/AutomationDashboard/GeoSequencingWardWiseSummary?${params.toString()}`
-    );
+    ,{ cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
-    return handleApiResponse(response, t("errors.fetchGeoSequencingWardWiseSummary") || "Failed to fetch geo sequencing ward-wise summary data").items ?? null;
+    const responseData = handleApiResponse(response, t("errors.fetchGeoSequencingWardWiseSummary") || "Failed to fetch geo sequencing ward-wise summary data");
+    return responseData.items?.[0] ?? null;
 }
