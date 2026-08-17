@@ -19,6 +19,8 @@ export function useExcelImportState() {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [previewData, setPreviewData] = useState<OperationPreviewResponse | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [previewPage, setPreviewPage] = useState(1);
+  const [previewPageSize, setPreviewPageSize] = useState(5);
 
   return {
     templateConfig,
@@ -48,7 +50,11 @@ export function useExcelImportState() {
     previewData,
     setPreviewData,
     isPreviewLoading,
-    setIsPreviewLoading
+    setIsPreviewLoading,
+    previewPage,
+    setPreviewPage,
+    previewPageSize,
+    setPreviewPageSize
   };
 }
 export type ExcelImportState = ReturnType<typeof useExcelImportState>;

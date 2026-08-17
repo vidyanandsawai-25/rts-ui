@@ -43,6 +43,11 @@ export interface JobDetailModalProps {
   onClose: () => void;
   detailProperties: JobPropertyItem[];
   isDetailLoading: boolean;
+  totalCount?: number;
+  detailPage?: number;
+  detailPageSize?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 export function JobDetailModal({
@@ -50,21 +55,46 @@ export function JobDetailModal({
   onClose,
   detailProperties,
   isDetailLoading,
+  totalCount: propTotalCount,
+  detailPage: propDetailPage,
+  detailPageSize: propDetailPageSize,
+  onPageChange,
+  onPageSizeChange,
 }: JobDetailModalProps) {
   const t = useTranslations('addTaxes');
 
-  const [detailPage, setDetailPage] = useState(1);
-  const [detailPageSize, setDetailPageSize] = useState(10);
+  const [internalPage, setInternalPage] = useState(1);
+  const [internalPageSize, setInternalPageSize] = useState(10);
+
+  const detailPage = propDetailPage ?? internalPage;
+  const detailPageSize = propDetailPageSize ?? internalPageSize;
+
+  const handlePageChange = (page: number) => {
+    if (onPageChange) {
+      onPageChange(page);
+    } else {
+      setInternalPage(page);
+    }
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    if (onPageSizeChange) {
+      onPageSizeChange(size);
+    } else {
+      setInternalPageSize(size);
+      setInternalPage(1);
+    }
+  };
 
   // Reset page when modal details changes
   useEffect(() => {
     if (selectedJobDetails) {
       const timer = setTimeout(() => {
-        setDetailPage(1);
+        if (!propDetailPage) setInternalPage(1);
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [selectedJobDetails]);
+  }, [selectedJobDetails, propDetailPage]);
 
   if (!selectedJobDetails) return null;
 
@@ -76,11 +106,18 @@ export function JobDetailModal({
   };
 
   const propertiesArray = Array.isArray(detailProperties) ? detailProperties : [];
+  const summaryTotal = summary.totalSelected || summary.TotalSelected || 0;
+  const totalCount = propTotalCount || summaryTotal || propertiesArray.length;
 
-  const paginatedProperties = propertiesArray.slice(
-    (detailPage - 1) * detailPageSize,
-    detailPage * detailPageSize
-  );
+  const isFullList = propertiesArray.length === totalCount && totalCount > detailPageSize;
+  const paginatedProperties = isFullList
+    ? propertiesArray.slice(
+        (detailPage - 1) * detailPageSize,
+        detailPage * detailPageSize
+      )
+    : propertiesArray;
+
+  const totalPages = Math.ceil(totalCount / detailPageSize) || 1;
 
   return (
     <Modal
@@ -132,13 +169,10 @@ export function JobDetailModal({
               data={paginatedProperties as JobPropertyRow[]}
               pageNumber={detailPage}
               pageSize={detailPageSize}
-              totalCount={propertiesArray.length}
-              totalPages={Math.ceil(propertiesArray.length / detailPageSize)}
-              onPageChange={setDetailPage}
-              onPageSizeChange={(s) => {
-                setDetailPageSize(s);
-                setDetailPage(1);
-              }}
+              totalCount={totalCount}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
               paginationConfig={{
                 enabled: true,
                 showPageSizeSelector: true,

@@ -15,7 +15,7 @@ interface ScopeDynamicFieldsProps {
   currentScopeData: ScopeOptionItem | undefined;
   optionsToRender: string[];
   selectionData: Record<string, string[]>;
-  handleSelectionChange: (key: string, values: string[]) => void;
+  handleSelectionChange: (key: string, values: string[], labels?: string[]) => void;
   zoneOptions: { value: string; label: string }[];
   fetchedWards: { value: string; label: string; zoneId: string }[];
   fetchWards: () => void;
@@ -39,6 +39,7 @@ interface ScopeDynamicFieldsProps {
   fetchAssessmentStatuses?: () => void;
   fetchZones?: () => void;
   fetchPropertyTypes?: () => void;
+  fetchToBuildings?: (wardId: string, propertyFrom: string) => void;
 }
 
 export function ScopeDynamicFields({
@@ -69,7 +70,8 @@ export function ScopeDynamicFields({
   assessmentStatusOptions = [],
   fetchAssessmentStatuses,
   fetchZones,
-  fetchPropertyTypes
+  fetchPropertyTypes,
+  fetchToBuildings
 }: ScopeDynamicFieldsProps) {
   const t = useTranslations('addTaxes');
   const [isToFieldBlurred, setIsToFieldBlurred] = useState(false);
@@ -118,9 +120,19 @@ export function ScopeDynamicFields({
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-        {optionsToRender.map(option => {
+        {optionsToRender.map((option, index) => {
           const hasZone = optionsToRender.some((o: string) => o.toLowerCase().includes('zone'));
           const hasWard = optionsToRender.some((o: string) => o.toLowerCase().includes('ward'));
+          
+          let isAnyPreviousFieldEmpty = false;
+          for (let i = 0; i < index; i++) {
+            const prevOption = optionsToRender[i];
+            const prevValues = selectionData[prevOption];
+            if (!prevValues || prevValues.length === 0 || prevValues.every(v => v === undefined || v === null || String(v).trim() === '')) {
+              isAnyPreviousFieldEmpty = true;
+              break;
+            }
+          }
           const config = getFieldConfig(
             option,
             zoneOptions,
@@ -150,9 +162,11 @@ export function ScopeDynamicFields({
             },
             fetchedToBuildings,
             fetchZones,
-            fetchPropertyTypes
+            fetchPropertyTypes,
+            fetchToBuildings
           );
 
+          const isDisabled = config.disabled || isAnyPreviousFieldEmpty;
           const isFullWidth = config.inputType === 'text' || config.label.toLowerCase().includes('search');
           return (
             <div key={option} className={isFullWidth ? "col-span-1 md:col-span-2 lg:col-span-3" : ""}>
@@ -163,9 +177,12 @@ export function ScopeDynamicFields({
                     required={config.required}
                     options={config.fallbackOptions}
                     value={selectionData[option] || []}
-                    onChange={(vals) => handleSelectionChange(option, vals)}
+                    onChange={(vals) => {
+                      const labels = vals.map(v => config.fallbackOptions?.find(o => o.value === v)?.label).filter(Boolean) as string[];
+                      handleSelectionChange(option, vals, labels.length > 0 ? labels : undefined);
+                    }}
                     placeholder={config.placeholder}
-                    disabled={config.disabled}
+                    disabled={isDisabled}
                     onOpen={config.onOpen}
                     selectSize="sm"
                   />
@@ -177,8 +194,12 @@ export function ScopeDynamicFields({
                   required={config.required}
                   options={config.fallbackOptions}
                   value={(selectionData[option] || [])[0] || ''}
-                  onChange={(e) => handleSelectionChange(option, [e.target.value])}
-                  disabled={config.disabled}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const label = config.fallbackOptions?.find(o => String(o.value) === String(val))?.label;
+                    handleSelectionChange(option, [val], label ? [label] : undefined);
+                  }}
+                  disabled={isDisabled}
                   selectSize="sm"
                 />
               ) : config.inputType === 'searchselectpaginated' ? (
@@ -188,13 +209,15 @@ export function ScopeDynamicFields({
                   options={config.fallbackOptions}
                   value={selectionData[option]?.[0] || ''}
                   onChange={(_name, val) => {
-                    handleSelectionChange(option, val ? [val] : []);
+                    const selectedOption = config.fallbackOptions?.find(o => String(o.value) === String(val));
+                    const label = selectedOption?.label;
+                    handleSelectionChange(option, val ? [val] : [], label ? [label] : []);
                     if (option.toLowerCase().includes('to')) {
                       setIsToFieldBlurred(true);
                     }
                   }}
                   placeholder={config.placeholder}
-                  disabled={config.disabled}
+                  disabled={isDisabled}
                   onInputFocus={config.onOpen}
                   error={option.toLowerCase().includes('to') ? (rangeError || undefined) : undefined}
                   onBlur={() => {
@@ -206,6 +229,8 @@ export function ScopeDynamicFields({
                   onLoadMore={config.onLoadMore}
                   isLoadingMore={config.isLoadingMore}
                   isLoading={config.isLoading}
+                  forceSearchText={selectionData[option]?.[0] ? (config.fallbackOptions?.find(o => String(o.value) === String(selectionData[option]?.[0]))?.label || selectionData[option]?.[0] || '') : undefined}
+                  key={`${option}-${selectionData[option]?.[0] || ''}`}
                 />
               ) : config.inputType === 'searchselect' ? (
                 <>
@@ -215,13 +240,15 @@ export function ScopeDynamicFields({
                     options={config.fallbackOptions}
                     value={selectionData[option]?.[0] || ''}
                     onChange={(_name, val) => {
-                      handleSelectionChange(option, val ? [val] : []);
+                      const selectedOption = config.fallbackOptions?.find(o => String(o.value) === String(val));
+                      const label = selectedOption?.label;
+                      handleSelectionChange(option, val ? [val] : [], label ? [label] : undefined);
                       if (option.toLowerCase().includes('to')) {
                         setIsToFieldBlurred(true);
                       }
                     }}
                     placeholder={config.placeholder}
-                    disabled={config.disabled}
+                    disabled={isDisabled}
                     onInputFocus={config.onOpen}
                     error={option.toLowerCase().includes('to') ? (rangeError || undefined) : undefined}
                     onBlur={() => {
@@ -239,6 +266,7 @@ export function ScopeDynamicFields({
                   value={selectionData[option]?.[0] || ''}
                   onChange={(e) => handleSelectionChange(option, [e.target.value])}
                   fullWidth
+                  disabled={isDisabled}
                   className="h-9 rounded-md border-slate-200 hover:border-slate-300 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               )}

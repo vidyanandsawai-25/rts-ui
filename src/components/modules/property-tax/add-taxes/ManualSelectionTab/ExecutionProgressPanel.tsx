@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/common/Card';
@@ -42,6 +42,13 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  const hasCompletedRef = useRef<Record<string, boolean>>({});
 
   const pageParam = searchParams.get('jobPage');
   const pageSizeParam = searchParams.get('jobPageSize');
@@ -87,7 +94,10 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
           const backendStatus = statusData.status?.toLowerCase();
           if (['completed', 'success'].includes(backendStatus)) {
             setStatus('Completed');
-            onComplete?.();
+            if (!hasCompletedRef.current[jobId]) {
+              hasCompletedRef.current[jobId] = true;
+              onCompleteRef.current?.();
+            }
           } else {
             setStatus('InProgress');
           }
@@ -113,7 +123,7 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
       isSubscribed = false;
       clearInterval(interval);
     };
-  }, [jobId, onComplete, pageNumber, pageSize]);
+  }, [jobId, pageNumber, pageSize]);
 
   const percentage = totalJobRecords > 0 ? Math.min(100, Math.floor((processed / totalJobRecords) * 100)) : 0;
   const pending = Math.max(0, totalJobRecords - processed);

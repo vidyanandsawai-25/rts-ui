@@ -90,8 +90,6 @@ export default function ExcelImportTab({
     previewPageSize,
     setPageNumber,
     setPageSize,
-    setPreviewPage,
-    setPreviewPageSize,
     handleDownloadTemplate,
     processFile,
     handleDragOver,
@@ -225,8 +223,9 @@ export default function ExcelImportTab({
         previewData={previewData}
         previewPage={previewPage}
         previewPageSize={previewPageSize}
-        setPreviewPage={setPreviewPage}
-        setPreviewPageSize={setPreviewPageSize}
+        onPageChange={(p) => handlePreview(p, previewPageSize)}
+        onPageSizeChange={(s) => handlePreview(1, s)}
+        isLoading={isPreviewLoading}
       />
     </div>
   );

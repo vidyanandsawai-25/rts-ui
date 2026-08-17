@@ -7,7 +7,7 @@ export interface ScopeSelectionPanelProps {
   selectedScope: Scope;
   handleScopeChange: (s: Scope) => void;
   selectionData: Record<string, string[]>;
-  handleSelectionChange: (key: string, values: string[]) => void;
+  handleSelectionChange: (key: string, values: string[], labels?: string[]) => void;
   scopeOptions: ScopeOptionItem[];
   zoneOptions?: { value: string; label: string }[];
   propertyTypeOptions?: { value: string; label: string }[];
@@ -48,7 +48,8 @@ export const getFieldConfig = (
   },
   fetchedToBuildings?: { value: string; label: string }[],
   fetchZones?: () => void,
-  fetchPropertyTypes?: () => void
+  fetchPropertyTypes?: () => void,
+  fetchToBuildings?: (wardId: string, propertyFrom: string) => void
 ) => {
   const opt = option.toLowerCase();
   if (opt.includes('assessment status')) {
@@ -143,10 +144,10 @@ export const getFieldConfig = (
         fallbackOptions: disabled ? [] : fetchedBuildings,
         disabled: disabled,
         onOpen: () => fetchBuildings(selectedZoneIds.length > 0 ? selectedZoneIds : null, selectedWardIds),
-        hasMore: buildingPagination?.hasMore,
-        onLoadMore: buildingPagination?.onLoadMore,
-        isLoadingMore: buildingPagination?.isLoadingMore,
-        isLoading: buildingPagination?.isFetching
+        hasMore: disabled ? false : buildingPagination?.hasMore,
+        onLoadMore: disabled ? undefined : buildingPagination?.onLoadMore,
+        isLoadingMore: disabled ? false : buildingPagination?.isLoadingMore,
+        isLoading: disabled ? false : buildingPagination?.isFetching
       };
     }
 
@@ -181,11 +182,27 @@ export const getFieldConfig = (
       inputType: 'searchselectpaginated',
       fallbackOptions: disabled ? [] : optionsToUse,
       disabled: disabled,
-      onOpen: () => fetchBuildings(null, selectedWardIds),
-      hasMore: paginationToUse?.hasMore,
-      onLoadMore: paginationToUse?.onLoadMore,
-      isLoadingMore: paginationToUse?.isLoadingMore,
-      isLoading: paginationToUse?.isFetching
+      onOpen: () => {
+        if (isTo) {
+          // Only fetch "to" buildings if "from" property is already selected
+          const fromKey = Object.keys(selectionData).find(k => k.toLowerCase().includes('from'));
+          const fromVal = fromKey ? selectionData[fromKey]?.[0] : undefined;
+          if (fromVal && fetchToBuildings && selectedWardIds.length > 0) {
+            const fromObj = fetchedBuildings.find(b => b.value === fromVal);
+            const fromLabel = fromObj ? fromObj.label : fromVal;
+            fetchToBuildings(selectedWardIds[0], fromLabel);
+          }
+        } else {
+          // Fetch "from" buildings only if not already fetched
+          if (fetchedBuildings.length === 0 && !buildingPagination?.isFetching && fetchBuildings) {
+            fetchBuildings(null, selectedWardIds);
+          }
+        }
+      },
+      hasMore: disabled ? false : paginationToUse?.hasMore,
+      onLoadMore: disabled ? undefined : paginationToUse?.onLoadMore,
+      isLoadingMore: disabled ? false : paginationToUse?.isLoadingMore,
+      isLoading: disabled ? false : paginationToUse?.isFetching
     };
   }
   const fallbackLabelKey = `dynamicFields.labels.${opt}`;

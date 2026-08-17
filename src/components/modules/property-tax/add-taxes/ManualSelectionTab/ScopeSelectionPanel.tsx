@@ -36,15 +36,15 @@ export function ScopeSelectionPanel({
     fetchedWards, fetchWards,
     fetchedBuildings, fetchBuildings,
     hasMoreBuildings, loadMoreBuildings, isLoadingMoreBuildings, isFetchingBuildings,
-    fetchedToBuildings, hasMoreToBuildings, loadMoreToBuildings, isLoadingMoreToBuildings, isFetchingToBuildings,
+    fetchedToBuildings, hasMoreToBuildings, loadMoreToBuildings, isLoadingMoreToBuildings, isFetchingToBuildings, fetchToBuildings,
     handleCalculateEligible,
     executeJob,
     isPreviewModalOpen, setIsPreviewModalOpen,
     previewData,
     isPreviewLoading,
     handlePreview,
-    previewPage, setPreviewPage,
-    previewPageSize, setPreviewPageSize,
+    previewPage,
+    previewPageSize,
     fetchedAssessmentStatuses,
     fetchAssessmentStatuses,
     isExportingPreview,
@@ -128,6 +128,7 @@ export function ScopeSelectionPanel({
         handleCalculateEligible={handleCalculateEligible}
         assessmentStatusOptions={fetchedAssessmentStatuses}
         fetchAssessmentStatuses={fetchAssessmentStatuses}
+        fetchToBuildings={fetchToBuildings}
       />
 
       <ScopeValidation
@@ -195,8 +196,9 @@ export function ScopeSelectionPanel({
                 pageNumber={previewPage}
                 pageSize={previewPageSize}
                 totalPages={Math.ceil(previewData.totalSelected / previewPageSize)}
-                onPageChange={setPreviewPage}
-                onPageSizeChange={setPreviewPageSize}
+                onPageChange={(p) => handlePreview(p, previewPageSize)}
+                onPageSizeChange={(s) => handlePreview(1, s)}
+                loading={isPreviewLoading}
                 paginationConfig={{ enabled: true, showPageSizeSelector: true }}
                 height="sm"
               />

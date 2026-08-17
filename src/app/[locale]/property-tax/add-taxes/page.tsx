@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { PageContainer } from '@/components/common/PageContainer';
 import AddTaxesConsole, { AddTaxesActions } from '@/components/modules/property-tax/add-taxes/AddTaxesConsole';
 import TableHeader from '@/components/common/TableHeader';
@@ -20,8 +20,14 @@ import {
   getImportTemplateAction
 } from './actions';
 
-export default async function AddTaxesPage() {
-  const t = await getTranslations('addTaxes');
+interface AddTaxesPageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function AddTaxesPage({ params }: AddTaxesPageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'addTaxes' });
 
   // Fetch initial base data concurrently
   const [

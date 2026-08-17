@@ -63,19 +63,6 @@ export function useExcelImport({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const setPreviewPage = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('previewPage', String(page));
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
-  const setPreviewPageSize = (size: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('previewPage', '1');
-    params.set('previewPageSize', String(size));
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
   useEffect(() => {
     const initData = async () => {
       try {
@@ -90,16 +77,6 @@ export function useExcelImport({
     initData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actions]);
-
-  useEffect(() => {
-    if (state.isPreviewModalOpen) {
-      const timer = setTimeout(() => {
-        excelActions.handlePreview(excelActions.previewPage, excelActions.previewPageSize);
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [excelActions.previewPage, excelActions.previewPageSize, state.isPreviewModalOpen]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -146,8 +123,6 @@ export function useExcelImport({
     previewPageSize: excelActions.previewPageSize,
     setPageNumber,
     setPageSize,
-    setPreviewPage,
-    setPreviewPageSize,
     handleDownloadTemplate: excelActions.handleDownloadTemplate,
     processFile: excelActions.processFile,
     handleDragOver,

@@ -57,6 +57,9 @@ export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [selectedJobDetails, setSelectedJobDetails] = useState<JobAuditItem | null>(null);
   const [detailProperties, setDetailProperties] = useState<JobPropertyItem[]>([]);
+  const [detailTotalCount, setDetailTotalCount] = useState(0);
+  const [detailPage, setDetailPage] = useState(1);
+  const [detailPageSize, setDetailPageSize] = useState(10);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
   // Fetch initial suggestion list and statistics ONCE on mount / financeYearId change
@@ -74,7 +77,7 @@ export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps
           setAllJobCodes(codes);
 
           const computedStats = {
-            total: items.length,
+            total: typeof res.totalCount === 'number' ? res.totalCount : items.length,
             completed: items.filter((j) => ['completed', 'success'].includes(j.status?.toLowerCase())).length,
             running: items.filter((j) => ['running', 'inprogress', 'pending', 'started'].includes(j.status?.toLowerCase())).length,
             failed: items.filter((j) => ['failed', 'error'].includes(j.status?.toLowerCase())).length,
@@ -109,9 +112,17 @@ export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps
 
         const res = await actions.getAuditListAction(query);
         if (res) {
+          const currentTotal = typeof res.totalCount === 'number' ? res.totalCount : (res.items?.length || 0);
           setFilteredJobs(res.items || []);
-          setTotalCount(res.totalCount || 0);
+          setTotalCount(currentTotal);
           setTotalPages(res.totalPages || 0);
+
+          if (!appliedJobCode && !appliedStatus && !appliedDate) {
+            setStats((prev) => ({
+              ...prev,
+              total: currentTotal,
+            }));
+          }
         } else {
           setFilteredJobs([]);
           setTotalCount(0);
@@ -135,6 +146,7 @@ export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps
       const timer = setTimeout(() => {
         setSelectedJobDetails(null);
         setDetailProperties([]);
+        setDetailTotalCount(0);
       }, 0);
       return () => clearTimeout(timer);
     }
@@ -146,16 +158,38 @@ export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps
         const numericJobId = selectedJobId.split('-').pop() || '';
         const [detailsRes, propertiesRes] = await Promise.all([
           actions.getAuditDetailAction(numericJobId),
-          actions.getJobPropertiesAction(numericJobId, 1, 1000)
+          actions.getJobPropertiesAction(numericJobId, detailPage, detailPageSize)
         ]);
 
         if (cancelled) return;
 
         setSelectedJobDetails(detailsRes);
-        const properties = Array.isArray(propertiesRes)
-          ? propertiesRes
-          : (propertiesRes?.items || []);
+
+        let properties: JobPropertyItem[] = [];
+        let total = 0;
+        const pRes = propertiesRes as Record<string, unknown> | null;
+        const dRes = detailsRes as Record<string, unknown> | null;
+
+        if (pRes) {
+          if (Array.isArray(pRes)) {
+            properties = pRes as JobPropertyItem[];
+            total = pRes.length;
+          } else {
+            properties = (pRes.items as JobPropertyItem[]) || [];
+            total = typeof pRes.totalCount === 'number'
+              ? (pRes.totalCount as number)
+              : (properties.length || 0);
+          }
+        }
+
+        const summaryObj = dRes?.summary as Record<string, unknown> | undefined;
+        const summaryTotal = (summaryObj?.totalSelected as number) || (summaryObj?.TotalSelected as number);
+        if (summaryTotal && summaryTotal > total) {
+          total = summaryTotal;
+        }
+
         setDetailProperties(properties);
+        setDetailTotalCount(total);
       } catch (err) {
         logger.error('Failed to fetch job details client-side', { error: err as Error });
       } finally {
@@ -173,7 +207,7 @@ export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [selectedJobId, actions]);
+  }, [selectedJobId, detailPage, detailPageSize, actions]);
 
   const jobOptions = useMemo(() => {
     return [{ value: '', label: t('audit.filters.allJobs') }, ...allJobCodes.map((code) => ({ value: code, label: code }))];
@@ -198,6 +232,7 @@ export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps
 
   const handleViewJobDetails = (job: JobAuditItem) => {
     setSelectedJobId(job.jobId);
+    setDetailPage(1);
   };
 
   return (
@@ -304,6 +339,14 @@ export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps
         onClose={() => setSelectedJobId(null)}
         detailProperties={detailProperties}
         isDetailLoading={isDetailLoading}
+        totalCount={detailTotalCount}
+        detailPage={detailPage}
+        detailPageSize={detailPageSize}
+        onPageChange={(page) => setDetailPage(page)}
+        onPageSizeChange={(size) => {
+          setDetailPageSize(size);
+          setDetailPage(1);
+        }}
       />
     </div>
   );
