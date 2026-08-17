@@ -77,7 +77,7 @@ export interface ApiResponseWrapper<T> {
 export async function createPaymentOrder(payload: CreatePaymentOrderPayload): Promise<PaymentOrderResult> {
   const res = await apiClient.post<ApiResponseWrapper<PaymentOrderResult>>("/RTSPayment/create-order", payload);
   if (!res.data?.success || !res.data?.items) {
-    throw new Error(res.data?.message || "Failed to create payment order");
+    throw new Error(res.data?.message || res.error || "Failed to create payment order");
   }
   return res.data.items;
 }
@@ -85,7 +85,7 @@ export async function createPaymentOrder(payload: CreatePaymentOrderPayload): Pr
 export async function verifyPayment(payload: VerifyPaymentPayload): Promise<VerifyPaymentResult> {
   const res = await apiClient.post<ApiResponseWrapper<VerifyPaymentResult>>("/RTSPayment/verify-payment", payload);
   if (!res.data?.success || !res.data?.items) {
-    throw new Error(res.data?.message || "Payment verification failed");
+    throw new Error(res.data?.message || res.error || "Payment verification failed");
   }
   return res.data.items;
 }
