@@ -22,6 +22,7 @@ const LocationPicker = dynamic(() => import("@/components/common/LocationPicker"
 });
 
 const DEFAULT_INDIAN_MOBILE_PATTERN = "^[7-9][0-9]{9}$";
+const DEFAULT_GMAIL_EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@gmail\\.com$";
 
 function t(label: LangLabel | undefined, lang: "en" | "hi" | "mr") {
   if (!label) return "";
@@ -90,6 +91,7 @@ const getFieldRules = (field: FieldConfig) => {
   const key = (field as any).validationKey;
   const rule = key ? REGISTRY_RULES[key] : undefined;
   const isMobileField = field.type === "tel";
+  const isEmailField = field.type === "email";
   const configuredPattern = validation.pattern ?? field.pattern ?? rule?.pattern;
   const hasConfiguredPattern = typeof configuredPattern === "string" && configuredPattern.trim().length > 0;
   const normalize = mergeNormalizeRules(
@@ -128,7 +130,13 @@ const getFieldRules = (field: FieldConfig) => {
     inputMode,
     allow,
     normalize,
-    pattern: hasConfiguredPattern ? configuredPattern : isMobileField ? DEFAULT_INDIAN_MOBILE_PATTERN : undefined,
+    pattern: hasConfiguredPattern
+      ? configuredPattern
+      : isMobileField
+        ? DEFAULT_INDIAN_MOBILE_PATTERN
+        : isEmailField
+          ? DEFAULT_GMAIL_EMAIL_PATTERN
+          : undefined,
     maxLength,
     min,
     max,

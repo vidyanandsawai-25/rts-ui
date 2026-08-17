@@ -105,7 +105,7 @@ The mapper also accepts these aliases for deployment compatibility. New records 
 | API `fieldType` | Rendered control | Recommended keys | Notes |
 | --- | --- | --- | --- |
 | `text` | text input | `pattern`, lengths, `allow`, `normalize` | General text control. |
-| `email` | email input | `pattern`, `allow`, `inputMode: "email"` | Use an explicit email pattern for DB-driven validation. |
+| `email` | email input | Optional `pattern`, `allow`, `inputMode: "email"` | Defaults to a valid address ending in `@gmail.com` when no pattern is configured. |
 | `mobile`, `tel`, `phone` | telephone input | Optional overrides: `pattern`, lengths, `allow` | Default Indian mobile validation is applied if absent. |
 | `number`, `decimal`, `amount` | number input | `min`, `max`, `allow: "decimal"`, `inputMode: "decimal"` | Use `allow: "decimal"` for decimal values. |
 | `year` | number input | `min`, `max` | Numeric-only input behavior is applied automatically. |
@@ -194,6 +194,16 @@ Set `isRequired` to `true`.
 ```
 
 If no JSON rule is supplied for a telephone field, the frontend applies the same 7-9, 10-digit default.
+
+### Gmail email address
+
+For `fieldType: "email"`, the frontend defaults to this pattern when no explicit `pattern` is configured:
+
+```text
+^[A-Za-z0-9._%+-]+@gmail\\.com$
+```
+
+Provide `pattern` in `validationRules` when the service must allow a different domain or a broader email format. An explicit pattern always overrides the Gmail default.
 
 ### Numeric range
 
