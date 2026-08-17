@@ -24,7 +24,7 @@ export const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({ receip
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100 print:m-0 print:w-full print:max-w-none print:shadow-none">
-        
+
         {/* Header Ribbon */}
         <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 px-6 py-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -47,7 +47,7 @@ export const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({ receip
 
         {/* Printable Receipt Body */}
         <div id="printable-receipt" className="p-6 space-y-6">
-          
+
           {/* Organization & Success Header */}
           <div className="text-center pb-5 border-b border-slate-200">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 mb-2">

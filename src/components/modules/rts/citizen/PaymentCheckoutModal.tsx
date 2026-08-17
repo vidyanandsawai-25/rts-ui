@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  X, 
-  CreditCard, 
-  ShieldCheck, 
-  Lock, 
-  Loader2, 
+import {
+  X,
+  CreditCard,
+  ShieldCheck,
+  Lock,
+  Loader2,
   AlertCircle
 } from 'lucide-react';
-import { 
-  createPaymentOrderAction, 
+import {
+  createPaymentOrderAction,
   verifyPaymentAction,
-  getPaymentReceiptAction 
+  getPaymentReceiptAction
 } from '@/app/[locale]/service/payment/actions';
 import { PaymentReceiptModal } from './PaymentReceiptModal';
 import type { PaymentReceiptResult, PaymentOrderResult } from '@/lib/api/rts/rtspayment.service';
@@ -163,7 +163,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100">
-        
+
         {/* Header */}
         <div className="bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 px-6 py-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">

@@ -280,5 +280,3 @@ export async function getServiceDetailsModalInfoAction(serviceId: number): Promi
     return { documents: [], receivingOfficer: "-" };
   }
 }
-
-

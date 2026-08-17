@@ -69,7 +69,7 @@ export default function RtsApplicationNoteSheetModal({
   const departmentName = record.departmentName?.trim() || '-';
   const serviceFees = data?.verification?.serviceFees ?? null;
   const feesRequired = data?.verification?.feesRequired ?? false;
-  
+
   // Extract applicant name from dynamic fields if not in record
   const applicantField = data?.details?.applicationDetails?.find((f) => {
     const label = (f.fieldLabel || f.fieldCode || '').toLowerCase();
