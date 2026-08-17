@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CheckCircle2, ChevronDown, ChevronUp, Clock, UserRoundPen, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Badge, type BadgeVariant } from '@/components/common/Badge';
 
 export interface StageItem {
@@ -125,6 +126,7 @@ export function ApprovalStagesTimeline({
   currentStageIndex,
   isLoading = false,
 }: ApprovalStagesTimelineProps) {
+  const t = useTranslations('rts.applicationDashboard.processDrawer');
   const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({});
 
   if (isLoading) {
@@ -274,7 +276,7 @@ export function ApprovalStagesTimeline({
                   {recordedTime && (
                     <p className="flex items-center gap-1.5 text-slate-600">
                       <Clock className="size-3 text-slate-500" aria-hidden="true" />
-                      <span className="font-semibold text-slate-500">{OFFICER_DETAIL_LABELS.time}</span>
+                      <span className="font-semibold text-slate-500">{t('time')}</span>
                       <span className="font-bold text-slate-800">{recordedTime}</span>
                     </p>
                   )}
@@ -287,7 +289,7 @@ export function ApprovalStagesTimeline({
                   {officerName && (
                     <p className={`${recordedTime ? 'mt-1.5' : 'mt-1'} flex items-center gap-1.5 text-slate-600`}>
                       <UserRoundPen className="size-3 text-slate-500" aria-hidden="true" />
-                      <span className="font-semibold text-slate-500">{OFFICER_DETAIL_LABELS.officerName} </span>
+                      <span className="font-semibold text-slate-500">{t('officerName')} </span>
                       <span className="font-bold text-slate-800">{officerName}</span>
                     </p>
                   )}

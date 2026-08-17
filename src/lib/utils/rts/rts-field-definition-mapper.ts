@@ -133,6 +133,24 @@ function toRuleString(value: unknown) {
   return undefined;
 }
 
+function toLocalDateValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function resolveDateRuleToken(value?: string) {
+  if (!value) return undefined;
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized !== "today" && normalized !== "yesterday") return value;
+
+  const date = new Date();
+  if (normalized === "yesterday") date.setDate(date.getDate() - 1);
+  return toLocalDateValue(date);
+}
+
 function parseFormatsFromAccept(value?: string) {
   if (!value?.trim()) return undefined;
 
@@ -669,12 +687,14 @@ function mapApiItemToOldField(item: RtsFieldDefinitionApiItem) {
   const maxValue =
     parsedValidation?.max ??
     extractValidationNumber(parsedValidation ? null : item?.validationRules, ["max", "maxvalue"], item?.maxValue);
-  const minDate =
+  const minDateRule =
     parsedValidation?.minDate ??
     extractValidationDateString(parsedValidation ? null : item?.validationRules, ["mindate", "datemin", "date_min", "min_date"]);
-  const maxDate =
+  const maxDateRule =
     parsedValidation?.maxDate ??
     extractValidationDateString(parsedValidation ? null : item?.validationRules, ["maxdate", "datemax", "date_max", "max_date"]);
+  const minDate = resolveDateRuleToken(minDateRule);
+  const maxDate = resolveDateRuleToken(maxDateRule);
   const minTime =
     parsedValidation?.minTime ??
     extractValidationDateString(parsedValidation ? null : item?.validationRules, ["mintime", "timemin", "time_min", "min_time"]);
