@@ -168,6 +168,54 @@ describe("useConstructionForm", () => {
     expect(toast.success).toHaveBeenCalled();
   });
 
+  it("should allow Marathi/Hindi description on submission", async () => {
+    vi.mocked(createConstructionAction).mockResolvedValue({ success: true });
+    
+    const { result } = renderHook(() => useConstructionForm(defaultProps));
+
+    act(() => {
+      result.current.handleChange({
+        target: { name: "constructionCode", value: "C1" },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+      result.current.handleChange({
+        target: { name: "description", value: "आरसीसी बांधकाम प्रकार" },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+      result.current.handleChange({
+        target: { name: "searchSequence", value: "1" },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(createConstructionAction).toHaveBeenCalled();
+    expect(toast.success).toHaveBeenCalled();
+  });
+
+  it("should show error toast when description contains only numbers", async () => {
+    const { result } = renderHook(() => useConstructionForm(defaultProps));
+
+    act(() => {
+      result.current.handleChange({
+        target: { name: "constructionCode", value: "C1" },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+      result.current.handleChange({
+        target: { name: "description", value: "12345" },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+      result.current.handleChange({
+        target: { name: "searchSequence", value: "1" },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(toast.error).toHaveBeenCalledWith("form.validation.descriptionNumbersOnlyNotAllowed");
+    expect(createConstructionAction).not.toHaveBeenCalled();
+  });
+
   it("should handle cancel", () => {
     const { result } = renderHook(() => useConstructionForm(defaultProps));
 
