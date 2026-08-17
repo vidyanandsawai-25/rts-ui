@@ -25,6 +25,8 @@
       "uploadCertificateFailed": "दस्तावेज़ अपलोड करने में विफल",
       "uploadCertificateSuccess": "दस्तावेज़ सफलतापूर्वक अपलोड किया गया",
       "fileRequired": "कृपया अपलोड करने के लिए एक फ़ाइल चुनें",
+      "invalidDocumentType": "अमान्य फ़ाइल प्रकार। अनुमत प्रारूप: {allowedTypes}",
+      "maxFileSizeExceeded": "फ़ाइल का आकार 10 MB सीमा से अधिक है",
       "somethingWrong": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
       "noChanges": "अपडेट करने के लिए कोई परिवर्तन नहीं",
       "noRecordsProcessed": "कोई रिकॉर्ड सफलतापूर्वक प्रोसेस नहीं हुआ। कृपया डेटा जांचें और पुनः प्रयास करें।",

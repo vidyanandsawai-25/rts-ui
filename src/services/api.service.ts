@@ -46,6 +46,11 @@ class ApiClient {
     '/ApprovalFlowMaster',
     '/RTSDepartment',
     '/RTSService',
+    '/RTSPayment',
+    '/RTSCitizenSession',
+    '/RTSApplication',
+    '/RTSApplicationDocument',
+    '/RTSApplicationTracking',
   ];
 
   constructor() {
