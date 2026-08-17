@@ -57,6 +57,7 @@ export {
   POSITIVE_DECIMAL_INVALID_KEYS,
   isAllZeros,
   YEAR_REGEX,
+  HAS_LETTER_REGEX,
 } from './validation-rules';
 
 // Re-export from validation-helpers.ts

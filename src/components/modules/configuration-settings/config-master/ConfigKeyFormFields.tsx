@@ -17,11 +17,7 @@ interface ConfigKeyFormFieldsProps {
   onDataTypeChange: (value: string) => void;
 }
 
-const CONTROL_TYPES: Option[] = [
-  { value: 'textbox', label: 'Text Input' }, { value: 'number', label: 'Number Input' },
-  { value: 'dropdown', label: 'Dropdown Select' }, { value: 'calendar', label: 'Date Picker' },
-  { value: 'checkbox', label: 'Checkbox/Toggle' }
-];
+
 
 const DATA_TYPES: Option[] = [
   { value: 'string', label: 'String' }, { value: 'int', label: 'Integer' },
@@ -70,7 +66,7 @@ export function ConfigKeyFormFields({
           id="configCode"
           value={formData.configCode || ''}
           onChange={(e) => {
-            const sanitized = e.target.value.replace(/[^A-Za-z0-9_]/g, '').toUpperCase();
+            const sanitized = e.target.value.replace(/\s+/g, '_').replace(/[^A-Za-z0-9_]/g, '').toUpperCase();
             onFieldChange('configCode', sanitized);
           }}
           placeholder={t('modals.addKey.form.placeholders.code')}
@@ -191,18 +187,7 @@ export function ConfigKeyFormFields({
         )}
       </div>
 
-      {/* Control Type */}
-      <div className="space-y-2">
-        <Label htmlFor="controlType">{t('modals.addKey.form.controlType')}</Label>
-        <Select options={CONTROL_TYPES}
-          value={formData.controlType}
-          onChange={(_, value) => onFieldChange('controlType', value)}
-          placeholder={t('modals.addKey.form.placeholders.controlType')}
-          disabled={isPending}
-          error={errors.controlType}
-          className="cursor-pointer [&_button]:cursor-pointer"
-        />
-      </div>
+
 
       {/* Status Toggle - Only show in Edit mode */}
       {isEdit && (

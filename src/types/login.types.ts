@@ -120,7 +120,13 @@ export interface UserInfo {
   permissions: string[];
 }
 
-/** POST `/Auth/login` — response JSON when HTTP succeeds. */
+/**
+ * POST `/Auth/login` — response JSON when HTTP succeeds.
+ *
+ * When `requiresTwoFactor` is true, the account has authenticator-app 2FA enabled: `token` and
+ * `refreshToken` are guaranteed absent and no session may be established yet. The caller must
+ * continue with `challengeId` via `POST /Auth/two-factor/verify`.
+ */
 export interface AuthLoginApiBody {
   success: boolean;
   token?: string;
@@ -133,6 +139,118 @@ export interface AuthLoginApiBody {
   message?: string;
   expiresAt?: string;
   requiresPasswordChange?: boolean;
+  requiresTwoFactor?: boolean;
+  /**
+   * Which verify flow the pending challenge belongs to when `requiresTwoFactor` is true:
+   * `"totp"` (authenticator app / recovery code, via `/Auth/two-factor/verify`) or `"otp"`
+   * (emailed/texted one-time code, via `/Auth/login-otp/verify`).
+   */
+  twoFactorMethod?: 'totp' | 'otp';
+  /** Opaque, one-time-use challenge id. Only present when `requiresTwoFactor` is true. */
+  challengeId?: string;
+  /**
+   * ISO-8601 expiry of the pending challenge, in server-local time (no UTC offset — do not
+   * assume UTC). Only present when `requiresTwoFactor` is true.
+   */
+  challengeExpiresAt?: string;
+  /**
+   * True when an administrator has required this account to set up 2FA but the user hasn't
+   * enrolled yet. Unlike `requiresTwoFactor`, this does NOT block login — `token`/`refreshToken`
+   * are present as normal. It's a signal to route the user to authenticator setup afterwards.
+   */
+  requiresTwoFactorSetup?: boolean;
+  /**
+   * Number of further wrong-password attempts allowed before the account locks. Only present
+   * when this attempt's password was wrong and the account isn't locked yet (`success` is
+   * false, `message` is a generic invalid-credentials message).
+   */
+  remainingLoginAttempts?: number;
+}
+
+/** POST `/Auth/two-factor/verify` — request body. */
+export interface VerifyTwoFactorRequest {
+  challengeId: string;
+  code: string;
+  useRecoveryCode: boolean;
+}
+
+/** POST `/Auth/login-otp/verify` — request body. */
+export interface VerifyLoginOtpRequest {
+  challengeId: string;
+  code: string;
+}
+
+// ---------------------------------------------------------------------------
+// Forgot password (self-service, config-gated by SECURITY_AUTH "2FALOGINFORFPASS")
+// ---------------------------------------------------------------------------
+
+/** Delivery method for the forgot-password OTP, as returned by `/Auth/forgot-password/methods`. */
+export type ForgotPasswordMethod = 'Email' | 'Sms' | 'Authenticator';
+
+/** POST `/Auth/forgot-password/methods` — request body. */
+export interface ForgotPasswordAvailableMethodsRequest {
+  usernameOrEmail: string;
+}
+
+/**
+ * POST `/Auth/forgot-password/methods` — response JSON. An empty `methods` array collapses
+ * "feature disabled", "account not found", and "account has no usable channel" into one generic
+ * outcome — same enumeration-safe posture as the rest of the flow.
+ */
+export interface ForgotPasswordAvailableMethodsApiBody {
+  success: boolean;
+  message?: string;
+  methods: ForgotPasswordMethod[];
+  maskedEmail?: string;
+  maskedMobile?: string;
+}
+
+/** POST `/Auth/forgot-password` — request body. */
+export interface ForgotPasswordRequest {
+  usernameOrEmail: string;
+  method: ForgotPasswordMethod;
+}
+
+/**
+ * POST `/Auth/forgot-password` — response JSON. `message` is deliberately generic and does not
+ * reveal whether the account exists. `challengeId` is only present when an OTP was actually sent.
+ */
+export interface ForgotPasswordApiBody {
+  success: boolean;
+  message?: string;
+  challengeId?: string;
+  /** ISO-8601 expiry of the challenge, in server-local time (no UTC offset — do not assume UTC). */
+  challengeExpiresAt?: string;
+}
+
+/** POST `/Auth/forgot-password/verify-otp` — request body. */
+export interface VerifyForgotPasswordOtpRequest {
+  challengeId: string;
+  code: string;
+}
+
+/**
+ * POST `/Auth/forgot-password/verify-otp` — response JSON. `resetToken` is only present on
+ * success and authorizes exactly one call to `/Auth/forgot-password/reset`.
+ */
+export interface VerifyForgotPasswordOtpApiBody {
+  success: boolean;
+  message?: string;
+  resetToken?: string;
+  /** ISO-8601 expiry of the reset token, in server-local time (no UTC offset — do not assume UTC). */
+  resetTokenExpiresAt?: string;
+}
+
+/** POST `/Auth/forgot-password/reset` — request body. */
+export interface ResetPasswordRequest {
+  resetToken: string;
+  newPassword: string;
+}
+
+/** POST `/Auth/forgot-password/reset` — response JSON. */
+export interface ResetPasswordApiBody {
+  success: boolean;
+  message?: string;
 }
 
 /** GET `/UlbConfig` — response JSON when HTTP succeeds. */

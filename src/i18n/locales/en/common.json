@@ -187,6 +187,7 @@
     "dashboard": "Dashboard",
     "profile": "Profile",
     "settings": "Configuration Setting",
+    "security": "Security",
     "ConstructionTypeMaster": "Construction Type Master"
   },
   "footer": {

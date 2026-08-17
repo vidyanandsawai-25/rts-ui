@@ -1,8 +1,194 @@
 'use client';
 
-import { Building2, Mail, Phone } from 'lucide-react';
-import { Label, Input, ToggleSwitch, ValidationMessage } from '@/components/common';
+import { useEffect, useState } from 'react';
+import { Building2, Mail, Phone, ShieldCheck, ShieldAlert, ShieldOff } from 'lucide-react';
+import { toast } from 'sonner';
+import { Label, Input, ToggleSwitch, ValidationMessage, Button } from '@/components/common';
+import { useConfirm } from '@/components/common/ConfirmProvider';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { BasicInfoStepProps } from '@/types/user-management';
+import { TwoFactorSetupWizard } from '../TwoFactorSetupWizard';
+import {
+  requireUserTwoFactorAction,
+  unrequireUserTwoFactorAction,
+  resetUserTwoFactorAction,
+} from '@/app/[locale]/configuration-settings/user-management/actions.mutations';
+import { getCurrentUserIdAction } from '@/app/[locale]/configuration-settings/user-management/actions';
+
+function resolveActionError(
+  t: (key: string) => string,
+  message: string | undefined,
+  fallbackKey: string
+): string {
+  if (!message) return t(fallbackKey);
+  if (message.startsWith('messages.') || message.startsWith('errors.')) return t(message);
+  return getCleanErrorMessage(message, t(fallbackKey));
+}
+
+function TwoFactorAdminSection({
+  editingUser,
+  t,
+}: {
+  editingUser: NonNullable<BasicInfoStepProps['editingUser']>;
+  t: (key: string) => string;
+}) {
+  const { confirm } = useConfirm();
+  const userId = Number(editingUser.id);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(editingUser.twoFactorEnabled);
+  const [twoFactorRequired, setTwoFactorRequired] = useState(editingUser.twoFactorRequired);
+  const [isToggling, setIsToggling] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
+  const [isSelfTarget, setIsSelfTarget] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const res = await getCurrentUserIdAction();
+      if (active && res.success && res.data === userId) {
+        setIsSelfTarget(true);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
+  const handleRequireToggle = async (checked: boolean) => {
+    setIsToggling(true);
+    try {
+      const res = checked
+        ? await requireUserTwoFactorAction(userId)
+        : await unrequireUserTwoFactorAction(userId);
+      if (res.success) {
+        setTwoFactorRequired(checked);
+        toast.success(checked ? t('twoFactor.requireSuccess') : t('twoFactor.unrequireSuccess'));
+      } else {
+        toast.error(resolveActionError(t, res.message, 'twoFactor.requireError'));
+      }
+    } catch (error) {
+      toast.error(getCleanErrorMessage(error, t('twoFactor.requireError')));
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
+  const handleReset = () => {
+    confirm({
+      variant: 'warning',
+      title: t('twoFactor.resetConfirmTitle'),
+      description: t('twoFactor.resetConfirmDescription'),
+      onConfirm: async () => {
+        setIsResetting(true);
+        try {
+          const res = await resetUserTwoFactorAction(userId);
+          if (res.success) {
+            setTwoFactorEnabled(false);
+            toast.success(t('twoFactor.resetSuccess'));
+          } else {
+            toast.error(resolveActionError(t, res.message, 'twoFactor.resetError'));
+          }
+        } catch (error) {
+          toast.error(getCleanErrorMessage(error, t('twoFactor.resetError')));
+        } finally {
+          setIsResetting(false);
+        }
+      },
+    });
+  };
+
+  return (
+    <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-4">
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-semibold">{t('twoFactor.title')}</Label>
+        {twoFactorEnabled ? (
+          <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold uppercase">{t('twoFactor.enabled')}</span>
+          </div>
+        ) : twoFactorRequired ? (
+          <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-100">
+            <ShieldAlert className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold uppercase">{t('twoFactor.pendingSetup')}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">
+            <ShieldOff className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold uppercase">{t('twoFactor.off')}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+        <div className="space-y-0.5 pr-4">
+          <p className="text-sm font-medium text-slate-700">{t('twoFactor.requireLabel')}</p>
+          <p className="text-xs text-slate-500">{t('twoFactor.requireDescription')}</p>
+        </div>
+        <ToggleSwitch
+          checked={twoFactorRequired}
+          onChange={handleRequireToggle}
+          disabled={isToggling}
+          showPopup={false}
+        />
+      </div>
+
+      {!twoFactorEnabled && (
+        <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+          <div className="space-y-0.5 pr-4">
+            <p className="text-sm font-medium text-slate-700">{t('twoFactor.setUpNowLabel')}</p>
+            <p className="text-xs text-slate-500">
+              {isSelfTarget
+                ? t('twoFactor.setUpNowSelfDescription')
+                : t('twoFactor.setUpNowDescription')}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowSetupWizard(true)}
+            className="shrink-0"
+          >
+            {t('twoFactor.setUpNowButton')}
+          </Button>
+        </div>
+      )}
+
+      {showSetupWizard && (
+        <TwoFactorSetupWizard
+          userId={userId}
+          userName={editingUser.userName}
+          isSelfTarget={isSelfTarget}
+          onCancel={() => setShowSetupWizard(false)}
+          onEnabled={() => {
+            setTwoFactorEnabled(true);
+            setShowSetupWizard(false);
+            toast.success(t('twoFactorSetup.enabledSuccess'));
+          }}
+        />
+      )}
+
+      {twoFactorEnabled && (
+        <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+          <div className="space-y-0.5 pr-4">
+            <p className="text-sm font-medium text-slate-700">{t('twoFactor.resetLabel')}</p>
+            <p className="text-xs text-slate-500">{t('twoFactor.resetDescription')}</p>
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={handleReset}
+            disabled={isResetting}
+            className="text-rose-600 border-rose-200 hover:bg-rose-50 shrink-0"
+          >
+            {isResetting ? t('actions.saving') : t('twoFactor.resetButton')}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function BasicInfoStep({
   formData,
@@ -157,6 +343,12 @@ export function BasicInfoStep({
                     showPopup={false}
                   />
                 </div>
+              </div>
+            )}
+
+            {editingUser && (
+              <div className="col-span-2">
+                <TwoFactorAdminSection editingUser={editingUser} t={t} />
               </div>
             )}
           </div>

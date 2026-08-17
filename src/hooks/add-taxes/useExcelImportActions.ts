@@ -209,6 +209,9 @@ export function useExcelImportActions({
       const response = await actions.executeOperationAction(payload);
       if (response && response.items && response.items.jobId) {
         state.setIsReviewModalOpen(false);
+        state.setFile(null);
+        state.setRows([]);
+        state.setCalculatedStats(null);
         if (isScheduled) {
           toast.success(t('messages.jobScheduled', { jobId: response.items.jobId }));
           onStartExecution(response.items.jobId, response.items.summary.total, scheduledDateTime);
@@ -230,8 +233,11 @@ export function useExcelImportActions({
   const handlePreview = async (targetPage?: number, targetPageSize?: number) => {
     state.setIsPreviewLoading(true);
     try {
-      const p = targetPage ?? previewPage;
-      const size = targetPageSize ?? previewPageSize;
+      const p = typeof targetPage === 'number' && Number.isFinite(targetPage) ? targetPage : 1;
+      const size = typeof targetPageSize === 'number' && Number.isFinite(targetPageSize) ? targetPageSize : (state.previewPageSize || 5);
+
+      state.setPreviewPage(p);
+      state.setPreviewPageSize(size);
       const scopeData = mapExcelDataToPayload(state.rows, state.selectedScopeType, zoneOptions, state.fetchedWards);
       const payload = {
         pageNumber: p,

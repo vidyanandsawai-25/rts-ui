@@ -116,6 +116,8 @@ export default function AddTaxesConsole({
     actions: eligibilityActions,
     isInitialized,
     isFinanceYearActive,
+    refreshStats,
+    clearSelectionData,
   } = useAddTaxesState(initData, effectiveScopeOptions, actionsProp);
 
   const pathname = usePathname();
@@ -144,6 +146,7 @@ export default function AddTaxesConsole({
       for (const key of selectionParamsToClear) {
         params.delete(key);
       }
+      clearSelectionData(true);
     }
 
     if (nextTab !== 'excel') {
@@ -154,6 +157,9 @@ export default function AddTaxesConsole({
       params.delete('previewPage');
       params.delete('previewPageSize');
     }
+    // Ensure `scope` is removed when switching tabs
+    params.delete('scope');
+
     window.history.pushState(null, '', `${window.location.pathname}?${params.toString()}`);
   };
 
@@ -173,6 +179,7 @@ export default function AddTaxesConsole({
           } else {
             setActiveJob(null);
           }
+          refreshStats();
         } else {
           setActiveJob(null);
         }
@@ -184,6 +191,7 @@ export default function AddTaxesConsole({
     checkActiveJobs();
     const interval = setInterval(checkActiveJobs, 10000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actionsProp]);
 
   useEffect(() => {
@@ -224,6 +232,7 @@ export default function AddTaxesConsole({
       }, 0);
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFinanceYearActive, currentTab]);
 
   const [exportingStatus, setExportingStatus] = useState<string | null>(null);
@@ -330,11 +339,13 @@ export default function AddTaxesConsole({
             onExportExcel={() => handleExportProperties('Skipped')}
             isExporting={exportingStatus === 'Skipped'}
           />
-          <DashboardCard
-            label={t('stats.runningJobs')}
-            value={stats.runningJobs}
-            valueColor="text-green-600"
-          />
+          {isFinanceYearActive && (
+            <DashboardCard
+              label={t('stats.runningJobs')}
+              value={Math.max(stats.runningJobs || 0, activeJob && showProgress ? 1 : 0)}
+              valueColor="text-green-600"
+            />
+          )}
 
           {/* User Permission */}
           <div className="bg-green-50 rounded-lg border border-green-200 p-4">
@@ -353,7 +364,16 @@ export default function AddTaxesConsole({
           <ExecutionProgressPanel
             jobId={activeJob.jobId}
             totalRecords={activeJob.total}
-            onComplete={() => { }}
+            onComplete={() => {
+              toast.success(
+                t('messages.executionCompleted', { jobId: activeJob.jobId }),
+                { id: `job-complete-${activeJob.jobId}` }
+              );
+              refreshStats();
+              setTimeout(() => {
+                refreshStats();
+              }, 1000);
+            }}
           />
         )}
 
@@ -371,7 +391,7 @@ export default function AddTaxesConsole({
 
           {isFinanceYearActive && (
             <Tabs.TabPanel value="manual">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left Panel - Scope Selection */}
                 <ScopeSelectionPanel
                   scopes={scopes}
@@ -380,7 +400,14 @@ export default function AddTaxesConsole({
                   selectionData={selectionData}
                   handleSelectionChange={handleSelectionChange}
                   scopeOptions={effectiveScopeOptions}
-                  onStartExecution={(jobId, total, scheduledTime) => setActiveJob({ jobId, total, scheduledTime })}
+                  onStartExecution={(jobId, total, scheduledTime) => {
+                    setActiveJob({ jobId, total, scheduledTime });
+                    refreshStats();
+                    setTimeout(() => {
+                      refreshStats();
+                    }, 1000);
+                    clearSelectionData();
+                  }}
                   isInitialized={isInitialized}
                   financeYear={financeYearOptions.find(opt => String(opt.value) === String(financeYearId))?.label}
                   actions={actionsProp}
@@ -399,7 +426,14 @@ export default function AddTaxesConsole({
           {isFinanceYearActive && (
             <Tabs.TabPanel value="excel">
               <ExcelImportTab
-                onStartExecution={(jobId, total, scheduledTime) => setActiveJob({ jobId, total, scheduledTime })}
+                onStartExecution={(jobId, total, scheduledTime) => {
+                  setActiveJob({ jobId, total, scheduledTime });
+                  refreshStats();
+                  setTimeout(() => {
+                    refreshStats();
+                  }, 1000);
+                  clearSelectionData();
+                }}
                 financeYearId={financeYearId}
                 scopeOptions={scopeOptions}
                 financeYear={financeYearOptions.find(opt => String(opt.value) === String(financeYearId))?.label}

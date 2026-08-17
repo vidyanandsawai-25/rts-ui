@@ -12,6 +12,7 @@ import { ConstructionTypeFormModel, ConstructionType } from "@/types/constructio
 import {
   CODE_SANITIZE,
   DESCRIPTION_SANITIZE,
+  HAS_LETTER_REGEX,
   validateForm,
   commonValidations
 } from "@/lib/utils/validation";
@@ -195,13 +196,13 @@ export function useConstructionForm({
     if (Object.keys(v).length) return;
 
     // Numbers only not allowed for constructionCode
-    if (!/[A-Za-z]/.test(formData.constructionCode)) {
+    if (!HAS_LETTER_REGEX.test(formData.constructionCode)) {
       toast.error(t("form.validation.constructionCodeNumbersOnlyNotAllowed"));
       return;
     }
 
     // Numbers only not allowed for description
-    if (!/[A-Za-z]/.test(formData.description)) {
+    if (!HAS_LETTER_REGEX.test(formData.description)) {
       toast.error(t("form.validation.descriptionNumbersOnlyNotAllowed"));
       return;
     }

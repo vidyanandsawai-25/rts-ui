@@ -74,6 +74,12 @@ export const AUTH_COOKIES = {
   PENDING_AUTH: 'pending_auth',
   /** Unix expiry (seconds) for client session timeout UI — not a secret */
   SESSION_EXPIRES_AT: 'session_expires_at',
+  /** Client-readable flag: an admin requires this account to set up 2FA (not yet enrolled) */
+  REQUIRES_TWO_FACTOR_SETUP: 'requires_2fa_setup',
+  /** Pending forgot-password OTP challenge (step 1 -> step 2 of the reset flow) */
+  PENDING_FORGOT_PASSWORD: 'forgot_flow',
+  /** Short-lived reset token authorizing the actual password change (step 2 -> step 3) */
+  PENDING_PASSWORD_RESET: 'forgot_reset_otp',
 } as const;
 
 /** Seconds to show session-timeout message before redirecting to login. */
@@ -129,6 +135,9 @@ export const LOGOUT_CLEAR_COOKIES = [
   AUTH_COOKIES.USER_ID,
   AUTH_COOKIES.LOGIN_USERNAME,
   AUTH_COOKIES.SESSION_EXPIRES_AT,
+  AUTH_COOKIES.REQUIRES_TWO_FACTOR_SETUP,
+  AUTH_COOKIES.PENDING_FORGOT_PASSWORD,
+  AUTH_COOKIES.PENDING_PASSWORD_RESET,
   ULB_COOKIES.ULB_NAME,
   ULB_COOKIES.ULB_NAME_LOCAL,
   ULB_COOKIES.ULB_LOGO,
@@ -137,8 +146,6 @@ export const LOGOUT_CLEAR_COOKIES = [
   DEPARTMENT_COOKIES.DEPARTMENT_NAME,
   DEPARTMENT_COOKIES.MODULE_ID,
   DEPARTMENT_COOKIES.MODULE_NAME,
-  'forgot_flow',
-  'forgot_reset_otp',
 ] as const;
 
 // ---------------------------------------------------------------------------

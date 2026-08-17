@@ -21,6 +21,8 @@ export interface User {
   alternateMobileNo?: string;
   address?: string;
   isActive: boolean;
+  twoFactorEnabled: boolean;
+  twoFactorRequired: boolean;
   departmentNames: string[];
   departmentIds: string[];
   moduleNames: string[];

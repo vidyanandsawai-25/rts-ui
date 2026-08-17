@@ -10,6 +10,11 @@
   "rememberMe": "मला लक्षात ठेवा",
   "enterOtp": "कृपया आपल्या नोंदणीकृत मोबाइल नंबरवर पाठविलेला 6 अंकी टोकन प्रविष्ट करा.",
   "otpHint": "",
+  "signedInAs": "{username} म्हणून साइन इन केले",
+  "enterAuthenticatorCode": "आपल्या ऑथेंटिकेटर अॅपमधील 6 अंकी कोड प्रविष्ट करा.",
+  "enterRecoveryCode": "आपला एक रिकव्हरी कोड प्रविष्ट करा.",
+  "useRecoveryCodeInstead": "त्याऐवजी रिकव्हरी कोड वापरा",
+  "useAuthenticatorInstead": "त्याऐवजी ऑथेंटिकेटर अॅप वापरा",
   "verifyToken": "टोकन सत्यापित करा",
   "resendToken": "नवा टोकन पुन्हा पाठवा",
   "tokenResentFlash": "नवा सत्यापन कोड पाठविला गेला आहे.",
@@ -22,6 +27,10 @@
   "resetPassword": "पासवर्ड रीसेट करा",
   "passwordChanged": "पासवर्ड बदलले",
   "enterUsername": "आपले वापरकर्तानाव प्रविष्ट करा",
+  "chooseVerificationMethod": "तुम्हाला तुमचा पडताळणी कोड कसा प्राप्त करायचा आहे?",
+  "methodEmail": "ईमेल",
+  "methodSms": "एसएमएस",
+  "methodAuthenticator": "ऑथेंटिकेटर अ‍ॅप",
   "proceed": "पुढे जा",
   "newPassword": "नवा पासवर्ड",
   "confirmPassword": "पासवर्डची पुष्टी करा",
@@ -60,6 +69,7 @@
     "credentialsRequired": "वापरकर्तानाव आणि पासवर्ड आवश्यक आहे",
     "authFailed": "प्रमाणीकरण अयशस्वी",
     "invalidCredentials": "अवैध प्रमाणपत्रे",
+    "invalidCredentialsWithAttempts": "अवैध वापरकर्तानाव किंवा संकेतशब्द. तुमचे खाते लॉक होण्यापूर्वी {remaining, plural, one {# प्रयत्न शिल्लक आहे} other {# प्रयत्न शिल्लक आहेत}}.",
     "serviceUnavailable": "सेवा उपलब्ध नाही",
     "invalidResponseFormat": "प्रमाणीकरण सेवेकडून अवैध प्रतिस्वरूप।",
     "sessionEstablishmentFailed": "प्रमाणीकरण यशस्वी, पण सत्र स्थापित होऊ शकले नाही।",
@@ -90,6 +100,7 @@
     "LOGIN_FAILED": "लॉगिन अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
     "RESEND_FAILED": "सत्यापन कोड पुन्हा पाठविण्यात अयशस्वी.",
     "VERIFICATION_FAILED": "सत्यापन अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+    "twoFactorUpdated": "आपल्या दोन-टप्पी प्रमाणीकरण सेटिंग्ज अद्यतनित केल्या आहेत. कृपया पुन्हा साइन इन करा.",
     "retryInSeconds": "{seconds} सेकंदात पुन्हा प्रयत्न करा."
   }
 }

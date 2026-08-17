@@ -22,6 +22,12 @@ export const getAllConfigValuesFull = cache(async (
   try {
     const response = await apiClient.get<unknown>(`${ENDPOINT}?ConfigKeyId=${configKeyId}`);
     if (!response.success) {
+      if (response.statusCode === 404) {
+        return {
+          success: true,
+          data: [],
+        };
+      }
       return {
         success: false,
         data: [],

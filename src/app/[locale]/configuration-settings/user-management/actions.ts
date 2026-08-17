@@ -10,7 +10,7 @@ import {
   getDesignations,
   getDesignationById,
 } from '@/lib/api/configuration-settings/user-management/user-management.services';
-import { performAction } from './action.utils';
+import { getUserId, performAction } from './action.utils';
 
 export const getUsersAction = async (
   pageNumber?: number,
@@ -44,3 +44,11 @@ export const getDesignationsAction = async () => performAction(() => getDesignat
 
 export const getDesignationByIdAction = async (id: string) =>
   performAction(() => getDesignationById(id), false);
+
+/**
+ * The id of the currently logged-in admin — used by the 2FA setup wizard to detect when an
+ * admin is setting up 2FA on their OWN account rather than someone else's, since enabling 2FA
+ * always rotates the target's security stamp and self-targeting therefore invalidates the
+ * admin's own active session.
+ */
+export const getCurrentUserIdAction = async () => performAction(() => getUserId(), false);

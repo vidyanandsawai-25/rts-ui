@@ -231,13 +231,14 @@
     "desc2": "Use the scope cards to switch between All Properties, Zone, Ward, Building, Property and Range modes."
   },
   "messages": {
+    "skippedCount": "{count} properties were skipped / Locked.",
     "selectedTimeInPast": "Selected time is in the past. Please choose a future time.",
     "timeReset": "Time reset to {time} to ensure it is in the future.",
     "selectTimeRequired": "Please select a time.",
     "scheduledTimeInPast": "Scheduled time must be in the future.",
     "fillRequiredFields": "Please fill all the required fields before calculating.",
-    "jobScheduled": "Job scheduled successfully. Job Code: {jobId}",
     "executionStarted": "Execution started successfully. Job Code: {jobId}",
+    "executionCompleted": "Execution completed successfully. Job Code: {jobId}",
     "failedExecute": "Failed to execute operation.",
     "errorExecution": "Error occurred during execution.",
     "failedPreview": "Failed to load preview data.",
@@ -321,6 +322,7 @@
     },
     "detailColumns": {
       "propertyNo": "Property No",
+      "propertyNoUpicId": "Property No / UPIC ID",
       "owner": "Owner",
       "taxHeadAmount": "Tax Head / Amount",
       "status": "Status",

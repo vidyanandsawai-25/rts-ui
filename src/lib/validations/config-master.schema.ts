@@ -187,15 +187,15 @@ export const UpdateConfigValueSchema = CreateConfigValueSchema.extend({
 });
 
 export const DepartmentUpdateItemSchema = z.object({
-  departmentId: z.number().int().positive(),
-  moduleId: z.number().int().nullable().optional(),
-  isEnabled: z.boolean(),
-  configValueId: z.number().int().nonnegative(),
-  value: z.string(),
+  departmentId: z.coerce.number().int().positive(),
+  moduleId: z.coerce.number().int().nullable().optional(),
+  isEnabled: z.coerce.boolean(),
+  configValueId: z.coerce.number().int().nonnegative(),
+  value: z.preprocess((v) => (v === null || v === undefined ? '' : String(v)), z.string()),
 });
 
 export const SaveDepartmentConfigurationSchema = z.object({
-  configKeyId: z.number().int().positive(),
+  configKeyId: z.coerce.number().int().positive(),
   updates: z.array(DepartmentUpdateItemSchema),
 });
 

@@ -194,6 +194,8 @@ export interface ExecuteOperationResponse {
 export interface JobPropertyItem {
   zone: string;
   ward: string;
+  wardNo?: string;
+  upicid?: string;
   propertyNo: string;
   partitionNo: string;
   owner: string;
