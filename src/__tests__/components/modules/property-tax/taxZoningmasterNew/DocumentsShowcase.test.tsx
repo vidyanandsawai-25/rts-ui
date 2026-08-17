@@ -170,6 +170,43 @@ describe('DocumentsShowcase', () => {
     await waitFor(() => expect(fetchUlbDocumentsAction).toHaveBeenCalledTimes(2));
   });
 
+  it('shows error toast and blocks upload when file extension is invalid', async () => {
+    render(<DocumentsShowcase />);
+    await waitFor(() => expect(fetchUlbDocumentsAction).toHaveBeenCalledTimes(1));
+
+    const uploadButtons = screen.getAllByTestId('upload-button');
+    fireEvent.click(uploadButtons[0]); // LIST slot (accepts only PDF)
+
+    const modal = await screen.findByTestId('modal');
+    const fileInput = modal.querySelector('input[type="file"]') as HTMLInputElement;
+    const invalidFile = new File(['dummy'], 'invalid-file.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+
+    fireEvent.change(fileInput, { target: { files: [invalidFile] } });
+
+    expect(toast.error).toHaveBeenCalledWith('messages.invalidDocumentType');
+    expect(uploadUlbDocumentAction).not.toHaveBeenCalled();
+  });
+
+  it('shows error toast and blocks upload when file size exceeds 10MB', async () => {
+    render(<DocumentsShowcase />);
+    await waitFor(() => expect(fetchUlbDocumentsAction).toHaveBeenCalledTimes(1));
+
+    const uploadButtons = screen.getAllByTestId('upload-button');
+    fireEvent.click(uploadButtons[1]); // MAP slot
+
+    const modal = await screen.findByTestId('modal');
+    const fileInput = modal.querySelector('input[type="file"]') as HTMLInputElement;
+
+    // Create a mock large file exceeding 10MB
+    const largeFile = new File(['dummy'], 'large-map.pdf', { type: 'application/pdf' });
+    Object.defineProperty(largeFile, 'size', { value: 11 * 1024 * 1024 });
+
+    fireEvent.change(fileInput, { target: { files: [largeFile] } });
+
+    expect(toast.error).toHaveBeenCalledWith('messages.maxFileSizeExceeded');
+    expect(uploadUlbDocumentAction).not.toHaveBeenCalled();
+  });
+
   it('calls deleteUlbDocumentAction via confirm and shows success toast on success', async () => {
     (fetchUlbDocumentsAction as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       success: true,
