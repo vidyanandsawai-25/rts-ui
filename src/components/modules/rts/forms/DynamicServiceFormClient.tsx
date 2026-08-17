@@ -39,6 +39,9 @@ import {
   extractRtsFieldDefinitionItems,
 } from "@/lib/utils/rts/rts-field-definition-mapper";
 import type { CreateRtsApplicationResponse } from "@/types/rts/rts-application.types";
+import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
+import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
+import type { PaymentReceiptResult } from "@/lib/api/rts/rtspayment.service";
 
 const MySwal = withReactContent(Swal);
 
@@ -129,6 +132,8 @@ export default function DynamicServiceFormClient({
 
   const [formData, setFormData] = useState<{ [key: string]: any }>({});
   const [currentApplicationId, setCurrentApplicationId] = useState<number | null>(null);
+  const [showSuccessPaymentModal, setShowSuccessPaymentModal] = useState(false);
+  const [successReceiptModalData, setSuccessReceiptModalData] = useState<PaymentReceiptResult | null>(null);
 
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -1307,8 +1312,16 @@ export default function DynamicServiceFormClient({
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
               <Button
+                onClick={() => setShowSuccessPaymentModal(true)}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg py-3 font-bold cursor-pointer"
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                {language === "en" ? "Pay Government Fee Now" : language === "hi" ? "शासकीय शुल्क अभी भरें" : "आताच शासकीय शुल्क भरा"}
+              </Button>
+
+              <Button
                 onClick={() => copyToClipboard(successTrackingId)}
-                className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white shadow-lg py-3"
+                className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white shadow-lg py-3 cursor-pointer"
               >
                 <Download className="w-4 h-4 mr-2" />
                 {language === "en" ? "Copy Tracking ID" : "आईडी कॉपी करें"}
@@ -1320,7 +1333,7 @@ export default function DynamicServiceFormClient({
                 className={`${darkMode
                   ? "border-gray-600 hover:bg-gray-700 text-white"
                   : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                  } py-3`}
+                  } py-3 cursor-pointer`}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 {language === "en" ? "Back to Services" : language === "hi" ? "वापस जाएं" : "सेवांकडे परत जा"}
@@ -1340,6 +1353,26 @@ export default function DynamicServiceFormClient({
             </div>
           </div>
         </div>
+
+        {showSuccessPaymentModal && (
+          <PaymentCheckoutModal
+            applicationId={parseInt(successTrackingId.replace(/\D/g, ""), 10) || 1}
+            applicationNo={successTrackingId}
+            serviceName={serviceTitle}
+            fees={50}
+            onClose={() => setShowSuccessPaymentModal(false)}
+            onSuccess={(receipt) => {
+              setSuccessReceiptModalData(receipt);
+            }}
+          />
+        )}
+
+        {successReceiptModalData && (
+          <PaymentReceiptModal
+            receipt={successReceiptModalData}
+            onClose={() => setSuccessReceiptModalData(null)}
+          />
+        )}
       </div>
     );
   }

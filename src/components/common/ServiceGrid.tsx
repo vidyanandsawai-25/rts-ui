@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import * as Icons from "lucide-react";
@@ -14,7 +14,10 @@ import {
   openExternalServiceTab,
   prepareExternalServiceNavigation,
 } from "@/lib/utils/rts/service-navigation";
-import { createExternalServiceApplicationAction } from "@/app/[locale]/service/dashboard/actions";
+import {
+  createExternalServiceApplicationAction,
+  getServiceDetailsModalInfoAction,
+} from "@/app/[locale]/service/dashboard/actions";
 import type { Language } from "@/types/language.type";
 import { Modal } from "./Modal";
 import { Button } from "./ActionButton";
@@ -89,6 +92,41 @@ export default function ServiceGrid({
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
   const [isCreatingExternalApplication, startExternalTransition] = useTransition();
+
+  const [modalDetails, setModalDetails] = useState<{
+    loading: boolean;
+    documents: { en: string; mr?: string; hi?: string }[];
+    receivingOfficer: string;
+  }>({ loading: false, documents: [], receivingOfficer: '-' });
+
+  useEffect(() => {
+    if (!isDetailsOpen || !selectedServiceId) {
+      setModalDetails({ loading: false, documents: [], receivingOfficer: '-' });
+      return;
+    }
+
+    let active = true;
+    setModalDetails((prev) => ({ ...prev, loading: true }));
+
+    void (async () => {
+      try {
+        const info = await getServiceDetailsModalInfoAction(Number(selectedServiceId));
+        if (!active) return;
+        setModalDetails({
+          loading: false,
+          documents: info.documents,
+          receivingOfficer: info.receivingOfficer,
+        });
+      } catch {
+        if (!active) return;
+        setModalDetails({ loading: false, documents: [], receivingOfficer: '-' });
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [isDetailsOpen, selectedServiceId]);
 
   const getTransText = (mr: string, hi: string, en: string) => {
     if (activeLang === "mr") return mr;
@@ -262,11 +300,19 @@ export default function ServiceGrid({
           if (selectedService?.feesRequired === false) {
             transFees = t("free");
           } else if (selectedService?.fees !== undefined && selectedService?.fees !== null) {
-            transFees = `₹${selectedService.fees}`;
+            transFees = Number(selectedService.fees) > 0 ? `₹${selectedService.fees}` : t("free");
           }
 
-          const transOfficer = "-";
-          const transDocs: string[] = [];
+          const transOfficer =
+            modalDetails.receivingOfficer && modalDetails.receivingOfficer !== '-'
+              ? modalDetails.receivingOfficer
+              : (selectedService?.receivingOfficer as string) || (selectedService?.officerName as string) || '-';
+
+          const transDocs: string[] = modalDetails.documents.map((doc) => {
+            if (activeLang === 'mr') return doc.mr || doc.en;
+            if (activeLang === 'hi') return doc.hi || doc.en;
+            return doc.en;
+          });
 
           return (
             <Modal
@@ -329,7 +375,12 @@ export default function ServiceGrid({
                     <Scale className="w-4 h-4 text-blue-600" />
                     <span>{t("mandatoryDocsRequired")}</span>
                   </h5>
-                  {transDocs.length > 0 ? (
+                  {modalDetails.loading ? (
+                    <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold py-2">
+                      <LoaderCircle className="w-4 h-4 animate-spin text-blue-600" />
+                      <span>Loading required documents...</span>
+                    </div>
+                  ) : transDocs.length > 0 ? (
                     <ul className="space-y-2 text-xs sm:text-sm text-slate-600 font-semibold list-disc pl-5">
                       {transDocs.map((doc, dIdx) => (
                         <li key={dIdx} className="leading-relaxed">{doc}</li>

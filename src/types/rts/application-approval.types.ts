@@ -180,6 +180,10 @@ export interface RtsApplicationVerificationItem {
   canPay: boolean;
   canEdit: boolean;
   canViewNoteSheet: boolean;
+  serviceId?: number | null;
+  serviceName?: string | null;
+  serviceFees?: number | null;
+  feesRequired?: boolean;
 }
 
 export type RtsApplicationVerificationApiResponse =

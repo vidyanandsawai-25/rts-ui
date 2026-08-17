@@ -1,8 +1,5 @@
-// app/components/Login.tsx
-'use client';
-
-import { useState } from 'react';
-import { Smartphone, ArrowRight, Shield, KeyRound } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Smartphone, ArrowRight, Shield, KeyRound, Landmark } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/common/input-otp';
@@ -10,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/components/Providers/LanguageProvider';
+import { getUlbDataFromCookies } from '@/lib/utils/cookie';
 
 interface LoginProps {
   onLoginSuccess?: () => void;
@@ -24,6 +22,22 @@ export function LoginForm({ onLoginSuccess: _onLoginSuccess, onSwitchToAdmin }: 
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [ulbData, setUlbData] = useState<{ name: string; nameLocal: string; logoUrl: string }>({
+    name: 'Right to Service (RTS) Portal',
+    nameLocal: 'महाराष्ट्र लोकसेवा हक्क पोर्टल',
+    logoUrl: '',
+  });
+
+  useEffect(() => {
+    const cookies = getUlbDataFromCookies();
+    if (cookies.ulbName || cookies.ulbLogo) {
+      setUlbData({
+        name: (cookies.ulbName || 'Right to Service (RTS) Portal').trim(),
+        nameLocal: (cookies.ulbNameLocal || 'महाराष्ट्र लोकसेवा हक्क पोर्टल').trim(),
+        logoUrl: (cookies.ulbLogo || '').trim(),
+      });
+    }
+  }, []);
 
   const handleSendOtp = async () => {
     if (phoneNumber.length !== 10) {
@@ -94,23 +108,22 @@ export function LoginForm({ onLoginSuccess: _onLoginSuccess, onSwitchToAdmin }: 
                 className="relative"
               >
                 <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
-
-                  {/* Add your logo here */}
-                  <div className="w-full h-full bg-blue-100 flex items-center justify-center">
-                    <span className="text-sm text-blue-600 font-bold">
-                       <Image
-                        src="/akolaLogo.png"
-                        alt="Logo"
-                        width={50}
-                        height={50}
-                        className="w-full h-full object-contain p-0.5"
-                      />
-
-                    </span>
-                  </div>
+                  {ulbData.logoUrl ? (
+                    <Image
+                      src={ulbData.logoUrl}
+                      alt={ulbData.name}
+                      width={60}
+                      height={60}
+                      className="w-full h-full object-contain p-1"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-cyan-50 flex items-center justify-center text-cyan-600">
+                      <Landmark className="w-10 h-10" />
+                    </div>
+                  )}
                 </div>
-                <h1 className="text-2xl text-gray-800 mb-1">Akola Municipal Corporation</h1>
-                <p className="text-gray-700 text-sm">Right to Service (RTS) Act 2015</p>
+                <h1 className="text-2xl font-bold text-gray-800 mb-1">{ulbData.name}</h1>
+                <p className="text-gray-700 text-sm font-medium">{ulbData.nameLocal || 'Right to Service (RTS) Act 2015'}</p>
               </motion.div>
             </div>
 

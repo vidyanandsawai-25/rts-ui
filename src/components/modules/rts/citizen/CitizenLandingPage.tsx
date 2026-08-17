@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import * as Icons from 'lucide-react';
@@ -14,9 +14,13 @@ import {
   UserCheck,
   CreditCard,
   Clock,
+  LoaderCircle,
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
-import { createExternalServiceApplicationAction } from '@/app/[locale]/service/dashboard/actions';
+import {
+  createExternalServiceApplicationAction,
+  getServiceDetailsModalInfoAction,
+} from '@/app/[locale]/service/dashboard/actions';
 import {
   getInternalRtsServiceHref,
   navigateExternalServiceTab,
@@ -84,6 +88,42 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
   const [isCreatingExternalApplication, setIsCreatingExternalApplication] = useState(false);
+
+  const [modalDetails, setModalDetails] = useState<{
+    loading: boolean;
+    documents: { en: string; mr?: string; hi?: string }[];
+    receivingOfficer: string;
+  }>({ loading: false, documents: [], receivingOfficer: '-' });
+
+  useEffect(() => {
+    if (!isDetailsOpen || !selectedServiceId) {
+      setModalDetails({ loading: false, documents: [], receivingOfficer: '-' });
+      return;
+    }
+
+    let active = true;
+    setModalDetails((prev) => ({ ...prev, loading: true }));
+
+    void (async () => {
+      try {
+        const info = await getServiceDetailsModalInfoAction(Number(selectedServiceId));
+        if (!active) return;
+        setModalDetails({
+          loading: false,
+          documents: info.documents,
+          receivingOfficer: info.receivingOfficer,
+        });
+      } catch {
+        if (!active) return;
+        setModalDetails({ loading: false, documents: [], receivingOfficer: '-' });
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [isDetailsOpen, selectedServiceId]);
+
   const totalServiceCount = useMemo(
     () => departments.reduce((acc, d) => acc + d.services.length, 0),
     [departments]
@@ -644,11 +684,19 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           if (serviceItem?.feesRequired === false) {
             transFees = t('serviceDetails.free');
           } else if (serviceItem?.fees !== undefined && serviceItem?.fees !== null) {
-            transFees = `₹${serviceItem.fees}`;
+            transFees = Number(serviceItem.fees) > 0 ? `₹${serviceItem.fees}` : t('serviceDetails.free');
           }
 
-          const transOfficer = '-';
-          const transDocs: string[] = [];
+          const transOfficer =
+            modalDetails.receivingOfficer && modalDetails.receivingOfficer !== '-'
+              ? modalDetails.receivingOfficer
+              : '-';
+
+          const transDocs: string[] = modalDetails.documents.map((doc) => {
+            if (locale === 'mr') return doc.mr || doc.en;
+            if (locale === 'hi') return doc.hi || doc.en;
+            return doc.en;
+          });
 
           return (
             <Modal
@@ -709,7 +757,12 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                     <Scale className="w-4 h-4 text-blue-600" />
                     <span>{t('serviceDetails.mandatoryDocuments')}</span>
                   </h5>
-                  {transDocs.length > 0 ? (
+                  {modalDetails.loading ? (
+                    <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold py-2">
+                      <LoaderCircle className="w-4 h-4 animate-spin text-blue-600" />
+                      <span>Loading required documents...</span>
+                    </div>
+                  ) : transDocs.length > 0 ? (
                     <ul className="space-y-2 text-xs sm:text-sm text-slate-600 font-semibold list-disc pl-5">
                       {transDocs.map((doc, dIdx) => (
                         <li key={dIdx} className="leading-relaxed">

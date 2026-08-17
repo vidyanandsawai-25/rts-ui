@@ -117,7 +117,7 @@ export function Modal({
   const widthClass = MODAL_WIDTH[maxWidth];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-gray-950/40 backdrop-blur-[2px]"
