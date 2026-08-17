@@ -78,6 +78,15 @@ function toPositiveNumber(value: unknown): number | undefined {
 }
 
 /**
+ * Safely converts a value to a non-negative number or undefined
+ */
+function toNonNegativeNumber(value: unknown): number | undefined {
+  if (value == null) return undefined;
+  const num = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(num) && num >= 0 ? num : undefined;
+}
+
+/**
  * Normalizes and validates an auth login response.
  * Ensures all fields have the correct types and safe defaults.
  * 
@@ -105,6 +114,16 @@ export function normalizeAuthLoginResponse(data: Record<string, unknown>): AuthL
   const expiresAt = toOptionalString(data.expiresAt);
   const requiresPasswordChange = Boolean(data.requiresPasswordChange);
 
+  // Two-factor challenge fields (present only when requiresTwoFactor is true)
+  const requiresTwoFactor = Boolean(data.requiresTwoFactor);
+  const rawMethod = toOptionalString(data.twoFactorMethod)?.toLowerCase();
+  const twoFactorMethod: 'totp' | 'otp' | undefined =
+    rawMethod === 'otp' ? 'otp' : rawMethod === 'totp' ? 'totp' : undefined;
+  const challengeId = toOptionalString(data.challengeId);
+  const challengeExpiresAt = toOptionalString(data.challengeExpiresAt);
+  const requiresTwoFactorSetup = Boolean(data.requiresTwoFactorSetup);
+  const remainingLoginAttempts = toNonNegativeNumber(data.remainingLoginAttempts);
+
   return {
     success,
     token,
@@ -117,7 +136,21 @@ export function normalizeAuthLoginResponse(data: Record<string, unknown>): AuthL
     message,
     expiresAt,
     requiresPasswordChange,
+    requiresTwoFactor,
+    twoFactorMethod,
+    challengeId,
+    challengeExpiresAt,
+    requiresTwoFactorSetup,
+    remainingLoginAttempts,
   };
+}
+
+/**
+ * True when the response is a valid, still-actionable 2FA challenge: `requiresTwoFactor` is set
+ * and a non-empty `challengeId` was returned alongside it.
+ */
+export function hasPendingTwoFactorChallenge(auth: AuthLoginApiBody): boolean {
+  return Boolean(auth.requiresTwoFactor && auth.challengeId && auth.challengeId.length > 0);
 }
 
 /**

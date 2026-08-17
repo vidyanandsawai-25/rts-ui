@@ -37,6 +37,7 @@ const LOGIN_ERROR_QUERY_TO_I18N_SUFFIX: Record<string, string> = {
   RESEND_FAILED: 'RESEND_FAILED',
   RESET_FAILED: 'RESET_FAILED',
   INVALID_REQUEST: 'INVALID_REQUEST',
+  twoFactorUpdated: 'twoFactorUpdated',
 };
 
 function normalizeQueryCode(raw: string | undefined): string | undefined {

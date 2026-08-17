@@ -158,6 +158,7 @@ export function mapAuthErrorToCode(statusCode: number | undefined, message?: str
     403: 'ACCOUNT_LOCKED',
     404: 'USER_NOT_FOUND',
     408: 'REQUEST_TIMEOUT',
+    423: 'ACCOUNT_LOCKED',
     429: 'TOO_MANY_ATTEMPTS',
     500: 'SERVICE_UNAVAILABLE',
     502: 'SERVICE_UNAVAILABLE',

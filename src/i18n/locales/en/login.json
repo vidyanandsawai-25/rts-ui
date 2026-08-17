@@ -10,6 +10,11 @@
   "rememberMe": "Remember Me",
   "enterOtp": "Please enter the 6-digit token sent to your registered mobile number.",
   "otpHint": "",
+  "signedInAs": "Signed in as {username}",
+  "enterAuthenticatorCode": "Enter the 6-digit code from your authenticator app.",
+  "enterRecoveryCode": "Enter one of your one-time recovery codes.",
+  "useRecoveryCodeInstead": "Use a recovery code instead",
+  "useAuthenticatorInstead": "Use authenticator app instead",
   "verifyToken": "VERIFY TOKEN",
   "resendToken": "Resend New Token",
   "tokenResentFlash": "A new verification code has been sent.",
@@ -22,6 +27,10 @@
   "resetPassword": "Reset Password",
   "passwordChanged": "Password Changed",
   "enterUsername": "Enter your Username",
+  "chooseVerificationMethod": "How would you like to receive your verification code?",
+  "methodEmail": "Email",
+  "methodSms": "SMS",
+  "methodAuthenticator": "Authenticator App",
   "proceed": "PROCEED",
   "newPassword": "New Password",
   "confirmPassword": "Confirm Password",
@@ -60,6 +69,7 @@
     "credentialsRequired": "Username and Password are required",
     "authFailed": "Authentication Failed",
     "invalidCredentials": "Invalid credentials",
+    "invalidCredentialsWithAttempts": "Invalid username or password. {remaining, plural, one {# attempt} other {# attempts}} remaining before your account is locked.",
     "serviceUnavailable": "Service unavailable. Please try again later.",
     "invalidResponseFormat": "Invalid response format from authentication service",
     "sessionEstablishmentFailed": "Authentication succeeded but session could not be established",
@@ -100,6 +110,7 @@
     "TOO_MANY_ATTEMPTS": "Too many login attempts. Please try again later.",
     "REQUEST_TIMEOUT": "Request timed out. Please check your connection.",
     "INVALID_REQUEST": "Invalid request. Please try again.",
+    "twoFactorUpdated": "Your two-factor authentication settings were updated. Please sign in again.",
     "retryInSeconds": "Try again in {seconds} seconds."
   }
 }

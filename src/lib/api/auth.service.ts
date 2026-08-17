@@ -1,5 +1,19 @@
 import { getAppConfig } from '@/config/app.config';
-import type { AuthLoginApiBody, LogoutRequest, UlbConfigApiBody } from '@/types/login.types';
+import type {
+  AuthLoginApiBody,
+  LogoutRequest,
+  UlbConfigApiBody,
+  VerifyTwoFactorRequest,
+  VerifyLoginOtpRequest,
+  ForgotPasswordAvailableMethodsRequest,
+  ForgotPasswordAvailableMethodsApiBody,
+  ForgotPasswordRequest,
+  ForgotPasswordApiBody,
+  VerifyForgotPasswordOtpRequest,
+  VerifyForgotPasswordOtpApiBody,
+  ResetPasswordRequest,
+  ResetPasswordApiBody,
+} from '@/types/login.types';
 import { ApiResponse } from '@/types/common.types';
 
 // ---------------------------------------------------------------------------
@@ -103,6 +117,9 @@ async function authJsonRequest<T>(
         success: false,
         error: msg || 'An error occurred',
         statusCode: response.status,
+        // Error responses (e.g. 401 with a bare { message, remainingLoginAttempts } body) still
+        // carry fields beyond `message` — preserve the parsed body so callers can read them.
+        data: data as T,
       };
     }
 
@@ -187,6 +204,71 @@ export const authService = {
     password: string;
   }): Promise<ApiResponse<AuthLoginApiBody>> {
     return authJsonRequest<AuthLoginApiBody>('POST', '/Auth/login', credentials);
+  },
+
+  /**
+   * POST `/Auth/two-factor/verify` — body `{ challengeId, code, useRecoveryCode }`.
+   * Completes a login that returned `requiresTwoFactor`. `ApiResponse.data` has the same shape
+   * as `/Auth/login`'s response (token/refreshToken populated only on success).
+   */
+  async verifyTwoFactor(request: VerifyTwoFactorRequest): Promise<ApiResponse<AuthLoginApiBody>> {
+    return authJsonRequest<AuthLoginApiBody>('POST', '/Auth/two-factor/verify', request);
+  },
+
+  /**
+   * POST `/Auth/login-otp/verify` — body `{ challengeId, code }`.
+   * Completes a login that returned `requiresTwoFactor` with `twoFactorMethod: "otp"` (the
+   * config-driven email/SMS OTP layer, distinct from authenticator-app TOTP). Same response
+   * shape as `/Auth/login`.
+   */
+  async verifyLoginOtp(request: VerifyLoginOtpRequest): Promise<ApiResponse<AuthLoginApiBody>> {
+    return authJsonRequest<AuthLoginApiBody>('POST', '/Auth/login-otp/verify', request);
+  },
+
+  /**
+   * POST `/Auth/forgot-password/methods` — body `{ usernameOrEmail }`. Looks up which OTP
+   * delivery methods are actually usable for this account before the user commits to one. An
+   * empty `methods` array is the generic, enumeration-safe "nothing available" response.
+   */
+  async getForgotPasswordMethods(
+    request: ForgotPasswordAvailableMethodsRequest
+  ): Promise<ApiResponse<ForgotPasswordAvailableMethodsApiBody>> {
+    return authJsonRequest<ForgotPasswordAvailableMethodsApiBody>('POST', '/Auth/forgot-password/methods', request);
+  },
+
+  /**
+   * POST `/Auth/forgot-password` — body `{ usernameOrEmail }`. Starts the self-service
+   * forgot-password flow. Gated server-side by SECURITY_AUTH "2FALOGINFORFPASS" — returns
+   * `success:false` only when the feature itself is disabled, otherwise always `success:true`
+   * with a generic message (a missing `challengeId` means no OTP was actually sent, without
+   * revealing why, to avoid account enumeration).
+   */
+  async forgotPassword(
+    request: ForgotPasswordRequest
+  ): Promise<ApiResponse<ForgotPasswordApiBody>> {
+    return authJsonRequest<ForgotPasswordApiBody>('POST', '/Auth/forgot-password', request);
+  },
+
+  /**
+   * POST `/Auth/forgot-password/verify-otp` — body `{ challengeId, code }`. On success returns a
+   * short-lived `resetToken` authorizing exactly one call to `resetPassword`.
+   */
+  async verifyForgotPasswordOtp(
+    request: VerifyForgotPasswordOtpRequest
+  ): Promise<ApiResponse<VerifyForgotPasswordOtpApiBody>> {
+    return authJsonRequest<VerifyForgotPasswordOtpApiBody>(
+      'POST',
+      '/Auth/forgot-password/verify-otp',
+      request
+    );
+  },
+
+  /**
+   * POST `/Auth/forgot-password/reset` — body `{ resetToken, newPassword }`. Completes the
+   * forgot-password flow; the backend revokes all of the user's existing sessions on success.
+   */
+  async resetPassword(request: ResetPasswordRequest): Promise<ApiResponse<ResetPasswordApiBody>> {
+    return authJsonRequest<ResetPasswordApiBody>('POST', '/Auth/forgot-password/reset', request);
   },
 
   async logout(sessionId: string, token: string): Promise<ApiResponse<void>> {

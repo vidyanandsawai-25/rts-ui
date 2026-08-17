@@ -4,6 +4,12 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  requireUserTwoFactor,
+  unrequireUserTwoFactor,
+  resetUserTwoFactor,
+  beginUserTwoFactorSetup,
+  enableUserTwoFactor,
+  confirmUserTwoFactorEmail,
   createUserRole,
   updateUserRole,
   deleteUserRole,
@@ -68,6 +74,33 @@ export const updateUserAction = async (
 };
 
 export const deleteUserAction = async (id: string) => performAction(() => deleteUser(id), true);
+
+export const requireUserTwoFactorAction = async (id: number) =>
+  performAction(async () => {
+    const userId = await getUserId();
+    return requireUserTwoFactor(id, userId);
+  }, true);
+
+export const unrequireUserTwoFactorAction = async (id: number) =>
+  performAction(async () => {
+    const userId = await getUserId();
+    return unrequireUserTwoFactor(id, userId);
+  }, true);
+
+export const resetUserTwoFactorAction = async (id: number) =>
+  performAction(async () => {
+    const userId = await getUserId();
+    return resetUserTwoFactor(id, userId);
+  }, true);
+
+export const beginUserTwoFactorSetupAction = async (id: number) =>
+  performAction(() => beginUserTwoFactorSetup(id), false);
+
+export const enableUserTwoFactorAction = async (id: number, code: string) =>
+  performAction(() => enableUserTwoFactor(id, code), false);
+
+export const confirmUserTwoFactorEmailAction = async (id: number, code: string) =>
+  performAction(() => confirmUserTwoFactorEmail(id, code), false);
 
 export const createUserRoleAction = async (data: Partial<Role>) =>
   performAction(async () => {

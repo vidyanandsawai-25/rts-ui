@@ -1,7 +1,11 @@
 import { apiClient } from '@/services/api.service';
 import type { BackendUser, User } from '@/types/user-management';
+import type {
+  TwoFactorSetupResponse,
+  EnableTwoFactorResponse,
+  TwoFactorEmailVerificationPendingResponse,
+} from '@/types/two-factor.types';
 import { ApiError } from '@/lib/utils/api';
-import { mapBackendUserToUser } from './user-management.utils';
 
 function getSelectedDepartmentIds(user: Partial<User>): string[] {
   return Array.from(new Set((user.departmentIds || []).map((id) => String(id))));
@@ -83,12 +87,18 @@ export async function createUser(user: Partial<User>, userId?: number): Promise<
       }));
     }),
   };
-  const response = await apiClient.post<BackendUser>('/users', backendUser);
+  const response = await apiClient.post<BackendUser | { items: BackendUser }>('/users', backendUser);
   if (!response.success || !response.data) {
     const errorMsg = response.error || 'A record with the same details already exists.';
     throw new ApiError(response.statusCode ?? 500, errorMsg, errorMsg);
   }
-  return mapBackendUserToUser(response.data);
+  // The create endpoint wraps the created record in a { items: BackendUser } envelope (unlike
+  // GET /users/{id}, which returns the record directly) — unwrap defensively, then re-fetch by
+  // id so the returned User is normalized the exact same way as everywhere else.
+  const created =
+    'items' in response.data ? response.data.items : (response.data as BackendUser);
+  const { getUserById } = await import('./user.services');
+  return getUserById(String(created.id));
 }
 export async function updateUser(id: number, user: Partial<User>, userId?: number): Promise<User> {
   validateRoleDepartmentIntegrity(user);
@@ -202,4 +212,80 @@ export async function deleteUser(id: string): Promise<void> {
       'Failed to delete user'
     );
   }
+}
+
+// ── Two-factor admin actions ────────────────────────────────────────────
+// Mirrors the lock/unlock pattern in updateUser above: fire the security
+// endpoint, then re-fetch the full user so the caller gets a consistent User.
+
+export async function requireUserTwoFactor(id: number, updatedBy?: number): Promise<User> {
+  const response = await apiClient.put<void>(`/users/${id}/require-2fa`, {
+    updatedBy: updatedBy || 0,
+  });
+  if (!response.success) {
+    const errorMsg = response.error || 'Failed to require two-factor authentication';
+    throw new ApiError(response.statusCode ?? 500, errorMsg, errorMsg);
+  }
+  const { getUserById } = await import('./user.services');
+  return getUserById(String(id));
+}
+
+export async function unrequireUserTwoFactor(id: number, updatedBy?: number): Promise<User> {
+  const response = await apiClient.put<void>(`/users/${id}/unrequire-2fa`, {
+    updatedBy: updatedBy || 0,
+  });
+  if (!response.success) {
+    const errorMsg = response.error || 'Failed to remove two-factor authentication requirement';
+    throw new ApiError(response.statusCode ?? 500, errorMsg, errorMsg);
+  }
+  const { getUserById } = await import('./user.services');
+  return getUserById(String(id));
+}
+
+export async function resetUserTwoFactor(id: number, updatedBy?: number): Promise<User> {
+  const response = await apiClient.put<void>(`/users/${id}/reset-2fa`, {
+    updatedBy: updatedBy || 0,
+  });
+  if (!response.success) {
+    const errorMsg = response.error || 'Failed to reset two-factor authentication';
+    throw new ApiError(response.statusCode ?? 500, errorMsg, errorMsg);
+  }
+  const { getUserById } = await import('./user.services');
+  return getUserById(String(id));
+}
+
+// ── Admin-assisted 2FA enrollment ────────────────────────────────────────
+// Lets an admin walk a user through authenticator setup in person (right after creating
+// their account, or later from the edit drawer) by scanning the QR with that user's own
+// phone. Mirrors the self-service /security/two-factor/setup and /enable calls exactly,
+// just scoped by a target user id instead of the caller's own JWT.
+
+export async function beginUserTwoFactorSetup(id: number): Promise<TwoFactorSetupResponse> {
+  const response = await apiClient.post<TwoFactorSetupResponse>(`/users/${id}/2fa/setup`);
+  if (!response.success || !response.data) {
+    const errorMsg = response.error || 'Failed to start two-factor setup';
+    throw new ApiError(response.statusCode ?? 500, errorMsg, errorMsg);
+  }
+  return response.data;
+}
+
+// A valid TOTP code only proves the scanner can operate *some* authenticator app, not that it's
+// the target user's — so this does NOT enable 2FA yet. It unlocks a one-time code emailed to the
+// target's registered address; call confirmUserTwoFactorEmail with that code to actually enable.
+export async function enableUserTwoFactor(id: number, code: string): Promise<TwoFactorEmailVerificationPendingResponse> {
+  const response = await apiClient.post<TwoFactorEmailVerificationPendingResponse>(`/users/${id}/2fa/enable`, { code });
+  if (!response.success || !response.data) {
+    const errorMsg = response.error || 'Failed to enable two-factor authentication';
+    throw new ApiError(response.statusCode ?? 500, errorMsg, errorMsg);
+  }
+  return response.data;
+}
+
+export async function confirmUserTwoFactorEmail(id: number, code: string): Promise<EnableTwoFactorResponse> {
+  const response = await apiClient.post<EnableTwoFactorResponse>(`/users/${id}/2fa/confirm-email`, { code });
+  if (!response.success || !response.data) {
+    const errorMsg = response.error || 'Failed to confirm two-factor authentication';
+    throw new ApiError(response.statusCode ?? 500, errorMsg, errorMsg);
+  }
+  return response.data;
 }
