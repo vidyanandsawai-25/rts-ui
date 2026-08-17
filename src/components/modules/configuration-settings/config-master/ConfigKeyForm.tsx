@@ -11,6 +11,14 @@ import { useTranslations } from 'next-intl';
 import { ConfigKeyFormFields } from './ConfigKeyFormFields';
 import { CreateConfigKeySchema, UpdateConfigKeySchema } from '@/lib/validations/config-master.schema';
 
+const getControlTypeFromDataType = (dataType: string): string => {
+  const dt = dataType?.toLowerCase() || '';
+  if (dt === 'int' || dt === 'decimal') return 'number';
+  if (dt === 'boolean') return 'checkbox';
+  if (dt === 'datetime') return 'calendar';
+  return 'textbox';
+};
+
 const initialFormState: FormState = {
   categoryId: '',
   configCode: '',
@@ -43,18 +51,21 @@ export const ConfigKeyForm = forwardRef<ConfigKeyFormRef, Omit<AddConfigKeyModal
 
   const derivedFormState = useMemo(() => {
     if (!isEdit || !initialData) {
+      const dt = initialFormState.dataType || 'string';
       return {
         ...initialFormState,
         categoryId: categoryId?.toString() || '',
+        controlType: getControlTypeFromDataType(dt),
       };
     }
+    const dt = initialData.dataType || 'string';
     return {
       categoryId: initialData.categoryId?.toString() || categoryId?.toString() || '',
-      configCode: (initialData.configCode || '').toUpperCase(),
+      configCode: (initialData.configCode || '').replace(/\s+/g, '_').replace(/[^A-Za-z0-9_]/g, '').toUpperCase(),
       configName: initialData.name || '',
       description: initialData.description || '',
-      dataType: initialData.dataType || 'string',
-      controlType: initialData.controlType || 'textbox',
+      dataType: dt,
+      controlType: getControlTypeFromDataType(dt),
       defaultValue: initialData.defaultValue?.toString() || '',
       isActive: initialData.isEnabled ?? true,
     };
@@ -71,7 +82,7 @@ export const ConfigKeyForm = forwardRef<ConfigKeyFormRef, Omit<AddConfigKeyModal
       ...prev,
       dataType: value,
       defaultValue: '',
-      controlType: value === 'int' ? 'number' : value === 'boolean' ? 'checkbox' : 'textbox',
+      controlType: getControlTypeFromDataType(value),
     }));
   };
 

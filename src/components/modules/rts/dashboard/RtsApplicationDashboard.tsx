@@ -669,7 +669,10 @@ export default function RtsApplicationDashboard({
             ? {
                 applicationId: drawer.record.applicationId,
                 appId: drawer.record.applicationNo,
+                citizenName: drawer.record.applicantName,
+                submittedDate: formatDate(drawer.record.applicationDate),
                 serviceName: drawer.record.serviceName,
+                departmentName: drawer.record.departmentName,
                 applicationStatus: drawer.record.currentStatus || 'Pending',
               }
             : null
@@ -691,6 +694,7 @@ export default function RtsApplicationDashboard({
                 submittedDate: formatDate(drawer.record.applicationDate),
                 slaLimit: drawer.record.expectedSlaDays,
                 serviceName: drawer.record.serviceName,
+                departmentName: drawer.record.departmentName,
                 applicationStatus: drawer.record.currentStatus || 'Pending',
               }
             : null

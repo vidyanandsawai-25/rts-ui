@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, Phone, CheckCircle2, XCircle, Edit2, Trash2, Loader2 } from 'lucide-react';
+import { Mail, Phone, CheckCircle2, XCircle, Edit2, Trash2, Loader2, ShieldCheck, ShieldAlert, ShieldOff } from 'lucide-react';
 import { MasterTable, Badge, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { User, UserTableProps } from '@/types/user-management';
@@ -155,6 +155,27 @@ export function UserTable({
           )}
         </div>
       ),
+    },
+    {
+      label: t('table.twoFactor'),
+      key: 'twoFactorEnabled' as const,
+      render: (_: unknown, row: User) =>
+        row.twoFactorEnabled ? (
+          <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100 w-fit">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold uppercase">{t('twoFactor.enabled')}</span>
+          </div>
+        ) : row.twoFactorRequired ? (
+          <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-100 w-fit">
+            <ShieldAlert className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold uppercase">{t('twoFactor.pendingSetup')}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 bg-slate-50 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200 w-fit">
+            <ShieldOff className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold uppercase">{t('twoFactor.off')}</span>
+          </div>
+        ),
     },
     {
       label: t('actions.title'),

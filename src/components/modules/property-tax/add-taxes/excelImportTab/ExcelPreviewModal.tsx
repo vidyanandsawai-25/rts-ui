@@ -14,8 +14,9 @@ interface ExcelPreviewModalProps {
   previewData: OperationPreviewResponse | null;
   previewPage: number;
   previewPageSize: number;
-  setPreviewPage: (page: number) => void;
-  setPreviewPageSize: (size: number) => void;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  isLoading?: boolean;
 }
 
 export function ExcelPreviewModal({
@@ -25,8 +26,9 @@ export function ExcelPreviewModal({
   previewData,
   previewPage,
   previewPageSize,
-  setPreviewPage,
-  setPreviewPageSize
+  onPageChange,
+  onPageSizeChange,
+  isLoading
 }: ExcelPreviewModalProps) {
   const previewColumns = [
     { key: 'zone', label: 'Zone', width: '15%' },
@@ -106,8 +108,9 @@ export function ExcelPreviewModal({
               pageNumber={previewPage}
               pageSize={previewPageSize}
               totalPages={Math.ceil(previewData.totalSelected / previewPageSize)}
-              onPageChange={setPreviewPage}
-              onPageSizeChange={setPreviewPageSize}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              loading={isLoading}
               paginationConfig={{ enabled: true, showPageSizeSelector: true }}
               height="sm"
             />

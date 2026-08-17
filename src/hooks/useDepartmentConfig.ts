@@ -10,7 +10,7 @@ export function useDepartmentConfig(
   initialData: DepartmentApiResponse[] | null,
   configKeyId: number,
   onSuccess: () => void,
-  _defaultValue?: string | number | boolean
+  defaultValue?: string | number | boolean
 ) {
   const t = useTranslations('configMaster');
   const { success: toastSuccess, error: toastError } = useToast();
@@ -18,6 +18,8 @@ export function useDepartmentConfig(
   // Initialize state from server data once - component will remount on navigation with new initialData
   const [departments, setDepartments] = useState<DepartmentApiResponse[]>(initialData || []);
   const [expandedDepts, setExpandedDepts] = useState<number[]>([]);
+
+  const defaultValStr = defaultValue !== undefined && defaultValue !== null ? String(defaultValue) : '';
 
   // Store initial state for comparison (normalize null to empty array)
   const initialState = useMemo(() => JSON.stringify(initialData ?? []), [initialData]);
@@ -49,12 +51,17 @@ export function useDepartmentConfig(
         d.id === deptId
           ? {
               ...d,
-              submodules: d.submodules.map((s) =>
-                s.id === subId ? { 
-                  ...s, 
-                  isEnabled: !s.isEnabled,
-                } : s
-              ),
+              submodules: d.submodules.map((s) => {
+                if (s.id !== subId) return s;
+                const nextEnabled = !s.isEnabled;
+                return {
+                  ...s,
+                  isEnabled: nextEnabled,
+                  value: nextEnabled
+                    ? (s.value ? s.value : defaultValStr)
+                    : (s.configValueId > 0 ? s.value : ''),
+                };
+              }),
             }
           : d
       )
@@ -70,6 +77,9 @@ export function useDepartmentConfig(
               submodules: d.submodules.map((s) => ({ 
                 ...s, 
                 isEnabled: enabled,
+                value: enabled
+                  ? (s.value ? s.value : defaultValStr)
+                  : (s.configValueId > 0 ? s.value : ''),
               })),
             }
           : d
@@ -124,18 +134,23 @@ export function useDepartmentConfig(
           
           if (!hasSubmodules) {
             const initialDept = initialMap.get(`${dept.id}_0`);
-            const hasDeptChanged = !initialDept || 
-                                  initialDept.isEnabled !== dept.isEnabled || 
-                                  initialDept.value !== (dept.value || '');
-            
-            if (hasDeptChanged) {
-              updates.push({
-                departmentId: dept.id,
-                moduleId: 0,
-                isEnabled: dept.isEnabled,
-                value: dept.value || '',
-                configValueId: dept.configValueId,
-              });
+            // If disabled and no existing configValueId, don't save
+            if (!dept.isEnabled && (!dept.configValueId || dept.configValueId === 0)) {
+              // Skip saving untoggled department with no existing record
+            } else {
+              const hasDeptChanged = !initialDept || 
+                                    initialDept.isEnabled !== dept.isEnabled || 
+                                    initialDept.value !== (dept.value || '');
+              
+              if (hasDeptChanged) {
+                updates.push({
+                  departmentId: dept.id,
+                  moduleId: 0,
+                  isEnabled: dept.isEnabled,
+                  value: dept.isEnabled ? (dept.value || '') : '',
+                  configValueId: dept.configValueId,
+                });
+              }
             }
           } else if (dept.configValueId > 0) {
             // Clean up/deactivate existing department-level record since the department has submodules
@@ -151,6 +166,12 @@ export function useDepartmentConfig(
           dept.submodules.forEach((sub) => {
             const initialSub = initialMap.get(`${dept.id}_${sub.id}`);
             const isSubEnabled = dept.isEnabled ? sub.isEnabled : false;
+            
+            // If submodule is disabled and has no existing database record, don't save it!
+            if (!isSubEnabled && (!sub.configValueId || sub.configValueId === 0)) {
+              return;
+            }
+
             const hasSubChanged = !initialSub || 
                                   initialSub.isEnabled !== isSubEnabled || 
                                   initialSub.value !== (sub.value || '');
@@ -160,7 +181,7 @@ export function useDepartmentConfig(
                 departmentId: dept.id,
                 moduleId: sub.id,
                 isEnabled: isSubEnabled,
-                value: sub.value || '',
+                value: isSubEnabled ? (sub.value || '') : '',
                 configValueId: sub.configValueId,
               });
             }

@@ -32,6 +32,7 @@ import {
   type ButtonVariant,
 } from '@/components/common';
 import { ApprovalStagesTimeline } from '@/components/modules/rts';
+import RtsApplicationNoteSheetModal from '@/components/modules/rts/dashboard/RtsApplicationNoteSheetModal';
 import {
   rejectApprovalApplicationAction,
   revertApprovalApplicationAction,
@@ -55,6 +56,7 @@ export interface RtsApplicationProcessDrawerRecord {
   submittedDate: string;
   slaLimit: number;
   serviceName: string;
+  departmentName?: string;
   applicationStatus: string;
 }
 
@@ -166,6 +168,7 @@ export default function RtsApplicationProcessDrawer({
   const [isEditing, setIsEditing] = useState(false);
   const [initialFieldValues, setInitialFieldValues] = useState<Record<string, string>>(() => getInitialFieldValues(data));
   const [editedFieldValues, setEditedFieldValues] = useState<Record<string, string>>(() => getInitialFieldValues(data));
+  const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
   const [isSubmittingDecision, startDecisionTransition] = useTransition();
   const [documentPreviewUrl, setDocumentPreviewUrl] = useState<string | null>(null);
   const [documentPreviewType, setDocumentPreviewType] = useState<'image' | 'file' | null>(null);
@@ -401,7 +404,8 @@ export default function RtsApplicationProcessDrawer({
   if (!record) return null;
 
   return (
-    <Drawer
+    <>
+      <Drawer
       open={open}
       onClose={closeDrawer}
       width="xl"
@@ -424,6 +428,10 @@ export default function RtsApplicationProcessDrawer({
                   disabled={isSubmittingDecision || !hasOfficerAccess}
                   title={!hasOfficerAccess ? t('officerAccessDenied') : undefined}
                   onClick={() => {
+                    if (action.key === 'canViewNoteSheet') {
+                      setIsNoteSheetOpen(true);
+                      return;
+                    }
                     if (
                       action.key === 'canVerifyDocument' ||
                       action.key === 'canApprove' ||
@@ -730,5 +738,13 @@ export default function RtsApplicationProcessDrawer({
       </div>
 
     </Drawer>
+
+      <RtsApplicationNoteSheetModal
+        isOpen={isNoteSheetOpen}
+        onClose={() => setIsNoteSheetOpen(false)}
+        record={record}
+        data={data}
+      />
+    </>
   );
 }

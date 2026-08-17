@@ -84,6 +84,8 @@ export function mapBackendUserToUser(bu: BackendUser): User {
     alternateMobileNo: bu.alternateMobileNo || '',
     address: bu.address || '',
     isActive: isUserActive,
+    twoFactorEnabled: bu.twoFactorEnabled === true,
+    twoFactorRequired: bu.twoFactorRequired === true,
     status: isUserActive ? 'Active' : 'Inactive',
     departmentNames: activeDepts.map((d) => d.departmentName || String(d.departmentId)) || [],
     departmentIds: activeDepts.map((d) => String(d.departmentId)) || [],

@@ -17,6 +17,38 @@ import {
   getSecondsUntilIsoExpiry,
   getSecondsUntilJwtExpiry,
 } from '@/lib/utils/jwt-expiry';
+
+/** Fallback pending-challenge cookie lifetime (seconds) if the API omits `challengeExpiresAt`. */
+const DEFAULT_PENDING_TWO_FACTOR_MAX_AGE_SECONDS = 5 * 60;
+
+/** Payload stashed server-side between the password step and the 2FA verify step. */
+export interface PendingTwoFactorAuth {
+  challengeId: string;
+  /** Username, for display only ("Signed in as ...") — never used for authorization. */
+  username: string;
+  /** Which verify endpoint/UI applies: authenticator-app TOTP or emailed/texted OTP. */
+  method: 'totp' | 'otp';
+}
+
+/** Fallback pending-challenge cookie lifetime (seconds) if the API omits `challengeExpiresAt`. */
+const DEFAULT_PENDING_FORGOT_PASSWORD_MAX_AGE_SECONDS = 5 * 60;
+
+/** Fallback reset-token cookie lifetime (seconds) if the API omits `resetTokenExpiresAt`. */
+const DEFAULT_PENDING_PASSWORD_RESET_MAX_AGE_SECONDS = 10 * 60;
+
+/** Payload stashed server-side between the forgot-password OTP request and verify steps. */
+export interface PendingForgotPasswordChallenge {
+  challengeId: string;
+  /** Whatever the user typed in (username or email), for display only. */
+  usernameOrEmail: string;
+  /** Which delivery method this challenge used — drives the verify screen's instruction copy. */
+  method: 'Email' | 'Sms' | 'Authenticator';
+}
+
+/** Payload stashed server-side between OTP verification and the actual password reset. */
+export interface PendingPasswordReset {
+  resetToken: string;
+}
 import { getUserIdFromCookies, type CookieStoreLike } from './cookie';
 
 export { getUserIdFromCookies };
@@ -129,6 +161,12 @@ export async function persistAuthSessionCookies(
   }
   cookieStore.set(AUTH_COOKIES.SESSION_EXPIRES_AT, String(expiresAtUnix), client);
 
+  if (auth.requiresTwoFactorSetup) {
+    cookieStore.set(AUTH_COOKIES.REQUIRES_TWO_FACTOR_SETUP, 'true', client);
+  } else {
+    cookieStore.delete(AUTH_COOKIES.REQUIRES_TWO_FACTOR_SETUP);
+  }
+
   const uid = auth.userId;
   if (typeof uid === 'number' && Number.isFinite(uid) && uid > 0) {
     cookieStore.set(AUTH_COOKIES.USER_ID, String(uid), secure);
@@ -136,6 +174,160 @@ export async function persistAuthSessionCookies(
 
   cookieStore.delete(AUTH_COOKIES.PENDING_AUTH);
   return cookieMaxAge;
+}
+
+/**
+ * Stashes the pending MFA challenge (httpOnly, short-lived) after a password check that
+ * returned `requiresTwoFactor`, so the verify-2FA step can complete the login without the
+ * challenge id ever touching client JS.
+ */
+export async function persistPendingTwoFactorCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>,
+  challengeId: string,
+  username: string,
+  challengeExpiresAt?: string | null,
+  method: 'totp' | 'otp' = 'totp'
+): Promise<void> {
+  const maxAgeSeconds =
+    (challengeExpiresAt ? getSecondsUntilIsoExpiry(challengeExpiresAt) : null) ??
+    DEFAULT_PENDING_TWO_FACTOR_MAX_AGE_SECONDS;
+
+  const payload: PendingTwoFactorAuth = { challengeId, username, method };
+  cookieStore.set(
+    AUTH_COOKIES.PENDING_AUTH,
+    JSON.stringify(payload),
+    buildSecureCookieOptions(maxAgeSeconds)
+  );
+}
+
+/**
+ * Reads back the pending MFA challenge stashed by {@link persistPendingTwoFactorCookie}.
+ * Returns null if absent, cleared, or malformed (e.g. the challenge has since expired and the
+ * cookie was evicted by the browser).
+ */
+export async function readPendingTwoFactorCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>
+): Promise<PendingTwoFactorAuth | null> {
+  const raw = cookieStore.get(AUTH_COOKIES.PENDING_AUTH)?.value;
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<PendingTwoFactorAuth>;
+    if (typeof parsed.challengeId === 'string' && parsed.challengeId.length > 0) {
+      return {
+        challengeId: parsed.challengeId,
+        username: parsed.username ?? '',
+        method: parsed.method === 'otp' ? 'otp' : 'totp',
+      };
+    }
+  } catch {
+    // Malformed cookie — treat as absent.
+  }
+  return null;
+}
+
+export async function clearPendingTwoFactorCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>
+): Promise<void> {
+  cookieStore.delete(AUTH_COOKIES.PENDING_AUTH);
+}
+
+/**
+ * Stashes the pending forgot-password OTP challenge (httpOnly, short-lived) after
+ * `/Auth/forgot-password` returns a `challengeId`, so the verify-otp step can complete without
+ * the challenge id ever touching client JS.
+ */
+export async function persistPendingForgotPasswordCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>,
+  challengeId: string,
+  usernameOrEmail: string,
+  method: 'Email' | 'Sms' | 'Authenticator',
+  challengeExpiresAt?: string | null
+): Promise<void> {
+  const maxAgeSeconds =
+    (challengeExpiresAt ? getSecondsUntilIsoExpiry(challengeExpiresAt) : null) ??
+    DEFAULT_PENDING_FORGOT_PASSWORD_MAX_AGE_SECONDS;
+
+  const payload: PendingForgotPasswordChallenge = { challengeId, usernameOrEmail, method };
+  cookieStore.set(
+    AUTH_COOKIES.PENDING_FORGOT_PASSWORD,
+    JSON.stringify(payload),
+    buildSecureCookieOptions(maxAgeSeconds)
+  );
+}
+
+/** Reads back the pending forgot-password challenge stashed by {@link persistPendingForgotPasswordCookie}. */
+export async function readPendingForgotPasswordCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>
+): Promise<PendingForgotPasswordChallenge | null> {
+  const raw = cookieStore.get(AUTH_COOKIES.PENDING_FORGOT_PASSWORD)?.value;
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<PendingForgotPasswordChallenge>;
+    if (typeof parsed.challengeId === 'string' && parsed.challengeId.length > 0) {
+      return {
+        challengeId: parsed.challengeId,
+        usernameOrEmail: parsed.usernameOrEmail ?? '',
+        method: parsed.method === 'Sms' || parsed.method === 'Authenticator' ? parsed.method : 'Email',
+      };
+    }
+  } catch {
+    // Malformed cookie — treat as absent.
+  }
+  return null;
+}
+
+export async function clearPendingForgotPasswordCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>
+): Promise<void> {
+  cookieStore.delete(AUTH_COOKIES.PENDING_FORGOT_PASSWORD);
+}
+
+/**
+ * Stashes the short-lived password-reset bearer token (httpOnly) obtained after a successful
+ * forgot-password OTP verification, so the final reset step can complete without the token ever
+ * touching client JS.
+ */
+export async function persistPendingPasswordResetCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>,
+  resetToken: string,
+  resetTokenExpiresAt?: string | null
+): Promise<void> {
+  const maxAgeSeconds =
+    (resetTokenExpiresAt ? getSecondsUntilIsoExpiry(resetTokenExpiresAt) : null) ??
+    DEFAULT_PENDING_PASSWORD_RESET_MAX_AGE_SECONDS;
+
+  const payload: PendingPasswordReset = { resetToken };
+  cookieStore.set(
+    AUTH_COOKIES.PENDING_PASSWORD_RESET,
+    JSON.stringify(payload),
+    buildSecureCookieOptions(maxAgeSeconds)
+  );
+}
+
+/** Reads back the pending reset token stashed by {@link persistPendingPasswordResetCookie}. */
+export async function readPendingPasswordResetCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>
+): Promise<PendingPasswordReset | null> {
+  const raw = cookieStore.get(AUTH_COOKIES.PENDING_PASSWORD_RESET)?.value;
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<PendingPasswordReset>;
+    if (typeof parsed.resetToken === 'string' && parsed.resetToken.length > 0) {
+      return { resetToken: parsed.resetToken };
+    }
+  } catch {
+    // Malformed cookie — treat as absent.
+  }
+  return null;
+}
+
+export async function clearPendingPasswordResetCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>
+): Promise<void> {
+  cookieStore.delete(AUTH_COOKIES.PENDING_PASSWORD_RESET);
 }
 
 /**

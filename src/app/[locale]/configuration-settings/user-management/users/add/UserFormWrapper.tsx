@@ -1,6 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { UserForm } from '@/components/modules/configuration-settings/user-management/components/UserForm';
+import { TwoFactorSetupWizard } from '@/components/modules/configuration-settings/user-management/components/TwoFactorSetupWizard';
 import { useUserForm } from '@/hooks/configuration-settings/user-management/useUserForm';
 import { useRouter } from 'next/navigation';
 import { User, Role, Department, MasterModule } from '@/types/user-management';
@@ -26,6 +29,13 @@ export function UserFormWrapper({
   const router = useRouter();
   const { confirm } = useConfirm();
   const tCommon = useTranslations('common');
+  const t = useTranslations('userManagement');
+  const [justCreatedUser, setJustCreatedUser] = useState<User | null>(null);
+
+  const finishFlow = () => {
+    router.back();
+    router.refresh();
+  };
 
   const {
     formData,
@@ -45,9 +55,13 @@ export function UserFormWrapper({
     selectAllModules,
     deselectAllModules,
     errors,
-  } = useUserForm(() => {
-    router.back();
-    router.refresh();
+  } = useUserForm((user) => {
+    if (isEdit) {
+      finishFlow();
+    } else {
+      // Newly created user — offer in-person 2FA enrollment before leaving the flow.
+      setJustCreatedUser(user);
+    }
   }, initialData);
 
   const hasChanges = () => {
@@ -150,6 +164,21 @@ export function UserFormWrapper({
       router.back();
     }
   };
+
+  if (justCreatedUser) {
+    return (
+      <TwoFactorSetupWizard
+        userId={justCreatedUser.userId}
+        userName={justCreatedUser.userName}
+        askFirst
+        onCancel={finishFlow}
+        onEnabled={() => {
+          toast.success(t('twoFactorSetup.enabledSuccess'));
+          finishFlow();
+        }}
+      />
+    );
+  }
 
   return (
     <UserForm

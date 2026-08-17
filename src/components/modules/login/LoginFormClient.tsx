@@ -104,8 +104,11 @@ export function LoginFormClient({
   const credentialFieldsKey = credState?.resetKey ?? 'idle';
   const initialUsernameForFields = credState?.message ? '' : (username ?? '');
 
-  const displayError = getLocalizedError(credState?.message) || errorMessage;
   const lastErrorCode = credState?.message;
+  const displayError =
+    lastErrorCode === AUTH_ERROR_CODES.INVALID_CREDENTIALS && credState?.remainingAttempts != null
+      ? t('errors.invalidCredentialsWithAttempts', { remaining: credState.remainingAttempts })
+      : getLocalizedError(credState?.message) || errorMessage;
   const showRateLimit = lastErrorCode === AUTH_ERROR_CODES.TOO_MANY_ATTEMPTS;
   const showTimeoutRetry = lastErrorCode === AUTH_ERROR_CODES.REQUEST_TIMEOUT;
 
@@ -175,6 +178,15 @@ export function LoginFormClient({
         locale={locale}
         copy={copy}
       />
+
+      <div className="flex justify-center pt-1">
+        <a
+          href={`/${locale}/login/forgot-password`}
+          className="text-sm font-medium text-cyan-700 hover:text-cyan-900 hover:underline"
+        >
+          {t('forgotPassword')}
+        </a>
+      </div>
     </>
   );
 }

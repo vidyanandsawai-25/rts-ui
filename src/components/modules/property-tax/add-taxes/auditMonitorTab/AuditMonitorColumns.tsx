@@ -84,9 +84,12 @@ export const getAuditColumns = (t: any): Column<any>[] => [
 export const getDetailColumns = (t: any): Column<any>[] => [
   {
     key: 'propertyNo',
-    label: t('audit.detailColumns.propertyNo'),
+    label: t('audit.detailColumns.propertyNoUpicId', { fallback: 'Property No / UPIC ID' }),
     width: '15%',
-    render: (_, row) => `${row.ward || ''}-${row.propertyNo || ''}-${row.partitionNo || ''}`,
+    render: (_, row) => {
+      const propStr = [row.wardNo || row.ward, row.propertyNo, row.partitionNo].filter(Boolean).join('-');
+      return row.upicid ? `${propStr} / ${row.upicid}` : propStr;
+    },
   },
   { key: 'owner', label: t('audit.detailColumns.owner'), width: '20%' },
   {

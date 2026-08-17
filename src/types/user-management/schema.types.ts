@@ -45,6 +45,8 @@ export interface BackendUser {
   language: string;
   remark: string;
   isActive: boolean;
+  twoFactorEnabled: boolean;
+  twoFactorRequired: boolean;
   departments: BackendUserDepartment[];
   moduleAccess: BackendUserModuleAccess[];
   roleAllocations: BackendUserRoleAllocation[];

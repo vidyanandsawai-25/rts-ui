@@ -140,31 +140,72 @@ export async function searchCitizenMisApplicationsAction(
   }
 
   try {
+    // 1. Try external live API (onesolutionakola.tabamc.in) by UPIC ID
     const upicResponse = await getRtsMisDashboardData({
       Flag: 'user',
       UpicId: normalizedValue,
       ApplicationNo: '',
-    });
+    }).catch(() => null);
 
-    if (upicResponse.status && (upicResponse.data.userApplicationDashboardData?.length ?? 0) > 0) {
+    if (
+      upicResponse?.status &&
+      (upicResponse.data?.userApplicationDashboardData?.length ?? 0) > 0
+    ) {
       return { success: true, items: upicResponse.data.userApplicationDashboardData };
     }
 
+    // 2. Try external live API (onesolutionakola.tabamc.in) by ApplicationNo
     const applicationResponse = await getRtsMisDashboardData({
       Flag: 'user',
       UpicId: '',
       ApplicationNo: normalizedValue,
-    });
+    }).catch(() => null);
 
-    if (!applicationResponse.status) {
-      return {
-        success: false,
-        items: [],
-        error: applicationResponse.message || 'Unable to find an application for this value.',
-      };
+    if (
+      applicationResponse?.status &&
+      (applicationResponse.data?.userApplicationDashboardData?.length ?? 0) > 0
+    ) {
+      return { success: true, items: applicationResponse.data.userApplicationDashboardData };
     }
 
-    return { success: true, items: applicationResponse.data.userApplicationDashboardData ?? [] };
+    // 3. Fallback: Search local RTS-API database (for newly created / local applications)
+    try {
+      const { getApprovalApplicationsPaged } = await import(
+        "@/lib/api/rts/rts-application-approval.service"
+      );
+      const localResponse = await getApprovalApplicationsPaged({
+        applicationNo: normalizedValue,
+      });
+
+      if (localResponse.applications && localResponse.applications.length > 0) {
+        const localMappedItems: RtsMisDashboardUserApplicationItem[] =
+          localResponse.applications.map((app) => ({
+            applicationId: app.id,
+            applicationNo: app.applicationNo,
+            departmentId: app.departmentId,
+            departmentName: app.departmentName,
+            serviceId: app.serviceId,
+            serviceName: app.serviceName,
+            applicationStatus: app.applicationStatus,
+            applicationDate: app.createdDate || undefined,
+            createdDate: app.createdDate || undefined,
+            submittedDate: app.createdDate || "",
+            status: app.applicationStatus || "Pending",
+            sla: 7,
+          }));
+        return { success: true, items: localMappedItems };
+      }
+    } catch (localErr) {
+      console.warn("Local RTS-API tracking lookup fallback error:", localErr);
+    }
+
+    return {
+      success: false,
+      items: [],
+      error:
+        applicationResponse?.message ||
+        'Unable to find an application for this value.',
+    };
   } catch (error) {
     console.error('Failed to load citizen MIS applications:', error);
     return {
@@ -172,5 +213,70 @@ export async function searchCitizenMisApplicationsAction(
       items: [],
       error: 'Unable to find applications for this value.',
     };
+  }
+}
+
+/** Fetches dynamic documents and first-stage receiving officer for a selected service modal */
+export async function getServiceDetailsModalInfoAction(serviceId: number): Promise<{
+  documents: { en: string; mr?: string; hi?: string }[];
+  receivingOfficer: string;
+}> {
+  try {
+    const { getRtsFieldDefinitionsByServiceId } = await import("@/lib/api/rts/rtsfielddefinition.service");
+    const { apiClient } = await import("@/services/api.service");
+
+    const [fields, stagesResponse] = await Promise.all([
+      getRtsFieldDefinitionsByServiceId(serviceId).catch(() => []),
+      apiClient
+        .get<{
+          flowId?: number;
+          stages?: Array<{ stageOrder: number; stageName: string }>;
+        }>(`/ApprovalFlowMaster/stages/${serviceId}`, { cache: "no-store" }, false)
+        .catch(() => null),
+    ]);
+
+    // Extract dynamic documents
+    const docFields = fields.filter(
+      (f) =>
+        (f.fieldGroup === "Document Uploads" || f.fieldType?.toLowerCase() === "file") &&
+        f.isActive !== false
+    );
+
+    const documents = docFields.map((f) => {
+      const en = (f.fieldLabel || f.fieldCode || "")
+        .replace(/\s*\(\s*optional\s*\)/gi, "")
+        .replace(/\s*\(\s*auto\s*\)/gi, "")
+        .trim();
+      const local = (f.fieldLabelLocal || f.fieldLabel || f.fieldCode || "")
+        .replace(/\s*\(\s*optional\s*\)/gi, "")
+        .replace(/\s*\(\s*ऐच्छिक\s*\)/gi, "")
+        .replace(/\s*\(\s*auto\s*\)/gi, "")
+        .trim();
+
+      return {
+        en: en || "Required Document",
+        mr: local || en || "आवश्यक कागदपत्र",
+        hi: local || en || "आवश्यक दस्तावेज़",
+      };
+    });
+
+    // Extract receiving officer from Approval Stage 1
+    let receivingOfficer = "-";
+    const rawData = stagesResponse?.data as any;
+    const stages: Array<{ stageOrder: number; stageName: string }> =
+      rawData?.data?.stages || rawData?.stages || [];
+
+    if (stages && stages.length > 0) {
+      const sortedStages = [...stages].sort((a, b) => a.stageOrder - b.stageOrder);
+      const stage1 = sortedStages[0];
+      if (stage1?.stageName) {
+        receivingOfficer = stage1.stageName.trim();
+      }
+    }
+
+    return { documents, receivingOfficer };
+  } catch (error) {
+    console.error("Failed to fetch service details modal info:", error);
+    return { documents: [], receivingOfficer: "-" };
   }
 }

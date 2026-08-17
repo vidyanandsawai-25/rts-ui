@@ -85,6 +85,8 @@ export const ALPHANUMERIC_WITH_SPACES_SANITIZE = /[^\p{L}\p{M}\p{N}.\s]/gu;
 // Code fields (letters only, no spaces, no numbers, no special characters)
 export const LETTERS_ONLY_REGEX = /^[\p{L}\p{M}]+$/u;
 export const LETTERS_ONLY_SANITIZE = /[^\p{L}\p{M}]/gu;
+// Check if text contains at least one letter (supports English, Marathi, Hindi, and all Unicode scripts)
+export const HAS_LETTER_REGEX = /\p{L}/u;
 
 /* ================= SOCIETY VALIDATION ================= */
 export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;

@@ -142,6 +142,8 @@ const mockUser: User = {
   email: 'john@example.com',
   mobileNo: '1234567890',
   isActive: true,
+  twoFactorEnabled: false,
+  twoFactorRequired: false,
   departmentNames: [],
   departmentIds: [],
   moduleNames: [],

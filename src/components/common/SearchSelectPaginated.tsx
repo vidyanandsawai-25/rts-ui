@@ -140,6 +140,19 @@ export function SearchSelectPaginated({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const prevValueRef = useRef(value);
+  useEffect(() => {
+    if (value !== prevValueRef.current) {
+      prevValueRef.current = value;
+      if (!value) {
+        queueMicrotask(() => {
+          setSearch('');
+          setHasTyped(false);
+        });
+      }
+    }
+  }, [value]);
+
   useEffect(() => {
     if (isOpen && highlightedIndex >= 0 && listRef.current) {
       const highlightedElement = listRef.current.children[highlightedIndex] as HTMLElement;

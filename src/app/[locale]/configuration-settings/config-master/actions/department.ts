@@ -10,7 +10,6 @@ import type { DepartmentMaster } from '@/types/departmentMaster.types';
 import type { ModuleMaster } from '@/types/moduleMaster.types';
 import {
   verifySession,
-  getLocaleFromHeaders,
   processBatch,
   MAX_CONCURRENT_UPDATES,
   tConfigMessage,
@@ -137,6 +136,8 @@ function transformDepartmentConfigs(
 /**
  * Save Department Configuration (Bulk Update)
  */
+import { locales } from '@/i18n/config';
+
 export async function saveDepartmentConfigurationAction(rawData: unknown): Promise<ActionResult> {
   try {
     const userId = await verifySession();
@@ -207,8 +208,9 @@ export async function saveDepartmentConfigurationAction(rawData: unknown): Promi
       };
     }
 
-    const locale = await getLocaleFromHeaders();
-    revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
+    }
     return { success: true, message: await tConfigMessage('configSaved', 'Saved successfully') };
   } catch (err) {
     logError('saveDepartmentConfigurationAction failed', {

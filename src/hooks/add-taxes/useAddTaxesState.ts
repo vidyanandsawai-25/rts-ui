@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { logger } from '@/lib/utils/logger';
@@ -49,12 +49,19 @@ export function useAddTaxesState(
   const [selectionData, setSelectionData] = useState<Record<string, string[]>>({});
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const isLocalUpdateRef = useRef(false);
+
   // Sync selectionData from URL parameters on mount or when scope/searchParams change
   useEffect(() => {
     if (!scopeOptions || scopeOptions.length === 0) return;
-    if (isInitialized) return;
 
-    const urlScope = searchParams.get('scope');
+    if (isLocalUpdateRef.current) {
+      isLocalUpdateRef.current = false;
+      return;
+    }
+
+    const currentParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : searchParams;
+    const urlScope = currentParams.get('scope');
     if (urlScope && urlScope !== selectedScope) {
       return;
     }
@@ -68,32 +75,32 @@ export function useAddTaxesState(
     for (const option of optionsToRender) {
       const optStr = option.toLowerCase();
       if (optStr.includes('zone')) {
-        const val = searchParams.get('zoneid');
+        const val = currentParams.get('zoneid');
         if (val) newSelectionData[option] = val.split(',');
       } else if (optStr.includes('ward')) {
-        const val = searchParams.get('wardid');
+        const val = currentParams.get('wardid');
         if (val) newSelectionData[option] = val.split(',');
       } else if (optStr.includes('property type')) {
-        const val = searchParams.get('PropertyTypeId') || searchParams.get('propertyTypeId') || searchParams.get('propertytypeid') || searchParams.get('TypeOfUseGroupId');
+        const val = currentParams.get('PropertyTypeId') || currentParams.get('propertyTypeId') || currentParams.get('propertytypeid') || currentParams.get('TypeOfUseGroupId');
         if (val) {
           newSelectionData[option] = val.split(',');
         } else {
           newSelectionData[option] = [];
         }
       } else if (optStr.includes('property no') || optStr.includes('building')) {
-        const val = searchParams.get('propertyid');
+        const val = currentParams.get('propertyno');
         if (val) newSelectionData[option] = val.split(',');
       } else if (optStr.includes('assessment status')) {
-        const val = searchParams.get('assessmentStatusIds');
+        const val = currentParams.get('assessmentStatusIds');
         if (val) newSelectionData[option] = val.split(',');
       } else if (optStr.includes('from')) {
-        const val = searchParams.get('fromPropertyId');
+        const val = currentParams.get('fromPropertyNo');
         if (val) newSelectionData[option] = [val];
       } else if (optStr.includes('to')) {
-        const val = searchParams.get('toPropertyId');
+        const val = currentParams.get('toPropertyNo');
         if (val) newSelectionData[option] = [val];
       } else if (optStr.includes('search') || optStr.includes('specific')) {
-        const val = searchParams.get('searchText') || searchParams.get('SearchText');
+        const val = currentParams.get('searchText') || currentParams.get('SearchText');
         if (val) newSelectionData[option] = [val];
       }
     }
@@ -114,36 +121,112 @@ export function useAddTaxesState(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedScope, scopeOptions, searchParams, isInitialized]);
 
-  const handleSelectionChange = (key: string, values: string[]) => {
-    setSelectionData(prev => {
-      const next = { ...prev, [key]: values };
-      const prevKeys = Object.keys(prev);
+  const handleSelectionChange = (key: string, values: string[], labels?: string[]) => {
+    isLocalUpdateRef.current = true;
 
-      const isZone = key.toLowerCase().includes('zone');
-      if (isZone) {
-        for (const k of prevKeys) {
-          const lowerKey = k.toLowerCase();
-          if (lowerKey.includes('ward')) {
-            next[k] = [];
-          }
-          if (lowerKey.includes('building') || lowerKey.includes('property no') || lowerKey.includes('from') || lowerKey.includes('to')) {
-            next[k] = [];
-          }
+    const prevKeys = Object.keys(selectionData);
+    const next = { ...selectionData, [key]: values };
+
+    const isZone = key.toLowerCase().includes('zone');
+    if (isZone) {
+      for (const k of prevKeys) {
+        const lowerKey = k.toLowerCase();
+        if (lowerKey.includes('ward')) {
+          next[k] = [];
+        }
+        if (lowerKey.includes('building') || lowerKey.includes('property no') || lowerKey.includes('from') || lowerKey.includes('to')) {
+          next[k] = [];
+        }
+      }
+    }
+
+    const isWard = key.toLowerCase().includes('ward');
+    if (isWard) {
+      for (const k of prevKeys) {
+        const lowerKey = k.toLowerCase();
+        if (lowerKey.includes('building') || lowerKey.includes('property no') || lowerKey.includes('from') || lowerKey.includes('to')) {
+          next[k] = [];
+        }
+      }
+    }
+
+    setSelectionData(next);
+
+    // Update URL params
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : searchParams.toString());
+    const keyMap: Record<string, string> = {
+      'zone': 'zoneid',
+      'ward': 'wardid',
+      'property type': 'PropertyTypeId',
+      'assessment status': 'assessmentStatusIds',
+      'search': 'searchText',
+      'specific': 'searchText'
+    };
+
+    const labelMap: Record<string, string> = {
+      'property no': 'propertyno',
+      'building': 'propertyno',
+      'from': 'fromPropertyNo',
+      'to': 'toPropertyNo'
+    };
+
+    Object.values(keyMap).forEach(p => params.delete(p));
+    Object.values(labelMap).forEach(p => params.delete(p));
+
+    Object.entries(next).forEach(([k, vals]) => {
+      const lowerK = k.toLowerCase();
+      const mappedParam = Object.keys(keyMap).find(mk => lowerK.includes(mk));
+      if (mappedParam && vals && vals.length > 0) {
+        const validVals = vals.filter(v => v !== 'select-all');
+        if (validVals.length > 0) {
+          params.set(keyMap[mappedParam], validVals.join(','));
         }
       }
 
-      const isWard = key.toLowerCase().includes('ward');
-      if (isWard) {
-        for (const k of prevKeys) {
-          const lowerKey = k.toLowerCase();
-          if (lowerKey.includes('building') || lowerKey.includes('property no') || lowerKey.includes('from') || lowerKey.includes('to')) {
-            next[k] = [];
+      const mappedLabelParam = Object.keys(labelMap).find(mk => lowerK.includes(mk));
+      if (mappedLabelParam) {
+        const paramName = labelMap[mappedLabelParam];
+        if (k === key && labels !== undefined) {
+          if (labels.length > 0) {
+            params.set(paramName, labels.join(','));
+          } else {
+            params.delete(paramName);
+          }
+        } else if (vals && vals.length > 0) {
+          const validVals = vals.filter(v => v !== 'select-all');
+          if (validVals.length > 0) {
+            params.set(paramName, validVals.join(','));
           }
         }
       }
-
-      return next;
     });
+
+    const newUrl = `${pathname}?${params.toString()}`;
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', newUrl);
+    }
+    router.replace(newUrl, { scroll: false });
+  };
+
+  const clearSelectionData = (preventUrlUpdate = false) => {
+    setSelectionData({});
+    
+    if (preventUrlUpdate) return;
+    
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : searchParams.toString());
+    const paramsToClear = [
+      'zoneid', 'wardid', 'PropertyTypeId', 'propertyTypeId', 'propertytypeid', 'TypeOfUseGroupId', 
+      'propertyid', 'propertyno', 'assessmentStatusIds', 'fromPropertyId', 'toPropertyId', 
+      'fromPropertyNo', 'toPropertyNo', 'searchText', 'SearchText', 'wardno', 'PropertyTypeCode',
+      'propertyTypeCode', 'typeOfUseGroupCode'
+    ];
+    paramsToClear.forEach(p => params.delete(p));
+    
+    const newUrl = `${pathname}?${params.toString()}`;
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', newUrl);
+    }
+    router.replace(newUrl, { scroll: false });
   };
 
   const defaultFinanceYearId = initData?.financeYears?.[0]?.value !== undefined ? String(initData.financeYears[0].value) : '';
@@ -174,6 +257,18 @@ export function useAddTaxesState(
       active = false;
     };
   }, [financeYearId, clientActions]);
+
+  const refreshStats = async () => {
+    if (!financeYearId) return;
+    try {
+      const data = await clientActions.initOperationsAction(financeYearId);
+      if (data) {
+        setCurrentInitData(data);
+      }
+    } catch (err) {
+      logger.error("Failed to load init data for finance year", { error: err as Error });
+    }
+  };
 
   useEffect(() => {
     const currentScope = searchParams.get('scope');
@@ -211,11 +306,13 @@ export function useAddTaxesState(
     setSelectedScope(val);
     setSelectionData({}); // clear selections on scope change
     
-    // Clear all other query params except scope and financeYearId to avoid race conditions
+    // Clear all other query params except scope, financeYearId, and tab to avoid race conditions
     const params = new URLSearchParams();
-    params.set('scope', val);
     const fy = searchParams.get('financeYearId') || searchParams.get('financeYear');
     if (fy) params.set('financeYearId', fy);
+    const tab = searchParams.get('tab');
+    if (tab) params.set('tab', tab);
+    params.set('scope', val);
     
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
@@ -297,6 +394,8 @@ export function useAddTaxesState(
     isInitialized,
     isFinanceYearActive,
     financeYearLabel,
-    isLoadingInit
+    isLoadingInit,
+    refreshStats,
+    clearSelectionData
   };
 }

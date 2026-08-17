@@ -15,9 +15,9 @@ import {
   Shield,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
 import { ApprovalStagesTimeline } from '@/components/modules/rts';
+import RtsApplicationNoteSheetModal from '@/components/modules/rts/dashboard/RtsApplicationNoteSheetModal';
 import { Badge, Button, Drawer, Input, Label, ViewButton } from '@/components/common';
 import type { RtsApplicationFullDetailData } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import { getAdminRtsDocumentDownloadUrl, getAdminRtsDocumentViewUrl } from '@/lib/api/rts/rtsdocument.client';
@@ -25,7 +25,10 @@ import { getAdminRtsDocumentDownloadUrl, getAdminRtsDocumentViewUrl } from '@/li
 export interface RtsApplicationFullDetailRecord {
   applicationId: number;
   appId: string;
+  citizenName?: string;
+  submittedDate?: string;
   serviceName: string;
+  departmentName?: string;
   applicationStatus: string;
 }
 
@@ -72,6 +75,7 @@ export default function RtsApplicationFullDetailView({
   const [documentPreviewType, setDocumentPreviewType] = useState<'image' | 'file' | null>(null);
   const [documentPreviewError, setDocumentPreviewError] = useState<string | null>(null);
   const [isDocumentPreviewLoading, setIsDocumentPreviewLoading] = useState(false);
+  const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
 
   const loading = Boolean(open && record && !data);
   const fieldGroups = useMemo(() => {
@@ -158,30 +162,31 @@ export default function RtsApplicationFullDetailView({
   const collapseAll = () => setOpenGroups(Object.fromEntries(fieldGroups.map((group) => [group.title, false])));
 
   return (
-    <Drawer
-      open={open}
-      onClose={onClose}
-      width="xl"
-      hideHeader
-      bodyClassName="relative overflow-hidden"
-      footer={
-        <div className="flex w-full items-center justify-between gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            icon={FileText}
-            size="xs"
-            onClick={() => toast.info(t('actionsUnavailable'))}
-            className="rounded-lg px-3 text-xs font-bold"
-          >
-            {t('viewNoteSheet')}
-          </Button>
-          <Button variant="secondary" onClick={onClose} size="xs" className="rounded-lg px-5 text-xs font-bold">
-            {tCommon('buttons.close')}
-          </Button>
-        </div>
-      }
-    >
+    <>
+      <Drawer
+        open={open}
+        onClose={onClose}
+        width="xl"
+        hideHeader
+        bodyClassName="relative overflow-hidden"
+        footer={
+          <div className="flex w-full items-center justify-between gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              icon={FileText}
+              size="xs"
+              onClick={() => setIsNoteSheetOpen(true)}
+              className="rounded-lg px-3 text-xs font-bold"
+            >
+              {t('viewNoteSheet')}
+            </Button>
+            <Button variant="secondary" onClick={onClose} size="xs" className="rounded-lg px-5 text-xs font-bold">
+              {tCommon('buttons.close')}
+            </Button>
+          </div>
+        }
+      >
       <div className="absolute inset-0 flex min-h-0 flex-col overflow-hidden bg-slate-50">
         <header className="flex shrink-0 items-center justify-between gap-3 border-b-2 border-blue-200 bg-[#143D7D] px-5 py-3 text-white shadow-sm">
           <div className="flex min-w-0 items-center gap-3">
@@ -320,5 +325,37 @@ export default function RtsApplicationFullDetailView({
         </main>
       </div>
     </Drawer>
+
+      <RtsApplicationNoteSheetModal
+        isOpen={isNoteSheetOpen}
+        onClose={() => setIsNoteSheetOpen(false)}
+        record={{
+          applicationId: record.applicationId,
+          appId: record.appId,
+          citizenName: record.citizenName || '',
+          submittedDate: record.submittedDate || '',
+          slaLimit: 0,
+          serviceName: record.serviceName,
+          departmentName: record.departmentName || '',
+          applicationStatus: record.applicationStatus,
+        }}
+        data={
+          data
+            ? {
+                currentUserId: null,
+                currentUserName: null,
+                details: data.details,
+                stages: data.stages,
+                verification: null,
+                errors: {
+                  details: data.errors.details,
+                  stages: data.errors.stages,
+                  verification: null,
+                },
+              }
+            : null
+        }
+      />
+    </>
   );
 }

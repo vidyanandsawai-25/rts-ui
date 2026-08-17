@@ -12,8 +12,16 @@ import {
 import {
   searchCitizenMisApplicationsAction,
 } from "@/app/[locale]/service/dashboard/actions";
+import {
+  getPaymentStatusAction,
+  getPaymentReceiptAction,
+} from "@/app/[locale]/service/payment/actions";
+import { PaymentCheckoutModal } from "./PaymentCheckoutModal";
+import { PaymentReceiptModal } from "./PaymentReceiptModal";
+import type { PaymentReceiptResult } from "@/lib/api/rts/rtspayment.service";
 import type { RtsApplicationApprovalStage } from "@/types/rts/application-approval.types";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import { CreditCard, Receipt, ShieldCheck } from "lucide-react";
 
 type ApplicationAndTrackingDrawerProps = {
   open: boolean;
@@ -162,6 +170,14 @@ export default function ApplicationAndTrackingDrawer({
   const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [paymentInfo, setPaymentInfo] = useState<{
+    requiredFee: number;
+    isFeeRequired: boolean;
+    paymentStatus: string;
+    receiptNo?: string;
+  } | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
 
   const searchApplications = async () => {
     const normalizedSearchValue = searchValue.trim();
@@ -173,6 +189,7 @@ export default function ApplicationAndTrackingDrawer({
     setApplications([]);
     setSelectedApplication(null);
     setDetail(null);
+    setPaymentInfo(null);
     setError("");
     setLoading(true);
 
@@ -200,8 +217,18 @@ export default function ApplicationAndTrackingDrawer({
   const selectApplication = async (application: RtsMisDashboardUserApplicationItem) => {
     setSelectedApplication(application);
     setDetail(null);
+    setPaymentInfo(null);
     setError("");
     setLoading(true);
+
+    const numericId = parseInt(application.applicationNo.replace(/\D/g, ''), 10);
+    if (Number.isFinite(numericId) && numericId > 0) {
+      getPaymentStatusAction(numericId).then((res) => {
+        if (res.success && res.data) {
+          setPaymentInfo(res.data);
+        }
+      }).catch(() => {});
+    }
 
     try {
       const response = await getApplicationDetailAction(application.applicationNo);
@@ -222,6 +249,7 @@ export default function ApplicationAndTrackingDrawer({
     setApplications([]);
     setSelectedApplication(null);
     setDetail(null);
+    setPaymentInfo(null);
     setError("");
     setLoading(false);
     onClose();
@@ -230,6 +258,7 @@ export default function ApplicationAndTrackingDrawer({
   const returnToResults = () => {
     setSelectedApplication(null);
     setDetail(null);
+    setPaymentInfo(null);
     setError("");
     setLoading(false);
   };
@@ -346,6 +375,69 @@ export default function ApplicationAndTrackingDrawer({
                 <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
                   <div className="h-full bg-gradient-to-r from-fuchsia-600 to-purple-600" style={{ width: `${progress}%` }} />
                 </div>
+
+                {/* Government Payment Status & Pay Now Banner */}
+                {paymentInfo?.isFeeRequired === false || (paymentInfo?.requiredFee !== undefined && Number(paymentInfo.requiredFee) <= 0) ? (
+                  <div className="mt-3.5 p-3 rounded-xl bg-emerald-50/60 border border-emerald-200/80 shadow-sm flex items-center gap-2.5">
+                    <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-800">
+                        Free Municipal Service / मोफत शासकीय सेवा
+                      </div>
+                      <div className="text-[11px] text-slate-500 font-medium">
+                        No payment required for this service • कोणतेही शुल्क आवश्यक नाही
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3.5 p-3 rounded-xl bg-white border border-slate-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`p-2 rounded-lg ${paymentInfo?.paymentStatus === 'SUCCESS' || paymentInfo?.paymentStatus === 'Success' ? 'bg-emerald-100 text-emerald-700' : 'bg-teal-100 text-teal-700'}`}>
+                        {paymentInfo?.paymentStatus === 'SUCCESS' || paymentInfo?.paymentStatus === 'Success' ? <ShieldCheck className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />}
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-800">
+                          {paymentInfo?.paymentStatus === 'SUCCESS' || paymentInfo?.paymentStatus === 'Success'
+                            ? `Fee Paid / भरलेले शुल्क: ₹${Number(paymentInfo?.requiredFee ?? 50).toFixed(2)}`
+                            : `Government Fee / शासकीय शुल्क: ₹${Number(paymentInfo?.requiredFee ?? 50).toFixed(2)}`}
+                        </div>
+                        <div className="text-[11px] text-slate-500 font-medium">
+                          {paymentInfo?.paymentStatus === 'SUCCESS' || paymentInfo?.paymentStatus === 'Success'
+                            ? `Receipt: ${paymentInfo?.receiptNo || 'Confirmed'} • Paid Online`
+                            : 'Payment Status: Pending / शुल्क बाकी'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {paymentInfo?.paymentStatus === 'SUCCESS' || paymentInfo?.paymentStatus === 'Success' ? (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const numericId = parseInt(selectedApplication.applicationNo.replace(/\D/g, ''), 10);
+                          const res = await getPaymentReceiptAction(numericId);
+                          if (res.success && res.data) {
+                            setReceiptModalData(res.data);
+                          }
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Receipt className="w-3.5 h-3.5" />
+                        View Receipt / पावती
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowPaymentModal(true)}
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 rounded-lg shadow-md shadow-teal-600/20 transition-all cursor-pointer"
+                      >
+                        <CreditCard className="w-3.5 h-3.5" />
+                        Pay Now / शुल्क भरा
+                      </button>
+                    )}
+                  </div>
+                )}
               </section>
 
               <div className="flex items-center gap-2 py-1">
@@ -396,6 +488,27 @@ export default function ApplicationAndTrackingDrawer({
           )}
         </div>
       </div>
+
+      {showPaymentModal && selectedApplication && (
+        <PaymentCheckoutModal
+          applicationId={parseInt(selectedApplication.applicationNo.replace(/\D/g, ''), 10)}
+          applicationNo={selectedApplication.applicationNo}
+          serviceName={selectedApplication.serviceName}
+          fees={paymentInfo?.requiredFee || 50}
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={(receipt) => {
+            setReceiptModalData(receipt);
+            setPaymentInfo((prev) => prev ? { ...prev, paymentStatus: 'Success', receiptNo: receipt.receiptNo } : null);
+          }}
+        />
+      )}
+
+      {receiptModalData && (
+        <PaymentReceiptModal
+          receipt={receiptModalData}
+          onClose={() => setReceiptModalData(null)}
+        />
+      )}
     </Drawer>
   );
 }

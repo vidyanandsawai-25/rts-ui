@@ -42,6 +42,7 @@ export const getAllConfigKeys = cache(async (params: {
         try {
           const parsed = ConfigKeyResponseSchema.parse(item);
           const itemData = item as Record<string, unknown>;
+          
           return {
             id: parsed.id,
             configKeyId: parsed.configKeyId,
@@ -57,6 +58,7 @@ export const getAllConfigKeys = cache(async (params: {
             type: (parsed.dataType?.toLowerCase() === 'boolean' || parsed.controlType?.toLowerCase() === 'toggle') ? 'boolean' : 'text',
             controlType: parsed.controlType,
             dataType: parsed.dataType,
+            options: undefined,
             stats: {
               deptOverrides: 0,
               userOverrides: 0,

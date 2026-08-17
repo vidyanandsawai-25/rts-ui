@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { logger } from '@/lib/utils/logger';
 import { Scope, OperationScope, ExecuteOperationPayload, OperationPreviewPayload, OperationPreviewResponse } from '@/types/addTaxes.types';
 import type { ScopeOptionItem, EligibleCountPayload, SearchPropertyItem, SearchPropertiesResponse } from '@/types/addTaxes.types';
@@ -49,6 +49,8 @@ interface SearchByCategoryResponse {
 
 interface EligibleCountActionResponse {
   eligible?: number;
+  skipped?: number;
+  total?: number;
 }
 
 interface ExecuteOperationActionResponse {
@@ -86,29 +88,51 @@ function resolveBuildingScope(
 ) {
   const propertyIdsList: number[] = [];
   const buildingsList: string[] = [];
-  const partitionNosList: string[] = [];
 
-  const splitIds = propertyIdsStr ? propertyIdsStr.split(',') : [];
-  const splitNos = propertyNoStr ? propertyNoStr.split(',') : [];
+  const rawTokens: string[] = [];
+  if (propertyIdsStr) {
+    propertyIdsStr.split(',').forEach(s => {
+      const trimmed = s.trim();
+      if (trimmed && !rawTokens.includes(trimmed)) rawTokens.push(trimmed);
+    });
+  }
+  if (propertyNoStr) {
+    propertyNoStr.split(',').forEach(s => {
+      const trimmed = s.trim();
+      if (trimmed && !rawTokens.includes(trimmed)) rawTokens.push(trimmed);
+    });
+  }
 
-  for (let i = 0; i < splitIds.length; i++) {
-    const idVal = Number(splitIds[i]);
-    if (Number.isFinite(idVal) && idVal > 0) {
-      propertyIdsList.push(idVal);
-      const bObj = fetchedBuildings.find(b => b.value === splitIds[i]);
-      if (bObj) {
-        if (bObj.propertyNo) buildingsList.push(bObj.propertyNo);
-        if (bObj.partitionNo) partitionNosList.push(bObj.partitionNo);
+  for (const token of rawTokens) {
+    const bObj = fetchedBuildings.find(b => b.value === token || b.label === token || b.propertyNo === token);
+
+    if (bObj) {
+      const idVal = Number(bObj.value);
+      if (Number.isFinite(idVal) && idVal > 0 && !propertyIdsList.includes(idVal)) {
+        propertyIdsList.push(idVal);
+      }
+
+      const bName = bObj.label || bObj.propertyNo;
+      if (bName && !buildingsList.includes(bName)) {
+        buildingsList.push(bName);
+      }
+    } else {
+      const idVal = Number(token);
+      if (Number.isFinite(idVal) && idVal > 0) {
+        if (!propertyIdsList.includes(idVal)) {
+          propertyIdsList.push(idVal);
+        }
       } else {
-        if (splitNos[i]) buildingsList.push(splitNos[i]);
+        if (!buildingsList.includes(token)) {
+          buildingsList.push(token);
+        }
       }
     }
   }
 
   return {
     propertyIds: propertyIdsList,
-    building: buildingsList.length > 0 ? buildingsList : undefined,
-    partitionNos: partitionNosList.length > 0 ? partitionNosList : undefined
+    building: buildingsList.length > 0 ? buildingsList : undefined
   };
 }
 
@@ -131,9 +155,7 @@ export function useScopeSelection(
     fetchAllPropertyTypesAction: () => Promise<PropertyTypesActionResponse | null>;
   }
 ) {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const t = useTranslations('addTaxes');
 
   // Helper to extract values from selectionData first, with fallback to URL searchParams
@@ -161,25 +183,8 @@ export function useScopeSelection(
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [previewData, setPreviewData] = useState<OperationPreviewResponse | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
-
-  const pageParam = searchParams.get('previewPage');
-  const pageSizeParam = searchParams.get('previewPageSize');
-
-  const previewPage = pageParam ? Number(pageParam) : 1;
-  const previewPageSize = pageSizeParam ? Number(pageSizeParam) : 5;
-
-  const setPreviewPage = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('previewPage', String(page));
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
-  const setPreviewPageSize = (size: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('previewPage', '1');
-    params.set('previewPageSize', String(size));
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
+  const [previewPage, setPreviewPage] = useState(1);
+  const [previewPageSize, setPreviewPageSize] = useState(5);
 
   const [fetchedWards, setFetchedWards] = useState<WardOption[]>([]);
   const [isFetchingWards, setIsFetchingWards] = useState(false);
@@ -349,7 +354,6 @@ export function useScopeSelection(
         );
         scopeData.propertyIds = buildingScope.propertyIds;
         if (buildingScope.building) scopeData.building = buildingScope.building;
-        if (buildingScope.partitionNos) scopeData.partitionNos = buildingScope.partitionNos;
       }
 
       if (selectedScope === 'range') {
@@ -373,6 +377,9 @@ export function useScopeSelection(
       const response = await actions.getEligibleCountAction(payload);
       if (response) {
         setEligibleCount(response.eligible ?? 0);
+        if (response.skipped !== undefined && response.skipped > 0) {
+          toast.info(t('messages.skippedCount', { count: response.skipped, fallback: `${response.skipped} properties were skipped.` }));
+        }
       } else {
         setEligibleCount(0);
       }
@@ -426,7 +433,6 @@ export function useScopeSelection(
         );
         scopeData.propertyIds = buildingScope.propertyIds;
         if (buildingScope.building) scopeData.building = buildingScope.building;
-        if (buildingScope.partitionNos) scopeData.partitionNos = buildingScope.partitionNos;
       } else if (selectedScope === 'property') {
         scopeData.propertyIds = [];
         const propertyIdsStr = getSelectedJoined('property no') || getSelectedJoined('building') || searchParams.get('propertyid');
@@ -487,6 +493,8 @@ export function useScopeSelection(
       const response = await actions.executeOperationAction(payload);
       if (response && response.items && response.items.jobId) {
         setIsModalOpen(false);
+        setIsValidated(false);
+        setEligibleCount(null);
         if (isScheduled) {
           toast.success(t('messages.jobScheduled', { jobId: response.items.jobId }));
           if (onStartExecution) {
@@ -512,8 +520,11 @@ export function useScopeSelection(
   const handlePreview = async (targetPage?: number, targetPageSize?: number) => {
     setIsPreviewLoading(true);
     try {
-      const p = targetPage ?? previewPage;
-      const size = targetPageSize ?? previewPageSize;
+      const p = typeof targetPage === 'number' && Number.isFinite(targetPage) ? targetPage : 1;
+      const size = typeof targetPageSize === 'number' && Number.isFinite(targetPageSize) ? targetPageSize : (previewPageSize || 5);
+
+      setPreviewPage(p);
+      setPreviewPageSize(size);
 
       const zoneVals = getSelectedValues('zone');
       let zoneIds = zoneVals.length > 0 ? zoneVals.map(Number) : (searchParams.get('zoneid')?.split(',').map(Number) || []);
@@ -559,7 +570,6 @@ export function useScopeSelection(
         );
         scopeData.propertyIds = buildingScope.propertyIds;
         if (buildingScope.building) scopeData.building = buildingScope.building;
-        if (buildingScope.partitionNos) scopeData.partitionNos = buildingScope.partitionNos;
       } else if (selectedScope === 'property') {
         scopeData.propertyIds = [];
         const rawText = (selectionData['Search Property'] || [])[0] || getSelectedJoined('property no') || getSelectedJoined('building') || searchParams.get('propertyid') || '';
@@ -679,7 +689,6 @@ export function useScopeSelection(
         );
         scopeData.propertyIds = buildingScope.propertyIds;
         if (buildingScope.building) scopeData.building = buildingScope.building;
-        if (buildingScope.partitionNos) scopeData.partitionNos = buildingScope.partitionNos;
       } else if (selectedScope === 'property') {
         scopeData.propertyIds = [];
         const rawText = (selectionData['Search Property'] || [])[0] || getSelectedJoined('property no') || getSelectedJoined('building') || searchParams.get('propertyid') || '';
@@ -761,15 +770,7 @@ export function useScopeSelection(
     }
   };
 
-  useEffect(() => {
-    if (isPreviewModalOpen) {
-      const timer = setTimeout(() => {
-        handlePreview(previewPage, previewPageSize);
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewPage, previewPageSize, isPreviewModalOpen]);
+
 
   const [buildingPage, setBuildingPage] = useState(1);
   const [hasMoreBuildings, setHasMoreBuildings] = useState(false);
@@ -962,47 +963,58 @@ export function useScopeSelection(
   };
 
 
-  useEffect(() => {
-    if (selectedScope === 'range' || selectedScope === 'building') {
-      const wardId = searchParams.get('wardid') || (selectionData['Ward / Sector'] || selectionData['Ward'])?.[0];
-      const zoneId = searchParams.get('zoneid') || (selectionData['Zone / Node'] || selectionData['Zone'])?.[0];
 
-      const timer = setTimeout(() => {
-        if (wardId) {
-          void fetchBuildings(zoneId ? [zoneId] : null, [wardId]);
-        } else {
-          setFetchedBuildings([]);
+
+  useEffect(() => {
+    // Eagerly fetch options for pre-selected values from URL
+    const hasZones = Object.keys(selectionData).some(k => k.toLowerCase().includes('zone') && selectionData[k]?.length > 0);
+    const timer = setTimeout(() => {
+      const hasPropertyTypes = Object.keys(selectionData).some(k => k.toLowerCase().includes('property type') && selectionData[k]?.length > 0);
+      const hasAssessmentStatus = Object.keys(selectionData).some(k => k.toLowerCase().includes('assessment status') && selectionData[k]?.length > 0);
+      const hasWards = Object.keys(selectionData).some(k => k.toLowerCase().includes('ward') && selectionData[k]?.length > 0);
+      const hasBuildings = Object.keys(selectionData).some(k => k.toLowerCase().includes('building') && selectionData[k]?.length > 0);
+      const hasFrom = Object.keys(selectionData).some(k => k.toLowerCase().includes('from') && selectionData[k]?.length > 0);
+      const hasTo = Object.keys(selectionData).some(k => k.toLowerCase().includes('to') && selectionData[k]?.length > 0);
+
+      if (hasZones && fetchedZones.length === 0 && !isFetchingZones) {
+        void fetchZones();
+      }
+      
+      if (hasPropertyTypes && fetchedPropertyTypes.length === 0 && !isFetchingPropertyTypes) {
+        void fetchPropertyTypes();
+      }
+      
+      if (hasAssessmentStatus && fetchedAssessmentStatuses.length === 0 && !isFetchingAssessmentStatuses) {
+        void fetchAssessmentStatuses();
+      }
+      
+      if (hasWards && fetchedWards.length === 0 && !isFetchingWards) {
+        void fetchWards();
+      }
+      
+      if ((hasBuildings || hasFrom) && fetchedBuildings.length === 0 && !isFetchingBuildings) {
+        const zoneIds = getSelectedJoined('zone', 'zoneid');
+        const wardIds = getSelectedJoined('ward', 'wardid');
+        if (wardIds) {
+          void fetchBuildings(zoneIds ? zoneIds.split(',') : null, wardIds.split(','));
         }
-      }, 0);
-
-      return () => clearTimeout(timer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedScope, searchParams.get('wardid'), searchParams.get('zoneid'), selectionData['Ward / Sector'], selectionData['Ward'], selectionData['Zone / Node'], selectionData['Zone']]);
-
-  useEffect(() => {
-    if (selectedScope === 'range') {
-      const wardId = searchParams.get('wardid') || (selectionData['Ward / Sector'] || selectionData['Ward'])?.[0];
-      const fromKey = Object.keys(selectionData).find(k => k.toLowerCase().includes('from'));
-      const fromVal = (fromKey ? selectionData[fromKey]?.[0] : null) || searchParams.get('fromPropertyId');
-
-      const timer = setTimeout(() => {
-        if (wardId && fromVal) {
+      }
+      
+      if (hasTo && fetchedToBuildings.length === 0 && !isFetchingToBuildings) {
+        const wardIds = getSelectedJoined('ward', 'wardid');
+        const fromKey = Object.keys(selectionData).find(k => k.toLowerCase().includes('from'));
+        const fromVal = fromKey ? selectionData[fromKey]?.[0] : undefined;
+        if (wardIds && fromVal) {
           const fromObj = fetchedBuildings.find(b => b.value === fromVal);
-          const fromLabel = fromObj ? fromObj.label : (searchParams.get('fromPropertyNo') || fromVal);
-          void fetchToBuildings(wardId, fromLabel);
-        } else {
-          setFetchedToBuildings([]);
-          setHasMoreToBuildings(false);
+          const fromLabel = fromObj ? fromObj.label : fromVal;
+          void fetchToBuildings(wardIds.split(',')[0], fromLabel);
         }
-      }, 0);
+      }
+    }, 0);
 
-      return () => clearTimeout(timer);
-    }
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedScope, searchParams.get('wardid'), selectionData, fetchedBuildings]);
-
-
+  }, [selectionData, fetchedZones.length, isFetchingZones, fetchedPropertyTypes.length, isFetchingPropertyTypes, fetchedAssessmentStatuses.length, isFetchingAssessmentStatuses, fetchedWards.length, isFetchingWards, fetchedBuildings.length, isFetchingBuildings, fetchedToBuildings.length, isFetchingToBuildings]);
 
   return {
     isValidated, setIsValidated,
