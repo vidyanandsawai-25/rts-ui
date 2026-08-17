@@ -170,6 +170,7 @@ export default function WardAbstractDrawer({
             paginationConfig={{ enabled: true, showPageSizeSelector: true }}
             pageNumber={pageNumber}
             pageSize={pageSize}
+            height="lg"
             totalCount={totalCount}
             totalPages={totalPages}
             onPageChange={onPageChange}

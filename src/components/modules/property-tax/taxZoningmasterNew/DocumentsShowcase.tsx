@@ -31,6 +31,13 @@ const CODE_TO_KIND: Record<string, TaxZoningDocumentKind> = {
   [TAX_ZONING_DOCUMENT_TYPE_CODE.MAP]: "MAP",
 };
 
+const ALLOWED_EXTENSIONS: Record<TaxZoningDocumentKind, string[]> = {
+  LIST: ["pdf"],
+  MAP: ["pdf", "jpg", "jpeg", "png"],
+};
+
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
 export default function DocumentsShowcase() {
   const t = useTranslations("taxZoningRange");
   const tUi = useTranslations("taxZoningRange.ui.certifiedDocs");
@@ -64,20 +71,60 @@ export default function DocumentsShowcase() {
     loadDocs();
   }, []);
 
+  const validateSelectedFile = (file: File, kind: TaxZoningDocumentKind): boolean => {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    const allowed = ALLOWED_EXTENSIONS[kind];
+
+    if (!allowed.includes(ext)) {
+      const formattedAllowed = allowed.map((a) => a.toUpperCase()).join(", ");
+      toast.error(t("messages.invalidDocumentType", { allowedTypes: formattedAllowed }));
+      return false;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast.error(t("messages.maxFileSizeExceeded"));
+      return false;
+    }
+
+    return true;
+  };
+
   const handleOpenModal = (kind: TaxZoningDocumentKind) => {
     setActiveModal(kind);
     setTempFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCloseModal = () => {
+    setActiveModal(null);
+    setTempFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setTempFile(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (!file || !activeModal) return;
+
+    if (!validateSelectedFile(file, activeModal)) {
+      e.target.value = "";
+      setTempFile(null);
+      return;
     }
+
+    setTempFile(file);
   };
 
   const handleSaveDoc = (e: React.FormEvent) => {
     e.preventDefault();
     if (!tempFile || !activeModal) return;
+
+    if (!validateSelectedFile(tempFile, activeModal)) {
+      return;
+    }
 
     startTransition(async () => {
       const formData = new FormData();
@@ -90,7 +137,7 @@ export default function DocumentsShowcase() {
         return;
       }
       toast.success(result.message || t("messages.uploadCertificateSuccess"));
-      setActiveModal(null);
+      handleCloseModal();
       await loadDocs();
     });
   };
@@ -187,7 +234,7 @@ export default function DocumentsShowcase() {
 
       <Modal
         open={activeModal !== null}
-        onClose={() => setActiveModal(null)}
+        onClose={handleCloseModal}
         title={<span className="text-[17px] font-bold text-[#0b2f5b]">{activeModal === "LIST" ? tUi("listUploadModalTitle") : tUi("mapUploadModalTitle")}</span>}
         maxWidth="md"
       >
@@ -218,7 +265,7 @@ export default function DocumentsShowcase() {
           <div className="flex justify-end gap-2 mt-2">
             <CancelButton
               label={tUi("cancel")}
-              onClick={() => setActiveModal(null)}
+              onClick={handleCloseModal}
               className="h-9 px-4 text-[12px] rounded-lg"
             />
             <SaveButton

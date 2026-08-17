@@ -25,6 +25,8 @@
       "uploadCertificateFailed": "Failed to upload document",
       "uploadCertificateSuccess": "Document uploaded successfully",
       "fileRequired": "Please select a file to upload",
+      "invalidDocumentType": "Invalid file type. Allowed formats: {allowedTypes}",
+      "maxFileSizeExceeded": "File size exceeds the 10 MB limit",
       "somethingWrong": "Something went wrong. Please try again.",
       "noChanges": "No changes to update",
       "noRecordsProcessed": "No records were successfully processed. Please check the data and try again.",
