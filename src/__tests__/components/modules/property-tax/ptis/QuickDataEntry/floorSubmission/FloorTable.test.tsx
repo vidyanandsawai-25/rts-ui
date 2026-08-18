@@ -147,10 +147,10 @@ describe('FloorTable', () => {
   it('renders table summary metrics badges including Additional Plot Area', () => {
     render(<FloorTable {...mockProps} plotAreaSqM={1000} />);
 
-    expect(screen.getByText('Plot Area:')).toBeInTheDocument();
-    expect(screen.getByText('Additional Plot Area:')).toBeInTheDocument();
-    expect(screen.getByText('Carpet Area:')).toBeInTheDocument();
-    expect(screen.getByText('Built-up Area:')).toBeInTheDocument();
+    expect(screen.getByText('floor.plotAreaColon')).toBeInTheDocument();
+    expect(screen.getByText('floor.additionalPlotAreaColon')).toBeInTheDocument();
+    expect(screen.getByText('floor.carpetAreaColon')).toBeInTheDocument();
+    expect(screen.getByText('floor.builtupAreaColon')).toBeInTheDocument();
   });
 
   it('hides table summary metrics badges when isBuildingPermissionView is true', () => {
