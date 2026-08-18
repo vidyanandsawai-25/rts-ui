@@ -220,8 +220,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
               }
             }
           }
-          router.push(targetUrl);
-          router.refresh();
+          window.location.href = targetUrl;
           return;
         }
 
@@ -268,8 +267,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
             }
           }
         }
-        router.push(targetUrl);
-        router.refresh();
+        window.location.href = targetUrl;
       } else {
         setError(res.error || t('messages.verifyFailed'));
       }
