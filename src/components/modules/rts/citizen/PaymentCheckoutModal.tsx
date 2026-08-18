@@ -8,6 +8,7 @@ import {
   Building2
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
+import { getUlbDataFromCookies } from '@/lib/utils/cookie';
 import {
   createPaymentOrderAction,
   verifyPaymentAction,
@@ -89,6 +90,9 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
       }
 
       const order: PaymentOrderResult = orderRes.data;
+      const cookieUlb = getUlbDataFromCookies();
+      const ulbName = cookieUlb.ulbName || 'Municipal Corporation';
+      const ulbLogo = cookieUlb.ulbLogo;
 
       // Step 2: Open Razorpay Live Gateway Modal with dynamic prefill
       if (typeof window !== 'undefined' && window.Razorpay) {
@@ -96,7 +100,8 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
           key: order.keyId,
           amount: order.amountInPaise,
           currency: order.currency || 'INR',
-          name: 'Akola Municipal Corporation',
+          name: ulbName,
+          image: ulbLogo || undefined,
           description: order.description || `Government RTS Fee - ${order.serviceName}`,
           order_id: order.gatewayOrderId,
           handler: async function (response: any) {
@@ -212,7 +217,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
           <div>
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Public Service / सेवा</span>
             <span className="font-bold text-gray-900 text-xs sm:text-sm block leading-snug break-words">{serviceName || 'RTS Public Service'}</span>
-            <span className="text-[11px] text-gray-500 font-medium block break-words mt-0.5">{departmentName || 'Akola Municipal Corporation'}</span>
+            <span className="text-[11px] text-gray-500 font-medium block break-words mt-0.5">{departmentName || getUlbDataFromCookies().ulbName || 'Municipal Corporation'}</span>
           </div>
 
           {(customerName || customerMobile) && (

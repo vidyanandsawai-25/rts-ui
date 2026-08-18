@@ -11,6 +11,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { Button } from '@/components/common';
+import { getUlbDataFromCookies } from '@/lib/utils/cookie';
 import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
 
 interface RTSPaymentReceiptProps {
@@ -41,16 +42,22 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
       })
     : new Date().toLocaleString('en-IN');
 
-  const ulbNameEn = receipt.ulbName || 'Akola Municipal Corporation';
-  const ulbNameMr = receipt.ulbNameLocal || 'अकोला महानगरपालिका';
+  const cookieUlb = getUlbDataFromCookies();
+  const ulbNameEn = receipt.ulbName || cookieUlb.ulbName || 'Municipal Corporation';
+  const ulbNameMr = receipt.ulbNameLocal || cookieUlb.ulbNameLocal || ulbNameEn;
+  const ulbLogo = cookieUlb.ulbLogo;
 
   return (
     <div className={`w-full max-w-3xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden border border-slate-200/90 print:m-0 print:w-full print:max-w-none print:shadow-none print:border-none print:rounded-none ${className}`}>
       {/* Header Banner - Official Municipal Identity */}
       <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 px-4 sm:px-6 py-4 sm:py-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:bg-none print:text-slate-900 print:border-b-2 print:border-slate-800 print:px-0 print:py-3">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shrink-0 print:border-slate-800 print:text-slate-900">
-            <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shrink-0 print:border-slate-800 print:text-slate-900 overflow-hidden">
+            {ulbLogo ? (
+              <img src={ulbLogo} alt={ulbNameEn} className="w-9 h-9 object-contain" />
+            ) : (
+              <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
+            )}
           </div>
           <div>
             <h2 className="font-black text-base sm:text-xl tracking-tight leading-tight">
@@ -220,7 +227,7 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
       {showActions && (
         <div className="bg-slate-50 px-4 sm:px-6 py-3.5 sm:py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2.5 print:hidden">
           <div className="text-xs text-slate-500 font-medium text-center sm:text-left">
-            RTS Public Portal • Akola Municipal Corporation
+            RTS Public Portal • {ulbNameEn}
           </div>
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
             <Button
