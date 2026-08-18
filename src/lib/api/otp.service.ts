@@ -25,7 +25,7 @@ export async function requestOtp(mobile: string): Promise<RequestOtpResponse> {
       expiresInSeconds: number;
       isLive?: boolean;
       directLogin?: boolean;
-    }>("/api/RTSApplication/citizen-otp/send", {
+    }>("/RTSApplication/citizen-otp/send", {
       mobile: sanitized,
     });
 

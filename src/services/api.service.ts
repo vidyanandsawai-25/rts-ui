@@ -68,7 +68,12 @@ class ApiClient {
   }
 
   private isPublicEndpoint(endpoint: string): boolean {
-    const path = endpoint.toLowerCase().split('?')[0];
+    let path = endpoint.toLowerCase().split('?')[0];
+    if (path.startsWith('/api/')) {
+      path = path.substring(4);
+    } else if (path.startsWith('api/')) {
+      path = '/' + path.substring(4);
+    }
     return this.publicEndpoints.some(
       (pe) => path === pe.toLowerCase() || path.startsWith(pe.toLowerCase() + '/')
     );
@@ -184,7 +189,12 @@ class ApiClient {
 
     try {
       const headers = await this.getAuthHeaders(options, skipAuth);
-      const url = `${baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+      let cleanEndpoint = endpoint.replace(/^\//, '');
+      const trimmedBase = baseUrl.replace(/\/$/, '');
+      if (trimmedBase.endsWith('/api') && cleanEndpoint.startsWith('api/')) {
+        cleanEndpoint = cleanEndpoint.substring(4);
+      }
+      const url = `${trimmedBase}/${cleanEndpoint}`;
 
       const cleanHeaders: Record<string, string> = {};
       Object.entries(headers).forEach(
