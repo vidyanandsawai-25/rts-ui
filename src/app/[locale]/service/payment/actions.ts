@@ -4,6 +4,7 @@ import {
   createPaymentOrder,
   verifyPayment,
   getPaymentReceipt,
+  getPaymentReceiptByNo,
   getPaymentStatus,
   type CreatePaymentOrderPayload,
   type PaymentOrderResult,
@@ -45,6 +46,20 @@ export async function getPaymentReceiptAction(
 ): Promise<{ success: boolean; data?: PaymentReceiptResult | null; error?: string }> {
   try {
     const data = await getPaymentReceipt(applicationId);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to retrieve receipt."
+    };
+  }
+}
+
+export async function getPaymentReceiptByNoAction(
+  receiptNo: string
+): Promise<{ success: boolean; data?: PaymentReceiptResult | null; error?: string }> {
+  try {
+    const data = await getPaymentReceiptByNo(receiptNo);
     return { success: true, data };
   } catch (err) {
     return {

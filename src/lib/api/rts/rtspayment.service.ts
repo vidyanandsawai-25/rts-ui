@@ -57,15 +57,23 @@ export interface PaymentReceiptResult {
   departmentName: string;
   departmentNameLocal: string;
   amount: number;
+  amountInWords?: string;
+  amountInWordsLocal?: string;
   currency: string;
   paymentGateway: string;
   gatewayPaymentId: string;
+  transactionNo?: string;
+  bankRefNo?: string;
+  payerVpaOrAccount?: string;
   receiptNo: string;
   paymentDate: string;
   paymentStatus: string;
   paymentMode?: string;
   customerName?: string;
   customerMobile?: string;
+  customerEmail?: string;
+  ulbName?: string;
+  ulbNameLocal?: string;
 }
 
 export interface ApiResponseWrapper<T> {
@@ -93,6 +101,15 @@ export async function verifyPayment(payload: VerifyPaymentPayload): Promise<Veri
 export async function getPaymentReceipt(applicationId: number): Promise<PaymentReceiptResult | null> {
   try {
     const res = await apiClient.get<ApiResponseWrapper<PaymentReceiptResult>>(`/RTSPayment/receipt/${applicationId}`);
+    return res.data?.items || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getPaymentReceiptByNo(receiptNo: string): Promise<PaymentReceiptResult | null> {
+  try {
+    const res = await apiClient.get<ApiResponseWrapper<PaymentReceiptResult>>(`/RTSPayment/receipt-by-no/${encodeURIComponent(receiptNo)}`);
     return res.data?.items || null;
   } catch {
     return null;
