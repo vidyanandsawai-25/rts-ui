@@ -11,9 +11,11 @@ import {
   Download,
   FileText,
   GitCommit,
+  IndianRupee,
   LoaderCircle,
   Paperclip,
   Pencil,
+  Printer,
   RotateCcw,
   Save,
   Shield,
@@ -33,6 +35,10 @@ import {
 } from '@/components/common';
 import { ApprovalStagesTimeline } from '@/components/modules/rts';
 import RtsApplicationNoteSheetModal from '@/components/modules/rts/dashboard/RtsApplicationNoteSheetModal';
+import { RtsRecordOfflinePaymentModal } from '@/components/modules/rts/dashboard/RtsRecordOfflinePaymentModal';
+import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
+import { getPaymentReceiptAction } from '@/app/[locale]/service/payment/actions';
+import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
 import {
   rejectApprovalApplicationAction,
   revertApprovalApplicationAction,
@@ -140,7 +146,7 @@ const ACTIONS: Array<{
     { key: 'canApprove', labelKey: 'approveApplication', icon: Check, variant: 'success' },
     { key: 'canReject', labelKey: 'rejectApplication', icon: XCircle, variant: 'danger' },
     { key: 'canReturn', labelKey: 'revertToCitizen', icon: RotateCcw, variant: 'secondary' },
-    { key: 'canPay', labelKey: 'recordPayment', icon: Shield, variant: 'primary' },
+    { key: 'canPay', labelKey: 'recordPayment', icon: IndianRupee, variant: 'primary' },
     { key: 'canViewNoteSheet', labelKey: 'viewNoteSheet', icon: FileText, variant: 'secondary' },
   ];
 
@@ -169,6 +175,9 @@ export default function RtsApplicationProcessDrawer({
   const [initialFieldValues, setInitialFieldValues] = useState<Record<string, string>>(() => getInitialFieldValues(data));
   const [editedFieldValues, setEditedFieldValues] = useState<Record<string, string>>(() => getInitialFieldValues(data));
   const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
+  const [isOfflinePaymentModalOpen, setIsOfflinePaymentModalOpen] = useState(false);
+  const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
+  const [isReceiptLoading, setIsReceiptLoading] = useState(false);
   const [isSubmittingDecision, startDecisionTransition] = useTransition();
   const [documentPreviewUrl, setDocumentPreviewUrl] = useState<string | null>(null);
   const [documentPreviewType, setDocumentPreviewType] = useState<'image' | 'file' | null>(null);
@@ -308,6 +317,31 @@ export default function RtsApplicationProcessDrawer({
     onClose();
   };
 
+  const applicantName = useMemo(() => {
+    return (
+      data?.details?.applicationDetails?.find(
+        (f) => f.fieldLabel?.includes('नाव') || f.fieldLabel?.toLowerCase().includes('name')
+      )?.value || record?.citizenName || ''
+    );
+  }, [data?.details?.applicationDetails, record?.citizenName]);
+
+  const handleViewReceipt = async () => {
+    if (!applicationId) return;
+    setIsReceiptLoading(true);
+    try {
+      const res = await getPaymentReceiptAction(applicationId);
+      if (res.success && res.data) {
+        setReceiptModalData(res.data);
+      } else {
+        toast.error('पावती उपलब्ध नाही किंवा मिळवता आली नाही.');
+      }
+    } catch {
+      toast.error('पावती मिळवताना त्रुटी आली.');
+    } finally {
+      setIsReceiptLoading(false);
+    }
+  };
+
   const notifyActionUnavailable = () => {
     toast.info(t('actionsUnavailable'));
   };
@@ -317,6 +351,11 @@ export default function RtsApplicationProcessDrawer({
 
     if (!hasOfficerAccess) {
       toast.error(t('officerAccessDenied'));
+      return;
+    }
+
+    if (actionKey === 'canApprove' && verification?.feesRequired && !verification?.isPaid) {
+      toast.warning(`नागरिकाचे शासकीय शुल्क (₹${verification.serviceFees ?? 0}) प्रलंबित असल्याने अर्ज मंजूर करता येणार नाही. प्रथम शुल्क जमा करणे आवश्यक आहे.`);
       return;
     }
 
@@ -418,36 +457,63 @@ export default function RtsApplicationProcessDrawer({
               <p className="text-xs font-medium text-amber-700">{t('officerAccessDenied')}</p>
             )}
             <div className="flex flex-wrap items-center justify-start gap-2">
-              {availableActions.map((action) => (
+              {availableActions.map((action) => {
+                const isApproveBlockedByFee = action.key === 'canApprove' && Boolean(verification?.feesRequired && !verification?.isPaid);
+                return (
+                  <Button
+                    key={action.key}
+                    type="button"
+                    size="xs"
+                    variant={action.variant}
+                    icon={action.icon}
+                    disabled={isSubmittingDecision || !hasOfficerAccess || isApproveBlockedByFee}
+                    title={
+                      !hasOfficerAccess
+                        ? t('officerAccessDenied')
+                        : isApproveBlockedByFee
+                          ? 'शासकीय शुल्क प्रलंबित असल्याने मंजूर करता येत नाही.'
+                          : undefined
+                    }
+                    onClick={() => {
+                      if (action.key === 'canViewNoteSheet') {
+                        setIsNoteSheetOpen(true);
+                        return;
+                      }
+                      if (action.key === 'canPay') {
+                        setIsOfflinePaymentModalOpen(true);
+                        return;
+                      }
+                      if (
+                        action.key === 'canVerifyDocument' ||
+                        action.key === 'canApprove' ||
+                        action.key === 'canReject' ||
+                        action.key === 'canReturn'
+                      ) {
+                        submitDecision(action.key);
+                        return;
+                      }
+                      notifyActionUnavailable();
+                    }}
+                    className="rounded-lg px-3 text-xs font-bold"
+                  >
+                    {action.key === 'canPay' ? 'शुल्क स्वीकारा (Record Payment)' : t(action.labelKey)}
+                  </Button>
+                );
+              })}
+
+              {verification?.isPaid && (
                 <Button
-                  key={action.key}
                   type="button"
                   size="xs"
-                  variant={action.variant}
-                  icon={action.icon}
-                  disabled={isSubmittingDecision || !hasOfficerAccess}
-                  title={!hasOfficerAccess ? t('officerAccessDenied') : undefined}
-                  onClick={() => {
-                    if (action.key === 'canViewNoteSheet') {
-                      setIsNoteSheetOpen(true);
-                      return;
-                    }
-                    if (
-                      action.key === 'canVerifyDocument' ||
-                      action.key === 'canApprove' ||
-                      action.key === 'canReject' ||
-                      action.key === 'canReturn'
-                    ) {
-                      submitDecision(action.key);
-                      return;
-                    }
-                    notifyActionUnavailable();
-                  }}
-                  className="rounded-lg px-3 text-xs font-bold"
+                  variant="secondary"
+                  icon={Printer}
+                  disabled={isReceiptLoading}
+                  onClick={handleViewReceipt}
+                  className="rounded-lg px-3 text-xs font-bold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
                 >
-                  {t(action.labelKey)}
+                  पावती पहा (Receipt)
                 </Button>
-              ))}
+              )}
             </div>
           </div>
 
@@ -600,6 +666,72 @@ export default function RtsApplicationProcessDrawer({
                   )}
                 </section>
 
+                {/* Payment Status Banner */}
+                {verification?.feesRequired && (
+                  verification?.isPaid ? (
+                    <section className="rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50/50 p-3.5 shadow-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                            <CheckCircle2 className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-extrabold text-emerald-900">
+                              शासकीय शुल्क प्राप्त (Fee Paid): ₹{verification.serviceFees ?? 0}
+                            </p>
+                            <p className="text-[11px] font-medium text-emerald-700">
+                              पावती क्र. : {verification.receiptNo || 'उपलब्ध'}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="secondary"
+                          icon={Printer}
+                          disabled={isReceiptLoading}
+                          onClick={handleViewReceipt}
+                          className="rounded-lg text-[11px] font-bold text-emerald-800 border-emerald-300 bg-white hover:bg-emerald-50 shrink-0"
+                        >
+                          पावती पहा
+                        </Button>
+                      </div>
+                    </section>
+                  ) : (
+                    <section className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-amber-50/50 p-3.5 shadow-sm">
+                      <div className="flex flex-col gap-2.5">
+                        <div className="flex items-start gap-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                            <IndianRupee className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-extrabold text-amber-900">
+                              शासकीय शुल्क प्रलंबित: ₹{verification?.serviceFees ?? 0}
+                            </p>
+                            <p className="text-[11px] font-medium text-amber-700 leading-relaxed">
+                              नागरिकाने ऑनलाइन भरावे किंवा CFC काऊंटरवर जमा करावे. शुल्क भरल्याशिवाय अंतिम मंजुरी देता येणार नाही.
+                            </p>
+                          </div>
+                        </div>
+                        {verification?.canPay && hasOfficerAccess && (
+                          <div className="pt-1 flex justify-end">
+                            <Button
+                              type="button"
+                              size="xs"
+                              variant="primary"
+                              icon={IndianRupee}
+                              onClick={() => setIsOfflinePaymentModalOpen(true)}
+                              className="rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 font-bold shadow-xs"
+                            >
+                              काऊंटर शुल्क स्वीकारा (Record Payment)
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                  )
+                )}
+
                 <section className="rounded-xl border border-blue-200 bg-white p-4 shadow-sm mb-1">
                   <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3">
                     <Shield className="h-4 w-4 text-blue-600" />
@@ -745,6 +877,31 @@ export default function RtsApplicationProcessDrawer({
         record={record}
         data={data}
       />
+
+      {isOfflinePaymentModalOpen && applicationId && (
+        <RtsRecordOfflinePaymentModal
+          open={isOfflinePaymentModalOpen}
+          onClose={() => setIsOfflinePaymentModalOpen(false)}
+          applicationId={applicationId}
+          applicationNo={headerApplicationNo}
+          serviceName={record?.serviceName || verification?.serviceName || undefined}
+          serviceFees={verification?.serviceFees}
+          applicantName={applicantName}
+          onSuccess={(receipt) => {
+            setIsOfflinePaymentModalOpen(false);
+            setReceiptModalData(receipt);
+            toast.success(`ऑफलाइन शुल्क ₹${receipt.amount} यशस्वीरीत्या जमा झाले. पावती क्र. ${receipt.receiptNo}`);
+            onSuccess?.();
+          }}
+        />
+      )}
+
+      {receiptModalData && (
+        <PaymentReceiptModal
+          receipt={receiptModalData}
+          onClose={() => setReceiptModalData(null)}
+        />
+      )}
     </>
   );
 }

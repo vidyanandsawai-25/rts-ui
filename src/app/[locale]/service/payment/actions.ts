@@ -3,6 +3,7 @@
 import {
   createPaymentOrder,
   verifyPayment,
+  recordOfflinePayment,
   getPaymentReceipt,
   getPaymentReceiptByNo,
   getPaymentStatus,
@@ -10,6 +11,7 @@ import {
   type PaymentOrderResult,
   type VerifyPaymentPayload,
   type VerifyPaymentResult,
+  type RecordOfflinePaymentPayload,
   type PaymentReceiptResult
 } from "@/lib/api/rts/rtspayment.service";
 
@@ -37,6 +39,20 @@ export async function verifyPaymentAction(
     return {
       success: false,
       error: err instanceof Error ? err.message : "Payment verification failed."
+    };
+  }
+}
+
+export async function recordOfflinePaymentAction(
+  payload: RecordOfflinePaymentPayload
+): Promise<{ success: boolean; data?: PaymentReceiptResult; error?: string }> {
+  try {
+    const data = await recordOfflinePayment(payload);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to record offline payment."
     };
   }
 }

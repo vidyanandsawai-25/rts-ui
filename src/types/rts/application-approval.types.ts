@@ -184,6 +184,9 @@ export interface RtsApplicationVerificationItem {
   serviceName?: string | null;
   serviceFees?: number | null;
   feesRequired?: boolean;
+  isPaid?: boolean;
+  paymentStatus?: string | null;
+  receiptNo?: string | null;
 }
 
 export type RtsApplicationVerificationApiResponse =

@@ -90,10 +90,28 @@ export async function createPaymentOrder(payload: CreatePaymentOrderPayload): Pr
   return res.data.items;
 }
 
+export interface RecordOfflinePaymentPayload {
+  applicationId: number;
+  paymentMode: string;
+  amount?: number;
+  instrumentNo?: string;
+  instrumentDate?: string;
+  bankName?: string;
+  remarks?: string;
+}
+
 export async function verifyPayment(payload: VerifyPaymentPayload): Promise<VerifyPaymentResult> {
   const res = await apiClient.post<ApiResponseWrapper<VerifyPaymentResult>>("/RTSPayment/verify-payment", payload);
   if (!res.data?.success || !res.data?.items) {
     throw new Error(res.data?.message || res.error || "Payment verification failed");
+  }
+  return res.data.items;
+}
+
+export async function recordOfflinePayment(payload: RecordOfflinePaymentPayload): Promise<PaymentReceiptResult> {
+  const res = await apiClient.post<ApiResponseWrapper<PaymentReceiptResult>>("/RTSPayment/record-offline", payload);
+  if (!res.data?.success || !res.data?.items) {
+    throw new Error(res.data?.message || res.error || "Failed to record offline payment");
   }
   return res.data.items;
 }
