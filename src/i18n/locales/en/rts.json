@@ -651,8 +651,10 @@
   "citizenDashboard": {
     "applicationDetails": "Application Details",
     "applicationSummary": "Application Summary",
+    "application": "Application",
     "applicationNumber": "Application Number",
     "submittedDate": "Submitted Date",
+    "submittedOn": "Submitted On",
     "slaTimeline": "SLA Timeline",
     "status": "Status",
     "days": "Days",
@@ -679,6 +681,7 @@
     "timelineDescription": "Each municipal service is bound by legal Right to Service delivery timelines.",
     "searchPlaceholder": "Search by ID or service name...",
     "noApplications": "No applications found.",
+    "noApplicationsDesc": "Your submitted applications will appear here.",
     "applicationAndService": "Application ID & Service",
     "statusAndStage": "Status & Stage",
     "actions": "Actions",

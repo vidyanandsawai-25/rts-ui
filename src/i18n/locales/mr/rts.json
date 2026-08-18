@@ -660,8 +660,10 @@
   "citizenDashboard": {
     "applicationDetails": "अर्जाचा तपशील",
     "applicationSummary": "अर्जाचा सारांश",
+    "application": "अर्ज",
     "applicationNumber": "अर्ज क्रमांक",
     "submittedDate": "सादर तारीख",
+    "submittedOn": "सादर केल्याची तारीख",
     "slaTimeline": "SLA कालावधी",
     "status": "स्थिती",
     "days": "दिवस",
@@ -688,6 +690,7 @@
     "timelineDescription": "प्रत्येक नगरपालिका सेवा कायदेशीर लोकसेवा हक्क कालमर्यादेने बांधलेली आहे.",
     "searchPlaceholder": "आयडी किंवा सेवा नावाने शोधा...",
     "noApplications": "कोणताही अर्ज आढळला नाही.",
+    "noApplicationsDesc": "तुमचे सादर केलेले अर्ज येथे दिसतील.",
     "applicationAndService": "अर्ज आयडी आणि सेवा",
     "statusAndStage": "स्थिती आणि टप्पा",
     "actions": "कृती",

@@ -13,6 +13,7 @@ interface RtsApplicationDocumentViewProps {
   downloadUrl: string;
   fileName: string;
   label?: string;
+  onClose?: () => void;
 }
 
 export default function RtsApplicationDocumentView({
@@ -21,12 +22,14 @@ export default function RtsApplicationDocumentView({
   downloadUrl,
   fileName,
   label,
+  onClose,
 }: RtsApplicationDocumentViewProps) {
   const router = useRouter();
   const t = useTranslations('rts.applicationDashboard.processDrawer');
   const tCommon = useTranslations('common');
   const title = label || fileName;
-  const handleClose = () => router.back();
+  // Route-driven admin previews use browser back; nested consumers can close locally.
+  const handleClose = onClose ?? (() => router.back());
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewType, setPreviewType] = useState<'image' | 'pdf' | 'unsupported' | null>(null);

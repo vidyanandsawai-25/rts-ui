@@ -657,8 +657,10 @@
   "citizenDashboard": {
     "applicationDetails": "आवेदन का विवरण",
     "applicationSummary": "आवेदन सारांश",
+    "application": "आवेदन",
     "applicationNumber": "आवेदन क्रमांक",
     "submittedDate": "जमा तिथि",
+    "submittedOn": "जमा करने की तिथि",
     "slaTimeline": "SLA समय सीमा",
     "status": "स्थिति",
     "days": "दिन",
@@ -685,6 +687,7 @@
     "timelineDescription": "प्रत्येक नगरपालिका सेवा कानूनी लोक सेवा अधिकार समय सीमा से बंधी है।",
     "searchPlaceholder": "आईडी या सेवा नाम से खोजें...",
     "noApplications": "कोई आवेदन नहीं मिला।",
+    "noApplicationsDesc": "आपके जमा किए गए आवेदन यहां दिखाई देंगे।",
     "applicationAndService": "आवेदन आईडी और सेवा",
     "statusAndStage": "स्थिति और चरण",
     "actions": "कार्रवाई",

@@ -7,7 +7,8 @@ import { useTranslations } from "next-intl";
 
 import { getApplicationDetailAction, type RtsApplicationDetailData } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import { ApprovalStagesTimeline } from "@/components/modules/rts";
-import { Button, DocumentViewerModal, Drawer, ViewButton } from "@/components/common";
+import RtsApplicationDocumentView from "@/components/modules/rts/dashboard/RtsApplicationDocumentView";
+import { Button, Drawer, ViewButton } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { getCitizenRtsDocumentDownloadUrl, getCitizenRtsDocumentViewUrl } from "@/lib/api/rts/rtsdocument.client";
 import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
@@ -58,6 +59,7 @@ export default function RtsCitizenViewDetailsDrawer({
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
   const [viewingDoc, setViewingDoc] = useState<{
     fileUrl: string;
+    downloadUrl: string;
     fileName: string;
     label: string;
   } | null>(null);
@@ -295,6 +297,7 @@ export default function RtsCitizenViewDetailsDrawer({
                             size="xs"
                             onClick={() => setViewingDoc({
                               fileUrl: getCitizenRtsDocumentViewUrl(document.guid),
+                              downloadUrl: getCitizenRtsDocumentDownloadUrl(document.guid),
                               fileName: `${document.label.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
                               label: document.label,
                             })}
@@ -354,13 +357,13 @@ export default function RtsCitizenViewDetailsDrawer({
       </Drawer>
 
       {viewingDoc && (
-        <DocumentViewerModal
-          isOpen
+        <RtsApplicationDocumentView
+          open
           onClose={() => setViewingDoc(null)}
           fileUrl={viewingDoc.fileUrl}
+          downloadUrl={viewingDoc.downloadUrl}
           fileName={viewingDoc.fileName}
           label={viewingDoc.label}
-          loadPreviewAsBlob
         />
       )}
 
