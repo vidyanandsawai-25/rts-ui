@@ -8,6 +8,7 @@ const backMock = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock, back: backMock, replace: vi.fn(), refresh: vi.fn() }),
   usePathname: () => '/property-tax/taxzoningmaster/ward-abstract',
+  useParams: () => ({ locale: 'en' }),
 }));
 
 vi.mock('next-intl', () => ({
@@ -15,11 +16,12 @@ vi.mock('next-intl', () => ({
 }));
 
 vi.mock('@/components/common/Drawer', () => ({
-  Drawer: ({ open, title, headerActions, children }: any) => (open ? (
+  Drawer: ({ open, title, headerActions, children, onClose }: any) => (open ? (
     <div data-testid="drawer">
       <div data-testid="drawer-title">{title}</div>
       <div data-testid="drawer-header-actions">{headerActions}</div>
       <div data-testid="drawer-body">{children}</div>
+      <button data-testid="drawer-close" onClick={onClose}>Close</button>
     </div>
   ) : null),
 }));
@@ -68,6 +70,13 @@ const baseProps = {
 describe('WardAbstractDrawerWrapper', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('clicking the close button navigates to the taxzoningmaster screen', () => {
+    render(<WardAbstractDrawerWrapper {...baseProps} />);
+    fireEvent.click(screen.getByTestId('drawer-close'));
+    expect(pushMock).toHaveBeenCalledWith('/en/property-tax/taxzoningmaster');
+    expect(backMock).not.toHaveBeenCalled();
   });
 
   it('clicking Export Excel calls downloadTaxZoningExport with ulbName only when search empty', () => {

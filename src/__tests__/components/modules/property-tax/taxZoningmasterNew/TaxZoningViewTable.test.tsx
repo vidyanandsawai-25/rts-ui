@@ -117,7 +117,7 @@ const data: TaxZoningRange[] = [
     id: 1, wardId: 1, wardNo: 'W1', taxZoneId: 1, taxZoneNo: 'TZ1',
     fromPropertyNo: '10', toPropertyNo: '20', assignEntireWard: false,
     zoneDescription: 'Desc', isActive: true, createdDate: null, updatedDate: null,
-    minPropertyNo: '10', maxPropertyNo: '20',
+    minPropertyNo: '10', maxPropertyNo: '20', totalProperties: 11,
   },
 ];
 

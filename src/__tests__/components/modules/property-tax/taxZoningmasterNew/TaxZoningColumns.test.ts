@@ -21,22 +21,32 @@ const baseRow: TaxZoningRange = {
   updatedDate: '2024-01-15T10:30:00Z',
   minPropertyNo: '1',
   maxPropertyNo: '999',
+  totalProperties: 42,
 };
 
 describe('getColumns', () => {
-  it('returns 7 columns with correct labels', () => {
+  it('returns 8 columns with correct labels', () => {
     const onEdit = vi.fn();
     const columns = getColumns(onEdit, t, 'en-IN');
-    expect(columns).toHaveLength(7);
+    expect(columns).toHaveLength(8);
     expect(columns.map((c) => c.label)).toEqual([
       'columns.srNo',
       'wardNo',
       'columns.propertyRange',
+      'columns.totalProperties',
       'zoneDescription',
       'taxZone',
       'columns.lastUpdated',
       'columns.actions',
     ]);
+  });
+
+  it('totalProperties column renders the server-computed count', () => {
+    const columns = getColumns(vi.fn(), t, 'en-IN');
+    const totalPropertiesCol = columns.find((c) => c.key === 'totalProperties')!;
+    const node = totalPropertiesCol.render!(42, baseRow as unknown as TaxZoningRange & Record<string, unknown>, 0);
+    render(node as ReactElement);
+    expect(screen.getByText('42')).toBeInTheDocument();
   });
 
   it('srNo column render returns idx + 1', () => {

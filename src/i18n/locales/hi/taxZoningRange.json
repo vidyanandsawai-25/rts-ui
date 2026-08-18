@@ -105,6 +105,7 @@
         "columns": {
           "srNo": "क्र.",
           "propertyRange": "संपत्ति सीमा",
+          "totalProperties": "कुल संपत्तियां",
           "lastUpdated": "अंतिम अपडेट",
           "actions": "कार्रवाई"
         }

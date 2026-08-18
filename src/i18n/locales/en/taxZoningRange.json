@@ -105,6 +105,7 @@
         "columns": {
           "srNo": "Sr.",
           "propertyRange": "Property Range",
+          "totalProperties": "Total Properties",
           "lastUpdated": "Last Updated",
           "actions": "Actions"
         }
