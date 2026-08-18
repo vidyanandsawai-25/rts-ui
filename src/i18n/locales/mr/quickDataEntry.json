@@ -1,4 +1,10 @@
 {
+  "common": {
+    "warning": "चेतावणी",
+    "confirm": "पुष्टी करा",
+    "cancel": "रद्द करा",
+    "ok": "ठीक आहे"
+  },
   "renter": {
     "loadingScreen": "भाडेकरू स्क्रीन लोड होत आहे...",
     "loadingEngine": "भाडे इंजिन लोड होत आहे..."
@@ -28,6 +34,12 @@
     "updating": "अपडेट होत आहे...",
     "saveData": "माहिती जतन करा",
     "close": "बंद करा",
+    "confirmSave": {
+      "title": "माहिती जतन करण्याची पुष्टी करा",
+      "message": "तुम्हाला नक्की मजला आणि खोलीचा तपशील जतन करायचा आहे का?",
+      "confirmBtn": "पुष्टी करा",
+      "cancelBtn": "रद्द करा"
+    },
     "success": {
       "title": "यशस्वी!",
       "message": "मजल्याचा तपशील यशस्वीरित्या जोडला गेला",
@@ -779,6 +791,11 @@
     }
   },
   "floor": {
+    "sequenceWarningTitle": "मजला अनुक्रम चेतावणी",
+    "doYouWantToProceed": "तुम्हाला तरीही पुढे जायचे आहे का?",
+    "proceedAnyway": "तरीही पुढे जा",
+    "sequenceGapDetected": "मजला अनुक्रम तफावत आढळली: {currLabel} हे अनुक्रमात नाही. {prevLabel} नंतर आवश्यक मजला क्रमांक ({missingNo}) गहाळ आहे.",
+    "sequenceMustStartGround": "मजला अनुक्रम तळमजल्यापासून (0) सुरू होणे आवश्यक आहे. {firstLabel} च्या आधी तळमजला गहाळ आहे.",
     "usedPlotArea": "वापरलेले भूखंड क्षेत्र",
     "openPlotCategory": "वर्ग",
     "separatelyUsedPlotArea": "स्वतंत्रपणे वापरलेले भूखंड क्षेत्रफळ",

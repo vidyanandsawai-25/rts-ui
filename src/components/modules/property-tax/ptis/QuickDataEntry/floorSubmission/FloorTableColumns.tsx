@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import React from 'react';
 import { DeleteButton, Tooltip } from '@/components/common';
 import { FloorData } from '@/types/room-details.types';
@@ -10,6 +11,8 @@ import {
   LookupData,
 } from '@/lib/utils/floorSubmission/floor-mappers';
 
+import { FloorCompleteSequenceValidationResult, FloorSequenceValidationResult } from '@/lib/validations/validateFloorSequence';
+
 interface UseFloorTableColumnsProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
   floorLookup: LookupData[];
@@ -17,6 +20,8 @@ interface UseFloorTableColumnsProps {
   constructionLookup: LookupData[];
   useLookup: LookupData[];
   subTypeData: LookupData[];
+  sequenceValidationResult?: FloorSequenceValidationResult;
+  completeSequenceValidationResult?: FloorCompleteSequenceValidationResult;
 }
 
 export const useFloorTableColumns = ({
@@ -26,6 +31,8 @@ export const useFloorTableColumns = ({
   constructionLookup,
   useLookup,
   subTypeData,
+  sequenceValidationResult,
+  completeSequenceValidationResult,
 }: UseFloorTableColumnsProps) => {
   return React.useMemo(() => {
     const formatArea = (val: unknown) => {
@@ -85,6 +92,21 @@ export const useFloorTableColumns = ({
           const rowRecord = row as unknown as Record<string, unknown>;
           const text = (rowRecord.floorDescription as string) ||
             getFloorDescription(String(val ?? ''), floorLookup) || String(val ?? '');
+
+          const numMismatch = completeSequenceValidationResult?.numberMismatches?.find(
+            (m) => String(m.floorId) === String(row.id || row.floorId || row.floorID)
+          );
+
+          if (numMismatch) {
+            return (
+              <Tooltip placement="bottom" content={numMismatch.message}>
+                <span className="inline-flex items-center gap-1 font-bold text-amber-800 bg-amber-50 border border-amber-300 px-1.5 py-0.5 rounded text-[12px] cursor-help">
+                  ⚠️ {text}
+                </span>
+              </Tooltip>
+            );
+          }
+
           return (
             <Tooltip placement="bottom" content={text}>
               <span className="block truncate cursor-default font-semibold text-slate-800 text-[12px]">{text}</span>
@@ -118,6 +140,20 @@ export const useFloorTableColumns = ({
         render: (val: unknown, row: FloorData) => {
           const rowRecord = row as unknown as Record<string, unknown>;
           const text = String((rowRecord.constructionYear as string) || val || '-');
+          const mismatch = (completeSequenceValidationResult?.yearMismatches || sequenceValidationResult?.mismatches)?.find(
+            (m) => String(m.floorId) === String(row.id || row.floorId || row.floorID)
+          );
+
+          if (mismatch) {
+            return (
+              <Tooltip placement="bottom" content={mismatch.message}>
+                <span className="inline-flex items-center gap-1 font-bold text-amber-800 bg-amber-50 border border-amber-300 px-1.5 py-0.5 rounded text-[12px] cursor-help">
+                  ⚠️ {text}
+                </span>
+              </Tooltip>
+            );
+          }
+
           return <span className="font-semibold text-slate-800 text-[12px]">{text}</span>;
         },
       },
@@ -260,7 +296,7 @@ export const useFloorTableColumns = ({
         },
       },
     ];
-  }, [t, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData]);
+  }, [t, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, sequenceValidationResult, completeSequenceValidationResult]);
 };
 
 export const renderFloorActions = (t: (key: string) => string, handleDeleteFloor: (floor: FloorData) => void) => {

@@ -32,7 +32,14 @@ import {
  *   setFormErrors(result.errors);
  * }
  */
-export function validateFloorForm(data: unknown, t?: (key: string) => string, isAddingNewFloor?: boolean, selectedFloorType?: 'Construction' | 'OpenPlot') {
+export function validateFloorForm(
+  data: unknown,
+  t?: (key: string) => string,
+  isAddingNewFloor?: boolean,
+  selectedFloorType?: 'Construction' | 'OpenPlot',
+  _allFloors?: unknown[],
+  _propertyId?: string | number
+) {
   const parseData = typeof data === 'object' && data !== null ? { ...data, isAddingNewFloor, selectedFloorType } : data;
   const result = floorFormSchema.safeParse(parseData);
 

@@ -252,6 +252,11 @@
     },
     "note": {
       "mandatory": "* चिह्नित फ़ील्ड अनिवार्य हैं"
-    }
+    },
+    "sequenceWarningTitle": "मंजिल अनुक्रम चेतावनी",
+    "doYouWantToProceed": "क्या आप फिर भी आगे बढ़ना चाहते हैं?",
+    "proceedAnyway": "फिर भी आगे बढ़ें",
+    "sequenceGapDetected": "मंजिल अनुक्रम में अंतर पाया गया: {currLabel} अनुक्रम से बाहर है। {prevLabel} के बाद गायब मंजिल संख्या ({missingNo})।",
+    "sequenceMustStartGround": "मंजिल अनुक्रम भूतल (0) से शुरू होना चाहिए। {firstLabel} से पहले भूतल गायब है।"
   }
 }

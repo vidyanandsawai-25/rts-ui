@@ -17,6 +17,7 @@ import {
 } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 import { useFloorDeletion } from './useFloorDeletion';
 import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
+import { validateFloorCompleteSequence, extractFloorId } from '@/lib/validations/validateFloorSequence';
 
 export const useFloorDataHandlers = (params: {
   props: EditSidebarProps;
@@ -230,12 +231,67 @@ export const useFloorDataHandlers = (params: {
       }
     }
 
-    confirm({
-      variant: isAddingNewFloor ? 'add' : 'update',
-      title: isAddingNewFloor ? t('floor.addConfirmTitle') : t('floor.updateConfirmTitle'),
-      description: isAddingNewFloor ? t('floor.addConfirmText') : t('floor.updateConfirmText'),
-      confirmText: isAddingNewFloor ? t('floor.addConfirmButton') : t('floor.updateConfirmButton'),
-      onConfirm: async () => {
+    // Dynamic Runtime Validation: Floor Number vs Construction Year sequence check for current Property ID
+    const targetFloorId = selectedFloor?.id ?? editingFloorForm.id;
+    const candidateFloorId = isAddingNewFloor ? (editingFloorForm.id || Date.now()) : targetFloorId;
+    const candidateFloor: FloorData = {
+      ...editingFloorForm,
+      constructionYear: editingFloorForm.conYr || editingFloorForm.constructionYear,
+      propertyId,
+      id: candidateFloorId,
+    };
+
+    const combinedFloorsForValidation = getOptimisticFloorsList(
+      localFloors,
+      candidateFloor,
+      isAddingNewFloor
+    );
+
+    const completeSequenceValidation = validateFloorCompleteSequence(combinedFloorsForValidation, propertyId);
+    let sequenceWarningMessage: string | null = null;
+
+    if (!completeSequenceValidation.isValid) {
+      const candidateExtractedId = extractFloorId(candidateFloor);
+      const candidateIds = new Set<string>(
+        [
+          candidateExtractedId,
+          candidateFloorId !== undefined && candidateFloorId !== null ? String(candidateFloorId) : '',
+          candidateFloor.floor ? String(candidateFloor.floor) : '',
+          candidateFloor.floorId ? String(candidateFloor.floorId) : '',
+          candidateFloor.id ? String(candidateFloor.id) : '',
+        ].filter(Boolean)
+      );
+
+      const candidateNumMismatch = completeSequenceValidation.numberMismatches.find(
+        (m) => candidateIds.has(String(m.floorId))
+      );
+
+      const candidateYearMismatch = completeSequenceValidation.yearMismatches.find(
+        (m) => candidateIds.has(String(m.floorId)) || candidateIds.has(String(m.previousFloorId))
+      );
+
+      if (candidateNumMismatch) {
+        sequenceWarningMessage = candidateNumMismatch.message;
+        setFormErrors((prev) => ({
+          ...prev,
+          floor: candidateNumMismatch.message,
+        }));
+      } else if (candidateYearMismatch) {
+        sequenceWarningMessage = candidateYearMismatch.message;
+        setFormErrors((prev) => ({
+          ...prev,
+          conYr: candidateYearMismatch.message,
+        }));
+      }
+    }
+
+    const proceedWithSaveConfirmation = () => {
+      confirm({
+        variant: isAddingNewFloor ? 'add' : 'update',
+        title: isAddingNewFloor ? t('floor.addConfirmTitle') : t('floor.updateConfirmTitle'),
+        description: isAddingNewFloor ? t('floor.addConfirmText') : t('floor.updateConfirmText'),
+        confirmText: isAddingNewFloor ? t('floor.addConfirmButton') : t('floor.updateConfirmButton'),
+        onConfirm: async () => {
         if (isSavingRef.current) return;
         isSavingRef.current = true;
         setIsSaving(true);
@@ -365,12 +421,29 @@ export const useFloorDataHandlers = (params: {
         }
       },
     });
+  };
+
+    if (sequenceWarningMessage) {
+      confirm({
+        variant: 'warning',
+        title: getSafeTranslation('floor.sequenceWarningTitle', 'Floor Sequence Warning'),
+        description: `${sequenceWarningMessage}\n\n${getSafeTranslation('floor.doYouWantToProceed', 'Do you want to proceed anyway?')}`,
+        confirmText: getSafeTranslation('floor.proceedAnyway', 'Proceed Anyway'),
+        cancelText: getSafeTranslation('common.cancel', getSafeTranslation('floor.cancel', 'Cancel')),
+        onConfirm: () => {
+          proceedWithSaveConfirmation();
+        },
+      });
+      return;
+    }
+
+    proceedWithSaveConfirmation();
   }, [
     isSaving, selectedFloorType, isOpenSpaceAreaExceeded, isFloorAreaExceeded, isGroundFloorAreaExceeded, isOpenSpaceNegative,
     availableRemainingOpenSpaceAreaSqM, availableRemainingConstructionAreaSqM, plotAreaSqM, totalOpenSpaceAreaSqM, totalConstructionAreaSqM,
     alreadyUtilizedOpenSpaceAreaSqM, enteredFloorAreaSqM, enteredOpenSpaceAreaSqM, confirm, t, editingFloorForm, setFormErrors,
     constructionLookup, isAddingNewFloor, localFloors, props, floorLookup, selectedFloor, locale, propertyId, setLocalFloors,
-    startTransition, setSelectedFloor, setIsAddingNewFloor, setEditingFloorForm, INITIAL_FORM_STATE, router
+    startTransition, setSelectedFloor, setIsAddingNewFloor, setEditingFloorForm, INITIAL_FORM_STATE, router, getSafeTranslation
   ]);
 
   const handleOpenRenterManagement = useCallback(async (formToUse?: FloorData) => {

@@ -1,4 +1,10 @@
 {
+  "common": {
+    "warning": "चेतावनी",
+    "confirm": "पुष्टि करें",
+    "cancel": "रद्द करें",
+    "ok": "ठीक है"
+  },
   "renter": {
     "loadingScreen": "किराएदार स्क्रीन लोड हो रही है...",
     "loadingEngine": "किराया इंजन लोड हो रहा है..."
@@ -28,6 +34,12 @@
     "updating": "अपडेट हो रहा है...",
     "saveData": "डेटा सहेजें",
     "close": "बंद करें",
+    "confirmSave": {
+      "title": "सहेजन की पुष्टि करें",
+      "message": "क्या आप निश्चित रूप से मंजिल और कमरे का विवरण सहेजना चाहते हैं?",
+      "confirmBtn": "पुष्टि करें",
+      "cancelBtn": "रद्द करें"
+    },
     "success": {
       "title": "सफलता!",
       "message": "तल विवरण सफलतापूर्वक जोड़ा गया",
@@ -779,6 +791,11 @@
     }
   },
   "floor": {
+    "sequenceWarningTitle": "मंजिल अनुक्रम चेतावनी",
+    "doYouWantToProceed": "क्या आप फिर भी आगे बढ़ना चाहते हैं?",
+    "proceedAnyway": "फिर भी आगे बढ़ें",
+    "sequenceGapDetected": "मंजिल अनुक्रम में अंतर पाया गया: {currLabel} अनुक्रम से बाहर है। {prevLabel} के बाद गायब मंजिल संख्या ({missingNo})।",
+    "sequenceMustStartGround": "मंजिल अनुक्रम भूतल (0) से शुरू होना चाहिए। {firstLabel} से पहले भूतल गायब है।",
     "usedPlotArea": "उपयोग किया गया प्लॉट क्षेत्र",
     "openPlotCategory": "श्रेणी",
     "separatelyUsedPlotArea": "अलग से उपयोग किया गया प्लॉट क्षेत्र",

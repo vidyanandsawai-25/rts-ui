@@ -26,7 +26,7 @@ export function getOptimisticFloorsList(
     return [optimisticFloor, ...currentFloors];
   }
   return currentFloors.map((f) =>
-    f.id === optimisticFloor.id ? optimisticFloor : f
+    String(f.id) === String(optimisticFloor.id) ? optimisticFloor : f
   );
 }
 

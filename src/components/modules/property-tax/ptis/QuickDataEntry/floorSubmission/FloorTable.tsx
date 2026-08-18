@@ -16,6 +16,7 @@ import {
 } from '@/lib/utils/floorSubmission/floor-mappers';
 import { useFloorTableColumns, renderFloorActions } from './FloorTableColumns';
 import { ExpandedRoomsBreakdown } from './components/ExpandedRoomsBreakdown';
+import { validateFloorCompleteSequence } from '@/lib/validations/validateFloorSequence';
 
 interface FloorTableProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
@@ -118,6 +119,10 @@ const FloorTable: React.FC<FloorTableProps> = ({
     handleOpenDataEntrySameAs();
   }, [isDataEntryDisabled, handleOpenDataEntrySameAs, t]);
 
+  const completeSequenceValidationResult = React.useMemo(() => {
+    return validateFloorCompleteSequence(filteredFloors);
+  }, [filteredFloors]);
+
   const columns = useFloorTableColumns({
     t,
     floorLookup,
@@ -125,6 +130,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
     constructionLookup,
     useLookup,
     subTypeData,
+    completeSequenceValidationResult,
   });
 
   const [expandedRowIds, setExpandedRowIds] = React.useState<Array<string | number>>([]);
