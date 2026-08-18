@@ -94,7 +94,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
       const ulbName =
         cookieUlb.ulbName ||
         cookieUlb.ulbNameLocal ||
-        'Akola Municipal Corporation (अकोला महानगरपालिका)';
+        'Right to Service';
 
       let ulbLogo: string | undefined = undefined;
       const rawLogo = cookieUlb.ulbLogo || '/images/rts-logo.png';
@@ -195,7 +195,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
           <span className="font-bold text-gray-800 text-base">Government Fee Payment</span>
         </div>
       }
-      subtitle="शासकीय शुल्क भरणा पोर्टल • Akola Municipal Corporation"
+      subtitle={`शासकीय शुल्क भरणा पोर्टल • ${getUlbDataFromCookies().ulbNameLocal || getUlbDataFromCookies().ulbName || 'Right to Service'}`}
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
           <Button

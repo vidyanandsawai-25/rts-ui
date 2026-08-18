@@ -46,19 +46,19 @@ export default function RtsApplicationNoteSheetModal({
     logoUrl: string;
     code: string;
   }>({
-    nameLocal: 'अकोला महानगरपालिका',
-    nameEnglish: 'AKOLA MUNICIPAL CORPORATION',
-    logoUrl: '/akolaLogo.png',
-    code: 'AMC',
+    nameLocal: 'महानगरपालिका',
+    nameEnglish: 'MUNICIPAL CORPORATION',
+    logoUrl: '/images/rts-logo.png',
+    code: 'ULB',
   });
 
   useEffect(() => {
     const cookieData = getUlbDataFromCookies();
     setUlbInfo({
-      nameLocal: cookieData.ulbNameLocal || 'अकोला महानगरपालिका',
-      nameEnglish: (cookieData.ulbName || 'AKOLA MUNICIPAL CORPORATION').toUpperCase(),
-      logoUrl: (cookieData.ulbLogo || '/akolaLogo.png').trim(),
-      code: cookieData.ulbCode || 'AMC',
+      nameLocal: cookieData.ulbNameLocal || 'महानगरपालिका',
+      nameEnglish: (cookieData.ulbName || 'MUNICIPAL CORPORATION').toUpperCase(),
+      logoUrl: (cookieData.ulbLogo || '/images/rts-logo.png').trim(),
+      code: cookieData.ulbCode || 'ULB',
     });
   }, [isOpen]);
 

@@ -56,32 +56,20 @@ export function CitizenHeader({
   };
 
   const getUlbName = () => {
-    const rawName = ulbData?.ulbName || '';
-    if (rawName.toUpperCase().includes('THANE')) {
-      return activeLocale === 'mr'
-        ? 'ठाणे महानगरपालिका'
-        : activeLocale === 'hi'
-          ? 'ठाणे नगर निगम'
-          : 'Thane Municipal Corporation';
+    if (activeLocale === 'mr') {
+      return ulbData?.ulbNameLocal || ulbData?.ulbName || 'महानगरपालिका';
     }
-    if (rawName.toUpperCase().includes('AKOLA')) {
-      return activeLocale === 'mr'
-        ? 'अकोला महानगरपालिका'
-        : activeLocale === 'hi'
-          ? 'अकोला नगर निगम'
-          : 'Akola Municipal Corporation';
+    if (activeLocale === 'hi') {
+      return ulbData?.ulbNameLocal || ulbData?.ulbName || 'नगर निगम';
     }
-    return activeLocale === 'mr'
-      ? ulbData?.ulbNameLocal || ulbData?.ulbName || ''
-      : ulbData?.ulbName || ulbData?.ulbNameLocal || '';
+    return ulbData?.ulbName || ulbData?.ulbNameLocal || 'Municipal Corporation';
   };
 
   const getUlbLocalName = () => {
-    const rawName = ulbData?.ulbName || '';
-    if (rawName.toUpperCase().includes('THANE') || rawName.toUpperCase().includes('AKOLA')) {
-      return activeLocale === 'en' ? ulbData?.ulbNameLocal || '' : '';
+    if (activeLocale === 'en') {
+      return ulbData?.ulbNameLocal || '';
     }
-    return activeLocale !== 'en' ? ulbData?.ulbName || '' : '';
+    return ulbData?.ulbName || '';
   };
 
   const handleLogout = () => {

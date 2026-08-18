@@ -43,8 +43,8 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
     : new Date().toLocaleString('en-IN');
 
   const cookieUlb = getUlbDataFromCookies();
-  const ulbNameEn = receipt.ulbName || cookieUlb.ulbName || 'Akola Municipal Corporation';
-  const ulbNameMr = receipt.ulbNameLocal || cookieUlb.ulbNameLocal || 'अकोला महानगरपालिका';
+  const ulbNameEn = receipt.ulbName || cookieUlb.ulbName || 'Municipal Corporation';
+  const ulbNameMr = receipt.ulbNameLocal || cookieUlb.ulbNameLocal || 'महानगरपालिका';
   let ulbLogo = receipt.ulbLogo || cookieUlb.ulbLogo || '/images/rts-logo.png';
   if (ulbLogo && !ulbLogo.startsWith('http://') && !ulbLogo.startsWith('https://') && !ulbLogo.startsWith('/')) {
     ulbLogo = `/api/UlbImageMaster/${ulbLogo}/view`;

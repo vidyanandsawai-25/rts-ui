@@ -31,16 +31,16 @@ function mapUlbConfigApiToMaster(raw: UlbConfigApiBody): UlbMaster {
 export async function getUlbConfigForLogin(): Promise<UlbMaster | undefined> {
   const defaultUlb: UlbMaster = {
     id: 1,
-    ulbCode: "AKOLA",
-    ulbName: "Akola Municipal Corporation",
-    ulbNameLocal: "अकोला महानगरपालिका",
+    ulbCode: "ULB",
+    ulbName: "Municipal Corporation",
+    ulbNameLocal: "महानगरपालिका",
     ulbTypeId: 1,
     isActive: true,
-    ulbLogo: "https://akolamc.in/images/councilLogo/akola.png",
-    email: "support@akolamc.in",
+    ulbLogo: "/images/councilLogo/logo.png",
+    email: "support@ulb.gov.in",
     phoneNo: "18002689959",
-    websiteUrl: "https://akolamc.in",
-    ulbAddress: "Akola Municipal Corporation Building, Near Open Theatre, Opposite Pharya Heights, New Radhakisan Plots, M.G. Road, Ganesh Nagar, Akola, Maharashtra 444001",
+    websiteUrl: "https://ulb.gov.in",
+    ulbAddress: "Municipal Corporation Administrative Building",
   };
 
   try {
@@ -51,13 +51,15 @@ export async function getUlbConfigForLogin(): Promise<UlbMaster | undefined> {
     }
     const apiUlb = mapUlbConfigApiToMaster(res.data);
     return {
+      ...defaultUlb,
       ...apiUlb,
-      ulbName: "Akola Municipal Corporation",
-      ulbNameLocal: "अकोला महानगरपालिका",
-      ulbLogo: "https://akolamc.in/images/councilLogo/akola.png",
-      email: "support@akolamc.in",
-      phoneNo: "18002689959",
-      ulbAddress: "Akola Municipal Corporation Building, Near Open Theatre, Opposite Pharya Heights, New Radhakisan Plots, M.G. Road, Ganesh Nagar, Akola, Maharashtra 444001",
+      ulbName: apiUlb.ulbName || defaultUlb.ulbName,
+      ulbNameLocal: apiUlb.ulbNameLocal || defaultUlb.ulbNameLocal,
+      ulbLogo: apiUlb.ulbLogo || defaultUlb.ulbLogo,
+      email: apiUlb.email || defaultUlb.email,
+      phoneNo: apiUlb.phoneNo || defaultUlb.phoneNo,
+      websiteUrl: apiUlb.websiteUrl || defaultUlb.websiteUrl,
+      ulbAddress: apiUlb.ulbAddress || defaultUlb.ulbAddress,
     };
   } catch (error) {
     logger.warn('Failed to load ULB config for login branding', {

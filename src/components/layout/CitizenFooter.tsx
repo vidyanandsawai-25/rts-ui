@@ -18,24 +18,13 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
   const router = useRouter();
 
   const getUlbName = () => {
-    const rawName = ulbData?.ulbName || '';
-    if (rawName.toUpperCase().includes('THANE')) {
-      return locale === 'mr'
-        ? 'ठाणे महानगरपालिका'
-        : locale === 'hi'
-          ? 'ठाणे नगर निगम'
-          : 'Thane Municipal Corporation';
+    if (locale === 'mr') {
+      return ulbData?.ulbNameLocal || ulbData?.ulbName || 'महानगरपालिका';
     }
-    if (rawName.toUpperCase().includes('AKOLA')) {
-      return locale === 'mr'
-        ? 'अकोला महानगरपालिका'
-        : locale === 'hi'
-          ? 'अकोला नगर निगम'
-          : 'Akola Municipal Corporation';
+    if (locale === 'hi') {
+      return ulbData?.ulbNameLocal || ulbData?.ulbName || 'नगर निगम';
     }
-    return locale === 'mr'
-      ? ulbData?.ulbNameLocal || ulbData?.ulbName || ''
-      : ulbData?.ulbName || ulbData?.ulbNameLocal || '';
+    return ulbData?.ulbName || ulbData?.ulbNameLocal || 'Municipal Corporation';
   };
 
   const handleActionClick = (path: string) => {
