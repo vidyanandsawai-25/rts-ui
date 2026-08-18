@@ -10,6 +10,7 @@ import {
   Building2,
   ArrowRight
 } from 'lucide-react';
+import { Button } from '@/components/common';
 import {
   createPaymentOrderAction,
   verifyPaymentAction,
@@ -166,52 +167,56 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   const displayFee = fees !== undefined && fees > 0 ? fees : 50;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200/80 my-6">
-
+    <div
+      className="fixed inset-0 z-[125] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md my-auto bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200/90"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Executive Header Banner */}
-        <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 px-6 py-5 text-white flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shrink-0">
-              <Building2 className="w-5 h-5" />
+        <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 px-4 sm:px-6 py-3.5 sm:py-4 text-white flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shrink-0">
+              <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-base leading-tight">Government Fee Payment</h3>
-              <p className="text-blue-200 text-xs font-medium">अकोला महानगरपालिका • RTS Portal</p>
+              <h3 className="font-extrabold text-sm sm:text-base leading-tight">Government Fee Payment</h3>
+              <p className="text-blue-200 text-[11px] sm:text-xs font-medium">अकोला महानगरपालिका • RTS Portal</p>
             </div>
           </div>
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50 cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50 cursor-pointer"
             aria-label="Close"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 space-y-4">
-
+        <div className="p-4 sm:p-6 space-y-3.5 sm:space-y-4">
           {/* Application Details Summary */}
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-            <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 text-xs">
+          <div className="bg-slate-50 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 space-y-2.5 sm:space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200 text-xs">
               <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Application / अर्ज क्र.</span>
-              <span className="font-mono font-black text-blue-900 text-sm">{applicationNo || `APP#${applicationId}`}</span>
+              <span className="font-mono font-black text-blue-900 text-xs sm:text-sm break-all">{applicationNo || `APP#${applicationId}`}</span>
             </div>
 
             <div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Public Service / सेवा</span>
-              <span className="font-bold text-slate-900 text-sm block leading-snug">{serviceName || 'RTS Public Service'}</span>
-              <span className="text-xs text-slate-500 font-medium">{departmentName || 'Akola Municipal Corporation'}</span>
+              <span className="font-bold text-slate-900 text-xs sm:text-sm block leading-snug break-words">{serviceName || 'RTS Public Service'}</span>
+              <span className="text-[11px] sm:text-xs text-slate-500 font-medium block break-words">{departmentName || 'Akola Municipal Corporation'}</span>
             </div>
 
             {(customerName || customerMobile) && (
-              <div className="pt-2.5 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs">
+              <div className="pt-2 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 {customerName && (
                   <div>
                     <span className="text-[10px] text-slate-400 block font-medium">Applicant / अर्जदार:</span>
-                    <span className="font-bold text-slate-800 truncate block">{customerName}</span>
+                    <span className="font-bold text-slate-800 break-words block">{customerName}</span>
                   </div>
                 )}
                 {customerMobile && (
@@ -225,7 +230,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
           </div>
 
           {/* Fee Itemization */}
-          <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-2 text-xs">
+          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-blue-50/60 border border-blue-100 space-y-1.5 sm:space-y-2 text-xs">
             <div className="flex justify-between text-slate-600">
               <span>Government Fee / शासकीय शुल्क:</span>
               <span className="font-semibold text-slate-900 font-mono">₹{Number(displayFee).toFixed(2)}</span>
@@ -234,49 +239,47 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
               <span>Gateway Charges / पोर्टल शुल्क:</span>
               <span className="font-medium text-emerald-600 font-mono">₹0.00 (मोफत)</span>
             </div>
-            <div className="flex justify-between items-center pt-2.5 border-t border-blue-200/80 text-sm font-bold text-slate-900">
+            <div className="flex justify-between items-center pt-2 border-t border-blue-200/80 text-xs sm:text-sm font-bold text-slate-900">
               <span>Total Payable / एकूण रक्कम:</span>
-              <span className="text-xl text-blue-900 font-black font-mono">₹{Number(displayFee).toFixed(2)}</span>
+              <span className="text-lg sm:text-xl text-blue-900 font-black font-mono">₹{Number(displayFee).toFixed(2)}</span>
             </div>
           </div>
 
           {/* Error Notice */}
           {errorMessage && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-700">
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-700 break-words">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {/* Action Button */}
-          <button
+          <Button
             type="button"
             onClick={handleProceedPayment}
             disabled={isLoading || !sdkReady}
-            className="w-full py-4 px-5 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-sm rounded-2xl shadow-xl shadow-blue-900/20 transition-all flex items-center justify-center gap-2.5 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full py-3.5 sm:py-4 px-4 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl shadow-xl shadow-blue-900/20 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 <span>Connecting to Secure Gateway...</span>
               </>
             ) : (
               <>
-                <ShieldCheck className="w-5 h-5" />
+                <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Pay ₹{Number(displayFee).toFixed(2)} Securely / शुल्क भरा</span>
-                <ArrowRight className="w-4 h-4 ml-1" />
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5" />
               </>
             )}
-          </button>
+          </Button>
 
           {/* Security Guarantee */}
-          <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-medium">
-            <Lock className="w-3.5 h-3.5 text-blue-600" />
+          <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 font-medium text-center">
+            <Lock className="w-3 h-3 text-blue-600 shrink-0" />
             <span>UPI • Cards • NetBanking • 256-bit Bank Encryption</span>
           </div>
-
         </div>
-
       </div>
     </div>
   );
