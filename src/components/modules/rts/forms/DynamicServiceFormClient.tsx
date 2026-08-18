@@ -29,6 +29,7 @@ import { isConditionMet } from "@/lib/utils/rts/conditions";
 import { VALIDATION_RULES } from "@/lib/utils/validationRegistry";
 
 const DEFAULT_INDIAN_MOBILE_PATTERN = "^[7-9][0-9]{9}$";
+const DEFAULT_GMAIL_EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@gmail\\.com$";
 
 import { type FormField, type NormalizeRule, type CustomValidate, type InputMode } from "@/types/rts/form.types";
 import { type SaveDraftValuesRequest } from "@/types/rts.types";
@@ -327,11 +328,18 @@ export default function DynamicServiceFormClient({
     const key = field?.validationKey;
     const rule = key ? VALIDATION_RULES[key] : undefined;
     const isMobileField = String(field?.type ?? "").toLowerCase() === "tel";
+    const isEmailField = String(field?.type ?? "").toLowerCase() === "email";
     const configuredPattern = validation.pattern ?? field?.pattern ?? rule?.pattern;
     const hasConfiguredPattern = typeof configuredPattern === "string" && configuredPattern.trim().length > 0;
 
     return {
-      pattern: hasConfiguredPattern ? configuredPattern : isMobileField ? DEFAULT_INDIAN_MOBILE_PATTERN : undefined,
+      pattern: hasConfiguredPattern
+        ? configuredPattern
+        : isMobileField
+          ? DEFAULT_INDIAN_MOBILE_PATTERN
+          : isEmailField
+            ? DEFAULT_GMAIL_EMAIL_PATTERN
+            : undefined,
       minLength: validation.minLength ?? field?.minLength ?? rule?.minLength,
       maxLength: validation.maxLength ?? field?.maxLength ?? rule?.maxLength,
       exactLength: validation.exactLength ?? field?.exactLength ?? rule?.exactLength ?? (isMobileField ? 10 : undefined),

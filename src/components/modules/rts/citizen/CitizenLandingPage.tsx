@@ -59,6 +59,11 @@ const DEPT_PALETTE = [
   { bannerBg: 'bg-[#FF8C00]', btnColor: 'bg-orange-600 hover:bg-orange-700' },
 ] as const;
 
+const FIRE_DEPARTMENT_PALETTE = {
+  bannerBg: 'bg-[#C2410C]',
+  btnColor: 'bg-orange-700 hover:bg-orange-800',
+} as const;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const ICONS = Icons as unknown as Record<string, LucideIcon>;
@@ -132,7 +137,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   // ── Build deptCards dynamically from API data ──────────────────────────────
   const deptCards = useMemo(() => {
     return departments.map((dept, idx) => {
-      const palette = DEPT_PALETTE[idx % DEPT_PALETTE.length];
+      const departmentName = pickLang(dept.name, 'en').trim().toLowerCase();
+      const palette = departmentName === 'fire'
+        ? FIRE_DEPARTMENT_PALETTE
+        : DEPT_PALETTE[idx % DEPT_PALETTE.length];
       const IconComp = resolveIcon(dept.icon);
       return {
         id: dept.id,

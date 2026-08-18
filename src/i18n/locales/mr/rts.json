@@ -523,6 +523,8 @@
       "revertToCitizen": "नागरिकाकडे परत पाठवा",
       "recordPayment": "भरणा नोंदवा",
       "viewNoteSheet": "नोट शीट पहा",
+      "time": "वेळ:",
+      "officerName": "अधिकाऱ्याचे नाव:",
       "serviceFallback": "सेवा",
       "applicantFallback": "अर्जदार / नागरिक",
       "noteSheet": {
@@ -671,6 +673,8 @@
     "attachment": "संलग्नक",
     "uploadedDocuments": "अपलोड केलेले संलग्नक आणि दस्तऐवज ({count})",
     "noUploadedDocuments": "या अर्जासाठी अपलोड केलेले दस्तऐवज संलग्नक आढळले नाहीत.",
+    "view": "पहा",
+    "download": "डाउनलोड करा",
     "approvalWorkflow": "मंजुरी कार्यप्रवाह कालरेषा",
     "stages": "{count} टप्पे",
     "noApprovalStages": "या अर्जासाठी मंजुरी कार्यप्रवाहाचे टप्पे नोंदलेले नाहीत.",

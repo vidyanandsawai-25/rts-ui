@@ -520,6 +520,8 @@
       "revertToCitizen": "नागरिक को वापस भेजें",
       "recordPayment": "भुगतान दर्ज करें",
       "viewNoteSheet": "नोट शीट देखें",
+      "time": "समय:",
+      "officerName": "अधिकारी का नाम:",
       "serviceFallback": "सेवा",
       "applicantFallback": "आवेदक / नागरिक",
       "noteSheet": {
@@ -668,6 +670,8 @@
     "attachment": "संलग्नक",
     "uploadedDocuments": "अपलोड किए गए संलग्नक और दस्तावेज़ ({count})",
     "noUploadedDocuments": "इस आवेदन के लिए कोई अपलोड किया गया दस्तावेज़ संलग्नक नहीं मिला।",
+    "view": "देखें",
+    "download": "डाउनलोड करें",
     "approvalWorkflow": "अनुमोदन कार्यप्रवाह समयरेखा",
     "stages": "{count} चरण",
     "noApprovalStages": "इस आवेदन के लिए कोई अनुमोदन कार्यप्रवाह चरण दर्ज नहीं है।",
