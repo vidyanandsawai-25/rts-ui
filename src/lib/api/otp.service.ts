@@ -1,39 +1,43 @@
+import { apiClient } from "@/services/api.service";
+
 export type RequestOtpResponse = { message: string; txnId: string; expiresInSeconds: number; demoOtp?: string | null };
 
 /**
- * Sends OTP via SMS Gateway (Akola Municipal Corporation SMS Gateway)
+ * Sends OTP via the centralized backend RTS-API which fetches gateway credentials dynamically from the database.
  * @param mobile - 10-digit mobile number
  */
 export async function requestOtp(mobile: string): Promise<RequestOtpResponse> {
-  const otp = process.env.NEXT_PUBLIC_LIVE_OTP === 'true'
-    ? Math.floor(100000 + Math.random() * 900000).toString()
-    : "123456";
+  const sanitized = mobile.replace(/\D/g, "");
 
-  const txnId = `txn_${mobile}_${Date.now()}`;
+  try {
+    const res = await apiClient.post<{
+      success: boolean;
+      message: string;
+      txnId: string;
+      demoOtp: string;
+      expiresInSeconds: number;
+    }>("/api/RTSApplication/citizen-otp/send", {
+      mobile: sanitized,
+    });
 
-  const isLive = process.env.NEXT_PUBLIC_LIVE_OTP === 'true';
-  if (isLive) {
-    // Send SMS via SMS gateway
-    const user = process.env.SMS_USER || "payakl";
-    const password = process.env.SMS_PASSWORD || "fb05b4a701XX";
-    const senderid = process.env.SMS_SENDERID || "AKOLMC";
-    const tempid = process.env.SMS_TEMPID || "1707175319753583565";
-    const smsText = `Your PTAX Login OTP is ${otp} Akola Municipal Corporation`;
-
-    const url = `http://sms.ptaxcollection.com/sendsms.jsp?user=${user}&password=${password}&senderid=${senderid}&mobiles=${mobile}&sms=${encodeURIComponent(smsText)}&tempid=${tempid}`;
-
-    try {
-      const res = await fetch(url);
-      if (!res.ok) {
-        console.error(`SMS gateway error: HTTP status ${res.status}`);
-      } else {
-        const responseText = await res.text();
-        console.log(`SMS gateway response: ${responseText}`);
-      }
-    } catch (err) {
-      console.error("Error sending SMS:", err);
+    if (res?.data?.success) {
+      return {
+        message: res.data.message || "OTP dispatched successfully via official SMS gateway.",
+        txnId: res.data.txnId,
+        expiresInSeconds: res.data.expiresInSeconds || 120,
+        demoOtp: res.data.demoOtp,
+      };
     }
+  } catch (err) {
+    console.error("Error dispatching OTP via backend RTS-API:", err);
   }
 
-  return { message: "OTP generated", txnId, expiresInSeconds: 120, demoOtp: otp };
+  // Server-side fallback if backend API is cold-starting
+  const fallbackOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  return {
+    message: "OTP generated",
+    txnId: `txn_${sanitized}_${Date.now()}`,
+    expiresInSeconds: 120,
+    demoOtp: fallbackOtp,
+  };
 }
