@@ -4,7 +4,7 @@ import React from 'react';
 import { Printer, Building2 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
 import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
-import { RTSPaymentReceipt } from '../common/RTSPaymentReceipt';
+import { RTSPaymentReceipt } from './RTSPaymentReceipt';
 
 interface PaymentReceiptModalProps {
   receipt: PaymentReceiptResult;
