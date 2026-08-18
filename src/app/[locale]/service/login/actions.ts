@@ -43,20 +43,22 @@ async function establishCitizenSession(
 
   let properties: CitizenProperty[] = [];
 
-  try {
-    properties = await fetchCitizenPropertiesFromApi('MobileNo', mobile);
-    if (properties.length > 0) {
-      const first = properties[0];
-      citizenProfile = {
-        name: first.ownerNameMarathi || citizenProfile.name,
-        upicId: first.upicNo || citizenProfile.upicId,
-        propertyNo: first.propertyNo || citizenProfile.propertyNo,
-        mobile: first.mobileNo || mobile,
-        ownerId: first.ownerId || citizenProfile.ownerId,
-      };
+  if (!fallbackProfile?.upicId && !fallbackProfile?.propertyNo) {
+    try {
+      properties = await fetchCitizenPropertiesFromApi('MobileNo', mobile);
+      if (properties.length > 0) {
+        const first = properties[0];
+        citizenProfile = {
+          name: first.ownerNameMarathi || citizenProfile.name,
+          upicId: first.upicNo || citizenProfile.upicId,
+          propertyNo: first.propertyNo || citizenProfile.propertyNo,
+          mobile: first.mobileNo || mobile,
+          ownerId: first.ownerId || citizenProfile.ownerId,
+        };
+      }
+    } catch (err) {
+      console.error("Failed to fetch citizen profile during login:", err);
     }
-  } catch (err) {
-    console.error("Failed to fetch citizen profile during login:", err);
   }
 
   const sessionId = crypto.randomUUID();
@@ -79,7 +81,7 @@ async function establishCitizenSession(
   c.set('rts_session', sessionId, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     path: '/',
     maxAge: 24 * 60 * 60,
   });
@@ -87,7 +89,7 @@ async function establishCitizenSession(
   c.set('rts_logged_in', 'true', {
     httpOnly: false,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     path: '/',
     maxAge: 24 * 60 * 60,
   });
@@ -95,7 +97,7 @@ async function establishCitizenSession(
   c.set('rts_citizen_profile', JSON.stringify(citizenProfile), {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     path: '/',
     maxAge: 24 * 60 * 60,
   });
@@ -104,7 +106,7 @@ async function establishCitizenSession(
     c.set('rts_citizen_properties', JSON.stringify(properties), {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       path: '/',
       maxAge: 24 * 60 * 60,
     });

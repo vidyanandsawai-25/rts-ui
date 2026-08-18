@@ -267,11 +267,28 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     const isAppApproved = app.normalizedStatus === "approved";
                     const isAppRejected = app.normalizedStatus === "rejected";
                     const serviceName = lang === "mr" && app.serviceNameLocal ? app.serviceNameLocal : app.serviceName;
-                    const isPaymentPending = app.status?.toLowerCase().includes("payment pending") || app.status?.toLowerCase().includes("pending payment");
+                    // Dynamic lookup in Service Master
                     const matchedService = departments
                       .flatMap((d) => d.services)
-                      .find((s) => s.serviceName === app.serviceName || (typeof s.name === "string" && s.name === app.serviceName));
-                    const dynamicServiceFee = Number((matchedService as any)?.fees) || 50;
+                      .find((s) => {
+                        const sNameEn = typeof s.name === "string" ? s.name : (s.name as any)?.en;
+                        const sNameMr = typeof s.name === "object" ? (s.name as any)?.mr : undefined;
+                        const targetName = app.serviceName?.toLowerCase().trim();
+                        return (
+                          (sNameEn && sNameEn.toLowerCase().trim() === targetName) ||
+                          (sNameMr && sNameMr.toLowerCase().trim() === targetName) ||
+                          (s.serviceName && s.serviceName.toLowerCase().trim() === targetName)
+                        );
+                      });
+
+                    // Dynamic attributes from Service Master
+                    const hasExternalServiceUrl = !!(matchedService as any)?.serviceUrl;
+                    const isFeesRequired = (matchedService as any)?.feesRequired === true;
+                    const dynamicServiceFee = Number((matchedService as any)?.fees) || 0;
+
+                    // If configured with an external ServiceUrl in master or not a native in-app service, it is an external portal service
+                    const isExternalPortalApp = hasExternalServiceUrl || !matchedService;
+                    const isPaymentPending = app.status?.toLowerCase().includes("payment pending") || app.status?.toLowerCase().includes("pending payment");
 
                     return (
                       <tr key={index} className="hover:bg-slate-50/50 transition-colors">
@@ -297,7 +314,13 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                           </div>
                         </td>
                         <td className="py-2.5 px-3">
-                          {isPaymentPending ? (
+                          {isExternalPortalApp ? (
+                            <span className="text-slate-400 font-bold text-sm tracking-widest pl-2">—</span>
+                          ) : !isFeesRequired || dynamicServiceFee === 0 ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                              {lang === "mr" ? "विनामूल्य" : lang === "hi" ? "निःशुल्क" : "Free"}
+                            </span>
+                          ) : isPaymentPending ? (
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                                 <Clock className="w-3 h-3 text-amber-600" />

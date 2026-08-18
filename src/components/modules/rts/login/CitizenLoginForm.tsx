@@ -35,13 +35,6 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
   const externalServiceId = searchParams.get('externalServiceId');
   const [isPending, startTransition] = useTransition();
 
-  React.useEffect(() => {
-    const isLoggedIn = typeof document !== 'undefined' && document.cookie.split('; ').some(row => row.startsWith('rts_logged_in='));
-    if (isLoggedIn) {
-      router.push(`/${locale}/service/dashboard`);
-    }
-  }, [locale, router]);
-
   // Component States
   const [step, setStep] = useState<LoginStep>('phone');
   const [method, setMethod] = useState<LoginMethod>('mobile');
@@ -186,20 +179,73 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
     }
 
     startTransition(async () => {
-      const res = await sendCitizenOtpAction(
-        method,
-        {
-          mobile,
-          upicId,
-          propertyNo:
-            method === 'property' ? buildPropertySearchValue(sectorId, propertyNo) : undefined,
-        },
-        externalServiceId ?? undefined
-      );
+      try {
+        const res = await sendCitizenOtpAction(
+          method,
+          {
+            mobile,
+            upicId,
+            propertyNo:
+              method === 'property' ? buildPropertySearchValue(sectorId, propertyNo) : undefined,
+          },
+          externalServiceId ?? undefined
+        );
 
-      if (res.success) {
-        if (res.directLogin) {
-          setInfo(t('messages.loginSuccess') || 'Login successful!');
+        if (res.success) {
+          if (res.directLogin) {
+            setInfo(t('messages.loginSuccess') || 'Login successful!');
+            if (res.externalDestination) {
+              window.open(res.externalDestination, '_blank', 'noopener,noreferrer');
+              return;
+            }
+
+            let targetUrl = redirectUrl || `/${locale}/service/dashboard`;
+            if (externalServiceId) {
+              const errorCode = res.serviceRedirectError || 'service-unavailable';
+              targetUrl = `/${locale}/service/dashboard?serviceRedirectError=${encodeURIComponent(errorCode)}`;
+            } else {
+              const cleanUpic = (upicId || '').trim().toUpperCase();
+              if (cleanUpic) {
+                if (targetUrl.includes('upicNo=')) {
+                  targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
+                } else {
+                  const sep = targetUrl.includes('?') ? '&' : '?';
+                  targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
+                }
+              }
+            }
+            window.location.href = targetUrl;
+            return;
+          }
+
+          setMaskedPhone(res.maskedPhone || '');
+          setStep('otp');
+          setInfo(t('messages.otpSent'));
+        } else {
+          setError(res.error || t('messages.sendOtpFailed'));
+        }
+      } catch (err: any) {
+        console.error('Error during login:', err);
+        setError(err?.message || 'Login failed. Please try again.');
+      }
+    });
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setInfo(null);
+
+    if (!/^\d{6}$/.test(otp)) {
+      setError(t('messages.invalidOtp'));
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const res = await verifyCitizenOtpAction(otp, externalServiceId ?? undefined);
+        if (res.success) {
+          setInfo(t('messages.loginSuccess'));
           if (res.externalDestination) {
             window.open(res.externalDestination, '_blank', 'noopener,noreferrer');
             return;
@@ -221,55 +267,12 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
             }
           }
           window.location.href = targetUrl;
-          return;
-        }
-
-        setMaskedPhone(res.maskedPhone || '');
-        setStep('otp');
-        setInfo(t('messages.otpSent'));
-      } else {
-        setError(res.error || t('messages.sendOtpFailed'));
-      }
-    });
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setInfo(null);
-
-    if (!/^\d{6}$/.test(otp)) {
-      setError(t('messages.invalidOtp'));
-      return;
-    }
-
-    startTransition(async () => {
-      const res = await verifyCitizenOtpAction(otp, externalServiceId ?? undefined);
-      if (res.success) {
-        setInfo(t('messages.loginSuccess'));
-        if (res.externalDestination) {
-          window.open(res.externalDestination, '_blank', 'noopener,noreferrer');
-          return;
-        }
-
-        let targetUrl = redirectUrl || `/${locale}/service/dashboard`;
-        if (externalServiceId) {
-          const errorCode = res.serviceRedirectError || 'service-unavailable';
-          targetUrl = `/${locale}/service/dashboard?serviceRedirectError=${encodeURIComponent(errorCode)}`;
         } else {
-          const cleanUpic = (upicId || '').trim().toUpperCase();
-          if (cleanUpic) {
-            if (targetUrl.includes('upicNo=')) {
-              targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
-            } else {
-              const sep = targetUrl.includes('?') ? '&' : '?';
-              targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
-            }
-          }
+          setError(res.error || t('messages.verifyFailed'));
         }
-        window.location.href = targetUrl;
-      } else {
-        setError(res.error || t('messages.verifyFailed'));
+      } catch (err: any) {
+        console.error('Error verifying OTP:', err);
+        setError(err?.message || 'Failed to verify OTP.');
       }
     });
   };

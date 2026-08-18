@@ -42,13 +42,22 @@ export async function fetchCitizenPropertiesFromApi(
     }
 
     console.log(`[API] Fetching properties dynamically from Akola MC API: ${searchType}: ${value}`);
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!res.ok) {
       console.error(`[API] GetCitizensDetails API error: HTTP status ${res.status}`);
