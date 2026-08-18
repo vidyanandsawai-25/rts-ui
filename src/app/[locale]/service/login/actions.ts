@@ -8,12 +8,30 @@ import { createTrackedExternalServiceNavigation } from '@/lib/utils/rts/external
 
 const OTP_TTL_MS = 2 * 60 * 1000;
 
+export type CitizenLoginActionResult = {
+  success: boolean;
+  error?: string;
+  directLogin?: boolean;
+  txnId?: string;
+  demoOtp?: string | null;
+  maskedPhone?: string;
+  citizen?: {
+    name: string;
+    upicId: string;
+    propertyNo: string;
+    mobile: string;
+    ownerId: number;
+  };
+  externalDestination?: string | null;
+  serviceRedirectError?: string | null;
+};
+
 async function establishCitizenSession(
   mobile: string,
   c: any,
   fallbackProfile?: { name?: string; upicId?: string; propertyNo?: string; ownerId?: number },
   externalServiceId?: string
-) {
+): Promise<CitizenLoginActionResult> {
   // Fetch citizen details from dynamic API
   let citizenProfile = {
     name: fallbackProfile?.name || 'नागरिक',
@@ -99,7 +117,7 @@ async function establishCitizenSession(
 
   const requestedServiceId = Number(externalServiceId);
   if (!Number.isInteger(requestedServiceId) || requestedServiceId <= 0) {
-    return { success: true, citizen: citizenProfile };
+    return { success: true, citizen: citizenProfile, externalDestination: null, serviceRedirectError: null };
   }
 
   const tracking = await createTrackedExternalServiceNavigation(requestedServiceId, {
@@ -110,17 +128,17 @@ async function establishCitizenSession(
   });
 
   if (!tracking.success) {
-    return { success: true, citizen: citizenProfile, serviceRedirectError: tracking.errorCode };
+    return { success: true, citizen: citizenProfile, externalDestination: null, serviceRedirectError: tracking.errorCode };
   }
 
-  return { success: true, citizen: citizenProfile, externalDestination: tracking.destination };
+  return { success: true, citizen: citizenProfile, externalDestination: tracking.destination, serviceRedirectError: null };
 }
 
 export async function sendCitizenOtpAction(
   method: 'mobile' | 'upic' | 'property',
   payload: { mobile?: string; upicId?: string; propertyNo?: string },
   externalServiceId?: string
-) {
+): Promise<CitizenLoginActionResult> {
   let searchValue = '';
   let searchType: 'MobileNo' | 'UpicId' | 'PropertyNo' = 'MobileNo';
 
@@ -219,7 +237,7 @@ export async function sendCitizenOtpAction(
   }
 }
 
-export async function verifyCitizenOtpAction(otp: string, externalServiceId?: string) {
+export async function verifyCitizenOtpAction(otp: string, externalServiceId?: string): Promise<CitizenLoginActionResult> {
   if (!/^\d{6}$/.test(otp)) {
     return { success: false, error: 'Please enter a valid 6-digit OTP.' };
   }
