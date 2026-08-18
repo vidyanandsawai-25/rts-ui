@@ -134,6 +134,12 @@ export default function DynamicServiceFormClient({
   const [formData, setFormData] = useState<{ [key: string]: any }>({});
   const [currentApplicationId, setCurrentApplicationId] = useState<number | null>(null);
   const [showSuccessPaymentModal, setShowSuccessPaymentModal] = useState(false);
+  const [checkoutAppInfo, setCheckoutAppInfo] = useState<{
+    applicationId: number;
+    applicationNo: string;
+    serviceName: string;
+    fees: number;
+  } | null>(null);
   const [successReceiptModalData, setSuccessReceiptModalData] = useState<PaymentReceiptResult | null>(null);
 
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
@@ -1187,6 +1193,9 @@ export default function DynamicServiceFormClient({
       existingData[newId] = newApplication;
       localStorage.setItem("rtsApplications", JSON.stringify(existingData));
 
+      const rawAppId = Number(response?.items?.id) || parseInt(newId.replace(/\D/g, ""), 10) || 1;
+      const appFees = 50;
+
       MySwal.fire({
         icon: "success",
         title: language === "en"
@@ -1195,32 +1204,54 @@ export default function DynamicServiceFormClient({
             ? "आवेदन सबमिट हुआ!"
             : "अर्ज यशस्वीरित्या सादर झाला!",
         html: language === "en"
-          ? `<div class="space-y-3 p-2">
-               <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Application Tracking ID</p>
-               <p class="text-3xl font-mono font-black text-teal-650">${newId}</p>
-               <p class="text-xs text-gray-400 font-medium">Save this ID to track status. Redirecting to dashboard...</p>
+          ? `<div class="space-y-3 p-2 text-center">
+               <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Application Tracking ID</p>
+               <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
+               <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
+                 Statutory Government Fee: ₹${appFees}.00
+               </div>
+               <p class="text-xs text-gray-500 font-medium">Please proceed to pay the statutory fee now or pay later from your citizen dashboard.</p>
              </div>`
           : language === "hi"
-            ? `<div class="space-y-3 p-2">
-                 <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">आवेदन ट्रैकिंग आईडी</p>
-                 <p class="text-3xl font-mono font-black text-teal-650">${newId}</p>
-                 <p class="text-xs text-gray-400 font-medium">स्थिति को ट्रैक करने के लिए इस आईडी को सहेजें। डैशबोर्ड पर पुनर्निर्देशित किया जा रहा है...</p>
+            ? `<div class="space-y-3 p-2 text-center">
+                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">आवेदन ट्रैकिंग आईडी</p>
+                 <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
+                 <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
+                   शासकीय सेवा शुल्क: ₹${appFees}.00
+                 </div>
+                 <p class="text-xs text-gray-500 font-medium">कृपया अभी शुल्क का भुगतान करें या बाद में नागरिक डैशबोर्ड से करें।</p>
                </div>`
-            : `<div class="space-y-3 p-2">
-                 <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">अर्ज ट्रॅकिंग आयडी</p>
-                 <p class="text-3xl font-mono font-black text-teal-650">${newId}</p>
-                 <p class="text-xs text-gray-400 font-medium">अर्ज ट्रॅक करण्यासाठी हा आयडी जतन करा. मुख्यपृष्ठावर नेले जात आहे...</p>
+            : `<div class="space-y-3 p-2 text-center">
+                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">अर्ज ट्रॅकिंग आयडी</p>
+                 <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
+                 <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
+                   शासकीय सेवा शुल्क: ₹${appFees}.00
+                 </div>
+                 <p class="text-xs text-gray-500 font-medium">कृपया आताच ऑनलाइन शुल्क भरा किंवा नंतर नागरिक डॅशबोर्डवरून भरा.</p>
                </div>`,
-        timer: 2000,
-        showConfirmButton: false,
+        showCancelButton: true,
+        confirmButtonText: language === "en" ? "💳 Pay Government Fee Now" : language === "hi" ? "💳 अभी शुल्क भरें" : "💳 आताच शुल्क भरा",
+        cancelButtonText: language === "en" ? "Pay Later / Go to Dashboard" : language === "hi" ? "बाद में भरें / डैशबोर्ड पर जाएं" : "नंतर भरा / डॅशबोर्डवर जा",
+        confirmButtonColor: "#059669",
+        cancelButtonColor: "#64748b",
         background: darkMode ? "#1f2937" : "#ffffff",
         color: darkMode ? "#ffffff" : "#000000",
         customClass: { popup: "rounded-xl shadow-xl border border-teal-500/20" },
-      }).then(() => {
-        if (isLoggedIn) {
-          router.replace(`/${locale}/service/dashboard`);
+      }).then((swalRes) => {
+        if (swalRes.isConfirmed) {
+          setCheckoutAppInfo({
+            applicationId: rawAppId,
+            applicationNo: newId,
+            serviceName: typeof serviceTitle === "string" ? serviceTitle : "RTS Service",
+            fees: appFees,
+          });
+          setShowSuccessPaymentModal(true);
         } else {
-          router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+          if (isLoggedIn) {
+            router.replace(`/${locale}/service/dashboard`);
+          } else {
+            router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+          }
         }
       });
     } catch (err: any) {
@@ -1655,6 +1686,41 @@ export default function DynamicServiceFormClient({
           </div>
         </div>
       </div>
+
+      {showSuccessPaymentModal && checkoutAppInfo && (
+        <PaymentCheckoutModal
+          applicationId={checkoutAppInfo.applicationId}
+          applicationNo={checkoutAppInfo.applicationNo}
+          serviceName={checkoutAppInfo.serviceName}
+          fees={checkoutAppInfo.fees}
+          onClose={() => {
+            setShowSuccessPaymentModal(false);
+            if (isLoggedIn) {
+              router.replace(`/${locale}/service/dashboard`);
+            } else {
+              router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+            }
+          }}
+          onSuccess={(receipt) => {
+            setShowSuccessPaymentModal(false);
+            setSuccessReceiptModalData(receipt);
+          }}
+        />
+      )}
+
+      {successReceiptModalData && (
+        <PaymentReceiptModal
+          receipt={successReceiptModalData}
+          onClose={() => {
+            setSuccessReceiptModalData(null);
+            if (isLoggedIn) {
+              router.replace(`/${locale}/service/dashboard`);
+            } else {
+              router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

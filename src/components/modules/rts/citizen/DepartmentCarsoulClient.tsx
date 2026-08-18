@@ -16,10 +16,17 @@ import {
   Search,
   Eye,
   LayoutDashboard,
+  CreditCard,
+  Printer,
 } from "lucide-react";
+import { toast } from "sonner";
 import TableHeader from "@/components/common/TableHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import RtsCitizenViewDetailsDrawer from "@/components/modules/rts/citizen/RtsCitizenViewDetailsDrawer";
+import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
+import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
+import { getPaymentReceiptAction } from "@/app/[locale]/service/payment/actions";
+import type { PaymentReceiptResult } from "@/lib/api/rts/rtspayment.service";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
@@ -106,6 +113,35 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
 
   const [activeDrawerApp, setActiveDrawerApp] = useState<CitizenApplication | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [checkoutAppData, setCheckoutAppData] = useState<{
+    applicationId: number;
+    applicationNo: string;
+    serviceName: string;
+    fees: number;
+  } | null>(null);
+  const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
+  const [isReceiptLoading, setIsReceiptLoading] = useState(false);
+
+  const handleViewReceipt = async (applicationNo: string) => {
+    const appId = parseInt(applicationNo.replace(/\D/g, ""), 10);
+    if (!appId) {
+      toast.error(lang === "mr" ? "अवैध अर्ज क्रमांक." : "Invalid application number.");
+      return;
+    }
+    setIsReceiptLoading(true);
+    try {
+      const res = await getPaymentReceiptAction(appId);
+      if (res.success && res.data) {
+        setReceiptModalData(res.data);
+      } else {
+        toast.error(lang === "mr" ? "या अर्जाची पावती उपलब्ध नाही किंवा शुल्क अद्याप प्रलंबित आहे." : "Receipt not found for this application.");
+      }
+    } catch {
+      toast.error(lang === "mr" ? "पावती मिळवताना त्रुटी आली." : "Error retrieving receipt.");
+    } finally {
+      setIsReceiptLoading(false);
+    }
+  };
 
   const applications = useMemo<CitizenApplication[]>(
     () => userApplications.map((application) => ({
@@ -222,6 +258,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     <th className="py-2 px-3">{t('submittedDate')}</th>
                     <th className="py-2 px-3">{t('slaTimeline')}</th>
                     <th className="py-2 px-3">{t('statusAndStage')}</th>
+                    <th className="py-2 px-3">{lang === "mr" ? "शासकीय शुल्क" : lang === "hi" ? "शासकीय शुल्क" : "Fee Payment"}</th>
                     <th className="py-2 px-3 text-right rounded-r-lg">{t('actions')}</th>
                   </tr>
                 </thead>
@@ -230,6 +267,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     const isAppApproved = app.normalizedStatus === "approved";
                     const isAppRejected = app.normalizedStatus === "rejected";
                     const serviceName = lang === "mr" && app.serviceNameLocal ? app.serviceNameLocal : app.serviceName;
+                    const isPaymentPending = app.status?.toLowerCase().includes("payment pending") || app.status?.toLowerCase().includes("pending payment");
 
                     return (
                       <tr key={index} className="hover:bg-slate-50/50 transition-colors">
@@ -254,6 +292,46 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                             )}
                           </div>
                         </td>
+                        <td className="py-2.5 px-3">
+                          {isPaymentPending ? (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                <Clock className="w-3 h-3 text-amber-600" />
+                                {lang === "mr" ? "बाकी" : lang === "hi" ? "लंबित" : "Pending"}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setCheckoutAppData({
+                                  applicationId: parseInt(app.applicationNo.replace(/\D/g, ""), 10) || 1,
+                                  applicationNo: app.applicationNo,
+                                  serviceName,
+                                  fees: 50
+                                })}
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer transition-all"
+                              >
+                                <CreditCard className="w-3 h-3" />
+                                {lang === "mr" ? "शुल्क भरा" : lang === "hi" ? "शुल्क भरें" : "Pay Fee"}
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                {lang === "mr" ? "प्राप्त" : lang === "hi" ? "प्राप्त" : "Paid"}
+                              </span>
+                              <button
+                                type="button"
+                                disabled={isReceiptLoading}
+                                onClick={() => handleViewReceipt(app.applicationNo)}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer transition-all"
+                                title="पावती पहा"
+                              >
+                                <Printer className="w-3 h-3 text-slate-600" />
+                                {lang === "mr" ? "पावती" : lang === "hi" ? "रसीद" : "Receipt"}
+                              </button>
+                            </div>
+                          )}
+                        </td>
                         <td className="py-2.5 px-3 text-right">
                           <button
                             onClick={() => setActiveDrawerApp(app)}
@@ -277,6 +355,27 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
             application={activeDrawerApp}
             language={lang}
             onClose={() => setActiveDrawerApp(null)}
+          />
+        )}
+
+        {checkoutAppData && (
+          <PaymentCheckoutModal
+            applicationId={checkoutAppData.applicationId}
+            applicationNo={checkoutAppData.applicationNo}
+            serviceName={checkoutAppData.serviceName}
+            fees={checkoutAppData.fees}
+            onClose={() => setCheckoutAppData(null)}
+            onSuccess={(receipt) => {
+              setCheckoutAppData(null);
+              setReceiptModalData(receipt);
+            }}
+          />
+        )}
+
+        {receiptModalData && (
+          <PaymentReceiptModal
+            receipt={receiptModalData}
+            onClose={() => setReceiptModalData(null)}
           />
         )}
       </div>

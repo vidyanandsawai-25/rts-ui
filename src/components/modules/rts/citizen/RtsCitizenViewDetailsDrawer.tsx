@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, FileText, GitCommit, Paperclip } from "lucide-react";
+import { Download, FileText, GitCommit, Paperclip, CreditCard, Printer, CheckCircle2, Clock } from "lucide-react";
+import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 import { getApplicationDetailAction, type RtsApplicationDetailData } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
@@ -9,6 +10,10 @@ import { ApprovalStagesTimeline } from "@/components/modules/rts";
 import { Button, DocumentViewerModal, Drawer, ViewButton } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { getCitizenRtsDocumentDownloadUrl, getCitizenRtsDocumentViewUrl } from "@/lib/api/rts/rtsdocument.client";
+import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
+import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
+import { getPaymentReceiptAction } from "@/app/[locale]/service/payment/actions";
+import type { PaymentReceiptResult } from "@/lib/api/rts/rtspayment.service";
 import type { Language } from "@/types/language.type";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 
@@ -48,12 +53,37 @@ export default function RtsCitizenViewDetailsDrawer({
   const tCommon = useTranslations("common");
   const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
+  const [isReceiptLoading, setIsReceiptLoading] = useState(false);
   const [viewingDoc, setViewingDoc] = useState<{
     fileUrl: string;
     fileName: string;
     label: string;
   } | null>(null);
   const applicationNumber = application?.applicationNo;
+
+  const handleViewReceipt = async () => {
+    if (!applicationNumber) return;
+    const appId = parseInt(applicationNumber.replace(/\D/g, ""), 10);
+    if (!appId) {
+      toast.error(language === "mr" ? "अवैध अर्ज क्रमांक." : "Invalid application number.");
+      return;
+    }
+    setIsReceiptLoading(true);
+    try {
+      const res = await getPaymentReceiptAction(appId);
+      if (res.success && res.data) {
+        setReceiptModalData(res.data);
+      } else {
+        toast.error(language === "mr" ? "या अर्जाची पावती उपलब्ध नाही किंवा शुल्क अद्याप प्रलंबित आहे." : "Receipt not found for this application.");
+      }
+    } catch {
+      toast.error(language === "mr" ? "पावती मिळवताना त्रुटी आली." : "Error retrieving receipt.");
+    } finally {
+      setIsReceiptLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!applicationNumber) return;
@@ -161,6 +191,70 @@ export default function RtsCitizenViewDetailsDrawer({
               </div>
             </section>
 
+            {/* Payment Status Card */}
+            {application.status?.toLowerCase().includes("payment pending") || application.status?.toLowerCase().includes("pending payment") ? (
+              <section className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-amber-50/50 p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-extrabold text-amber-900">
+                        {language === "mr" ? "शासकीय सेवा शुल्क प्रलंबित: ₹50.00" : language === "hi" ? "शासकीय सेवा शुल्क लंबित: ₹50.00" : "Government Fee Pending: ₹50.00"}
+                      </p>
+                      <p className="text-[11px] font-medium text-amber-700 mt-0.5">
+                        {language === "mr"
+                          ? "अर्जावर पुढील प्रक्रिया सुरू करण्यासाठी शुल्क भरणे आवश्यक आहे."
+                          : language === "hi"
+                            ? "आवेदन पर आगे की प्रक्रिया के लिए शुल्क का भुगतान अनिवार्य है।"
+                            : "Payment is required for application processing to proceed."}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="primary"
+                    icon={CreditCard}
+                    onClick={() => setIsCheckoutOpen(true)}
+                    className="rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 px-3"
+                  >
+                    {language === "mr" ? "आताच शुल्क भरा" : language === "hi" ? "अभी शुल्क भरें" : "Pay Fee Now"}
+                  </Button>
+                </div>
+              </section>
+            ) : (
+              <section className="rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50/50 p-4 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <CheckCircle2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-extrabold text-emerald-900">
+                        {language === "mr" ? "शासकीय सेवा शुल्क प्राप्त (Fee Paid): ₹50.00" : language === "hi" ? "शासकीय सेवा शुल्क प्राप्त: ₹50.00" : "Government Fee Paid: ₹50.00"}
+                      </p>
+                      <p className="text-[11px] font-medium text-emerald-700">
+                        {language === "mr" ? "अधिकृत शासकीय ई-पावती उपलब्ध आहे" : language === "hi" ? "आधिकारिक सरकारी ई-रसीद उपलब्ध है" : "Official municipal e-receipt is available"}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="secondary"
+                    icon={Printer}
+                    disabled={isReceiptLoading}
+                    onClick={handleViewReceipt}
+                    className="rounded-lg text-xs font-bold text-emerald-800 border-emerald-300 bg-white hover:bg-emerald-50 shrink-0"
+                  >
+                    {language === "mr" ? "पावती पहा" : language === "hi" ? "रसीद देखें" : "View Receipt"}
+                  </Button>
+                </div>
+              </section>
+            )}
+
             <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
               <h4 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase text-slate-800">
                 <Paperclip className="h-4 w-4 text-blue-600" />
@@ -251,6 +345,27 @@ export default function RtsCitizenViewDetailsDrawer({
           fileName={viewingDoc.fileName}
           label={viewingDoc.label}
           loadPreviewAsBlob
+        />
+      )}
+
+      {isCheckoutOpen && applicationNumber && (
+        <PaymentCheckoutModal
+          applicationId={parseInt(applicationNumber.replace(/\D/g, ""), 10) || 1}
+          applicationNo={applicationNumber}
+          serviceName={(language === "mr" || language === "hi") && application.serviceNameLocal ? application.serviceNameLocal : application.serviceName}
+          fees={50}
+          onClose={() => setIsCheckoutOpen(false)}
+          onSuccess={(receipt) => {
+            setIsCheckoutOpen(false);
+            setReceiptModalData(receipt);
+          }}
+        />
+      )}
+
+      {receiptModalData && (
+        <PaymentReceiptModal
+          receipt={receiptModalData}
+          onClose={() => setReceiptModalData(null)}
         />
       )}
     </>
