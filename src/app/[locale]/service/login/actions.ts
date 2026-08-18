@@ -8,108 +8,19 @@ import { createTrackedExternalServiceNavigation } from '@/lib/utils/rts/external
 
 const OTP_TTL_MS = 2 * 60 * 1000;
 
-export async function sendCitizenOtpAction(
-  method: 'mobile' | 'upic' | 'property',
-  payload: { mobile?: string; upicId?: string; propertyNo?: string }
+async function establishCitizenSession(
+  mobile: string,
+  c: any,
+  fallbackProfile?: { name?: string; upicId?: string; propertyNo?: string; ownerId?: number },
+  externalServiceId?: string
 ) {
-  let searchValue = '';
-  let searchType: 'MobileNo' | 'UpicId' | 'PropertyNo' = 'MobileNo';
-
-  if (method === 'mobile') {
-    searchValue = payload.mobile?.replace(/\D/g, '') || '';
-    if (!/^\d{10}$/.test(searchValue)) {
-      return { success: false, error: 'Please enter a valid 10-digit phone number.' };
-    }
-    searchType = 'MobileNo';
-  } else if (method === 'upic') {
-    searchValue = payload.upicId?.trim() || '';
-    if (!searchValue) {
-      return { success: false, error: 'Please enter a UPIC ID.' };
-    }
-    searchType = 'UpicId';
-  } else if (method === 'property') {
-    searchValue = payload.propertyNo?.trim() || '';
-    if (!searchValue) {
-      return { success: false, error: 'Please enter a Property Number.' };
-    }
-    searchType = 'PropertyNo';
-  }
-
-  try {
-    // Check if the property/mobile is registered in the DB
-    const properties = await fetchCitizenPropertiesFromApi(searchType, searchValue);
-    if (!properties || properties.length === 0) {
-      return {
-        success: false,
-        error: method === 'mobile'
-          ? 'हा मोबाईल नंबर नोंदणीकृत नाही. कृपया प्रथम मालमत्ता नोंदणी करा. / This mobile number is not registered. Please register your property first.'
-          : method === 'upic'
-            ? 'हा UPIC आयडी नोंदणीकृत नाही. कृपया बरोबर UPIC आयडी प्रविष्ट करा. / This UPIC ID is not registered. Please enter a correct UPIC ID.'
-            : 'हा मालमत्ता क्रमांक नोंदणीकृत नाही. कृपया बरोबर मालमत्ता क्रमांक प्रविष्ट करा. / This Property Number is not registered. Please enter a correct Property Number.'
-      };
-    }
-
-    // Extract dynamic mobile number from the retrieved property to send OTP
-    const mobile = properties[0].mobileNo;
-    if (!mobile || !/^\d{10}$/.test(mobile)) {
-      return {
-        success: false,
-        error: 'या मालमत्तेसाठी वैध मोबाईल नंबर नोंदणीकृत नाही. / No valid mobile number is registered for this property.'
-      };
-    }
-
-    const resp = await requestOtp(mobile);
-    const txnId = resp.txnId;
-    const demoOtp = resp.demoOtp || '123456';
-    const maskedPhone = `+91 ${mobile.slice(0, 2)}******${mobile.slice(8)}`;
-
-    const c = await cookies();
-    c.set('rts_login_mobile', mobile, { httpOnly: true, sameSite: 'lax', path: '/' });
-    c.set('rts_otp_txn', txnId, { httpOnly: true, sameSite: 'lax', path: '/' });
-    c.set('rts_otp_code', demoOtp, { httpOnly: true, sameSite: 'lax', path: '/' });
-    c.set('rts_otp_expires_at', String(Date.now() + OTP_TTL_MS), { httpOnly: true, sameSite: 'lax', path: '/' });
-
-    return {
-      success: true,
-      txnId,
-      demoOtp,
-      maskedPhone,
-    };
-  } catch (e: any) {
-    return { success: false, error: e?.message || 'Failed to send OTP. Please try again.' };
-  }
-}
-
-export async function verifyCitizenOtpAction(otp: string, externalServiceId?: string) {
-  if (!/^\d{6}$/.test(otp)) {
-    return { success: false, error: 'Please enter a valid 6-digit OTP.' };
-  }
-
-  const c = await cookies();
-  const mobile = c.get('rts_login_mobile')?.value;
-  const txnId = c.get('rts_otp_txn')?.value;
-  const storedOtp = c.get('rts_otp_code')?.value;
-  const expiresAt = Number(c.get('rts_otp_expires_at')?.value || '0');
-
-  if (!mobile || !txnId || !storedOtp) {
-    return { success: false, error: 'Session not found. Please request OTP again.' };
-  }
-
-  if (Date.now() > expiresAt) {
-    return { success: false, error: 'OTP session expired. Please request OTP again.' };
-  }
-
-  if (storedOtp !== otp) {
-    return { success: false, error: 'Invalid OTP. Please try again.' };
-  }
-
   // Fetch citizen details from dynamic API
   let citizenProfile = {
-    name: 'धारक . .',
-    upicId: 'AKLMC089194',
-    propertyNo: 'B3-434',
+    name: fallbackProfile?.name || 'नागरिक',
+    upicId: fallbackProfile?.upicId || '',
+    propertyNo: fallbackProfile?.propertyNo || '',
     mobile: mobile,
-    ownerId: 0,
+    ownerId: fallbackProfile?.ownerId || 0,
   };
 
   let properties: CitizenProperty[] = [];
@@ -119,11 +30,11 @@ export async function verifyCitizenOtpAction(otp: string, externalServiceId?: st
     if (properties.length > 0) {
       const first = properties[0];
       citizenProfile = {
-        name: first.ownerNameMarathi || 'धारक . .',
-        upicId: first.upicNo,
-        propertyNo: first.propertyNo,
-        mobile: first.mobileNo,
-        ownerId: first.ownerId,
+        name: first.ownerNameMarathi || citizenProfile.name,
+        upicId: first.upicNo || citizenProfile.upicId,
+        propertyNo: first.propertyNo || citizenProfile.propertyNo,
+        mobile: first.mobileNo || mobile,
+        ownerId: first.ownerId || citizenProfile.ownerId,
       };
     }
   } catch (err) {
@@ -188,7 +99,7 @@ export async function verifyCitizenOtpAction(otp: string, externalServiceId?: st
 
   const requestedServiceId = Number(externalServiceId);
   if (!Number.isInteger(requestedServiceId) || requestedServiceId <= 0) {
-    return { success: true };
+    return { success: true, citizen: citizenProfile };
   }
 
   const tracking = await createTrackedExternalServiceNavigation(requestedServiceId, {
@@ -199,26 +110,163 @@ export async function verifyCitizenOtpAction(otp: string, externalServiceId?: st
   });
 
   if (!tracking.success) {
-    return { success: true, serviceRedirectError: tracking.errorCode };
+    return { success: true, citizen: citizenProfile, serviceRedirectError: tracking.errorCode };
   }
 
-  return { success: true, externalDestination: tracking.destination };
+  return { success: true, citizen: citizenProfile, externalDestination: tracking.destination };
+}
+
+export async function sendCitizenOtpAction(
+  method: 'mobile' | 'upic' | 'property',
+  payload: { mobile?: string; upicId?: string; propertyNo?: string },
+  externalServiceId?: string
+) {
+  let searchValue = '';
+  let searchType: 'MobileNo' | 'UpicId' | 'PropertyNo' = 'MobileNo';
+
+  if (method === 'mobile') {
+    searchValue = payload.mobile?.replace(/\D/g, '') || '';
+    if (!/^\d{10}$/.test(searchValue)) {
+      return { success: false, error: 'Please enter a valid 10-digit phone number.' };
+    }
+    searchType = 'MobileNo';
+  } else if (method === 'upic') {
+    searchValue = payload.upicId?.trim() || '';
+    if (!searchValue) {
+      return { success: false, error: 'Please enter a UPIC ID.' };
+    }
+    searchType = 'UpicId';
+  } else if (method === 'property') {
+    searchValue = payload.propertyNo?.trim() || '';
+    if (!searchValue) {
+      return { success: false, error: 'Please enter a Property Number.' };
+    }
+    searchType = 'PropertyNo';
+  }
+
+  try {
+    // Check if the property/mobile is registered in the DB
+    const properties = await fetchCitizenPropertiesFromApi(searchType, searchValue);
+    let mobile = '';
+    let fallbackProfile = {
+      name: 'नागरिक',
+      upicId: '',
+      propertyNo: '',
+      ownerId: 0,
+    };
+
+    if (properties && properties.length > 0) {
+      const first = properties[0];
+      mobile = first.mobileNo || (method === 'mobile' ? searchValue : '');
+      fallbackProfile = {
+        name: first.ownerNameMarathi || 'नागरिक',
+        upicId: first.upicNo,
+        propertyNo: first.propertyNo,
+        ownerId: first.ownerId,
+      };
+    } else if (method === 'mobile') {
+      mobile = searchValue;
+    } else {
+      return {
+        success: false,
+        error: method === 'upic'
+          ? 'हा UPIC आयडी नोंदणीकृत नाही. कृपया बरोबर UPIC आयडी प्रविष्ट करा. / This UPIC ID is not registered.'
+          : 'हा मालमत्ता क्रमांक नोंदणीकृत नाही. कृपया बरोबर मालमत्ता क्रमांक प्रविष्ट करा. / This Property Number is not registered.'
+      };
+    }
+
+    if (!mobile || !/^\d{10}$/.test(mobile)) {
+      return {
+        success: false,
+        error: 'या मालमत्तेसाठी वैध मोबाईल नंबर नोंदणीकृत नाही. / No valid mobile number is registered for this property.'
+      };
+    }
+
+    const resp = await requestOtp(mobile);
+    const c = await cookies();
+
+    // If SMS Gateway is disabled in database, perform DIRECT 1-click login without showing OTP step!
+    if (resp.directLogin) {
+      const loginResult = await establishCitizenSession(mobile, c, fallbackProfile, externalServiceId);
+      return {
+        success: true,
+        directLogin: true,
+        citizen: loginResult.citizen,
+        externalDestination: loginResult.externalDestination,
+        serviceRedirectError: loginResult.serviceRedirectError,
+      };
+    }
+
+    // Live OTP mode
+    const txnId = resp.txnId;
+    const demoOtp = resp.demoOtp || '123456';
+    const maskedPhone = `+91 ${mobile.slice(0, 2)}******${mobile.slice(8)}`;
+
+    c.set('rts_login_mobile', mobile, { httpOnly: true, sameSite: 'lax', path: '/' });
+    c.set('rts_otp_txn', txnId, { httpOnly: true, sameSite: 'lax', path: '/' });
+    c.set('rts_otp_code', demoOtp, { httpOnly: true, sameSite: 'lax', path: '/' });
+    c.set('rts_otp_expires_at', String(Date.now() + OTP_TTL_MS), { httpOnly: true, sameSite: 'lax', path: '/' });
+
+    return {
+      success: true,
+      directLogin: false,
+      txnId,
+      demoOtp,
+      maskedPhone,
+    };
+  } catch (e: any) {
+    return { success: false, error: e?.message || 'Failed to send OTP. Please try again.' };
+  }
+}
+
+export async function verifyCitizenOtpAction(otp: string, externalServiceId?: string) {
+  if (!/^\d{6}$/.test(otp)) {
+    return { success: false, error: 'Please enter a valid 6-digit OTP.' };
+  }
+
+  const c = await cookies();
+  const mobile = c.get('rts_login_mobile')?.value;
+  const txnId = c.get('rts_otp_txn')?.value;
+  const storedOtp = c.get('rts_otp_code')?.value;
+  const expiresAt = Number(c.get('rts_otp_expires_at')?.value || '0');
+
+  if (!mobile || !txnId || !storedOtp) {
+    return { success: false, error: 'Session not found. Please request OTP again.' };
+  }
+
+  if (Date.now() > expiresAt) {
+    return { success: false, error: 'OTP session expired. Please request OTP again.' };
+  }
+
+  if (storedOtp !== otp) {
+    return { success: false, error: 'Invalid OTP. Please try again.' };
+  }
+
+  return await establishCitizenSession(mobile, c, undefined, externalServiceId);
 }
 
 export async function logoutCitizenAction() {
   const c = await cookies();
   const sessionId = c.get('rts_session')?.value;
+
   if (sessionId) {
     try {
       await logoutRtsCitizenSession(sessionId);
-    } catch (err) {
-      console.error('Failed to logout citizen session in DB:', err);
+    } catch {
+      // non-blocking
     }
   }
+
   c.delete('rts_session');
   c.delete('rts_logged_in');
   c.delete('rts_citizen_profile');
   c.delete('rts_citizen_properties');
+  c.delete('rts_login_mobile');
+  c.delete('rts_otp_txn');
+  c.delete('rts_otp_code');
+  c.delete('rts_otp_expires_at');
+
+  return { success: true };
 }
 
 export async function switchCitizenPropertyAction(ownerId: number) {

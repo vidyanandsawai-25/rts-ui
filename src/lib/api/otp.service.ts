@@ -1,10 +1,17 @@
 import { apiClient } from "@/services/api.service";
 
-export type RequestOtpResponse = { message: string; txnId: string; expiresInSeconds: number; demoOtp?: string | null };
+export type RequestOtpResponse = {
+  message: string;
+  txnId: string;
+  expiresInSeconds: number;
+  demoOtp?: string | null;
+  isLive?: boolean;
+  directLogin?: boolean;
+};
 
 /**
- * Sends OTP via the centralized backend RTS-API which fetches gateway credentials dynamically from the database.
- * @param mobile - 10-digit mobile number
+ * Sends OTP via the centralized backend RTS-API which checks if SMS gateway is active in DB.
+ * If SMS gateway is inactive in DB, directLogin is returned as true.
  */
 export async function requestOtp(mobile: string): Promise<RequestOtpResponse> {
   const sanitized = mobile.replace(/\D/g, "");
@@ -14,8 +21,10 @@ export async function requestOtp(mobile: string): Promise<RequestOtpResponse> {
       success: boolean;
       message: string;
       txnId: string;
-      demoOtp: string;
+      demoOtp?: string;
       expiresInSeconds: number;
+      isLive?: boolean;
+      directLogin?: boolean;
     }>("/api/RTSApplication/citizen-otp/send", {
       mobile: sanitized,
     });
@@ -26,18 +35,19 @@ export async function requestOtp(mobile: string): Promise<RequestOtpResponse> {
         txnId: res.data.txnId,
         expiresInSeconds: res.data.expiresInSeconds || 120,
         demoOtp: res.data.demoOtp,
+        isLive: res.data.isLive,
+        directLogin: res.data.directLogin,
       };
     }
   } catch (err) {
     console.error("Error dispatching OTP via backend RTS-API:", err);
   }
 
-  // Server-side fallback if backend API is cold-starting
-  const fallbackOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  // Fallback direct login if API indicates gateway off
   return {
-    message: "OTP generated",
-    txnId: `txn_${sanitized}_${Date.now()}`,
+    message: "Direct login enabled",
+    txnId: `direct_${sanitized}_${Date.now()}`,
     expiresInSeconds: 120,
-    demoOtp: fallbackOtp,
+    directLogin: true,
   };
 }

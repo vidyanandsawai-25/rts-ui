@@ -186,13 +186,45 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
     }
 
     startTransition(async () => {
-      const res = await sendCitizenOtpAction(method, {
-        mobile,
-        upicId,
-        propertyNo:
-          method === 'property' ? buildPropertySearchValue(sectorId, propertyNo) : undefined,
-      });
-      if (res.success && res.txnId) {
+      const res = await sendCitizenOtpAction(
+        method,
+        {
+          mobile,
+          upicId,
+          propertyNo:
+            method === 'property' ? buildPropertySearchValue(sectorId, propertyNo) : undefined,
+        },
+        externalServiceId ?? undefined
+      );
+
+      if (res.success) {
+        if (res.directLogin) {
+          setInfo(t('messages.loginSuccess') || 'Login successful!');
+          if (res.externalDestination) {
+            window.open(res.externalDestination, '_blank', 'noopener,noreferrer');
+            return;
+          }
+
+          let targetUrl = redirectUrl || `/${locale}/service/dashboard`;
+          if (externalServiceId) {
+            const errorCode = res.serviceRedirectError || 'service-unavailable';
+            targetUrl = `/${locale}/service/dashboard?serviceRedirectError=${encodeURIComponent(errorCode)}`;
+          } else {
+            const cleanUpic = (upicId || '').trim().toUpperCase();
+            if (cleanUpic) {
+              if (targetUrl.includes('upicNo=')) {
+                targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
+              } else {
+                const sep = targetUrl.includes('?') ? '&' : '?';
+                targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
+              }
+            }
+          }
+          router.push(targetUrl);
+          router.refresh();
+          return;
+        }
+
         setMaskedPhone(res.maskedPhone || '');
         setStep('otp');
         setInfo(t('messages.otpSent'));
