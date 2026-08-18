@@ -18,11 +18,6 @@ interface FieldRegistryFormProps {
   state: ReturnType<typeof useFieldRegistryState>;
 }
 
-const LEGACY_TABLE_MAPPING: Record<string, string> = {
-  "PropertyMast": "Property Tax Property Information",
-  "PropertyDetails": "Property Tax PropertyDetails",
-};
-
 export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
   const {
     sourceTable,
@@ -41,13 +36,32 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
   const tableOptions = useMemo(() => {
     const options = tables.map((t) => ({ label: t.tableName, value: String(t.id) }));
     if (sourceTable && !options.some(o => o.value === sourceTable)) {
-      const matchedTable = tables.find(t =>
-        t.tableName && (
-          t.tableName.toLowerCase() === sourceTable.toLowerCase() ||
-          t.tableName.toLowerCase().replace(/[\s_]/g, '') === sourceTable.toLowerCase().replace(/[\s_]/g, '')
-        )
-      );
-      const displayLabel = matchedTable ? matchedTable.tableName : (LEGACY_TABLE_MAPPING[sourceTable] || sourceTable);
+      const sTable = sourceTable.toLowerCase();
+      const sTableClean = sTable.replace(/[\s_]/g, '');
+
+      const matchedTable = tables.find(t => {
+        if (!t) return false;
+        if (String(t.id) === String(sourceTable)) return true;
+
+        const tName = t.tableName ? t.tableName.toLowerCase() : '';
+        const tNameClean = tName.replace(/[\s_]/g, '');
+
+        const refName = t.referenceTableName ? t.referenceTableName.toLowerCase() : '';
+        const refNameClean = refName.replace(/[\s_]/g, '');
+        const refLastPart = refName.split('.').pop() || '';
+        const refLastPartClean = refLastPart.replace(/[\s_]/g, '');
+
+        return (
+          tName === sTable ||
+          tNameClean === sTableClean ||
+          refName === sTable ||
+          refNameClean === sTableClean ||
+          refLastPart === sTable ||
+          refLastPartClean === sTableClean
+        );
+      });
+
+      const displayLabel = matchedTable ? matchedTable.tableName : sourceTable;
       options.push({ label: displayLabel, value: sourceTable });
     }
     return options;

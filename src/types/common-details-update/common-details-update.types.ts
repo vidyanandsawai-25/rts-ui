@@ -203,6 +203,7 @@ export interface FieldRegistrySchema {
 export interface FieldRegistryTable {
   id?: number;
   tableName: string;
+  referenceTableName?: string;
 }
 
 export interface SourceTableField {
