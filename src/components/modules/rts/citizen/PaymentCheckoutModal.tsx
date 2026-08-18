@@ -91,8 +91,22 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
 
       const order: PaymentOrderResult = orderRes.data;
       const cookieUlb = getUlbDataFromCookies();
-      const ulbName = cookieUlb.ulbName || 'Municipal Corporation';
-      const ulbLogo = cookieUlb.ulbLogo;
+      const ulbName =
+        cookieUlb.ulbName ||
+        cookieUlb.ulbNameLocal ||
+        'Akola Municipal Corporation (अकोला महानगरपालिका)';
+
+      let ulbLogo: string | undefined = undefined;
+      const rawLogo = cookieUlb.ulbLogo || '/images/rts-logo.png';
+      if (typeof window !== 'undefined' && rawLogo) {
+        if (rawLogo.startsWith('http://') || rawLogo.startsWith('https://')) {
+          ulbLogo = rawLogo;
+        } else if (rawLogo.startsWith('/')) {
+          ulbLogo = `${window.location.origin}${rawLogo}`;
+        } else {
+          ulbLogo = `${window.location.origin}/api/UlbImageMaster/${rawLogo}/view`;
+        }
+      }
 
       // Step 2: Open Razorpay Live Gateway Modal with dynamic prefill
       if (typeof window !== 'undefined' && window.Razorpay) {
@@ -101,7 +115,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
           amount: order.amountInPaise,
           currency: order.currency || 'INR',
           name: ulbName,
-          image: ulbLogo || undefined,
+          image: ulbLogo,
           description: order.description || `Government RTS Fee - ${order.serviceName}`,
           order_id: order.gatewayOrderId,
           handler: async function (response: any) {

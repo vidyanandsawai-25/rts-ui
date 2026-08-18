@@ -74,6 +74,7 @@ export interface PaymentReceiptResult {
   customerEmail?: string;
   ulbName?: string;
   ulbNameLocal?: string;
+  ulbLogo?: string;
 }
 
 export interface ApiResponseWrapper<T> {

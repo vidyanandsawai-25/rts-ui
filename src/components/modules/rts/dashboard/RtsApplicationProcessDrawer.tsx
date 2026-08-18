@@ -221,7 +221,12 @@ export default function RtsApplicationProcessDrawer({
   const verification = data?.verification ?? null;
   const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
   const availableActions = verification
-    ? ACTIONS.filter((action) => verification[action.key])
+    ? ACTIONS.filter((action) => {
+        if (action.key === 'canPay') {
+          return Boolean(verification.canPay || (verification.feesRequired && !verification.isPaid));
+        }
+        return Boolean(verification[action.key]);
+      })
     : [];
 
   useEffect(() => {
@@ -458,7 +463,9 @@ export default function RtsApplicationProcessDrawer({
             )}
             <div className="flex flex-wrap items-center justify-start gap-2">
               {availableActions.map((action) => {
-                const isApproveBlockedByFee = action.key === 'canApprove' && Boolean(verification?.feesRequired && !verification?.isPaid);
+                const isApproveBlockedByFee =
+                  (action.key === 'canApprove' || action.key === 'canVerifyDocument') &&
+                  Boolean(verification?.feesRequired && !verification?.isPaid);
                 return (
                   <Button
                     key={action.key}
@@ -471,7 +478,7 @@ export default function RtsApplicationProcessDrawer({
                       !hasOfficerAccess
                         ? t('officerAccessDenied')
                         : isApproveBlockedByFee
-                          ? 'शासकीय शुल्क प्रलंबित असल्याने मंजूर करता येत नाही.'
+                          ? 'शासकीय शुल्क प्रलंबित असल्याने कार्यवाही / मंजुरी करता येत नाही. प्रथम शुल्क स्वीकारा.'
                           : undefined
                     }
                     onClick={() => {
@@ -713,7 +720,7 @@ export default function RtsApplicationProcessDrawer({
                             </p>
                           </div>
                         </div>
-                        {verification?.canPay && hasOfficerAccess && (
+                        {hasOfficerAccess && (
                           <div className="pt-1 flex justify-end">
                             <Button
                               type="button"

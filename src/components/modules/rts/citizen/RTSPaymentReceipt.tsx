@@ -43,12 +43,45 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
     : new Date().toLocaleString('en-IN');
 
   const cookieUlb = getUlbDataFromCookies();
-  const ulbNameEn = receipt.ulbName || cookieUlb.ulbName || 'Municipal Corporation';
-  const ulbNameMr = receipt.ulbNameLocal || cookieUlb.ulbNameLocal || ulbNameEn;
-  const ulbLogo = cookieUlb.ulbLogo;
+  const ulbNameEn = receipt.ulbName || cookieUlb.ulbName || 'Akola Municipal Corporation';
+  const ulbNameMr = receipt.ulbNameLocal || cookieUlb.ulbNameLocal || 'अकोला महानगरपालिका';
+  let ulbLogo = receipt.ulbLogo || cookieUlb.ulbLogo || '/images/rts-logo.png';
+  if (ulbLogo && !ulbLogo.startsWith('http://') && !ulbLogo.startsWith('https://') && !ulbLogo.startsWith('/')) {
+    ulbLogo = `/api/UlbImageMaster/${ulbLogo}/view`;
+  }
 
   return (
-    <div className={`w-full max-w-3xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden border border-slate-200/90 print:m-0 print:w-full print:max-w-none print:shadow-none print:border-none print:rounded-none ${className}`}>
+    <>
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          .rts-printable-receipt-document,
+          .rts-printable-receipt-document * {
+            visibility: visible !important;
+          }
+          .rts-printable-receipt-document {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: white !important;
+          }
+          @page {
+            size: A4 portrait;
+            margin: 8mm 10mm;
+          }
+        }
+      `}</style>
+      <div
+        className={`rts-printable-receipt-document w-full max-w-3xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden border border-slate-200/90 print:m-0 print:w-full print:max-w-none print:shadow-none print:border-none print:rounded-none ${className}`}
+      >
       {/* Header Banner - Official Municipal Identity */}
       <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 px-4 sm:px-6 py-4 sm:py-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:bg-none print:text-slate-900 print:border-b-2 print:border-slate-800 print:px-0 print:py-3">
         <div className="flex items-center gap-3">
@@ -242,5 +275,6 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
         </div>
       )}
     </div>
+    </>
   );
 };
