@@ -424,7 +424,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                   key={action.label}
                   type="button"
                   onClick={() => {
-                    if (action.id === 'track') {
+                    if (action.id === 'track' || action.id === 'pay' || action.id === 'download') {
                       updateTrackingDrawerRoute(true);
                       return;
                     }
