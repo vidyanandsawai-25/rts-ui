@@ -66,6 +66,7 @@ export interface SubFloorFormModel {
   id?: number;
   subFloorCode: string;
   description: string;
+  sequenceNo?: number | null | '';
   isActive: boolean;
   updatedBy?: number;
 }
@@ -79,6 +80,7 @@ export interface SubFloor {
   id: number;
   subFloorCode: string;
   description: string;
+  sequenceNo: number | null;
 
   isActive: boolean;
   createdDate: string;
@@ -91,6 +93,7 @@ export interface SubFloor {
 export interface SubFloorCreatePayload {
   subFloorCode: string;
   description: string;
+  sequenceNo?: number | null;
   isActive: boolean;
   createdBy?: number;
   createdDate?: string;
@@ -153,7 +156,6 @@ export interface FloorRangeTemplate {
 export interface FloorRangePayload {
   rangeFrom: string;
   rangeTo: string;
-  prefix: string;
   template: FloorRangeTemplate;
   startSequenceNo: number;
 }
@@ -164,7 +166,6 @@ export interface FloorRangePayload {
 export interface FloorRangeFormModel {
   rangeFrom: number;
   rangeTo: number;
-  prefix: string;
   isActive: boolean;
   autoGenerateSubFloor: boolean;
 }
@@ -177,7 +178,6 @@ export interface FloorRangeFieldsProps {
   errors: {
     rangeFrom?: string;
     rangeTo?: string;
-    prefix?: string;
   };
   showError: (field: keyof FloorRangeFormModel) => boolean;
   onChange: (field: keyof FloorRangeFormModel, value: string | number | boolean) => void;

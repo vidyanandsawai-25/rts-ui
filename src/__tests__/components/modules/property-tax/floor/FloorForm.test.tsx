@@ -76,6 +76,7 @@ const messages = {
           descriptionRequired: 'Description is required',
           descriptionMaxLength: 'Max {count} characters',
           descriptionFormat: 'Invalid format',
+          sequenceNoRequired: 'Sequence No is required',
           mustBeActive: 'Must be active on create',
           rangeStartMinValue: 'Start value must be at least 1',
           rangeEndMinValue: 'End value must be at least 1',
@@ -293,7 +294,6 @@ describe('FloorForm — Range Mode', () => {
     // Wait for the mode change and re-render
     expect(await screen.findByLabelText(/Start/)).toBeInTheDocument();
     expect(await screen.findByLabelText(/End/)).toBeInTheDocument();
-    expect(await screen.findByLabelText('Prefix')).toBeInTheDocument();
   });
 
   it('shows validation errors for invalid range input', async () => {
@@ -316,14 +316,12 @@ describe('FloorForm — Range Mode', () => {
     // Wait for range fields to appear
     fireEvent.change(await screen.findByLabelText(/Start/), { target: { value: '1' } });
     fireEvent.change(await screen.findByLabelText(/End/), { target: { value: '3' } });
-    fireEvent.change(await screen.findByLabelText('Prefix'), { target: { value: 'F' } });
     submitForm(document.body);
     await waitFor(() => {
       expect(createFloorRangeAction).toHaveBeenCalledWith(
         expect.objectContaining({
           rangeFrom: '1',
           rangeTo: '3',
-          prefix: 'F',
         })
       );
     });

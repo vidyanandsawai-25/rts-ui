@@ -109,10 +109,30 @@ export default function FloorMaster({
             toast.success(t("messages.deleteSuccess"));
             router.refresh();
           } else {
-            const msg =
-              result.statusCode === 409 ? t("messages.deleteInUse") :
-              result.statusCode === 404 ? tCommon("errors.notFound") :
-              result.message || tCommon("errors.deleteError");
+            let msg = tCommon("errors.deleteError");
+
+            if (
+              result.statusCode === 409 ||
+              (result.statusCode === 400 &&
+                result.message &&
+                (result.message.toLowerCase().includes("referenced") ||
+                  result.message.toLowerCase().includes("in use") ||
+                  result.message.toLowerCase().includes("cannot deactivate"))) ||
+              (result.message &&
+                (result.message.toLowerCase().includes("invalid object name") ||
+                  result.message.toLowerCase().includes("floorfactorcvmaster") ||
+                  result.message.toLowerCase().includes("reference constraint") ||
+                  result.message.toLowerCase().includes("foreign key")))
+            ) {
+              msg = t("apiErrors.inUse");
+            } else if (result.statusCode === 404) {
+              msg = tCommon("errors.notFound");
+            } else if (result.messageKey) {
+              // Translate i18n key from server
+              msg = t(result.messageKey);
+            } else if (result.message) {
+              msg = result.message;
+            }
 
             toast.error(msg);
           }

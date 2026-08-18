@@ -99,10 +99,21 @@ export default function SubFloorMaster({
             toast.success(t("messages.deleteSuccess"));
             router.refresh();
           } else {
-            const msg =
-              result.statusCode === 409 ? t("messages.deleteInUse") :
-              result.messageKey ? t(result.messageKey) :
-              result.message || t("messages.deleteFailed");
+            let msg = t("messages.deleteFailed");
+            if (result.message) {
+              const match = result.message.match(/(?:referenced in:\s*([^.\n]+)|referenced by other entities \((.*?)\))/i);
+              if (match) {
+                const rawTables = (match[1] || match[2] || "").trim();
+                const tables = rawTables.replace(/([a-z])([A-Z])/g, "$1 $2");
+                msg = t("apiErrors.referencedIn", { tables });
+              } else {
+                msg = result.message;
+              }
+            } else if (result.statusCode === 409) {
+              msg = t("messages.deleteInUse");
+            } else if (result.messageKey) {
+              msg = t(result.messageKey);
+            }
             toast.error(msg);
           }
         },

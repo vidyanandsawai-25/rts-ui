@@ -11,7 +11,7 @@ import {
   createFloorRange,
   updateFloor,
   deleteFloor,
- 
+
 } from "@/lib/api/floor.service";
 
 import {
@@ -147,7 +147,7 @@ export async function fetchFloorPagedServerAction(
       throw new Error("Invalid pagination parameters");
     }
 
-  
+
     const allowedSortColumns = ["floorCode", "description", "sequenceNo", "isActive"];
 
     const validSortBy = sortBy && allowedSortColumns.includes(sortBy)
@@ -194,7 +194,7 @@ export async function createFloorAction(
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
-    
+
     if (!userId) {
       throw new ApiError(401, "Unauthorized", "User session expired");
     }
@@ -325,6 +325,23 @@ export async function deleteFloorAction(
       } catch {
         // use raw text
       }
+
+      const lowerErr = errorMessage.toLowerCase();
+      if (
+        error.statusCode === 409 ||
+        (error.statusCode === 400 && (lowerErr.includes("referenced") || lowerErr.includes("in use") || lowerErr.includes("cannot deactivate"))) ||
+        lowerErr.includes("referenced") ||
+        lowerErr.includes("in use") ||
+        lowerErr.includes("invalid object name") ||
+        lowerErr.includes("floorfactorcvmaster")
+      ) {
+        return {
+          success: false,
+          messageKey: "apiErrors.inUse",
+          statusCode: 409,
+        };
+      }
+
       return {
         success: false,
         message: errorMessage,
@@ -348,17 +365,16 @@ export async function createFloorRangeAction(
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
-    
+
     if (!userId) {
       throw new ApiError(401, "Unauthorized", "User session expired");
     }
 
     const rangeFrom = Number.parseInt(data.rangeFrom, 10);
     const rangeTo = Number.parseInt(data.rangeTo, 10);
-    const normalizedPrefix = (data.prefix ?? "").trim().toLowerCase();
 
     // Pre-check: prevent known duplicate scenario before API call
-    // Check if existing floors overlap with the requested sequence range + prefix pattern
+    // Check if existing floors overlap with the requested sequence range
     if (Number.isFinite(rangeFrom) && Number.isFinite(rangeTo)) {
       try {
         const existingFloors = await getFloorPaged(1, -1);
@@ -368,12 +384,7 @@ export async function createFloorRangeAction(
           // Check if sequence overlaps with requested range
           if (sequenceNo < rangeFrom || sequenceNo > rangeTo) return false;
 
-          const floorCode = String(floor.floorCode ?? "").trim().toLowerCase();
-
-          // Check prefix match
-          if (normalizedPrefix && !floorCode.startsWith(normalizedPrefix)) return false;
-
-          // Conflict found: same sequence + prefix pattern
+          // Conflict found: same sequence pattern
           return true;
         });
 
@@ -493,7 +504,7 @@ export async function createSubFloorAction(
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
-    
+
     if (!userId) {
       throw new ApiError(401, "Unauthorized", "User session expired");
     }
@@ -617,9 +628,17 @@ export async function deleteSubFloorAction(
     };
   } catch (error) {
     if (error instanceof ApiError) {
+      let errorMessage = error.responseText;
+      try {
+        const parsed = JSON.parse(error.responseText);
+        if (parsed?.message) errorMessage = parsed.message;
+      } catch {
+        // use raw text
+      }
+
       return {
         success: false,
-        message: error.responseText,
+        message: errorMessage,
         statusCode: error.statusCode,
       };
     }

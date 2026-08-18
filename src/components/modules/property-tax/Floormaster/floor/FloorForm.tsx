@@ -34,7 +34,6 @@ type FloorMode = 'single' | 'range';
 const DEFAULT_RANGE_DATA: FloorRangeFormModel = {
   rangeFrom: 0,
   rangeTo: 0,
-  prefix: '',
   isActive: true,
   autoGenerateSubFloor: false,
 };
@@ -216,7 +215,6 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
         const payload: FloorRangePayload = {
           rangeFrom: rangeData.rangeFrom.toString(),
           rangeTo: rangeData.rangeTo.toString(),
-          prefix: rangeData.prefix,
           template: {
             isActive: rangeData.isActive,
             floorCode: '',
@@ -424,6 +422,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
             showError={(field) => showError(field)}
             onChange={handleChange}
             onBlur={handleBlur}
+            isEdit={isEdit}
             labels={{
               floorCode: t('form.floorCode'),
               floorCodePlaceholder: t('form.floorCodePlaceholder'),

@@ -19,6 +19,13 @@ export const subFloorColumns = (
     cellClassName: "text-center",
   },
   {
+    key: "sequenceNo",
+    label: t("table.columns.sequenceNo"),
+    width: "15%",
+    headerClassName: "text-center",
+    cellClassName: "text-center",
+  },
+  {
     key: "isActive",
     label: t("table.columns.status"),
     width: "15%",

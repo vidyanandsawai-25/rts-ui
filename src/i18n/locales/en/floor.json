@@ -123,7 +123,7 @@
       "updateSuccess": "Floor updated successfully",
       "deleteSuccess": "Floor deleted successfully",
       "deleteFailed": "Failed to delete floor. Please try again.",
-      "deleteInUse": "You can't delete this floor because it is in use.",
+       "deleteInUse": "Cannot deactivate/delete this Floor because it is referenced in:\nWeightage Master, Property Details.\n\nPlease remove the dependent records first.",
       "deleteConfirm": "Are you sure you want to delete this floor?",
       "noFloors": "No floors available. Add a new floor to get started.",
       "validFloorIdRequired": "Valid Floor ID is required"
@@ -143,7 +143,8 @@
       "duplicateRecord": "Duplicate record already exists",
       "invalidData": "Invalid data provided",
       "notFound": "Record not found",
-      "operationFailed": "Operation failed"
+      "operationFailed": "Operation failed",
+      "inUse": "Cannot deactivate/delete this Floor because it is referenced in:\nWeightage Master, Property Details."
     },
     "note": {
       "mandatory": "Fields marked with * are mandatory"
@@ -198,6 +199,8 @@
       "codePlaceholder": "e.g., SF01, SF02",
       "description": "Description",
       "descriptionPlaceholder": "Enter sub-floor description or additional details",
+      "sequenceNo": "Sequence No",
+      "sequenceNoPlaceholder": "Enter sequence number",
       "validation": {
         "codeRequired": "Code is required",
         "codeFormat": "Code can only contain letters, numbers, and underscores (not at start/end)",
@@ -205,6 +208,7 @@
         "descriptionRequired": "Description is required",
         "descriptionFormat": "Description contains invalid characters or formatting",
         "descriptionMaxLength": "Description cannot exceed {count} characters",
+        "sequenceNoRequired": "Sequence No is required",
         "mustBeActive": "New sub-floor must be active"
       }
     },
@@ -217,7 +221,8 @@
         "status": "Status",
         "actions": "Actions",
         "subFloorCode": "Sub-Floor Code",
-        "subFloorDescription": "Description"
+        "subFloorDescription": "Description",
+        "sequenceNo": "Sequence No"
       },
       "pagination": {
         "showing": "Showing",
@@ -244,7 +249,8 @@
       "duplicateRecord": "Duplicate record already exists",
       "invalidData": "Invalid data provided",
       "notFound": "Record not found",
-      "operationFailed": "Operation failed"
+      "operationFailed": "Operation failed",
+      "referencedIn": "Cannot deactivate or delete this Sub-Floor because it is referenced in: {tables}."
     },
     "note": {
       "mandatory": "Fields marked with * are mandatory"

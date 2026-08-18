@@ -29,7 +29,7 @@ import {
   LETTERS_ONLY_SANITIZE,
 } from "@/lib/utils/validation-rules";
 
-const MAX_NAME = 5;
+const MAX_NAME = 2;
 const MAX_UNIT = 7;
 
 export interface TapSizeFormProps {
