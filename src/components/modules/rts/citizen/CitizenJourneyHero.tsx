@@ -184,7 +184,7 @@ export function CitizenJourneyHero({
 
         <div className="relative z-10 grid min-w-0 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] xl:min-h-[550px] xl:grid-cols-[minmax(0,0.88fr)_minmax(540px,1.12fr)] 2xl:min-h-[610px] 2xl:grid-cols-[minmax(640px,0.72fr)_minmax(940px,1.28fr)]">
           <motion.div
-            initial={reduceMotion ? false : { opacity: 0, x: -24 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="min-w-0 bg-white p-5 sm:p-7 md:flex md:flex-col md:justify-center md:border-r md:border-slate-100 md:p-5 lg:p-7 xl:m-5 xl:mr-0 xl:self-center xl:rounded-[1.75rem] xl:border xl:border-white/80 xl:bg-white/95 xl:p-7 xl:shadow-[0_24px_70px_-34px_rgba(15,23,42,0.55)] xl:backdrop-blur-md 2xl:m-7 2xl:mr-0 2xl:bg-white/92 2xl:p-9"
@@ -263,7 +263,7 @@ export function CitizenJourneyHero({
           </motion.div>
 
           <motion.div
-            initial={reduceMotion ? false : { opacity: 0, x: 24 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.65, delay: 0.1, ease: 'easeOut' }}
             className="min-w-0 bg-gradient-to-b from-slate-50 to-white p-3 pb-4 sm:p-5 md:flex md:items-center md:p-4 lg:p-5 xl:items-end xl:bg-none xl:bg-transparent xl:p-6 xl:pl-5"
@@ -277,7 +277,7 @@ export function CitizenJourneyHero({
 
               <div className="relative grid grid-cols-[minmax(0,1fr)_72px] gap-3 sm:grid-cols-[minmax(0,1fr)_88px] sm:gap-4 xl:grid-cols-[minmax(145px,0.7fr)_minmax(330px,1.55fr)_88px] xl:items-center">
                 <div className="min-w-0">
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={activeStatIndex}
                       initial={reduceMotion ? false : { opacity: 0, y: 10 }}
@@ -406,7 +406,7 @@ export function CitizenJourneyHero({
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[10px] font-black text-cyan-100">
                       {activeJourneyIndex + 1}
                     </span>
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="wait" initial={false}>
                       <motion.div
                         key={activeJourneyIndex}
                         initial={reduceMotion ? false : { opacity: 0, y: 5 }}
