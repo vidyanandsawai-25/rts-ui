@@ -18,7 +18,8 @@
     "fetchPropertyWiseData": "Failed to fetch property-wise data.",
     "fetchPropertyAssessmentStatus": "Failed to fetch property assessment status details.",
     "fetchZones": "Failed to fetch zones.",
-    "fetchPropertyTrackingStatus": "Failed to fetch property tracking status."
+    "fetchPropertyTrackingStatus": "Failed to fetch property tracking status.",
+    "sendToApprove": "Failed to send for approval."
   },
   "summaryCards": {
     "metrics": {
@@ -363,6 +364,12 @@
     }
   },
   "sendToApprove": {
+    "confirmTitle": "Confirm Action",
+    "confirmDescription": "Are you sure you want to send the selected properties for approval?",
+    "confirmButton": "Confirm",
+    "successTitle": "Success",
+    "successDescription": "Properties sent for approval successfully",
+    "errorTitle": "Error",
     "title": "Send to Approve",
     "subtitle": "Select properties from the Assessment stage to send for approval",
     "backToAssessment": "Back to Assessment",

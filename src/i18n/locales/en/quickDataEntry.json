@@ -1,4 +1,10 @@
 {
+    "common": {
+        "warning": "Warning",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "ok": "OK"
+    },
     "renter": {
         "loadingScreen": "Loading renter screen...",
         "loadingEngine": "Loading rent engine..."
@@ -28,6 +34,12 @@
         "updating": "UPDATING...",
         "saveData": "SAVE DATA",
         "close": "CLOSE",
+        "confirmSave": {
+            "title": "Confirm Save",
+            "message": "Are you sure you want to save the floor and room details?",
+            "confirmBtn": "Confirm",
+            "cancelBtn": "Cancel"
+        },
         "success": {
             "title": "Success!",
             "message": "Floor details added successfully",
@@ -523,6 +535,7 @@
             "invalidAadharStart": "Aadhar number cannot start with 0 or 1.",
             "invalidAddress": "Invalid address. Only letters, numbers, and common punctuation (. , - / #) are allowed. Special characters like *()_++_)(&&^%$@!~[];  are not permitted.",
             "invalidPinCode": "Pin code must be exactly 6 digits",
+            "pinCodeCannotStartWithZero": "PIN code cannot start with 0",
             "invalidRepeatedSequence": "Repeated number sequences are not allowed",
             "pleaseFixErrors": "Please fix the highlighted validation errors before submitting."
         },
@@ -786,6 +799,11 @@
         }
     },
     "floor": {
+        "sequenceWarningTitle": "Floor Sequence Warning",
+        "doYouWantToProceed": "Do you want to proceed anyway?",
+        "proceedAnyway": "Proceed Anyway",
+        "sequenceGapDetected": "Floor sequence gap detected: {currLabel} is out of sequence. Missing floor number ({missingNo}) after {prevLabel}.",
+        "sequenceMustStartGround": "Floor sequence must start with Ground Floor (0). Missing Ground Floor before {firstLabel}.",
         "usedPlotArea": "Used Plot Area",
         "openPlotCategory": "Category",
         "separatelyUsedPlotArea": "Separately Used Plot Area",
@@ -800,6 +818,9 @@
         "plotAreaCalculator": "Total Plot Area",
         "plotAreaCalcDesc": "Quickly calculate plot area using length and width",
         "plotAreaColon": "Plot Area:",
+        "additionalPlotAreaColon": "Additional Plot Area:",
+        "carpetAreaColon": "Carpet Area:",
+        "builtupAreaColon": "Built-up Area:",
         "utilizedAreaColon": "Utilized Area:",
         "openSpaceAreaColon": "Open Space Area:",
         "remainingAreaColon": "Remaining Area:",

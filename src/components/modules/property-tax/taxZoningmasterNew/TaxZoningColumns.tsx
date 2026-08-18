@@ -44,6 +44,17 @@ export const getColumns = (
       },
     },
     {
+      label: t("columns.totalProperties"),
+      key: "totalProperties",
+      width: "110px",
+      align: "center",
+      render: (val) => (
+        <span className="inline-flex items-center justify-center min-w-[34px] px-2 py-1 rounded-lg bg-[#eef2f8] text-[#123d70] font-black">
+          {Number(val ?? 0).toLocaleString()}
+        </span>
+      ),
+    },
+    {
       label: t("zoneDescription"),
       key: "zoneDescription",
       render: (val) => (

@@ -159,12 +159,14 @@ export const kycValidators = {
    * @returns True if valid (empty or exactly 6 digits without repeated sequences)
    */
   isValidPinCode: (pinCode: string): boolean => {
-    const digits = (pinCode ?? '').replace(/\D/g, '');
-    if (digits.length === 0) return true;
-    if (digits.length !== 6) return false;
+    if (!pinCode) return true;
+    const trimmed = pinCode.trim();
+    if (trimmed.length === 0) return true;
+    
+    if (!/^[1-9][0-9]{5}$/.test(trimmed)) return false;
+    if (kycValidators.hasRepeatedSequence(trimmed, 6)) return false;
 
-    // Check for repeated sequences
-    return !kycValidators.hasRepeatedSequence(digits, 5);
+    return true;
   },
 } as const;
 
@@ -623,12 +625,14 @@ export const validateKycForm = (
 
   // Pin Code
   if (pinCode.trim().length > 0) {
-    const pinDigits = pinCode.replace(/\D/g, '');
-    if (pinCode.length !== pinDigits.length || pinDigits.length !== 6) {
-      return t('kyc.validation.invalidPinCode');
+    if (pinCode.trim().startsWith('0')) {
+      return t('kyc.validation.pinCodeCannotStartWithZero') || "PIN code cannot start with 0";
     }
-    if (kycValidators.hasRepeatedSequence(pinDigits, 5)) {
-      return t('kyc.validation.invalidRepeatedSequence');
+    if (kycValidators.hasRepeatedSequence(pinCode.trim(), 6)) {
+      return t('kyc.validation.invalidRepeatedSequence') || "Cannot enter repeated numbers";
+    }
+    if (!/^[1-9][0-9]{5}$/.test(pinCode.trim())) {
+      return t('kyc.validation.invalidPinCode') || "Please enter a valid 6-digit PIN code.";
     }
   }
 

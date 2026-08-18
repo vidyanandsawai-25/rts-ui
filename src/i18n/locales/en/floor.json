@@ -254,6 +254,11 @@
     },
     "note": {
       "mandatory": "Fields marked with * are mandatory"
-    }
+    },
+    "sequenceWarningTitle": "Floor Sequence Warning",
+    "doYouWantToProceed": "Do you want to proceed anyway?",
+    "proceedAnyway": "Proceed Anyway",
+    "sequenceGapDetected": "Floor sequence gap detected: {currLabel} is out of sequence. Missing floor number ({missingNo}) after {prevLabel}.",
+    "sequenceMustStartGround": "Floor sequence must start with Ground Floor (0). Missing Ground Floor before {firstLabel}."
   }
 }

@@ -42,19 +42,19 @@ export default function AddRateDrawer({
     year: yearParam || assessmentYearParam || undefined,
   }), [zoneParam, useGroupParam, yearParam, assessmentYearParam, isOpenPlot]);
 
-  const handleClose = () => {
-    if (isFormDirty) {
+  const handleClose = (isSuccessfulSave?: boolean) => {
+    if (isFormDirty && isSuccessfulSave !== true) {
       confirm({
         title: t("messages.confirmCloseTitle"),
-        confirmText: t("messages.confirmCloseConfirm"),
-        cancelText: t("messages.confirmCloseCancel"),
+        confirmText: t("messages.confirmCloseCancel"),
+        cancelText: t("messages.confirmCloseConfirm"),
         variant: "warning",
         onConfirm: () => {
-          // Keep drawer open - do nothing
-        },
-        onCancel: () => {
           const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
           router.replace(`/${locale}/property-tax/rate-master/${routePrefix}`);
+        },
+        onCancel: () => {
+          // Keep drawer open - do nothing
         }
       });
     } else {

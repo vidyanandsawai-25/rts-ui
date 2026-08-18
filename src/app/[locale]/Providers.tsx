@@ -13,7 +13,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <Suspense fallback={null}>
           <LoginSuccessFlash />
         </Suspense>
-        <Toaster position="top-right" richColors closeButton />
+        <Toaster position="top-right" richColors closeButton style={{ marginTop: '70px' }} />
         {children}
       </ConfirmProvider>
     </ToastProvider>

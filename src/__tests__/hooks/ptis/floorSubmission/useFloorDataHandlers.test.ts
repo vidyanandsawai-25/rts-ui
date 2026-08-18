@@ -10,11 +10,12 @@ import {
 
 // Mock dependencies
 vi.mock('sonner', () => ({
-  toast: {
+  toast: Object.assign(vi.fn(), {
     success: vi.fn(),
     error: vi.fn(),
     info: vi.fn(),
-  },
+    warning: vi.fn(),
+  }),
 }));
 
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions', () => ({
@@ -127,6 +128,96 @@ describe('useFloorDataHandlers', () => {
         expect(updateFloorSubmissionNoRedirectAction).toHaveBeenCalled();
         expect(toast.success).toHaveBeenCalledWith('floor.floorUpdateSuccess');
       });
+    });
+
+    it('should not attach sequence error to new candidate floor if error belongs to existing floor in table', async () => {
+      vi.mocked(submitFloorSubmissionNoRedirectAction).mockResolvedValue({
+        success: true,
+        data: { id: 200 },
+      });
+
+      // Existing table has ground floor (2020) and 1st floor (2019) -> 1st floor has pre-existing error
+      const localFloors: FloorData[] = [
+        createMockFloorData({ id: 1, floor: '0', floorDescription: 'तळमजला', conYr: '2020' }),
+        createMockFloorData({ id: 2, floor: '1', floorDescription: 'पहिला मजला', conYr: '2019' }),
+      ];
+
+      // Adding 2nd floor with 2022 -> valid relative to lower floors
+      const editingFloorForm = createMockFloorData({
+        id: 3,
+        floor: '2',
+        floorDescription: 'दुसरा मजला',
+        conYr: '2022',
+      });
+
+      const setFormErrorsMock = vi.fn();
+
+      const { result } = renderHook(() =>
+        useFloorDataHandlers(
+          getDefaultParams({
+            isAddingNewFloor: true,
+            localFloors,
+            editingFloorForm,
+            setFormErrors: setFormErrorsMock,
+          })
+        )
+      );
+
+      await act(async () => {
+        result.current.handleSave();
+      });
+
+      // Verification: setFormErrors should NOT have received conYr error from 1st floor
+      expect(setFormErrorsMock).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          conYr: expect.stringContaining('पहिला मजला'),
+        })
+      );
+    });
+
+    it('should trigger sequence warning when updating lower floor to a year greater than upper floor', async () => {
+      const localFloors: FloorData[] = [
+        createMockFloorData({ id: 1, floor: '0', floorDescription: 'तळमजला', conYr: '2020' }),
+        createMockFloorData({ id: 2, floor: '1', floorDescription: 'पहिला मजला', conYr: '2021' }),
+        createMockFloorData({ id: 3, floor: '2', floorDescription: 'दुसरा मजला', conYr: '2020' }),
+      ];
+
+      // Updating 1st floor to 2024 (which is greater than 2nd floor's 2020)
+      const selectedFloor = localFloors[1];
+      const editingFloorForm: FloorData = {
+        ...selectedFloor,
+        conYr: '2024',
+        constructionYear: '2024',
+      };
+
+      const setFormErrorsMock = vi.fn();
+
+      const { result } = renderHook(() =>
+        useFloorDataHandlers(
+          getDefaultParams({
+            isAddingNewFloor: false,
+            selectedFloor,
+            editingFloorForm,
+            localFloors,
+            setFormErrors: setFormErrorsMock,
+          })
+        )
+      );
+
+      await act(async () => {
+        result.current.handleSave();
+      });
+
+      // Verification: confirm modal should be called with warning variant and sequence warning title
+      expect(testParams.confirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          variant: 'warning',
+          title: expect.stringMatching(/Floor Sequence Warning|floor\.sequenceWarningTitle/),
+        })
+      );
+
+      // setFormErrors should be called to set error state
+      expect(setFormErrorsMock).toHaveBeenCalled();
     });
 
     it('should handle API errors during save', async () => {

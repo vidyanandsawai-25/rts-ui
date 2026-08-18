@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Drawer } from "@/components/common/Drawer";
 import { SearchInput } from "@/components/common/SearchInput";
@@ -42,6 +42,9 @@ export default function WardAbstractDrawerWrapper({
 }: WrapperProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams();
+  const locale = String(params?.locale || "en");
+  const basePath = `/${locale}/property-tax/taxzoningmaster`;
   const tUi = useTranslations("taxZoningRange.ui.wardAbstract");
   const [localSearch, setLocalSearch] = useState(searchTerm);
 
@@ -72,7 +75,7 @@ export default function WardAbstractDrawerWrapper({
   return (
     <Drawer
       open={true}
-      onClose={() => router.back()}
+      onClose={() => router.push(basePath)}
       title={<span className="text-[17px] font-bold text-[#0b2f5b]">{tUi("title")}</span>}
       headerActions={
         <div className="flex items-center gap-2">

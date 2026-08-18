@@ -166,22 +166,19 @@ export default async function EditPage(props: EditPageProps) {
     if (referenceTableName) {
       const parts = referenceTableName.split('.');
       const tableName = parts[parts.length - 1];
-      
-      const LEGACY_TABLE_MAPPING: Record<string, string> = {
-        "PropertyMast": "Property Tax Property Information",
-        "PropertyDetails": "Property Tax PropertyDetails",
-      };
-      const mappedTableName = LEGACY_TABLE_MAPPING[tableName] || tableName;
 
-      const normalizedMapped = mappedTableName.toLowerCase().replace(/[\s_]/g, '');
       const normalizedTable = tableName.toLowerCase().replace(/[\s_]/g, '');
+      const normalizedRef = referenceTableName.toLowerCase().replace(/[\s_]/g, '');
 
-      const foundTable = (initialSourceTables || []).find((t: { id: number; tableName?: string }) => {
-        if (!t.tableName) return false;
-        const tName = t.tableName.toLowerCase().replace(/[\s_]/g, '');
-        return tName === normalizedMapped || tName === normalizedTable || String(t.id) === tableName;
+      const foundTable = (initialSourceTables || []).find((t: { id?: number; tableName?: string; referenceTableName?: string }) => {
+        if (String(t.id) === tableName || String(t.id) === referenceTableName) return true;
+        const tName = t.tableName ? t.tableName.toLowerCase().replace(/[\s_]/g, '') : '';
+        const refName = t.referenceTableName ? t.referenceTableName.toLowerCase().replace(/[\s_]/g, '') : '';
+        const refLastPart = t.referenceTableName ? (t.referenceTableName.split('.').pop() || '').toLowerCase().replace(/[\s_]/g, '') : '';
+
+        return tName === normalizedTable || tName === normalizedRef || refName === normalizedRef || refLastPart === normalizedTable;
       });
-      if (foundTable) {
+      if (foundTable && foundTable.id != null) {
         actualSourceId = String(foundTable.id);
       }
     }

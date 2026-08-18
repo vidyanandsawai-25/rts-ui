@@ -24,6 +24,18 @@ vi.mock("next-intl", () => ({
   useLocale: () => 'en',
 }));
 
+vi.mock("@/components/common/ConfirmProvider", () => ({
+  useConfirm: () => ({
+    confirm: vi.fn(),
+  }),
+}));
+
+vi.mock("@/components/common/ToastProvider", () => ({
+  useToast: () => ({
+    toast: vi.fn(),
+  }),
+}));
+
 // Mock AutomationTable component to simplify testing
 vi.mock("@/components/common/AutomationTable", () => ({
   AutomationTable: ({ data, headerExtra, onPageChange, onPageSizeChange, renderActions }: { data: SendToApproveData[]; headerExtra?: ReactNode; onPageChange?: (page: number) => void; onPageSizeChange?: (size: number) => void; renderActions?: (row: SendToApproveData) => ReactNode }) => (

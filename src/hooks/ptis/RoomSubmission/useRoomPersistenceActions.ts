@@ -33,82 +33,93 @@ export const useRoomPersistenceActions = (state: RoomSubmissionState, props: Roo
       return;
     }
 
-    setIsUpdating(true);
+    const getSafeText = (key: string, fallback: string) => {
+      const val = t(key);
+      return val && !val.includes(".") ? val : fallback;
+    };
 
-    try {
-      // 1. Execute Pending Deletions
-      const { pendingDeletions, setPendingDeletions } = state;
+    confirm({
+      variant: "info",
+      title: getSafeText("roomSubmission.confirmSave.title", "Confirm Save"),
+      description: getSafeText(
+        "roomSubmission.confirmSave.message",
+        "Are you sure you want to save the floor and room details?"
+      ),
+      confirmText: getSafeText("roomSubmission.confirmSave.confirmBtn", "Confirm"),
+      cancelText: getSafeText("roomSubmission.confirmSave.cancelBtn", "Cancel"),
+      onConfirm: async () => {
+        setIsUpdating(true);
 
-      // Parallel execution of deletions
-      const roomResults = await Promise.all(
-        pendingDeletions.rooms.map(async (roomId) => ({
-          id: roomId,
-          success: (await deleteRoomSubmissionNoRedirectAction(roomId))?.success
-        }))
-      );
+        try {
+          // 1. Execute Pending Deletions
+          const { pendingDeletions, setPendingDeletions } = state;
 
-      const offsetResults = await Promise.all(
-        pendingDeletions.offsets.map(async (offsetId) => ({
-          id: offsetId,
-          success: (await deleteOffsetSubmissionNoRedirectAction(offsetId))?.success
-        }))
-      );
+          // Parallel execution of deletions
+          const roomResults = await Promise.all(
+            pendingDeletions.rooms.map(async (roomId) => ({
+              id: roomId,
+              success: (await deleteRoomSubmissionNoRedirectAction(roomId))?.success
+            }))
+          );
 
-      const failedRooms = roomResults.filter(r => !r.success).map(r => r.id);
-      const failedOffsets = offsetResults.filter(o => !o.success).map(o => o.id);
+          const offsetResults = await Promise.all(
+            pendingDeletions.offsets.map(async (offsetId) => ({
+              id: offsetId,
+              success: (await deleteOffsetSubmissionNoRedirectAction(offsetId))?.success
+            }))
+          );
 
-      // Only clear successful deletions
-      setPendingDeletions({ rooms: failedRooms, offsets: failedOffsets });
+          const failedRooms = roomResults.filter(r => !r.success).map(r => r.id);
+          const failedOffsets = offsetResults.filter(o => !o.success).map(o => o.id);
 
-      // Abort update if any deletion failed
-      if (failedRooms.length > 0 || failedOffsets.length > 0) {
-        warning(t("roomSubmission.validation.deleteFailed") || "Failed to delete one or more rooms or offsets. Please try again.");
-        setIsUpdating(false);
-        return;
-      }
+          // Only clear successful deletions
+          setPendingDeletions({ rooms: failedRooms, offsets: failedOffsets });
 
-      // 2. Proceed with Updates
-      const areaSqM = convertAreaUnit(grandTotal, areaUnit || "sq.m", "sq.m");
-      const builtUpSqM = convertAreaUnit(builtupGrandTotal, areaUnit || "sq.m", "sq.m");
-      const roomsToUpdate = [...rooms];
+          // Abort update if any deletion failed
+          if (failedRooms.length > 0 || failedOffsets.length > 0) {
+            warning(t("roomSubmission.validation.deleteFailed") || "Failed to delete one or more rooms or offsets. Please try again.");
+            setIsUpdating(false);
+            return;
+          }
 
-      if (onRoomsUpdate) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onRoomsUpdate(roomsToUpdate as any);
-      }
+          // 2. Proceed with Updates
+          const areaSqM = convertAreaUnit(grandTotal, areaUnit || "sq.m", "sq.m");
+          const builtUpSqM = convertAreaUnit(builtupGrandTotal, areaUnit || "sq.m", "sq.m");
+          const roomsToUpdate = [...rooms];
 
-      if (onSaveRooms) onSaveRooms(roomsToUpdate, parseFloat(areaSqM.toFixed(2)));
+          if (onRoomsUpdate) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onRoomsUpdate(roomsToUpdate as any);
+          }
 
-      if (onUpdate) {
-        onUpdate({
-          floorNumber: floorNumber || "0",
-          rooms: roomsToUpdate,
-          totalAreaSqM: parseFloat(areaSqM.toFixed(2)),
-          builtUpAreaSqM: parseFloat(builtUpSqM.toFixed(2)),
-          roomCount: roomsToUpdate.filter(r => Number(r.area || 0) > 0).length
-        });
-      }
+          if (onSaveRooms) onSaveRooms(roomsToUpdate, parseFloat(areaSqM.toFixed(2)));
 
-      confirm({
-        variant: 'info',
-        title: t('roomSubmission.success.title') || 'Success',
-        description: t('roomSubmission.success.message') || 'Room data updated in the form.',
-        onConfirm: () => {
+          if (onUpdate) {
+            onUpdate({
+              floorNumber: floorNumber || "0",
+              rooms: roomsToUpdate,
+              totalAreaSqM: parseFloat(areaSqM.toFixed(2)),
+              builtUpAreaSqM: parseFloat(builtUpSqM.toFixed(2)),
+              roomCount: roomsToUpdate.filter(r => Number(r.area || 0) > 0).length
+            });
+          }
+
           if (onClose) onClose();
           setTimeout(() => {
-            const saveBtn = document.getElementById('floor-save-btn');
+            const saveBtn = document.getElementById("floor-save-btn");
             if (saveBtn) {
               saveBtn.focus();
             }
           }, 150);
+        } catch {
+          warning(t("roomSubmission.validation.updateFailed") || "An error occurred while updating rooms.");
+        } finally {
+          setIsUpdating(false);
         }
-      });
-    } catch {
-      warning(t("roomSubmission.validation.updateFailed") || "An error occurred while updating rooms.");
-    } finally {
-      setIsUpdating(false);
-    }
+      },
+    });
   };
 
   return { handleUpdate };
 };
+

@@ -28,7 +28,7 @@ export function filterTableData(
  */
 export function countConfiguredRates(filteredData: IRateMaster[]): number {
   return filteredData.reduce((count, row) => {
-    const filledRates = row.rates?.filter((r: IRateValue) => r.ratePerSqMtr != null && r.ratePerSqMtr > 0).length || 0;
+    const filledRates = row.rates?.filter((r: IRateValue) => r.ratePerSqMtr != null && r.ratePerSqMtr >= 0).length || 0;
     return count + filledRates;
   }, 0);
 }

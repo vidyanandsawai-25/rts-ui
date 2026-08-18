@@ -35,23 +35,23 @@ export interface AssessmentGridResponse {
 }
 
 export interface AssessmentRow {
-    [key: string]: unknown;
-    id: string;
-    zoneId?: number | null;
-    sr?: number | string;
-    zoneName?: string;
-    zoneNo?: string;
-    totalStructure?: number | string;
-    totalUnit?: number | string;
-    type: string;
-    structure: number | string;
-    unit: number | string;
-    oldDemand: number | string;
-    currentDemand: number | string;
-    retroDemand: number | string;
-    totalDemand: number | string;
-    addRevenue: number | string;
-    rowSpan?: number;
+  [key: string]: unknown;
+  id: string;
+  zoneId?: number | null;
+  sr?: number | string;
+  zoneName?: string;
+  zoneNo?: string;
+  totalStructure?: number | string;
+  totalUnit?: number | string;
+  type: string;
+  structure: number | string;
+  unit: number | string;
+  oldDemand: number | string;
+  currentDemand: number | string;
+  retroDemand: number | string;
+  totalDemand: number | string;
+  addRevenue: number | string;
+  rowSpan?: number;
 }
 
 export interface PendingAssessmentRecordDetails {
@@ -145,4 +145,15 @@ export interface SendToApproveData {
   };
 }
 
+export interface SendToApproveResponse {
+  success: boolean;
+  message: string;
+  items: unknown | null;
+  errors: unknown | null;
+  correlationId: string | null;
+}
 
+export interface SendToApprovePayload {
+  propertyIds: number[];
+  userId: number;
+}

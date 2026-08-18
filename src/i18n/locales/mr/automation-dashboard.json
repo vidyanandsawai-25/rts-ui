@@ -18,7 +18,8 @@
     "fetchPropertyWiseData": "मालमत्ता-निहाय डेटा आणण्यात अयशस्वी.",
     "fetchPropertyAssessmentStatus": "मालमत्ता मूल्यांकन स्थिती तपशील आणण्यात अयशस्वी.",
     "fetchZones": "झोन डेटा आणण्यात अयशस्वी.",
-    "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रॅकिंग स्टेटस आणण्यात अयशस्वी."
+    "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रॅकिंग स्टेटस आणण्यात अयशस्वी.",
+    "sendToApprove": "मंजुरीसाठी पाठवण्यात अयशस्वी."
   },
   "summaryCards": {
     "metrics": {
@@ -363,6 +364,12 @@
     }
   },
   "sendToApprove": {
+    "confirmTitle": "कृतीची पुष्टी करा",
+    "confirmDescription": "मंजुरीसाठी निवडलेल्या मालमत्ता पाठवायच्या आहेत याची तुम्हाला खात्री आहे का?",
+    "confirmButton": "पुष्टी करा",
+    "successTitle": "यशस्वी",
+    "successDescription": "मालमत्ता मंजुरीसाठी यशस्वीरित्या पाठवल्या",
+    "errorTitle": "त्रुटी",
     "title": "मंजुरीसाठी पाठवा",
     "subtitle": "मंजुरीसाठी पाठवण्यासाठी मूल्यांकन टप्प्यातील मालमत्ता निवडा",
     "backToAssessment": "मूल्यांकनावर परत जा",

@@ -14,12 +14,6 @@ import {
   ActionResult
 } from "@/types/common-details-update/common-details-update.types";
 
-
-const LEGACY_TABLE_MAPPING: Record<string, string> = {
-  "PropertyMast": "Property Tax Property Information",
-  "PropertyDetails": "Property Tax PropertyDetails",
-};
-
 interface EditFieldRegistryDrawerProps {
   t: (key: string) => string;
   updateCode: string | undefined;
@@ -76,13 +70,31 @@ export function EditFieldRegistryDrawer({
   const tableOptions = useMemo(() => {
     const options = tables.map((t) => ({ label: t.tableName, value: String(t.id) }));
     if (sourceTable && !options.some(o => o.value === sourceTable)) {
-      const matchedTable = tables.find(t =>
-        t.tableName && (
-          t.tableName.toLowerCase() === sourceTable.toLowerCase() ||
-          t.tableName.toLowerCase().replace(/[\s_]/g, '') === sourceTable.toLowerCase().replace(/[\s_]/g, '')
-        )
-      );
-      const displayLabel = matchedTable ? matchedTable.tableName : (LEGACY_TABLE_MAPPING[sourceTable] || sourceTable);
+      const sTable = sourceTable.toLowerCase();
+      const sTableClean = sTable.replace(/[\s_]/g, '');
+
+      const matchedTable = tables.find(t => {
+        if (!t) return false;
+        if (String(t.id) === String(sourceTable)) return true;
+
+        const tName = t.tableName ? t.tableName.toLowerCase() : '';
+        const tNameClean = tName.replace(/[\s_]/g, '');
+
+        const refName = t.referenceTableName ? t.referenceTableName.toLowerCase() : '';
+        const refNameClean = refName.replace(/[\s_]/g, '');
+        const refLastPart = refName.split('.').pop() || '';
+        const refLastPartClean = refLastPart.replace(/[\s_]/g, '');
+
+        return (
+          tName === sTable ||
+          tNameClean === sTableClean ||
+          refName === sTable ||
+          refNameClean === sTableClean ||
+          refLastPart === sTable ||
+          refLastPartClean === sTableClean
+        );
+      });
+      const displayLabel = matchedTable ? matchedTable.tableName : sourceTable;
       options.push({ label: displayLabel, value: sourceTable });
     }
     return options;
@@ -125,22 +137,22 @@ export function EditFieldRegistryDrawer({
       const parts = referenceTableName.split(".");
       const tableName = parts.length === 2 ? parts[1] : referenceTableName;
       
-      const mappedTableName = LEGACY_TABLE_MAPPING[tableName] || tableName;
-
-      const normalizedMapped = mappedTableName.toLowerCase().replace(/[\s_]/g, '');
       const normalizedTable = tableName.toLowerCase().replace(/[\s_]/g, '');
-
       const normalizedRef = referenceTableName.toLowerCase().replace(/[\s_]/g, '');
 
       const foundTable = tables.find((t) => {
         if (!t) return false;
         if (String(t.id) === String(tableName) || String(t.id) === String(referenceTableName)) return true;
-        if (!t.tableName) return false;
-        const tName = t.tableName.toLowerCase().replace(/[\s_]/g, '');
+
+        const tName = t.tableName ? t.tableName.toLowerCase().replace(/[\s_]/g, '') : '';
+        const refName = t.referenceTableName ? t.referenceTableName.toLowerCase().replace(/[\s_]/g, '') : '';
+        const refLastPart = t.referenceTableName ? (t.referenceTableName.split('.').pop() || '').toLowerCase().replace(/[\s_]/g, '') : '';
+
         return (
-          tName === normalizedMapped ||
           tName === normalizedTable ||
           tName === normalizedRef ||
+          refName === normalizedRef ||
+          refLastPart === normalizedTable ||
           tName.includes(normalizedTable) ||
           normalizedTable.includes(tName)
         );
@@ -155,7 +167,7 @@ export function EditFieldRegistryDrawer({
       if (foundTable) {
         setSourceTable(String(foundTable.id));
       } else {
-        setSourceTable(mappedTableName); // fallback to mapped name if not found
+        setSourceTable(tableName); // fallback to tableName if not found
       }
     } else {
       setSourceModule("");

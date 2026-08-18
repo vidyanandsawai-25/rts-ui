@@ -221,7 +221,7 @@ export interface RateFormProps {
   sourceUseGroup?: string;
   fetchedRates?: IBackendRateMaster[] | null;
   year?: string;
-  onClose?: () => void;
+  onClose?: (isSuccessfulSave?: boolean) => void;
   mode?: "edit" | "delete" | "add";
   // Server-side paginated zone data
   paginatedZonesData?: {

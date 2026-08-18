@@ -257,6 +257,11 @@
     },
     "note": {
       "mandatory": "* चिन्हांकित फील्ड अनिवार्य आहेत"
-    }
+    },
+    "sequenceWarningTitle": "मजला अनुक्रम चेतावणी",
+    "doYouWantToProceed": "तुम्हाला तरीही पुढे जायचे आहे का?",
+    "proceedAnyway": "तरीही पुढे जा",
+    "sequenceGapDetected": "मजला अनुक्रम तफावत आढळली: {currLabel} हे अनुक्रमात नाही. {prevLabel} नंतर आवश्यक मजला क्रमांक ({missingNo}) गहाळ आहे.",
+    "sequenceMustStartGround": "मजला अनुक्रम तळमजल्यापासून (0) सुरू होणे आवश्यक आहे. {firstLabel} च्या आधी तळमजला गहाळ आहे."
   }
 }

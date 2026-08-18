@@ -129,7 +129,7 @@ export function RateViewGrid({
         </div>
       </GridContainerCardHeader>
       <GridContainerCardContent className="bg-white p-1 md:p-2">
-        {data.length > 0 ? (
+        {data.length > 0 && ratesConfiguredCount > 0 ? (
           <>
             <div className="w-full overflow-x-auto">
               <MatrixGrid

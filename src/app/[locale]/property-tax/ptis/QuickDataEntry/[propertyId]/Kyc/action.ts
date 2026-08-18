@@ -46,7 +46,6 @@ export async function getOwnerTypesAction(): Promise<{
     };
   }
 }
-
 /**
  * Fetches property KYC details by ID with comprehensive error handling
  */

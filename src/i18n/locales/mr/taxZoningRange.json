@@ -105,6 +105,7 @@
         "columns": {
           "srNo": "क्र.",
           "propertyRange": "मालमत्ता श्रेणी",
+          "totalProperties": "एकूण मालमत्ता",
           "lastUpdated": "शेवटचे अद्यतन",
           "actions": "क्रिया"
         }

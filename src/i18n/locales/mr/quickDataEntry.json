@@ -1,4 +1,10 @@
 {
+  "common": {
+    "warning": "चेतावणी",
+    "confirm": "पुष्टी करा",
+    "cancel": "रद्द करा",
+    "ok": "ठीक आहे"
+  },
   "renter": {
     "loadingScreen": "भाडेकरू स्क्रीन लोड होत आहे...",
     "loadingEngine": "भाडे इंजिन लोड होत आहे..."
@@ -28,6 +34,12 @@
     "updating": "अपडेट होत आहे...",
     "saveData": "माहिती जतन करा",
     "close": "बंद करा",
+    "confirmSave": {
+      "title": "माहिती जतन करण्याची पुष्टी करा",
+      "message": "तुम्हाला नक्की मजला आणि खोलीचा तपशील जतन करायचा आहे का?",
+      "confirmBtn": "पुष्टी करा",
+      "cancelBtn": "रद्द करा"
+    },
     "success": {
       "title": "यशस्वी!",
       "message": "मजल्याचा तपशील यशस्वीरित्या जोडला गेला",
@@ -523,6 +535,7 @@
       "invalidAadharStart": "आधार क्रमांक 0 किंवा 1 ने सुरू होऊ शकत नाही.",
       "invalidAddress": "अवैध पत्ता। फक्त अक्षरे, संख्या, आणि सामान्य विरामचिन्हे (. , - / #) यांना परवानगी आहे। विशेष वर्ण जसे *()_++_)(&&^%$@!~[];  यांना परवानगी नाही।",
       "invalidPinCode": "पिन कोड अचूक ६ अंकी असावा",
+      "pinCodeCannotStartWithZero": "पिन कोड 0 ने सुरू होऊ शकत नाही",
       "invalidRepeatedSequence": "वारंवार पुनरावृत्ती होणाऱ्या क्रमांकाच्या अनुक्रमांना परवानगी नाही",
       "pleaseFixErrors": "कृपया सबमिट करण्यापूर्वी हायलाइट केलेल्या प्रमाणीकरण त्रुटी दुरुस्त करा."
     },
@@ -778,6 +791,11 @@
     }
   },
   "floor": {
+    "sequenceWarningTitle": "मजला अनुक्रम चेतावणी",
+    "doYouWantToProceed": "तुम्हाला तरीही पुढे जायचे आहे का?",
+    "proceedAnyway": "तरीही पुढे जा",
+    "sequenceGapDetected": "मजला अनुक्रम तफावत आढळली: {currLabel} हे अनुक्रमात नाही. {prevLabel} नंतर आवश्यक मजला क्रमांक ({missingNo}) गहाळ आहे.",
+    "sequenceMustStartGround": "मजला अनुक्रम तळमजल्यापासून (0) सुरू होणे आवश्यक आहे. {firstLabel} च्या आधी तळमजला गहाळ आहे.",
     "usedPlotArea": "वापरलेले भूखंड क्षेत्र",
     "openPlotCategory": "वर्ग",
     "separatelyUsedPlotArea": "स्वतंत्रपणे वापरलेले भूखंड क्षेत्रफळ",
@@ -792,6 +810,9 @@
     "plotAreaCalculator": "एकूण भूखंड क्षेत्रफळ",
     "plotAreaCalcDesc": "लांबी आणि रुंदी वापरून भूखंडाचे क्षेत्रफळ पटकन मोजा",
     "plotAreaColon": "भूखंड क्षेत्रफळ:",
+    "additionalPlotAreaColon": "अतिरिक्त भूखंड क्षेत्रफळ:",
+    "carpetAreaColon": "कार्पेट क्षेत्रफळ:",
+    "builtupAreaColon": "बांधकाम क्षेत्रफळ:",
     "utilizedAreaColon": "वापरात असलेले क्षेत्रफळ:",
     "openSpaceAreaColon": "खुली जागा क्षेत्रफळ:",
     "remainingAreaColon": "उर्वरित क्षेत्रफळ:",

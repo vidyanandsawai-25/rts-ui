@@ -12,6 +12,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock, replace: replaceMock, back: backMock, refresh: vi.fn() }),
   usePathname: () => '/property-tax/taxzoningmaster/0',
   useSearchParams: () => new URLSearchParams(searchParamsString),
+  useParams: () => ({ locale: 'en' }),
 }));
 
 vi.mock('next-intl', () => ({
@@ -19,11 +20,12 @@ vi.mock('next-intl', () => ({
 }));
 
 vi.mock('@/components/common/Drawer', () => ({
-  Drawer: ({ open, title, footer, children }: any) => (open ? (
+  Drawer: ({ open, title, footer, children, onClose }: any) => (open ? (
     <div data-testid="drawer">
       <div data-testid="drawer-title">{title}</div>
       <div data-testid="drawer-body">{children}</div>
       <div data-testid="drawer-footer">{footer}</div>
+      <button data-testid="drawer-close" onClick={onClose}>Close</button>
     </div>
   ) : null),
 }));
@@ -98,6 +100,23 @@ describe('TaxZoningUpdateFormWrapper', () => {
     capturedProps = null;
     formState = makeFormState();
     actionsState = { saving: false, handleSave: handleSaveMock };
+  });
+
+  it('clicking the close button navigates to the taxzoningmaster screen', () => {
+    render(<TaxZoningUpdateFormWrapper id="0" {...baseWrapperProps} />);
+    fireEvent.click(screen.getByTestId('drawer-close'));
+    expect(pushMock).toHaveBeenCalledWith('/en/property-tax/taxzoningmaster');
+    expect(backMock).not.toHaveBeenCalled();
+  });
+
+  it('navigates to the taxzoningmaster screen after a successful save', () => {
+    render(<TaxZoningUpdateFormWrapper id="0" {...baseWrapperProps} />);
+    fireEvent.submit(screen.getByTestId('child-form'));
+    expect(handleSaveMock).toHaveBeenCalled();
+    const onSuccess = handleSaveMock.mock.calls[0][1] as () => void;
+    onSuccess();
+    expect(pushMock).toHaveBeenCalledWith('/en/property-tax/taxzoningmaster');
+    expect(backMock).not.toHaveBeenCalled();
   });
 
   it('renders "Add Zoning Range" title when id is "0"', () => {

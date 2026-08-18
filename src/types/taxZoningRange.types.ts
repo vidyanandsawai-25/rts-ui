@@ -42,6 +42,7 @@ export interface TaxZoningRange {
   updatedDate: string | null;
   minPropertyNo: string | null;
   maxPropertyNo: string | null;
+  totalProperties: number;
 }
 
 export interface CreateTaxZoningRangePayload {

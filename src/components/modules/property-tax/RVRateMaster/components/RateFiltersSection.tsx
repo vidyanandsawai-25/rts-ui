@@ -175,18 +175,18 @@ export function RateFiltersSection({
 
       {/* Action Buttons - only in add mode */}
       {mode === "add" && (() => {
-        const isActionsDisabled = !allFiltersSelected || isCheckingRates ||
-          (isOpenPlot ? !hasConfiguredRates : existingRateFound);
+        const isActionsDisabled = !allFiltersSelected || isCheckingRates || existingRateFound ||
+          (isOpenPlot ? !hasConfiguredRates : false);
 
         return (
           <>
             {/* Multiplier Button */}
             {!isOpenPlot && (
-              <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('sections.multipliersTitle')}>
+              <Tooltip placement="top" content={existingRateFound ? t('messages.validationRatesAlreadyExist') : t('sections.multipliersTitle')}>
                 <IconButton
                   icon={TrendingUp}
                   variant="primary"
-                  aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('sections.multipliersTitle')}
+                  aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : t('sections.multipliersTitle')}
                   disabled={isActionsDisabled}
                   onClick={onToggleMultipliers}
                 />
@@ -194,11 +194,11 @@ export function RateFiltersSection({
             )}
 
             {/* Generate Matrix Button */}
-            <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('buttons.generateRateMatrix')}>
+            <Tooltip placement="top" content={existingRateFound ? t('messages.validationRatesAlreadyExist') : t('buttons.generateRateMatrix')}>
               <IconButton
                 icon={Plus}
                 variant="primary"
-                aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('buttons.generateRateMatrix')}
+                aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : t('buttons.generateRateMatrix')}
                 disabled={isActionsDisabled}
                 onClick={onGenerateMatrix}
               />
@@ -206,11 +206,11 @@ export function RateFiltersSection({
 
             {/* Copy Rates Toggle Button */}
             {!isOpenPlot && (
-              <Tooltip placement="top" content={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('buttons.copyRates')}>
+              <Tooltip placement="top" content={existingRateFound ? t('messages.validationRatesAlreadyExist') : t('buttons.copyRates')}>
                 <IconButton
                   icon={ClipboardCopy}
                   variant="primary"
-                  aria-label={(!isOpenPlot && existingRateFound) ? t('messages.validationRatesAlreadyExist') : t('buttons.copyRates')}
+                  aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : t('buttons.copyRates')}
                   disabled={isActionsDisabled}
                   onClick={onToggleCopyRates}
                 />

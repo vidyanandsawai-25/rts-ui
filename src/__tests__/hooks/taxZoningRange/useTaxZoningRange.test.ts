@@ -63,6 +63,7 @@ describe('useTaxZoningRangeForm', () => {
       updatedDate: null,
       minPropertyNo: null,
       maxPropertyNo: null,
+      totalProperties: 0,
     };
     const { result } = renderHook(() => useTaxZoningRangeForm(initial));
     expect(result.current.form).toEqual({

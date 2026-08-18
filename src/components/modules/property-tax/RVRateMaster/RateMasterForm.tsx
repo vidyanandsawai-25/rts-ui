@@ -94,6 +94,7 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
     loadUseGroupOptions,
     loadAssessmentYears,
     showMatrix,
+    setShowMatrix,
     matrixData,
     setMatrixData,
     localRateCategories,
@@ -108,7 +109,7 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
   const { handleAddRates, handleUpdateRates, handleDeleteRates, handleGenerateMatrix, handleToggleMultipliers, handleToggleCopyRates, handleCloseCopySection, handleCloseMultipliersSection, handleApplyMultipliers, handleCopyRatesWithValidation } = useRateFormHandlers({ mode, id, editData, bulkEditData, selectedZone, selectedUseGroup, assessmentYear, existingRateFound, rateCategories: localRateCategories, useGroupOptions: finalUseGroupOptions, zoneOptions: finalZoneOptions, assessmentYears: finalAssessmentYears, assessmentYearRanges, zoneDescriptions, paginatedZoneDescriptions, matrixStorageKey, locale, onClose, router, confirm, buildCompleteMatrixForSubmission, handleBulkCreate, handleBulkUpdate, handleDelete, setMatrixData, setShowMatrix, setCopySectionsExpanded, setShowMultipliersInline, setMultipliers, tempMultipliers, sourceUseGroup, handleCopyRates, t, isOpenPlot });
 
   const isDrawerMode = !!onClose;
-  const isImportDisabled = (!isOpenPlot && existingRateFound) || !selectedZone || selectedZone === 'ALL' ||
+  const isImportDisabled = existingRateFound || !selectedZone || selectedZone === 'ALL' ||
     (!isOpenPlot && (!selectedUseGroup || selectedUseGroup === 'ALL')) || !assessmentYear || assessmentYear === 'ALL' ||
     (isOpenPlot && !hasConfiguredRates);
 

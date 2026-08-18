@@ -28,7 +28,7 @@ interface RateCRUDHandlersProps {
   handleBulkCreate: (data: MatrixRow[]) => Promise<{ success: boolean } | undefined>;
   handleBulkUpdate: (data: MatrixRow[]) => Promise<{ success: boolean } | undefined>;
   handleDelete: (data: IBackendRateMaster[]) => Promise<{ success: boolean } | undefined>;
-  handleClose: () => void;
+  handleClose: (isSuccessfulSave?: boolean) => void;
   t: ReturnType<typeof import("next-intl").useTranslations>;
   isOpenPlot?: boolean;
   router: { refresh: () => void; replace?: (url: string) => void; };
@@ -64,7 +64,7 @@ export function useRateCRUDHandlers(props: RateCRUDHandlersProps) {
     const result = await handleBulkCreate(completeMatrixData);
     if (result?.success) {
       router.refresh();
-      handleClose();
+      handleClose(true);
     }
   };
 
@@ -73,7 +73,7 @@ export function useRateCRUDHandlers(props: RateCRUDHandlersProps) {
     const result = await handleBulkUpdate(completeMatrixData);
     if (result?.success) {
       router.refresh();
-      handleClose();
+      handleClose(true);
     }
   };
 

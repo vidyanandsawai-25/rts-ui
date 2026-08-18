@@ -28,7 +28,7 @@ interface RateFormHandlersProps {
   paginatedZoneDescriptions: IZoneDescription[];
   matrixStorageKey: string;
   locale: string;
-  onClose?: () => void;
+  onClose?: (isSuccessfulSave?: boolean) => void;
   router: { replace: (url: string) => void; refresh: () => void; };
   confirm: (options: ConfirmOptions) => void;
   buildCompleteMatrixForSubmission: () => MatrixRow[];
@@ -58,9 +58,9 @@ export function useRateFormHandlers(props: RateFormHandlersProps) {
     tempMultipliers, sourceUseGroup, handleCopyRates, t, isOpenPlot
   } = props;
 
-  const handleClose = () => {
+  const handleClose = (isSuccessfulSave?: boolean) => {
     if (onClose) {
-      onClose();
+      onClose(isSuccessfulSave);
     } else {
       const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
       router.replace(`/${locale}/property-tax/rate-master/${routePrefix}`);

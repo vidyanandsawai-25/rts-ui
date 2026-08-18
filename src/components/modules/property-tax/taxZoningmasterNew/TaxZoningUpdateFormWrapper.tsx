@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname, useSearchParams, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Drawer } from "@/components/common/Drawer";
 import { ClearButton, SaveButton } from "@/components/common/ActionButtons";
@@ -25,6 +25,9 @@ export default function TaxZoningUpdateFormWrapper({ id, wardsData, taxZones, in
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const routeParams = useParams();
+  const locale = String(routeParams?.locale || "en");
+  const basePath = `/${locale}/property-tax/taxzoningmaster`;
   const t = useTranslations("taxZoningRange");
   const tUi = useTranslations("taxZoningRange.ui.form");
   const isEditMode = id !== "0";
@@ -73,7 +76,7 @@ export default function TaxZoningUpdateFormWrapper({ id, wardsData, taxZones, in
     e.preventDefault();
     setSubmitted(true);
     if (!isFormValid) return;
-    handleSave(form, () => router.back());
+    handleSave(form, () => router.push(basePath));
   };
 
   const handleClear = () => {
@@ -86,7 +89,7 @@ export default function TaxZoningUpdateFormWrapper({ id, wardsData, taxZones, in
   return (
     <Drawer
       open={true}
-      onClose={() => router.back()}
+      onClose={() => router.push(basePath)}
       title={<span className="text-[17px] font-bold text-[#0b2f5b]">{isEditMode ? tUi("updateTitle") : tUi("addTitle")}</span>}
       width="sm"
       footer={
