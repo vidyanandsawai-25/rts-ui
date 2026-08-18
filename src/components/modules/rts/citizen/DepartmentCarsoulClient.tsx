@@ -268,6 +268,10 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     const isAppRejected = app.normalizedStatus === "rejected";
                     const serviceName = lang === "mr" && app.serviceNameLocal ? app.serviceNameLocal : app.serviceName;
                     const isPaymentPending = app.status?.toLowerCase().includes("payment pending") || app.status?.toLowerCase().includes("pending payment");
+                    const matchedService = departments
+                      .flatMap((d) => d.services)
+                      .find((s) => s.serviceName === app.serviceName || (typeof s.name === "string" && s.name === app.serviceName));
+                    const dynamicServiceFee = Number((matchedService as any)?.fees) || 50;
 
                     return (
                       <tr key={index} className="hover:bg-slate-50/50 transition-colors">
@@ -305,7 +309,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                                   applicationId: parseInt(app.applicationNo.replace(/\D/g, ""), 10) || 1,
                                   applicationNo: app.applicationNo,
                                   serviceName,
-                                  fees: 50
+                                  fees: dynamicServiceFee
                                 })}
                                 className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer transition-all"
                               >

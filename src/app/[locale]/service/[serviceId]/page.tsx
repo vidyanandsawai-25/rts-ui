@@ -149,6 +149,8 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
           successTrackingId={successTrackingId}
           successApplicationStatus={successApplicationStatus}
           isLoggedIn={isLoggedIn}
+          serviceFees={rtsService?.fees ?? 0}
+          feesRequired={Boolean(rtsService?.feesRequired || rtsService?.isFeesRequired || (rtsService?.fees && rtsService.fees > 0))}
         />
       ) : (
         <div className="mx-auto flex w-full max-w-[960px] flex-1 items-center justify-center px-4 py-10">

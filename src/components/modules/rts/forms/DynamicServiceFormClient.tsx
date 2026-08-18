@@ -68,6 +68,8 @@ interface ServiceFormProps {
   successTrackingId?: string;
   successApplicationStatus?: string;
   isLoggedIn?: boolean;
+  serviceFees?: number;
+  feesRequired?: boolean;
 }
 
 const iconMap: Record<string, LucideIcon> = {
@@ -120,6 +122,8 @@ export default function DynamicServiceFormClient({
   successTrackingId = "",
   successApplicationStatus = "",
   isLoggedIn = false,
+  serviceFees,
+  feesRequired,
 }: ServiceFormProps) {
   const router = useRouter();
   const { language } = useLanguage();
@@ -1194,66 +1198,92 @@ export default function DynamicServiceFormClient({
       localStorage.setItem("rtsApplications", JSON.stringify(existingData));
 
       const rawAppId = Number(response?.items?.id) || parseInt(newId.replace(/\D/g, ""), 10) || 1;
-      const appFees = 50;
+      const appFees = Number(serviceFees) > 0 ? Number(serviceFees) : (feesRequired ? 50 : 0);
 
-      MySwal.fire({
-        icon: "success",
-        title: language === "en"
-          ? "Application Submitted!"
-          : language === "hi"
-            ? "आवेदन सबमिट हुआ!"
-            : "अर्ज यशस्वीरित्या सादर झाला!",
-        html: language === "en"
-          ? `<div class="space-y-3 p-2 text-center">
-               <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Application Tracking ID</p>
-               <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
-               <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
-                 Statutory Government Fee: ₹${appFees}.00
-               </div>
-               <p class="text-xs text-gray-500 font-medium">Please proceed to pay the statutory fee now or pay later from your citizen dashboard.</p>
-             </div>`
-          : language === "hi"
+      if (appFees > 0) {
+        MySwal.fire({
+          icon: "success",
+          title: language === "en"
+            ? "Application Submitted!"
+            : language === "hi"
+              ? "आवेदन सबमिट हुआ!"
+              : "अर्ज यशस्वीरित्या सादर झाला!",
+          html: language === "en"
             ? `<div class="space-y-3 p-2 text-center">
-                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">आवेदन ट्रैकिंग आईडी</p>
+                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Application Tracking ID</p>
                  <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
                  <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
-                   शासकीय सेवा शुल्क: ₹${appFees}.00
+                   Statutory Government Fee: ₹${appFees}.00
                  </div>
-                 <p class="text-xs text-gray-500 font-medium">कृपया अभी शुल्क का भुगतान करें या बाद में नागरिक डैशबोर्ड से करें।</p>
+                 <p class="text-xs text-gray-500 font-medium">Please proceed to pay the statutory fee now or pay later from your citizen dashboard.</p>
                </div>`
-            : `<div class="space-y-3 p-2 text-center">
-                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">अर्ज ट्रॅकिंग आयडी</p>
-                 <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
-                 <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
-                   शासकीय सेवा शुल्क: ₹${appFees}.00
-                 </div>
-                 <p class="text-xs text-gray-500 font-medium">कृपया आताच ऑनलाइन शुल्क भरा किंवा नंतर नागरिक डॅशबोर्डवरून भरा.</p>
-               </div>`,
-        showCancelButton: true,
-        confirmButtonText: language === "en" ? "💳 Pay Government Fee Now" : language === "hi" ? "💳 अभी शुल्क भरें" : "💳 आताच शुल्क भरा",
-        cancelButtonText: language === "en" ? "Pay Later / Go to Dashboard" : language === "hi" ? "बाद में भरें / डैशबोर्ड पर जाएं" : "नंतर भरा / डॅशबोर्डवर जा",
-        confirmButtonColor: "#059669",
-        cancelButtonColor: "#64748b",
-        background: darkMode ? "#1f2937" : "#ffffff",
-        color: darkMode ? "#ffffff" : "#000000",
-        customClass: { popup: "rounded-xl shadow-xl border border-teal-500/20" },
-      }).then((swalRes) => {
-        if (swalRes.isConfirmed) {
-          setCheckoutAppInfo({
-            applicationId: rawAppId,
-            applicationNo: newId,
-            serviceName: typeof serviceTitle === "string" ? serviceTitle : "RTS Service",
-            fees: appFees,
-          });
-          setShowSuccessPaymentModal(true);
-        } else {
+            : language === "hi"
+              ? `<div class="space-y-3 p-2 text-center">
+                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">आवेदन ट्रैकिंग आईडी</p>
+                   <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
+                   <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
+                     शासकीय सेवा शुल्क: ₹${appFees}.00
+                   </div>
+                   <p class="text-xs text-gray-500 font-medium">कृपया अभी शुल्क का भुगतान करें या बाद में नागरिक डैशबोर्ड से करें।</p>
+                 </div>`
+              : `<div class="space-y-3 p-2 text-center">
+                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">अर्ज ट्रॅकिंग आयडी</p>
+                   <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
+                   <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
+                     शासकीय सेवा शुल्क: ₹${appFees}.00
+                   </div>
+                   <p class="text-xs text-gray-500 font-medium">कृपया आताच ऑनलाइन शुल्क भरा किंवा नंतर नागरिक डॅशबोर्डवरून भरा.</p>
+                 </div>`,
+          showCancelButton: true,
+          confirmButtonText: language === "en" ? "💳 Pay Government Fee Now" : language === "hi" ? "💳 अभी शुल्क भरें" : "💳 आताच शुल्क भरा",
+          cancelButtonText: language === "en" ? "Pay Later / Go to Dashboard" : language === "hi" ? "बाद में भरें / डैशबोर्ड पर जाएं" : "नंतर भरा / डॅशबोर्डवर जा",
+          confirmButtonColor: "#059669",
+          cancelButtonColor: "#64748b",
+          background: darkMode ? "#1f2937" : "#ffffff",
+          color: darkMode ? "#ffffff" : "#000000",
+          customClass: { popup: "rounded-xl shadow-xl border border-teal-500/20" },
+        }).then((swalRes) => {
+          if (swalRes.isConfirmed) {
+            setCheckoutAppInfo({
+              applicationId: rawAppId,
+              applicationNo: newId,
+              serviceName: typeof serviceTitle === "string" ? serviceTitle : "RTS Service",
+              fees: appFees,
+            });
+            setShowSuccessPaymentModal(true);
+          } else {
+            if (isLoggedIn) {
+              router.replace(`/${locale}/service/dashboard`);
+            } else {
+              router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+            }
+          }
+        });
+      } else {
+        MySwal.fire({
+          icon: "success",
+          title: language === "en"
+            ? "Application Submitted!"
+            : language === "hi"
+              ? "आवेदन सबमिट हुआ!"
+              : "अर्ज यशस्वीरित्या सादर झाला!",
+          html: `<div class="space-y-3 p-2 text-center">
+                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Application Tracking ID</p>
+                   <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
+                 </div>`,
+          timer: 2500,
+          showConfirmButton: false,
+          background: darkMode ? "#1f2937" : "#ffffff",
+          color: darkMode ? "#ffffff" : "#000000",
+          customClass: { popup: "rounded-xl shadow-xl border border-teal-500/20" },
+        }).then(() => {
           if (isLoggedIn) {
             router.replace(`/${locale}/service/dashboard`);
           } else {
             router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
           }
-        }
-      });
+        });
+      }
     } catch (err: any) {
       const apiErr = parseBackendError(err);
 
