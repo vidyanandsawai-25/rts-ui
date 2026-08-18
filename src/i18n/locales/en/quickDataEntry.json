@@ -787,6 +787,13 @@
         "clearSelection": "Clear Selection",
         "action": "Action",
         "errors": {
+            "failedToConnect": {
+                "title": "Building Permission Error",
+                "description": "Failed to fetch building permission details. The API server is unreachable or not responding. Please try again later.",
+                "goHome": "Go Home",
+                "tryAgain": "Try Again",
+                "errorId": "Error ID: {id}"
+            },
             "cannotEnableWithoutDate": "Cannot enable document without an issue date.",
             "cannotEnableWithoutNumber": "Cannot enable document without a document number.",
             "enterDetailsFirst": "Please enter Document Number and Document Date before uploading.",
