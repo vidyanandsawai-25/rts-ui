@@ -47,7 +47,6 @@ const messages = {
 const defaultFormData: FloorRangeFormModel = {
   rangeFrom: 1,
   rangeTo: 10,
-  prefix: '',
   isActive: true,
   autoGenerateSubFloor: false,
 };
@@ -86,11 +85,6 @@ describe('FloorRangeFields', () => {
     renderFloorRangeFields();
     expect(screen.getByLabelText(/Start/)).toBeInTheDocument();
     expect(screen.getByLabelText(/End/)).toBeInTheDocument();
-  });
-
-  it('renders Prefix field', () => {
-    renderFloorRangeFields();
-    expect(screen.getByLabelText('Prefix')).toBeInTheDocument();
   });
 
   it('renders example info message', () => {
@@ -145,24 +139,6 @@ describe('FloorRangeFields', () => {
     });
     
     expect(screen.getByText('Start value must be at least 1')).toBeInTheDocument();
-  });
-
-  it('calls onChange when prefix is changed with valid length', () => {
-    const onChangeMock = vi.fn();
-    renderFloorRangeFields({ onChange: onChangeMock });
-    const prefixInput = screen.getByLabelText('Prefix');
-    fireEvent.change(prefixInput, { target: { value: 'FL' } });
-    expect(onChangeMock).toHaveBeenCalledWith('prefix', 'FL');
-  });
-
-  it('restricts Prefix field to 2 characters maximum', () => {
-    const onChangeMock = vi.fn();
-    renderFloorRangeFields({ onChange: onChangeMock });
-    const prefixInput = screen.getByLabelText('Prefix');
-    fireEvent.change(prefixInput, { target: { value: 'ABC' } });
-    expect(onChangeMock).not.toHaveBeenCalledWith('prefix', 'ABC');
-    fireEvent.change(prefixInput, { target: { value: 'FL' } });
-    expect(onChangeMock).toHaveBeenCalledWith('prefix', 'FL');
   });
 
 

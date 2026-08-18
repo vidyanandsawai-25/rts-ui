@@ -20,6 +20,7 @@ interface FloorFormFieldsProps {
     sequenceNo: string;
     sequenceNoPlaceholder: string;
   };
+  isEdit?: boolean;
 }
 
 /* ================= COMPONENT ================= */
@@ -35,6 +36,7 @@ export function FloorFormFields({
   onChange,
   onBlur,
   labels,
+  isEdit = false,
 }: Readonly<FloorFormFieldsProps>) {
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
@@ -81,6 +83,7 @@ export function FloorFormFields({
         value={formData.sequenceNo === 0 ? '' : formData.sequenceNo}
         onChange={onChange}
         onBlur={onBlur}
+        disabled={!isEdit}
         fullWidth
         min={1}
         max={999}

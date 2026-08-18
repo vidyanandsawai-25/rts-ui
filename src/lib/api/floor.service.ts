@@ -279,7 +279,6 @@ export async function createFloorRange(data: FloorRangePayload, userId: string):
     const payload: FloorRangePayload = {
       rangeFrom: data.rangeFrom.trim(),
       rangeTo: data.rangeTo.trim(),
-      prefix: data.prefix?.trim() ?? '',
       template: {
         isActive: data.template.isActive,
         createdBy: Number(userId),

@@ -17,4 +17,14 @@ describe("TapSizeForm", () => {
     );
     expect(document.getElementById("tap-size-form")).toBeInTheDocument();
   });
+
+  it("has a maximum length of 2 on size field", () => {
+    const { container } = render(
+      <IntlProvider locale="en" messages={{}} onError={() => {}}>
+        <TapSizeForm id={null} />
+      </IntlProvider>
+    );
+    const sizeInput = container.querySelector("#tap-size-name");
+    expect(sizeInput).toHaveAttribute("maxlength", "2");
+  });
 });

@@ -16,7 +16,10 @@ interface SubFloorFormFieldsProps {
     codePlaceholder: string;
     description: string;
     descriptionPlaceholder: string;
+    sequenceNo: string;
+    sequenceNoPlaceholder: string;
   };
+  isEdit?: boolean;
 }
 
 /* ================= COMPONENT ================= */
@@ -32,6 +35,7 @@ export function SubFloorFormFields({
   onChange,
   onBlur,
   labels,
+  isEdit = false,
 }: Readonly<SubFloorFormFieldsProps>) {
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
@@ -65,6 +69,24 @@ export function SubFloorFormFields({
       <ValidationMessage
         message={errors.description}
         visible={showError('description')}
+      />
+
+      <Input
+        name="sequenceNo"
+        type="number"
+        label={labels.sequenceNo}
+        required
+        value={formData.sequenceNo ?? ''}
+        onChange={onChange}
+        onBlur={onBlur}
+        disabled={!isEdit}
+        placeholder={labels.sequenceNoPlaceholder}
+        fullWidth
+        className="text-gray-700"
+      />
+      <ValidationMessage
+        message={errors.sequenceNo}
+        visible={showError('sequenceNo')}
       />
     </div>
   );

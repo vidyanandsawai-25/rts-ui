@@ -18,7 +18,6 @@ describe('createFloorRange', () => {
   const validPayload: FloorRangePayload = {
     rangeFrom: '1',
     rangeTo: '10',
-    prefix: '',
     template: {
       isActive: true,
       floorCode: '0',
@@ -37,7 +36,6 @@ describe('createFloorRange', () => {
     expect(apiClient.post).toHaveBeenCalledWith('/Floor/Range', {
       rangeFrom: '1',
       rangeTo: '10',
-      prefix: '',
       template: {
         isActive: true,
         createdBy: 123,
@@ -119,21 +117,6 @@ describe('createFloorRange', () => {
     });
 
     await expect(createFloorRange(validPayload, '123')).rejects.toThrow();
-  });
-
-  it('should trim prefix value', async () => {
-    vi.mocked(apiClient.post).mockResolvedValue({ success: true });
-
-    const payloadWithSpaces = {
-      ...validPayload,
-      prefix: '  Test  ',
-    };
-
-    await createFloorRange(payloadWithSpaces, '123');
-
-    expect(apiClient.post).toHaveBeenCalledWith('/Floor/Range', expect.objectContaining({
-      prefix: 'Test',
-    }));
   });
 
   it('should use rangeFrom as startSequenceNo when not provided', async () => {

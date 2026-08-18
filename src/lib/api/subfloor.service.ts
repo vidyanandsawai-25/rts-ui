@@ -52,6 +52,7 @@ function normalizeSubFloor(data: Record<string, unknown>): SubFloor {
     id,
     subFloorCode,
     description,
+    sequenceNo: typeof data.sequenceNo === 'number' ? data.sequenceNo : null,
     isActive: Boolean(data.isActive),
     createdDate: typeof data.createdDate === 'string' ? data.createdDate : '',
     updatedDate: typeof data.updatedDate === 'string' ? data.updatedDate : null,
@@ -145,6 +146,7 @@ export async function createSubFloor(data: SubFloorFormModel, userId: string): P
     const payload = {
       subFloorCode: data.subFloorCode.trim(),
       description: data.description.trim(),
+      sequenceNo: data.sequenceNo ? Number(data.sequenceNo) : null,
       isActive: data.isActive,
       createdBy: Number(userId),
       updatedBy: Number(userId),
@@ -182,6 +184,7 @@ export async function updateSubFloor(data: SubFloorFormModel, userId: string): P
       id: data.id,
       subFloorCode: data.subFloorCode.trim(),
       description: data.description.trim(),
+      sequenceNo: data.sequenceNo ? Number(data.sequenceNo) : null,
       isActive: data.isActive,
       updatedBy: Number(userId),
     };

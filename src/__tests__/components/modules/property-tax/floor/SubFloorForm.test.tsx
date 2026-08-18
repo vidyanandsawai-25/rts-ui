@@ -46,6 +46,8 @@ const messages = {
         codePlaceholder: 'Enter subfloor code',
         description: 'Description',
         descriptionPlaceholder: 'Enter description',
+        sequenceNo: 'Sequence No',
+        sequenceNoPlaceholder: 'Enter sequence number',
         activeStatusTitle: 'Active Status',
         activeStatusOn: 'Active',
         activeStatusOff: 'Inactive',
@@ -56,6 +58,7 @@ const messages = {
           descriptionRequired: 'Description is required',
           descriptionMaxLength: 'Max {count} characters',
           descriptionFormat: 'Invalid format',
+          sequenceNoRequired: 'Sequence No is required',
           mustBeActive: 'Must be active on create',
         },
       },
@@ -93,6 +96,7 @@ const existingSubFloor: SubFloor = {
   id: 5,
   subFloorCode: 'B1',
   description: 'Basement 1',
+  sequenceNo: 1,
   isActive: true,
   createdDate: '2024-01-01',
   updatedDate: null,
@@ -175,6 +179,9 @@ describe('SubFloorForm — Add Mode', () => {
     });
     fireEvent.change(screen.getByPlaceholderText('Enter description'), {
       target: { name: 'description', value: 'Basement 1' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Enter sequence number'), {
+      target: { name: 'sequenceNo', value: '1' },
     });
     submitSubFloorForm(container);
 

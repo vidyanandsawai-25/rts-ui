@@ -48,6 +48,11 @@ export function validateSubFloorForm(
     errors.description = t('form.validation.descriptionFormat');
   }
 
+  // SequenceNo validation
+  if (data.sequenceNo === null || data.sequenceNo === undefined || data.sequenceNo === '') {
+    errors.sequenceNo = t('form.validation.sequenceNoRequired');
+  }
+
   // isActive validation
   const isActiveError = commonValidations.masterActiveStatus(t, isEdit)(data.isActive);
   if (isActiveError) {

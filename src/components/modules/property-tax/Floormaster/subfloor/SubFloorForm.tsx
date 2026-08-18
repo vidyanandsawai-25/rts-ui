@@ -48,6 +48,7 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
     id: initialData?.id,
     subFloorCode: initialData?.subFloorCode ?? '',
     description: initialData?.description ?? '',
+    sequenceNo: initialData?.sequenceNo ?? '',
     isActive: initialData?.isActive ?? true,
   });
 
@@ -75,14 +76,18 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
   /* ================= CHANGE ================= */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    let newValue = value;
+    let newValue: string | number = value;
 
     if (name === 'description') {
-      newValue = sanitizeDescription(newValue);
+      newValue = sanitizeDescription(value);
     }
 
     if (name === 'subFloorCode') {
-      newValue = sanitizeSubFloorCode(newValue);
+      newValue = sanitizeSubFloorCode(value);
+    }
+
+    if (name === 'sequenceNo') {
+      newValue = value === '' ? '' : Number(value);
     }
 
     setFormData((p) => ({
@@ -222,11 +227,14 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
           showError={showError}
           onChange={handleChange}
           onBlur={handleBlur}
+          isEdit={isEdit}
           labels={{
             code: t('form.code'),
             codePlaceholder: t('form.codePlaceholder'),
             description: t('form.description'),
             descriptionPlaceholder: t('form.descriptionPlaceholder'),
+            sequenceNo: t('form.sequenceNo'),
+            sequenceNoPlaceholder: t('form.sequenceNoPlaceholder'),
           }}
         />
         <MandatoryFieldsNotice message={tCommon('note.mandatory')} />

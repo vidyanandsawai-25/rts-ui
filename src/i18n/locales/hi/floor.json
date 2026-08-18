@@ -120,7 +120,7 @@
       "updateSuccess": "फ्लोर सफलतापूर्वक अपडेट किया गया",
       "deleteSuccess": "मंजिल सफलतापूर्वक हटाया गया",
       "deleteFailed": "मंजिल हटाने में विफल। कृपया पुनः प्रयास करें।",
-      "deleteInUse": "यह मंजिल उपयोग में है, इसलिए आप इसे हटा नहीं सकते।",
+     "deleteInUse": "यह फ्लोर निम्नलिखित में संदर्भित होने के कारण इसे निष्क्रिय/हटाया नहीं जा सकता:\nवेटेज मास्टर, संपत्ति विवरण (Weightage Master, Property Details).\n\nकृपया पहले निर्भर रिकॉर्ड हटाएं।",
       "deleteConfirm": "क्या आप वाकई इस मंजिल को हटाना चाहते हैं?",
       "noFloors": "कोई मंजिल उपलब्ध नहीं है। शुरू करने के लिए एक नया मंजिल जोड़ें।",
       "validFloorIdRequired": "मान्य मंजिल आईडी आवश्यक है"
@@ -139,7 +139,8 @@
       "duplicateRecord": "रिकॉर्ड पहले से मौजूद है",
       "invalidData": "अमान्य डेटा प्रदान किया गया",
       "notFound": "रिकॉर्ड नहीं मिला",
-      "operationFailed": "ऑपरेशन विफल रहा"
+    "operationFailed": "ऑपरेशन विफल रहा",
+      "inUse": "यह फ्लोर निम्नलिखित में संदर्भित होने के कारण इसे निष्क्रिय/हटाया नहीं जा सकता:\nवेटेज मास्टर, संपत्ति विवरण (Weightage Master, Property Details).\n\nकृपया पहले निर्भर रिकॉर्ड हटाएं।"
     },
     "note": {
       "mandatory": "* चिह्नित फ़ील्ड अनिवार्य हैं"
@@ -194,6 +195,8 @@
       "codePlaceholder": "उदा., SF01, SF02",
       "description": "विवरण",
       "descriptionPlaceholder": "उप-मंजिल विवरण या अतिरिक्त जानकारी दर्ज करें",
+      "sequenceNo": "क्रम संख्या",
+      "sequenceNoPlaceholder": "क्रम संख्या दर्ज करें",
       "validation": {
         "codeRequired": "संकेतांक आवश्यक है",
         "codeFormat": "संकेतांक में केवल अक्षर, संख्या और अंडरस्कोर हो सकते हैं (शुरुआत/अंत में नहीं)",
@@ -201,6 +204,7 @@
         "descriptionRequired": "विवरण आवश्यक है",
         "descriptionFormat": "विवरण में अमान्य वर्ण या स्वरूपण है",
         "descriptionMaxLength": "विवरण {count} वर्णों से अधिक नहीं हो सकता",
+        "sequenceNoRequired": "क्रम संख्या आवश्यक है",
         "mustBeActive": "नया उप-मंजिल सक्रिय होना चाहिए"
       }
     },
@@ -213,7 +217,8 @@
         "status": "स्थिति",
         "actions": "कार्रवाई",
         "subFloorCode": "उप-मंजिल संकेतांक",
-        "subFloorDescription": "विवरण"
+        "subFloorDescription": "विवरण",
+        "sequenceNo": "क्रम संख्या"
       },
       "pagination": {
         "showing": "दिखा रहा है",
@@ -242,7 +247,8 @@
       "duplicateRecord": "रिकॉर्ड पहले से मौजूद है",
       "invalidData": "अमान्य डेटा प्रदान किया गया",
       "notFound": "रिकॉर्ड नहीं मिला",
-      "operationFailed": "ऑपरेशन विफल रहा"
+      "operationFailed": "ऑपरेशन विफल रहा",
+      "referencedIn": "{tables} तालिका में संदर्भित होने के कारण इस उप-मंजिल को निष्‍क्र‍िय या हटाया नहीं जा सकता।"
     },
     "note": {
       "mandatory": "* चिह्नित फ़ील्ड अनिवार्य हैं"
