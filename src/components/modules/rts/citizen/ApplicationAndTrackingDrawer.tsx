@@ -494,6 +494,8 @@ export default function ApplicationAndTrackingDrawer({
           applicationId={parseInt(selectedApplication.applicationNo.replace(/\D/g, ''), 10)}
           applicationNo={selectedApplication.applicationNo}
           serviceName={selectedApplication.serviceName}
+          customerName={(selectedApplication as any).applicantName || (detail as any)?.applicantName}
+          customerMobile={(selectedApplication as any).mobileNo || (detail as any)?.mobileNo}
           fees={paymentInfo?.requiredFee || 50}
           onClose={() => setShowPaymentModal(false)}
           onSuccess={(receipt) => {

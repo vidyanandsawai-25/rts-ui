@@ -3,14 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   X,
-  CreditCard,
   ShieldCheck,
   Lock,
   Loader2,
   AlertCircle,
-  Phone,
-  Mail,
-  User
+  Building2,
+  ArrowRight
 } from 'lucide-react';
 import {
   createPaymentOrderAction,
@@ -34,7 +32,6 @@ interface PaymentCheckoutModalProps {
   fees?: number;
   customerName?: string;
   customerMobile?: string;
-  customerEmail?: string;
   onClose: () => void;
   onSuccess?: (receipt: PaymentReceiptResult) => void;
 }
@@ -45,9 +42,8 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   serviceName,
   departmentName,
   fees,
-  customerName: initialName = '',
-  customerMobile: initialMobile = '',
-  customerEmail: initialEmail = '',
+  customerName,
+  customerMobile,
   onClose,
   onSuccess
 }) => {
@@ -55,12 +51,6 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [receiptData, setReceiptData] = useState<PaymentReceiptResult | null>(null);
   const [sdkReady, setSdkReady] = useState(false);
-
-  // Applicant Contact state with automatic dummy email fallback
-  const fallbackEmail = initialEmail.trim() || (initialMobile.trim() ? `${initialMobile.trim()}@citizen.akolamc.org` : `citizen_${applicationNo || applicationId}@citizen.akolamc.org`);
-  const [applicantName, setApplicantName] = useState(initialName);
-  const [applicantMobile, setApplicantMobile] = useState(initialMobile);
-  const [applicantEmail, setApplicantEmail] = useState(fallbackEmail);
 
   // Load official Razorpay Checkout SDK dynamically
   useEffect(() => {
@@ -90,17 +80,10 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
     setErrorMessage(null);
 
     try {
-      const finalEmail = applicantEmail.trim() || fallbackEmail;
-      const finalMobile = applicantMobile.trim() || initialMobile || '9876543210';
-      const finalName = applicantName.trim() || initialName || 'Citizen Applicant';
-
-      // Step 1: Create Order dynamically via Backend API
+      // Step 1: Create Order dynamically via Backend API (Backend automatically resolves dynamic applicant name, mobile, email, fees)
       const orderRes = await createPaymentOrderAction({
         applicationId,
-        paymentGateway: 'Razorpay',
-        customerName: finalName,
-        mobileNo: finalMobile,
-        email: finalEmail
+        paymentGateway: 'Razorpay'
       });
 
       if (!orderRes.success || !orderRes.data) {
@@ -109,14 +92,14 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
 
       const order: PaymentOrderResult = orderRes.data;
 
-      // Step 2: Open Razorpay Live/Test Modal dynamically using server response
+      // Step 2: Open Razorpay Live Gateway Modal with fully dynamic prefill
       if (typeof window !== 'undefined' && window.Razorpay) {
         const options = {
           key: order.keyId,
           amount: order.amountInPaise,
           currency: order.currency || 'INR',
-          name: order.departmentName || 'Akola Municipal Corporation',
-          description: order.description || `Government Fee for ${order.serviceName}`,
+          name: 'Akola Municipal Corporation',
+          description: order.description || `Government RTS Fee - ${order.serviceName}`,
           order_id: order.gatewayOrderId,
           handler: async function (response: any) {
             setIsLoading(true);
@@ -126,7 +109,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
                 gatewayOrderId: response.razorpay_order_id || order.gatewayOrderId,
                 gatewayPaymentId: response.razorpay_payment_id,
                 gatewaySignature: response.razorpay_signature,
-                paymentMode: response.method || 'Razorpay Online'
+                paymentMode: response.method || 'Online'
               });
 
               if (verifyRes.success) {
@@ -147,12 +130,12 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
             }
           },
           prefill: {
-            name: finalName,
-            email: finalEmail,
-            contact: finalMobile
+            name: order.customerName || customerName || undefined,
+            email: order.customerEmail || undefined,
+            contact: order.customerMobile || customerMobile || undefined
           },
           theme: {
-            color: '#0d9488'
+            color: '#1e3a8a'
           },
           modal: {
             ondismiss: function () {
@@ -183,24 +166,24 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   const displayFee = fees !== undefined && fees > 0 ? fees : 50;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100 my-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200/80 my-6">
 
-        {/* Header */}
-        <div className="bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 px-6 py-4 text-white flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm">
-              <CreditCard className="w-5 h-5 text-white" />
+        {/* Executive Header Banner */}
+        <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 px-6 py-5 text-white flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shrink-0">
+              <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-lg leading-tight">Government Fee Payment</h3>
-              <p className="text-teal-100 text-xs font-medium">शासकीय शुल्क भरणा पोर्टल</p>
+              <h3 className="font-extrabold text-base leading-tight">Government Fee Payment</h3>
+              <p className="text-blue-200 text-xs font-medium">अकोला महानगरपालिका • RTS Portal</p>
             </div>
           </div>
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="p-1.5 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-colors disabled:opacity-50 cursor-pointer"
+            className="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50 cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -210,108 +193,57 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
         {/* Modal Content */}
         <div className="p-6 space-y-4">
 
-          {/* Application Summary Box */}
-          <div className="bg-gradient-to-br from-slate-50 to-teal-50/30 p-3.5 rounded-xl border border-slate-200/90">
-            <div className="flex items-center justify-between text-xs text-slate-500 font-medium mb-1">
-              <span>Application No. / अर्ज क्र.</span>
-              <span className="font-bold text-slate-800 text-sm font-mono">{applicationNo || `APP#${applicationId}`}</span>
+          {/* Application Details Summary */}
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 text-xs">
+              <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Application / अर्ज क्र.</span>
+              <span className="font-mono font-black text-blue-900 text-sm">{applicationNo || `APP#${applicationId}`}</span>
             </div>
-            <div className="text-sm font-bold text-slate-800 line-clamp-1">{serviceName || 'RTS Public Service'}</div>
-            <div className="text-xs text-slate-500">{departmentName || 'Right to Service Portal'}</div>
-          </div>
 
-          {/* Citizen Contact Confirmation Section */}
-          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
-              Applicant Contact Details / अर्जदाराचा संपर्क
-            </span>
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Public Service / सेवा</span>
+              <span className="font-bold text-slate-900 text-sm block leading-snug">{serviceName || 'RTS Public Service'}</span>
+              <span className="text-xs text-slate-500 font-medium">{departmentName || 'Akola Municipal Corporation'}</span>
+            </div>
 
-            <div className="space-y-2 text-xs">
-              <div>
-                <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Applicant Name / नाव:</label>
-                <div className="relative">
-                  <User className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
-                  <input
-                    type="text"
-                    value={applicantName}
-                    onChange={(e) => setApplicantName(e.target.value)}
-                    placeholder="Applicant Full Name"
-                    className="w-full pl-8 pr-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Mobile No / मोबाईल:</label>
-                  <div className="relative">
-                    <Phone className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
-                    <input
-                      type="tel"
-                      value={applicantMobile}
-                      onChange={(e) => setApplicantMobile(e.target.value)}
-                      placeholder="9876543210"
-                      className="w-full pl-8 pr-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-medium focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                    />
+            {(customerName || customerMobile) && (
+              <div className="pt-2.5 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs">
+                {customerName && (
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-medium">Applicant / अर्जदार:</span>
+                    <span className="font-bold text-slate-800 truncate block">{customerName}</span>
                   </div>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Email / ईमेल:</label>
-                  <div className="relative">
-                    <Mail className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
-                    <input
-                      type="email"
-                      value={applicantEmail}
-                      onChange={(e) => setApplicantEmail(e.target.value)}
-                      placeholder="name@example.com"
-                      className="w-full pl-8 pr-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-medium focus:ring-2 focus:ring-teal-500 focus:outline-none truncate"
-                    />
+                )}
+                {customerMobile && (
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-medium">Mobile / मोबाईल:</span>
+                    <span className="font-mono font-semibold text-slate-800 block">{customerMobile}</span>
                   </div>
-                </div>
+                )}
               </div>
-            </div>
-            <p className="text-[10px] text-slate-400">
-              * ओटीपी आणि पावती पाठवण्यासाठी हे तपशील वापरले जातील.
-            </p>
+            )}
           </div>
 
-          {/* Gateway Information Badge */}
-          <div className="p-2.5 rounded-xl border border-teal-200 bg-teal-50/50 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded-lg bg-teal-600 text-white">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="font-bold text-xs text-slate-800 block">Secure Payment Gateway</span>
-                <span className="text-[10px] text-slate-500">UPI, QR Code, Credit/Debit Cards, NetBanking</span>
-              </div>
-            </div>
-            <span className="text-[9px] font-bold uppercase tracking-wider text-teal-800 bg-teal-200/70 px-2 py-0.5 rounded-full">
-              RBI Approved
-            </span>
-          </div>
-
-          {/* Fee Calculation Breakdown */}
-          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5 text-xs">
+          {/* Fee Itemization */}
+          <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-2 text-xs">
             <div className="flex justify-between text-slate-600">
-              <span>Government Service Fee / शासकीय शुल्क:</span>
-              <span className="font-semibold text-slate-800">₹{Number(displayFee).toFixed(2)}</span>
+              <span>Government Fee / शासकीय शुल्क:</span>
+              <span className="font-semibold text-slate-900 font-mono">₹{Number(displayFee).toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-slate-600">
-              <span>Portal Convenience Fee / पोर्टल शुल्क:</span>
-              <span className="font-semibold text-emerald-600">₹0.00 (मोफत)</span>
+              <span>Gateway Charges / पोर्टल शुल्क:</span>
+              <span className="font-medium text-emerald-600 font-mono">₹0.00 (मोफत)</span>
             </div>
-            <div className="flex justify-between items-center pt-2 border-t border-slate-200 text-sm font-bold text-slate-900">
-              <span>Total Payable Amount / एकूण देय रक्कम:</span>
-              <span className="text-lg text-teal-700 font-extrabold">₹{Number(displayFee).toFixed(2)}</span>
+            <div className="flex justify-between items-center pt-2.5 border-t border-blue-200/80 text-sm font-bold text-slate-900">
+              <span>Total Payable / एकूण रक्कम:</span>
+              <span className="text-xl text-blue-900 font-black font-mono">₹{Number(displayFee).toFixed(2)}</span>
             </div>
           </div>
 
           {/* Error Notice */}
           {errorMessage && (
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-700">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-600" />
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -321,25 +253,26 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
             type="button"
             onClick={handleProceedPayment}
             disabled={isLoading || !sdkReady}
-            className="w-full py-3.5 px-4 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-teal-600/25 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full py-4 px-5 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-sm rounded-2xl shadow-xl shadow-blue-900/20 transition-all flex items-center justify-center gap-2.5 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Processing with Payment Gateway... / प्रतीक्षा करा</span>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Connecting to Secure Gateway...</span>
               </>
             ) : (
               <>
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck className="w-5 h-5" />
                 <span>Pay ₹{Number(displayFee).toFixed(2)} Securely / शुल्क भरा</span>
+                <ArrowRight className="w-4 h-4 ml-1" />
               </>
             )}
           </button>
 
-          {/* Security Badge */}
-          <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-medium pt-0.5">
-            <Lock className="w-3 h-3 text-teal-600" />
-            <span>256-bit SSL Cryptographic Security • PCI-DSS Certified</span>
+          {/* Security Guarantee */}
+          <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-medium">
+            <Lock className="w-3.5 h-3.5 text-blue-600" />
+            <span>UPI • Cards • NetBanking • 256-bit Bank Encryption</span>
           </div>
 
         </div>
