@@ -95,7 +95,7 @@ export function useRateMasterFormState({
     allFiltersSelected,
   } = useRateValidation({ selectedZone, selectedUseGroup, assessmentYear, initialExistingRatesCheck, isOpenPlot });
 
-  const shouldShowMatrix = (!!editData || !!bulkEditData || (mode === 'add' && !isOpenPlot && !!filterValues?.zone && !!filterValues?.useGroup));
+  const shouldShowMatrix = (!!editData || !!bulkEditData || (mode === 'add' && !isOpenPlot && !!filterValues?.zone && !!filterValues?.useGroup && !initialExistingRatesCheck));
   const [showMatrix, setShowMatrix] = useState(shouldShowMatrix);
   const [allZoneEdits, setAllZoneEdits] = useState<Record<string, Record<string, number>>>({});
   const allZoneEditsInitializedRef = useRef(false);

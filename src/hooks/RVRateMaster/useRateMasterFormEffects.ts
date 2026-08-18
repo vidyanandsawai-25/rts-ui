@@ -20,6 +20,7 @@ interface RateMasterFormEffectsProps {
   loadUseGroupOptions: () => void;
   loadAssessmentYears: () => void;
   showMatrix: boolean;
+  setShowMatrix: (show: boolean) => void;
   matrixData: MatrixRow[];
   setMatrixData: React.Dispatch<React.SetStateAction<MatrixRow[]>>;
   localRateCategories: RateCategory[];
@@ -41,6 +42,7 @@ export function useRateMasterFormEffects({
   loadUseGroupOptions,
   loadAssessmentYears,
   showMatrix,
+  setShowMatrix,
   matrixData,
   setMatrixData,
   localRateCategories,
@@ -97,11 +99,11 @@ export function useRateMasterFormEffects({
 
   // Show toast when existing rates are found — id deduplication prevents stacking
   useEffect(() => {
-    if (isOpenPlot) return;
     if (!isEditMode && existingRateFound) {
       toast.error(t('messages.validationRatesAlreadyExist'), { id: TOAST_ID });
+      setShowMatrix(false);
     }
-  }, [existingRateFound, isEditMode, t, isOpenPlot]);
+  }, [existingRateFound, isEditMode, t, setShowMatrix]);
 
   // Dismiss only when the user actively changes filters (not during async re-checks)
   useEffect(() => {

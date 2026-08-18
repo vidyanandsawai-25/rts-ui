@@ -166,18 +166,18 @@ export function ConfigureRatesDrawer({
                             : "bg-white border-[#DCEAFF] border-l-slate-300"
                         )}
                       >
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-3 min-w-0 flex-1">
                           <Checkbox
                             checked={isChecked}
                             onCheckedChange={() => { }}
                             disabled={isOP}
                             className={`mt-0.5 ${isChecked ? "bg-blue-600 border-blue-600 text-white" : "border-[#DCEAFF] hover:border-blue-400"}`}
                           />
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <div className="text-sm font-semibold text-slate-900 font-sans">
                               {tu.typeOfUseCode}
                             </div>
-                            <div className="text-xs text-slate-500 font-sans leading-normal">
+                            <div className="text-xs text-slate-500 font-sans leading-normal break-words break-all">
                               {tu.description}
                             </div>
                           </div>

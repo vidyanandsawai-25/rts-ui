@@ -410,7 +410,7 @@ describe("RateViewGrid", () => {
         },
       ];
 
-      const props = { ...getDefaultProps(), data: mockData };
+      const props = { ...getDefaultProps(), data: mockData, ratesConfiguredCount: 1 };
       render(<RateViewGrid {...props} />);
 
       expect(screen.getByTestId("pagination")).toBeInTheDocument();
