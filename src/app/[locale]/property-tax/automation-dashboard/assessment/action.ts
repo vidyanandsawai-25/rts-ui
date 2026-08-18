@@ -1,11 +1,14 @@
 'use server';
 
+import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { 
     automationGetAssessmentGrid, 
     automationGetPendingAssessmentProps,
-    FetchPendingAssessmentPropsParams 
+    FetchPendingAssessmentPropsParams,
+    automationSendToApprove
 } from "@/lib/api/automation-dashboard/assessment/assessmentgrid.service";
-import { AssessmentGridItems, AssessmentGridType, PendingAssessmentItems } from "@/types/automation-dashboard/assessment/assessmentgrid.type";
+import { AssessmentGridItems, AssessmentGridType, PendingAssessmentItems, SendToApproveResponse } from "@/types/automation-dashboard/assessment/assessmentgrid.type";
 import { 
     getZones, 
     getWards, 
@@ -159,5 +162,27 @@ export async function getPropertyAssessmentStatusAction(
         }
         const t = await getTranslations("automationDashboard");
         return { success: false, error: t("errors.fetchPropertyAssessmentStatus") || "Failed to fetch assessment status", statusCode: 500 };
+    }
+}
+
+export async function sendToApproveAction(
+    propertyIds: number[]
+): Promise<ActionResult<SendToApproveResponse>> {
+    try {
+        const cookieStore = await cookies();
+        const userId = getUserIdFromCookies(cookieStore);              
+        if (!userId) {
+            return { success: false, error: "User not authenticated", statusCode: 401 };
+        }       
+        logger.info("sendToApproveAction: Sending for approval", { propertyIds, userId });       
+        const data = await automationSendToApprove({ propertyIds, userId });
+        return { success: true, data };
+    } catch (error) {
+        logger.error("Failed to send for approval", { propertyIds }, error);
+        if (error instanceof ApiError) {
+            return { success: false, error: error.message, statusCode: error.statusCode };
+        }
+        const t = await getTranslations("automationDashboard");
+        return { success: false, error: t("errors.sendToApprove") || "Failed to send for approval", statusCode: 500 };
     }
 }

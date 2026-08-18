@@ -18,7 +18,8 @@
     "fetchPropertyWiseData": "संपत्ति-वार डेटा प्राप्त करने में विफल।",
     "fetchPropertyAssessmentStatus": "संपत्ति मूल्यांकन स्थिति विवरण प्राप्त करने में विफल।",
     "fetchZones": "जोन डेटा प्राप्त करने में विफल।",
-    "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रैकिंग स्टेटस प्राप्त करने में विफल।"
+    "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रैकिंग स्टेटस प्राप्त करने में विफल।",
+    "sendToApprove": "स्वीकृति के लिए भेजने में विफल।"
   },
   "summaryCards": {
     "metrics": {
@@ -307,8 +308,14 @@
     "emptyMessage": "डेटा एंट्री गुणवत्ता जांच डेटा उपलब्ध नहीं है"
   },
   "sendToApprove": {
+    "confirmTitle": "कार्रवाई की पुष्टि करें",
+    "confirmDescription": "क्या आप वाकई चयनित संपत्तियों को मंजूरी के लिए भेजना चाहते हैं?",
+    "confirmButton": "पुष्टि करें",
+    "successTitle": "सफल",
+    "successDescription": "संपत्तियों को सफलतापूर्वक मंजूरी के लिए भेज दिया गया",
+    "errorTitle": "त्रुटि",
     "title": "मंजूरी के लिए भेजें",
-    "subtitle": "मंजूरी के लिए भेजने के लिए मूल्यांकन चरण से संपत्तियां चुनें",
+    "subtitle": "मंजूरी के लिए भेजने हेतु असेसमेंट चरण से संपत्तियां चुनें",
     "backToAssessment": "मूल्यांकन पर वापस जाएं",
     "selected": "चयनित",
     "updateNoticeNo": "SR नोटिस नंबर अपडेट करें",

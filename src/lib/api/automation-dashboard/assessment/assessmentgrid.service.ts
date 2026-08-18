@@ -6,7 +6,9 @@ import {
   AssessmentGridResponse,
   AssessmentGridType,
   PendingAssessmentItems,
-  PendingAssessmentResponse
+  PendingAssessmentResponse,
+  SendToApprovePayload,
+  SendToApproveResponse
 } from "@/types/automation-dashboard/assessment/assessmentgrid.type";
 
 export async function automationGetAssessmentGrid(
@@ -74,3 +76,10 @@ export async function automationGetPendingAssessmentProps(
   return responseData.items?.[0] ?? null;
 }
 
+export async function automationSendToApprove(payload: SendToApprovePayload): Promise<SendToApproveResponse> {
+  const url = `/AutomationDashboard/SendToApprove`;
+ 
+  const response = await apiClient.post<SendToApproveResponse>(url, payload);
+  const t = await getTranslations("automationDashboard");
+  return handleApiResponse(response, t("errors.sendToApprove") || "Failed to send for approval");
+}

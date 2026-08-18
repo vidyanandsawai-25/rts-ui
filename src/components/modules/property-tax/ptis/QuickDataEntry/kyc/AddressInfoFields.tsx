@@ -65,9 +65,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
   const pinCodeError =
     showError('pinCode', kycValidators.isValidPinCode(formData.pinCode ?? '')) ||
     !!(
-      formData.pinCode &&
-      ((formData.pinCode.length >= 4 && formData.pinCode.length <= 5) ||
-        (formData.pinCode.length === 6 && kycValidators.hasRepeatedSequence(formData.pinCode, 5)))
+      formData.pinCode && !kycValidators.isValidPinCode(formData.pinCode)
     );
 
   const preventEnterSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -363,9 +361,11 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
             />
             {pinCodeError && (
               <span className="text-xs text-red-500">
-                {formData.pinCode && kycValidators.hasRepeatedSequence(formData.pinCode, 5)
-                  ? t('kyc.validation.invalidRepeatedSequence')
-                  : t('kyc.validation.invalidPinCode')}
+                {String(formData.pinCode || '').startsWith('0')
+                  ? t('kyc.validation.pinCodeCannotStartWithZero') || 'PIN code cannot start with 0'
+                  :  kycValidators.hasRepeatedSequence(String(formData.pinCode || '').trim(), 6)
+                  ? t('kyc.validation.invalidRepeatedSequence') || 'Cannot enter repeated numbers'
+                  : t('kyc.validation.invalidPinCode') || 'Please enter a valid 6-digit PIN code.'}
               </span>
             )}
           </div>

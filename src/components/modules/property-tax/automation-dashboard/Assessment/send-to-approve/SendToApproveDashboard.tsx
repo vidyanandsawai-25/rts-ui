@@ -11,12 +11,13 @@ import { ArrowLeft, Send } from 'lucide-react';
 import { PendingAssessmentItems, SendToApproveData } from '@/types/automation-dashboard/assessment/assessmentgrid.type';
 import { getSendToApproveColumns, getSendToApproveHeaderRows } from './SendToApproveColumns';
 import { DocumentViewerModal } from '@/components/common';
-
+import { useConfirm } from '@/components/common/ConfirmProvider';
+import { useToast } from '@/components/common/ToastProvider';
+import { sendToApproveAction } from '@/app/[locale]/property-tax/automation-dashboard/assessment/action';
 interface OptionType {
     value: string;
     label: string;
 }
-
 interface SendToApproveDashboardProps {
     serverData?: PendingAssessmentItems | null;
     pageNumber: number;
@@ -59,6 +60,42 @@ export default function SendToApproveDashboard({
     const [viewerWardNo, setViewerWardNo] = useState<string>('');
     const [isViewerOpen, setIsViewerOpen] = useState(false);
     const [viewerType, setViewerType] = useState<'plan' | 'image'>('image');
+
+    const { confirm } = useConfirm();
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSendToApprove = () => {
+        if (selectedIds.length === 0) return;
+
+        confirm({
+            title: t('sendToApprove.confirmTitle') || "Confirm Action",
+            description: t('sendToApprove.confirmDescription') || `Are you sure you want to send ${selectedIds.length} properties for approval?`,
+            variant: "info",
+            confirmText: t('sendToApprove.confirmButton') || "Confirm",
+            onConfirm: async () => {
+                setIsSubmitting(true);
+                try {
+                    const propertyIds = selectedIds.map(id => parseInt(id, 10));
+                    // the user ID is now retrieved from the session inside the action
+
+                    const result = await sendToApproveAction(propertyIds);
+
+                    if (result.success) {
+                        toast(t('sendToApprove.successDescription') || "Properties sent for approval successfully", "success");
+                        setSelectedIds([]);
+                        triggerSearch(); // Refresh the list
+                    } else {
+                        toast(result.error || "Failed to send for approval", "error");
+                    }
+                } catch (_error) {
+                    toast(t('errors.sendToApprove') || "Failed to send for approval", "error");
+                } finally {
+                    setIsSubmitting(false);
+                }
+            }
+        });
+    };
 
     const triggerSearch = () => {
         const currentParams = new URLSearchParams(searchParams.toString());
@@ -235,7 +272,8 @@ export default function SendToApproveDashboard({
                         <Button
                             variant="primary"
                             icon={Send}
-                            disabled={selectedIds.length === 0}
+                            disabled={selectedIds.length === 0 || isSubmitting}
+                            onClick={handleSendToApprove}
                             className={`h-9 px-4 text-xs font-semibold flex items-center gap-2 shadow-sm rounded-md transition-colors border-none ${selectedIds.length > 0
                                 ? 'bg-blue-600 hover:bg-blue-700 text-white'
                                 : 'bg-blue-300 text-white cursor-not-allowed'

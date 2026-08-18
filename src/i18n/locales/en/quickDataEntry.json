@@ -523,6 +523,7 @@
             "invalidAadharStart": "Aadhar number cannot start with 0 or 1.",
             "invalidAddress": "Invalid address. Only letters, numbers, and common punctuation (. , - / #) are allowed. Special characters like *()_++_)(&&^%$@!~[];  are not permitted.",
             "invalidPinCode": "Pin code must be exactly 6 digits",
+            "pinCodeCannotStartWithZero": "PIN code cannot start with 0",
             "invalidRepeatedSequence": "Repeated number sequences are not allowed",
             "pleaseFixErrors": "Please fix the highlighted validation errors before submitting."
         },
