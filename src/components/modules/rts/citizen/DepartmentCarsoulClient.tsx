@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import DepartmentCarousel from "@/components/common/DepartmentCarousel";
@@ -59,10 +59,12 @@ type DepartmentCarsoulClientProps = {
   upicId?: string;
 };
 
-const normalize = (v: string) => v.toLowerCase().replace(/\s+/g, " ").trim();
+function normalize(s: string) {
+  return s.toLowerCase().trim();
+}
 
-function safeLang(v: unknown): Language {
-  return v === "hi" || v === "mr" || v === "en" ? (v as Language) : "en";
+function allLabels(deptName: LangText) {
+  return [deptName.en, deptName.hi, deptName.mr].filter(Boolean) as string[];
 }
 
 function pickLangText(v: LangText | string | undefined, lang: Language): string | undefined {
@@ -71,32 +73,35 @@ function pickLangText(v: LangText | string | undefined, lang: Language): string 
   return v[lang] || v.en || v.hi || v.mr;
 }
 
-function allLabels(v: LangText | string | undefined): string[] {
-  if (!v) return [];
-  if (typeof v === "string") return [v];
-  return [v.en, v.hi, v.mr].filter(Boolean) as string[];
-}
-
 type CitizenApplication = RtsMisDashboardUserApplicationItem & {
-  normalizedStatus: "approved" | "rejected" | "pending";
+  normalizedStatus: "pending" | "approved" | "rejected";
 };
 
-function normalizeApplicationStatus(status: string): CitizenApplication["normalizedStatus"] {
-  const normalized = status.toLowerCase();
-  if (normalized.includes("approved")) return "approved";
-  if (normalized.includes("rejected") || normalized.includes("failed") || normalized.includes("discarded")) {
+function normalizeApplicationStatus(status?: string | null): "pending" | "approved" | "rejected" {
+  const normalized = (status ?? "").toLowerCase().trim();
+  if (normalized.includes("approv") || normalized.includes("स्वीकृत") || normalized.includes("मान्य")) {
+    return "approved";
+  }
+  if (normalized.includes("reject") || normalized.includes("नाकार") || normalized.includes("अमान्य")) {
     return "rejected";
   }
   return "pending";
 }
 
-function formatSubmittedDate(value: string, locale: Language): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+function safeLang(lang: Language): Language {
+  return lang === "mr" || lang === "hi" || lang === "en" ? lang : "en";
+}
 
-  return new Intl.DateTimeFormat(locale === "mr" ? "mr-IN" : locale === "hi" ? "hi-IN" : "en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
+function formatSubmittedDate(dateString?: string, language?: Language): string {
+  if (!dateString) return "—";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return dateString;
+
+  const locale = language === "mr" ? "mr-IN" : language === "hi" ? "hi-IN" : "en-IN";
+  return new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   }).format(date);
 }
 
@@ -121,6 +126,49 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
   } | null>(null);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
+  const [paidAppMap, setPaidAppMap] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkPaidStatuses = async () => {
+      const feeApplications = userApplications.filter((app) => {
+        const matched = departments
+          .flatMap((d) => d.services)
+          .find((s) => {
+            const sNameEn = typeof s.name === "string" ? s.name : (s.name as any)?.en;
+            const sNameMr = typeof s.name === "object" ? (s.name as any)?.mr : undefined;
+            const targetName = app.serviceName?.toLowerCase().trim();
+            return (
+              (sNameEn && sNameEn.toLowerCase().trim() === targetName) ||
+              (sNameMr && sNameMr.toLowerCase().trim() === targetName) ||
+              (s.serviceName && s.serviceName.toLowerCase().trim() === targetName)
+            );
+          });
+        const isFeesReq = (matched as any)?.feesRequired === true;
+        const dynamicFee = Number((matched as any)?.fees) || 0;
+        return isFeesReq && dynamicFee > 0 && !(matched as any)?.serviceUrl;
+      });
+
+      for (const app of feeApplications) {
+        const appId = parseInt(app.applicationNo.replace(/\D/g, ""), 10);
+        if (appId) {
+          try {
+            const res = await getPaymentReceiptAction(appId);
+            if (isMounted && res.success && res.data) {
+              setPaidAppMap((prev) => ({ ...prev, [app.applicationNo]: true }));
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
+    };
+
+    void checkPaidStatuses();
+    return () => {
+      isMounted = false;
+    };
+  }, [userApplications, departments]);
 
   const handleViewReceipt = async (applicationNo: string) => {
     const appId = parseInt(applicationNo.replace(/\D/g, ""), 10);
@@ -239,23 +287,24 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('searchPlaceholder')}
-                className="w-full pl-8.5 pr-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold placeholder-slate-400 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-slate-50/30"
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 focus:bg-white transition-all font-medium"
               />
             </div>
           </div>
 
           {filteredSubmissions.length === 0 ? (
-            <div className="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-8 text-center text-slate-400 text-xs font-semibold">
-              <AlertCircle className="w-5 h-5 mx-auto text-slate-350 mb-1" />
-              <p>{t('noApplications')}</p>
+            <div className="text-center py-8">
+              <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+              <p className="text-xs font-bold text-slate-700">{t('noApplications')}</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">{t('noApplicationsDesc')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full text-left border-collapse text-xs font-semibold text-slate-700">
+              <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-100/70 text-[10px] text-slate-600 font-bold uppercase tracking-wider">
-                    <th className="py-2 px-3 rounded-l-lg">{t('applicationAndService')}</th>
-                    <th className="py-2 px-3">{t('submittedDate')}</th>
+                  <tr className="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">
+                    <th className="py-2 px-3 rounded-l-lg">{t('application')}</th>
+                    <th className="py-2 px-3">{t('submittedOn')}</th>
                     <th className="py-2 px-3">{t('slaTimeline')}</th>
                     <th className="py-2 px-3">{t('statusAndStage')}</th>
                     <th className="py-2 px-3">{lang === "mr" ? "शासकीय शुल्क" : lang === "hi" ? "शासकीय शुल्क" : "Fee Payment"}</th>
@@ -267,7 +316,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                     const isAppApproved = app.normalizedStatus === "approved";
                     const isAppRejected = app.normalizedStatus === "rejected";
                     const serviceName = lang === "mr" && app.serviceNameLocal ? app.serviceNameLocal : app.serviceName;
-                    // Dynamic lookup in Service Master
+
                     const matchedService = departments
                       .flatMap((d) => d.services)
                       .find((s) => {
@@ -281,20 +330,24 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                         );
                       });
 
-                    // Dynamic attributes from Service Master
                     const hasExternalServiceUrl = !!(matchedService as any)?.serviceUrl;
                     const isFeesRequired = (matchedService as any)?.feesRequired === true;
                     const dynamicServiceFee = Number((matchedService as any)?.fees) || 0;
 
-                    // If configured with an external ServiceUrl in master or not a native in-app service, it is an external portal service
                     const isExternalPortalApp = hasExternalServiceUrl || !matchedService;
-                    const isPaymentPending = app.status?.toLowerCase().includes("payment pending") || app.status?.toLowerCase().includes("pending payment");
+                    const isPaidExplicitly =
+                      paidAppMap[app.applicationNo] === true ||
+                      app.status?.toLowerCase().includes("payment received") ||
+                      app.status?.toLowerCase().includes("payment success") ||
+                      app.status?.toLowerCase().includes("payment completed") ||
+                      app.status?.toLowerCase().includes("paid") ||
+                      app.status?.toLowerCase().includes("शुल्क प्राप्त");
 
                     return (
                       <tr key={index} className="hover:bg-slate-50/50 transition-colors">
                         <td className="py-2.5 px-3">
                           <span className="block text-[9px] font-mono font-bold text-slate-400 mb-0.5">{app.applicationNo}</span>
-                          <span className="font-bold text-slate-900 text-xs">{serviceName}</span>
+                          <span className="font-bold text-slate-900">{serviceName}</span>
                         </td>
                         <td className="py-2.5 px-3 text-slate-600">{formatSubmittedDate(app.submittedDate, lang)}</td>
                         <td className="py-2.5 px-3">
@@ -320,27 +373,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                             <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
                               {lang === "mr" ? "विनामूल्य" : lang === "hi" ? "निःशुल्क" : "Free"}
                             </span>
-                          ) : isPaymentPending ? (
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                                <Clock className="w-3 h-3 text-amber-600" />
-                                {lang === "mr" ? "बाकी" : lang === "hi" ? "लंबित" : "Pending"}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => setCheckoutAppData({
-                                  applicationId: parseInt(app.applicationNo.replace(/\D/g, ""), 10) || 1,
-                                  applicationNo: app.applicationNo,
-                                  serviceName,
-                                  fees: dynamicServiceFee
-                                })}
-                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer transition-all"
-                              >
-                                <CreditCard className="w-3 h-3" />
-                                {lang === "mr" ? "शुल्क भरा" : lang === "hi" ? "शुल्क भरें" : "Pay Fee"}
-                              </button>
-                            </div>
-                          ) : (
+                          ) : isPaidExplicitly ? (
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -357,12 +390,33 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                                 {lang === "mr" ? "पावती" : lang === "hi" ? "रसीद" : "Receipt"}
                               </button>
                             </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                <Clock className="w-3 h-3 text-amber-600" />
+                                {lang === "mr" ? "बाकी" : lang === "hi" ? "लंबित" : "Pending"}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setCheckoutAppData({
+                                  applicationId: parseInt(app.applicationNo.replace(/\D/g, ""), 10) || 1,
+                                  applicationNo: app.applicationNo,
+                                  serviceName: serviceName || app.serviceName,
+                                  fees: dynamicServiceFee
+                                })}
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer transition-all"
+                              >
+                                <CreditCard className="w-3 h-3" />
+                                {lang === "mr" ? `शुल्क भरा (₹${dynamicServiceFee})` : lang === "hi" ? `शुल्क भरें (₹${dynamicServiceFee})` : `Pay Fee (₹${dynamicServiceFee})`}
+                              </button>
+                            </div>
                           )}
                         </td>
                         <td className="py-2.5 px-3 text-right">
                           <button
                             onClick={() => setActiveDrawerApp(app)}
                             className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-all bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg cursor-pointer"
+                            title={t('viewDetails')}
                           >
                             <Eye size={12} />
                             <span>{t('viewDetails')}</span>
@@ -395,6 +449,9 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
             onSuccess={(receipt) => {
               setCheckoutAppData(null);
               setReceiptModalData(receipt);
+              if (checkoutAppData?.applicationNo) {
+                setPaidAppMap((prev) => ({ ...prev, [checkoutAppData.applicationNo]: true }));
+              }
             }}
           />
         )}

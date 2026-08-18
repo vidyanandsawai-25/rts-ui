@@ -196,8 +196,16 @@ export default function RtsCitizenViewDetailsDrawer({
               const dynamicFees = detail?.verification?.serviceFees ?? 50;
               const isPaid = detail?.verification
                 ? Boolean(detail.verification.isPaid)
-                : (!application.status?.toLowerCase().includes("payment pending") && !application.status?.toLowerCase().includes("pending payment"));
-              const receiptNo = detail?.verification?.receiptNo;
+                : Boolean(
+                    receiptModalData ||
+                    detail?.verification?.receiptNo ||
+                    application.status?.toLowerCase().includes("payment received") ||
+                    application.status?.toLowerCase().includes("payment success") ||
+                    application.status?.toLowerCase().includes("payment completed") ||
+                    application.status?.toLowerCase().includes("paid") ||
+                    application.status?.toLowerCase().includes("शुल्क प्राप्त")
+                  );
+              const receiptNo = detail?.verification?.receiptNo || receiptModalData?.receiptNo;
 
               return !isPaid ? (
                 <section className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-amber-50/50 p-4 shadow-sm">
