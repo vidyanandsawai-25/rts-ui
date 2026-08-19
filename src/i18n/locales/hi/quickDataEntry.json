@@ -1286,7 +1286,7 @@
     "confirmDeleteDiscountOk": "हाँ, हटाएँ",
     "confirmDeleteDiscountCancel": "नहीं, रद्द करें",
     "deleteSuccess": "विवरण और संबंधित डेटा सफलतापूर्वक हटा दिया गया!",
-    "deleteSocialDetail": "विवरण और डेटा हटाएं",
+    "deleteSocialDetail": "सामाजिक विवरण और डेटा हटाएं",
     "confirmDeleteAttributeTitle": "सामाजिक विवरण और डेटा हटाएं",
     "confirmDeleteAttributeDesc": "क्या आप वाकई इस सामाजिक विवरण और इसके सभी संबद्ध डेटा को हटाना चाहते हैं?",
     "confirmDeleteAttributeOk": "हाँ, हटाएँ",

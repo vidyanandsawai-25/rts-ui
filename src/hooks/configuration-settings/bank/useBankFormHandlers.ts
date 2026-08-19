@@ -33,6 +33,9 @@ export function useBankFormHandlers({
       } else if (name === 'city' || name === 'state') {
         // Allows only letters (any language) and spaces
         value = value.replace(/[^\p{L}\p{M}\s]/gu, '');
+      } else if (name === 'address') {
+        // Allows letters, numbers, spaces, and basic punctuation: / , . - () &
+        value = value.replace(/[^\p{L}\p{M}\p{N}\s\/,.\-()&]/gu, '');
       } else if (name === 'pincode') {
         // Allows only numbers
         value = value.replace(/[^0-9]/g, '');

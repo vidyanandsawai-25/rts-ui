@@ -86,6 +86,7 @@
     "ifscFormat": "अवैध IFSC स्वरूप (उदा., SBIN0000001)",
     "branchRequired": "शाखेचे नाव आवश्यक आहे",
     "addressRequired": "रस्त्याचा पत्ता आवश्यक आहे",
+    "addressFormat": "रस्त्याच्या पत्त्यामध्ये अवैध विशेष अक्षरे आहेत",
     "cityRequired": "शहर आवश्यक आहे",
     "stateRequired": "राज्य आवश्यक आहे",
     "pincodeRequired": "पिनकोड आवश्यक आहे",
@@ -98,7 +99,8 @@
     "stateLength": "राज्य {count} अक्षरांपेक्षा जास्त नसावे",
     "bankCodeExists": "बँक कोड आधीच अस्तित्वात आहे",
     "bankNameExists": "बँकेचे नाव आधीच अस्तित्वात आहे",
-    "ifscCodeExists": "IFSC कोड आधीच अस्तित्वात आहे"
+    "ifscCodeExists": "IFSC कोड आधीच अस्तित्वात आहे",
+    "bankMismatch": "बँक कोड, बँकेचे नाव आणि IFSC कोड जुळत नाहीत"
   },
   "error": {
     "title": "काहीतरी चुकले आहे",

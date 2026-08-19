@@ -2,6 +2,7 @@ import { BankMasterDto, BankMasterFormData } from '@/types/bank-master.types';
 import { ApiError } from '@/lib/utils/api';
 import { parseBoolean } from '@/lib/utils/type-guards';
 import { toTitleCase } from '@/lib/utils/format';
+import { DESCRIPTION_REGEX } from '@/lib/utils/validation-rules';
 import * as CONST from './bank-master.constants';
 
 export type BankMasterValidationCode =
@@ -19,10 +20,59 @@ export type BankMasterValidationCode =
   | 'bankNameLength'
   | 'branchNameLength'
   | 'addressLength'
+  | 'addressFormat'
   | 'cityLength'
-  | 'stateLength';
+  | 'stateLength'
+  | 'bankMismatch';
 
 export type BankMasterErrors = Partial<Record<keyof BankMasterFormData, BankMasterValidationCode>>;
+
+export function checkBankDetailsMatch(bankCode: string, bankName: string, ifscCode: string): boolean {
+  const cleanCode = bankCode.trim().toUpperCase();
+  const cleanName = bankName.trim().toUpperCase();
+  const cleanIfsc = ifscCode.trim().toUpperCase();
+
+  if (cleanIfsc.length < 4) return true;
+
+  const ifscPrefix = cleanIfsc.substring(0, 4);
+  const ifscThree = cleanIfsc.substring(0, 3);
+
+  // Mappings for standard/common Indian banks
+  const BANK_IFSC_MAPPING: Record<string, { codes: string[]; names: string[] }> = {
+    'SBIN': { codes: ['SBI'], names: ['STATE BANK OF INDIA', 'SBI'] },
+    'HDFC': { codes: ['HDFC'], names: ['HDFC'] },
+    'ICIC': { codes: ['ICIC', 'ICICI'], names: ['ICICI'] },
+    'BARB': { codes: ['BARB', 'BOB'], names: ['BANK OF BARODA', 'BOB'] },
+    'AXIS': { codes: ['AXIS'], names: ['AXIS'] },
+    'UTIB': { codes: ['AXIS', 'UTI'], names: ['AXIS', 'UTI'] },
+    'PUNB': { codes: ['PUNB', 'PNB'], names: ['PUNJAB NATIONAL BANK', 'PNB'] },
+    'UBIN': { codes: ['UBIN', 'UBI', 'UNI'], names: ['UNION BANK OF INDIA', 'UNION BANK'] },
+    'CNRB': { codes: ['CNRB', 'CAN'], names: ['CANARA BANK', 'CANARA'] },
+    'KKBK': { codes: ['KKBK', 'KOTAK'], names: ['KOTAK MAHINDRA BANK', 'KOTAK'] },
+    'BKID': { codes: ['BKID', 'BOI'], names: ['BANK OF INDIA', 'BOI'] },
+    'MAHB': { codes: ['MAHB', 'BOM'], names: ['BANK OF MAHARASHTRA', 'BOM'] },
+    'IDIB': { codes: ['IDIB', 'IND'], names: ['INDIAN BANK'] },
+    'IOBA': { codes: ['IOBA', 'IOB'], names: ['INDIAN OVERSEAS BANK', 'IOB'] },
+    'UCBA': { codes: ['UCBA', 'UCO'], names: ['UCO BANK', 'UCO'] },
+    'YESB': { codes: ['YESB', 'YES'], names: ['YES BANK', 'YES'] },
+    'IBKL': { codes: ['IBKL', 'IDBI'], names: ['IDBI'] },
+  };
+
+  const known = BANK_IFSC_MAPPING[ifscPrefix];
+  if (known) {
+    const codeMatches = known.codes.some(c => cleanCode.includes(c));
+    const nameMatches = known.names.some(n => cleanName.includes(n));
+    return codeMatches && nameMatches;
+  }
+
+  // Fallback fuzzy check for unknown/cooperative banks and mock test data
+  const codeContainsPrefix = cleanCode.includes(ifscThree);
+  const nameContainsPrefix = cleanName.includes(ifscThree);
+  const firstThreeCode = cleanCode.substring(0, Math.min(3, cleanCode.length));
+  const codePrefixMatch = firstThreeCode.length >= 2 && ifscThree.includes(firstThreeCode);
+
+  return codeContainsPrefix || nameContainsPrefix || codePrefixMatch;
+}
 
 export function validateBankMaster(data: BankMasterFormData): BankMasterErrors {
   const errors: BankMasterErrors = {};
@@ -42,6 +92,7 @@ export function validateBankMaster(data: BankMasterFormData): BankMasterErrors {
 
   if (!data.address) errors.address = 'addressRequired';
   else if (data.address.length > CONST.ADDRESS_MAX) errors.address = 'addressLength';
+  else if (!DESCRIPTION_REGEX.test(data.address)) errors.address = 'addressFormat';
 
   if (!data.city) errors.city = 'cityRequired';
   else if (data.city.length > CONST.CITY_MAX) errors.city = 'cityLength';
@@ -52,6 +103,12 @@ export function validateBankMaster(data: BankMasterFormData): BankMasterErrors {
   if (!data.pincode) errors.pincode = 'pincodeRequired';
   else if (!new RegExp(`^[1-9]\\d{${CONST.PINCODE_MAX - 1}}$`).test(data.pincode))
     errors.pincode = 'pincodeFormat';
+
+  if (data.bankCode && data.bankName && data.ifscCode && !errors.ifscCode) {
+    if (!checkBankDetailsMatch(data.bankCode, data.bankName, data.ifscCode)) {
+      errors.ifscCode = 'bankMismatch';
+    }
+  }
 
   return errors;
 }

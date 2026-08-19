@@ -86,6 +86,7 @@
     "ifscFormat": "Invalid IFSC format (e.g., SBIN0000001)",
     "branchRequired": "Branch Name is required",
     "addressRequired": "Street Address is required",
+    "addressFormat": "Street address contains invalid special characters",
     "cityRequired": "City is required",
     "stateRequired": "State is required",
     "pincodeRequired": "Pincode is required",
@@ -98,7 +99,8 @@
     "stateLength": "State Name cannot exceed {count} characters",
     "bankCodeExists": "Bank Code already exists",
     "bankNameExists": "Bank Name already exists",
-    "ifscCodeExists": "IFSC Code already exists"
+    "ifscCodeExists": "IFSC Code already exists",
+    "bankMismatch": "Bank Code, Bank Name, and IFSC Code do not match"
   },
   "error": {
     "title": "Something Went Wrong",

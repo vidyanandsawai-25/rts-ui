@@ -85,6 +85,9 @@ export function useSocialAttributeForm({
           const strVal = String(val ?? '')
             .trim()
             .toUpperCase();
+          if (strVal.length < 3) {
+            return t('form.validation.codeMinLength');
+          }
           if (strVal && /[0-9]/.test(strVal)) {
             return t('form.validation.codeFormat');
           }
