@@ -203,9 +203,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     department: (typeof deptCards)[number],
     service: (typeof deptCards)[number]['services'][number]
   ) => {
-    const serviceName = service.name;
     const serviceId = service.id;
-    const deptName = department.title;
     const externalUrl = service.serviceUrl?.trim() ?? '';
 
     if (externalUrl) {
@@ -252,48 +250,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
     const internalHref = getInternalRtsServiceHref(locale, serviceId, String(department.id));
 
-    // Keep the existing login requirement for internal Property Tax, Trade License, and Water services.
-    const s = serviceName.toLowerCase();
-    const d = deptName.toLowerCase();
-
-    const isPropertyTax =
-      s.includes('property') ||
-      s.includes('tax') ||
-      d.includes('property') ||
-      d.includes('tax') ||
-      s.includes('मालमत्ता') ||
-      s.includes('कर') ||
-      d.includes('मालमत्ता') ||
-      d.includes('कर');
-
-    const isTrade =
-      s.includes('trade') ||
-      s.includes('license') ||
-      d.includes('trade') ||
-      d.includes('license') ||
-      s.includes('व्यवसाय') ||
-      s.includes('व्यापार') ||
-      d.includes('व्यवसाय') ||
-      d.includes('व्यापार');
-
-    const isWater =
-      s.includes('water') ||
-      d.includes('water') ||
-      s.includes('पाणी') ||
-      s.includes('जल') ||
-      d.includes('पाणी') ||
-      d.includes('जल');
-
-    const requiresLogin = isPropertyTax || isTrade || isWater;
-
-    if (requiresLogin && !isLoggedIn) {
-      router.push(`/${locale}/service/login?redirect=${encodeURIComponent(internalHref)}`);
-    } else {
-      saveDeptServiceContext(department, service);
-      setIsDetailsOpen(false);
-      setSelectedServiceId(null);
-      router.push(internalHref);
-    }
+    saveDeptServiceContext(department, service);
+    setIsDetailsOpen(false);
+    setSelectedServiceId(null);
+    router.push(internalHref);
   };
 
   // ── Search ─────────────────────────────────────────────────────────────────

@@ -576,15 +576,6 @@ export default function RtsApplicationDashboard({
               />
             </div>
 
-            <div className="self-end pb-0.5">
-              <button
-                type="button"
-                aria-label={t('applicationDashboard.actions.openFilters')}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white transition hover:bg-slate-50"
-              >
-                <Filter className="h-4.5 w-4.5 text-slate-500" />
-              </button>
-            </div>
           </div>
         </div>
 
