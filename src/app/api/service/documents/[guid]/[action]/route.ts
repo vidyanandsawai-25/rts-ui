@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import {
   downloadCitizenRtsDocument,
   viewCitizenRtsDocument,
-} from "@/lib/api/rts/rtsdocument.service";
+} from "@/lib/api/rts/rtscitizendoc.service";
 
 const DOCUMENT_ACTIONS = new Set(["view", "download"]);
 

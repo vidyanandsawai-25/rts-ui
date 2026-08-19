@@ -7,9 +7,14 @@ import { useTranslations } from "next-intl";
 
 import { getApplicationDetailAction, type RtsApplicationDetailData } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import { ApprovalStagesTimeline } from "@/components/modules/rts";
-import { Button, DocumentViewerModal, Drawer, ViewButton } from "@/components/common";
+import RtsApplicationDocumentView from "@/components/modules/rts/dashboard/RtsApplicationDocumentView";
+import { Button, Drawer, ViewButton } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { getCitizenRtsDocumentDownloadUrl, getCitizenRtsDocumentViewUrl } from "@/lib/api/rts/rtsdocument.client";
+import {
+  downloadRtsDocument,
+  getCitizenRtsDocumentDownloadUrl,
+  getCitizenRtsDocumentViewUrl,
+} from "@/lib/api/rts/rtsdocument.client";
 import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
 import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
 import { getPaymentReceiptAction } from "@/app/[locale]/service/payment/actions";
@@ -58,10 +63,23 @@ export default function RtsCitizenViewDetailsDrawer({
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
   const [viewingDoc, setViewingDoc] = useState<{
     fileUrl: string;
+    downloadUrl: string;
     fileName: string;
     label: string;
   } | null>(null);
   const applicationNumber = application?.applicationNo;
+
+  const handleDocumentDownload = async (document: { guid: string; label: string }) => {
+    try {
+      await downloadRtsDocument({
+        url: getCitizenRtsDocumentDownloadUrl(document.guid),
+        fallbackFileName: `${document.label.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
+        errorMessage: t("downloadFailed"),
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("downloadFailed"));
+    }
+  };
 
   const handleViewReceipt = async () => {
     if (!applicationNumber) return;
@@ -295,13 +313,14 @@ export default function RtsCitizenViewDetailsDrawer({
                             size="xs"
                             onClick={() => setViewingDoc({
                               fileUrl: getCitizenRtsDocumentViewUrl(document.guid),
+                              downloadUrl: getCitizenRtsDocumentDownloadUrl(document.guid),
                               fileName: `${document.label.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
                               label: document.label,
                             })}
                           >
                             {t("view")}
                           </ViewButton>
-                          <Button type="button" variant="secondary" size="xs" icon={Download} onClick={() => window.open(getCitizenRtsDocumentDownloadUrl(document.guid), "_blank")}>
+                          <Button type="button" variant="secondary" size="xs" icon={Download} onClick={() => handleDocumentDownload(document)}>
                             {t("download")}
                           </Button>
                         </div>
@@ -354,13 +373,13 @@ export default function RtsCitizenViewDetailsDrawer({
       </Drawer>
 
       {viewingDoc && (
-        <DocumentViewerModal
-          isOpen
+        <RtsApplicationDocumentView
+          open
           onClose={() => setViewingDoc(null)}
           fileUrl={viewingDoc.fileUrl}
+          downloadUrl={viewingDoc.downloadUrl}
           fileName={viewingDoc.fileName}
           label={viewingDoc.label}
-          loadPreviewAsBlob
         />
       )}
 

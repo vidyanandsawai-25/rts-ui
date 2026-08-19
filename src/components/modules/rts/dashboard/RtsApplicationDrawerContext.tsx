@@ -14,9 +14,10 @@ import { ApprovalStagesTimeline } from '@/components/modules/rts';
 import { Button, ViewButton } from '@/components/common';
 import { Badge, Drawer } from '@/components/common';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import type { RtsApplicationProcessData } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 
-import { getAdminRtsDocumentDownloadUrl } from '@/lib/api/rts/rtsdocument.client';
+import { downloadRtsDocument, getAdminRtsDocumentDownloadUrl } from '@/lib/api/rts/rtsdocument.client';
 
 export interface RtsApplicationViewDrawerRecord {
   appId: string;
@@ -89,9 +90,15 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
     }
   }
 
-  const handleDownload = (doc: DisplayDocument) => {
-    if (doc.downloadUrl) {
-      window.open(doc.downloadUrl, '_blank');
+  const handleDownload = async (doc: DisplayDocument) => {
+    try {
+      await downloadRtsDocument({
+        url: doc.downloadUrl,
+        fallbackFileName: doc.fileName,
+        errorMessage: tProcess('downloadFailed'),
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : tProcess('downloadFailed'));
     }
   };
 
