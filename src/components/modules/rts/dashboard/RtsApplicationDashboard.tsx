@@ -270,6 +270,16 @@ export default function RtsApplicationDashboard({
       iconClassName: 'bg-emerald-50 border-emerald-100 text-[#10B981]',
     },
     {
+      key: 'reverted',
+      icon: RotateCcw,
+      label: t('applicationDashboard.cards.reverted'),
+      value: kpis.reverted,
+      percentage: kpis.revertedPercentage ?? (kpis.total > 0 ? Math.round((kpis.reverted / kpis.total) * 100) : 0),
+      borderClassName: 'border-l-violet-500',
+      valueClassName: 'text-violet-600',
+      iconClassName: 'bg-violet-50 border-violet-100 text-violet-600',
+    },
+    {
       key: 'rejected',
       icon: TriangleAlert,
       label: t('applicationDashboard.cards.rejected'),
@@ -288,16 +298,6 @@ export default function RtsApplicationDashboard({
       borderClassName: 'border-l-[#DC2626]',
       valueClassName: 'text-[#DC2626]',
       iconClassName: 'bg-red-50 border-red-100 text-[#DC2626]',
-    },
-    {
-      key: 'reverted',
-      icon: RotateCcw,
-      label: t('applicationDashboard.cards.reverted'),
-      value: kpis.reverted,
-      percentage: kpis.revertedPercentage ?? (kpis.total > 0 ? Math.round((kpis.reverted / kpis.total) * 100) : 0),
-      borderClassName: 'border-l-violet-500',
-      valueClassName: 'text-violet-600',
-      iconClassName: 'bg-violet-50 border-violet-100 text-violet-600',
     },
     {
       key: 'today',
