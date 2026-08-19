@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useConfirm, type SearchSelectOption } from '@/components/common';
+
 import {
   fetchDataEntrySameAsAction,
   applyDataEntrySameAsAction,
@@ -583,11 +584,16 @@ export function useDataEntrySameAs({
 
       if (!failedResult) {
         toast.success(t('floor.selectProperties.applySuccess'));
+        await clearDataEntrySameAsCache();
+        preloadedPropertiesRef.current = null;
+        initializedRequestRef.current = null;
         // Re-fetch the properties to get updated data from server (with same categoryName filter)
-        if (Number(searchWardId) && searchPropertyNo.trim()) {
+        const fetchWard = Number(searchWardId) || Number(wardId);
+        const fetchPropNo = searchPropertyNo.trim() || (propertyNo ? String(propertyNo).trim() : '');
+        if (fetchWard && fetchPropNo) {
           const updatedResults = await fetchDataEntrySameAsAction(
-            Number(searchWardId),
-            searchPropertyNo.trim(),
+            fetchWard,
+            fetchPropNo,
             categoryName
           );
           setSelectableProperties(updatedResults);
@@ -618,6 +624,8 @@ export function useDataEntrySameAs({
     locale,
     searchWardId,
     searchPropertyNo,
+    wardId,
+    propertyNo,
     categoryName,
   ]);
 
@@ -663,10 +671,14 @@ export function useDataEntrySameAs({
           toast.success(t('floor.selectProperties.applySuccess'));
           setSelectedPropertyIds(new Set());
           await clearDataEntrySameAsCache();
-          if (Number(searchWardId) && searchPropertyNo.trim()) {
+          preloadedPropertiesRef.current = null;
+          initializedRequestRef.current = null;
+          const fetchWard = Number(searchWardId) || Number(wardId);
+          const fetchPropNo = searchPropertyNo.trim() || (propertyNo ? String(propertyNo).trim() : '');
+          if (fetchWard && fetchPropNo) {
             const updatedResults = await fetchDataEntrySameAsAction(
-              Number(searchWardId),
-              searchPropertyNo.trim(),
+              fetchWard,
+              fetchPropNo,
               categoryName
             );
             setSelectableProperties(updatedResults);
@@ -708,6 +720,8 @@ export function useDataEntrySameAs({
     locale,
     searchWardId,
     searchPropertyNo,
+    wardId,
+    propertyNo,
     categoryName,
   ]);
 
