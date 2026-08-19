@@ -10,7 +10,6 @@ import {
   getIconKey,
   getIconComponent,
   getGroupApiId,
-  countTypesForGroup,
   getTypeApiId,
 } from "./typeOfUseMasterUtils";
 
@@ -44,8 +43,6 @@ export function GroupSection({
 }: GroupSectionProps) {
   const router = useRouter();
   const locale = useLocale();
-  const allGroupsLabel = t('group.allGroups') || "सर्व गट";
-
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col gap-3">
       {/* Header section with Title and Add Buttons */}
@@ -71,65 +68,15 @@ export function GroupSection({
 
       {/* Cards list section scrollable */}
       <div className="flex items-stretch gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-200">
-        {/* All Groups Card */}
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => {
-            const firstType = allTypes?.[0];
-            const firstTypeId = firstType ? getTypeApiId(firstType) : "";
-            onGroupSelect("ALL", firstTypeId);
-          }}
-          onKeyDown={(e) => {
-            if (e.target !== e.currentTarget) return;
-            if (e.key === "Enter") {
-              e.preventDefault();
-              (e.currentTarget as HTMLElement).click();
-            }
-          }}
-          className={clsx(
-            "min-w-[230px] cursor-pointer select-none rounded-xl border px-3 py-2 text-left shadow-sm transition",
-            selectedGroupId === "ALL"
-              ? "border-indigo-300 ring-2 ring-indigo-100 bg-indigo-50"
-              : "border-slate-200 hover:border-slate-300 bg-white"
-          )}
-        >
-          <div className="flex items-start gap-3 h-full">
-            <div
-              className={clsx(
-                "rounded-lg p-2",
-                selectedGroupId === "ALL"
-                  ? "bg-indigo-100 text-indigo-700"
-                  : "bg-slate-100 text-slate-700"
-              )}
-            >
-              <LayoutGrid className="h-5 w-5" />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-2">
-                <GroupNameLabel name={allGroupsLabel} />
-              </div>
-
-              <div className="mt-1 text-xs flex items-center gap-2">
-                <span className="text-slate-600">
-                  {groups.some(g => 'typeCount' in g)
-                    ? groups.reduce((acc, g) => acc + ((g as UseGroup & { typeCount?: number }).typeCount ?? 0), 0)
-                    : allTypes.length}{" "}
-                  {t('type.title')}
-                </span>
-                <StatusBadge value="Active" />
-              </div>
-            </div>
-          </div>
-        </div>
-
         {groups.map((g: UseGroup) => {
-          const Icon = getIconComponent(getIconKey(g.groupIcon));
-          const selected = g.typeOfUseGroupId === selectedGroupId;
-          const typesCount = (g as UseGroup & { typeCount?: number }).typeCount ?? countTypesForGroup(g, allTypes);
-          const groupIdForRoute = g.typeOfUseGroupId;
-          const groupApiId = getGroupApiId(g);
+          const isTotalGroup = g.typeOfUseGroupCode === "TOTAL" || g.typeOfUseGroupId === 0;
+          const Icon = isTotalGroup
+            ? LayoutGrid
+            : getIconComponent(getIconKey(g.groupIcon, g.groupName || g.typeOfUseGroupCode));
+          const selected = isTotalGroup
+            ? (selectedGroupId === "ALL" || selectedGroupId === 0 || selectedGroupId === "0")
+            : String(g.typeOfUseGroupId) === String(selectedGroupId);
+          const groupApiId = isTotalGroup ? "ALL" : getGroupApiId(g);
 
           return (
             <div
@@ -173,33 +120,35 @@ export function GroupSection({
                   <div className="flex items-start justify-between gap-2">
                     <GroupNameLabel name={g.groupName} />
 
-                    <div className="flex gap-2 shrink-0">
-                      <EditButton
-                        size="sm"
-                        title={t('buttons.edit') + ' ' + t('group.title')}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(
-                            `/${locale}/property-tax/typeofusemaster/group/edit/${encodeURIComponent(
-                              groupIdForRoute
-                            )}`
-                          );
-                        }}
-                      />
-                      <DeleteButton
-                        size="sm"
-                        title={t('buttons.delete') + ' ' + t('group.title')}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteGroup(g);
-                        }}
-                      />
-                    </div>
+                    {!isTotalGroup && (
+                      <div className="flex gap-2 shrink-0">
+                        <EditButton
+                          size="sm"
+                          title={t('buttons.edit') + ' ' + t('group.title')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(
+                              `/${locale}/property-tax/typeofusemaster/group/edit/${encodeURIComponent(
+                                g.typeOfUseGroupId
+                              )}`
+                            );
+                          }}
+                        />
+                        <DeleteButton
+                          size="sm"
+                          title={t('buttons.delete') + ' ' + t('group.title')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteGroup(g);
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-1 text-xs flex items-center gap-2">
                     <span className="text-slate-600">
-                      {typesCount} {t('type.title')}
+                      {g.countOfTypes ?? 0} {t('type.title')}
                     </span>
                     <StatusBadge value={g.status ?? "Active"} />
                   </div>

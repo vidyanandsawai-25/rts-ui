@@ -5,6 +5,7 @@
  * Includes type selector, group selector, and input fields
  */
 
+import { useMemo } from 'react';
 import type { UseGroup, TypeOfUseCategory, TranslatorFunction } from '@/types/typeOfUse.types';
 import { Input } from '@/components/common/Input';
 import { SearchSelect } from '@/components/common/SearchSelect';
@@ -72,6 +73,20 @@ export function GroupSelector({
   showError,
   t,
 }: GroupSelectorProps) {
+  const filteredGroups = useMemo(() => {
+    return allGroups.filter((g) => {
+      const isTotalGroup =
+        g.typeOfUseGroupCode === "TOTAL" ||
+        g.typeOfUseGroupCode === "ALL" ||
+        g.typeOfUseGroupId === 0 ||
+        g.groupName?.toLowerCase() === "all groups";
+
+      if (isTotalGroup) return false;
+
+      return g.isActive === true && g.status !== "Inactive";
+    });
+  }, [allGroups]);
+
   return (
     <div className="flex flex-col">
       <Label htmlFor="use-type-group-select" required>
@@ -86,7 +101,7 @@ export function GroupSelector({
           onClearError?.();
         }}
         placeholder={t('type.selectUseTypeGroup')}
-        options={allGroups.map((g) => ({
+        options={filteredGroups.map((g) => ({
           value: String(g.typeOfUseGroupId),
           label: g.groupName || '',
         }))}
@@ -262,7 +277,7 @@ export function CategorySelector({
           onChange(val ? Number(val) : null);
         }}
         placeholder={t('type.selectCategory')}
-        options={allCategories.map((c) => ({
+        options={allCategories.filter((c) => c.isActive === true).map((c) => ({
           value: String(c.id),
           label: `${c.typeOfUseCategoryCode} - ${c.typeOfUseCategoryName}`,
         }))}

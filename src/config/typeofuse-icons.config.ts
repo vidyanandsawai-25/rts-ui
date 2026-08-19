@@ -6,14 +6,16 @@
  */
 
 import {
+  LayoutGrid,
   Home,
-  Briefcase,
+  Building2,
   Factory,
   GraduationCap,
   Wheat,
   MapPin,
   LandPlot,
   SquareParking,
+  Layers,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { UseGroupIconKey } from '@/types/typeOfUse.types';
@@ -32,32 +34,51 @@ export interface IconOption {
  * Each option includes the key, display label, and Lucide icon component
  */
 export const ICON_OPTIONS: IconOption[] = [
-  { value: 'home', label: 'Home', Icon: Home },
-  { value: 'building', label: 'Briefcase', Icon: Briefcase },
-  { value: 'factory', label: 'Factory', Icon: Factory },
-  { value: 'school', label: 'School', Icon: GraduationCap },
-  { value: 'leaf', label: 'Wheat', Icon: Wheat },
-  { value: 'map', label: 'MapPin', Icon: MapPin },
-  { value: 'plots', label: 'Plots', Icon: LandPlot },
+  { value: 'grid', label: 'All Group (Grid)', Icon: LayoutGrid },
+  { value: 'home', label: 'Home / Residential', Icon: Home },
+  { value: 'building', label: 'Commercial Building', Icon: Building2 },
+  { value: 'factory', label: 'Factory / Industrial', Icon: Factory },
+  { value: 'school', label: 'School / Education', Icon: GraduationCap },
+  { value: 'leaf', label: 'Wheat / Agriculture', Icon: Wheat },
+  { value: 'map', label: 'MapPin / Location', Icon: MapPin },
+  { value: 'plots', label: 'Land Plot', Icon: LandPlot },
   { value: 'parking', label: 'Parking', Icon: SquareParking },
+  { value: 'other', label: 'Other', Icon: Layers },
 ];
 
 /**
  * Helper to convert groupIcon string to UseGroupIconKey for display
- * Handles legacy icon formats and normalizes to standard keys
+ * Handles legacy icon formats and normalizes to standard keys with smart fallback
  * 
  * @param iconStr - The icon string from the database (e.g., 'home-icon', 'building')
+ * @param groupNameOrCode - Optional group name or code for smart fallback
  * @returns The normalized UseGroupIconKey
  */
-export const getIconKey = (iconStr: string): UseGroupIconKey => {
-  if (iconStr.includes('home')) return 'home';
-  if (iconStr.includes('building') || iconStr.includes('briefcase')) return 'building';
-  if (iconStr.includes('factory')) return 'factory';
-  if (iconStr.includes('school') || iconStr.includes('graduation')) return 'school';
-  if (iconStr.includes('leaf') || iconStr.includes('wheat')) return 'leaf';
-  if (iconStr.includes('map') || iconStr.includes('pin')) return 'map';
-  if (iconStr.includes('plot') || iconStr.includes('land')) return 'plots';
-  if (iconStr.includes('parking') || iconStr.includes('car')) return 'parking';
+export const getIconKey = (iconStr?: string | null, groupNameOrCode?: string | null): UseGroupIconKey => {
+  const str = (iconStr || '').toLowerCase();
+  const fallbackStr = (groupNameOrCode || '').toLowerCase();
+
+  // First check explicit icon string if present
+  if (str.includes('grid') || str.includes('total') || str.includes('layout') || str.includes('all')) return 'grid';
+  if (str.includes('home')) return 'home';
+  if (str.includes('building') || str.includes('briefcase') || str.includes('commercial')) return 'building';
+  if (str.includes('factory') || str.includes('industrial')) return 'factory';
+  if (str.includes('school') || str.includes('graduation') || str.includes('educational')) return 'school';
+  if (str.includes('leaf') || str.includes('wheat') || str.includes('agriculture')) return 'leaf';
+  if (str.includes('map') || str.includes('pin') || str.includes('location')) return 'map';
+  if (str.includes('plot') || str.includes('land')) return 'plots';
+  if (str.includes('parking') || str.includes('car')) return 'parking';
+  if (str.includes('other') || str.includes('layers')) return 'other';
+
+  // Secondary smart fallback matching group name or code (English & Marathi/Hindi)
+  if (fallbackStr.includes('total') || fallbackStr.includes('all') || fallbackStr === '0') return 'grid';
+  if (fallbackStr.includes('nivasi') || fallbackStr.includes('निवासी') || fallbackStr.includes('res')) return 'home';
+  if (fallbackStr.includes('vyav') || fallbackStr.includes('व्याव') || fallbackStr.includes('com')) return 'building';
+  if (fallbackStr.includes('audyo') || fallbackStr.includes('औद्यो') || fallbackStr.includes('ind')) return 'factory';
+  if (fallbackStr.includes('plot') || fallbackStr.includes('प्लॉट') || fallbackStr.includes('प्लाॉट')) return 'plots';
+  if (fallbackStr.includes('itar') || fallbackStr.includes('इतर') || fallbackStr.includes('oth')) return 'other';
+  if (fallbackStr.includes('park')) return 'parking';
+
   return 'home'; // default fallback
 };
 

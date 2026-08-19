@@ -14,13 +14,7 @@ export function clsx(...a: Array<string | false | undefined | null>) {
   return a.filter(Boolean).join(" ");
 }
 
-// Helper to get the API identifier (typeOfUseGroupId) for a group
 export function getGroupApiId(g: UseGroup): string {
   return String(g.typeOfUseGroupId);
 }
 
-// Count types using the API identifier (typeOfUseGroupId)
-export function countTypesForGroup(group: UseGroup, types: UseType[]) {
-  const groupApiId = getGroupApiId(group);
-  return types.filter((t) => String(t.typeOfUseGroupId) === groupApiId).length;
-}
