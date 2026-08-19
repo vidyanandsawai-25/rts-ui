@@ -10,6 +10,7 @@ import type { UlbMaster } from '@/types/master.types';
 interface CitizenFooterProps {
   ulbData?: UlbMaster;
   isLoggedIn?: boolean;
+  locale?: string;
 }
 
 export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {

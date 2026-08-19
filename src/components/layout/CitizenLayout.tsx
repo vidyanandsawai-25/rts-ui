@@ -70,7 +70,7 @@ export async function CitizenLayout({ children }: CitizenLayoutProps) {
       {/* pt accounts for fixed header: h-16 mobile, h-20 sm+ */}
       <main className="flex-1 overflow-x-hidden w-full pt-16 sm:pt-20 px-3 sm:px-4 md:px-6 pb-4">
         {children}
-        <CitizenFooter ulbData={ulbData} isLoggedIn={isLoggedIn} />
+        <CitizenFooter ulbData={ulbData} isLoggedIn={isLoggedIn} locale={locale} />
       </main>
     </div>
   );
