@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { downloadTaxZoningExport } from "@/lib/api/taxZoningRange/taxZoningRange-export.client";
 
@@ -20,11 +21,12 @@ export function useTaxZoningExport(
 ) {
   const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [isExportingPending, setIsExportingPending] = useState(false);
+  const locale = useLocale();
 
   const handleExportExcel = useCallback(() => {
     setIsExportingExcel(true);
     try {
-      const params: Record<string, string> = {};
+      const params: Record<string, string> = { locale };
       if (filters.wardId) params.WardId = String(filters.wardId);
       if (filters.taxZoneId) params.TaxZoneId = String(filters.taxZoneId);
       if (filters.fromPropertyNo) params.PropertyNo = filters.fromPropertyNo;
@@ -32,11 +34,11 @@ export function useTaxZoningExport(
       if (filters.ulbName) params.ulbName = filters.ulbName;
 
       toast.info(t("messages.exportDownloading"));
-      downloadTaxZoningExport("ranges-excel", Object.keys(params).length ? params : undefined);
+      downloadTaxZoningExport("ranges-excel", params);
     } finally {
       setIsExportingExcel(false);
     }
-  }, [filters, t]);
+  }, [filters, locale, t]);
 
   const handleExportPending = useCallback(() => {
     setIsExportingPending(true);

@@ -42,10 +42,14 @@ export async function GET(request: NextRequest) {
   const config = getAppConfig();
   const { path, contentType, ext, prefix } = ALLOWED_TYPES[type];
 
+  // Locale drives the Accept-Language header below (read by the backend's LanguageMiddleware)
+  // rather than being forwarded as a query param.
+  const locale = searchParams.get("locale") || "en";
+
   // Forward all other query params to the backend (SearchTerm, etc.)
   const forwardParams = new URLSearchParams();
   searchParams.forEach((value, key) => {
-    if (key !== "type") forwardParams.set(key, value);
+    if (key !== "type" && key !== "locale") forwardParams.set(key, value);
   });
 
   // Inject ulbName from cookie if not already supplied by the client
@@ -73,6 +77,7 @@ export async function GET(request: NextRequest) {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: contentType,
+        "Accept-Language": locale,
       },
       cache: "no-store",
     });
