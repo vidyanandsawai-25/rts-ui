@@ -41,12 +41,11 @@ const greenRowClassName =
 
 
 function formatPropertyDisplay(property: SelectableProperty): string {
-  const ward = String(property.wardNo ?? '').trim() || '-';
-  const prop = String(property.propertyNo ?? '').trim() || '-';
-  const part = String(property.partitionNo ?? '').trim();
-  const hasValidPartition = part && part !== '-';
+  const parts = [property.wardNo, property.propertyNo, property.partitionNo]
+    .map((v) => String(v ?? '').trim())
+    .filter((v) => v && v !== '-');
 
-  return hasValidPartition ? `${ward}-${prop}-${part}` : `${ward}-${prop}`;
+  return parts.length > 0 ? parts.join('-') : '-';
 }
 
 function formatCategoryDisplay(property: SelectableProperty): string {
@@ -251,10 +250,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
             },
             {
               key: 'builtupAreaDisplay',
-              label: ((): string => {
-                const val = t('floor.selectProperties.builtupArea');
-                return !val || val.includes('selectProperties') ? 'BuildupArea (Sq.Ft / Sq.M)' : val;
-              })(),
+              label: t('floor.selectProperties.builtupArea'),
               width: '155px',
               cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
             },

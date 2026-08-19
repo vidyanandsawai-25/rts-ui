@@ -75,7 +75,7 @@ export function useSmartLayoutState(reportId: number | null | undefined, handleR
     setIsPropertyDrawerOpen(false);
     setSelectionMode('');
     setAmountOperator('greater_than');
-    setAmountValue('');0
+    setAmountValue('');
     setPropertyDescription([]);
     setAssessmentStatus([]);
     handleReset();

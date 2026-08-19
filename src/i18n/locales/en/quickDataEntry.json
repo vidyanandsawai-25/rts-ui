@@ -847,6 +847,7 @@
         "select": "Select",
         "allFloors": "All Floors",
         "dataEntry": "Data Entry Same As",
+        "dataEntryApplyAll": "Data Entry Apply All",
         "atLeastOneFloorRequired": "Please add at least one floor to enable Data Entry Same As button",
         "dataEntryTabs": {
             "typeWise": "Type-wise",

@@ -839,6 +839,7 @@
     "select": "निवडा",
     "allFloors": "सर्व मजले",
     "dataEntry": "डेटा एंट्री",
+    "dataEntryApplyAll": "डेटा सर्वत्र लागू करा",
     "atLeastOneFloorRequired": "कृपया डेटा एंट्री बटण सक्षम करण्यासाठी किमान एक मजला जोडा",
     "dataEntryTabs": {
       "typeWise": "प्रकारनिहाय",
@@ -858,6 +859,10 @@
       "partitionNo": "विभाजन क्र.",
       "type": "प्रकार",
       "carpetArea": "कार्पेट क्षेत्रफळ (चौ. फूट / चौ. मीटर)",
+      "builtupArea": "बांधकाम क्षेत्रफळ (चौ. फूट / चौ. मीटर)",
+      "parkingCarpetArea": "पार्किंग कार्पेट क्षेत्रफळ (चौ. फूट / चौ. मीटर)",
+      "parkingBuiltupArea": "पार्किंग बांधकाम क्षेत्रफळ (चौ. फूट / चौ. मीटर)",
+      "category": "वर्गवारी",
       "wing": "विंग",
       "flatNo": "फ्लॅट क्र.",
       "selected": "{count} निवडले",

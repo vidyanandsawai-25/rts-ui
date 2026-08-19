@@ -51,8 +51,8 @@ export async function clearDataEntrySameAsCache(): Promise<void> {
     sameAsCache.clear();
 }
 
-export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: string, _categoryName?: string): Promise<SelectableProperty[]> {
-    const cacheKey = `${wardId}-${propertyNo}`;
+export async function fetchDataEntrySameAsAction(wardId: number, propertyNo?: string, _categoryName?: string): Promise<SelectableProperty[]> {
+    const cacheKey = propertyNo ? `${wardId}-${propertyNo}` : `${wardId}-ALL`;
     const cached = sameAsCache.get(cacheKey);
     if (cached && cached.data && cached.data.length > 0 && (Date.now() - cached.timestamp < SAME_AS_CACHE_TTL)) {
         return cached.data;
@@ -61,7 +61,9 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo: str
     try {
         const params = new URLSearchParams();
         params.set('WardId', String(wardId));
-        params.set('PropertyNo', propertyNo);
+        if (propertyNo) {
+            params.set('PropertyNo', propertyNo);
+        }
         const response = await apiClient.get<DataEntrySameAsResponse>(`/DataEntrySameAs/units?${params.toString()}`, { cache: 'no-store' });
         
         const raw = (response?.data ?? response) as unknown;
