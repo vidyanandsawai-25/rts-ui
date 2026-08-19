@@ -37,6 +37,7 @@ import type {
   RtsApplicationFullDetailData,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import { toApplicationFilterSlug } from '@/lib/utils/rts/application-filter-slug';
+import { getRtsApplicationStatusBadgeProps } from '@/lib/utils/rts/application-status-badge';
 import {
   getAdminRtsDocumentDownloadUrl,
   getAdminRtsDocumentViewUrl,
@@ -71,14 +72,6 @@ type GridRow = AdminApplicationGridRow & Record<string, unknown> & { id: string 
 
 const PAGE_SIZE_OPTIONS = [10];
 const STATUS_OPTIONS = ['submitted', 'pending', 'approved', 'rejected', 'reverted'];
-
-function statusBadgeVariant(status: string): 'success' | 'destructive' | 'warning' | 'secondary' {
-  const normalized = status.toLowerCase();
-  if (normalized === 'approved') return 'success';
-  if (normalized === 'rejected') return 'destructive';
-  if (normalized === 'returned') return 'warning';
-  return 'secondary';
-}
 
 export default function RtsApplicationDashboard({
   kpis,
@@ -388,7 +381,7 @@ export default function RtsApplicationDashboard({
         label: t('applicationDashboard.table.status'),
         align: 'center',
         render: (_value, row) => (
-          <Badge variant={statusBadgeVariant(row.currentStatus)}>
+          <Badge {...getRtsApplicationStatusBadgeProps(row.currentStatus)}>
             {row.currentStatus.charAt(0).toUpperCase() + row.currentStatus.slice(1)}
           </Badge>
         ),
