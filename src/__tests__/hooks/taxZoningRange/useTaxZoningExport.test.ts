@@ -7,6 +7,8 @@ vi.mock('@/lib/api/taxZoningRange/taxZoningRange-export.client', () => ({
   downloadTaxZoningExport: (...args: unknown[]) => mockDownloadTaxZoningExport(...args),
 }));
 
+vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
+
 const mockToast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() }));
 vi.mock('sonner', () => ({ toast: mockToast }));
 
@@ -41,6 +43,7 @@ describe('useTaxZoningExport', () => {
 
       expect(mockToast.info).toHaveBeenCalledWith('messages.exportDownloading');
       expect(mockDownloadTaxZoningExport).toHaveBeenCalledWith('ranges-excel', {
+        locale: 'en',
         WardId: '5',
         TaxZoneId: '2',
         PropertyNo: '10',
@@ -61,19 +64,20 @@ describe('useTaxZoningExport', () => {
       });
 
       expect(mockDownloadTaxZoningExport).toHaveBeenCalledWith('ranges-excel', {
+        locale: 'en',
         WardId: '5',
         SearchTerm: 'abc',
       });
     });
 
-    it('should call downloadTaxZoningExport with undefined when all filters are empty', () => {
+    it('should call downloadTaxZoningExport with just the current locale when all filters are empty', () => {
       const { result } = renderHook(() => useTaxZoningExport({}, false, t));
 
       act(() => {
         result.current.handleExportExcel();
       });
 
-      expect(mockDownloadTaxZoningExport).toHaveBeenCalledWith('ranges-excel', undefined);
+      expect(mockDownloadTaxZoningExport).toHaveBeenCalledWith('ranges-excel', { locale: 'en' });
     });
   });
 
