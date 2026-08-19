@@ -10,7 +10,11 @@ import { ApprovalStagesTimeline } from "@/components/modules/rts";
 import RtsApplicationDocumentView from "@/components/modules/rts/dashboard/RtsApplicationDocumentView";
 import { Button, Drawer, ViewButton } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { getCitizenRtsDocumentDownloadUrl, getCitizenRtsDocumentViewUrl } from "@/lib/api/rts/rtsdocument.client";
+import {
+  downloadRtsDocument,
+  getCitizenRtsDocumentDownloadUrl,
+  getCitizenRtsDocumentViewUrl,
+} from "@/lib/api/rts/rtsdocument.client";
 import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
 import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
 import { getPaymentReceiptAction } from "@/app/[locale]/service/payment/actions";
@@ -64,6 +68,18 @@ export default function RtsCitizenViewDetailsDrawer({
     label: string;
   } | null>(null);
   const applicationNumber = application?.applicationNo;
+
+  const handleDocumentDownload = async (document: { guid: string; label: string }) => {
+    try {
+      await downloadRtsDocument({
+        url: getCitizenRtsDocumentDownloadUrl(document.guid),
+        fallbackFileName: `${document.label.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
+        errorMessage: t("downloadFailed"),
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("downloadFailed"));
+    }
+  };
 
   const handleViewReceipt = async () => {
     if (!applicationNumber) return;
@@ -304,7 +320,7 @@ export default function RtsCitizenViewDetailsDrawer({
                           >
                             {t("view")}
                           </ViewButton>
-                          <Button type="button" variant="secondary" size="xs" icon={Download} onClick={() => window.open(getCitizenRtsDocumentDownloadUrl(document.guid), "_blank")}>
+                          <Button type="button" variant="secondary" size="xs" icon={Download} onClick={() => handleDocumentDownload(document)}>
                             {t("download")}
                           </Button>
                         </div>

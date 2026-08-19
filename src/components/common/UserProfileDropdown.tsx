@@ -69,7 +69,7 @@ export function UserProfileDropdown({
   }[activeLocale as 'en' | 'mr' | 'hi'] || {
     profile: 'Citizen Profile',
     dashboard: 'Dashboard Overview',
-    myApplications: 'Track Application',
+    myApplications: 'Track My Application',
     logout: 'Logout',
     upicId: 'UPIC ID',
     propertyNo: 'Property No',

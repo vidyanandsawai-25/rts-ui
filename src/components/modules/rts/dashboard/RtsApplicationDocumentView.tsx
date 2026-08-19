@@ -4,8 +4,10 @@ import { AlertCircle, Download, FileText, LoaderCircle, RotateCcw, X, ZoomIn, Zo
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button, Drawer } from '@/components/common';
+import { downloadRtsDocument } from '@/lib/api/rts/rtsdocument.client';
 
 interface RtsApplicationDocumentViewProps {
   open: boolean;
@@ -37,6 +39,18 @@ export default function RtsApplicationDocumentView({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
+
+  const handleDownload = async () => {
+    try {
+      await downloadRtsDocument({
+        url: downloadUrl,
+        fallbackFileName: fileName,
+        errorMessage: t('downloadFailed'),
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('downloadFailed'));
+    }
+  };
 
   useEffect(() => {
     if (!open || !fileUrl) return;
@@ -107,7 +121,7 @@ export default function RtsApplicationDocumentView({
       bodyClassName="relative overflow-hidden"
       footer={
         <div className="flex w-full items-center justify-end gap-2">
-          <Button type="button" size="sm" variant="secondary" icon={Download} onClick={() => window.open(downloadUrl, '_blank')}>
+          <Button type="button" size="sm" variant="secondary" icon={Download} onClick={handleDownload}>
             {t('download')}
           </Button>
           <Button type="button" size="sm" variant="secondary" onClick={handleClose}>
@@ -196,7 +210,7 @@ export default function RtsApplicationDocumentView({
             <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
               <AlertCircle className="h-10 w-10 text-rose-500" />
               <p className="max-w-sm text-sm font-semibold text-slate-700">{previewError ?? t('previewUnsupported')}</p>
-              <Button type="button" size="sm" variant="secondary" icon={Download} onClick={() => window.open(downloadUrl, '_blank')}>
+              <Button type="button" size="sm" variant="secondary" icon={Download} onClick={handleDownload}>
                 {t('download')}
               </Button>
             </div>
