@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { appConfig } from '@/config/app.config';
 import { RuntimeConfigScript } from '@/config/RuntimeConfigScript';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { locales } from '@/i18n/config';
 import Providers from './Providers';
 import { headers } from 'next/headers';
@@ -53,6 +53,7 @@ interface RootLayoutProps {
 
 export default async function RootLayout({ children, params }: Readonly<RootLayoutProps>) {
   const { locale } = await params;
+  setRequestLocale(locale);
 
   // Important: Pass locale to getMessages to ensure correct translations are loaded
   const messages = await getMessages({ locale });

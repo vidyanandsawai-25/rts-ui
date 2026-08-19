@@ -57,6 +57,9 @@ export interface PaymentReceiptResult {
   departmentName: string;
   departmentNameLocal: string;
   amount: number;
+  baseAmount?: number;
+  lateFeeAmount?: number;
+  discountAmount?: number;
   amountInWords?: string;
   amountInWordsLocal?: string;
   currency: string;
@@ -64,11 +67,16 @@ export interface PaymentReceiptResult {
   gatewayPaymentId: string;
   transactionNo?: string;
   bankRefNo?: string;
+  bankName?: string;
+  instrumentNo?: string;
   payerVpaOrAccount?: string;
   receiptNo: string;
   paymentDate: string;
   paymentStatus: string;
   paymentMode?: string;
+  channel?: string;
+  counterOfficerName?: string;
+  remarks?: string;
   customerName?: string;
   customerMobile?: string;
   customerEmail?: string;

@@ -12,8 +12,9 @@ const validateLocale = (locale: string | undefined): Locale => {
   return locale && locales.includes(locale as Locale) ? (locale as Locale) : defaultLocale;
 };
 
-export default getRequestConfig(async ({ locale }) => {
-  const validatedLocale = validateLocale(locale);
+export default getRequestConfig(async (params: any) => {
+  let rawLocale = params?.requestLocale ? await params.requestLocale : params?.locale;
+  const validatedLocale = validateLocale(rawLocale);
 
   // Load all translation files
   const [

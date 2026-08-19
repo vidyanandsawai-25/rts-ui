@@ -24,7 +24,7 @@ const HEADER_BG = '#0a3275';
 interface CitizenHeaderProps {
   profile?: CitizenProfile;
   properties?: CitizenProperty[];
-  locale: string;
+  locale?: string;
   ulbData?: UlbMaster;
 }
 
@@ -40,7 +40,7 @@ export function CitizenHeader({
   const [isPropertiesDrawerOpen, setIsPropertiesDrawerOpen] = useState(false);
   const currentLocale = useLocale();
   const t = useTranslations('rts.citizenHeader');
-  const activeLocale = currentLocale || propLocale;
+  const activeLocale = currentLocale || propLocale || 'mr';
   const mobile = profile?.mobile;
 
   const handleSwitchProperty = (ownerId: number) => {

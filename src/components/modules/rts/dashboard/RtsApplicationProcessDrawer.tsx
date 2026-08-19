@@ -219,11 +219,26 @@ export default function RtsApplicationProcessDrawer({
   const stages = data?.stages ?? null;
 
   const verification = data?.verification ?? null;
+  const [isPaidLocal, setIsPaidLocal] = useState<boolean | null>(null);
+  const [receiptNoLocal, setReceiptNoLocal] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (verification) {
+      setIsPaidLocal(Boolean(verification.isPaid));
+      setReceiptNoLocal(verification.receiptNo ?? null);
+    }
+  }, [verification]);
+
+  const effectiveIsPaid = isPaidLocal ?? verification?.isPaid ?? false;
+  const effectiveReceiptNo = receiptNoLocal ?? verification?.receiptNo ?? null;
+
   const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
   const availableActions = verification
     ? ACTIONS.filter((action) => {
         if (action.key === 'canPay') {
-          return Boolean(verification.canPay || (verification.feesRequired && !verification.isPaid));
+          // If already paid, DO NOT show "Record Payment" button!
+          if (effectiveIsPaid) return false;
+          return Boolean(verification.canPay || (verification.feesRequired && !effectiveIsPaid));
         }
         return Boolean(verification[action.key]);
       })
@@ -331,6 +346,10 @@ export default function RtsApplicationProcessDrawer({
   }, [data?.details?.applicationDetails, record?.citizenName]);
 
   const handleViewReceipt = async () => {
+    if (receiptModalData) {
+      setReceiptModalData({ ...receiptModalData });
+      return;
+    }
     if (!applicationId) return;
     setIsReceiptLoading(true);
     try {
@@ -359,7 +378,7 @@ export default function RtsApplicationProcessDrawer({
       return;
     }
 
-    if (actionKey === 'canApprove' && verification?.feesRequired && !verification?.isPaid) {
+    if (actionKey === 'canApprove' && verification?.feesRequired && !effectiveIsPaid) {
       toast.warning(`नागरिकाचे शासकीय शुल्क (₹${verification.serviceFees ?? 0}) प्रलंबित असल्याने अर्ज मंजूर करता येणार नाही. प्रथम शुल्क जमा करणे आवश्यक आहे.`);
       return;
     }
@@ -465,7 +484,7 @@ export default function RtsApplicationProcessDrawer({
               {availableActions.map((action) => {
                 const isApproveBlockedByFee =
                   (action.key === 'canApprove' || action.key === 'canVerifyDocument') &&
-                  Boolean(verification?.feesRequired && !verification?.isPaid);
+                  Boolean(verification?.feesRequired && !effectiveIsPaid);
                 return (
                   <Button
                     key={action.key}
@@ -508,7 +527,7 @@ export default function RtsApplicationProcessDrawer({
                 );
               })}
 
-              {verification?.isPaid && (
+              {effectiveIsPaid && (
                 <Button
                   type="button"
                   size="xs"
@@ -674,8 +693,8 @@ export default function RtsApplicationProcessDrawer({
                 </section>
 
                 {/* Payment Status Banner */}
-                {verification?.feesRequired && (
-                  verification?.isPaid ? (
+                {(verification?.feesRequired || effectiveIsPaid || (verification?.serviceFees ?? 0) > 0) && (
+                  effectiveIsPaid ? (
                     <section className="rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50/50 p-3.5 shadow-sm">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5">
@@ -684,10 +703,10 @@ export default function RtsApplicationProcessDrawer({
                           </div>
                           <div>
                             <p className="text-xs font-extrabold text-emerald-900">
-                              शासकीय शुल्क प्राप्त (Fee Paid): ₹{verification.serviceFees ?? 0}
+                              शासकीय शुल्क प्राप्त (Fee Paid): ₹{verification?.serviceFees ?? 0}
                             </p>
                             <p className="text-[11px] font-medium text-emerald-700">
-                              पावती क्र. : {verification.receiptNo || 'उपलब्ध'}
+                              पावती क्र. : {effectiveReceiptNo || 'उपलब्ध'}
                             </p>
                           </div>
                         </div>
@@ -896,6 +915,8 @@ export default function RtsApplicationProcessDrawer({
           applicantName={applicantName}
           onSuccess={(receipt) => {
             setIsOfflinePaymentModalOpen(false);
+            setIsPaidLocal(true);
+            setReceiptNoLocal(receipt.receiptNo);
             setReceiptModalData(receipt);
             toast.success(`ऑफलाइन शुल्क ₹${receipt.amount} यशस्वीरीत्या जमा झाले. पावती क्र. ${receipt.receiptNo}`);
             onSuccess?.();

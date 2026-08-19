@@ -89,7 +89,18 @@ class ApiClient {
       'Accept-Charset': 'utf-8',
       ...(options.headers as Record<string, string>),
     };
-    if (skipAuth) return headers;
+    if (skipAuth) {
+      try {
+        const store = await cookies();
+        const token = store.get('auth_token')?.value;
+        const has = (n: string) =>
+          Object.keys(headers).some((k) => k.toLowerCase() === n.toLowerCase());
+        if (token && !has('authorization')) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+      } catch {}
+      return headers;
+    }
 
     try {
       const store = await cookies();
