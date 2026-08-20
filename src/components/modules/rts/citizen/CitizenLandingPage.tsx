@@ -166,8 +166,9 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     (department) => String(department.id) === String(searchParams.get('deptId') ?? '')
   );
   const resolvedActiveTab = activeTab || requestedDepartment?.id || (deptCards[0]?.id ?? '');
-  const trackParam = searchParams.get('track') || searchParams.get('receipt') || '';
-  const isTrackingOpen = searchParams.get('applicaAndtracking') === 'true' || Boolean(trackParam);
+  const trackParam = searchParams.get('track') || '';
+  const receiptParam = searchParams.get('receipt') || '';
+  const isTrackingOpen = searchParams.get('applicaAndtracking') === 'true' || Boolean(trackParam) || Boolean(receiptParam);
 
   const updateTrackingDrawerRoute = (open: boolean) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -790,6 +791,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       <ApplicationAndTrackingDrawer
         open={isTrackingOpen}
         initialSearchValue={trackParam}
+        initialReceiptValue={receiptParam}
         onClose={() => updateTrackingDrawerRoute(false)}
       />
     </div>

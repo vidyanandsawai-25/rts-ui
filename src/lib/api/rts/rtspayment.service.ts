@@ -136,7 +136,8 @@ export async function getPaymentReceipt(applicationId: number): Promise<PaymentR
 
 export async function getPaymentReceiptByNo(receiptNo: string): Promise<PaymentReceiptResult | null> {
   try {
-    const res = await apiClient.get<ApiResponseWrapper<PaymentReceiptResult>>(`/RTSPayment/receipt-by-no/${encodeURIComponent(receiptNo)}`);
+    const cleanNo = receiptNo.trim();
+    const res = await apiClient.get<ApiResponseWrapper<PaymentReceiptResult>>(`/RTSPayment/receipt-by-no?rNo=${encodeURIComponent(cleanNo)}`);
     return res.data?.items || null;
   } catch {
     return null;
