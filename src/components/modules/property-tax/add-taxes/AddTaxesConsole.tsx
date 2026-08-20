@@ -165,6 +165,25 @@ export default function AddTaxesConsole({
   };
 
   useEffect(() => {
+    const fetchSkew = async () => {
+      try {
+        const clientRequestTime = Date.now();
+        const serverTimeStr = await actionsProp.getServerTimeAction();
+        if (serverTimeStr) {
+          const oneWayLatency = (Date.now() - clientRequestTime) / 2;
+          const serverTime = new Date(new Date(serverTimeStr).getTime() + oneWayLatency);
+          const clientTime = new Date();
+          const skewMs = clientTime.getTime() - serverTime.getTime();
+          window.sessionStorage.setItem('ntis_clock_skew_ms', String(skewMs));
+        }
+      } catch (err) {
+        logger.error('Failed to fetch initial clock skew', { error: err as Error });
+      }
+    };
+    void fetchSkew();
+  }, [actionsProp]);
+
+  useEffect(() => {
     const checkActiveJobs = async () => {
       try {
         const res = await actionsProp.getAuditListAction({ PageSize: 50 });

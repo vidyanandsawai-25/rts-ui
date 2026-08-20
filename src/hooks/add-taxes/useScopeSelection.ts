@@ -488,6 +488,9 @@ export function useScopeSelection(
           const serverTime = new Date(new Date(serverTimeStr).getTime() + oneWayLatency);
           const clientTime = new Date();
           const skewMs = clientTime.getTime() - serverTime.getTime();
+          if (typeof window !== 'undefined') {
+            window.sessionStorage.setItem('ntis_clock_skew_ms', String(skewMs));
+          }
 
           const originalScheduledDate = new Date(scheduledDateTime);
           const adjustedDate = new Date(originalScheduledDate.getTime() - skewMs);
