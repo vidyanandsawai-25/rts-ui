@@ -79,7 +79,9 @@ const validateDefaultValueRefinement = (data: { dataType: string; defaultValue?:
   const { dataType, defaultValue } = data;
   if (!defaultValue) return;
 
-  if (dataType === 'int') {
+  const normDataType = (dataType || '').toLowerCase();
+
+  if (normDataType === 'int' || normDataType === 'integer') {
     if (!/^\d+$/.test(defaultValue)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -104,7 +106,7 @@ const validateDefaultValueRefinement = (data: { dataType: string; defaultValue?:
         path: ['defaultValue'],
       });
     }
-  } else if (dataType === 'decimal') {
+  } else if (normDataType === 'decimal' || normDataType === 'float' || normDataType === 'number') {
     if (!/^\d+(\.\d+)?$/.test(defaultValue)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -121,7 +123,7 @@ const validateDefaultValueRefinement = (data: { dataType: string; defaultValue?:
         path: ['defaultValue'],
       });
     }
-  } else if (dataType === 'boolean') {
+  } else if (normDataType === 'boolean' || normDataType === 'bool') {
     if (defaultValue !== 'true' && defaultValue !== 'false') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -129,13 +131,13 @@ const validateDefaultValueRefinement = (data: { dataType: string; defaultValue?:
         path: ['defaultValue'],
       });
     }
-  } else if (dataType === 'datetime') {
+  } else if (normDataType === 'datetime' || normDataType === 'date' || normDataType === 'timestamp') {
     const isValidFormat = DateUtils.isValidDateTime(defaultValue);
       
     if (!isValidFormat) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Default value must be a valid date and time (year between 1900 and 2100)',
+        message: 'Default value must be a valid date and time (year from current year onwards)',
         path: ['defaultValue'],
       });
     }

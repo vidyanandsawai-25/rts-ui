@@ -162,9 +162,15 @@ export async function updateGrievanceCategory(
   }
 }
 
-export async function deleteGrievanceCategory(id: number): Promise<ApiResponse<void>> {
+export async function deleteGrievanceCategory(id: number, userId?: number): Promise<ApiResponse<void>> {
   if (!id || id <= 0) return { success: false, error: 'Invalid ID' };
-  const response = await apiClient.delete<unknown>(`${ENDPOINTS.delete}/${id}`);
+  const queryParams = new URLSearchParams();
+  if (userId) {
+    queryParams.set('userId', String(userId));
+    queryParams.set('updatedBy', String(userId));
+  }
+  const queryStr = queryParams.toString() ? `?${queryParams.toString()}` : '';
+  const response = await apiClient.delete<unknown>(`${ENDPOINTS.delete}/${id}${queryStr}`);
   if (!response.success)
     return { success: false, error: response.error, message: response.message };
 

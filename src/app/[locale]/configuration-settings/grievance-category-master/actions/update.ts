@@ -106,6 +106,7 @@ export async function updateGrievanceCategoryAction(
     escalationLevel: escalationLevel as (typeof ESCALATION_LEVELS)[number],
     description: sanitizeDescription(description),
     isActive: isActiveRaw === 'true',
+    updatedBy: currentUserId,
   };
 
   try {

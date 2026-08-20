@@ -110,32 +110,54 @@ export function useDepartmentConfig(
       return;
     }
 
-    const isDateTimeType =
-      (dataType || '').toLowerCase() === 'datetime' ||
-      (controlType || '').toLowerCase() === 'calendar' ||
-      (controlType || '').toLowerCase() === 'date';
+    const normDataType = (dataType || '').toLowerCase();
+    const normControlType = (controlType || '').toLowerCase();
 
-    if (isDateTimeType) {
-      for (const dept of departments) {
-        if (dept.submodules.length === 0 && dept.isEnabled && dept.value) {
-          if (!DateUtils.isValidDateTime(dept.value)) {
-            toastError(
-              t('messages.invalidDateTime') ||
-                'Please enter a valid date and time (year between 1900 and 2100)'
-            );
-            return;
-          }
+    const isIntegerType = normControlType === 'number' || normDataType === 'int' || normDataType === 'integer';
+    const isDecimalType = normDataType === 'decimal' || normDataType === 'float' || normDataType === 'double' || normDataType === 'number';
+    const isDateTimeType = normDataType === 'datetime' || normDataType === 'date' || normDataType === 'timestamp' || normControlType === 'calendar' || normControlType === 'date';
+    const isBooleanType = normControlType === 'checkbox' || normControlType === 'toggle' || normDataType === 'boolean' || normDataType === 'bool';
+
+    const validateValue = (val: string, name: string): string | null => {
+      const trimmed = val.trim();
+      if (isIntegerType && trimmed) {
+        if (!/^-?\d+$/.test(trimmed)) {
+          return t('messages.invalidInteger') || `Please enter a valid integer for ${name}`;
         }
-        for (const sub of dept.submodules) {
-          const isSubEnabled = dept.isEnabled ? sub.isEnabled : false;
-          if (isSubEnabled && sub.value) {
-            if (!DateUtils.isValidDateTime(sub.value)) {
-              toastError(
-                t('messages.invalidDateTime') ||
-                  `Please enter a valid date and time for ${sub.title} (year between 1900 and 2100)`
-              );
-              return;
-            }
+      }
+      if (isDecimalType && trimmed) {
+        if (isNaN(Number(trimmed)) || !/^-?\d+(\.\d+)?$/.test(trimmed)) {
+          return t('messages.invalidDecimal') || `Please enter a valid decimal number for ${name}`;
+        }
+      }
+      if (isDateTimeType && trimmed) {
+        if (!DateUtils.isValidDateTime(trimmed)) {
+          return t('messages.invalidDateTime') || `Please enter a valid date and time for ${name} (year from current year onwards)`;
+        }
+      }
+      if (isBooleanType && trimmed) {
+        if (trimmed !== 'true' && trimmed !== 'false') {
+          return t('messages.invalidBoolean') || `Please select a valid boolean (True/False) for ${name}`;
+        }
+      }
+      return null;
+    };
+
+    for (const dept of departments) {
+      if (dept.submodules.length === 0 && dept.isEnabled && dept.value) {
+        const errorMsg = validateValue(dept.value, dept.name);
+        if (errorMsg) {
+          toastError(errorMsg);
+          return;
+        }
+      }
+      for (const sub of dept.submodules) {
+        const isSubEnabled = dept.isEnabled ? sub.isEnabled : false;
+        if (isSubEnabled && sub.value) {
+          const errorMsg = validateValue(sub.value, sub.title);
+          if (errorMsg) {
+            toastError(errorMsg);
+            return;
           }
         }
       }

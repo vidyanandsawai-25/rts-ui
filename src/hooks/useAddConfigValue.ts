@@ -115,14 +115,25 @@ export function useAddConfigValue({
     }
 
     if (selectedConfigKey && formData.value.trim()) {
-      const dataType = (selectedConfigKey.dataType || '').toLowerCase();
-      const controlType = (selectedConfigKey.controlType || '').toLowerCase();
-      if (dataType === 'datetime' || controlType === 'calendar' || controlType === 'date') {
-        if (!DateUtils.isValidDateTime(formData.value)) {
-          newErrors.value =
-            t('messages.invalidDateTime') ||
-            'Please enter a valid date and time (year between 1900 and 2100)';
-        }
+      const normDataType = (selectedConfigKey.dataType || '').toLowerCase();
+      const normControlType = (selectedConfigKey.controlType || '').toLowerCase();
+      const trimmed = formData.value.trim();
+
+      const isIntegerType = normControlType === 'number' || normDataType === 'int' || normDataType === 'integer';
+      const isDecimalType = normDataType === 'decimal' || normDataType === 'float' || normDataType === 'double' || normDataType === 'number';
+      const isDateTimeType = normDataType === 'datetime' || normDataType === 'date' || normDataType === 'timestamp' || normControlType === 'calendar' || normControlType === 'date';
+      const isBooleanType = normControlType === 'checkbox' || normControlType === 'toggle' || normDataType === 'boolean' || normDataType === 'bool';
+
+      if (isIntegerType && !/^-?\d+$/.test(trimmed)) {
+        newErrors.value = t('messages.invalidInteger') || 'Please enter a valid integer';
+      } else if (isDecimalType && (isNaN(Number(trimmed)) || !/^-?\d+(\.\d+)?$/.test(trimmed))) {
+        newErrors.value = t('messages.invalidDecimal') || 'Please enter a valid decimal number';
+      } else if (isDateTimeType && !DateUtils.isValidDateTime(trimmed)) {
+        newErrors.value =
+          t('messages.invalidDateTime') ||
+          'Please enter a valid date and time (year from current year onwards)';
+      } else if (isBooleanType && trimmed !== 'true' && trimmed !== 'false') {
+        newErrors.value = t('messages.invalidBoolean') || 'Please select a valid boolean (True/False)';
       }
     }
 

@@ -54,7 +54,8 @@ export function ConfigItemRow({ item, searchTerm = '' }: ConfigItemRowProps) {
         'group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl border transition-all duration-300 gap-3 overflow-visible h-full',
         item.isEnabled
           ? 'bg-white border-emerald-100/80 shadow-sm hover:shadow-md hover:border-emerald-200'
-          : 'bg-slate-50/50 border-slate-200/60 shadow-none opacity-80 hover:opacity-100'
+          : 'bg-slate-50/50 border-slate-200/60 shadow-none opacity-80 hover:opacity-100',
+        isPending && 'pointer-events-none'
       )}
     >
       <div className="flex flex-col gap-2.5 flex-1 min-w-0">
@@ -133,33 +134,35 @@ export function ConfigItemRow({ item, searchTerm = '' }: ConfigItemRowProps) {
       </div>
 
       {/* Footer / Action Area */}
-      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 mt-auto relative">
-        <ConfigItemActions
-          id={item.id}
-          configKeyId={item.configKeyId}
-          isEnabled={item.isEnabled}
-        />
-
-        {showToggle && (
-          <div className="flex items-center justify-center shrink-0">
-            <ToggleSwitch
-              checked={item.isEnabled}
-              onChange={handleToggle}
-              showPopup={false}
-              disabled={isPending}
-            />
-          </div>
-        )}
-
-        {isPending && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/90 rounded-lg">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100">
-              <Loader2 className="w-4 h-4 text-indigo-600 animate-spin" />
-              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest animate-pulse">
+      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 mt-auto min-h-[44px]">
+        {isPending ? (
+          <div className="w-full flex items-center justify-center py-0.5">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100/80 shadow-2xs">
+              <Loader2 className="w-4 h-4 text-indigo-600 animate-spin shrink-0" />
+              <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider animate-pulse">
                 {t('messages.savingConfig') || 'Saving...'}
               </span>
             </div>
           </div>
+        ) : (
+          <>
+            <ConfigItemActions
+              id={item.id}
+              configKeyId={item.configKeyId}
+              isEnabled={item.isEnabled}
+            />
+
+            {showToggle && (
+              <div className="flex items-center justify-center shrink-0">
+                <ToggleSwitch
+                  checked={item.isEnabled}
+                  onChange={handleToggle}
+                  showPopup={false}
+                  disabled={isPending}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </Card>

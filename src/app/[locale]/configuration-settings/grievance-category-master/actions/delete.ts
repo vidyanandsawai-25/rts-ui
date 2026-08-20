@@ -33,7 +33,7 @@ export async function deleteGrievanceCategoryAction(
     // Pass userId for audit trail and permission verification
     logger.info('Deleting grievance category', { id, userId, locale });
 
-    const response = await deleteGrievanceCategory(id);
+    const response = await deleteGrievanceCategory(id, userId);
     if (response.success) {
       logger.info('Successfully deleted grievance category', { id, userId });
 
