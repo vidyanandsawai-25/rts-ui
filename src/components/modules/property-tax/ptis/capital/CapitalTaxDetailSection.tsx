@@ -59,10 +59,10 @@ export async function CapitalTaxDetailsSection({
   return (
     <div className="space-y-0.5 p-0.5">
       {showInlineError && finalErrorMessage && (
-        <ToastNotifier message={finalErrorMessage} type="error" />
+        <ToastNotifier id="capital-error" message={finalErrorMessage} type="error" />
       )}
       {showInlineError && taxDetailsError && (
-        <ToastNotifier message={taxDetailsError} type="error" />
+        <ToastNotifier id="capital-tax-error" message={taxDetailsError} type="error" />
       )}
       {showInlineError && warningMessage && (
         <ToastNotifier message={warningMessage} type="warning" />

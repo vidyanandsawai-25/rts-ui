@@ -88,7 +88,7 @@ export function PtisValuationSections({
           locale={locale}
           initialTaxDetails={rateableTaxDetails}
           taxDetailsError={rateableTaxError}
-          showInlineError={false}
+          showInlineError={true}
         />
       ) : null,
     dualCapitalSection:
@@ -104,7 +104,7 @@ export function PtisValuationSections({
           locale={locale}
           initialTaxDetails={capitalTaxDetails}
           taxDetailsError={capitalTaxError}
-          showInlineError={false}
+          showInlineError={true}
         />
       ) : null,
   };

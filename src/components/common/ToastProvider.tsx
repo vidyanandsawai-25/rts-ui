@@ -53,13 +53,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-const shownToasts = new Set<string>();
-
 /**
  * SSR-Friendly Notifier.
  * Since Server Components cannot call hooks or trigger side effects, they can render
  * this component with a message prop. This component, being a client component,
- * will trigger a sonner toast on mount.
+ * will trigger a sonner toast on mount (e.g. whenever section is rendered or tab is clicked).
  */
 export function ToastNotifier({ 
   message, 
@@ -70,15 +68,13 @@ export function ToastNotifier({
   type?: ToastType;
   id?: string;
 }) {
-  const triggeredMessage = React.useRef<string | null>(null);
+  const triggeredKeyRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
-    // Use an explicit ID if provided, otherwise fallback to the message itself.
-    // This allows unique errors to be shown once per session, preventing 
-    // duplicate firing on tab re-mounts or hydration.
-    const toastId = id || message;
+    const key = id ? `${id}:${message}` : message;
 
-    if (message && !shownToasts.has(toastId)) {
+    if (message && triggeredKeyRef.current !== key) {
+      triggeredKeyRef.current = key;
       const toastFn = 
         type === 'success' ? sonnerToast.success : 
         type === 'error' ? sonnerToast.error : 
@@ -86,8 +82,6 @@ export function ToastNotifier({
         sonnerToast.info;
       
       toastFn(message);
-      shownToasts.add(toastId);
-      triggeredMessage.current = message;
     }
   }, [message, type, id]);
 

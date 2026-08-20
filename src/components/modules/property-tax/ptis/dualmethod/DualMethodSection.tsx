@@ -87,7 +87,7 @@ export const DualMethodSection: React.FC<DualMethodSectionProps> = ({
         retainTotalTax={retainTotalTax}
       />
 
-      {finalErrorMessage && <ToastNotifier message={finalErrorMessage} />}
+      {finalErrorMessage && <ToastNotifier id="dual-error" message={finalErrorMessage} type="error" />}
 
       <DualMethodComparisonTable locale={locale} dualMethodData={initialDualMethodData} />
 

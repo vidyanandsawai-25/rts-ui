@@ -126,6 +126,10 @@ class ApiClient {
   }
 
   private extractErrorMessage(errBody: unknown, statusText: string): string {
+    if (typeof errBody === 'string' && errBody.trim()) {
+      return errBody.trim();
+    }
+
     const body = errBody as Record<string, unknown> | null | undefined;
 
     // First check for specific error messages in the errors object (e.g., validation errors)
@@ -149,8 +153,27 @@ class ApiClient {
       }
     }
 
+    if (Array.isArray(body?.errors) && body.errors.length > 0) {
+      const firstErr = body.errors[0];
+      if (typeof firstErr === 'string' && firstErr.trim()) return firstErr.trim();
+      if (typeof firstErr === 'object' && firstErr !== null && 'message' in firstErr) {
+        const msg = (firstErr as { message?: string }).message;
+        if (msg?.trim()) return msg.trim();
+      }
+    }
+
     // Fall back to standard error message fields
-    const candidates = [body?.message, body?.error, body?.title, body?.detail, statusText];
+    const candidates = [
+      body?.message,
+      body?.error,
+      body?.errorMessage,
+      body?.detail,
+      body?.title,
+      body?.ExceptionMessage,
+      body?.exceptionMessage,
+      body?.messageDetail,
+      statusText,
+    ];
     for (const c of candidates) {
       if (typeof c === 'string' && c.trim()) return c.trim();
     }
