@@ -181,10 +181,10 @@ export async function searchCitizenMisApplicationsAction(
         const localMappedItems: RtsMisDashboardUserApplicationItem[] =
           localResponse.applications.map((app) => ({
             applicationNo: app.applicationNo,
-            serviceName: app.serviceName || "RTS Service",
-            status: app.applicationStatus || "Pending",
+            serviceName: app.serviceName || "",
+            status: app.applicationStatus || "Submitted",
             submittedDate: app.createdDate ? new Date(app.createdDate).toISOString().split('T')[0] : "",
-            sla: 7,
+            sla: Number(app.sla) || 0,
           }));
         return { success: true, items: localMappedItems };
       }
@@ -206,21 +206,21 @@ export async function searchCitizenMisApplicationsAction(
         if (appRes.applications && appRes.applications.length > 0) {
           const mapped: RtsMisDashboardUserApplicationItem[] = appRes.applications.map((app) => ({
             applicationNo: app.applicationNo,
-            serviceName: app.serviceName || receipt.serviceName || "RTS Service",
+            serviceName: app.serviceName || receipt.serviceName || "",
             serviceNameLocal: receipt.serviceNameLocal,
             status: app.applicationStatus || "Fee Paid",
             submittedDate: app.createdDate ? new Date(app.createdDate).toISOString().split('T')[0] : "",
-            sla: 7,
+            sla: Number(app.sla) || 0,
           }));
           return { success: true, items: mapped };
         } else {
           const fallbackItem: RtsMisDashboardUserApplicationItem = {
             applicationNo: receipt.applicationNo,
-            serviceName: receipt.serviceName || "RTS Service",
+            serviceName: receipt.serviceName || "",
             serviceNameLocal: receipt.serviceNameLocal,
             status: "Fee Paid",
             submittedDate: receipt.paymentDate ? new Date(receipt.paymentDate).toISOString().split('T')[0] : "",
-            sla: 7,
+            sla: 0,
           };
           return {
             success: true,
