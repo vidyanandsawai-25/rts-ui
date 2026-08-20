@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, Search, User, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -26,6 +26,7 @@ import { CreditCard, Receipt, ShieldCheck } from "lucide-react";
 type ApplicationAndTrackingDrawerProps = {
   open: boolean;
   onClose: () => void;
+  initialSearchValue?: string;
 };
 
 type StageVisual = "approved" | "rejected" | "current" | "pending";
@@ -179,6 +180,7 @@ function progressPercentage(detail: RtsApplicationDetailData): number {
 export default function ApplicationAndTrackingDrawer({
   open,
   onClose,
+  initialSearchValue,
 }: ApplicationAndTrackingDrawerProps) {
   const t = useTranslations("rts.citizenHeader");
   const [applications, setApplications] = useState<RtsMisDashboardUserApplicationItem[]>([]);
@@ -195,6 +197,37 @@ export default function ApplicationAndTrackingDrawer({
   } | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
+
+  useEffect(() => {
+    if (open && initialSearchValue && initialSearchValue.trim()) {
+      const val = initialSearchValue.trim();
+      setSearchValue(val);
+      setApplications([]);
+      setSelectedApplication(null);
+      setDetail(null);
+      setPaymentInfo(null);
+      setError("");
+      setLoading(true);
+
+      void (async () => {
+        try {
+          const response = await searchCitizenMisApplicationsAction(val);
+          if (!response || !response.success || response.items.length === 0) {
+            setError(COPY.noApplication);
+            return;
+          }
+          setApplications(response.items);
+          if (response.items.length === 1) {
+            void selectApplication(response.items[0]);
+          }
+        } catch {
+          setError(COPY.unableToLoadApplications);
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }
+  }, [open, initialSearchValue]);
 
   const searchApplications = async () => {
     const normalizedSearchValue = searchValue.trim();
