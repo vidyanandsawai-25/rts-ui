@@ -126,6 +126,7 @@ export function isCardInvalid(
 
 /**
  * Gets a localized name/label for a social attribute code and name using next-intl translations.
+ * Prioritizes dynamic DB attribute names when provided, while respecting non-English (Hindi/Marathi) translations.
  */
 export function getLocalizedName(
     code: string | undefined | null,
@@ -135,7 +136,8 @@ export function getLocalizedName(
         has?: (key: string) => boolean;
     }
 ): string {
-    const rawName = name || code || "";
+    const trimmedName = name?.trim();
+    const rawName = trimmedName || code || "";
     if (!t) return rawName;
 
     const tryTranslate = (key: string): string | null => {
@@ -157,28 +159,33 @@ export function getLocalizedName(
         return null;
     };
 
+    let translated: string | null = null;
     if (code) {
-        // 1. Direct code lookup
-        let translated = tryTranslate(code);
-        if (translated !== null) return translated;
-
-        // 2. Uppercase code lookup
-        translated = tryTranslate(code.toUpperCase());
-        if (translated !== null) return translated;
+        translated = tryTranslate(code) || tryTranslate(code.toUpperCase());
     }
 
-    if (name) {
-        // 3. Sanitized name lookup
-        const sanitized = name
+    if (!translated && trimmedName) {
+        const sanitized = trimmedName
             .toUpperCase()
             .replace(/[^A-Z0-9]/g, "_")
             .replace(/_+/g, "_")
             .replace(/^_+|_+$/g, "");
-        
-        const translated = tryTranslate(sanitized);
-        if (translated !== null) return translated;
+        translated = tryTranslate(sanitized);
     }
 
-    return rawName;
+    if (translated !== null) {
+        // If a non-English (Hindi/Marathi Devanagari range) translation is present, use it for i18n
+        const isNonEnglishLocale = /[\u0900-\u097F]/.test(translated);
+        if (isNonEnglishLocale) {
+            return translated;
+        }
+    }
+
+    // When dynamic DB name is provided from API, prefer it over static English dictionary fallbacks
+    if (trimmedName) {
+        return trimmedName;
+    }
+
+    return translated || rawName;
 }
 

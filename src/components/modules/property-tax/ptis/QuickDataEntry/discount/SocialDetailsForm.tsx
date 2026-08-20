@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { SaveButton } from "@/components/common";
 import { useSocialDetailsForm } from "@/hooks/useSocialDetailsForm";
 import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
 import { useTranslations } from "next-intl";
@@ -226,6 +225,8 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                             }
                         }}
                         isSaving={isSaving}
+                        hasChanges={hasChanges}
+                        onSave={handleSaveClick}
                         validationErrors={validationErrors}
                         isAttributeEnabled={isAttributeEnabled}
                         t={t as unknown as {
@@ -234,16 +235,6 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                         }}
                     />
                 </div>
-            </div>
-
-            {/* Fixed Save Button - bottom right */}
-            <div className="fixed bottom-4 right-6 z-50">
-                <SaveButton
-                    onClick={handleSaveClick}
-                    disabled={!hasChanges || isSaving}
-                    isLoading={isSaving}
-                    label={t("common.saveChanges") || "Save Changes"}
-                />
             </div>
         </div>
     );

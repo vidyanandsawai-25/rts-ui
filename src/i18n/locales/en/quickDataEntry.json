@@ -1261,6 +1261,8 @@
         "confirmDeleteOk": "Yes, Delete",
         "confirmDeleteCancel": "No, Cancel",
         "uploadInvalidFile": "Invalid file type or size. Only PDF, PNG, and JPG under 5MB are allowed.",
+        "uploadInvalidPhoto": "Invalid file type or size. Only PNG and JPG under 5MB are allowed.",
+        "allowedImageFormats": "PNG, JPG (Max 5MB)",
         "fileRemoved": "File removed from attachment",
         "saveSuccess": "Discount details saved successfully!",
         "saveError": "Error saving discount details",

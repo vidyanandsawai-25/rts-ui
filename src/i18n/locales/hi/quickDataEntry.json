@@ -1250,6 +1250,8 @@
     "confirmDeleteOk": "हाँ, हटाएं",
     "confirmDeleteCancel": "नहीं, रद्द करें",
     "uploadInvalidFile": "अमान्य फ़ाइल प्रकार या आकार। केवल 5MB से कम आकार की PDF, PNG और JPG फ़ाइलें ही मान्य हैं।",
+    "uploadInvalidPhoto": "अमान्य फ़ाइल प्रकार या आकार। केवल 5MB से कम आकार की PNG और JPG फ़ाइलें ही मान्य हैं।",
+    "allowedImageFormats": "PNG, JPG (अधिकतम 5MB)",
     "fileRemoved": "फ़ाइल अटैचमेंट से हटा दी गई।",
     "uploading": "दस्तावेज़ अपलोड हो रहा है...",
     "documentUploaded": "दस्तावेज़ अपलोड हो चुका है।",

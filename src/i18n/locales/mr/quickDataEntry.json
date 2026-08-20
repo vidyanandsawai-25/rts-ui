@@ -1252,6 +1252,8 @@
     "confirmDeleteOk": "होय, काढा",
     "confirmDeleteCancel": "नाही, रद्द करा",
     "uploadInvalidFile": "अवैध फाईल प्रकार किंवा आकार. फक्त 5MB पेक्षा कमी आकाराच्या PDF, PNG आणि JPG फाईल्सना परवानगी आहे।",
+    "uploadInvalidPhoto": "अवैध फाईल प्रकार किंवा आकार. फक्त 5MB पेक्षा कमी आकाराच्या PNG आणि JPG फाईल्सना परवानगी आहे।",
+    "allowedImageFormats": "PNG, JPG (कमाल 5MB)",
     "fileRemoved": "फाईल अटॅचमेंटमधून काढून टाकली.",
     "uploading": "कागदपत्र अपलोड होत आहे...",
     "documentUploaded": "कागदपत्र अपलोड झाले",

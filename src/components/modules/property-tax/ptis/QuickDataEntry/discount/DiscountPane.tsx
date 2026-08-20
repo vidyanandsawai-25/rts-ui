@@ -25,6 +25,8 @@ interface DiscountPaneProps {
     handleFileDelete: (id: number) => void;
     handleDeleteDiscount: (id: number) => void;
     isSaving: boolean;
+    hasChanges?: boolean;
+    onSave?: () => void;
 
     t: {
         (key: string, values?: Record<string, string | number | Date>): string;
@@ -51,6 +53,8 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
     handleFileDelete,
     handleDeleteDiscount,
     isSaving,
+    hasChanges,
+    onSave,
 
     t
 }) => {
@@ -113,6 +117,8 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                             }
                         }}
                         isSaving={isSaving}
+                        hasChanges={hasChanges}
+                        onSave={onSave}
                         validationError={activeSelectedId !== null ? validationErrors[activeSelectedId] : undefined}
                         t={t}
                     />

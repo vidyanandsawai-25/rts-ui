@@ -95,9 +95,16 @@ export async function handleActionError<T>(
 ): Promise<ApiResponse<T>> {
     const loc = locale || await getLocaleFromHeaders();
     const t = await getTranslations({ locale: loc, namespace });
-    const msg = error instanceof Error ? error.message : (t(fallbackKey) || "An error occurred");
+    const rawMsg = error instanceof Error ? error.message : (typeof error === "string" ? error : (t(fallbackKey) || "An error occurred"));
     const cleanFn = cleanErrorFn || cleanCommonApiError;
-    return { success: false, error: await cleanFn(msg, loc, namespace) };
+    const cleanedMessage = await cleanFn(rawMsg, loc, namespace);
+    const statusCode = (error as { statusCode?: number })?.statusCode || 500;
+    return {
+        success: false,
+        error: cleanedMessage,
+        message: cleanedMessage,
+        statusCode
+    };
 }
 
 /**

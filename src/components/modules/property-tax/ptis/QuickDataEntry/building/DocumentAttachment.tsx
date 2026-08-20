@@ -25,11 +25,12 @@ interface DocumentAttachmentProps {
     t: (key: string) => string;
     label?: string;
     pendingFile?: File;
+    allowedFormats?: string;
 }
 
 export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
     documentGuid, fileName, hasDocumentBinding, isUploading, isDeleting, isDisabled,
-    isDocumentInvalid, documentError, onFileUpload, onFileDelete, t, label, pendingFile
+    isDocumentInvalid, documentError, onFileUpload, onFileDelete, t, label, pendingFile, allowedFormats
 }) => {
     const locale = useLocale();
     const [isViewing, setIsViewing] = React.useState(false);
@@ -77,7 +78,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
     };
 
     if (!documentGuid && !hasDocumentBinding && !pendingFile) {
-        return <UploadDropzone isDisabled={isDisabled} isUploading={isUploading} isDocumentInvalid={isDocumentInvalid} documentError={documentError} onFileUpload={onFileUpload} t={t} />;
+        return <UploadDropzone isDisabled={isDisabled} isUploading={isUploading} isDocumentInvalid={isDocumentInvalid} documentError={documentError} onFileUpload={onFileUpload} t={t} allowedFormats={allowedFormats} />;
     }
 
     if (!documentGuid && hasDocumentBinding && !pendingFile) {
@@ -142,6 +143,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
                     <span>{isUploading ? t("building.uploading") || "Uploading..." : t("building.replaceDocument") || "Replace File"}</span>
                     <input
                         type="file" className="hidden" disabled={isDisabled || isAnyActionRunning}
+                        accept={allowedFormats ? (allowedFormats.includes("PDF") ? ".pdf,.png,.jpg,.jpeg" : ".png,.jpg,.jpeg") : undefined}
                         onChange={(e) => {
                             const file = e.target.files?.[0] || null;
                             if (file) {

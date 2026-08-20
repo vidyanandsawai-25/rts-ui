@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Tabs, SaveButton } from "@/components/common";
+import { Tabs } from "@/components/common";
 import { useTranslations } from "next-intl";
 import { useDiscountForm } from "@/hooks/useDiscountForm";
 import { DiscountPane } from "./DiscountPane";
@@ -202,6 +202,8 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                     handleFileDelete={handleFileDelete}
                     handleDeleteDiscount={handleDeleteDiscount}
                     isSaving={isSaving}
+                    hasChanges={hasChanges}
+                    onSave={handleSaveClick}
                     t={t}
                 />
             </Tabs.TabPanel>
@@ -214,18 +216,6 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                 />
             </Tabs.TabPanel>
         </Tabs>
-
-        {/* Fixed Save Button - bottom right */}
-        {activeTab === "discount" && (
-            <div className="fixed bottom-4 right-6 z-50">
-                <SaveButton
-                    onClick={handleSaveClick}
-                    disabled={!hasChanges || isSaving}
-                    isLoading={isSaving}
-                    label={t("common.saveChanges") || "Save Changes"}
-                />
-            </div>
-        )}
         </>
     );
 };

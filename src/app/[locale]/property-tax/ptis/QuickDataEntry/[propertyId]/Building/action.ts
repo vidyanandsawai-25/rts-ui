@@ -172,13 +172,15 @@ export async function saveBuildingPermissionsAction(
       const certId = initialCert?.propertyCertificateId;
       const file = formData.get(`file_${cert.certificateTypeId}`) as File | null;
 
-      if (!file && (cert.markedForDeletion || !cert.isEnabled || !cert.existingDocumentGuid)) {
+      if (cert.markedForDeletion || !cert.isEnabled) {
         if (certId) {
           deleteTasks.push(deletePropertyCertificate(Number(propertyId), cert.certificateTypeId, cert.propertyDetailsId ?? null));
           continue;
         } else if (oldGuid) {
           deleteTasks.push(deleteCertificateDocument(oldGuid));
         }
+      } else if (!file && !cert.existingDocumentGuid && oldGuid) {
+        deleteTasks.push(deleteCertificateDocument(oldGuid));
       }
       certificatesToSave.push(cert);
     }
@@ -192,7 +194,14 @@ export async function saveBuildingPermissionsAction(
     if (payload.certificates.length > 0) {
       const response = await bulkSaveCertificates(payload);
       if (!response.success || !response.data?.updatedCertificates) {
-        return { success: false, error: await cleanBuildingApiError(response.error, locale) };
+        const rawErr = response.error || response.message || "An error occurred while saving the certificate";
+        const cleaned = await cleanBuildingApiError(rawErr, locale);
+        return {
+          success: false,
+          error: cleaned,
+          message: cleaned,
+          statusCode: response.statusCode || 500
+        };
       }
 
       // Build a lookup map from the bulk save response to avoid N+1 re-fetches
