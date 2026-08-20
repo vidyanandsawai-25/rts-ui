@@ -8,6 +8,8 @@ import { createConfigValueAction } from '@/app/[locale]/configuration-settings/c
 import { useConfirm } from '@/components/common';
 import type { AddConfigValueModalProps } from '@/types/configMaster.types';
 
+import { DateUtils } from '@/lib/utils/date-helpers';
+
 const initialFormData = {
   configKeyId: '',
   departmentId: '',
@@ -68,6 +70,11 @@ export function useAddConfigValue({
     [filteredConfigItems]
   );
 
+  const selectedConfigKey = useMemo(
+    () => configItems.find((item) => item.configKeyId.toString() === formData.configKeyId),
+    [configItems, formData.configKeyId]
+  );
+
   const handleCategoryChange = (newCategory: string): void => {
     setSelectedCategory(newCategory);
     if (newCategory && newCategory !== 'all' && formData.configKeyId) {
@@ -106,6 +113,19 @@ export function useAddConfigValue({
     if (formData.moduleId && isNaN(parseInt(formData.moduleId))) {
       newErrors.moduleId = t('modals.addValue.form.validation.moduleIdRequired');
     }
+
+    if (selectedConfigKey && formData.value.trim()) {
+      const dataType = (selectedConfigKey.dataType || '').toLowerCase();
+      const controlType = (selectedConfigKey.controlType || '').toLowerCase();
+      if (dataType === 'datetime' || controlType === 'calendar' || controlType === 'date') {
+        if (!DateUtils.isValidDateTime(formData.value)) {
+          newErrors.value =
+            t('messages.invalidDateTime') ||
+            'Please enter a valid date and time (year between 1900 and 2100)';
+        }
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -162,11 +182,6 @@ export function useAddConfigValue({
     setErrors({});
     onClose();
   };
-
-  const selectedConfigKey = useMemo(() => 
-    configItems.find((item) => item.configKeyId.toString() === formData.configKeyId),
-    [configItems, formData.configKeyId]
-  );
 
   return {
     formData,

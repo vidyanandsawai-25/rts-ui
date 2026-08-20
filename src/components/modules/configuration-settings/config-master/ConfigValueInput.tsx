@@ -4,6 +4,7 @@ import { Input, Select, ToggleSwitch } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import type { ConfigItem } from '@/types/configMaster.types';
+import { DateUtils } from '@/lib/utils/date-helpers';
 
 interface ConfigValueInputProps {
   value: string;
@@ -81,11 +82,21 @@ export function ConfigValueInput({
 
   // 3. Calendar/Date
   if (controlType === 'calendar' || controlType === 'date' || dataType === 'datetime') {
+    const isDateTime = dataType === 'datetime' || controlType === 'calendar';
+    const currentYear = new Date().getFullYear();
+    const formattedValue = DateUtils.formatForInput(value, isDateTime);
+
     return (
       <Input
-        type={dataType === 'datetime' ? 'datetime-local' : 'date'}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        ref={inputRef}
+        type={isDateTime ? 'datetime-local' : 'date'}
+        min={isDateTime ? `${currentYear}-01-01T00:00` : `${currentYear}-01-01`}
+        max={isDateTime ? '2100-12-31T23:59' : '2100-12-31'}
+        value={formattedValue || value}
+        onChange={(e) => {
+          const val = e.target.value;
+          onChange(val ? val.replace('T', ' ') : '');
+        }}
         className={cn(error ? 'border-red-500' : '', className)}
         disabled={disabled}
       />

@@ -134,3 +134,26 @@ describe("DateUtils.calculateDurationYearsMonths", () => {
   });
 });
 
+describe("DateUtils.isValidDateTime", () => {
+  it("should return true for valid dates and datetimes from specified minYear onwards", () => {
+    expect(DateUtils.isValidDateTime("2026-08-20T18:14")).toBe(true);
+    expect(DateUtils.isValidDateTime("15-08-2026 10:30")).toBe(true);
+    expect(DateUtils.isValidDateTime("2000-01-01", 1900)).toBe(true);
+    expect(DateUtils.isValidDateTime("01-01-1900 00:00", 1900)).toBe(true);
+  });
+
+  it("should return false for out-of-range years such as 1111", () => {
+    expect(DateUtils.isValidDateTime("11-11-1111 18:14")).toBe(false);
+    expect(DateUtils.isValidDateTime("1111-11-11T18:14")).toBe(false);
+    expect(DateUtils.isValidDateTime("1899-12-31")).toBe(false);
+    expect(DateUtils.isValidDateTime("2101-01-01")).toBe(false);
+  });
+
+  it("should return false for invalid calendar dates and formats", () => {
+    expect(DateUtils.isValidDateTime("31-02-2026 18:14")).toBe(false);
+    expect(DateUtils.isValidDateTime("invalid date")).toBe(false);
+    expect(DateUtils.isValidDateTime(null)).toBe(false);
+    expect(DateUtils.isValidDateTime("")).toBe(false);
+  });
+});
+

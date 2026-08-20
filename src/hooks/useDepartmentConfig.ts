@@ -5,12 +5,15 @@ import { useToast } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { saveDepartmentConfigurationAction } from '@/app/[locale]/configuration-settings/config-master/actions';
 import { DepartmentApiResponse } from '@/types/config-master/entities.types';
+import { DateUtils } from '@/lib/utils/date-helpers';
 
 export function useDepartmentConfig(
   initialData: DepartmentApiResponse[] | null,
   configKeyId: number,
   onSuccess: () => void,
-  defaultValue?: string | number | boolean
+  defaultValue?: string | number | boolean,
+  dataType?: string,
+  controlType?: string
 ) {
   const t = useTranslations('configMaster');
   const { success: toastSuccess, error: toastError } = useToast();
@@ -105,6 +108,37 @@ export function useDepartmentConfig(
     if (!isDirty) {
       onSuccess(); // Just close the modal
       return;
+    }
+
+    const isDateTimeType =
+      (dataType || '').toLowerCase() === 'datetime' ||
+      (controlType || '').toLowerCase() === 'calendar' ||
+      (controlType || '').toLowerCase() === 'date';
+
+    if (isDateTimeType) {
+      for (const dept of departments) {
+        if (dept.submodules.length === 0 && dept.isEnabled && dept.value) {
+          if (!DateUtils.isValidDateTime(dept.value)) {
+            toastError(
+              t('messages.invalidDateTime') ||
+                'Please enter a valid date and time (year between 1900 and 2100)'
+            );
+            return;
+          }
+        }
+        for (const sub of dept.submodules) {
+          const isSubEnabled = dept.isEnabled ? sub.isEnabled : false;
+          if (isSubEnabled && sub.value) {
+            if (!DateUtils.isValidDateTime(sub.value)) {
+              toastError(
+                t('messages.invalidDateTime') ||
+                  `Please enter a valid date and time for ${sub.title} (year between 1900 and 2100)`
+              );
+              return;
+            }
+          }
+        }
+      }
     }
     
     startTransition(async () => {

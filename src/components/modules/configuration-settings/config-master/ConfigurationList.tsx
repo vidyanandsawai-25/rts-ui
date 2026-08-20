@@ -99,7 +99,7 @@ export function ConfigurationList({
       </Card>
 
       {/* Config Items List */}
-      <div className="grid grid-cols-1 gap-2 pb-8 overflow-visible">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-8 overflow-visible">
         {items.map((item) => (
           <ConfigItemRow key={item.id} item={item} searchTerm={searchTerm} locale={locale} />
         ))}

@@ -174,24 +174,11 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
             <div className="space-y-5 overflow-y-auto pr-1">
                 {isDisabled && <DisabledBanner t={t as (key: string) => string} />}
 
-                <div className="pb-3 border-b border-blue-50 flex items-start justify-between gap-4">
-                    <div>
-                        <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
-                            {t("discount.editingDiscount") || "Social Attribute Details"}
-                        </span>
-                        <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
-                    </div>
-                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDisabled && (
-                        <button
-                            type="button"
-                            disabled={isDisabled || isSaving}
-                            onClick={handleDeleteSocialDetailWithConfirm}
-                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            {t("discount.deleteSocialDetail") || "Delete Detail & Data"}
-                        </button>
-                    )}
+                <div className="pb-3 border-b border-blue-50">
+                    <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
+                        {t("discount.editingDiscount") || "Social Attribute Details"}
+                    </span>
+                    <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
                 </div>
 
                 {/* Root value input if applicable */}
