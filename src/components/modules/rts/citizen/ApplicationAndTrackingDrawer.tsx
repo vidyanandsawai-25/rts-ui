@@ -185,7 +185,7 @@ export default function ApplicationAndTrackingDrawer({
   initialSearchValue,
   initialReceiptValue,
 }: ApplicationAndTrackingDrawerProps) {
-  const t = useTranslations("rts.misDashboard");
+  const t = useTranslations("rts.citizenHeader");
   const [searchValue, setSearchValue] = useState("");
   const [applications, setApplications] = useState<RtsMisDashboardUserApplicationItem[]>([]);
   const [selectedApplication, setSelectedApplication] = useState<RtsMisDashboardUserApplicationItem | null>(null);

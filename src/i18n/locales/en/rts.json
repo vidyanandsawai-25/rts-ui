@@ -333,6 +333,11 @@
     "trackingSearchHelpTitle": "How to search",
     "trackingSearchHelp": "Enter a UPIC ID to view linked applications, or an application number to find one specific application."
   },
+  "misDashboard": {
+    "applicationsTitle": "My Applications & Tracking",
+    "trackingSearchHelpTitle": "How to search",
+    "trackingSearchHelp": "Enter a UPIC ID to view linked applications, or an application number to find one specific application."
+  },
   "citizenFooter": {
     "logoAlt": "Municipal corporation logo",
     "description": "Committed to providing time-bound and transparent services under the Maharashtra Right to Public Services Act 2015.",
