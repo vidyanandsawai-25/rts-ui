@@ -666,6 +666,18 @@
       "label": "QC Status",
       "placeholder": "QC Status"
     },
+    "qcRevertModal": {
+      "title": "Confirm QC Revert",
+      "description": "Are you sure you want to revert the QC status?",
+      "confirmText": "Yes",
+      "cancelText": "No"
+    },
+    "statusChangeModal": {
+      "title": "Confirm Status Change",
+      "description": "Are you sure you want to set the status to \"{status}\"?",
+      "confirmText": "Yes",
+      "cancelText": "No"
+    },
     "qcDoneLabel": "QC Done",
     "trackStatus": "Track Status"
   },

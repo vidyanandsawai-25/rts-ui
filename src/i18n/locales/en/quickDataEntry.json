@@ -69,7 +69,8 @@
                 "operationRequired": "Operation is required."
             },
             "roomNoRequired": "Room number is required.",
-            "roomTypeRequired": "Room type is required."
+            "roomTypeRequired": "Room type is required.",
+            "totalExceedsWarning": "The entered width exceeds the standard limit of 20. Please verify the value before continuing. Do you want to proceed anyway?"
         },
         "table": {
             "Subtracttitle": "Subtract from total area",

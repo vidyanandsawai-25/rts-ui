@@ -671,6 +671,18 @@
       "label": "क्यूसी स्थिती",
       "placeholder": "क्यूसी स्थिती"
     },
+    "qcRevertModal": {
+      "title": "क्यूसी रिव्हर्टची पुष्टी करा",
+      "description": "तुम्हाला नक्की क्यूसी स्थिती परत (रिव्हर्ट) करायची आहे का?",
+      "confirmText": "होय",
+      "cancelText": "नाही"
+    },
+    "statusChangeModal": {
+      "title": "स्थिती बदलाची पुष्टी करा",
+      "description": "तुम्हाला नक्की स्थिती \"{status}\" वर सेट करायची आहे का?",
+      "confirmText": "होय",
+      "cancelText": "नाही"
+    },
     "qcDoneLabel": "क्यूसी पूर्ण",
     "trackStatus": "स्थिती ट्रॅक करा"
   },

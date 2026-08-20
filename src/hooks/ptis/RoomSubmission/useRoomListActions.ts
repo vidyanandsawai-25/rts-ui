@@ -22,12 +22,24 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
     areaUnit, setValidationErrors
   } = state;
 
+  const getSafeText = (key: string, fallback: string) => {
+    try {
+      if (typeof t?.has === "function" ? t.has(key) : true) {
+        const val = t(key);
+        return val || fallback;
+      }
+      return fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
   const warning = (msg: string) => {
     confirm({
       variant: "warning",
-      title: t("common.warning") || "Warning",
+      title: getSafeText("common.warning", "Warning"),
       description: msg,
-      confirmText: t("common.ok") || "OK",
+      confirmText: getSafeText("common.ok", "OK"),
       onConfirm: () => { },
     });
   };
@@ -133,19 +145,42 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
       return updated;
     };
 
-    const updated = getUpdatedRooms(rooms);
-    const nextEmptyIdx = updated.findIndex((r) => {
-      return !(Number(r.area || 0) > 0 && r.shape && r.shape !== "-Select-");
-    });
+    const executeAdd = () => {
+      const updated = getUpdatedRooms(rooms);
+      const nextEmptyIdx = updated.findIndex((r) => {
+        return !(Number(r.area || 0) > 0 && r.shape && r.shape !== "-Select-");
+      });
 
-    startTransition(() => {
-      setRooms(() => updated);
-      if (nextEmptyIdx !== -1 && handleEdit) {
-        handleEdit(nextEmptyIdx, updated[nextEmptyIdx]);
-      } else {
-        handleCancelEdit();
-      }
-    });
+      startTransition(() => {
+        setRooms(() => updated);
+        if (nextEmptyIdx !== -1 && handleEdit) {
+          handleEdit(nextEmptyIdx, updated[nextEmptyIdx]);
+        } else {
+          handleCancelEdit();
+        }
+      });
+    };
+
+    if (computed.carpetArea > 20) {
+      const hasWarningKey = typeof t?.has === "function" ? t.has("roomSubmission.validation.totalExceedsWarning") : true;
+      const descriptionText = hasWarningKey
+        ? t("roomSubmission.validation.totalExceedsWarning", { total: computed.carpetArea.toFixed(2) })
+        : "The entered width exceeds the standard limit of 20. Please verify the value before continuing. Do you want to proceed anyway?";
+
+      confirm({
+        variant: "warning",
+        title: getSafeText("common.warning", "Warning"),
+        description: descriptionText,
+        confirmText: getSafeText("roomSubmission.confirmSave.confirmBtn", getSafeText("common.confirm", "Proceed")),
+        cancelText: getSafeText("roomSubmission.confirmSave.cancelBtn", getSafeText("common.cancel", "Cancel")),
+        onConfirm: () => {
+          executeAdd();
+        },
+      });
+      return;
+    }
+
+    executeAdd();
   };
 
   const handleUpdateRoom = () => {
@@ -230,7 +265,7 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
       return updated;
     };
 
-    const performUpdate = () => {
+    const executeUpdate = () => {
       const updated = getUpdatedRooms(rooms);
       const nextEmptyIdx = updated.findIndex((r) => {
         return !(Number(r.area || 0) > 0 && r.shape && r.shape !== "-Select-");
@@ -244,6 +279,28 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
           handleCancelEdit();
         }
       });
+    };
+
+    const performUpdate = () => {
+      if (computed.carpetArea > 20) {
+        const hasWarningKey = typeof t?.has === "function" ? t.has("roomSubmission.validation.totalExceedsWarning") : true;
+        const descriptionText = hasWarningKey
+          ? t("roomSubmission.validation.totalExceedsWarning", { total: computed.carpetArea.toFixed(2) })
+          : "The entered width exceeds the standard limit of 20. Please verify the value before continuing. Do you want to proceed anyway?";
+
+        confirm({
+          variant: "warning",
+          title: getSafeText("common.warning", "Warning"),
+          description: descriptionText,
+          confirmText: getSafeText("roomSubmission.confirmSave.confirmBtn", getSafeText("common.confirm", "Proceed")),
+          cancelText: getSafeText("roomSubmission.confirmSave.cancelBtn", getSafeText("common.cancel", "Cancel")),
+          onConfirm: () => {
+            executeUpdate();
+          },
+        });
+        return;
+      }
+      executeUpdate();
     };
 
     const { pendingDeletions, setPendingDeletions } = state;
