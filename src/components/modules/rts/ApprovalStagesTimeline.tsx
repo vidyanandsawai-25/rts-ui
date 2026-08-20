@@ -55,6 +55,10 @@ function isCorrectionRequiredStatus(status: string): boolean {
   );
 }
 
+function isPaymentStatus(status: string): boolean {
+  return status.includes('payment');
+}
+
 function getStageVisualState(
   stage: StageItem,
   index: number,
@@ -69,6 +73,7 @@ function getStageVisualState(
   if (terminalStageIndex >= 0 && index > terminalStageIndex) return 'pending';
   if (status.includes('reject')) return 'rejected';
   if (status.includes('return') || status.includes('revert')) return 'returned';
+  if (isPaymentStatus(status)) return 'current';
   if (status.includes('in progress')) return 'current';
   if (isCorrectionRequiredStatus(status)) {
     return !allCompleted && index === activeIndex ? 'current' : 'pending';
@@ -160,6 +165,7 @@ export function ApprovalStagesTimeline({
         const isCurrent = visualState === 'current';
         const isRejected = visualState === 'rejected';
         const isReturned = visualState === 'returned';
+        const isPaymentStage = isCurrent && isPaymentStatus(getNormalizedStatus(stage));
         const stageKey = String(stage.id || idx);
         const isExpanded = Boolean(expandedStages[stageKey]);
         const displayName = cleanStageName(stage.stageName);
@@ -225,7 +231,9 @@ export function ApprovalStagesTimeline({
             <div
               className={`${idx < stages.length - 1 ? 'mb-2' : ''} flex-1 rounded-xl border text-xs transition-all ${
                 isCurrent
-                  ? 'border-amber-300 bg-amber-50/40 shadow-sm'
+                  ? isPaymentStage
+                    ? 'border-lime-300 bg-lime-50/60 shadow-sm'
+                    : 'border-amber-300 bg-amber-50/40 shadow-sm'
                   : isRejected
                     ? 'border-rose-200 bg-rose-50/60 shadow-sm'
                     : isReturned

@@ -7,7 +7,7 @@ import type {
 } from '@/types/rts/rtsmisdashboard.types';
 
 const RTS_MIS_DASHBOARD_URL =
-  'https://onesolutionakola.tabamc.in/PropertyTaxMicroservice/PropertyTaxApi/AapleSarkar/GetMISDashboardData';
+  `${process.env.RTS_MIS_DASHBOARD_BASE_URL}/PropertyTaxMicroservice/PropertyTaxApi/AapleSarkar/GetMISDashboardData`;
 
 export async function getRtsMisDashboardData(
   payload: RtsMisDashboardRequestInput = {}

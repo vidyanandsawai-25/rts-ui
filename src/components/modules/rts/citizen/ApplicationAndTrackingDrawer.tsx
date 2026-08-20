@@ -60,6 +60,10 @@ function isTerminalStage(stage: RtsApplicationApprovalStage): boolean {
   return status.includes("reject") || status.includes("return") || status.includes("revert");
 }
 
+function isPaymentStage(stage: RtsApplicationApprovalStage): boolean {
+  return (stage.status?.trim().toLowerCase() ?? "").includes("payment");
+}
+
 function statusVisual(
   stage: RtsApplicationApprovalStage,
   index: number,
@@ -70,6 +74,7 @@ function statusVisual(
   // A terminal decision stops visual progression even if the API flags a later stage as current.
   if (terminalStageIndex >= 0 && index > terminalStageIndex) return "pending";
   if (status.includes("reject")) return "rejected";
+  if (isPaymentStage(stage)) return "current";
   if (status.includes("approved") || status.includes("verified") || status.includes("completed")) {
     return "approved";
   }
@@ -463,6 +468,7 @@ export default function ApplicationAndTrackingDrawer({
                 {stages.map((stage, index) => {
                   const visual = statusVisual(stage, index, terminalStageIndex);
                   const styles = stageStyle(visual);
+                  const hasPaymentStatus = visual === "current" && isPaymentStage(stage);
                   const stageTimestamp = formatStageTimestamp(stage.createdDate ?? stage.completedDate);
                   const officerName = [stage.firstName, stage.lastName].filter(Boolean).join(" ") || stage.userName || stage.assignedToName || "-";
 
@@ -472,7 +478,7 @@ export default function ApplicationAndTrackingDrawer({
                         {visual === "approved" ? <CheckCircle2 className="h-4 w-4" /> : visual === "rejected" ? <XCircle className="h-4 w-4" /> : stage.stageOrder}
                       </div>
                       {index < stages.length - 1 && <div className={`absolute left-[13px] top-7 h-[calc(100%-12px)] w-0.5 ${styles.connector}`} />}
-                      <article className={`rounded-lg border-2 px-4 py-3 shadow-sm ${styles.card}`}>
+                      <article className={`rounded-lg border-2 px-4 py-3 shadow-sm ${hasPaymentStatus ? "border-lime-300 bg-lime-50/60" : styles.card}`}>
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <h5 className="font-medium text-slate-800">{stage.stageName}</h5>
