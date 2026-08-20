@@ -21,7 +21,6 @@ export function useWards(
       return;
     }
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetchWards(id)
       .then((w) => { if (!cancelled) setWards(w); })
@@ -49,7 +48,6 @@ export function useProperties(
       return;
     }
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetchProperties(id)
       .then((p) => { if (!cancelled) setProperties(p); })

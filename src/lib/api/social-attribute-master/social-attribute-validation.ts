@@ -24,6 +24,13 @@ export function validateSocialAttributeForm(data: SocialAttributeFormModel, isEd
   if (!code) {
     throw new ApiError(400, 'Social attribute code is required', 'Validation failed');
   }
+  if (code.length < 3) {
+    throw new ApiError(
+      400,
+      'Social attribute code must be at least 3 characters',
+      'Validation failed'
+    );
+  }
   if (code.length > 50) {
     throw new ApiError(
       400,

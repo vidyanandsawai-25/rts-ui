@@ -11,6 +11,7 @@ interface UploadDropzoneProps {
     documentError?: string;
     onFileUpload: (file: File) => void;
     t: (key: string) => string;
+    allowedFormats?: string;
 }
 
 export const UploadDropzone: React.FC<UploadDropzoneProps> = ({
@@ -20,6 +21,7 @@ export const UploadDropzone: React.FC<UploadDropzoneProps> = ({
     documentError,
     onFileUpload,
     t,
+    allowedFormats,
 }) => {
     return (
         <div className="space-y-1.5 w-full">
@@ -47,11 +49,12 @@ export const UploadDropzone: React.FC<UploadDropzoneProps> = ({
                 <span className={`text-sm font-bold block mb-1 ${isDocumentInvalid ? "text-red-900" : "text-blue-900"}`}>
                     {isUploading ? t("building.uploading") || "Uploading file..." : t("building.dragAndDrop") || "Click to select or drag & drop"}
                 </span>
-                <span className="text-xs text-gray-400 font-semibold">{t("building.allowedFormats") || "PDF, PNG, JPG (Max 5MB)"}</span>
+                <span className="text-xs text-gray-400 font-semibold">{allowedFormats || t("building.allowedFormats") || "PDF, PNG, JPG (Max 5MB)"}</span>
                 <input
                     type="file"
                     className="hidden"
                     disabled={isDisabled || isUploading}
+                    accept={allowedFormats ? (allowedFormats.includes("PDF") ? ".pdf,.png,.jpg,.jpeg" : ".png,.jpg,.jpeg") : undefined}
                     onChange={(e) => {
                         const file = e.target.files?.[0] || null;
                         if (file) {

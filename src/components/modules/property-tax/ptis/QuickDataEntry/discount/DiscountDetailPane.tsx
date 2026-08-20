@@ -2,26 +2,27 @@
 
 import React from "react";
 import { AlertCircle, Trash2 } from "lucide-react";
-import { Label, TextArea } from "@/components/common";
+import { Label, TextArea, SaveButton } from "@/components/common";
 import { DiscountAttributeState } from "@/types/discount.types";
 import { DocumentAttachment } from "../building/DocumentAttachment";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { DiscountValueInput } from "./DiscountValueInput";
 import { getLocalizedName } from "@/lib/utils/social-details";
 
-
 interface DiscountDetailPaneProps {
     data: DiscountAttributeState | null | undefined;
     onInputChange: (field: "intValue" | "decimalValue" | "textValue" | "dateValue" | "remark", value: string) => void;
     onFileUpload: (file: File) => void;
-    onFileDelete: () => void;
+    onFileDelete?: () => void;
+    onDeleteDiscount?: () => void;
     validationError?: string;
+    isSaving?: boolean;
+    hasChanges?: boolean;
+    onSave?: () => void;
     t: {
-        (key: string, values?: Record<string, string | number>): string;
+        (key: string, values?: Record<string, string | number | Date>): string;
         has?: (key: string) => boolean;
     };
-    onDeleteDiscount?: () => void;
-    isSaving?: boolean;
 }
 
 export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
@@ -29,14 +30,24 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     onInputChange,
     onFileUpload,
     onFileDelete,
-    validationError,
-    t,
     onDeleteDiscount,
+    validationError,
     isSaving = false,
+    hasChanges = false,
+    onSave,
+    t,
 }) => {
     const { confirm } = useConfirm();
     const isActiveDiscount = (item: DiscountAttributeState) =>
         item.dataType.toUpperCase() === "BIT" ? item.bitValue === true : item.enabled;
+
+    const displayName = data
+        ? getLocalizedName(
+            data.socialAttributeCode,
+            data.socialAttributeName,
+            t as unknown as Parameters<typeof getLocalizedName>[2]
+        )
+        : "";
 
     const handleFileUploadWithConfirm = (file: File) => {
         if (data && (data.documentGuid || data.documentBindingId)) {
@@ -62,7 +73,9 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
             confirmText: t("discount.confirmDeleteOk") || "Yes, Delete",
             cancelText: t("discount.confirmDeleteCancel") || "No, Cancel",
             variant: "delete",
-            onConfirm: onFileDelete
+            onConfirm: () => {
+                if (onFileDelete) onFileDelete();
+            }
         });
     };
 
@@ -94,10 +107,13 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                 confirmText: t("discount.confirmDeleteDiscountOk") || "Yes, Delete",
                 cancelText: t("discount.confirmDeleteDiscountCancel") || "No, Cancel",
                 variant: "delete",
-                onConfirm: onDeleteDiscount
+                onConfirm: () => {
+                    if (onDeleteDiscount) onDeleteDiscount();
+                }
             });
         }
     };
+
     if (!data) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-full bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
@@ -109,16 +125,18 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
         );
     }
 
-    const displayName = getLocalizedName(data.socialAttributeCode, data.socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2]);
     const tWithHas = t as unknown as { has?: (key: string) => boolean };
     const hasRemark = typeof tWithHas.has === "function" && tWithHas.has("discount.remark");
     const hasRemarkPlaceholder = typeof tWithHas.has === "function" && tWithHas.has("discount.remarkPlaceholder");
 
     const hasAnyData = !!(
-        data.intValue !== null && data.intValue !== undefined ||
-        data.decimalValue !== null && data.decimalValue !== undefined ||
-        data.textValue?.trim() || data.dateValue?.trim() ||
-        data.documentGuid?.trim() || data.documentBindingId || data.remark?.trim()
+        (data.intValue !== null && data.intValue !== undefined) ||
+        (data.decimalValue !== null && data.decimalValue !== undefined) ||
+        data.textValue?.trim() ||
+        data.dateValue?.trim() ||
+        data.documentGuid?.trim() ||
+        data.documentBindingId ||
+        data.remark?.trim()
     );
 
     if (!isActiveDiscount(data) && !hasAnyData) {
@@ -143,11 +161,18 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     if (validationError && !isDocumentInvalid) {
         if ((data.dataType || "").toUpperCase() === "BIT") {
             isRemarkError = true;
-        } else if (validationError.includes("500") || validationError.includes("Remark cannot exceed")) {
+        } else if (
+            validationError.includes("500") ||
+            validationError.includes("Remark cannot exceed")
+        ) {
             isRemarkError = true;
-        } else if (validationError === (t("property.validation.invalidCharacters") || "Contains invalid characters.")) {
-            const textValueInvalid = (data.dataType || "").toUpperCase() === "VARCHAR" && 
-                                     data.textValue && !/^[^<>]*$/.test(data.textValue);
+        } else if (
+            validationError === (t("property.validation.invalidCharacters") || "Contains invalid characters.")
+        ) {
+            const textValueInvalid =
+                (data.dataType || "").toUpperCase() === "VARCHAR" &&
+                data.textValue &&
+                !/^[^<>]*$/.test(data.textValue);
             if (textValueInvalid) {
                 isValueInvalid = true;
             } else {
@@ -163,15 +188,17 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     const inputClassName = `h-10 text-sm placeholder:text-gray-400 focus:ring-1 shadow-sm transition-colors font-semibold ${
         isDisabled
             ? "bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed"
-            : isValueInvalid 
-                ? "bg-white text-gray-800 border-red-500 focus:border-red-500 focus:ring-red-500" 
+            : isValueInvalid
+                ? "bg-white text-gray-800 border-red-500 focus:border-red-500 focus:ring-red-500"
                 : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300"
     }`;
 
     return (
-        <div className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
-            isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
-        }`}>
+        <div
+            className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
+                isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
+            }`}
+        >
             <div className="space-y-5 overflow-y-auto pr-1">
                 {isDisabled && (
                     <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-amber-50 border border-amber-200 rounded-lg">
@@ -220,7 +247,6 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         label={displayName}
                         pendingFile={data.pendingFile}
                     />
-
                 </div>
 
                 <div className="space-y-1.5 w-full">
@@ -268,17 +294,27 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         {t("discount.verifyDetailsNote") || "Verify details & file attachment before saving changes."}
                     </span>
                 </div>
-                {onDeleteDiscount && isDiscountFilled && isUpdateCase && !isDisabled && (
-                    <button
-                        type="button"
-                        disabled={isDisabled || isSaving}
-                        onClick={handleDeleteDiscountWithConfirm}
-                        className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        {t("discount.deleteDiscount") || "Delete Discount & Data"}
-                    </button>
-                )}
+                <div className="flex items-center gap-3 shrink-0">
+                    {onDeleteDiscount && isDiscountFilled && isUpdateCase && !isDisabled && (
+                        <button
+                            type="button"
+                            disabled={isDisabled || isSaving}
+                            onClick={handleDeleteDiscountWithConfirm}
+                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            {t("discount.deleteDiscount") || "Delete Discount & Data"}
+                        </button>
+                    )}
+                    {onSave && (
+                        <SaveButton
+                            onClick={onSave}
+                            disabled={!hasChanges || isSaving}
+                            isLoading={isSaving}
+                            label={t("common.saveChanges") || "Save Changes"}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );

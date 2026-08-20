@@ -76,7 +76,7 @@
         },
         "unit": {
           "label": "इकाई",
-          "placeholder": "उदा. Meter"
+          "placeholder": "इकाई चुनें"
         },
         "displayOrder": {
           "label": "प्रदर्शन क्रम",
@@ -104,6 +104,7 @@
       },
       "validation": {
         "codeRequired": "विशेषता कोड आवश्यक है",
+        "codeMinLength": "विशेषता कोड कम से कम ३ अक्षरों का होना चाहिए",
         "codeMaxLength": "अधिकतम लंबाई {count} वर्ण है",
         "codeFormat": "अमान्य प्रारूप। केवल अंग्रेजी बड़े अक्षर और अंडरस्कोर अनुमत हैं।",
         "nameRequired": "विशेषता का नाम आवश्यक है",

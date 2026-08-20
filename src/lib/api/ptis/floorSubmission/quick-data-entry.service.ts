@@ -7,7 +7,7 @@ export interface ApplyDataEntrySameAsPayload {
     sourcePropertyId: number;
     destinationPropertyIds: number[];
     filterType: string;
-    type: number | string;
+    type?: number | string;
 }
 
 export interface ApplyDataEntrySameAsResponse {

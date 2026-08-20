@@ -15,7 +15,7 @@ export const useSocialPhotoUpload = (
 ) => {
     const handlePhotoUpload = useCallback((socialAttributeId: number, file: File) => {
         if (file.size > 5 * 1024 * 1024 || !['image/jpeg', 'image/png'].includes(file.type)) {
-            toast.error(t("discount.uploadInvalidFile") || "Invalid file type. Only JPG and PNG images are allowed.");
+            toast.error(t("discount.uploadInvalidPhoto") || "Invalid file type or size. Only PNG and JPG under 5MB are allowed.");
             return;
         }
 

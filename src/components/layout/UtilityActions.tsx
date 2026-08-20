@@ -108,14 +108,24 @@ export function UtilityActions({
 
         if (hasText) {
           // If button has text + icon, render without Tooltip
+          const isRefreshButton = actionCommand === 'PTIS_REFRESH';
+          const isDisabledButton = !isEnabled || isRefreshButton;
+
           return (
             <Button
               key={key}
               variant="secondary"
               size="sm"
-              onClick={() => onActionClick(actionCommand)}
-              disabled={isLoading || !isEnabled}
-              className={buttonClasses}
+              onClick={() => {
+                if (!isDisabledButton) {
+                  onActionClick(actionCommand);
+                }
+              }}
+              disabled={isLoading || isDisabledButton}
+              className={cn(
+                buttonClasses,
+                isRefreshButton && '!opacity-50 !cursor-not-allowed !pointer-events-none'
+              )}
               aria-label={localizedButtonName}
             >
               <span className="flex flex-row items-center justify-center gap-1.5 sm:gap-2 w-full group">

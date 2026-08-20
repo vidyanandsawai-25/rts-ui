@@ -73,15 +73,16 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
     setErrors(v);
     if (Object.keys(v).length) return;
     setLoading(true);
+    const trimmedName = form.zoneRegional.trim();
     try {
       const result = await updateRateSectionAction(rate.id!, {
-        description: form.zoneRegional, isActive: form.isActive ?? false
+        description: trimmedName, isActive: form.isActive ?? false
       });
       if (result.success) {
-        toast.success(t('messages.updateSuccess', { name: form.zoneRegional }));
+        toast.success(t('messages.updateSuccess', { name: trimmedName }));
         handleClose();
         router.refresh();
-        if (onUpdate) onUpdate({ ...rate, description: form.zoneRegional, isActive: form.isActive } as RateItem);
+        if (onUpdate) onUpdate({ ...rate, description: trimmedName, isActive: form.isActive } as RateItem);
       } else toast.error(result.error || t('messages.updateError'));
     } finally {
       setLoading(false);
@@ -92,20 +93,21 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
     if (!rate || loading) return;
     
     const newStatus = !form.isActive;
+    const trimmedName = form.zoneRegional.trim();
 
     setLoading(true);
     try {
       const result = await updateRateSectionAction(rate.id!, {
-        description: form.zoneRegional,
+        description: trimmedName,
         isActive: newStatus
       });
       
       if (result.success) {
         setForm((p) => ({ ...p, isActive: newStatus }));
-        toast.success(t('messages.updateSuccess', { name: `${form.zoneCode} - ${form.zoneRegional}` }));
+        toast.success(t('messages.updateSuccess', { name: `${form.zoneCode} - ${trimmedName}` }));
         router.refresh();
         if (onUpdate) {
-          onUpdate({ ...rate, isActive: newStatus } as RateItem);
+          onUpdate({ ...rate, description: trimmedName, isActive: newStatus } as RateItem);
         }
       } else {
         const errorMsg = result.message || result.error || t('messages.updateError');

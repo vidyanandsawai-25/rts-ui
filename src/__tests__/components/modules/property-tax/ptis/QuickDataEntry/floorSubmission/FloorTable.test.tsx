@@ -7,7 +7,7 @@ vi.mock('@/components/common', () => ({
   AddButton: ({ label, onClick }: { label: string; onClick: () => void }) => (
     <button
       onClick={onClick}
-      data-testid={label === 'floor.dataEntry' ? 'data-entry-button' : 'add-floor-button'}
+      data-testid={label === 'floor.dataEntry' || label === 'floor.dataEntryApplyAll' ? 'data-entry-button' : 'add-floor-button'}
     >
       {label}
     </button>
@@ -221,7 +221,9 @@ describe('FloorTable', () => {
       />
     );
 
-    expect(screen.getByTestId('data-entry-button')).toBeEnabled();
+    const btn = screen.getByTestId('data-entry-button');
+    expect(btn).toBeEnabled();
+    expect(btn).toHaveTextContent('floor.dataEntryApplyAll');
   });
 
   it('hides Data Entry Same As button when category is Apartment and partitionNo is null or empty', () => {

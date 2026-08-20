@@ -670,6 +670,18 @@
       "label": "क्यूसी स्थिति",
       "placeholder": "क्यूसी स्थिति"
     },
+    "qcRevertModal": {
+      "title": "क्यूसी रिवर्ट की पुष्टि करें",
+      "description": "क्या आप निश्चित रूप से क्यूसी स्थिति को वापस (रिवर्ट) करना चाहते हैं?",
+      "confirmText": "हाँ",
+      "cancelText": "नहीं"
+    },
+    "statusChangeModal": {
+      "title": "स्थिति परिवर्तन की पुष्टि करें",
+      "description": "क्या आप निश्चित रूप से स्थिति को \"{status}\" पर सेट करना चाहते हैं?",
+      "confirmText": "हाँ",
+      "cancelText": "नहीं"
+    },
     "qcDoneLabel": "क्यूसी पूर्ण",
     "trackStatus": "स्थिति ट्रैक करें"
   },

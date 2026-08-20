@@ -1,6 +1,7 @@
 export type UseStatus = "Active" | "Inactive";
 
 export type UseGroupIconKey =
+  | "grid"
   | "home"
   | "building"
   | "factory"
@@ -8,12 +9,13 @@ export type UseGroupIconKey =
   | "leaf"
   | "map"
   | "plots"
-  | "parking";
+  | "parking"
+  | "other";
 
 // Translation function type for next-intl
 export type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
 
-// ✅ Matches API response exactly: /TypeOfUseGroup
+// Matches API response exactly: /TypeOfUseGroup
 export interface UseGroup {
   typeOfUseGroupId: number;
   typeOfUseGroupCode: string;
@@ -23,11 +25,12 @@ export interface UseGroup {
   isOpenPlot?: boolean;
   createdDate?: string;
   updatedDate?: string | null;
+  countOfTypes?: number;
   // UI-only computed field
   status?: UseStatus;
 }
 
-// ✅ Matches API response exactly: /TypeOfUse  
+// Matches API response exactly: /TypeOfUse  
 export interface UseType {
   typeOfUseId: number;
   typeOfUseCode: string;
@@ -44,7 +47,7 @@ export interface UseType {
   [key: string]: unknown; // Index signature for MasterTable compatibility
 }
 
-// ✅ Matches API response exactly: /SubTypeOfUse
+// Matches API response exactly: /SubTypeOfUse
 export interface UseSubType {
   subTypeOfUseId: number;
   description: string;
@@ -58,7 +61,7 @@ export interface UseSubType {
   status?: UseStatus;
 }
 
-// ✅ Matches API response exactly: /TypeOfUseCategory
+// Matches API response exactly: /TypeOfUseCategory
 export interface TypeOfUseCategory {
   id: number;
   typeOfUseCategoryCode: string;

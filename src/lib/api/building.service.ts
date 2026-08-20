@@ -120,23 +120,25 @@ export async function bulkSaveCertificates(
         if (!response.data.success) {
             errorVal = response.data.errors && response.data.errors.length > 0
                 ? response.data.errors.join("; ")
-                : (response.data.message || "Failed to save certificates");
+                : (response.data.message || response.message || "Failed to save certificates");
         }
 
+        const msg = response.data.message || response.message || errorVal;
         return {
             success: response.data.success,
-            statusCode: response.statusCode,
+            statusCode: response.statusCode || (response.data.success ? 200 : 500),
             data: response.data.items,
-            message: response.data.message || response.message,
+            message: msg,
             error: errorVal
         };
     }
     
+    const errText = response.error || response.message || "An error occurred while saving the certificate";
     return {
         success: false,
-        statusCode: response.statusCode,
-        error: response.error,
-        message: response.message
+        statusCode: response.statusCode || 500,
+        error: errText,
+        message: errText
     };
 }
 

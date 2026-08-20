@@ -69,7 +69,8 @@
         "nonnegative": "मूल्य शून्य किंवा सकारात्मक असले पाहिजे.",
         "shapeRequired": "आकार आवश्यक आहे.",
         "operationRequired": "क्रिया आवश्यक आहे."
-      }
+      },
+      "totalExceedsWarning": "प्रविष्ट केलेली रुंदी 20 च्या मानक मर्यादेपेक्षा जास्त आहे. कृपया सुरू ठेवण्यापूर्वी मूल्याची पडताळणी करा. आपण तरीही पुढे जाऊ इच्छिता?"
     },
     "table": {
       "Subtracttitle": "एकूण क्षेत्रफळातून वजा करा",
@@ -839,6 +840,7 @@
     "select": "निवडा",
     "allFloors": "सर्व मजले",
     "dataEntry": "डेटा एंट्री",
+    "dataEntryApplyAll": "डेटा सर्वत्र लागू करा",
     "atLeastOneFloorRequired": "कृपया डेटा एंट्री बटण सक्षम करण्यासाठी किमान एक मजला जोडा",
     "dataEntryTabs": {
       "typeWise": "प्रकारनिहाय",
@@ -858,6 +860,10 @@
       "partitionNo": "विभाजन क्र.",
       "type": "प्रकार",
       "carpetArea": "कार्पेट क्षेत्रफळ (चौ. फूट / चौ. मीटर)",
+      "builtupArea": "बांधकाम क्षेत्रफळ (चौ. फूट / चौ. मीटर)",
+      "parkingCarpetArea": "पार्किंग कार्पेट क्षेत्रफळ (चौ. फूट / चौ. मीटर)",
+      "parkingBuiltupArea": "पार्किंग बांधकाम क्षेत्रफळ (चौ. फूट / चौ. मीटर)",
+      "category": "वर्गवारी",
       "wing": "विंग",
       "flatNo": "फ्लॅट क्र.",
       "selected": "{count} निवडले",
@@ -1247,6 +1253,8 @@
     "confirmDeleteOk": "होय, काढा",
     "confirmDeleteCancel": "नाही, रद्द करा",
     "uploadInvalidFile": "अवैध फाईल प्रकार किंवा आकार. फक्त 5MB पेक्षा कमी आकाराच्या PDF, PNG आणि JPG फाईल्सना परवानगी आहे।",
+    "uploadInvalidPhoto": "अवैध फाईल प्रकार किंवा आकार. फक्त 5MB पेक्षा कमी आकाराच्या PNG आणि JPG फाईल्सना परवानगी आहे।",
+    "allowedImageFormats": "PNG, JPG (कमाल 5MB)",
     "fileRemoved": "फाईल अटॅचमेंटमधून काढून टाकली.",
     "uploading": "कागदपत्र अपलोड होत आहे...",
     "documentUploaded": "कागदपत्र अपलोड झाले",
@@ -1283,7 +1291,7 @@
     "confirmDeleteDiscountOk": "होय, हटवा",
     "confirmDeleteDiscountCancel": "नाही, रद्द करा",
     "deleteSuccess": "तपशील आणि संबंधित डेटा यशस्वीरित्या हटविला गेला!",
-    "deleteSocialDetail": "तपशील आणि डेटा हटवा",
+    "deleteSocialDetail": "सामाजिक तपशील आणि डेटा हटवा",
     "confirmDeleteAttributeTitle": "सामाजिक तपशील आणि डेटा हटवा",
     "confirmDeleteAttributeDesc": "तुम्हाला नक्की हा सामाजिक तपशील आणि त्याशी संबंधित सर्व डेटा हटवायचा आहे का?",
     "confirmDeleteAttributeOk": "होय, हटवा",

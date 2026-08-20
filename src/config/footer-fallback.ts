@@ -84,7 +84,7 @@ export const FALLBACK_FOOTER_ACTIONS: FallbackFooterAction[] = [
     lucideIcon: 'RefreshCw',
     routePath: '',
     displayOrder: 140,
-    isEnabled: true,
+    isEnabled: false,
     canView: true,
     canEdit: true,
     canDelete: true,

@@ -199,10 +199,10 @@ export function PtisFooterDropdowns({
     if (val === 'QC Revert') {
       confirm({
         variant: 'warning',
-        title: 'Confirm QC Revert',
-        description: 'Are you sure you want to revert the QC status?',
-        confirmText: 'Yes',
-        cancelText: 'No',
+        title: t('footerControls.qcRevertModal.title'),
+        description: t('footerControls.qcRevertModal.description'),
+        confirmText: t('footerControls.qcRevertModal.confirmText'),
+        cancelText: t('footerControls.qcRevertModal.cancelText'),
         onConfirm: () => {
           if (workflowStageId) {
             handleSaveWorkflowDetail(val, workflowStageId);
@@ -216,10 +216,10 @@ export function PtisFooterDropdowns({
 
     confirm({
       variant: 'info',
-      title: 'Confirm Status Change',
-      description: `Are you sure you want to set the status to "${val}"?`,
-      confirmText: 'Yes',
-      cancelText: 'No',
+      title: t('footerControls.statusChangeModal.title'),
+      description: t('footerControls.statusChangeModal.description', { status: val }),
+      confirmText: t('footerControls.statusChangeModal.confirmText'),
+      cancelText: t('footerControls.statusChangeModal.cancelText'),
       onConfirm: () => {
         if (workflowStageId) {
           handleSaveWorkflowDetail(val, workflowStageId);

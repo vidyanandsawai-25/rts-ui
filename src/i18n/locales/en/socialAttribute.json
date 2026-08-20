@@ -76,7 +76,7 @@
         },
         "unit": {
           "label": "Unit",
-          "placeholder": "e.g. Meter"
+          "placeholder": "Select Unit"
         },
         "displayOrder": {
           "label": "Display Order",
@@ -104,6 +104,7 @@
       },
       "validation": {
         "codeRequired": "Attribute code is required",
+        "codeMinLength": "Attribute code must be at least 3 characters",
         "codeMaxLength": "Maximum length is {count} characters",
         "codeFormat": "Invalid format. Only English uppercase letters and underscore are allowed.",
         "nameRequired": "Attribute name is required",

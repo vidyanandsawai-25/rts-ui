@@ -69,7 +69,8 @@
         "nonnegative": "मूल्य शून्य या सकारात्मक होना चाहिए।",
         "shapeRequired": "आकार आवश्यक है।",
         "operationRequired": "ऑपरेशन आवश्यक है।"
-      }
+      },
+      "totalExceedsWarning": "दर्ज की गई चौड़ाई 20 की मानक सीमा से अधिक है। कृपया आगे बढ़ने से पहले मान सत्यापित करें। क्या आप फिर भी आगे बढ़ना चाहते हैं?"
     },
     "table": {
       "Subtracttitle": "कुल क्षेत्रफल से घटाएं",
@@ -839,6 +840,7 @@
     "select": "चुनें",
     "allFloors": "सभी मंज़िलें",
     "dataEntry": "डेटा प्रविष्टि",
+    "dataEntryApplyAll": "डेटा सभी पर लागू करें",
     "atLeastOneFloorRequired": "कृपया डेटा एंट्री बटन सक्षम करने के लिए कम से कम एक मंज़िल जोड़ें",
     "dataEntryTabs": {
       "typeWise": "प्रकारवार",
@@ -858,6 +860,10 @@
       "partitionNo": "विभाजन नं.",
       "type": "प्रकार",
       "carpetArea": "कार्पेट क्षेत्रफल (वर्ग फुट / वर्ग मीटर)",
+      "builtupArea": "बिल्ट-अप क्षेत्रफल (वर्ग फुट / वर्ग मीटर)",
+      "parkingCarpetArea": "पार्किंग कार्पेट क्षेत्रफल (वर्ग फुट / वर्ग मीटर)",
+      "parkingBuiltupArea": "पार्किंग बिल्ट-अप क्षेत्रफल (वर्ग फुट / वर्ग मीटर)",
+      "category": "श्रेणी",
       "wing": "विंग",
       "flatNo": "फ्लैट नं.",
       "selected": "{count} चुने गए",
@@ -1245,6 +1251,8 @@
     "confirmDeleteOk": "हाँ, हटाएं",
     "confirmDeleteCancel": "नहीं, रद्द करें",
     "uploadInvalidFile": "अमान्य फ़ाइल प्रकार या आकार। केवल 5MB से कम आकार की PDF, PNG और JPG फ़ाइलें ही मान्य हैं।",
+    "uploadInvalidPhoto": "अमान्य फ़ाइल प्रकार या आकार। केवल 5MB से कम आकार की PNG और JPG फ़ाइलें ही मान्य हैं।",
+    "allowedImageFormats": "PNG, JPG (अधिकतम 5MB)",
     "fileRemoved": "फ़ाइल अटैचमेंट से हटा दी गई।",
     "uploading": "दस्तावेज़ अपलोड हो रहा है...",
     "documentUploaded": "दस्तावेज़ अपलोड हो चुका है।",
@@ -1281,7 +1289,7 @@
     "confirmDeleteDiscountOk": "हाँ, हटाएँ",
     "confirmDeleteDiscountCancel": "नहीं, रद्द करें",
     "deleteSuccess": "विवरण और संबंधित डेटा सफलतापूर्वक हटा दिया गया!",
-    "deleteSocialDetail": "विवरण और डेटा हटाएं",
+    "deleteSocialDetail": "सामाजिक विवरण और डेटा हटाएं",
     "confirmDeleteAttributeTitle": "सामाजिक विवरण और डेटा हटाएं",
     "confirmDeleteAttributeDesc": "क्या आप वाकई इस सामाजिक विवरण और इसके सभी संबद्ध डेटा को हटाना चाहते हैं?",
     "confirmDeleteAttributeOk": "हाँ, हटाएँ",

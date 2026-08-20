@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Badge, Input, Select } from '@/components/common';
+import { Badge, Drawer, Input, Select } from '@/components/common';
 import { UpdateButton } from '@/components/common/ActionButtons';
 import FloorTable from '../FloorTable';
 import SelectPropertiesTable from '../SelectPropertiesTable';
@@ -50,7 +50,7 @@ interface TypeWiseTabProps {
 
 export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   t,
-  currentPropertyType: _currentPropertyType,
+  currentPropertyType,
   properties,
   selectedIds,
   onToggle,
@@ -67,6 +67,11 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   onApplyTypeSubmission,
   ...floorTableProps
 }) => {
+  const [isChangeTypeDrawerOpen, setIsChangeTypeDrawerOpen] = React.useState(false);
+
+  // Independent type filter state for Change Type drawer — separate from the main tab's state
+  const [drawerTypeFilter, setDrawerTypeFilter] = React.useState<string>('all');
+
   const isApplyTypeDisabled = React.useMemo(() => {
     return selectedIds.size === 0;
   }, [selectedIds]);
@@ -75,10 +80,6 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
     // Apply button is disabled if no destination property (non-source) is selected
     return !Array.from(selectedIds).some((id) => !sourcePropertyIds.has(id));
   }, [selectedIds, sourcePropertyIds]);
-
-  // ── Type filter dropdown state ──────────────────────────────────────────────
-  // Holds the currently selected type from the dropdown ('all' = no filter)
-  const [selectedTypeFilter, setSelectedTypeFilter] = React.useState<string>('all');
 
   // Local state for Change Type text input to avoid input loop bug
   // Initialize as empty string by default instead of currentPropertyType
@@ -89,7 +90,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   if (changeTypeInput !== prevChangeTypeInput) {
     setInputValue(changeTypeInput || '');
     if (!changeTypeInput) {
-      setSelectedTypeFilter('all');
+      setDrawerTypeFilter('all');
     }
     setPrevChangeTypeInput(changeTypeInput);
   }
@@ -124,21 +125,31 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
     return list;
   }, [availableTypes, t]);
 
-  // Filter table rows based on selected type dropdown
-  // Use || so empty-string typeLabel falls back to type correctly
-  const filteredProperties = React.useMemo(() => {
-    if (selectedTypeFilter === 'all') return properties;
+  // Filter table rows based on selected type dropdown (used inside Change Type drawer)
+  // This is keyed off drawerTypeFilter, independent of main tab filters
+  const drawerFilteredProperties = React.useMemo(() => {
+    if (drawerTypeFilter === 'all') return properties;
     return properties.filter((p) => {
       const raw = String(p.type || '').trim();
-      return raw === selectedTypeFilter;
+      return raw === drawerTypeFilter;
     });
-  }, [properties, selectedTypeFilter]);
+  }, [properties, drawerTypeFilter]);
 
-  // When a type is chosen from dropdown → auto-fill CHANGE TYPE + update filter
+  // Filter table rows for main TypeWise tab layout (only properties matching the main property's type)
+  const sameTypeProperties = React.useMemo(() => {
+    if (!currentPropertyType) return properties;
+    const targetType = String(currentPropertyType).trim();
+    return properties.filter((p) => {
+      const raw = String(p.type || '').trim();
+      return raw === targetType;
+    });
+  }, [properties, currentPropertyType]);
+
+  // When a type is chosen from dropdown inside Change Type drawer → auto-fill CHANGE TYPE input + update drawer filter
   // Also clears selection to avoid mismatch between visible and selected-but-hidden rows
   const handleTypeFilterChange = React.useCallback(
     (val: string) => {
-      setSelectedTypeFilter(val);
+      setDrawerTypeFilter(val);
       onClearSelection(); // Reset selection on filter change — prevents hidden-row selection confusion
       if (val !== 'all') {
         setChangeTypeInput(val);
@@ -150,7 +161,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
   );
 
 
-  // ── Render dropdown to be placed on the left side of table header ──────────
+  // ── Render dropdown to be placed on the left side of the Change Type drawer table header ──────────
   const typeFilterDropdown = (
     <div className="flex items-center gap-1.5 ml-3 font-normal text-slate-700">
       <Badge variant="secondary" className="uppercase tracking-wide text-[9px] whitespace-nowrap bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-50">
@@ -158,7 +169,7 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
       </Badge>
       <Select
         options={filterOptions}
-        value={selectedTypeFilter}
+        value={drawerTypeFilter}
         onChange={(_, val) => handleTypeFilterChange(val)}
         disabled={isLoading || availableTypes.length === 0}
         selectSize="sm"
@@ -182,49 +193,86 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
         {t('floor.selectProperties.typeWiseInstruction')}
       </div>
 
-      {/* ── Type Filter + Change Type Row ───────────────────────────────── */}
-      <div className="flex items-center gap-3 mt-3 px-1 flex-wrap">
-
-        {/* CHANGE TYPE — auto-filled from dropdown, still manually editable */}
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="uppercase tracking-wide text-[10px] whitespace-nowrap">
-            {t('floor.selectProperties.changeType')}
-          </Badge>
-          <Input
-            type="text"
-            value={inputValue}
-            onChange={(e) => {
-              const val = e.target.value;
-              const ZERO_TO_NINETY_NINE_REGEX = /^(?:0|[1-9][0-9]?)$/;
-              if (val === '' || ZERO_TO_NINETY_NINE_REGEX.test(val)) {
-                setInputValue(val);
-                setChangeTypeInput(val);
-              }
-            }}
-            onFocus={(e) => {
-              e.target.select();
-            }}
-            className={`h-8 w-16 rounded border border-slate-200 px-2 text-xs font-semibold text-center outline-none transition-colors bg-white text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
-            aria-label={t('floor.selectProperties.changeType')}
-          />
-        </div>
-
-        {/* Apply Types button */}
+      {/* ── Change Type Drawer Trigger ───────────────────────────────── */}
+      <div className="flex justify-end items-center gap-3 mt-3 px-1">
         <UpdateButton
           type="button"
           size="sm"
-          label={isApplying ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyTypesButton')}
-          onClick={onApply}
-          disabled={isApplyTypeDisabled || isApplying}
-          isLoading={isApplying}
-          className="h-9 px-5 text-xs font-semibold rounded-md"
+          label={t('floor.selectProperties.changeType') || 'CHANGE TYPE'}
+          onClick={() => {
+            setDrawerTypeFilter('all');  // Always reset drawer filter to 'all' on open
+            setIsChangeTypeDrawerOpen(true);
+          }}
+          className="h-9 px-5 text-xs font-semibold rounded-md uppercase tracking-wide bg-blue-600 hover:bg-blue-700 text-white"
         />
       </div>
 
-      {/* ── Properties Table (filtered by selected type) ─────────────────── */}
+      {/* ── Change Type Drawer ────────────────────────────────────────── */}
+      <Drawer
+        open={isChangeTypeDrawerOpen}
+        onClose={() => setIsChangeTypeDrawerOpen(false)}
+        title={(
+          <h2 className="text-[15px] font-bold leading-tight text-slate-800">
+            {t('floor.selectProperties.changeType') || 'CHANGE TYPE'}
+          </h2>
+        )}
+        width="lg"
+      >
+        <div className="flex flex-col h-full p-4 bg-slate-50 gap-4 overflow-y-auto">
+          {/* Change Type Input + Apply Types Row */}
+          <div className="flex items-center gap-3 p-3.5 bg-white border border-slate-200 rounded-lg shadow-xs flex-wrap">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="uppercase tracking-wide text-[10px] whitespace-nowrap">
+                {t('floor.selectProperties.changeType')}
+              </Badge>
+              <Input
+                type="number"
+                value={inputValue}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setInputValue(val);
+                  setChangeTypeInput(val);
+                }}
+                onFocus={(e) => {
+                  e.target.select();
+                }}
+                className={`h-8 w-16 rounded border border-slate-200 px-2 text-xs font-semibold text-center outline-none transition-colors bg-white text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
+                aria-label={t('floor.selectProperties.changeType')}
+              />
+            </div>
+
+            {/* Apply Types button */}
+            <UpdateButton
+              type="button"
+              size="sm"
+              label={isApplying ? t('floor.selectProperties.applying') : t('floor.selectProperties.applyTypesButton')}
+              onClick={onApply}
+              disabled={isApplyTypeDisabled || isApplying}
+              isLoading={isApplying}
+              className="h-9 px-5 text-xs font-semibold rounded-md"
+            />
+          </div>
+
+          {/* Properties Table inside Change Type Drawer — always shows all types, with optional drawer-local filter */}
+          <SelectPropertiesTable
+            t={t}
+            properties={drawerFilteredProperties}
+            selectedIds={selectedIds}
+            onToggle={onToggle}
+            onClearSelection={onClearSelection}
+            onToggleMultiple={onToggleMultiple}
+            isLoading={isLoading}
+            disabledIds={disabledIds}
+            sourcePropertyIds={sourcePropertyIds}
+            leftHeaderContent={typeFilterDropdown}
+          />
+        </div>
+      </Drawer>
+
+      {/* ── Properties Table (filtered by main property type) ─────────────────── */}
       <SelectPropertiesTable
         t={t}
-        properties={filteredProperties}
+        properties={sameTypeProperties}
         selectedIds={selectedIds}
         onToggle={onToggle}
         onClearSelection={onClearSelection}
@@ -232,7 +280,6 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
         isLoading={isLoading}
         disabledIds={disabledIds}
         sourcePropertyIds={sourcePropertyIds}
-        leftHeaderContent={typeFilterDropdown}
       />
 
       {/* Apply Type Submission button */}

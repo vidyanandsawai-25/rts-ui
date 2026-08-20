@@ -109,6 +109,14 @@ const FloorTable: React.FC<FloorTableProps> = ({
     return !filteredFloors || filteredFloors.length === 0;
   }, [filteredFloors]);
 
+  const dataEntryButtonLabel = React.useMemo(() => {
+    const cat = (categoryName ?? '').trim().toLowerCase();
+    if (cat === 'apartment') {
+      return t('floor.dataEntryApplyAll');
+    }
+    return t('floor.dataEntry');
+  }, [categoryName, t]);
+
   const handleDataEntrySameAsClick = React.useCallback(() => {
     if (isDataEntryDisabled) {
       toast.error(
@@ -378,7 +386,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
               className="inline-block cursor-pointer"
             >
               <AddButton
-                label={t('floor.dataEntry')}
+                label={dataEntryButtonLabel}
                 size="sm"
                 className={`px-4 h-8 text-[11px] font-bold shadow-md rounded-lg transition-all duration-300 hover:shadow-lg flex items-center gap-2 ${isDataEntryDisabled ? 'pointer-events-none opacity-60' : 'active:scale-95'
                   }`}

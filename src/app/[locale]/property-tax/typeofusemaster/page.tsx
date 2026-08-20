@@ -2,9 +2,8 @@
 import {
   getSubTypesPaged,
   getAllUseGroups,
-  getAllUseTypes, // ✅ Keep for counting across all groups
   getTypesByGroupPaged,
-  resolveTypeId, // ✅ NEW - lightweight type lookup
+  resolveTypeId,
 } from "./actions";
 
 import TypeOfUseMaster from
@@ -17,21 +16,21 @@ export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{
-    groupId?: string;    // 🆕 Group ID
+    groupId?: string;    // Group ID
     typeId?: string;
     pn?: string;         // SubType page number
     ps?: string;         // SubType page size
-    typePn?: string;     // 🆕 Type page number
-    typePs?: string;     // 🆕 Type page size
-    q?: string;          // 🔍 SubType search
-    typeSearch?: string; // 🔍 Type search (BACKEND)
+    typePn?: string;     // Type page number
+    typePs?: string;     // Type page size
+    q?: string;          // SubType search
+    typeSearch?: string; // Type search (BACKEND)
   }>;
 }) {
-  // ✅ unwrap params (Next.js requirement)
+  // unwrap params (Next.js requirement)
   const params = await searchParams;
 
   /* ---------------------------------------------------
-   * 1️⃣ Resolve paging + searches
+   * 1. Resolve paging + searches
    * --------------------------------------------------- */
   const pageNumber = Number(params.pn ?? 1);
   const pageSize = Number(params.ps ?? 5);
@@ -44,64 +43,12 @@ export default async function Page({
   const groupId = params.groupId ?? "ALL";
 
   /* ---------------------------------------------------
-   * 2️⃣ Load GROUPS (always full)
+   * 2. Load GROUPS (always full)
    * --------------------------------------------------- */
   const groupsResp = await getAllUseGroups();
 
   /* ---------------------------------------------------
-   * 3️⃣ Fetch ALL types for counting & selection logic
-   * --------------------------------------------------- */
-  // ✅ Needed for: 
-  //    - Displaying accurate type counts for ALL groups (not just selected)
-  //    - Selection logic in hooks (useTypeOfUseMasterSelection, etc.)
-  //    - First type lookup when switching groups
-  // Note: This is fetched ONCE per page load and cached in initialData
-  const allTypesResp = await getAllUseTypes();
-
-  /* ---------------------------------------------------
-   * 4️⃣ Resolve SELECTED TYPE ID (from all types or URL)
-   * --------------------------------------------------- */
-  const selectedTypeId = await (async () => {
-    const typeParam = params.typeId;
-    const groupParam = params.groupId;
-
-    // 🔥 EXPLICIT "no type selected"
-    if (typeParam === "__NONE__") {
-      return "";
-    }
-
-    // ✅ If we have explicit groupId but no typeId, it's an intentional empty group selection
-    if (groupParam && !typeParam) {
-      return "";
-    }
-
-    // ✅ If we have typeId in URL, try to find it in allTypes first (fast)
-    if (typeParam) {
-      const directMatch = allTypesResp.items.find(
-        (t) => String(t.typeOfUseId) === typeParam
-      );
-      if (directMatch) return String(directMatch.typeOfUseId);
-
-      const codeMatch = allTypesResp.items.find(
-        (t) => t.typeOfUseCode === typeParam
-      );
-      if (codeMatch) return String(codeMatch.typeOfUseId);
-      
-      // ✅ Fallback: If not found in allTypes, try API lookup
-      const resolvedId = await resolveTypeId(typeParam);
-      if (resolvedId) return resolvedId;
-    }
-
-    // ✅ Default to first type only if no params at all (initial load)
-    if (!typeParam && (!groupParam || groupParam === "ALL")) {
-      return String(allTypesResp.items?.[0]?.typeOfUseId ?? "");
-    }
-
-    return "";
-  })();
-
-  /* ---------------------------------------------------
-   * 5️⃣ Load TYPES (PAGINATED BY GROUP for display)
+   * 3. Load TYPES (PAGINATED BY GROUP for display)
    * --------------------------------------------------- */
   const effectiveGroupId = groupId || "ALL";
   
@@ -113,18 +60,42 @@ export default async function Page({
   });
 
   /* ---------------------------------------------------
-   * 6️⃣ Build master data
+   * 4. Resolve SELECTED TYPE ID
    * --------------------------------------------------- */
-  // ✅ Pass ALL types for counting and selection logic
-  // ✅ Pagination happens in the UI layer for type display
+  const selectedTypeId = await (async () => {
+    const typeParam = params.typeId;
+
+    // EXPLICIT "no type selected"
+    if (typeParam === "__NONE__") {
+      return "";
+    }
+
+    // If we have explicit typeId in URL, use it
+    if (typeParam) {
+      const match = typesResp.items.find(
+        (t) => String(t.typeOfUseId) === typeParam || t.typeOfUseCode === typeParam
+      );
+      if (match) return String(match.typeOfUseId);
+      
+      const resolvedId = await resolveTypeId(typeParam);
+      if (resolvedId) return resolvedId;
+    }
+
+    // Default to first type from typesResp
+    return String(typesResp.items?.[0]?.typeOfUseId ?? "");
+  })();
+
+  /* ---------------------------------------------------
+   * 5. Build master data
+   * --------------------------------------------------- */
   const masterData = {
     groups: groupsResp.items,
-    types: allTypesResp.items, // ✅ ALL types for accurate counts across all groups
+    types: typesResp.items,
     subTypes: [],
   };
 
   /* ---------------------------------------------------
-   * 7️⃣ Load SUBTYPES (SERVER PAGED + SEARCH)
+   * 6. Load SUBTYPES (SERVER PAGED + SEARCH)
    * --------------------------------------------------- */
   const subTypeResp = selectedTypeId
     ? await getSubTypesPaged({
@@ -140,7 +111,7 @@ export default async function Page({
       };
 
   /* ---------------------------------------------------
-   * 8️⃣ Render UI
+   * 7. Render UI
    * --------------------------------------------------- */
   return (
     <TypeOfUseMaster

@@ -76,7 +76,7 @@
         },
         "unit": {
           "label": "एकक",
-          "placeholder": "उदा. Meter"
+          "placeholder": "एकक निवडा"
         },
         "displayOrder": {
           "label": "प्रदर्शन क्रम",
@@ -104,6 +104,7 @@
       },
       "validation": {
         "codeRequired": "वैशिष्ट्य कोड आवश्यक आहे",
+        "codeMinLength": "वैशिष्ट्य कोड किमान ३ अक्षरांचा असणे आवश्यक आहे",
         "codeMaxLength": "कमाल लांबी {count} वर्ण आहे",
         "codeFormat": "अवैध स्वरूप. केवळ इंग्रजी मोठी अक्षरे आणि अंडरस्कोर अनुमत आहेत.",
         "nameRequired": "वैशिष्ट्य नाव आवश्यक आहे",

@@ -38,8 +38,15 @@ describe('useRoomListActions', () => {
   let mockProps: RoomWiseSubmissionProps;
   let mockHandleCancelEdit: () => void;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+
+    const { useConfirm } = await import('@/components/common');
+    vi.mocked(useConfirm).mockReturnValue({
+      confirm: vi.fn((options) => {
+        if (options?.onConfirm) options.onConfirm();
+      }),
+    });
 
     mockHandleCancelEdit = vi.fn();
 

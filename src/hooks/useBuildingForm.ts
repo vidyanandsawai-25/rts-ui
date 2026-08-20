@@ -512,8 +512,9 @@ export const useBuildingForm = (
                     router.refresh();
                     return { success: true, isValid: true };
                 } else {
-                    const displayError = response.error 
-                        ? parseAndLocalizeBackendError(response.error, buildingPermission, (key) => t(key))
+                    const errText = response.error || response.message;
+                    const displayError = errText 
+                        ? parseAndLocalizeBackendError(errText, buildingPermission, (key) => t(key))
                         : (t("building.saveError") || "Error saving building permissions!");
                     toast.error(displayError);
                     return { success: false, isValid: true };

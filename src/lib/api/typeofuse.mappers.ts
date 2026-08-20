@@ -8,6 +8,8 @@ import type {
 /** -------------------- ICON MAPPING (GROUP) -------------------- */
 export function iconKeyToApi(iconKey: UseGroupIconKey): string {
   switch (iconKey) {
+    case "grid":
+      return "layout-grid-icon";
     case "home":
       return "home-icon";
     case "building":
@@ -20,6 +22,12 @@ export function iconKeyToApi(iconKey: UseGroupIconKey): string {
       return "wheat-icon";
     case "map":
       return "map-pin-icon";
+    case "plots":
+      return "land-plot-icon";
+    case "parking":
+      return "parking-icon";
+    case "other":
+      return "layers-icon";
     default:
       return "home-icon";
   }
@@ -27,6 +35,8 @@ export function iconKeyToApi(iconKey: UseGroupIconKey): string {
 
 /** -------------------- MAP API -> UI (GROUP) -------------------- */
 export function mapApiGroupToUi(g: Record<string, unknown>): UseGroup {
+  const countOfTypes = Number(g.countOfTypes ?? g.CountOfTypes ?? 0);
+
   return {
     typeOfUseGroupId: Number(g.id ?? g.typeOfUseGroupId ?? g.typeOfUseGroupID ?? 0),
     typeOfUseGroupCode: String(g.typeOfUseGroupCode ?? ""),
@@ -36,6 +46,7 @@ export function mapApiGroupToUi(g: Record<string, unknown>): UseGroup {
     isOpenPlot: typeof g.isOpenPlot === "boolean" ? g.isOpenPlot : (typeof g.IsOpenPlot === "boolean" ? g.IsOpenPlot : false),
     createdDate: typeof g.createdDate === "string" ? g.createdDate : (typeof g.CreatedDate === "string" ? g.CreatedDate : undefined),
     updatedDate: typeof g.updatedDate === "string" ? g.updatedDate : (typeof g.UpdatedDate === "string" ? g.UpdatedDate : null),
+    countOfTypes,
     // UI computed field
     status: (g.isActive === false || g.IsActive === false) ? "Inactive" : "Active",
   };

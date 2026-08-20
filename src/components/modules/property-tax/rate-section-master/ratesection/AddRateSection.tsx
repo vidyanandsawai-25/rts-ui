@@ -73,15 +73,16 @@ export function useAddRateSection({ onClose, onSuccess, existingRates }: AddRate
     setSubmittedOnce(true);
     const v = validate(form);
     setErrors(v);
-    const isDuplicate = checkDuplicateRateSection(form.zoneRegional);
+    const trimmedName = form.zoneRegional.trim();
+    const isDuplicate = checkDuplicateRateSection(trimmedName);
     if (Object.keys(v).length || isDuplicate) return;
     setLoading(true);
     try {
       const result = await createRateSectionAction({
-        description: form.zoneRegional, isActive: form.isActive ?? true
+        description: trimmedName, isActive: form.isActive ?? true
       });
       if (result.success) {
-        toast.success(t('messages.createSuccess', { name: form.zoneRegional }));
+        toast.success(t('messages.createSuccess', { name: trimmedName }));
         setForm(INITIAL_FORM_STATE);
         setErrors({});
         if (onSuccess) onSuccess(String(result.data?.id || ''));
@@ -91,7 +92,7 @@ export function useAddRateSection({ onClose, onSuccess, existingRates }: AddRate
       } else toast.error(result.error || t('messages.createError'));
     } catch (error: unknown) {
       const err = error as { message?: string };
-      toast.error(err?.message?.includes("500") ? t('messages.createExistsError', { name: form.zoneRegional }) : err?.message || "Unexpected error occurred");
+      toast.error(err?.message?.includes("500") ? t('messages.createExistsError', { name: trimmedName }) : err?.message || "Unexpected error occurred");
     } finally {
       setLoading(false);
     }

@@ -352,7 +352,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                         type="button"
                         disabled={isDisabled}
                         onClick={handleDeleteCertificateWithConfirm}
-                        className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                        className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
                     >
                         <Trash2 className="w-3.5 h-3.5" />
                         {t("building.deleteCertificate") || "Delete Certificate & Data"}

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Trash2 } from "lucide-react";
-import { Label, TextArea } from "@/components/common";
+import { Label, TextArea, SaveButton } from "@/components/common";
 import { FlatSocialAttributeState, getLocalizedName } from "@/lib/utils/social-details";
 import { SocialAttributeHierarchyDto } from "@/types/property-social-details.types";
 import { DocumentAttachment } from "../building/DocumentAttachment";
@@ -30,6 +30,8 @@ interface SocialDetailPaneProps {
     };
     onDeleteSocialDetail?: () => void;
     isSaving?: boolean;
+    hasChanges?: boolean;
+    onSave?: () => void;
 }
 
 export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
@@ -44,6 +46,8 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     t,
     onDeleteSocialDetail,
     isSaving = false,
+    hasChanges = false,
+    onSave,
 }) => {
     const { confirm } = useConfirm();
 
@@ -70,6 +74,12 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     if (!data || !hierarchyData) {
         return <SocialSelectPrompt t={t as (key: string) => string} />;
     }
+
+    const displayName = getLocalizedName(
+        data.socialAttributeCode,
+        data.socialAttributeName,
+        t as unknown as (key: string) => string
+    );
 
     const handleFileUploadWithConfirm = (file: File) => {
         if (!(data.documentGuid || data.documentBindingId)) {
@@ -105,17 +115,22 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                 confirmText: t("discount.confirmDeleteAttributeOk") || "Yes, Delete",
                 cancelText: t("discount.confirmDeleteAttributeCancel") || "No, Cancel",
                 variant: "delete",
-                onConfirm: onDeleteSocialDetail
+                onConfirm: () => {
+                    if (onDeleteSocialDetail) onDeleteSocialDetail();
+                }
             });
         }
     };
 
-    const displayName = getLocalizedName(data.socialAttributeCode, data.socialAttributeName, t as unknown as (key: string) => string);
     const isEnabled = isAttributeEnabled(data);
     const hasAnyData = !!(
-        data.intValue !== null || data.decimalValue !== null ||
-        data.textValue?.trim() || data.dateValue?.trim() ||
-        data.documentGuid?.trim() || data.documentBindingId || data.remark?.trim()
+        data.intValue !== null ||
+        data.decimalValue !== null ||
+        data.textValue?.trim() ||
+        data.dateValue?.trim() ||
+        data.documentGuid?.trim() ||
+        data.documentBindingId ||
+        data.remark?.trim()
     );
 
     if (!isEnabled && !hasAnyData) {
@@ -127,7 +142,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
 
     const errorMsg = validationErrors?.[data.socialAttributeId];
     const docRequiredMsg = t("common.validation.documentRequired") || "Document is required.";
-    const isPhotoInvalid = !!errorMsg && (errorMsg.includes("required") && !data.documentGuid || errorMsg === docRequiredMsg);
+    const isPhotoInvalid = !!errorMsg && ((errorMsg.includes("required") && !data.documentGuid) || errorMsg === docRequiredMsg);
 
     let isRemarkError = false;
     let isValueInvalid = false;
@@ -138,8 +153,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
         } else if (errorMsg.includes("500") || errorMsg.includes("Remark cannot exceed")) {
             isRemarkError = true;
         } else if (errorMsg === (t("property.validation.invalidCharacters") || "Contains invalid characters.")) {
-            const textValueInvalid = (data.dataType || "").toUpperCase() === "VARCHAR" && 
-                                     data.textValue && !/^[^<>]*$/.test(String(data.textValue));
+            const textValueInvalid = (data.dataType || "").toUpperCase() === "VARCHAR" && data.textValue && !/^[^<>]*$/.test(String(data.textValue));
             if (textValueInvalid) {
                 isValueInvalid = true;
             } else {
@@ -152,17 +166,32 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
 
     return (
-        <div className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
-            isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
-        }`}>
+        <div
+            className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
+                isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
+            }`}
+        >
             <div className="space-y-5 overflow-y-auto pr-1">
                 {isDisabled && <DisabledBanner t={t as (key: string) => string} />}
-                
-                <div className="pb-3 border-b border-blue-50">
-                    <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
-                        {t("discount.editingDiscount") || "Social Attribute Details"}
-                    </span>
-                    <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
+
+                <div className="pb-3 border-b border-blue-50 flex items-start justify-between gap-4">
+                    <div>
+                        <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
+                            {t("discount.editingDiscount") || "Social Attribute Details"}
+                        </span>
+                        <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
+                    </div>
+                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDisabled && (
+                        <button
+                            type="button"
+                            disabled={isDisabled || isSaving}
+                            onClick={handleDeleteSocialDetailWithConfirm}
+                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            {t("discount.deleteSocialDetail") || "Delete Detail & Data"}
+                        </button>
+                    )}
                 </div>
 
                 {/* Root value input if applicable */}
@@ -180,9 +209,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                             handleValueChange={onInputChange}
                         />
                         {isValueInvalid && (
-                            <span className="text-red-500 text-[10px] font-semibold mt-1">
-                                {errorMsg}
-                            </span>
+                            <span className="text-red-500 text-[10px] font-semibold mt-1">{errorMsg}</span>
                         )}
                     </div>
                 )}
@@ -221,12 +248,11 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                         t={t as (key: string, values?: Record<string, string | number>) => string}
                         label={displayName}
                         pendingFile={data.pendingFile}
+                        allowedFormats={t("discount.allowedImageFormats") || "PNG, JPG (Max 5MB)"}
                     />
 
                     {isPhotoInvalid && (
-                        <span className="text-red-500 text-[10px] font-semibold mt-1 block">
-                            {errorMsg}
-                        </span>
+                        <span className="text-red-500 text-[10px] font-semibold mt-1 block">{errorMsg}</span>
                     )}
                 </div>
 
@@ -262,9 +288,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                         className={`resize-y font-semibold ${isRemarkError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
                     />
                     {isRemarkError && (
-                        <span className="text-red-500 text-[10px] font-semibold mt-1 block">
-                            {errorMsg}
-                        </span>
+                        <span className="text-red-500 text-[10px] font-semibold mt-1 block">{errorMsg}</span>
                     )}
                 </div>
             </div>
@@ -276,17 +300,27 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                         {t("discount.verifyDetailsNote") || "Verify details & photo attachment before saving changes."}
                     </span>
                 </div>
-                {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDisabled && (
-                    <button
-                        type="button"
-                        disabled={isDisabled || isSaving}
-                        onClick={handleDeleteSocialDetailWithConfirm}
-                        className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        {t("discount.deleteSocialDetail") || "Delete Detail & Data"}
-                    </button>
-                )}
+                <div className="flex items-center gap-3 shrink-0">
+                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDisabled && (
+                        <button
+                            type="button"
+                            disabled={isDisabled || isSaving}
+                            onClick={handleDeleteSocialDetailWithConfirm}
+                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            {t("discount.deleteSocialDetail") || "Delete Detail & Data"}
+                        </button>
+                    )}
+                    {onSave && (
+                        <SaveButton
+                            onClick={onSave}
+                            disabled={!hasChanges || isSaving}
+                            isLoading={isSaving}
+                            label={t("common.saveChanges") || "Save Changes"}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -150,6 +150,7 @@ const mockGroups: UseGroup[] = [
     groupIcon: "home-icon",
     isActive: true,
     status: "Active",
+    countOfTypes: 1,
   },
   {
     typeOfUseGroupId: 2,
@@ -158,6 +159,7 @@ const mockGroups: UseGroup[] = [
     groupIcon: "building-icon",
     isActive: true,
     status: "Active",
+    countOfTypes: 1,
   },
 ];
 
