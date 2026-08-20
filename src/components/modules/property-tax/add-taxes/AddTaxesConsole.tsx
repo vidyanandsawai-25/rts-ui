@@ -71,6 +71,7 @@ export interface AddTaxesActionsProps {
   getAuditDetailAction: (jobId: string) => Promise<any>;
   getJobPropertiesAction: (jobId: string, pageNumber: number, pageSize: number, status?: string) => Promise<any>;
   getImportTemplateAction: () => Promise<any>;
+  getServerTimeAction: () => Promise<any>;
 }
 
 interface AddTaxesConsoleProps {
