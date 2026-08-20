@@ -127,6 +127,7 @@ function normalizePropertySearchApiItem(
     propertyHolderName:
       readApiText(raw, "propertyHolderName", "PropertyHolderName") || null,
     occupierName: readApiText(raw, "occupierName", "OccupierName") || null,
+    occupierMobileNo: formatMobileNumber(readApiText(raw, "occupierMobileNo", "OccupierMobileNo")) || null,
     shopBuildingName:
       readApiText(raw, "shopBuildingName", "ShopBuildingName") || null,
     societyName: readApiText(raw, "societyName", "SocietyName") || null,
@@ -152,9 +153,9 @@ export function normalizePropertySearchItem(
 ): SearchResult {
   const item =
     typeof data === "object" &&
-    data !== null &&
-    "propertyId" in data &&
-    typeof (data as PropertySearchApiItem).propertyId === "number"
+      data !== null &&
+      "propertyId" in data &&
+      typeof (data as PropertySearchApiItem).propertyId === "number"
       ? (data as PropertySearchApiItem)
       : normalizePropertySearchApiItem(data as Record<string, unknown>);
 
@@ -194,6 +195,7 @@ export function normalizePropertySearchItem(
     description: toRawText(item.propertyDescription),
     mobile: formatMobileNumber(toRawText(item.mobile)),
     alternateMobile: formatMobileNumber(toRawText(item.alternateMobileNo)),
+    occupierMobile: formatMobileNumber(toRawText(item.occupierMobileNo)),
     holderName: toRawText(item.propertyHolderName),
     holderNameMarathi: "",
     occupierName: toRawText(item.occupierName),
@@ -251,7 +253,7 @@ export function extractPropertySearchRawItems(data: unknown): unknown[] {
     if (Array.isArray(nested.Items)) {
       return nested.Items;
     }
-    
+
     // Handle the new /PropertySearch/search/grid structure: items.results.items
     const nestedResults = nested.results as Record<string, unknown> | undefined;
     if (nestedResults && Array.isArray(nestedResults.items)) {
@@ -332,8 +334,8 @@ export function normalizePropertySearchResponse(
     const itemsObject =
       typeof data === "object" && data !== null
         ? ((data as Record<string, unknown>).items as
-            | Record<string, unknown>
-            | undefined)
+          | Record<string, unknown>
+          | undefined)
         : undefined;
 
     const envelopeItems = itemsObject?.results
