@@ -49,6 +49,7 @@ import {
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import { getAdminRtsDocumentDownloadUrl, getAdminRtsDocumentViewUrl } from '@/lib/api/rts/rtsdocument.client';
 import { hasApprovalOfficerAccess } from '@/lib/utils/rts/approval-officer-access';
+import { getRtsApplicationStatusBadgeProps } from '@/lib/utils/rts/application-status-badge';
 import type {
   RtsApplicationApprovalFieldValuePayload,
   RtsApplicationViewDetailField,
@@ -149,14 +150,6 @@ const ACTIONS: Array<{
     { key: 'canPay', labelKey: 'recordPayment', icon: IndianRupee, variant: 'primary' },
     { key: 'canViewNoteSheet', labelKey: 'viewNoteSheet', icon: FileText, variant: 'secondary' },
   ];
-
-function statusBadgeVariant(status: string): 'success' | 'destructive' | 'warning' | 'secondary' {
-  const normalized = status.toLowerCase();
-  if (normalized.includes('approv') || normalized.includes('complete')) return 'success';
-  if (normalized.includes('reject')) return 'destructive';
-  if (normalized.includes('return') || normalized.includes('revert')) return 'warning';
-  return 'secondary';
-}
 
 export default function RtsApplicationProcessDrawer({
   open,
@@ -563,7 +556,7 @@ export default function RtsApplicationProcessDrawer({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            {headerStatus && <Badge variant={statusBadgeVariant(headerStatus)}>{headerStatus}</Badge>}
+            {headerStatus && <Badge {...getRtsApplicationStatusBadgeProps(headerStatus)}>{headerStatus}</Badge>}
             {/* <button
               type="button"
               onClick={closeDrawer}

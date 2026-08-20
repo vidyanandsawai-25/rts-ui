@@ -559,7 +559,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
           <span className="font-bold text-slate-300">|</span>
           <span className="text-[11px] font-bold text-slate-500">{t("misDashboard.to")}</span>
           <Input id="dashboard-date-to" type="date" min={dateFrom || undefined} value={dateTo} onChange={(event) => setDateTo(event.target.value)} aria-label={t("misDashboard.toDate")} className="h-8 min-w-[132px] border-0 bg-transparent px-1 text-[12px] font-semibold shadow-none focus-visible:ring-0" />
-          {(dateFrom || dateTo) && <Button type="button" onClick={() => { setDateFrom(""); setDateTo(""); }} aria-label={t("misDashboard.clearDates")} title={t("misDashboard.clearDatesTitle")} className="h-7 min-h-0 px-2 text-[10px] font-bold text-slate-400 hover:bg-rose-50 hover:text-rose-500"><X className="h-3.5 w-3.5" /></Button>}
+          {(dateFrom || dateTo) && <Button type="button" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); }} aria-label={t("misDashboard.clearDates")} title={t("misDashboard.clearDatesTitle")} className="h-5 min-h-0 px-1 text-[10px] font-bold text-slate-400 hover:bg-rose-50 hover:text-rose-500"><X className="size-3.5" /></Button>}
         </div>
       </Card>
 

@@ -55,8 +55,20 @@ const COPY = {
   inProgress: "प्रगतीत / In Progress",
 } as const;
 
-function statusVisual(stage: RtsApplicationApprovalStage): StageVisual {
-  const status = stage.status.toLowerCase();
+function isTerminalStage(stage: RtsApplicationApprovalStage): boolean {
+  const status = stage.status?.trim().toLowerCase() ?? "";
+  return status.includes("reject") || status.includes("return") || status.includes("revert");
+}
+
+function statusVisual(
+  stage: RtsApplicationApprovalStage,
+  index: number,
+  terminalStageIndex: number
+): StageVisual {
+  const status = stage.status?.trim().toLowerCase() ?? "";
+
+  // A terminal decision stops visual progression even if the API flags a later stage as current.
+  if (terminalStageIndex >= 0 && index > terminalStageIndex) return "pending";
   if (status.includes("reject")) return "rejected";
   if (status.includes("approved") || status.includes("verified") || status.includes("completed")) {
     return "approved";
@@ -265,6 +277,7 @@ export default function ApplicationAndTrackingDrawer({
 
   const stages = detail?.approvalStages ?? [];
   const progress = detail ? progressPercentage(detail) : 0;
+  const terminalStageIndex = stages.findIndex(isTerminalStage);
 
   return (
     <Drawer
@@ -448,7 +461,7 @@ export default function ApplicationAndTrackingDrawer({
 
               <div className="space-y-2">
                 {stages.map((stage, index) => {
-                  const visual = statusVisual(stage);
+                  const visual = statusVisual(stage, index, terminalStageIndex);
                   const styles = stageStyle(visual);
                   const stageTimestamp = formatStageTimestamp(stage.createdDate ?? stage.completedDate);
                   const officerName = [stage.firstName, stage.lastName].filter(Boolean).join(" ") || stage.userName || stage.assignedToName || "-";

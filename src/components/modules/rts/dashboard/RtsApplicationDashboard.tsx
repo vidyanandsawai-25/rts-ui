@@ -37,6 +37,7 @@ import type {
   RtsApplicationFullDetailData,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import { toApplicationFilterSlug } from '@/lib/utils/rts/application-filter-slug';
+import { getRtsApplicationStatusBadgeProps } from '@/lib/utils/rts/application-status-badge';
 import {
   getAdminRtsDocumentDownloadUrl,
   getAdminRtsDocumentViewUrl,
@@ -71,14 +72,6 @@ type GridRow = AdminApplicationGridRow & Record<string, unknown> & { id: string 
 
 const PAGE_SIZE_OPTIONS = [10];
 const STATUS_OPTIONS = ['submitted', 'pending', 'approved', 'rejected', 'reverted'];
-
-function statusBadgeVariant(status: string): 'success' | 'destructive' | 'warning' | 'secondary' {
-  const normalized = status.toLowerCase();
-  if (normalized === 'approved') return 'success';
-  if (normalized === 'rejected') return 'destructive';
-  if (normalized === 'returned') return 'warning';
-  return 'secondary';
-}
 
 export default function RtsApplicationDashboard({
   kpis,
@@ -277,6 +270,16 @@ export default function RtsApplicationDashboard({
       iconClassName: 'bg-emerald-50 border-emerald-100 text-[#10B981]',
     },
     {
+      key: 'reverted',
+      icon: RotateCcw,
+      label: t('applicationDashboard.cards.reverted'),
+      value: kpis.reverted,
+      percentage: kpis.revertedPercentage ?? (kpis.total > 0 ? Math.round((kpis.reverted / kpis.total) * 100) : 0),
+      borderClassName: 'border-l-violet-500',
+      valueClassName: 'text-violet-600',
+      iconClassName: 'bg-violet-50 border-violet-100 text-violet-600',
+    },
+    {
       key: 'rejected',
       icon: TriangleAlert,
       label: t('applicationDashboard.cards.rejected'),
@@ -295,16 +298,6 @@ export default function RtsApplicationDashboard({
       borderClassName: 'border-l-[#DC2626]',
       valueClassName: 'text-[#DC2626]',
       iconClassName: 'bg-red-50 border-red-100 text-[#DC2626]',
-    },
-    {
-      key: 'reverted',
-      icon: RotateCcw,
-      label: t('applicationDashboard.cards.reverted'),
-      value: kpis.reverted,
-      percentage: kpis.revertedPercentage ?? (kpis.total > 0 ? Math.round((kpis.reverted / kpis.total) * 100) : 0),
-      borderClassName: 'border-l-violet-500',
-      valueClassName: 'text-violet-600',
-      iconClassName: 'bg-violet-50 border-violet-100 text-violet-600',
     },
     {
       key: 'today',
@@ -388,7 +381,7 @@ export default function RtsApplicationDashboard({
         label: t('applicationDashboard.table.status'),
         align: 'center',
         render: (_value, row) => (
-          <Badge variant={statusBadgeVariant(row.currentStatus)}>
+          <Badge {...getRtsApplicationStatusBadgeProps(row.currentStatus)}>
             {row.currentStatus.charAt(0).toUpperCase() + row.currentStatus.slice(1)}
           </Badge>
         ),
@@ -576,15 +569,6 @@ export default function RtsApplicationDashboard({
               />
             </div>
 
-            <div className="self-end pb-0.5">
-              <button
-                type="button"
-                aria-label={t('applicationDashboard.actions.openFilters')}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white transition hover:bg-slate-50"
-              >
-                <Filter className="h-4.5 w-4.5 text-slate-500" />
-              </button>
-            </div>
           </div>
         </div>
 

@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import type { RtsApplicationProcessData } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 
 import { downloadRtsDocument, getAdminRtsDocumentDownloadUrl } from '@/lib/api/rts/rtsdocument.client';
+import { getRtsApplicationStatusBadgeProps } from '@/lib/utils/rts/application-status-badge';
 
 export interface RtsApplicationViewDrawerRecord {
   appId: string;
@@ -296,14 +297,6 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
   );
 }
 
-function statusBadgeVariant(status: string): 'success' | 'destructive' | 'warning' | 'secondary' {
-  const normalized = status.toLowerCase();
-  if (normalized === 'approved') return 'success';
-  if (normalized === 'rejected') return 'destructive';
-  if (normalized === 'returned' || normalized === 'reverted') return 'warning';
-  return 'secondary';
-}
-
 export default function RtsApplicationViewDrawer({
   open,
   record,
@@ -335,7 +328,7 @@ export default function RtsApplicationViewDrawer({
             </div>
           </div>
           <div className="ml-4 flex shrink-0 items-center gap-3">
-            <Badge variant={statusBadgeVariant(record.applicationStatus)}>{record.applicationStatus}</Badge>
+            <Badge {...getRtsApplicationStatusBadgeProps(record.applicationStatus)}>{record.applicationStatus}</Badge>
           </div>
         </div>
       }
@@ -357,7 +350,7 @@ export default function RtsApplicationViewDrawer({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <Badge variant={statusBadgeVariant(record.applicationStatus)}>{record.applicationStatus}</Badge>
+            <Badge {...getRtsApplicationStatusBadgeProps(record.applicationStatus)}>{record.applicationStatus}</Badge>
             {/* <button
               type="button"
               onClick={onClose}

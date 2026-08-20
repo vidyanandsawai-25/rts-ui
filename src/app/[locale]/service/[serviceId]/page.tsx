@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { cookies } from "next/headers";
 
@@ -110,28 +110,7 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
     }
   }
 
-  // Check login requirement server-side
-  const cookieStore = await cookies();
-  const isLoggedIn = cookieStore.has("rts_session");
-
-  const s = serviceTitle.toLowerCase();
-  const d = departmentTitle.toLowerCase();
-
-  const isPropertyTax = s.includes("property") || s.includes("tax") || d.includes("property") || d.includes("tax") ||
-                        s.includes("मालमत्ता") || s.includes("कर") || d.includes("मालमत्ता") || d.includes("कर");
-
-  const isTrade = s.includes("trade") || s.includes("license") || d.includes("trade") || d.includes("license") ||
-                  s.includes("व्यवसाय") || s.includes("व्यापार") || d.includes("व्यवसाय") || d.includes("व्यापार");
-
-  const isWater = s.includes("water") || d.includes("water") ||
-                  s.includes("पाणी") || s.includes("जल") || d.includes("पाणी") || d.includes("जल");
-
-  const requiresLogin = isPropertyTax || isTrade || isWater;
-
-  if (requiresLogin && !isLoggedIn) {
-    redirect(`/${locale}/service/login?redirect=/${locale}/service/${serviceId}`);
-  }
-
+  const isLoggedIn = (await cookies()).has("rts_session");
   const hasFieldDefinitions = Array.isArray(fieldDefinitions) && fieldDefinitions.length > 0;
 
   return (
