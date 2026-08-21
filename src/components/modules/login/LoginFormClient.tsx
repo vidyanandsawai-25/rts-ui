@@ -99,6 +99,15 @@ export function LoginFormClient({
 
   useEffect(() => {
     clearLegacyAuthClientStorage();
+
+    const handlePageShow = () => {
+      clearLegacyAuthClientStorage();
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+    };
   }, []);
 
   const credentialFieldsKey = credState?.resetKey ?? 'idle';

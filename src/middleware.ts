@@ -37,6 +37,12 @@ function clearAuthCookiesOnResponse(response: NextResponse): void {
   }
 }
 
+function applyAntiCacheHeaders(headers: Headers): void {
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  headers.set('Pragma', 'no-cache');
+  headers.set('Expires', '0');
+}
+
 function redirectToLogin(
   request: NextRequest,
   locale: string,
@@ -47,6 +53,7 @@ function redirectToLogin(
     url.searchParams.set('error', SESSION_EXPIRED_LOGIN_ERROR);
   }
   const response = NextResponse.redirect(url);
+  applyAntiCacheHeaders(response.headers);
   clearAuthCookiesOnResponse(response);
   return response;
 }
@@ -92,20 +99,26 @@ export default function middleware(request: NextRequest) {
   const requiresTwoFactorSetup =
     request.cookies.get(AUTH_COOKIES.REQUIRES_TWO_FACTOR_SETUP)?.value === 'true';
   if (isLoggedIn && requiresTwoFactorSetup && !isAccountSecurityRoute) {
-    return NextResponse.redirect(
+    const res = NextResponse.redirect(
       new URL(`/${locale}/account/security?required=1`, request.url)
     );
+    applyAntiCacheHeaders(res.headers);
+    return res;
   }
 
   if (isLoginRoute && isLoggedIn && !sessionExpiredLogin && !requireVerification) {
-    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    const res = NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    applyAntiCacheHeaders(res.headers);
+    return res;
   }
 
   if (pathWithoutLocale === '/') {
     if (!isLoggedIn) {
       return redirectToLogin(request, locale, isSessionExpiredOrWasLoggedIn);
     }
-    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    const res = NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    applyAntiCacheHeaders(res.headers);
+    return res;
   }
 
   if (!isLoginRoute && !isLoggedIn) {
@@ -130,6 +143,7 @@ export default function middleware(request: NextRequest) {
     if (!isPendingChallengeRoute && (sessionExpired || sessionExpiredLogin || (isLoginRoute && !isLoggedIn))) {
       clearAuthCookiesOnResponse(intlResponse);
     }
+    applyAntiCacheHeaders(intlResponse.headers);
     return intlResponse;
   }
 
@@ -149,6 +163,7 @@ export default function middleware(request: NextRequest) {
     clearAuthCookiesOnResponse(response);
   }
 
+  applyAntiCacheHeaders(response.headers);
   return response;
 }
 
