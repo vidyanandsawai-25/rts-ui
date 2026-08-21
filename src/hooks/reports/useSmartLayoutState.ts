@@ -93,4 +93,6 @@ export function useSmartLayoutState(reportId: number | null | undefined, handleR
       setAmountOperator, setAmountValue, setPropertyDescription, setAssessmentStatus, handleResetAll
     }
   };
+  
 }
+
