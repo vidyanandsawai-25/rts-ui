@@ -7,6 +7,7 @@ import { Tabs } from '@/components/common';
 import { useUlbConfigurationForm } from '@/hooks/configuration-settings/ulb-configuration/useUlbConfigurationForm';
 import { useUlbConfigurationSave } from '@/hooks/configuration-settings/ulb-configuration/useUlbConfigurationSave';
 import { useDepartmentLicenses } from '@/hooks/configuration-settings/ulb-configuration/useDepartmentLicenses';
+import { useUlbImages } from '@/hooks/configuration-settings/ulb-configuration/useUlbImages';
 import {
   findInvalidEnabledDepartment,
   getDepartmentLicencesToSave,
@@ -45,6 +46,7 @@ export default function ULBConfigurationClient({
     Array.isArray(initialLicenceData) && initialLicenceData.some((l) => l.isActive ?? l.isEnabled)
   );
   const depts = useDepartmentLicenses(initialDeptData, initialLicenceData);
+  const imagesHook = useUlbImages(initialImagesData || [], (url) => form.setField('ulbLogo', url));
 
   const { save, isSaving } = useUlbConfigurationSave({
     formData: form.formData,
@@ -58,7 +60,7 @@ export default function ULBConfigurationClient({
   const goTo = useCallback((next: UlbTabId) => setActiveTab(next), []);
 
   const handleSaveSection = useCallback(
-    (section: UlbSectionKey) => {
+    async (section: UlbSectionKey) => {
       if (section !== 'ulb-info' && !ulbMasterId && !form.validateSection('ulb-info')) {
         toast.error(t('messages.completeUlbInfoFirst'));
         setActiveTab('ulb-info');
@@ -71,10 +73,15 @@ export default function ULBConfigurationClient({
         return;
       }
 
+      if (section === 'logo-images') {
+         const success = await imagesHook.commitImageChanges();
+         if (!success) return;
+      }
+
       form.markSectionComplete(section, true);
       toast.success(t('messages.success'));
     },
-    [form, t, ulbMasterId]
+    [form, t, ulbMasterId, imagesHook]
   );
 
   const handleApplyMaster = useCallback(() => {
@@ -123,12 +130,15 @@ export default function ULBConfigurationClient({
     const savedUlb = await save(undefined, true);
     if (!savedUlb) return;
 
+    const savedImages = await imagesHook.commitImageChanges();
+    if (!savedImages) return;
+
     const savedDepts = await depts.saveLicences(true);
     if (!savedDepts) return;
 
     form.setDepartmentLicenseComplete(true);
     toast.success(t('messages.success'));
-  }, [depts, form, save, t]);
+  }, [depts, form, save, t, imagesHook]);
 
   if (fetchError) {
     return (
@@ -184,9 +194,9 @@ export default function ULBConfigurationClient({
               }}
               onPrevious={() => goTo('ulb-info')}
               onNext={() => goTo('project-license-info')}
-              isSaving={isSaving}
+              isSaving={isSaving || imagesHook.isUploading}
               footerClassName={FOOTER_CLASS}
-              initialImages={initialImagesData}
+              imagesHook={imagesHook}
             />
           </Tabs.TabPanel>
 

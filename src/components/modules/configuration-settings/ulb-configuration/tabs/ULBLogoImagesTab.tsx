@@ -7,7 +7,6 @@ import type { ULBLogoImagesTabProps } from '@/types/ulbconfig-master.types';
 import { ULBImageCard } from '../parts/ULBImageCard';
 import { ULBImageGallery } from '../parts/ULBImageGallery';
 import { ULBLogoImagesDrawer } from '../parts/ULBLogoImagesDrawer';
-import { useUlbImages } from '@/hooks/configuration-settings/ulb-configuration/useUlbImages';
 
 export function ULBLogoImagesTab({
   t,
@@ -18,7 +17,7 @@ export function ULBLogoImagesTab({
   onNext,
   isSaving,
   footerClassName,
-  initialImages,
+  imagesHook,
 }: ULBLogoImagesTabProps) {
   const {
     images,
@@ -26,7 +25,7 @@ export function ULBLogoImagesTab({
     deleteImage,
     setAsBackground,
     uploadOrReplaceImage,
-  } = useUlbImages(initialImages, onLogoChange);
+  } = imagesHook;
 
   // Drawer modal state
   const [drawerOpen, setDrawerOpen] = useState(false);

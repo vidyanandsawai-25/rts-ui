@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { parseDurationFromApi } from '@/lib/api/configuration-settings/ulb-configuration/department-licence.mapper';
-import { calculateLicenseEndDate, calculateRenewalAlerts } from '@/lib/utils/ulb-configuration.utils';
+import { calculateLicenseEndDate, calculateRenewalAlerts, calculateDurationInMonths } from '@/lib/utils/ulb-configuration.utils';
 import { useDepartmentLicencesSave } from '@/hooks/configuration-settings/ulb-configuration/useDepartmentLicencesSave';
 import type {
   Department,
@@ -172,6 +172,9 @@ export function useDepartmentLicenses(
 
           if (field === 'endDate') {
             if (next.endDate) {
+              if (next.startDate) {
+                next.duration = calculateDurationInMonths(next.startDate, next.endDate);
+              }
               next.renewalAlerts = calculateRenewalAlerts(next.endDate);
               const expired = isLicenseExpired(next.endDate);
               if (expired) {
@@ -186,7 +189,24 @@ export function useDepartmentLicenses(
             return next;
           }
 
-          if (next.startDate && next.duration) {
+          if (field === 'startDate') {
+             if (next.endDate) {
+                next.duration = calculateDurationInMonths(next.startDate, next.endDate);
+             } else if (next.duration) {
+                next.endDate = calculateLicenseEndDate(next.startDate, next.duration);
+                next.renewalAlerts = calculateRenewalAlerts(next.endDate);
+                const expired = isLicenseExpired(next.endDate);
+                if (expired) {
+                  next.enabled = false;
+                  next.status = 'inactive';
+                } else {
+                  next.status = 'active';
+                }
+             }
+             return next;
+          }
+
+          if (field === 'duration' && next.startDate && next.duration) {
             next.endDate = calculateLicenseEndDate(next.startDate, next.duration);
             next.renewalAlerts = calculateRenewalAlerts(next.endDate);
             const expired = isLicenseExpired(next.endDate);

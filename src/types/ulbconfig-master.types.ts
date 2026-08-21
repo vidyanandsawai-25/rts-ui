@@ -6,6 +6,7 @@
 import type { ComponentType, ChangeEvent, FocusEvent } from 'react';
 import type { SelectProps, TextAreaProps, InputProps } from '@/components/common';
 import type { LucideIcon } from 'lucide-react';
+import type { ImageHookReturn } from '@/hooks/configuration-settings/ulb-configuration/useUlbImages';
 
 /**
  * --- Common Interfaces ---
@@ -426,7 +427,8 @@ export interface ULBLogoImagesTabProps {
   onNext: () => void;
   isSaving?: boolean;
   footerClassName: string;
-  initialImages: UlbImageMasterDto[];
+  initialImages?: UlbImageMasterDto[];
+  imagesHook: ImageHookReturn;
 }
 
 export interface ULBProjectLicenseTabProps extends UlbValidatedFieldProps {

@@ -93,6 +93,52 @@ export function calculateLicenseEndDate(startDate: string, duration: string): st
   return Number.isNaN(end.getTime()) ? '' : end.toISOString().split('T')[0];
 }
 
+/**
+ * Computes the duration in months between a start date and an end date.
+ */
+export function calculateDurationInMonths(startDate: string, endDate: string): string {
+  if (!startDate || !endDate) return '';
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return '';
+
+  let months = (end.getFullYear() - start.getFullYear()) * 12;
+  months -= start.getMonth();
+  months += end.getMonth();
+  
+  // Adjust for days if end day is significantly earlier in the month than start day
+  if (end.getDate() < start.getDate() - 15) {
+      months--;
+  } else if (end.getDate() > start.getDate() + 15) {
+      months++;
+  }
+
+  return months > 0 ? months.toString() : '0';
+}
+
+/**
+ * Formats a duration in months into a human readable string (e.g., "1 Year, 2 Months")
+ */
+export function formatDurationText(duration: string): string {
+  if (!duration || duration === '0') return '0 Months';
+  if (duration === '999') return 'Lifetime';
+  
+  const months = Number.parseInt(duration, 10);
+  if (Number.isNaN(months)) return duration;
+  
+  const y = Math.floor(months / 12);
+  const m = months % 12;
+  
+  const parts = [];
+  if (y === 1) parts.push('1 Year');
+  else if (y > 1) parts.push(`${y} Years`);
+  
+  if (m === 1) parts.push('1 Month');
+  else if (m > 1) parts.push(`${m} Months`);
+  
+  return parts.join(', ') || '0 Months';
+}
+
 const LICENSE_KEY_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
 function randomLicenseKeyChar(): string {
