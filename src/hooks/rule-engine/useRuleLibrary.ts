@@ -123,7 +123,9 @@ export function useRuleLibrary({
   );
 
   React.useEffect(() => {
-    if (searchTerm === initialSearchTerm) return;
+    const currentTrimmed = searchTerm.trim();
+    const initialTrimmed = initialSearchTerm.trim();
+    if (currentTrimmed === initialTrimmed) return;
     const delayDebounceFn = setTimeout(() => pushRoute(1, pageSize), 400);
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, initialSearchTerm, pushRoute, pageSize]);
@@ -151,9 +153,15 @@ export function useRuleLibrary({
   };
 
   const filteredRules = React.useMemo(() => {
-    const s = searchTerm.toLowerCase();
+    const trimmed = searchTerm.trim().toLowerCase();
+    if (!trimmed) {
+      return rules.filter((r) => filterCategory === 'ALL' || r.ruleCategory === filterCategory);
+    }
+    const words = trimmed.split(' ').filter(Boolean);
     return rules.filter((r) => {
-      const matchesSearch = (r.ruleName || '').toLowerCase().includes(s) || (r.ruleCode || '').toLowerCase().includes(s);
+      const name = (r.ruleName || '').toLowerCase();
+      const code = (r.ruleCode || '').toLowerCase();
+      const matchesSearch = words.every((w) => name.includes(w) || code.includes(w));
       return matchesSearch && (filterCategory === 'ALL' || r.ruleCategory === filterCategory);
     });
   }, [rules, filterCategory, searchTerm]);

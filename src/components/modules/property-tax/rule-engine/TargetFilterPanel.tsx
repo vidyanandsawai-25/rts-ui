@@ -95,13 +95,26 @@ export default function TargetFilterPanel({
             label={t('targetFilter.priority')}
             type="number"
             value={priority === undefined || priority === null ? '' : priority.toString()}
+            onKeyDown={(e) => {
+              if (['-', '+', 'e', 'E', '.'].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
             onChange={(e) => {
-              const val = e.target.value;
-              setPriority(val === '' ? undefined : Number(val));
+              const cleanVal = e.target.value.replace(/[-+eE.]/g, '');
+              if (cleanVal === '') {
+                setPriority(undefined);
+              } else {
+                const parsed = parseInt(cleanVal, 10);
+                if (!isNaN(parsed)) {
+                  setPriority(Math.max(1, parsed));
+                }
+              }
             }}
             placeholder={t('targetFilter.priorityPlaceholder')}
             required
             min={1}
+            step={1}
           />
         </div>
 

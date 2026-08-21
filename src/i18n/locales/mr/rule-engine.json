@@ -128,6 +128,8 @@
   "simulation": {
     "viewRuleTitle": "नियम पहा: {code}",
     "consoleTitle": "सिम्युलेशन कन्सोल: {code}",
+    "globalConsoleTitle": "ग्लोबल सिम्युलेटर कन्सोल: {category} कार्यप्रवाह",
+    "allWorkflows": "सर्व",
     "jsonStructure": "नियम JSON रचना",
     "readOnly": "केवळ वाचनासाठी",
     "copied": "कॉपी केले!",

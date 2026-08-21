@@ -29,7 +29,13 @@ export default function RuleExecutionDrawer({
       title={
         <div className="flex items-center gap-2.5 text-[#1E3A8A] font-bold text-base md:text-lg">
           <Terminal className="w-5.5 h-5.5 text-indigo-600 stroke-[2.5]" />
-          <span>{rule.id === -1 ? `Global Simulator Console: ${rule.ruleCategory} Workflows` : t('simulation.consoleTitle', { code: rule.ruleCode })}</span>
+          <span>
+            {rule.id === -1
+              ? t('simulation.globalConsoleTitle', {
+                  category: !rule.ruleCategory || rule.ruleCategory === 'ALL' ? t('simulation.allWorkflows') : rule.ruleCategory,
+                })
+              : t('simulation.consoleTitle', { code: rule.ruleCode })}
+          </span>
         </div>
       }
     >

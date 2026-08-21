@@ -128,6 +128,8 @@
   "simulation": {
     "viewRuleTitle": "View Rule: {code}",
     "consoleTitle": "Simulation Console: {code}",
+    "globalConsoleTitle": "Global Simulator Console: {category} Workflows",
+    "allWorkflows": "All",
     "jsonStructure": "Rule JSON Structure",
     "readOnly": "Read-Only",
     "copied": "Copied!",

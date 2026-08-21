@@ -23,7 +23,16 @@ export default function RuleLibraryFilter({
       <Input
         placeholder={searchPlaceholder}
         value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (val.trim() === '') {
+            setSearchTerm('');
+            return;
+          }
+          // Remove leading spaces and collapse consecutive spaces
+          const sanitized = val.replace(/^\s+/, '').replace(/\s+/g, ' ');
+          setSearchTerm(sanitized);
+        }}
       />
       <SearchSelect
         options={categoryFilterOptions}
