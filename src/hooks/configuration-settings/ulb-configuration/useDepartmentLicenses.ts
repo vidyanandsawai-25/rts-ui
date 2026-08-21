@@ -71,13 +71,15 @@ export function useDepartmentLicenses(
   initialLicences: DepartmentLicenceDetails[]
 ) {
   const t = useTranslations('ulb_configuration');
-  const [departments, setDepartments] = useState<DepartmentLicense[]>(() =>
+  const [initialDepartments, setInitialDepartments] = useState<DepartmentLicense[]>(() =>
     buildInitial(initialDepts, initialLicences)
   );
+  const [departments, setDepartments] = useState<DepartmentLicense[]>(initialDepartments);
   const [searchQuery, setSearchQuery] = useState('');
   const { saveLicences, isSavingLicences } = useDepartmentLicencesSave({
     departments,
     setDepartments,
+    setInitialDepartments,
   });
 
   const mergeWithPreviousState = useCallback(
@@ -303,9 +305,14 @@ export function useDepartmentLicenses(
 
   const activeCount = useMemo(() => departments.filter((d) => d.enabled).length, [departments]);
 
+  const isDirty = useMemo(() => {
+    return JSON.stringify(departments) !== JSON.stringify(initialDepartments);
+  }, [departments, initialDepartments]);
+
   return {
     departments,
     filtered,
+    isDirty,
     activeCount,
     searchQuery,
     setSearchQuery,

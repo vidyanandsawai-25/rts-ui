@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Clock, Key, RefreshCw, Shield } from 'lucide-react';
+import { Clock, Key, RefreshCw, Shield } from 'lucide-react';
 import { Badge, Button } from '@/components/common';
 import {
   LICENSE_DURATION_OPTIONS,
@@ -20,7 +20,6 @@ function isCustomDuration(duration: string): boolean {
 
 export function ULBLicenseSection({
   formData,
-  masterRenewalAlerts,
   t,
   onFieldChange,
   onLicenseFieldChange,
@@ -95,29 +94,6 @@ export function ULBLicenseSection({
         </div>
       </div>
 
-      {masterRenewalAlerts.length > 0 && (
-        <div className="border-t border-slate-100 px-4 pt-3 pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-slate-400" />
-              <span className="text-xs font-bold uppercase text-slate-500">{t('sections.renewalAlerts')}</span>
-            </div>
-            <div className="flex gap-2">
-              {masterRenewalAlerts.slice(0, 4).map((alert, idx) => (
-                <span
-                  key={idx}
-                  className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold ${
-                    alert.triggered ? 'border-amber-200 bg-amber-100 text-amber-700' : 'border-slate-200 bg-slate-100 text-slate-500'
-                  }`}
-                >
-                  <span className={`h-1.5 w-1.5 rounded-full ${alert.triggered ? 'bg-amber-500' : 'bg-slate-400'}`} />
-                  {alert.label}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

@@ -170,6 +170,7 @@
     "perUlb": "Per ULB"
   },
   "messages": {
+    "saveBeforeSwitch": "Please save your current changes before switching tabs",
     "loading": "Loading configuration...",
     "saving": "Saving changes...",
     "uploading": "Uploading...",

@@ -21,7 +21,7 @@ export type PendingUpload = {
 
 export type ImageHookReturn = ReturnType<typeof useUlbImages>;
 
-export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (url: string | null) => void) {
+export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (url: string | null, isAutoSelect?: boolean) => void) {
   const { confirm } = useConfirm();
   
   // Track original images to detect category changes (like Background -> BackgroundLibrary)

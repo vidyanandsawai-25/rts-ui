@@ -421,7 +421,7 @@ export interface ULBInfoTabProps extends UlbValidatedFieldProps {
 export interface ULBLogoImagesTabProps {
   t: (key: string) => string;
   logoUrl: string | null;
-  onLogoChange: (url: string | null) => void;
+  onLogoChange: (url: string | null, isAutoSelect?: boolean) => void;
   onSave: () => void;
   onPrevious: () => void;
   onNext: () => void;
@@ -433,7 +433,6 @@ export interface ULBLogoImagesTabProps {
 
 export interface ULBProjectLicenseTabProps extends UlbValidatedFieldProps {
   formData: ULBConfigurationFormData;
-  masterRenewalAlerts: RenewalAlert[];
   t: (key: string, values?: Record<string, string | number>) => string;
   onLicenseFieldChange: (field: 'licenseStartDate' | 'licenseDuration', value: string) => void;
   onGenerateLicenseKey: () => void;
@@ -454,7 +453,6 @@ export interface ULBDepartmentLicenseTabProps {
   master: UlbMasterLicenseSnapshot;
   onToggle: (id: string, enabled: boolean, masterDates?: UlbMasterLicenseSnapshot) => void;
   onDateChange: (id: string, field: 'startDate' | 'duration' | 'endDate', value: string) => void;
-  onApplyMaster: () => void;
   onEnableAll: () => void;
   onDisableAll: () => void;
   onPrevious: () => void;
@@ -477,7 +475,6 @@ export interface ULBProjectInfoSectionProps extends UlbValidatedFieldProps {
 
 export interface ULBLicenseSectionProps extends Pick<UlbValidatedFieldProps, 'onFieldBlur' | 'getFieldError'> {
   formData: ULBConfigurationFormData;
-  masterRenewalAlerts: RenewalAlert[];
   t: (key: string, values?: Record<string, string | number>) => string;
   onFieldChange: UlbFieldChangeHandler;
   onLicenseFieldChange: (field: 'licenseStartDate' | 'licenseDuration', value: string) => void;

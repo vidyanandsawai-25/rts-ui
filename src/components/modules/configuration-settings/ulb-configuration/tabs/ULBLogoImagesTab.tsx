@@ -41,7 +41,7 @@ export function ULBLogoImagesTab({
     const currentLogoExists = logoImagesList.some((img) => img.url === logoUrl);
     if (!logoUrl || !currentLogoExists) {
       const defaultLogo = logoImagesList[0]?.url || null;
-      onLogoChange(defaultLogo);
+      onLogoChange(defaultLogo, true);
     }
   }, [images, logoUrl, onLogoChange]);
 

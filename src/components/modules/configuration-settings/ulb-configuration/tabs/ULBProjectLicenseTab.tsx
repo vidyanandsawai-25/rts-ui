@@ -8,7 +8,6 @@ import { ULBLicenseSection } from '../parts/ULBLicenseSection';
 
 export function ULBProjectLicenseTab({
   formData,
-  masterRenewalAlerts,
   t,
   onFieldChange,
   onFieldBlur,
@@ -33,7 +32,6 @@ export function ULBProjectLicenseTab({
         />
         <ULBLicenseSection
           formData={formData}
-          masterRenewalAlerts={masterRenewalAlerts}
           t={t}
           onFieldChange={onFieldChange}
           onLicenseFieldChange={onLicenseFieldChange}

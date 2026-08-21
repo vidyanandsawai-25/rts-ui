@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Tabs } from '@/components/common';
@@ -46,7 +46,7 @@ export default function ULBConfigurationClient({
     Array.isArray(initialLicenceData) && initialLicenceData.some((l) => l.isActive ?? l.isEnabled)
   );
   const depts = useDepartmentLicenses(initialDeptData, initialLicenceData);
-  const imagesHook = useUlbImages(initialImagesData || [], (url) => form.setField('ulbLogo', url));
+  const imagesHook = useUlbImages(initialImagesData || [], (url, isAutoSelect) => form.setField('ulbLogo', url, isAutoSelect));
 
   const { save, isSaving } = useUlbConfigurationSave({
     formData: form.formData,
@@ -57,7 +57,27 @@ export default function ULBConfigurationClient({
     },
   });
 
-  const goTo = useCallback((next: UlbTabId) => setActiveTab(next), []);
+  const isGlobalDirty = form.isDirty || depts.isDirty || imagesHook.hasPendingImageChanges;
+
+  const goTo = useCallback((next: UlbTabId) => {
+    if (isGlobalDirty) {
+      toast.error(t('messages.saveBeforeSwitch'));
+      return;
+    }
+    setActiveTab(next);
+  }, [isGlobalDirty, t]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isGlobalDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isGlobalDirty]);
 
   const handleSaveSection = useCallback(
     async (section: UlbSectionKey) => {
@@ -73,6 +93,11 @@ export default function ULBConfigurationClient({
         return;
       }
 
+      if (section === 'ulb-info' || section === 'project-license-info') {
+        const savedUlb = await save(undefined, false);
+        if (!savedUlb) return;
+      }
+
       if (section === 'logo-images') {
          const success = await imagesHook.commitImageChanges();
          if (!success) return;
@@ -81,27 +106,22 @@ export default function ULBConfigurationClient({
       form.markSectionComplete(section, true);
       toast.success(t('messages.success'));
     },
-    [form, t, ulbMasterId, imagesHook]
+    [form, t, ulbMasterId, imagesHook, save]
   );
 
-  const handleApplyMaster = useCallback(() => {
-    depts.applyMaster({
-      startDate: form.formData.licenseStartDate,
-      duration: form.formData.licenseDuration,
-      endDate: form.formData.licenseEndDate,
-    });
-  }, [depts, form.formData.licenseDuration, form.formData.licenseEndDate, form.formData.licenseStartDate]);
-
-  const handleSaveDepartments = useCallback(() => {
+  const handleSaveDepartments = useCallback(async () => {
     const toSave = getDepartmentLicencesToSave(depts.departments);
     if (findInvalidEnabledDepartment(toSave)) {
       toast.error(t('messages.validation'));
       return;
     }
 
+    const success = await depts.saveLicences();
+    if (!success) return;
+
     form.setDepartmentLicenseComplete(true);
     toast.success(t('messages.success'));
-  }, [depts.departments, form, t]);
+  }, [depts, form, t]);
 
   const handleFinalSave = useCallback(async () => {
     if (!form.validateSection('ulb-info')) {
@@ -163,7 +183,7 @@ export default function ULBConfigurationClient({
 
         <Tabs
           value={activeTab}
-          onChange={(val) => setActiveTab(val as UlbTabId)}
+          onChange={(val) => goTo(val as UlbTabId)}
           className="flex min-h-0 flex-1 flex-col overflow-hidden"
         >
           <ULBTabList activeTab={activeTab} completionStatus={form.completionStatus} t={t} />
@@ -188,7 +208,7 @@ export default function ULBConfigurationClient({
             <ULBLogoImagesTab
               t={t}
               logoUrl={form.formData.ulbLogo}
-              onLogoChange={(url) => form.setField('ulbLogo', url)}
+              onLogoChange={(url, isAutoSelect) => form.setField('ulbLogo', url, isAutoSelect)}
               onSave={() => {
                 if (!isSaving) void handleSaveSection('logo-images');
               }}
@@ -203,7 +223,6 @@ export default function ULBConfigurationClient({
           <Tabs.TabPanel value="project-license-info" className={PANEL_CLASS}>
             <ULBProjectLicenseTab
               formData={form.formData}
-              masterRenewalAlerts={form.masterRenewalAlerts}
               t={t}
               onFieldChange={form.handleFieldChange}
               onFieldBlur={form.handleFieldBlur}
@@ -235,7 +254,6 @@ export default function ULBConfigurationClient({
               }}
               onToggle={depts.toggle}
               onDateChange={depts.updateDate}
-              onApplyMaster={handleApplyMaster}
               onEnableAll={() =>
                 depts.enableAll({
                   startDate: form.formData.licenseStartDate,
