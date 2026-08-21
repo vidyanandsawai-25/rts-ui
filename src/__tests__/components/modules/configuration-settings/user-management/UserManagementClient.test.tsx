@@ -22,6 +22,16 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useActivePagePermissions', () => ({
+  useActivePagePermissions: () => ({
+    canView: true,
+    canEdit: true,
+    canDelete: true,
+    haveFullAccess: true,
+    hasAccess: true,
+  }),
+}));
+
 vi.mock('@/app/[locale]/configuration-settings/user-management/actions', () => ({
   getUsersAction: vi.fn(),
 }));

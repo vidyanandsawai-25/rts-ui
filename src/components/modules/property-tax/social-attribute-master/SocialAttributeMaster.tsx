@@ -56,6 +56,14 @@ export function SocialAttributeMaster({
   const totalCount = parentItems.length;
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
+  // If the current page becomes out of bounds (e.g., after deleting the last item on the last page), go to the last available page.
+  React.useEffect(() => {
+    if (pageNumber > totalPages) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPageNumber(totalPages);
+    }
+  }, [totalPages, pageNumber]);
+
   // Slice the parent items first
   const paginatedParentItems = React.useMemo(() => {
     const start = (pageNumber - 1) * pageSize;

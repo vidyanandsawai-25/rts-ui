@@ -196,6 +196,11 @@ export const FormFieldsSection = ({
               className="w-full text-gray-700"
               label={t('form.fields.parentAttribute.label') || 'Parent Attribute'}
               disabled={areFieldsDisabled}
+              required
+            />
+            <ValidationMessage
+              message={errors.parentAttributeId}
+              visible={showError('parentAttributeId')}
             />
           </div>
 

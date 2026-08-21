@@ -3,17 +3,24 @@ import { MasterTable, Badge, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { Designation, DesignationTableProps } from '@/types/user-management';
 
+import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
+
 export function DesignationTable({
   designations,
   pageNumber,
   pageSize,
   totalCount,
   onPageChange,
+  onPageSizeChange,
   onEdit,
   onDelete,
   deletingId,
 }: DesignationTableProps) {
   const t = useTranslations('userManagement');
+  const { canEdit, canDelete, haveFullAccess } = useActivePagePermissions();
+  const showEdit = canEdit || haveFullAccess;
+  const showDelete = canDelete || haveFullAccess;
+  const showActions = showEdit || showDelete;
 
   const columns = [
     {
@@ -73,35 +80,47 @@ export function DesignationTable({
       totalCount={totalCount}
       totalPages={Math.ceil(totalCount / pageSize)}
       onPageChange={onPageChange}
-      renderActions={(row) => (
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onEdit(row)}
-            aria-label={t('actions.edit')}
-            className="h-8 w-8 p-0 text-slate-400 hover:text-indigo-600"
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onDelete(row)}
-            aria-label={t('actions.delete')}
-            className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 disabled:opacity-50"
-            disabled={deletingId === row.id}
-          >
-            {deletingId === row.id ? (
-              <Loader2 className="h-4 w-4 animate-spin text-rose-500" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-      )}
+      renderActions={
+        showActions
+          ? (row) => (
+              <div className="flex items-center gap-2">
+                {showEdit && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onEdit(row)}
+                    aria-label={t('actions.edit')}
+                    className="h-8 w-8 p-0 text-slate-400 hover:text-indigo-600"
+                    actionType="edit"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                )}
+                {showDelete && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onDelete(row)}
+                    aria-label={t('actions.delete')}
+                    className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 disabled:opacity-50"
+                    disabled={deletingId === row.id}
+                    actionType="delete"
+                  >
+                    {deletingId === row.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-rose-500" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
+              </div>
+            )
+          : undefined
+      }
       isPagination={true}
-      actionLabel={t('table.actions')}
+      isPageSize={true}
+      onPageSizeChange={onPageSizeChange}
+      actionLabel={showActions ? t('table.actions') : undefined}
       getRowKey={(designation) => designation.id}
     />
   );

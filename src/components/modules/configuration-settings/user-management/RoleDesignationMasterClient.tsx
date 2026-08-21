@@ -18,6 +18,8 @@ import { useDesignationTable } from '@/hooks/configuration-settings/user-managem
 import { RoleTable } from './components/RoleTable';
 import { DesignationTable } from './components/DesignationTable';
 
+import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
+
 export function RoleDesignationMasterClient({
   initialRoles = [],
   initialDesignations = [],
@@ -32,6 +34,9 @@ export function RoleDesignationMasterClient({
 
   const locale = useLocale();
   const basePath = `/${locale}/configuration-settings/user-management`;
+
+  const { haveFullAccess } = useActivePagePermissions();
+  const showAdd = haveFullAccess;
 
   // Handle sub-tab selection via search params
   const activeSubTab = searchParams.get('subtab') || 'roles';
@@ -49,7 +54,8 @@ export function RoleDesignationMasterClient({
     setSearchTerm: setRoleSearch,
     pageNumber: rolePage,
     setPageNumber: setRolePage,
-    pageSize,
+    pageSize: rolePageSize,
+    setPageSize: setRolePageSize,
     filteredRoles,
   } = useRoleTable(initialRoles);
 
@@ -60,6 +66,8 @@ export function RoleDesignationMasterClient({
     setSearchTerm: setDesSearch,
     pageNumber: desPage,
     setPageNumber: setDesPage,
+    pageSize: desPageSize,
+    setPageSize: setDesPageSize,
     filteredDesignations,
   } = useDesignationTable(initialDesignations);
 
@@ -205,24 +213,30 @@ export function RoleDesignationMasterClient({
                 onChange={(val) => (isRoles ? setRoleSearch(val) : setDesSearch(val))}
                 className="mb-0 w-64 [&_input]:text-black [&_input]:opacity-100"
               />
-              <Button
-                onClick={() => router.push(`${basePath}/${isRoles ? 'roles' : 'designations'}/add`)}
-                aria-label={isRoles ? t('roles.addRole') : t('roles.addDesignation')}
-                className="flex items-center gap-2"
-              >
-                {isRoles ? <Shield className="w-4 h-4" /> : <Briefcase className="w-4 h-4" />}
-                {isRoles ? t('roles.addRole') : t('roles.addDesignation')}
-              </Button>
+              {showAdd && (
+                <Button
+                  onClick={() =>
+                    router.push(`${basePath}/${isRoles ? 'roles' : 'designations'}/add`)
+                  }
+                  aria-label={isRoles ? t('roles.addRole') : t('roles.addDesignation')}
+                  className="flex items-center gap-2"
+                  actionType="add"
+                  icon={isRoles ? Shield : Briefcase}
+                >
+                  {isRoles ? t('roles.addRole') : t('roles.addDesignation')}
+                </Button>
+              )}
             </div>
           </div>
 
           <TabPanel value="roles" className="mt-0 border-none p-0 shadow-none">
             <RoleTable
-              roles={filteredRoles.slice((rolePage - 1) * pageSize, rolePage * pageSize)}
+              roles={filteredRoles.slice((rolePage - 1) * rolePageSize, rolePage * rolePageSize)}
               pageNumber={rolePage}
-              pageSize={pageSize}
+              pageSize={rolePageSize}
               totalCount={filteredRoles.length}
               onPageChange={setRolePage}
+              onPageSizeChange={setRolePageSize}
               onEdit={handleRoleEdit}
               onDelete={handleDeleteRole}
               deletingId={deletingRoleId}
@@ -232,13 +246,14 @@ export function RoleDesignationMasterClient({
           <TabPanel value="designations" className="mt-0 border-none p-0 shadow-none">
             <DesignationTable
               designations={filteredDesignations.slice(
-                (desPage - 1) * pageSize,
-                desPage * pageSize
+                (desPage - 1) * desPageSize,
+                desPage * desPageSize
               )}
               pageNumber={desPage}
-              pageSize={pageSize}
+              pageSize={desPageSize}
               totalCount={filteredDesignations.length}
               onPageChange={setDesPage}
+              onPageSizeChange={setDesPageSize}
               onEdit={handleDesignationEdit}
               onDelete={handleDeleteDesignation}
               deletingId={deletingDesignationId}

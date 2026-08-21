@@ -41,6 +41,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   isLoading?: boolean;
   children?: React.ReactNode;
   hidden?: boolean;
+  actionType?: 'add' | 'edit' | 'delete' | 'save';
 }
 
 /**
@@ -66,6 +67,7 @@ export function Button({
   className = '',
   children,
   type = 'button',
+  actionType,
   ...props
 }: ButtonProps): React.ReactElement | null {
   let pathname = '';
@@ -123,11 +125,11 @@ export function Button({
     const canEdit = !!activeScreenPermission.canEdit || isFull;
     const canDelete = !!activeScreenPermission.canDelete || isFull;
 
-    const isAdd = Icon === Plus;
-    const isEdit = variant === 'edit' || Icon === Pencil;
-    const isDelete = variant === 'delete' || Icon === Trash2;
+    const isAdd = actionType === 'add' || Icon === Plus;
+    const isEdit = actionType === 'edit' || variant === 'edit' || Icon === Pencil;
+    const isDelete = actionType === 'delete' || variant === 'delete' || Icon === Trash2;
     // Save and Update (RefreshCw) require edit access — covers SaveButton, UpdateButton globally
-    const isSaveOrUpdate = Icon === Save || Icon === RefreshCw;
+    const isSaveOrUpdate = actionType === 'save' || Icon === Save || Icon === RefreshCw;
 
     if (isAdd && !isFull) return null;
     if (isEdit && !canEdit) return null;

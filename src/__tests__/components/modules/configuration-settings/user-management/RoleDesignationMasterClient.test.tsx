@@ -20,6 +20,16 @@ vi.mock('@/app/[locale]/configuration-settings/user-management/actions', () => (
   getDesignationsAction: vi.fn(),
 }));
 
+vi.mock('@/hooks/useActivePagePermissions', () => ({
+  useActivePagePermissions: () => ({
+    canView: true,
+    canEdit: true,
+    canDelete: true,
+    haveFullAccess: true,
+    hasAccess: true,
+  }),
+}));
+
 const mockPush = vi.fn();
 let mockSubtab = 'roles';
 

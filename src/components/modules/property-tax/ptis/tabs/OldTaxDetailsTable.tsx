@@ -39,12 +39,16 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
         label: t('fields.wardPropPartNo'),
         align: 'left',
         width: '180px',
+        headerClassName: 'whitespace-nowrap',
+        cellClassName: 'whitespace-nowrap',
       },
       {
         key: 'year',
         label: t('fields.year'),
         align: 'center',
         width: '100px',
+        headerClassName: 'whitespace-nowrap',
+        cellClassName: 'whitespace-nowrap',
       },
     ];
 
@@ -54,7 +58,8 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
         key: taxName,
         label: taxName,
         align: 'right',
-        cellClassName: 'tabular-nums font-medium',
+        cellClassName: 'tabular-nums font-medium whitespace-nowrap',
+        headerClassName: 'whitespace-nowrap',
       });
     });
 
@@ -63,7 +68,8 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
       key: 'taxTotal',
       label: t('fields.taxTotal'),
       align: 'right',
-      cellClassName: 'tabular-nums font-bold text-slate-900',
+      cellClassName: 'tabular-nums font-bold text-slate-900 whitespace-nowrap',
+      headerClassName: 'whitespace-nowrap',
     });
 
     return cols;

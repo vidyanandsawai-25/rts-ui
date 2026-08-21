@@ -88,7 +88,7 @@ export default function SocialAttributeForm({
         </>
       }
     >
-      <form id="form" onSubmit={handleSubmit} className="space-y-6 bg-[#F8FAFF] p-5">
+      <form id="form" onSubmit={handleSubmit} noValidate className="space-y-6 bg-[#F8FAFF] p-5">
         <StatusToggleSection
           isEdit={isEdit}
           isActive={isActive}

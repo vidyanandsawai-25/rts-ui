@@ -16,6 +16,8 @@ import { MasterTable, Badge, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { User, UserTableProps } from '@/types/user-management';
 
+import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
+
 export function UserTable({
   users,
   totalCount,
@@ -25,9 +27,14 @@ export function UserTable({
   pageNumber,
   pageSize,
   onPageChange,
+  onPageSizeChange,
   deletingId,
 }: UserTableProps) {
   const t = useTranslations('userManagement');
+  const { canEdit, canDelete, haveFullAccess } = useActivePagePermissions();
+  const showEdit = canEdit || haveFullAccess;
+  const showDelete = canDelete || haveFullAccess;
+  const showActions = showEdit || showDelete;
 
   const columns = [
     {
@@ -194,47 +201,56 @@ export function UserTable({
       key: 'id' as const,
       render: (_: unknown, row: User) => (
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onEdit(row)}
-            className="h-8 w-8 p-0 text-slate-400 hover:text-indigo-600"
-            title={t('actions.edit')}
-            aria-label={t('actions.edit')}
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onDelete(row.id)}
-            className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 disabled:opacity-50"
-            title={t('actions.delete')}
-            aria-label={t('actions.delete')}
-            disabled={deletingId === row.id}
-          >
-            {deletingId === row.id ? (
-              <Loader2 className="h-4 w-4 animate-spin text-rose-500" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-          </Button>
+          {showEdit && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onEdit(row)}
+              className="h-8 w-8 p-0 text-slate-400 hover:text-indigo-600"
+              title={t('actions.edit')}
+              aria-label={t('actions.edit')}
+              actionType="edit"
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          )}
+          {showDelete && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onDelete(row.id)}
+              className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 disabled:opacity-50"
+              title={t('actions.delete')}
+              aria-label={t('actions.delete')}
+              disabled={deletingId === row.id}
+              actionType="delete"
+            >
+              {deletingId === row.id ? (
+                <Loader2 className="h-4 w-4 animate-spin text-rose-500" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+            </Button>
+          )}
         </div>
       ),
     },
   ];
 
+  const activeColumns = showActions ? columns : columns.filter((col) => col.key !== 'id');
+
   return (
     <MasterTable
       data={users}
-      columns={columns}
+      columns={activeColumns}
       pageNumber={pageNumber}
       pageSize={pageSize}
       totalCount={totalCount}
       totalPages={totalPages}
       onPageChange={onPageChange}
+      onPageSizeChange={onPageSizeChange}
       isPagination={true}
-      isPageSize={false}
+      isPageSize={true}
       containerClassName="border-none shadow-none bg-transparent"
     />
   );
