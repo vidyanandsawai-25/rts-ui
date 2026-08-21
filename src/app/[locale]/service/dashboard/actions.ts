@@ -180,23 +180,56 @@ export async function searchCitizenMisApplicationsAction(
       if (localResponse.applications && localResponse.applications.length > 0) {
         const localMappedItems: RtsMisDashboardUserApplicationItem[] =
           localResponse.applications.map((app) => ({
-            applicationId: app.id,
             applicationNo: app.applicationNo,
-            departmentId: app.departmentId,
-            departmentName: app.departmentName,
-            serviceId: app.serviceId,
-            serviceName: app.serviceName,
-            applicationStatus: app.applicationStatus,
-            applicationDate: app.createdDate || undefined,
-            createdDate: app.createdDate || undefined,
-            submittedDate: app.createdDate || "",
-            status: app.applicationStatus || "Pending",
-            sla: 7,
+            serviceName: app.serviceName || "",
+            status: app.applicationStatus || "Submitted",
+            submittedDate: app.createdDate ? new Date(app.createdDate).toISOString().split('T')[0] : "",
+            sla: Number(app.sla) || 0,
           }));
         return { success: true, items: localMappedItems };
       }
     } catch (localErr) {
       console.warn("Local RTS-API tracking lookup fallback error:", localErr);
+    }
+
+    // 4. Fallback: Search by Receipt No (e.g. REC/RTS/20260820/020027)
+    try {
+      const { getPaymentReceiptByNo } = await import("@/lib/api/rts/rtspayment.service");
+      const receipt = await getPaymentReceiptByNo(normalizedValue);
+      if (receipt && receipt.applicationNo) {
+        const { getApprovalApplicationsPaged } = await import(
+          "@/lib/api/rts/rts-application-approval.service"
+        );
+        const appRes = await getApprovalApplicationsPaged({
+          applicationNo: receipt.applicationNo,
+        });
+        if (appRes.applications && appRes.applications.length > 0) {
+          const mapped: RtsMisDashboardUserApplicationItem[] = appRes.applications.map((app) => ({
+            applicationNo: app.applicationNo,
+            serviceName: app.serviceName || receipt.serviceName || "",
+            serviceNameLocal: receipt.serviceNameLocal,
+            status: app.applicationStatus || "Fee Paid",
+            submittedDate: app.createdDate ? new Date(app.createdDate).toISOString().split('T')[0] : "",
+            sla: Number(app.sla) || 0,
+          }));
+          return { success: true, items: mapped };
+        } else {
+          const fallbackItem: RtsMisDashboardUserApplicationItem = {
+            applicationNo: receipt.applicationNo,
+            serviceName: receipt.serviceName || "",
+            serviceNameLocal: receipt.serviceNameLocal,
+            status: "Fee Paid",
+            submittedDate: receipt.paymentDate ? new Date(receipt.paymentDate).toISOString().split('T')[0] : "",
+            sla: 0,
+          };
+          return {
+            success: true,
+            items: [fallbackItem],
+          };
+        }
+      }
+    } catch (rcpErr) {
+      console.warn("Receipt lookup fallback error:", rcpErr);
     }
 
     return {

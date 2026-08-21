@@ -15,6 +15,7 @@ import {
 import {
   getPaymentStatusAction,
   getPaymentReceiptAction,
+  getPaymentReceiptByNoAction,
 } from "@/app/[locale]/service/payment/actions";
 import { PaymentCheckoutModal } from "./PaymentCheckoutModal";
 import { PaymentReceiptModal } from "./PaymentReceiptModal";
@@ -27,6 +28,7 @@ type ApplicationAndTrackingDrawerProps = {
   open: boolean;
   onClose: () => void;
   initialSearchValue?: string;
+  initialReceiptValue?: string;
 };
 
 type StageVisual = "approved" | "rejected" | "current" | "pending";
@@ -181,15 +183,19 @@ export default function ApplicationAndTrackingDrawer({
   open,
   onClose,
   initialSearchValue,
+  initialReceiptValue,
 }: ApplicationAndTrackingDrawerProps) {
   const t = useTranslations("rts.citizenHeader");
-  const [applications, setApplications] = useState<RtsMisDashboardUserApplicationItem[]>([]);
   const [searchValue, setSearchValue] = useState("");
+  const [applications, setApplications] = useState<RtsMisDashboardUserApplicationItem[]>([]);
   const [selectedApplication, setSelectedApplication] = useState<RtsMisDashboardUserApplicationItem | null>(null);
   const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
   const [paymentInfo, setPaymentInfo] = useState<{
+    applicationId: number;
+    applicationNo: string;
+    serviceName: string;
     requiredFee: number;
     isFeeRequired: boolean;
     paymentStatus: string;
@@ -199,35 +205,94 @@ export default function ApplicationAndTrackingDrawer({
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
 
   useEffect(() => {
-    if (open && initialSearchValue && initialSearchValue.trim()) {
-      const val = initialSearchValue.trim();
-      setSearchValue(val);
-      setApplications([]);
-      setSelectedApplication(null);
-      setDetail(null);
-      setPaymentInfo(null);
-      setError("");
-      setLoading(true);
+    if (open) {
+      if (initialReceiptValue && initialReceiptValue.trim()) {
+        const rcpNo = initialReceiptValue.trim();
+        setLoading(true);
+        setError("");
+        void (async () => {
+          try {
+            const res = await getPaymentReceiptByNoAction(rcpNo);
+            if (res.success && res.data) {
+              setReceiptModalData(res.data);
+              if (res.data.applicationNo) {
+                setSearchValue(res.data.applicationNo);
+                const searchRes = await searchCitizenMisApplicationsAction(res.data.applicationNo);
+                if (searchRes?.success && searchRes.items.length > 0) {
+                  setApplications(searchRes.items);
+                  void selectApplication(searchRes.items[0]);
+                }
+              }
+            } else {
+              setSearchValue(rcpNo);
+              const response = await searchCitizenMisApplicationsAction(rcpNo);
+              if (response?.success && response.items.length > 0) {
+                setApplications(response.items);
+                void selectApplication(response.items[0]);
+              } else {
+                setError(COPY.noApplication);
+              }
+            }
+          } catch {
+            setError(COPY.unableToLoadApplications);
+          } finally {
+            setLoading(false);
+          }
+        })();
+      } else if (initialSearchValue && initialSearchValue.trim()) {
+        const val = initialSearchValue.trim();
+        setSearchValue(val);
+        setApplications([]);
+        setSelectedApplication(null);
+        setDetail(null);
+        setPaymentInfo(null);
+        setError("");
+        setLoading(true);
 
-      void (async () => {
-        try {
-          const response = await searchCitizenMisApplicationsAction(val);
-          if (!response || !response.success || response.items.length === 0) {
-            setError(COPY.noApplication);
-            return;
-          }
-          setApplications(response.items);
-          if (response.items.length === 1) {
-            void selectApplication(response.items[0]);
-          }
-        } catch {
-          setError(COPY.unableToLoadApplications);
-        } finally {
-          setLoading(false);
+        if (val.toUpperCase().startsWith("REC") || val.includes("/")) {
+          void (async () => {
+            try {
+              const res = await getPaymentReceiptByNoAction(val);
+              if (res.success && res.data) {
+                setReceiptModalData(res.data);
+              }
+              const response = await searchCitizenMisApplicationsAction(val);
+              if (response?.success && response.items.length > 0) {
+                setApplications(response.items);
+                if (response.items.length === 1) {
+                  void selectApplication(response.items[0]);
+                }
+              } else if (!res.data) {
+                setError(COPY.noApplication);
+              }
+            } catch {
+              setError(COPY.unableToLoadApplications);
+            } finally {
+              setLoading(false);
+            }
+          })();
+        } else {
+          void (async () => {
+            try {
+              const response = await searchCitizenMisApplicationsAction(val);
+              if (!response || !response.success || response.items.length === 0) {
+                setError(COPY.noApplication);
+                return;
+              }
+              setApplications(response.items);
+              if (response.items.length === 1) {
+                void selectApplication(response.items[0]);
+              }
+            } catch {
+              setError(COPY.unableToLoadApplications);
+            } finally {
+              setLoading(false);
+            }
+          })();
         }
-      })();
+      }
     }
-  }, [open, initialSearchValue]);
+  }, [open, initialSearchValue, initialReceiptValue]);
 
   const searchApplications = async () => {
     const normalizedSearchValue = searchValue.trim();
@@ -466,6 +531,13 @@ export default function ApplicationAndTrackingDrawer({
                       <button
                         type="button"
                         onClick={async () => {
+                          if (paymentInfo?.receiptNo) {
+                            const resByNo = await getPaymentReceiptByNoAction(paymentInfo.receiptNo);
+                            if (resByNo.success && resByNo.data) {
+                              setReceiptModalData(resByNo.data);
+                              return;
+                            }
+                          }
                           const numericId = parseInt(selectedApplication.applicationNo.replace(/\D/g, ''), 10);
                           const res = await getPaymentReceiptAction(numericId);
                           if (res.success && res.data) {
