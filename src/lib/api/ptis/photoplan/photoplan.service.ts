@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { apiClient } from "@/services/api.service";
 import { ApiResponse } from "@/types/common.types";
 import { uploadDocument, deleteDocument } from "../../document.service";
@@ -313,9 +315,27 @@ export const photoPlanService = {
     wardNo?: string;
     propertyNo?: string;
     partitionNo?: string | null;
+    ptisBackendUri?: string;
   }): Promise<{ success: boolean; launchUrl?: string; error?: string }> {
     try {
-      const { propertyId, councilName, returnUrl, ptisUsername, ptisDisplayName, ptisUserId, wardNo, propertyNo, partitionNo } = params;
+      const { propertyId, councilName: _councilName, returnUrl, ptisUsername, ptisDisplayName, ptisUserId, wardNo, propertyNo, partitionNo, ptisBackendUri } = params;
+
+      let cookieUsername = '';
+      let cookieDisplayName = '';
+      let cookieUserId = '';
+
+      if (typeof window === 'undefined') {
+        try {
+          const { cookies } = await import('next/headers');
+          const cookieStore = await cookies();
+          cookieUsername = cookieStore.get('login_username')?.value || cookieStore.get('username')?.value || cookieStore.get('user_name')?.value || '';
+          const rawDisplayName = cookieStore.get('user_name')?.value || cookieStore.get('display_name')?.value || '';
+          cookieDisplayName = rawDisplayName ? decodeURIComponent(rawDisplayName.replace(/\+/g, ' ')) : '';
+          cookieUserId = cookieStore.get('user_id')?.value || '';
+        } catch {
+          // Cookies store unavailable in non-request contexts
+        }
+      }
 
       const safeDecode = (val?: string) => {
         if (!val) return '';
@@ -326,24 +346,25 @@ export const photoPlanService = {
         }
       };
 
-      const finalPtisUsername = safeDecode(ptisUsername || 'ADMIN');
-      const finalPtisDisplayName = safeDecode(ptisDisplayName || 'Admin scipl');
-      const finalPtisUserId = safeDecode(ptisUserId || '1');
+      const finalPtisUsername = safeDecode(ptisUsername || cookieUsername || 'tejas');
+      const finalPtisDisplayName = safeDecode(ptisDisplayName || cookieDisplayName || 'Tejas Kishor');
+      const finalPtisUserId = safeDecode(ptisUserId || cookieUserId || '42');
 
-      const loginCouncilName = councilName || 'THANE_Survey';
-      const apiCouncilName = councilName === 'THANE_Survey' ? 'THANE_survey' : (councilName || 'THANE_survey');
+      const apiCouncilName = 'THANE_Survey';
 
-      // 1. Authenticate user
+      // 1. Authenticate user with static credentials
+      const authBody = {
+        username: 'tejas.d',
+        password: '123456',
+        councilName: 'THANE_Survey'
+      };
+
       let loginRes = await fetch('https://apiptisplanapp.tabamc.in/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          username: process.env.PHOTO_PLAN_API_USERNAME || 'tejas.d',
-          password: process.env.PHOTO_PLAN_API_PASSWORD || '123456',
-          councilName: loginCouncilName
-        })
+        body: JSON.stringify(authBody)
       });
 
       if (!loginRes.ok) {
@@ -352,11 +373,7 @@ export const photoPlanService = {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            username: process.env.PHOTO_PLAN_API_USERNAME || 'tejas.d',
-            password: process.env.PHOTO_PLAN_API_PASSWORD || '123456',
-            councilName: loginCouncilName
-          })
+          body: JSON.stringify(authBody)
         });
       }
 
@@ -383,31 +400,56 @@ export const photoPlanService = {
         safeReturnUrl = `${defaultReturnBase}${safeReturnUrl}`;
       }
 
-      const rawApiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || getAppConfig().api.baseUrl || '';
-      const ptisBackendUri = rawApiUrl.replace(/\/api\/?$/, '');
+      const envBackendUrl = process.env.RUNTIME_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || getAppConfig().api.baseUrl || 'https://ptisthaneapi.scipl.info.in/api';
+      const resolvedPtisBackendUri = (ptisBackendUri || envBackendUrl).replace(/\/api\/?$/, '') || 'https://ptisthaneapi.scipl.info.in';
 
-      const cleanPartition = (!partitionNo || partitionNo.trim() === '' || partitionNo.trim() === '-') ? '' : partitionNo.trim();
+      const cleanPartition = (!partitionNo || partitionNo.trim() === '' || partitionNo.trim() === '-' || partitionNo.trim() === '0' || partitionNo.trim() === 'null')
+        ? null
+        : partitionNo.trim();
 
-      const queryParams = new URLSearchParams({
+      const launchPayload = {
         councilName: apiCouncilName,
         wardNo: wardNo || '',
         propertyNo: propertyNo || '',
         partitionNo: cleanPartition,
         mode: 'draw',
         returnUrl: safeReturnUrl,
-        ptisBackendUri: ptisBackendUri,
+        ptisBackendUri: resolvedPtisBackendUri,
         ptisUsername: finalPtisUsername,
         ptisDisplayName: finalPtisDisplayName,
-        ptisUserId: finalPtisUserId,
-        propertyId: String(propertyId),
+        ptisUserId: String(finalPtisUserId),
+        propertyId: propertyId ? String(propertyId) : undefined,
+      };
+
+      // Send JSON object payload to the drawing tool launch API
+      let launchRes = await fetch('https://apiptisplanapp.tabamc.in/api/plans/ptis/launch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(launchPayload)
       });
 
-      const launchRes = await fetch(`https://apiptisplanapp.tabamc.in/api/plans/ptis/launch?${queryParams.toString()}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
+      // Fallback to GET with query parameters if POST endpoint returns 405/404
+      if (!launchRes.ok && (launchRes.status === 405 || launchRes.status === 404)) {
+        const queryParams = new URLSearchParams();
+        Object.entries(launchPayload).forEach(([key, val]) => {
+          if (val !== null && val !== undefined) {
+            queryParams.set(key, String(val));
+          }
+        });
+        if (cleanPartition === null) {
+          queryParams.set('partitionNo', 'null');
         }
-      });
+
+        launchRes = await fetch(`https://apiptisplanapp.tabamc.in/api/plans/ptis/launch?${queryParams.toString()}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
 
       if (!launchRes.ok) {
         let errMsg = `Failed to launch drawing tool API: ${launchRes.status}`;

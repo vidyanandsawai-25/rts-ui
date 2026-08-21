@@ -533,7 +533,8 @@ describe('PhotoPlan Section - Complete Tests', () => {
         undefined,
         '',
         '',
-        ''
+        '',
+        undefined
       );
 
       // Delete plan button check - should not exist

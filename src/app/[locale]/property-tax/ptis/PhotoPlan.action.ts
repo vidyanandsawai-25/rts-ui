@@ -10,7 +10,6 @@ import type {
 } from '@/types/photoplan.types';
 import { z } from 'zod';
 import { getTranslations } from 'next-intl/server';
-import { cookies } from 'next/headers';
 
 const idSchema = z.number().positive();
 
@@ -223,32 +222,21 @@ export async function launchPhotoPlanDrawingToolAction(
   ptisUserId?: string,
   wardNo?: string,
   propertyNo?: string,
-  partitionNo?: string | null
+  partitionNo?: string | null,
+  ptisBackendUri?: string
 ): Promise<ActionResult<{ launchUrl: string }>> {
   try {
-    let cookieUsername = '';
-    let cookieDisplayName = '';
-    let cookieUserId = '';
-
-    try {
-      const cookieStore = await cookies();
-      cookieUsername = cookieStore.get('login_username')?.value || '';
-      cookieDisplayName = cookieStore.get('user_name')?.value || '';
-      cookieUserId = cookieStore.get('user_id')?.value || '';
-    } catch {
-      // Cookies may not be accessible in all execution contexts
-    }
-
     const result = await photoPlanService.launchDrawingTool({
       propertyId,
       councilName,
       returnUrl,
-      ptisUsername: ptisUsername || cookieUsername,
-      ptisDisplayName: ptisDisplayName || cookieDisplayName,
-      ptisUserId: ptisUserId || cookieUserId,
+      ptisUsername,
+      ptisDisplayName,
+      ptisUserId,
       wardNo,
       propertyNo,
       partitionNo,
+      ptisBackendUri,
     });
 
     if (result.success && result.launchUrl) {
