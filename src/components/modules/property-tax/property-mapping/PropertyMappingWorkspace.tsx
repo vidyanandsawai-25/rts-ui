@@ -54,7 +54,9 @@ interface PropertyMappingWorkspaceProps {
     errorMsg: string | null;
     warnings: string[];
   };
+  isSubmitting?: boolean;
   onConfirmClick: () => void;
+  onDisconnectCandidate?: (candidate: OldPropertyCandidate) => void;
   stepNumbers: { comparisonStep: number; floorStep: number };
   page12?: number;
   pageSize12?: number;
@@ -99,7 +101,9 @@ export function PropertyMappingWorkspace({
   hoveredFloorIndex,
   setHoveredFloorIndex,
   validationStatus,
+  isSubmitting,
   onConfirmClick,
+  onDisconnectCandidate,
   stepNumbers,
   page12,
   pageSize12,
@@ -142,6 +146,7 @@ export function PropertyMappingWorkspace({
           mappedOldPropNos={mappedOldPropNos}
           onToggleCandidate={onToggleCandidate}
           onCompareClick={onCompareClick}
+          onDisconnectCandidate={onDisconnectCandidate}
           money={money}
           hasSearchActive={hasSearchActive}
           currentWard={currentNewProperty?.ward}
@@ -183,6 +188,7 @@ export function PropertyMappingWorkspace({
         <ActionFooter
           selectedCandidates={selectedCandidates}
           validationStatus={validationStatus}
+          isSubmitting={isSubmitting}
           onConfirmClick={onConfirmClick}
         />
       </main>

@@ -1,12 +1,14 @@
 import { useState, useMemo } from "react";
 import { NewProperty, OldPropertyCandidate, FloorDetail, MappingLink, AuditHistory, MappedPropertyApiResponse } from "@/types/property-mapping";
 import { getFloorKey, calculateMatchScore } from "@/components/modules/property-tax/property-mapping/mappingScoreCalculator";
+import { getUsernameFromCookie } from "@/lib/utils/cookie";
 
 export function usePropertyMappingState(
   initialMappingData: MappedPropertyApiResponse | null | undefined,
   queryPropertyId: string | null,
   customFloorDataMap: Record<string, FloorDetail[]>
 ) {
+  const currentUserName = useMemo(() => getUsernameFromCookie() || "Admin", []);
   const [selectedNewIndex, setSelectedNewIndex] = useState<number>(0);
 
   const [newProperties, setNewProperties] = useState<NewProperty[]>(() => {
@@ -68,7 +70,7 @@ export function usePropertyMappingState(
     return newProperties[selectedNewIndex] || newProperties[0];
   }, [newProperties, selectedNewIndex]);
 
-  const [candidates] = useState<OldPropertyCandidate[]>(() => {
+  const [candidates, setCandidates] = useState<OldPropertyCandidate[]>(() => {
     if (initialMappingData?.items?.length) {
       const first = initialMappingData.items[0];
       const newInfo = first.newPropertyInfo;
@@ -125,8 +127,16 @@ export function usePropertyMappingState(
             constructionYear: item.oldConstructionYear ? String(item.oldConstructionYear) : (item.oldAssessmentYear ? String(item.oldAssessmentYear) : "")
           });
 
+          // Extract the REAL Old Property ID:
+          // 1. transMastOldRecords uses 'propertyMastOldId' (NOT 'propertyId')
+          // 2. propertyDetailsOld uses 'propertyId' which IS the old property ID
+          // 3. item.propertyId is the NEW property ID — only use as last resort
+          const realOldPropertyId = item.transMastOldRecords?.[0]?.propertyMastOldId
+            ?? item.propertyDetailsOld?.[0]?.propertyId 
+            ?? item.propertyId;
+
           return {
-            id: String(item.propertyId) + "-initial-" + idx,
+            id: String(realOldPropertyId) + "-initial-" + idx,
             status: "Mapped" as const,
             isMapped: true,
             mappedNewPropertyNo: newInfo?.propertyNo || "",
@@ -174,15 +184,16 @@ export function usePropertyMappingState(
       const oldPropNos = initialMappingData.items.map(i => i.oldPropertyNo).filter(Boolean) as string[];
 
       if (oldPropNos.length > 0) {
+        const isMultiple = oldPropNos.length > 1 || first.mappingCategory === "SPLIT" || first.mappingCategory === "MERGE";
         return [{
           id: "ML-" + (first.propertyId || "101"),
           newPropNo: newInfo?.propertyNo || "",
           oldPropNos: oldPropNos,
           status: "Mapped",
-          mapType: first.mappingCategory === "SPLIT" ? "Split (1 New → Multiple Old)" : "1 → 1 (One-to-One)",
+          mapType: isMultiple ? `Split (1 New → ${oldPropNos.length} Old Records)` : "1 → 1 (One-to-One)",
           confidence: 100,
           note: "Initial mapping record",
-          mappedBy: "Officer User",
+          mappedBy: currentUserName,
           mappedAt: new Date().toISOString().split('T')[0]
         }];
       }
@@ -202,7 +213,7 @@ export function usePropertyMappingState(
         action: "Mapped",
         newPropNo: newInfo?.propertyNo || "",
         oldPropNos: oldPropNos,
-        user: "Officer User",
+        user: currentUserName,
         reason: "Initial property mapping loaded from legacy API records."
       }];
     }
@@ -237,6 +248,153 @@ export function usePropertyMappingState(
     return { ...initialFloorDataMap, ...customFloorDataMap };
   }, [initialFloorDataMap, customFloorDataMap]);
 
+  const refreshMappingState = (freshData: MappedPropertyApiResponse) => {
+    if (!freshData?.items?.length) return;
+    
+    // 1. Update New Properties
+    const first = freshData.items[0];
+    const newInfo = first.newPropertyInfo;
+    const newDetails = first.newPropertyDetails || [];
+    
+    const openPlotFloor = newDetails.find(d => d.isOpenPlot);
+    const plotAreaVal = openPlotFloor ? openPlotFloor.builtupAreaSqFeet : 0;
+    const builtUpAreaVal = newDetails.filter(d => !d.isOpenPlot).reduce((sum, d) => sum + d.builtupAreaSqFeet, 0);
+    const carpetAreaVal = newDetails.filter(d => !d.isOpenPlot).reduce((sum, d) => sum + d.carpetAreaSqFeet, 0);
+    const nonOpenPlotFloors = newDetails.filter(d => !d.isOpenPlot);
+    const floorLabels = nonOpenPlotFloors.map(d => d.floorDescription || d.floorCode).filter(Boolean);
+    const floorsText = floorLabels.length > 0 ? floorLabels.join(", ") : "";
+    const fullPropNo = [newInfo?.wardNo, newInfo?.propertyNo, newInfo?.partitionNo].filter(Boolean).join(" - ");
+    const transRecord = first.transMastRecords?.[0] || null;
+    const rvVal = transRecord?.calculationValue ?? 0;
+    const taxVal = transRecord?.taxAmount ?? 0;
+
+    const parsedNewProps: NewProperty[] = [{
+      id: "dyn-" + (newInfo?.id || queryPropertyId || ""),
+      propNo: newInfo?.propertyNo || "",
+      partitionNo: newInfo?.partitionNo || "",
+      fullPropNo: fullPropNo,
+      owner: newInfo?.ownerName || newInfo?.ownerNameEnglish || first.oldOwnerName || first.oldOccupierName || "",
+      address: newInfo?.address || newInfo?.addressEnglish || first.oldAddress || "",
+      mobile: newInfo?.mobileNo || first.oldMobileNo || "",
+      plotArea: plotAreaVal,
+      builtUpArea: builtUpAreaVal,
+      carpetArea: carpetAreaVal,
+      floors: floorsText,
+      use: newInfo?.propertyTypeDescription || first.oldUseType || "",
+      rv: rvVal,
+      tax: taxVal,
+      cts: newInfo?.csn || first.oldCSN || "",
+      status: freshData.items.some(item => Boolean(item.oldPropertyNo)) ? "Mapped" : "Needs verification",
+      verificationResult: freshData.items.some(item => Boolean(item.oldPropertyNo)) ? "Verified & Mapped" : "Pending review",
+      remark: "",
+      mappingType: first.mappingCategory === "SPLIT" ? "Split" : "1 → 1",
+      ward: newInfo?.wardNo || "",
+      zone: newInfo?.taxZoneNo || "",
+      plotNo: newInfo?.plotNo || "",
+      constructionYear: newDetails[0]?.constructionYear || ""
+    }];
+    setNewProperties(parsedNewProps);
+
+    // 2. Update Candidates
+    const newPropRef = {
+      propNo: newInfo?.propertyNo || "",
+      owner: parsedNewProps[0].owner,
+      address: parsedNewProps[0].address,
+      builtUpArea: builtUpAreaVal,
+      floors: floorsText,
+      tax: taxVal,
+      cts: parsedNewProps[0].cts,
+      rv: rvVal,
+      use: parsedNewProps[0].use,
+      ward: newInfo?.wardNo || "",
+      zone: newInfo?.taxZoneNo || "",
+      plotNo: newInfo?.plotNo || "",
+      constructionYear: newDetails[0]?.constructionYear || ""
+    };
+
+    const parsedCandidates = freshData.items
+      .filter(item => Boolean(item.oldPropertyNo))
+      .map((item, idx) => {
+        const itemTrans = item.transMastRecords?.[0] || null;
+        const itemTax = itemTrans?.taxAmount ?? (item.oldTotalTax || 0);
+        const itemRv = itemTrans?.calculationValue ?? (item.oldRV || 0);
+        const candCarpetArea = (item.propertyDetailsOld || []).reduce((sum, d) => sum + (d.oldCarpetAreaSqFeet || 0), 0);
+        const candScore = calculateMatchScore(newPropRef, {
+          propNo: item.oldPropertyNo || "",
+          owner: item.oldOwnerName || item.oldOccupierName || parsedNewProps[0].owner,
+          address: item.oldAddress || parsedNewProps[0].address,
+          area: item.oldConstructionArea || 0,
+          floors: item.oldFloor || "",
+          tax: itemTax,
+          cts: item.oldCSN || parsedNewProps[0].cts,
+          rv: itemRv,
+          use: item.oldUseType || "",
+          ward: item.oldWardNo || "",
+          zone: item.oldZoneNo || "",
+          plotNo: item.oldPlotNo || "",
+          constructionYear: item.oldConstructionYear ? String(item.oldConstructionYear) : (item.oldAssessmentYear ? String(item.oldAssessmentYear) : "")
+        });
+
+          // Extract the REAL Old Property ID:
+          // 1. transMastOldRecords uses 'propertyMastOldId' (NOT 'propertyId')
+          // 2. propertyDetailsOld uses 'propertyId' which IS the old property ID
+          // 3. item.propertyId is the NEW property ID — only use as last resort
+          const realOldPropertyId = item.transMastOldRecords?.[0]?.propertyMastOldId
+            ?? item.propertyDetailsOld?.[0]?.propertyId 
+            ?? item.propertyId;
+
+        return {
+          id: String(realOldPropertyId) + "-initial-" + idx,
+          status: "Mapped" as const,
+          isMapped: true,
+          mappedNewPropertyNo: newInfo?.propertyNo || "",
+          propNo: item.oldPropertyNo || "",
+          partitionNo: item.oldPartitionNo || undefined,
+          owner: item.oldOwnerName || item.oldOccupierName || parsedNewProps[0].owner,
+          address: item.oldAddress || parsedNewProps[0].address,
+          area: item.oldConstructionArea || 0,
+          carpetArea: candCarpetArea,
+          tax: itemTax,
+          floors: item.oldFloor || "",
+          evidence: [
+            { text: `Ward ${item.oldWardNo || ""}`, type: "good" as const },
+            { text: `Zone ${item.oldZoneNo || ""}`, type: "good" as const },
+            { text: `Category ${item.mappingCategory || "ONE_TO_ONE"}`, type: "good" as const }
+          ],
+          score: candScore,
+          isHardConflict: false,
+          belongsToNewId: newInfo?.propertyNo || "",
+          cts: item.oldCSN || parsedNewProps[0].cts,
+          rv: itemRv,
+          use: item.oldUseType || "",
+          ward: item.oldWardNo || "",
+          zone: item.oldZoneNo || "",
+          plotNo: item.oldPlotNo || "",
+          constructionYear: item.oldConstructionYear ? String(item.oldConstructionYear) : (item.oldAssessmentYear ? String(item.oldAssessmentYear) : "")
+        };
+      });
+    setCandidates(parsedCandidates);
+    setActiveCheckedIds(parsedCandidates.filter(c => c.isMapped).map(c => c.id));
+    setMappedOldPropNos(parsedCandidates.filter(c => c.isMapped).map(c => c.propNo));
+
+    // 3. Update Mappings
+    const oldPropNos = freshData.items.map(i => i.oldPropertyNo).filter(Boolean) as string[];
+    if (oldPropNos.length > 0) {
+      const isMultiple = oldPropNos.length > 1 || first.mappingCategory === "SPLIT" || first.mappingCategory === "MERGE";
+      setMappings([{
+        id: "ML-" + (first.propertyId || "101"),
+        newPropNo: newInfo?.propertyNo || "",
+        oldPropNos: oldPropNos,
+        status: "Mapped",
+        mapType: isMultiple ? `Split (1 New → ${oldPropNos.length} Old Records)` : "1 → 1 (One-to-One)",
+        confidence: 100,
+        note: "Updated mapping record",
+        mappedBy: currentUserName,
+        mappedAt: new Date().toISOString().split('T')[0]
+      }]);
+    }
+  };
+
   return {
     selectedNewIndex,
     setSelectedNewIndex,
@@ -255,5 +413,7 @@ export function usePropertyMappingState(
     compareCandidate,
     setCompareCandidate,
     activeFloorDataMap,
+    refreshMappingState,
+    setCandidates,
   };
 }

@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect, useMemo } from "react";
 import { MasterTable, Button, Checkbox } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
-import { Eye, CheckCircle2 } from "lucide-react";
+import { Eye, CheckCircle2, Unlink } from "lucide-react";
 import { OldPropertyCandidate, CandidatesTableProps } from "@/types/property-mapping";
 import { formatArea } from "./mappingUtils";
 
@@ -46,7 +46,8 @@ export function CandidatesTable({
   totalCount13: propTotalCount13,
   onPageChange13,
   onPageSizeChange13,
-}: CandidatesTableProps) {
+  onDisconnectCandidate,
+}: CandidatesTableProps & { onDisconnectCandidate?: (candidate: OldPropertyCandidate) => void }) {
   const t = useTranslations("propertyMapping");
   const areaUnit = t("candidatesTable.areaUnit");
 
@@ -324,18 +325,30 @@ export function CandidatesTable({
           data={paginated11}
           emptyText={t("candidatesTable.step1.emptyText")}
           renderActions={(row) => (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => onCompareClick(row)}
-              className={`p-1.5 border min-w-0 ${
-                row.isHardConflict
-                  ? "bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200"
-                  : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200"
-              }`}
-              icon={Eye}
-              title={row.isHardConflict ? t("candidatesTable.compareButtonBlocked") : t("candidatesTable.compareButton")}
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="xs"
+                onClick={() => onCompareClick(row)}
+                className={`p-1.5 border min-w-0 ${
+                  row.isHardConflict
+                    ? "bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200"
+                    : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200"
+                }`}
+                icon={Eye}
+                title={row.isHardConflict ? t("candidatesTable.compareButtonBlocked") : t("candidatesTable.compareButton")}
+              />
+              {onDisconnectCandidate && (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => onDisconnectCandidate(row)}
+                  className="p-1.5 border min-w-0 bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200"
+                  icon={Unlink}
+                  title="Unlink"
+                />
+              )}
+            </div>
           )}
           actionLabel={t("candidatesTable.columns.action")}
           getRowKey={(row) => row.id}

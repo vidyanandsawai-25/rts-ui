@@ -20,7 +20,7 @@ export function MappingHeader({
 }: MappingHeaderProps) {
   const t = useTranslations("propertyMapping");
 
-  const mappedCount = mappings.filter((m) => m.status === "Mapped").length;
+  const mappedCount = mappings.filter((m) => m.status === "Mapped").reduce((sum, m) => sum + (m.oldPropNos?.length || 0), 0);
   const pendingCount = newProperties.filter((p) => p.status === "Needs verification").length;
 
   return (

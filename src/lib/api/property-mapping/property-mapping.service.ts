@@ -15,6 +15,40 @@ export interface SavePropertyMappingPayload {
   remark: string;
 }
 
+export interface PropertyMergeSinglePayload {
+  propertyId: number;
+  propertyOldId: number;
+  latitude?: string;
+  longitude?: string;
+  location?: string;
+  CreatedBy?: number;
+}
+
+export interface PropertyMergePayload {
+  propertyId: number;
+  propertyOldIds: number[];
+  latitude?: string;
+  longitude?: string;
+  location?: string;
+  CreatedBy?: number;
+}
+
+export interface PropertyUnmergeSinglePayload {
+  isActive: boolean;
+  updatedBy: number;
+  propertyOldId: number;
+  propertyId: number;
+  isPreviousDataUpdate: boolean;
+}
+
+export interface PropertyUnmergeMultiplePayload {
+  isActive: boolean;
+  updatedBy: number;
+  propertyId: number;
+  propertyOldIds: number[];
+  isPreviousDataUpdate: boolean;
+}
+
 /**
  * Service API call to fetch mapped property details by PropertyId.
  * API: GET /api/PropertyMapMaster/mapped-properties?PropertyId={PropertyId}&PageSize={pageSize}
@@ -24,9 +58,8 @@ export async function getMappedProperties(propertyId: number, pageSize: number =
     const response = await apiClient.get<MappedPropertyApiResponse>(
       `/PropertyMapMaster/mapped-properties?PropertyId=${propertyId}&PageSize=${pageSize}`
     );
-    return handleApiResponse(response, `Fetch mapped properties for ${propertyId} failed`);
-  } catch (error) {
-    console.error("getMappedProperties failed:", error);
+    return response.data ?? null;
+  } catch {
     return null;
   }
 }
@@ -57,8 +90,7 @@ export async function searchOldProperties(params: SearchOldPropertiesParams): Pr
       `/PropertyMapMaster/search${queryString}`
     );
     return handleApiResponse(response, `Search old properties failed`);
-  } catch (error) {
-    console.error("searchOldProperties failed:", error);
+  } catch {
     return null;
   }
 }
@@ -74,8 +106,7 @@ export async function savePropertyMapping(payload: SavePropertyMappingPayload): 
       payload
     );
     return handleApiResponse(response, `Save property mapping for ${payload.newPropertyNo} failed`);
-  } catch (error) {
-    console.error("savePropertyMapping failed:", error);
+  } catch {
     return null;
   }
 }
@@ -83,3 +114,88 @@ export async function savePropertyMapping(payload: SavePropertyMappingPayload): 
 // Aliases for backward compatibility
 export const getMappedPropertiesAction = getMappedProperties;
 export const searchOldPropertiesAction = searchOldProperties;
+
+/**
+ * Service API call to merge exactly 1 New Property and 1 Old Property.
+ * API: POST /PropertyMergeSingle
+ */
+export async function mergeSingleProperty(payload: PropertyMergeSinglePayload): Promise<{ success: boolean; message?: string; items?: { success: boolean; message?: string } } | null> {
+  try {
+    // Build request payload — only include lat/lng/location if they have real values
+    const requestPayload: Record<string, unknown> = {
+      propertyId: payload.propertyId,
+      propertyOldId: payload.propertyOldId,
+    };
+    if (payload.CreatedBy) requestPayload.CreatedBy = payload.CreatedBy;
+    if (payload.latitude && payload.latitude !== "0") requestPayload.latitude = payload.latitude;
+    if (payload.longitude && payload.longitude !== "0") requestPayload.longitude = payload.longitude;
+    if (payload.location && payload.location !== "Default") requestPayload.location = payload.location;
+
+    const response = await apiClient.post<{ success: boolean; message?: string; items?: { success: boolean; message?: string } }>(
+      `/PropertyMergeSingle`,
+      requestPayload
+    );
+    return handleApiResponse(response, `Merge single property failed`);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Merge single property failed";
+    return { success: false, message: msg };
+  }
+}
+
+/**
+ * Service API call to merge 1 New Property to Multiple Old Properties.
+ * API: POST /PropertyMerge
+ */
+export async function mergeMultipleProperties(payload: PropertyMergePayload): Promise<{ success: boolean; message?: string; items?: { success: boolean; message?: string } } | null> {
+  try {
+    const requestPayload: Record<string, unknown> = {
+      propertyId: payload.propertyId,
+      PropertyOldIds: payload.propertyOldIds,
+      CreatedBy: payload.CreatedBy
+    };
+    
+    if (payload.latitude && payload.latitude !== "0") requestPayload.latitude = payload.latitude;
+    if (payload.longitude && payload.longitude !== "0") requestPayload.longitude = payload.longitude;
+    if (payload.location && payload.location !== "Default") requestPayload.location = payload.location;
+
+    const response = await apiClient.post<{ success: boolean; message?: string; items?: { success: boolean; message?: string } }>(`/PropertyMerge`, requestPayload);
+    return handleApiResponse(response, `Merge multiple properties failed`);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Merge multiple properties failed";
+    return { success: false, message: msg };
+  }
+}
+
+/**
+ * Service API call to unmerge 1 New Property and 1 Old Property.
+ * API: PUT /PropertyMergeSingle
+ */
+export async function unmergeSingleProperty(payload: PropertyUnmergeSinglePayload): Promise<{ success: boolean; message?: string; items?: { success: boolean; message?: string } } | null> {
+  try {
+    const response = await apiClient.put<{ success: boolean; message?: string; items?: { success: boolean; message?: string } }>(
+      `/PropertyMergeSingle`,
+      payload
+    );
+    return handleApiResponse(response, `Unmerge single property failed`);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Unmerge single property failed";
+    return { success: false, message: msg };
+  }
+}
+
+/**
+ * Service API call to unmerge 1 New Property and Multiple Old Properties.
+ * API: PUT /PropertyMerge
+ */
+export async function unmergeMultipleProperties(payload: PropertyUnmergeMultiplePayload): Promise<{ success: boolean; message?: string; items?: { success: boolean; message?: string } } | null> {
+  try {
+    const response = await apiClient.put<{ success: boolean; message?: string; items?: { success: boolean; message?: string } }>(
+      `/PropertyMerge`,
+      payload
+    );
+    return handleApiResponse(response, `Unmerge multiple properties failed`);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Unmerge multiple properties failed";
+    return { success: false, message: msg };
+  }
+}
