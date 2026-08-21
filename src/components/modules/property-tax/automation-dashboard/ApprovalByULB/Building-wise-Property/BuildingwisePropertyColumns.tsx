@@ -4,27 +4,30 @@ import { PropertyWiseItem } from '@/types/automation-dashboard/approval-by-ulb/a
 import { Check, X } from 'lucide-react';
 import { handleLocationClick } from '@/lib/utils/automation-dashboard/mapUtils';
 
-export const getBuildingwisePropertyHeaderRows = (): HeaderCell[][] => {
+export const getBuildingwisePropertyHeaderRows = (t: (key: string) => string): HeaderCell[][] => {
   return [
     [
-      { label: 'Ward No', headerClassName: 'p-2 text-center text-table-header text-slate-700 min-w-[70px]' },
-      { label: 'New Property No\n& Old Property No', headerClassName: 'p-2 text-center text-table-header text-slate-700 whitespace-pre-line min-w-[120px]' },
-      { label: 'Description', headerClassName: 'p-2 text-center text-table-header text-slate-700 min-w-[90px]' },
-      { label: 'Owner Name\n& Occupier Name', headerClassName: 'p-2 text-center text-table-header text-slate-700 whitespace-pre-line min-w-[140px]' },
-      { label: 'Address', headerClassName: 'p-2 text-center text-table-header text-slate-700 min-w-[180px]' },
-      { label: 'Society Name\n& Builder Name', headerClassName: 'p-2 text-center text-table-header text-slate-700 whitespace-pre-line min-w-[140px]' },
-      { label: 'Wing No\n& Flat No', headerClassName: 'p-2 text-center text-table-header text-slate-700 whitespace-pre-line min-w-[100px]' },
-      { label: 'Old Record', headerClassName: 'p-2 text-center text-table-header text-slate-700 min-w-[130px]' },
-      { label: 'New Record', headerClassName: 'p-2 text-center text-table-header text-slate-700 min-w-[130px]' },
-      { label: 'Property Type', headerClassName: 'p-2 text-center text-table-header text-slate-700 min-w-[80px]' },
-      { label: 'Total Demand', headerClassName: 'p-2 text-center text-table-header text-slate-700 min-w-[80px]' },
-      { label: 'DOCUMENTS\nImage', headerClassName: 'p-2 text-center text-table-header text-slate-700 whitespace-pre-line min-w-[80px]' },
-      { label: 'ACTIONS', headerClassName: 'p-2 text-center text-table-header text-slate-700 min-w-[80px]' },
-      { label: 'Clerk Sign', headerClassName: 'p-2 text-center text-table-header text-slate-700 whitespace-pre-line min-w-[60px]' },
-      { label: 'Tax Insp.', headerClassName: 'p-2 text-center text-table-header text-slate-700 whitespace-pre-line min-w-[60px]' },
-      { label: 'Asst. Comm.', headerClassName: 'p-2 text-center text-table-header text-slate-700 whitespace-pre-line min-w-[60px]' },
-      { label: 'Dy. Comm.\n(Tax)', headerClassName: 'p-2 text-center text-table-header text-slate-700 whitespace-pre-line min-w-[60px]' },
-      { label: 'Addl. Comm.', headerClassName: 'p-2 text-center text-table-header text-slate-700 whitespace-pre-line min-w-[60px]' }
+      { label: t('approvalByULB.buildingWiseProperty.headers.wardNo').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 min-w-[70px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.newOldPropertyNo').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 whitespace-pre-line min-w-[120px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.description').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 min-w-[90px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.ownerOccupierName').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 whitespace-pre-line min-w-[140px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.address').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 min-w-[180px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.societyBuilderName').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 whitespace-pre-line min-w-[140px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.wingFlatNo').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 whitespace-pre-line min-w-[100px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.propertyDetails').toUpperCase(), colSpan: 2, headerClassName: 'p-2 text-center text-sm font-bold text-slate-700 border border-slate-300 bg-amber-50' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.propertyType').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 min-w-[80px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.totalDemand').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-emerald-50 min-w-[80px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.documentsImage').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-blue-50 whitespace-pre-line min-w-[80px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.actions').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 min-w-[80px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.clerkSign').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-indigo-50 whitespace-pre-line min-w-[60px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.taxInsp').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-cyan-50 whitespace-pre-line min-w-[60px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.asstComm').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-purple-50 whitespace-pre-line min-w-[60px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.dyCommTax').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-pink-50 whitespace-pre-line min-w-[60px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.addlComm').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-teal-50 whitespace-pre-line min-w-[60px]' }
+    ],
+    [
+      { label: t('approvalByULB.buildingWiseProperty.headers.oldRecord').toUpperCase(), headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-red-50 min-w-[130px]' },
+      { label: t('approvalByULB.buildingWiseProperty.headers.newRecord').toUpperCase(), headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-emerald-50 min-w-[130px]' }
     ]
   ];
 };
@@ -36,16 +39,18 @@ export const getBuildingwisePropertyColumns = (
   return [
     {
       key: 'wardNo',
-      label: 'Ward No',
-      render: (_, row) => <div className="text-center text-slate-700 text-sm">{row.wardNo || 'N/A'}</div>
+      label: t('approvalByULB.buildingWiseProperty.headers.wardNo'),
+      cellClassName: 'align-center',
+      render: (_, row) => <div className="text-center text-slate-700 text-xs font-medium">{row.wardNo || 'N/A'}</div>
     },
     {
       key: 'newPropertyNo',
-      label: 'New Property No & Old Property No',
+      label: t('approvalByULB.buildingWiseProperty.headers.newOldPropertyNo'),
+      cellClassName: 'align-center',
       render: (_, row) => (
         <div className="flex flex-col text-center">
-          <div className="text-slate-800 font-medium text-sm">{row.newPropertyNo || 'N/A'}</div>
-          <div className="text-xs text-slate-700 font-medium mt-0.5">
+          <div className="text-slate-800 font-semibold text-xs">{row.newPropertyNo || 'N/A'}</div>
+          <div className="text-[11px] text-slate-600 font-medium mt-1">
             {t('approvalByULB.buildingWiseProperty.oldLabel')} {row.oldPropertyNo || t('approvalByULB.buildingWiseProperty.newLabel')}
           </div>
         </div>
@@ -53,95 +58,135 @@ export const getBuildingwisePropertyColumns = (
     },
     {
       key: 'description',
-      label: 'Description',
-      render: (_, row) => <div className="text-center text-slate-700 text-sm">{row.description || 'N/A'}</div>
+      label: t('approvalByULB.buildingWiseProperty.headers.description'),
+      cellClassName: 'align-center',
+      render: (_, row) => <div className="text-center text-slate-700 text-xs font-medium">{row.description || 'N/A'}</div>
     },
     {
       key: 'ownerName',
-      label: 'Owner Name & Occupier Name',
+      label: t('approvalByULB.buildingWiseProperty.headers.ownerOccupierName'),
+      cellClassName: 'align-center',
       render: (_, row) => (
-        <div className="flex flex-col text-left text-xs leading-tight break-words">
+        <div className="flex flex-col text-left text-xs leading-tight break-words gap-1">
           <div className="text-slate-800 font-medium">
-            <span className="text-slate-500 font-normal">{t('approvalByULB.buildingWiseProperty.ownerLabel')}</span> {row.ownerName || 'N/A'}
+            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.ownerLabel')}</span> {row.ownerName || 'N/A'}
           </div>
-          <div className="text-slate-700 font-medium mt-1">
-            <span className="text-slate-500 font-normal">{t('approvalByULB.buildingWiseProperty.occupierLabel')}</span> {row.occupierName || 'N/A'}
+          <div className="text-slate-700 font-medium">
+            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.occupierLabel')}</span> {row.occupierName || 'N/A'}
           </div>
         </div>
       )
     },
     {
       key: 'address',
-      label: 'Address',
-      render: (_, row) => <div className="text-left text-slate-700 text-sm">{row.address || 'N/A'}</div>
+      label: t('approvalByULB.buildingWiseProperty.headers.address'),
+       cellClassName: 'align-middle uppercase',
+      render: (_, row) => <div className="text-left text-slate-700 text-xs font-medium">{row.address || 'N/A'}</div>
     },
     {
       key: 'societyName',
-      label: 'Society Name & Builder Name',
+      label: t('approvalByULB.buildingWiseProperty.headers.societyBuilderName'),
+      cellClassName: 'align-center',
       render: (_, row) => (
-        <div className="flex flex-col text-left text-xs leading-tight break-words">
+        <div className="flex flex-col text-left text-xs leading-tight break-words gap-1">
           <div className="text-slate-800 font-medium">
-            <span className="text-slate-500 font-normal">{t('approvalByULB.buildingWiseProperty.societyLabel')}</span> {row.societyName || 'N/A'}
+            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.societyLabel')}</span> {row.societyName || 'N/A'}
           </div>
-          <div className="text-slate-700 font-medium mt-1">
-            <span className="text-slate-500 font-normal">{t('approvalByULB.buildingWiseProperty.builderLabel')}</span> {row.builderName || 'N/A'}
+          <div className="text-slate-700 font-medium">
+            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.builderLabel')}</span> {row.builderName || 'N/A'}
           </div>
         </div>
       )
     },
     {
       key: 'wingNo',
-      label: 'Wing No & Flat No',
+      label: t('approvalByULB.buildingWiseProperty.headers.wingFlatNo'),
+      cellClassName: 'align-center',
       render: (_, row) => (
-        <div className="flex flex-col text-left text-xs leading-tight break-words">
+        <div className="flex flex-col text-left text-xs leading-tight break-words gap-1">
           <div className="text-slate-800 font-medium">
-            <span className="text-slate-500 font-normal">{t('approvalByULB.buildingWiseProperty.wingLabel')}</span> {row.wingNo || 'N/A'}
+            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.wingLabel')}</span> {row.wingNo || 'N/A'}
           </div>
-          <div className="text-slate-700 font-medium mt-1">
-            <span className="text-slate-500 font-normal">{t('approvalByULB.buildingWiseProperty.flatLabel')}</span> {row.flatNo || 'N/A'}
+          <div className="text-slate-700 font-medium">
+            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.flatLabel')}</span> {row.flatNo || 'N/A'}
           </div>
         </div>
       )
     },
     {
       key: 'oldRecord',
-      label: 'Old Record',
+      label: t('approvalByULB.buildingWiseProperty.headers.oldRecord'),
+      cellClassName: 'bg-red-50/30 align-center',
       render: (_, row) => (
-        <div className="flex flex-col text-left leading-tight gap-0.5 text-xs">
-          <span>{t('approvalByULB.buildingWiseProperty.areaLabel')} <span className="text-black">{row.oldRecord?.area || 'N/A'}</span></span>
-          <span>{t('approvalByULB.buildingWiseProperty.useLabel')} <span className="text-black">{row.oldRecord?.use || 'N/A'}</span></span>
-          <span>{t('approvalByULB.buildingWiseProperty.yearLabel')} <span className="text-black">{row.oldRecord?.year || 'N/A'}</span></span>
-          <span>{t('approvalByULB.buildingWiseProperty.rvLabel')} <span className="text-black">{row.oldRecord?.rv || 'N/A'}</span></span>
-          <span>{t('approvalByULB.buildingWiseProperty.taxLabel')} <span className="text-black">{row.oldRecord?.tax || 'N/A'}</span></span>
+        <div className="space-y-0.5 text-xs p-1">
+          <div className="flex items-start justify-between gap-1">
+            <span className="font-semibold text-gray-700">{t('approvalByULB.buildingWiseProperty.areaLabel')}</span>
+            <span className="font-semibold text-gray-800 text-right">{row.oldRecord?.area || 'N/A'}</span>
+          </div>
+          <div className="flex items-start justify-between gap-1">
+            <span className="font-semibold text-gray-700">{t('approvalByULB.buildingWiseProperty.useLabel')}</span>
+            <span className="font-semibold text-gray-800 text-right truncate max-w-[80px]" title={row.oldRecord?.use}>{row.oldRecord?.use || 'N/A'}</span>
+          </div>
+          <div className="flex items-start justify-between gap-1">
+            <span className="font-semibold text-gray-700">{t('approvalByULB.buildingWiseProperty.yearLabel')}</span>
+            <span className="font-semibold text-gray-800 text-right">{row.oldRecord?.year || 'N/A'}</span>
+          </div>
+          <div className="flex items-start justify-between gap-1">
+            <span className="font-semibold text-gray-700">{t('approvalByULB.buildingWiseProperty.rvLabel')}</span>
+            <span className="font-semibold text-gray-800 text-right">{row.oldRecord?.rv || 'N/A'}</span>
+          </div>
+          <div className="flex items-start justify-between gap-1 pt-0.5 mt-0.5 border-t border-red-100">
+            <span className="font-semibold text-gray-700">{t('approvalByULB.buildingWiseProperty.taxLabel')}</span>
+            <span className="font-bold text-gray-700 text-right">{row.oldRecord?.tax || 'N/A'}</span>
+          </div>
         </div>
       )
     },
     {
       key: 'newRecord',
-      label: 'New Record',
+      label: t('approvalByULB.buildingWiseProperty.headers.newRecord'),
+      cellClassName: 'bg-emerald-50/30 align-center',
       render: (_, row) => (
-        <div className="flex flex-col text-left leading-tight gap-0.5 text-xs">
-          <span>{t('approvalByULB.buildingWiseProperty.areaLabel')} <span className="text-black">{row.newRecord?.area || 'N/A'}</span></span>
-          <span>{t('approvalByULB.buildingWiseProperty.useLabel')} <span className="text-black">{row.newRecord?.use || 'N/A'}</span></span>
-          <span>{t('approvalByULB.buildingWiseProperty.yearLabel')} <span className="text-black">{row.newRecord?.year || 'N/A'}</span></span>
-          <span>{t('approvalByULB.buildingWiseProperty.rvLabel')} <span className="text-black">{row.newRecord?.rv || 'N/A'}</span></span>
-          <span>{t('approvalByULB.buildingWiseProperty.taxLabel')} <span className="text-black">{row.newRecord?.tax || 'N/A'}</span></span>
+        <div className="space-y-0.5 text-xs p-1">
+          <div className="flex items-start justify-between gap-1">
+            <span className="font-semibold text-gray-700">{t('approvalByULB.buildingWiseProperty.areaLabel')}</span>
+            <span className="font-semibold text-gray-800 text-right">{row.newRecord?.area || 'N/A'}</span>
+          </div>
+          <div className="flex items-start justify-between gap-1">
+            <span className="font-semibold text-gray-700">{t('approvalByULB.buildingWiseProperty.useLabel')}</span>
+            <span className="font-semibold text-gray-800 text-right truncate max-w-[80px]" title={row.newRecord?.use}>{row.newRecord?.use || 'N/A'}</span>
+          </div>
+          <div className="flex items-start justify-between gap-1">
+            <span className="font-semibold text-gray-700">{t('approvalByULB.buildingWiseProperty.yearLabel')}</span>
+            <span className="font-semibold text-gray-800 text-right">{row.newRecord?.year || 'N/A'}</span>
+          </div>
+          <div className="flex items-start justify-between gap-1">
+            <span className="font-semibold text-gray-700">{t('approvalByULB.buildingWiseProperty.rvLabel')}</span>
+            <span className="font-semibold text-gray-800 text-right">{row.newRecord?.rv || 'N/A'}</span>
+          </div>
+          <div className="flex items-start justify-between gap-1 pt-0.5 mt-0.5 border-t border-emerald-100">
+            <span className="font-semibold text-gray-700">{t('approvalByULB.buildingWiseProperty.taxLabel')}</span>
+            <span className="font-bold text-gray-700 text-right">{row.newRecord?.tax || 'N/A'}</span>
+          </div>
         </div>
       )
     },
     {
       key: 'propertyType',
-      label: 'Property Type',
-      render: (_, row) => <div className="text-center text-slate-700 text-sm">{row.propertyType || 'N/A'}</div>
+      label: t('approvalByULB.buildingWiseProperty.headers.propertyType'),
+      cellClassName: 'align-center',
+      render: (_, row) => <div className="text-center text-slate-800 font-medium text-xs">{row.propertyType || 'N/A'}</div>
     },
     {
       key: 'totalDemand',
-      label: 'Total Demand',
-      render: (_, row) => <div className="text-center text-slate-700 text-sm">{t('approvalByULB.buildingWiseProperty.currencySymbol')}{row.totalDemand?.toLocaleString('en-IN') || 0}</div>
+      label: t('approvalByULB.buildingWiseProperty.headers.totalDemand'),
+      cellClassName: 'align-center',
+      render: (_, row) => <div className="text-center font-bold text-green-700 text-xs">{t('approvalByULB.buildingWiseProperty.currencySymbol')}{row.totalDemand?.toLocaleString('en-IN') || 0}</div>
     },
     {
       key: 'documents',
-      label: 'DOCUMENTS Image',
+      label: t('approvalByULB.buildingWiseProperty.headers.documentsImage'),
+      cellClassName: 'align-middle',
       render: (_, _row) => {
         const imageUrl = 'df9f9f30-86c6-4da4-84e8-31e2faa2492e'
 
@@ -167,7 +212,8 @@ export const getBuildingwisePropertyColumns = (
     },
     {
       key: 'actions',
-      label: 'ACTIONS',
+      label: t('approvalByULB.buildingWiseProperty.headers.actions'),
+      cellClassName: 'align-middle',
       render: (_, row) => (
         <div className="flex flex-col items-center justify-center gap-1.5 py-1 text-xs">
           <button
@@ -185,7 +231,7 @@ export const getBuildingwisePropertyColumns = (
             {t('approvalByULB.buildingWiseProperty.tracking')}
           </button>
           <div
-            className="h-12 w-12 hover:bg-slate-100 transition-colors flex items-center justify-center rounded-full overflow-hidden mx-auto"
+            className="h-8 w-8 hover:bg-slate-100 transition-colors flex items-center justify-center rounded-full overflow-hidden mx-auto cursor-pointer mt-0.5"
             title="Location"
             onClick={() => handleLocationClick(row, row.wardNo, row.propertyId)}
           >           
@@ -193,7 +239,7 @@ export const getBuildingwisePropertyColumns = (
             <img
               src="https://thaneautomationdashboard.tabamc.in/_next/static/media/map%20icon.11lzpgxlb~sr1.png"
               alt="Location"
-              className="h-8 w-8 object-contain scale-[2]"
+              className="h-7 w-7 object-contain scale-[1.8]"
             />
           </div>
         </div>
@@ -201,7 +247,8 @@ export const getBuildingwisePropertyColumns = (
     },
     {
       key: 'clerkSign',
-      label: 'Clerk Sign',
+      label: t('approvalByULB.buildingWiseProperty.headers.clerkSign'),
+      cellClassName: 'align-middle bg-indigo-50/30',
       render: (_, row) => (
         <div className="flex justify-center items-center">
           {row.clerkSign ? <Check className="h-4 w-4 text-emerald-600 inline-block" /> : <X className="h-4 w-4 text-rose-600 inline-block" />}
@@ -210,7 +257,8 @@ export const getBuildingwisePropertyColumns = (
     },
     {
       key: 'taxInspectorSign',
-      label: 'Tax Insp.',
+      label: t('approvalByULB.buildingWiseProperty.headers.taxInsp'),
+      cellClassName: 'align-middle bg-cyan-50/30',
       render: (_, row) => (
         <div className="flex justify-center items-center">
           {row.taxInspectorSign ? <Check className="h-4 w-4 text-emerald-600 inline-block" /> : <X className="h-4 w-4 text-rose-600 inline-block" />}
@@ -219,7 +267,8 @@ export const getBuildingwisePropertyColumns = (
     },
     {
       key: 'assistantCommissionerSign',
-      label: 'Asst. Comm.',
+      label: t('approvalByULB.buildingWiseProperty.headers.asstComm'),
+      cellClassName: 'align-middle bg-purple-50/30',
       render: (_, row) => (
         <div className="flex justify-center items-center">
           {row.assistantCommissionerSign ? <Check className="h-4 w-4 text-emerald-600 inline-block" /> : <X className="h-4 w-4 text-rose-600 inline-block" />}
@@ -228,7 +277,8 @@ export const getBuildingwisePropertyColumns = (
     },
     {
       key: 'deputyCommissionerSign',
-      label: 'Dy. Comm. (Tax)',
+      label: t('approvalByULB.buildingWiseProperty.headers.dyCommTax'),
+      cellClassName: 'align-middle bg-pink-50/30',
       render: (_, row) => (
         <div className="flex justify-center items-center">
           {row.deputyCommissionerSign ? <Check className="h-4 w-4 text-emerald-600 inline-block" /> : <X className="h-4 w-4 text-rose-600 inline-block" />}
@@ -237,7 +287,8 @@ export const getBuildingwisePropertyColumns = (
     },
     {
       key: 'additionalCommissionerSign',
-      label: 'Addl. Comm.',
+      label: t('approvalByULB.buildingWiseProperty.headers.addlComm'),
+      cellClassName: 'align-middle bg-teal-50/30',
       render: (_, row) => (
         <div className="flex justify-center items-center">
           {row.additionalCommissionerSign ? <Check className="h-4 w-4 text-emerald-600 inline-block" /> : <X className="h-4 w-4 text-rose-600 inline-block" />}

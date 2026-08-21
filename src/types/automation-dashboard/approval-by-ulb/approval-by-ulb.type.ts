@@ -143,3 +143,40 @@ export interface PendingExportResponse {
     errors: unknown | null;
     correlationId: string | null;
 }
+
+export interface PendingSignItem {
+    propertyId: number;
+    signAuthorityId: number;
+    structureName: string;
+    srNoticeNo: string;
+    noOfUnits: number;
+    demand: number;
+    signStatus: string;
+    authorityCode: string;
+}
+
+export interface PendingSignPagination {
+    items: PendingSignItem[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
+}
+
+export interface PendingSignResponse {
+    success: boolean;
+    message: string;
+    items: PendingSignPagination[] | null;
+    errors: unknown | null;
+    correlationId: string | null;
+}
+
+export interface UpdatePropertySignPayload {
+    userId: number;
+    signAuthorityId: number;
+    propertyId: number;
+    authorityCode: string;
+    signStatus: string;
+}

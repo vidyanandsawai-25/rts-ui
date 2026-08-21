@@ -1,5 +1,11 @@
 {
+  "success": {
+    "updatePropertySign": "Property approved successfully.",
+    "title": "Success"
+  },
   "errors": {
+    "updatePropertySign": "Failed to update property sign.",
+    "fetchPendingSigns": "Failed to fetch pending signs",
     "exportPendingData": "Failed to export pending data.",
     "fetchMainCards": "Failed to fetch main cards data.",
     "fetchWorkflowCards": "Failed to fetch workflow cards data.",
@@ -101,7 +107,7 @@
       "assessmentType": "ASSESSMENT TYPE",
       "selectAssessmentType": "Select Assessment Type",
       "Descriptionforproperty": "Description",
-      "CategoryProperty" : "Category",
+      "CategoryProperty": "Category",
       "Filters": "Filters"
     },
     "labels": {
@@ -360,10 +366,54 @@
       "currencySymbol": "₹",
       "unassessed": "Unassessed",
       "report": "Report",
-      "tracking": "Tracking"
+      "tracking": "Tracking",
+      "headers": {
+        "wardNo": "Ward No",
+        "newOldPropertyNo": "New Property No\n& Old Property No",
+        "description": "Description",
+        "ownerOccupierName": "Owner Name\n& Occupier Name",
+        "address": "Address",
+        "societyBuilderName": "Society Name\n& Builder Name",
+        "wingFlatNo": "Wing No\n& Flat No",
+        "propertyDetails": "PROPERTY DETAILS (NEW VS OLD)",
+        "propertyType": "Property Type",
+        "totalDemand": "Total Demand",
+        "documentsImage": "DOCUMENTS\nImage",
+        "actions": "ACTIONS",
+        "clerkSign": "Clerk Sign",
+        "taxInsp": "Tax Insp.",
+        "asstComm": "Asst. Comm.",
+        "dyCommTax": "Dy. Comm.\n(Tax)",
+        "addlComm": "Addl. Comm.",
+        "oldRecord": "Old Record",
+        "newRecord": "New Record"
+      }
+    }
+  },
+  "ulbPendingSigns": {
+    "title": "Update Pending",
+    "officerName": "Officer Name",
+    "pendingBuildings": "Pending Buildings",
+    "total": "Total",
+    "searchPlaceholder": "Search by SR Notice No...",
+    "showing": "Showing",
+    "of": "of",
+    "columns": {
+      "structureName": "Structure Name",
+      "srNoticeNo": "SR Notice No",
+      "noOfUnits": "No of Units",
+      "demand": "Demand",
+      "approve": "Approve"
+    },
+    "confirmApproveTitle": "Confirm Approval",
+    "confirmApproveMessage": "Are you sure you want to approve this property?",
+    "actions": {
+      "approve": "Approve"
     }
   },
   "sendToApprove": {
+    "warningIncomplete": "Warning: {count} property has incomplete QC checklist items.",
+    "successComplete": "All selected properties have complete QC checklists.",
     "confirmTitle": "Confirm Action",
     "confirmDescription": "Are you sure you want to send the selected properties for approval?",
     "confirmButton": "Confirm",

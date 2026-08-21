@@ -68,11 +68,48 @@ export default function SendToApproveDashboard({
     const handleSendToApprove = () => {
         if (selectedIds.length === 0) return;
 
+        const selectedPropertiesData = paginatedData.filter(p => selectedIds.includes(p.id));
+        const incompleteCount = selectedPropertiesData.filter(p => {
+            const qc = p.qcChecklist;
+            return !(qc.siteQC && qc.applyTaxes && qc.officeQC && qc.dataUpdated && qc.addTaxes && qc.qcCcBill);
+        }).length;
+
+        const hasIncomplete = incompleteCount > 0;
+
+        const getWarningMessage = () => {
+            try {
+                return t('sendToApprove.warningIncomplete', { count: incompleteCount });
+            } catch (_e) {
+                return `Warning: ${incompleteCount} ${incompleteCount === 1 ? 'property has' : 'properties have'} incomplete QC checklist items.`;
+            }
+        };
+
+        const getSuccessMessage = () => {
+            try {
+                return t('sendToApprove.successComplete');
+            } catch (_e) {
+                return "All selected properties have complete QC checklists.";
+            }
+        };
+
         confirm({
-            title: t('sendToApprove.confirmTitle') || "Confirm Action",
-            description: t('sendToApprove.confirmDescription') || `Are you sure you want to send ${selectedIds.length} properties for approval?`,
+            title: t('sendToApprove.confirmTitle') || "Send to ULB for approval",
+            description: ((
+                <div className="flex flex-col gap-2 mt-1">
+                    <span>{t('sendToApprove.confirmDescription') || `Do you really want to send this property for approval to ULB?`}</span>
+                    {hasIncomplete ? (
+                        <span className="text-red-500 font-medium text-sm">
+                            {getWarningMessage()}
+                        </span>
+                    ) : (
+                        <span className="text-green-900 font-medium text-sm">
+                            {getSuccessMessage()}
+                        </span>
+                    )}
+                </div>
+            ) as unknown as string),
             variant: "info",
-            confirmText: t('sendToApprove.confirmButton') || "Confirm",
+            confirmText: t('sendToApprove.confirmButton') || "Yes, send for approval",
             onConfirm: async () => {
                 setIsSubmitting(true);
                 try {
@@ -191,9 +228,25 @@ export default function SendToApproveDashboard({
         }));
     }, [serverData]);
 
+    const [paginatedData, setPaginatedData] = useState<SendToApproveData[]>(mappedProperties);
+    const [prevMappedProperties, setPrevMappedProperties] = useState<SendToApproveData[]>(mappedProperties);
+
+    if (mappedProperties !== prevMappedProperties) {
+        setPrevMappedProperties(mappedProperties);
+        setPaginatedData(mappedProperties);
+    }
+
+    const handleQcToggle = (propertyId: string, key: keyof SendToApproveData['qcChecklist'], isChecked: boolean) => {
+        setPaginatedData(prev => prev.map(p => {
+            if (p.id === propertyId) {
+                p.qcChecklist[key] = isChecked;
+            }
+            return p;
+        }));
+    };
+
     const totalCount = serverData?.totalCount ?? 0;
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-    const paginatedData = mappedProperties;
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
@@ -231,7 +284,7 @@ export default function SendToApproveDashboard({
         setViewerDocumentGuid(null);
     };
 
-    const columns = getSendToApproveColumns(selectedIds, handleSelectRow, handleDocumentClick, undefined, t);
+    const columns = getSendToApproveColumns(selectedIds, handleSelectRow, handleDocumentClick, handleQcToggle, t);
     const headerRows = getSendToApproveHeaderRows(selectedIds, paginatedData, handleSelectAll, t);
     return (
         <div className="flex flex-col h-full bg-slate-50/50 p-4 gap-4">

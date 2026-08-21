@@ -89,6 +89,10 @@ const ApprovalbyUlbDashboard = ({ serverData, exportData, exportRoleName }: Appr
         router.push(`${basePath}/approval-by-ulb?${currentParams.toString()}`);
     }, [router, searchParams, basePath, workflowStageId]);
 
+    const handleUpdatePendingClick = useCallback(() => {
+        router.push(`${basePath}/approval-by-ulb/ulb-pending-signs${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
+    }, [router, basePath, workflowStageId]);
+
     const columns = useMemo(() => getApprovalColumns(roles, handleNavigation, t), [roles, handleNavigation, t]);
     const headerRows = useMemo(() => getApprovalHeaderRows(roles, t, 'zone', handleExportClick), [roles, t, handleExportClick]);
 
@@ -115,7 +119,10 @@ const ApprovalbyUlbDashboard = ({ serverData, exportData, exportRoleName }: Appr
                             {/* Empty space on left side if we don't have search */}
                         </div>
                         <div className="flex items-center gap-3">
-                            <Button className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-medium text-[13px] rounded transition-colors shadow-sm border-none">
+                            <Button 
+                                onClick={handleUpdatePendingClick}
+                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-medium text-[13px] rounded transition-colors shadow-sm border-none"
+                            >
                                 {t('updatePending') || 'Update Pending'}
                             </Button>
                             <ExportDropdown config={exportConfig} />

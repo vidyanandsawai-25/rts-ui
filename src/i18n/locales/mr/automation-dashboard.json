@@ -1,5 +1,11 @@
 {
+  "success": {
+    "updatePropertySign": "मालमत्ता यशस्वीरित्या मंजूर केली.",
+    "title": "यशस्वी"
+  },
   "errors": {
+    "updatePropertySign": "मालमत्ता मंजूर करण्यात अयशस्वी.",
+    "fetchPendingSigns": "प्रलंबित स्वाक्षऱ्या मिळविण्यात अयशस्वी.",
     "exportPendingData": "प्रलंबित डेटा निर्यात करण्यात अयशस्वी.",
     "fetchMainCards": "मुख्य कार्ड डेटा प्राप्त करण्यात अयशस्वी.",
     "fetchWorkflowCards": "वर्कफ्लो कार्ड डेटा प्राप्त करण्यात अयशस्वी.",
@@ -360,10 +366,54 @@
       "currencySymbol": "₹",
       "unassessed": "मूल्यांकन न केलेले",
       "report": "अहवाल",
-      "tracking": "ट्रॅकिंग"
+      "tracking": "ट्रॅकिंग",
+      "headers": {
+        "wardNo": "प्रभाग क्रमांक",
+        "newOldPropertyNo": "नवीन मालमत्ता क्र.\nव जुना मालमत्ता क्र.",
+        "description": "वर्णन",
+        "ownerOccupierName": "मालकाचे नाव\nव भोगवटादाराचे नाव",
+        "address": "पत्ता",
+        "societyBuilderName": "सोसायटीचे नाव\nव बिल्डरचे नाव",
+        "wingFlatNo": "विंग क्र.\nव फ्लॅट क्र.",
+        "propertyDetails": "मालमत्ता तपशील (नवीन विरुद्ध जुना)",
+        "propertyType": "मालमत्ता प्रकार",
+        "totalDemand": "एकूण मागणी",
+        "documentsImage": "कागदपत्रे\nइमेज",
+        "actions": "कृती",
+        "clerkSign": "लिपिकाची स्वाक्षरी",
+        "taxInsp": "कर निरीक्षक",
+        "asstComm": "सहाय्यक आयुक्त",
+        "dyCommTax": "उपायुक्त\n(कर)",
+        "addlComm": "अतिरिक्त आयुक्त",
+        "oldRecord": "जुनी नोंद",
+        "newRecord": "नवीन नोंद"
+      }
+    }
+  },
+  "ulbPendingSigns": {
+    "title": "प्रलंबित अद्यतन",
+    "officerName": "अधिकाऱ्याचे नाव",
+    "pendingBuildings": "प्रलंबित इमारती",
+    "total": "एकूण",
+    "searchPlaceholder": "SR नोटीस क्र. ने शोधा...",
+    "showing": "दर्शवित आहे",
+    "of": "पैकी",
+    "columns": {
+      "structureName": "रचनेचे नाव",
+      "srNoticeNo": "SR नोटीस क्र.",
+      "noOfUnits": "युनिट्सची संख्या",
+      "demand": "मागणी",
+      "approve": "मंजूर करा"
+    },
+    "confirmApproveTitle": "मंजुरीची पुष्टी करा",
+    "confirmApproveMessage": "तुम्हाला खात्री आहे की तुम्ही ही मालमत्ता मंजूर करू इच्छिता?",
+    "actions": {
+      "approve": "मंजूर करा"
     }
   },
   "sendToApprove": {
+    "warningIncomplete": "चेतावणी: {count} मालमत्तेचे QC चेकलिस्ट आयटम अपूर्ण आहेत.",
+    "successComplete": "सर्व निवडलेल्या मालमत्तांच्या QC चेकलिस्ट पूर्ण आहेत.",
     "confirmTitle": "कृतीची पुष्टी करा",
     "confirmDescription": "मंजुरीसाठी निवडलेल्या मालमत्ता पाठवायच्या आहेत याची तुम्हाला खात्री आहे का?",
     "confirmButton": "पुष्टी करा",

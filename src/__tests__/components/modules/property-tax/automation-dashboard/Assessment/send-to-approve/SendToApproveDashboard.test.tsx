@@ -57,9 +57,9 @@ vi.mock("@/components/common/AutomationTable", () => ({
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe() { }
+  unobserve() { }
+  disconnect() { }
 };
 
 describe("SendToApproveDashboard", () => {
@@ -131,7 +131,7 @@ describe("SendToApproveDashboard", () => {
         surveyTypeOptions={mockSurveyTypeOptions}
       />
     );
-    
+
     // Check if table rows are rendered
     expect(screen.getByTestId("table-row-0")).toHaveTextContent("Property A");
   });
@@ -149,10 +149,10 @@ describe("SendToApproveDashboard", () => {
         surveyTypeOptions={mockSurveyTypeOptions}
       />
     );
-    
+
     const backButton = screen.getByRole("button", { name: /back/i });
     fireEvent.click(backButton);
-    
+
     expect(mockPush).toHaveBeenCalledWith('/en/property-tax/automation-dashboard/assessment?workflowStageId=4');
   });
   it("handles page change", () => {
@@ -202,11 +202,11 @@ describe("SendToApproveDashboard", () => {
         surveyTypeOptions={mockSurveyTypeOptions}
       />
     );
-    
+
     // Simulate clicking one of the action buttons to cover `handleActionClick` / rendering logic
     const actionsContainer = screen.getByTestId("actions-0");
     const clickableElements = actionsContainer.querySelectorAll('div, button');
-    
+
     // Click all clickable elements in the actions container
     clickableElements.forEach(el => {
       fireEvent.click(el);
