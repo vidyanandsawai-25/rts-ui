@@ -216,6 +216,10 @@ export function useUserForm(onSuccess: (user: User) => void, initialData?: User)
       if (res.success && res.data) {
         onSuccess(res.data as User);
         toast.success(t(isEdit ? 'messages.updateSuccess' : 'messages.createSuccess'));
+        if (!isEdit) {
+          const email = (formData as Partial<User>).email || '';
+          toast.info(t('messages.passwordSentToEmail', { email }), { duration: 6000 });
+        }
       } else {
         setErrors(res.validationErrors || {});
         let errorMsg = res.message || t(isEdit ? 'messages.updateError' : 'messages.createError');

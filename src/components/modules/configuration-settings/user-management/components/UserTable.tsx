@@ -1,11 +1,20 @@
 'use client';
 
-import { Mail, Phone, CheckCircle2, XCircle, Edit2, Trash2, Loader2, ShieldCheck, ShieldAlert, ShieldOff } from 'lucide-react';
+import {
+  Mail,
+  Phone,
+  CheckCircle2,
+  XCircle,
+  Edit2,
+  Trash2,
+  Loader2,
+  ShieldCheck,
+  ShieldAlert,
+  ShieldOff,
+} from 'lucide-react';
 import { MasterTable, Badge, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { User, UserTableProps } from '@/types/user-management';
-
-
 
 export function UserTable({
   users,
@@ -73,13 +82,16 @@ export function UserTable({
         const activeDeptIds = new Set(row.departmentIds || []);
 
         // 1. Match roles to their respective departments using raw allocations
-        const allocations = (row.rawRoleAllocations || [])
-          .filter((ra) => ra && (ra.isActive || !isUserActive) && activeDeptIds.has(String(ra.departmentId)));
+        const allocations = (row.rawRoleAllocations || []).filter(
+          (ra) => ra && (ra.isActive || !isUserActive) && activeDeptIds.has(String(ra.departmentId))
+        );
 
         let pairs: string[] = [];
         if (allocations.length > 0) {
           pairs = allocations.map((ra) => {
-            const dept = (row.rawDepartments || []).find((d) => String(d.departmentId) === String(ra.departmentId));
+            const dept = (row.rawDepartments || []).find(
+              (d) => String(d.departmentId) === String(ra.departmentId)
+            );
             const deptName = dept?.departmentName || `Dept ${ra.departmentId}`;
             const roleName = ra.userRoleName || '';
             return `${deptName} - ${roleName}`;
@@ -103,7 +115,7 @@ export function UserTable({
         }
 
         return (
-          <div className="flex flex-wrap gap-1 max-w-[250px]">
+          <div className="flex flex-wrap gap-1 max-w-[450px]">
             {pairs.map((val, idx) => (
               <Badge
                 key={idx}
@@ -123,7 +135,7 @@ export function UserTable({
       render: (value: unknown) => {
         const items = value as string[];
         return (
-          <div className="flex flex-wrap gap-1 max-w-[150px]">
+          <div className="flex flex-wrap gap-1 max-w-[300px]">
             {items.map((val, idx) => (
               <Badge
                 key={idx}

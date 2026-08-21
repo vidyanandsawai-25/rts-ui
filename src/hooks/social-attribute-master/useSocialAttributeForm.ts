@@ -173,6 +173,14 @@ export function useSocialAttributeForm({
     []
   );
 
+  const handleParentAttributeChange = useCallback((_name: string, value: string): void => {
+    setFormData((p) => ({
+      ...p,
+      parentAttributeId: value === '' ? null : Number(value),
+      isRequiredWhenParentTrue: value === '' ? false : p.isRequiredWhenParentTrue,
+    }));
+  }, []);
+
   const handleBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>): void => {
       const { name, value } = e.target;
@@ -353,6 +361,7 @@ export function useSocialAttributeForm({
     open,
     setOpen,
     handleChange,
+    handleParentAttributeChange,
     handleBlur,
     handleSubmit,
     handleToggleStatus,

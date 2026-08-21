@@ -16,15 +16,17 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
 
   // Collect unique tax names (excluding 'taxtotal') to define dynamic columns
   const uniqueTaxNames = useMemo(() => {
-    if (!oldTaxesData || !oldTaxesData.taxYears) return [];
+    if (!oldTaxesData || !Array.isArray(oldTaxesData.taxYears)) return [];
     const taxNames = new Set<string>();
     oldTaxesData.taxYears.forEach((yearData) => {
-      yearData.taxes.forEach((tax) => {
-        const name = tax.taxName;
-        if (name && name.toLowerCase() !== 'taxtotal') {
-          taxNames.add(name);
-        }
-      });
+      if (yearData && Array.isArray(yearData.taxes)) {
+        yearData.taxes.forEach((tax) => {
+          const name = tax?.taxName;
+          if (name && name.toLowerCase() !== 'taxtotal') {
+            taxNames.add(name);
+          }
+        });
+      }
     });
     return Array.from(taxNames);
   }, [oldTaxesData]);
@@ -69,7 +71,7 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
 
   // Construct table data
   const data = useMemo(() => {
-    if (!oldTaxesData || !oldTaxesData.taxYears) return [];
+    if (!oldTaxesData || !Array.isArray(oldTaxesData.taxYears)) return [];
 
     return oldTaxesData.taxYears.map((yearData) => {
       const wardNo = yearData.oldWardNo?.toString() ?? '';
@@ -88,16 +90,18 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
       });
       row['taxTotal'] = 0;
 
-      yearData.taxes.forEach((tax) => {
-        const name = tax.taxName;
-        if (name) {
-          if (name.toLowerCase() === 'taxtotal') {
-            row['taxTotal'] = tax.taxAmount;
-          } else {
-            row[name] = tax.taxAmount;
+      if (yearData && Array.isArray(yearData.taxes)) {
+        yearData.taxes.forEach((tax) => {
+          const name = tax?.taxName;
+          if (name) {
+            if (name.toLowerCase() === 'taxtotal') {
+              row['taxTotal'] = tax.taxAmount;
+            } else {
+              row[name] = tax.taxAmount;
+            }
           }
-        }
-      });
+        });
+      }
 
       return row;
     });

@@ -24,7 +24,7 @@ export const userManagementValidations = {
       userName: (val) => {
         if (!isEdit && !val) return t('form.errors.usernameRequired');
         if (val && String(val).length > 20) return t('form.errors.usernameTooLong');
-        if (val && !/^[a-zA-Z0-9]+$/.test(String(val))) {
+        if (val && !/^[a-zA-Z0-9.]+$/.test(String(val))) {
           return t('form.errors.usernameInvalid');
         }
         if (val && existingUsers) {

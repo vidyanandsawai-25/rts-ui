@@ -49,7 +49,8 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
 
   // ✅ Check if we have data in oldDetailsData that should be shown in the table if table is empty
   const tableData = React.useMemo(() => {
-    if (oldFloorTableData.length > 0) return oldFloorTableData;
+    const floors = Array.isArray(oldFloorTableData) ? oldFloorTableData : [];
+    if (floors.length > 0) return floors;
 
     // Fallback to single row from oldDetailsData if available
     if (oldDetailsData?.oldConstructionYear || oldDetailsData?.oldCarpetAreaSqMeter) {
@@ -92,7 +93,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
   ];
 
   const oldMapTableData = React.useMemo(() => {
-    return (mappedPropertiesData || []).map((item) => {
+    return (mappedPropertiesData || []).filter(Boolean).map((item) => {
       const oldPropPartNo = `${item.oldPropertyNo || ''}${item.oldPartitionNo ? ` - ${item.oldPartitionNo}` : ''}`;
       const oldWardPropPartNo = [item.oldWardNo, oldPropPartNo].filter(Boolean).join(' - ');
       return {
@@ -286,7 +287,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
                       tax: String(oldDetailsData?.oldTotalTax || ''),
                       rv: String(oldDetailsData?.oldRV || ''),
                       cv: String(oldDetailsData?.oldCV || ''),
-                      floors: String(oldDetailsData?.oldConstructionArea || '')
+                      floors: String(oldDetailsData?.oldConstructionArea || ''),
                     }).toString();
                     router.push(`/${locale}/property-tax/property-mapping?${params}`);
                   }}

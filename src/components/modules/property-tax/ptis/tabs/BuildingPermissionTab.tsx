@@ -9,10 +9,7 @@ import { ValueDisplay } from './components/ValueDisplay';
 import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
 import { DocumentViewerModal } from '@/components/common';
 import { toast } from 'sonner';
-import type {
-  BuildingPermissionData,
-  BuildingPermissionItem,
-} from '@/types/ptis.types';
+import type { BuildingPermissionData, BuildingPermissionItem } from '@/types/ptis.types';
 
 export interface BuildingPermissionTabProps {
   data?: BuildingPermissionData;
@@ -21,16 +18,28 @@ export interface BuildingPermissionTabProps {
   isExpanded?: boolean;
 }
 
-const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data, isExpanded = false }) => {
+const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
+  data,
+  isExpanded = false,
+}) => {
   const t = useTranslations('ptis');
   const locale = useLocale();
   const [activeViewingGuid, setActiveViewingGuid] = React.useState<string | null>(null);
-  const [viewerData, setViewerData] = React.useState<{ isOpen: boolean; url: string; name: string; label?: string } | null>(null);
+  const [viewerData, setViewerData] = React.useState<{
+    isOpen: boolean;
+    url: string;
+    name: string;
+    label?: string;
+  } | null>(null);
 
   // Filter for items that have actual certificate data (number, date, or document) or hasCertificate=true
   const items = React.useMemo(() => {
-    return (data?.items || []).filter((item) => {
-      const hasContent = !!(item.certificateNo?.trim() || item.issueDate?.trim() || item.documentGuid?.trim());
+    return (data?.items || []).filter(Boolean).filter((item) => {
+      const hasContent = !!(
+        item.certificateNo?.trim() ||
+        item.issueDate?.trim() ||
+        item.documentGuid?.trim()
+      );
       return item.hasCertificate || hasContent;
     });
   }, [data?.items]);
@@ -54,7 +63,9 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data, isE
     return (
       <div className="flex flex-col items-center justify-center p-6 text-slate-500 bg-slate-50 rounded-lg border border-dashed border-slate-300">
         <AlertCircle className="h-7 w-7 text-slate-400 mb-1.5" />
-        <p className="text-xs font-semibold">{t('noDataAvailable') || 'No attached certificates available'}</p>
+        <p className="text-xs font-semibold">
+          {t('noDataAvailable') || 'No attached certificates available'}
+        </p>
       </div>
     );
   }
@@ -75,11 +86,11 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data, isE
     const scopeName = item.floorDescription
       ? item.floorDescription
       : item.propertyDetailsId
-      ? `Floor #${item.propertyDetailsId}`
-      : null;
+        ? `Floor #${item.propertyDetailsId}`
+        : null;
 
-    const cardKey = item.propertyCertificateId 
-      ? String(item.propertyCertificateId) 
+    const cardKey = item.propertyCertificateId
+      ? String(item.propertyCertificateId)
       : `${item.certificateTypeId}-${item.propertyDetailsId || 'property'}`;
 
     return (
@@ -118,7 +129,10 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data, isE
             onClick={async (e) => {
               e.stopPropagation();
               if (!item.documentGuid) {
-                toast.info(t('building.noDocumentAttached') || 'No document file attached for this certificate.');
+                toast.info(
+                  t('building.noDocumentAttached') ||
+                    'No document file attached for this certificate.'
+                );
                 return;
               }
               setActiveViewingGuid(item.documentGuid);
@@ -127,11 +141,11 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data, isE
                 setViewerData({
                   isOpen: true,
                   url: res.url,
-                  name: item.fileName || "Document",
-                  label: item.certificateTypeName
+                  name: item.fileName || 'Document',
+                  label: item.certificateTypeName,
                 });
               } catch (err: unknown) {
-                toast.error(err instanceof Error ? err.message : "Failed to view document");
+                toast.error(err instanceof Error ? err.message : 'Failed to view document');
               } finally {
                 setActiveViewingGuid(null);
               }

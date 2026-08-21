@@ -30,6 +30,7 @@ export default function SocialAttributeForm({
     isChild,
     open,
     handleChange,
+    handleParentAttributeChange,
     handleBlur,
     handleSubmit,
     handleToggleStatus,
@@ -101,6 +102,7 @@ export default function SocialAttributeForm({
           formData={formData}
           handleChange={handleChange}
           handleBlur={handleBlur}
+          onParentAttributeChange={handleParentAttributeChange}
           isChild={isChild}
           handleToggleIsChild={handleToggleIsChild}
           handleToggleIsRequiredWhenParentTrue={handleToggleIsRequiredWhenParentTrue}

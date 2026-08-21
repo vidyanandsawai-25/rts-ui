@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Input, ValidationMessage, Select, ToggleSwitch } from '@/components/common';
+import { Input, ValidationMessage, Select, SearchSelect, ToggleSwitch } from '@/components/common';
 import { SocialAttributeFormModel, SocialAttribute } from '@/types/social-attribute.types';
 
 interface FormFieldsSectionProps {
   formData: SocialAttributeFormModel;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  onParentAttributeChange: (name: string, value: string) => void;
   isChild: boolean;
   handleToggleIsChild: () => void;
   handleToggleIsRequiredWhenParentTrue: () => void;
@@ -26,6 +27,7 @@ export const FormFieldsSection = ({
   formData,
   handleChange,
   handleBlur,
+  onParentAttributeChange,
   isChild,
   handleToggleIsChild,
   handleToggleIsRequiredWhenParentTrue,
@@ -84,16 +86,14 @@ export const FormFieldsSection = ({
   );
 
   const parentAttributeOptions = useMemo(
-    () => [
-      { label: t('form.fields.parentAttribute.placeholder'), value: '' },
-      ...parentAttributes
-        .filter((attr) => attr.id !== formData.id && attr.parentAttributeId === null) // Cannot be own parent and must be a root parent
+    () =>
+      parentAttributes
+        .filter((attr) => attr.id !== formData.id && attr.parentAttributeId === null)
         .map((attr) => ({
           label: `${attr.socialAttributeName} (${attr.socialAttributeCode})`,
           value: String(attr.id),
         })),
-    ],
-    [parentAttributes, formData.id, t]
+    [parentAttributes, formData.id]
   );
 
   return (
@@ -187,18 +187,14 @@ export const FormFieldsSection = ({
       {isChild && (
         <>
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-medium text-slate-700">
-              {t('form.fields.parentAttribute.label')}
-            </label>
-            <Select
+            <SearchSelect
               name="parentAttributeId"
               value={formData.parentAttributeId != null ? String(formData.parentAttributeId) : ''}
-              onChange={handleChange}
-              onBlur={handleBlur}
+              onChange={onParentAttributeChange}
               options={parentAttributeOptions}
-              selectSize="md"
+              placeholder={t('form.fields.parentAttribute.placeholder')}
               className="w-full text-gray-700"
-              ariaLabel={t('form.fields.parentAttribute.label') || 'Parent Attribute'}
+              label={t('form.fields.parentAttribute.label') || 'Parent Attribute'}
               disabled={areFieldsDisabled}
             />
           </div>

@@ -214,7 +214,7 @@ export function BasicInfoStep({
                 disabled={!!editingUser}
                 value={formData.userName}
                 onChange={(e) => {
-                  const val = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+                  const val = e.target.value.replace(/[^a-zA-Z0-9.]/g, '');
                   setFormData({ ...formData, userName: val });
                 }}
                 className="border-2 text-slate-700"
