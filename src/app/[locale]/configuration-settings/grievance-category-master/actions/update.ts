@@ -118,6 +118,14 @@ export async function updateGrievanceCategoryAction(
         message: await tGrievanceMessage(locale, 'master.toast.updateSuccess', 'Category updated successfully')
       };
     }
+    const rawErr = (response.error || response.message || '').toLowerCase();
+    if (rawErr.includes('unique') || rawErr.includes('duplicate') || rawErr.includes('already exists') || rawErr.includes('categorycode')) {
+      return {
+        success: false,
+        fieldErrors: { categoryCode: tVal('errors.duplicateCode') },
+        error: tVal('errors.duplicateCode'),
+      };
+    }
     const errorMsg = await localizeBackendMessage(response.error || response.message, locale, 'updateError', 'Failed to update grievance category');
     return {
       success: false,

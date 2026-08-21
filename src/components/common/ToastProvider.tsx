@@ -68,20 +68,15 @@ export function ToastNotifier({
   type?: ToastType;
   id?: string;
 }) {
-  const triggeredKeyRef = React.useRef<string | null>(null);
-
   React.useEffect(() => {
-    const key = id ? `${id}:${message}` : message;
-
-    if (message && triggeredKeyRef.current !== key) {
-      triggeredKeyRef.current = key;
+    if (message?.trim()) {
       const toastFn = 
         type === 'success' ? sonnerToast.success : 
         type === 'error' ? sonnerToast.error : 
         type === 'warning' ? sonnerToast.warning : 
         sonnerToast.info;
       
-      toastFn(message);
+      toastFn(message, id ? { id } : undefined);
     }
   }, [message, type, id]);
 
