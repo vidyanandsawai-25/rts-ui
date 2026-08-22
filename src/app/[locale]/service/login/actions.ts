@@ -3,8 +3,12 @@
 import { cookies } from 'next/headers';
 import { requestOtp } from '@/lib/api/otp.service';
 import { fetchCitizenPropertiesFromApi, type CitizenProperty } from '@/lib/api/citizen-property.service';
+import {
+  getCitizenLoginNodes,
+  getCitizenLoginSectors,
+} from '@/lib/api/rts/rtscitizenlogin.service';
 import { createRtsCitizenSession, logoutRtsCitizenSession } from '@/lib/api/rts/rtscitizensession.service';
-import { createTrackedExternalServiceNavigation } from '@/lib/utils/rts/external-service-application';
+import { resolveExternalServiceNavigation } from '@/lib/utils/rts/external-service-application';
 
 const OTP_TTL_MS = 2 * 60 * 1000;
 
@@ -122,18 +126,13 @@ async function establishCitizenSession(
     return { success: true, citizen: citizenProfile, externalDestination: null, serviceRedirectError: null };
   }
 
-  const tracking = await createTrackedExternalServiceNavigation(requestedServiceId, {
-    sessionId,
-    name: citizenProfile.name,
-    ownerId: citizenProfile.ownerId,
-    upicId: citizenProfile.upicId,
-  });
+  const navigation = await resolveExternalServiceNavigation(requestedServiceId, citizenProfile.upicId);
 
-  if (!tracking.success) {
-    return { success: true, citizen: citizenProfile, externalDestination: null, serviceRedirectError: tracking.errorCode };
+  if (!navigation.success) {
+    return { success: true, citizen: citizenProfile, externalDestination: null, serviceRedirectError: navigation.errorCode };
   }
 
-  return { success: true, citizen: citizenProfile, externalDestination: tracking.destination, serviceRedirectError: null };
+  return { success: true, citizen: citizenProfile, externalDestination: navigation.destination, serviceRedirectError: null };
 }
 
 export async function sendCitizenOtpAction(
@@ -328,44 +327,26 @@ export async function switchCitizenPropertyAction(ownerId: number) {
 
 export async function fetchNodesAction() {
   try {
-    const res = await fetch('https://akolamc.in/PropertyTax/FillComboForPayment/FillComboForPayments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ Flag: 'GetNode' }),
-    });
-
-    if (!res.ok) {
-      return { success: false, error: `Failed to fetch nodes. Status: ${res.status}` };
-    }
-
-    const data = await res.json();
+    const data = await getCitizenLoginNodes();
     return { success: true, data };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error fetching nodes:', err);
-    return { success: false, error: err?.message || 'Failed to fetch nodes.' };
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to fetch nodes.',
+    };
   }
 }
 
 export async function fetchSectorsAction(node: string) {
   try {
-    const res = await fetch('https://akolamc.in/PropertyTax/FillComboForPayment/FillComboForPayments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ Flag: 'GetSector', Node: node }),
-    });
-
-    if (!res.ok) {
-      return { success: false, error: `Failed to fetch sectors. Status: ${res.status}` };
-    }
-
-    const data = await res.json();
+    const data = await getCitizenLoginSectors(node);
     return { success: true, data };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error fetching sectors:', err);
-    return { success: false, error: err?.message || 'Failed to fetch sectors.' };
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to fetch sectors.',
+    };
   }
 }

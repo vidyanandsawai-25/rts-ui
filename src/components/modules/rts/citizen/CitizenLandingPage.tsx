@@ -18,8 +18,8 @@ import {
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
 import {
-  createExternalServiceApplicationAction,
   getServiceDetailsModalInfoAction,
+  resolveExternalServiceNavigationAction,
 } from '@/app/[locale]/service/dashboard/actions';
 import {
   getInternalRtsServiceHref,
@@ -230,7 +230,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
       setIsCreatingExternalApplication(true);
       try {
-        const result = await createExternalServiceApplicationAction(Number(serviceId));
+        const result = await resolveExternalServiceNavigationAction(Number(serviceId));
         if (!result.success) {
           externalTab.close();
           if (result.errorCode === 'login-required') {

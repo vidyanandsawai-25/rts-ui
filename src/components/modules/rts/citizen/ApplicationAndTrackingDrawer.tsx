@@ -436,9 +436,9 @@ export default function ApplicationAndTrackingDrawer({
                 <p className="text-xs text-slate-500">{COPY.selectApplication}</p>
               </div>
               <div className="grid gap-2">
-                {applications.map((application) => (
+                {applications.map((application, index) => (
                   <button
-                    key={application.applicationNo}
+                    key={index}
                     type="button"
                     onClick={() => void selectApplication(application)}
                     className="rounded-lg border border-fuchsia-200 bg-white px-4 py-3 text-left shadow-sm transition hover:border-fuchsia-400 hover:bg-fuchsia-50"

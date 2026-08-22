@@ -19,6 +19,9 @@ export async function getRtsMisDashboardData(
     DeparmentId: payload.DeparmentId ?? 0,
     DeparmentName: payload.DeparmentName?.trim() ?? '',
     ModuleName: payload.ModuleName ?? '',
+    // The backend binds these as nullable DateTime values; empty strings cause a 400.
+    FromDate: payload.FromDate?.trim() || null,
+    ToDate: payload.ToDate?.trim() || null,
   };
 
   const response = await fetch(RTS_MIS_DASHBOARD_URL, {

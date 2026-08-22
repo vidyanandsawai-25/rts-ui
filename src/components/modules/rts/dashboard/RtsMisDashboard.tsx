@@ -36,12 +36,15 @@ interface DashboardProps {
   getDepartmentServices: (
     departmentId: number,
     departmentName: string,
-    moduleName: RtsMisDashboardModuleName
+    moduleName: RtsMisDashboardModuleName,
+    fromDate?: string,
+    toDate?: string
   ) => Promise<RtsMisDashboardData>;
   filters: {
     applicationSource: ApplicationSource;
-    chart: PieChartView;
     pageNumber: number;
+    fromDate: string;
+    toDate: string;
   };
 }
 
@@ -104,7 +107,6 @@ interface PieDataPoint {
 }
 
 type PaginationToken = number | "dots";
-type PieChartView = "department" | "service";
 type ApplicationSource = "rts" | "aaple-sarkar" | "offline";
 
 function getModuleName(applicationSource: ApplicationSource): RtsMisDashboardModuleName {
@@ -181,8 +183,8 @@ function buildPieData(
   const sortedRows = rows
     .filter((row) => row.value > 0)
     .sort((first, second) => second.value - first.value);
-  const topRows = sortedRows.slice(0, 3);
-  const otherValue = sortedRows.slice(3).reduce((total, row) => total + row.value, 0);
+  const topRows = sortedRows.slice(0, 5);
+  const otherValue = sortedRows.slice(5).reduce((total, row) => total + row.value, 0);
   const visibleRows = otherValue > 0 ? [...topRows, { label: otherLabel, value: otherValue }] : topRows;
 
   return visibleRows.map((row, index) => ({
@@ -209,17 +211,17 @@ function DonutChart({
   formatNumber: (value: number) => string;
 }) {
   if (loading) {
-    return <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-xs font-bold text-slate-500">{loadingLabel}</div>;
+    return <div className="flex h-56 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-xs font-bold text-slate-500">{loadingLabel}</div>;
   }
 
   if (total === 0) {
-    return <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-xs font-bold text-slate-500">{noDataLabel}</div>;
+    return <div className="flex h-56 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-xs font-bold text-slate-500">{noDataLabel}</div>;
   }
 
   return (
     <div className="space-y-2 w-full h-auto">
       <div className="flex justify-center">
-        <svg viewBox="0 0 180 180" className="h-48 w-full" role="img" aria-label={totalLabel}>
+        <svg viewBox="0 0 180 180" className="h-56 w-full" role="img" aria-label={totalLabel}>
           <circle cx="90" cy="90" r="42" fill="none" stroke="#E2E8F0" strokeWidth="28" />
           {data.map((item, index) => {
             const length = (item.value / total) * DONUT_CIRCUMFERENCE;
@@ -250,16 +252,14 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { applicationSource, chart: pieChartView, pageNumber } = filters;
+  const { applicationSource, pageNumber, fromDate, toDate } = filters;
   const numberFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
   const [expandedDepartmentId, setExpandedDepartmentId] = useState<string | null>(null);
   const [servicesByDepartment, setServicesByDepartment] = useState<Record<string, ServiceRow[]>>({});
   const [loadingDepartmentId, setLoadingDepartmentId] = useState<string | null>(null);
   const [serviceErrors, setServiceErrors] = useState<Record<string, string>>({});
   const activeServiceRequests = useRef(new Set<string>());
-  const previousApplicationSource = useRef(applicationSource);
+  const previousDashboardFilterKey = useRef(`${applicationSource}:${fromDate}:${toDate}`);
 
   const formatNumber = (value: number) => numberFormatter.format(value);
   const moduleName = getModuleName(applicationSource);
@@ -301,8 +301,6 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     () => departments.find((department) => department.id === expandedDepartmentId) ?? null,
     [departments, expandedDepartmentId]
   );
-  const selectedDepartment = expandedDepartment ?? departments[0] ?? null;
-
   const filteredDepartments = departments;
 
   const totals = useMemo(() => departments.reduce(
@@ -347,7 +345,13 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     });
 
     try {
-      const response = await getDepartmentServices(numericId, department.name, moduleName);
+      const response = await getDepartmentServices(
+        numericId,
+        department.name,
+        moduleName,
+        fromDate,
+        toDate
+      );
       const services = (response.serviceWiseData ?? []).map((service, index): ServiceRow => ({
         srNo: index + 1,
         id: `${department.id}-${createIdentifier(service.serviceName, String(index + 1))}`,
@@ -368,7 +372,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
       activeServiceRequests.current.delete(department.id);
       setLoadingDepartmentId((current) => current === department.id ? null : current);
     }
-  }, [getDepartmentServices, moduleName, servicesByDepartment, t]);
+  }, [fromDate, getDepartmentServices, moduleName, servicesByDepartment, t, toDate]);
 
   useEffect(() => {
     if (!expandedDepartment) return;
@@ -381,14 +385,15 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
   }, [expandedDepartment, fetchDepartmentServices]);
 
   useEffect(() => {
-    if (previousApplicationSource.current === applicationSource) return;
-    previousApplicationSource.current = applicationSource;
+    const filterKey = `${applicationSource}:${fromDate}:${toDate}`;
+    if (previousDashboardFilterKey.current === filterKey) return;
+    previousDashboardFilterKey.current = filterKey;
     activeServiceRequests.current.clear();
     setExpandedDepartmentId(null);
     setServicesByDepartment({});
     setLoadingDepartmentId(null);
     setServiceErrors({});
-  }, [applicationSource]);
+  }, [applicationSource, fromDate, toDate]);
 
   const updateUrl = useCallback((updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -411,6 +416,24 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     updateUrl({ PageNumber: String(page) });
   };
 
+  const changeFromDate = (value: string) => {
+    const nextToDate = value && toDate && toDate < value ? "" : toDate;
+    updateUrl({
+      FromDate: value || null,
+      ToDate: nextToDate || null,
+      PageNumber: "1",
+    });
+  };
+
+  const changeToDate = (value: string) => {
+    if (value && fromDate && value < fromDate) return;
+    updateUrl({ ToDate: value || null, PageNumber: "1" });
+  };
+
+  const clearDates = () => {
+    updateUrl({ FromDate: null, ToDate: null, PageNumber: "1" });
+  };
+
   const metrics = [
     { count: totals.total, label: t("misDashboard.totalApplications"), detail: t("misDashboard.allSubmitted"), icon: FileText, colors: "bg-blue-50 text-[#0B5CD5] ring-blue-100", detailColor: "text-[#0B5CD5]" },
     { count: totals.pending, label: t("misDashboard.pendingVerification"), detail: t("misDashboard.inProgress"), icon: Clock3, colors: "bg-amber-50 text-[#F39C12] ring-amber-100", detailColor: "text-[#C66922]" },
@@ -419,32 +442,41 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     { count: totals.overdue, label: t("misDashboard.overdueApplications"), detail: t("misDashboard.requiresAttention"), icon: Timer, colors: "bg-violet-50 text-[#8A2BE2] ring-violet-100", detailColor: "text-[#551A8B]" },
   ];
 
-  const approvalDistribution = selectedDepartment ? [
-    { label: t("misDashboard.approved"), value: selectedDepartment.approved, color: "bg-[#27AE60]", text: "text-[#0F7A3F]" },
-    { label: t("misDashboard.pending"), value: selectedDepartment.pending, color: "bg-[#F39C12]", text: "text-[#C66922]" },
-    { label: t("misDashboard.rejected"), value: selectedDepartment.rejected, color: "bg-[#B22222]", text: "text-[#B22222]" },
-  ] : [];
+  const visualizationSummary = expandedDepartment
+    ? {
+      totalApplications: expandedDepartment.totalApplications,
+      approved: expandedDepartment.approved,
+      pending: expandedDepartment.pending,
+      rejected: expandedDepartment.rejected,
+    }
+    : {
+      totalApplications: totals.total,
+      approved: totals.approved,
+      pending: totals.pending,
+      rejected: totals.rejected,
+    };
+  const approvalDistribution = [
+    { label: t("misDashboard.approved"), value: visualizationSummary.approved, color: "bg-[#27AE60]", text: "text-[#0F7A3F]" },
+    { label: t("misDashboard.pending"), value: visualizationSummary.pending, color: "bg-[#F39C12]", text: "text-[#C66922]" },
+    { label: t("misDashboard.rejected"), value: visualizationSummary.rejected, color: "bg-[#B22222]", text: "text-[#B22222]" },
+  ];
 
   const departmentPieData = useMemo(() => buildPieData(
     departments.map((department) => ({ label: department.name, value: department.totalApplications })),
     t("misDashboard.other")
   ), [departments, t]);
-  const servicePieData = useMemo(() => {
-    const rows = expandedDepartment
+  const servicePieData = useMemo(() => buildPieData(
+    expandedDepartment
       ? (servicesByDepartment[expandedDepartment.id] ?? []).map((service) => ({
         label: service.name,
         value: service.totalApplications,
       }))
-      : (dashboardData.serviceWiseData ?? []).map((service) => ({
-        label: service.serviceName,
-        value: Number(service.totalApplications ?? 0),
-      }));
-
-    return buildPieData(rows, t("misDashboard.other"));
-  }, [dashboardData.serviceWiseData, expandedDepartment, servicesByDepartment, t]);
-  const activePieData = pieChartView === "department" ? departmentPieData : servicePieData;
+      : [],
+    t("misDashboard.other")
+  ), [expandedDepartment, servicesByDepartment, t]);
+  const activePieData = expandedDepartment ? servicePieData : departmentPieData;
   const activePieTotal = activePieData.reduce((total, item) => total + item.value, 0);
-  const isServicePieLoading = pieChartView === "service" && loadingDepartmentId === expandedDepartment?.id;
+  const isServicePieLoading = Boolean(expandedDepartment && loadingDepartmentId === expandedDepartment.id);
 
   const tableRows = useMemo<MisTableRow[]>(() => {
     return paginatedDepartments.flatMap((department) => {
@@ -555,11 +587,11 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 shadow-sm">
           <span className="text-[11px] font-bold text-slate-500">{t("misDashboard.from")}</span>
-          <Input id="dashboard-date-from" type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} aria-label={t("misDashboard.fromDate")} className="h-8 min-w-[132px] border-0 bg-transparent px-1 text-[12px] font-semibold shadow-none focus-visible:ring-0" />
+          <Input id="dashboard-date-from" type="date" value={fromDate} onChange={(event) => changeFromDate(event.target.value)} aria-label={t("misDashboard.fromDate")} className="h-8 min-w-[132px] border-0 bg-transparent px-1 text-[12px] font-semibold shadow-none focus-visible:ring-0" />
           <span className="font-bold text-slate-300">|</span>
           <span className="text-[11px] font-bold text-slate-500">{t("misDashboard.to")}</span>
-          <Input id="dashboard-date-to" type="date" min={dateFrom || undefined} value={dateTo} onChange={(event) => setDateTo(event.target.value)} aria-label={t("misDashboard.toDate")} className="h-8 min-w-[132px] border-0 bg-transparent px-1 text-[12px] font-semibold shadow-none focus-visible:ring-0" />
-          {(dateFrom || dateTo) && <Button type="button" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); }} aria-label={t("misDashboard.clearDates")} title={t("misDashboard.clearDatesTitle")} className="h-5 min-h-0 px-1 text-[10px] font-bold text-slate-400 hover:bg-rose-50 hover:text-rose-500"><X className="size-3.5" /></Button>}
+          <Input id="dashboard-date-to" type="date" min={fromDate || undefined} value={toDate} onChange={(event) => changeToDate(event.target.value)} aria-label={t("misDashboard.toDate")} className="h-8 min-w-[132px] border-0 bg-transparent px-1 text-[12px] font-semibold shadow-none focus-visible:ring-0" />
+          {(fromDate || toDate) && <Button type="button" size="sm" onClick={clearDates} aria-label={t("misDashboard.clearDates")} title={t("misDashboard.clearDatesTitle")} className="h-5 min-h-0 px-1 text-[10px] font-bold text-slate-400 hover:bg-rose-50 hover:text-rose-500"><X className="size-3.5" /></Button>}
         </div>
       </Card>
 
@@ -604,15 +636,18 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
             data={tableRows}
             getRowKey={(row) => row.id}
             emptyText={t("misDashboard.noData")}
-            maxBodyHeightClassName="h-[442px]"
+            maxBodyHeightClassName="max-h-[502px]"
             tableClassName="table-fixed border-collapse text-left text-sm text-slate-900"
             containerClassName="gap-0"
             theadClassName="bg-[#0A3275]"
             rowClassName={(row) => {
-              if (row.kind === "service") return "cursor-default bg-slate-50/90 hover:!bg-slate-100";
-              if (row.kind === "loading" || row.kind === "empty") return "cursor-default bg-slate-50 text-slate-500";
-              if (row.kind === "error") return "cursor-default bg-rose-50/60";
-              return expandedDepartment?.id === row.id ? "bg-blue-50/70 hover:!bg-blue-100/70" : "bg-white";
+              const minimumRowHeight = "h-[46px]";
+              if (row.kind === "service") return `${minimumRowHeight} cursor-default bg-slate-50/90 hover:!bg-slate-100`;
+              if (row.kind === "loading" || row.kind === "empty") return `${minimumRowHeight} cursor-default bg-slate-50 text-slate-500`;
+              if (row.kind === "error") return `${minimumRowHeight} cursor-default bg-rose-50/60`;
+              return expandedDepartment?.id === row.id
+                ? `${minimumRowHeight} bg-blue-50/70 hover:!bg-blue-100/70`
+                : `${minimumRowHeight} bg-white`;
             }}
             onRowClick={(row) => {
               if (row.kind === "department" && row.department) toggleDepartment(row.department);
@@ -637,10 +672,10 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
         </Card>
 
         <div className="w-full space-y-2 lg:w-[20%]">
-          <Card className="flex h-[238px] flex-col gap-2 self-start border border-slate-200 bg-white p-3 shadow-sm">
+          <Card className="flex h-[238px] flex-col justify-between gap-2 self-start border border-slate-200 bg-white p-3 shadow-sm">
 
             {/* Main header */}
-            <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2">
+            <div className="flex items-start justify-between gap-2">
 
               {/* Department */}
               <div className="min-w-0 pt-1">
@@ -648,7 +683,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
                   {/* <span className="size-2.5 shrink-0 rounded-full bg-[#0B5CD5]" /> */}
 
                   <span>
-                    {selectedDepartment?.name}
+                    {expandedDepartment?.name ?? t("misDashboard.allDepartments")}
                   </span>
                 </h3>
 
@@ -657,28 +692,26 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
                 </p>
               </div>
 
-              {/* SLA panel */}
-              <div className="w-[108px] rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white px-2 py-2 shadow-sm">
-                <p className="text-center text-[8px] font-bold uppercase tracking-wide text-slate-500">
-                  {t("misDashboard.slaTargetEfficiency")}
-                </p>
+              {expandedDepartment && (
+                <div className="w-[108px] rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white px-2 py-2 shadow-sm">
+                  <p className="text-center text-[8px] font-bold uppercase tracking-wide text-slate-500">
+                    {t("misDashboard.slaTargetEfficiency")}
+                  </p>
 
-                <div className="mt-1 flex items-center justify-center gap-y-1 gap-x-1">
-
-                  <span className="text-[16px] font-extrabold leading-none text-[#008B8B]">
-                    {formatNumber(selectedDepartment?.sla ?? 0)}
-                  </span>
-
-                  <span className="text-[11px] font-bold text-slate-500">
-                    {t("misDashboard.days")}
-                  </span>
-                  {/* </div> */}
+                  <div className="mt-1 flex items-center justify-center gap-y-1 gap-x-1">
+                    <span className="text-[16px] font-extrabold leading-none text-[#008B8B]">
+                      {formatNumber(expandedDepartment.sla)}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-500">
+                      {t("misDashboard.days")}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Application status */}
-            <div className="space-y-0.5">
+            <div className="space-y-0.5 border-t border-slate-100 pt-2">
               <span className="block text-[13px] font-bold text-[#0a3275]">
                 {t("misDashboard.applicationStatusDistribution")}
               </span>
@@ -686,9 +719,9 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
               <div className="space-y-1 rounded-xl border border-slate-100 bg-slate-50/50 p-1.5">
                 {approvalDistribution.map((item) => {
                   const percentage =
-                    selectedDepartment?.totalApplications > 0
+                    visualizationSummary.totalApplications > 0
                       ? Math.round(
-                        (item.value / selectedDepartment.totalApplications) * 100
+                        (item.value / visualizationSummary.totalApplications) * 100
                       )
                       : 0;
 
@@ -719,13 +752,9 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
               </div>
             </div>
           </Card>
-          <Card className="h-[340px] border border-slate-200 bg-white p-4 shadow-sm">
+          <Card className="h-[400px] border border-slate-200 bg-white p-4 shadow-sm">
             <div className="mb-3 flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
               <h3 className="flex items-center gap-1.5 text-sm font-bold text-[#0a3275] truncate"><PieChart className="h-4 w-4 text-[#0B5CD5]" />{t("misDashboard.applicationShare")}</h3>
-              <div role="tablist" aria-label={t("misDashboard.applicationShare")} className="flex rounded-lg bg-slate-100 p-0.5">
-                <button type="button" role="tab" aria-selected={pieChartView === "department"} onClick={() => updateUrl({ Chart: "department" })} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "department" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.department")}</button>
-                <button type="button" role="tab" aria-selected={pieChartView === "service"} onClick={() => updateUrl({ Chart: "service" })} className={`rounded-md px-2 py-1 text-[10px] font-bold transition ${pieChartView === "service" ? "bg-white text-[#0B5CD5] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{t("misDashboard.service")}</button>
-              </div>
             </div>
             <DonutChart
               data={activePieData}

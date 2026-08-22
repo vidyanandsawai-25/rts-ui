@@ -15,8 +15,8 @@ import {
   prepareExternalServiceNavigation,
 } from "@/lib/utils/rts/service-navigation";
 import {
-  createExternalServiceApplicationAction,
   getServiceDetailsModalInfoAction,
+  resolveExternalServiceNavigationAction,
 } from "@/app/[locale]/service/dashboard/actions";
 import type { Language } from "@/types/language.type";
 import { Modal } from "./Modal";
@@ -173,7 +173,7 @@ export default function ServiceGrid({
       }
 
       startExternalTransition(async () => {
-        const result = await createExternalServiceApplicationAction(Number(service.id));
+        const result = await resolveExternalServiceNavigationAction(Number(service.id));
 
         if (!result.success) {
           externalTab.close();

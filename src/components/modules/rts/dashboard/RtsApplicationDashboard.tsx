@@ -605,10 +605,10 @@ export default function RtsApplicationDashboard({
             enabled: true,
             showPageSizeSelector: true,
           }}
-          maxBodyHeightClassName="max-h-auto"
+          maxBodyHeightClassName="min-h-[200px] max-h-auto"
           containerClassName="gap-0 [&>div]:!border-0 [&>div]:!shadow-none [&>div]:!rounded-none"
           theadClassName="!bg-[#143D7D] [&_tr]:!bg-[#143D7D] [&_th]:!bg-[#143D7D] [&_th]:!text-white [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-xs [&_th]:border-none"
-          tableClassName="[&_tbody_tr]:hover:bg-blue-50 [&_tbody_tr]:h-[64px] [&_tbody_td]:py-3 [&_tbody_td]:text-sm [&_tbody_td]:align-middle [&_thead_tr]:border-none [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100"
+          tableClassName="[&_tbody_tr]:hover:bg-blue-50 [&_tbody_tr]:h-[64px] [&_tbody_td]:py-3 [&_tbody_td]:text-sm [&_tbody_td]:align-middle [&_tbody_td[colspan]]:h-[160px] [&_tbody_td[colspan]]:align-middle [&_thead_tr]:border-none [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100"
           footerLeftContent={
             <span className="text-[12px] text-slate-400">
               {t('applicationDashboard.pagination.showing', {

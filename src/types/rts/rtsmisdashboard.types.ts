@@ -67,6 +67,8 @@ export interface RtsMisDashboardRequest {
   DeparmentId: number | null;
   DeparmentName: string;
   ModuleName: RtsMisDashboardModuleName;
+  FromDate: string | null;
+  ToDate: string | null;
 }
 
 export type RtsMisDashboardRequestInput =

@@ -4,7 +4,6 @@ import { getRtsMisDepartmentServicesAction } from "./actions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 type ApplicationSource = "rts" | "aaple-sarkar" | "offline";
-type PieChartView = "department" | "service";
 
 function getFirstValue(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -27,6 +26,19 @@ function getApplicationSource(value: string | undefined): ApplicationSource {
   }
 }
 
+function getDate(value: string | undefined): string {
+  const trimmed = value?.trim() ?? "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return "";
+
+  const [year, month, day] = trimmed.split("-").map(Number);
+  const parsedDate = new Date(Date.UTC(year, month - 1, day));
+  return parsedDate.getUTCFullYear() === year
+    && parsedDate.getUTCMonth() === month - 1
+    && parsedDate.getUTCDate() === day
+    ? trimmed
+    : "";
+}
+
 function getModuleName(source: ApplicationSource): RtsMisDashboardModuleName {
   if (source === "aaple-sarkar") return "AapleSarkar";
   if (source === "offline") return "Offline";
@@ -41,16 +53,20 @@ export default async function RtsMISDashboardPage({
   const query = await searchParams;
   const applicationSource = getApplicationSource(getFirstValue(query.AppliSource));
   const pageNumber = getPageNumber(getFirstValue(query.PageNumber));
-  const chart: PieChartView = getFirstValue(query.Chart)?.trim().toLowerCase() === "service"
-    ? "service"
-    : "department";
+  const fromDate = getDate(getFirstValue(query.FromDate));
+  const requestedToDate = getDate(getFirstValue(query.ToDate));
+  const toDate = fromDate && requestedToDate && requestedToDate < fromDate
+    ? ""
+    : requestedToDate;
   const moduleName = getModuleName(applicationSource);
 
   // The action defaults provide the backend's required valid department pair.
   const defaultDashboardData = await getRtsMisDepartmentServicesAction(
     undefined,
     undefined,
-    moduleName
+    moduleName,
+    fromDate,
+    toDate
   );
   const misDashboardData = defaultDashboardData;
 
@@ -61,8 +77,9 @@ export default async function RtsMISDashboardPage({
         getDepartmentServices={getRtsMisDepartmentServicesAction}
         filters={{
           applicationSource,
-          chart,
           pageNumber,
+          fromDate,
+          toDate,
         }}
       />
     </div>

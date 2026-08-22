@@ -12,8 +12,8 @@ import { cookies } from "next/headers";
 import { getDashboardDepartments } from "@/lib/api/dashboard";
 import { getRtsMisDashboardData } from "@/lib/api/rts/rtsmisdashboard.service";
 import {
-  createTrackedExternalServiceNavigation,
-  type ExternalServiceTrackingResult,
+  resolveExternalServiceNavigation,
+  type ExternalServiceNavigationResult,
 } from "@/lib/utils/rts/external-service-application";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 import type { DepartmentDTO } from "@/types/rts-citizen.types";
@@ -38,10 +38,18 @@ type CitizenProfileCookie = {
   ownerId?: number;
 };
 
-/** Creates the required RTS tracking record before opening a legacy service URL. */
-export async function createExternalServiceApplicationAction(
+type ExternalServiceNavigationActionResult =
+  | ExternalServiceNavigationResult
+  | {
+      success: false;
+      errorCode: 'login-required' | 'missing-citizen-profile';
+      error: string;
+    };
+
+/** Resolves a legacy service URL without creating an RTS application record. */
+export async function resolveExternalServiceNavigationAction(
   serviceId: number
-): Promise<ExternalServiceTrackingResult> {
+): Promise<ExternalServiceNavigationActionResult> {
   const cookieStore = await cookies();
   const sessionId = cookieStore.get("rts_session")?.value;
   const profileCookie = cookieStore.get("rts_citizen_profile")?.value;
@@ -56,12 +64,7 @@ export async function createExternalServiceApplicationAction(
 
   try {
     const profile = JSON.parse(profileCookie) as CitizenProfileCookie;
-    return createTrackedExternalServiceNavigation(serviceId, {
-      sessionId,
-      name: profile.name,
-      ownerId: profile.ownerId,
-      upicId: profile.upicId,
-    });
+    return resolveExternalServiceNavigation(serviceId, profile.upicId);
   } catch {
     return {
       success: false,
