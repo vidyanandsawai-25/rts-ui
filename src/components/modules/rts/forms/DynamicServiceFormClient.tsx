@@ -39,6 +39,7 @@ import {
   buildOldServiceFormConfigFromRtsFieldDefinitions,
   extractRtsFieldDefinitionItems,
 } from "@/lib/utils/rts/rts-field-definition-mapper";
+import { resolveApplicantContact } from "@/lib/utils/rts/rts-application-payload";
 import type { CreateRtsApplicationResponse } from "@/types/rts/rts-application.types";
 import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
 import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
@@ -1300,6 +1301,81 @@ export default function DynamicServiceFormClient({
     }
   };
 
+  const handleSubmitRequest = async () => {
+    if (isSubmitting) return;
+
+    setHasAttemptedSubmit(true);
+
+    const firstInvalidIndex = sections.findIndex((_, index) => !isSectionComplete(index));
+
+    if (firstInvalidIndex !== -1) {
+      scrollToSection(firstInvalidIndex);
+
+      MySwal.fire({
+        icon: "error",
+        title: language === "en" ? "Incomplete Form" : "अपूर्ण फॉर्म",
+        text:
+          language === "en"
+            ? "Please fill all required fields highlighted in red."
+            : "कृपया लाल रंग में हाइलाइट किए गए सभी आवश्यक फ़ील्ड भरें।",
+        confirmButtonColor: "#ef4444",
+        background: darkMode ? "#1f2937" : "#ffffff",
+        color: darkMode ? "#ffffff" : "#000000",
+      });
+
+      logRequiredMissing();
+      return;
+    }
+
+    const applicantContact = resolveApplicantContact(formData, steps);
+    if (applicantContact.missing.length) {
+      const missingLabels = applicantContact.missing
+        .map((field) => field === 'applicantName' ? 'applicant name' : 'mobile number')
+        .join(' and ');
+
+      MySwal.fire({
+        icon: 'error',
+        title: language === 'en' ? 'Applicant details required' : 'आवेदक विवरण आवश्यक है',
+        text:
+          language === 'en'
+            ? `The configured form must include a filled ${missingLabels} field before submission.`
+            : `सबमिट करने से पहले ${missingLabels} फ़ील्ड भरना आवश्यक है।`,
+        confirmButtonColor: '#ef4444',
+        background: darkMode ? '#1f2937' : '#ffffff',
+        color: darkMode ? '#ffffff' : '#000000',
+      });
+      return;
+    }
+
+    const confirmation = await MySwal.fire({
+      icon: "question",
+      title:
+        language === "en"
+          ? "Submit application?"
+          : language === "hi"
+            ? "आवेदन जमा करें?"
+            : "अर्ज सादर करायचा आहे का?",
+      text:
+        language === "en"
+          ? "Please confirm that the information and uploaded documents are correct before submitting."
+          : language === "hi"
+            ? "जमा करने से पहले कृपया पुष्टि करें कि जानकारी और अपलोड किए गए दस्तावेज़ सही हैं।"
+            : "सादर करण्यापूर्वी माहिती आणि अपलोड केलेली कागदपत्रे बरोबर असल्याची खात्री करा.",
+      showCancelButton: true,
+      confirmButtonText:
+        language === "en" ? "Yes, Submit" : language === "hi" ? "हाँ, जमा करें" : "होय, सादर करा",
+      cancelButtonText: language === "en" ? "Cancel" : language === "hi" ? "रद्द करें" : "रद्द करा",
+      confirmButtonColor: "#059669",
+      cancelButtonColor: "#64748b",
+      background: darkMode ? "#1f2937" : "#ffffff",
+      color: darkMode ? "#ffffff" : "#000000",
+    });
+
+    if (confirmation.isConfirmed) {
+      await handleSubmit();
+    }
+  };
+
   const getServiceIcon = (title: string) => {
     if (title.includes("Applicant")) return User;
     if (title.includes("Address")) return MapPin;
@@ -1691,7 +1767,7 @@ export default function DynamicServiceFormClient({
             </button>
 
             <button
-              onClick={handleSubmit}
+              onClick={handleSubmitRequest}
               disabled={isSubmitting}
               className={`flex items-center justify-center px-4 sm:px-6 py-1.5 rounded-md bg-gradient-to-r from-green-500 to-teal-600 text-white shadow font-medium text-xs transition-all
                 ${isSubmitting

@@ -26,7 +26,7 @@ import RtsCitizenViewDetailsDrawer from "@/components/modules/rts/citizen/RtsCit
 import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
 import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
 import { getPaymentReceiptAction } from "@/app/[locale]/service/payment/actions";
-import type { PaymentReceiptResult } from "@/lib/api/rts/rtspayment.service";
+import type { CitizenDashboardRouteState } from "@/app/[locale]/service/dashboard/actions";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
@@ -57,6 +57,7 @@ type DepartmentCarsoulClientProps = {
   departments: Department[];
   userApplications: RtsMisDashboardUserApplicationItem[];
   upicId?: string;
+  routeState: CitizenDashboardRouteState;
 };
 
 function normalize(s: string) {
@@ -105,7 +106,12 @@ function formatSubmittedDate(dateString?: string, language?: Language): string {
   }).format(date);
 }
 
-export default function DepartmentCarsoulClient({ departments, userApplications, upicId }: DepartmentCarsoulClientProps) {
+export default function DepartmentCarsoulClient({
+  departments,
+  userApplications,
+  upicId,
+  routeState,
+}: DepartmentCarsoulClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const deptFromUrl = (searchParams.get("deptId") ?? "").trim();
@@ -116,17 +122,67 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
   const tCommon = useTranslations('common');
   const localePrefix = `/${lang}`;
 
-  const [activeDrawerApp, setActiveDrawerApp] = useState<CitizenApplication | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [checkoutAppData, setCheckoutAppData] = useState<{
-    applicationId: number;
-    applicationNo: string;
-    serviceName: string;
-    fees: number;
-  } | null>(null);
-  const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
   const [paidAppMap, setPaidAppMap] = useState<Record<string, boolean>>({});
+
+  const updateDashboardRoute = (
+    update: (params: URLSearchParams) => void,
+    mode: 'push' | 'replace' = 'push'
+  ) => {
+    const params = new URLSearchParams(searchParams.toString());
+    update(params);
+    const queryString = params.toString();
+    const href = `${localePrefix}/service/dashboard${queryString ? `?${queryString}` : ''}`;
+    router[mode](href, { scroll: false });
+  };
+
+  const openDetails = (applicationNo: string) => {
+    updateDashboardRoute((params) => {
+      params.set('details', applicationNo);
+      params.delete('payment');
+      params.delete('receipt');
+    });
+  };
+
+  const openPayment = (applicationNo: string, retainDetails = false) => {
+    updateDashboardRoute((params) => {
+      if (retainDetails) params.set('details', applicationNo);
+      else params.delete('details');
+      params.set('payment', applicationNo);
+      params.delete('receipt');
+    });
+  };
+
+  const openReceipt = (receiptNo: string, applicationNo?: string, mode: 'push' | 'replace' = 'push') => {
+    updateDashboardRoute((params) => {
+      if (applicationNo) params.set('details', applicationNo);
+      params.delete('payment');
+      params.set('receipt', receiptNo);
+    }, mode);
+  };
+
+  const closeDetails = () => {
+    updateDashboardRoute((params) => {
+      params.delete('details');
+      params.delete('payment');
+      params.delete('receipt');
+    }, 'replace');
+  };
+
+  const closePayment = () => {
+    updateDashboardRoute((params) => {
+      params.delete('payment');
+      params.delete('receipt');
+    }, 'replace');
+  };
+
+  const closeReceipt = () => {
+    updateDashboardRoute((params) => {
+      params.delete('receipt');
+      params.delete('payment');
+    }, 'replace');
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -180,7 +236,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
     try {
       const res = await getPaymentReceiptAction(appId);
       if (res.success && res.data) {
-        setReceiptModalData(res.data);
+        openReceipt(res.data.receiptNo);
       } else {
         toast.error(lang === "mr" ? "या अर्जाची पावती उपलब्ध नाही किंवा शुल्क अद्याप प्रलंबित आहे." : "Receipt not found for this application.");
       }
@@ -398,12 +454,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                               </span>
                               <button
                                 type="button"
-                                onClick={() => setCheckoutAppData({
-                                  applicationId: parseInt(app.applicationNo.replace(/\D/g, ""), 10) || 1,
-                                  applicationNo: app.applicationNo,
-                                  serviceName: serviceName || app.serviceName,
-                                  fees: dynamicServiceFee
-                                })}
+                                onClick={() => openPayment(app.applicationNo)}
                                 className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer transition-all"
                               >
                                 <CreditCard className="w-3 h-3" />
@@ -414,7 +465,7 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
                         </td>
                         <td className="py-2.5 px-3 text-right">
                           <button
-                            onClick={() => setActiveDrawerApp(app)}
+                            onClick={() => openDetails(app.applicationNo)}
                             className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-all bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg cursor-pointer"
                             title={t('viewDetails')}
                           >
@@ -431,35 +482,47 @@ export default function DepartmentCarsoulClient({ departments, userApplications,
           )}
         </div>
 
-        {activeDrawerApp && (
+        {routeState.detailApplication && (
           <RtsCitizenViewDetailsDrawer
-            application={activeDrawerApp}
+            application={routeState.detailApplication}
             language={lang}
-            onClose={() => setActiveDrawerApp(null)}
+            detailData={routeState.detail}
+            onClose={closeDetails}
+            onOpenPayment={(applicationNo) => openPayment(applicationNo, true)}
+            onOpenReceipt={(receiptNo, applicationNo) => openReceipt(receiptNo, applicationNo)}
           />
         )}
 
-        {checkoutAppData && (
+        {routeState.paymentApplication && (
           <PaymentCheckoutModal
-            applicationId={checkoutAppData.applicationId}
-            applicationNo={checkoutAppData.applicationNo}
-            serviceName={checkoutAppData.serviceName}
-            fees={checkoutAppData.fees}
-            onClose={() => setCheckoutAppData(null)}
+            applicationId={parseInt(routeState.paymentApplication.applicationNo.replace(/\D/g, ''), 10) || 1}
+            applicationNo={routeState.paymentApplication.applicationNo}
+            serviceName={routeState.paymentApplication.serviceName}
+            fees={Number(
+              departments
+                .flatMap((department) => department.services)
+                .find((service) => {
+                  const serviceName = typeof service.name === 'string' ? service.name : service.name?.en;
+                  return serviceName?.trim().toLowerCase() === routeState.paymentApplication?.serviceName.trim().toLowerCase();
+                })?.fees
+            ) || 0}
+            onClose={closePayment}
             onSuccess={(receipt) => {
-              setCheckoutAppData(null);
-              setReceiptModalData(receipt);
-              if (checkoutAppData?.applicationNo) {
-                setPaidAppMap((prev) => ({ ...prev, [checkoutAppData.applicationNo]: true }));
-              }
+              setPaidAppMap((prev) => ({ ...prev, [routeState.paymentApplication!.applicationNo]: true }));
+              openReceipt(
+                receipt.receiptNo,
+                routeState.detailApplication?.applicationNo,
+                'replace'
+              );
             }}
+            onPaymentTerminal={closePayment}
           />
         )}
 
-        {receiptModalData && (
+        {routeState.receipt && (
           <PaymentReceiptModal
-            receipt={receiptModalData}
-            onClose={() => setReceiptModalData(null)}
+            receipt={routeState.receipt}
+            onClose={closeReceipt}
           />
         )}
       </div>

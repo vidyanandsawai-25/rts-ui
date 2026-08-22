@@ -579,7 +579,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
   }, [expandedDepartment, fetchDepartmentServices, numberFormatter, t]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <Card className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
         <div className="flex items-center gap-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600"><LayoutDashboard className="h-5 w-5" /></div>
@@ -595,7 +595,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {metrics.map((metric) => (
           <Card key={metric.label} padding="none" className="flex min-h-[112px] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-1 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ring-4 ${metric.colors}`}><metric.icon className="h-6 w-6" strokeWidth={2.2} /></div>
@@ -636,7 +636,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
             data={tableRows}
             getRowKey={(row) => row.id}
             emptyText={t("misDashboard.noData")}
-            maxBodyHeightClassName="max-h-[502px]"
+            maxBodyHeightClassName="h-[502px]"
             tableClassName="table-fixed border-collapse text-left text-sm text-slate-900"
             containerClassName="gap-0"
             theadClassName="bg-[#0A3275]"

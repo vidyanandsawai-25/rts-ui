@@ -54,6 +54,8 @@ export interface RtsApprovalApplicationListItem {
   serviceId: number;
   applicationNo: string;
   applicationStatus: string;
+  applicantName: string | null;
+  applicantMobileNo: string | null;
   remark: string | null;
   createdDate: string;
   updatedDate: string | null;

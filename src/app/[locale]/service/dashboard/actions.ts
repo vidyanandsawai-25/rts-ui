@@ -17,6 +17,14 @@ import {
 } from "@/lib/utils/rts/external-service-application";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 import type { DepartmentDTO } from "@/types/rts-citizen.types";
+import {
+  getApplicationDetailAction,
+  type RtsApplicationDetailData,
+} from "@/app/[locale]/rts/dashboard/rts-applications/actions";
+import {
+  getPaymentReceiptByNo,
+  type PaymentReceiptResult,
+} from "@/lib/api/rts/rtspayment.service";
 
 export type DashboardData = {
   departments: DepartmentDTO[];
@@ -37,6 +45,93 @@ type CitizenProfileCookie = {
   name?: string;
   ownerId?: number;
 };
+
+export type CitizenDashboardRouteState = {
+  detailApplication: RtsMisDashboardUserApplicationItem | null;
+  detail: RtsApplicationDetailData | null;
+  paymentApplication: RtsMisDashboardUserApplicationItem | null;
+  receipt: PaymentReceiptResult | null;
+};
+
+type CitizenDashboardRouteInput = {
+  details?: string;
+  payment?: string;
+  receipt?: string;
+};
+
+const emptyCitizenDashboardRouteState: CitizenDashboardRouteState = {
+  detailApplication: null,
+  detail: null,
+  paymentApplication: null,
+  receipt: null,
+};
+
+function findCitizenApplication(
+  applications: RtsMisDashboardUserApplicationItem[],
+  applicationNo: string | undefined
+): RtsMisDashboardUserApplicationItem | null {
+  const normalizedApplicationNo = applicationNo?.trim().toLowerCase();
+  if (!normalizedApplicationNo) return null;
+
+  return applications.find((application) =>
+    application.applicationNo.trim().toLowerCase() === normalizedApplicationNo
+  ) ?? null;
+}
+
+/** Resolves reloadable dashboard overlays only for applications owned by this citizen. */
+export async function getCitizenDashboardRouteState(
+  applications: RtsMisDashboardUserApplicationItem[],
+  input: CitizenDashboardRouteInput
+): Promise<CitizenDashboardRouteState> {
+  const detailApplication = findCitizenApplication(applications, input.details);
+  const requestedPaymentApplication = findCitizenApplication(applications, input.payment);
+
+  // Payment can only be nested under matching details when a Details route exists.
+  const paymentApplication = detailApplication && input.payment
+    ? requestedPaymentApplication?.applicationNo === detailApplication.applicationNo
+      ? requestedPaymentApplication
+      : null
+    : requestedPaymentApplication;
+
+  let receipt: PaymentReceiptResult | null = null;
+  if (input.receipt?.trim()) {
+    try {
+      const candidate = await getPaymentReceiptByNo(input.receipt);
+      const receiptApplication = candidate
+        ? findCitizenApplication(applications, candidate.applicationNo)
+        : null;
+
+      // A receipt overlay must belong to the current citizen and to Details when nested.
+      if (
+        candidate &&
+        receiptApplication &&
+        (!detailApplication || receiptApplication.applicationNo === detailApplication.applicationNo)
+      ) {
+        receipt = candidate;
+      }
+    } catch (error) {
+      console.error('Failed to resolve citizen dashboard receipt route:', error);
+    }
+  }
+
+  let detail: RtsApplicationDetailData | null = null;
+  if (detailApplication) {
+    try {
+      detail = await getApplicationDetailAction(detailApplication.applicationNo);
+    } catch (error) {
+      console.error('Failed to resolve citizen dashboard details route:', error);
+    }
+  }
+
+  return {
+    ...emptyCitizenDashboardRouteState,
+    detailApplication,
+    detail,
+    // Receipt wins over payment if both parameters are supplied.
+    paymentApplication: receipt ? null : paymentApplication,
+    receipt,
+  };
+}
 
 type ExternalServiceNavigationActionResult =
   | ExternalServiceNavigationResult

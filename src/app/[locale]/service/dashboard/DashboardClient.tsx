@@ -4,14 +4,16 @@ import { useSearchParams } from "next/navigation";
 import DepartmentCarouselClient from "@/components/modules/rts/citizen/DepartmentCarsoulClient";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 import type { DepartmentDTO } from "@/types/rts-citizen.types";
+import type { CitizenDashboardRouteState } from './actions';
 
 type DashboardClientProps = {
   departments: DepartmentDTO[];
   userApplications: RtsMisDashboardUserApplicationItem[];
   upicId?: string;
+  routeState: CitizenDashboardRouteState;
 };
 
-export default function DashboardClient({ departments, userApplications, upicId }: DashboardClientProps) {
+export default function DashboardClient({ departments, userApplications, upicId, routeState }: DashboardClientProps) {
   const searchParams = useSearchParams();
   const redirectError = searchParams.get("serviceRedirectError");
   const redirectErrorMessage =
@@ -31,7 +33,12 @@ export default function DashboardClient({ departments, userApplications, upicId 
             {redirectErrorMessage}
           </div>
         )}
-        <DepartmentCarouselClient departments={departments} userApplications={userApplications} upicId={upicId} />
+        <DepartmentCarouselClient
+          departments={departments}
+          userApplications={userApplications}
+          upicId={upicId}
+          routeState={routeState}
+        />
       </div>
     </main>
   );

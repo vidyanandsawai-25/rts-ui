@@ -407,7 +407,7 @@ export default function RtsApplicationProcessDrawer({
               ? t('applicationSentForApproval')
               : actionKey === 'canReject'
                 ? t('rejectApplication')
-                : t('revertToCitizen')
+                : t('revertApplication')
         )
       );
       setOfficerRemark('');

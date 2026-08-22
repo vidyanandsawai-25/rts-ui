@@ -13,6 +13,12 @@ export interface BuildRtsApplicationPayloadParams {
   documentGuidByFieldDefinitionId?: Record<string, string>;
 }
 
+export type ApplicantContactResolution = {
+  applicantName: string;
+  applicantMobileNo: string;
+  missing: Array<'applicantName' | 'applicantMobileNo'>;
+};
+
 function isEmptyValue(value: unknown): boolean {
   if (value === undefined || value === null) return true;
   if (typeof value === "string") return value.trim() === "";
@@ -41,6 +47,57 @@ function toLabelText(label: unknown): string | null {
     }
   }
   return null;
+}
+
+function normalizeApplicantFieldLabel(label: unknown): string {
+  return (toLabelText(label) ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function readTrimmedFieldValue(
+  field: Record<string, unknown>,
+  formData: Record<string, unknown>
+): string {
+  const fieldId = String(field.id ?? '');
+  const value = fieldId ? formData[fieldId] : undefined;
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+/** Resolves API applicant fields from configured field labels, never field codes. */
+export function resolveApplicantContact(
+  formData: Record<string, unknown>,
+  steps: Array<{ fields?: Array<Record<string, unknown>> }>
+): ApplicantContactResolution {
+  const fields = (steps ?? []).flatMap(
+    (step) => step.fields ?? []
+  ) as Array<Record<string, unknown>>;
+
+  const firstValue = (labels: string[]) => {
+    for (const field of fields) {
+      const label = normalizeApplicantFieldLabel(field.label);
+      if (label.includes('alternate') || !labels.includes(label)) continue;
+      const value = readTrimmedFieldValue(field, formData);
+      if (value) return value;
+    }
+    return '';
+  };
+
+  const fullName = firstValue(['full name', 'applicant full name']);
+  const applicantName = fullName || [
+    firstValue(['first name']),
+    firstValue(['middle name']),
+    firstValue(['last name']),
+  ].filter(Boolean).join(' ');
+  const applicantMobileNo = firstValue(['mobile number', 'applicant mobile number']);
+  const missing: ApplicantContactResolution['missing'] = [];
+
+  if (!applicantName) missing.push('applicantName');
+  if (!applicantMobileNo) missing.push('applicantMobileNo');
+
+  return { applicantName, applicantMobileNo, missing };
 }
 
 function getFieldOptions(field: Record<string, unknown>) {
@@ -111,6 +168,14 @@ export function buildRtsApplicationPayload({
   applicationStatus = "pending",
   documentGuidByFieldDefinitionId = {},
 }: BuildRtsApplicationPayloadParams): CreateRtsApplicationPayload {
+  const applicantContact = resolveApplicantContact(formData, steps);
+  if (applicantContact.missing.length) {
+    const missingLabels = applicantContact.missing
+      .map((field) => field === 'applicantName' ? 'name' : 'mobile number')
+      .join(' and ');
+    throw new Error(`Unable to resolve required applicant ${missingLabels} from the configured form fields.`);
+  }
+
   const fieldValues = (steps || [])
     .flatMap((step) => (step.fields || []) as Array<Record<string, unknown>>)
     .map((field) => {
@@ -170,6 +235,8 @@ export function buildRtsApplicationPayload({
     createdBy,
     departmentId: departmentId == null || departmentId === "" ? undefined : Number(departmentId),
     serviceId: serviceId == null || serviceId === "" ? undefined : Number(serviceId),
+    applicantName: applicantContact.applicantName,
+    applicantMobileNo: applicantContact.applicantMobileNo,
     // New applications always enter the workflow before any stage has been assigned.
     approvalFlowId: 0,
     currentApprovalFlowStageId: 0,

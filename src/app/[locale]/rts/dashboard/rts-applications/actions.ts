@@ -36,7 +36,6 @@ import type {
 import {
   computeOverdueDays,
   computeRemainingDays,
-  deriveApplicantName,
 } from '@/lib/utils/rts/application-grid';
 import type { RtsMisDashboardResponse } from '@/types/rts/rtsmisdashboard.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
@@ -652,7 +651,7 @@ export async function getRtsApplicationsDashboardAction(
         applicationId: app.id,
         applicationNo: app.applicationNo,
         applicationDate: app.createdDate,
-        applicantName: deriveApplicantName(app.applicantDetails, app.citizenName, app.applicationNo),
+        applicantName: app.applicantName?.trim() || '—',
         serviceName: app.serviceName || 'Unknown Service',
         departmentName: app.departmentName || 'Unknown Department',
         currentStatus: app.applicationStatus,

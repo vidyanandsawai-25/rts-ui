@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ShieldCheck,
   Lock,
@@ -33,6 +33,7 @@ interface PaymentCheckoutModalProps {
   customerMobile?: string;
   onClose: () => void;
   onSuccess?: (receipt: PaymentReceiptResult) => void;
+  onPaymentTerminal?: (outcome: 'failed' | 'dismissed' | 'error') => void;
 }
 
 export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
@@ -44,12 +45,22 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   customerName,
   customerMobile,
   onClose,
-  onSuccess
+  onSuccess,
+  onPaymentTerminal
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [receiptData, setReceiptData] = useState<PaymentReceiptResult | null>(null);
   const [sdkReady, setSdkReady] = useState(false);
+  const hasReportedTerminalOutcome = useRef(false);
+  const isVerifyingGatewayPayment = useRef(false);
+
+  const reportTerminalOutcome = (outcome: 'failed' | 'dismissed' | 'error') => {
+    if (hasReportedTerminalOutcome.current) return;
+
+    hasReportedTerminalOutcome.current = true;
+    onPaymentTerminal?.(outcome);
+  };
 
   // Load official Razorpay Checkout SDK dynamically
   useEffect(() => {
@@ -77,6 +88,8 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   const handleProceedPayment = async () => {
     setIsLoading(true);
     setErrorMessage(null);
+    hasReportedTerminalOutcome.current = false;
+    isVerifyingGatewayPayment.current = false;
 
     try {
       // Step 1: Create Order dynamically via Backend API
@@ -119,6 +132,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
           description: order.description || `Government RTS Fee - ${order.serviceName}`,
           order_id: order.gatewayOrderId,
           handler: async function (response: any) {
+            isVerifyingGatewayPayment.current = true;
             setIsLoading(true);
             try {
               const verifyRes = await verifyPaymentAction({
@@ -139,9 +153,11 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
                 }
               } else {
                 setErrorMessage(verifyRes.error || 'Cryptographic payment verification failed.');
+                reportTerminalOutcome('error');
               }
             } catch (vErr) {
               setErrorMessage(vErr instanceof Error ? vErr.message : 'Error verifying payment signature');
+              reportTerminalOutcome('error');
             } finally {
               setIsLoading(false);
             }
@@ -157,6 +173,9 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
           modal: {
             ondismiss: function () {
               setIsLoading(false);
+              if (!isVerifyingGatewayPayment.current) {
+                reportTerminalOutcome('dismissed');
+              }
             }
           }
         };
@@ -165,6 +184,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
         rzp.on('payment.failed', function (response: any) {
           setErrorMessage(response.error?.description || 'Transaction was declined or cancelled by the bank.');
           setIsLoading(false);
+          reportTerminalOutcome('failed');
         });
         rzp.open();
       } else {
@@ -173,6 +193,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'An error occurred during payment processing.');
       setIsLoading(false);
+      reportTerminalOutcome('error');
     }
   };
 

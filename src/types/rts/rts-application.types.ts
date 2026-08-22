@@ -105,6 +105,8 @@ export interface CreateRtsApplicationPayload {
   createdBy?: number;
   departmentId?: number;
   serviceId?: number;
+  applicantName: string;
+  applicantMobileNo: string;
   approvalFlowId: number;
   currentApprovalFlowStageId: number;
   currentStageOrder: number;

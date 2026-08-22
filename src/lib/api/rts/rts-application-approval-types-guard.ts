@@ -106,6 +106,8 @@ export function normalizeRtsApprovalApplicationListItem(
     serviceId: parseNumber(data.serviceId),
     applicationNo: parseString(data.applicationNo),
     applicationStatus: parseString(data.applicationStatus, 'pending'),
+    applicantName: parseNullableString(data.applicantName),
+    applicantMobileNo: parseNullableString(data.applicantMobileNo),
     remark: parseNullableString(data.remark),
     createdDate: parseString(data.createdDate),
     updatedDate: parseNullableString(data.updatedDate),

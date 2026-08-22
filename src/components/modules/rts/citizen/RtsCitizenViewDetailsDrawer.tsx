@@ -26,6 +26,10 @@ type RtsCitizenViewDetailsDrawerProps = {
   application: RtsMisDashboardUserApplicationItem | null;
   language: Language;
   onClose: () => void;
+  /** SSR-loaded for the dashboard route; the local fetch remains a fallback for other consumers. */
+  detailData?: RtsApplicationDetailData | null;
+  onOpenPayment?: (applicationNo: string) => void;
+  onOpenReceipt?: (receiptNo: string, applicationNo: string) => void;
 };
 
 type NormalizedStatus = "approved" | "rejected" | "pending";
@@ -53,11 +57,14 @@ export default function RtsCitizenViewDetailsDrawer({
   application,
   language,
   onClose,
+  detailData,
+  onOpenPayment,
+  onOpenReceipt,
 }: RtsCitizenViewDetailsDrawerProps) {
   const t = useTranslations("rts.citizenDashboard");
   const tCommon = useTranslations("common");
   const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
@@ -92,7 +99,11 @@ export default function RtsCitizenViewDetailsDrawer({
     try {
       const res = await getPaymentReceiptAction(appId);
       if (res.success && res.data) {
-        setReceiptModalData(res.data);
+        if (onOpenReceipt) {
+          onOpenReceipt(res.data.receiptNo, applicationNumber);
+        } else {
+          setReceiptModalData(res.data);
+        }
       } else {
         toast.error(language === "mr" ? "या अर्जाची पावती उपलब्ध नाही किंवा शुल्क अद्याप प्रलंबित आहे." : "Receipt not found for this application.");
       }
@@ -105,6 +116,8 @@ export default function RtsCitizenViewDetailsDrawer({
 
   useEffect(() => {
     if (!applicationNumber) return;
+
+    if (detailData) return;
 
     let cancelled = false;
 
@@ -125,19 +138,21 @@ export default function RtsCitizenViewDetailsDrawer({
     return () => {
       cancelled = true;
     };
-  }, [applicationNumber]);
+  }, [applicationNumber, detailData]);
 
   if (!application) return null;
 
+  const resolvedDetail = detailData ?? detail;
+  const isLoadingDetails = detailData ? false : loading;
   const normalizedStatus = normalizeStatus(application.status);
   const documents = [
-    ...(detail?.documents ?? []).map((document, index) => ({
+    ...(resolvedDetail?.documents ?? []).map((document, index) => ({
       id: document.documentId || index + 1,
       label: document.documentName || t("documentAttachment"),
       guid: document.documentGuid || "",
       size: document.fileSizeBytes ? `${(document.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : t("attachment"),
     })),
-    ...(detail?.answerGroups ?? [])
+    ...(resolvedDetail?.answerGroups ?? [])
       .flatMap((group) => group.answers)
       .filter((answer) => answer.documentGuid)
       .map((answer, index) => ({
@@ -177,7 +192,7 @@ export default function RtsCitizenViewDetailsDrawer({
           </Button>
         }
       >
-        {loading ? (
+        {isLoadingDetails ? (
           <div className="p-8 text-center text-xs font-medium text-slate-400">{t("loadingApplicationDetails")}</div>
         ) : (
           <div className="space-y-5 p-5">
@@ -211,19 +226,19 @@ export default function RtsCitizenViewDetailsDrawer({
 
             {/* Dynamic Payment Status Card */}
             {(() => {
-              const dynamicFees = detail?.verification?.serviceFees ?? 50;
-              const isPaid = detail?.verification
-                ? Boolean(detail.verification.isPaid)
+              const dynamicFees = resolvedDetail?.verification?.serviceFees ?? 50;
+              const isPaid = resolvedDetail?.verification
+                ? Boolean(resolvedDetail.verification.isPaid)
                 : Boolean(
                     receiptModalData ||
-                    detail?.verification?.receiptNo ||
+                    resolvedDetail?.verification?.receiptNo ||
                     application.status?.toLowerCase().includes("payment received") ||
                     application.status?.toLowerCase().includes("payment success") ||
                     application.status?.toLowerCase().includes("payment completed") ||
                     application.status?.toLowerCase().includes("paid") ||
                     application.status?.toLowerCase().includes("शुल्क प्राप्त")
                   );
-              const receiptNo = detail?.verification?.receiptNo || receiptModalData?.receiptNo;
+              const receiptNo = resolvedDetail?.verification?.receiptNo || receiptModalData?.receiptNo;
 
               return !isPaid ? (
                 <section className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-amber-50/50 p-4 shadow-sm">
@@ -250,7 +265,13 @@ export default function RtsCitizenViewDetailsDrawer({
                       size="xs"
                       variant="primary"
                       icon={CreditCard}
-                      onClick={() => setIsCheckoutOpen(true)}
+                      onClick={() => {
+                        if (onOpenPayment) {
+                          onOpenPayment(applicationNumber!);
+                        } else {
+                          setIsCheckoutOpen(true);
+                        }
+                      }}
                       className="rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 px-3"
                     >
                       {language === "mr" ? "आताच शुल्क भरा" : language === "hi" ? "अभी शुल्क भरें" : "Pay Fee Now"}
@@ -340,12 +361,12 @@ export default function RtsCitizenViewDetailsDrawer({
                   {t("approvalWorkflow")}
                 </h4>
                 <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">
-                  {t("stages", { count: detail?.approvalStages?.length || 0 })}
+                  {t("stages", { count: resolvedDetail?.approvalStages?.length || 0 })}
                 </span>
               </div>
-              {detail?.approvalStages?.length ? (
+              {resolvedDetail?.approvalStages?.length ? (
                 <ApprovalStagesTimeline
-                  stages={detail.approvalStages.map((stage) => ({
+                  stages={resolvedDetail.approvalStages.map((stage) => ({
                     id: stage.approvalFlowStageId,
                     stageName: stage.stageName,
                     stageOrder: stage.stageOrder,
@@ -358,9 +379,9 @@ export default function RtsCitizenViewDetailsDrawer({
                     assignedRole: stage.assignedToRole || undefined,
                     assignedToName: stage.assignedToName || undefined,
                   }))}
-                  completedCount={detail.completedStages || 0}
+                  completedCount={resolvedDetail.completedStages || 0}
                   currentStageIndex={(() => {
-                    const index = detail.approvalStages.findIndex((stage) => stage.isCurrentStage);
+                    const index = resolvedDetail.approvalStages.findIndex((stage) => stage.isCurrentStage);
                     return index >= 0 ? index : undefined;
                   })()}
                 />
@@ -388,7 +409,7 @@ export default function RtsCitizenViewDetailsDrawer({
           applicationId={parseInt(applicationNumber.replace(/\D/g, ""), 10) || 1}
           applicationNo={applicationNumber}
           serviceName={(language === "mr" || language === "hi") && application.serviceNameLocal ? application.serviceNameLocal : application.serviceName}
-          fees={detail?.verification?.serviceFees ?? 50}
+          fees={resolvedDetail?.verification?.serviceFees ?? 50}
           onClose={() => setIsCheckoutOpen(false)}
           onSuccess={(receipt) => {
             setIsCheckoutOpen(false);
