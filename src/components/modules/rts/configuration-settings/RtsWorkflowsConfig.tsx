@@ -6,6 +6,11 @@ import { Card, Drawer, MasterTable, useConfirm } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import {
+  RTS_DASHBOARD_TABLE_CLASS,
+  RTS_DASHBOARD_TABLE_CONTAINER_CLASS,
+  RTS_DASHBOARD_TABLE_HEAD_CLASS,
+} from "@/lib/utils/rts/dashboard-table-styles";
 interface WorkflowItem {
   id: number;
   serviceId: number;
@@ -353,6 +358,11 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
             showPageSizeSelector: true,
           }}
           pageSizeOptions={[5, 10, 20, 50]}
+          maxBodyHeightClassName="min-h-[200px] max-h-auto"
+          theadClassName={RTS_DASHBOARD_TABLE_HEAD_CLASS}
+          tableClassName={RTS_DASHBOARD_TABLE_CLASS}
+          containerClassName={RTS_DASHBOARD_TABLE_CONTAINER_CLASS}
+          rowClassName={() => "hover:bg-blue-50"}
         />
       </Card>
 

@@ -33,6 +33,7 @@ import {
   ViewButton,
   type ButtonVariant,
 } from '@/components/common';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 import { ApprovalStagesTimeline } from '@/components/modules/rts';
 import RtsApplicationNoteSheetModal from '@/components/modules/rts/dashboard/RtsApplicationNoteSheetModal';
 import { RtsRecordOfflinePaymentModal } from '@/components/modules/rts/dashboard/RtsRecordOfflinePaymentModal';
@@ -83,6 +84,18 @@ interface DisplayDocument {
   isRequired: boolean;
   isUploaded: boolean;
 }
+
+type DecisionActionKey = 'canVerifyDocument' | 'canApprove' | 'canReject' | 'canReturn';
+
+const DECISION_CONFIRMATION_TITLE_KEYS: Record<
+  DecisionActionKey,
+  'confirmVerificationAction' | 'confirmApprovalAction' | 'confirmRejectAction' | 'confirmRevertAction'
+> = {
+  canVerifyDocument: 'confirmVerificationAction',
+  canApprove: 'confirmApprovalAction',
+  canReject: 'confirmRejectAction',
+  canReturn: 'confirmRevertAction',
+};
 
 function isDeclarationGroup(title: string): boolean {
   return title.trim().toLowerCase().includes('declaration');
@@ -161,6 +174,7 @@ export default function RtsApplicationProcessDrawer({
 }: RtsApplicationProcessDrawerProps) {
   const t = useTranslations('rts.applicationDashboard.processDrawer');
   const tCommon = useTranslations('common');
+  const { confirm } = useConfirm();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => getInitialOpenGroups(data, t('generalDetails')));
   const [activeDocumentIndex, setActiveDocumentIndex] = useState(0);
   const [officerRemark, setOfficerRemark] = useState('');
@@ -224,6 +238,12 @@ export default function RtsApplicationProcessDrawer({
 
   const effectiveIsPaid = isPaidLocal ?? verification?.isPaid ?? false;
   const effectiveReceiptNo = receiptNoLocal ?? verification?.receiptNo ?? null;
+  const isFreeService = Boolean(
+    verification && (
+      verification.feesRequired === false ||
+      Number(verification.serviceFees ?? 0) <= 0
+    )
+  );
 
   const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
   const availableActions = verification
@@ -363,7 +383,7 @@ export default function RtsApplicationProcessDrawer({
     toast.info(t('actionsUnavailable'));
   };
 
-  const submitDecision = (actionKey: 'canVerifyDocument' | 'canApprove' | 'canReject' | 'canReturn') => {
+  const requestDecisionConfirmation = (actionKey: DecisionActionKey) => {
     if (!applicationId) return;
 
     if (!hasOfficerAccess) {
@@ -380,6 +400,21 @@ export default function RtsApplicationProcessDrawer({
       toast.error(t('remarkRequired'));
       return;
     }
+
+    const isDestructive = actionKey === 'canReject' || actionKey === 'canReturn';
+
+    confirm({
+      variant: isDestructive ? 'warning' : 'info',
+      title: t(DECISION_CONFIRMATION_TITLE_KEYS[actionKey]),
+      description: t('confirmDecisionDescription'),
+      confirmText: t('confirmDecision'),
+      cancelText: t('cancelDecision'),
+      onConfirm: () => submitDecision(actionKey),
+    });
+  };
+
+  const submitDecision = (actionKey: DecisionActionKey) => {
+    if (!applicationId) return;
 
     startDecisionTransition(async () => {
       const result = actionKey === 'canVerifyDocument'
@@ -475,9 +510,12 @@ export default function RtsApplicationProcessDrawer({
             )}
             <div className="flex flex-wrap items-center justify-start gap-2">
               {availableActions.map((action) => {
+                const isEditLockedWorkflowAction =
+                  isEditing && action.key !== 'canViewNoteSheet';
                 const isApproveBlockedByFee =
                   (action.key === 'canApprove' || action.key === 'canVerifyDocument') &&
                   Boolean(verification?.feesRequired && !effectiveIsPaid);
+                const isRecordPaymentDisabled = action.key === 'canPay' && isFreeService;
                 return (
                   <Button
                     key={action.key}
@@ -485,13 +523,23 @@ export default function RtsApplicationProcessDrawer({
                     size="xs"
                     variant={action.variant}
                     icon={action.icon}
-                    disabled={isSubmittingDecision || !hasOfficerAccess || isApproveBlockedByFee}
+                    disabled={
+                      isSubmittingDecision ||
+                      !hasOfficerAccess ||
+                      isEditLockedWorkflowAction ||
+                      isApproveBlockedByFee ||
+                      isRecordPaymentDisabled
+                    }
                     title={
                       !hasOfficerAccess
                         ? t('officerAccessDenied')
+                        : isEditLockedWorkflowAction
+                          ? t('finishEditBeforeWorkflowAction')
                         : isApproveBlockedByFee
                           ? 'शासकीय शुल्क प्रलंबित असल्याने कार्यवाही / मंजुरी करता येत नाही. प्रथम शुल्क स्वीकारा.'
-                          : undefined
+                          : isRecordPaymentDisabled
+                            ? t('recordPaymentNotRequired')
+                            : undefined
                     }
                     onClick={() => {
                       if (action.key === 'canViewNoteSheet') {
@@ -499,6 +547,7 @@ export default function RtsApplicationProcessDrawer({
                         return;
                       }
                       if (action.key === 'canPay') {
+                        if (isFreeService) return;
                         setIsOfflinePaymentModalOpen(true);
                         return;
                       }
@@ -508,7 +557,7 @@ export default function RtsApplicationProcessDrawer({
                         action.key === 'canReject' ||
                         action.key === 'canReturn'
                       ) {
-                        submitDecision(action.key);
+                        requestDecisionConfirmation(action.key);
                         return;
                       }
                       notifyActionUnavailable();
@@ -686,8 +735,20 @@ export default function RtsApplicationProcessDrawer({
                 </section>
 
                 {/* Payment Status Banner */}
-                {(verification?.feesRequired || effectiveIsPaid || (verification?.serviceFees ?? 0) > 0) && (
-                  effectiveIsPaid ? (
+                {verification && (
+                  isFreeService ? (
+                    <section className="rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50/50 p-3.5 shadow-sm">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-xs">
+                          <CheckCircle2 className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-extrabold text-emerald-900">{t('freeService')}</p>
+                          <p className="text-[11px] font-medium text-emerald-700">{t('noGovernmentFeeRequired')}</p>
+                        </div>
+                      </div>
+                    </section>
+                  ) : effectiveIsPaid ? (
                     <section className="rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50/50 p-3.5 shadow-sm">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5">
@@ -716,7 +777,7 @@ export default function RtsApplicationProcessDrawer({
                         </Button>
                       </div>
                     </section>
-                  ) : (
+                  ) : (verification.feesRequired || (verification.serviceFees ?? 0) > 0) ? (
                     <section className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-amber-50/50 p-3.5 shadow-sm">
                       <div className="flex flex-col gap-2.5">
                         <div className="flex items-start gap-2.5">
@@ -748,7 +809,7 @@ export default function RtsApplicationProcessDrawer({
                         )}
                       </div>
                     </section>
-                  )
+                  ) : null
                 )}
 
                 <section className="rounded-xl border border-blue-200 bg-white p-4 shadow-sm mb-1">
@@ -888,7 +949,7 @@ export default function RtsApplicationProcessDrawer({
         </main>
       </div>
 
-    </Drawer>
+      </Drawer>
 
       <RtsApplicationNoteSheetModal
         isOpen={isNoteSheetOpen}

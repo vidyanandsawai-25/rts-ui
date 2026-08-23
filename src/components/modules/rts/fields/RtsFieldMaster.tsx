@@ -9,6 +9,11 @@ import { MasterTable } from '@/components/common/MasterTable';
 import { EditButton, DeleteButton } from '@/components/common/ActionButtons';
 import TableHeader from '@/components/common/TableHeader';
 import { useConfirm } from '@/components/common/ConfirmProvider';
+import {
+  RTS_DASHBOARD_TABLE_CLASS,
+  RTS_DASHBOARD_TABLE_CONTAINER_CLASS,
+  RTS_DASHBOARD_TABLE_HEAD_CLASS,
+} from '@/lib/utils/rts/dashboard-table-styles';
 import { PageContainer, SearchInput, Select } from '@/components/common';
 import { RtsFieldDefinitionApiItem } from '@/types/rts/field-definition.types';
 import { RtsDepartmentApiItem } from '@/types/rts/departments.types';
@@ -150,7 +155,6 @@ export function RtsFieldMaster({
           columns={columns}
           data={data}
           loading={isPending}
-          height="lg"
           pageNumber={pageNumber}
           pageSize={pageSize}
           totalCount={totalCount}
@@ -164,6 +168,10 @@ export function RtsFieldMaster({
           )}
           actionLabel={tCommon('table.columns.actions')}
           paginationConfig={{ enabled: true, showPageSizeSelector: false }}
+          maxBodyHeightClassName="min-h-[200px] max-h-auto"
+          containerClassName={RTS_DASHBOARD_TABLE_CONTAINER_CLASS}
+          theadClassName={RTS_DASHBOARD_TABLE_HEAD_CLASS}
+          tableClassName={RTS_DASHBOARD_TABLE_CLASS}
           footerLeftContent={
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-700">

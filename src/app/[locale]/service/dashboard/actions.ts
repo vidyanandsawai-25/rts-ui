@@ -23,7 +23,9 @@ import {
 } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import {
   getPaymentReceiptByNo,
+  getPaymentStatus,
   type PaymentReceiptResult,
+  type PaymentStatusResult,
 } from "@/lib/api/rts/rtspayment.service";
 
 export type DashboardData = {
@@ -49,6 +51,7 @@ type CitizenProfileCookie = {
 export type CitizenDashboardRouteState = {
   detailApplication: RtsMisDashboardUserApplicationItem | null;
   detail: RtsApplicationDetailData | null;
+  paymentStatus: PaymentStatusResult | null;
   paymentApplication: RtsMisDashboardUserApplicationItem | null;
   receipt: PaymentReceiptResult | null;
 };
@@ -62,6 +65,7 @@ type CitizenDashboardRouteInput = {
 const emptyCitizenDashboardRouteState: CitizenDashboardRouteState = {
   detailApplication: null,
   detail: null,
+  paymentStatus: null,
   paymentApplication: null,
   receipt: null,
 };
@@ -87,7 +91,7 @@ export async function getCitizenDashboardRouteState(
   const requestedPaymentApplication = findCitizenApplication(applications, input.payment);
 
   // Payment can only be nested under matching details when a Details route exists.
-  const paymentApplication = detailApplication && input.payment
+  let paymentApplication = detailApplication && input.payment
     ? requestedPaymentApplication?.applicationNo === detailApplication.applicationNo
       ? requestedPaymentApplication
       : null
@@ -114,12 +118,44 @@ export async function getCitizenDashboardRouteState(
     }
   }
 
+  const paymentStatusApplication = detailApplication ?? paymentApplication;
+  const paymentStatusApplicationId = paymentStatusApplication
+    ? Number.parseInt(paymentStatusApplication.applicationNo.replace(/\D/g, ''), 10)
+    : null;
   let detail: RtsApplicationDetailData | null = null;
-  if (detailApplication) {
-    try {
-      detail = await getApplicationDetailAction(detailApplication.applicationNo);
-    } catch (error) {
-      console.error('Failed to resolve citizen dashboard details route:', error);
+  let paymentStatus: PaymentStatusResult | null = null;
+
+  if (detailApplication || paymentStatusApplication) {
+    const [detailResult, paymentStatusResult] = await Promise.allSettled([
+      detailApplication
+        ? getApplicationDetailAction(detailApplication.applicationNo)
+        : Promise.resolve(null),
+      paymentStatusApplicationId && Number.isFinite(paymentStatusApplicationId) && paymentStatusApplicationId > 0
+        ? getPaymentStatus(paymentStatusApplicationId)
+        : Promise.resolve(null),
+    ]);
+
+    if (detailResult.status === 'fulfilled') {
+      detail = detailResult.value;
+    } else {
+      console.error('Failed to resolve citizen dashboard details route:', detailResult.reason);
+    }
+
+    if (paymentStatusResult.status === 'fulfilled') {
+      paymentStatus = paymentStatusResult.value;
+      if (paymentStatusApplication && !paymentStatus) {
+        console.error(`Failed to resolve payment status for citizen application ${paymentStatusApplication.applicationNo}.`);
+      }
+    } else {
+      console.error('Failed to resolve citizen dashboard payment status route:', paymentStatusResult.reason);
+    }
+
+    // A payment route must never open checkout for a free or unresolved payment status.
+    if (
+      paymentApplication &&
+      (!paymentStatus || paymentStatus.isFeeRequired === false || Number(paymentStatus.requiredFee) <= 0)
+    ) {
+      paymentApplication = null;
     }
   }
 
@@ -127,6 +163,7 @@ export async function getCitizenDashboardRouteState(
     ...emptyCitizenDashboardRouteState,
     detailApplication,
     detail,
+    paymentStatus,
     // Receipt wins over payment if both parameters are supplied.
     paymentApplication: receipt ? null : paymentApplication,
     receipt,

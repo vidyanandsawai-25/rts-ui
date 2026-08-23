@@ -21,6 +21,13 @@ type ConfigService = {
   id: string;
   name: string;
   departmentId: string;
+  localName: string | null;
+  serviceUrl: string | null;
+  sla: string | number | null;
+  fees: number | null;
+  feesRequired: boolean;
+  displayOrder: number;
+  isActive: boolean;
 };
 
 function toConfigDepartment(department: {
@@ -37,11 +44,26 @@ function toConfigService(service: {
   id: number;
   serviceName: string;
   departmentId: number;
+  serviceNameLocal?: string | null;
+  serviceUrl?: string | null;
+  sla?: string | number | null;
+  fees?: number | null;
+  feesRequired?: boolean | null;
+  isFeesRequired?: boolean | null;
+  displayOrder?: number;
+  isActive: boolean;
 }): ConfigService {
   return {
     id: String(service.id),
     name: service.serviceName,
     departmentId: String(service.departmentId),
+    localName: service.serviceNameLocal ?? null,
+    serviceUrl: service.serviceUrl ?? null,
+    sla: service.sla ?? null,
+    fees: service.fees ?? null,
+    feesRequired: Boolean(service.feesRequired ?? service.isFeesRequired),
+    displayOrder: service.displayOrder ?? 0,
+    isActive: service.isActive,
   };
 }
 

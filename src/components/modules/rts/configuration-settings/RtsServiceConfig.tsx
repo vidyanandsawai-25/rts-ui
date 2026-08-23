@@ -20,6 +20,11 @@ import {
 } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
+import {
+  RTS_DASHBOARD_TABLE_CLASS,
+  RTS_DASHBOARD_TABLE_CONTAINER_CLASS,
+  RTS_DASHBOARD_TABLE_HEAD_CLASS,
+} from "@/lib/utils/rts/dashboard-table-styles";
 
 interface Department {
   id: string;
@@ -30,6 +35,13 @@ interface Service {
   id: string;
   name: string;
   departmentId: string;
+  localName: string | null;
+  serviceUrl: string | null;
+  sla: string | number | null;
+  fees: number | null;
+  feesRequired: boolean;
+  displayOrder: number;
+  isActive: boolean;
 }
 
 interface SaveServiceResponse {
@@ -71,7 +83,13 @@ type ServiceRow = Record<string, unknown> & {
   srNo: number;
   name: string;
   departmentName: string;
-  status: string;
+  localName: string | null;
+  serviceUrl: string | null;
+  sla: string | number | null;
+  fees: number | null;
+  feesRequired: boolean;
+  displayOrder: number;
+  isActive: boolean;
 };
 
 export default function RtsServiceConfig({
@@ -409,6 +427,13 @@ export default function RtsServiceConfig({
         id: service.id,
         srNo: (page - 1) * 12 + index + 1,
         name: service.name,
+        localName: service.localName,
+        serviceUrl: service.serviceUrl,
+        sla: service.sla,
+        fees: service.fees,
+        feesRequired: service.feesRequired,
+        displayOrder: service.displayOrder,
+        isActive: service.isActive,
         departmentName:
           departmentMap.get(
             service.departmentId
@@ -416,7 +441,6 @@ export default function RtsServiceConfig({
           tRts(
             "masters.unknownDepartment"
           ),
-        status: "active",
       })
     );
 
@@ -449,9 +473,65 @@ export default function RtsServiceConfig({
         "border-r border-blue-300/60 text-white",
       cellClassName:
         "font-semibold text-slate-800 border-r border-slate-100",
+      render: (_value, row) => (
+        <div className="space-y-0.5">
+          <div className="font-semibold text-slate-950">{row.name}</div>
+          <div className="break-all text-[10px] font-medium text-slate-400">{row.serviceUrl || "-"}</div>
+        </div>
+      ),
     },
     {
-      key: "status",
+      key: "localName",
+      label: tRts("masters.localName"),
+      headerClassName:
+        "border-r border-blue-300/60 text-white",
+      cellClassName:
+        "border-r border-slate-100 text-slate-700",
+      render: (value) => String(value || "-"),
+    },
+    {
+      key: "sla",
+      label: tRts("masters.slaDays"),
+      width: "96px",
+      align: "center",
+      headerClassName:
+        "border-r border-blue-300/60 text-white",
+      cellClassName: "border-r border-slate-100",
+      render: (value) => {
+        const sla = String(value ?? "").trim();
+        const displaySla = sla
+          ? /\bdays?\b/i.test(sla)
+            ? sla
+            : `${sla} ${tRts("masters.days")}`
+          : "-";
+
+        return (
+          <span className="whitespace-nowrap rounded border border-slate-200 bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-700">
+            {displaySla}
+          </span>
+        );
+      },
+    },
+    {
+      key: "fees",
+      label: tRts("masters.fees"),
+      headerClassName:
+        "border-r border-blue-300/60 text-white",
+      cellClassName:
+        "border-r border-slate-100 font-mono text-xs text-slate-700",
+      render: (_value, row) => row.feesRequired ? `₹${row.fees ?? 0}` : tRts("masters.free"),
+    },
+    {
+      key: "displayOrder",
+      label: tRts("masters.displayOrder"),
+      align: "center",
+      headerClassName:
+        "border-r border-blue-300/60 text-white",
+      cellClassName:
+        "border-r border-slate-100 font-mono text-xs text-slate-600",
+    },
+    {
+      key: "isActive",
       label: tRts("masters.status"),
       width: "110px",
       align: "center",
@@ -459,21 +539,21 @@ export default function RtsServiceConfig({
         "border-r border-blue-300/60 text-white",
       cellClassName:
         "border-r border-slate-100",
-      render: () => (
+      render: (value) => (
         <StatusBadge
-          value="active"
+          value={Boolean(value)}
           activeLabel={tRts("masters.active")}
+          inactiveLabel={t("status.inactive")}
           className="px-2 py-0.5 text-[10px]"
         />
       ),
     },
   ];
 
-  const tableHeaderClass =
-    "!bg-[#4b70a6] !from-[#4b70a6] !via-[#4b70a6] !to-[#4b70a6] hover:!from-[#4b70a6] hover:!via-[#4b70a6] hover:!to-[#4b70a6] [&_th]:!text-white";
+  const tableHeaderClass = RTS_DASHBOARD_TABLE_HEAD_CLASS;
 
   const tableClass =
-    "border-collapse text-left text-sm [&_th:last-child]:border-l [&_th:last-child]:border-blue-300/60 [&_td:last-child]:border-l [&_td:last-child]:border-slate-100";
+    `${RTS_DASHBOARD_TABLE_CLASS} border-collapse text-left text-sm`;
 
   const actionButtons = (
     onEdit: () => void,
@@ -579,10 +659,10 @@ export default function RtsServiceConfig({
             enabled: totalPages > 1,
             showPageSizeSelector: false,
           }}
-          maxBodyHeightClassName="max-h-auto"
+          maxBodyHeightClassName="min-h-[200px] max-h-auto"
           theadClassName={tableHeaderClass}
           tableClassName={tableClass}
-          containerClassName="gap-0"
+          containerClassName={RTS_DASHBOARD_TABLE_CONTAINER_CLASS}
           onRowClick={(row) =>
             handleRowSelect(
               selectedServiceId === row.id
@@ -593,20 +673,15 @@ export default function RtsServiceConfig({
           rowClassName={(row) =>
             selectedServiceId === row.id
               ? "bg-blue-50/70"
-              : ""
+              : "hover:bg-blue-50"
           }
           renderActions={(row) =>
             actionButtons(
-              () =>
-                openEditService({
-                  id: row.id,
-                  name: row.name,
-                  departmentId:
-                    departments.find(
-                      (d) =>
-                        d.name === row.departmentName
-                    )?.id ?? "",
-                }),
+              () => {
+                const service = services.find((item) => item.id === row.id);
+
+                if (service) openEditService(service);
+              },
               () =>
                 handleDeleteService(
                   row.id,

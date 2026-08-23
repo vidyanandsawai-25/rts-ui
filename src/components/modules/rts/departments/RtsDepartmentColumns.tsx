@@ -17,10 +17,10 @@ export const getRtsDepartmentColumns = (
     label: (
       <button
         onClick={() => onSort?.('departmentName')}
-        className="flex items-center gap-1 font-bold text-slate-800 hover:text-slate-900 cursor-pointer"
+        className="flex items-center gap-1 font-bold cursor-pointer"
       >
         <span>{t('deptName')}</span>
-        <ArrowUpDown size={14} className="text-slate-400" />
+        <ArrowUpDown size={14} />
       </button>
     ),
     render: (_value, row) => (
@@ -29,14 +29,14 @@ export const getRtsDepartmentColumns = (
   },
   {
     key: 'departmentNameLocal',
-    label: <span className="font-bold text-slate-800">{t('localName')}</span>,
+    label: <span className="font-bold">{t('localName')}</span>,
     render: (_value, row) => (
       <span className="text-slate-600">{row.departmentNameLocal || '-'}</span>
     ),
   },
   {
     key: 'departmentIcon',
-    label: <span className="font-bold text-slate-800">{t('icon')}</span>,
+    label: <span className="font-bold">{t('icon')}</span>,
     render: (_value, row) => (
       <span className="font-mono text-xs text-slate-500">{row.departmentIcon || '-'}</span>
     ),
@@ -46,17 +46,17 @@ export const getRtsDepartmentColumns = (
     label: (
       <button
         onClick={() => onSort?.('displayOrder')}
-        className="flex items-center gap-1 font-bold text-slate-800 hover:text-slate-900 cursor-pointer"
+        className="flex items-center gap-1 font-bold cursor-pointer"
       >
         <span>{t('displayOrder')}</span>
-        <ArrowUpDown size={14} className="text-slate-400" />
+        <ArrowUpDown size={14} />
       </button>
     ),
     render: (_value, row) => <span className="text-slate-600 font-mono">{row.displayOrder}</span>,
   },
   {
     key: 'isActive',
-    label: <span className="font-bold text-slate-800">{tCommon('table.columns.status')}</span>,
+    label: <span className="font-bold">{tCommon('table.columns.status')}</span>,
     render: (_value, row) => (
       <StatusBadge
         value={row.isActive}

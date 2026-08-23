@@ -19,10 +19,19 @@ import {
 } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
+import {
+  RTS_DASHBOARD_TABLE_CLASS,
+  RTS_DASHBOARD_TABLE_CONTAINER_CLASS,
+  RTS_DASHBOARD_TABLE_HEAD_CLASS,
+} from "@/lib/utils/rts/dashboard-table-styles";
 
 interface Department {
   id: string;
   name: string;
+  localName: string | null;
+  icon: string | null;
+  displayOrder: number;
+  isActive: boolean;
 }
 
 interface SaveDepartmentResponse {
@@ -60,7 +69,10 @@ type DepartmentRow = Record<string, unknown> & {
   id: string;
   srNo: number;
   name: string;
-  status: string;
+  localName: string | null;
+  icon: string | null;
+  displayOrder: number;
+  isActive: boolean;
 };
 
 export default function RtsDepartmentConfig({
@@ -329,7 +341,10 @@ export default function RtsDepartmentConfig({
         id: department.id,
         srNo: (page - 1) * 12 + index + 1,
         name: department.name,
-        status: "active",
+        localName: department.localName,
+        icon: department.icon,
+        displayOrder: department.displayOrder,
+        isActive: department.isActive,
       })
     );
 
@@ -356,7 +371,34 @@ export default function RtsDepartmentConfig({
         "font-semibold text-slate-800 border-r border-slate-100",
     },
     {
-      key: "status",
+      key: "localName",
+      label: tRts("masters.localName"),
+      headerClassName:
+        "border-r border-blue-300/60 text-white",
+      cellClassName:
+        "border-r border-slate-100 text-slate-700",
+      render: (value) => String(value || "-"),
+    },
+    {
+      key: "icon",
+      label: tRts("masters.icon"),
+      headerClassName:
+        "border-r border-blue-300/60 text-white",
+      cellClassName:
+        "border-r border-slate-100 font-mono text-xs text-slate-500",
+      render: (value) => String(value || "-"),
+    },
+    {
+      key: "displayOrder",
+      label: tRts("masters.displayOrder"),
+      align: "center",
+      headerClassName:
+        "border-r border-blue-300/60 text-white",
+      cellClassName:
+        "border-r border-slate-100 font-mono text-xs text-slate-600",
+    },
+    {
+      key: "isActive",
       label: tRts("masters.status"),
       width: "112px",
       align: "center",
@@ -364,21 +406,21 @@ export default function RtsDepartmentConfig({
         "border-r border-blue-300/60 text-white",
       cellClassName:
         "border-r border-slate-100",
-      render: () => (
+      render: (value) => (
         <StatusBadge
-          value="active"
+          value={Boolean(value)}
           activeLabel={tRts("masters.active")}
+          inactiveLabel={t("status.inactive")}
           className="px-2 py-0.5 text-[10px]"
         />
       ),
     },
   ];
 
-  const tableHeaderClass =
-    "!bg-[#4b70a6] !from-[#4b70a6] !via-[#4b70a6] !to-[#4b70a6] hover:!from-[#4b70a6] hover:!via-[#4b70a6] hover:!to-[#4b70a6] [&_th]:!text-white";
+  const tableHeaderClass = RTS_DASHBOARD_TABLE_HEAD_CLASS;
 
   const tableClass =
-    "border-collapse text-left text-sm [&_th:last-child]:border-l [&_th:last-child]:border-blue-300/60 [&_td:last-child]:border-l [&_td:last-child]:border-slate-100";
+    `${RTS_DASHBOARD_TABLE_CLASS} border-collapse text-left text-sm`;
 
   const actionButtons = (
     onEdit: () => void,
@@ -455,10 +497,10 @@ export default function RtsDepartmentConfig({
             enabled: totalPages > 1,
             showPageSizeSelector: false,
           }}
-          maxBodyHeightClassName="max-h-auto"
+          maxBodyHeightClassName="min-h-[200px] max-h-auto"
           theadClassName={tableHeaderClass}
           tableClassName={tableClass}
-          containerClassName="gap-0"
+          containerClassName={RTS_DASHBOARD_TABLE_CONTAINER_CLASS}
           onRowClick={(row) =>
             handleRowSelect(
               selectedDepartmentId === row.id
@@ -469,15 +511,15 @@ export default function RtsDepartmentConfig({
           rowClassName={(row) =>
             selectedDepartmentId === row.id
               ? "bg-blue-50/70"
-              : ""
+              : "hover:bg-blue-50"
           }
           renderActions={(row) =>
             actionButtons(
-              () =>
-                openEditDepartment({
-                  id: row.id,
-                  name: row.name,
-                }),
+              () => {
+                const department = departments.find((item) => item.id === row.id);
+
+                if (department) openEditDepartment(department);
+              },
               () =>
                 handleDeleteDepartment(
                   row.id,

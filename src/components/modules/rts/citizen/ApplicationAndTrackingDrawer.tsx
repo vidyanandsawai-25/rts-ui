@@ -19,7 +19,7 @@ import {
 } from "@/app/[locale]/service/payment/actions";
 import { PaymentCheckoutModal } from "./PaymentCheckoutModal";
 import { PaymentReceiptModal } from "./PaymentReceiptModal";
-import type { PaymentReceiptResult } from "@/lib/api/rts/rtspayment.service";
+import type { PaymentReceiptResult, PaymentStatusResult } from "@/lib/api/rts/rtspayment.service";
 import type { RtsApplicationApprovalStage } from "@/types/rts/application-approval.types";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 import { CreditCard, Receipt, ShieldCheck } from "lucide-react";
@@ -192,15 +192,7 @@ export default function ApplicationAndTrackingDrawer({
   const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const [paymentInfo, setPaymentInfo] = useState<{
-    applicationId: number;
-    applicationNo: string;
-    serviceName: string;
-    requiredFee: number;
-    isFeeRequired: boolean;
-    paymentStatus: string;
-    receiptNo?: string;
-  } | null>(null);
+  const [paymentInfo, setPaymentInfo] = useState<PaymentStatusResult | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
 

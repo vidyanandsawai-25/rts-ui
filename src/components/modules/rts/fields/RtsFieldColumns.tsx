@@ -17,10 +17,10 @@ export const getRtsFieldColumns = (
     label: (
       <button
         onClick={() => onSort?.('fieldLabel')}
-        className="flex items-center gap-1 font-bold text-slate-800 hover:text-slate-900 cursor-pointer"
+        className="flex items-center gap-1 font-bold cursor-pointer"
       >
         <span>{t('fieldLabel')}</span>
-        <ArrowUpDown size={14} className="text-slate-400" />
+        <ArrowUpDown size={14} />
       </button>
     ),
     render: (_value, row) => (
@@ -32,12 +32,12 @@ export const getRtsFieldColumns = (
   },
   {
     key: 'fieldLabelLocal',
-    label: <span className="font-bold text-slate-800">{t('fieldLabelLocal')}</span>,
+    label: <span className="font-bold">{t('fieldLabelLocal')}</span>,
     render: (_value, row) => <span className="text-slate-700">{row.fieldLabelLocal || '-'}</span>,
   },
   {
     key: 'fieldType',
-    label: <span className="font-bold text-slate-800">{t('fieldType')}</span>,
+    label: <span className="font-bold">{t('fieldType')}</span>,
     render: (_value, row) => (
       <span className="text-slate-500 font-mono text-xs capitalize bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
         {row.fieldType}
@@ -46,14 +46,14 @@ export const getRtsFieldColumns = (
   },
   {
     key: 'fieldGroup',
-    label: <span className="font-bold text-slate-800">{t('fieldGroup')}</span>,
+    label: <span className="font-bold">{t('fieldGroup')}</span>,
     render: (_value, row) => (
       <span className="text-slate-600 text-xs font-semibold">{row.fieldGroup || t('general')}</span>
     ),
   },
   {
     key: 'isRequired',
-    label: <span className="font-bold text-slate-800">{t('isRequired')}</span>,
+    label: <span className="font-bold">{t('isRequired')}</span>,
     render: (_value, row) => (
       <span
         className={`text-xs font-bold ${
@@ -68,14 +68,14 @@ export const getRtsFieldColumns = (
   },
   {
     key: 'displayOrder',
-    label: <span className="font-bold text-slate-800">{t('displayOrder')}</span>,
+    label: <span className="font-bold">{t('displayOrder')}</span>,
     render: (_value, row) => (
       <span className="text-slate-600 font-mono text-xs">{row.displayOrder}</span>
     ),
   },
   {
     key: 'isActive',
-    label: <span className="font-bold text-slate-800">{tCommon('table.columns.status')}</span>,
+    label: <span className="font-bold">{tCommon('table.columns.status')}</span>,
     render: (_value, row) => (
       <StatusBadge
         value={row.isActive}

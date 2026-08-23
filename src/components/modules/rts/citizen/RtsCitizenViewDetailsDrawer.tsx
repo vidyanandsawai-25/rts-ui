@@ -17,8 +17,8 @@ import {
 } from "@/lib/api/rts/rtsdocument.client";
 import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
 import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
-import { getPaymentReceiptAction } from "@/app/[locale]/service/payment/actions";
-import type { PaymentReceiptResult } from "@/lib/api/rts/rtspayment.service";
+import { getPaymentReceiptAction, getPaymentStatusAction } from "@/app/[locale]/service/payment/actions";
+import type { PaymentReceiptResult, PaymentStatusResult } from "@/lib/api/rts/rtspayment.service";
 import type { Language } from "@/types/language.type";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 
@@ -28,6 +28,8 @@ type RtsCitizenViewDetailsDrawerProps = {
   onClose: () => void;
   /** SSR-loaded for the dashboard route; the local fetch remains a fallback for other consumers. */
   detailData?: RtsApplicationDetailData | null;
+  /** SSR-loaded payment state; fetched via action only for non-dashboard consumers. */
+  paymentStatusData?: PaymentStatusResult | null;
   onOpenPayment?: (applicationNo: string) => void;
   onOpenReceipt?: (receiptNo: string, applicationNo: string) => void;
 };
@@ -58,12 +60,14 @@ export default function RtsCitizenViewDetailsDrawer({
   language,
   onClose,
   detailData,
+  paymentStatusData,
   onOpenPayment,
   onOpenReceipt,
 }: RtsCitizenViewDetailsDrawerProps) {
   const t = useTranslations("rts.citizenDashboard");
   const tCommon = useTranslations("common");
   const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatusResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
@@ -140,9 +144,35 @@ export default function RtsCitizenViewDetailsDrawer({
     };
   }, [applicationNumber, detailData]);
 
+  useEffect(() => {
+    if (!applicationNumber || paymentStatusData !== undefined) return;
+
+    const applicationId = Number.parseInt(applicationNumber.replace(/\D/g, ""), 10);
+    if (!Number.isFinite(applicationId) || applicationId <= 0) return;
+
+    let cancelled = false;
+
+    void getPaymentStatusAction(applicationId)
+      .then((response) => {
+        if (!cancelled) setPaymentStatus(response.success ? response.data ?? null : null);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch citizen payment status:", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationNumber, paymentStatusData]);
+
   if (!application) return null;
 
   const resolvedDetail = detailData ?? detail;
+  const resolvedPaymentStatus = paymentStatusData !== undefined
+    ? paymentStatusData
+    : paymentStatus?.applicationNo.trim().toLowerCase() === applicationNumber?.trim().toLowerCase()
+      ? paymentStatus
+      : null;
   const isLoadingDetails = detailData ? false : loading;
   const normalizedStatus = normalizeStatus(application.status);
   const documents = [
@@ -224,21 +254,28 @@ export default function RtsCitizenViewDetailsDrawer({
               </div>
             </section>
 
-            {/* Dynamic Payment Status Card */}
-            {(() => {
-              const dynamicFees = resolvedDetail?.verification?.serviceFees ?? 50;
-              const isPaid = resolvedDetail?.verification
-                ? Boolean(resolvedDetail.verification.isPaid)
-                : Boolean(
-                    receiptModalData ||
-                    resolvedDetail?.verification?.receiptNo ||
-                    application.status?.toLowerCase().includes("payment received") ||
-                    application.status?.toLowerCase().includes("payment success") ||
-                    application.status?.toLowerCase().includes("payment completed") ||
-                    application.status?.toLowerCase().includes("paid") ||
-                    application.status?.toLowerCase().includes("शुल्क प्राप्त")
-                  );
-              const receiptNo = resolvedDetail?.verification?.receiptNo || receiptModalData?.receiptNo;
+            {/* Payment state is owned by /RTSPayment/status, not approval-officer metadata. */}
+            {resolvedPaymentStatus && (() => {
+              const requiredFee = Number(resolvedPaymentStatus.requiredFee);
+              const isFeeRequired = resolvedPaymentStatus.isFeeRequired !== false && requiredFee > 0;
+              const isPaid = resolvedPaymentStatus.paymentStatus.trim().toUpperCase() === "SUCCESS";
+              const receiptNo = resolvedPaymentStatus.receiptNo || receiptModalData?.receiptNo;
+
+              if (!isFeeRequired) {
+                return (
+                  <section className="rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50/50 p-4 shadow-sm">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-xs">
+                        <CheckCircle2 className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-extrabold text-emerald-900">{t("freeService")}</p>
+                        <p className="text-[11px] font-medium text-emerald-700">{t("noGovernmentFeeRequired")}</p>
+                      </div>
+                    </div>
+                  </section>
+                );
+              }
 
               return !isPaid ? (
                 <section className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-amber-50/50 p-4 shadow-sm">
@@ -249,14 +286,10 @@ export default function RtsCitizenViewDetailsDrawer({
                       </div>
                       <div>
                         <p className="text-xs font-extrabold text-amber-900">
-                          {language === "mr" ? `शासकीय सेवा शुल्क प्रलंबित: ₹${dynamicFees}.00` : language === "hi" ? `शासकीय सेवा शुल्क लंबित: ₹${dynamicFees}.00` : `Government Fee Pending: ₹${dynamicFees}.00`}
+                          {t("governmentFeePending", { amount: requiredFee.toFixed(2) })}
                         </p>
                         <p className="text-[11px] font-medium text-amber-700 mt-0.5">
-                          {language === "mr"
-                            ? "अर्जावर पुढील प्रक्रिया सुरू करण्यासाठी शुल्क भरणे आवश्यक आहे."
-                            : language === "hi"
-                              ? "आवेदन पर आगे की प्रक्रिया के लिए शुल्क का भुगतान अनिवार्य है।"
-                              : "Payment is required for application processing to proceed."}
+                          {t("paymentRequiredToProceed")}
                         </p>
                       </div>
                     </div>
@@ -274,7 +307,7 @@ export default function RtsCitizenViewDetailsDrawer({
                       }}
                       className="rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 px-3"
                     >
-                      {language === "mr" ? "आताच शुल्क भरा" : language === "hi" ? "अभी शुल्क भरें" : "Pay Fee Now"}
+                      {t("payFeeNow")}
                     </Button>
                   </div>
                 </section>
@@ -287,24 +320,26 @@ export default function RtsCitizenViewDetailsDrawer({
                       </div>
                       <div>
                         <p className="text-xs font-extrabold text-emerald-900">
-                          {language === "mr" ? `शासकीय सेवा शुल्क प्राप्त (Fee Paid): ₹${dynamicFees}.00` : language === "hi" ? `शासकीय सेवा शुल्क प्राप्त: ₹${dynamicFees}.00` : `Government Fee Paid: ₹${dynamicFees}.00`}
+                          {t("governmentFeePaid", { amount: requiredFee.toFixed(2) })}
                         </p>
                         <p className="text-[11px] font-medium text-emerald-700">
-                          {receiptNo ? `पावती क्र. : ${receiptNo}` : (language === "mr" ? "अधिकृत शासकीय ई-पावती उपलब्ध आहे" : language === "hi" ? "आधिकारिक सरकारी ई-रसीद उपलब्ध है" : "Official municipal e-receipt is available")}
+                          {receiptNo ? t("receiptNumber", { receiptNo }) : t("officialReceiptAvailable")}
                         </p>
                       </div>
                     </div>
-                    <Button
-                      type="button"
-                      size="xs"
-                      variant="secondary"
-                      icon={Printer}
-                      disabled={isReceiptLoading}
-                      onClick={handleViewReceipt}
-                      className="rounded-lg text-xs font-bold text-emerald-800 border-emerald-300 bg-white hover:bg-emerald-50 shrink-0"
-                    >
-                      {language === "mr" ? "पावती पहा" : language === "hi" ? "रसीद देखें" : "View Receipt"}
-                    </Button>
+                    {receiptNo && (
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="secondary"
+                        icon={Printer}
+                        disabled={isReceiptLoading}
+                        onClick={handleViewReceipt}
+                        className="rounded-lg text-xs font-bold text-emerald-800 border-emerald-300 bg-white hover:bg-emerald-50 shrink-0"
+                      >
+                        {t("viewReceipt")}
+                      </Button>
+                    )}
                   </div>
                 </section>
               );
@@ -409,7 +444,7 @@ export default function RtsCitizenViewDetailsDrawer({
           applicationId={parseInt(applicationNumber.replace(/\D/g, ""), 10) || 1}
           applicationNo={applicationNumber}
           serviceName={(language === "mr" || language === "hi") && application.serviceNameLocal ? application.serviceNameLocal : application.serviceName}
-          fees={resolvedDetail?.verification?.serviceFees ?? 50}
+          fees={resolvedPaymentStatus?.requiredFee ?? 0}
           onClose={() => setIsCheckoutOpen(false)}
           onSuccess={(receipt) => {
             setIsCheckoutOpen(false);

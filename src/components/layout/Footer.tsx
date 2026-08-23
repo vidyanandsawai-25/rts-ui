@@ -34,7 +34,7 @@ export function Footer({ ulbData }: FooterProps) {
       <div className={`w-full text-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] transition-colors duration-300 ${
         isAssets
           ? 'bg-gradient-to-r from-[#000428] to-[#004e92]'
-          : 'bg-[#4b70a6]'
+          : 'bg-[#143D7D]'
       }`}>
         <Card
           padding="none"

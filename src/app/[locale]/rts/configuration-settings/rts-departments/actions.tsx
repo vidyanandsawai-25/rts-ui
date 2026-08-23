@@ -14,15 +14,27 @@ import { getUserIdFromCookies } from "@/lib/utils/cookie";
 type ConfigDepartment = {
   id: string;
   name: string;
+  localName: string | null;
+  icon: string | null;
+  displayOrder: number;
+  isActive: boolean;
 };
 
 function toConfigDepartment(department: {
   id: number;
   departmentName: string;
+  departmentNameLocal?: string | null;
+  departmentIcon?: string | null;
+  displayOrder?: number;
+  isActive: boolean;
 }): ConfigDepartment {
   return {
     id: String(department.id),
     name: department.departmentName,
+    localName: department.departmentNameLocal ?? null,
+    icon: department.departmentIcon ?? null,
+    displayOrder: department.displayOrder ?? 0,
+    isActive: department.isActive,
   };
 }
 

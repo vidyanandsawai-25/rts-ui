@@ -373,17 +373,13 @@ export async function getApplicationDetailAction(
 
   if (Number.isFinite(numericId) && numericId > 0) {
     try {
-      const [viewDetails, stageDetails, verification] = await Promise.all([
+      const [viewDetails, stageDetails] = await Promise.all([
         getApprovalApplicationDetails(numericId).catch((err) => {
           console.error(`Failed to fetch ViewApplicationDetails for ${numericId}:`, err);
           return null;
         }),
         getApprovalApplicationStages(numericId).catch((err) => {
           console.error(`Failed to fetch ApplicationApprovalStages for ${numericId}:`, err);
-          return null;
-        }),
-        getApprovalApplicationVerification(numericId).catch((err) => {
-          console.error(`Failed to fetch ApplicationVerification for ${numericId}:`, err);
           return null;
         }),
       ]);
@@ -455,7 +451,7 @@ export async function getApplicationDetailAction(
           completedStages: stageDetails?.completedStages ?? 0,
           totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
           documents: viewDetails.documents ?? [],
-          verification: verification ?? null,
+          verification: null,
         };
       }
 
@@ -474,7 +470,7 @@ export async function getApplicationDetailAction(
         completedStages: stageDetails?.completedStages ?? 0,
         totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
         documents: [],
-        verification: verification ?? null,
+        verification: null,
       };
     } catch (err) {
       console.error(`Error in getApplicationDetailAction for ${applicationNo}:`, err);

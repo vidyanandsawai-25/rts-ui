@@ -19,6 +19,11 @@ import {
 } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
+import {
+  RTS_DASHBOARD_TABLE_CLASS,
+  RTS_DASHBOARD_TABLE_CONTAINER_CLASS,
+  RTS_DASHBOARD_TABLE_HEAD_CLASS,
+} from "@/lib/utils/rts/dashboard-table-styles";
 import { useTranslations } from "next-intl";
 
 interface RtsField {
@@ -617,8 +622,8 @@ export default function RtsFieldsConfig({
     });
   };
 
-  const tableHeaderClass = "!bg-[#4b70a6] !from-[#4b70a6] !via-[#4b70a6] !to-[#4b70a6] hover:!from-[#4b70a6] hover:!via-[#4b70a6] hover:!to-[#4b70a6] [&_th]:!text-white";
-  const tableClass = "border-collapse text-left text-[13px] [&_th:last-child]:border-l [&_th:last-child]:border-blue-300/60 [&_td:last-child]:border-l [&_td:last-child]:border-slate-100";
+  const tableHeaderClass = RTS_DASHBOARD_TABLE_HEAD_CLASS;
+  const tableClass = `${RTS_DASHBOARD_TABLE_CLASS} border-collapse text-left text-[13px]`;
   const fieldColumns: Column<FieldTableRow>[] = [
     {
       key: "id",
@@ -749,11 +754,11 @@ export default function RtsFieldsConfig({
         totalPages={totalPages}
         onPageChange={setPageNumber}
         paginationConfig={{ enabled: true, showPageSizeSelector: false }}
-        maxBodyHeightClassName="max-h-auto"
+        maxBodyHeightClassName="min-h-[200px] max-h-auto"
         theadClassName={tableHeaderClass}
         tableClassName={tableClass}
-        containerClassName="gap-0"
-        rowClassName={() => "hover:bg-slate-50/50"}
+        containerClassName={RTS_DASHBOARD_TABLE_CONTAINER_CLASS}
+        rowClassName={() => "hover:bg-blue-50"}
         renderActions={(field) => (
           <div className="flex justify-center gap-2">
             <EditButton onClick={() => handleStartEdit(field)} title={t("fields.edit")} className="size-10 px-0" />

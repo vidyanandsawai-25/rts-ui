@@ -12,7 +12,8 @@ import {
   type VerifyPaymentPayload,
   type VerifyPaymentResult,
   type RecordOfflinePaymentPayload,
-  type PaymentReceiptResult
+  type PaymentReceiptResult,
+  type PaymentStatusResult,
 } from "@/lib/api/rts/rtspayment.service";
 
 export async function createPaymentOrderAction(
@@ -87,7 +88,7 @@ export async function getPaymentReceiptByNoAction(
 
 export async function getPaymentStatusAction(
   applicationId: number
-): Promise<{ success: boolean; data?: any; error?: string }> {
+): Promise<{ success: boolean; data?: PaymentStatusResult | null; error?: string }> {
   try {
     const data = await getPaymentStatus(applicationId);
     return { success: true, data };

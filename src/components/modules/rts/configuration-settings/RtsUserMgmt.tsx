@@ -173,24 +173,29 @@ export default function RtsUserMgmt({ officers, departments }: UserMgmtProps) {
 
   return (
     <div className="space-y-4">
-      {/* Title Header with Add Action */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-800">{t("users.title")}</h1>
-          <p className="text-[13px] text-slate-400 mt-0.5">{t("users.subtitle")}</p>
+      {/* Title and action card aligned with the RTS configuration masters. */}
+      <Card className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+        <div className="flex items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
+            <Users className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-800">{t("users.title")}</h1>
+            <p className="mt-0.5 text-[13px] text-slate-400">{t("users.subtitle")}</p>
+          </div>
         </div>
         <div>
           <button
             type="button"
             aria-label={t("users.addUser")}
             onClick={handleStartAdd}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#4b70a6] px-4 py-2 text-[13px] font-bold text-white shadow-sm transition hover:bg-[#3d5e8c]"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2 text-[13px] font-bold text-white shadow-sm transition hover:bg-[#1d4ed8]"
           >
             <Plus className="h-4 w-4" />
             {t("users.addUser")}
           </button>
         </div>
-      </div>
+      </Card>
 
       {/* Advanced Filters Panel wrapped in Common Card Component */}
       <Card className="p-3 border border-slate-200 bg-white shadow-sm">
@@ -232,23 +237,23 @@ export default function RtsUserMgmt({ officers, departments }: UserMgmtProps) {
       {/* User Registry List Table wrapped in Common Card */}
       <Card className="p-0 border border-slate-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-[13px] text-slate-600">
-            <thead className="bg-[#4b70a6] text-white font-bold">
+          <table className="w-full border-collapse text-left text-sm text-slate-600">
+            <thead className="bg-[#143D7D] text-xs font-semibold uppercase tracking-wide text-white">
               <tr>
-                <th className="p-3 border-r border-[#3d5a8a]">{t("users.empId")}</th>
-                <th className="p-3 border-r border-[#3d5a8a]">{t("users.officerName")}</th>
-                <th className="p-3 border-r border-[#3d5a8a]">{t("users.department")}</th>
-                <th className="p-3 border-r border-[#3d5a8a]">{t("users.designation")}</th>
-                <th className="p-3 border-r border-[#3d5a8a]">{t("users.email")} / {t("users.mobile")}</th>
-                <th className="p-3 border-r border-[#3d5a8a]">{t("users.role")}</th>
-                <th className="p-3 text-center border-r border-[#3d5a8a]">{t("users.status")}</th>
-                <th className="p-3 text-center">{t("users.actions")}</th>
+                <th className="px-3 py-3">{t("users.empId")}</th>
+                <th className="px-3 py-3">{t("users.officerName")}</th>
+                <th className="px-3 py-3">{t("users.department")}</th>
+                <th className="px-3 py-3">{t("users.designation")}</th>
+                <th className="px-3 py-3">{t("users.email")} / {t("users.mobile")}</th>
+                <th className="px-3 py-3">{t("users.role")}</th>
+                <th className="px-3 py-3 text-center">{t("users.status")}</th>
+                <th className="px-3 py-3 text-center">{t("users.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredOfficers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-slate-400 font-semibold">
+                  <td colSpan={8} className="h-40 px-3 py-3 text-center text-slate-400 font-semibold">
                     {t("users.noOfficers")}
                   </td>
                 </tr>
@@ -256,12 +261,12 @@ export default function RtsUserMgmt({ officers, departments }: UserMgmtProps) {
                 filteredOfficers.map(officer => {
                   const isActive = activeStatuses[officer.id] !== false;
                   return (
-                    <tr key={officer.id} className="hover:bg-slate-50/50 transition">
-                      <td className="p-3 font-bold text-slate-800">{officer.employeeId}</td>
-                      <td className="p-3 font-semibold text-slate-700">{officer.name}</td>
-                      <td className="p-3 text-slate-500">{officer.departmentName}</td>
-                      <td className="p-3 font-medium text-slate-600">{officer.designation}</td>
-                      <td className="p-3">
+                    <tr key={officer.id} className="h-16 border-b border-slate-100 transition hover:bg-blue-50">
+                      <td className="px-3 py-3 font-bold text-slate-800">{officer.employeeId}</td>
+                      <td className="px-3 py-3 font-semibold text-slate-700">{officer.name}</td>
+                      <td className="px-3 py-3 text-slate-500">{officer.departmentName}</td>
+                      <td className="px-3 py-3 font-medium text-slate-600">{officer.designation}</td>
+                      <td className="px-3 py-3">
                         <div className="flex flex-col gap-0.5 text-slate-450">
                           <span className="flex items-center gap-1">
                             <Mail className="h-3 w-3 text-slate-400" />
@@ -273,13 +278,13 @@ export default function RtsUserMgmt({ officers, departments }: UserMgmtProps) {
                           </span>
                         </div>
                       </td>
-                      <td className="p-3 font-semibold text-slate-750">
+                      <td className="px-3 py-3 font-semibold text-slate-750">
                         <div className="flex items-center gap-1.5">
                           <Shield className="h-3.5 w-3.5 text-[#4b70a6]" />
                           <span>{getRoleLabel(officer.role)}</span>
                         </div>
                       </td>
-                      <td className="p-3 text-center">
+                      <td className="px-3 py-3 text-center">
                         <button
                           type="button"
                           aria-label={t("users.toggleStatusAria", {
@@ -304,7 +309,7 @@ export default function RtsUserMgmt({ officers, departments }: UserMgmtProps) {
                           {isActive ? t("users.active") : t("users.inactive")}
                         </button>
                       </td>
-                      <td className="p-3 text-center">
+                      <td className="px-3 py-3 text-center">
                         <div className="flex justify-center gap-1.5">
                           <button
                             type="button"

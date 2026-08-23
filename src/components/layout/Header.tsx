@@ -15,7 +15,7 @@ import { locales, switchLocale, getLocaleFromPathname, type Locale } from '@/i18
 import { logoutAction } from '@/app/[locale]/login/actions';
 
 const HEADER_COLORS = {
-  background: '#4b70a6',
+  background: '#143D7D',
   userCardFrom: '#243B7C',
   userCardTo: '#0C1B48',
 } as const;
@@ -272,9 +272,9 @@ export function Header({
           className="pointer-events-none absolute inset-0 hidden sm:block opacity-30"
           style={{ contain: 'layout style paint' }}
         >
-          <div className="absolute left-[15%] top-4 h-16 w-16 rounded-full bg-orange-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
+          {/* <div className="absolute left-[15%] top-4 h-16 w-16 rounded-full bg-orange-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
           <div className="absolute left-[50%] top-2 h-20 w-20 rounded-full bg-blue-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
-          <div className="absolute right-[15%] top-6 h-20 w-20 rounded-full bg-purple-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
+          <div className="absolute right-[15%] top-6 h-20 w-20 rounded-full bg-purple-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" /> */}
         </div>
 
         <div className="relative flex h-full w-full items-center justify-between gap-3 overflow-visible px-4 md:px-6">

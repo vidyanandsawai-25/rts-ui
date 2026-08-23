@@ -85,6 +85,21 @@ export interface PaymentReceiptResult {
   ulbLogo?: string;
 }
 
+export interface PaymentStatusResult {
+  applicationId: number;
+  applicationNo: string;
+  serviceName: string;
+  requiredFee: number;
+  isFeeRequired: boolean;
+  paymentStatus: string;
+  statusNameEn?: string | null;
+  statusNameMr?: string | null;
+  badgeColor?: string | null;
+  receiptNo?: string | null;
+  paymentDate?: string | null;
+  gatewayPaymentId?: string | null;
+}
+
 export interface ApiResponseWrapper<T> {
   success: boolean;
   message: string;
@@ -144,20 +159,12 @@ export async function getPaymentReceiptByNo(receiptNo: string): Promise<PaymentR
   }
 }
 
-export async function getPaymentStatus(applicationId: number): Promise<{
-  applicationId: number;
-  applicationNo: string;
-  serviceName: string;
-  requiredFee: number;
-  isFeeRequired: boolean;
-  paymentStatus: string;
-  receiptNo?: string;
-  paymentDate?: string;
-  gatewayPaymentId?: string;
-} | null> {
+export async function getPaymentStatus(applicationId: number): Promise<PaymentStatusResult | null> {
   try {
-    const res = await apiClient.get<{ success: boolean; data: any }>(`/RTSPayment/status/${applicationId}`);
-    return res.data?.data || null;
+    const res = await apiClient.get<{ success: boolean; data?: PaymentStatusResult }>(
+      `/RTSPayment/status/${applicationId}`
+    );
+    return res.data?.success ? res.data.data ?? null : null;
   } catch {
     return null;
   }

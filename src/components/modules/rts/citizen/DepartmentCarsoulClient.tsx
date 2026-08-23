@@ -487,6 +487,7 @@ export default function DepartmentCarsoulClient({
             application={routeState.detailApplication}
             language={lang}
             detailData={routeState.detail}
+            paymentStatusData={routeState.paymentStatus}
             onClose={closeDetails}
             onOpenPayment={(applicationNo) => openPayment(applicationNo, true)}
             onOpenReceipt={(receiptNo, applicationNo) => openReceipt(receiptNo, applicationNo)}
@@ -498,14 +499,9 @@ export default function DepartmentCarsoulClient({
             applicationId={parseInt(routeState.paymentApplication.applicationNo.replace(/\D/g, ''), 10) || 1}
             applicationNo={routeState.paymentApplication.applicationNo}
             serviceName={routeState.paymentApplication.serviceName}
-            fees={Number(
-              departments
-                .flatMap((department) => department.services)
-                .find((service) => {
-                  const serviceName = typeof service.name === 'string' ? service.name : service.name?.en;
-                  return serviceName?.trim().toLowerCase() === routeState.paymentApplication?.serviceName.trim().toLowerCase();
-                })?.fees
-            ) || 0}
+            fees={routeState.paymentStatus?.applicationNo === routeState.paymentApplication.applicationNo
+              ? Number(routeState.paymentStatus.requiredFee)
+              : 0}
             onClose={closePayment}
             onSuccess={(receipt) => {
               setPaidAppMap((prev) => ({ ...prev, [routeState.paymentApplication!.applicationNo]: true }));
