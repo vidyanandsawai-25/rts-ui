@@ -187,6 +187,7 @@ export const ExcelUpload = ({ updateData, actions, locale = "en" }: ExcelUploadP
                   <div className="flex items-center gap-2 min-h-[42px] shrink-0">
                     <Checkbox
                       checked={downloadWithData}
+                      className="border-blue-300 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
                       onCheckedChange={(checked) => {
                         if (checked && updateData && !updateData.hasAnyFilterValue) {
                           toast.error(t("messages.downloadWithDataCriteria"));
@@ -289,10 +290,7 @@ export const ExcelUpload = ({ updateData, actions, locale = "en" }: ExcelUploadP
               <span className="font-semibold text-gray-800">{t("excelUpload.selectCorrectGroupTitle")}</span> {t("excelUpload.selectCorrectGroupDesc")}
             </li>
             <li>
-              <span className="font-semibold text-gray-800">{t("excelUpload.batchProcessingTitle")}</span> {t("excelUpload.batchProcessingDesc")}
-            </li>
-            <li>
-              <span className="font-semibold text-gray-800">{t("excelUpload.consistencyTitle")}</span> {t("excelUpload.consistencyDesc")}
+              <span className="font-semibold text-gray-800">{t("excelUpload.reuploadTitle")}</span> {t("excelUpload.reuploadDesc")}
             </li>
           </ul>
           <div className="flex justify-end pt-2">

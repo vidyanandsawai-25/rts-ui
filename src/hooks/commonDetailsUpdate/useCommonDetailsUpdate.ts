@@ -16,6 +16,7 @@ import { ScopeOption } from "@/lib/api/common-details-update/common-details-upda
 import { PagedResponse } from "@/types/common.types";
 import { useCommonDetailsUpdateActions } from "@/hooks/commonDetailsUpdate/useCommonDetailsUpdateActions";
 import { useBindApiOptions } from "@/hooks/commonDetailsUpdate/useBindApiOptions";
+import { useYearValidation, compileSafeRegex } from "@/hooks/commonDetailsUpdate/useUpdateFieldsValidation";
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
@@ -237,6 +238,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     Record<string, string | number | boolean>
   >({});
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const {
     saving,
@@ -251,6 +253,13 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     loadAllWards,
     handleBulkUpdate
   } = useCommonDetailsUpdateActions(t, props.actions || {});
+
+  const { validateYearFields } = useYearValidation(t);
+
+  const formWarnings = useMemo(() => {
+    const { warnings } = validateYearFields(formValues, fieldConfigs, properties);
+    return warnings;
+  }, [validateYearFields, formValues, fieldConfigs, properties]);
 
   // Track initial load for field configs
   const initialLoadRef = useRef(false);
@@ -717,13 +726,9 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
         }
 
         if (isProvided && f.validationRegex) {
-          try {
-            const regex = new RegExp(f.validationRegex);
-            if (!regex.test(String(val))) {
-              return false;
-            }
-          } catch (_e) {
-            // Ignore invalid regex
+          const regex = compileSafeRegex(f.validationRegex);
+          if (regex && !regex.test(String(val))) {
+            return false;
           }
         }
 
@@ -732,22 +737,6 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     [fieldConfigs, formValues]
   );
 
-  const formErrors = useMemo(() => {
-    const errors: Record<string, string> = {};
-    if (!formSubmitted) return errors;
-
-    fieldConfigs.forEach((f) => {
-      if (f.controlType === "checkbox") return;
-      // const val = formValues[f.fieldName];
-      // const isProvided = val !== undefined && val !== "" && val !== null;
-      // const displayName = locale === "mr" && f.displayNameMarathi ? f.displayNameMarathi : f.displayName;
-
-      // if (f.isRequired && !isProvided) {
-      //   errors[f.fieldName] = t("newValues.fieldRequired", { field: displayName });
-      // }
-    });
-    return errors;
-  }, [fieldConfigs, formValues, formSubmitted, locale, t]);
 
   const canShowProperties = useMemo(() => {
     if (!activeScopeDetails) return false;
@@ -1462,9 +1451,60 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     }
   }, [updateUrlParams, filterSubmitted, handleShowProperties, propertiesPageSize]);
 
+  const parseServerErrorMessages = useCallback((
+    rawErrors: string[],
+    items: Array<{ updateCode?: string; errors?: string[] }> = [],
+    configs: BulkUpdateFieldConfig[] = []
+  ): Record<string, string> => {
+    const errorsMap: Record<string, string> = {};
+
+    const allErrStrings: string[] = [...(rawErrors || [])];
+    if (Array.isArray(items)) {
+      items.forEach((item) => {
+        if (Array.isArray(item.errors)) {
+          allErrStrings.push(...item.errors);
+        }
+      });
+    }
+
+    allErrStrings.forEach((errStr) => {
+      if (!errStr) return;
+      const cleanStr = String(errStr).replace(/^\[[^\]]+\]\s*/, "").trim();
+      const statements = cleanStr.split(";");
+
+      statements.forEach((stmt) => {
+        const trimmedStmt = stmt.trim();
+        if (!trimmedStmt) return;
+
+        configs.forEach((config) => {
+          const dName = config.displayName?.toLowerCase();
+          const fName = config.fieldName?.toLowerCase();
+          const dNameMr = config.displayNameMarathi?.toLowerCase();
+          const stmtLower = trimmedStmt.toLowerCase();
+
+          if (
+            (dName && stmtLower.includes(dName)) ||
+            (fName && stmtLower.includes(fName)) ||
+            (dNameMr && stmtLower.includes(dNameMr))
+          ) {
+            errorsMap[config.fieldName] = trimmedStmt;
+          }
+        });
+      });
+    });
+
+    return errorsMap;
+  }, []);
+
   const handleFormValueChange = useCallback(
     (fieldName: string, value: string | number | boolean) => {
       setFormValues((prev) => ({ ...prev, [fieldName]: value }));
+      setFormErrors((prev) => {
+        if (!prev[fieldName]) return prev;
+        const next = { ...prev };
+        delete next[fieldName];
+        return next;
+      });
     },
     []
   );
@@ -1476,33 +1516,50 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     });
     setFormValues(defaults);
     setFormSubmitted(false);
+    setFormErrors({});
   }, [fieldConfigs]);
 
   const handleSubmitBulkUpdate = useCallback(async () => {
     setFormSubmitted(true);
+    setFormErrors({});
 
-    let hasRegexError = false;
+    const clientErrors: Record<string, string> = {};
     fieldConfigs.forEach((f) => {
       if (f.controlType === "checkbox") return;
       const val = formValues[f.fieldName];
       const isProvided = val !== undefined && val !== "" && val !== null;
       if (isProvided && f.validationRegex) {
-        try {
-          const regex = new RegExp(f.validationRegex);
-          if (!regex.test(String(val))) {
-            hasRegexError = true;
-          }
-        } catch (_e) {
+        const regex = compileSafeRegex(f.validationRegex);
+        if (regex && !regex.test(String(val))) {
+          clientErrors[f.fieldName] = `${f.displayName || f.fieldName} has invalid format.`;
         }
       }
     });
 
-    if (hasRegexError) {
-      toast.error(t("messages.invalidFormat"));
+    // Custom Year Validation (AssessmentYear >= ConstructionYear rule, 4-digit regex, current year limit)
+    const { errors: yearErrors } = validateYearFields(formValues, fieldConfigs, properties);
+    Object.assign(clientErrors, yearErrors);
+
+    if (Object.keys(clientErrors).length > 0) {
+      setFormErrors(clientErrors);
       return;
     }
 
     if (!isFormValid || !selectedMenuItem || selectedCodes.length === 0) return;
+
+    // Pre-check: Ensure at least one field has a non-empty value in formValues BEFORE triggering any API calls
+    const hasAnyValue = fieldConfigs.some((f) => {
+      const val = formValues[f.fieldName];
+      if (f.controlType === "checkbox") {
+        return val !== undefined && val !== null;
+      }
+      return val !== undefined && val !== "" && val !== null;
+    });
+
+    if (!hasAnyValue) {
+      toast.error(t("messages.noDataToUpdate"));
+      return;
+    }
 
     let idsToUpdate: number[] = [];
 
@@ -1592,7 +1649,17 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
         });
       }
 
-      const updateDataToSend = relevantConfigs.length > 0 ? filteredUpdateData : formValues;
+      // Also merge any other non-empty formValues from active fieldConfigs to provide full field context for cross-field validations (e.g. ConstructionYear + AssessmentYear together)
+      fieldConfigs.forEach(f => {
+        const val = formValues[f.fieldName];
+        if (val !== undefined && val !== "" && val !== null) {
+          if (filteredUpdateData[f.fieldName] === undefined) {
+            filteredUpdateData[f.fieldName] = val;
+          }
+        }
+      });
+
+      const updateDataToSend = Object.keys(filteredUpdateData).length > 0 ? filteredUpdateData : formValues;
 
       return { apiRoute, code, updateDataToSend };
     });
@@ -1621,13 +1688,29 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
 
     const apiRoute = payloadsToUpdate[0]?.apiRoute || "/CommonDetails/update";
 
-    await handleBulkUpdate(
+    const serverResponse = await handleBulkUpdate(
       apiRoute,
       payloadsToSend,
       async () => {
         hasSuccess = true;
       }
     );
+
+    if (serverResponse) {
+      const itemsArr = Array.isArray(serverResponse.items)
+        ? serverResponse.items
+        : serverResponse.items
+          ? [serverResponse.items]
+          : [];
+      const serverErrorsMap = parseServerErrorMessages(
+        serverResponse.errors || [],
+        itemsArr,
+        fieldConfigs
+      );
+      if (Object.keys(serverErrorsMap).length > 0) {
+        setFormErrors(serverErrorsMap);
+      }
+    }
 
     if (hasSuccess) {
       handleFormClear();
@@ -1655,6 +1738,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     menuItems,
     actions,
     selectedScopeId,
+    validateYearFields,
     t,
   ]);
 
@@ -1709,7 +1793,6 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     handleToPropertyChange,
     handleShowProperties,
     handleBack,
-    formErrors,
     loadingProperties,
     loadingShowProperties,
     loadingScopeOptions,
@@ -1758,6 +1841,8 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     handlePropertySelect,
     // Form
     formValues,
+    formErrors,
+    formWarnings,
     formSubmitted,
     isFormValid,
     saving,

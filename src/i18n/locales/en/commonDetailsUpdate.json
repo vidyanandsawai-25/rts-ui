@@ -238,6 +238,7 @@
       "processedGroupsSuccess": "Processed {groups} group for update and {properties} properties were updated successfully",
       "updateFailed": "Failed to update properties",
       "selectProperties": "Please select at least one property to update",
+      "noDataToUpdate": "Please enter value to update.",
       "selectUpdateType": "Please select an update type",
       "fillRequired": "Please fill all required fields",
       "invalidRange": "From Property No. must be less than or equal to To Property No.",
@@ -250,7 +251,12 @@
       "partialUpdate": "{success} properties updated, {failed} failed",
       "noPropertiesFound": "No properties found for the selected filters",
       "cannotDeselectIndividual": "Cannot deselect individual records when 'Select All' is active. Please clear selection first.",
-      "invalidFormat": "Invalid value for the selected field. Please check and try again.",
+      "invalidFormat": "Some fields contain invalid values. Please correct them and try again.",
+      "assessmentYearLessThanConstruction": "Assessment Year must be greater than Construction Year.",
+      "makeSureAssessmentYearGreater": "Make sure Assessment Year is greater than Construction Year.",
+      "makeSureConstructionYearLessThan": "Make sure Construction Year is less than Assessment Year.",
+      "invalidYearFormat": "Year must be a valid 4-digit number.",
+      "yearExceedsCurrentYear": "Year cannot be greater than current year ({year}).",
       "fetchingAllProperties": "Fetching all properties to update...",
       "missingWardOrField": "Missing Ward ID or Enabled Field selection",
       "downloadingExcel": "Downloading Excel file...",
@@ -260,6 +266,7 @@
       "uploadingExcel": "Uploading and processing Excel file...",
       "excelProcessSuccess": "Excel uploaded and processed successfully!",
       "definitionAlreadyExists": "A bulk update definition with code '{code}' already exists.",
+      "groupAlreadyExists": "Group Name already exists. Please choose a different group name.",
       "pleaseSelectField": "Please select a field first.",
       "noDataRows": "Your uploaded file is empty, please upload a file with data.",
       "loadingTabData": "Loading tab data...",
@@ -311,6 +318,7 @@
       "description": "Monitor execution of background update Audit and field-level user access.",
       "exportAudit": "Export Audit",
       "stats": {
+        "totalActivity": "Total Activity",
         "totalRecords": "Total Records",
         "totalJobs": "Total Jobs",
         "completed": "Completed",
@@ -321,7 +329,10 @@
       "filters": {
         "user": "User",
         "allUsers": "All Users",
-        "searchPlaceholder": "Search field, user, remarks"
+        "searchPlaceholder": "Search by PropertyNo, field, user, remarks"
+      },
+      "messages": {
+        "activityFailedCannotView": "This activity has failed and has no details to view."
       },
       "columns": {
         "id": "Activity ID / Job ID",
@@ -352,6 +363,8 @@
         }
       },
       "modal": {
+        "totalProperties": "Total Property",
+        "fieldCount": "Field Count",
         "updateName": "Update Name",
         "updatedBy": "Updated By",
         "date": "Date & Time",
@@ -391,10 +404,12 @@
       "downloadDataDesc": "Check the “Download with Data” checkbox to download a template pre-populated with the current property data based on the selected property criteria.",
       "selectCorrectGroupTitle": "Select the Correct Group:",
       "selectCorrectGroupDesc": "Make sure the correct group is selected before uploading the Excel file.",
-      "batchProcessingTitle": "Separate Batches:",
-      "batchProcessingDesc": "Upload properties with partition numbers and properties without partition numbers in separate batches.",
-      "consistencyTitle": "Do Not Mix:",
-      "consistencyDesc": "Do not include properties with and without partition numbers in the same Excel file, as this may cause validation errors.",
+      "reuploadTitle": "Correct and Re-upload:",
+      "reuploadDesc": "If the uploaded Excel data is rejected during validation, correct the data errors in the Excel sheet and re-upload the file.",
+      "batchProcessingTitle": "Correct and Re-upload:",
+      "batchProcessingDesc": "If the uploaded Excel data is rejected during validation, correct the data errors in the Excel sheet and re-upload the file.",
+      "consistencyTitle": "Correct and Re-upload:",
+      "consistencyDesc": "If the uploaded Excel data is rejected during validation, correct the data errors in the Excel sheet and re-upload the file.",
       "emptyData": "No data available",
       "loadingData": "Loading data...",
       "inactiveStatus": "Inactive",
@@ -413,6 +428,7 @@
         "processingBulkUpdate": "Processing bulk update...",
         "bulkUpdateSuccessMsg": "Excel uploaded and processed successfully!",
         "bulkUpdateFailedMsg": "Failed to process bulk update.",
+        "dataRejectedMsg": "Upload data is rejected during the validation, please correct data and re-upload.",
         "validationErrorsMsg": "{errors} out of {total} uploaded rows contain errors."
       },
       "stats": {

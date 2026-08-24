@@ -1,7 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-"use client";
-
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -21,6 +19,7 @@ import {
 
 interface UseJobsAuditOptions {
   initialData?: PagedResponse<UpdateHistoryItem> | UpdateHistoryItem[] | null;
+  initialAllData?: PagedResponse<UpdateHistoryItem> | UpdateHistoryItem[] | null;
   initialUpdateHistoryDetail?: PagedResponse<UpdateHistoryDetailItem> | null;
   actions?: Partial<CommonDetailsUpdateActions>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,6 +29,7 @@ interface UseJobsAuditOptions {
 
 export const useJobsAudit = ({
   initialData = null,
+  initialAllData = null,
   initialUpdateHistoryDetail = null,
   actions,
   t,
@@ -40,7 +40,7 @@ export const useJobsAudit = ({
   const pathname = usePathname();
 
   const auditPage = Number(searchParams.get("auditPage")) || 1;
-  const auditPageSize = Number(searchParams.get("auditPageSize")) || 5;
+  const auditPageSize = Number(searchParams.get("auditPageSize")) || 10;
   const auditUser = searchParams.get("auditUser") || "all";
   const auditSearch = searchParams.get("auditSearch") || "";
 
@@ -57,7 +57,16 @@ export const useJobsAudit = ({
   const [modalTotalPages, setModalTotalPages] = useState<number>(1);
   const [modalSearchTerm, setModalSearchTerm] = useState<string>("");
   const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(false);
+  const [isLoadingTable, setIsLoadingTable] = useState<boolean>(false);
   const [userOptionsState, setUserOptionsState] = useState<{ label: string; value: string }[]>([]);
+
+  const initialAllItems = useMemo(() => {
+    if (!initialAllData) return [];
+    if (Array.isArray(initialAllData)) return initialAllData;
+    return initialAllData.items || [];
+  }, [initialAllData]);
+
+  const [allHistoryItems, setAllHistoryItems] = useState<UpdateHistoryItem[]>(initialAllItems);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const debouncedModalSearchTerm = useDebounce(modalSearchTerm, 1000);
@@ -65,6 +74,11 @@ export const useJobsAudit = ({
   const getUpdateHistoryDetailFn = actions?.getUpdateHistoryDetailAction || getUpdateHistoryDetailAction;
   const getUpdateHistoryFn = actions?.getUpdateHistoryAction || getUpdateHistoryAction;
   const exportUpdateHistoryFn = actions?.exportUpdateHistoryAction || exportUpdateHistoryAction;
+
+  // Turn off table loading spinner when new initialData arrives
+  useEffect(() => {
+    setIsLoadingTable(false);
+  }, [initialData]);
 
   const updateUrlParams = useCallback((params: Record<string, string | number | null | undefined>) => {
     if (providedUpdateUrlParams) {
@@ -96,6 +110,24 @@ export const useJobsAudit = ({
     return initialData.totalCount || 0;
   }, [initialData]);
 
+  const completedCount = useMemo(() => {
+    const listToCount = allHistoryItems.length > 0 ? allHistoryItems : (initialAllItems.length > 0 ? initialAllItems : itemsList);
+    return listToCount.filter(
+      (item) =>
+        item.activityStatus?.toLowerCase() === "success" ||
+        item.activityStatus?.toLowerCase() === "completed"
+    ).length;
+  }, [allHistoryItems, initialAllItems, itemsList]);
+
+  const failedCount = useMemo(() => {
+    const listToCount = allHistoryItems.length > 0 ? allHistoryItems : (initialAllItems.length > 0 ? initialAllItems : itemsList);
+    return listToCount.filter(
+      (item) =>
+        item.activityStatus?.toLowerCase() === "failed" ||
+        item.activityStatus?.toLowerCase() === "error"
+    ).length;
+  }, [allHistoryItems, initialAllItems, itemsList]);
+
   const data = useMemo(() => {
     return itemsList.slice(0, auditPageSize);
   }, [itemsList, auditPageSize]);
@@ -103,30 +135,35 @@ export const useJobsAudit = ({
   // Sync debounced search term to URL
   useEffect(() => {
     if (debouncedSearchTerm !== auditSearch) {
+      setIsLoadingTable(true);
       updateUrlParams({ auditPage: 1, auditSearch: debouncedSearchTerm });
     }
   }, [debouncedSearchTerm, auditSearch, updateUrlParams]);
 
   const handleSearchChange = (val: string) => {
     setSearchTerm(val);
+    setIsLoadingTable(true);
   };
 
   const handlePageChange = (newPage: number) => {
+    setIsLoadingTable(true);
     updateUrlParams({ auditPage: newPage });
   };
 
   const handlePageSizeChange = (newSize: number) => {
+    setIsLoadingTable(true);
     updateUrlParams({ auditPage: 1, auditPageSize: newSize });
   };
 
   const handleUserChange = (user: string) => {
+    setIsLoadingTable(true);
     updateUrlParams({ auditPage: 1, auditUser: user });
   };
 
-  // Extract distinct users for user filter dropdown
+  // Fetch full update history (PageSize: 1000) for overall completed/failed stats and user filter list
   useEffect(() => {
     let isMounted = true;
-    const extractUsers = async () => {
+    const fetchAllHistory = async () => {
       const usersSet = new Set<string>();
 
       itemsList.forEach((item) => {
@@ -135,8 +172,16 @@ export const useJobsAudit = ({
       });
 
       try {
-        const response = await getUpdateHistoryFn({ PageSize: 1000 });
+        const response = await getUpdateHistoryFn({
+          PageSize: 1000,
+          DoneBy: auditUser !== "all" ? auditUser : undefined,
+          SearchTerm: debouncedSearchTerm || undefined,
+        });
+
         if (response.success && response.data?.items) {
+          if (isMounted) {
+            setAllHistoryItems(response.data.items);
+          }
           response.data.items.forEach((item: UpdateHistoryItem) => {
             const u = item.doneBy || item.username || item.createdBy || item.user;
             if (u && typeof u === "string") usersSet.add(u.trim());
@@ -152,11 +197,11 @@ export const useJobsAudit = ({
       }
     };
 
-    extractUsers();
+    fetchAllHistory();
     return () => {
       isMounted = false;
     };
-  }, [itemsList, getUpdateHistoryFn]);
+  }, [itemsList, auditUser, debouncedSearchTerm, getUpdateHistoryFn]);
 
   const userOptions = useMemo(() => {
     return [
@@ -165,16 +210,46 @@ export const useJobsAudit = ({
     ];
   }, [userOptionsState, t]);
 
+  const lastFetchRef = useRef<string>("");
+
   // Fetch modal details from server
   const fetchModalDetails = useCallback(
     async (activityId: string, page: number, size: number, search: string) => {
+      const cacheKey = `${activityId}_${page}_${size}_${search}`;
+      if (lastFetchRef.current === cacheKey) {
+        return;
+      }
+      lastFetchRef.current = cacheKey;
       setIsLoadingDetails(true);
       try {
         const response = await getUpdateHistoryDetailFn(activityId, page, size, search);
         if (response.success && response.data) {
-          setModalDetailsData(response.data.items || []);
+          const items = response.data.items || [];
+          setModalDetailsData(items);
           setModalTotalCount(response.data.totalCount || 0);
           setModalTotalPages(response.data.totalPages || 1);
+
+          if (items.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const first = items[0] as any;
+            setSelectedRow((prev) => ({
+              ...prev,
+              id: prev?.id ?? first.activityId ?? Number(activityId),
+              activityId: prev?.activityId ?? first.activityId ?? Number(activityId),
+              updateName: first.updateName || prev?.updateName || "",
+              doneBy: first.activityDoneBy || first.doneBy || prev?.doneBy || "",
+              createdDate: first.createdDate || first.startTime || prev?.createdDate || "",
+              ipAddress: first.ipAddress || prev?.ipAddress || "",
+              remarks: first.activityRemark || first.remarks || prev?.remarks || "",
+              activityStatus: first.activityStatus || prev?.activityStatus || "",
+              activityType: first.activityType || prev?.activityType || "",
+              records: first.records || response.data?.totalCount || prev?.records || 0,
+              startTime: first.startTime || prev?.startTime,
+              endTime: first.endTime || prev?.endTime,
+              duration: first.duration || prev?.duration,
+              activityRemark: first.activityRemark || prev?.activityRemark,
+            }));
+          }
         } else {
           setModalDetailsData([]);
           setModalTotalCount(0);
@@ -193,6 +268,7 @@ export const useJobsAudit = ({
 
   const handleViewClick = useCallback(
     (row: UpdateHistoryItem) => {
+      lastFetchRef.current = "";
       setSelectedRow(row);
       setIsModalOpen(true);
       setModalPage(1);
@@ -201,10 +277,9 @@ export const useJobsAudit = ({
       const targetId = row.id != null ? String(row.id) : String(row.activityId || "");
       if (targetId) {
         updateUrlParams({ activityId: targetId });
-        fetchModalDetails(targetId, 1, modalPageSize, "");
       }
     },
-    [updateUrlParams, fetchModalDetails, modalPageSize]
+    [updateUrlParams]
   );
 
   // Reset modal page to 1 on debounced search change
@@ -222,6 +297,8 @@ export const useJobsAudit = ({
         modalPageSize,
         debouncedModalSearchTerm
       );
+    } else if (!isModalOpen) {
+      lastFetchRef.current = "";
     }
   }, [
     isModalOpen,
@@ -235,17 +312,18 @@ export const useJobsAudit = ({
   // Initial SSR sync for id / activityId in URL search params
   useEffect(() => {
     const targetId = searchParams.get("id") || searchParams.get("activityId");
-    if (targetId && initialUpdateHistoryDetail) {
+    if (targetId && initialUpdateHistoryDetail && !isModalOpen) {
       const row = itemsList.find((item) => String(item.id) === targetId || String(item.activityId) === targetId);
-      if (row) {
+      if (row && (!selectedRow || (String(selectedRow.id) !== targetId && String(selectedRow.activityId) !== targetId))) {
         setSelectedRow(row);
         setIsModalOpen(true);
         setModalDetailsData(initialUpdateHistoryDetail.items || []);
         setModalTotalCount(initialUpdateHistoryDetail.totalCount || 0);
         setModalTotalPages(initialUpdateHistoryDetail.totalPages || 1);
+        lastFetchRef.current = `${targetId}_1_${modalPageSize}_`;
       }
     }
-  }, [searchParams, itemsList, initialUpdateHistoryDetail]);
+  }, [searchParams, itemsList, initialUpdateHistoryDetail, isModalOpen, selectedRow, modalPageSize]);
 
   const handleExportAudit = async (params: UpdateHistoryFilterParams) => {
     try {
@@ -356,16 +434,54 @@ export const useJobsAudit = ({
   };
 
   const handleModalExport = useCallback(async () => {
-    const targetId = selectedRow ? (selectedRow.id != null ? String(selectedRow.id) : String(selectedRow.activityId || "")) : "";
-    if (!targetId || !selectedRow) {
+    const targetActivityId =
+      searchParams.get("activityId") ||
+      searchParams.get("id") ||
+      (selectedRow ? String(selectedRow.activityId || selectedRow.id || "") : "");
+
+    if (!targetActivityId) {
       toast.error(t("messages.somethingWrong"));
       return;
     }
 
     try {
-      const fetchCount = modalTotalCount || 10000;
+      // Trigger API /CommonDetails/update-history/export-excel sending ONLY activityId
+      const result = await exportUpdateHistoryFn({
+        ActivityId: String(targetActivityId),
+      });
+
+      if (result.success && result.data) {
+        const byteCharacters = atob(result.data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const filenamePrefix = selectedRow?.updateCode || selectedRow?.activityId || targetActivityId;
+        a.download = `Update_Details_${filenamePrefix}_${new Date().toISOString().split("T")[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success(t("messages.excelDownloadSuccess"));
+        return;
+      }
+    } catch (_err) {
+      // Fallback below if server API endpoint is unavailable
+    }
+
+    // Fallback: Client side export if server binary action is unavailable
+    try {
+      const fetchCount = modalTotalCount > 0 ? modalTotalCount : 100000;
       const res = await getUpdateHistoryDetailFn(
-        targetId,
+        String(targetActivityId),
         1,
         fetchCount,
         debouncedModalSearchTerm
@@ -392,9 +508,9 @@ export const useJobsAudit = ({
       await exportToExcel({
         data: modalTableExportData,
         columns: excelColumns,
-        fileName: `Update_Details_${selectedRow.updateCode || selectedRow.activityId || selectedRow.id}_${new Date().toISOString().split("T")[0]}`,
-        reportTitle: `${t("jobsAudit.modal.updateDetailsPrefix")} (${selectedRow.updateCode || selectedRow.activityId || selectedRow.id})`,
-        reportSubtitle: `${t("jobsAudit.modal.updatedBy")}: ${selectedRow.doneBy || selectedRow.username || "-"} | ${t("jobsAudit.modal.date")}: ${selectedRow.createdDate || selectedRow.doneOn ? new Date((selectedRow.createdDate || selectedRow.doneOn) as string | number | Date).toLocaleString() : "-"}`,
+        fileName: `Update_Details_${targetActivityId}_${new Date().toISOString().split("T")[0]}`,
+        reportTitle: `${t("jobsAudit.modal.updateDetailsPrefix")} (${targetActivityId})`,
+        reportSubtitle: `${t("jobsAudit.modal.updatedBy")}: ${selectedRow?.doneBy || selectedRow?.username || "-"} | ${t("jobsAudit.modal.date")}: ${selectedRow?.createdDate || selectedRow?.doneOn ? new Date((selectedRow.createdDate || selectedRow.doneOn) as string | number | Date).toLocaleString() : "-"}`,
       });
 
       toast.success(t("messages.excelDownloadSuccess"));
@@ -402,7 +518,9 @@ export const useJobsAudit = ({
       toast.error(t("messages.somethingWrong"));
     }
   }, [
+    searchParams,
     selectedRow,
+    exportUpdateHistoryFn,
     getUpdateHistoryDetailFn,
     modalTotalCount,
     debouncedModalSearchTerm,
@@ -432,6 +550,8 @@ export const useJobsAudit = ({
     handleUserChange,
     userOptions,
     totalCount,
+    completedCount,
+    failedCount,
     data,
     itemsList,
     selectedRow,
@@ -448,6 +568,7 @@ export const useJobsAudit = ({
     modalSearchTerm,
     setModalSearchTerm,
     isLoadingDetails,
+    isLoadingTable,
     userOptionsState,
     isExporting,
     isModalExporting,

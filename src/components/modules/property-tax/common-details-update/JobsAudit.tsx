@@ -2,6 +2,7 @@
 import { useMemo } from "react";
 import { MasterTable, Select, SearchInput, Badge, TruncatedText } from "@/components/common";
 import { Modal } from "@/components/common/Modal";
+import { DashboardCard } from "@/components/common/DashboardCard";
 import { getJobsAuditColumns } from "./JobsAuditConstants";
 import { UpdateHistoryItem, CommonDetailsUpdateActions } from "@/types/common-details-update/common-details-update.types";
 import { PagedResponse } from "@/types/common.types";
@@ -12,15 +13,17 @@ import { useJobsAudit } from "@/hooks/commonDetailsUpdate/useJobsAudit";
 
 interface JobsAuditProps {
   initialData?: PagedResponse<UpdateHistoryItem> | null;
+  initialAllData?: PagedResponse<UpdateHistoryItem> | UpdateHistoryItem[] | null;
   initialUpdateHistoryDetail?: PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem> | null;
   actions?: Partial<CommonDetailsUpdateActions>;
 }
 
-export const JobsAudit = ({ initialData, initialUpdateHistoryDetail, actions }: JobsAuditProps) => {
+export const JobsAudit = ({ initialData, initialAllData, initialUpdateHistoryDetail, actions }: JobsAuditProps) => {
   const t = useTranslations("commonDetailsUpdate");
 
   const auditState = useJobsAudit({
     initialData,
+    initialAllData,
     initialUpdateHistoryDetail,
     actions,
     t,
@@ -37,6 +40,8 @@ export const JobsAudit = ({ initialData, initialUpdateHistoryDetail, actions }: 
     handlePageSizeChange,
     userOptions,
     totalCount,
+    completedCount,
+    failedCount,
     data,
     selectedRow,
     isModalOpen,
@@ -48,6 +53,7 @@ export const JobsAudit = ({ initialData, initialUpdateHistoryDetail, actions }: 
     modalSearchTerm,
     setModalSearchTerm,
     isLoadingDetails,
+    isLoadingTable,
     isExporting,
     isModalExporting,
     handleExport,
@@ -88,12 +94,22 @@ export const JobsAudit = ({ initialData, initialUpdateHistoryDetail, actions }: 
     }
   ], [t]);
 
+  const modalFieldCount = useMemo(() => {
+    if (!modalTableData || modalTableData.length === 0) return 0;
+    const uniqueFields = new Set(
+      modalTableData
+        .map((item) => item.field)
+        .filter((f) => f && f !== "-" && f !== "Value")
+    );
+    return uniqueFields.size || (modalTableData.length > 0 ? 1 : 0);
+  }, [modalTableData]);
+
   return (
     <div className="flex flex-col space-y-2 h-full">
       {/* Top Section */}
-      <div className="border border-blue-200 rounded-xl bg-white overflow-hidden">
+      <div className="border border-blue-200 rounded-xl bg-white overflow-hidden p-4">
         {/* Header Row */}
-        <div className="bg-[#F8FAFF] px-4 py-3 border-b border-blue-200 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-sm font-semibold text-[#1E3A8A]">{t("jobsAudit.title")}</h3>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -109,13 +125,29 @@ export const JobsAudit = ({ initialData, initialUpdateHistoryDetail, actions }: 
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="border border-blue-200 rounded-xl bg-white flex flex-col space-y-0 overflow-hidden">
-        {/* Filters Row */}
-        <div className="bg-[#F8FAFF] px-4 py-3 border-b border-blue-200">
-          <div className="flex flex-col lg:flex-row gap-4 justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="w-full sm:w-48">
+      {/* Main Table Section */}
+      <div className="rounded-xl overflow-hidden flex flex-col">
+        <MasterTable
+          columns={columns}
+          data={data}
+          loading={isLoadingTable || !initialData}
+          containerClassName="w-full text-sm"
+          tableClassName="min-w-[1200px]"
+          maxBodyHeightClassName="h-[360px]"
+          pageNumber={auditPage}
+          pageSize={auditPageSize}
+          totalCount={totalCount}
+          totalPages={initialData?.totalPages || 1}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          paginationConfig={{
+            enabled: true,
+            showPageSizeSelector: true
+          }}
+          headerExtra={
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-3 w-full py-1 min-w-0">
+              {/* Filter */}
+              <div className="w-full sm:w-40 flex-shrink-0">
                 <Select 
                   label={t("jobsAudit.filters.user")}
                   options={userOptions} 
@@ -124,42 +156,41 @@ export const JobsAudit = ({ initialData, initialUpdateHistoryDetail, actions }: 
                   className="w-full"
                 />
               </div>
-            </div>
-            
-            <div className="w-full lg:w-72 self-end">
-              <SearchInput
-                placeholder={t("jobsAudit.filters.searchPlaceholder")}
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="w-full"
-              />
-            </div>
-          </div>
-        </div>
 
-        {/* Data Table */}
-        <div className="overflow-auto bg-slate-50 p-2">
-          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden flex flex-col">
-            <MasterTable
-              columns={columns}
-              data={data}
-              loading={!initialData && auditPage === 1}
-              containerClassName="w-full text-sm"
-              tableClassName="min-w-[1200px]"
-              maxBodyHeightClassName="h-[300px]"
-              pageNumber={auditPage}
-              pageSize={auditPageSize}
-              totalCount={totalCount}
-              totalPages={initialData?.totalPages || 1}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              paginationConfig={{
-                enabled: true,
-                showPageSizeSelector: true
-              }}
-            />
-          </div>
-        </div>
+              {/* Status Cards (Center) */}
+              <div className="flex flex-wrap items-center justify-center gap-2 flex-1 min-w-0">
+                <DashboardCard
+                  label={t("jobsAudit.stats.totalActivity")}
+                  value={totalCount}
+                  valueColor="text-[#0F5FC2]"
+                  className="px-3 py-1 min-w-[120px] flex-1 max-w-[200px]"
+                />
+                <DashboardCard
+                  label={t("jobsAudit.stats.completed")}
+                  value={completedCount}
+                  valueColor="text-emerald-600"
+                  className="px-3 py-1 min-w-[120px] flex-1 max-w-[200px]"
+                />
+                <DashboardCard
+                  label={t("jobsAudit.stats.failed")}
+                  value={failedCount}
+                  valueColor="text-amber-600"
+                  className="px-3 py-1 min-w-[120px] flex-1 max-w-[200px]"
+                />
+              </div>
+
+              {/* SearchBar */}
+              <div className="w-full sm:w-80 lg:w-96 xl:w-[380px] flex-shrink-0 min-w-0">
+                <SearchInput
+                  placeholder={t("jobsAudit.filters.searchPlaceholder")}
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  className="w-full !mb-0"
+                />
+              </div>
+            </div>
+          }
+        />
       </div>
 
       <Modal
@@ -192,6 +223,23 @@ export const JobsAudit = ({ initialData, initialUpdateHistoryDetail, actions }: 
                 <Badge variant="warning" className="font-semibold">
                   {t("jobsAudit.modal.ipDevice")}: {selectedRow.ipAddress || "-"}
                 </Badge>
+                {selectedRow.activityType && (
+                  <Badge variant="secondary" className="font-semibold bg-slate-100 text-slate-700">
+                    {t("jobsAudit.columns.activityType") || "Type"}: {selectedRow.activityType}
+                  </Badge>
+                )}
+                {selectedRow.activityStatus && (
+                  <Badge
+                    variant={
+                      selectedRow.activityStatus.toLowerCase() === "success" || selectedRow.activityStatus.toLowerCase() === "completed"
+                        ? "success"
+                        : "destructive"
+                    }
+                    className="font-semibold"
+                  >
+                    {selectedRow.activityStatus}
+                  </Badge>
+                )}
               </div>
               <div className="text-sm bg-slate-50 border border-slate-200 rounded-md px-3 py-2">
                 <div className="text-slate-500 font-medium text-xs mb-1">{t("jobsAudit.modal.remarks")}</div>
@@ -223,8 +271,9 @@ export const JobsAudit = ({ initialData, initialUpdateHistoryDetail, actions }: 
                 showPageSizeSelector: true
               }}
               headerExtra={
-                <div className="flex flex-wrap items-center justify-between gap-3 w-full">
-                  <div className="w-full sm:w-64">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full py-1 min-w-0">
+                  {/* Search Bar */}
+                  <div className="w-full sm:w-64 flex-shrink-0">
                     <SearchInput
                       placeholder={t("jobsAudit.modal.searchPlaceholder")}
                       value={modalSearchTerm}
@@ -232,12 +281,32 @@ export const JobsAudit = ({ initialData, initialUpdateHistoryDetail, actions }: 
                       className="w-full !mb-0"
                     />
                   </div>
-                  <DownloadButton
-                    onClick={onModalExportClick}
-                    isLoading={isModalExporting}
-                    label={t("jobsAudit.modal.exportExcel")}
-                    className="flex items-center gap-2 px-3 py-1.5 border border-[#0F5FC2] text-[#0F5FC2] font-semibold rounded-lg hover:bg-blue-50 transition-colors whitespace-nowrap text-xs disabled:opacity-50"
-                  />
+
+                  {/* Status Cards inside Modal Header */}
+                  <div className="flex flex-wrap items-center justify-center gap-2 flex-1 min-w-0">
+                    <DashboardCard
+                      label={t("jobsAudit.modal.totalProperties")}
+                      value={modalTotalCount || selectedRow?.records || 0}
+                      valueColor="text-[#0F5FC2]"
+                      className="px-3 py-1 min-w-[120px] flex-1 max-w-[180px]"
+                    />
+                    <DashboardCard
+                      label={t("jobsAudit.modal.fieldCount")}
+                      value={modalFieldCount}
+                      valueColor="text-emerald-600"
+                      className="px-3 py-1 min-w-[120px] flex-1 max-w-[180px]"
+                    />
+                  </div>
+
+                  {/* Export Button */}
+                  <div className="flex-shrink-0">
+                    <DownloadButton
+                      onClick={onModalExportClick}
+                      isLoading={isModalExporting}
+                      label={t("jobsAudit.modal.exportExcel")}
+                      className="flex items-center gap-2 px-3 py-1.5 border border-[#0F5FC2] text-[#0F5FC2] font-semibold rounded-lg hover:bg-blue-50 transition-colors whitespace-nowrap text-xs disabled:opacity-50"
+                    />
+                  </div>
                 </div>
               }
             />

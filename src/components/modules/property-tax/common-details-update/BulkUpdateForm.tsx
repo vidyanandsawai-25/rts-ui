@@ -22,6 +22,7 @@ interface BulkUpdateFormProps {
   loadingConfigs: boolean;
   formValues: Record<string, string | number | boolean>;
   formErrors?: Record<string, string>;
+  formWarnings?: Record<string, string>;
   formSubmitted: boolean;
   saving: boolean;
   selectedCount: number;
@@ -46,6 +47,7 @@ export const BulkUpdateForm = ({
   loadingConfigs,
   formValues,
   formErrors = {},
+  formWarnings = {},
   formSubmitted,
   saving,
   selectedCount,
@@ -126,6 +128,7 @@ export const BulkUpdateForm = ({
                   onChange={onFieldChange}
                   submitted={formSubmitted}
                   error={formErrors[overrideConfig.fieldName]}
+                  warning={formWarnings[overrideConfig.fieldName]}
                   dropdownOptions={options}
                   isLoading={loadingMap[overrideConfig.fieldName]}
                   hasMore={hasMoreMap[overrideConfig.fieldName]}
@@ -156,7 +159,6 @@ export const BulkUpdateForm = ({
           </div>
         )}
       </CardContent>
-
       {/* Validation Status & Actions */}
       {selectedMenuItem && !loadingConfigs && fieldConfigs.length > 0 && (
         <div className="border-t border-blue-200 bg-[#F8FAFF] px-4 py-3 rounded-b-xl shrink-0 space-y-3">

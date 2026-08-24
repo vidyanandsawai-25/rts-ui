@@ -168,6 +168,20 @@ export const useFieldRegistryForm = (
       }
     }
 
+    // Client-side pre-validation for duplicate Group Name
+    if (_fields && _fields.length > 0 && updateCode) {
+      const normInput = updateCode.trim().toLowerCase();
+      const isDuplicate = _fields.some(
+        (f) =>
+          (f.updateName && f.updateName.trim().toLowerCase() === normInput) ||
+          (f.updateCode && f.updateCode.trim().toLowerCase() === normInput)
+      );
+      if (isDuplicate) {
+        toast.error(t("messages.groupAlreadyExists"));
+        return;
+      }
+    }
+
     setSubmitting(true);
     
     // We need to map fieldName string arrays back to their numeric IDs in sourceTableFields

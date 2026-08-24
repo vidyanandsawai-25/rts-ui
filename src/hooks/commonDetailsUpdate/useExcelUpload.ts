@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
@@ -16,23 +14,12 @@ import {
 export function normalizeValidationPayload(raw: unknown): ExcelValidationResponse["items"] | null {
   if (!raw) return null;
 
-  let current = raw as Record<string, unknown>;
-
-  if (typeof current === "object" && current !== null) {
-    if ("items" in current && current.items) {
-      current = current.items as Record<string, unknown>;
-    } else if ("data" in current && current.data && typeof current.data === "object") {
-      current = current.data as Record<string, unknown>;
-    } else if ("result" in current && current.result && typeof current.result === "object") {
-      current = current.result as Record<string, unknown>;
-    }
-  }
-
-  if (Array.isArray(current)) {
-    const rows = current as Record<string, unknown>[];
+  // Direct array
+  if (Array.isArray(raw)) {
+    const rows = raw as Record<string, unknown>[];
     const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
     const flaggedRowCount = rows.filter((r: Record<string, unknown>) =>
-      Boolean(r?.ValidationRemark || r?.validationRemark || r?.remark || r?.Remark || r?.isFlagged || r?.status === "Failed" || r?.status === "Rejected")
+      Boolean(r?.ValidationRemark || r?.validationRemark || r?.remark || r?.Remark || r?.isFlagged || r?.status === "Failed" || r?.status === "Rejected" || r?.isValid === false)
     ).length;
 
     return {
@@ -43,45 +30,121 @@ export function normalizeValidationPayload(raw: unknown): ExcelValidationRespons
     };
   }
 
-  if (current && typeof current === "object") {
-    let rows: Record<string, unknown>[] = [];
-    if (Array.isArray(current.rows)) {
-      rows = current.rows as Record<string, unknown>[];
-    } else if (Array.isArray(current.items)) {
-      rows = current.items as Record<string, unknown>[];
-    } else if (Array.isArray(current.records)) {
-      rows = current.records as Record<string, unknown>[];
-    } else if (Array.isArray(current.data)) {
-      rows = current.data as Record<string, unknown>[];
+  if (typeof raw === "object" && raw !== null) {
+    const root = raw as Record<string, unknown>;
+    const searchTargets: Record<string, unknown>[] = [root];
+
+    if (root.items && typeof root.items === "object" && !Array.isArray(root.items)) {
+      searchTargets.push(root.items as Record<string, unknown>);
+    }
+    if (root.data && typeof root.data === "object" && !Array.isArray(root.data)) {
+      searchTargets.push(root.data as Record<string, unknown>);
+    }
+    if (root.result && typeof root.result === "object" && !Array.isArray(root.result)) {
+      searchTargets.push(root.result as Record<string, unknown>);
     }
 
-    const totalRows = typeof current.totalRows === "number"
-      ? current.totalRows
-      : (typeof current.totalCount === "number"
-        ? current.totalCount
-        : (typeof current.totalRequested === "number"
-          ? current.totalRequested
-          : (typeof current.successCount === "number"
-            ? current.successCount + (typeof current.failedCount === "number" ? current.failedCount : 0)
-            : rows.length)));
+    let rows: Record<string, unknown>[] = [];
+    const candidateKeys = [
+      "rows",
+      "items",
+      "records",
+      "data",
+      "rejectedItems",
+      "invalidItems",
+      "rejectedRows",
+      "invalidRows",
+      "failedRows",
+      "rejected",
+      "invalid",
+      "failed",
+      "list",
+    ];
 
-    const flaggedRowCount = typeof current.flaggedRowCount === "number"
-      ? current.flaggedRowCount
-      : (typeof current.failedCount === "number"
-        ? current.failedCount
-        : rows.filter((r: Record<string, unknown>) =>
-            Boolean(r?.ValidationRemark || r?.validationRemark || r?.remark || r?.Remark || r?.isFlagged || r?.status === "Failed" || r?.status === "Rejected")
-          ).length);
+    for (const target of searchTargets) {
+      for (const key of candidateKeys) {
+        if (Array.isArray(target[key]) && (target[key] as unknown[]).length > 0) {
+          rows = target[key] as Record<string, unknown>[];
+          break;
+        }
+      }
+      if (rows.length > 0) break;
+    }
+
+    // Fallback if rows is empty
+    if (rows.length === 0) {
+      if (Array.isArray(root.rows)) rows = root.rows as Record<string, unknown>[];
+      else if (Array.isArray(root.items)) rows = root.items as Record<string, unknown>[];
+      else if (Array.isArray(root.records)) rows = root.records as Record<string, unknown>[];
+      else if (Array.isArray(root.data)) rows = root.data as Record<string, unknown>[];
+    }
+
+    let totalRows = rows.length;
+    for (const target of searchTargets) {
+      const num =
+        typeof target.totalRows === "number"
+          ? target.totalRows
+          : typeof target.totalCount === "number"
+          ? target.totalCount
+          : typeof target.totalRequested === "number"
+          ? target.totalRequested
+          : typeof target.total === "number"
+          ? target.total
+          : null;
+
+      if (num !== null && num > 0) {
+        totalRows = num;
+        break;
+      }
+    }
+
+    let flaggedRowCount = rows.filter((r: Record<string, unknown>) =>
+      Boolean(
+        r?.ValidationRemark ||
+          r?.validationRemark ||
+          r?.remark ||
+          r?.Remark ||
+          r?.isFlagged ||
+          r?.status === "Failed" ||
+          r?.status === "Rejected" ||
+          r?.isValid === false
+      )
+    ).length;
+
+    for (const target of searchTargets) {
+      const num =
+        typeof target.flaggedRowCount === "number"
+          ? target.flaggedRowCount
+          : typeof target.failedCount === "number"
+          ? target.failedCount
+          : typeof target.rejectedCount === "number"
+          ? target.rejectedCount
+          : typeof target.invalidCount === "number"
+          ? target.invalidCount
+          : null;
+
+      if (num !== null && num >= 0) {
+        flaggedRowCount = Math.max(flaggedRowCount, num);
+        break;
+      }
+    }
+
+    let columns: string[] = [];
+    for (const target of searchTargets) {
+      if (Array.isArray(target.columns) && target.columns.length > 0) {
+        columns = target.columns as string[];
+        break;
+      }
+    }
+    if (columns.length === 0 && rows.length > 0) {
+      columns = Object.keys(rows[0]);
+    }
 
     if (rows.length > 0 || totalRows > 0) {
-      const columns = Array.isArray(current.columns) && current.columns.length > 0
-        ? (current.columns as string[])
-        : (rows.length > 0 ? Object.keys(rows[0]) : []);
-
       return {
         columns,
         rows,
-        totalRows,
+        totalRows: Math.max(totalRows, rows.length),
         flaggedRowCount,
       };
     }
@@ -263,13 +326,26 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
       }
 
       if (valRes.success) {
+        const isAllRejected =
+          Boolean(currentValData) &&
+          (currentValData?.totalRows || 0) > 0 &&
+          (currentValData?.flaggedRowCount || 0) === currentValData?.totalRows;
+
+        if (isAllRejected) {
+          toast.error(t("excelUpload.validations.dataRejectedMsg"), { id: toastId });
+          return;
+        }
+
         toast.success(t("excelUpload.validations.excelValidatedMsg"), { id: toastId });
 
         // Step 2: Import Excel
         const impRes = await importExcelFn(formData);
+        let finalValData = currentValData;
+
         if (impRes.data) {
           const normalizedImp = normalizeValidationPayload(impRes.data);
           if (normalizedImp) {
+            finalValData = normalizedImp;
             setValidationData((prev) => {
               const base = prev || currentValData;
               const hasNewRows = Array.isArray(normalizedImp.rows) && normalizedImp.rows.length > 0;
@@ -283,10 +359,19 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
           }
         }
 
-        if (impRes.success) {
+        const isImpAllRejected =
+          Boolean(finalValData) &&
+          (finalValData?.totalRows || 0) > 0 &&
+          (finalValData?.flaggedRowCount || 0) === finalValData?.totalRows;
+
+        if (isImpAllRejected) {
+          toast.error(t("excelUpload.validations.dataRejectedMsg"));
+        } else if (finalValData && (finalValData.flaggedRowCount || 0) > 0) {
+          toast.warning(t("excelUpload.validations.dataRejectedMsg"));
+        } else if (impRes.success) {
           toast.success(t("excelUpload.validations.bulkUpdateSuccessMsg"));
         } else {
-          toast.error(("error" in impRes ? impRes.error : "") || t("excelUpload.validations.bulkUpdateFailedMsg"));
+          toast.error(("error" in impRes ? impRes.error : "") || t("excelUpload.validations.bulkUploadFailedMsg"));
         }
       } else {
         const rawErr = ("error" in valRes ? valRes.error : "") || "";
