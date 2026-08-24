@@ -23,12 +23,13 @@ import { redirectSessionExpiredOnClient } from '@/lib/utils/session-unauthorized
 /** Max delay for a single `setTimeout` (ms). */
 const MAX_TIMEOUT_MS = 2_147_483_647;
 
-function isLoginPath(pathname: string): boolean {
+function isExemptPath(pathname: string): boolean {
+  if (!pathname) return true;
   const segments = pathname.split('/').filter(Boolean);
   const first = segments[0];
   const hasLocale = (locales as readonly string[]).includes(first);
   const routeSegment = hasLocale ? segments[1] : first;
-  return routeSegment === 'login';
+  return !routeSegment || routeSegment === 'login' || routeSegment === 'service';
 }
 
 function hasLoggedInFlag(): boolean {
@@ -36,7 +37,7 @@ function hasLoggedInFlag(): boolean {
 }
 
 /**
- * Headless controller monitoring session expiration.
+ * Headless controller monitoring session expiration for administrative portals.
  * Dispatches 'ntis:session-warning-tick' custom event with warning duration.
  * Redirects to login when session expires.
  */
@@ -44,6 +45,10 @@ export function SessionTimeoutGuard() {
   const pathname = usePathname();
   const { locale: localeParam } = useParams();
   const locale = typeof localeParam === 'string' ? localeParam : 'en';
+
+  if (!pathname || isExemptPath(pathname)) {
+    return null;
+  }
 
   const [visible, setVisible] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(SESSION_TIMEOUT_REDIRECT_SECONDS);
@@ -155,7 +160,7 @@ export function SessionTimeoutGuard() {
   }, [locale, startCountdown]);
 
   useEffect(() => {
-    if (!pathname || isLoginPath(pathname)) return;
+    if (!pathname || isExemptPath(pathname)) return;
 
     logoutStartedRef.current = false;
     redirectingRef.current = false;
@@ -235,7 +240,7 @@ export function SessionTimeoutGuard() {
 
     const verifyTabAndAuthState = () => {
       if (redirectingRef.current) return;
-      if (!pathname || isLoginPath(pathname)) return;
+      if (!pathname || isExemptPath(pathname)) return;
 
       const loggedIn = hasLoggedInFlag();
       const isNewLogin = window.location.search.includes('loginSuccess=1');
@@ -305,7 +310,7 @@ export function SessionTimeoutGuard() {
   // Inactivity detection: redirect to login after 10 minutes of no user interaction
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!pathname || isLoginPath(pathname) || !hasLoggedInFlag()) return;
+    if (!pathname || isExemptPath(pathname) || !hasLoggedInFlag()) return;
 
     let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
     let lastReset = Date.now();
