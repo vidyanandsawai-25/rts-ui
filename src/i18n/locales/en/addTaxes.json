@@ -238,6 +238,7 @@
     "scheduledTimeInPast": "Scheduled time must be in the future.",
     "fillRequiredFields": "Please fill all the required fields before calculating.",
     "executionStarted": "Execution started successfully. Job Code: {jobId}",
+    "jobScheduled": "Job scheduled successfully. Job Code: {jobId}",
     "executionCompleted": "Execution completed successfully. Job Code: {jobId}",
     "failedExecute": "Failed to execute operation.",
     "errorExecution": "Error occurred during execution.",

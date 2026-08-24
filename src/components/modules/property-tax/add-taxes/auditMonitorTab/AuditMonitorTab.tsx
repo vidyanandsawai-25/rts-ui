@@ -1,239 +1,54 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { logger } from '@/lib/utils/logger';
-
 import { Calendar } from 'lucide-react';
-import { SearchButton, ClearButton, ViewButton } from '@/components/common/ActionButtons';
-
+import { SearchButton, RefreshButton, ViewButton } from '@/components/common/ActionButtons';
 import { MasterTable } from '@/components/common/MasterTable';
 import { Select } from '@/components/common/select';
 import { SearchSelect } from '@/components/common/SearchSelect';
-
 import { getAuditColumns, JobAuditItem } from './AuditMonitorColumns';
 import { JobDetailModal } from './JobDetailModal';
-import type { JobPropertyItem } from '@/types/addTaxes.types';
-import { useTranslations } from 'next-intl';
-
-import { useEffect } from 'react';
+import { useAuditMonitor, AuditMonitorActions } from '@/hooks/add-taxes/useAuditMonitor';
 
 type JobAuditRow = JobAuditItem & Record<string, unknown>;
 
 interface AuditMonitorTabProps {
   financeYearId?: string;
-  actions: {
-    getAuditListAction: (payload: Record<string, string | number>) => Promise<{ items?: JobAuditItem[]; totalCount?: number; totalPages?: number } | null>;
-    getAuditDetailAction: (jobId: string) => Promise<JobAuditItem | null>;
-    getJobPropertiesAction: (jobId: string, pageNumber: number, pageSize: number, status?: string) => Promise<{ items?: JobPropertyItem[] } | JobPropertyItem[] | null>;
-  };
+  refreshKey?: number;
+  actions: AuditMonitorActions;
 }
 
-export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps) {
-  const t = useTranslations('addTaxes');
-
-  // Filter input states
-  const [selectedJobCode, setSelectedJobCode] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [selectedDate, setSelectedDate] = useState<string>('');
-
-  // Applied filter query states
-  const [appliedJobCode, setAppliedJobCode] = useState<string>('');
-  const [appliedStatus, setAppliedStatus] = useState<string>('');
-  const [appliedDate, setAppliedDate] = useState<string>('');
-
-  // Data states
-  const [allJobCodes, setAllJobCodes] = useState<string[]>([]);
-  const [filteredJobs, setFilteredJobs] = useState<JobAuditItem[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Overall dynamic stats
-  const [stats, setStats] = useState({ total: 0, completed: 0, running: 0, failed: 0 });
-
-  // Modal detail states
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [selectedJobDetails, setSelectedJobDetails] = useState<JobAuditItem | null>(null);
-  const [detailProperties, setDetailProperties] = useState<JobPropertyItem[]>([]);
-  const [detailTotalCount, setDetailTotalCount] = useState(0);
-  const [detailPage, setDetailPage] = useState(1);
-  const [detailPageSize, setDetailPageSize] = useState(10);
-  const [isDetailLoading, setIsDetailLoading] = useState(false);
-
-  // Fetch initial suggestion list and statistics ONCE on mount / financeYearId change
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const query: Record<string, string | number> = { PageSize: 1000 };
-        if (financeYearId) {
-          query.FinanceYearId = financeYearId;
-        }
-        const res = await actions.getAuditListAction(query);
-        if (res?.items) {
-          const items = res.items;
-          const codes = items.map((j) => j.jobId).filter(Boolean);
-          setAllJobCodes(codes);
-
-          const computedStats = {
-            total: typeof res.totalCount === 'number' ? res.totalCount : items.length,
-            completed: items.filter((j) => ['completed', 'success'].includes(j.status?.toLowerCase())).length,
-            running: items.filter((j) => ['running', 'inprogress', 'pending', 'started'].includes(j.status?.toLowerCase())).length,
-            failed: items.filter((j) => ['failed', 'error'].includes(j.status?.toLowerCase())).length,
-          };
-          setStats(computedStats);
-        } else {
-          setAllJobCodes([]);
-          setStats({ total: 0, completed: 0, running: 0, failed: 0 });
-        }
-      } catch (err) {
-        logger.error('Failed to fetch initial audit data client-side', { error: err as Error });
-        setAllJobCodes([]);
-        setStats({ total: 0, completed: 0, running: 0, failed: 0 });
-      }
-    };
-    fetchInitialData();
-  }, [financeYearId, actions]);
-
-  // Fetch paginated jobs based on filters, pagination, and financeYearId
-  useEffect(() => {
-    const fetchJobs = async () => {
-      setIsLoading(true);
-      try {
-        const query: Record<string, string | number> = {
-          PageNumber: pageNumber,
-          PageSize: pageSize,
-        };
-        if (financeYearId) query.FinanceYearId = financeYearId;
-        if (appliedJobCode) query.JobCode = appliedJobCode;
-        if (appliedStatus) query.Status = appliedStatus;
-        if (appliedDate) query.StartTime = appliedDate;
-
-        const res = await actions.getAuditListAction(query);
-        if (res) {
-          const currentTotal = typeof res.totalCount === 'number' ? res.totalCount : (res.items?.length || 0);
-          setFilteredJobs(res.items || []);
-          setTotalCount(currentTotal);
-          setTotalPages(res.totalPages || 0);
-
-          if (!appliedJobCode && !appliedStatus && !appliedDate) {
-            setStats((prev) => ({
-              ...prev,
-              total: currentTotal,
-            }));
-          }
-        } else {
-          setFilteredJobs([]);
-          setTotalCount(0);
-          setTotalPages(0);
-        }
-      } catch (err) {
-        logger.error('Failed to fetch filtered audit page client-side', { error: err as Error });
-        setFilteredJobs([]);
-        setTotalCount(0);
-        setTotalPages(0);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchJobs();
-  }, [appliedJobCode, appliedStatus, appliedDate, pageNumber, pageSize, financeYearId, actions]);
-
-  // Load Modal Details on demand
-  useEffect(() => {
-    if (!selectedJobId) {
-      const timer = setTimeout(() => {
-        setSelectedJobDetails(null);
-        setDetailProperties([]);
-        setDetailTotalCount(0);
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-
-    let cancelled = false;
-    const fetchDetails = async () => {
-      setIsDetailLoading(true);
-      try {
-        const numericJobId = selectedJobId.split('-').pop() || '';
-        const [detailsRes, propertiesRes] = await Promise.all([
-          actions.getAuditDetailAction(numericJobId),
-          actions.getJobPropertiesAction(numericJobId, detailPage, detailPageSize)
-        ]);
-
-        if (cancelled) return;
-
-        setSelectedJobDetails(detailsRes);
-
-        let properties: JobPropertyItem[] = [];
-        let total = 0;
-        const pRes = propertiesRes as Record<string, unknown> | null;
-        const dRes = detailsRes as Record<string, unknown> | null;
-
-        if (pRes) {
-          if (Array.isArray(pRes)) {
-            properties = pRes as JobPropertyItem[];
-            total = pRes.length;
-          } else {
-            properties = (pRes.items as JobPropertyItem[]) || [];
-            total = typeof pRes.totalCount === 'number'
-              ? (pRes.totalCount as number)
-              : (properties.length || 0);
-          }
-        }
-
-        const summaryObj = dRes?.summary as Record<string, unknown> | undefined;
-        const summaryTotal = (summaryObj?.totalSelected as number) || (summaryObj?.TotalSelected as number);
-        if (summaryTotal && summaryTotal > total) {
-          total = summaryTotal;
-        }
-
-        setDetailProperties(properties);
-        setDetailTotalCount(total);
-      } catch (err) {
-        logger.error('Failed to fetch job details client-side', { error: err as Error });
-      } finally {
-        if (!cancelled) {
-          setIsDetailLoading(false);
-        }
-      }
-    };
-
-    const timer = setTimeout(() => {
-      void fetchDetails();
-    }, 0);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [selectedJobId, detailPage, detailPageSize, actions]);
-
-  const jobOptions = useMemo(() => {
-    return [{ value: '', label: t('audit.filters.allJobs') }, ...allJobCodes.map((code) => ({ value: code, label: code }))];
-  }, [allJobCodes, t]);
-
-  const handleApplyFilter = () => {
-    setAppliedJobCode(selectedJobCode);
-    setAppliedStatus(selectedStatus);
-    setAppliedDate(selectedDate);
-    setPageNumber(1);
-  };
-
-  const handleResetFilters = () => {
-    setSelectedJobCode('');
-    setSelectedStatus('');
-    setSelectedDate('');
-    setAppliedJobCode('');
-    setAppliedStatus('');
-    setAppliedDate('');
-    setPageNumber(1);
-  };
-
-  const handleViewJobDetails = (job: JobAuditItem) => {
-    setSelectedJobId(job.jobId);
-    setDetailPage(1);
-  };
+export function AuditMonitorTab({ financeYearId, refreshKey, actions }: AuditMonitorTabProps) {
+  const {
+    t,
+    selectedJobCode,
+    setSelectedJobCode,
+    selectedStatus,
+    setSelectedStatus,
+    selectedDate,
+    setSelectedDate,
+    jobOptions,
+    stats,
+    filteredJobs,
+    pageNumber,
+    pageSize,
+    totalCount,
+    totalPages,
+    setPageNumber,
+    setPageSize,
+    isLoading,
+    handleApplyFilter,
+    handleResetFilters,
+    handleViewJobDetails,
+    selectedJobDetails,
+    setSelectedJobId,
+    detailProperties,
+    detailTotalCount,
+    detailPage,
+    detailPageSize,
+    isDetailLoading,
+    setDetailPage,
+    setDetailPageSize,
+  } = useAuditMonitor({ financeYearId, refreshKey, actions });
 
   return (
     <div className="flex flex-col gap-6">
@@ -304,7 +119,7 @@ export function AuditMonitorTab({ financeYearId, actions }: AuditMonitorTabProps
 
             <div className="flex gap-2 w-full lg:w-auto items-end">
               <SearchButton size='sm' label={t('audit.buttons.applyFilter')} onClick={handleApplyFilter} className="flex-1 lg:flex-none" />
-              <ClearButton size='sm' label={t('audit.buttons.resetFilters')} onClick={handleResetFilters} className="flex-1 lg:flex-none" />
+              <RefreshButton size='sm' label={t('audit.buttons.resetFilters', { fallback: 'Refresh' })} onClick={handleResetFilters} className="flex-1 lg:flex-none" />
             </div>
           </div>
         </div>

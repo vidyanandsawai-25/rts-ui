@@ -10,7 +10,7 @@ import { DashboardCard } from '@/components/common/DashboardCard';
 import { CheckCircle, FileText, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/utils/logger';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -125,7 +125,13 @@ export default function AddTaxesConsole({
   const searchParams = useSearchParams();
 
   const [activeJob, setActiveJob] = useState<{ jobId: string; total: number; scheduledTime?: string } | null>(null);
+  const [runningJobsCount, setRunningJobsCount] = useState<number | null>(null);
   const [showProgress, setShowProgress] = useState(false);
+  const [auditRefreshKey, setAuditRefreshKey] = useState(0);
+
+  const triggerAuditRefresh = useCallback(() => {
+    setAuditRefreshKey((prev) => prev + 1);
+  }, []);
 
   const [currentTab, setCurrentTab] = useState(searchParams.get('tab') || 'manual');
 
@@ -186,9 +192,16 @@ export default function AddTaxesConsole({
   useEffect(() => {
     const checkActiveJobs = async () => {
       try {
-        const res = await actionsProp.getAuditListAction({ PageSize: 50 });
+        const query: Record<string, string | number> = { PageSize: 100 };
+        if (financeYearId) query.FinanceYearId = financeYearId;
+        const res = await actionsProp.getAuditListAction(query);
         if (res?.items) {
-          const inProgressJob = res.items.find((j: any) =>
+          const activeJobs = res.items.filter((j: any) =>
+            ['inprogress', 'running', 'pending', 'started', 'scheduled'].includes(j.status?.toLowerCase())
+          );
+          setRunningJobsCount(activeJobs.length);
+
+          const inProgressJob = activeJobs.find((j: any) =>
             ['inprogress', 'running', 'pending', 'started'].includes(j.status?.toLowerCase())
           );
           if (inProgressJob) {
@@ -197,11 +210,17 @@ export default function AddTaxesConsole({
             setActiveJob({ jobId: inProgressJob.jobId, total });
             setShowProgress(true);
           } else {
-            setActiveJob(null);
+            setActiveJob((prevActive) => {
+              if (prevActive) {
+                triggerAuditRefresh();
+              }
+              return null;
+            });
           }
           refreshStats();
         } else {
           setActiveJob(null);
+          setRunningJobsCount(0);
         }
       } catch (err) {
         logger.error('Failed to check active jobs', { error: err as Error });
@@ -212,7 +231,7 @@ export default function AddTaxesConsole({
     const interval = setInterval(checkActiveJobs, 10000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [actionsProp]);
+  }, [actionsProp, financeYearId, auditRefreshKey]);
 
   useEffect(() => {
     if (!activeJob) {
@@ -362,7 +381,7 @@ export default function AddTaxesConsole({
           {isFinanceYearActive && (
             <DashboardCard
               label={t('stats.runningJobs')}
-              value={Math.max(stats.runningJobs || 0, activeJob && showProgress ? 1 : 0)}
+              value={runningJobsCount !== null ? runningJobsCount : Math.max(stats.runningJobs || 0, activeJob && showProgress ? 1 : 0)}
               valueColor="text-green-600"
             />
           )}
@@ -390,8 +409,10 @@ export default function AddTaxesConsole({
                 { id: `job-complete-${activeJob.jobId}` }
               );
               refreshStats();
+              triggerAuditRefresh();
               setTimeout(() => {
                 refreshStats();
+                triggerAuditRefresh();
               }, 1000);
             }}
           />
@@ -423,8 +444,10 @@ export default function AddTaxesConsole({
                   onStartExecution={(jobId, total, scheduledTime) => {
                     setActiveJob({ jobId, total, scheduledTime });
                     refreshStats();
+                    triggerAuditRefresh();
                     setTimeout(() => {
                       refreshStats();
+                      triggerAuditRefresh();
                     }, 1000);
                     clearSelectionData();
                   }}
@@ -449,8 +472,10 @@ export default function AddTaxesConsole({
                 onStartExecution={(jobId, total, scheduledTime) => {
                   setActiveJob({ jobId, total, scheduledTime });
                   refreshStats();
+                  triggerAuditRefresh();
                   setTimeout(() => {
                     refreshStats();
+                    triggerAuditRefresh();
                   }, 1000);
                   clearSelectionData();
                 }}
@@ -463,7 +488,7 @@ export default function AddTaxesConsole({
           )}
 
           <Tabs.TabPanel value="audit">
-            <AuditMonitorTab financeYearId={financeYearId} actions={actionsProp} />
+            <AuditMonitorTab financeYearId={financeYearId} refreshKey={auditRefreshKey} actions={actionsProp} />
           </Tabs.TabPanel>
         </Tabs>
       </div>
