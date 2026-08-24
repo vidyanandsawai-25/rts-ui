@@ -3,6 +3,8 @@
 import { Input } from "@/components/common";
 import { Tooltip } from "@/components/common/Tooltip";
 import { Label } from "@/components/common/label";
+import { useTranslations } from "next-intl";
+import { getTranslatedTaxLabel } from "@/lib/utils/ptis";
 import { DynamicTaxFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
 import { sanitizeTaxDecimal, preventInvalidNumericKeys } from "../../OldTaxation/utils/inputValidation";
 
@@ -16,6 +18,8 @@ export function DynamicTaxFields({
   onTaxChange,
   validationErrors = {},
 }: DynamicTaxFieldsProps) {
+  const t = useTranslations('ptis');
+
   // Return null when no tax data - warning is shown at the top of the form
   if (!taxes || taxes.length === 0) {
     return null;
@@ -25,10 +29,11 @@ export function DynamicTaxFields({
     <>
       {taxes.map((tax) => {
         const errorMsg = validationErrors[`tax_${tax.taxId}`];
+        const displayLabel = getTranslatedTaxLabel(t, tax.taxName);
         return (
           <div key={tax.taxId} className="group relative flex flex-col space-y-1">
             <Label className="text-xs font-semibold text-slate-700 transition-colors group-focus-within:text-blue-600">
-              {tax.taxName}
+              {displayLabel}
             </Label>
             <Tooltip content={tax.taxAmount === 0 || !tax.taxAmount ? "" : String(tax.taxAmount)} placement="top">
               <Input
@@ -42,7 +47,7 @@ export function DynamicTaxFields({
                   }
                 }}
                 onKeyDown={preventInvalidNumericKeys}
-                placeholder={tax.taxName}
+                placeholder={displayLabel}
                 className={`h-9 text-sm rounded-lg transition-all duration-200 placeholder:text-xs ${errorMsg
                     ? "border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-red-900 bg-red-50/30"
                     : "border-slate-300 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-gray-900 bg-white"

@@ -51,6 +51,30 @@ const ModuleAccordionItem = ({
   const accessLevelEntries = Object.entries(accessLevelConfig) as [string, AccessLevelConfigItem][];
   const moduleInactive = domain.isModuleActive === false;
 
+  // Screens List grouped by screenGroupName
+  const groupedScreens = React.useMemo(() => {
+    const groups: { groupName: string; screens: DisplayScreen[] }[] = [];
+    const groupMap = new Map<string, DisplayScreen[]>();
+
+    domain.screens.forEach((screen) => {
+      const gName = screen.screenGroupName?.trim() || '';
+      if (!groupMap.has(gName)) {
+        groupMap.set(gName, []);
+      }
+      groupMap.get(gName)!.push(screen);
+    });
+
+    groupMap.forEach((screens, groupName) => {
+      groups.push({ groupName, screens });
+    });
+
+    return groups.sort((a, b) => {
+      if (!a.groupName) return 1;
+      if (!b.groupName) return -1;
+      return a.groupName.localeCompare(b.groupName);
+    });
+  }, [domain.screens]);
+
   return (
     <div
       className={cn(
@@ -115,94 +139,109 @@ const ModuleAccordionItem = ({
         </div>
       )}
 
-      {/* Screens List */}
-      <div className={cn('p-3 space-y-2', !isExpanded && 'hidden')}>
-        {domain.screens.map((screen: DisplayScreen) => {
-          const currentLevel = roleAccess[screen.id] || 'no-access';
-          const effectiveLevel = moduleInactive ? 'no-access' : currentLevel;
-
-          return (
-            <div
-              key={screen.id}
-              className={cn(
-                'flex items-center justify-between px-6 sm:px-8 md:px-16 py-2.5 border rounded-lg transition-colors',
-                moduleInactive
-                  ? 'bg-amber-50/50 border-amber-200/80'
-                  : 'bg-emerald-50/30 border-emerald-200/60 hover:border-emerald-300'
-              )}
-            >
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium text-gray-700">{screen.name}</span>
-                {moduleInactive && currentLevel !== 'no-access' && (
-                  <span className="text-[11px] text-amber-700">
-                    {t('accessControl.labels.assignedAccessPreserved', {
-                      level: accessLevelConfig[currentLevel]?.label ?? currentLevel,
-                    })}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                {accessLevelEntries.map(([level, levelCfg]) => {
-                  const isActive = currentLevel === level;
-                  const isEffective = effectiveLevel === level;
-                  return (
-                    <button
-                      type="button"
-                      key={level}
-                      onClick={() => onUpdate(screen.id, level as AccessLevel)}
-                      className={cn(
-                        'flex items-center justify-center w-7 h-7 rounded-md border transition-all',
-                        isActive
-                          ? cn(
-                              'border-transparent shadow-sm ring-2 ring-offset-1 text-white',
-                              moduleInactive && 'opacity-70 ring-amber-200',
-                              level === 'no-access'
-                                ? 'bg-red-500 ring-red-200'
-                                : level === 'view'
-                                  ? 'bg-blue-500 ring-blue-200'
-                                  : level === 'edit'
-                                    ? 'bg-amber-500 ring-amber-200'
-                                    : level === 'delete'
-                                      ? 'bg-purple-500 ring-purple-200'
-                                      : 'bg-emerald-500 ring-emerald-200'
-                            )
-                          : cn(
-                              'bg-white hover:bg-gray-50',
-                              level === 'no-access'
-                                ? 'text-red-500 border-red-200'
-                                : level === 'view'
-                                  ? 'text-blue-500 border-blue-200'
-                                  : level === 'edit'
-                                    ? 'text-amber-500 border-amber-200'
-                                    : level === 'delete'
-                                      ? 'text-purple-500 border-purple-200'
-                                      : 'text-emerald-500 border-emerald-200'
-                            ),
-                        moduleInactive && !isActive && 'opacity-60'
-                      )}
-                      title={
-                        moduleInactive && isActive
-                          ? t('accessControl.labels.storedPermissionHint', {
-                              level: levelCfg.label,
-                            })
-                          : levelCfg.label
-                      }
-                      aria-label={levelCfg.label}
-                    >
-                      <levelCfg.icon
-                        className={cn(
-                          'w-3.5 h-3.5',
-                          moduleInactive && isEffective && level === 'no-access' && 'opacity-100'
-                        )}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
+      {/* Screens List grouped by Screen Groups */}
+      <div className={cn('p-3 space-y-4', !isExpanded && 'hidden')}>
+        {groupedScreens.map((group) => (
+          <div key={group.groupName || 'unassigned'} className="space-y-2">
+            {/* Screen Group Section Title */}
+            <div className="px-4 py-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-100/50 rounded-md border border-slate-200/40 flex items-center justify-between">
+              <span>{group.groupName || t('accessControl.domains.general')}</span>
+              <span className="px-1.5 py-0.2 text-[10px] bg-slate-250 text-slate-600 rounded-full font-medium">
+                {t('accessControl.labels.screenCount', { count: group.screens.length })}
+              </span>
             </div>
-          );
-        })}
+
+            {/* Screen Items under this group */}
+            <div className="space-y-2">
+              {group.screens.map((screen: DisplayScreen) => {
+                const currentLevel = roleAccess[screen.id] || 'no-access';
+                const effectiveLevel = moduleInactive ? 'no-access' : currentLevel;
+
+                return (
+                  <div
+                    key={screen.id}
+                    className={cn(
+                      'flex items-center justify-between px-6 sm:px-8 md:px-16 py-2.5 border rounded-lg transition-colors',
+                      moduleInactive
+                        ? 'bg-amber-50/50 border-amber-200/80'
+                        : 'bg-emerald-50/30 border-emerald-200/60 hover:border-emerald-300'
+                    )}
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-medium text-gray-700">{screen.name}</span>
+                      {moduleInactive && currentLevel !== 'no-access' && (
+                        <span className="text-[11px] text-amber-700">
+                          {t('accessControl.labels.assignedAccessPreserved', {
+                            level: accessLevelConfig[currentLevel]?.label ?? currentLevel,
+                          })}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      {accessLevelEntries.map(([level, levelCfg]) => {
+                        const isActive = currentLevel === level;
+                        const isEffective = effectiveLevel === level;
+                        return (
+                          <button
+                            type="button"
+                            key={level}
+                            onClick={() => onUpdate(screen.id, level as AccessLevel)}
+                            className={cn(
+                              'flex items-center justify-center w-7 h-7 rounded-md border transition-all',
+                              isActive
+                                ? cn(
+                                    'border-transparent shadow-sm ring-2 ring-offset-1 text-white',
+                                    moduleInactive && 'opacity-70 ring-amber-200',
+                                    level === 'no-access'
+                                      ? 'bg-red-500 ring-red-200'
+                                      : level === 'view'
+                                        ? 'bg-blue-500 ring-blue-200'
+                                        : level === 'edit'
+                                          ? 'bg-amber-500 ring-amber-200'
+                                          : level === 'delete'
+                                            ? 'bg-purple-500 ring-purple-200'
+                                            : 'bg-emerald-500 ring-emerald-200'
+                                  )
+                                : cn(
+                                    'bg-white hover:bg-gray-50',
+                                    level === 'no-access'
+                                      ? 'text-red-500 border-red-200'
+                                      : level === 'view'
+                                        ? 'text-blue-500 border-blue-200'
+                                        : level === 'edit'
+                                          ? 'text-amber-500 border-amber-200'
+                                          : level === 'delete'
+                                            ? 'text-purple-500 border-purple-200'
+                                            : 'text-emerald-500 border-emerald-200'
+                                  ),
+                              moduleInactive && !isActive && 'opacity-60'
+                            )}
+                            title={
+                              moduleInactive && isActive
+                                ? t('accessControl.labels.storedPermissionHint', {
+                                    level: levelCfg.label,
+                                  })
+                                : levelCfg.label
+                            }
+                            aria-label={levelCfg.label}
+                          >
+                            <levelCfg.icon
+                              className={cn(
+                                'w-3.5 h-3.5',
+                                moduleInactive && isEffective && level === 'no-access' && 'opacity-100'
+                              )}
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

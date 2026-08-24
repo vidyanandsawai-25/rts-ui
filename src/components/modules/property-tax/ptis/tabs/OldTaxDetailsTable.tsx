@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { OldTaxesData } from '@/types/ptis.types';
 import { MasterTable, Column } from '@/components/common/MasterTable';
+import { getTranslatedTaxLabel } from '@/lib/utils/ptis';
 
 interface OldTaxDetailsTableProps {
   oldTaxesData: OldTaxesData | null | undefined;
@@ -56,7 +57,7 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
     uniqueTaxNames.forEach((taxName) => {
       cols.push({
         key: taxName,
-        label: taxName,
+        label: getTranslatedTaxLabel(t, taxName),
         align: 'right',
         cellClassName: 'tabular-nums font-medium whitespace-nowrap',
         headerClassName: 'whitespace-nowrap',
