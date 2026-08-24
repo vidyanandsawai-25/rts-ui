@@ -1,7 +1,7 @@
 'use client';
 
 import { Layers, Shield, CheckCircle2 } from 'lucide-react';
-import { Badge, Button, Card, CardContent, MultiSelectDropdown } from '@/components/common';
+import { Badge, Button, Card, CardContent, Select } from '@/components/common';
 import { ModuleAccessStepProps } from '@/types/user-management';
 import { parseBoolean } from '@/lib/utils/type-guards';
 
@@ -38,7 +38,7 @@ export function ModuleAccessStep({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 px-2 overflow-visible">
-      <div className="flex-1 overflow-y-auto pr-2 pt-2 pb-32">
+      <div className="flex-1 overflow-y-auto pr-2 pt-2 pb-80">
         <div className="space-y-4">
           {formData.departmentIds.map((deptId: string) => {
             const dept = departments.find(
@@ -48,10 +48,10 @@ export function ModuleAccessStep({
             const deptModules = modules.filter((m) => {
               const mDeptId = String(
                 m.departmentMasterId ||
-                m.departmentId ||
-                m.departmentID ||
-                m.departmentMasterID ||
-                ''
+                  m.departmentId ||
+                  m.departmentID ||
+                  m.departmentMasterID ||
+                  ''
               );
 
               if (mDeptId !== String(deptId)) {
@@ -119,17 +119,19 @@ export function ModuleAccessStep({
                           <div
                             key={moduleId}
                             onClick={() => toggleModule(deptId, moduleId)}
-                            className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${isSelected
+                            className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${
+                              isSelected
                                 ? 'border-indigo-500 bg-indigo-50 shadow-sm ring-1 ring-indigo-500/20'
                                 : 'border-slate-100 hover:border-indigo-200 hover:bg-slate-50'
-                              }`}
+                            }`}
                           >
                             <div className="flex items-center gap-3">
                               <div
-                                className={`p-2 rounded-lg transition-colors ${isSelected
+                                className={`p-2 rounded-lg transition-colors ${
+                                  isSelected
                                     ? 'bg-indigo-500 text-white'
                                     : 'bg-slate-100 text-slate-500'
-                                  }`}
+                                }`}
                               >
                                 <Layers className="w-4 h-4" />
                               </div>
@@ -152,10 +154,11 @@ export function ModuleAccessStep({
                             </div>
 
                             <div
-                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                                isSelected
                                   ? 'border-indigo-500 bg-indigo-500 text-white'
                                   : 'border-slate-200'
-                                }`}
+                              }`}
                             >
                               {isSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
                             </div>
@@ -178,7 +181,7 @@ export function ModuleAccessStep({
                       </span>
                     </div>
 
-                    <MultiSelectDropdown
+                    <Select
                       options={roles
                         .filter((role) => {
                           if (!role.isActive) return false;
@@ -204,16 +207,15 @@ export function ModuleAccessStep({
                         })
                         .map((role) => ({
                           label: role.name,
-                          value: role.name,
+                          value: String(role.userRoleId),
                         }))}
-                      value={(formData.roleAccess[deptId] || []).map(
-                        (id) =>
-                          roles.find((r) => Number(r.userRoleId) === Number(id))?.name || String(id)
-                      )}
-                      onChange={(names) => {
-                        const ids = names
-                          .map((name) => roles.find((r) => r.name === name)?.userRoleId)
-                          .filter((id): id is number => id !== undefined);
+                      value={
+                        formData.roleAccess[deptId]?.[0]
+                          ? String(formData.roleAccess[deptId][0])
+                          : ''
+                      }
+                      onChange={(_e, val) => {
+                        const ids = val ? [Number(val)] : [];
 
                         setFormData({
                           ...formData,
@@ -223,8 +225,8 @@ export function ModuleAccessStep({
                           },
                         });
                       }}
-                      placeholder={t('form.rolePlaceholder')}
-                      className="bg-white h-8 text-xs [&_input]:text-black [&_span]:text-black"
+                      placeholder={t('form.rolePlaceholder') || 'Select Role'}
+                      className="bg-white h-8 text-xs [&_button]:h-8 [&_button]:text-xs [&_button]:py-1 [&_ul]:top-full [&_ul]:bottom-auto [&_ul]:mt-1 [&_ul]:mb-0"
                     />
                   </div>
                 </CardContent>

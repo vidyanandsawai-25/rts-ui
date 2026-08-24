@@ -149,7 +149,30 @@ export async function updateConfigKeyAction(
       defaultValue: validation.data.defaultValue ?? '',
       updatedBy: userId,
     });
+
     if (res.success) {
+      const newDefVal = validation.data.defaultValue ?? '';
+      try {
+        const valRes = await configMasterService.getAllConfigValuesFull(keyId);
+        if (valRes.success && Array.isArray(valRes.data)) {
+          const globalVal = valRes.data.find(
+            (v) => (v.departmentId === null || v.departmentId === 0) && (v.moduleId === null || v.moduleId === 0)
+          );
+          if (globalVal) {
+            await configMasterService.updateConfigValue(globalVal.configValueId, {
+              configKeyId: keyId,
+              departmentId: null,
+              moduleId: null,
+              value: newDefVal,
+              isActive: globalVal.isActive,
+              updatedBy: userId,
+            });
+          }
+        }
+      } catch {
+        // Silently ignore background value sync issues
+      }
+
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
       return { 

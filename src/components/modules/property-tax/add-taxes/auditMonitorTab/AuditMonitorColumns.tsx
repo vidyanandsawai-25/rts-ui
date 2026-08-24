@@ -24,7 +24,20 @@ export const getAuditColumns = (t: any): Column<any>[] => [
     key: 'dateTime',
     label: t('audit.columns.dateTime'),
     width: '12%',
-    render: (val) => (val ? new Date(String(val)).toLocaleString() : '-'),
+    render: (val, row) => {
+      if (!val) return '-';
+      let date = new Date(String(val));
+      if (row?.status?.toLowerCase() === 'scheduled' && typeof window !== 'undefined') {
+        const storedSkew = window.sessionStorage.getItem('ntis_clock_skew_ms');
+        if (storedSkew) {
+          const skewMs = Number(storedSkew);
+          if (!isNaN(skewMs)) {
+            date = new Date(date.getTime() + skewMs);
+          }
+        }
+      }
+      return date.toLocaleString();
+    },
   },
   { key: 'operation', label: t('audit.columns.operation'), width: '10%' },
   { key: 'doneBy', label: t('audit.columns.doneBy'), width: '10%' },
@@ -33,7 +46,20 @@ export const getAuditColumns = (t: any): Column<any>[] => [
     key: 'startTime',
     label: t('audit.columns.startTime'),
     width: '10%',
-    render: (val) => (val ? new Date(String(val)).toLocaleTimeString() : '-'),
+    render: (val, row) => {
+      if (!val) return '-';
+      let date = new Date(String(val));
+      if (row?.status?.toLowerCase() === 'scheduled' && typeof window !== 'undefined') {
+        const storedSkew = window.sessionStorage.getItem('ntis_clock_skew_ms');
+        if (storedSkew) {
+          const skewMs = Number(storedSkew);
+          if (!isNaN(skewMs)) {
+            date = new Date(date.getTime() + skewMs);
+          }
+        }
+      }
+      return date.toLocaleTimeString();
+    },
   },
   {
     key: 'completeTime',

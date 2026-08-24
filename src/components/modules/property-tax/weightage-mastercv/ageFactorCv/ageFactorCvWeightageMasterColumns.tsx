@@ -147,9 +147,10 @@ export const getAgeFactorCvWeightageMasterColumns = ({
             value={editableValue}
             rowId={rowUid}
             columnId="factor"
-            maxValue={999.99}
+            maxValue={100}
+            readOnly={row.isActive === false}
             onCellChange={handleCellChange}
-            onMaxExceeded={() => toast.error(tW('common.messages.valueExceedsMax'))}
+            onMaxExceeded={() => toast.error(tW('common.messages.factorPercentageExceedsMax'))}
           />
         );
       },

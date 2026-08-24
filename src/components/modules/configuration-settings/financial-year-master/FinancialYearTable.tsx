@@ -35,17 +35,17 @@ export const FinancialYearTable = ({
   modal,
 }: FinancialYearTableProps) => {
   const {
+    data,
     activeDrawer,
     editingData,
-    loadingState,
-    isPending,
+    isPageNavigating,
     handleAdd,
     handleCloseDrawer,
+    handleFormSuccess,
     handlePageChange,
     handlePageSizeChange,
     columns,
     t,
-    router,
   } = useFinancialYearTable({
     initialData,
     totalCount,
@@ -67,10 +67,10 @@ export const FinancialYearTable = ({
           
           <div className="overflow-x-auto">
             <Table 
-              data={initialData as unknown as Record<string, unknown>[]} 
+              data={data as unknown as Record<string, unknown>[]} 
               columns={columns as unknown as TableColumn<Record<string, unknown>>[]} 
               className="w-full border-none [&_th:last-child]:!text-right [&_td:last-child]:!text-right [&_td:nth-child(2)]:!whitespace-normal [&_td:nth-child(2)]:!max-w-[320px]" 
-              isLoading={isPending && loadingState === null}
+              isLoading={isPageNavigating}
             />
           </div>
           
@@ -89,11 +89,9 @@ export const FinancialYearTable = ({
               onClose={handleCloseDrawer}
             >
               <FinancialYearForm
+                key={editingData ? `edit-${editingData.id}-${editingData.description ?? ''}` : 'add'}
                 initialData={editingData}
-                onSuccess={() => {
-                  handleCloseDrawer();
-                  router.refresh();
-                }}
+                onSuccess={handleFormSuccess}
                 onCancel={handleCloseDrawer}
               />
             </FinancialYearDrawerWrapper>

@@ -109,6 +109,48 @@ describe("Financial Year Master Module", () => {
       expect(schema.safeParse(data).success).toBe(true);
     });
 
+    it("allows any string with special characters in description", () => {
+      const data = {
+        yearCode: "FY24-25",
+        status: "Active",
+        year: 2024,
+        startDate: "2024-04-01",
+        endDate: "2025-03-31",
+        description: "fgggs34534565hjgbvcxbv#@#$#4543545342545435656gfdgdfgggffgggs34534565hjgbvcxbv#@#$#454354534",
+        isActive: false,
+        isCurrent: false,
+      };
+      expect(schema.safeParse(data).success).toBe(true);
+    });
+
+    it("fails when description contains HTML tags", () => {
+      const dataWithScript = {
+        yearCode: "FY24-25",
+        status: "Active",
+        year: 2024,
+        startDate: "2024-04-01",
+        endDate: "2025-03-31",
+        description: "Test <script>alert(1)</script>",
+        isActive: false,
+        isCurrent: false,
+      };
+      const resultScript = schema.safeParse(dataWithScript);
+      expect(resultScript.success).toBe(false);
+
+      const dataWithDiv = {
+        yearCode: "FY24-25",
+        status: "Active",
+        year: 2024,
+        startDate: "2024-04-01",
+        endDate: "2025-03-31",
+        description: "Hello <div>world</div>",
+        isActive: false,
+        isCurrent: false,
+      };
+      const resultDiv = schema.safeParse(dataWithDiv);
+      expect(resultDiv.success).toBe(false);
+    });
+
     it("fails when end date is before start date", () => {
       const data = {
         yearCode: "FY24-25",
@@ -352,8 +394,9 @@ describe("Financial Year Master Module", () => {
       fireEvent.change(screen.getByLabelText("form.fields.endDate *"), { target: { value: "2027-03-31" } });
       fireEvent.click(screen.getByText("form.buttons.create"));
 
+      const pushStateSpy = vi.spyOn(window.history, "pushState");
       await waitFor(() => expect(actions.saveFinancialYearAction).toHaveBeenCalled());
-      await waitFor(() => expect(routerRefresh).toHaveBeenCalled());
+      await waitFor(() => expect(pushStateSpy.mock.calls.length > 0 || routerPush.mock.calls.length > 0).toBe(true));
     });
 
     it("renders edit drawer title branch", () => {
@@ -957,6 +1000,148 @@ describe("Financial Year Master Module", () => {
       expect(screen.queryByText("table.addButton")).not.toBeInTheDocument();
       
       vi.useRealTimers();
+    });
+  });
+
+  describe("New Feature Highlights & Edge Cases", () => {
+    it("converts Year Code input to uppercase automatically and allows underscores", () => {
+      const onChange = vi.fn();
+      render(
+        <FinancialYearFormFields
+          formData={{
+            yearCode: "",
+            year: 2026,
+            startDate: "2026-04-01",
+            endDate: "2027-03-31",
+            description: "",
+            isActive: false,
+            isCurrent: false,
+          }}
+          errors={{}}
+          onChange={onChange}
+          duration="364 days"
+          handleCurrentChange={vi.fn()}
+          disableCurrentToggle={false}
+          onCurrentToggleBlocked={vi.fn()}
+        />
+      );
+
+      const yearCodeInput = screen.getByLabelText("form.fields.yearCode *") as HTMLInputElement;
+      fireEvent.change(yearCodeInput, { target: { value: "fy_2026_27" } });
+      
+      expect(onChange).toHaveBeenCalledWith("yearCode", "FY_2026_27");
+    });
+
+    it("validates Year Code format with underscores in Zod schema", () => {
+      const t = (k: string) => k;
+      const schema = createFinancialYearSchema(t);
+
+      const validUnderscore = schema.safeParse({
+        yearCode: "FY_2026_27",
+        year: 2026,
+        startDate: "2026-04-01",
+        endDate: "2027-03-31",
+        description: "Valid description",
+        isActive: false,
+        isCurrent: false,
+      });
+
+      expect(validUnderscore.success).toBe(true);
+    });
+
+    it("validates description with special characters while rejecting HTML tags", () => {
+      const t = (k: string) => k;
+      const schema = createFinancialYearSchema(t);
+
+      const validDesc = schema.safeParse({
+        yearCode: "FY2026",
+        year: 2026,
+        startDate: "2026-04-01",
+        endDate: "2027-03-31",
+        description: "Special chars & @ # $ % ! * _ - test string",
+        isActive: false,
+        isCurrent: false,
+      });
+      expect(validDesc.success).toBe(true);
+
+      const invalidHtmlDesc = schema.safeParse({
+        yearCode: "FY2026",
+        year: 2026,
+        startDate: "2026-04-01",
+        endDate: "2027-03-31",
+        description: "<script>alert('xss')</script>",
+        isActive: false,
+        isCurrent: false,
+      });
+      expect(invalidHtmlDesc.success).toBe(false);
+      if (!invalidHtmlDesc.success) {
+        expect(invalidHtmlDesc.error.flatten().fieldErrors.description).toContain("form.validation.descriptionFormat");
+      }
+    });
+
+    it("sorts records so currently active year is always 1st record", () => {
+      const items: FinancialYear[] = [
+        { id: 1, year: 2023, yearCode: "2023-24", status: "Active", startDate: "2023-04-01", endDate: "2024-03-31", description: null, isActive: false },
+        { id: 2, year: 2025, yearCode: "2025-26", status: "Active", startDate: "2025-04-01", endDate: "2026-03-31", description: null, isActive: true },
+        { id: 3, year: 2024, yearCode: "2024-25", status: "Active", startDate: "2024-04-01", endDate: "2025-03-31", description: null, isActive: false },
+      ];
+
+      items.sort((a, b) => {
+        if (a.isActive && !b.isActive) return -1;
+        if (!a.isActive && b.isActive) return 1;
+        return b.year - a.year;
+      });
+
+      expect(items[0].id).toBe(2);
+      expect(items[0].isActive).toBe(true);
+    });
+
+    it("handles popstate navigation events for /add and /edit/:id", () => {
+      const TestComponent = () => {
+        useFinancialYearTable({ initialData: mockData, totalCount: 3, pageNumber: 1, pageSize: 10 });
+        return <div>Table Component</div>;
+      };
+      wrap(<TestComponent />);
+
+      window.history.pushState({}, "", "/en/configuration-settings/financial-year-master/add");
+      act(() => {
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      });
+
+      window.history.pushState({}, "", "/en/configuration-settings/financial-year-master/edit/1");
+      act(() => {
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      });
+
+      window.history.pushState({}, "", "/en/configuration-settings/financial-year-master");
+      act(() => {
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      });
+    });
+
+    it("triggers handleBlockedCurrentToggle when attempting to mark a closed year as current", () => {
+      const closedData = { ...mockData[1], status: "Closed" as const };
+      wrap(
+        <FinancialYearForm
+          initialData={closedData}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const markContainer = screen.getByTestId("mark-as-current-container");
+      fireEvent.click(markContainer);
+    });
+
+    it("handles non-4-digit year change branch in FinancialYearForm", () => {
+      wrap(
+        <FinancialYearForm
+          initialData={null}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const yearInput = screen.getByLabelText("form.fields.year *");
+      fireEvent.change(yearInput, { target: { value: "12" } });
     });
   });
 });

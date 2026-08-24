@@ -143,7 +143,7 @@ export function Select({
       setInternalValueState(val);
     }
     setOpen(false);
-    
+
     if (onChange) {
       // Simulate a ChangeEvent
       const event = {
@@ -290,7 +290,7 @@ export function Select({
                 'px-4 py-2 transition-colors',
                 !opt.disabled && 'cursor-pointer',
                 !opt.disabled &&
-                  (index === highlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'),
+                (index === highlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'),
                 internalValue === opt.value && 'text-blue-700 font-semibold bg-blue-50',
                 opt.disabled && 'opacity-50 cursor-not-allowed'
               )}

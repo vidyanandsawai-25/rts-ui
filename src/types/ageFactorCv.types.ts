@@ -46,7 +46,7 @@ export interface AgeFactorCVMasterCreate {
 
 export interface AgeFactorCVMasterQueryParams {
   id?: number;
-  constructionTypeId?: number;
+  constructionTypeId?: number | number[];
   yearRangeCVId?: number;
   isActive?: boolean;
   pageNumber?: number;
@@ -87,6 +87,7 @@ export interface AgeFactorCVMasterSearchParams {
     pageSize?: string;
     q?: string;
     selectedYearRange?: string;
+    /** Comma-separated list of selected construction type IDs */
     constructionType?: string;
     sortBy?: string;
     sortOrder?: string;

@@ -629,22 +629,31 @@ export async function addBulkUpdateDefinitionAction(
     const result = await addBulkUpdateDefinitionServer(payload);
     if (result.success) {
       revalidatePath("/[locale]/property-tax/common-details-update", "page");
+      return result;
     }
-    return result;
+
+    const rawError = result.error || (result as Record<string, unknown>).message as string || "";
+    let errorMessage = rawError;
+
+    if (/already exists/i.test(rawError) || /definition with code/i.test(rawError)) {
+      const t = await getTranslations("commonDetailsUpdate");
+      errorMessage = t("messages.groupAlreadyExists");
+    } else {
+      errorMessage = rawError.replace(/^addBulkUpdateDefinitionServer:\s*/, '').replace(/^:\s*/, '');
+    }
+
+    return { success: false, error: errorMessage, statusCode: result.statusCode || 400 };
   } catch (error) {
     logger.error("Failed to add bulk update definition", { updateName: payload.updateName }, error);
     if (error instanceof ApiError) {
       let errorMessage = error.responseText || error.message;
-      const match = errorMessage.match(/A bulk update definition with code '([^']+)' already exists/i);
-      
-      if (match && match[1]) {
+      if (/already exists/i.test(errorMessage) || /definition with code/i.test(errorMessage)) {
         const t = await getTranslations("commonDetailsUpdate");
-        errorMessage = t("messages.definitionAlreadyExists", { code: match[1] });
+        errorMessage = t("messages.groupAlreadyExists");
       } else {
-        // Strip out the contextMessage prefix if it exists
-        errorMessage = errorMessage.replace(/^addBulkUpdateDefinitionServer:\s*/, '');
+        errorMessage = errorMessage.replace(/^addBulkUpdateDefinitionServer:\s*/, '').replace(/^:\s*/, '');
       }
-      
+
       return { success: false, error: errorMessage, statusCode: error.statusCode };
     }
     const t = await getTranslations("commonDetailsUpdate");

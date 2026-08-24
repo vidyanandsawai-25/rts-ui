@@ -76,6 +76,20 @@ export const PropertyTrackingDrawer = ({
     const trackingStages: TrackingStage[] = useMemo(() => {
         const firstPendingIndex = stageItems.findIndex((item) => item.isCompleted !== 1);
 
+        const formatDate = (dateString?: string) => {
+            if (!dateString) return '- - -';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '- - -';
+
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = date.toLocaleString(locale, { month: 'short' });
+            const year = date.getFullYear();
+
+            const time = date.toLocaleString(locale, { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
+
+            return `${day} ${month} ${year} • ${time}`;
+        };
+
         return stageItems.map((item, index) => {
             let status: TrackingStage['status'] = 'Pending';
             if (item.isCompleted === 1) {
@@ -87,11 +101,11 @@ export const PropertyTrackingDrawer = ({
             return {
                 stage: item.stageName,
                 status,
-                date: '- - -',
-                submittedBy: '-'
+                date: formatDate(item.createdDate),
+                submittedBy: item.officerName || '-'
             };
         });
-    }, [stageItems]);
+    }, [stageItems, locale]);
 
     const completedCount = trackingStages.filter(s => s.status === 'Completed').length;
     const totalCount = trackingStages.length;

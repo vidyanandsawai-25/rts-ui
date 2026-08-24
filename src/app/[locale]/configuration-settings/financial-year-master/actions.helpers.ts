@@ -1,7 +1,15 @@
+import { revalidatePath } from "next/cache";
+import { locales } from "@/i18n/config";
 import { ApiError, updateFinancialYear } from "@/lib/api/financial-year.service";
 import { FinancialYear } from "@/types/financialYear.types";
 
 export const REVALIDATE_PATH = "/[locale]/configuration-settings/financial-year-master";
+
+export function revalidateFinancialYearPaths() {
+  for (const locale of locales) {
+    revalidatePath(`/${locale}/configuration-settings/financial-year-master`, "page");
+  }
+}
 
 export function extractActionError(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
@@ -54,7 +62,7 @@ export function mapApiErrorsToFormFields(parsedErrors: Record<string, unknown>):
   return validationErrors;
 }
 
-export function buildYearPayload(year: FinancialYear, isActive: boolean, status: string) {
+export function buildYearPayload(year: FinancialYear, isActive: boolean, status: string, updatedBy?: number) {
   return {
     isActive,
     status,
@@ -63,12 +71,13 @@ export function buildYearPayload(year: FinancialYear, isActive: boolean, status:
     yearCode: year.yearCode || `${year.year}-${(year.year + 1).toString().slice(-2)}`,
     startDate: year.startDate || `${year.year}-04-01`,
     endDate: year.endDate || `${year.year + 1}-03-31`,
+    updatedBy: updatedBy ?? 1,
   };
 }
 
-export async function unsetActiveYears(existingYears: FinancialYear[], id?: number) {
+export async function unsetActiveYears(existingYears: FinancialYear[], id?: number, updatedBy?: number) {
   const activeYearsToUnset = existingYears.filter((y) => y.isActive && y.id !== id);
   for (const otherYear of activeYearsToUnset) {
-    await updateFinancialYear(otherYear.id, buildYearPayload(otherYear, false, otherYear.status || "Active"));
+    await updateFinancialYear(otherYear.id, buildYearPayload(otherYear, false, otherYear.status || "Active", updatedBy));
   }
 }

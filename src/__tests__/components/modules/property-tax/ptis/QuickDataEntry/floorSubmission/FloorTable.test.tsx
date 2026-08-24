@@ -206,18 +206,12 @@ describe('FloorTable', () => {
     expect(screen.queryByTestId('data-entry-button')).toBeNull();
   });
 
-  it('hides Data Entry Same As button when the existing wing condition matches', () => {
-    render(<FloorTable {...mockProps} hasWing={true} />);
-    expect(screen.queryByTestId('data-entry-button')).toBeNull();
-  });
-
-  it('enables Data Entry Same As for an Apartment with an A2 partition when wing metadata is absent', () => {
+  it('enables Data Entry Same As for an Apartment with an A2 partition', () => {
     render(
       <FloorTable
         {...mockProps}
         categoryName={'Apartment'}
         partitionNo={'A2'}
-        hasWing={false}
       />
     );
 

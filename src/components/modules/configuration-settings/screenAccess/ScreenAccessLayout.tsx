@@ -160,6 +160,7 @@ export function ScreenAccessLayout({
               modules={modules}
               roles={roles}
               initialRoleAccess={initialRoleAccess}
+              groups={groups}
             />
           </TabPanel>
         </Tabs>

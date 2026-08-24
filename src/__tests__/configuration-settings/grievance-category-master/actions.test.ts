@@ -157,6 +157,8 @@ describe('Grievance Category Master Server Actions', () => {
         escalationLevel: 'Level 1',
         description: 'Test Description with alert("xss") code',
         isActive: true,
+        createdBy: 123,
+        updatedBy: 123,
       });
       expect(revalidatePath).toHaveBeenCalled();
     });
@@ -213,7 +215,7 @@ describe('Grievance Category Master Server Actions', () => {
 
       const result = await deleteGrievanceCategoryAction(1, 'en');
       expect(result.success).toBe(true);
-      expect(deleteGrievanceCategory).toHaveBeenCalledWith(1);
+      expect(deleteGrievanceCategory).toHaveBeenCalledWith(1, 123);
       expect(revalidatePath).toHaveBeenCalled();
     });
 

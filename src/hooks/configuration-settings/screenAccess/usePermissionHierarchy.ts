@@ -6,6 +6,7 @@ import {
   ScreenMasterData,
   DepartmentMasterData,
   ModuleMasterData,
+  ScreenGroupMasterData,
 } from '@/types/screen-access.types';
 
 interface HierarchyContext {
@@ -63,6 +64,8 @@ const prepareLookupMaps = (
 export interface DisplayScreen {
   id: string;
   name: string;
+  screenGroupId?: number;
+  screenGroupName?: string;
 }
 
 export interface DisplayDomain {
@@ -83,6 +86,7 @@ interface UsePermissionHierarchyProps {
   screens: ScreenMasterData[];
   departments: DepartmentMasterData[];
   modules: ModuleMasterData[];
+  groups?: ScreenGroupMasterData[];
   t: (key: string) => string;
 }
 
@@ -90,6 +94,7 @@ export function usePermissionHierarchy({
   screens,
   departments,
   modules,
+  groups = [],
   t,
 }: UsePermissionHierarchyProps) {
   const hierarchy: DisplayDepartment[] = useMemo(() => {
@@ -101,6 +106,14 @@ export function usePermissionHierarchy({
       validScreens
     );
 
+    // Build a map of screenGroupId to screenGroupName
+    const groupNameMap = new Map<number, string>();
+    groups.forEach((g) => {
+      if (g.screenGroupId) {
+        groupNameMap.set(g.screenGroupId, g.screenGroupName || g.screenGroupLocalName || '');
+      }
+    });
+
     const deptHierarchy = departments
       .map((dept) => {
         const canonicalDeptId =
@@ -111,7 +124,7 @@ export function usePermissionHierarchy({
 
         const deptModules = modulesByDept.get(canonicalDeptId) || [];
         const domains: DisplayDomain[] = deptModules
-          .map((mod) => {
+          .map((mod): DisplayDomain | null => {
             const canonicalModId =
               mod.moduleMasterId && mod.moduleMasterId > 0 ? mod.moduleMasterId : mod.moduleId;
             if (!canonicalModId) return null;
@@ -126,6 +139,8 @@ export function usePermissionHierarchy({
               screens: modScreens.map((s) => ({
                 id: String(s.screenMasterId),
                 name: s.screenName,
+                screenGroupId: s.screenGroupId,
+                screenGroupName: s.screenGroupName || (s.screenGroupId ? groupNameMap.get(s.screenGroupId) : undefined) || undefined,
               })),
             };
           })
@@ -135,15 +150,18 @@ export function usePermissionHierarchy({
         directScreens.forEach((s) => assignedScreenIds.add(String(s.screenMasterId)));
 
         if (directScreens.length > 0) {
-          domains.push({
+          const directDomainItem: DisplayDomain = {
             id: `dept-${canonicalDeptId}-general`,
             name: t('accessControl.domains.general'),
             isModuleActive: true,
             screens: directScreens.map((s) => ({
               id: String(s.screenMasterId),
               name: s.screenName,
+              screenGroupId: s.screenGroupId,
+              screenGroupName: s.screenGroupName || (s.screenGroupId ? groupNameMap.get(s.screenGroupId) : undefined) || undefined,
             })),
-          });
+          };
+          domains.push(directDomainItem);
         }
 
         return {
@@ -161,26 +179,27 @@ export function usePermissionHierarchy({
     );
 
     if (orphanedScreens.length > 0) {
+      const orphanedDomainItem: DisplayDomain = {
+        id: 'system-general',
+        name: t('accessControl.domains.general'),
+        isModuleActive: true,
+        screens: orphanedScreens.map((s) => ({
+          id: String(s.screenMasterId),
+          name: s.screenName,
+          screenGroupId: s.screenGroupId,
+          screenGroupName: s.screenGroupName || (s.screenGroupId ? groupNameMap.get(s.screenGroupId) : undefined) || undefined,
+        })),
+      };
       deptHierarchy.push({
         id: 'system-unassigned',
         name: t('accessControl.filters.systemDepartment'),
         icon: Database,
-        domains: [
-          {
-            id: 'system-general',
-            name: t('accessControl.domains.general'),
-            isModuleActive: true,
-            screens: orphanedScreens.map((s) => ({
-              id: String(s.screenMasterId),
-              name: s.screenName,
-            })),
-          },
-        ],
+        domains: [orphanedDomainItem],
       });
     }
 
     return deptHierarchy.filter((d) => d.domains.length > 0);
-  }, [departments, modules, screens, t]);
+  }, [departments, modules, screens, groups, t]);
 
   return { hierarchy };
 }

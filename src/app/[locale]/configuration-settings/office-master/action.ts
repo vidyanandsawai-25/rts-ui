@@ -14,12 +14,54 @@ import { logger } from "@/lib/utils/logger";
 function parseOfficeActionError(error: unknown, operation: string) {
   if (error instanceof ApiError) {
     const errors: Record<string, string> = {};
-    const lowerMsg = error.responseText.toLowerCase();
-    if (lowerMsg.includes("office code") || lowerMsg.includes("already exists")) {
-      errors.officeCode = error.responseText;
+    let message = error.responseText;
+
+    try {
+      // Attempt to parse Problem Details JSON format from backend
+      const parsed = JSON.parse(error.responseText);
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.title) {
+          message = parsed.title;
+        }
+
+        // Map field-level validation errors
+        if (parsed.errors && typeof parsed.errors === 'object') {
+          Object.entries(parsed.errors).forEach(([field, messages]) => {
+            // Convert PascalCase field name from API to camelCase for the form
+            const fieldName = field.charAt(0).toLowerCase() + field.slice(1);
+            let errorMsg = Array.isArray(messages) ? messages[0] : String(messages);
+            
+            // Clean up raw enum/technical messages like "City_Required"
+            if (errorMsg.endsWith("_Required")) {
+               errorMsg = `${field} is required`;
+            } else if (errorMsg.endsWith("_Invalid")) {
+               errorMsg = `${field} is invalid`;
+            }
+            
+            errors[fieldName] = errorMsg;
+          });
+          
+          if (parsed.title === "One or more validation errors occurred.") {
+            message = "Please correct the highlighted validation errors.";
+          }
+        }
+      }
+    } catch (_e) {
+      // If not JSON, fallback to basic text inspection
+      const lowerMsg = error.responseText.toLowerCase();
+      if (lowerMsg.includes("office code") || lowerMsg.includes("already exists")) {
+        errors.officeCode = error.responseText;
+      }
+      
+      // Don't show raw JSON-like strings to the user if parsing completely failed
+      if (message.trim().startsWith('{') && message.trim().endsWith('}')) {
+        message = `Failed to ${operation} office.`;
+      }
     }
-    return { success: false, message: error.responseText, statusCode: error.statusCode, errors };
+
+    return { success: false, message, statusCode: error.statusCode, errors };
   }
+  
   if (error instanceof Error) {
     return { success: false, message: error.message };
   }

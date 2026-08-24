@@ -5,6 +5,7 @@ import { Input, Select, ValidationMessage, TextArea, StatusToggleCard } from '@/
 import type { Option } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import type { FormState } from '@/types/configMaster.types';
+import { DateUtils } from '@/lib/utils/date-helpers';
 
 
 interface ConfigKeyFormFieldsProps {
@@ -154,36 +155,56 @@ export function ConfigKeyFormFields({
             <ValidationMessage id="defaultValue-error" message={errors.defaultValue} visible={!!errors.defaultValue} />
           </>
         ) : (
-          <>
-            <Input
-              id="defaultValue"
-              type={
-                formData.dataType === 'int' || formData.dataType === 'decimal'
-                  ? 'number'
-                  : formData.dataType === 'datetime'
-                    ? 'datetime-local'
-                    : 'text'
-              }
-              min={formData.dataType === 'int' ? 1 : formData.dataType === 'decimal' ? 0.01 : undefined}
-              step={formData.dataType === 'decimal' ? 'any' : formData.dataType === 'int' ? 1 : undefined}
-              value={formData.defaultValue || ''}
-              onChange={(e) => {
-                onFieldChange('defaultValue', e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (formData.dataType === 'int' && /^[eE+\-.,]$/.test(e.key)) e.preventDefault();
-                if (formData.dataType === 'decimal' && /^[eE+\-]$/.test(e.key)) e.preventDefault();
-              }}
-              placeholder={t('modals.addKey.form.placeholders.defaultValue')}
-              className={errors.defaultValue ? 'border-red-500' : ''}
-              disabled={isPending}
-              maxLength={100}
-              autoComplete="off"
-              aria-invalid={errors.defaultValue ? 'true' : 'false'}
-              aria-describedby={errors.defaultValue ? 'defaultValue-error' : undefined}
-            />
-            <ValidationMessage id="defaultValue-error" message={errors.defaultValue} visible={!!errors.defaultValue} />
-          </>
+          (() => {
+            const currentYear = new Date().getFullYear();
+            const isDateTime = formData.dataType === 'datetime';
+            const formattedDefaultValue = isDateTime
+              ? DateUtils.formatForInput(formData.defaultValue || '', true)
+              : formData.defaultValue || '';
+
+            return (
+              <>
+                <Input
+                  id="defaultValue"
+                  type={
+                    formData.dataType === 'int' || formData.dataType === 'decimal'
+                      ? 'number'
+                      : formData.dataType === 'datetime'
+                        ? 'datetime-local'
+                        : 'text'
+                  }
+                  min={
+                    formData.dataType === 'int'
+                      ? 1
+                      : formData.dataType === 'decimal'
+                        ? 0.01
+                        : formData.dataType === 'datetime'
+                          ? `${currentYear}-01-01T00:00`
+                          : undefined
+                  }
+                  max={formData.dataType === 'datetime' ? '2100-12-31T23:59' : undefined}
+                  step={formData.dataType === 'decimal' ? 'any' : formData.dataType === 'int' ? 1 : undefined}
+                  value={formData.dataType === 'datetime' ? (formattedDefaultValue || formData.defaultValue || '') : (formData.defaultValue || '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    onFieldChange('defaultValue', isDateTime && val ? val.replace('T', ' ') : val);
+                  }}
+                  onKeyDown={(e) => {
+                    if (formData.dataType === 'int' && /^[eE+\-.,]$/.test(e.key)) e.preventDefault();
+                    if (formData.dataType === 'decimal' && /^[eE+\-]$/.test(e.key)) e.preventDefault();
+                  }}
+                  placeholder={t('modals.addKey.form.placeholders.defaultValue')}
+                  className={errors.defaultValue ? 'border-red-500' : ''}
+                  disabled={isPending}
+                  maxLength={100}
+                  autoComplete="off"
+                  aria-invalid={errors.defaultValue ? 'true' : 'false'}
+                  aria-describedby={errors.defaultValue ? 'defaultValue-error' : undefined}
+                />
+                <ValidationMessage id="defaultValue-error" message={errors.defaultValue} visible={!!errors.defaultValue} />
+              </>
+            );
+          })()
         )}
       </div>
 

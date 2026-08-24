@@ -118,9 +118,19 @@ describe('ageFactorCvValidation', () => {
       expect(result).toEqual({ isValid: true, factor: 1.5 });
     });
 
-    it('should validate zero', () => {
+    it('should reject zero', () => {
       const result = validateFactorValue('0');
-      expect(result).toEqual({ isValid: true, factor: 0 });
+      expect(result).toEqual({ isValid: false, factor: 0 });
+    });
+
+    it('should reject values below the 0.1 lower bound', () => {
+      const result = validateFactorValue('0.05');
+      expect(result).toEqual({ isValid: false, factor: 0 });
+    });
+
+    it('should validate a value at the 0.1 lower bound', () => {
+      const result = validateFactorValue('0.1');
+      expect(result).toEqual({ isValid: true, factor: 0.1 });
     });
 
     it('should reject negative numbers', () => {
@@ -130,6 +140,16 @@ describe('ageFactorCvValidation', () => {
 
     it('should reject invalid strings', () => {
       const result = validateFactorValue('invalid');
+      expect(result).toEqual({ isValid: false, factor: 0 });
+    });
+
+    it('should validate a value at the upper bound', () => {
+      const result = validateFactorValue('100');
+      expect(result).toEqual({ isValid: true, factor: 100 });
+    });
+
+    it('should reject values above 100', () => {
+      const result = validateFactorValue('100.01');
       expect(result).toEqual({ isValid: false, factor: 0 });
     });
   });

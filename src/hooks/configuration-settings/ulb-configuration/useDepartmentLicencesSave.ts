@@ -16,12 +16,14 @@ import type { DepartmentLicense } from '@/types/ulbconfig-master.types';
 interface UseDepartmentLicencesSaveOptions {
   departments: DepartmentLicense[];
   setDepartments: Dispatch<SetStateAction<DepartmentLicense[]>>;
+  setInitialDepartments?: Dispatch<SetStateAction<DepartmentLicense[]>>;
 }
 
 /** Persists department licence cards via the ULB server action (no direct API client usage). */
 export function useDepartmentLicencesSave({
   departments,
   setDepartments,
+  setInitialDepartments,
 }: UseDepartmentLicencesSaveOptions) {
   const router = useRouter();
   const t = useTranslations('ulb_configuration');
@@ -50,8 +52,8 @@ export function useDepartmentLicencesSave({
       const response = await saveDepartmentLicencesAction(departments);
 
       if (response.data?.length) {
-        setDepartments((prev) =>
-          prev.map((dept) => {
+        setDepartments((prev) => {
+          const next = prev.map((dept) => {
             const saved = response.data!.find(
               (item) =>
                 Number(item.departmentId ?? item.departmentMasterId) ===
@@ -69,10 +71,11 @@ export function useDepartmentLicencesSave({
                 : dept.duration,
               endDate: saved.licenceEndDate ? saved.licenceEndDate.split('T')[0] : dept.endDate,
             };
-          })
-        );
+          });
+          if (setInitialDepartments) setInitialDepartments(next);
+          return next;
+        });
       }
-
       if (!response.success) {
         toast.error(
           resolveUlbConfigurationErrorMessage(response.error, t, t('messages.error'))
@@ -107,7 +110,6 @@ export function useDepartmentLicencesSave({
       isSavingLicencesRef.current = false;
       setIsSavingLicences(false);
     }
-  }, [departments, router, setDepartments, t]);
-
+  }, [departments, router, setDepartments, setInitialDepartments, t]);
   return { saveLicences, isSavingLicences };
 }

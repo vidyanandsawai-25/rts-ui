@@ -9,10 +9,10 @@ import {
 } from "./ageFactorCvValidation";
 
 interface BuildGenerationParams {
-    selectedAgeRange: string;
+    selectedAgeRange: string | string[];
     ageRangeOptions: Option[];
     data: AgeFactorCVMaster[];
-    constructionType: string;
+    constructionType: string | string[];
     constructionTypeOptions: Option[];
     allAgeFactors: AgeFactorCVMaster[];
     editableRows: Record<string, AgeFactorCVMaster>;
@@ -85,17 +85,24 @@ export const buildGenerationPayloadForYear = (
     
     const generatedRows: BulkAgeFactorCVMasterCreate = [];
 
-    const typesToProcess = constructionType
-        ? constructionTypeOptions.filter(ct => ct.value === constructionType)
+    const selectedConstructionTypes = Array.isArray(constructionType)
+        ? constructionType
+        : (constructionType ? [constructionType] : []);
+    const typesToProcess = selectedConstructionTypes.length > 0
+        ? constructionTypeOptions.filter(ct => selectedConstructionTypes.includes(ct.value))
         : constructionTypeOptions;
 
     typesToProcess.forEach(constTypeOpt => {
         const constructionTypeId = parseInt(constTypeOpt.value);
         if (isNaN(constructionTypeId)) return;
 
+        const selectedAgeRanges = Array.isArray(selectedAgeRange)
+            ? selectedAgeRange
+            : (selectedAgeRange ? [selectedAgeRange] : []);
+
         let rangesToProcess: string[] = [];
-        if (selectedAgeRange) {
-            rangesToProcess = [selectedAgeRange];
+        if (selectedAgeRanges.length > 0) {
+            rangesToProcess = selectedAgeRanges;
         } else if (ageRangeOptions.length > 0) {
             rangesToProcess = ageRangeOptions.map(o => o.value);
         } else {

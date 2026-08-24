@@ -27,9 +27,6 @@ export function useFooterActionHandler(
   }, [isPending]);
 
   const handleActionClick = async (command: string) => {
-    if (command === 'PTIS_REFRESH') {
-      return;
-    }
     if (isPending) {
       return;
     }

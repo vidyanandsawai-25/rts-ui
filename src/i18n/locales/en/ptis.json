@@ -453,6 +453,8 @@
     "cleaningTax": "Cleaning Tax",
     "sewerageTax": "Sewerage Tax",
     "treeTax": "Tree Tax",
+    "educationTax": "Education Tax",
+    "employmentTax": "Employment Tax",
     "taxTotal": "Tax Total"
   },
   "actions": {

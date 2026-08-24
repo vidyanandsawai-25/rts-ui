@@ -46,7 +46,7 @@ export const hasExistingAgeFactor = (
  */
 export const validateFactorValue = (factorValue: string): { isValid: boolean; factor: number } => {
     const factor = parseFloat(factorValue);
-    if (isNaN(factor) || factor < 0) {
+    if (isNaN(factor) || factor < 0.1 || factor > 100) {
         return { isValid: false, factor: 0 };
     }
     return { isValid: true, factor };
@@ -58,8 +58,8 @@ export const validateFactorValue = (factorValue: string): { isValid: boolean; fa
 export const matchesFilterCriteria = (
     row: AgeFactorCVMaster,
     criteria: {
-        constructionType: string;
-        selectedAgeRange: string;
+        constructionType: string | string[];
+        selectedAgeRange: string | string[];
         ageFrom: string;
         ageTo: string;
         selectedYear: string;
@@ -67,12 +67,22 @@ export const matchesFilterCriteria = (
 ): boolean => {
     const { constructionType, selectedAgeRange, ageFrom, ageTo, selectedYear } = criteria;
 
-    const matchesConstruction = !constructionType || row.constructionTypeId === parseInt(constructionType);
+    const selectedConstructionTypes = Array.isArray(constructionType)
+        ? constructionType
+        : (constructionType ? [constructionType] : []);
+    const matchesConstruction = selectedConstructionTypes.length === 0 ||
+        selectedConstructionTypes.map(Number).includes(row.constructionTypeId);
+
+    const selectedAgeRanges = Array.isArray(selectedAgeRange)
+        ? selectedAgeRange
+        : (selectedAgeRange ? [selectedAgeRange] : []);
 
     let matchesAge = true;
-    if (selectedAgeRange) {
-        const [minAge, maxAge] = selectedAgeRange.split("-").map(Number);
-        matchesAge = row.ageFrom === minAge && row.ageTo === maxAge;
+    if (selectedAgeRanges.length > 0) {
+        matchesAge = selectedAgeRanges.some((range) => {
+            const [minAge, maxAge] = range.split("-").map(Number);
+            return row.ageFrom === minAge && row.ageTo === maxAge;
+        });
     } else if (ageFrom || ageTo) {
         matchesAge = (!ageFrom || row.ageFrom >= parseInt(ageFrom)) &&
             (!ageTo || row.ageTo <= parseInt(ageTo));

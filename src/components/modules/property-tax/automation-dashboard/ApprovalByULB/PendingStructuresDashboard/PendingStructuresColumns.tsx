@@ -1,8 +1,8 @@
 
-import Link from 'next/link';
 import { Column } from '@/components/common/AutomationTable';
 import { X, Check } from 'lucide-react';
 import { BuildingWiseItem, AuthoritySignature } from '@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type';
+import Link from 'next/link';
 
 export type ExtendedBuildingWiseItem = BuildingWiseItem & {
     isTotal?: boolean;
@@ -28,8 +28,8 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             render: (_val, row) => {
                 if (row.isTotal) return null;
                 return (
-                    <Link 
-                        href={`/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}${currentUrl ? `?returnUrl=${currentUrl}` : ''}`} 
+                    <Link
+                        href={`/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}${currentUrl ? `?returnUrl=${currentUrl}` : ''}`}
                         className="text-gray-700 font-semibold hover:underline hover:text-indigo-800 transition-colors"
                     >
                         {row.buildingNo}
@@ -45,8 +45,8 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             render: (_val, row) => {
                 if (row.isTotal) return null;
                 return (
-                    <Link 
-                        href={`/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}?noticeNo=${row.noticeNo}${currentUrl ? `&returnUrl=${currentUrl}` : ''}`} 
+                    <Link
+                        href={`/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}?noticeNo=${row.noticeNo}${currentUrl ? `&returnUrl=${currentUrl}` : ''}`}
                         className="text-gray-700 font-semibold hover:underline hover:text-indigo-800 transition-colors"
                     >
                         {row.noticeNo}
@@ -85,7 +85,7 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             align: 'center',
             render: (_val, row) => {
                 if (row.isTotal) {
-                     return <span className="font-bold text-slate-800">{(row[`total_auth_${auth.signAuthorityId}`] as React.ReactNode) ?? 0}</span>;
+                    return <span className="font-bold text-slate-800">{(row[`total_auth_${auth.signAuthorityId}`] as React.ReactNode) ?? 0}</span>;
                 }
                 const sig = row.authoritySignatures?.find((s: AuthoritySignature) => s.signAuthorityId === auth.signAuthorityId);
                 if (sig) {

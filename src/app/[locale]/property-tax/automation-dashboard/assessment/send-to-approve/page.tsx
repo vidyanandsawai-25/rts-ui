@@ -64,8 +64,8 @@ export default async function SendToApprovePage({ searchParams }: PageProps) {
         pageSize,
         searchTerm: SearchTerm,
         surveyTypeId: surveyType,
-        zoneId: zoneName,    
-        wardId: wardNumber,    
+        zoneId: zoneName,
+        wardId: wardNumber,
         PropertyTypeCategoryId: propertyType,
         PropertyTypeId: propertyDescription
     });
@@ -84,10 +84,10 @@ export default async function SendToApprovePage({ searchParams }: PageProps) {
     surveyTypeOptions.unshift({ value: 'All', label: 'All Survey Types' });
 
     return (
-        <SendToApproveDashboard 
-            serverData={serverData} 
-            pageNumber={pageNumber} 
-            pageSize={pageSize} 
+        <SendToApproveDashboard
+            serverData={serverData}
+            pageNumber={pageNumber}
+            pageSize={pageSize}
             zoneOptions={zoneOptions}
             wardOptions={wardOptions}
             propertyTypeOptions={propertyTypeStaticOptions}

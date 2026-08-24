@@ -153,6 +153,7 @@ export function useScopeSelection(
     fetchAssessmentStatusesAction: () => Promise<AssessmentStatusesActionResponse>;
     fetchAllZonesAction: () => Promise<ZonesActionResponse | null>;
     fetchAllPropertyTypesAction: () => Promise<PropertyTypesActionResponse | null>;
+    getServerTimeAction: () => Promise<string | null>;
   }
 ) {
   const searchParams = useSearchParams();
@@ -478,6 +479,25 @@ export function useScopeSelection(
       }
       const financeYearId = Number(currentFy);
 
+      let adjustedScheduledDateTime = scheduledDateTime;
+      if (isScheduled && scheduledDateTime) {
+        const clientRequestTime = Date.now();
+        const serverTimeStr = await actions.getServerTimeAction();
+        if (serverTimeStr) {
+          const oneWayLatency = (Date.now() - clientRequestTime) / 2;
+          const serverTime = new Date(new Date(serverTimeStr).getTime() + oneWayLatency);
+          const clientTime = new Date();
+          const skewMs = clientTime.getTime() - serverTime.getTime();
+          if (typeof window !== 'undefined') {
+            window.sessionStorage.setItem('ntis_clock_skew_ms', String(skewMs));
+          }
+
+          const originalScheduledDate = new Date(scheduledDateTime);
+          const adjustedDate = new Date(originalScheduledDate.getTime() - skewMs);
+          adjustedScheduledDateTime = adjustedDate.toISOString();
+        }
+      }
+
       const payload: ExecuteOperationPayload = {
         financeYearId,
         operation: 'addTax',
@@ -486,7 +506,7 @@ export function useScopeSelection(
         options: {
           previewBeforeExecute: true,
           isScheduled,
-          ...(scheduledDateTime ? { scheduledDateTime } : {})
+          ...(adjustedScheduledDateTime ? { scheduledDateTime: adjustedScheduledDateTime } : {})
         }
       };
 

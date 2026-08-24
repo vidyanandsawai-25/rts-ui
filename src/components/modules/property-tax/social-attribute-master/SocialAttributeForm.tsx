@@ -30,6 +30,7 @@ export default function SocialAttributeForm({
     isChild,
     open,
     handleChange,
+    handleParentAttributeChange,
     handleBlur,
     handleSubmit,
     handleToggleStatus,
@@ -87,7 +88,7 @@ export default function SocialAttributeForm({
         </>
       }
     >
-      <form id="form" onSubmit={handleSubmit} className="space-y-6 bg-[#F8FAFF] p-5">
+      <form id="form" onSubmit={handleSubmit} noValidate className="space-y-6 bg-[#F8FAFF] p-5">
         <StatusToggleSection
           isEdit={isEdit}
           isActive={isActive}
@@ -101,6 +102,7 @@ export default function SocialAttributeForm({
           formData={formData}
           handleChange={handleChange}
           handleBlur={handleBlur}
+          onParentAttributeChange={handleParentAttributeChange}
           isChild={isChild}
           handleToggleIsChild={handleToggleIsChild}
           handleToggleIsRequiredWhenParentTrue={handleToggleIsRequiredWhenParentTrue}

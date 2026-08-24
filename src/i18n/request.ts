@@ -98,6 +98,7 @@ export default getRequestConfig(async (params: any) => {
     dynamicTaxRegisterMessages,
     assetGrievanceCategoryMessages,
     assetGrievanceRemarkMessages,
+    retrospectiveRuleLibraryMessages,
     taxZoningRangeMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -237,6 +238,7 @@ export default getRequestConfig(async (params: any) => {
     import(`./locales/${validatedLocale}/dynamicTaxRegister.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetGrievanceCategory.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetGrievanceRemark.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/retrospectiveRuleLibrary.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxZoningRange.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
@@ -327,6 +329,7 @@ export default getRequestConfig(async (params: any) => {
       dynamicTaxRegister: dynamicTaxRegisterMessages,
       assetGrievanceCategory: assetGrievanceCategoryMessages,
       assetGrievanceRemark: assetGrievanceRemarkMessages,
+      retrospectiveRuleLibrary: retrospectiveRuleLibraryMessages,
       taxZoningRange: taxZoningRangeMessages?.taxZoningRange || taxZoningRangeMessages,
     },
   };

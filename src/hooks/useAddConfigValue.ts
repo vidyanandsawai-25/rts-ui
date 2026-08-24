@@ -8,6 +8,8 @@ import { createConfigValueAction } from '@/app/[locale]/configuration-settings/c
 import { useConfirm } from '@/components/common';
 import type { AddConfigValueModalProps } from '@/types/configMaster.types';
 
+import { DateUtils } from '@/lib/utils/date-helpers';
+
 const initialFormData = {
   configKeyId: '',
   departmentId: '',
@@ -68,6 +70,11 @@ export function useAddConfigValue({
     [filteredConfigItems]
   );
 
+  const selectedConfigKey = useMemo(
+    () => configItems.find((item) => item.configKeyId.toString() === formData.configKeyId),
+    [configItems, formData.configKeyId]
+  );
+
   const handleCategoryChange = (newCategory: string): void => {
     setSelectedCategory(newCategory);
     if (newCategory && newCategory !== 'all' && formData.configKeyId) {
@@ -106,6 +113,30 @@ export function useAddConfigValue({
     if (formData.moduleId && isNaN(parseInt(formData.moduleId))) {
       newErrors.moduleId = t('modals.addValue.form.validation.moduleIdRequired');
     }
+
+    if (selectedConfigKey && formData.value.trim()) {
+      const normDataType = (selectedConfigKey.dataType || '').toLowerCase();
+      const normControlType = (selectedConfigKey.controlType || '').toLowerCase();
+      const trimmed = formData.value.trim();
+
+      const isIntegerType = normControlType === 'number' || normDataType === 'int' || normDataType === 'integer';
+      const isDecimalType = normDataType === 'decimal' || normDataType === 'float' || normDataType === 'double' || normDataType === 'number';
+      const isDateTimeType = normDataType === 'datetime' || normDataType === 'date' || normDataType === 'timestamp' || normControlType === 'calendar' || normControlType === 'date';
+      const isBooleanType = normControlType === 'checkbox' || normControlType === 'toggle' || normDataType === 'boolean' || normDataType === 'bool';
+
+      if (isIntegerType && !/^-?\d+$/.test(trimmed)) {
+        newErrors.value = t('messages.invalidInteger') || 'Please enter a valid integer';
+      } else if (isDecimalType && (isNaN(Number(trimmed)) || !/^-?\d+(\.\d+)?$/.test(trimmed))) {
+        newErrors.value = t('messages.invalidDecimal') || 'Please enter a valid decimal number';
+      } else if (isDateTimeType && !DateUtils.isValidDateTime(trimmed)) {
+        newErrors.value =
+          t('messages.invalidDateTime') ||
+          'Please enter a valid date and time (year from current year onwards)';
+      } else if (isBooleanType && trimmed !== 'true' && trimmed !== 'false') {
+        newErrors.value = t('messages.invalidBoolean') || 'Please select a valid boolean (True/False)';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -162,11 +193,6 @@ export function useAddConfigValue({
     setErrors({});
     onClose();
   };
-
-  const selectedConfigKey = useMemo(() => 
-    configItems.find((item) => item.configKeyId.toString() === formData.configKeyId),
-    [configItems, formData.configKeyId]
-  );
 
   return {
     formData,

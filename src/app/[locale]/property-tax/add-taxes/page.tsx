@@ -17,7 +17,8 @@ import {
   getAuditListAction,
   getAuditDetailAction,
   getJobPropertiesAction,
-  getImportTemplateAction
+  getImportTemplateAction,
+  getServerTimeAction
 } from './actions';
 
 interface AddTaxesPageProps {
@@ -56,7 +57,8 @@ export default async function AddTaxesPage({ params }: AddTaxesPageProps) {
     getAuditListAction,
     getAuditDetailAction,
     getJobPropertiesAction,
-    getImportTemplateAction
+    getImportTemplateAction,
+    getServerTimeAction
   };
 
   return (

@@ -23,12 +23,19 @@
       "labels": {
         "active": "सक्रिय",
         "inactive": "निष्क्रिय",
+        "assessmentYear": "मूल्यांकन वर्ष",
+        "status": "स्थिती",
         "pendingRecordCreates": "{count} प्रलंबित नोंदी तयार करणे"
       },
+      "placeholders": {
+        "selectAssessmentYear": "मूल्यांकन वर्ष निवडा"
+      },
       "messages": {
+        "createRecordFirst": "संपादन किंवा हटवण्यापूर्वी कृपया प्रथम नोंद तयार करा.",
         "pendingRecordsWarning": "प्रलंबित नोंदी आहेत. कृपया सर्व तयार करा बटणावर क्लिक करा.",
         "negativeValuesNotAllowed": "ऋण मूल्यांना परवानगी नाही",
         "valueExceedsMax": "मूल्य 999.99 पेक्षा जास्त असू शकत नाही",
+        "factorPercentageExceedsMax": "फॅक्टर/टक्केवारी मूल्य 0 ते 100 दरम्यान असणे आवश्यक आहे",
         "noChangesToUpdate": "या ओळीसाठी अद्यतनित करण्यासाठी कोणतेही बदल नाहीत",
         "noChangesDetected": "या ओळीसाठी कोणतेही बदल आढळले नाहीत",
         "recordCreatedSuccess": "नोंद यशस्वीरित्या तयार केली",
@@ -38,7 +45,7 @@
         "failedToSaveRow": "ओळ अद्यतनित करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
         "changesDiscarded": "या ओळीसाठी बदल रद्द केले",
         "assessmentYearRequired": "मोठ्या प्रमाणात घटक लागू करण्यापूर्वी कृपया मूल्यांकन वर्ष निवडा",
-        "validFactorRequired": "कृपया 0 पेक्षा जास्त वैध घटक मूल्य प्रविष्ट करा",
+        "validFactorRequired": "कृपया 0.1 ते 100 दरम्यान वैध घटक मूल्य प्रविष्ट करा",
         "negativeFactorsNotAllowed": "ऋण घटकांना परवानगी नाही",
         "factorApplied": "{count} नोंदी(नोंदींना) घटक {factor} लागू केला",
         "noRecordsMatch": "निवडलेल्या निकषांशी कोणतीही नोंद जुळत नाही",
@@ -52,6 +59,7 @@
         "generationFailed": "नोंदी तयार करण्यात अयशस्वी",
         "generateAllFailed": "सर्व तयार करणे अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
         "allClearedInfo": "सर्व बदल आणि फिल्टर साफ केले",
+        "allRecordsExist": "सध्याच्या निवडींसाठी सर्व नोंदी आधीच अस्तित्वात आहेत",
         "created": "तयार केले",
         "updated": "अद्यतनित केले",
         "failed": "अयशस्वी"

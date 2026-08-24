@@ -152,7 +152,8 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
   const t = useTranslations('ulb_configuration');
   const tCommon = useTranslations('common');
 
-  const [formData, setFormData] = useState<ULBConfigurationFormData>(() => buildInitialForm(initialUlb));
+  const [initialFormData, setInitialFormData] = useState<ULBConfigurationFormData>(() => buildInitialForm(initialUlb));
+  const [formData, setFormData] = useState<ULBConfigurationFormData>(initialFormData);
   const [errors, setErrors] = useState<UlbConfigurationFieldErrors>({});
   const [touched, setTouched] = useState<Partial<Record<keyof ULBConfigurationFormData, boolean>>>({});
   const [submittedOnce, setSubmittedOnce] = useState<Partial<Record<UlbSectionKey, boolean>>>({});
@@ -170,7 +171,9 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
   );
 
   const syncFromUlbMaster = useCallback((ulb: UlbConfigurationMaster | null, hasLicences?: boolean) => {
-    setFormData(buildInitialForm(ulb));
+    const initial = buildInitialForm(ulb);
+    setInitialFormData(initial);
+    setFormData(initial);
     setErrors({});
     setTouched({});
     setSubmittedOnce({});
@@ -181,8 +184,11 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
     }));
   }, []);
 
-  const setField = useCallback(<K extends keyof ULBConfigurationFormData>(field: K, value: ULBConfigurationFormData[K]) => {
+  const setField = useCallback(<K extends keyof ULBConfigurationFormData>(field: K, value: ULBConfigurationFormData[K], updateInitial = false) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (updateInitial) {
+      setInitialFormData((prev) => ({ ...prev, [field]: value }));
+    }
     setErrors((prev) => {
       if (!prev[field]) return prev;
       const next = { ...prev };
@@ -348,9 +354,15 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
     [masterRenewalAlerts]
   );
 
+  const isDirty = useMemo(() => {
+    return JSON.stringify(formData) !== JSON.stringify(initialFormData);
+  }, [formData, initialFormData]);
+
   return {
     formData,
     errors,
+    touched,
+    isDirty,
     setField,
     handleFieldChange,
     handleFieldBlur,

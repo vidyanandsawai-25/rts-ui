@@ -80,11 +80,25 @@ const fetchActiveModuleIds = cache(async () => {
  */
 const fetchUserMenuItems = cache(async (userId: number, token?: string) => {
   try {
-    const [screensRes, activeModuleIds, userProfile] = await Promise.all([
+    const [screensRes, activeModuleIds, userProfile, groupsRes] = await Promise.all([
       userScreenAccessService.getScreensForUser(userId, token),
       fetchActiveModuleIds(),
       getUserById(String(userId)).catch(() => null),
+      sidebarNavigationService.getScreenGroups().catch(() => null),
     ]);
+
+    // Build a set of inactive screen group names so we can hide their screens in the sidebar
+    const inactiveGroupNames = new Set<string>();
+    if (groupsRes?.success) {
+      const allGroups = Array.isArray(groupsRes.data)
+        ? groupsRes.data
+        : groupsRes.data?.items || [];
+      for (const g of allGroups) {
+        if (!g.isActive && g.screenGroupName) {
+          inactiveGroupNames.add(g.screenGroupName.trim());
+        }
+      }
+    }
 
     if (screensRes.success && Array.isArray(screensRes.data) && screensRes.data.length > 0) {
       const filteredScreens = filterScreensByAllocatedRoles(
@@ -98,7 +112,10 @@ const fetchUserMenuItems = cache(async (userId: number, token?: string) => {
           ? applyModuleActivationGate(mergedScreens, activeModuleIds)
           : mergedScreens;
 
-      const userMenuItems = buildSidebarTreeFromUserScreens(effectiveScreens);
+      const userMenuItems = buildSidebarTreeFromUserScreens(
+        effectiveScreens,
+        inactiveGroupNames.size > 0 ? inactiveGroupNames : undefined
+      );
       if (userMenuItems.length > 0) {
         return { menuItems: userMenuItems, rawScreens: effectiveScreens };
       }
@@ -161,7 +178,13 @@ async function FooterWithUlb() {
   return <Footer ulbData={ulbData} />;
 }
 function HeaderSkeleton() {
-  return <div className="fixed inset-x-0 top-0 z-40 h-20 w-full border-b border-white/10 shadow-2xl" style={{ backgroundColor: '#4b70a6' }} aria-hidden />;
+  return (
+    <div
+      className="fixed inset-x-0 top-0 z-40 h-20 w-full border-b border-white/10 shadow-2xl"
+      style={{ backgroundColor: '#4b70a6' }}
+      aria-hidden
+    />
+  );
 }
 function FooterSkeleton() {
   return <div className="mt-auto h-16 w-full shrink-0 bg-slate-100" aria-hidden />;

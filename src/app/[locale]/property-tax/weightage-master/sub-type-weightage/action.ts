@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { locales } from "@/i18n/config";
 import {
   getUseFactorCVMasterWithParams,
+  getUseFactorCVMasterById,
   updateUseFactorCVMaster,
   createUseFactorCVMaster,
   bulkCreateUseFactorCVMaster,
@@ -25,6 +26,7 @@ import {
   TypeOfUseQueryParams,
   UseType,
 } from "@/types/useCategoryCvFactor.types";
+import { deleteUseFactorCVMaster } from "@/lib/api/weightagemaster/useCategoryCvFactor/useCategoryCvFactor-queries.service";
 
 
 /**
@@ -43,7 +45,7 @@ export async function fetchUseFactorCVMasterPagedServerAction(
   try {
     const MAX_PAGE_SIZE = 1000; // Increased limit
     const MAX_PAGE_NUMBER = 10000;
-    
+
     // Handle potential "undefined" string or NaN
     const safeTypeOfUseId = sanitizeNumericParam(typeOfUseId);
     const safeSubTypeOfUseId = sanitizeNumericParam(subTypeOfUseId);
@@ -86,7 +88,7 @@ export async function fetchUseFactorCVMasterPagedServerAction(
     return response.data;
   } catch (error: unknown) {
     const logger = createLogger('fetchUseFactorCVMasterPaged');
-    
+
     if (error instanceof ApiError) {
       logger.error(
         'Failed to fetch UseFactorCVMaster records',
@@ -116,15 +118,48 @@ export async function fetchUseFactorCVMasterPagedServerAction(
 }
 
 /**
- * Update UseFactorCVMaster record
+ * fetch UseFactorCVMaster by ID
  */
+export async function fetchUseFactorCVMasterByIdServerAction(id: number) {
+  const logger = createLogger('fetchUseFactorCVMasterById');
+  logger.info('Starting request', { operation: 'fetchUseFactorCVMasterByIdServerAction', id });
+
+  try {
+    if (!id || id <= 0) {
+      throw new Error('Invalid Use Factor CV ID');
+    }
+
+    const response = await getUseFactorCVMasterById(id);
+    logger.info('Successfully fetched UseFactorCVMaster by ID', { id });
+
+    if (!response?.success || !response.data) {
+      throw new Error(response?.error || 'Failed to fetch record');
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: unknown) {
+    const errorDetails = {
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      stack: error instanceof Error ? error.stack : undefined,
+      status: error instanceof ApiError ? error.statusCode : 500,
+    };
+
+    logger.error('Failed to fetch UseFactorCVMaster by ID', { error: errorDetails });
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch record',
+      error: errorDetails,
+    };
+  }
+}
+
 export async function updateUseFactorCVMasterAction(
   id: number,
   payload: Omit<UseFactorCVMasterUpdate, 'updatedBy'>
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     const userId = getUserIdFromCookies(await cookies()) || 1;
-    
+
     const finalPayload: UseFactorCVMasterUpdate = {
       ...payload,
       updatedBy: userId
@@ -163,7 +198,7 @@ export async function createUseFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
     const userId = getUserIdFromCookies(await cookies()) || 1;
-    
+
     const finalPayload: UseFactorCVMasterCreate = {
       ...payload,
       createdBy: userId
@@ -197,7 +232,7 @@ export async function bulkCreateUseFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
     const userId = getUserIdFromCookies(await cookies()) || 1;
-    
+
     const finalPayload: BulkUseFactorCVMasterCreate = payload.map(item => ({
       ...item,
       createdBy: userId
@@ -231,7 +266,7 @@ export async function bulkUpdateUseFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     const userId = getUserIdFromCookies(await cookies()) || 1;
-    
+
     const finalPayload: BulkUseFactorCVMasterUpdate = payload.map(item => ({
       id: item.id,
       data: {
@@ -311,5 +346,27 @@ export async function fetchTypeOfUsePaged(
       error
     );
     throw error;
+  }
+}
+
+export async function deleteUseFactorCVMasterAction(id: number): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+  try {
+    const response = await deleteUseFactorCVMaster(id);
+    if (response.success) {
+      for (const locale of locales) {
+        revalidatePath(`/${locale}/property-tax/weightage-master/sub-type-weightage`, "page");
+      }
+      return { success: true };
+    } else {
+      return { success: false, message: response.error || 'Failed to delete record', statusCode: 500 };
+    }
+  } catch (error: unknown) {
+    const logger = createLogger('deleteUseFactorCVMasterAction');
+    logger.error('Failed to delete UseFactorCVMaster', { operation: 'deleteUseFactorCVMasterAction', id }, error);
+
+    if (error instanceof ApiError) {
+      return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+    }
+    return { success: false, message: error instanceof Error ? error.message : 'Unknown error', statusCode: 500 };
   }
 }

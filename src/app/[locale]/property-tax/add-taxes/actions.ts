@@ -2,7 +2,7 @@
 "use server";
 
 import { ApiError } from '@/lib/utils/api';
-import { initOperations, getScopeOptions, searchProperties, getEligibleCount, executeOperation, getJobProperties, getJobStatus, previewOperation, getAuditList, getAuditDetail, getImportTemplate, exportProperties } from '@/lib/api/add-taxes/operations.service';
+import { initOperations, getScopeOptions, searchProperties, getEligibleCount, executeOperation, getJobProperties, getJobStatus, previewOperation, getAuditList, getAuditDetail, getImportTemplate, exportProperties, getServerTime } from '@/lib/api/add-taxes/operations.service';
 import { InitOperationsResponse, ScopeOptionsResponse, ExecuteOperationPayload, SearchPropertiesResponse, OperationPreviewPayload, ImportTemplateResponse } from '@/types/addTaxes.types';
 import type { JobPropertyPaginatedResponse } from '@/types/addTaxes.types';
 import { createLogger } from '@/lib/utils/server-logger';
@@ -11,6 +11,19 @@ import { fetchZonesAction, getAllWardsForLinkAction } from "../zone-master/actio
 import { getPropertyTypesPaged } from '@/lib/api/property-type-crud.service';
 
 const logger = createLogger('AddTaxesActions');
+
+export async function getServerTimeAction(): Promise<string | null> {
+    try {
+        return await getServerTime();
+    } catch (error) {
+        if (error instanceof ApiError) {
+            logger.error(`[getServerTimeAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
+        } else {
+            logger.error("[getServerTimeAction] Error:", undefined, error);
+        }
+        return null;
+    }
+}
 
 export async function initOperationsAction(financeYearId?: string | number): Promise<InitOperationsResponse | null> {
     try {

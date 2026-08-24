@@ -8,12 +8,25 @@ import {
   uploadUlbImageAction,
   replaceUlbImageAction,
 } from '@/app/[locale]/configuration-settings/ulb-configuration/actions';
-import { clearDocumentCacheEntry } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import type { ULBImage, UlbImageMasterDto } from '@/types/ulbconfig-master.types';
 
-export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (url: string | null) => void) {
+export type PendingUpload = {
+  tempId: string;
+  mode: 'upload' | 'replace';
+  category: 'Logo' | 'Background' | 'Gallery' | 'BackgroundLibrary';
+  file: File;
+  replaceId: string | null;
+};
+
+export type ImageHookReturn = ReturnType<typeof useUlbImages>;
+
+export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (url: string | null, isAutoSelect?: boolean) => void) {
   const { confirm } = useConfirm();
+  
+  // Track original images to detect category changes (like Background -> BackgroundLibrary)
+  const [originalImages] = useState<UlbImageMasterDto[]>(initialImages);
+
   const [images, setImages] = useState<ULBImage[]>(() =>
     initialImages.map((img) => {
       const realId = img.id ?? (img as UlbImageMasterDto & { ulbImageMasterId?: number }).ulbImageMasterId;
@@ -28,27 +41,32 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
       };
     })
   );
+
   const [isUploading, setIsUploading] = useState(false);
+  
+  // Pending queues
+  const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
+  const [pendingDeletions, setPendingDeletions] = useState<string[]>([]);
+  
+  const hasPendingImageChanges = pendingUploads.length > 0 || pendingDeletions.length > 0;
 
   const deleteImage = useCallback(async (id: string, category: 'Logo' | 'Background' | 'Gallery') => {
     confirm({
       variant: 'delete',
-      title: 'Delete Image',
-      description: 'Are you sure you want to delete this image?',
-      confirmText: 'Delete',
+      title: 'Remove Image',
+      description: 'Are you sure you want to remove this image? (Changes apply when you Save Progress)',
+      confirmText: 'Remove',
       cancelText: 'Cancel',
       onConfirm: async () => {
-        const toastId = toast.loading('Deleting image...');
-        try {
-          const res = await deleteUlbImageAction(Number(id));
-          if (!res.success) throw new Error(res.error || 'Delete failed');
-          setImages((prev) => prev.filter((img) => img.id !== id));
-          if (category === 'Logo') onLogoChange(null);
-          toast.success('Image deleted successfully', { id: toastId });
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Delete failed';
-          toast.error(message, { id: toastId });
+        setImages((prev) => prev.filter((img) => img.id !== id));
+        if (category === 'Logo') onLogoChange(null);
+
+        if (id.startsWith('temp-')) {
+          setPendingUploads((prev) => prev.filter((u) => u.tempId !== id));
+        } else {
+          setPendingDeletions((prev) => [...prev, id]);
         }
+        toast.info('Image removed. Click "Save Progress" to confirm.');
       }
     });
   }, [confirm, onLogoChange]);
@@ -57,27 +75,25 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
     const target = images.find((img) => img.id === id);
     if (!target) return;
     const prevBg = images.find((img) => img.name === 'Background' || img.isBackgroundImage);
-    const toastId = toast.loading('Updating background...');
-    try {
-      const res1 = await updateUlbImageTypeAction(Number(id), 'Background', target.documentId || 0);
-      if (!res1.success) throw new Error(res1.error || 'Update failed');
 
-      if (prevBg) {
-        await updateUlbImageTypeAction(Number(prevBg.id), 'BackgroundLibrary', prevBg.documentId || 0);
-      }
-
-      setImages((prev) =>
-        prev.map((img) => {
-          if (img.id === id) return { ...img, isBackgroundImage: true, name: 'Background' };
-          if (prevBg && img.id === prevBg.id) return { ...img, isBackgroundImage: false, name: 'BackgroundLibrary' };
-          return img;
-        })
-      );
-      toast.success('Background updated successfully', { id: toastId });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Update failed';
-      toast.error(message, { id: toastId });
+    setImages((prev) =>
+      prev.map((img) => {
+        if (img.id === id) return { ...img, isBackgroundImage: true, name: 'Background' };
+        if (prevBg && img.id === prevBg.id) return { ...img, isBackgroundImage: false, name: 'BackgroundLibrary' };
+        return img;
+      })
+    );
+    
+    // If it's a pending upload, update its category
+    if (id.startsWith('temp-')) {
+        setPendingUploads(prev => prev.map(u => {
+            if (u.tempId === id) return { ...u, category: 'Background' };
+            if (prevBg && u.tempId === prevBg.id) return { ...u, category: 'BackgroundLibrary' };
+            return u;
+        }));
     }
+    
+    toast.info('Background selected. Click "Save Progress" to confirm.');
   }, [images]);
 
   const uploadOrReplaceImage = useCallback(
@@ -91,9 +107,7 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
       if (!file) return toast.error('Please select an image file');
       if (file.size > 5 * 1024 * 1024) return toast.error('File size exceeds 5MB limit');
 
-      // If active background already exists and we are uploading a new background,
-      // upload it as "BackgroundLibrary" so it goes to the library instead of replacing the active background.
-      let finalTargetType = category === 'Background' ? 'Background' : category;
+      let finalTargetType: 'Logo' | 'Background' | 'Gallery' | 'BackgroundLibrary' = category;
       if (category === 'Background') {
         const hasActiveBg = images.some((i) => i.name === 'Background' || i.isBackgroundImage);
         if (hasActiveBg) {
@@ -101,92 +115,128 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
         }
       }
 
-      confirm({
-        variant: mode === 'replace' ? 'update' : 'add',
-        title: mode === 'replace' ? 'Confirm Replace' : 'Confirm Upload',
-        description: `Are you sure you want to ${mode === 'replace' ? 'replace' : 'upload'} this image?`,
-        confirmText: mode === 'replace' ? 'Replace' : 'Upload',
-        cancelText: 'Cancel',
-        onConfirm: async () => {
-          setIsUploading(true);
-          const toastId = toast.loading(mode === 'replace' ? 'Replacing image...' : 'Uploading image...');
+      const tempId = `temp-${Date.now()}`;
+      const tempUrl = URL.createObjectURL(file);
 
-          try {
-            const formData = new FormData();
-            formData.append('File', file);
+      const newImg: ULBImage = {
+        id: tempId,
+        url: tempUrl,
+        name: finalTargetType,
+        size: file.size,
+        isBackgroundImage: finalTargetType === 'Background',
+        uploadedDate: new Date().toISOString(),
+        documentId: undefined,
+      };
 
-            if (mode === 'upload') {
-              formData.append('ImageType', finalTargetType);
-              const res = await uploadUlbImageAction(formData);
-              if (!res.success || !res.data) throw new Error(res.error || 'Upload failed');
-
-              const newImg: ULBImage = {
-                id: String(res.data.ulbImageMasterId),
-                url: `/api/UlbImageMaster/${res.data.documentGuid}/view`,
-                name: finalTargetType,
-                size: file.size,
-                isBackgroundImage: finalTargetType === 'Background',
-                uploadedDate: new Date().toISOString(),
-                documentId: res.data.documentId,
-              };
-
-              let prevBgId = null;
-              if (finalTargetType === 'Background') {
-                const prevBg = images.find((i) => i.name === 'Background' || i.isBackgroundImage);
-                if (prevBg && !isNaN(Number(prevBg.id))) {
-                  prevBgId = prevBg.id;
-                  await updateUlbImageTypeAction(Number(prevBg.id), 'BackgroundLibrary', prevBg.documentId || 0);
-                }
-              }
-
-              setImages((prev) =>
-                prev.map((i) => i.id === prevBgId ? { ...i, name: 'BackgroundLibrary', isBackgroundImage: false } : i).concat(newImg)
-              );
-
-              // Only set as active logo if there isn't one set already
-              if (category === 'Logo' && !logoUrl) {
-                onLogoChange(newImg.url);
-              }
-              toast.success('Image uploaded successfully', { id: toastId });
-            } else {
-              if (!replaceId || isNaN(Number(replaceId))) throw new Error('Replace target id missing or invalid');
-              const target = images.find((i) => i.id === replaceId);
-              if (!target) throw new Error('Target image not found');
-
-              const res = await replaceUlbImageAction(Number(replaceId), formData);
-              if (!res.success || !res.data) throw new Error(res.error || 'Replace failed');
-
-              const newUrl = `/api/UlbImageMaster/${res.data.documentGuid}/view`;
-              if (target.url) clearDocumentCacheEntry(target.url);
-
-              const upRes = await updateUlbImageTypeAction(Number(replaceId), finalTargetType, res.data.documentId);
-              if (!upRes.success) throw new Error(upRes.error || 'Update category failed');
-
-              setImages((prev) =>
-                prev.map((i) =>
-                  i.id === replaceId
-                    ? { ...i, url: newUrl, name: finalTargetType, size: file.size, isBackgroundImage: finalTargetType === 'Background', documentId: res.data?.documentId }
-                    : i
-                )
-              );
-              if (category === 'Logo') {
-                onLogoChange(newUrl);
-              } else if (target.name === 'Logo') {
-                onLogoChange(null);
-              }
-              toast.success('Image replaced successfully', { id: toastId });
-            }
-          } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : 'Operation failed';
-            toast.error(message, { id: toastId });
-          } finally {
-            setIsUploading(false);
-          }
+      if (mode === 'upload') {
+        let prevBgId: string | null = null;
+        if (finalTargetType === 'Background') {
+          const prevBg = images.find((i) => i.name === 'Background' || i.isBackgroundImage);
+          if (prevBg) prevBgId = prevBg.id;
         }
-      });
+
+        setImages((prev) =>
+          prev
+            .map((i) => (i.id === prevBgId ? { ...i, name: 'BackgroundLibrary', isBackgroundImage: false } : i))
+            .concat(newImg)
+        );
+        
+        if (prevBgId && prevBgId.startsWith('temp-')) {
+             setPendingUploads(prev => prev.map(u => u.tempId === prevBgId ? { ...u, category: 'BackgroundLibrary' } : u));
+        }
+
+        setPendingUploads((prev) => [
+          ...prev,
+          { tempId, mode: 'upload', category: finalTargetType, file, replaceId: null },
+        ]);
+
+        if (category === 'Logo' && !logoUrl) {
+          onLogoChange(tempUrl);
+        }
+      } else {
+        if (!replaceId) return toast.error('Replace target missing');
+        
+        if (replaceId.startsWith('temp-')) {
+           // Replacing an already pending upload
+           setImages((prev) =>
+              prev.map((i) => (i.id === replaceId ? { ...i, url: tempUrl, size: file.size } : i))
+           );
+           setPendingUploads((prev) =>
+              prev.map((u) => (u.tempId === replaceId ? { ...u, file } : u))
+           );
+        } else {
+           // Replacing a real server image
+           setImages((prev) =>
+              prev.map((i) =>
+                i.id === replaceId
+                  ? { ...i, url: tempUrl, name: finalTargetType, size: file.size, isBackgroundImage: finalTargetType === 'Background' }
+                  : i
+              )
+           );
+           setPendingUploads((prev) => [
+              ...prev,
+              { tempId: replaceId, mode: 'replace', category: finalTargetType, file, replaceId },
+           ]);
+        }
+
+        if (category === 'Logo') {
+          onLogoChange(tempUrl);
+        }
+      }
+
+      toast.info('Image added locally. Click "Save Progress" to confirm.');
     },
-    [confirm, images, onLogoChange]
+    [images, onLogoChange]
   );
 
-  return { images, isUploading, deleteImage, setAsBackground, uploadOrReplaceImage };
+  const commitImageChanges = useCallback(async () => {
+    if (!hasPendingImageChanges) return true;
+    setIsUploading(true);
+    const toastId = toast.loading('Saving images to server...');
+
+    try {
+      // 1. Process deletions first
+      for (const id of pendingDeletions) {
+        await deleteUlbImageAction(Number(id));
+      }
+
+      // 2. Process uploads & replaces
+      for (const upload of pendingUploads) {
+        const formData = new FormData();
+        formData.append('File', upload.file);
+
+        if (upload.mode === 'upload') {
+          formData.append('ImageType', upload.category);
+          const res = await uploadUlbImageAction(formData);
+          if (!res.success) throw new Error(res.error || 'Upload failed');
+        } else if (upload.mode === 'replace' && upload.replaceId) {
+          const res = await replaceUlbImageAction(Number(upload.replaceId), formData);
+          if (!res.success || !res.data) throw new Error(res.error || 'Replace failed');
+          await updateUlbImageTypeAction(Number(upload.replaceId), upload.category, res.data.documentId);
+        }
+      }
+      
+      // 3. Process category changes (e.g. set as background) for existing images
+      const existingImages = images.filter(img => !img.id.startsWith('temp-') && !pendingUploads.some(u => u.replaceId === img.id));
+      for (const img of existingImages) {
+          const original = originalImages.find(o => String(o.id ?? (o as UlbImageMasterDto & { ulbImageMasterId?: number }).ulbImageMasterId) === img.id);
+          if (original && original.imageType !== img.name && img.documentId) {
+              await updateUlbImageTypeAction(Number(img.id), img.name, img.documentId);
+          }
+      }
+
+      toast.success('All images saved successfully', { id: toastId });
+      setPendingUploads([]);
+      setPendingDeletions([]);
+      return true;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save images';
+      toast.error(message, { id: toastId });
+      return false;
+    } finally {
+      setIsUploading(false);
+    }
+  }, [hasPendingImageChanges, pendingDeletions, pendingUploads, images, originalImages]);
+
+  return { images, isUploading, hasPendingImageChanges, deleteImage, setAsBackground, uploadOrReplaceImage, commitImageChanges };
 }

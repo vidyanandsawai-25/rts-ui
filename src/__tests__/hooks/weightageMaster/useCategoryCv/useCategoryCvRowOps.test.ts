@@ -61,6 +61,8 @@ describe('useCategoryCvRowOps', () => {
     return messages[key] || key;
   });
 
+  const mockOnDataChanged = vi.fn();
+
   const defaultProps = {
     editableRows: {},
     setEditableRows: mockSetEditableRows,
@@ -70,6 +72,7 @@ describe('useCategoryCvRowOps', () => {
     addToast: mockAddToast,
     refreshPage: mockRefreshPage,
     tW: mockTw,
+    onDataChanged: mockOnDataChanged,
   };
 
   beforeEach(() => {

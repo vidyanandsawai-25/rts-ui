@@ -195,12 +195,39 @@ async function resolveOrCreateCategory(remarkType: string, customRemarkType?: st
 }
 
 /**
+ * Helper to check for duplicate remarks
+ */
+async function checkDuplicateRemark(remarkTypeId: number, remark: string, excludeId?: number): Promise<void> {
+  const params = new URLSearchParams();
+  params.append("PageSize", "-1");
+  params.append("RemarkTypeId", String(remarkTypeId));
+
+  const response = await apiClient.get<unknown>(`/CommonRemarkDetails?${params.toString()}`);
+  if (response.success) {
+    const rawData = response.data as Record<string, unknown> | undefined;
+    const items = normalizeApiArray<Record<string, unknown>>(rawData);
+    
+    const isDuplicate = items.some((item) => {
+      const itemRemark = (item.remark as string || "").trim().toLowerCase();
+      const itemId = Number(item.id);
+      return itemRemark === remark.trim().toLowerCase() && itemId !== excludeId;
+    });
+
+    if (isDuplicate) {
+      throw new ApiError(409, "This remark already exists for the selected Remark Type.", "Duplicate remark");
+    }
+  }
+}
+
+/**
  * Create a new common remark
  */
 export async function createCommonRemark(data: CommonRemarkFormModel): Promise<void> {
   validateCreateFormData(data);
   const userId = data.createdBy ?? 1;
   const remarkTypeId = await resolveOrCreateCategory(data.remarkType, data.customRemarkType, userId);
+
+  await checkDuplicateRemark(remarkTypeId, data.remark);
 
   const payload = {
     remarkTypeId,
@@ -222,6 +249,8 @@ export async function updateCommonRemark(data: CommonRemarkFormModel): Promise<v
   validateUpdateFormData(data);
   const userId = data.updatedBy ?? 1;
   const remarkTypeId = await resolveOrCreateCategory(data.remarkType, data.customRemarkType, userId);
+
+  await checkDuplicateRemark(remarkTypeId, data.remark, data.id);
 
   const payload = {
     id: data.id,

@@ -157,6 +157,10 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   const initShowDrawer = searchParams?.get('dataEntrySameAs') === 'true';
   const [showDataEntrySameAsDrawer, setShowDataEntrySameAsDrawer] = React.useState(initShowDrawer);
 
+  React.useEffect(() => {
+    setShowDataEntrySameAsDrawer(searchParams?.get('dataEntrySameAs') === 'true');
+  }, [searchParams]);
+
   // Derive categoryName from initialPropertyData (comes from PropertyCategoryMaster via API)
   // Using name instead of numeric ID so it's not tied to hardcoded DB values
   const categoryName = React.useMemo(() => {
@@ -171,18 +175,6 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
   // Individual property: Data Entry Same As button should always be enabled
   const isIndividualProperty = categoryName.toLowerCase() === 'individual';
-
-  // Hide Data Entry Same As only when actual wing metadata is present.
-  // Partition numbers such as A, A1, A2 or A-1 do not imply a wing.
-  const hasWing = React.useMemo(() => {
-    const wingNo = props.initialPropertyData?.wingNo || props.initialPropertyData?.wingName;
-    return Boolean(
-      wingNo &&
-        String(wingNo).trim() !== '' &&
-        String(wingNo).trim() !== '-' &&
-        String(wingNo).trim() !== '0'
-    );
-  }, [props.initialPropertyData]);
 
   const handleOpenDataEntrySameAsDrawer = React.useCallback(() => {
     setShowDataEntrySameAsDrawer(true);
@@ -292,7 +284,6 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             plotAreaSqM={plotAreaSqM}
             categoryName={categoryName}
             propertyDescription={propertyDescription}
-            hasWing={hasWing}
           />
 
 

@@ -36,6 +36,12 @@ function clearAuthCookiesOnResponse(response: NextResponse): void {
   }
 }
 
+function applyAntiCacheHeaders(headers: Headers): void {
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  headers.set('Pragma', 'no-cache');
+  headers.set('Expires', '0');
+}
+
 function redirectToLogin(
   request: NextRequest,
   locale: string,
@@ -46,6 +52,7 @@ function redirectToLogin(
     url.searchParams.set('error', SESSION_EXPIRED_LOGIN_ERROR);
   }
   const response = NextResponse.redirect(url);
+  applyAntiCacheHeaders(response.headers);
   clearAuthCookiesOnResponse(response);
   return response;
 }
@@ -83,12 +90,6 @@ export default function middleware(request: NextRequest) {
   const isPendingChallengeRoute =
     isVerifyTwoFactorRoute || isForgotPasswordVerifyOtpRoute || isForgotPasswordResetRoute;
   const isAccountSecurityRoute = pathWithoutLocale === '/account/security';
-  const sessionExpiredLogin =
-    isLoginRoute &&
-    request.nextUrl.searchParams.get('error') === SESSION_EXPIRED_LOGIN_ERROR;
-  const requireVerification =
-    isLoginRoute &&
-    request.nextUrl.searchParams.get('requireVerification') === '1';
 
   // 1. Citizen route redirection logic
   if (isCitizenRoute) {
@@ -116,19 +117,20 @@ export default function middleware(request: NextRequest) {
     }
   } else {
     // 2. Non-citizen route redirection logic
-    // An admin-required 2FA setup that the user hasn't completed yet takes priority over
-    // everywhere else in the app — including the "already logged in, bounce off /login" case
-    // right below, which would otherwise send them to /home instead.
     const requiresTwoFactorSetup =
       request.cookies.get(AUTH_COOKIES.REQUIRES_TWO_FACTOR_SETUP)?.value === 'true';
     if (isLoggedIn && requiresTwoFactorSetup && !isAccountSecurityRoute) {
-      return NextResponse.redirect(
+      const res = NextResponse.redirect(
         new URL(`/${locale}/account/security?required=1`, request.url)
       );
+      applyAntiCacheHeaders(res.headers);
+      return res;
     }
 
-    if (isLoginRoute && isLoggedIn && !sessionExpiredLogin && !requireVerification) {
-      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    if (isLoginRoute && isLoggedIn) {
+      const res = NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+      applyAntiCacheHeaders(res.headers);
+      return res;
     }
 
     if (pathWithoutLocale === '/') {
@@ -164,9 +166,10 @@ export default function middleware(request: NextRequest) {
 
   // 5. Mutate next-intl's response to add headers and clear auth cookies if redirecting
   if (response.headers.has('location')) {
-    if (!isCitizenRoute && !isPendingChallengeRoute && (sessionExpired || sessionExpiredLogin || (isLoginRoute && !isLoggedIn))) {
+    if (!isCitizenRoute && !isPendingChallengeRoute && isLoginRoute) {
       clearAuthCookiesOnResponse(response);
     }
+    applyAntiCacheHeaders(response.headers);
     return response;
   }
 
@@ -175,10 +178,11 @@ export default function middleware(request: NextRequest) {
   response.headers.set('x-middleware-request-x-pathname', pathname);
   response.headers.set('x-middleware-request-x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
 
-  if (!isCitizenRoute && !isPendingChallengeRoute && isLoginRoute && (!isLoggedIn || sessionExpired || sessionExpiredLogin)) {
+  if (!isCitizenRoute && !isPendingChallengeRoute && isLoginRoute && !isLoggedIn) {
     clearAuthCookiesOnResponse(response);
   }
 
+  applyAntiCacheHeaders(response.headers);
   return response;
 }
 

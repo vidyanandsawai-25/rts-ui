@@ -39,7 +39,10 @@ function sanitizeParams(raw: AgeFactorCVMasterSearchParams) {
     const selectedYearRange = (rawYear && Number.isFinite(Number(rawYear))) ? rawYear : undefined;
 
     const rawConst = raw.constructionType?.trim();
-    const constructionType = (rawConst && Number.isFinite(Number(rawConst))) ? rawConst : undefined;
+    const constructionTypeIds = rawConst
+        ? rawConst.split(",").map((v) => Number(v.trim())).filter((n) => Number.isFinite(n) && n > 0)
+        : [];
+    const constructionType = constructionTypeIds.length > 0 ? constructionTypeIds.join(",") : undefined;
     
     const allowedSortFields = ["ConstructionCode", "ConstructionDescription", "AgeFrom", "AgeTo", "FromYear"];
     const sortByRaw = raw.sortBy?.trim();
@@ -78,7 +81,9 @@ export default async function Page({ searchParams }: PagePropsAgeFactor): Promis
         pageSize,
         searchTerm,
         selectedYearRange,
-        constructionType ? Number(constructionType) : undefined,
+        constructionType
+            ? constructionType.split(",").map(Number)
+            : undefined,
         sortBy,
         sortOrder
     );

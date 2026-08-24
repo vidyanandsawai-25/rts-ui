@@ -29,7 +29,29 @@ export const ExcelUploadTable = ({ t, validationData: rawData }: ExcelUploadTabl
       ? validationData.columns
       : (rowsList.length > 0 ? Object.keys(rowsList[0]) : []);
 
-    const fixedCols = ["wardNo", "propertyNo", "partitionNo", "ValidationRemark", "validationRemark", "remark", "Remark"];
+    const fixedCols = [
+      "WardNo",
+      "wardNo",
+      "WardNumber",
+      "wardNumber",
+      "PropertyNo",
+      "propertyNo",
+      "PropertyNumber",
+      "propertyNumber",
+      "PartitionNo",
+      "partitionNo",
+      "PartitionNumber",
+      "partitionNumber",
+      "ValidationRemark",
+      "validationRemark",
+      "remark",
+      "Remark",
+      "Error",
+      "error",
+      "Status",
+      "status",
+      "isValid",
+    ];
     const dynamicCols = rawCols.filter((col) => !fixedCols.includes(col));
 
     // 1. Combined Property No Column
@@ -37,8 +59,15 @@ export const ExcelUploadTable = ({ t, validationData: rawData }: ExcelUploadTabl
       label: t("excelUpload.table.propertyNo") || "PropertyNo",
       key: "combinedPropertyNo",
       render: (_value: unknown, row?: Record<string, unknown>) => {
-        const parts = [row?.wardNo, row?.propertyNo, row?.partitionNo].filter(Boolean);
-        return <TruncatedText text={parts.join(" - ")} className="font-medium text-slate-700 block truncate" />;
+        const pNo = row?.PropertyNo ?? row?.propertyNo ?? row?.PropertyNumber ?? row?.propertyNumber;
+        const wNo = row?.WardNo ?? row?.wardNo ?? row?.WardNumber ?? row?.wardNumber;
+        const partNo = row?.PartitionNo ?? row?.partitionNo ?? row?.PartitionNumber ?? row?.partitionNumber;
+
+        const parts = [wNo, pNo, partNo].filter(Boolean);
+        if (parts.length > 0) {
+          return <TruncatedText text={parts.join(" - ")} className="font-medium text-slate-700 block truncate" />;
+        }
+        return <TruncatedText text={pNo ? String(pNo) : "-"} className="font-medium text-slate-700 block truncate" />;
       }
     });
 
@@ -52,17 +81,22 @@ export const ExcelUploadTable = ({ t, validationData: rawData }: ExcelUploadTabl
     });
 
     // 3. Validation Remark Column
-    const hasRemarkCol = rawCols.some(c => ["ValidationRemark", "validationRemark", "remark", "Remark"].includes(c)) ||
-      rowsList.some(r => Boolean(r.ValidationRemark || r.validationRemark || r.remark || r.Remark));
+    const hasRemarkCol =
+      rawCols.some((c) => ["ValidationRemark", "validationRemark", "remark", "Remark", "Error", "error", "Status", "status"].includes(c)) ||
+      rowsList.some((r) => Boolean(r.ValidationRemark || r.validationRemark || r.remark || r.Remark || r.Error || r.error || r.Status || r.status || r.isValid === false));
 
-    if (hasRemarkCol) {
+    if (hasRemarkCol || rowsList.length > 0) {
       columns.push({
         label: t("excelUpload.table.validationRemark") || "Validation Remark",
         key: "ValidationRemark",
         render: (_value: unknown, row?: Record<string, unknown>) => {
-          const val = row?.ValidationRemark || row?.validationRemark || row?.remark || row?.Remark;
+          const val = row?.ValidationRemark || row?.validationRemark || row?.remark || row?.Remark || row?.Error || row?.error;
           if (val) {
-            return <TruncatedText text={String(val)} className="text-red-500 font-medium block truncate" />;
+            return <TruncatedText maxLength = {60} text={String(val)} className="text-red-500 font-medium block truncate" />;
+          }
+          const isInvalid = row?.isValid === false || row?.status === "Failed" || row?.status === "Rejected";
+          if (isInvalid) {
+            return <span className="text-red-500 font-medium">{row?.status ? String(row.status) : (t("excelUpload.stats.rejected") || "Rejected")}</span>;
           }
           return <span className="text-green-500 font-medium">{t("excelUpload.stats.valid") || "Valid"}</span>;
         }

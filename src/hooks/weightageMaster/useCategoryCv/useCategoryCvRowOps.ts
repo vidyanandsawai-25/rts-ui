@@ -13,6 +13,9 @@ interface UseCategoryCvRowOpsProps {
     refreshPage: () => void;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tW: (key: string, values?: Record<string, any>) => string;
+    /** Called after a successful create/update so the "pending records" count can
+     *  be refreshed to reflect what actually changed. */
+    onDataChanged: () => void;
 }
 
 export function useCategoryCvRowOps({
@@ -24,8 +27,9 @@ export function useCategoryCvRowOps({
     addToast,
     refreshPage,
     tW,
+    onDataChanged,
 }: UseCategoryCvRowOpsProps) {
-    
+
     const handleCellChange = (rowId: string, columnId: string, value: number) => {
         if (value < 0) {
             addToast('error', tW('common.messages.negativeValuesNotAllowed'));
@@ -65,6 +69,15 @@ export function useCategoryCvRowOps({
             addToast('warning', tW('common.messages.noChangesDetected'));
             return;
         }
+        const factorValue = updatedData.factor ?? row.factor;
+        if (factorValue < 0.1) {
+            addToast("error", tW('common.messages.validFactorRequired') || "Please enter a valid factor value greater than 0");
+            return;
+        }
+        if (factorValue > 100) {
+            addToast("error", tW('common.messages.factorPercentageExceedsMax'));
+            return;
+        }
 
         setIsUpdating(true);
         try {
@@ -100,6 +113,7 @@ export function useCategoryCvRowOps({
                     delete updated[rowUid];
                     return updated;
                 });
+                onDataChanged();
                 setTimeout(() => {
                     refreshPage();
                 }, 1000);

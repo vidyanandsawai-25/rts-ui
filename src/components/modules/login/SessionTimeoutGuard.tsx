@@ -233,32 +233,54 @@ export function SessionTimeoutGuard() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const loggedIn = hasLoggedInFlag();
-    if (!loggedIn) {
-      try {
-        sessionStorage.removeItem('is_tab_active_session');
-      } catch {}
-      return;
-    }
+    const verifyTabAndAuthState = () => {
+      if (redirectingRef.current) return;
+      if (!pathname || isLoginPath(pathname)) return;
 
-    if (!pathname || isLoginPath(pathname)) return;
+      const loggedIn = hasLoggedInFlag();
+      const isNewLogin = window.location.search.includes('loginSuccess=1');
+      const isTabSessionActive = sessionStorage.getItem('is_tab_active_session') === 'true';
 
-    const isNewLogin = window.location.search.includes('loginSuccess=1');
-    const isTabSessionActive = sessionStorage.getItem('is_tab_active_session') === 'true';
+      if (!loggedIn) {
+        redirectingRef.current = true;
+        clearLegacyAuthClientStorage();
+        window.location.replace(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
+        return;
+      }
 
-    if (isNewLogin) {
-      try {
-        sessionStorage.setItem('is_tab_active_session', 'true');
-      } catch {}
-    } else if (!isTabSessionActive) {
-      redirectingRef.current = true;
-      clearLegacyAuthClientStorage();
-      try {
-        sessionStorage.removeItem('is_tab_active_session');
-      } catch {}
-      window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}&requireVerification=1`);
-    }
-  }, [pathname, locale]);
+      if (isNewLogin) {
+        try {
+          sessionStorage.setItem('is_tab_active_session', 'true');
+        } catch {}
+      } else if (!isTabSessionActive) {
+        redirectingRef.current = true;
+        clearLegacyAuthClientStorage();
+        try {
+          sessionStorage.removeItem('is_tab_active_session');
+        } catch {}
+        window.location.replace(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}&requireVerification=1`);
+      }
+    };
+
+    verifyTabAndAuthState();
+
+    const handlePageShow = () => {
+      verifyTabAndAuthState();
+      checkClientSessionExpiry();
+    };
+
+    const handlePopState = () => {
+      verifyTabAndAuthState();
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [pathname, locale, checkClientSessionExpiry]);
 
   useEffect(() => {
     const onUnauthorized = () => {

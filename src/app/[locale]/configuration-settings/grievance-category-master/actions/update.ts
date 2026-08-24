@@ -106,6 +106,7 @@ export async function updateGrievanceCategoryAction(
     escalationLevel: escalationLevel as (typeof ESCALATION_LEVELS)[number],
     description: sanitizeDescription(description),
     isActive: isActiveRaw === 'true',
+    updatedBy: currentUserId,
   };
 
   try {
@@ -115,6 +116,14 @@ export async function updateGrievanceCategoryAction(
       return {
         success: true,
         message: await tGrievanceMessage(locale, 'master.toast.updateSuccess', 'Category updated successfully')
+      };
+    }
+    const rawErr = (response.error || response.message || '').toLowerCase();
+    if (rawErr.includes('unique') || rawErr.includes('duplicate') || rawErr.includes('already exists') || rawErr.includes('categorycode')) {
+      return {
+        success: false,
+        fieldErrors: { categoryCode: tVal('errors.duplicateCode') },
+        error: tVal('errors.duplicateCode'),
       };
     }
     const errorMsg = await localizeBackendMessage(response.error || response.message, locale, 'updateError', 'Failed to update grievance category');

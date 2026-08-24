@@ -13,7 +13,7 @@ import {
 } from './ulb-master.constants';
 import { mapFormDataToUlbMasterPayload } from './ulb-master.mapper';
 import { normalizeUlbMaster, parseUlbMasterMutationResponse } from './ulb-master-types-guard';
-import { cookies } from 'next/headers';
+
 import { getAppConfig } from '@/config/app.config';
 import { serverFetch } from '@/lib/utils/server-fetch';
 
@@ -232,15 +232,15 @@ export async function getUlbImageView(
   const finalRoot = cleanBase.endsWith('/') ? cleanBase : `${cleanBase}/`;
   const url = `${finalRoot}api/UlbImageMaster/${encodeURIComponent(documentGuid)}/view`;
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth_token')?.value;
-
   const headers: Record<string, string> = {
     Accept: '*/*',
   };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
+
+  // We deliberately do NOT send the Authorization Bearer token here.
+  // ULB Master images (Logo, Background) are public branding assets.
+  // If we send a token belonging to another user/tenant, the .NET backend might 
+  // reject it due to strict ownership checks. By omitting the token, we utilize 
+  // the public anonymous access path (the same one the Login screen uses).
 
   const response = await serverFetch(url, {
     method: 'GET',

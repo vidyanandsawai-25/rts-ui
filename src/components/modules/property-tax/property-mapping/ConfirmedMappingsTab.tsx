@@ -3,10 +3,11 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { MasterTable, Column, Button } from "@/components/common";
 import { MappingLink } from "@/types/property-mapping";
+import { UnmapSelectionModal } from "./UnmapSelectionModal";
 
 interface ActiveMappingsRegisterProps {
   mappings: MappingLink[];
-  onDisconnectMapping: (newPropNo: string, id: string) => void;
+  onDisconnectMapping: (newPropNo: string, id: string, selectedOldPropNos?: string[]) => void;
 }
 
 export function ActiveMappingsRegister({
@@ -16,6 +17,7 @@ export function ActiveMappingsRegister({
   const t = useTranslations("propertyMapping");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedMappingForUnmap, setSelectedMappingForUnmap] = useState<MappingLink | null>(null);
 
   useEffect(() => {
     setPage(1);
@@ -26,6 +28,17 @@ export function ActiveMappingsRegister({
   const safePage = Math.min(page, totalPages);
   const startIndex = (safePage - 1) * pageSize;
   const paginatedData = mappings.slice(startIndex, startIndex + pageSize);
+
+  const handleOpenUnmap = (mapping: MappingLink) => {
+    setSelectedMappingForUnmap(mapping);
+  };
+
+  const handleConfirmUnmapFromModal = (selectedPropNos: string[]) => {
+    if (!selectedMappingForUnmap) return;
+    const mapping = selectedMappingForUnmap;
+    setSelectedMappingForUnmap(null);
+    onDisconnectMapping(mapping.newPropNo, mapping.id, selectedPropNos);
+  };
 
   const columns: Column<MappingLink>[] = [
     {
@@ -67,7 +80,24 @@ export function ActiveMappingsRegister({
     {
       key: "mappedAt",
       label: t("confirmedMappingsTab.columns.verifiedDate"),
-      render: (val) => <span className="font-mono">{String(val)}</span>,
+      render: (val) => {
+        if (!val) return "-";
+        const str = String(val);
+        // Handle YYYY-MM-DD format
+        if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+          const [year, month, day] = str.split("T")[0].split("-");
+          return <span className="font-mono font-bold text-slate-700">{`${day}-${month}-${year}`}</span>;
+        }
+        // Handle standard Date string
+        const parsed = new Date(str);
+        if (!isNaN(parsed.getTime())) {
+          const day = String(parsed.getDate()).padStart(2, "0");
+          const month = String(parsed.getMonth() + 1).padStart(2, "0");
+          const year = parsed.getFullYear();
+          return <span className="font-mono font-bold text-slate-700">{`${day}-${month}-${year}`}</span>;
+        }
+        return <span className="font-mono font-bold text-slate-700">{str}</span>;
+      },
     },
   ];
 
@@ -84,7 +114,7 @@ export function ActiveMappingsRegister({
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => onDisconnectMapping(row.newPropNo, row.id)}
+            onClick={() => handleOpenUnmap(row)}
             className="bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 text-xs font-black rounded-lg transition-all duration-150 hover:scale-[1.02]"
           >
             {t("confirmedMappingsTab.unmapButton")}
@@ -102,6 +132,13 @@ export function ActiveMappingsRegister({
           setPage(1);
         }}
         paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+      />
+
+      <UnmapSelectionModal
+        isOpen={Boolean(selectedMappingForUnmap)}
+        onClose={() => setSelectedMappingForUnmap(null)}
+        mapping={selectedMappingForUnmap}
+        onConfirmUnmap={handleConfirmUnmapFromModal}
       />
     </div>
   );

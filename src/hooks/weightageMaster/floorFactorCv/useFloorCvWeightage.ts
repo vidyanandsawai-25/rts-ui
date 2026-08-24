@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { FloorFactorCVMaster } from "@/types/floor-cv-weightageMaster.types";
@@ -8,6 +8,7 @@ import { useFloorCvRowOps } from "./useFloorCvRowOps";
 import { useFloorCvBulkOps } from "./useFloorCvBulkOps";
 import { useFloorCvToasts } from "./useFloorCvToasts";
 import { useFloorCvSessionTracking } from "./useFloorCvSessionTracking";
+import { fetchAllFloorFactorCVMasterAction } from "@/app/[locale]/property-tax/weightage-master/action";
 import type { Option } from "@/components/common";
 
 export interface UseFloorCvWeightageProps {
@@ -53,11 +54,26 @@ export function useFloorCvWeightage({
     const [fromFloor, setFromFloor] = useState<string>("");
     const [toFloor, setToFloor] = useState<string>("");
     const [liftStatus, setLiftStatus] = useState<string>("both");
-    const [factorValue, setFactorValue] = useState<string>("0.00");
+    const [factorValue, setFactorValue] = useState<string>("1.00");
 
-    const newRecords = data.filter(row => row.id === 0 && !sessionCreatedUids.has(getRowUid(row)));
-    const hasNewRecords = newRecords.length > 0;
-    const newRecordsCount = newRecords.length;
+    // Total missing (Floor x Year) combinations for the current selection, not just
+    // whatever happens to be on the current page — otherwise this badge/count is
+    // just coincidentally equal to the page size. When no year is selected yet,
+    // this covers every year (matching the unfiltered grid shown in that state).
+    // Refetched whenever the selected year changes, and again after a successful
+    // Generate All / Bulk Update.
+    const [newRecordsCount, setNewRecordsCount] = useState(0);
+    const hasNewRecords = newRecordsCount > 0;
+
+    const refreshMissingCount = useCallback(async () => {
+        const allForSelection = await fetchAllFloorFactorCVMasterAction(selectedYear);
+        setNewRecordsCount(allForSelection.filter(row => row.id === 0).length);
+    }, [selectedYear]);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        refreshMissingCount();
+    }, [refreshMissingCount]);
 
     // Loading states
     const [isUpdating, setIsUpdating] = useState(false);
@@ -105,7 +121,7 @@ export function useFloorCvWeightage({
         setFromFloor("");
         setToFloor("");
         setLiftStatus("both");
-        setFactorValue("0.00");
+        setFactorValue("1.00");
     };
 
     // Row-level CRUD operations
@@ -120,6 +136,7 @@ export function useFloorCvWeightage({
         addToast,
         refreshPage,
         clearFilters,
+        onDataChanged: refreshMissingCount,
     });
 
     // Bulk operations
@@ -142,6 +159,7 @@ export function useFloorCvWeightage({
         refreshPage,
         clearFilters,
         floorOptions,
+        onDataChanged: refreshMissingCount,
     });
 
     const buildFloorUrl = (params: {
@@ -216,7 +234,6 @@ export function useFloorCvWeightage({
     const isApplyDisabled =
         !selectedYear ||
         !liftStatus ||
-        parseFloat(factorValue) < 0 ||
         isRangeInvalid;
     const isBulkUpdateDisabled = Object.keys(editableRows).length === 0 || isBulkUpdating;
     // const isSingleUpdateDisabled = isBulkUpdating || isUpdating;

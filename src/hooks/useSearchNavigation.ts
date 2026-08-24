@@ -54,10 +54,9 @@ export function useSearchNavigation({
     const timer = setTimeout(() => {
       const trimmedSearch = search.trim();
 
-      // Prevent URL churn on rerenders when the effective search text did not change.
-      if (trimmedSearch === (currentSearchTerm || "").trim()) {
-        return;
-      }
+      // We compare the fully constructed new URL with the current URL 
+      // instead of only checking if the search text changed.
+      // This ensures that changes to extraParams (like filters) also trigger navigation.
 
       const params = new URLSearchParams();
 
@@ -89,9 +88,32 @@ export function useSearchNavigation({
       
       const query = params.toString();
       const newUrl = query ? `/${locale}${basePath}?${query}` : `/${locale}${basePath}`;
-      const currentUrl = `${window.location.pathname}${window.location.search}`;
+      
+      const currentParams = new URLSearchParams(window.location.search);
+      
+      // Semantically compare parameters to avoid infinite loops due to ordering or encoding
+      let isDifferent = false;
+      
+      // 1. Check if any new param is different from current
+      for (const [key, value] of params.entries()) {
+        if (currentParams.get(key) !== value) {
+          isDifferent = true;
+          break;
+        }
+      }
+      
+      // 2. Check if current URL has any tracked params that should be removed
+      if (!isDifferent) {
+        const trackedKeys = ['page', 'pageSize', 'q', 'sortBy', 'sortOrder', ...Object.keys(extraParams || {})];
+        for (const key of currentParams.keys()) {
+          if (trackedKeys.includes(key) && !params.has(key)) {
+            isDifferent = true;
+            break;
+          }
+        }
+      }
 
-      if (newUrl !== currentUrl) {
+      if (isDifferent) {
         startTransition(() => {
           router.push(newUrl);
         });

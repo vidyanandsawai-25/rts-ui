@@ -12,7 +12,6 @@ import { PhotoPlanDrawer } from './PhotoPlanDrawer';
 import { PropertyMediaPanelContent } from './PropertyMediaPanelContent';
 import { PropertyMediaPanelSkeleton } from './PropertyMediaPanelSkeleton';
 import { toast } from 'sonner';
-import { getCookieValue, decodeCookieValue } from '@/lib/utils/cookie';
 import { launchPhotoPlanDrawingToolAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
 export interface PropertyMediaPanelProps {
   wardNo?: string;
@@ -22,6 +21,11 @@ export interface PropertyMediaPanelProps {
   propertyHolderNameMarathi?: string;
   isQCApproved?: boolean;
   propertyId?: number;
+  councilName?: string;
+  ptisUsername?: string;
+  ptisDisplayName?: string;
+  ptisUserId?: string;
+  ptisBackendUri?: string;
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
   initialPhotos?: PropertyPhotoDto[];
   loading?: boolean;
@@ -37,6 +41,11 @@ function PropertyMediaPanel({
   propertyNo = '',
   partitionNo = '',
   propertyId,
+  councilName = 'THANE_Survey',
+  ptisUsername: propPtisUsername,
+  ptisDisplayName: propPtisDisplayName,
+  ptisUserId: propPtisUserId,
+  ptisBackendUri: propPtisBackendUri,
   initialPhotoSlots = [],
   initialPhotos = [],
   loading = false,
@@ -151,25 +160,19 @@ function PropertyMediaPanel({
 
       const toastId = toast.loading(t('media.preparingDrawingTool') || 'Preparing drawing tool...');
       try {
-        const councilName = 'THANE_Survey';
         const returnUrl = typeof window !== 'undefined' ? window.location.href : '';
-        const ptisUsername = getCookieValue('login_username');
-        const rawDisplayName = getCookieValue('user_name');
-        const ptisDisplayName = rawDisplayName ? decodeCookieValue(rawDisplayName) : undefined;
-        const ptisUserId = getCookieValue('user_id');
-
-        const cleanPartitionNo = (!partitionNo || partitionNo.trim() === '' || partitionNo.trim() === '-') ? '' : partitionNo.trim();
 
         const result = await launchPhotoPlanDrawingToolAction(
           propertyId,
           councilName,
           returnUrl,
-          ptisUsername,
-          ptisDisplayName,
-          ptisUserId,
+          propPtisUsername,
+          propPtisDisplayName,
+          propPtisUserId,
           wardNo,
           propertyNo,
-          cleanPartitionNo
+          partitionNo,
+          propPtisBackendUri
         );
 
         if (!result.success || !result.data?.launchUrl) {
@@ -193,7 +196,18 @@ function PropertyMediaPanel({
         toast.error(errorMessage, { id: toastId });
       }
     },
-    [propertyId, t, wardNo, propertyNo, partitionNo]
+    [
+      propertyId,
+      t,
+      councilName,
+      propPtisUsername,
+      propPtisDisplayName,
+      propPtisUserId,
+      wardNo,
+      propertyNo,
+      partitionNo,
+      propPtisBackendUri,
+    ]
   );
 
   if (loading) {

@@ -10,12 +10,14 @@ interface ActionFooterProps {
     errorMsg: string | null;
     warnings: string[];
   };
+  isSubmitting?: boolean;
   onConfirmClick: () => void;
 }
 
 export function ActionFooter({
   selectedCandidates,
   validationStatus,
+  isSubmitting,
   onConfirmClick,
 }: ActionFooterProps) {
   const t = useTranslations("propertyMapping");
@@ -51,11 +53,13 @@ export function ActionFooter({
       <Button
         type="button"
         onClick={onConfirmClick}
-        disabled={!validationStatus.isValid}
+        disabled={!validationStatus.isValid || isSubmitting}
         variant={isUnmappedMode ? "danger" : "primary"}
         className="w-full sm:w-auto px-4.5 py-2.5 rounded-xl text-xs font-extrabold shadow-sm transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
       >
-        {isUnmappedMode ? t("confirmFooter.saveUnmappedButton") : t("confirmFooter.confirmMergeButton")}
+        {isSubmitting 
+          ? "Submitting..." 
+          : (isUnmappedMode ? t("confirmFooter.saveUnmappedButton") : t("confirmFooter.confirmMergeButton"))}
       </Button>
     </footer>
   );

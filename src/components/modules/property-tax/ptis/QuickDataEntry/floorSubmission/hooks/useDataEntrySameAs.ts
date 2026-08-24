@@ -467,14 +467,34 @@ export function useDataEntrySameAs({
 
         if (res.success) {
           toast.success(t('floor.selectProperties.applySuccess'));
+          // Change Type and Apply Submission share the same selection state.
+          // Clear it after a successful type change so the changed properties
+          // are not automatically checked in the Apply Submission table.
+          setSelectedPropertyIds(new Set());
           await clearDataEntrySameAsCache();
-          if (Number(searchWardId) && searchPropertyNo.trim()) {
-            const updatedResults = await fetchDataEntrySameAsAction(
-              Number(searchWardId),
-              searchPropertyNo.trim(),
-              categoryName
-            );
-            setSelectableProperties(updatedResults);
+          preloadedPropertiesRef.current = null;
+          consumedPreloadKeyRef.current = null;
+          setIsLoadingProperties(true);
+          try {
+            const fetchWard = Number(searchWardId) || Number(wardId);
+            const fetchPropNo = searchPropertyNo.trim() || (propertyNo ? String(propertyNo).trim() : '');
+            if (fetchWard && fetchPropNo) {
+              const updatedResults = await fetchDataEntrySameAsAction(
+                fetchWard,
+                fetchPropNo,
+                categoryName
+              );
+              setSelectableProperties(updatedResults);
+              initializedRequestRef.current = `${fetchWard}|${fetchPropNo}`;
+              const preloadKey = `${fetchWard}|${fetchPropNo}|${(categoryName ?? '').trim().toLowerCase()}`;
+              preloadedPropertiesRef.current = {
+                key: preloadKey,
+                request: Promise.resolve(updatedResults),
+                data: updatedResults,
+              };
+            }
+          } finally {
+            setIsLoadingProperties(false);
           }
         } else {
           toast.error(res.error || t('floor.selectProperties.unknownError'));
@@ -483,7 +503,7 @@ export function useDataEntrySameAs({
       } else {
         // For non-TYPEWISE tabs, use original logic
         // 1. If source property is selected, update its type via basic details API
-        if (isSourceSelected) {
+        if (isSourceSelected && dataEntrySameAsTab !== 'parking') {
           promises.push(
             (async () => {
               // Fetch current basic details of source property
@@ -544,7 +564,7 @@ export function useDataEntrySameAs({
             filterType:
               DATA_ENTRY_SAME_AS_FILTER_TYPES[dataEntrySameAsTab] ??
               dataEntrySameAsTab.toUpperCase(),
-            type: newType,
+            ...(dataEntrySameAsTab === 'parking' ? {} : { type: newType }),
           };
           promises.push(applyDataEntrySameAsAction(payload, locale));
         }
@@ -586,17 +606,29 @@ export function useDataEntrySameAs({
         toast.success(t('floor.selectProperties.applySuccess'));
         await clearDataEntrySameAsCache();
         preloadedPropertiesRef.current = null;
-        initializedRequestRef.current = null;
-        // Re-fetch the properties to get updated data from server (with same categoryName filter)
-        const fetchWard = Number(searchWardId) || Number(wardId);
-        const fetchPropNo = searchPropertyNo.trim() || (propertyNo ? String(propertyNo).trim() : '');
-        if (fetchWard && fetchPropNo) {
-          const updatedResults = await fetchDataEntrySameAsAction(
-            fetchWard,
-            fetchPropNo,
-            categoryName
-          );
-          setSelectableProperties(updatedResults);
+        consumedPreloadKeyRef.current = null;
+        setIsLoadingProperties(true);
+        try {
+          // Re-fetch the properties to get updated data from server (with same categoryName filter)
+          const fetchWard = Number(searchWardId) || Number(wardId);
+          const fetchPropNo = searchPropertyNo.trim() || (propertyNo ? String(propertyNo).trim() : '');
+          if (fetchWard && fetchPropNo) {
+            const updatedResults = await fetchDataEntrySameAsAction(
+              fetchWard,
+              fetchPropNo,
+              categoryName
+            );
+            setSelectableProperties(updatedResults);
+            initializedRequestRef.current = `${fetchWard}|${fetchPropNo}`;
+            const preloadKey = `${fetchWard}|${fetchPropNo}|${(categoryName ?? '').trim().toLowerCase()}`;
+            preloadedPropertiesRef.current = {
+              key: preloadKey,
+              request: Promise.resolve(updatedResults),
+              data: updatedResults,
+            };
+          }
+        } finally {
+          setIsLoadingProperties(false);
         }
       } else {
         if (dataEntrySameAsTab === 'type-wise') {
@@ -630,15 +662,26 @@ export function useDataEntrySameAs({
   ]);
 
   const handleApplyTypeSubmission = React.useCallback(async () => {
-    const selectedPropertyIds = Array.from(
+    const sourcePropertyId = currentPropertyId;
+    if (!sourcePropertyId) {
+      toast.error(
+        t('floor.selectProperties.sourcePropertyNotFound', { partitionNo: partitionNo || '-' })
+      );
+      return;
+    }
+
+    const destinationPropertyIds = Array.from(
       new Set(
         Array.from(effectiveSelectedPropertyIds)
           .map((id) => Number(String(id).split('-')[0]))
-          .filter((propId) => Number.isFinite(propId) && propId > 0)
+          .filter(
+            (propId) =>
+              Number.isFinite(propId) && propId > 0 && propId !== sourcePropertyId
+          )
       )
     );
 
-    if (selectedPropertyIds.length === 0) {
+    if (destinationPropertyIds.length === 0) {
       toast.error(t('floor.selectProperties.selectDestinationProperty'));
       return;
     }
@@ -656,12 +699,12 @@ export function useDataEntrySameAs({
     const executeSubmission = async () => {
       setIsApplyingTypeSubmission(true);
       try {
-        const [targetSourceId] = selectedPropertyIds;
-
         const payload = {
-          sourcePropertyId: targetSourceId,
-          destinationPropertyIds: selectedPropertyIds,
-          filterType: 'TYPEWISE',
+          sourcePropertyId,
+          destinationPropertyIds,
+          // Apply Submission copies only the source property's submitted
+          // property/floor details. Parking has its own Apply Parking action.
+          filterType: 'PROPERTYWISE',
           type: targetType,
         };
 
@@ -672,16 +715,28 @@ export function useDataEntrySameAs({
           setSelectedPropertyIds(new Set());
           await clearDataEntrySameAsCache();
           preloadedPropertiesRef.current = null;
-          initializedRequestRef.current = null;
-          const fetchWard = Number(searchWardId) || Number(wardId);
-          const fetchPropNo = searchPropertyNo.trim() || (propertyNo ? String(propertyNo).trim() : '');
-          if (fetchWard && fetchPropNo) {
-            const updatedResults = await fetchDataEntrySameAsAction(
-              fetchWard,
-              fetchPropNo,
-              categoryName
-            );
-            setSelectableProperties(updatedResults);
+          consumedPreloadKeyRef.current = null;
+          setIsLoadingProperties(true);
+          try {
+            const fetchWard = Number(searchWardId) || Number(wardId);
+            const fetchPropNo = searchPropertyNo.trim() || (propertyNo ? String(propertyNo).trim() : '');
+            if (fetchWard && fetchPropNo) {
+              const updatedResults = await fetchDataEntrySameAsAction(
+                fetchWard,
+                fetchPropNo,
+                categoryName
+              );
+              setSelectableProperties(updatedResults);
+              initializedRequestRef.current = `${fetchWard}|${fetchPropNo}`;
+              const preloadKey = `${fetchWard}|${fetchPropNo}|${(categoryName ?? '').trim().toLowerCase()}`;
+              preloadedPropertiesRef.current = {
+                key: preloadKey,
+                request: Promise.resolve(updatedResults),
+                data: updatedResults,
+              };
+            }
+          } finally {
+            setIsLoadingProperties(false);
           }
         } else {
           toast.error(res.error || t('floor.selectProperties.unknownError'));
@@ -711,6 +766,7 @@ export function useDataEntrySameAs({
     }
   }, [
     effectiveSelectedPropertyIds,
+    currentPropertyId,
     changeTypeInput,
     currentPropertyType,
     sourcePropertyIds,

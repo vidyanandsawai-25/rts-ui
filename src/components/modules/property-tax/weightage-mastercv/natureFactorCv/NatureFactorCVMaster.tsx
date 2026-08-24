@@ -1,14 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { startTransition } from "react";
+import { toast } from "sonner";
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { MasterTable } from "@/components/common/MasterTable";
 import { Option } from "@/components/common/select";
-import { UpdateButton, CancelButton, SaveButton } from "@/components/common/ActionButtons";
+import { UpdateButton, CancelButton, SaveButton, EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { ToastContainer } from "@/components/common/Toast";
 import { NatureFactorCVMaster as NatureFactorCVMasterType } from "@/types/natureofbuilding-cv-weightageMaster.types";
 import { useNatureFactorCv } from "@/hooks/weightageMaster/natureFactorCv/useNatureFactorCv";
 import { getNatureFactorCvColumns } from "./natureFactorCvColumns";
 import { NatureFactorCvHeaderExtra } from "./NatureFactorCvHeaderExtra";
+import { useNatureFactorCVWeightageMasterDeleteHandler } from "@/hooks/weightageMaster/natureFactorCv/useNatureFactorDeleteHandler";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+
 
 
 interface NatureFactorCVMasterProps {
@@ -34,6 +40,10 @@ const NatureFactorCVMaster: React.FC<NatureFactorCVMasterProps> = ({
     sortBy,
     sortOrder,
 }) => {
+    const router = useRouter();
+    const locale = useLocale();
+    const { confirm } = useConfirm();
+
     const {
         t, tW, tCommon,
         selectedYear, constructionType, factorValue,
@@ -55,6 +65,13 @@ const NatureFactorCVMaster: React.FC<NatureFactorCVMasterProps> = ({
         sortBy: activeSortBy, sortOrder: activeSortOrder, onSort: handleSort
     });
 
+    const { handleDelete } = useNatureFactorCVWeightageMasterDeleteHandler({
+        t,
+        tCommon,
+        confirm,
+        startTransition,
+    });
+
     const renderActions = (row: NatureFactorCVMasterType) => {
         const rowUid = getRowUid(row);
         const hasRowChanges = editableRows[rowUid] !== undefined;
@@ -66,16 +83,42 @@ const NatureFactorCVMaster: React.FC<NatureFactorCVMasterProps> = ({
                         label={tW('common.buttons.create')}
                         size="sm"
                         onClick={() => handleUpdate(row)}
-                        disabled={!hasRowChanges || isUpdating || isBulkUpdating}
+                        disabled={isUpdating || isBulkUpdating}
+                        className={!hasRowChanges ? "opacity-50" : ""}
                     />
                 ) : (
                     <UpdateButton
                         label={tW('common.buttons.update')}
                         size="sm"
                         onClick={() => handleUpdate(row)}
-                        disabled={!hasRowChanges || isUpdating || isBulkUpdating}
+                        disabled={isUpdating || isBulkUpdating}
+                        className={!hasRowChanges ? "opacity-50" : ""}
                     />
                 )}
+                <EditButton
+                    size="sm"
+                    onClick={() => {
+                        if (row.id === 0) {
+                            toast.warning(tW("common.messages.createRecordFirst") || "Please create the record first before editing.");
+                        } else {
+                            router.push(`/${locale}/property-tax/weightage-master/nature-weightage/edit/${row.id}`);
+                        }
+                    }}
+                    disabled={isUpdating || isBulkUpdating}
+                />
+                <DeleteButton
+                    size="sm"
+                    onClick={() => {
+                        if (row.id === 0) {
+                            toast.warning(tW("common.messages.createRecordFirst") || "Please create the record first before deleting.");
+                        }
+                        else {
+                            handleDelete(row);
+
+                        }
+                    }}
+                    disabled={isUpdating || isBulkUpdating}
+                />
                 <CancelButton
                     size="sm"
                     onClick={() => handleCancel(row)}

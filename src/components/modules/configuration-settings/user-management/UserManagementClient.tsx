@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, UserCheck, Filter, XCircle } from 'lucide-react';
+import { Users, UserCheck, Plus, Filter, XCircle } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Badge, Button } from '@/components/common';
+import { Badge, Button, SearchInput } from '@/components/common';
 import { toast } from 'sonner';
 import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { useTranslations, useLocale } from 'next-intl';
@@ -12,8 +12,8 @@ import { deleteUserAction } from '@/app/[locale]/configuration-settings/user-man
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { useUserTable } from '@/hooks/configuration-settings/user-management/useUserTable';
 import { UserStats } from './components/UserStats';
-import { UserFilters } from './components/UserFilters';
 import { UserTable } from './components/UserTable';
+import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
 
 function getStatusFilterFromUrl(value: string | null): UserStatusFilter {
   switch (value) {
@@ -44,6 +44,7 @@ export function UserManagementClient({
   const pageFromUrl = Number(searchParams.get('page')) || 1;
   const searchFromUrl = searchParams.get('search') || '';
   const statusFromUrl = getStatusFilterFromUrl(searchParams.get('status'));
+  const pageSizeFromUrl = Number(searchParams.get('pageSize') || searchParams.get('size')) || 10;
 
   const {
     users,
@@ -56,7 +57,14 @@ export function UserManagementClient({
     pageSize,
     totalCount,
     filteredUsers,
-  } = useUserTable(initialUsers, initialTotalCount, pageFromUrl, searchFromUrl, statusFromUrl);
+  } = useUserTable(
+    initialUsers,
+    initialTotalCount,
+    pageFromUrl,
+    searchFromUrl,
+    statusFromUrl,
+    pageSizeFromUrl
+  );
 
   const getLocalizedFilterName = (filter: UserStatusFilter): string => {
     switch (filter) {
@@ -142,6 +150,13 @@ export function UserManagementClient({
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const handlePageSizeChange = (newPageSize: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('pageSize', String(newPageSize));
+    params.set('page', '1');
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   useEffect(() => {
     if (searchTerm === searchFromUrl) return;
 
@@ -170,10 +185,12 @@ export function UserManagementClient({
 
   const totalUsers = users.length;
   const activeUsers = users.filter(isActiveUser).length;
+  const { haveFullAccess } = useActivePagePermissions();
+  const showAdd = haveFullAccess;
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between px-0 py-5 border-b bg-gradient-to-r from-primary/5 to-transparent">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between px-0 py-5 border-b bg-gradient-to-r from-primary/5 to-transparent gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-gradient-to-br from-primary/10 to-primary/20 rounded-lg shadow-sm">
             <Users className="w-5 h-5 text-blue-600" />
@@ -185,18 +202,36 @@ export function UserManagementClient({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 h-10">
-            <Users className="w-3 h-3 mr-1" />
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 h-9 px-3 text-xs font-semibold">
+            <Users className="w-3.5 h-3.5 mr-1.5" />
             {t('stats.usersCount', {
               count: initialTotalCount || totalUsers,
             })}
           </Badge>
 
-          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 h-10">
-            <UserCheck className="w-3 h-3 mr-1" />
+          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 h-9 px-3 text-xs font-semibold">
+            <UserCheck className="w-3.5 h-3.5 mr-1.5" />
             {activeUsers} {t('filters.active')}
           </Badge>
+
+          <SearchInput
+            placeholder={t('filters.searchPlaceholder')}
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="mb-0 w-64 focus:ring-2 focus:ring-indigo-500/20 h-9 text-sm [&_input]:text-black [&_input]:opacity-100"
+          />
+
+          {showAdd && (
+            <Button
+              onClick={() => router.push(`${basePath}/users/add`)}
+              className="transition-all text-white h-9 px-4 text-sm font-semibold"
+              actionType="add"
+              icon={Plus}
+            >
+              {t('actions.add')}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -228,12 +263,6 @@ export function UserManagementClient({
             </div>
           )}
 
-          <UserFilters
-            searchTerm={searchTerm}
-            onSearchChange={handleSearchChange}
-            onAddClick={() => router.push(`${basePath}/users/add`)}
-          />
-
           <UserTable
             users={filteredUsers}
             totalCount={totalCount}
@@ -243,6 +272,7 @@ export function UserManagementClient({
             pageNumber={pageNumber}
             pageSize={pageSize}
             onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
             deletingId={deletingId}
           />
         </div>

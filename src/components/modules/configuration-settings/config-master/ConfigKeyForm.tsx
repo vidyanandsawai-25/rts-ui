@@ -59,6 +59,10 @@ export const ConfigKeyForm = forwardRef<ConfigKeyFormRef, Omit<AddConfigKeyModal
       };
     }
     const dt = initialData.dataType || 'string';
+    const initDefVal = (initialData.defaultValue !== undefined && initialData.defaultValue !== null && String(initialData.defaultValue).trim() !== '')
+      ? String(initialData.defaultValue)
+      : (initialData.value !== undefined && initialData.value !== null ? String(initialData.value) : '');
+
     return {
       categoryId: initialData.categoryId?.toString() || categoryId?.toString() || '',
       configCode: (initialData.configCode || '').replace(/\s+/g, '_').replace(/[^A-Za-z0-9_]/g, '').toUpperCase(),
@@ -66,7 +70,7 @@ export const ConfigKeyForm = forwardRef<ConfigKeyFormRef, Omit<AddConfigKeyModal
       description: initialData.description || '',
       dataType: dt,
       controlType: getControlTypeFromDataType(dt),
-      defaultValue: initialData.defaultValue?.toString() || '',
+      defaultValue: initDefVal,
       isActive: initialData.isEnabled ?? true,
     };
   }, [isEdit, initialData, categoryId]);
@@ -81,7 +85,6 @@ export const ConfigKeyForm = forwardRef<ConfigKeyFormRef, Omit<AddConfigKeyModal
     setFormData((prev) => ({
       ...prev,
       dataType: value,
-      defaultValue: '',
       controlType: getControlTypeFromDataType(value),
     }));
   };

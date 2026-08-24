@@ -12,6 +12,7 @@ import {
   ModuleMasterData,
   RoleMasterData,
   ScreenAccessPermissionData,
+  ScreenGroupMasterData,
 } from '@/types/screen-access.types';
 import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { updateScreenAccessAction } from '@/app/[locale]/configuration-settings/screenAccess/action.mutations';
@@ -32,6 +33,7 @@ interface RolePermissionManagerProps {
   modules: ModuleMasterData[];
   roles: RoleMasterData[];
   initialRoleAccess: ScreenAccessPermissionData[];
+  groups?: ScreenGroupMasterData[];
 }
 
 export function RolePermissionManager({
@@ -40,6 +42,7 @@ export function RolePermissionManager({
   modules,
   roles,
   initialRoleAccess,
+  groups = [],
 }: RolePermissionManagerProps) {
   const t = useTranslations('screenAccess');
   const router = useRouter();
@@ -77,7 +80,7 @@ export function RolePermissionManager({
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { hierarchy } = usePermissionHierarchy({ screens, departments, modules, t });
+  const { hierarchy } = usePermissionHierarchy({ screens, departments, modules, groups, t });
 
   const filteredHierarchy = useMemo(() => {
     if (!selectedDept) return [];

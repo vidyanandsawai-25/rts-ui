@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { OldTaxesData } from '@/types/ptis.types';
 import { MasterTable, Column } from '@/components/common/MasterTable';
+import { getTranslatedTaxLabel } from '@/lib/utils/ptis';
 
 interface OldTaxDetailsTableProps {
   oldTaxesData: OldTaxesData | null | undefined;
@@ -16,15 +17,17 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
 
   // Collect unique tax names (excluding 'taxtotal') to define dynamic columns
   const uniqueTaxNames = useMemo(() => {
-    if (!oldTaxesData || !oldTaxesData.taxYears) return [];
+    if (!oldTaxesData || !Array.isArray(oldTaxesData.taxYears)) return [];
     const taxNames = new Set<string>();
     oldTaxesData.taxYears.forEach((yearData) => {
-      yearData.taxes.forEach((tax) => {
-        const name = tax.taxName;
-        if (name && name.toLowerCase() !== 'taxtotal') {
-          taxNames.add(name);
-        }
-      });
+      if (yearData && Array.isArray(yearData.taxes)) {
+        yearData.taxes.forEach((tax) => {
+          const name = tax?.taxName;
+          if (name && name.toLowerCase() !== 'taxtotal') {
+            taxNames.add(name);
+          }
+        });
+      }
     });
     return Array.from(taxNames);
   }, [oldTaxesData]);
@@ -37,12 +40,16 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
         label: t('fields.wardPropPartNo'),
         align: 'left',
         width: '180px',
+        headerClassName: 'whitespace-nowrap',
+        cellClassName: 'whitespace-nowrap',
       },
       {
         key: 'year',
         label: t('fields.year'),
         align: 'center',
         width: '100px',
+        headerClassName: 'whitespace-nowrap',
+        cellClassName: 'whitespace-nowrap',
       },
     ];
 
@@ -50,9 +57,10 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
     uniqueTaxNames.forEach((taxName) => {
       cols.push({
         key: taxName,
-        label: taxName,
+        label: getTranslatedTaxLabel(t, taxName),
         align: 'right',
-        cellClassName: 'tabular-nums font-medium',
+        cellClassName: 'tabular-nums font-medium whitespace-nowrap',
+        headerClassName: 'whitespace-nowrap',
       });
     });
 
@@ -61,7 +69,8 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
       key: 'taxTotal',
       label: t('fields.taxTotal'),
       align: 'right',
-      cellClassName: 'tabular-nums font-bold text-slate-900',
+      cellClassName: 'tabular-nums font-bold text-slate-900 whitespace-nowrap',
+      headerClassName: 'whitespace-nowrap',
     });
 
     return cols;
@@ -69,7 +78,7 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
 
   // Construct table data
   const data = useMemo(() => {
-    if (!oldTaxesData || !oldTaxesData.taxYears) return [];
+    if (!oldTaxesData || !Array.isArray(oldTaxesData.taxYears)) return [];
 
     return oldTaxesData.taxYears.map((yearData) => {
       const wardNo = yearData.oldWardNo?.toString() ?? '';
@@ -88,16 +97,18 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
       });
       row['taxTotal'] = 0;
 
-      yearData.taxes.forEach((tax) => {
-        const name = tax.taxName;
-        if (name) {
-          if (name.toLowerCase() === 'taxtotal') {
-            row['taxTotal'] = tax.taxAmount;
-          } else {
-            row[name] = tax.taxAmount;
+      if (yearData && Array.isArray(yearData.taxes)) {
+        yearData.taxes.forEach((tax) => {
+          const name = tax?.taxName;
+          if (name) {
+            if (name.toLowerCase() === 'taxtotal') {
+              row['taxTotal'] = tax.taxAmount;
+            } else {
+              row[name] = tax.taxAmount;
+            }
           }
-        }
-      });
+        });
+      }
 
       return row;
     });

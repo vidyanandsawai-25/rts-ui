@@ -140,6 +140,13 @@ export interface PropertyTrackingStageStatusItem {
     stageName: string;
     displayOrder: number;
     isCompleted: number;
+    officerName?: string;
+    createdDate?: string;
+    updatedDate?: string;
+    id?: number;
+    description?: string;
+    userId?: number;
+    isActive?: boolean;
 }
 
 export interface PropertyTrackingStageStatusResponse {

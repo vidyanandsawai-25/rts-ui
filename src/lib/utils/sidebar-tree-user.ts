@@ -3,10 +3,17 @@ import type { MenuItem } from '@/types/menu.types';
 
 /**
  * Converts UserScreenAccess[] to MenuItem[] for sidebar rendering.
+ * @param screens - The user's accessible screens
+ * @param inactiveGroupNames - Optional set of group names that are inactive (should be hidden)
  */
-export function buildSidebarTreeFromUserScreens(screens: UserScreenAccess[]): MenuItem[] {
+export function buildSidebarTreeFromUserScreens(
+  screens: UserScreenAccess[],
+  inactiveGroupNames?: Set<string>
+): MenuItem[] {
   // Only include menu items the user can view and are marked as menu
-  const menuScreens = screens.filter(s => (s.isMenu === true || s.isMenu === 1) && s.canView && !s.haveNoAccess);
+  const menuScreens = screens.filter(
+    (s) => (s.isMenu === true || s.isMenu === 1) && s.canView && !s.haveNoAccess
+  );
 
   // Group by screenGroupName (if present)
   const groupsMap = new Map<string, MenuItem>();
@@ -14,8 +21,11 @@ export function buildSidebarTreeFromUserScreens(screens: UserScreenAccess[]): Me
 
   for (const screen of menuScreens) {
     const groupName = screen.screenGroupName?.trim();
-    
+
     if (groupName) {
+      // Skip screens whose group is inactive
+      if (inactiveGroupNames?.has(groupName)) continue;
+
       if (!groupsMap.has(groupName)) {
         groupsMap.set(groupName, {
           name: groupName,
@@ -41,8 +51,5 @@ export function buildSidebarTreeFromUserScreens(screens: UserScreenAccess[]): Me
   }
 
   // Combine standalone screens first, then groups
-  return [
-    ...standalone,
-    ...Array.from(groupsMap.values()),
-  ];
+  return [...standalone, ...Array.from(groupsMap.values())];
 }

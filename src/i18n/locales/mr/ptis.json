@@ -454,6 +454,8 @@
     "cleaningTax": "स्वच्छता कर",
     "sewerageTax": "मलनिस्सारण कर",
     "treeTax": "वृक्ष कर",
+    "educationTax": "शिक्षण कर",
+    "employmentTax": "रोजगार कर",
     "taxTotal": "एकूण कर"
   },
   "actions": {

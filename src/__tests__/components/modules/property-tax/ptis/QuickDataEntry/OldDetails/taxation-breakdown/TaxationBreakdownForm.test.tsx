@@ -7,10 +7,17 @@ import { saveOldTaxesDetailsAction } from '@/app/[locale]/property-tax/ptis/Quic
 import { OldTaxesDetails } from '@/types/OldDetails/property-old-details.types';
 
 // Mock dependencies
-vi.mock('next-intl', () => ({
-  useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
-  useLocale: () => 'en',
-}));
+vi.mock('next-intl', () => {
+  const useTranslations = (namespace: string) => {
+    const t = (key: string) => `${namespace}.${key}`;
+    t.has = () => false;
+    return t;
+  };
+  return {
+    useTranslations,
+    useLocale: () => 'en',
+  };
+});
 
 vi.mock('next/navigation', () => ({
   useParams: () => ({ propertyId: '123', locale: 'en' }),

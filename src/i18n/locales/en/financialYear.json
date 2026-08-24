@@ -74,7 +74,7 @@
       "startDateRange": "Start date must be within the financial year (April 1st to March 31st)",
       "endDateRange": "End date must be within the financial year (April 1st to March 31st)",
       "descriptionMaxLength": "Description must be at most {count} characters",
-      "descriptionFormat": "Description contains invalid characters",
+      "descriptionFormat": "Description cannot contain invalid characters",
       "yearMinValue": "Year must be 1900 or later",
       "yearMaxValue": "Year must be 2100 or earlier",
       "yearMustBePositive": "Year must be a positive number",

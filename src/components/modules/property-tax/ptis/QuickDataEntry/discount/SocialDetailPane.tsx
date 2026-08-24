@@ -141,8 +141,20 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     const isPhotoRequired = data.isPhotoRequired === true;
 
     const errorMsg = validationErrors?.[data.socialAttributeId];
-    const docRequiredMsg = t("common.validation.documentRequired") || "Document is required.";
-    const isPhotoInvalid = !!errorMsg && ((errorMsg.includes("required") && !data.documentGuid) || errorMsg === docRequiredMsg);
+    const tHas = typeof (t as { has?: (key: string) => boolean }).has === "function";
+    const docRequiredMsg = (tHas && (t as { has: (key: string) => boolean }).has("common.validation.documentRequired"))
+        ? t("common.validation.documentRequired")
+        : "Document is required.";
+    const photoRequiredMsg = (tHas && (t as { has: (key: string) => boolean }).has("discount.socialValidation.photoRequired"))
+        ? t("discount.socialValidation.photoRequired")
+        : "Photo is required.";
+
+    const isPhotoInvalid = !!errorMsg && (
+        errorMsg === docRequiredMsg ||
+        errorMsg === photoRequiredMsg ||
+        errorMsg.toLowerCase().includes("photo is required") ||
+        errorMsg.toLowerCase().includes("document is required")
+    );
 
     let isRemarkError = false;
     let isValueInvalid = false;
@@ -165,6 +177,13 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     }
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
 
+    const isSpecialToggle = 
+        data.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
+        data.socialAttributeCode.toUpperCase().includes("WATER_CONN") || 
+        data.socialAttributeCode.toUpperCase().includes("TREE");
+
+    const isValueRequired = data.isRequiredWhenParentTrue || (isSpecialToggle && data.bitValue === true);
+
     return (
         <div
             className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
@@ -174,24 +193,11 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
             <div className="space-y-5 overflow-y-auto pr-1">
                 {isDisabled && <DisabledBanner t={t as (key: string) => string} />}
 
-                <div className="pb-3 border-b border-blue-50 flex items-start justify-between gap-4">
-                    <div>
-                        <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
-                            {t("discount.editingDiscount") || "Social Attribute Details"}
-                        </span>
-                        <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
-                    </div>
-                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDisabled && (
-                        <button
-                            type="button"
-                            disabled={isDisabled || isSaving}
-                            onClick={handleDeleteSocialDetailWithConfirm}
-                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            {t("discount.deleteSocialDetail") || "Delete Detail & Data"}
-                        </button>
-                    )}
+                <div className="pb-3 border-b border-blue-50">
+                    <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
+                        {t("discount.editingDiscount") || "Social Attribute Details"}
+                    </span>
+                    <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
                 </div>
 
                 {/* Root value input if applicable */}
@@ -199,7 +205,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     <div className="flex flex-col gap-1.5 w-full">
                         <span className="text-xs font-bold text-slate-600">
                             {displayName}
-                            {data.isRequiredWhenParentTrue && <span className="text-red-500 ml-0.5">*</span>}
+                            {isValueRequired && <span className="text-red-500 ml-0.5">*</span>}
                         </span>
                         <AttributeControl
                             attr={hierarchyData}

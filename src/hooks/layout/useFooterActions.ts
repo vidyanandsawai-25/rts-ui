@@ -2,8 +2,19 @@
 
 import { useMemo } from 'react';
 import { FooterAction } from '@/lib/api/footer.service';
+import { isActionFeatureEnabled } from '@/config/footer-config';
 
-export function useFooterActions(actions: FooterAction[] = []) {
+export interface FooterActionOverrides {
+  [actionCommand: string]: {
+    isEnabled?: boolean;
+    canView?: boolean;
+  };
+}
+
+export function useFooterActions(
+  actions: FooterAction[] = [],
+  overrides?: FooterActionOverrides
+) {
   return useMemo(() => {
     const processedActions = (Array.isArray(actions) ? actions : [])
       .map((a) => {
@@ -47,9 +58,13 @@ export function useFooterActions(actions: FooterAction[] = []) {
           }
         }
 
+        const featureEnabled = isActionFeatureEnabled(a.actionCommand);
+        const overrideState = overrides?.[a.actionCommand]?.isEnabled;
+        const baseEnabled = overrideState ?? (featureEnabled && a.isEnabled);
+
         return {
           ...a,
-          isEnabled: a.isEnabled && isAuthorized,
+          isEnabled: Boolean(baseEnabled) && isAuthorized,
         };
       })
       .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
@@ -96,5 +111,5 @@ export function useFooterActions(actions: FooterAction[] = []) {
       utility: finalUtility,
       right: rightActions,
     };
-  }, [actions]);
+  }, [actions, overrides]);
 }

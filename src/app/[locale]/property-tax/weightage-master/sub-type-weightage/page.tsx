@@ -76,7 +76,6 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
             value: String(type.id),
         }));
 
-
     return (
         <div className="pt-6">
             <UseCategoryCvFactorMaster
@@ -94,7 +93,7 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
                 
                 assessmentYearOptions={assessmentYearOptions}
                 typeOfUseOptions={typeOfUseOptions}
-                
+
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 leftSortBy={leftSortBy}

@@ -5,6 +5,11 @@ import { AgeFactorCvHeaderExtra } from "@/components/modules/property-tax/weight
 // Minimal mock for next-intl useTranslations return type consumed by the component
 vi.mock("next-intl", () => ({
     useTranslations: (ns: string) => (key: string) => `${ns}.${key}`,
+    useLocale: () => "en",
+}));
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({ push: vi.fn() }),
 }));
 
 const mockT = (key: string) => key;
@@ -38,8 +43,8 @@ function buildDefaultProps(overrides = {}) {
         constructionTypeOptions,
         ageRangeOptions,
         selectedYear: "",
-        constructionType: "",
-        selectedAgeRange: "",
+        constructionType: [] as string[],
+        selectedAgeRange: [] as string[],
         ageFrom: "",
         ageTo: "",
         factorValue: "0.00",
@@ -136,7 +141,7 @@ describe("AgeFactorCvHeaderExtra – Action Buttons", () => {
     });
 
     it("Apply button is disabled when no filters are selected", () => {
-        render(<AgeFactorCvHeaderExtra {...buildDefaultProps({ selectedYear: "", constructionType: "", selectedAgeRange: "", dataLength: 10 })} />);
+        render(<AgeFactorCvHeaderExtra {...buildDefaultProps({ selectedYear: "", constructionType: [], selectedAgeRange: [], dataLength: 10 })} />);
         const applyBtn = screen.getByRole("button", { name: /apply/i });
         expect(applyBtn).toBeDisabled();
     });

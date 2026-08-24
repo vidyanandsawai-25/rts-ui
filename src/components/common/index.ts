@@ -34,6 +34,7 @@ export {
   PrevPageButton,
   NextPageButton,
   LastPageButton,
+  PageNumberButton,
   SelectAllButton,
   ClearButton,
   SortAscButton,

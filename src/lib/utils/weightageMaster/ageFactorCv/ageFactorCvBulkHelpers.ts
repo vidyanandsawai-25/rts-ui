@@ -57,10 +57,10 @@ export const prepareBulkUpdatePayloads = (
 
 interface BuildGenerateAllParams {
     selectedYear: string;
-    selectedAgeRange: string;
+    selectedAgeRange: string | string[];
     ageRangeOptions: Option[];
     data: AgeFactorCVMaster[];
-    constructionType: string;
+    constructionType: string | string[];
     constructionTypeOptions: Option[];
     allAgeFactors: AgeFactorCVMaster[];
     editableRows: Record<string, AgeFactorCVMaster>;

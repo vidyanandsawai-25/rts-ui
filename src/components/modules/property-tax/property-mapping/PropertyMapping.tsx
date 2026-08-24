@@ -83,7 +83,7 @@ export default function PropertyMapping({ initialMappingData, initialSearchParam
 
   const {
     selectedNewIndex, setSelectedNewIndex, newProperties, setNewProperties, currentNewProperty,
-    candidates, setMappings, mappings, setHistoryList, historyList, compareCandidate, setCompareCandidate, activeFloorDataMap
+    candidates, setCandidates, setMappings, mappings, setHistoryList, historyList, compareCandidate, setCompareCandidate, activeFloorDataMap, refreshMappingState
   } = usePropertyMappingState(initialMappingData, queryPropertyId, customFloorDataMap);
 
   const {
@@ -98,9 +98,9 @@ export default function PropertyMapping({ initialMappingData, initialSearchParam
     mappedOldPropNos, handleToggleCandidate
   } = usePropertyCandidates({ currentNewProperty, candidates, autoSearchedCandidates, serverSearchedCandidates, searchQuery, activeFloorDataMap, mappings });
 
-  const { metrics, validationStatus, handleConfirmMapping, handleDisconnectMapping } = usePropertyMappingHandlers({
+  const { metrics, validationStatus, isSubmitting, handleConfirmMapping, handleDisconnectMapping, handleUnlinkCandidate } = usePropertyMappingHandlers({
     currentNewProperty, selectedCandidates, activeFloorDataMap, inferredMappingType, selectedNewIndex,
-    newProperties, setNewProperties, setSelectedNewIndex, setMappings, setHistoryList, showToast
+    newProperties, setNewProperties, setSelectedNewIndex, setMappings, setHistoryList, showToast, refreshMappingState, candidates, mappings, setCandidates
   });
 
   return (
@@ -148,7 +148,9 @@ export default function PropertyMapping({ initialMappingData, initialSearchParam
             hoveredFloorIndex={hoveredFloorIndex}
             setHoveredFloorIndex={setHoveredFloorIndex}
             validationStatus={validationStatus}
+            isSubmitting={isSubmitting}
             onConfirmClick={handleConfirmMapping}
+            onDisconnectCandidate={handleUnlinkCandidate}
             stepNumbers={{ comparisonStep: 2, floorStep: 3 }}
             page12={page12}
             pageSize12={pageSize12}

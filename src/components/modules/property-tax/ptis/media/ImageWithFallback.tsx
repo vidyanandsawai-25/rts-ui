@@ -28,7 +28,7 @@ export async function resolveDocumentUrl(src: string, documentGuid?: string): Pr
   
   let guid = documentGuid;
   if (!guid && src) {
-    const match = src.match(/\/(?:documents|UlbImageMaster)\/([^/]+)/);
+    const match = src.match(/\/documents\/([^/]+)/);
     if (match) {
       guid = match[1];
     }
@@ -175,7 +175,7 @@ export function clearDocumentCacheEntry(srcOrGuid?: string): void {
     documentCache.clear();
     return;
   }
-  const match = srcOrGuid.match(/\/(?:documents|UlbImageMaster)\/([^/]+)/);
+  const match = srcOrGuid.match(/\/documents\/([^/]+)/);
   const guid = match ? match[1] : srcOrGuid;
   const decodedGuid = decodeURIComponent(guid);
   documentCache.delete(decodedGuid);

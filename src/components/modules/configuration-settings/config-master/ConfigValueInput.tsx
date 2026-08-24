@@ -4,6 +4,7 @@ import { Input, Select, ToggleSwitch } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import type { ConfigItem } from '@/types/configMaster.types';
+import { DateUtils } from '@/lib/utils/date-helpers';
 
 interface ConfigValueInputProps {
   value: string;
@@ -80,21 +81,33 @@ export function ConfigValueInput({
   }
 
   // 3. Calendar/Date
-  if (controlType === 'calendar' || controlType === 'date' || dataType === 'datetime') {
+  const isDateTimeType = controlType === 'calendar' || controlType === 'date' || dataType === 'datetime' || dataType === 'date' || dataType === 'timestamp';
+  if (isDateTimeType) {
+    const isDateTime = dataType === 'datetime' || dataType === 'timestamp' || controlType === 'calendar';
+    const currentYear = new Date().getFullYear();
+    const formattedValue = DateUtils.formatForInput(value, isDateTime);
+
     return (
       <Input
-        type={dataType === 'datetime' ? 'datetime-local' : 'date'}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        ref={inputRef}
+        type={isDateTime ? 'datetime-local' : 'date'}
+        min={isDateTime ? `${currentYear}-01-01T00:00` : `${currentYear}-01-01`}
+        max={isDateTime ? '2100-12-31T23:59' : '2100-12-31'}
+        value={formattedValue || value}
+        onChange={(e) => {
+          const val = e.target.value;
+          onChange(val ? val.replace('T', ' ') : '');
+        }}
         className={cn(error ? 'border-red-500' : '', className)}
         disabled={disabled}
       />
     );
   }
 
-  // 4. Default: Text/Number
-  const isNumericType = controlType === 'number' || dataType === 'int' || dataType === 'number';
-  const isDecimalType = dataType === 'decimal';
+  // 4. Numeric: Integer vs Decimal vs Text
+  const isIntegerType = controlType === 'number' || dataType === 'int' || dataType === 'integer';
+  const isDecimalType = dataType === 'decimal' || dataType === 'float' || dataType === 'double' || dataType === 'number';
+
   return (
     <Input
       ref={inputRef}
@@ -102,18 +115,18 @@ export function ConfigValueInput({
       value={value}
       onChange={(e) => {
         let val = e.target.value;
-        if (isNumericType) {
+        if (isIntegerType) {
           val = val.replace(/[^0-9]/g, '');
         } else if (isDecimalType) {
-          val = val.replace(/[^0-9.]/g, '').replace(/(\.[^.]*)\./g, '$1');
+          val = val.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
         }
         onChange(val);
       }}
-      type={isNumericType ? 'number' : isDecimalType ? 'number' : 'text'}
-      min={isNumericType ? 1 : isDecimalType ? 0.01 : undefined}
-      step={isDecimalType ? 'any' : isNumericType ? 1 : undefined}
+      type={isIntegerType ? 'number' : isDecimalType ? 'number' : 'text'}
+      min={isIntegerType ? 1 : isDecimalType ? 0.01 : undefined}
+      step={isDecimalType ? 'any' : isIntegerType ? 1 : undefined}
       onKeyDown={(e) => {
-        if (isNumericType && /^[eE+\-.,]$/.test(e.key)) {
+        if (isIntegerType && /^[eE+\-.,]$/.test(e.key)) {
           e.preventDefault();
         }
         if (isDecimalType && /^[eE+\-]$/.test(e.key)) {

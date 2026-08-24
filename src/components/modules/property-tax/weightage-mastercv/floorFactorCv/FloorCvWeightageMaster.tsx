@@ -1,14 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { startTransition } from "react";
+import { toast } from "sonner";
 
 import { MasterTable, Column } from "@/components/common/MasterTable";
 import { FloorCvWeightageMasterProps, FloorFactorCVMaster } from "@/types/floor-cv-weightageMaster.types";
-import { UpdateButton, ClearButton, SaveButton } from "@/components/common/ActionButtons";
+import { UpdateButton, ClearButton, SaveButton, EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { ToastContainer } from "@/components/common/Toast";
 import { getFloorCvWeightageMasterColumns } from "./floorCvWeightageMasterColumns";
 import { FloorCvHeaderExtra } from "./FloorCvHeaderExtra";
 import { useFloorCvWeightage } from "@/hooks/weightageMaster/floorFactorCv/useFloorCvWeightage";
+import { useFloorFactorCVWeightageMasterDeleteHandler } from "@/hooks/weightageMaster/floorFactorCv/useFloorFactorDeleteHandler";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 
 
 // Extend FloorFactorCVMaster to add index signature
@@ -27,6 +32,9 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
     sortBy,
     sortOrder,
 }) => {
+    const router = useRouter();
+    const locale = useLocale();
+    const { confirm } = useConfirm();
     const {
         t,
         tW,
@@ -80,6 +88,13 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
         onSort: handleSort,
     });
 
+    const { handleDelete } = useFloorFactorCVWeightageMasterDeleteHandler({
+        t,
+        tCommon,
+        confirm,
+        startTransition,
+    });
+
     const renderActions = (row: FloorFactorCVMaster) => {
         const rowUid = getRowUid(row);
         const hasRowChanges = editableRows[rowUid] !== undefined;
@@ -91,16 +106,41 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
                         label={tW("common.buttons.create")}
                         size="sm"
                         onClick={() => handleUpdate(row)}
-                        disabled={!hasRowChanges || isUpdating}
+                        disabled={isUpdating}
+                        className={!hasRowChanges ? "opacity-50" : ""}
                     />
                 ) : (
                     <UpdateButton
                         label={tW("common.buttons.update")}
                         size="sm"
                         onClick={() => handleUpdate(row)}
-                        disabled={!hasRowChanges || isUpdating}
+                        disabled={isUpdating}
+                        className={!hasRowChanges ? "opacity-50" : ""}
                     />
                 )}
+                <EditButton
+                    size="sm"
+                    onClick={() => {
+                        if (row.id === 0) {
+                            toast.warning(tW("common.messages.createRecordFirst") || "Please create the record first before editing.");
+                        } else {
+                            router.push(`/${locale}/property-tax/weightage-master/edit/${row.id}`);
+                        }
+                    }}
+                    disabled={isUpdating}
+                />
+                <DeleteButton
+                    size="sm"
+                    onClick={() => {
+                        if (row.id === 0) {
+                            toast.warning(tW("common.messages.createRecordFirst") || "Please create the record first before deleting.");
+                        }
+                        else {
+                            handleDelete(row);
+                        }
+                    }}
+                    disabled={isUpdating}
+                />
                 <ClearButton
                     label={tW("common.buttons.clear")}
                     size="sm"
@@ -122,7 +162,7 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
                 pageNumber={pageNumber}
                 pageSize={pageSize}
                 totalCount={totalCount}
-                totalPages={totalPages}
+                totalPages={totalPages} 
                 onPageChange={changePage}
                 onPageSizeChange={changePageSize}
                 renderActions={renderActions as unknown as (row: Record<string, unknown>) => React.ReactNode}

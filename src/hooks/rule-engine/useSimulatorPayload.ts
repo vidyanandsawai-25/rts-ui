@@ -11,6 +11,7 @@ import {
 } from '@/components/modules/property-tax/rule-engine/simulatorExpressionParser';
 
 export interface InputRow {
+  id: string;
   key: string;
   value: string;
   isExtracted: boolean;
@@ -44,9 +45,9 @@ export function useSimulatorPayload(rule: RuleItem) {
       });
     } catch { /* ignore */ }
     const rows = extracted.map(field => {
-      return { key: field, value: '', isExtracted: true };
+      return { id: `ext-${field}-${Math.random().toString(36).substring(2, 7)}`, key: field, value: '', isExtracted: true };
     });
-    return rows.length === 0 ? [{ key: '', value: '', isExtracted: false }] : rows;
+    return rows.length === 0 ? [{ id: `custom-${Date.now()}-0`, key: '', value: '', isExtracted: false }] : rows;
   });
 
   const arrayFieldIds = React.useMemo<Set<string>>(() => {
@@ -89,6 +90,7 @@ export function useSimulatorPayload(rule: RuleItem) {
           lowercaseExtracted.includes((f.databaseColumnName || '').toLowerCase()),
         );
         const rows: InputRow[] = filteredFields.map(f => ({
+          id: `ext-${f.fieldId || f.databaseColumnName || Math.random().toString(36).substring(2, 7)}`,
           key: f.databaseColumnName || f.fieldId || '',
           value: '',
           isExtracted: true,
@@ -96,7 +98,7 @@ export function useSimulatorPayload(rule: RuleItem) {
         lowercaseExtracted.forEach(param => {
           if (!rows.some(r => r.key.toLowerCase() === param)) {
             const original = extractedParams.find(p => p.toLowerCase() === param) || param;
-            rows.push({ key: original, value: '', isExtracted: true });
+            rows.push({ id: `ext-${param}-${Math.random().toString(36).substring(2, 7)}`, key: original, value: '', isExtracted: true });
           }
         });
         setInputs(rows);
@@ -112,7 +114,7 @@ export function useSimulatorPayload(rule: RuleItem) {
     ),
   [fields]);
 
-  const handleAddRow    = () => setInputs(prev => [...prev, { key: '', value: '', isExtracted: false }]);
+  const handleAddRow    = () => setInputs(prev => [...prev, { id: `custom-${Date.now()}-${prev.length}`, key: '', value: '', isExtracted: false }]);
   const handleRemoveRow = (index: number) => setInputs(prev => prev.filter((_, i) => i !== index));
   const handleRowChange = (index: number, field: 'key' | 'value', val: string) =>
     setInputs(prev => prev.map((row, i) => (i === index ? { ...row, [field]: val } : row)));

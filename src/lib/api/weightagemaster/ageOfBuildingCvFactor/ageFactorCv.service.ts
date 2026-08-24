@@ -18,6 +18,15 @@ const QUERY_PARAM_MAP: Record<string, string> = {
 };
 
 /**
+ * Backend key to use instead when the value is an array (e.g. multiple selected
+ * construction types are filtered via the dedicated ConstructionTypeIds "IN" param,
+ * not by repeating the singular ConstructionTypeId key).
+ */
+const QUERY_PARAM_ARRAY_MAP: Record<string, string> = {
+  constructionTypeId: 'ConstructionTypeIds',
+};
+
+/**
  * Converts a frontend camelCase key to a backend PascalCase key using a predefined map
  * or by capitalizing the first letter as a fallback.
  */
@@ -37,16 +46,30 @@ export async function getAgeFactorCVMasterWithParams(
 
   // Add parameters to query string if they exist
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      // Safety check: Skip numeric values that are NaN or Infinity
-      if (typeof value === 'number' && !Number.isFinite(value)) {
-        return;
-      }
-
-      // Map frontend camelCase to backend PascalCase using specialized mapping
-      const apiKey = mapQueryParamKey(key);
-      searchParams.append(apiKey, String(value));
+    if (value === undefined || value === null || value === '') {
+      return;
     }
+
+    // Array values (e.g. multiple selected construction type IDs) are sent as
+    // repeated query params under the dedicated plural "IN" key:
+    // ConstructionTypeIds=1&ConstructionTypeIds=2
+    if (Array.isArray(value)) {
+      const arrayApiKey = QUERY_PARAM_ARRAY_MAP[key] || mapQueryParamKey(key);
+      value.forEach((item) => {
+        if (typeof item === 'number' && !Number.isFinite(item)) return;
+        searchParams.append(arrayApiKey, String(item));
+      });
+      return;
+    }
+
+    const apiKey = mapQueryParamKey(key);
+
+    // Safety check: Skip numeric values that are NaN or Infinity
+    if (typeof value === 'number' && !Number.isFinite(value)) {
+      return;
+    }
+
+    searchParams.append(apiKey, String(value));
   });
 
   const endpoint = searchParams.toString()
@@ -149,5 +172,30 @@ export async function deleteAgeFactorCVMaster(
   if (id <= 0) {
     throw new ApiError(400, t ? t('errors.validIdRequired') : 'Valid AgeFactorCV ID is required', 'Validation');
   }
-  return apiClient.delete<unknown>(`/AgeFactorCVMaster/${id}`);
+  return apiClient.delete<unknown>(`/AgeFactorCVMaster/${id}/purge`);
 }
+
+/**
+ * Fetches a single AgeFactorCVMaster record by ID
+ * @param id The AgeFactorCV ID to fetch
+ * @returns Promise resolving to ApiResponse containing the record
+ */
+
+export async function getAgeFactorCVMasterById(id: number, t?: (key: string) => string): Promise<ApiResponse<AgeFactorCVMaster>> {
+  if (id <= 0) {
+    throw new ApiError(400, t ? t('errors.validIdRequired') : 'Valid AgeFactorCV ID is required', 'Validation');
+  }
+
+  try {
+    const response = await apiClient.get<AgeFactorCVMaster>(`/AgeFactorCVMaster/${id}`);
+    if (!response.success) {
+      throw new ApiError(response.statusCode || 500, response.error || (t ? t('errors.fetchFailed') : 'Failed to fetch Age Factor CV Master'), 'Fetch Age Factor CV Master by ID failed');
+    }
+    return response;
+  } catch (error) {
+    throw error;
+
+  }
+
+}
+

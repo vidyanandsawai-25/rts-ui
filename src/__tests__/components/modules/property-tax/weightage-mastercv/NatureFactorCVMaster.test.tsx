@@ -1,10 +1,11 @@
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import NatureFactorCVMaster from "@/components/modules/property-tax/weightage-mastercv/natureFactorCv/NatureFactorCVMaster";
 import { Option } from "@/components/common/select";
 import { NatureFactorCVMaster as NatureFactorCVMasterType } from "@/types/natureofbuilding-cv-weightageMaster.types";
 import {
     updateNatureFactorCVMasterAction,
+    fetchNatureFactorCVMasterPagedServerAction,
 } from "@/app/[locale]/property-tax/weightage-master/nature-weightage/actions";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
@@ -14,10 +15,14 @@ vi.mock("@/app/[locale]/property-tax/weightage-master/nature-weightage/actions",
     createNatureFactorCVMasterAction: vi.fn(),
     bulkCreateNatureFactorCVMasterAction: vi.fn(),
     bulkUpdateNatureFactorCVMasterAction: vi.fn(),
+    fetchNatureFactorCVMasterPagedServerAction: vi.fn(),
 }));
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
+// Configurable per-test/describe-block via beforeEach/afterEach; defaults to a
+// year being selected since that's the common case for the missing-count tests.
+let mockSelectedYearRange: string | null = "2024";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
@@ -25,6 +30,7 @@ vi.mock("next/navigation", () => ({
         get: vi.fn().mockImplementation((key: string) => {
             if (key === "page") return "1";
             if (key === "pageSize") return "10";
+            if (key === "selectedYearRange") return mockSelectedYearRange;
             return null;
         }),
     }),
@@ -97,24 +103,42 @@ const constructionTypeOptions: Option[] = [
 
 const yearOptions: Option[] = [{ label: "2024-2025", value: "2024" }];
 
+import { ConfirmProvider } from "@/components/common/ConfirmProvider";
+
 function renderComponent(data = mockData) {
     return render(
-        <NatureFactorCVMaster
-            data={data}
-            pageNumber={1}
-            pageSize={10}
-            totalCount={data.length}
-            totalPages={1}
-            assessmentYearOptions={yearOptions}
-            constructionTypeOptions={constructionTypeOptions}
-        />
+        <ConfirmProvider>
+            <NatureFactorCVMaster
+                data={data}
+                pageNumber={1}
+                pageSize={10}
+                totalCount={data.length}
+                totalPages={1}
+                assessmentYearOptions={yearOptions}
+                constructionTypeOptions={constructionTypeOptions}
+            />
+        </ConfirmProvider>
     );
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe("NatureFactorCVMaster – rendering", () => {
-    beforeEach(() => { vi.clearAllMocks(); });
+    beforeEach(() => {
+        vi.clearAllMocks();
+        // Default: one real row (C1) + one missing combo (C2), matching mockData,
+        // so the "1 pending creates" badge expectations hold unless a test
+        // overrides this to represent a fully-existing selection.
+        vi.mocked(fetchNatureFactorCVMasterPagedServerAction).mockResolvedValue({
+            items: mockData,
+            pageNumber: 1,
+            pageSize: -1,
+            totalCount: mockData.length,
+            totalPages: 1,
+            hasPrevious: false,
+            hasNext: false,
+        });
+    });
 
     it("renders table rows with correct construction codes", () => {
         renderComponent();
@@ -135,19 +159,30 @@ describe("NatureFactorCVMaster – rendering", () => {
         });
     });
 
-    it("shows pending badge with correct count when new records exist", () => {
+    it("shows pending badge with correct count when new records exist", async () => {
         renderComponent();
-        expect(screen.getByText(/1 pending creates/i)).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText(/1 pending creates/i)).toBeInTheDocument();
+        });
     });
 });
 
 describe("NatureFactorCVMaster – row actions", () => {
     beforeEach(() => { vi.clearAllMocks(); });
 
-    it("Update / Create buttons are disabled initially", () => {
+    it("Update / Create buttons show a localized warning when clicked with no editable changes", async () => {
         renderComponent();
-        const updateBtns = screen.getAllByRole("button", { name: /^(update|create)$/i });
-        updateBtns.forEach((btn) => expect(btn).toBeDisabled());
+        const input = screen.getByDisplayValue("1.20");
+        const row = input.closest("tr") as HTMLElement;
+        const updateBtn = within(row).getByRole("button", { name: /update/i });
+
+        expect(updateBtn).not.toBeDisabled();
+
+        fireEvent.click(updateBtn);
+
+        await waitFor(() => {
+            expect(screen.getByText("No changes to update")).toBeInTheDocument();
+        });
     });
 
     it("enables Update button after changing a cell value", async () => {
@@ -179,7 +214,12 @@ describe("NatureFactorCVMaster – row actions", () => {
 });
 
 describe("NatureFactorCVMaster – bulk actions", () => {
-    it("Apply button is disabled initially", () => {
+    afterEach(() => {
+        mockSelectedYearRange = "2024";
+    });
+
+    it("Apply button is disabled initially (no assessment year or construction type selected)", () => {
+        mockSelectedYearRange = null;
         renderComponent();
         // Use getAllByRole since there might be other buttons, and pick the Apply one
         const applyBtn = screen.getByRole("button", { name: /^Apply$/ });

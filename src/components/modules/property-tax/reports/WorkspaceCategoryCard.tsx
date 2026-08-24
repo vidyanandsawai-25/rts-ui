@@ -2,7 +2,6 @@
 import type { Category } from './ReportWorkspaceConfig';
 import Image from 'next/image';
 import { Badge } from '@/components/common';
-
 interface CategoryCardProps {
   category: Category;
   label: string;

@@ -1,21 +1,12 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { CheckCircle, Package, RefreshCw, Shield } from 'lucide-react';
+import { CheckCircle, Package, Shield } from 'lucide-react';
 import { Button, Label, ToggleSwitch } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
-import { formatExpiryDate } from '@/lib/utils/ulb-configuration.utils';
-import { DEPARTMENT_DURATION_OPTIONS } from '@/config/ulb-configuration.config';
+import { formatExpiryDate, formatDurationText } from '@/lib/utils/ulb-configuration.utils';
 import type { ULBDepartmentCardProps } from '@/types/ulbconfig-master.types';
-import { UlbInput, UlbSelect } from '../ULBFormField';
-
-const DURATION_VALUES = new Set(DEPARTMENT_DURATION_OPTIONS.map((option) => option.value));
-
-function isCustomDuration(duration: string): boolean {
-  if (!duration) return false;
-  if (duration === 'custom') return true;
-  return !DURATION_VALUES.has(duration);
-}
+import { UlbInput } from '../ULBFormField';
 
 const COMPACT_LABEL =
   'mb-1 block truncate text-[9px] font-semibold uppercase leading-none tracking-wide text-slate-500';
@@ -38,7 +29,6 @@ function CardField({
 }
 
 export function ULBDepartmentCard({ dept, t, onToggle, onDateChange }: ULBDepartmentCardProps) {
-  const customMode = isCustomDuration(dept.duration);
   const fieldClass = 'h-7 w-full min-w-0 border-slate-200 bg-white px-1.5 text-[10px] font-medium';
 
   return (
@@ -97,37 +87,13 @@ export function ULBDepartmentCard({ dept, t, onToggle, onDateChange }: ULBDepart
               </CardField>
 
               <CardField label={t('fields.licenseDuration')}>
-                {customMode ? (
-                  <div className="flex w-full min-w-0 items-center gap-1">
-                    <UlbInput
-                      type="number"
-                      min={1}
-                      max={120}
-                      maxLength={3}
-                      placeholder="Months"
-                      value={dept.duration === 'custom' ? '' : dept.duration}
-                      onChange={(e) => onDateChange(dept.id, 'duration', e.target.value.slice(0, 3))}
-                      className={cn(fieldClass, 'flex-1')}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDateChange(dept.id, 'duration', '12')}
-                      className="h-7 w-7 shrink-0 p-0"
-                      aria-label="Reset duration"
-                    >
-                      <RefreshCw className="h-2.5 w-2.5" />
-                    </Button>
-                  </div>
-                ) : (
-                  <UlbSelect
-                    options={DEPARTMENT_DURATION_OPTIONS}
-                    value={dept.duration}
-                    onChange={(val) => onDateChange(dept.id, 'duration', val)}
-                    placeholder="Select"
-                    className="h-7 w-full border-none bg-transparent p-0 [&_button]:h-7 [&_button]:border-slate-200 [&_button]:bg-white [&_button]:px-1.5 [&_button]:text-[10px] [&_button]:font-medium [&_span]:text-[10px] [&_svg]:w-3 [&_svg]:h-3 [&_ul]:max-h-[160px]"
-                  />
-                )}
+                <UlbInput
+                  type="text"
+                  value={formatDurationText(dept.duration)}
+                  readOnly
+                  title={formatDurationText(dept.duration)}
+                  className={cn(fieldClass, 'bg-slate-50/70 text-slate-500 cursor-default border-slate-200/60')}
+                />
               </CardField>
 
               <CardField label={t('fields.endDate')}>

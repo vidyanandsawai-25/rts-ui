@@ -1,5 +1,11 @@
 {
+  "success": {
+    "updatePropertySign": "संपत्ति को सफलतापूर्वक स्वीकृत किया गया।",
+    "title": "सफल"
+  },
   "errors": {
+    "updatePropertySign": "संपत्ति को स्वीकृत करने में विफल।",
+    "fetchPendingSigns": "लंबित हस्ताक्षर प्राप्त करने में विफल।",
     "exportPendingData": "लंबित डेटा निर्यात करने में विफल।",
     "fetchMainCards": "मुख्य कार्ड डेटा प्राप्त करने में विफल।",
     "fetchWorkflowCards": "वर्कफ़्लो कार्ड डेटा प्राप्त करने में विफल।",
@@ -308,6 +314,8 @@
     "emptyMessage": "डेटा एंट्री गुणवत्ता जांच डेटा उपलब्ध नहीं है"
   },
   "sendToApprove": {
+    "warningIncomplete": "चेतावनी: {count} संपत्ति में अपूर्ण QC चेकलिस्ट आइटम हैं।",
+    "successComplete": "सभी चयनित संपत्तियों में पूर्ण QC चेकलिस्ट हैं।",
     "confirmTitle": "कार्रवाई की पुष्टि करें",
     "confirmDescription": "क्या आप वाकई चयनित संपत्तियों को मंजूरी के लिए भेजना चाहते हैं?",
     "confirmButton": "पुष्टि करें",
@@ -391,15 +399,15 @@
     }
   },
   "approvalByULB": {
-    "title": "Approval by ULB",
-    "titleWithWard": "Approval by ULB - {wardId}",
-    "searchPlaceholder": "Search notice no...",
-    "backToWardWise": "Back to Ward-wise",
-    "backToDivisions": "Back to Divisions",
-    "totalStructures": "Total Structures",
-    "totalUnitsSubmitted": "Total Units Submitted",
-    "totalDemandCr": "Total Demand (Cr)",
-    "total": "Total",
+    "title": "ULB द्वारा अनुमोदन",
+    "titleWithWard": "ULB द्वारा अनुमोदन - {wardId}",
+    "searchPlaceholder": "नोटिस नंबर खोजें...",
+    "backToWardWise": "वार्ड-वार पर वापस जाएं",
+    "backToDivisions": "डिवीजन पर वापस जाएं",
+    "totalStructures": "कुल संरचनाएं",
+    "totalUnitsSubmitted": "कुल इकाइयां सबमिट की गईं",
+    "totalDemandCr": "कुल मांग (करोड़)",
+    "total": "कुल",
     "updatePending": "लंबित अपडेट करें",
     "export": "निर्यात करें",
     "signed": "हस्ताक्षरित",
@@ -409,17 +417,17 @@
     "unit": "यूनिट",
     "units": "यूनिट्स",
     "columns": {
-      "sr": "Sr",
-      "zoneWard": "Zone / Ward",
+      "sr": "क्र.सं.",
+      "zoneWard": "ज़ोन / वार्ड",
       "division": "प्रभाग",
       "divisionOffice": "प्रभागीय कार्यालय",
       "ward": "वॉर्ड",
-      "totalStructures": "Total Structures",
-      "totalUnits": "Total Units",
-      "demandCr": "Demand (Cr)",
-      "buildingNo": "Building No",
-      "noticeNo": "Notice No",
-      "units": "Units"
+      "totalStructures": "कुल संरचनाएं",
+      "totalUnits": "कुल इकाइयां",
+      "demandCr": "मांग (करोड़)",
+      "buildingNo": "भवन संख्या",
+      "noticeNo": "नोटिस संख्या",
+      "units": "इकाइयां"
     },
     "buildingWiseProperty": {
       "backToStructureDetails": "भवन विवरण पर वापस जाएं",
@@ -443,7 +451,49 @@
       "currencySymbol": "₹",
       "unassessed": "अमूल्यांकित",
       "report": "रिपोर्ट",
-      "tracking": "ट्रैकिंग"
+      "tracking": "ट्रैकिंग",
+      "headers": {
+        "wardNo": "वार्ड क्र.",
+        "newOldPropertyNo": "नया संपत्ति क्र.\nऔर पुराना संपत्ति क्र.",
+        "description": "विवरण",
+        "ownerOccupierName": "मालिक का नाम\nऔर कब्जेदार का नाम",
+        "address": "पता",
+        "societyBuilderName": "सोसायटी का नाम\nऔर बिल्डर का नाम",
+        "wingFlatNo": "विंग क्र.\nऔर फ्लैट क्र.",
+        "propertyDetails": "संपत्ति विवरण (नया बनाम पुराना)",
+        "propertyType": "संपत्ति प्रकार",
+        "totalDemand": "कुल मांग",
+        "documentsImage": "दस्तावेज़\nछवि",
+        "actions": "कार्रवाई",
+        "clerkSign": "क्लर्क के हस्ताक्षर",
+        "taxInsp": "कर निरीक्षक",
+        "asstComm": "सहायक आयुक्त",
+        "dyCommTax": "उपायुक्त\n(कर)",
+        "addlComm": "अतिरिक्त आयुक्त",
+        "oldRecord": "पुराना रिकॉर्ड",
+        "newRecord": "नया रिकॉर्ड"
+      }
+    }
+  },
+  "ulbPendingSigns": {
+    "title": "लंबित अपडेट करें",
+    "officerName": "अधिकारी का नाम",
+    "pendingBuildings": "लंबित भवन",
+    "total": "कुल",
+    "searchPlaceholder": "SR नोटिस नंबर द्वारा खोजें...",
+    "showing": "दिखाया जा रहा है",
+    "of": "का",
+    "columns": {
+      "structureName": "संरचना का नाम",
+      "srNoticeNo": "एसआर नोटिस नंबर",
+      "noOfUnits": "इकाइयों की संख्या",
+      "demand": "मांग",
+      "approve": "स्वीकृत करें"
+    },
+    "confirmApproveTitle": "स्वीकृति की पुष्टि करें",
+    "confirmApproveMessage": "क्या आप निश्चित रूप से इस संपत्ति को स्वीकृत करना चाहते हैं?",
+    "actions": {
+      "approve": "अनुमोदित करें"
     }
   }
 }

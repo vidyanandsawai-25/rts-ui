@@ -63,11 +63,22 @@ export function useSocialAttributeForm({
   const handleToggleIsChild = useCallback((): void => {
     setIsChild((prev) => {
       const newValue = !prev;
-      setFormData((p) => ({
-        ...p,
-        parentAttributeId: newValue ? p.parentAttributeId : null,
-        isRequiredWhenParentTrue: newValue ? p.isRequiredWhenParentTrue : false,
-      }));
+      setFormData((p) => {
+        const updated = {
+          ...p,
+          parentAttributeId: newValue ? p.parentAttributeId : null,
+          isRequiredWhenParentTrue: newValue ? p.isRequiredWhenParentTrue : false,
+        };
+        // Reset parentAttributeId error if child is disabled
+        if (!newValue) {
+          setErrors((prevErr) => {
+            const nextErr = { ...prevErr };
+            delete nextErr.parentAttributeId;
+            return nextErr;
+          });
+        }
+        return updated;
+      });
       return newValue;
     });
   }, []);
@@ -126,11 +137,19 @@ export function useSocialAttributeForm({
           }
           return undefined;
         },
+        parentAttributeId: (val: unknown) => {
+          if (isChild) {
+            if (val === null || val === undefined || val === '') {
+              return t('form.validation.parentRequired');
+            }
+          }
+          return undefined;
+        },
         isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
       };
       return validateForm(data, schema);
     },
-    [t, isEdit, id, existingAttributes]
+    [t, isEdit, id, existingAttributes, isChild]
   );
 
   const showError = useCallback(
@@ -171,6 +190,34 @@ export function useSocialAttributeForm({
       }));
     },
     []
+  );
+
+  const handleParentAttributeChange = useCallback(
+    (name: string, value: string): void => {
+      setFormData((p) => {
+        const updated = {
+          ...p,
+          parentAttributeId: value === '' ? null : Number(value),
+          isRequiredWhenParentTrue: value === '' ? false : p.isRequiredWhenParentTrue,
+        };
+
+        // Validate updated state
+        const fieldErrors = validate(updated);
+        setErrors((prev) => {
+          const next = { ...prev };
+          if (fieldErrors.parentAttributeId) {
+            next.parentAttributeId = fieldErrors.parentAttributeId;
+          } else {
+            delete next.parentAttributeId;
+          }
+          return next;
+        });
+
+        return updated;
+      });
+      setTouched((prev) => ({ ...prev, [name]: true }));
+    },
+    [validate]
   );
 
   const handleBlur = useCallback(
@@ -353,6 +400,7 @@ export function useSocialAttributeForm({
     open,
     setOpen,
     handleChange,
+    handleParentAttributeChange,
     handleBlur,
     handleSubmit,
     handleToggleStatus,

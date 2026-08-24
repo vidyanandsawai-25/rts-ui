@@ -114,8 +114,9 @@
         "unitFormat": "केवळ अक्षरे आणि संख्या अनुमत आहेत.",
         "displayOrderInvalid": "प्रदर्शन क्रम ० किंवा अधिक असणे आवश्यक आहे",
         "mustBeActive": "जतन करण्यासाठी सामाजिक वैशिष्ट्य सक्रिय असणे आवश्यक आहे",
-        "codeExists": "सोशल अॅट्रिब्यूट कोड आधीपासूनच अस्तित्वात आहे",
-        "nameExists": "सोशल अॅट्रिब्यूट नाव आधीपासूनच अस्तित्वात आहे"
+        "codeExists": "Social Attribute Code आधीपासूनच अस्तित्वात आहे",
+        "nameExists": "Social Attribute Name आधीपासूनच अस्तित्वात आहे",
+        "parentRequired": "उप-वैशिष्ट्यासाठी मुख्य वैशिष्ट्य (Parent Attribute) आवश्यक आहे"
       },
       "status": {
         "label": "सक्रिय स्थिती",

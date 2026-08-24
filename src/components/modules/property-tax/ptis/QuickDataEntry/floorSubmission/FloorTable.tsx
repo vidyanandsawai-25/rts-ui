@@ -50,8 +50,6 @@ interface FloorTableProps {
   categoryName?: string;
   /** propertyDescription from PropertyCategoryMaster (e.g. "Amenity" or "ॲमिनिटी") */
   propertyDescription?: string;
-  /** true when the current property belongs to a wing — Data Entry Same As should be hidden */
-  hasWing?: boolean;
   isBuildingPermissionView?: boolean;
   plotAreaSqM?: number;
 }
@@ -83,7 +81,6 @@ const FloorTable: React.FC<FloorTableProps> = ({
   partitionNo,
   categoryName,
   propertyDescription,
-  hasWing = false,
   isIndividualProperty: _isIndividualProperty = false,
   onRowClick,
   isBuildingPermissionView = false,
@@ -380,7 +377,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          {!viewOnly && !isAmenityProperty && !hasWing && !(categoryName?.trim().toLowerCase() === 'apartment' && !partitionNo?.trim()) && (
+          {!viewOnly && !isAmenityProperty && !(categoryName?.trim().toLowerCase() === 'apartment' && !partitionNo?.trim()) && (
             <div
               onClick={handleDataEntrySameAsClick}
               className="inline-block cursor-pointer"

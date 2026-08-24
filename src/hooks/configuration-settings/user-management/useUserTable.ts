@@ -3,8 +3,6 @@ import { User } from '@/types/user-management';
 
 type CardFilter = 'all' | 'active' | 'inactive' | 'highest' | 'lowest';
 
-const PAGE_SIZE = 10;
-
 function normalizeUsers(users: User[] | undefined | null): User[] {
   return Array.isArray(users) ? users : [];
 }
@@ -21,7 +19,8 @@ export function useUserTable(
   initialTotalCount: number = 0,
   initialPageNumber: number = 1,
   initialSearchTerm: string = '',
-  initialCardFilter: CardFilter = 'all'
+  initialCardFilter: CardFilter = 'all',
+  initialPageSize: number = 10
 ) {
   const safeInitialUsers = normalizeUsers(initialUsers);
 
@@ -30,6 +29,7 @@ export function useUserTable(
   const [pageNumber, setPageNumber] = useState(initialPageNumber);
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [cardFilter, setCardFilter] = useState<CardFilter>(initialCardFilter);
+  const [pageSize, setPageSize] = useState(initialPageSize);
 
   /**
    * Keep previous incoming props in refs.
@@ -43,6 +43,7 @@ export function useUserTable(
   const prevPageNumberRef = useRef(initialPageNumber);
   const prevSearchTermRef = useRef(initialSearchTerm);
   const prevCardFilterRef = useRef<CardFilter>(initialCardFilter);
+  const prevPageSizeRef = useRef(initialPageSize);
 
   useEffect(() => {
     const incomingUsers = normalizeUsers(initialUsers);
@@ -54,8 +55,9 @@ export function useUserTable(
     const pageChanged = initialPageNumber !== prevPageNumberRef.current;
     const searchChanged = initialSearchTerm !== prevSearchTermRef.current;
     const filterChanged = initialCardFilter !== prevCardFilterRef.current;
+    const sizeChanged = initialPageSize !== prevPageSizeRef.current;
 
-    if (dataChanged || pageChanged || searchChanged || filterChanged) {
+    if (dataChanged || pageChanged || searchChanged || filterChanged || sizeChanged) {
       if (dataChanged) {
         setUsers(incomingUsers);
         setTotalCount(initialTotalCount);
@@ -73,13 +75,25 @@ export function useUserTable(
         setCardFilter(initialCardFilter);
       }
 
+      if (sizeChanged) {
+        setPageSize(initialPageSize);
+      }
+
       prevInitialUsersRef.current = incomingUsers;
       prevTotalCountRef.current = initialTotalCount;
       prevPageNumberRef.current = initialPageNumber;
       prevSearchTermRef.current = initialSearchTerm;
       prevCardFilterRef.current = initialCardFilter;
+      prevPageSizeRef.current = initialPageSize;
     }
-  }, [initialUsers, initialTotalCount, initialPageNumber, initialSearchTerm, initialCardFilter]);
+  }, [
+    initialUsers,
+    initialTotalCount,
+    initialPageNumber,
+    initialSearchTerm,
+    initialCardFilter,
+    initialPageSize,
+  ]);
 
   const { highestUser, lowestUser } = useMemo(() => {
     const validUsers = users.filter(Boolean);
@@ -177,7 +191,7 @@ export function useUserTable(
     pageNumber,
     setPageNumber,
 
-    pageSize: PAGE_SIZE,
+    pageSize,
 
     filteredUsers,
     handleCardClick,

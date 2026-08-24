@@ -82,6 +82,30 @@ export async function initOperations(financeYearId?: string | number): Promise<I
 }
 
 /**
+ * Get system time from server.
+ * API: GET /api/property-tax/operations/server-time
+ */
+export async function getServerTime(): Promise<string> {
+  try {
+    const response = await apiClient.get<string>("/property-tax/operations/server-time");
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to fetch server time",
+        "Fetch server time failed"
+      );
+    }
+    if (!response.data) {
+      throw new ApiError(500, "No server time received", "Invalid response format");
+    }
+    return response.data;
+  } catch (error) {
+    logger.error("Error fetching server time", undefined, error);
+    throw error;
+  }
+}
+
+/**
  * Fetch scope options.
  * API: GET /api/Property/search/scope-options
  */

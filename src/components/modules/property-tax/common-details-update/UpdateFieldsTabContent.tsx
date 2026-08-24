@@ -142,6 +142,7 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             loadingConfigs={updateData.loadingConfigs}
             formValues={updateData.formValues}
             formErrors={updateData.formErrors}
+            formWarnings={updateData.formWarnings}
             formSubmitted={updateData.formSubmitted}
             saving={updateData.saving}
             selectedCount={updateData.allSelected ? updateData.totalCount : updateData.selectedPropertyIds.size}

@@ -18,7 +18,13 @@ export interface DiscountDataTabProps {
   readOnly?: boolean;
 }
 
-const hasValue = (i: PropertySocialDetailItem) => i.bitValue === true || i.intValue !== null || i.decimalValue !== null || i.textValue !== null || i.dateValue !== null;
+const hasValue = (i: PropertySocialDetailItem) =>
+  i &&
+  (i.bitValue === true ||
+    i.intValue !== null ||
+    i.decimalValue !== null ||
+    i.textValue !== null ||
+    i.dateValue !== null);
 
 const DiscountDataTab: React.FC<DiscountDataTabProps> = ({
   propertyId,
@@ -46,7 +52,12 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({
     setViewerData(null);
   }, [viewerData]);
 
-  React.useEffect(() => () => { if (viewerData?.url) URL.revokeObjectURL(viewerData.url); }, [viewerData]);
+  React.useEffect(
+    () => () => {
+      if (viewerData?.url) URL.revokeObjectURL(viewerData.url);
+    },
+    [viewerData]
+  );
 
   const discountItems = (initialData?.items || []).filter(hasValue);
 
@@ -54,7 +65,11 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({
 
   const prevPropertyIdRef = React.useRef<number | undefined>(propertyId);
   React.useEffect(() => {
-    if (prevPropertyIdRef.current !== propertyId) { setActiveSubTab('discount'); setSocialItems([]); prevPropertyIdRef.current = propertyId; }
+    if (prevPropertyIdRef.current !== propertyId) {
+      setActiveSubTab('discount');
+      setSocialItems([]);
+      prevPropertyIdRef.current = propertyId;
+    }
   }, [propertyId]);
 
   const handleSubTabChange = async (tab: 'discount' | 'social') => {

@@ -7,7 +7,7 @@ export function useRoleTable(initialRoles: Role[]) {
   const [roles, setRoles] = useState<Role[]>(initialRoles);
   const [searchTerm, setSearchTerm] = useState('');
   const [pageNumber, setPageNumber] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -27,6 +27,7 @@ export function useRoleTable(initialRoles: Role[]) {
     pageNumber,
     setPageNumber,
     pageSize,
+    setPageSize,
     filteredRoles,
   };
 }

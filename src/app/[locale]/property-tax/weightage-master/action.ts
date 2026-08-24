@@ -7,9 +7,11 @@ import { locales } from "@/i18n/config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import {
   getFloorFactorCVMasterWithPagination,
+  getFloorFactorCVMasterById,
   updateFloorFactorCVMaster,
   bulkCreateFloorWeightageCv,
   bulkUpdateFloorFactorCVMaster,
+  deleteFloorFactorCVMasterById,
 } from "@/lib/api/floor-cv-weightageMaster.service";
 import { ApiError } from "@/lib/utils/api";
 import {
@@ -74,6 +76,64 @@ export async function fetchFloorFactorCVMasterPagedServerAction(
       pageSize,
     }, error);
     throw error;
+  }
+}
+
+/**
+ * Fetch all FloorFactorCVMaster records (real + placeholder rows for missing
+ * Floor/Year combinations) for a given assessment year, unpaginated. Used so
+ * "Generate All" can cover every missing combination, not just the current page.
+ */
+export async function fetchAllFloorFactorCVMasterAction(
+  selectedYearRange?: string
+): Promise<FloorFactorCVMaster[]> {
+  try {
+    const yearRangeParam =
+      selectedYearRange && selectedYearRange.trim() !== "" ? selectedYearRange : undefined;
+
+    const response = await getFloorFactorCVMasterWithPagination(1, -1, undefined, yearRangeParam);
+    return Array.isArray(response.items) ? response.items : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+/**
+ * Fetch FloorFactorCVMaster record by ID
+ */
+export async function fetchFloorFactorCVMasterByIdServerAction(
+  id: number
+): Promise<{ success: boolean; data?: FloorFactorCVMaster; message?: string; statusCode?: number }> {
+  try {
+    if (!id || id <= 0) {
+      return {
+        success: false,
+        message: "Invalid Floor Factor CV Master ID",
+        statusCode: 400,
+      };
+    }
+    
+    const data = await getFloorFactorCVMasterById(id);
+    return { success: true, data };
+  } catch (error: unknown) {
+    const logger = createLogger('fetchFloorFactorCVMasterById');
+    logger.error('Failed to fetch FloorFactorCVMaster by ID', {
+      operation: 'fetchFloorFactorCVMasterByIdServerAction',
+      id,
+    }, error);
+    
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        message: error.responseText || 'API Error occurred',
+        statusCode: error.statusCode,
+      };
+    }
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : "Failed to fetch record",
+      statusCode: 500,
+    };
   }
 }
 
@@ -258,4 +318,34 @@ export async function bulkUpdateFloorFactorCVMasterAction(
       statusCode: 500,
     };
   }
+}
+
+/**
+ * Delete FloorFactorCVMaster record by ID
+ * @param id The ID of the record to delete
+ * @returns Promise resolving to an object indicating success or failure
+ */
+
+export async function deleteFloorFactorCVMasterActionById(
+    id: number
+): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+    try {
+        const response = await deleteFloorFactorCVMasterById(id);
+        if (response.success) {
+            for (const locale of locales) {
+                revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
+            }
+            return { success: true };
+        } else {
+            return { success: false, message: response.error || 'Failed to delete record', statusCode: 500 };
+        }
+    } catch (error: unknown) {
+        if (error instanceof ApiError) {
+            return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+        }
+        if (error instanceof Error) {
+            return { success: false, message: error.message, statusCode: 500 };
+        }
+        return { success: false, message: 'Unknown error', statusCode: 500 };
+    }
 }

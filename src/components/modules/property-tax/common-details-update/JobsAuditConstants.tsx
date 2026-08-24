@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { Column, TruncatedText } from "@/components/common";
+import { Column, TruncatedText, ViewButton } from "@/components/common";
 import { UpdateHistoryItem } from "@/types/common-details-update/common-details-update.types";
 import { format } from "date-fns";
-import { Eye } from "lucide-react";
 
 export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem) => void): Column<UpdateHistoryItem>[] => [
   {
@@ -58,10 +57,19 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
     headerClassName: "whitespace-nowrap",
     width: "50px",
     render: (_, row) => {
+      if (!row.startTime) return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
+      const str = String(row.startTime).trim();
+      if (str === "" || str.startsWith("0001") || str === "null" || str === "undefined") {
+        return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
+      }
       try {
-        return <span className="text-sm text-slate-700 whitespace-nowrap">{format(new Date(row.startTime), "hh:mm:ss a")}</span>;
+        const dateObj = new Date(str);
+        if (isNaN(dateObj.getTime()) || dateObj.getFullYear() < 2000) {
+          return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
+        }
+        return <span className="text-sm text-slate-700 whitespace-nowrap">{format(dateObj, "hh:mm:ss a")}</span>;
       } catch (e) {
-        return <span className="text-sm text-slate-700 whitespace-nowrap">{row.startTime}</span>;
+        return <span className="text-sm text-slate-700 whitespace-nowrap">{str || "-"}</span>;
       }
     }
   },
@@ -71,10 +79,20 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
     headerClassName: "whitespace-nowrap",
     width: "50px",
     render: (_, row) => {
+      const isFailed = row.activityStatus?.toLowerCase() === "failed";
+      if (isFailed || !row.endTime) return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
+      const str = String(row.endTime).trim();
+      if (str === "" || str.startsWith("0001") || str.startsWith("1970") || str === "null" || str === "undefined") {
+        return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
+      }
       try {
-        return <span className="text-sm text-slate-700 whitespace-nowrap">{format(new Date(row.endTime), "hh:mm:ss a")}</span>;
+        const dateObj = new Date(str);
+        if (isNaN(dateObj.getTime()) || dateObj.getFullYear() < 2000) {
+          return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
+        }
+        return <span className="text-sm text-slate-700 whitespace-nowrap">{format(dateObj, "hh:mm:ss a")}</span>;
       } catch (e) {
-        return <span className="text-sm text-slate-700 whitespace-nowrap">{row.endTime}</span>;
+        return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
       }
     }
   },
@@ -83,7 +101,56 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
     label: t("jobsAudit.columns.duration"),
     headerClassName: "whitespace-nowrap",
     width: "50px",
-    render: (_, row) => <span className="text-sm text-slate-700">{row.duration}</span>
+    render: (_, row) => {
+      const isFailed = row.activityStatus?.toLowerCase() === "failed";
+      if (isFailed) {
+        return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
+      }
+
+      let sec: number | null = null;
+      if (row.duration !== null && row.duration !== undefined) {
+        const parsed = Number(row.duration);
+        if (!isNaN(parsed) && parsed >= 0) {
+          sec = parsed;
+        }
+      }
+
+      // Fallback: Calculate from endTime and startTime if duration is not directly provided or 0
+      if ((sec === null || sec === 0) && row.startTime && row.endTime) {
+        try {
+          const start = new Date(row.startTime).getTime();
+          const end = new Date(row.endTime).getTime();
+          if (!isNaN(start) && !isNaN(end) && end >= start) {
+            sec = Math.round((end - start) / 1000);
+          }
+        } catch (_e) {
+          // ignore calculation error
+        }
+      }
+
+      if (sec === null || sec < 0) {
+        return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
+      }
+
+      let formatted = "0s";
+      if (sec === 0) {
+        formatted = "0s";
+      } else if (sec < 60) {
+        formatted = `${sec}s`;
+      } else {
+        const mins = Math.floor(sec / 60);
+        const remainingSec = sec % 60;
+        if (mins < 60) {
+          formatted = remainingSec > 0 ? `${mins}m ${remainingSec}s` : `${mins}m`;
+        } else {
+          const hrs = Math.floor(mins / 60);
+          const remainingMins = mins % 60;
+          formatted = remainingMins > 0 ? `${hrs}h ${remainingMins}m` : `${hrs}h`;
+        }
+      }
+
+      return <span className="text-sm text-slate-700 whitespace-nowrap">{formatted}</span>;
+    }
   },
   {
     key: "activityStatus",
@@ -113,13 +180,12 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
     align: "center",
     width: "100px",
     render: (_, row) => (
-      <button
+      <ViewButton
         onClick={() => onViewClick(row)}
         className="flex items-center gap-1.5 px-3 py-1.5 mx-auto border border-slate-300 rounded-md text-slate-700 text-sm hover:bg-slate-50 transition-colors shadow-sm bg-white"
       >
-        <Eye className="w-4 h-4 text-slate-500" />
         {t("jobsAudit.columns.view")}
-      </button>
+      </ViewButton>
     )
   }
 ];

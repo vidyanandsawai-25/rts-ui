@@ -115,7 +115,8 @@
         "displayOrderInvalid": "Display order must be 0 or greater",
         "mustBeActive": "Social Attribute must be active to save",
         "codeExists": "Social Attribute Code already exists",
-        "nameExists": "Social Attribute Name already exists"
+        "nameExists": "Social Attribute Name already exists",
+        "parentRequired": "Parent Attribute is required when Is Child Attribute is active"
       },
       "status": {
         "label": "Active Status",

@@ -230,6 +230,7 @@ export default function CommonDetailsUpdatePage(
               <TabPanel value="auditMonitor" className="flex-1 min-h-0 overflow-auto">
                 <JobsAudit 
                   initialData={props.initialUpdateHistory} 
+                  initialAllData={props.initialAllUpdateHistory}
                   initialUpdateHistoryDetail={props.initialUpdateHistoryDetail}
                   actions={props.actions} 
                 />

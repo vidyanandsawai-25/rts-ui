@@ -35,7 +35,7 @@ export function getInitialFinancialYearFormData(
     startDate: financialYearData?.startDate?.split('T')[0] || (initialYear ? `${initialYear}-04-01` : ''),
     endDate: financialYearData?.endDate?.split('T')[0] || (initialYear ? `${initialYear + 1}-03-31` : ''),
     description: financialYearData?.description || '',
-    isActive: Boolean(financialYearData?.isActive ?? true),
+    isActive: Boolean(financialYearData?.isActive ?? false),
     isCurrent: Boolean(financialYearData?.isActive ?? false) && financialYearData?.status !== 'Closed',
   };
 }

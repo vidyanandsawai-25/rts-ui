@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CODE_REGEX, TEXT_ALLOWED, isAllZeros } from '../utils/validation-rules';
+import { DateUtils } from '../utils/date-helpers';
 
 /**
  * Shared audit fields
@@ -78,7 +79,9 @@ const validateDefaultValueRefinement = (data: { dataType: string; defaultValue?:
   const { dataType, defaultValue } = data;
   if (!defaultValue) return;
 
-  if (dataType === 'int') {
+  const normDataType = (dataType || '').toLowerCase();
+
+  if (normDataType === 'int' || normDataType === 'integer') {
     if (!/^\d+$/.test(defaultValue)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -103,7 +106,7 @@ const validateDefaultValueRefinement = (data: { dataType: string; defaultValue?:
         path: ['defaultValue'],
       });
     }
-  } else if (dataType === 'decimal') {
+  } else if (normDataType === 'decimal' || normDataType === 'float' || normDataType === 'number') {
     if (!/^\d+(\.\d+)?$/.test(defaultValue)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -120,7 +123,7 @@ const validateDefaultValueRefinement = (data: { dataType: string; defaultValue?:
         path: ['defaultValue'],
       });
     }
-  } else if (dataType === 'boolean') {
+  } else if (normDataType === 'boolean' || normDataType === 'bool') {
     if (defaultValue !== 'true' && defaultValue !== 'false') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -128,22 +131,13 @@ const validateDefaultValueRefinement = (data: { dataType: string; defaultValue?:
         path: ['defaultValue'],
       });
     }
-  } else if (dataType === 'datetime') {
-    // Support ISO strings and UI format DD-MM-YYYY HH:mm (normalize before parsing)
-    const ddmmyyyyMatch = defaultValue.match(
-      /^(\d{2})-(\d{2})-(\d{4})(?:\s(\d{2}):(\d{2})(?::(\d{2}))?)?$/
-    );
-
-    const normalized = ddmmyyyyMatch
-      ? `${ddmmyyyyMatch[3]}-${ddmmyyyyMatch[2]}-${ddmmyyyyMatch[1]}T${ddmmyyyyMatch[4] ?? '00'}:${ddmmyyyyMatch[5] ?? '00'}:${ddmmyyyyMatch[6] ?? '00'}`
-      : defaultValue;
-
-    const isValidFormat = !isNaN(Date.parse(normalized));
+  } else if (normDataType === 'datetime' || normDataType === 'date' || normDataType === 'timestamp') {
+    const isValidFormat = DateUtils.isValidDateTime(defaultValue);
       
     if (!isValidFormat) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Default value must be a valid date and time',
+        message: 'Default value must be a valid date and time (year from current year onwards)',
         path: ['defaultValue'],
       });
     }

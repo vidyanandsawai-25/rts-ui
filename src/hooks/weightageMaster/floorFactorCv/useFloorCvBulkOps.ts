@@ -11,6 +11,7 @@ import {
 import {
     bulkCreateFloorFactorCVMasterAction,
     bulkUpdateFloorFactorCVMasterAction,
+    fetchAllFloorFactorCVMasterAction,
 } from "@/app/[locale]/property-tax/weightage-master/action";
 import type { Option } from "@/components/common";
 
@@ -34,6 +35,9 @@ export interface UseFloorCvBulkOpsParams {
     refreshPage: () => void;
     clearFilters: () => void;
     floorOptions: Option[];
+    /** Called after a successful bulk update / generate-all so the "pending records"
+     *  count can be refreshed to reflect what actually changed. */
+    onDataChanged: () => void;
 }
 
 export function useFloorCvBulkOps({
@@ -55,6 +59,7 @@ export function useFloorCvBulkOps({
     refreshPage,
     clearFilters,
     floorOptions,
+    onDataChanged,
 }: UseFloorCvBulkOpsParams) {
     const t = useTranslations("floorFactorMaster");
     const tW = useTranslations("weightageMaster");
@@ -71,9 +76,14 @@ export function useFloorCvBulkOps({
 
         const factor = parseFloat(factorValue);
 
-        // Prevent negative factors
-        if (factor < 0) {
-            addToast("error", tW("common.messages.negativeFactorsNotAllowed"));
+        // Prevent non-positive factors
+        if (factor < 0.1) {
+            addToast("error", tW("common.messages.validFactorRequired"));
+            return;
+        }
+
+        if (factor > 100) {
+            addToast("error", tW("common.messages.factorPercentageExceedsMax"));
             return;
         }
 
@@ -94,9 +104,12 @@ export function useFloorCvBulkOps({
         const updatedRows: Record<string, FloorFactorCVMaster> = {};
         let updatedCount = 0;
         data.forEach((row) => {
+            // Inactive records are non-editable — leave them untouched by bulk factor apply.
+            if (row.isActive === false) return;
+
             const rowUid = getRowUid(row);
             const rowFloorIndex = floorOptions.findIndex(o => o.value === String(row.floorId));
-            
+
             const isInRange =
                 (!fromFloor || rowFloorIndex >= fromIndex) &&
                 (!toFloor || rowFloorIndex <= toIndex);
@@ -226,6 +239,7 @@ export function useFloorCvBulkOps({
                 setEditableRows({});
                 // Clear filters after successful bulk update
                 clearFilters();
+                onDataChanged();
                 setTimeout(() => { refreshPage(); }, 1500);
             } else if (totalSuccess > 0 && errorCount > 0) {
                 const successMsg = [];
@@ -236,6 +250,7 @@ export function useFloorCvBulkOps({
                 setEditableRows({});
                 // Clear filters after partial success
                 clearFilters();
+                onDataChanged();
                 setTimeout(() => { refreshPage(); }, 1500);
             } else if (errorCount > 0) {
                 addToast("error", tW("common.messages.bulkOperationFailed"));
@@ -249,12 +264,20 @@ export function useFloorCvBulkOps({
         }
     };
 
-    // Handle Generate All uncreated records
+    // Handle Generate All uncreated records. Fetches the full, unpaginated dataset
+    // (real + placeholder rows for every missing Floor/Year combination) on demand
+    // at click time, so this covers the whole matrix, not just the currently-rendered
+    // page, without eagerly re-fetching it on every page load.
     const handleGenerateAll = async (): Promise<void> => {
-        const newRecords = data.filter((row) => row.id === 0 && !sessionCreatedUids.has(getRowUid(row)));
-        if (newRecords.length === 0) return;
         setIsGeneratingAll(true);
         try {
+            const allFloorFactors = await fetchAllFloorFactorCVMasterAction(selectedYear);
+            const newRecords = allFloorFactors.filter((row) => row.id === 0 && !sessionCreatedUids.has(getRowUid(row)));
+            if (newRecords.length === 0) {
+                addToast("info", tW("common.messages.allRecordsExist"));
+                return;
+            }
+
             const createdUids: string[] = [];
             const payload: BulkFloorFactorCVMasterCreateAction = newRecords.map((row) => {
                 const rowUid = getRowUid(row);
@@ -275,6 +298,7 @@ export function useFloorCvBulkOps({
             if (result && result.success) {
                 addToast("success", tW("common.messages.recordsGeneratedSuccess", { count: newRecords.length }));
                 setSessionCreatedUids((prev) => new Set([...prev, ...createdUids]));
+                onDataChanged();
                 setTimeout(() => { refreshPage(); }, 1500);
             } else {
                 addToast("error", result?.message || tW("common.messages.generationFailed"));

@@ -216,6 +216,8 @@ export interface MappedPropertyApiItem {
 export interface TransMastRecord {
   id: number;
   propertyId: number;
+  /** The actual old property master ID — returned by backend as propertyMastOldId on transMastOldRecords */
+  propertyMastOldId?: number;
   financeYearId: number | null;
   calculationType: string | null;
   calculationValue: number | null;

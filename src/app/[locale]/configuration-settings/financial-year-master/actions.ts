@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import {
   createFinancialYear,
@@ -21,7 +20,7 @@ import {
   extractActionError,
   mapApiErrorsToFormFields,
   mapSchemaErrors,
-  REVALIDATE_PATH,
+  revalidateFinancialYearPaths,
   unsetActiveYears,
 } from "./actions.helpers";
 
@@ -32,7 +31,10 @@ async function ensureAuthorized() {
 
 export async function saveFinancialYearAction(data: FinancialYearFormValues, id?: number): Promise<ActionResult<void>> {
   try {
-    if (!(await ensureAuthorized())) return { success: false, error: "Session expired: Please login to continue" };
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) return { success: false, error: "Session expired: Please login to continue" };
+    const numericUserId = Number(userId) || 1;
 
     const parsed = createFinancialYearSchema((key) => key).safeParse(data);
     if (!parsed.success) {
@@ -56,18 +58,20 @@ export async function saveFinancialYearAction(data: FinancialYearFormValues, id?
     const existing = id ? existingYears.find((y) => y.id === id) : null;
     const currentStatus = existing?.status || "Active";
 
-    if (data.isCurrent) await unsetActiveYears(existingYears, id);
+    if (data.isCurrent) await unsetActiveYears(existingYears, id, numericUserId);
     const payload = {
       isActive: data.isCurrent,
       year: data.year,
-      yearCode: data.yearCode,
+      yearCode: data.yearCode.trim().toUpperCase(),
       status: currentStatus,
       startDate: data.startDate,
       endDate: data.endDate,
       description: data.description || null,
+      createdBy: numericUserId,
+      updatedBy: numericUserId,
     };
     if (id) await updateFinancialYear(id, payload); else await createFinancialYear(payload);
-    revalidatePath(REVALIDATE_PATH, "page");
+    revalidateFinancialYearPaths();
     return { success: true };
   } catch (err: unknown) {
     logger.error("saveFinancialYearAction failed", { err });
@@ -90,7 +94,7 @@ export async function deleteFinancialYearAction(id: number): Promise<ActionResul
     const year = await getFinancialYearById(id);
     if (year.isActive) return { success: false, error: t("table.messages.cannotDeleteCurrent") };
     await deleteFinancialYear(id);
-    revalidatePath(REVALIDATE_PATH, "page");
+    revalidateFinancialYearPaths();
     return { success: true };
   } catch (err: unknown) {
     logger.error("deleteFinancialYearAction failed", { err, id });
@@ -100,13 +104,17 @@ export async function deleteFinancialYearAction(id: number): Promise<ActionResul
 
 export async function setAsCurrentAction(id: number): Promise<ActionResult<void>> {
   try {
-    if (!(await ensureAuthorized())) return { success: false, error: "Access denied" };
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) return { success: false, error: "Access denied" };
+    const numericUserId = Number(userId) || 1;
+
     const year = await getFinancialYearById(id);
     if (year.status === "Closed") return { success: false, error: "Closed financial year cannot be marked as current" };
     const existingYears = (await getFinancialYearsPaged(1, 2000)).items || [];
-    await unsetActiveYears(existingYears, id);
-    await updateFinancialYear(id, buildYearPayload(year as FinancialYear, true, "Active"));
-    revalidatePath(REVALIDATE_PATH, "page");
+    await unsetActiveYears(existingYears, id, numericUserId);
+    await updateFinancialYear(id, buildYearPayload(year as FinancialYear, true, "Active", numericUserId));
+    revalidateFinancialYearPaths();
     return { success: true };
   } catch (err: unknown) {
     logger.error("setAsCurrentAction failed", { err, id });
@@ -116,10 +124,14 @@ export async function setAsCurrentAction(id: number): Promise<ActionResult<void>
 
 export async function closeYearAction(id: number): Promise<ActionResult<void>> {
   try {
-    if (!(await ensureAuthorized())) return { success: false, error: "Access denied" };
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) return { success: false, error: "Access denied" };
+    const numericUserId = Number(userId) || 1;
+
     const year = await getFinancialYearById(id);
-    await updateFinancialYear(id, buildYearPayload(year as FinancialYear, false, "Closed"));
-    revalidatePath(REVALIDATE_PATH, "page");
+    await updateFinancialYear(id, buildYearPayload(year as FinancialYear, false, "Closed", numericUserId));
+    revalidateFinancialYearPaths();
     return { success: true };
   } catch (err: unknown) {
     logger.error("closeYearAction failed", { err, id });

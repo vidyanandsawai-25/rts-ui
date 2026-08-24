@@ -13,6 +13,11 @@ interface RawFinancialYear {
   startDate?: string | null; StartDate?: string | null;
   endDate?: string | null; EndDate?: string | null;
   description?: string | null; Description?: string | null;
+  yearDescription?: string | null; YearDescription?: string | null;
+  createdBy?: number | null; CreatedBy?: number | null;
+  createdDate?: string | null; CreatedDate?: string | null;
+  updatedBy?: number | null; UpdatedBy?: number | null;
+  updatedDate?: string | null; UpdatedDate?: string | null;
 }
 
 const normalizeFinancialYear = (year: RawFinancialYear): FinancialYear => ({
@@ -23,20 +28,28 @@ const normalizeFinancialYear = (year: RawFinancialYear): FinancialYear => ({
   status: year.status ?? year.Status ?? 'Draft',
   startDate: year.startDate ?? year.StartDate ?? null,
   endDate: year.endDate ?? year.EndDate ?? null,
-  description: year.description ?? year.Description ?? null,
+  description: year.description ?? year.Description ?? year.yearDescription ?? year.YearDescription ?? null,
+  createdBy: year.createdBy ?? year.CreatedBy ?? null,
+  createdDate: year.createdDate ?? year.CreatedDate ?? null,
+  updatedBy: year.updatedBy ?? year.UpdatedBy ?? null,
+  updatedDate: year.updatedDate ?? year.UpdatedDate ?? null,
 });
+
+const formatPayloadDate = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const dateOnly = dateStr.split('T')[0].split(' ')[0];
+  return `${dateOnly}T00:00:00`;
+};
 
 export async function getFinancialYearsPaged(
   pageNumber: number,
   pageSize: number,
   searchTerm?: string,
   statusFilter?: string
-): Promise<FinancialYearPagedResponse> {
-  const hasFilter = !!(searchTerm?.trim() || statusFilter?.trim());
-
+): Promise<FinancialYearPagedResponse & { stats?: { total: number; active: number; closed: number } }> {
   const params = new URLSearchParams({
-    PageNumber: hasFilter ? "1" : pageNumber.toString(),
-    PageSize: hasFilter ? "2000" : pageSize.toString(),
+    PageNumber: "1",
+    PageSize: "2000",
   });
 
   if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
@@ -54,7 +67,14 @@ export async function getFinancialYearsPaged(
     );
   }
 
-  let items = (response.data.items || []).map(normalizeFinancialYear);
+  const allItems = (response.data.items || []).map(normalizeFinancialYear);
+  const stats = {
+    total: allItems.length,
+    active: allItems.filter((y) => y.status === "Active" || y.isActive).length,
+    closed: allItems.filter((y) => y.status === "Closed").length,
+  };
+
+  let items = allItems;
 
   // Client-side search filtering fallback
   if (searchTerm?.trim()) {
@@ -73,14 +93,19 @@ export async function getFinancialYearsPaged(
     items = items.filter((item) => item.status === filterValue);
   }
 
-  const totalCount = hasFilter ? items.length : (response.data.totalCount ?? items.length);
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // Always sort so that the active/current financial year is 1st record, followed by descending year order
+  items.sort((a, b) => {
+    if (a.isActive && !b.isActive) return -1;
+    if (!a.isActive && b.isActive) return 1;
+    return b.year - a.year;
+  });
+
+  const totalCount = items.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const hasPrevious = pageNumber > 1;
   const hasNext = pageNumber < totalPages;
 
-  const paginatedItems = hasFilter
-    ? items.slice((pageNumber - 1) * pageSize, pageNumber * pageSize)
-    : items;
+  const paginatedItems = items.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
 
   return {
     ...response.data,
@@ -91,6 +116,7 @@ export async function getFinancialYearsPaged(
     totalPages,
     hasPrevious,
     hasNext,
+    stats,
   };
 }
 
@@ -116,9 +142,11 @@ export async function createFinancialYear(data: FinancialYearPayload): Promise<v
     Year: data.year,
     YearCode: data.yearCode,
     Status: data.status,
-    StartDate: data.startDate.includes('T') ? data.startDate : `${data.startDate}T00:00:00`,
-    EndDate: data.endDate.includes('T') ? data.endDate : `${data.endDate}T00:00:00`,
-    Description: data.description,
+    StartDate: formatPayloadDate(data.startDate),
+    EndDate: formatPayloadDate(data.endDate),
+    Description: data.description ?? null,
+    YearDescription: data.description ?? null,
+    CreatedBy: data.createdBy ?? null,
   };
   const response = await apiClient.post<void>("/YearMaster", payload);
 
@@ -139,9 +167,11 @@ export async function updateFinancialYear(id: number, data: FinancialYearPayload
     Year: data.year,
     YearCode: data.yearCode,
     Status: data.status,
-    StartDate: data.startDate.includes('T') ? data.startDate : `${data.startDate}T00:00:00`,
-    EndDate: data.endDate.includes('T') ? data.endDate : `${data.endDate}T00:00:00`,
-    Description: data.description,
+    StartDate: formatPayloadDate(data.startDate),
+    EndDate: formatPayloadDate(data.endDate),
+    Description: data.description ?? null,
+    YearDescription: data.description ?? null,
+    UpdatedBy: data.updatedBy ?? null,
   };
   
   const response = await apiClient.put<void>(`/YearMaster/${id}`, payload);

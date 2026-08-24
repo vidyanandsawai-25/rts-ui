@@ -20,7 +20,14 @@
       "factor": "0.00"
     },
     "messages": {
-      "noRecordsFound": "कोई रिकॉर्ड नहीं मिला"
+      "noRecordsFound": "कोई रिकॉर्ड नहीं मिला",
+      "mandatoryFields": "* से चिह्नित फ़ील्ड अनिवार्य हैं"
+    },
+    "titles": {
+      "editNatureWeightage": "प्रकृति भार संपादित करें"
+    },
+    "descriptions": {
+      "updateNatureDetails": "प्रकृति भार विवरण अपडेट करें"
     },
     "loading": {
       "message": "प्रकृति कारक CV मास्टर लोड हो रहा है...",
@@ -40,6 +47,13 @@
       "createFailed": "प्रकृति कारक भार रिकॉर्ड बनाने में विफल",
       "bulkUpdateFailed": "प्रकृति कारक भार रिकॉर्ड्स को बल्क अपडेट करने में विफल",
       "bulkCreateFailed": "प्रकृति कारक भार रिकॉर्ड्स को बल्क बनाने में विफल"
+    },
+      "deleteConfirmation": {
+      "title": "प्रकृति का प्रकार",
+      "description": "क्या आप वाकई इस रिकॉर्ड को हटाना चाहते हैं?",
+      "confirmButton": "हटाएं",
+      "cancelButton": "रद्द करें",
+      "successMessage": "रिकॉर्ड सफलतापूर्वक हटा दिया गया"
     }
   }
 }

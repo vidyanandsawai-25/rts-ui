@@ -117,7 +117,7 @@ export default async function Page({ searchParams }: PageProps) {
   const menuItems = await getMenuItemsAction();
   const defaultCode = selectedField || (menuItems[0]?.updateCode || "");
 
-  const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, initialSourceTables, initialExcelTemplateFieldsResult, initialUpdateHistory, initialUpdateHistoryDetail] = await Promise.all([
+  const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, initialSourceTables, initialExcelTemplateFieldsResult, initialUpdateHistory, initialAllUpdateHistory, initialUpdateHistoryDetail] = await Promise.all([
     getAllWardsAction(),
     getAllWingsAction(),
     getFieldRegistriesServer(pageNumber, pageSize).catch(() => ({
@@ -152,6 +152,12 @@ export default async function Page({ searchParams }: PageProps) {
     getUpdateHistoryServer({
       PageNumber: auditPage,
       PageSize: auditPageSize,
+      DoneBy: auditUser,
+      SearchTerm: auditSearch,
+    }).catch(() => null),
+    getUpdateHistoryServer({
+      PageNumber: 1,
+      PageSize: 1000,
       DoneBy: auditUser,
       SearchTerm: auditSearch,
     }).catch(() => null),
@@ -236,6 +242,7 @@ export default async function Page({ searchParams }: PageProps) {
       setFieldRegistryStatusAction={setFieldRegistryStatusAction}
       initialEditData={null}
       initialUpdateHistory={initialUpdateHistory}
+      initialAllUpdateHistory={initialAllUpdateHistory}
       initialUpdateHistoryDetail={initialUpdateHistoryDetail}
       actions={actions}
     />

@@ -52,7 +52,7 @@ export default function DepartmentConfigModal({
     toggleAllSubmodules,
     handleSubmoduleValueChange,
     handleSaveAll,
-  } = useDepartmentConfig(initialData, configKeyId, onSuccess, defaultValue);
+  } = useDepartmentConfig(initialData, configKeyId, onSuccess, defaultValue, dataType, controlType);
 
   const handleClose = (): void => {
     if (isPending) return;

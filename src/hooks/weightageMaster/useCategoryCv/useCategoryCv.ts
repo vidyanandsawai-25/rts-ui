@@ -8,6 +8,7 @@ import { useCategoryCvRowOps } from "./useCategoryCvRowOps";
 import { useCategoryCvBulkOps } from "./useCategoryCvBulkOps";
 import { useCategoryCvState } from "./useCategoryCvState";
 import { useCategoryCvPagination } from "./useCategoryCvPagination";
+import { fetchUseFactorCVMasterPagedServerAction } from "@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action";
 
 export interface UseCategoryCvProps {
     data: UseFactorCVMaster[];
@@ -80,10 +81,39 @@ export function useCategoryCv({
     );
     const { buildUrl, ...paginationHandlers } = pagination;
 
-    const newRecordsCount = data.filter(row => row.id === 0).length;
+    // Total missing (Type of Use x Year) combinations for the current selection,
+    // not just whatever happens to be on the current page — otherwise this
+    // badge/count is just coincidentally equal to the page size. When no year is
+    // selected yet, this covers every year (matching the unfiltered grid shown in
+    // that state). Refetched whenever the selection changes, and again after a
+    // successful Generate All / Bulk Update / row Create.
+    const [newRecordsCount, setNewRecordsCount] = useState(0);
     const hasNewRecords = newRecordsCount > 0;
 
-    const getRowUid = useCallback((row: UseFactorCVMaster): string => 
+    const refreshMissingCount = useCallback(async () => {
+        try {
+            const result = await fetchUseFactorCVMasterPagedServerAction(
+                1,
+                -1,
+                undefined,
+                selectedYear,
+                typeOfUseId ? Number(typeOfUseId) : undefined,
+                undefined,
+                undefined,
+                undefined
+            );
+            setNewRecordsCount(result.items.filter(row => row.id === 0).length);
+        } catch (_error) {
+            setNewRecordsCount(0);
+        }
+    }, [selectedYear, typeOfUseId]);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        refreshMissingCount();
+    }, [refreshMissingCount]);
+
+    const getRowUid = useCallback((row: UseFactorCVMaster): string =>
         `${row.id}-${row.typeOfUseId}-${row.subTypeOfUseId}-${row.yearRangeCVId || 'noYear'}`, []);
 
     const findRowByUid = (uid: string): UseFactorCVMaster | undefined => {
@@ -144,7 +174,7 @@ export function useCategoryCv({
 
     const handleClearAll = (): void => {
         setEditableRows({});
-        setFactorValue("0.00");
+        setFactorValue("1.00");
         setTypeOfUseId("");
         setSelectedTypeId(null);
         setSelectedYear("");
@@ -166,6 +196,7 @@ export function useCategoryCv({
         addToast,
         refreshPage,
         tW,
+        onDataChanged: refreshMissingCount,
     });
 
     // 4. Bulk Operations
@@ -175,16 +206,17 @@ export function useCategoryCv({
         setEditableRows,
         setIsBulkUpdating,
         setIsGeneratingAll,
+        selectedYear,
+        typeOfUseId,
         factorValue,
         getRowUid,
         findRowByUid,
         addToast,
         refreshPage,
         tW,
+        onDataChanged: refreshMissingCount,
     });
-
-    const parsedFactorValue = parseFloat(factorValue);
-    const isApplyDisabled = Number.isNaN(parsedFactorValue) || parsedFactorValue < 0 || (!selectedYear && !typeOfUseId);
+    const isApplyDisabled = (!selectedYear && !typeOfUseId);
     const isBulkUpdateDisabled = Object.keys(editableRows).length === 0 || isBulkUpdating;
 
     return {

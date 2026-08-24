@@ -50,6 +50,7 @@ export interface PropertySearchApiItem {
   propertyDescription: string | null;
   mobile: string | null;
   alternateMobileNo?: string | null;
+  occupierMobileNo?: string | null;
   propertyHolderName: string | null;
   occupierName: string | null;
   shopBuildingName: string | null;

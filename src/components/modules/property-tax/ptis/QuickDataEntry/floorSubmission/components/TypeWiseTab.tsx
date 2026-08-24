@@ -7,6 +7,7 @@ import FloorTable from '../FloorTable';
 import SelectPropertiesTable from '../SelectPropertiesTable';
 import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
+import { sanitizeNumericInput } from '@/lib/utils/input-sanitization';
 import type { SelectableProperty } from '@/types/floor-details.types';
 
 interface TypeWiseTabProps {
@@ -226,10 +227,12 @@ export const TypeWiseTab: React.FC<TypeWiseTabProps> = ({
                 {t('floor.selectProperties.changeType')}
               </Badge>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                maxLength={2}
                 value={inputValue}
                 onChange={(e) => {
-                  const val = e.target.value;
+                  const val = sanitizeNumericInput(e.target.value).slice(0, 2);
                   setInputValue(val);
                   setChangeTypeInput(val);
                 }}

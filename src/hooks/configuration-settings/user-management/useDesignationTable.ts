@@ -7,7 +7,7 @@ export function useDesignationTable(initialDesignations: Designation[]) {
   const [designations, setDesignations] = useState<Designation[]>(initialDesignations);
   const [searchTerm, setSearchTerm] = useState('');
   const [pageNumber, setPageNumber] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -32,6 +32,7 @@ export function useDesignationTable(initialDesignations: Designation[]) {
     pageNumber,
     setPageNumber,
     pageSize,
+    setPageSize,
     filteredDesignations,
   };
 }

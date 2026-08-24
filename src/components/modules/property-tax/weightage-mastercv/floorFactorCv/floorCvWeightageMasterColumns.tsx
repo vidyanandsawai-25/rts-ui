@@ -132,9 +132,10 @@ export const getFloorCvWeightageMasterColumns = ({
             rowId={rowUid}
             columnId="factorWithLift"
             metaLabel={t('columns.factorWithLift')}
-            maxValue={999.99}
+            maxValue={100}
+            readOnly={row.isActive === false}
             onCellChange={handleCellChange}
-            onMaxExceeded={() => toast.error(tW('common.messages.valueExceedsMax'))}
+            onMaxExceeded={() => toast.error(tW('common.messages.factorPercentageExceedsMax'))}
           />
         );
       },
@@ -153,9 +154,10 @@ export const getFloorCvWeightageMasterColumns = ({
             rowId={rowUid}
             columnId="factorWithoutLift"
             metaLabel={t('columns.factorWithoutLift')}
-            maxValue={999.99}
+            maxValue={100}
+            readOnly={row.isActive === false}
             onCellChange={handleCellChange}
-            onMaxExceeded={() => toast.error(tW('common.messages.valueExceedsMax'))}
+            onMaxExceeded={() => toast.error(tW('common.messages.factorPercentageExceedsMax'))}
           />
         );
       },

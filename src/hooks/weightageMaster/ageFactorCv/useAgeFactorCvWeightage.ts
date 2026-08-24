@@ -85,15 +85,21 @@ export const useAgeFactorCvWeightage = ({
         sortBy: activeSortBy,
         sortOrder: activeSortOrder,
         handleSort,
+        getMissingRecordsCount,
     } = useAgeFactorCvFilters({
         initialAgeRangeOptions,
         initialSortBy: sortBy,
         initialSortOrder: sortOrder,
     });
 
-    const newRecords = data.filter(row => row.id === 0 && !sessionCreatedUids.has(getRowUid(row)));
-    const hasNewRecords = newRecords.length > 0;
-    const newRecordsCount = newRecords.length;
+    // Whether the *currently selected* Assessment Year + Age Range(s) + Construction
+    // Type(s) combination is missing from the database (not just whether the current
+    // page happens to contain placeholder rows). This is what actually drives whether
+    // "Generate All" has anything to create — e.g. a brand-new age range the user just
+    // added via "Add Age Range" has no rows anywhere yet, so this correctly reports it
+    // as missing and enables the button, even though it won't appear in `data` at all.
+    const newRecordsCount = getMissingRecordsCount(constructionTypeOptions, allAgeFactors);
+    const hasNewRecords = newRecordsCount > 0;
     const hasShownWarningRef = useRef(false);
 
     useEffect(() => {
@@ -215,7 +221,7 @@ export const useAgeFactorCvWeightage = ({
         }
         
         setUserAddedAgeRanges(prev => [...prev, { label: newRange, value: newRange }]);
-        setSelectedAgeRange(newRange);
+        setSelectedAgeRange([newRange]);
         addToast('success', t('messages.ageRangeAdded', { from: ageFrom, to: ageTo }));
         setIsAgeRangeAdded(true);
         setIsAddYearRangeModalOpen(false);

@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
 import { highlightText } from './config-master-ui.utils';
 import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
+import { DateUtils } from '@/lib/utils/date-helpers';
 
 interface ConfigItemRowProps {
   item: ConfigItem;
@@ -50,131 +51,118 @@ export function ConfigItemRow({ item, searchTerm = '' }: ConfigItemRowProps) {
   return (
     <Card
       className={cn(
-        'group relative flex flex-col md:flex-row md:items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-300 gap-3 overflow-visible',
+        'group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl border transition-all duration-300 gap-3 overflow-visible h-full',
         item.isEnabled
-          ? 'bg-emerald-50/10 border-emerald-100/50'
-          : 'bg-white border-slate-100 shadow-sm'
+          ? 'bg-white border-emerald-100/80 shadow-sm hover:shadow-md hover:border-emerald-200'
+          : 'bg-slate-50/50 border-slate-200/60 shadow-none opacity-80 hover:opacity-100',
+        isPending && 'pointer-events-none'
       )}
     >
-      <div className="flex items-start gap-4 min-w-0">
-        <div
-          className={cn(
-            'p-2.5 rounded-xl transition-all shrink-0 border',
-            item.isEnabled
-              ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-100/50'
-              : 'bg-slate-50 text-slate-400 border-slate-100 opacity-60'
-          )}
-        >
-          <Shield className="w-5 h-5 transition-transform group-hover:scale-110" />
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span
-              className={cn(
-                'font-bold text-sm sm:text-base tracking-tight transition-colors',
-                item.isEnabled ? 'text-slate-900' : 'text-slate-500'
-              )}
-              title={item.name}
-            >
-              {highlightText(item.name, searchTerm)}
-            </span>
-            <Badge
-              variant={item.isEnabled ? 'success' : 'secondary'}
-              size="sm"
-              className={cn(
-                'h-4 py-0 px-1.5 text-[8px] font-black uppercase tracking-widest shrink-0',
-                !item.isEnabled && 'bg-slate-100 text-slate-400 border-slate-200'
-              )}
-            >
-              {item.isEnabled ? t('list.on') : t('list.off')}
-            </Badge>
+      <div className="flex flex-col gap-2.5 flex-1 min-w-0">
+        {/* Header: Icon, Title & Badge */}
+        <div className="flex items-start gap-3 min-w-0">
+          <div
+            className={cn(
+              'p-2 rounded-xl transition-all shrink-0 border mt-0.5',
+              item.isEnabled
+                ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-100/50'
+                : 'bg-slate-100 text-slate-400 border-slate-200'
+            )}
+          >
+            <Shield className="w-4 h-4 transition-transform group-hover:scale-110" />
           </div>
 
-          {item.description && (
-            <div className="text-[11px] sm:text-xs font-medium text-slate-500 break-words [overflow-wrap:anywhere] leading-relaxed mb-2">
-              {highlightText(item.description, searchTerm)}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap mb-1">
+              <span
+                className={cn(
+                  'font-bold text-sm leading-snug tracking-tight transition-colors break-words',
+                  item.isEnabled ? 'text-slate-900' : 'text-slate-500'
+                )}
+                title={item.name}
+              >
+                {highlightText(item.name, searchTerm)}
+              </span>
+              <Badge
+                variant={item.isEnabled ? 'success' : 'secondary'}
+                size="sm"
+                className={cn(
+                  'h-4 py-0 px-1.5 text-[8px] font-black uppercase tracking-widest shrink-0',
+                  !item.isEnabled && 'bg-slate-100 text-slate-400 border-slate-200'
+                )}
+              >
+                {item.isEnabled ? t('list.on') : t('list.off')}
+              </Badge>
             </div>
-          )}
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-1">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-indigo-50/60 px-2.5 py-1 rounded-lg border border-indigo-100/80">
-                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                  {t('list.currentValue') || 'Value'}
-                </span>
-                <span className="text-xs font-bold text-indigo-700 break-all">
-                  {(() => {
-                    const val = item.value || item.defaultValue || '';
-                    const control = (item.controlType || '').toLowerCase();
-                    if (val === 'true') return t('list.on') || 'ON';
-                    if (val === 'false') return t('list.off') || 'OFF';
-                    if (val) return val;
-                    if (control === 'toggle' || control === 'checkbox') {
-                      return item.isEnabled ? t('list.on') || 'ON' : t('list.off') || 'OFF';
-                    }
-                    return '-';
-                  })()}
-                </span>
-              </div>
+            {item.description && (
+              <p className="text-[11px] sm:text-xs font-medium text-slate-500 break-words [overflow-wrap:anywhere] leading-relaxed">
+                {highlightText(item.description, searchTerm)}
+              </p>
+            )}
+          </div>
+        </div>
 
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                <span className="uppercase tracking-tight">
-                  {(() => {
-                    const dateStr = item.updatedDate || item.createdDate;
-                    if (!dateStr) return '—';
-                    const parsedDate = new Date(dateStr);
-                    if (isNaN(parsedDate.getTime())) return '—';
-                    const day = String(parsedDate.getDate()).padStart(2, '0');
-                    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
-                    const year = parsedDate.getFullYear();
-                    const hours = String(parsedDate.getHours()).padStart(2, '0');
-                    const minutes = String(parsedDate.getMinutes()).padStart(2, '0');
-                    return `${day}/${month}/${year} ${hours}:${minutes}`;
-                  })()}
-                </span>
-              </div>
-            </div>
+        {/* Current Value & Updated Date */}
+        <div className="flex items-center justify-between gap-2 flex-wrap pt-1 text-xs font-medium mt-auto">
+          <div className="flex items-center gap-1.5 bg-indigo-50/70 px-2.5 py-1 rounded-lg border border-indigo-100/80">
+            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+              {t('list.currentValue') || 'Value'}
+            </span>
+            <span className="text-xs font-bold text-indigo-700 break-all">
+              {(() => {
+                const val = item.value || item.defaultValue || '';
+                const control = (item.controlType || '').toLowerCase();
+                if (val === 'true') return t('list.on') || 'ON';
+                if (val === 'false') return t('list.off') || 'OFF';
+                if (val !== '' && val !== null && val !== undefined) return String(val).replace('T', ' ');
+                if (control === 'toggle' || control === 'checkbox') {
+                  return item.isEnabled ? t('list.on') || 'ON' : t('list.off') || 'OFF';
+                }
+                return '-';
+              })()}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+            <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="uppercase tracking-tight">
+              {DateUtils.formatDisplayDate(item.updatedDate || item.createdDate)}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-4 relative min-w-[120px] sm:min-w-[200px]">
-        {/* Actions & Toggle Container - hidden when loading to prevent overlap */}
-        <div
-          className={cn(
-            'flex items-center justify-end gap-3 sm:gap-4 transition-all duration-200',
-            isPending ? 'opacity-0 invisible scale-95' : 'opacity-100 visible scale-100'
-          )}
-        >
-          <ConfigItemActions
-            id={item.id}
-            configKeyId={item.configKeyId}
-            isEnabled={item.isEnabled}
-          />
-          {showToggle && (
-            <div className="flex items-center justify-center scale-[0.85] sm:scale-100">
-              <ToggleSwitch
-                checked={item.isEnabled}
-                onChange={handleToggle}
-                showPopup={false}
-                disabled={isPending}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Row-level Loader - centered in the action area */}
-        {isPending && (
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50/50 border border-indigo-100/50">
-              <Loader2 className="w-4 h-4 text-indigo-600 animate-spin" />
-              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest animate-pulse">
+      {/* Footer / Action Area */}
+      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 mt-auto min-h-[44px]">
+        {isPending ? (
+          <div className="w-full flex items-center justify-center py-0.5">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100/80 shadow-2xs">
+              <Loader2 className="w-4 h-4 text-indigo-600 animate-spin shrink-0" />
+              <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider animate-pulse">
                 {t('messages.savingConfig') || 'Saving...'}
               </span>
             </div>
           </div>
+        ) : (
+          <>
+            <ConfigItemActions
+              id={item.id}
+              configKeyId={item.configKeyId}
+              isEnabled={item.isEnabled}
+            />
+
+            {showToggle && (
+              <div className="flex items-center justify-center shrink-0">
+                <ToggleSwitch
+                  checked={item.isEnabled}
+                  onChange={handleToggle}
+                  showPopup={false}
+                  disabled={isPending}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </Card>

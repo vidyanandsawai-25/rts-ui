@@ -57,7 +57,6 @@
     "ui": {
       "certifiedDocs": {
         "heading": "प्रमाणित झोनिंग दस्तऐवज",
-        "requiredBadge": "मान्यतेसाठी आवश्यक",
         "notUploaded": "अपलोड केलेले नाही",
         "selectFile": "फाइल निवडा",
         "chooseFile": "फाइल निवडा",

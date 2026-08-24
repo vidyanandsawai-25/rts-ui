@@ -221,6 +221,20 @@
         "description": "Are you sure you want to unmap property link {mId} for survey property {newPropNo}? This will disconnect the mapped old property records.",
         "confirmText": "Unmap Property",
         "cancelText": "Cancel"
+      },
+      "unmapSelection": {
+        "title": "Select Properties to Unmap",
+        "surveyProperty": "Survey Property:",
+        "multipleDesc": "This survey property is mapped to {count} old properties. Select which old property record(s) you wish to unmap:",
+        "singleDesc": "Are you sure you want to unmap property link {mId} for survey property {newPropNo}? This will disconnect the mapped old property record.",
+        "recordsHeader": "Old Property Records ({selected}/{total} selected)",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All",
+        "toUnmap": "To Unmap",
+        "keep": "Keep",
+        "cancel": "Cancel",
+        "unmapping": "Unmapping...",
+        "unmapSelected": "Unmap Selected ({count})"
       }
     },
 
@@ -229,7 +243,11 @@
       "searchFailed": "Server search failed",
       "markedUnmapped": "Property {propNo} verified as Unmapped.",
       "mappingConfirmed": "Property mapping successfully verified for {propNo}.",
-      "unmapped": "Property link for {propNo} has been unmapped."
+      "unmapped": "Property link for {propNo} has been unmapped.",
+      "mergeFailed": "Failed to merge property records.",
+      "unmergeFailed": "Failed to unmerge property records.",
+      "unlinkFailed": "Failed to unlink property record.",
+      "invalidPropertyId": "Invalid property record identifier."
     },
 
     "mappingType": {

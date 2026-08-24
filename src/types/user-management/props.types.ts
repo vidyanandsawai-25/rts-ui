@@ -61,6 +61,7 @@ export interface DesignationTableProps {
   pageSize: number;
   totalCount: number;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
   onEdit: (designation: Designation) => void;
   onDelete: (designation: Designation) => void;
   deletingId?: string | number | null;
@@ -94,6 +95,7 @@ export interface RoleTableProps {
   pageSize: number;
   totalCount: number;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
   onEdit: (role: Role) => void;
   onDelete: (role: Role) => void;
   deletingId?: string | number | null;
@@ -146,6 +148,7 @@ export interface UserTableProps {
   pageNumber: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
   deletingId?: string | null;
 }
 

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { FooterAction } from '@/lib/api/footer.service';
 import { FooterPagination } from './FooterPagination';
 import { UtilityActions, RightActions } from './FooterActionButtons';
-import { useFooterActions } from '@/hooks/layout/useFooterActions';
+import { useFooterActions, type FooterActionOverrides } from '@/hooks/layout/useFooterActions';
 import type { PropertyListItem } from '@/types/ptis.types';
 import type { PropertyWorkflowStage } from '@/types/propertyWorkflowStage.types';
 import { useOptionalPtisNavigation } from '@/components/modules/property-tax/ptis/shared/PtisNavigationContext';
@@ -13,6 +13,7 @@ import { useFooterActionHandler } from '@/hooks/layout/useFooterActionHandler';
 
 interface BottomActionBarProps {
   actions?: FooterAction[];
+  actionOverrides?: FooterActionOverrides;
   currentPage?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
@@ -31,6 +32,7 @@ interface BottomActionBarProps {
 
 export function BottomActionBar({
   actions = [],
+  actionOverrides,
   currentPage = 1,
   totalPages = 1,
   onPageChange,
@@ -58,7 +60,7 @@ export function BottomActionBar({
     societyDetailId
   );
 
-  const groupedActions = useFooterActions(actions);
+  const groupedActions = useFooterActions(actions, actionOverrides);
 
   // Check if properties array is present
   const hasProperties = properties.length > 0;

@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { parseDurationFromApi } from '@/lib/api/configuration-settings/ulb-configuration/department-licence.mapper';
-import { calculateLicenseEndDate, calculateRenewalAlerts } from '@/lib/utils/ulb-configuration.utils';
+import { calculateLicenseEndDate, calculateRenewalAlerts, calculateDurationInMonths } from '@/lib/utils/ulb-configuration.utils';
 import { useDepartmentLicencesSave } from '@/hooks/configuration-settings/ulb-configuration/useDepartmentLicencesSave';
 import type {
   Department,
@@ -71,13 +71,15 @@ export function useDepartmentLicenses(
   initialLicences: DepartmentLicenceDetails[]
 ) {
   const t = useTranslations('ulb_configuration');
-  const [departments, setDepartments] = useState<DepartmentLicense[]>(() =>
+  const [initialDepartments, setInitialDepartments] = useState<DepartmentLicense[]>(() =>
     buildInitial(initialDepts, initialLicences)
   );
+  const [departments, setDepartments] = useState<DepartmentLicense[]>(initialDepartments);
   const [searchQuery, setSearchQuery] = useState('');
   const { saveLicences, isSavingLicences } = useDepartmentLicencesSave({
     departments,
     setDepartments,
+    setInitialDepartments,
   });
 
   const mergeWithPreviousState = useCallback(
@@ -172,6 +174,9 @@ export function useDepartmentLicenses(
 
           if (field === 'endDate') {
             if (next.endDate) {
+              if (next.startDate) {
+                next.duration = calculateDurationInMonths(next.startDate, next.endDate);
+              }
               next.renewalAlerts = calculateRenewalAlerts(next.endDate);
               const expired = isLicenseExpired(next.endDate);
               if (expired) {
@@ -186,7 +191,24 @@ export function useDepartmentLicenses(
             return next;
           }
 
-          if (next.startDate && next.duration) {
+          if (field === 'startDate') {
+             if (next.endDate) {
+                next.duration = calculateDurationInMonths(next.startDate, next.endDate);
+             } else if (next.duration) {
+                next.endDate = calculateLicenseEndDate(next.startDate, next.duration);
+                next.renewalAlerts = calculateRenewalAlerts(next.endDate);
+                const expired = isLicenseExpired(next.endDate);
+                if (expired) {
+                  next.enabled = false;
+                  next.status = 'inactive';
+                } else {
+                  next.status = 'active';
+                }
+             }
+             return next;
+          }
+
+          if (field === 'duration' && next.startDate && next.duration) {
             next.endDate = calculateLicenseEndDate(next.startDate, next.duration);
             next.renewalAlerts = calculateRenewalAlerts(next.endDate);
             const expired = isLicenseExpired(next.endDate);
@@ -283,9 +305,14 @@ export function useDepartmentLicenses(
 
   const activeCount = useMemo(() => departments.filter((d) => d.enabled).length, [departments]);
 
+  const isDirty = useMemo(() => {
+    return JSON.stringify(departments) !== JSON.stringify(initialDepartments);
+  }, [departments, initialDepartments]);
+
   return {
     departments,
     filtered,
+    isDirty,
     activeCount,
     searchQuery,
     setSearchQuery,

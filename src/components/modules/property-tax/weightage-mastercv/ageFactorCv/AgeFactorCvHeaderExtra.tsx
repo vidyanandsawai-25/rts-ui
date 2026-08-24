@@ -1,6 +1,7 @@
 import React from "react";
 import { Option } from "@/components/common/select";
 import { SearchSelect } from "@/components/common/SearchSelect";
+import { MultiSelect } from "@/components/common/MultiSelect";
 import { Input } from "@/components/common/Input";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { X } from "lucide-react";
@@ -12,6 +13,7 @@ import {
     AddButton
 } from "@/components/common/ActionButtons";
 import { POSITIVE_DECIMAL_INVALID_KEYS, sanitizePositiveDecimal } from "@/lib/utils/validation";
+import { toast } from "sonner";
 
 interface AgeFactorCvHeaderExtraProps {
     t: (key: string, values?: Record<string, string | number>) => string;
@@ -20,8 +22,8 @@ interface AgeFactorCvHeaderExtraProps {
     constructionTypeOptions: Option[];
     ageRangeOptions: Option[];
     selectedYear: string;
-    constructionType: string;
-    selectedAgeRange: string;
+    constructionType: string[];
+    selectedAgeRange: string[];
     ageFrom: string;
     ageTo: string;
     factorValue: string;
@@ -34,8 +36,8 @@ interface AgeFactorCvHeaderExtraProps {
     isAddYearRangeModalOpen: boolean;
     setIsAddYearRangeModalOpen: (open: boolean) => void;
     handleAssessmentYearChange: (value: string) => void;
-    handleConstructionTypeChange: (value: string) => void;
-    handleAgeRangeChange: (value: string) => void;
+    handleConstructionTypeChange: (values: string[]) => void;
+    handleAgeRangeChange: (values: string[]) => void;
     setAgeFrom: (value: string) => void;
     setAgeTo: (value: string) => void;
     setFactorValue: (value: string) => void;
@@ -100,11 +102,12 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
             <div className="flex flex-col gap-1.5">
                 <span className="text-[12px] font-medium text-gray-600 ml-0.5">{t('filters.constructionType')}</span>
                 <div className="w-[180px] z-30">
-                    <SearchSelect
+                    <MultiSelect
                         name="constructionType"
                         options={constructionTypeOptions}
                         value={constructionType}
-                        onChange={(_, val) => handleConstructionTypeChange(val)}
+                        onChange={handleConstructionTypeChange}
+                        selectSize="sm"
                         placeholder={t('placeholders.select')}
                     />
                 </div>
@@ -115,11 +118,12 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                 <span className="text-[12px] font-medium text-gray-600 ml-0.5">{t('filters.ageRange')}</span>
                 <div className="flex gap-2">
                     <div className="w-[140px] z-30">
-                        <SearchSelect
+                        <MultiSelect
                             name="ageRange"
                             options={ageRangeOptions}
                             value={selectedAgeRange}
-                            onChange={(_, val) => handleAgeRangeChange(val)}
+                            onChange={handleAgeRangeChange}
+                            selectSize="sm"
                             placeholder={t('placeholders.selectRange')}
                         />
                     </div>
@@ -154,7 +158,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                                             value={ageFrom}
                                             onChange={(e) => {
                                                 const value = e.target.value.replace(/[^0-9]/g, '');
-                                                if (value.length <= 2) {
+                                                if (value.length <= 3) {
                                                     setAgeFrom(value);
                                                 }
                                             }}
@@ -167,7 +171,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                                                     e.preventDefault();
                                                 }
                                             }}
-                                            maxLength={2}
+                                            maxLength={3}
                                             className="h-9 text-sm border-[#DCEAFF]"
                                         />
                                     </div>
@@ -224,12 +228,16 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                 <Input
                     type="number"
                     step="0.01"
-                    min="0"
-                    max="999.99"
+                    min="0.1"
+                    max="100"
                     value={factorValue}
                     onChange={(e) => {
                         const sanitized = sanitizePositiveDecimal(e.target.value, 2);
-                        if (sanitized === '' || (parseFloat(sanitized) >= 0 && parseFloat(sanitized) <= 999.99)) {
+                        if (sanitized === '') {
+                            setFactorValue(sanitized);
+                        } else if (parseFloat(sanitized) > 100) {
+                            toast.error(tW('common.messages.factorPercentageExceedsMax'));
+                        } else if (parseFloat(sanitized) >= 0) {
                             setFactorValue(sanitized);
                         }
                     }}
@@ -267,7 +275,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                     size="sm"
                     label={tW('common.buttons.apply')}
                     onClick={handleApplyFilter}
-                    disabled={!selectedYear && !constructionType && !selectedAgeRange}
+                    disabled={!selectedYear && constructionType.length === 0 && selectedAgeRange.length === 0}
                     className="h-[34px] px-4 font-bold bg-[#52C41A]"
                 />
                 <ClearButton

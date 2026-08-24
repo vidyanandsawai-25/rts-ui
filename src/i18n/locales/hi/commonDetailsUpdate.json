@@ -238,6 +238,7 @@
       "processedGroupsSuccess": "अपडेट के लिए {groups} समूहों को प्रोसेस किया गया और {properties} संपत्तियों को सफलतापूर्वक अपडेट किया गया",
       "updateFailed": "संपत्तियां अपडेट करने में विफल",
       "selectProperties": "अपडेट करने के लिए कम से कम एक संपत्ति चुनें",
+      "noDataToUpdate": "अपडेट करने के लिए कृपया जानकारी भरें।",
       "selectUpdateType": "कृपया अपडेट प्रकार चुनें",
       "fillRequired": "कृपया सभी आवश्यक फ़ील्ड भरें",
       "invalidRange": "संपत्ति क्र. से, संपत्ति क्र. तक से कम या बराबर होना चाहिए",
@@ -250,7 +251,12 @@
       "partialUpdate": "{success} संपत्तियां अपडेट हुईं, {failed} विफल",
       "noPropertiesFound": "चुने गए फ़िल्टर के लिए कोई संपत्ति नहीं मिली",
       "cannotDeselectIndividual": "'सभी चुनें' सक्रिय होने पर व्यक्तिगत रिकॉर्ड को अनचुना करने की अनुमति नहीं है। कृपया पहले चयन को साफ़ करें।",
-      "invalidFormat": "चयनित फ़ील्ड में दर्ज जानकारी सही नहीं है। कृपया जाँच करें और फिर से प्रयास करें.",
+      "invalidFormat": "कुछ फ़ील्ड में दर्ज जानकारी सही नहीं है। कृपया उन्हें सही करें और फिर से प्रयास करें।",
+      "assessmentYearLessThanConstruction": "मूल्यांकन वर्ष, निर्माण वर्ष से बड़ा होना चाहिए।",
+      "makeSureAssessmentYearGreater": "सुनिश्चित करें कि मूल्यांकन वर्ष, निर्माण वर्ष से बड़ा हो।",
+      "makeSureConstructionYearLessThan": "सुनिश्चित करें कि निर्माण वर्ष, आकलन वर्ष से कम हो।",
+      "invalidYearFormat": "वर्ष 4 अंकों की एक मान्य संख्या होना चाहिए।",
+      "yearExceedsCurrentYear": "वर्ष वर्तमान वर्ष ({year}) से बड़ा नहीं हो सकता।",
       "fetchingAllProperties": "अपडेट के लिए सभी संपत्तियां प्राप्त की जा रही हैं...",
       "missingWardOrField": "वार्ड आईडी या सक्षम फ़ील्ड चयन गायब है",
       "downloadingExcel": "एक्सेल फ़ाइल डाउनलोड हो रही है...",
@@ -260,6 +266,7 @@
       "uploadingExcel": "एक्सेल फ़ाइल अपलोड और प्रोसेस की जा रही है...",
       "excelProcessSuccess": "एक्सेल सफलतापूर्वक अपलोड और प्रोसेस हुआ!",
       "definitionAlreadyExists": "इस नाम से एक बल्क अपडेट परिभाषा पहले से मौजूद है।",
+      "groupAlreadyExists": "समूह का नाम पहले से मौजूद है। कृपया कोई दूसरा नाम चुनें।",
       "pleaseSelectField": "कृपया पहले एक फ़ील्ड चुनें।",
       "noDataRows": "आपकी अपलोड की गई फ़ाइल खाली है, कृपया डेटा के साथ एक फ़ाइल अपलोड करें।",
       "loadingTabData": "टैब डेटा लोड हो रहा है...",
@@ -311,6 +318,7 @@
       "description": "पृष्ठभूमि अद्यतन नौकरियों और फ़ील्ड-स्तरीय उपयोगकर्ता पहुंच के निष्पादन की निगरानी करें।",
       "exportAudit": "ऑडिट निर्यात करें",
       "stats": {
+        "totalActivity": "कुल गतिविधि",
         "totalRecords": "कुल रिकॉर्ड",
         "totalJobs": "कुल नौकरियां",
         "completed": "पूरा हुआ",
@@ -321,7 +329,10 @@
       "filters": {
         "user": "उपयोगकर्ता",
         "allUsers": "सभी उपयोगकर्ता",
-        "searchPlaceholder": "खोज फ़ील्ड, उपयोगकर्ता, टिप्पणियाँ"
+        "searchPlaceholder": "संपत्ति क्र., फ़ील्ड, उपयोगकर्ता, टिप्पणी द्वारा खोजें"
+      },
+      "messages": {
+        "activityFailedCannotView": "यह गतिविधि विफल हो गई है और इसमें देखने के लिए कोई विवरण नहीं है।"
       },
       "columns": {
         "id": "गतिविधि आईडी / जॉब आईडी",
@@ -352,6 +363,8 @@
         }
       },
       "modal": {
+        "totalProperties": "कुल संपत्ति",
+        "fieldCount": "फ़ील्ड संख्या",
         "updateName": "अपडेट नाम",
         "updatedBy": "द्वारा अपडेट किया गया",
         "date": "दिनांक और समय",
@@ -387,12 +400,14 @@
       "downloadEmptyDesc": "Uncheck the “Download with Data” checkbox to download an empty template containing only the column headers.",
       "downloadDataTitle": "Download With Data:",
       "downloadDataDesc": "Check the “Download with Data” checkbox to download a template pre-populated with the current property data based on the selected property criteria.",
-      "selectCorrectGroupTitle": "Select the Correct Group:",
-      "selectCorrectGroupDesc": "Make sure the correct group is selected before uploading the Excel file.",
-      "batchProcessingTitle": "Separate Batches:",
-      "batchProcessingDesc": "Upload properties with partition numbers and properties without partition numbers in separate batches.",
-      "consistencyTitle": "Do Not Mix:",
-      "consistencyDesc": "Do not include properties with and without partition numbers in the same Excel file, as this may cause validation errors.",
+      "selectCorrectGroupTitle": "सही समूह चुनें:",
+      "selectCorrectGroupDesc": "एक्सेल फ़ाइल अपलोड करने से पहले सुनिश्चित करें कि सही समूह चुना गया है।",
+      "reuploadTitle": "सुधारें और पुनः अपलोड करें:",
+      "reuploadDesc": "यदि सत्यापन के दौरान अपलोड किया गया एक्सेल डेटा अस्वीकार कर दिया जाता है, तो एक्सेल शीट में डेटा त्रुटियों को सुधारें और फ़ाइल को पुनः अपलोड करें।",
+      "batchProcessingTitle": "सुधारें और पुनः अपलोड करें:",
+      "batchProcessingDesc": "यदि सत्यापन के दौरान अपलोड किया गया एक्सेल डेटा अस्वीकार कर दिया जाता है, तो एक्सेल शीट में डेटा त्रुटियों को सुधारें और फ़ाइल को पुनः अपलोड करें।",
+      "consistencyTitle": "सुधारें और पुनः अपलोड करें:",
+      "consistencyDesc": "यदि सत्यापन के दौरान अपलोड किया गया एक्सेल डेटा अस्वीकार कर दिया जाता है, तो एक्सेल शीट में डेटा त्रुटियों को सुधारें और फ़ाइल को पुनः अपलोड करें।",
       "emptyData": "कोई डेटा उपलब्ध नहीं",
       "loadingData": "डेटा लोड हो रहा है...",
       "inactiveStatus": "निष्क्रिय",
@@ -411,6 +426,7 @@
         "processingBulkUpdate": "थोक अपडेट संसाधित किया जा रहा है...",
         "bulkUpdateSuccessMsg": "एक्सेल अपलोड और संसाधित किया गया!",
         "bulkUpdateFailedMsg": "थोक अपडेट संसाधित करने में विफल।",
+        "dataRejectedMsg": "डेटा सही नहीं है। कृपया डेटा ठीक करें और फिर से अपलोड करें।",
         "validationErrorsMsg": "अपलोड किए गए {total} में से {errors} रिकॉर्ड में त्रुटियाँ हैं।"
       },
       "stats": {

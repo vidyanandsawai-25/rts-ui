@@ -31,41 +31,11 @@ export const PTIS_VALUATION_ERROR_MESSAGES = {
 } as const;
 
 /**
- * Localizes raw backend exception messages case-insensitively.
+ * Localizes raw backend exception messages case-insensitively while preserving exact backend detail strings.
  */
-export function localizeBackendError(rawError: string, t: PtisTranslationFunction): string {
-  const errUpper = rawError.toUpperCase();
-  if (
-    errUpper.includes('PROPERTYDETAILSNOTFOUND') || 
-    errUpper.includes('PROPERTY DETAILS NOT FOUND') ||
-    (errUpper.includes('PROPERTYDETAILS') && errUpper.includes('NOT FOUND')) ||
-    (errUpper.includes('PROPERTY DETAILS') && errUpper.includes('NOT FOUND'))
-  ) {
-    return t.has('error.propertyDetailsNotFound') ? t('error.propertyDetailsNotFound') : rawError;
-  }
-  if (
-    errUpper.includes('INVALIDPROPERTYDATA') || 
-    errUpper.includes('INVALID PROPERTY DATA') ||
-    (errUpper.includes('INVALID') && errUpper.includes('PROPERTY DATA'))
-  ) {
-    return t.has('error.invalidPropertyData') ? t('error.invalidPropertyData') : rawError;
-  }
-  if (
-    errUpper.includes('TYPEOFUSEGROUPNOTFOUND') || 
-    errUpper.includes('TYPE OF USE GROUP NOT FOUND') ||
-    (errUpper.includes('TYPEOFUSEGROUP') && errUpper.includes('NOT FOUND')) ||
-    (errUpper.includes('TYPE OF USE GROUP') && errUpper.includes('NOT FOUND'))
-  ) {
-    return t.has('error.typeOfUseGroupNotFound') ? t('error.typeOfUseGroupNotFound') : rawError;
-  }
-  if (
-    errUpper.includes('YEARRANGENOTFOUND') || 
-    errUpper.includes('YEAR RANGE NOT FOUND') ||
-    (errUpper.includes('YEARRANGE') && errUpper.includes('NOT FOUND')) ||
-    (errUpper.includes('YEAR RANGE') && errUpper.includes('NOT FOUND'))
-  ) {
-    return t.has('error.yearRangeNotFound') ? t('error.yearRangeNotFound') : rawError;
-  }
+export function localizeBackendError(rawError: string, _t?: PtisTranslationFunction): string {
+  // Always return the exact raw backend error message so detailed criteria
+  // (e.g. MoujaId, CSN, AssessmentYear, TypeOfUseGroupId, FloorGroupId) are presented as returned by the API
   return rawError;
 }
 
@@ -80,10 +50,7 @@ export function getPtisUserSafeErrorMessage(
   t?: PtisTranslationFunction
 ): string {
   if (rawError?.trim()) {
-    if (t) {
-      return localizeBackendError(rawError, t);
-    }
-    return rawError;
+    return rawError.trim();
   }
 
   if (statusCode === 404) {
@@ -103,6 +70,27 @@ export function getPtisUserSafeErrorMessage(
   }
 
   return fallbackUserMessage;
+}
+
+/**
+ * Helper to determine if an error string or status code indicates missing data / empty valuation state
+ * (e.g. newly created property with no CV or RV records).
+ */
+export function isMissingValuationDataError(rawError?: string, statusCode?: number): boolean {
+  if (statusCode === 404) return true;
+  if (!rawError?.trim()) return false;
+
+  const errUpper = rawError.toUpperCase();
+  return (
+    errUpper.includes('NOT FOUND') ||
+    errUpper.includes('NOTFOUND') ||
+    errUpper.includes('NO CAPITAL') ||
+    errUpper.includes('NO RATEABLE') ||
+    errUpper.includes('NO DATA') ||
+    errUpper.includes('DOES NOT EXIST') ||
+    errUpper.includes('EMPTY') ||
+    errUpper === '404'
+  );
 }
 
 /**

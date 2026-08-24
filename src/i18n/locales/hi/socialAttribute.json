@@ -114,8 +114,9 @@
         "unitFormat": "केवल अक्षर और संख्याएं अनुमत हैं।",
         "displayOrderInvalid": "प्रदर्शन क्रम 0 या अधिक होना चाहिए",
         "mustBeActive": "सहेजने के लिए सामाजिक विशेषता सक्रिय होनी चाहिए",
-        "codeExists": "सोशल एट्रीब्यूट कोड पहले से ही मौजूद है",
-        "nameExists": "सोशल एट्रीब्यूट नाम पहले से ही मौजूद है"
+        "codeExists": "Social Attribute Code पहले से ही मौजूद है",
+        "nameExists": "Social Attribute Name पहले से ही मौजूद है",
+        "parentRequired": "उप-विशेषता होने पर मुख्य विशेषता (Parent Attribute) आवश्यक है"
       },
       "status": {
         "label": "सक्रिय स्थिति",

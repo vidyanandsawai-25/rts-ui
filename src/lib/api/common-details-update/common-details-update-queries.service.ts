@@ -14,6 +14,9 @@ import {
   FieldRegistrySchema,
   FieldRegistryTable,
   FieldRegistryColumn,
+  UpdateHistoryItem,
+  UpdateHistoryDetailItem,
+  UpdateHistoryFilterParams,
 } from "@/types/common-details-update/common-details-update.types";
 import { createLogger } from "@/lib/utils/server-logger";
 import type { WingItem } from "@/types/wing.types";
@@ -959,8 +962,8 @@ export async function exportExcelServer(params: {
 
 
 export async function getUpdateHistoryServer(
-  params: import("@/types/common-details-update/common-details-update.types").UpdateHistoryFilterParams
-): Promise<PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>> {
+  params: UpdateHistoryFilterParams
+): Promise<PagedResponse<UpdateHistoryItem>> {
   try {
     const { apiClient } = await import("@/services/api.service");
 
@@ -983,14 +986,144 @@ export async function getUpdateHistoryServer(
     const queryString = urlParams.toString();
     const url = `/CommonDetails/update-activity${queryString ? `?${queryString}` : ""}`;
 
-    const response = await apiClient.get<ApiWrappedResponse<PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>>>(url);
+    const response = await apiClient.get<ApiWrappedResponse<PagedResponse<UpdateHistoryItem>>>(url);
 
     if (response.success && response.data) {
       const data = response.data as unknown as Record<string, unknown>;
+      let normalized: PagedResponse<UpdateHistoryItem>;
       if (data.items && typeof data.items === 'object' && Array.isArray((data.items as any).items)) {
-        return normalizePagedResponse(data.items as PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>);
+        normalized = normalizePagedResponse(data.items as PagedResponse<UpdateHistoryItem>);
+      } else {
+        normalized = normalizePagedResponse(response.data as unknown as PagedResponse<UpdateHistoryItem>);
       }
-      return normalizePagedResponse(response.data as unknown as PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryItem>);
+
+      // If SearchTerm is provided, ALSO query /CommonDetails/update-history to support PropertyNo (WardNo + PropertyNo + PartitionNo) search
+      const searchTerm = params.SearchTerm?.trim();
+      if (searchTerm) {
+        try {
+          const normalizePropertySearchStr = (str: string): string => {
+            if (!str) return "";
+            return str
+              .toLowerCase()
+              .replace(/\s*-\s*/g, "-") // Normalize " - ", " -", "- " to "-"
+              .replace(/\s+/g, " ")     // Collapse multiple spaces
+              .trim();
+          };
+
+          const normalizedSearch = normalizePropertySearchStr(searchTerm);
+
+          const historyUrl = `/CommonDetails/update-history?PageSize=100&PageNumber=1&SearchTerm=${encodeURIComponent(searchTerm)}`;
+          const historyResponse = await apiClient.get<ApiWrappedResponse<PagedResponse<UpdateHistoryDetailItem>>>(historyUrl);
+
+          let historyItems: UpdateHistoryDetailItem[] = [];
+
+          const extractItems = (respData: unknown): UpdateHistoryDetailItem[] => {
+            if (!respData) return [];
+            const historyDataRaw = respData as Record<string, unknown>;
+            if (historyDataRaw.items && typeof historyDataRaw.items === 'object' && Array.isArray((historyDataRaw.items as any).items)) {
+              return (historyDataRaw.items as any).items;
+            } else if (Array.isArray(historyDataRaw.items)) {
+              return historyDataRaw.items as any;
+            }
+            return [];
+          };
+
+          if (historyResponse.success && historyResponse.data) {
+            historyItems = extractItems(historyResponse.data);
+          }
+
+          // Fallback: If raw search term yielded no history items and normalizedSearch is different (e.g. spaces around hyphens)
+          if (historyItems.length === 0 && normalizedSearch && normalizedSearch !== searchTerm.toLowerCase()) {
+            const fallbackUrl = `/CommonDetails/update-history?PageSize=100&PageNumber=1&SearchTerm=${encodeURIComponent(normalizedSearch)}`;
+            const fallbackResponse = await apiClient.get<ApiWrappedResponse<PagedResponse<UpdateHistoryDetailItem>>>(fallbackUrl);
+            if (fallbackResponse.success && fallbackResponse.data) {
+              historyItems = extractItems(fallbackResponse.data);
+            }
+          }
+
+          if (historyItems.length > 0) {
+            const matchingActivityIds = new Set<string>();
+            const activityMapFromHistory = new Map<string, UpdateHistoryItem>();
+
+            historyItems.forEach((detail) => {
+              const actId = detail.activityId != null ? String(detail.activityId) : "";
+              if (actId) {
+                const detailProp = normalizePropertySearchStr(
+                  detail.property || `${detail.wardNo || ""}-${detail.propertyNo || ""}-${detail.partitionNo || ""}`
+                );
+                const detailPropNo = normalizePropertySearchStr(detail.propertyNo || "");
+                const detailWardNo = normalizePropertySearchStr(detail.wardNo || "");
+                const detailPartitionNo = normalizePropertySearchStr(detail.partitionNo || "");
+                const detailCombinedSpace = `${detailWardNo} ${detailPropNo} ${detailPartitionNo}`.trim();
+
+                if (
+                  !normalizedSearch ||
+                  detailProp.includes(normalizedSearch) ||
+                  detailPropNo.includes(normalizedSearch) ||
+                  detailWardNo.includes(normalizedSearch) ||
+                  detailPartitionNo.includes(normalizedSearch) ||
+                  detailCombinedSpace.includes(normalizedSearch) ||
+                  String(detail.propertyId) === normalizedSearch
+                ) {
+                  matchingActivityIds.add(actId);
+                  if (!activityMapFromHistory.has(actId)) {
+                    activityMapFromHistory.set(actId, {
+                      id: Number(actId) || detail.id,
+                      activityId: actId,
+                      activityType: detail.activityType || "Screen",
+                      activityStatus: detail.activityStatus || "Success",
+                      createdDate: detail.createdDate || "",
+                      records: detail.records || 1,
+                      ipAddress: detail.ipAddress || "",
+                      remarks: detail.remarks || null,
+                      updateName: detail.updateName || "",
+                      doneBy: detail.activityDoneBy || detail.doneBy || "",
+                      startTime: detail.startTime || "",
+                      endTime: detail.endTime || "",
+                      duration: detail.duration || 0,
+                      activityRemark: detail.activityRemark || null,
+                    });
+                  }
+                }
+              }
+            });
+
+            if (matchingActivityIds.size > 0) {
+              const existingIds = new Set(normalized.items.map((item) => String(item.id || item.activityId)));
+              const combinedItems = [...normalized.items];
+
+              matchingActivityIds.forEach((actId) => {
+                if (!existingIds.has(actId)) {
+                  const constructed = activityMapFromHistory.get(actId);
+                  if (constructed) {
+                    combinedItems.push(constructed);
+                    existingIds.add(actId);
+                  }
+                }
+              });
+
+              const filteredItems = combinedItems.filter((item) => {
+                const itemActId = String(item.id || item.activityId);
+                return (
+                  matchingActivityIds.has(itemActId) ||
+                  normalized.items.some((orig) => String(orig.id || orig.activityId) === itemActId)
+                );
+              });
+
+              return {
+                ...normalized,
+                items: filteredItems,
+                totalCount: filteredItems.length,
+                totalPages: Math.ceil(filteredItems.length / (params.PageSize || 10)) || 1,
+              };
+            }
+          }
+        } catch (historyErr) {
+          logger.error("Error fetching update-history for property search fallback", { searchTerm } as any, historyErr);
+        }
+      }
+
+      return normalized;
     }
 
     throw new ApiError(500, response.message || "Failed to fetch update history", "");
@@ -1005,31 +1138,56 @@ export async function getUpdateHistoryDetailServer(
   pageNumber?: number,
   pageSize?: number,
   searchTerm?: string
-): Promise<PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem>> {
+): Promise<PagedResponse<UpdateHistoryDetailItem>> {
   try {
     const { apiClient } = await import("@/services/api.service");
 
-    const urlParams = new URLSearchParams();
-    if (activityId) {
-      urlParams.append("activityid", activityId);
-    }
-    urlParams.append("PageSize", String(pageSize ?? 10));
-    urlParams.append("PageNumber", String(pageNumber ?? 1));
-    if (searchTerm && searchTerm.trim()) {
-      urlParams.append("SearchTerm", searchTerm.trim());
-    }
+    const cleanSearchTerm = searchTerm?.trim() || "";
+    const normalizedSearchTerm = cleanSearchTerm
+      .replace(/\s*-\s*/g, "-")
+      .replace(/\s+/g, " ")
+      .trim();
 
-    const queryString = urlParams.toString();
-    const url = `/CommonDetails/update-history?${queryString}`;
+    const buildUrl = (term: string) => {
+      const urlParams = new URLSearchParams();
+      if (activityId) {
+        urlParams.append("activityid", activityId);
+      }
+      urlParams.append("PageSize", String(pageSize ?? 10));
+      urlParams.append("PageNumber", String(pageNumber ?? 1));
+      if (term) {
+        urlParams.append("SearchTerm", term);
+      }
+      return `/CommonDetails/update-history?${urlParams.toString()}`;
+    };
 
-    const response = await apiClient.get<ApiWrappedResponse<PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem>>>(url);
+    const targetTerm = normalizedSearchTerm || cleanSearchTerm;
+    const url = buildUrl(targetTerm);
+
+    let response = await apiClient.get<ApiWrappedResponse<PagedResponse<UpdateHistoryDetailItem>>>(url);
+
+    // Fallback: If normalized query returned no results and clean raw search term is different, retry with raw term
+    if (
+      (!response.success ||
+        !response.data ||
+        (response.data as any)?.items?.length === 0 ||
+        (response.data as any)?.items?.items?.length === 0) &&
+      cleanSearchTerm &&
+      cleanSearchTerm !== targetTerm
+    ) {
+      const rawUrl = buildUrl(cleanSearchTerm);
+      const fallbackResponse = await apiClient.get<ApiWrappedResponse<PagedResponse<UpdateHistoryDetailItem>>>(rawUrl);
+      if (fallbackResponse.success && fallbackResponse.data) {
+        response = fallbackResponse;
+      }
+    }
 
     if (response.success && response.data) {
       const data = response.data as unknown as Record<string, unknown>;
       if (data.items && typeof data.items === 'object' && Array.isArray((data.items as any).items)) {
-        return normalizePagedResponse(data.items as PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem>);
+        return normalizePagedResponse(data.items as PagedResponse<UpdateHistoryDetailItem>);
       }
-      return normalizePagedResponse(response.data as unknown as PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem>);
+      return normalizePagedResponse(response.data as unknown as PagedResponse<UpdateHistoryDetailItem>);
     }
 
     throw new ApiError(500, response.message || "Failed to fetch update history details", "");
@@ -1040,7 +1198,7 @@ export async function getUpdateHistoryDetailServer(
 }
 
 export async function exportUpdateHistoryServer(
-  params: import("@/types/common-details-update/common-details-update.types").UpdateHistoryFilterParams
+  params: UpdateHistoryFilterParams
 ): Promise<string> {
   const cookieStore = await cookies();
   const authToken = cookieStore.get("auth_token")?.value;
@@ -1054,31 +1212,62 @@ export async function exportUpdateHistoryServer(
     const { apiClient } = await import("@/services/api.service");
 
     const urlParams = new URLSearchParams();
-    if (params.Id !== undefined) urlParams.append("Id", params.Id.toString());
-    if (params.ActivityId) urlParams.append("ActivityId", params.ActivityId);
-    if (params.ActivityType) urlParams.append("ActivityType", params.ActivityType);
-    if (params.ActivityStatus) urlParams.append("ActivityStatus", params.ActivityStatus);
-    if (params.CreatedDateFrom) urlParams.append("CreatedDateFrom", params.CreatedDateFrom);
-    if (params.CreatedDateTo) urlParams.append("CreatedDateTo", params.CreatedDateTo);
-    if (params.DoneBy) urlParams.append("DoneBy", params.DoneBy);
-    if (params.Remarks) urlParams.append("Remarks", params.Remarks);
-    if (params.SearchTerm) urlParams.append("SearchTerm", params.SearchTerm);
+    const actId = params.ActivityId || (params as Record<string, unknown>).activityId || (params as Record<string, unknown>).activityid;
+
+    if (actId) {
+      urlParams.append("activityId", String(actId));
+      urlParams.append("ActivityId", String(actId));
+    } else {
+      if (params.Id !== undefined) urlParams.append("Id", params.Id.toString());
+      if (params.ActivityType) urlParams.append("ActivityType", params.ActivityType);
+      if (params.ActivityStatus) urlParams.append("ActivityStatus", params.ActivityStatus);
+      if (params.CreatedDateFrom) urlParams.append("CreatedDateFrom", params.CreatedDateFrom);
+      if (params.CreatedDateTo) urlParams.append("CreatedDateTo", params.CreatedDateTo);
+      if (params.DoneBy) urlParams.append("DoneBy", params.DoneBy);
+      if (params.Remarks) urlParams.append("Remarks", params.Remarks);
+      if (params.SearchTerm) urlParams.append("SearchTerm", params.SearchTerm);
+    }
 
     const queryString = urlParams.toString();
-    const url = `/CommonDetails/update-activity/export-excel${queryString ? `?${queryString}` : ""}`;
+    const endpointCandidates = actId
+      ? [
+          `/CommonDetails/update-history/export-excel${queryString ? `?${queryString}` : ""}`,
+          `/CommonDetails/update-activity/export-excel${queryString ? `?${queryString}` : ""}`,
+        ]
+      : [
+          `/CommonDetails/update-activity/export-excel${queryString ? `?${queryString}` : ""}`,
+          `/CommonDetails/update-history/export-excel${queryString ? `?${queryString}` : ""}`,
+        ];
 
-    const response = await apiClient.fetch(url, { method: "GET" }, true);
-    
-    if (!response.ok) {
-      let errorMsg = "Failed to export update history";
+    let response: Response | null = null;
+    let lastError: Error | null = null;
+
+    for (const url of endpointCandidates) {
       try {
-        const errBody = await response.json();
-        errorMsg = errBody.message || errBody.error || errorMsg;
-      } catch (e) {
-        const errText = await response.text().catch(() => "");
-        if (errText) errorMsg = errText;
+        const res = await apiClient.fetch(url, { method: "GET" }, true);
+        if (res.ok) {
+          response = res;
+          break;
+        } else {
+          lastError = new ApiError(res.status, `HTTP error ${res.status}`, "");
+        }
+      } catch (err) {
+        lastError = err as Error;
       }
-      throw new ApiError(response.status, errorMsg, "");
+    }
+
+    if (!response || !response.ok) {
+      let errorMsg = "Failed to export update history";
+      if (response) {
+        try {
+          const errBody = await response.json();
+          errorMsg = errBody.message || errBody.error || errorMsg;
+        } catch (e) {
+          const errText = await response.text().catch(() => "");
+          if (errText) errorMsg = errText;
+        }
+      }
+      throw lastError || new ApiError(response?.status || 500, errorMsg, "");
     }
 
     const contentType = response.headers.get("content-type") || "";

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle, ChevronDown, ChevronLeft, Package, RefreshCw } from 'lucide-react';
+import { CheckCircle, ChevronDown, ChevronLeft, Package } from 'lucide-react';
 import { Button, SaveButton, Badge, SearchInput } from '@/components/common';
 import type { ULBDepartmentLicenseTabProps } from '@/types/ulbconfig-master.types';
 import { ULBDepartmentCard } from '../parts/ULBDepartmentCard';
@@ -18,7 +18,6 @@ export function ULBDepartmentLicenseTab({
   master,
   onToggle,
   onDateChange,
-  onApplyMaster,
   onEnableAll,
   onDisableAll,
   onPrevious,
@@ -72,17 +71,7 @@ export function ULBDepartmentLicenseTab({
             className="mb-0 w-full max-w-xs"
           />
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onApplyMaster}
-              disabled={!master.startDate || !master.duration}
-              className="h-8 gap-1.5 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-primary/5 hover:text-primary"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              {t('buttons.syncMaster')}
-            </Button>
-            <div className="h-5 w-px bg-slate-200" />
+
             <Button
               variant="ghost"
               size="sm"

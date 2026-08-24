@@ -44,7 +44,7 @@ const BuildingwiseProperty = ({ propertyNo, serverData }: BuildingwisePropertyPr
         router.push(`${pathname}/PropertyTracking/${propertyId}?propertyNo=${row.newPropertyNo || ''}&ownerName=${row.ownerName || ''}&returnUrl=${currentReturnUrl}`);
     }, [pathname, searchParams, router]);
 
-    const headerRows = useMemo(() => getBuildingwisePropertyHeaderRows(), []);
+    const headerRows = useMemo(() => getBuildingwisePropertyHeaderRows(t), [t]);
     const columns = useMemo(() => getBuildingwisePropertyColumns(t, handleTrackingClick), [t, handleTrackingClick]);
 
     const totalCount = serverData?.totalCount || 0;
@@ -83,7 +83,7 @@ const BuildingwiseProperty = ({ propertyNo, serverData }: BuildingwisePropertyPr
 
                 <div className="flex-1 flex justify-center">
                     <h3 className="absolute left-1/2 -translate-x-1/2 text-[15px] font-semibold text-slate-800 text-center">
-                        {noticeNo 
+                        {noticeNo
                             ? `Notice No - ${noticeNo}`
                             : t('approvalByULB.buildingWiseProperty.title', { propertyNo })
                         }
@@ -116,8 +116,8 @@ const BuildingwiseProperty = ({ propertyNo, serverData }: BuildingwisePropertyPr
                     columns={columns}
                     headerRows={headerRows}
                     containerClassName="h-full flex flex-col min-h-0"
-                    tableClassName="w-full border-collapse text-xs border border-slate-300 [&_tbody>tr>td]:border [&_tbody>tr>td]:border-slate-300 hover:[&_tbody>tr]:bg-slate-50"
-                    theadClassName="sticky top-0 z-20 bg-gradient-to-r from-violet-50 to-fuchsia-50 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)] [&>tr>th]:border [&>tr>th]:border-slate-300 [&>tr>th]:py-3 [&>tr>th]:!text-black"
+                    tableClassName="data-table w-full border-collapse text-xs border border-slate-300 [&_tbody>tr>td]:border [&_tbody>tr>td]:border-slate-300"
+                    theadClassName="sticky top-0 z-50 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-300 shadow-sm [&>tr>th]:border [&>tr>th]:border-slate-300"
                     maxBodyHeightClassName="flex-1 min-h-0"
                     rowClassName={() => "border-b border-slate-200 odd:bg-white even:bg-violet-50/25 hover:bg-indigo-50/25 transition-colors cursor-pointer"}
                     loading={false}

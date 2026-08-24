@@ -106,7 +106,7 @@ export default async function ScreenAccessPage({ params, searchParams }: ScreenA
       onError: handleFetchError,
     },
     groups: {
-      condition: isScreens || isGroups,
+      condition: true,
       fetcher: () =>
         getScreenGroupsAction(
           isGroups ? gpage : 1,

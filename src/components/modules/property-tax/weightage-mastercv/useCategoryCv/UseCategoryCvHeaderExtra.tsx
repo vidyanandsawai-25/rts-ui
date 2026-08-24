@@ -6,6 +6,7 @@ import { ApplyButton, ClearButton, UpdateButton, CancelButton, AddButton } from 
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Option } from "@/components/common/select";
 import { POSITIVE_DECIMAL_INVALID_KEYS, sanitizePositiveDecimal } from "@/lib/utils/validation";
+import { toast } from "sonner";
 
 interface UseCategoryCvHeaderExtraProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,12 +83,16 @@ export function UseCategoryCvHeaderExtra({
                 <Input
                     type="number"
                     step="0.01"
-                    min="0"
-                    max="999.99"
+                    min="0.1"
+                    max="100"
                     value={factorValue}
                     onChange={(e) => {
                         const sanitized = sanitizePositiveDecimal(e.target.value, 2);
-                        if (sanitized === '' || (!isNaN(parseFloat(sanitized)) && parseFloat(sanitized) >= 0 && parseFloat(sanitized) <= 999.99)) {
+                        if (sanitized === '') {
+                            setFactorValue(sanitized);
+                        } else if (!isNaN(parseFloat(sanitized)) && parseFloat(sanitized) > 100) {
+                            toast.error(tW('common.messages.factorPercentageExceedsMax'));
+                        } else if (!isNaN(parseFloat(sanitized)) && parseFloat(sanitized) >= 0) {
                             setFactorValue(sanitized);
                         }
                     }}

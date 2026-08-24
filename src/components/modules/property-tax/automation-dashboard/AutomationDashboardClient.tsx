@@ -31,7 +31,8 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
         pathname.includes('/quality-check/update-common-details') ||
         pathname.includes('/send-to-approve') ||
         pathname.includes('/pending-structures-ward-wise') ||
-        pathname.includes('/building-wise-property') ;
+        pathname.includes('/building-wise-property') ||
+        pathname.includes('/approval-by-ulb/ulb-pending-signs');
 
     const getStageConfig = (stageName: string) => {
         switch (stageName) {

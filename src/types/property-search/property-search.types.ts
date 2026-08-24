@@ -100,6 +100,7 @@ export interface SearchResult {
   description: string;
   mobile: string;
   alternateMobile: string;
+  occupierMobile?: string;
   holderName: string;
   holderNameMarathi: string;
   occupierName: string;

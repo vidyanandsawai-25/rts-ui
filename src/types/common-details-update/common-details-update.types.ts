@@ -180,6 +180,7 @@ export interface CommonDetailsUpdatePageProps {
   editUpdateCode?: string;
   initialEditData?: BulkUpdateMaster | null;
   initialUpdateHistory?: PagedResponse<UpdateHistoryItem> | null;
+  initialAllUpdateHistory?: PagedResponse<UpdateHistoryItem> | UpdateHistoryItem[] | null;
   initialUpdateHistoryDetail?: PagedResponse<import("@/types/common-details-update/common-details-update.types").UpdateHistoryDetailItem> | null;
   actions?: Partial<CommonDetailsUpdateActions>;
 }

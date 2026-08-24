@@ -115,6 +115,20 @@ export const MatrixCellInput = ({
       }
     }
 
+    // Reject values that numerically exceed maxValue even when the digit
+    // count matches (e.g. maxValue=100, typed value 101-999 has the same
+    // digit length as "100" and would otherwise pass the checks above).
+    const parsedForMaxCheck = inputValue === "" ? undefined : Number(inputValue);
+    if (
+      parsedForMaxCheck !== undefined &&
+      !Number.isNaN(parsedForMaxCheck) &&
+      parsedForMaxCheck > maxValue
+    ) {
+      onMaxExceeded?.();
+      e.target.value = localValue;
+      return;
+    }
+
     setLocalValue(inputValue);
     
     // Convert to number for onCellChange call
@@ -142,6 +156,9 @@ export const MatrixCellInput = ({
       setLocalValue("");
       onCellChange?.(rowId, columnId, 0);
     } else {
+      if (numValue > maxValue) {
+        onMaxExceeded?.();
+      }
       const clamped = Math.min(allowDecimals ? (numValue ?? 0) : Math.floor(numValue ?? 0), maxValue);
       setLocalValue(allowDecimals ? clamped.toFixed(decimalPlaces) : String(clamped));
       if (clamped !== value) onCellChange?.(rowId, columnId, clamped);

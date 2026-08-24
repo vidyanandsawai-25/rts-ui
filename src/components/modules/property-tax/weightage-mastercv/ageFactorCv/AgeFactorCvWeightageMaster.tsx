@@ -1,14 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { startTransition } from "react";
+import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
 import { ToastContainer } from "@/components/common/Toast";
-import { SaveButton, UpdateButton, ClearButton } from "@/components/common/ActionButtons";
+import { SaveButton, UpdateButton, ClearButton, EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { AgeFactorCVMaster } from "@/types/ageFactorCv.types";
 import { getAgeFactorCvWeightageMasterColumns } from "./ageFactorCvWeightageMasterColumns";
 import { AgeFactorCvHeaderExtra } from "./AgeFactorCvHeaderExtra";
 import { useAgeFactorCvWeightage } from "@/hooks/weightageMaster/ageFactorCv/useAgeFactorCvWeightage";
 import type { Option } from "@/components/common/select";
+import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
+import { useAgeFactorCVWeightageMasterDeleteHandler} from "@/hooks/weightageMaster/ageFactorCv/useAgeFactorDeleteHandler";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+
 
 interface AgeFactorCvWeightageMasterProps {
     data: AgeFactorCVMaster[];
@@ -37,6 +43,9 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
     sortBy,
     sortOrder,
 }) => {
+    const router = useRouter();
+    const locale = useLocale();
+    const { confirm } = useConfirm();
     const {
         t,
         tW,
@@ -108,6 +117,14 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
         onSort: handleSort,
     });
 
+    const { handleDelete } = useAgeFactorCVWeightageMasterDeleteHandler({
+        t,
+        tCommon,
+        confirm,
+        startTransition,
+
+    })
+
     const renderActions = (row: AgeFactorCVMaster) => {
         const rowUid = getRowUid(row);
         const hasRowChanges = editableRows[rowUid] !== undefined;
@@ -119,16 +136,42 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
                         label={tW('common.buttons.create')}
                         size="sm"
                         onClick={() => handleUpdate(row)}
-                        disabled={!hasRowChanges || isUpdating || isBulkUpdating}
+                        disabled={isUpdating || isBulkUpdating}
+                        className={!hasRowChanges ? "opacity-50" : ""}
                     />
                 ) : (
                     <UpdateButton
                         label={tW('common.buttons.update')}
                         size="sm"
                         onClick={() => handleUpdate(row)}
-                        disabled={!hasRowChanges || isUpdating || isBulkUpdating}
+                        disabled={isUpdating || isBulkUpdating}
+                        className={!hasRowChanges ? "opacity-50" : ""}
                     />
                 )}
+                <EditButton
+                    size="sm"
+                    onClick={() => {
+                        if (row.id === 0) {
+                            toast.warning(tW("common.messages.createRecordFirst") || "Please create the record first before editing.");
+                        }
+                        else {
+                            router.push(`/${locale}/property-tax/weightage-master/age-weightage/edit/${row.id}`);
+                        }
+                    }}
+                    disabled={isUpdating || isBulkUpdating}
+                />
+                <DeleteButton
+                    size="sm"
+                    onClick={() => {
+                        if (row.id === 0) {
+                            toast.warning(tW("common.messages.createRecordFirst") || "Please create the record first before deleting.");
+                        } else {
+                            handleDelete(row);
+
+                        }
+                    }}
+                    disabled={isUpdating || isBulkUpdating}
+                />
                 <ClearButton
                     label={tW('common.buttons.clear')}
                     size="sm"

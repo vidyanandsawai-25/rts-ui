@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { NatureFactorCVMaster } from "@/types/natureofbuilding-cv-weightageMaster.types";
 import { useNatureFactorCvRowOps } from "./useNatureFactorCvRowOps";
 import { useNatureFactorCvBulkOps } from "./useNatureFactorCvBulkOps";
+import { fetchNatureFactorCVMasterPagedServerAction } from "@/app/[locale]/property-tax/weightage-master/nature-weightage/actions";
 
 export interface UseNatureFactorCvProps {
     data: NatureFactorCVMaster[];
@@ -33,7 +34,7 @@ export function useNatureFactorCv({
     const [editableRows, setEditableRows] = useState<Record<string, NatureFactorCVMaster>>({});
 
     const [constructionType, setConstructionType] = useState<string>(currentConstructionType);
-    const [factorValue, setFactorValue] = useState<string>("0.00");
+    const [factorValue, setFactorValue] = useState<string>("1.00");
 
     const [isUpdating, setIsUpdating] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
@@ -42,8 +43,36 @@ export function useNatureFactorCv({
     const [sortBy, setSortBy] = useState<string | undefined>(initialSortBy);
     const [sortOrder, setSortOrder] = useState<string | undefined>(initialSortOrder);
 
-    const newRecordsCount = data.filter(row => row.id === 0).length;
+    // Total missing (Construction Type x Year) combinations for the current
+    // selection, not just whatever happens to be on the current page — otherwise
+    // this badge/count is just coincidentally equal to the page size. When no
+    // year is selected yet, this covers every year (matching the unfiltered grid
+    // shown in that state). Refetched whenever the selection changes, and again
+    // after a successful Generate All / Bulk Update / row Create.
+    const [newRecordsCount, setNewRecordsCount] = useState(0);
     const hasNewRecords = newRecordsCount > 0;
+
+    const refreshMissingCount = useCallback(async () => {
+        try {
+            const result = await fetchNatureFactorCVMasterPagedServerAction(
+                1,
+                -1,
+                undefined,
+                selectedYear,
+                constructionType,
+                undefined,
+                undefined
+            );
+            setNewRecordsCount(result.items.filter(row => row.id === 0).length);
+        } catch (_error) {
+            setNewRecordsCount(0);
+        }
+    }, [selectedYear, constructionType]);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        refreshMissingCount();
+    }, [refreshMissingCount]);
 
     const [toasts, setToasts] = useState<Array<{ id: string; type: "success" | "error" | "info" | "warning"; message: string }>>([]);
 
@@ -82,7 +111,7 @@ export function useNatureFactorCv({
     const refreshPage = (): void => router.refresh();
 
     const clearFilters = (): void => {
-        setFactorValue("0.00");
+        setFactorValue("1.00");
         setConstructionType("");
         // Synchronize with URL to ensure server-side filtering is also cleared
         router.push(buildNatureFactorUrl({ page: 1, type: "" }));
@@ -99,6 +128,7 @@ export function useNatureFactorCv({
         addToast,
         refreshPage,
         clearFilters,
+        onDataChanged: refreshMissingCount,
     });
 
     // Bulk operations
@@ -108,12 +138,15 @@ export function useNatureFactorCv({
         setEditableRows,
         setIsBulkUpdating,
         setIsGeneratingAll,
+        selectedYear,
+        constructionType,
         factorValue,
         getRowUid,
         findRowByUid,
         addToast,
         refreshPage,
         clearFilters,
+        onDataChanged: refreshMissingCount,
     });
 
     const buildNatureFactorUrl = (params: {
@@ -184,7 +217,7 @@ export function useNatureFactorCv({
         addToast('info', tW('common.messages.allClearedInfo'));
     };
 
-    const isApplyDisabled = parseFloat(factorValue) < 0 || (!selectedYear && !constructionType);
+    const isApplyDisabled = (!selectedYear && !constructionType);
     const isBulkUpdateDisabled = Object.keys(editableRows).length === 0 || isBulkUpdating;
 
     return {

@@ -19,7 +19,7 @@ import {
 
 interface FinancialYearFormProps {
   initialData?: FinancialYear | null;
-  onSuccess?: () => void;
+  onSuccess?: (savedData?: FinancialYearFormValues, id?: number) => void;
   onCancel?: () => void;
 }
 
@@ -61,6 +61,10 @@ export const FinancialYearForm = ({ initialData: financialYearData, onSuccess, o
         };
       }
 
+      if (name === 'yearCode' && typeof value === 'string') {
+        return { ...prev, [name]: value.toUpperCase() };
+      }
+
       return { ...prev, [name]: value };
     });
     if (errors[name]) {
@@ -88,7 +92,7 @@ export const FinancialYearForm = ({ initialData: financialYearData, onSuccess, o
       const actionResult = await saveFinancialYearAction(formData, financialYearData?.id);
       if (actionResult.success) {
         toast.success(financialYearData ? t('form.messages.updateSuccess') : t('form.messages.createSuccess'));
-        if (onSuccess) onSuccess(); else router.push(basePath);
+        if (onSuccess) onSuccess(formData, financialYearData?.id); else router.push(basePath);
         return;
       }
       if (actionResult.validationErrors) {

@@ -114,6 +114,8 @@ export async function createGrievanceCategoryAction(
     escalationLevel: escalationLevel as EscalationLevel,
     description: sanitizeDescription(description),
     isActive: isActiveRaw === 'true',
+    createdBy: currentUserId,
+    updatedBy: currentUserId,
   };
 
   try {
@@ -131,6 +133,14 @@ export async function createGrievanceCategoryAction(
         message: response.message,
         locale,
       });
+      const rawErr = (response.error || response.message || '').toLowerCase();
+      if (rawErr.includes('unique') || rawErr.includes('duplicate') || rawErr.includes('already exists') || rawErr.includes('categorycode')) {
+        return {
+          success: false,
+          fieldErrors: { categoryCode: tVal('errors.duplicateCode') },
+          error: tVal('errors.duplicateCode'),
+        };
+      }
       const errorMsg = await localizeBackendMessage(response.error || response.message, locale, 'createError', 'Failed to create grievance category');
       return {
         success: false,

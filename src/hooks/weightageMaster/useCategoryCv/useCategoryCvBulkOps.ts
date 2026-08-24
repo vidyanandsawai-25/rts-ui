@@ -1,7 +1,11 @@
 "use client";
 
 import { UseFactorCVMaster, UseFactorCVMasterCreate } from "@/types/useCategoryCvFactor.types";
-import { bulkCreateUseFactorCVMasterAction, bulkUpdateUseFactorCVMasterAction } from "@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action";
+import {
+    bulkCreateUseFactorCVMasterAction,
+    bulkUpdateUseFactorCVMasterAction,
+    fetchUseFactorCVMasterPagedServerAction,
+} from "@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action";
 import { processBulkOperations } from "./useBulkOperationHandler";
 
 interface UseCategoryCvBulkOpsProps {
@@ -10,6 +14,8 @@ interface UseCategoryCvBulkOpsProps {
     setEditableRows: React.Dispatch<React.SetStateAction<Record<string, UseFactorCVMaster>>>;
     setIsBulkUpdating: (val: boolean) => void;
     setIsGeneratingAll: (val: boolean) => void;
+    selectedYear: string;
+    typeOfUseId: string;
     factorValue: string;
     getRowUid: (row: UseFactorCVMaster) => string;
     findRowByUid: (uid: string) => UseFactorCVMaster | undefined;
@@ -17,6 +23,9 @@ interface UseCategoryCvBulkOpsProps {
     refreshPage: () => void;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tW: (key: string, values?: Record<string, any>) => string;
+    /** Called after a successful bulk update / generate-all so the "pending records"
+     *  count can be refreshed to reflect what actually changed. */
+    onDataChanged: () => void;
 }
 
 export function useCategoryCvBulkOps({
@@ -25,18 +34,26 @@ export function useCategoryCvBulkOps({
     setEditableRows,
     setIsBulkUpdating,
     setIsGeneratingAll,
+    selectedYear,
+    typeOfUseId,
     factorValue,
     getRowUid,
     findRowByUid,
     addToast,
     refreshPage,
     tW,
+    onDataChanged,
 }: UseCategoryCvBulkOpsProps) {
 
     const handleApplyFilter = () => {
         const factor = parseFloat(factorValue);
-        if (!factorValue || isNaN(factor) || factor < 0) {
+        if (!factorValue || isNaN(factor) || factor < 0.1) {
             addToast('warning', tW('common.messages.validFactorRequired'));
+            return;
+        }
+
+        if (factor > 100) {
+            addToast('warning', tW('common.messages.factorPercentageExceedsMax'));
             return;
         }
 
@@ -44,10 +61,13 @@ export function useCategoryCvBulkOps({
         let updatedCount = 0;
 
         data.forEach((row) => {
+            // Inactive records are non-editable — leave them untouched by bulk factor apply.
+            if (row.isActive === false) return;
+
             const rowUid = getRowUid(row);
             const existingEdit = editableRows[rowUid];
             const baseRow = { ...row, ...(existingEdit || {}) };
-            
+
             // Only update if factor actually changed
             if (baseRow.factor !== factor) {
                 updatedRows[rowUid] = {
@@ -88,10 +108,12 @@ export function useCategoryCvBulkOps({
                 // Complete success
                 addToast('success', message || tW('common.messages.bulkOperationSuccess'));
                 setEditableRows({});
+                onDataChanged();
                 setTimeout(() => refreshPage(), 1500);
             } else if (success && errorCount > 0) {
                 // Partial success
                 addToast('warning', message || tW('common.messages.bulkOperationPartialSuccess'));
+                onDataChanged();
             } else if (errorCount > 0) {
                 // Complete failure
                 addToast('error', message || tW('common.messages.bulkOperationFailed'));
@@ -106,12 +128,29 @@ export function useCategoryCvBulkOps({
         }
     };
 
+    // Fetches the full, unpaginated dataset (real + placeholder rows for every missing
+    // Type-of-Use/Year combination) on demand at click time, so this covers the whole
+    // matrix, not just the currently-rendered page, without eagerly re-fetching it on
+    // every page load.
     const handleGenerateAll = async () => {
-        const newRecords = data.filter(row => row.id === 0);
-        if (newRecords.length === 0) return;
-
         setIsGeneratingAll(true);
         try {
+            const allUseFactorsResult = await fetchUseFactorCVMasterPagedServerAction(
+                1,
+                -1,
+                undefined,
+                selectedYear,
+                typeOfUseId ? Number(typeOfUseId) : undefined,
+                undefined,
+                undefined,
+                undefined
+            );
+            const newRecords = allUseFactorsResult.items.filter(row => row.id === 0);
+            if (newRecords.length === 0) {
+                addToast('info', tW('common.messages.allRecordsExist'));
+                return;
+            }
+
             const payload: Array<Omit<UseFactorCVMasterCreate, 'createdBy'>> = newRecords.map(row => {
                 const rowUid = getRowUid(row);
                 const editableRow = editableRows[rowUid];
@@ -133,6 +172,7 @@ export function useCategoryCvBulkOps({
             if (result && result.success) {
                 addToast('success', tW('common.messages.recordsGeneratedSuccess', { count: newRecords.length }));
                 setEditableRows({}); // Clear edits after successful generation
+                onDataChanged();
                 setTimeout(() => refreshPage(), 1500);
             } else {
                 addToast('error', result?.message || tW('common.messages.generationFailed'));
