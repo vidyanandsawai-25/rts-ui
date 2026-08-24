@@ -345,12 +345,12 @@ export default function RtsCitizenViewDetailsDrawer({
               );
             })()}
 
-            <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
-              <h4 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase text-slate-800">
-                <Paperclip className="h-4 w-4 text-blue-600" />
-                {t("uploadedDocuments", { count: documents.length })}
-              </h4>
-              {documents.length ? (
+            {documents.length > 0 && (
+              <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
+                <h4 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase text-slate-800">
+                  <Paperclip className="h-4 w-4 text-blue-600" />
+                  {t("uploadedDocuments", { count: documents.length })}
+                </h4>
                 <div className="space-y-2.5">
                   {documents.map((document) => (
                     <div key={document.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs">
@@ -384,24 +384,22 @@ export default function RtsCitizenViewDetailsDrawer({
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="py-2 text-center text-xs font-medium text-slate-400">{t("noUploadedDocuments")}</p>
-              )}
-            </section>
+              </section>
+            )}
 
-            <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <h4 className="flex items-center gap-2 text-xs font-bold uppercase text-slate-800">
-                  <GitCommit className="h-4 w-4 text-blue-600" />
-                  {t("approvalWorkflow")}
-                </h4>
-                <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">
-                  {t("stages", { count: resolvedDetail?.approvalStages?.length || 0 })}
-                </span>
-              </div>
-              {resolvedDetail?.approvalStages?.length ? (
+            {Boolean(resolvedDetail && resolvedDetail.approvalStages && resolvedDetail.approvalStages.length > 0) && (
+              <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase text-slate-800">
+                    <GitCommit className="h-4 w-4 text-blue-600" />
+                    {t("approvalWorkflow")}
+                  </h4>
+                  <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">
+                    {t("stages", { count: resolvedDetail?.approvalStages?.length ?? 0 })}
+                  </span>
+                </div>
                 <ApprovalStagesTimeline
-                  stages={resolvedDetail.approvalStages.map((stage) => ({
+                  stages={(resolvedDetail!.approvalStages ?? []).map((stage) => ({
                     id: stage.approvalFlowStageId,
                     stageName: stage.stageName,
                     stageOrder: stage.stageOrder,
@@ -414,16 +412,14 @@ export default function RtsCitizenViewDetailsDrawer({
                     assignedRole: stage.assignedToRole || undefined,
                     assignedToName: stage.assignedToName || undefined,
                   }))}
-                  completedCount={resolvedDetail.completedStages || 0}
+                  completedCount={resolvedDetail!.completedStages || 0}
                   currentStageIndex={(() => {
-                    const index = resolvedDetail.approvalStages.findIndex((stage) => stage.isCurrentStage);
+                    const index = (resolvedDetail!.approvalStages ?? []).findIndex((stage) => stage.isCurrentStage);
                     return index >= 0 ? index : undefined;
                   })()}
                 />
-              ) : (
-                <p className="py-2 text-center text-xs font-medium text-slate-400">{t("noApprovalStages")}</p>
-              )}
-            </section>
+              </section>
+            )}
           </div>
         )}
       </Drawer>

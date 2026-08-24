@@ -8,6 +8,7 @@ import { CitizenLayout } from "@/components/layout";
 import DynamicServiceFormClient from "@/components/modules/rts/forms/DynamicServiceFormClient";
 import { getRtsFieldDefinitionsByServiceId } from "@/lib/api/rts/rtsfielddefinition.service";
 import { getAllRtsDepartments } from "@/lib/api/rts/rtsdepartment.service";
+import { isServiceUrlStruck } from "@/lib/utils/rts/service-navigation";
 import { getRtsServiceByIdSSR, submitRtsApplicationAction } from "./actions";
 
 interface ServicePageProps {
@@ -111,6 +112,35 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
   }
 
   const isLoggedIn = (await cookies()).has("rts_session");
+
+  if (rtsService?.serviceUrl && isServiceUrlStruck(rtsService.serviceUrl)) {
+    return (
+      <CitizenLayout>
+        <div className="mx-auto flex w-full max-w-[960px] flex-1 items-center justify-center px-4 py-10">
+          <div className="w-full rounded-[28px] border border-[#dfe7ef] bg-white p-8 text-center shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#647792]">
+              RTS Service
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold text-[#102b55]">{serviceTitle}</h1>
+            <p className="mt-2 text-sm text-[#5f7290]">{departmentTitle}</p>
+            <div className="mx-auto mt-6 max-w-[560px] rounded-2xl border border-amber-200 bg-amber-50 px-6 py-8">
+              <h2 className="text-xl font-semibold text-amber-900">
+                {locale === "mr" ? "सेवा प्रगतीपथावर आहे" : locale === "hi" ? "सेवा प्रगति पर है" : "Service Under Development"}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-amber-800">
+                {locale === "mr"
+                  ? "ही सेवा सध्या प्रगतीपथावर असून लवकरच उपलब्ध होईल."
+                  : locale === "hi"
+                  ? "यह सेवा वर्तमान में प्रगति पर है और जल्द ही उपलब्ध होगी।"
+                  : "This service is currently under development and will be available soon."}
+              </p>
+            </div>
+          </div>
+        </div>
+      </CitizenLayout>
+    );
+  }
+
   const hasFieldDefinitions = Array.isArray(fieldDefinitions) && fieldDefinitions.length > 0;
 
   return (

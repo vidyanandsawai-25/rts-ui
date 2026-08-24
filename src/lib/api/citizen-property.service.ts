@@ -78,15 +78,28 @@ export async function fetchCitizenPropertiesFromApi(
       list = [data];
     }
 
-    return list.map((item) => ({
-      ownerId: Number(item.ownerID || item.OwnerID || 0),
-      upicNo: String(item.upicNo || item.UpicNo || item.unicdeAddress || item.UnicdeAddress || '').trim(),
-      ownerNameMarathi: String(item.ownerNameMarathi || item.OwnerNameMarathi || item.marathiOwnerPrathamNav || item.MarathiOwnerPrathamNav || '').trim(),
-      propertyNo: String(item.propertyNo || item.PropertyNo || '').trim(),
-      mobileNo: String(item.mobileNo || item.MobileNo || '').trim(),
-      category: String(item.category || item.Category || '').trim(),
-      propertyDescription: String(item.propertyDescription || item.PropertyDescription || '').trim(),
-    }));
+    return list.map((item) => {
+      const rawName = String(
+        item.ownerNameMarathi ||
+        item.OwnerNameMarathi ||
+        item.ownerNameEnglish ||
+        item.OwnerNameEnglish ||
+        item.marathiOwnerPrathamNav ||
+        item.MarathiOwnerPrathamNav ||
+        ''
+      ).trim();
+      const cleanedName = rawName.replace(/^[\s.,\-_/]+|[\s.,\-_/]+$/g, '').trim();
+
+      return {
+        ownerId: Number(item.ownerID || item.OwnerID || 0),
+        upicNo: String(item.upicNo || item.UpicNo || item.unicdeAddress || item.UnicdeAddress || '').trim(),
+        ownerNameMarathi: cleanedName || 'नागरिक',
+        propertyNo: String(item.propertyNo || item.PropertyNo || '').trim(),
+        mobileNo: String(item.mobileNo || item.MobileNo || '').trim(),
+        category: String(item.category || item.Category || '').trim(),
+        propertyDescription: String(item.propertyDescription || item.PropertyDescription || '').trim(),
+      };
+    });
   } catch (error) {
     console.error('[API] Error in fetchCitizenPropertiesFromApi:', error);
     return [];

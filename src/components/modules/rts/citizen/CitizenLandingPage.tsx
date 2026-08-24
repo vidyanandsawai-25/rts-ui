@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useTransition } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import * as Icons from 'lucide-react';
@@ -23,8 +23,11 @@ import {
 } from '@/app/[locale]/service/dashboard/actions';
 import {
   getInternalRtsServiceHref,
-  navigateExternalServiceTab,
+  isExternalServiceUrl,
+  isLoginRequiredForService,
+  isServiceUrlStruck,
   openExternalServiceTab,
+  navigateExternalServiceTab,
   prepareExternalServiceNavigation,
 } from '@/lib/utils/rts/service-navigation';
 import type { DepartmentDTO } from '@/types/rts-citizen.types';
@@ -92,7 +95,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
-  const [isCreatingExternalApplication, setIsCreatingExternalApplication] = useState(false);
+  const [isCreatingExternalApplication, startExternalTransition] = useTransition();
 
   const [modalDetails, setModalDetails] = useState<{
     loading: boolean;
@@ -186,7 +189,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   const handleActionClick = () => {
-    if (isLoggedIn) {
+    const section = document.getElementById('citizen-service-browser');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    } else if (isLoggedIn) {
       router.push(`/${locale}/service/dashboard`);
     } else {
       router.push(`/${locale}/service/login`);
@@ -208,50 +214,78 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     service: (typeof deptCards)[number]['services'][number]
   ) => {
     const serviceId = service.id;
-    const externalUrl = service.serviceUrl?.trim() ?? '';
+    const rawUrl = service.serviceUrl?.trim() ?? '';
 
-    if (externalUrl) {
-      const initialNavigation = prepareExternalServiceNavigation(externalUrl);
+    // 1. '#' or placeholder -> Struck / stop: Do NOT redirect and do NOT show form
+    if (isServiceUrlStruck(rawUrl)) {
+      setApplyError(
+        locale === 'mr'
+          ? 'ही सेवा सध्या प्रगतीपथावर आहे / उपलब्ध नाही.'
+          : locale === 'hi'
+          ? 'यह सेवा वर्तमान में उपलब्ध नहीं है।'
+          : 'This service is currently under development / not available.'
+      );
+      return;
+    }
+
+    // Check if service requires login (Property Tax, Water Bill, Trade License)
+    const needsLogin = isLoginRequiredForService(service, department);
+    if (needsLogin && !isLoggedIn) {
+      router.push(`/${locale}/service/login?externalServiceId=${encodeURIComponent(serviceId)}`);
+      return;
+    }
+
+    // 2. Valid URL -> External Redirect Logic (Passes UPIC if citizen is logged in)
+    if (isExternalServiceUrl(rawUrl)) {
+      if (isLoggedIn) {
+        const externalTab = openExternalServiceTab();
+        if (!externalTab) {
+          setApplyError(
+            locale === 'mr'
+              ? 'तुमच्या ब्राउझरने नवीन टॅब ब्लॉक केला आहे. कृपया पॉप-अपला परवानगी द्या.'
+              : locale === 'hi'
+              ? 'आपके ब्राउज़र ने नया टैब ब्लॉक कर दिया है। कृपया पॉप-अप की अनुमति दें।'
+              : 'Your browser blocked the external service tab. Please allow pop-ups and try again.'
+          );
+          return;
+        }
+
+        startExternalTransition(async () => {
+          const result = await resolveExternalServiceNavigationAction(Number(serviceId));
+
+          if (!result.success) {
+            externalTab.close();
+            if (result.errorCode === 'login-required') {
+              router.push(`/${locale}/service/login?externalServiceId=${encodeURIComponent(serviceId)}`);
+              return;
+            }
+
+            setApplyError(result.error);
+            return;
+          }
+
+          saveDeptServiceContext(department, service);
+          setIsDetailsOpen(false);
+          setSelectedServiceId(null);
+          navigateExternalServiceTab(externalTab, result.destination);
+        });
+        return;
+      }
+
+      const initialNavigation = prepareExternalServiceNavigation(rawUrl);
       if (!initialNavigation.ok && initialNavigation.reason === 'invalid-url') {
         setApplyError('This service has an invalid external URL. Please contact the administrator.');
         return;
       }
 
-      if (!isLoggedIn) {
-        router.push(`/${locale}/service/login?externalServiceId=${encodeURIComponent(serviceId)}`);
-        return;
-      }
-
-      const externalTab = openExternalServiceTab();
-      if (!externalTab) {
-        setApplyError('Your browser blocked the external service tab. Please allow pop-ups and try again.');
-        return;
-      }
-
-      setIsCreatingExternalApplication(true);
-      try {
-        const result = await resolveExternalServiceNavigationAction(Number(serviceId));
-        if (!result.success) {
-          externalTab.close();
-          if (result.errorCode === 'login-required') {
-            router.push(`/${locale}/service/login?externalServiceId=${encodeURIComponent(serviceId)}`);
-            return;
-          }
-
-          setApplyError(result.error);
-          return;
-        }
-
-        saveDeptServiceContext(department, service);
-        setIsDetailsOpen(false);
-        setSelectedServiceId(null);
-        navigateExternalServiceTab(externalTab, result.destination);
-      } finally {
-        setIsCreatingExternalApplication(false);
-      }
+      saveDeptServiceContext(department, service);
+      setIsDetailsOpen(false);
+      setSelectedServiceId(null);
+      window.open(initialNavigation.ok ? initialNavigation.destination : rawUrl, '_blank');
       return;
     }
 
+    // 3. null / empty -> Show dynamic fields form
     const internalHref = getInternalRtsServiceHref(locale, serviceId, String(department.id));
 
     saveDeptServiceContext(department, service);
@@ -634,7 +668,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           let serviceItem: (typeof deptCards)[number]['services'][number] | null = null;
           let departmentItem: (typeof deptCards)[number] | null = null;
           for (const dept of deptCards) {
-            const svc = dept.services.find((s) => s.id === selectedServiceId);
+            const svc = dept.services.find((s) => String(s.id) === String(selectedServiceId));
             if (svc) {
               serviceName = svc.name;
               deptName = dept.title;
@@ -765,22 +799,15 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                   <Button
                     variant="primary"
                     size="md"
+                    isLoading={isCreatingExternalApplication}
                     onClick={() => {
                       if (serviceItem && departmentItem) {
                         void handleServiceClick(departmentItem, serviceItem);
                       }
                     }}
                     className="font-extrabold"
-                    disabled={isCreatingExternalApplication}
                   >
-                    {isCreatingExternalApplication ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Icons.LoaderCircle className="h-4 w-4 animate-spin" />
-                        {t('serviceDetails.apply')}
-                      </span>
-                    ) : (
-                      <>{t('serviceDetails.apply')} &rarr;</>
-                    )}
+                    <>{t('serviceDetails.apply')} &rarr;</>
                   </Button>
                 </div>
               </div>

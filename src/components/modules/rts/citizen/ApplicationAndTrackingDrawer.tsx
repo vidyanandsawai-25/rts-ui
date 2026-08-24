@@ -274,6 +274,13 @@ export default function ApplicationAndTrackingDrawer({
               setApplications(response.items);
               if (response.items.length === 1) {
                 void selectApplication(response.items[0]);
+              } else if (response.items.length > 1) {
+                const exact = response.items.find(
+                  (item) => item.applicationNo.trim().toLowerCase() === val.toLowerCase()
+                );
+                if (exact) {
+                  void selectApplication(exact);
+                }
               }
             } catch {
               setError(COPY.unableToLoadApplications);
@@ -313,6 +320,15 @@ export default function ApplicationAndTrackingDrawer({
       setApplications(response.items);
       if (response.items.length === 0) {
         setError(COPY.noApplication);
+      } else if (response.items.length === 1) {
+        void selectApplication(response.items[0]);
+      } else {
+        const exact = response.items.find(
+          (item) => item.applicationNo.trim().toLowerCase() === normalizedSearchValue.toLowerCase()
+        );
+        if (exact) {
+          void selectApplication(exact);
+        }
       }
     } catch {
       setError(COPY.unableToLoadApplications);
@@ -555,51 +571,55 @@ export default function ApplicationAndTrackingDrawer({
                 )}
               </section>
 
-              <div className="flex items-center gap-2 py-1">
-                <div className="h-px flex-1 bg-gradient-to-r from-fuchsia-300 to-fuchsia-500" />
-                <h4 className="text-sm font-medium text-slate-700">{COPY.approvalStages}</h4>
-                <div className="h-px flex-1 bg-gradient-to-r from-fuchsia-500 to-fuchsia-300" />
-              </div>
+              {stages.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 py-1">
+                    <div className="h-px flex-1 bg-gradient-to-r from-fuchsia-300 to-fuchsia-500" />
+                    <h4 className="text-sm font-medium text-slate-700">{COPY.approvalStages}</h4>
+                    <div className="h-px flex-1 bg-gradient-to-r from-fuchsia-500 to-fuchsia-300" />
+                  </div>
 
-              <div className="space-y-2">
-                {stages.map((stage, index) => {
-                  const visual = statusVisual(stage, index, terminalStageIndex);
-                  const styles = stageStyle(visual);
-                  const hasPaymentStatus = visual === "current" && isPaymentStage(stage);
-                  const stageTimestamp = formatStageTimestamp(stage.createdDate ?? stage.completedDate);
-                  const officerName = [stage.firstName, stage.lastName].filter(Boolean).join(" ") || stage.userName || stage.assignedToName || "-";
+                  <div className="space-y-2">
+                    {stages.map((stage, index) => {
+                      const visual = statusVisual(stage, index, terminalStageIndex);
+                      const styles = stageStyle(visual);
+                      const hasPaymentStatus = visual === "current" && isPaymentStage(stage);
+                      const stageTimestamp = formatStageTimestamp(stage.createdDate ?? stage.completedDate);
+                      const officerName = [stage.firstName, stage.lastName].filter(Boolean).join(" ") || stage.userName || stage.assignedToName || "-";
 
-                  return (
-                    <div key={stage.approvalFlowStageId} className="relative pl-9">
-                      <div className={`absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${styles.marker}`}>
-                        {visual === "approved" ? <CheckCircle2 className="h-4 w-4" /> : visual === "rejected" ? <XCircle className="h-4 w-4" /> : stage.stageOrder}
-                      </div>
-                      {index < stages.length - 1 && <div className={`absolute left-[13px] top-7 h-[calc(100%-12px)] w-0.5 ${styles.connector}`} />}
-                      <article className={`rounded-lg border-2 px-4 py-3 shadow-sm ${hasPaymentStatus ? "border-lime-300 bg-lime-50/60" : styles.card}`}>
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h5 className="font-medium text-slate-800">{stage.stageName}</h5>
-                            <p className="mt-1 text-xs text-slate-600">{COPY.officer}: <span className="font-semibold">{officerName}</span></p>
+                      return (
+                        <div key={stage.approvalFlowStageId} className="relative pl-9">
+                          <div className={`absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${styles.marker}`}>
+                            {visual === "approved" ? <CheckCircle2 className="h-4 w-4" /> : visual === "rejected" ? <XCircle className="h-4 w-4" /> : stage.stageOrder}
                           </div>
-                          <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${styles.badge}`}>{statusLabel(visual)}</span>
+                          {index < stages.length - 1 && <div className={`absolute left-[13px] top-7 h-[calc(100%-12px)] w-0.5 ${styles.connector}`} />}
+                          <article className={`rounded-lg border-2 px-4 py-3 shadow-sm ${hasPaymentStatus ? "border-lime-300 bg-lime-50/60" : styles.card}`}>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <h5 className="font-medium text-slate-800">{stage.stageName}</h5>
+                                <p className="mt-1 text-xs text-slate-600">{COPY.officer}: <span className="font-semibold">{officerName}</span></p>
+                              </div>
+                              <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${styles.badge}`}>{statusLabel(visual)}</span>
+                            </div>
+                            {stageTimestamp && (
+                              <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
+                                <CalendarDays className="h-3.5 w-3.5" />
+                                <span>{stageTimestamp.date}</span>
+                                <Clock3 className="ml-2 h-3.5 w-3.5" />
+                                <span>{stageTimestamp.time}</span>
+                              </div>
+                            )}
+                            <div className="mt-3 rounded-lg border border-fuchsia-100 bg-fuchsia-50/60 px-3 py-2 text-xs text-slate-600">
+                              <span className="font-medium">{COPY.remark}: </span>
+                              {stage.remark?.trim() || COPY.noRemarks}
+                            </div>
+                          </article>
                         </div>
-                        {stageTimestamp && (
-                          <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
-                            <CalendarDays className="h-3.5 w-3.5" />
-                            <span>{stageTimestamp.date}</span>
-                            <Clock3 className="ml-2 h-3.5 w-3.5" />
-                            <span>{stageTimestamp.time}</span>
-                          </div>
-                        )}
-                        <div className="mt-3 rounded-lg border border-fuchsia-100 bg-fuchsia-50/60 px-3 py-2 text-xs text-slate-600">
-                          <span className="font-medium">{COPY.remark}: </span>
-                          {stage.remark?.trim() || COPY.noRemarks}
-                        </div>
-                      </article>
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>

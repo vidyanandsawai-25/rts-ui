@@ -195,7 +195,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
           if (res.directLogin) {
             setInfo(t('messages.loginSuccess') || 'Login successful!');
             if (res.externalDestination) {
-              window.open(res.externalDestination, '_blank', 'noopener,noreferrer');
+              window.location.href = res.externalDestination;
               return;
             }
 
@@ -247,7 +247,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
         if (res.success) {
           setInfo(t('messages.loginSuccess'));
           if (res.externalDestination) {
-            window.open(res.externalDestination, '_blank', 'noopener,noreferrer');
+            window.location.href = res.externalDestination;
             return;
           }
 

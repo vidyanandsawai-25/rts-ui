@@ -25,31 +25,14 @@ export async function CitizenLayout({ children }: CitizenLayoutProps) {
     }
   }
 
-  // Extract mobile number from the cookie: local_mobile_timestamp
-  const mobile = isLoggedIn ? (sessionCookie.split('_')[1] || '') : '';
-
   const profileCookie = cookieStore.get('rts_citizen_profile')?.value;
   let profile = undefined;
   if (profileCookie) {
     try {
       profile = JSON.parse(profileCookie);
     } catch {
-      profile = isLoggedIn ? {
-        name: 'धारक . .',
-        upicId: 'AKLMC089194',
-        propertyNo: 'B3-434',
-        mobile: mobile,
-        ownerId: 1,
-      } : undefined;
+      profile = undefined;
     }
-  } else if (isLoggedIn) {
-    profile = {
-      name: 'धारक . .',
-      upicId: 'AKLMC089194',
-      propertyNo: 'B3-434',
-      mobile: mobile,
-      ownerId: 1,
-    };
   }
 
   const propertiesCookie = cookieStore.get('rts_citizen_properties')?.value;

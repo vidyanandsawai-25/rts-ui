@@ -138,16 +138,13 @@ export async function getCitizenDashboardRouteState(
     if (detailResult.status === 'fulfilled') {
       detail = detailResult.value;
     } else {
-      console.error('Failed to resolve citizen dashboard details route:', detailResult.reason);
+      console.warn('Failed to resolve citizen dashboard details route:', detailResult.reason);
     }
 
     if (paymentStatusResult.status === 'fulfilled') {
       paymentStatus = paymentStatusResult.value;
-      if (paymentStatusApplication && !paymentStatus) {
-        console.error(`Failed to resolve payment status for citizen application ${paymentStatusApplication.applicationNo}.`);
-      }
     } else {
-      console.error('Failed to resolve citizen dashboard payment status route:', paymentStatusResult.reason);
+      console.warn('Failed to resolve citizen dashboard payment status route:', paymentStatusResult.reason);
     }
 
     // A payment route must never open checkout for a free or unresolved payment status.
@@ -300,7 +297,19 @@ export async function searchCitizenMisApplicationsAction(
       applicationResponse?.status &&
       (applicationResponse.data?.userApplicationDashboardData?.length ?? 0) > 0
     ) {
-      return { success: true, items: applicationResponse.data.userApplicationDashboardData };
+      const rawItems = applicationResponse.data?.userApplicationDashboardData ?? [];
+      const exactMatch = rawItems.filter(
+        (item) => item.applicationNo?.trim().toLowerCase() === normalizedValue.toLowerCase()
+      );
+      if (exactMatch.length > 0) {
+        return { success: true, items: exactMatch };
+      }
+      const partialMatch = rawItems.filter(
+        (item) => item.applicationNo?.trim().toLowerCase().includes(normalizedValue.toLowerCase())
+      );
+      if (partialMatch.length > 0) {
+        return { success: true, items: partialMatch };
+      }
     }
 
     // 3. Fallback: Search local RTS-API database (for newly created / local applications)
@@ -313,8 +322,13 @@ export async function searchCitizenMisApplicationsAction(
       });
 
       if (localResponse.applications && localResponse.applications.length > 0) {
+        const exactLocal = localResponse.applications.filter(
+          (app) => app.applicationNo?.trim().toLowerCase() === normalizedValue.toLowerCase()
+        );
+        const filteredLocal = exactLocal.length > 0 ? exactLocal : localResponse.applications;
+
         const localMappedItems: RtsMisDashboardUserApplicationItem[] =
-          localResponse.applications.map((app) => ({
+          filteredLocal.map((app) => ({
             applicationNo: app.applicationNo,
             serviceName: app.serviceName || "",
             status: app.applicationStatus || "Submitted",

@@ -138,7 +138,7 @@ async function establishCitizenSession(
 export async function sendCitizenOtpAction(
   method: 'mobile' | 'upic' | 'property',
   payload: { mobile?: string; upicId?: string; propertyNo?: string },
-  externalServiceId?: string
+  _externalServiceId?: string
 ): Promise<CitizenLoginActionResult> {
   let searchValue = '';
   let searchType: 'MobileNo' | 'UpicId' | 'PropertyNo' = 'MobileNo';
@@ -167,28 +167,16 @@ export async function sendCitizenOtpAction(
     // Check if the property/mobile is registered in the DB
     const properties = await fetchCitizenPropertiesFromApi(searchType, searchValue);
     let mobile = '';
-    let fallbackProfile = {
-      name: 'नागरिक',
-      upicId: '',
-      propertyNo: '',
-      ownerId: 0,
-    };
 
     if (properties && properties.length > 0) {
       const first = properties[0];
       mobile = first.mobileNo || (method === 'mobile' ? searchValue : '');
-      fallbackProfile = {
-        name: first.ownerNameMarathi || 'नागरिक',
-        upicId: first.upicNo,
-        propertyNo: first.propertyNo,
-        ownerId: first.ownerId,
-      };
-    } else if (method === 'mobile') {
-      mobile = searchValue;
     } else {
       return {
         success: false,
-        error: method === 'upic'
+        error: method === 'mobile'
+          ? 'हा मोबाईल नंबर नोंदणीकृत नाही. कृपया नोंदणीकृत मोबाईल नंबर प्रविष्ट करा. / This mobile number is not registered with any property.'
+          : method === 'upic'
           ? 'हा UPIC आयडी नोंदणीकृत नाही. कृपया बरोबर UPIC आयडी प्रविष्ट करा. / This UPIC ID is not registered.'
           : 'हा मालमत्ता क्रमांक नोंदणीकृत नाही. कृपया बरोबर मालमत्ता क्रमांक प्रविष्ट करा. / This Property Number is not registered.'
       };
@@ -204,19 +192,7 @@ export async function sendCitizenOtpAction(
     const resp = await requestOtp(mobile);
     const c = await cookies();
 
-    // If SMS Gateway is disabled in database, perform DIRECT 1-click login without showing OTP step!
-    if (resp.directLogin) {
-      const loginResult = await establishCitizenSession(mobile, c, fallbackProfile, externalServiceId);
-      return {
-        success: true,
-        directLogin: true,
-        citizen: loginResult.citizen,
-        externalDestination: loginResult.externalDestination,
-        serviceRedirectError: loginResult.serviceRedirectError,
-      };
-    }
-
-    // Live OTP mode
+    // Live or Demo OTP mode (always show OTP step)
     const txnId = resp.txnId;
     const demoOtp = resp.demoOtp || '123456';
     const maskedPhone = `+91 ${mobile.slice(0, 2)}******${mobile.slice(8)}`;

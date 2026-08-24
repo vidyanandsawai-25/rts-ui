@@ -34,20 +34,13 @@ export async function requestOtp(mobile: string): Promise<RequestOtpResponse> {
         message: res.data.message || "OTP dispatched successfully via official SMS gateway.",
         txnId: res.data.txnId,
         expiresInSeconds: res.data.expiresInSeconds || 120,
-        demoOtp: res.data.demoOtp,
-        isLive: res.data.isLive,
-        directLogin: res.data.directLogin,
+        demoOtp: (res.data as any).otp || res.data.demoOtp,
+        isLive: true,
       };
     }
-  } catch (err) {
+    throw new Error(res?.data?.message || "Failed to send OTP via SMS Gateway.");
+  } catch (err: any) {
     console.error("Error dispatching OTP via backend RTS-API:", err);
+    throw new Error(err?.response?.data?.message || err?.message || "Failed to send OTP via SMS Gateway.");
   }
-
-  // Fallback direct login if API indicates gateway off
-  return {
-    message: "Direct login enabled",
-    txnId: `direct_${sanitized}_${Date.now()}`,
-    expiresInSeconds: 120,
-    directLogin: true,
-  };
 }

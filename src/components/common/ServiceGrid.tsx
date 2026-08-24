@@ -10,8 +10,10 @@ import type { LucideIcon } from "lucide-react";
 import { useLanguage } from "@/components/Providers/LanguageProvider";
 import {
   getInternalRtsServiceHref,
-  navigateExternalServiceTab,
+  isExternalServiceUrl,
+  isServiceUrlStruck,
   openExternalServiceTab,
+  navigateExternalServiceTab,
   prepareExternalServiceNavigation,
 } from "@/lib/utils/rts/service-navigation";
 import {
@@ -45,7 +47,6 @@ type Department = {
 };
 
 const ICONS = Icons as unknown as Record<string, LucideIcon>;
-const EXTERNAL_TAB_BLOCKED_MESSAGE = "Your browser blocked the external service tab. Please allow pop-ups and try again.";
 
 interface ServiceGridProps {
   departments: Department[];
@@ -81,7 +82,7 @@ export default function ServiceGrid({
   deptId,
   services,
   lang,
-  upicId: _upicId,
+  upicId,
 }: ServiceGridProps) {
   const { language } = useLanguage();
   const activeLang = safeLang(lang ?? language);
@@ -139,8 +140,8 @@ export default function ServiceGrid({
   const selectedService =
     selectedServiceId == null
       ? undefined
-      : list.find((service) => service.id === selectedServiceId) ??
-      departments.flatMap((department) => department.services).find((service) => service.id === selectedServiceId);
+      : list.find((service) => String(service.id) === String(selectedServiceId)) ??
+      departments.flatMap((department) => department.services).find((service) => String(service.id) === String(selectedServiceId));
 
   const saveDeptServiceContext = (service: Service) => {
     const deptToUse =
@@ -155,11 +156,24 @@ export default function ServiceGrid({
   };
 
   const handleApplyClick = (service: Service) => {
-    const externalUrl = typeof service.serviceUrl === "string" ? service.serviceUrl.trim() : "";
+    const rawUrl = typeof service.serviceUrl === "string" ? service.serviceUrl.trim() : "";
     const locale = params.locale && ["en", "hi", "mr"].includes(params.locale) ? params.locale : "en";
 
-    if (externalUrl) {
-      const navigation = prepareExternalServiceNavigation(externalUrl);
+    // 1. '#' or placeholder -> Struck: Do NOT redirect anywhere and do NOT show form
+    if (isServiceUrlStruck(rawUrl)) {
+      setApplyError(
+        locale === "mr"
+          ? "ही सेवा सध्या प्रगतीपथावर आहे / उपलब्ध नाही."
+          : locale === "hi"
+          ? "यह सेवा वर्तमान में उपलब्ध नहीं है।"
+          : "This service is currently under development / not available."
+      );
+      return;
+    }
+
+    // 2. Valid URL -> External Redirect Logic (Passes UPIC if citizen is logged in)
+    if (isExternalServiceUrl(rawUrl)) {
+      const navigation = prepareExternalServiceNavigation(rawUrl, upicId);
 
       if (!navigation.ok && navigation.reason === "invalid-url") {
         setApplyError(t("invalidServiceUrl"));
@@ -168,7 +182,13 @@ export default function ServiceGrid({
 
       const externalTab = openExternalServiceTab();
       if (!externalTab) {
-        setApplyError(EXTERNAL_TAB_BLOCKED_MESSAGE);
+        setApplyError(
+          locale === "mr"
+            ? "तुमच्या ब्राउझरने नवीन टॅब ब्लॉक केला आहे. कृपया पॉप-अपला परवानगी द्या."
+            : locale === "hi"
+            ? "आपके ब्राउज़र ने नया टैब ब्लॉक कर दिया है। कृपया पॉप-अप की अनुमति दें।"
+            : "Your browser blocked the external service tab. Please allow pop-ups and try again."
+        );
         return;
       }
 
@@ -182,9 +202,7 @@ export default function ServiceGrid({
             return;
           }
 
-          setApplyError(
-            result.errorCode === "missing-upic" ? t("missingUpic") : result.error
-          );
+          setApplyError(result.error);
           return;
         }
 
@@ -196,6 +214,7 @@ export default function ServiceGrid({
       return;
     }
 
+    // 3. null / empty -> Show dynamic fields form
     saveDeptServiceContext(service);
     const deptToUseId = dept?.id ?? service.__deptId;
     const serviceHref = getInternalRtsServiceHref(locale, service.id, deptToUseId);
@@ -409,22 +428,15 @@ export default function ServiceGrid({
                   <Button
                     variant="primary"
                     size="md"
+                    isLoading={isCreatingExternalApplication}
                     onClick={() => {
                       if (selectedService) {
                         handleApplyClick(selectedService);
                       }
                     }}
                     className="font-extrabold"
-                    disabled={isCreatingExternalApplication}
                   >
-                    {isCreatingExternalApplication ? (
-                      <span className="inline-flex items-center gap-2">
-                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                        {t("applyProcess")}
-                      </span>
-                    ) : (
-                      <>{t("applyProcess")} &rarr;</>
-                    )}
+                    <>{t("applyProcess")} &rarr;</>
                   </Button>
                 </div>
               </div>

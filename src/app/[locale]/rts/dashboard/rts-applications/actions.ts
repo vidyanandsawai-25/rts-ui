@@ -374,17 +374,11 @@ export async function getApplicationDetailAction(
   if (Number.isFinite(numericId) && numericId > 0) {
     try {
       const [viewDetails, stageDetails] = await Promise.all([
-        getApprovalApplicationDetails(numericId).catch((err) => {
-          console.error(`Failed to fetch ViewApplicationDetails for ${numericId}:`, err);
-          return null;
-        }),
-        getApprovalApplicationStages(numericId).catch((err) => {
-          console.error(`Failed to fetch ApplicationApprovalStages for ${numericId}:`, err);
-          return null;
-        }),
+        getApprovalApplicationDetails(numericId).catch(() => null),
+        getApprovalApplicationStages(numericId).catch(() => null),
       ]);
 
-      if (viewDetails) {
+      if (viewDetails && viewDetails.applicationDetails && viewDetails.applicationDetails.length > 0) {
         const groupMap = new Map<string, ApplicationAnswerItem[]>();
         for (const field of viewDetails.applicationDetails) {
           const groupName = field.fieldGroup || 'General Details';

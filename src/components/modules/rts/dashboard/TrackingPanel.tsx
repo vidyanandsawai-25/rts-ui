@@ -156,20 +156,24 @@ export function TrackingPanel() {
             </div>
           </section>
 
-          <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
-            <h4 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase text-slate-800"><Paperclip className="h-4 w-4 text-blue-600" />Submitted Documents ({documents.length})</h4>
-            {documents.length ? documents.map((document) => (
-              <div key={`${document.id}-${document.guid}`} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs">
-                <div className="flex min-w-0 items-center gap-3"><FileText className="h-4 w-4 shrink-0 text-blue-600" /><span className="truncate font-bold text-slate-800">{document.label}</span></div>
-                {document.guid && <div className="flex shrink-0 gap-2"><ViewButton size="xs" onClick={() => setViewingDocument({ fileUrl: getCitizenRtsDocumentViewUrl(document.guid), fileName: `${document.label.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`, label: document.label })}>View</ViewButton><Button type="button" size="xs" variant="secondary" icon={Download} onClick={() => window.open(getCitizenRtsDocumentDownloadUrl(document.guid), "_blank")}>Download</Button></div>}
-              </div>
-            )) : <p className="py-2 text-center text-xs font-medium text-slate-400">No uploaded document attachments found for this application.</p>}
-          </section>
+          {documents.length > 0 && (
+            <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
+              <h4 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase text-slate-800"><Paperclip className="h-4 w-4 text-blue-600" />Submitted Documents ({documents.length})</h4>
+              {documents.map((document) => (
+                <div key={`${document.id}-${document.guid}`} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs">
+                  <div className="flex min-w-0 items-center gap-3"><FileText className="h-4 w-4 shrink-0 text-blue-600" /><span className="truncate font-bold text-slate-800">{document.label}</span></div>
+                  {document.guid && <div className="flex shrink-0 gap-2"><ViewButton size="xs" onClick={() => setViewingDocument({ fileUrl: getCitizenRtsDocumentViewUrl(document.guid), fileName: `${document.label.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`, label: document.label })}>View</ViewButton><Button type="button" size="xs" variant="secondary" icon={Download} onClick={() => window.open(getCitizenRtsDocumentDownloadUrl(document.guid), "_blank")}>Download</Button></div>}
+                </div>
+              ))}
+            </section>
+          )}
 
-          <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
-            <h4 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase text-slate-800"><GitCommit className="h-4 w-4 text-blue-600" />Approval Workflow Timeline</h4>
-            {detail.approvalStages?.length ? <ApprovalStagesTimeline stages={detail.approvalStages.map((stage) => ({ id: stage.approvalFlowStageId, stageName: stage.stageName, stageOrder: stage.stageOrder, status: stage.status, remark: stage.remark || undefined, userName: stage.userName || undefined, firstName: stage.firstName || undefined, lastName: stage.lastName || undefined, createdDate: stage.createdDate || undefined }))} completedCount={detail.completedStages || 0} currentStageIndex={detail.approvalStages.findIndex((stage) => stage.isCurrentStage)} /> : <p className="py-2 text-center text-xs font-medium text-slate-400">No approval workflow stages recorded for this application.</p>}
-          </section>
+          {Boolean(detail.approvalStages && detail.approvalStages.length > 0) && (
+            <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
+              <h4 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase text-slate-800"><GitCommit className="h-4 w-4 text-blue-600" />Approval Workflow Timeline</h4>
+              <ApprovalStagesTimeline stages={(detail.approvalStages ?? []).map((stage) => ({ id: stage.approvalFlowStageId, stageName: stage.stageName, stageOrder: stage.stageOrder, status: stage.status, remark: stage.remark || undefined, userName: stage.userName || undefined, firstName: stage.firstName || undefined, lastName: stage.lastName || undefined, createdDate: stage.createdDate || undefined }))} completedCount={detail.completedStages || 0} currentStageIndex={(detail.approvalStages ?? []).findIndex((stage) => stage.isCurrentStage)} />
+            </section>
+          )}
         </div>
       )}
 

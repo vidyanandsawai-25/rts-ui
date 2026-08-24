@@ -145,23 +145,26 @@ export async function getApprovalApplicationsPaged(
 export async function getApprovalApplicationDetails(
   id: number | string
 ): Promise<RtsApplicationViewDetailsItem> {
-  const response = await apiClient.get<RtsApplicationViewDetailsApiResponse>(
-    `/RTSApplicationApproval/${encodeURIComponent(String(id))}/details`,
-    { cache: 'no-store' }
-  );
+  try {
+    const response = await apiClient.get<RtsApplicationViewDetailsApiResponse>(
+      `/RTSApplicationApproval/${encodeURIComponent(String(id))}/details`,
+      { cache: 'no-store' }
+    );
 
-  if (!response.success || !response.data) {
-    throw new Error(response.error || `Failed to fetch application details for ${id}`);
+    if (!response.success || !response.data || (response.data.success !== true && response.data.status !== true)) {
+      return normalizeRtsApplicationViewDetailsItem({});
+    }
+
+    const rawItem = getApprovalItems(response.data);
+
+    if (isRtsApplicationViewDetailsItemShape(rawItem)) {
+      return normalizeRtsApplicationViewDetailsItem(rawItem as Record<string, unknown>);
+    }
+
+    return normalizeRtsApplicationViewDetailsItem((rawItem ?? {}) as unknown as Record<string, unknown>);
+  } catch {
+    return normalizeRtsApplicationViewDetailsItem({});
   }
-
-  assertApprovalSuccess(response.data, `Failed to fetch application details for ${id}`);
-  const rawItem = getApprovalItems(response.data);
-
-  if (isRtsApplicationViewDetailsItemShape(rawItem)) {
-    return normalizeRtsApplicationViewDetailsItem(rawItem as Record<string, unknown>);
-  }
-
-  return normalizeRtsApplicationViewDetailsItem((rawItem ?? {}) as unknown as Record<string, unknown>);
 }
 
 /**
@@ -171,23 +174,34 @@ export async function getApprovalApplicationDetails(
 export async function getApprovalApplicationStages(
   id: number | string
 ): Promise<RtsApplicationApprovalStagesItem> {
-  const response = await apiClient.get<RtsApplicationApprovalStagesApiResponse>(
-    `/RTSApplicationApproval/${encodeURIComponent(String(id))}/approval-stages`,
-    { cache: 'no-store' }
-  );
+  try {
+    const response = await apiClient.get<RtsApplicationApprovalStagesApiResponse>(
+      `/RTSApplicationApproval/${encodeURIComponent(String(id))}/approval-stages`,
+      { cache: 'no-store' }
+    );
 
-  if (!response.success || !response.data) {
-    throw new Error(response.error || `Failed to fetch approval stages for ${id}`);
+    if (!response.success || !response.data || (response.data.success !== true && response.data.status !== true)) {
+      return {
+        approvalStages: [],
+        completedStages: 0,
+        totalApprovalStages: 0,
+      };
+    }
+
+    const rawItem = getApprovalItems(response.data);
+
+    if (isRtsApplicationApprovalStagesItemShape(rawItem)) {
+      return normalizeRtsApplicationApprovalStagesItem(rawItem as Record<string, unknown>);
+    }
+
+    return normalizeRtsApplicationApprovalStagesItem((rawItem ?? {}) as unknown as Record<string, unknown>);
+  } catch {
+    return {
+      approvalStages: [],
+      completedStages: 0,
+      totalApprovalStages: 0,
+    };
   }
-
-  assertApprovalSuccess(response.data, `Failed to fetch approval stages for ${id}`);
-  const rawItem = getApprovalItems(response.data);
-
-  if (isRtsApplicationApprovalStagesItemShape(rawItem)) {
-    return normalizeRtsApplicationApprovalStagesItem(rawItem as Record<string, unknown>);
-  }
-
-  return normalizeRtsApplicationApprovalStagesItem((rawItem ?? {}) as unknown as Record<string, unknown>);
 }
 
 /**
@@ -197,19 +211,22 @@ export async function getApprovalApplicationStages(
 export async function getApprovalApplicationVerification(
   id: number | string
 ): Promise<RtsApplicationVerificationItem> {
-  const response = await apiClient.get<RtsApplicationVerificationApiResponse>(
-    `/RTSApplicationApproval/${encodeURIComponent(String(id))}/approval-officer`,
-    { cache: 'no-store' }
-  );
+  try {
+    const response = await apiClient.get<RtsApplicationVerificationApiResponse>(
+      `/RTSApplicationApproval/${encodeURIComponent(String(id))}/approval-officer`,
+      { cache: 'no-store' }
+    );
 
-  if (!response.success || !response.data) {
-    throw new Error(response.error || `Failed to fetch application verification for ${id}`);
+    if (!response.success || !response.data || (response.data.success !== true && response.data.status !== true)) {
+      return normalizeRtsApplicationVerificationItem({});
+    }
+
+    return normalizeRtsApplicationVerificationItem(
+      (getApprovalItems(response.data) ?? {}) as Record<string, unknown>
+    );
+  } catch {
+    return normalizeRtsApplicationVerificationItem({});
   }
-
-  assertApprovalSuccess(response.data, `Failed to fetch application verification for ${id}`);
-  return normalizeRtsApplicationVerificationItem(
-    (getApprovalItems(response.data) ?? {}) as Record<string, unknown>
-  );
 }
 
 /**
