@@ -22,6 +22,8 @@ import {
 import type { LoginFormProps } from '@/types/login.types';
 
 import { FormLoadingOverlay, LoginCredentialFields } from './LoginFormParts';
+import { InlineChangePasswordForm } from './InlineChangePasswordForm';
+import { KeyRound } from 'lucide-react';
 
 function LoginRateLimitHint() {
   const t = useTranslations('login');
@@ -95,6 +97,9 @@ export function LoginFormClient({
   const { getLocalizedError } = useLoginErrorMessages();
   const t = useTranslations('login');
 
+  const [viewMode, setViewMode] = useState<'login' | 'changePassword'>('login');
+  const [successInfo, setSuccessInfo] = useState<string | null>(null);
+
   const [credState, credAction] = useActionState(loginCredentialsFormAction, null);
 
   useEffect(() => {
@@ -114,6 +119,7 @@ export function LoginFormClient({
   const initialUsernameForFields = credState?.message ? '' : (username ?? '');
 
   const lastErrorCode = credState?.message;
+  const isPasswordChangeRequired = lastErrorCode === AUTH_ERROR_CODES.PASSWORD_CHANGE_REQUIRED;
   const displayError =
     lastErrorCode === AUTH_ERROR_CODES.INVALID_CREDENTIALS && credState?.remainingAttempts != null
       ? t('errors.invalidCredentialsWithAttempts', { remaining: credState.remainingAttempts })
@@ -121,10 +127,23 @@ export function LoginFormClient({
   const showRateLimit = lastErrorCode === AUTH_ERROR_CODES.TOO_MANY_ATTEMPTS;
   const showTimeoutRetry = lastErrorCode === AUTH_ERROR_CODES.REQUEST_TIMEOUT;
 
+  if (viewMode === 'changePassword') {
+    return (
+      <InlineChangePasswordForm
+        initialUsername={username}
+        onBackToLogin={() => setViewMode('login')}
+        onSuccess={(msg) => {
+          setSuccessInfo(msg);
+          setViewMode('login');
+        }}
+      />
+    );
+  }
+
   return (
     <>
       <AnimatePresence mode="wait">
-        {infoMessage ? (
+        {successInfo || infoMessage ? (
           <motion.div
             key="login-info"
             initial={{ opacity: 0, y: -6 }}
@@ -135,7 +154,7 @@ export function LoginFormClient({
           >
             <ValidationMessage
               type="info"
-              message={infoMessage}
+              message={successInfo || infoMessage}
               visible
               className="!mt-0 w-full justify-center rounded-lg px-3 py-3 text-center text-sm font-medium !border-emerald-200 !bg-emerald-50 !text-emerald-800"
             />
@@ -154,12 +173,30 @@ export function LoginFormClient({
             role="status"
             aria-live="polite"
           >
-            <ValidationMessage
-              type="error"
-              message={displayError}
-              visible
-              className="!mt-0 w-full justify-center rounded-lg px-3 py-3 text-center text-sm font-medium [&_svg]:shrink-0"
-            />
+            {isPasswordChangeRequired ? (
+              <div className="rounded-xl border border-red-200 bg-red-50/95 p-3.5 text-center shadow-sm space-y-2">
+                <p className="text-xs font-semibold text-red-700 leading-relaxed">
+                  {t('errors.passwordChangeRequired')}
+                </p>
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('changePassword')}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-700 px-3.5 py-1.5 text-xs font-bold text-white shadow transition-all duration-200 hover:scale-[1.02]"
+                  >
+                    <KeyRound size={13} />
+                    <span>{t('changePassword')}</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <ValidationMessage
+                type="error"
+                message={displayError}
+                visible
+                className="!mt-0 w-full justify-center rounded-lg px-3 py-3 text-center text-sm font-medium [&_svg]:shrink-0"
+              />
+            )}
             {showRateLimit && credState?.resetKey ? (
               <LoginRateLimitHint key={credState.resetKey} />
             ) : null}
@@ -187,15 +224,6 @@ export function LoginFormClient({
         locale={locale}
         copy={copy}
       />
-
-      <div className="flex justify-center pt-1">
-        <a
-          href={`/${locale}/login/forgot-password`}
-          className="text-sm font-medium text-cyan-700 hover:text-cyan-900 hover:underline"
-        >
-          {t('forgotPassword')}
-        </a>
-      </div>
     </>
   );
 }

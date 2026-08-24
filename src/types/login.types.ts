@@ -20,6 +20,7 @@ export interface LoginFormCopy {
   signIn: string;
   showPassword: string;
   hidePassword: string;
+  forgotPassword?: string;
 }
 
 export interface LoginFormProps {
@@ -92,9 +93,15 @@ export interface LogoutRequest {
 }
 
 export interface ChangePasswordRequest {
-  userName: string;
+  userName?: string;
+  currentPassword: string;
   newPassword: string;
-  mustChangePassword?: boolean;
+  confirmPassword: string;
+}
+
+export interface ChangePasswordApiBody {
+  success: boolean;
+  message?: string;
 }
 
 export interface RefreshTokenRequest {
