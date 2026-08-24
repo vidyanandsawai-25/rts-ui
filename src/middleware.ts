@@ -61,6 +61,11 @@ export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const { locale, pathWithoutLocale } = localeAndPathWithoutLocale(pathname);
 
+  // Root path '/' always redirects directly to citizen landing page '/service'
+  if (pathWithoutLocale === '/') {
+    return NextResponse.redirect(new URL(`/${locale}/service`, request.url));
+  }
+
   // Citizen portal check
   const isCitizenRoute = pathWithoutLocale === '/service' || pathWithoutLocale.startsWith('/service/');
   const isCitizenLogin = pathWithoutLocale === '/service/login' || pathWithoutLocale.startsWith('/service/login/');

@@ -15,5 +15,5 @@ export default async function LocaleRootPage({ params }: RootPageProps) {
     redirect(`/${locale}/home`);
   }
 
-  redirect(`/${locale}/login`);
+  redirect(`/${locale}/service`);
 }
