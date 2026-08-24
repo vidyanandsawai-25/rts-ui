@@ -5,8 +5,6 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { GripVertical, Search } from 'lucide-react';
 import {
-  ToggleSwitch,
-  Badge,
   EditButton,
   DeleteButton,
   FirstPageButton,
@@ -68,7 +66,6 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
       : []
   );
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [appliesToFilter, setAppliesToFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -102,16 +99,6 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
     };
   }, [initialRules]);
 
-  const toggleStatus = (id: string, newChecked: boolean) => {
-    setRules((prevRules) =>
-      prevRules.map((rule) =>
-        rule.id === id
-          ? { ...rule, status: newChecked ? 'Active' : 'Inactive' }
-          : rule
-      )
-    );
-  };
-
   const handleDelete = (id: string, name?: string) => {
     confirm({
       variant: 'delete',
@@ -144,11 +131,6 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
       rule.defaultDateLogic.toLowerCase().includes(searchQuery.toLowerCase()) ||
       rule.appliesTo.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === 'all' ||
-      (statusFilter === 'active' && rule.status === 'Active') ||
-      (statusFilter === 'inactive' && rule.status === 'Inactive');
-
     const matchesAppliesTo =
       appliesToFilter === 'all' ||
       (appliesToFilter === 'authorized' &&
@@ -161,16 +143,11 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
           rule.condition.toLowerCase().includes('insufficient') ||
           rule.ruleName.toLowerCase().includes('manual')));
 
-    return matchesSearch && matchesStatus && matchesAppliesTo;
+    return matchesSearch && matchesAppliesTo;
   });
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1);
-  };
-
-  const handleStatusFilterChange = (status: string) => {
-    setStatusFilter(status);
     setCurrentPage(1);
   };
 
@@ -231,16 +208,6 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
             {/* Filters */}
             <div className="flex items-center gap-3">
               <select
-                value={statusFilter}
-                onChange={(e) => handleStatusFilterChange(e.target.value)}
-                className="appearance-none bg-white border border-slate-200 rounded-xl px-3.5 py-2 pr-8 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer shadow-2xs"
-              >
-                <option value="all">All statuses</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-
-              <select
                 value={appliesToFilter}
                 onChange={(e) => handleAppliesToFilterChange(e.target.value)}
                 className="appearance-none bg-white border border-slate-200 rounded-xl px-3.5 py-2 pr-8 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer shadow-2xs"
@@ -265,21 +232,18 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
                 <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[130px]">{t('columns.appliesTo')}</th>
                 <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[280px]">{t('columns.condition')}</th>
                 <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[240px]">{t('columns.defaultDateLogic')}</th>
-                <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[130px]">{t('columns.effectiveFrom')}</th>
-                <th className="py-3.5 px-4 border-r border-blue-200/80 text-center w-[100px]">{t('columns.status')}</th>
                 <th className="py-3.5 px-4 text-center w-[110px]">{t('columns.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200/80 text-xs bg-white">
               {paginatedRules.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-gray-400">
+                  <td colSpan={6} className="py-12 text-center text-gray-400">
                     {t('noRules')}
                   </td>
                 </tr>
               ) : (
                 paginatedRules.map((rule) => {
-                  const isActive = rule.status === 'Active';
                   return (
                     <tr
                       key={rule.id}
@@ -297,16 +261,9 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
 
                       {/* Rule Name Column */}
                       <td className="py-3.5 px-4 border-r border-gray-200/70 align-middle">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-gray-900 text-xs">
-                            {rule.ruleName}
-                          </span>
-                          {rule.isDefault && (
-                            <Badge variant="success" size="sm">
-                              {t('defaultBadge')}
-                            </Badge>
-                          )}
-                        </div>
+                        <span className="font-bold text-gray-900 text-xs">
+                          {rule.ruleName}
+                        </span>
                       </td>
 
                       {/* Applies To Column */}
@@ -328,26 +285,6 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
                         <span className="font-semibold text-gray-800 text-xs">
                           {rule.defaultDateLogic}
                         </span>
-                      </td>
-
-                      {/* Effective From Column */}
-                      <td className="py-3.5 px-4 border-r border-gray-200/70 align-middle">
-                        <span className="text-gray-600 font-medium text-xs">
-                          {rule.effectiveFrom}
-                        </span>
-                      </td>
-
-                      {/* Status Column */}
-                      <td className="py-3.5 px-4 border-r border-gray-200/70 align-middle text-center">
-                        <div className="flex items-center justify-center">
-                          <ToggleSwitch
-                            checked={isActive}
-                            onChange={(checked) => toggleStatus(rule.id, checked)}
-                            showPopup={false}
-                            activeLabel="Active"
-                            inactiveLabel="Inactive"
-                          />
-                        </div>
                       </td>
 
                       {/* Actions Column */}

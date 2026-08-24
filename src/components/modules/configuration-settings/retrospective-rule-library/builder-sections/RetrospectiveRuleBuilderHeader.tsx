@@ -2,7 +2,7 @@
 
 import React, { memo } from 'react';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, Zap, IndianRupee, Clover } from 'lucide-react';
+import { ArrowLeft, Zap } from 'lucide-react';
 
 interface RetrospectiveRuleBuilderHeaderProps {
   onBack: () => void;
@@ -33,31 +33,6 @@ export const RetrospectiveRuleBuilderHeader: React.FC<RetrospectiveRuleBuilderHe
               {t('subtitle')}
             </p>
           </div>
-        </div>
-
-        {/* Anchor Nav Pills */}
-        <div className="flex items-center gap-2">
-          <a
-            href="#section-taxation"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200/60 hover:bg-rose-100 transition-colors"
-          >
-            <IndianRupee className="w-3.5 h-3.5 text-rose-700" />
-            <span>{t('pills.taxation')}</span>
-          </a>
-          <a
-            href="#section-conditions"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60 hover:bg-emerald-100 transition-colors"
-          >
-            <Clover className="w-3.5 h-3.5 text-emerald-700" />
-            <span>{t('pills.conditions')}</span>
-          </a>
-          <a
-            href="#section-actions"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200/60 hover:bg-sky-100 transition-colors"
-          >
-            <Zap className="w-3.5 h-3.5 text-sky-700" />
-            <span>{t('pills.actions')}</span>
-          </a>
         </div>
       </div>
     </div>
