@@ -86,12 +86,6 @@ export default function middleware(request: NextRequest) {
   const isPendingChallengeRoute =
     isVerifyTwoFactorRoute || isForgotPasswordVerifyOtpRoute || isForgotPasswordResetRoute;
   const isAccountSecurityRoute = pathWithoutLocale === '/account/security';
-  const sessionExpiredLogin =
-    isLoginRoute &&
-    request.nextUrl.searchParams.get('error') === SESSION_EXPIRED_LOGIN_ERROR;
-  const requireVerification =
-    isLoginRoute &&
-    request.nextUrl.searchParams.get('requireVerification') === '1';
 
   // An admin-required 2FA setup that the user hasn't completed yet takes priority over
   // everywhere else in the app — including the "already logged in, bounce off /login" case
@@ -102,12 +96,6 @@ export default function middleware(request: NextRequest) {
     const res = NextResponse.redirect(
       new URL(`/${locale}/account/security?required=1`, request.url)
     );
-    applyAntiCacheHeaders(res.headers);
-    return res;
-  }
-
-  if (isLoginRoute && isLoggedIn && !sessionExpiredLogin && !requireVerification) {
-    const res = NextResponse.redirect(new URL(`/${locale}/home`, request.url));
     applyAntiCacheHeaders(res.headers);
     return res;
   }
@@ -140,7 +128,7 @@ export default function middleware(request: NextRequest) {
   const intlResponse = intlMiddleware(request);
 
   if (intlResponse.headers.has('location')) {
-    if (!isPendingChallengeRoute && (sessionExpired || sessionExpiredLogin || (isLoginRoute && !isLoggedIn))) {
+    if (!isPendingChallengeRoute && isLoginRoute) {
       clearAuthCookiesOnResponse(intlResponse);
     }
     applyAntiCacheHeaders(intlResponse.headers);
@@ -159,7 +147,7 @@ export default function middleware(request: NextRequest) {
   response.headers.set('x-pathname', pathname);
   response.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
 
-  if (!isPendingChallengeRoute && isLoginRoute && (!isLoggedIn || sessionExpired || sessionExpiredLogin)) {
+  if (!isPendingChallengeRoute && isLoginRoute) {
     clearAuthCookiesOnResponse(response);
   }
 
