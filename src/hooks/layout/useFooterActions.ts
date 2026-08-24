@@ -111,5 +111,5 @@ export function useFooterActions(
       utility: finalUtility,
       right: rightActions,
     };
-  }, [actions]);
+  }, [actions, overrides]);
 }

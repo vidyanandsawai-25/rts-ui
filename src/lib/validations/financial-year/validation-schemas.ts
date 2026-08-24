@@ -14,7 +14,7 @@ export function createFinancialYearSchema(
         .string()
         .min(1, t('form.validation.codeRequired'))
         .max(15, t('form.validation.codeMaxLength', { count: 15 }))
-        .refine((val) => /^[\p{L}\p{M}\p{N}]+(-[\p{L}\p{M}\p{N}]+)*$/u.test(val), {
+        .refine((val) => /^[\p{L}\p{M}\p{N}]+([-_][\p{L}\p{M}\p{N}]+)*$/u.test(val), {
           message: t('form.validation.codeFormat'),
         })
         .refine((val) => !isAllZeros(val), {
@@ -39,7 +39,7 @@ export function createFinancialYearSchema(
         .refine(
           (val) => {
             if (!val) return true;
-            return /^[\p{L}\p{M}\p{N} .,\-_()/'\n]*$/u.test(val);
+            return !/<\s*\/?\s*[a-zA-Z][\s\S]*?>/i.test(val);
           },
           { message: t('form.validation.descriptionFormat') }
         )

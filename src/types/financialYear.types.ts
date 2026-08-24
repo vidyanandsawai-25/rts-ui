@@ -9,6 +9,10 @@ export interface FinancialYear {
   startDate: string | null;
   endDate: string | null;
   description: string | null;
+  createdBy?: number | null;
+  createdDate?: string | null;
+  updatedBy?: number | null;
+  updatedDate?: string | null;
 }
 
 export interface FinancialYearPayload {
@@ -19,6 +23,10 @@ export interface FinancialYearPayload {
   startDate: string;
   endDate: string;
   description: string | null;
+  createdBy?: number | null;
+  createdDate?: string | null;
+  updatedBy?: number | null;
+  updatedDate?: string | null;
 }
 
 export type FinancialYearPagedResponse = PagedResponse<FinancialYear>;

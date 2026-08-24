@@ -2,7 +2,7 @@ import { useState, useEffect, useTransition, useCallback, useMemo, ChangeEvent }
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useToast, useConfirm } from '@/components/common';
-import { FinancialYear } from '@/types/financialYear.types';
+import { FinancialYear, FinancialYearFormValues } from '@/types/financialYear.types';
 import { deleteFinancialYearAction, setAsCurrentAction, closeYearAction } from '@/app/[locale]/configuration-settings/financial-year-master/actions';
 import { getFinancialYearColumns } from '../../../components/modules/configuration-settings/financial-year-master/FinancialYearTableColumns';
 import { translateBackendMessage } from '@/lib/utils/backend-error-detection';
@@ -24,11 +24,28 @@ export function useFinancialYearTable({
   const [loadingState, setLoadingState] = useState<{ id: number; action: 'setCurrent' | 'close' | 'delete' | 'edit' } | null>(null);
   const [activeDrawer, setActiveDrawer] = useState<'add' | 'edit' | null>(drawer);
   const [editingData, setEditingData] = useState<FinancialYear | null>(initialEditingData);
-  const [prevProps, setPrevProps] = useState({ drawer, initialEditingData });
-  if (drawer !== prevProps.drawer || initialEditingData !== prevProps.initialEditingData) {
-    setPrevProps({ drawer, initialEditingData });
-    setActiveDrawer(drawer);
-    setEditingData(initialEditingData);
+  const [tableData, setTableData] = useState<FinancialYear[]>(initialData);
+  const [isPageNavigating, setIsPageNavigating] = useState(false);
+  const [isClosed, setIsClosed] = useState(false);
+  const [prevProps, setPrevProps] = useState({ drawer, initialEditingData, initialData });
+
+  if (
+    drawer !== prevProps.drawer ||
+    initialEditingData !== prevProps.initialEditingData ||
+    initialData !== prevProps.initialData
+  ) {
+    setPrevProps({ drawer, initialEditingData, initialData });
+    if (drawer !== prevProps.drawer) {
+      if (!isClosed) setActiveDrawer(drawer);
+      if (!drawer) setIsClosed(false);
+    }
+    if (initialEditingData !== prevProps.initialEditingData && initialEditingData) {
+      setEditingData(initialEditingData);
+    }
+    if (initialData !== prevProps.initialData) {
+      setTableData(initialData);
+      setIsPageNavigating(false);
+    }
   }
 
   const basePath = useMemo(() => {
@@ -39,22 +56,58 @@ export function useFinancialYearTable({
   }, [pathname]);
 
   const handleEdit = useCallback((id: number) => {
+    setIsClosed(false);
     setActiveDrawer('edit');
-    setEditingData(initialData.find(item => item.id === id) || null);
+    setEditingData(tableData.find(item => item.id === id) || null);
     window.history.pushState(null, '', `${basePath}/edit/${id}`);
-  }, [basePath, initialData]);
+  }, [basePath, tableData]);
 
   const handleAdd = useCallback(() => {
+    setIsClosed(false);
     setActiveDrawer('add');
     setEditingData(null);
     window.history.pushState(null, '', `${basePath}/add`);
   }, [basePath]);
 
   const handleCloseDrawer = useCallback(() => {
+    setIsClosed(true);
     setActiveDrawer(null);
     setEditingData(null);
-    window.history.pushState(null, '', basePath);
-  }, [basePath]);
+    const search = window.location.search;
+    const targetUrl = `${basePath}${search}`;
+    window.history.pushState(null, '', targetUrl);
+    if (pathname !== basePath) {
+      router.push(targetUrl);
+    }
+  }, [basePath, pathname, router]);
+
+  const handleFormSuccess = useCallback((savedData?: FinancialYearFormValues, id?: number) => {
+    if (savedData && id) {
+      setTableData((prev) => {
+        const updated = prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                yearCode: savedData.yearCode.toUpperCase(),
+                year: Number(savedData.year),
+                startDate: savedData.startDate,
+                endDate: savedData.endDate,
+                description: savedData.description || null,
+                isActive: savedData.isCurrent,
+              }
+            : savedData.isCurrent ? { ...item, isActive: false } : item
+        );
+        return updated.sort((a, b) => {
+          if (a.isActive && !b.isActive) return -1;
+          if (!a.isActive && b.isActive) return 1;
+          return b.year - a.year;
+        });
+      });
+      handleCloseDrawer();
+    } else {
+      handleCloseDrawer();
+    }
+  }, [handleCloseDrawer]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -77,6 +130,7 @@ export function useFinancialYearTable({
   }, [initialData]);
 
   const handleSearch = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setIsPageNavigating(true);
     const term = e.target.value;
     const cleanTerm = term.replace(/[^\p{L}\p{M}\p{N}\s\-]/gu, "");
     const params = new URLSearchParams(window.location.search);
@@ -89,12 +143,14 @@ export function useFinancialYearTable({
   }, [pathname, router]);
 
   const handlePageChange = useCallback((page: number) => {
+    setIsPageNavigating(true);
     const params = new URLSearchParams(window.location.search);
     params.set('page', page.toString());
     startTransition(() => router.push(`${pathname}?${params.toString()}`, { scroll: false }));
   }, [pathname, router]);
 
   const handlePageSizeChange = useCallback((size: number) => {
+    setIsPageNavigating(true);
     const params = new URLSearchParams(window.location.search);
     params.set('pageSize', size.toString());
     params.set('page', '1');
@@ -112,6 +168,7 @@ export function useFinancialYearTable({
           try {
             const result = await deleteFinancialYearAction(id);
             if (result.success) {
+              setTableData((prev) => prev.filter((item) => item.id !== id));
               toast.success(t('table.messages.deleteSuccess'));
               router.refresh();
             } else {
@@ -132,6 +189,18 @@ export function useFinancialYearTable({
       try {
         const result = await setAsCurrentAction(id);
         if (result.success) {
+          setTableData((prev) => {
+            const updated = prev.map((item) =>
+              item.id === id
+                ? { ...item, isActive: true, status: 'Active' }
+                : { ...item, isActive: false }
+            );
+            return updated.sort((a, b) => {
+              if (a.isActive && !b.isActive) return -1;
+              if (!a.isActive && b.isActive) return 1;
+              return b.year - a.year;
+            });
+          });
           toast.success(t('table.messages.setCurrentSuccess'));
           router.refresh();
         } else {
@@ -155,6 +224,11 @@ export function useFinancialYearTable({
           try {
             const result = await closeYearAction(id);
             if (result.success) {
+              setTableData((prev) =>
+                prev.map((item) =>
+                  item.id === id ? { ...item, status: 'Closed', isActive: false } : item
+                )
+              );
               toast.success(t('table.messages.closeSuccess'));
               router.refresh();
             } else {
@@ -180,12 +254,15 @@ export function useFinancialYearTable({
   }), [t, tCommon, handleEdit, handleSetCurrent, handleClose, handleDelete, loadingState]);
 
   return {
+    data: tableData,
     activeDrawer,
     editingData,
     loadingState,
     isPending,
+    isPageNavigating,
     handleAdd,
     handleCloseDrawer,
+    handleFormSuccess,
     handleSearch,
     handlePageChange,
     handlePageSizeChange,

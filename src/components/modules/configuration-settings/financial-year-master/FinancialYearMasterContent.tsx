@@ -4,7 +4,6 @@ import { FinancialYearStats } from '@/components/modules/configuration-settings/
 import { FinancialYearTable } from '@/components/modules/configuration-settings/financial-year-master/FinancialYearTable';
 import { getFinancialYearsPaged } from '@/lib/api/financial-year.service';
 import { parsePaginationParams } from '@/lib/utils/pagination';
-import { getTranslations } from 'next-intl/server';
 import { FinancialYear } from '@/types/financialYear.types';
 
 interface FinancialYearMasterContentProps {
@@ -23,21 +22,17 @@ export async function FinancialYearMasterContent({
   modal,
 }: FinancialYearMasterContentProps) {
   const { page, pageSize, search, status } = searchParams;
-  const t = await getTranslations({ locale, namespace: 'financialYear' });
 
   const { pageNumber, pageSize: size } = parsePaginationParams(page, pageSize);
   const searchTerm = (Array.isArray(search) ? search[0] : (search as string)) || '';
   const statusFilter = (Array.isArray(status) ? status[0] : (status as string)) || '';
 
-  const [data, allData] = await Promise.all([
-    getFinancialYearsPaged(pageNumber, size, searchTerm, statusFilter),
-    getFinancialYearsPaged(1, 2000)
-  ]);
+  const data = await getFinancialYearsPaged(pageNumber, size, searchTerm, statusFilter);
 
-  const stats = {
-    total: allData.totalCount,
-    active: allData.items.filter(y => y.status === 'Active').length,
-    closed: allData.items.filter(y => y.status === 'Closed').length,
+  const stats = data.stats || {
+    total: data.totalCount,
+    active: data.items.filter((y) => y.status === 'Active' || y.isActive).length,
+    closed: data.items.filter((y) => y.status === 'Closed').length,
   };
 
   return (
@@ -48,8 +43,6 @@ export async function FinancialYearMasterContent({
       pageSize={size}
       drawer={drawer}
       initialEditingData={initialEditingData}
-      title={t('title')}
-      subtitle={t('subtitle')}
       statsCard={<FinancialYearStats stats={stats} locale={locale} />}
       modal={modal}
     />

@@ -52,11 +52,11 @@ export const FinancialYearFormFields: FC<FinancialYearFormFieldsProps> = ({
           value={formData.yearCode}
           onChange={(e) => {
             const val = e.target.value;
-            const hasConsecutiveSpecial = /-{2,}/.test(val);
-            const isLeadingSpecial = /^-/.test(val);
-            const hasInvalidChars = /[^\p{L}\p{M}\p{N}\-]/u.test(val);
+            const hasConsecutiveSpecial = /[-_]{2,}/.test(val);
+            const isLeadingSpecial = /^[-_]/.test(val);
+            const hasInvalidChars = /[^\p{L}\p{M}\p{N}\-_]/u.test(val);
             if (!hasConsecutiveSpecial && !isLeadingSpecial && !hasInvalidChars && val.length <= 15) {
-              onChange('yearCode', val);
+              onChange('yearCode', val.toUpperCase());
             }
           }}
           maxLength={15}
@@ -64,7 +64,7 @@ export const FinancialYearFormFields: FC<FinancialYearFormFieldsProps> = ({
           error={errors.yearCode}
           aria-invalid={!!errors.yearCode}
           aria-describedby={errors.yearCode ? 'yearCode-error' : undefined}
-          className="bg-slate-50 border-slate-200 focus:bg-white transition-all cursor-text"
+          className="bg-slate-50 border-slate-200 focus:bg-white transition-all cursor-text uppercase"
         />
       </div>
 
