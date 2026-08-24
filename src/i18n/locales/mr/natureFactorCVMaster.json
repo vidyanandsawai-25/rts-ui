@@ -20,7 +20,14 @@
       "factor": "0.00"
     },
     "messages": {
-      "noRecordsFound": "कोणत्याही नोंदी आढळल्या नाहीत"
+      "noRecordsFound": "कोणत्याही नोंदी आढळल्या नाहीत",
+      "mandatoryFields": "* ने चिन्हांकित फील्ड अनिवार्य आहेत"
+    },
+    "titles": {
+      "editNatureWeightage": "निसर्ग वेटेज संपादित करा"
+    },
+    "descriptions": {
+      "updateNatureDetails": "निसर्ग वेटेज तपशील अपडेट करा"
     },
     "loading": {
       "message": "निसर्ग घटक CV मास्टर लोड होत आहे...",
@@ -40,6 +47,13 @@
       "createFailed": "निसर्ग घटक वेटेज रेकॉर्ड तयार करण्यात अयशस्वी",
       "bulkUpdateFailed": "निसर्ग घटक वेटेज रेकॉर्ड बल्क अपडेट करण्यात अयशस्वी",
       "bulkCreateFailed": "निसर्ग घटक वेटेज रेकॉर्ड बल्क तयार करण्यात अयशस्वी"
+    },
+    "deleteConfirmation": {
+      "title": "निसर्ग प्रकार",
+      "description": "तुम्हाला खात्री आहे की तुम्ही ही नोंद हटवू इच्छिता?",
+      "confirmButton": "हटवा",
+      "cancelButton": "रद्द करा",
+      "successMessage": "नोंद यशस्वीरित्या हटवली"
     }
   }
 }

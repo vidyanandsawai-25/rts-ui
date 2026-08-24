@@ -1,4 +1,5 @@
 import { apiClient } from '@/services/api.service';
+import { getTranslations } from 'next-intl/server';
 import type { ApiResponse, PagedResponse } from '@/types/common.types';
 import {
   FloorFactorCVMaster,
@@ -125,6 +126,34 @@ export async function getFloorFactorCVMasterWithPagination(
     return data;
   } catch (error) {
     console.error("Error fetching paged FloorFactorCVMaster records:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches a single FloorFactorCVMaster record by ID
+ */
+export async function getFloorFactorCVMasterById(id: number): Promise<FloorFactorCVMaster> {
+  try {
+    if (!id || id <= 0) {
+      throw new Error("Valid FloorFactorCV ID is required");
+    }
+
+    const response = await apiClient.get<FloorFactorCVMaster>(
+      `/FloorFactorCVMaster/${encodeURIComponent(String(id))}`
+    );
+
+    if (!response.success || !response.data) {
+      throw new ApiError(
+        500,
+        response.error || "Failed to fetch FloorFactorCVMaster record",
+        "Fetch FloorFactorCVMaster (by ID) failed"
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching FloorFactorCVMaster with ID ${id}:`, error);
     throw error;
   }
 }
@@ -355,4 +384,20 @@ export async function getFloorPaged(
   }
 
   return data;
+}
+
+/**
+ * Delete FloorFactorCVMaster record by ID
+ * @param id The ID of the record to delete
+ * @returns Promise resolving to an object indicating success or failure
+ */
+
+
+export async function deleteFloorFactorCVMasterById(id:number): Promise<ApiResponse<null>> {
+  const response = await apiClient.delete<null>(`/FloorFactorCVMaster/${id}/purge`);
+  if (!response.success) {
+    const t = await getTranslations('floor');
+    throw new ApiError(response.statusCode || 500, response.error || t('messages.deleteFailed'), 'Delete Floor Factor CV Master failed');
+  }
+  return response;
 }

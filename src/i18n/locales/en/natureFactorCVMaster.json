@@ -20,7 +20,14 @@
       "factor": "0.00"
     },
     "messages": {
-      "noRecordsFound": "No records found"
+      "noRecordsFound": "No records found",
+      "mandatoryFields": "Fields marked with * are mandatory"
+    },
+    "titles": {
+      "editNatureWeightage": "Edit Nature Weightage"
+    },
+    "descriptions": {
+      "updateNatureDetails": "Update nature weightage details"
     },
     "loading": {
       "message": "Loading Nature Factor CV Master...",
@@ -40,6 +47,14 @@
       "createFailed": "Failed to create nature factor weightage record",
       "bulkUpdateFailed": "Failed to bulk update nature factor weightage records",
       "bulkCreateFailed": "Failed to bulk create nature factor weightage records"
+    },
+    "deleteConfirmation": {
+      "title": "Type Of Nature",
+      "description": "Are you sure you want to delete this record?.",
+      "confirmButton": "Delete",
+      "cancelButton": "Cancel",
+      "successMessage": "Record deleted successfully",
+      "deleteFailed": "Failed to delete nature factor weightage record"
     }
   }
 }

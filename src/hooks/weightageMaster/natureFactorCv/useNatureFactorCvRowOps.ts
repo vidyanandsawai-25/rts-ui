@@ -24,6 +24,9 @@ export interface UseNatureFactorCvRowOpsParams {
     addToast: (type: "success" | "error" | "info" | "warning", message: string) => void;
     refreshPage: () => void;
     clearFilters: () => void;
+    /** Called after a successful create/update so the "pending records" count can
+     *  be refreshed to reflect what actually changed. */
+    onDataChanged: () => void;
 }
 
 export function useNatureFactorCvRowOps({
@@ -35,6 +38,7 @@ export function useNatureFactorCvRowOps({
     addToast,
     refreshPage,
     clearFilters,
+    onDataChanged,
 }: UseNatureFactorCvRowOpsParams) {
     const tW = useTranslations("weightageMaster");
 
@@ -77,6 +81,18 @@ export function useNatureFactorCvRowOps({
             return;
         }
 
+        const factor = updatedData.factor ?? row.factor;
+
+        if (factor < 0.1) {
+            addToast('error', tW('common.messages.validFactorRequired') || "Please enter a valid factor value greater than 0");
+            return;
+        }
+
+        if (factor > 100) {
+            addToast('error', tW('common.messages.factorPercentageExceedsMax'));
+            return;
+        }
+
         const userId = getUserIdFromCookie() || 0;
 
         setIsUpdating(true);
@@ -110,6 +126,7 @@ export function useNatureFactorCvRowOps({
                     return updated;
                 });
                 clearFilters();
+                onDataChanged();
                 setTimeout(() => refreshPage(), 1000);
             } else {
                 addToast('error', result.message || (row.id === 0 ? tW('common.messages.createFailed') : tW('common.messages.updateFailed')));

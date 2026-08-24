@@ -41,11 +41,11 @@ describe('useAgeFactorCvFilters', () => {
     );
 
     expect(result.current.selectedYear).toBe('');
-    expect(result.current.constructionType).toBe('');
-    expect(result.current.factorValue).toBe('0.00');
+    expect(result.current.constructionType).toEqual([]);
+    expect(result.current.factorValue).toBe('1.00');
     expect(result.current.ageFrom).toBe('');
     expect(result.current.ageTo).toBe('');
-    expect(result.current.selectedAgeRange).toBe('');
+    expect(result.current.selectedAgeRange).toEqual([]);
     expect(result.current.ageRangeOptions).toEqual(initialAgeRangeOptions);
   });
 
@@ -63,7 +63,7 @@ describe('useAgeFactorCvFilters', () => {
     );
 
     expect(result.current.selectedYear).toBe('2024');
-    expect(result.current.constructionType).toBe('101');
+    expect(result.current.constructionType).toEqual(['101']);
   });
 
   it('should clear filters', () => {
@@ -75,11 +75,11 @@ describe('useAgeFactorCvFilters', () => {
 
     act(() => {
       result.current.setFactorValue('1.50');
-      result.current.setConstructionType('101');
+      result.current.setConstructionType(['101']);
       result.current.setSelectedYear('2024');
       result.current.setAgeFrom('0');
       result.current.setAgeTo('5');
-      result.current.setSelectedAgeRange('0-5');
+      result.current.setSelectedAgeRange(['0-5']);
       result.current.setIsAgeRangeAdded(true);
     });
 
@@ -89,12 +89,12 @@ describe('useAgeFactorCvFilters', () => {
       result.current.clearFilters();
     });
 
-    expect(result.current.factorValue).toBe('0.00');
-    expect(result.current.constructionType).toBe('');
+    expect(result.current.factorValue).toBe('1.00');
+    expect(result.current.constructionType).toEqual([]);
     expect(result.current.selectedYear).toBe('');
     expect(result.current.ageFrom).toBe('');
     expect(result.current.ageTo).toBe('');
-    expect(result.current.selectedAgeRange).toBe('');
+    expect(result.current.selectedAgeRange).toEqual([]);
     expect(result.current.isAgeRangeAdded).toBe(false);
   });
 
@@ -106,18 +106,18 @@ describe('useAgeFactorCvFilters', () => {
     );
 
     act(() => {
-      result.current.handleAgeRangeChange('0-5');
+      result.current.handleAgeRangeChange(['0-5']);
     });
 
-    expect(result.current.selectedAgeRange).toBe('0-5');
+    expect(result.current.selectedAgeRange).toEqual(['0-5']);
     expect(result.current.ageFrom).toBe('0');
     expect(result.current.ageTo).toBe('5');
 
     act(() => {
-      result.current.handleAgeRangeChange('');
+      result.current.handleAgeRangeChange([]);
     });
 
-    expect(result.current.selectedAgeRange).toBe('');
+    expect(result.current.selectedAgeRange).toEqual([]);
     expect(result.current.ageFrom).toBe('');
     expect(result.current.ageTo).toBe('');
   });
@@ -149,10 +149,10 @@ describe('useAgeFactorCvFilters', () => {
     );
 
     act(() => {
-      result.current.handleConstructionTypeChange('101');
+      result.current.handleConstructionTypeChange(['101']);
     });
 
-    expect(result.current.constructionType).toBe('101');
+    expect(result.current.constructionType).toEqual(['101']);
     expect(mockPush).toHaveBeenCalledWith(
       '/en/property-tax/weightage-master/age-weightage?selectedYearRange=2024&page=1&constructionType=101'
     );
@@ -194,7 +194,7 @@ describe('useAgeFactorCvFilters', () => {
 
     act(() => {
       result.current.setSelectedYear('2024');
-      result.current.setConstructionType('101');
+      result.current.setConstructionType(['101']);
     });
 
     act(() => {

@@ -9,7 +9,8 @@ import {
 } from "@/types/natureofbuilding-cv-weightageMaster.types";
 import {
     bulkCreateNatureFactorCVMasterAction,
-    bulkUpdateNatureFactorCVMasterAction
+    bulkUpdateNatureFactorCVMasterAction,
+    fetchNatureFactorCVMasterPagedServerAction,
 } from "@/app/[locale]/property-tax/weightage-master/nature-weightage/actions";
 import { getUserIdFromCookie } from "@/lib/utils/cookie";
 
@@ -19,12 +20,17 @@ export interface UseNatureFactorCvBulkOpsParams {
     setEditableRows: Dispatch<SetStateAction<Record<string, NatureFactorCVMaster>>>;
     setIsBulkUpdating: Dispatch<SetStateAction<boolean>>;
     setIsGeneratingAll: Dispatch<SetStateAction<boolean>>;
+    selectedYear: string;
+    constructionType: string;
     factorValue: string;
     getRowUid: (row: NatureFactorCVMaster) => string;
     findRowByUid: (uid: string) => NatureFactorCVMaster | undefined;
     addToast: (type: "success" | "error" | "info" | "warning", message: string) => void;
     refreshPage: () => void;
     clearFilters: () => void;
+    /** Called after a successful bulk update / generate-all so the "pending records"
+     *  count can be refreshed to reflect what actually changed. */
+    onDataChanged: () => void;
 }
 
 export function useNatureFactorCvBulkOps({
@@ -33,19 +39,27 @@ export function useNatureFactorCvBulkOps({
     setEditableRows,
     setIsBulkUpdating,
     setIsGeneratingAll,
+    selectedYear,
+    constructionType,
     factorValue,
     getRowUid,
     findRowByUid,
     addToast,
     refreshPage,
     clearFilters,
+    onDataChanged,
 }: UseNatureFactorCvBulkOpsParams) {
     const tW = useTranslations("weightageMaster");
 
     const handleApplyFilter = (): void => {
         const factor = parseFloat(factorValue);
-        if (!factorValue || isNaN(factor) || factor < 0) {
+        if (!factorValue || isNaN(factor) || factor < 0.1) {
             addToast('warning', tW('common.messages.validFactorRequired'));
+            return;
+        }
+
+        if (factor > 100) {
+            addToast('warning', tW('common.messages.factorPercentageExceedsMax'));
             return;
         }
 
@@ -53,6 +67,9 @@ export function useNatureFactorCvBulkOps({
         let updatedCount = 0;
 
         data.forEach((row) => {
+            // Inactive records are non-editable — leave them untouched by bulk factor apply.
+            if (row.isActive === false) return;
+
             const rowUid = getRowUid(row);
             const existingEdit = editableRows[rowUid];
             const baseRow = { ...row, ...(existingEdit || {}) };
@@ -142,6 +159,7 @@ export function useNatureFactorCvBulkOps({
                 addToast('success', tW('common.messages.bulkOperationSuccess', { message: successMsg.join(", ") }));
                 setEditableRows({});
                 clearFilters();
+                onDataChanged();
                 setTimeout(() => refreshPage(), 1500);
             } else if (totalSuccess > 0 && errorCount > 0) {
                 const successMsg = [];
@@ -151,6 +169,7 @@ export function useNatureFactorCvBulkOps({
                 addToast('warning', tW('common.messages.bulkOperationPartialSuccess', { message: successMsg.join(", ") }));
                 setEditableRows({});
                 clearFilters();
+                onDataChanged();
                 setTimeout(() => refreshPage(), 1500);
             } else if (errorCount > 0) {
                 addToast('error', tW('common.messages.bulkOperationFailed'));
@@ -164,13 +183,30 @@ export function useNatureFactorCvBulkOps({
         }
     };
 
+    // Fetches the full, unpaginated dataset (real + placeholder rows for every missing
+    // Construction Type/Year combination) on demand at click time, so this covers the
+    // whole matrix, not just the currently-rendered page, without eagerly re-fetching
+    // it on every page load.
     const handleGenerateAll = async (): Promise<void> => {
-        const newRecords = data.filter(row => row.id === 0);
-        if (newRecords.length === 0) return;
         setIsGeneratingAll(true);
         const userId = getUserIdFromCookie() || 1;
 
         try {
+            const allNatureFactorsResult = await fetchNatureFactorCVMasterPagedServerAction(
+                1,
+                -1,
+                undefined,
+                selectedYear,
+                constructionType,
+                undefined,
+                undefined
+            );
+            const newRecords = allNatureFactorsResult.items.filter(row => row.id === 0);
+            if (newRecords.length === 0) {
+                addToast('info', tW('common.messages.allRecordsExist'));
+                return;
+            }
+
             const payload: NatureFactorCVBulkCreateItem[] = newRecords.map(row => {
                 const rowUid = getRowUid(row);
                 const editedFactor = editableRows[rowUid]?.factor;
@@ -189,6 +225,7 @@ export function useNatureFactorCvBulkOps({
             if (result && result.success) {
                 addToast('success', tW('common.messages.recordsGeneratedSuccess', { count: newRecords.length }));
                 clearFilters();
+                onDataChanged();
                 setTimeout(() => refreshPage(), 1500);
             } else {
                 addToast('error', result?.message || tW('common.messages.generationFailed'));

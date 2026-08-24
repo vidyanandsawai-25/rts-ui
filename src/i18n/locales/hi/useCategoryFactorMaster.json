@@ -28,7 +28,14 @@
     "messages": {
       "noSubtypeRecordsFound": "चयनित प्रकार के लिए कोई उप-प्रकार रिकॉर्ड नहीं मिला",
       "selectTypeOfUsePrompt": "बाईं तालिका से उपयोग प्रकार चुनें या ड्रॉपडाउन फ़िल्टर का उपयोग करें",
-      "noTypeOfUseRecordsFound": "उपयोग प्रकार के कोई रिकॉर्ड नहीं मिले"
+      "noTypeOfUseRecordsFound": "उपयोग प्रकार के कोई रिकॉर्ड नहीं मिले",
+      "mandatoryFields": "* के साथ चिह्नित फ़ील्ड अनिवार्य हैं"
+    },
+    "titles": {
+      "editTitle": "उप-प्रकार भारांक संपादित करें"
+    },
+    "descriptions": {
+      "updateSubTypeDetails": "उप-प्रकार भारांक का विवरण अपडेट करें"
     },
     "loading": {
       "message": "उपयोग श्रेणी CV कारक मास्टर लोड हो रहा है...",
@@ -53,7 +60,20 @@
       "bulkCreateFailed": "उपयोग कारक सीवी मास्टर को थोक में बनाने में विफल",
       "payloadRequired": "मान्य पेलोड आवश्यक है",
       "invalidPaginationParameters": "अमान्य पृष्ठांकन पैरामीटर",
-      "fetchTypeOfUseFailed": "उपयोग प्रकार रिकॉर्ड प्राप्त करने में विफल"
+      "fetchTypeOfUseFailed": "उपयोग प्रकार रिकॉर्ड प्राप्त करने में विफल",
+      "deleteFailed": "उपयोग प्रकार रिकॉर्ड को हटाने में विफल"
+    },
+    "deleteConfirmation": {
+      "title": "उपयोग का प्रकार",
+      "description": "क्या आप वाकई इस रिकॉर्ड को हटाना चाहते हैं?",
+      "confirmButton": "हटाएं",
+      "cancelButton": "रद्द करें",
+      "successMessage": "रिकॉर्ड सफलतापूर्वक हटा दिया गया"
+    },
+    "edit": {
+      "subTypeStatus": "उप-प्रकार भारांक वर्तमान में {status} है",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय"
     }
   }
 }

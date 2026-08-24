@@ -1,11 +1,12 @@
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import FloorCvWeightageMaster from "@/components/modules/property-tax/weightage-mastercv/floorFactorCv/FloorCvWeightageMaster";
 import { Option } from "@/components/common/select";
 import { FloorFactorCVMaster } from "@/types/floor-cv-weightageMaster.types";
 import {
     updateFloorFactorCVMasterAction,
     bulkUpdateFloorFactorCVMasterAction,
+    fetchAllFloorFactorCVMasterAction,
 } from "@/app/[locale]/property-tax/weightage-master/action";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
@@ -15,10 +16,14 @@ vi.mock("@/app/[locale]/property-tax/weightage-master/action", () => ({
     createFloorFactorCVMasterAction: vi.fn(),
     bulkCreateFloorFactorCVMasterAction: vi.fn(),
     bulkUpdateFloorFactorCVMasterAction: vi.fn(),
+    fetchAllFloorFactorCVMasterAction: vi.fn(),
 }));
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
+// Configurable per-test/describe-block via beforeEach; defaults to a year being
+// selected since that's the common case for the missing-records-count tests.
+let mockSelectedYearRange: string | null = "2024";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
@@ -26,6 +31,7 @@ vi.mock("next/navigation", () => ({
         get: vi.fn().mockImplementation((key: string) => {
             if (key === "page") return "1";
             if (key === "pageSize") return "10";
+            if (key === "selectedYearRange") return mockSelectedYearRange;
             return null;
         }),
     }),
@@ -107,24 +113,34 @@ const floorOptions: Option[] = [
 
 const yearOptions: Option[] = [{ label: "2024-2025", value: "2024" }];
 
+import { ConfirmProvider } from "@/components/common/ConfirmProvider";
+
 function renderComponent(data = mockData) {
     return render(
-        <FloorCvWeightageMaster
-            data={data}
-            pageNumber={1}
-            pageSize={10}
-            totalCount={data.length}
-            totalPages={1}
-            floorOptions={floorOptions}
-            assessmentYearOptions={yearOptions}
-        />
+        <ConfirmProvider>
+            <FloorCvWeightageMaster
+                data={data}
+                pageNumber={1}
+                pageSize={10}
+                totalCount={data.length}
+                totalPages={1}
+                floorOptions={floorOptions}
+                assessmentYearOptions={yearOptions}
+            />
+        </ConfirmProvider>
     );
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe("FloorCvWeightageMaster – rendering", () => {
-    beforeEach(() => { vi.clearAllMocks(); });
+    beforeEach(() => {
+        vi.clearAllMocks();
+        // Default: one real row (F1) + one missing combo (F2), matching mockData,
+        // so the "1 pending creates" badge/button-enabled expectations hold unless
+        // a test overrides this to represent a fully-existing selection.
+        vi.mocked(fetchAllFloorFactorCVMasterAction).mockResolvedValue(mockData);
+    });
 
     it("renders table rows with correct floor codes", () => {
         renderComponent();
@@ -152,20 +168,28 @@ describe("FloorCvWeightageMaster – rendering", () => {
         });
     });
 
-    it("shows Generate All button (enabled) when new records exist", () => {
+    it("shows Generate All button (enabled) when new records exist", async () => {
         renderComponent();
-        const btn = screen.getByRole("button", { name: /generate all/i });
-        expect(btn).toBeInTheDocument();
-        expect(btn).not.toBeDisabled();
+        await waitFor(() => {
+            const btn = screen.getByRole("button", { name: /generate all/i });
+            expect(btn).not.toBeDisabled();
+        });
     });
 
-    it("shows pending badge with correct count when new records exist", () => {
+    it("shows pending badge with correct count when new records exist", async () => {
         renderComponent();
-        expect(screen.getByText(/1 pending creates/i)).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText(/1 pending creates/i)).toBeInTheDocument();
+        });
     });
 
-    it("does not show pending badge when all records are existing", () => {
-        renderComponent([mockData[0]]);
+    it("does not show pending badge when all records are existing", async () => {
+        // No missing combinations for the selected year: only the real row.
+        vi.mocked(fetchAllFloorFactorCVMasterAction).mockResolvedValue([mockData[0]]);
+        renderComponent();
+        await waitFor(() => {
+            expect(fetchAllFloorFactorCVMasterAction).toHaveBeenCalled();
+        });
         expect(screen.queryByText(/pending creates/i)).not.toBeInTheDocument();
     });
 });
@@ -173,31 +197,37 @@ describe("FloorCvWeightageMaster – rendering", () => {
 describe("FloorCvWeightageMaster – row actions", () => {
     beforeEach(() => { vi.clearAllMocks(); });
 
-    it("Update / Create buttons are disabled initially (no editable changes)", () => {
-        renderComponent();
-        const updateBtns = screen.getAllByRole("button", { name: /^(update|create)$/i });
-        updateBtns.forEach((btn) => expect(btn).toBeDisabled());
-    });
-
-    it("enables Update button and row-Clear button after changing a cell value", async () => {
+    it("Update / Create buttons show a localized warning when clicked with no editable changes", async () => {
         renderComponent();
         const input = screen.getByDisplayValue("1.20");
         const row = input.closest("tr") as HTMLElement;
         const updateBtn = within(row).getByRole("button", { name: /update/i });
+
+        expect(updateBtn).not.toBeDisabled();
+
+        fireEvent.click(updateBtn);
+
+        await waitFor(() => {
+            expect(screen.getByText("No changes to update")).toBeInTheDocument();
+        });
+    });
+
+    it("enables row-Clear button after changing a cell value", async () => {
+        renderComponent();
+        const input = screen.getByDisplayValue("1.20");
+        const row = input.closest("tr") as HTMLElement;
         const clearBtn = within(row).getByRole("button", { name: /clear/i });
 
-        expect(updateBtn).toBeDisabled();
         expect(clearBtn).toBeDisabled();
 
         fireEvent.change(input, { target: { value: "1.5" } });
 
         await waitFor(() => {
-            expect(updateBtn).not.toBeDisabled();
             expect(clearBtn).not.toBeDisabled();
         });
     });
 
-    it("disables Update button after Clear is clicked", async () => {
+    it("shows the no-changes warning again after Clear discards an edit", async () => {
         renderComponent();
         const input = screen.getByDisplayValue("1.20");
         const row = input.closest("tr") as HTMLElement;
@@ -205,10 +235,15 @@ describe("FloorCvWeightageMaster – row actions", () => {
         const clearBtn = within(row).getByRole("button", { name: /clear/i });
 
         fireEvent.change(input, { target: { value: "1.5" } });
-        await waitFor(() => expect(updateBtn).not.toBeDisabled());
+        await waitFor(() => expect(clearBtn).not.toBeDisabled());
 
         fireEvent.click(clearBtn);
-        await waitFor(() => expect(updateBtn).toBeDisabled());
+        await waitFor(() => expect(clearBtn).toBeDisabled());
+
+        fireEvent.click(updateBtn);
+        await waitFor(() => {
+            expect(screen.getByText("No changes to update")).toBeInTheDocument();
+        });
     });
 
     it("calls updateFloorFactorCVMasterAction when Update is clicked on changed row", async () => {
@@ -269,7 +304,12 @@ describe("FloorCvWeightageMaster – clear all (header)", () => {
 });
 
 describe("FloorCvWeightageMaster – Apply filter button", () => {
-    it("Apply button is disabled initially (factor is 0.00)", () => {
+    afterEach(() => {
+        mockSelectedYearRange = "2024";
+    });
+
+    it("Apply button is disabled initially (no assessment year selected)", () => {
+        mockSelectedYearRange = null;
         renderComponent();
         expect(screen.getByRole("button", { name: /^apply$/i })).toBeDisabled();
     });

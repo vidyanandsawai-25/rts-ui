@@ -11,6 +11,8 @@ import {
   createNatureFactorCVMaster,
   bulkCreateNatureFactorCVMaster,
   bulkUpdateNatureFactorCVMaster,
+  getNatureFactorCVMasterById,
+  deleteNatureFactorCVMasterById,
 } from "@/lib/api/natureofbuilding-cv-weightageMaster.service";
 import { ApiError } from "@/lib/utils/api";
 import { createLogger } from "@/lib/utils/server-logger";
@@ -263,4 +265,64 @@ export async function bulkUpdateNatureFactorCVMasterAction(
       statusCode: 500,
     };
   }
+}
+
+/**
+ * Server action to fetch a single NatureFactorCVMaster record by ID
+ */
+export async function fetchNatureFactorCVMasterByIdServerAction(id: number) {
+  const logger = createLogger('fetchNatureFactorCVMasterById');
+  logger.info('Starting request', { operation: 'fetchNatureFactorCVMasterByIdServerAction', id });
+  try {
+    if (!id || id <= 0) {
+      throw new Error("Invalid Nature Factor ID");
+    }
+    const data = await getNatureFactorCVMasterById(id);
+    logger.info('Successfully fetched NatureFactorCVMaster by ID', { id });
+    return { success: true, data };
+  } catch (error: unknown) {
+    const err = error as Error & { statusCode?: number; status?: number };
+    const errorDetails = {
+      message: err.message || 'Unknown error occurred',
+      stack: err.stack,
+      status: err.statusCode || err.status || 500,
+    };
+    logger.error('Failed to fetch NatureFactorCVMaster by ID', { error: errorDetails });
+    return {
+      success: false,
+      message: err.message || 'Failed to fetch record',
+      error: errorDetails,
+    };
+  }
+}
+
+/**
+ * Delete NatureFactorCVMaster record by ID
+ * @param id The ID of the record to delete
+ * @returns Promise resolving to an object indicating success or failure
+ */
+
+export async function deleteNatureFactorCVMasterActionById(
+    id: number
+): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+    try {
+        const response = await deleteNatureFactorCVMasterById(id);
+        if (response.success) {
+            for (const locale of locales) {
+                revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
+                revalidatePath(`/${locale}/property-tax/weightage-master/nature-weightage`, "page");
+            }
+            return { success: true };
+        } else {
+            return { success: false, message: response.error || 'Failed to delete record', statusCode: 500 };
+        }
+    } catch (error: unknown) {
+        if (error instanceof ApiError) {
+            return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
+        }
+        if (error instanceof Error) {
+            return { success: false, message: error.message, statusCode: 500 };
+        }
+        return { success: false, message: 'Unknown error', statusCode: 500 };
+    }
 }

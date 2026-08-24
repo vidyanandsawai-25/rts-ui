@@ -36,8 +36,8 @@ describe('useAgeFactorCvBulkOps', () => {
   const defaultProps = {
     selectionState: {
       selectedYear: '2024',
-      constructionType: '1',
-      selectedAgeRange: '0-5',
+      constructionType: ['1'],
+      selectedAgeRange: ['0-5'],
       ageFrom: '0',
       ageTo: '5',
       factorValue: '1.2',

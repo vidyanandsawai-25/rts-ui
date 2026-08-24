@@ -71,11 +71,27 @@ describe('useCategoryCv Orchestration', () => {
     typeOfUsePageNumber: 1,
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     mockSearchParams.delete('selectedYearRange');
     mockSearchParams.delete('typeOfUseId');
     vi.useFakeTimers();
+
+    // Default resolved value for the "refresh missing-records count" fetch,
+    // triggered whenever selectedYear/typeOfUseId change (even in tests that
+    // don't care about the count itself).
+    const { fetchUseFactorCVMasterPagedServerAction } = await import(
+      '@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action'
+    );
+    vi.mocked(fetchUseFactorCVMasterPagedServerAction).mockResolvedValue({
+      items: [],
+      pageNumber: 1,
+      pageSize: -1,
+      totalCount: 0,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    });
   });
 
   afterEach(() => {
@@ -86,7 +102,7 @@ describe('useCategoryCv Orchestration', () => {
     const { result } = renderHook(() => useCategoryCv(defaultProps));
 
     expect(result.current.selectedYear).toBe('');
-    expect(result.current.factorValue).toBe('0.00');
+    expect(result.current.factorValue).toBe('1.00');
     expect(typeof result.current.changePage).toBe('function');
   });
 
@@ -130,7 +146,7 @@ describe('useCategoryCv Orchestration', () => {
       });
 
       expect(result.current.selectedYear).toBe('');
-      expect(result.current.factorValue).toBe('0.00');
+      expect(result.current.factorValue).toBe('1.00');
       expect(result.current.sortBy).toBeUndefined();
       expect(result.current.sortOrder).toBeUndefined();
       expect(result.current.leftSortBy).toBeUndefined();

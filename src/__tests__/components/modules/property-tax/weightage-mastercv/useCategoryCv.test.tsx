@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 
 // Mock next/navigation
 const mockPush = vi.fn();
@@ -26,6 +26,15 @@ vi.mock("@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action"
   createUseFactorCVMasterAction: vi.fn().mockResolvedValue({ success: true }),
   bulkCreateUseFactorCVMasterAction: vi.fn().mockResolvedValue({ success: true }),
   bulkUpdateUseFactorCVMasterAction: vi.fn().mockResolvedValue({ success: true }),
+  fetchUseFactorCVMasterPagedServerAction: vi.fn().mockResolvedValue({
+    items: [],
+    pageNumber: 1,
+    pageSize: -1,
+    totalCount: 0,
+    totalPages: 1,
+    hasPrevious: false,
+    hasNext: false,
+  }),
 }));
 
 import { useCategoryCv } from "@/hooks/weightageMaster/useCategoryCv/useCategoryCv";
@@ -81,8 +90,33 @@ describe("useCategoryCv", () => {
 
     expect(result.current.selectedYear).toBe("");
     expect(result.current.typeOfUseId).toBe("");
-    expect(result.current.factorValue).toBe("0.00");
-    expect(result.current.newRecordsCount).toBe(1);
+    expect(result.current.factorValue).toBe("1.00");
+    // No assessment year selected yet, so the missing-records count is
+    // meaningless (and not fetched) until one is picked.
+    expect(result.current.newRecordsCount).toBe(0);
+    expect(result.current.hasNewRecords).toBe(false);
+  });
+
+  it("computes newRecordsCount from the full dataset for the selected year, not just the current page", async () => {
+    mockSearchParams.set("selectedYearRange", "1");
+    const { fetchUseFactorCVMasterPagedServerAction } = await import(
+      "@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action"
+    );
+    vi.mocked(fetchUseFactorCVMasterPagedServerAction).mockResolvedValueOnce({
+      items: mockData,
+      pageNumber: 1,
+      pageSize: -1,
+      totalCount: mockData.length,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    });
+
+    const { result } = renderHook(() => useCategoryCv(defaultProps));
+
+    await waitFor(() => {
+      expect(result.current.newRecordsCount).toBe(1);
+    });
     expect(result.current.hasNewRecords).toBe(true);
   });
 
@@ -143,11 +177,26 @@ describe("useCategoryCv", () => {
     });
 
     expect(Object.keys(result.current.editableRows).length).toBe(0);
-    expect(result.current.factorValue).toBe("0.00");
+    expect(result.current.factorValue).toBe("1.00");
     expect(mockPush).toHaveBeenCalled();
   });
 
   it("generates all pending records including edits", async () => {
+    const { bulkCreateUseFactorCVMasterAction, fetchUseFactorCVMasterPagedServerAction } =
+      await import("@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action");
+    // Not "Once": the "refresh missing count" effect also calls this on mount
+    // (and again whenever the selection changes), so it needs to keep resolving
+    // to the same data for the later, explicit handleGenerateAll() call too.
+    vi.mocked(fetchUseFactorCVMasterPagedServerAction).mockResolvedValue({
+      items: mockData,
+      pageNumber: 1,
+      pageSize: -1,
+      totalCount: mockData.length,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    });
+
     const { result } = renderHook(() => useCategoryCv(defaultProps));
     const pendingRowUid = result.current.getRowUid(mockData[1]);
 
@@ -159,8 +208,6 @@ describe("useCategoryCv", () => {
     await act(async () => {
       await result.current.handleGenerateAll();
     });
-
-    const { bulkCreateUseFactorCVMasterAction } = await import("@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action");
     
     // Should have been called with the edited factor
     expect(bulkCreateUseFactorCVMasterAction).toHaveBeenCalledWith(expect.arrayContaining([

@@ -16,7 +16,7 @@ describe('useCategoryCvState', () => {
     expect(result.current.selectedYear).toBe(currentSelectedYear);
     expect(result.current.typeOfUseId).toBe(currentTypeOfUse);
     expect(result.current.selectedTypeId).toBe(100);
-    expect(result.current.factorValue).toBe('0.00');
+    expect(result.current.factorValue).toBe('1.00');
     expect(result.current.editableRows).toEqual({});
     expect(result.current.isUpdating).toBe(false);
     expect(result.current.isBulkUpdating).toBe(false);

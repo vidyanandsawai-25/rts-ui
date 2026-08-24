@@ -13,7 +13,7 @@ export function useCategoryCvState(
     const [editableRows, setEditableRows] = useState<Record<string, UseFactorCVMaster>>({});
     const [selectedTypeId, setSelectedTypeId] = useState<number | null>(currentTypeOfUse ? Number(currentTypeOfUse) : null);
     const [typeOfUseId, setTypeOfUseId] = useState<string>(currentTypeOfUse);
-    const [factorValue, setFactorValue] = useState<string>("0.00");
+    const [factorValue, setFactorValue] = useState<string>("1.00");
 
     const [isUpdating, setIsUpdating] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);

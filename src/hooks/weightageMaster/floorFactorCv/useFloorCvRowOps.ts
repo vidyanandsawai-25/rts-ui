@@ -23,6 +23,9 @@ export interface UseFloorCvRowOpsParams {
     addToast: (type: "success" | "error" | "info" | "warning", message: string) => void;
     refreshPage: () => void;
     clearFilters: () => void;
+    /** Called after a successful create/update so the "pending records" count can
+     *  be refreshed to reflect what actually changed. */
+    onDataChanged: () => void;
 }
 
 export function useFloorCvRowOps({
@@ -35,6 +38,7 @@ export function useFloorCvRowOps({
     addToast,
     refreshPage,
     clearFilters,
+    onDataChanged,
 }: UseFloorCvRowOpsParams) {
     const tW = useTranslations("weightageMaster");
 
@@ -91,6 +95,19 @@ export function useFloorCvRowOps({
             return;
         }
 
+        const factorWithLift = updatedData.factorWithLift ?? row.factorWithLift;
+        const factorWithoutLift = updatedData.factorWithoutLift ?? row.factorWithoutLift;
+
+        if (factorWithLift < 0.1 || factorWithoutLift < 0.1) {
+            addToast("error", tW("common.messages.validFactorRequired") || "Please enter a valid factor value greater than 0");
+            return;
+        }
+
+        if (factorWithLift > 100 || factorWithoutLift > 100) {
+            addToast("error", tW("common.messages.factorPercentageExceedsMax"));
+            return;
+        }
+
         setIsUpdating(true);
         try {
             let result;
@@ -131,6 +148,7 @@ export function useFloorCvRowOps({
                 });
                 // Clear filters after successful update
                 clearFilters();
+                onDataChanged();
                 // Refresh route data after a short delay without forcing a full page reload
                 setTimeout(() => {
                     refreshPage();

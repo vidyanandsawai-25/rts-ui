@@ -28,6 +28,13 @@
     "messages": {
       "fromFloorGreaterError": "मजला पासून, मजला पर्यंत पेक्षा जास्त असू शकत नाही",
       "noRecordsFound": "कोणत्याही नोंदी आढळल्या नाहीत"
+    },
+    "deleteConfirmation": {
+      "title": "मजला प्रकार",
+      "description": "तुम्हाला खात्री आहे की तुम्ही ही नोंद हटवू इच्छिता?",
+      "confirmButton": "हटवा",
+      "cancelButton": "रद्द करा",
+      "successMessage": "नोंद यशस्वीरित्या हटवली"
     }
   }
 }

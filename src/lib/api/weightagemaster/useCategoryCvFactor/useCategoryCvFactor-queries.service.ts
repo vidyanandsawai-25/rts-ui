@@ -94,3 +94,18 @@ export async function getTypeOfUseWithParams(
   }
   return response;
 }
+
+/**
+ * Deletes a UseFactorCVMaster record
+ * @param id The ID of the record to delete
+ * @returns Promise resolving to ApiResponse
+ */
+
+export async function deleteUseFactorCVMaster(id:number): Promise<ApiResponse<null>> {
+  const response = await apiClient.delete<null>(`/UseFactorCVMaster/${id}/purge`);
+  if (!response.success) {
+    const t = await getTranslations('useCategoryFactorMaster');
+    throw new ApiError(response.statusCode || 500, response.error || t('errors.deleteFailed'), 'Delete Use Factor CV Master failed');
+  }
+  return response;
+}

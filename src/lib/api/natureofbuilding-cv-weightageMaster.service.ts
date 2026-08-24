@@ -59,6 +59,32 @@ export async function getNatureFactorCVMasterWithPagination(
 }
 
 /**
+ * Fetches a single NatureFactorCVMaster record by ID
+ */
+export async function getNatureFactorCVMasterById(id: number): Promise<NatureFactorCVMaster> {
+  try {
+    const t = await getTranslations('natureFactorCVMaster');
+    if (!id || id <= 0) {
+      throw new ApiError(400, t('errors.invalidNatureFactorCVId'), "Validation");
+    }
+
+    const response = await apiClient.get<NatureFactorCVMaster>(`/NatureFactorCVMaster/${id}`);
+    
+    if (!response.success || !response.data) {
+      throw new ApiError(
+        response.statusCode || 404,
+        response.error || t('errors.fetchFailed'),
+        "Fetch Nature Factor CV Master by ID"
+      );
+    }
+    
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
  * Updates an existing NatureFactorCVMaster record
  */
 export async function updateNatureFactorCVMaster(
@@ -248,4 +274,19 @@ export async function getAssessmentYearsPagedServerCV(
       "Fetch Assessment Year Range CV returned unexpected format"
     );
   }
+}
+
+/**
+ * Deletes a NatureFactorCVMaster record by ID
+ * @param id The ID of the record to delete
+ * @returns Promise resolving to an object indicating success or failure
+ */
+
+export async function deleteNatureFactorCVMasterById(id:number): Promise<ApiResponse<null>> {
+  const response = await apiClient.delete<null>(`/NatureFactorCVMaster/${id}/purge`);
+  if (!response.success) {
+    const t = await getTranslations('natureFactorCVMaster');
+    throw new ApiError(response.statusCode || 500, response.error || t('deleteConfirmation.deleteFailed'), 'Delete Nature Factor CV Master failed');
+  }
+  return response;
 }

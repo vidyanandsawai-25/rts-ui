@@ -28,6 +28,13 @@
     "messages": {
       "fromFloorGreaterError": "From floor cannot be greater than To floor",
       "noRecordsFound": "No records found"
+    },
+      "deleteConfirmation": {
+      "title": "Type Of Floor",
+      "description": "Are you sure you want to delete this record?.",
+      "confirmButton": "Delete",
+      "cancelButton": "Cancel",
+      "successMessage": "Record deleted successfully"
     }
   }
 }

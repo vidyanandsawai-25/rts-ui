@@ -10,6 +10,7 @@ import {
   updateAgeFactorCVMaster,
   createAgeFactorCVMaster,
   deleteAgeFactorCVMaster,
+  getAgeFactorCVMasterById,
 } from "@/lib/api/weightagemaster/ageOfBuildingCvFactor/ageFactorCv.service";
 import {
   bulkCreateAgeFactorCVMaster,
@@ -28,6 +29,7 @@ import {
 } from "@/types/ageFactorCv.types";
 import { ConstructionType } from "@/types/construction.types";
 import { getConstructionPaged } from "@/lib/api/constructiontypemaster/construction-crud.service";
+import { createLogger } from "@/lib/utils/server-logger";
 
 
 
@@ -81,7 +83,7 @@ export async function fetchAgeFactorCVMasterPagedServerAction(
   pageSize: number,
   searchTerm?: string,
   selectedYearRange?: string,
-  constructionTypeId?: number,
+  constructionTypeId?: number | number[],
   sortBy?: string,
   sortOrder?: string
 ): Promise<PagedResponse<AgeFactorCVMaster>> {
@@ -92,9 +94,14 @@ export async function fetchAgeFactorCVMasterPagedServerAction(
 
     const yearRangeParam = normalizeYearRangeParam(selectedYearRange);
 
-    const normalizedConstructionTypeId = constructionTypeId !== undefined && Number.isFinite(constructionTypeId)
-      ? constructionTypeId
-      : undefined;
+    const normalizedConstructionTypeId = Array.isArray(constructionTypeId)
+      ? (() => {
+          const ids = constructionTypeId.filter((id) => Number.isFinite(id));
+          return ids.length > 0 ? ids : undefined;
+        })()
+      : constructionTypeId !== undefined && Number.isFinite(constructionTypeId)
+        ? constructionTypeId
+        : undefined;
 
     const allowedSortFields = ["ConstructionCode", "ConstructionDescription", "AgeFrom", "AgeTo", "FromYear"];
     const normalizedSortBy = allowedSortFields.includes(sortBy?.trim() || "") ? sortBy?.trim() : undefined;
@@ -434,3 +441,34 @@ function normalizePagedResponse(
         hasNext: data.hasNext ?? (normalizedPageNumber < totalPages)
     };
 }
+
+/**
+ * Fetch AgeFactorCVMaster by ID
+ */
+
+export async function fetchAgeFactorCVMasterByIdServerAction(id: number) {
+  const logger = createLogger('fetchAgeFactorCVMasterById');
+  logger.info('Starting request', { operation: 'fetchAgeFactorCVMasterByIdServerAction', id });
+  try {
+    if (!id || id <= 0) {
+      throw new Error("Invalid Age Factor ID");
+    }
+    const data = await getAgeFactorCVMasterById(id);
+    logger.info('Successfully fetched AgeFactorCVMaster by ID', { id });
+    return { success: true, data };
+  } catch (error: unknown) {
+    const err = error as Error & { statusCode?: number; status?: number };
+    const errorDetails = {
+      message: err.message || 'Unknown error occurred',
+      stack: err.stack,
+      status: err.statusCode || err.status || 500,
+    };
+    logger.error('Failed to fetch AgeFactorCVMaster by ID', { error: errorDetails });
+    return {
+      success: false,
+      message: err.message || 'Failed to fetch record',
+      error: errorDetails,
+    };
+  }
+}
+

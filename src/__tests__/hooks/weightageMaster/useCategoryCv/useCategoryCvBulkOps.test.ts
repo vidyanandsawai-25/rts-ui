@@ -8,6 +8,7 @@ import * as bulkHandler from '@/hooks/weightageMaster/useCategoryCv/useBulkOpera
 vi.mock('@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action', () => ({
   bulkCreateUseFactorCVMasterAction: vi.fn(),
   bulkUpdateUseFactorCVMasterAction: vi.fn(),
+  fetchUseFactorCVMasterPagedServerAction: vi.fn(),
 }));
 
 vi.mock('@/hooks/weightageMaster/useCategoryCv/useBulkOperationHandler', () => ({
@@ -60,7 +61,8 @@ describe('useCategoryCvBulkOps', () => {
   const mockSetEditableRows = vi.fn();
   const mockSetIsBulkUpdating = vi.fn();
   const mockSetIsGeneratingAll = vi.fn();
-  
+  const mockOnDataChanged = vi.fn();
+
   const mockTw = vi.fn((key: string, values?: Record<string, unknown>) => {
     const messages: Record<string, string> = {
       'common.messages.validFactorRequired': 'Valid factor required',
@@ -75,6 +77,7 @@ describe('useCategoryCvBulkOps', () => {
       'common.messages.recordsGeneratedSuccess': `${values?.count} records generated successfully`,
       'common.messages.generationFailed': 'Generation failed',
       'common.messages.generateAllFailed': 'Generate all failed',
+      'common.messages.allRecordsExist': 'All records already exist',
     };
     return messages[key] || key;
   });
@@ -85,17 +88,31 @@ describe('useCategoryCvBulkOps', () => {
     setEditableRows: mockSetEditableRows,
     setIsBulkUpdating: mockSetIsBulkUpdating,
     setIsGeneratingAll: mockSetIsGeneratingAll,
+    selectedYear: '2023',
+    typeOfUseId: '',
     factorValue: '2.5',
     getRowUid,
     findRowByUid: mockFindRowByUid,
     addToast: mockAddToast,
     refreshPage: mockRefreshPage,
     tW: mockTw,
+    onDataChanged: mockOnDataChanged,
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    // Default: the lazy "fetch everything" call used by handleGenerateAll returns the
+    // same rows as the current page, unless a test overrides it.
+    vi.mocked(actions.fetchUseFactorCVMasterPagedServerAction).mockResolvedValue({
+      items: mockData,
+      pageNumber: 1,
+      pageSize: -1,
+      totalCount: mockData.length,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    });
   });
 
   afterEach(() => {
@@ -341,17 +358,26 @@ describe('useCategoryCvBulkOps', () => {
   describe('handleGenerateAll', () => {
     it('should do nothing when no new records exist', async () => {
       const dataWithoutNewRecords = mockData.filter((row) => row.id !== 0);
+      vi.mocked(actions.fetchUseFactorCVMasterPagedServerAction).mockResolvedValue({
+        items: dataWithoutNewRecords,
+        pageNumber: 1,
+        pageSize: -1,
+        totalCount: dataWithoutNewRecords.length,
+        totalPages: 1,
+        hasPrevious: false,
+        hasNext: false,
+      });
 
-      const { result } = renderHook(() =>
-        useCategoryCvBulkOps({ ...defaultProps, data: dataWithoutNewRecords })
-      );
+      const { result } = renderHook(() => useCategoryCvBulkOps(defaultProps));
 
       await act(async () => {
         await result.current.handleGenerateAll();
       });
 
-      expect(mockSetIsGeneratingAll).not.toHaveBeenCalled();
+      expect(mockAddToast).toHaveBeenCalledWith('info', expect.any(String));
       expect(actions.bulkCreateUseFactorCVMasterAction).not.toHaveBeenCalled();
+      expect(mockSetIsGeneratingAll).toHaveBeenCalledWith(true);
+      expect(mockSetIsGeneratingAll).toHaveBeenCalledWith(false);
     });
 
     it('should generate all new records successfully', async () => {
@@ -465,9 +491,17 @@ describe('useCategoryCvBulkOps', () => {
         },
       ];
 
-      const { result } = renderHook(() =>
-        useCategoryCvBulkOps({ ...defaultProps, data: dataWithMultipleNew })
-      );
+      vi.mocked(actions.fetchUseFactorCVMasterPagedServerAction).mockResolvedValue({
+        items: dataWithMultipleNew,
+        pageNumber: 1,
+        pageSize: -1,
+        totalCount: dataWithMultipleNew.length,
+        totalPages: 1,
+        hasPrevious: false,
+        hasNext: false,
+      });
+
+      const { result } = renderHook(() => useCategoryCvBulkOps(defaultProps));
 
       await act(async () => {
         await result.current.handleGenerateAll();

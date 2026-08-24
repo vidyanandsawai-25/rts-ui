@@ -16,8 +16,8 @@ import { validateFactorValue, matchesFilterCriteria } from "@/lib/utils/weightag
 interface UseAgeFactorCvBulkOpsParams {
     selectionState: {
         selectedYear: string;
-        constructionType: string;
-        selectedAgeRange: string;
+        constructionType: string[];
+        selectedAgeRange: string[];
         ageFrom: string;
         ageTo: string;
         factorValue: string;
@@ -96,6 +96,8 @@ export const useAgeFactorCvBulkOps = ({
         let updatedCount = 0;
 
         data.forEach((row) => {
+            // Inactive records are non-editable — leave them untouched by bulk factor apply.
+            if (row.isActive === false) return;
             if (matchesFilterCriteria(row, { constructionType, selectedAgeRange, ageFrom, ageTo, selectedYear })) {
                 const rowUid = getRowUid(row);
                 updatedRows[rowUid] = {

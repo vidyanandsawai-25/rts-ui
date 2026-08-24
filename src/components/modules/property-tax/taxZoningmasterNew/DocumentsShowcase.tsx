@@ -218,10 +218,6 @@ export default function DocumentsShowcase() {
               <h2 className="m-0 text-[14px] text-[#0b2f5b] font-semibold">{tUi("heading")}</h2>
             </div>
           </div>
-          <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 border border-[#bad2e9] rounded-full bg-white/80 text-[#38536f] text-[10px] font-bold">
-            <span className="w-[7px] h-[7px] rounded-full bg-[#17a264] shadow-[0_0_0_3px_rgba(23,162,100,.12)]"></span>
-            {tUi("requiredBadge")}
-          </div>
         </div>
 
         <div className="p-3">

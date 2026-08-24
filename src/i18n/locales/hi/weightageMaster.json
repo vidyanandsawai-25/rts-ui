@@ -23,12 +23,15 @@
       "labels": {
         "active": "सक्रिय",
         "inactive": "निष्क्रिय",
+        "assessmentYear": "मूल्यांकन वर्ष",
+        "status": "स्थिति",
         "pendingRecordCreates": "{count} लंबित रिकॉर्ड बनाना"
       },
       "messages": {
         "pendingRecordsWarning": "लंबित रिकॉर्ड हैं। कृपया सभी जेनरेट करें बटन पर क्लिक करें।",
         "negativeValuesNotAllowed": "नकारात्मक मानों की अनुमति नहीं है",
         "valueExceedsMax": "मान 999.99 से अधिक नहीं हो सकता",
+        "factorPercentageExceedsMax": "फैक्टर/प्रतिशत मान 0 से 100 के बीच होना चाहिए",
         "noChangesToUpdate": "इस पंक्ति के लिए अपडेट करने के लिए कोई परिवर्तन नहीं",
         "noChangesDetected": "इस पंक्ति के लिए कोई परिवर्तन नहीं मिला",
         "recordCreatedSuccess": "रिकॉर्ड सफलतापूर्वक बनाया गया",
@@ -36,7 +39,7 @@
         "createFailed": "बनाना विफल",
         "updateFailed": "अपडेट विफल",
         "failedToSaveRow": "पंक्ति अपडेट करने में विफल। कृपया पुनः प्रयास करें।",
-        "changesDiscarded": "इस पंक्ति के लिए परिवर्तन त्याग दिए गए",        "assessmentYearRequired": "बल्क फैक्टर लागू करने से पहले कृपया मूल्यांकन वर्ष चुनें",        "validFactorRequired": "कृपया 0 से अधिक एक वैध कारक मान दर्ज करें",
+        "changesDiscarded": "इस पंक्ति के लिए परिवर्तन त्याग दिए गए",        "assessmentYearRequired": "बल्क फैक्टर लागू करने से पहले कृपया मूल्यांकन वर्ष चुनें",        "validFactorRequired": "कृपया 0.1 से 100 के बीच एक वैध कारक मान दर्ज करें",
         "negativeFactorsNotAllowed": "नकारात्मक कारकों की अनुमति नहीं है",
         "factorApplied": "{count} रिकॉर्ड(ों) में कारक {factor} लागू किया गया",
         "noRecordsMatch": "चयनित मानदंडों से कोई रिकॉर्ड मेल नहीं खाता",
@@ -50,6 +53,7 @@
         "generationFailed": "रिकॉर्ड जेनरेट करने में विफल",
         "generateAllFailed": "सभी जेनरेट करना विफल। कृपया पुनः प्रयास करें।",
         "allClearedInfo": "सभी परिवर्तन और फ़िल्टर साफ़ कर दिए गए",
+        "allRecordsExist": "मौजूदा चयन के लिए सभी रिकॉर्ड पहले से मौजूद हैं",
         "created": "बनाया गया",
         "updated": "अपडेट किया गया",
         "failed": "विफल"

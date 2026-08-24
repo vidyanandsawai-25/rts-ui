@@ -27,6 +27,7 @@ vi.mock("next/navigation", () => ({
         get: vi.fn().mockImplementation((key: string) => {
             if (key === "page") return "1";
             if (key === "pageSize") return "10";
+            if (key === "selectedYearRange") return "2024";
             return null;
         }),
     }),
@@ -62,6 +63,7 @@ vi.mock("next-intl", () => ({
             "common.labels.inactive": "Inactive",
             "common.labels.pendingRecordCreates": (p?: Record<string, unknown>) => p?.count !== undefined ? `${p.count} pending creates` : "pending creates",
             "common.messages.pendingRecordsWarning": "Pending records warning",
+            "common.messages.noChangesToUpdate": "No changes to update",
             "common.messages.noChangesDetected": "No changes detected",
             "common.messages.recordUpdatedSuccess": "Updated successfully",
             "common.messages.bulkOperationSuccess": "Bulk success",
@@ -94,21 +96,33 @@ const constructionTypeOptions: Option[] = [
 ];
 
 const yearOptions: Option[] = [{ label: "2024-2025", value: "2024" }];
-const ageRangeOptions: Option[] = [{ label: "0-10", value: "0-10" }];
+const ageRangeOptions: Option[] = [
+    { label: "0-10", value: "0-10" },
+    { label: "11-20", value: "11-20" },
+];
+
+// Mirrors `data`, but only the real row (id=1, age 0-10) — the id=0 placeholder row
+// for age 11-20 has no counterpart here, so it's correctly reported as "missing"
+// for the selected year, matching how the real backend/allAgeFactors fetch behaves.
+const allAgeFactorsFixture: AgeFactorCVMaster[] = [mockData[0]];
+
+import { ConfirmProvider } from "@/components/common/ConfirmProvider";
 
 function renderComponent(data = mockData) {
     return render(
-        <AgeFactorCvWeightageMaster
-            data={data}
-            pageNumber={1}
-            pageSize={10}
-            totalCount={data.length}
-            totalPages={1}
-            constructionTypeOptions={constructionTypeOptions}
-            assessmentYearOptions={yearOptions}
-            ageRangeOptions={ageRangeOptions}
-            allAgeFactors={[]}
-        />
+        <ConfirmProvider>
+            <AgeFactorCvWeightageMaster
+                data={data}
+                pageNumber={1}
+                pageSize={10}
+                totalCount={data.length}
+                totalPages={1}
+                constructionTypeOptions={constructionTypeOptions}
+                assessmentYearOptions={yearOptions}
+                ageRangeOptions={ageRangeOptions}
+                allAgeFactors={allAgeFactorsFixture}
+            />
+        </ConfirmProvider>
     );
 }
 
@@ -153,22 +167,35 @@ describe("AgeFactorCvWeightageMaster – rendering", () => {
 describe("AgeFactorCvWeightageMaster – row actions", () => {
     beforeEach(() => { vi.clearAllMocks(); });
 
-    it("enables Update button and row-Clear button after changing a cell value", async () => {
+    it("enables row-Clear button after changing a cell value", async () => {
         renderComponent();
         const input = screen.getByDisplayValue("1.50");
         const row = input.closest("tr") as HTMLElement;
-        const updateBtn = within(row).getByRole("button", { name: /update/i });
         const clearBtn = within(row).getByRole("button", { name: /clear/i });
 
-        expect(updateBtn).toBeDisabled();
         expect(clearBtn).toBeDisabled();
 
         fireEvent.change(input, { target: { value: "1.8" } });
 
         await waitFor(() => {
-            expect(updateBtn).not.toBeDisabled();
             expect(clearBtn).not.toBeDisabled();
         });
+    });
+
+    it("shows a localized warning instead of updating when Update is clicked without any change", async () => {
+        renderComponent();
+        const input = screen.getByDisplayValue("1.50");
+        const row = input.closest("tr") as HTMLElement;
+        const updateBtn = within(row).getByRole("button", { name: /update/i });
+
+        expect(updateBtn).not.toBeDisabled();
+
+        fireEvent.click(updateBtn);
+
+        await waitFor(() => {
+            expect(screen.getByText("No changes to update")).toBeInTheDocument();
+        });
+        expect(updateAgeFactorCVMasterAction).not.toHaveBeenCalled();
     });
 
     it("calls updateAgeFactorCVMasterAction when Update is clicked on changed row", async () => {

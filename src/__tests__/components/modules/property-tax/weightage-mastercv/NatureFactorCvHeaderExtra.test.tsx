@@ -6,6 +6,11 @@ import { NatureFactorCvHeaderExtra } from "@/components/modules/property-tax/wei
 // Minimal mock for next-intl useTranslations return type consumed by the component
 vi.mock("next-intl", () => ({
     useTranslations: (ns: string) => (key: string) => `${ns}.${key}`,
+    useLocale: () => "en",
+}));
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({ push: vi.fn() }),
 }));
 
 const mockT = (key: string) => key;

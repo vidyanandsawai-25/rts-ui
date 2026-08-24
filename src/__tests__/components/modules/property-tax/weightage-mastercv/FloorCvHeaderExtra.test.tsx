@@ -5,6 +5,11 @@ import { FloorCvHeaderExtra } from "@/components/modules/property-tax/weightage-
 // Minimal mock for next-intl useTranslations return type consumed by the component
 vi.mock("next-intl", () => ({
     useTranslations: (ns: string) => (key: string) => `${ns}.${key}`,
+    useLocale: () => "en",
+}));
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({ push: vi.fn() }),
 }));
 
 const mockT = (key: string) => key;
@@ -19,6 +24,7 @@ const mockTW = (key: string, params?: Record<string, unknown>) => {
         "common.buttons.updating": "Updating...",
         "common.labels.pendingRecordCreates": (p?: Record<string, unknown>) => p?.count !== undefined ? `${p.count} pending creates` : "pending creates",
         "common.messages.valueExceedsMax": "Value exceeds max",
+        "common.messages.factorPercentageExceedsMax": "Factor/percentage exceeds max",
     };
     const value = map[key];
     if (typeof value === "function") return value(params);
@@ -186,7 +192,7 @@ describe("FloorCvHeaderExtra – factor input", () => {
         const addToast = vi.fn();
         render(<FloorCvHeaderExtra {...buildDefaultProps({ addToast })} />);
         fireEvent.change(screen.getByPlaceholderText("0.00"), { target: { value: "1000000" } });
-        expect(addToast).toHaveBeenCalledWith("error", "Value exceeds max");
+        expect(addToast).toHaveBeenCalledWith("error", "Factor/percentage exceeds max");
     });
 
     it("prevents minus key entry via keydown", () => {

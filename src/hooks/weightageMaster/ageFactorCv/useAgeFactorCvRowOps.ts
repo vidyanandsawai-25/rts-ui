@@ -53,6 +53,16 @@ export const useAgeFactorCvRowOps = ({
             return;
         }
 
+        const factorValue = updatedData.factor ?? row.factor;
+        if (factorValue < 0.1) {
+            addToast("error", tW('common.messages.validFactorRequired') || "Please enter a valid factor value greater than 0");
+            return;
+        }
+        if (factorValue > 100) {
+            addToast("error", tW('common.messages.factorPercentageExceedsMax'));
+            return;
+        }
+
         setIsUpdating(true);
         try {
             let result;

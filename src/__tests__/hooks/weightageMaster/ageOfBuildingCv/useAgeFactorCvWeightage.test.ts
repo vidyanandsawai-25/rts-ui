@@ -13,14 +13,14 @@ const mockSetAgeTo = vi.fn();
 // Create a factory for filter mock state
 const createFiltersMock = (ageFrom = '', ageTo = '') => ({
   selectedYear: '2024',
-  constructionType: '',
+  constructionType: [] as string[],
   factorValue: '0.00',
   setFactorValue: vi.fn(),
   ageFrom,
   setAgeFrom: mockSetAgeFrom,
   ageTo,
   setAgeTo: mockSetAgeTo,
-  selectedAgeRange: '',
+  selectedAgeRange: [] as string[],
   setSelectedAgeRange: mockSetSelectedAgeRange,
   setUserAddedAgeRanges: mockSetUserAddedAgeRanges,
   ageRangeOptions: [
@@ -225,7 +225,7 @@ describe('useAgeFactorCvWeightage', () => {
 
       expect(checkOverlapSpy).toHaveBeenCalledWith(6, 10, ['0-5', '11-15']);
       expect(mockSetUserAddedAgeRanges).toHaveBeenCalled();
-      expect(mockSetSelectedAgeRange).toHaveBeenCalledWith('6-10');
+      expect(mockSetSelectedAgeRange).toHaveBeenCalledWith(['6-10']);
       expect(mockAddToast).toHaveBeenCalledWith(
         'success',
         expect.stringContaining('messages.ageRangeAdded')
