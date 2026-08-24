@@ -219,7 +219,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
           return flat;
         }
       },
-      // Default variant: show CarpetArea + BuildupArea; Parking variant: show ParkingCarpetArea + ParkingBuiltupArea
+      // Default variant: show CarpetArea + BuiltupArea; Parking variant: show ParkingCarpetArea + ParkingBuiltupArea
       ...(variant === 'parking'
         ? [
             {
@@ -235,7 +235,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
               key: 'parkingBuiltupAreaDisplay',
               label: ((): string => {
                 const val = t('floor.selectProperties.parkingBuiltupArea');
-                return !val || val.includes('selectProperties') ? 'Parking Buildup Area (Sq.Ft / Sq.M)' : val;
+                return !val || val.includes('selectProperties') ? 'Parking Builtup Area (Sq.Ft / Sq.M)' : val;
               })(),
               width: '180px',
               cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
@@ -316,7 +316,7 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         loadingText={t('floor.selectProperties.loading')}
         containerClassName="md:[&_div:has(>h3)]:w-auto md:[&_div:has(>.select-properties-header-extra)]:w-auto md:[&_div:has(>.select-properties-header-extra)]:grow"
         tableClassName="table-fixed text-xs [&_th]:px-3 [&_td]:px-3"
-        maxBodyHeightClassName="max-h-[260px]"
+        maxBodyHeightClassName="min-h-[200px] max-h-[260px]"
       />
     </div>
   );

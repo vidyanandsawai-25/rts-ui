@@ -105,7 +105,7 @@ export const PropertyTrackingDrawer = ({
                 submittedBy: item.officerName || '-'
             };
         });
-    }, [stageItems]);
+    }, [stageItems, locale]);
 
     const completedCount = trackingStages.filter(s => s.status === 'Completed').length;
     const totalCount = trackingStages.length;
