@@ -113,6 +113,7 @@ export function LoginCredentialFields({
   const labelShowPassword = t('showPassword') || copy?.showPassword;
   const labelHidePassword = t('hidePassword') || copy?.hidePassword;
   const labelSignIn = t('signIn') || copy?.signIn;
+  const labelForgotPassword = (t('forgotPassword') || copy?.forgotPassword || 'Forgot Password').replace('?', '');
 
   return (
     <>
@@ -183,13 +184,21 @@ export function LoginCredentialFields({
               </Button>
             ) : null}
           </div>
+          <div className="flex justify-end pt-1">
+            <a
+              href={`/${locale}/login/forgot-password`}
+              className="text-sm font-semibold text-cyan-600 hover:text-cyan-800 hover:underline transition-colors"
+            >
+              {labelForgotPassword}
+            </a>
+          </div>
         </div>
       </div>
 
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="flex justify-center pt-4"
+        className="flex justify-center pt-1"
       >
         <FormSubmitButton className={LOGIN_PRIMARY_SUBMIT_CLASS}>{labelSignIn}</FormSubmitButton>
       </motion.div>

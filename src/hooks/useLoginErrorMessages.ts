@@ -32,7 +32,26 @@ const AUTH_ERROR_TO_LOGIN_I18N_KEY: Record<string, string> = {
   [AUTH_ERROR_CODES.RESEND_FAILED]: 'RESEND_FAILED',
   [AUTH_ERROR_CODES.RESET_FAILED]: 'RESET_FAILED',
   [AUTH_ERROR_CODES.INVALID_REQUEST]: 'INVALID_REQUEST',
-  PASSWORDS_MISMATCH: 'passwordsMismatch',
+  [AUTH_ERROR_CODES.CURRENT_PASSWORD_REQUIRED]: 'currentPasswordRequired',
+  [AUTH_ERROR_CODES.NEW_PASSWORD_REQUIRED]: 'newPasswordRequired',
+  [AUTH_ERROR_CODES.PASSWORD_TOO_SHORT]: 'passwordMinLength',
+  [AUTH_ERROR_CODES.PASSWORD_DIFFERENT_REQUIRED]: 'newPasswordMustBeDifferent',
+  [AUTH_ERROR_CODES.PASSWORDS_MISMATCH]: 'passwordsMismatch',
+  [AUTH_ERROR_CODES.CHANGE_PASSWORD_FAILED]: 'changePasswordFailed',
+  [AUTH_ERROR_CODES.INVALID_CURRENT_PASSWORD]: 'invalidCurrentPassword',
+  // Common backend error text mappings
+  'Current password is incorrect.': 'invalidCurrentPassword',
+  'Current password is required.': 'currentPasswordRequired',
+  'New password is required.': 'newPasswordRequired',
+  'New password must be different from current password.': 'newPasswordMustBeDifferent',
+  'New password and confirmation password do not match.': 'passwordsMismatch',
+  'Password must be at least 6 characters long.': 'passwordMinLength',
+  'User not found or account is inactive.': 'ACCOUNT_INACTIVE',
+  'Failed to change password.': 'changePasswordFailed',
+  'Failed to update password.': 'changePasswordFailed',
+  'All password fields are required.': 'passwordsRequired',
+  'Username is required to change password.': 'usernameRequired',
+  'Username is required': 'usernameRequired',
 };
 
 /**

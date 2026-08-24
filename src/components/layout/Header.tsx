@@ -13,6 +13,7 @@ import { sanitizeInput } from '@/lib/utils/security';
 import { resolveActiveScreenContext } from '@/lib/utils/active-screen-context';
 import { locales, switchLocale, getLocaleFromPathname, type Locale } from '@/i18n/config';
 import { logoutAction } from '@/app/[locale]/login/actions';
+import { ChangePasswordModal } from './ChangePasswordModal';
 
 const HEADER_COLORS = {
   background: '#143D7D',
@@ -85,6 +86,7 @@ export function Header({
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [isLogoutPending, startLogoutTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -478,24 +480,21 @@ export function Header({
                         </Button>
                       </span>
                     </Tooltip>
-                    <Tooltip content={t('userMenu.comingSoon')} placement="top">
-                      <span className="block w-full">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          disabled
-                          aria-disabled
-                          aria-label={`${t('userMenu.changePassword')}: ${t('userMenu.comingSoon')}`}
-                          className={`${menuNavBtnClass} cursor-not-allowed`}
-                        >
-                          <span className="flex w-full items-center gap-3">
-                            <Lock className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
-                            {t('userMenu.changePassword')}
-                          </span>
-                        </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setChangePasswordOpen(true);
+                      }}
+                      className={menuNavBtnClass}
+                    >
+                      <span className="flex w-full items-center gap-3">
+                        <Lock className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
+                        {t('userMenu.changePassword')}
                       </span>
-                    </Tooltip>
+                    </Button>
                   </nav>
 
                   <div className="border-t border-white/10 py-1">
@@ -588,6 +587,11 @@ export function Header({
           </div>
         </div>
       </div>
+
+      <ChangePasswordModal
+        isOpen={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+      />
     </header>
   );
 }

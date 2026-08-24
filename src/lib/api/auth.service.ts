@@ -13,6 +13,8 @@ import type {
   VerifyForgotPasswordOtpApiBody,
   ResetPasswordRequest,
   ResetPasswordApiBody,
+  ChangePasswordRequest,
+  ChangePasswordApiBody,
 } from '@/types/login.types';
 import { ApiResponse } from '@/types/common.types';
 
@@ -269,6 +271,22 @@ export const authService = {
    */
   async resetPassword(request: ResetPasswordRequest): Promise<ApiResponse<ResetPasswordApiBody>> {
     return authJsonRequest<ResetPasswordApiBody>('POST', '/Auth/forgot-password/reset', request);
+  },
+
+  /**
+   * POST `/Auth/change-password` — body `{ currentPassword, newPassword, confirmPassword }`.
+   * Changes password for the authenticated user. Requires valid JWT Bearer token.
+   */
+  async changePassword(
+    request: ChangePasswordRequest,
+    token?: string
+  ): Promise<ApiResponse<ChangePasswordApiBody>> {
+    return authJsonRequest<ChangePasswordApiBody>(
+      'POST',
+      '/Auth/change-password',
+      request,
+      token ? { Authorization: `Bearer ${token}` } : undefined
+    );
   },
 
   async logout(sessionId: string, token: string): Promise<ApiResponse<void>> {
