@@ -48,7 +48,7 @@ export function CitizenHeader({
       const res = await switchCitizenPropertyAction(ownerId);
       if (res.success) {
         setIsPropertiesDrawerOpen(false);
-        router.refresh();
+        window.location.href = `/${activeLocale}/service/dashboard`;
       } else {
         alert(res.error || t('switchPropertyError'));
       }

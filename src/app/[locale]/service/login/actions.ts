@@ -338,11 +338,31 @@ export async function switchCitizenPropertyAction(ownerId: number) {
   try {
     const c = await cookies();
     const propertiesCookie = c.get('rts_citizen_properties')?.value;
-    if (!propertiesCookie) {
+    let properties: CitizenProperty[] = [];
+    if (propertiesCookie) {
+      try {
+        properties = JSON.parse(propertiesCookie);
+      } catch {
+        properties = [];
+      }
+    }
+
+    if (properties.length === 0) {
+      const profileCookie = c.get('rts_citizen_profile')?.value;
+      if (profileCookie) {
+        try {
+          const p = JSON.parse(profileCookie);
+          if (p.mobile) {
+            properties = await fetchCitizenPropertiesFromApi('MobileNo', p.mobile);
+          }
+        } catch {}
+      }
+    }
+
+    if (properties.length === 0) {
       return { success: false, error: 'Properties not found in session.' };
     }
 
-    const properties: CitizenProperty[] = JSON.parse(propertiesCookie);
     const selected = properties.find((p) => p.ownerId === ownerId);
     if (!selected) {
       return { success: false, error: 'Property not found.' };
@@ -359,7 +379,7 @@ export async function switchCitizenPropertyAction(ownerId: number) {
     c.set('rts_citizen_profile', JSON.stringify(citizenProfile), {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       path: '/',
       maxAge: 24 * 60 * 60,
     });

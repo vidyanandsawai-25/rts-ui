@@ -7,6 +7,7 @@ import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
 import { CitizenHeader } from './CitizenHeader';
 import { CitizenFooter } from './CitizenFooter';
 import { validateRtsCitizenSession } from '@/lib/api/rts/rtscitizensession.service';
+import { fetchCitizenPropertiesFromApi, type CitizenProperty } from '@/lib/api/citizen-property.service';
 
 interface CitizenLayoutProps {
   children: React.ReactNode;
@@ -36,12 +37,21 @@ export async function CitizenLayout({ children }: CitizenLayoutProps) {
   }
 
   const propertiesCookie = cookieStore.get('rts_citizen_properties')?.value;
-  let properties = [];
+  let properties: CitizenProperty[] = [];
   if (propertiesCookie) {
     try {
       properties = JSON.parse(propertiesCookie);
     } catch {
       properties = [];
+    }
+  }
+
+  // Fallback: If cookie was omitted/dropped due to browser cookie size limit (4KB), fetch dynamically
+  if (properties.length === 0 && profile?.mobile) {
+    try {
+      properties = await fetchCitizenPropertiesFromApi('MobileNo', profile.mobile);
+    } catch (err) {
+      console.error('Failed to fetch citizen properties in layout:', err);
     }
   }
 
