@@ -1,5 +1,5 @@
-/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
-import { useState, useEffect, useCallback } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useCallback } from "react";
 import { useSearchParams, usePathname } from "next/navigation";
 import { PagedResponse } from "@/types/common.types";
 import { BulkUpdateMaster, FieldRegistrySchema, CommonDetailsUpdateActions, FieldRegistryTable, SourceTableField } from "@/types/common-details-update/common-details-update.types";
@@ -35,8 +35,9 @@ export const useFieldRegistryState = (
     return 0;
   });
 
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilterState] = useState("all");
   const [searchTerm, setSearchTermState] = useState(searchParams.get("searchTerm") || "");
+  const [loading, setLoading] = useState(false);
 
   const initialPageNumber = Number(searchParams.get("pageNumber") || searchParams.get("page") || "1");
   const initialPageSize = Number(searchParams.get("pageSize") || "10");
@@ -44,8 +45,14 @@ export const useFieldRegistryState = (
   const [pageNumber, setPageNumberState] = useState(initialPageNumber);
   const [pageSize, setPageSizeState] = useState(initialPageSize);
 
+  const setStatusFilter = (val: string) => {
+    setStatusFilterState(val);
+    setPageNumberState(1);
+  };
+
   const setSearchTerm = (val: string) => {
     setSearchTermState(val);
+    setPageNumberState(1);
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (val) params.set("searchTerm", val); else params.delete("searchTerm");
@@ -53,16 +60,45 @@ export const useFieldRegistryState = (
     }
   };
 
-  const setPageNumber = (val: number) => {
+  const refreshFieldsList = useCallback(async (targetPage?: number, targetSize?: number) => {
+    if (!actions.getFieldRegistriesAction) return;
+
+    const pNum = targetPage !== undefined ? targetPage : pageNumber;
+    const pSize = targetSize !== undefined ? targetSize : pageSize;
+
+    setLoading(true);
+    try {
+      const res = await actions.getFieldRegistriesAction(pNum, pSize);
+      if (res.success && res.data) {
+        const data = res.data;
+        if (data && "items" in data) {
+          setFields(data.items || []);
+          setTotalCount(data.totalCount || (data.items ? data.items.length : 0));
+        } else if (Array.isArray(data)) {
+          setFields(data);
+          setTotalCount(data.length);
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [actions.getFieldRegistriesAction, pageNumber, pageSize]);
+
+  const setPageNumber = useCallback((val: number) => {
+    setLoading(true);
     setPageNumberState(val);
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       params.set("pageNumber", String(val));
       window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
     }
-  };
+    setTimeout(() => {
+      setLoading(false);
+    }, 150);
+  }, [pathname]);
 
-  const setPageSize = (val: number) => {
+  const setPageSize = useCallback((val: number) => {
+    setLoading(true);
     setPageSizeState(val);
     setPageNumberState(1);
     if (typeof window !== "undefined") {
@@ -71,38 +107,10 @@ export const useFieldRegistryState = (
       params.set("pageNumber", "1");
       window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
     }
-  };
-
-  const refreshFieldsList = useCallback(async () => {
-    if (!actions.getFieldRegistriesAction) return;
-  
-    const res = await actions.getFieldRegistriesAction(pageNumber, pageSize);
-    if (res.success && res.data) {
-      const data = res.data;
-      if (data && "items" in data) {
-        setFields(data.items || []);
-        setTotalCount(data.totalCount || 0);
-      }
-    }
-    
-  }, [actions.getFieldRegistriesAction, pageNumber, pageSize]);
-
-  useEffect(() => {
-    refreshFieldsList();
-  }, [refreshFieldsList]);
-
-  useEffect(() => {
-    if (Array.isArray(initialFields)) {
-      setFields(initialFields);
-      setTotalCount(initialFields.length);
-    } else if (initialFields && "items" in initialFields) {
-      setFields(initialFields.items || []);
-      setTotalCount(initialFields.totalCount || 0);
-    } else {
-      setFields([]);
-      setTotalCount(0);
-    }
-  }, [initialFields]);
+    setTimeout(() => {
+      setLoading(false);
+    }, 150);
+  }, [pathname]);
 
   const formState = useFieldRegistryForm(fields, refreshFieldsList, initialSchemas, initialSourceTables, initialSourceTableFields);
 
@@ -123,6 +131,7 @@ export const useFieldRegistryState = (
     pageNumber, setPageNumber,
     pageSize, setPageSize,
     totalCount,
+    loading,
     toggleFieldStatus,
     setFieldRegistryStatusAction: actions.setFieldRegistryStatusAction,
   };

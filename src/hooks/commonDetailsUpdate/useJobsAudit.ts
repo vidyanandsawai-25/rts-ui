@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/components/common";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { exportToExcel } from "@/lib/utils/automation-dashboard/export/excelExport";
@@ -35,6 +35,7 @@ export const useJobsAudit = ({
   t,
   updateUrlParams: providedUpdateUrlParams,
 }: UseJobsAuditOptions) => {
+  const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -268,6 +269,12 @@ export const useJobsAudit = ({
 
   const handleViewClick = useCallback(
     (row: UpdateHistoryItem) => {
+      const isFailed = ["failed", "error"].includes(String(row.activityStatus || "").trim().toLowerCase());
+      if (isFailed) {
+        toast.info(t("jobsAudit.messages.activityFailedCannotView"));
+        return;
+      }
+
       lastFetchRef.current = "";
       setSelectedRow(row);
       setIsModalOpen(true);
@@ -279,7 +286,7 @@ export const useJobsAudit = ({
         updateUrlParams({ activityId: targetId });
       }
     },
-    [updateUrlParams]
+    [updateUrlParams, t, toast]
   );
 
   // Reset modal page to 1 on debounced search change
@@ -526,6 +533,7 @@ export const useJobsAudit = ({
     debouncedModalSearchTerm,
     modalDetailsData,
     t,
+    toast,
   ]);
 
   const onModalExportClick = async () => {

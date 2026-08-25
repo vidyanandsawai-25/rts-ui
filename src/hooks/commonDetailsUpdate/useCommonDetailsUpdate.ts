@@ -233,6 +233,9 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     new Set()
   );
   const [isSelectAllAcrossPages, setIsSelectAllAcrossPages] = useState(false);
+  const [excludedPropertyIds, setExcludedPropertyIds] = useState<Set<number>>(
+    new Set()
+  );
 
   const [formValues, setFormValues] = useState<
     Record<string, string | number | boolean>
@@ -711,7 +714,27 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     [properties]
   );
 
-  const allSelected = isSelectAllAcrossPages || (totalCount > 0 && selectedPropertyIds.size === totalCount);
+  const allSelected = useMemo(() => {
+    if (totalCount === 0) return false;
+    if (isSelectAllAcrossPages) {
+      return excludedPropertyIds.size === 0;
+    }
+    return selectedPropertyIds.size === totalCount;
+  }, [totalCount, isSelectAllAcrossPages, excludedPropertyIds.size, selectedPropertyIds.size]);
+
+  const selectedCount = useMemo(() => {
+    if (isSelectAllAcrossPages) {
+      return Math.max(0, totalCount - excludedPropertyIds.size);
+    }
+    return selectedPropertyIds.size;
+  }, [isSelectAllAcrossPages, totalCount, excludedPropertyIds.size, selectedPropertyIds.size]);
+
+  const isPropertySelected = useCallback((id: number) => {
+    if (isSelectAllAcrossPages) {
+      return !excludedPropertyIds.has(id);
+    }
+    return selectedPropertyIds.has(id);
+  }, [isSelectAllAcrossPages, excludedPropertyIds, selectedPropertyIds]);
 
   const isFormValid = useMemo(
     () =>
@@ -1368,6 +1391,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     setTotalCount(0);
     setSelectedPropertyIds(new Set());
     setIsSelectAllAcrossPages(false);
+    setExcludedPropertyIds(new Set());
     setPropertiesPage(1);
     setWings([]);
     setPropertyOptions([]);
@@ -1394,27 +1418,40 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
   }, [pathname, router, t]);
 
   const handleSelectAll = useCallback(() => {
-    if (isSelectAllAcrossPages || allSelected) {
+    if (allSelected || isSelectAllAcrossPages) {
       setIsSelectAllAcrossPages(false);
+      setExcludedPropertyIds(new Set());
       setSelectedPropertyIds(new Set());
     } else {
       setIsSelectAllAcrossPages(true);
-      setSelectedPropertyIds(new Set(properties.map(p => p.id))); // select current page visually in state too
+      setExcludedPropertyIds(new Set());
+      setSelectedPropertyIds(new Set());
     }
-  }, [isSelectAllAcrossPages, allSelected, properties]);
+  }, [allSelected, isSelectAllAcrossPages]);
 
   const handlePropertySelect = useCallback((id: number, checked: boolean) => {
     if (isSelectAllAcrossPages) {
-      toast.warning(t("messages.cannotDeselectIndividual"));
-      return;
+      setExcludedPropertyIds((prev) => {
+        const next = new Set(prev);
+        if (!checked) {
+          next.add(id);
+        } else {
+          next.delete(id);
+        }
+        return next;
+      });
+    } else {
+      setSelectedPropertyIds((prev) => {
+        const next = new Set(prev);
+        if (checked) {
+          next.add(id);
+        } else {
+          next.delete(id);
+        }
+        return next;
+      });
     }
-    setSelectedPropertyIds((prev) => {
-      const next = new Set(prev);
-      if (checked) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-  }, [isSelectAllAcrossPages, t]);
+  }, [isSelectAllAcrossPages]);
 
   const handlePropertiesPageSizeChange = useCallback((newSize: number) => {
     setPropertiesPageSize(newSize);
@@ -1610,7 +1647,9 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
           })
             .then(res => {
               if (res.success && res.data && res.data.items) {
-                idsToUpdate = res.data.items.map((p: { id: number }) => p.id);
+                idsToUpdate = res.data.items
+                  .map((p: { id: number }) => p.id)
+                  .filter((id: number) => !excludedPropertyIds.has(id));
                 resolve();
               } else {
                 reject(new Error("Failed to load properties"));
@@ -1837,6 +1876,10 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     // Selection
     selectedPropertyIds,
     allSelected,
+    selectedCount,
+    isPropertySelected,
+    isSelectAllAcrossPages,
+    excludedPropertyIds,
     handleSelectAll,
     handlePropertySelect,
     // Form
