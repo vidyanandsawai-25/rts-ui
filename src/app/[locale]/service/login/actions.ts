@@ -36,33 +36,34 @@ async function establishCitizenSession(
   fallbackProfile?: { name?: string; upicId?: string; propertyNo?: string; ownerId?: number },
   externalServiceId?: string
 ): Promise<CitizenLoginActionResult> {
+  const selectedOwnerIdStr = c.get('rts_selected_owner_id')?.value;
+  const targetOwnerId = selectedOwnerIdStr ? Number(selectedOwnerIdStr) : (fallbackProfile?.ownerId || 0);
+
   // Fetch citizen details from dynamic API
   let citizenProfile = {
     name: fallbackProfile?.name || 'नागरिक',
     upicId: fallbackProfile?.upicId || '',
     propertyNo: fallbackProfile?.propertyNo || '',
     mobile: mobile,
-    ownerId: fallbackProfile?.ownerId || 0,
+    ownerId: targetOwnerId,
   };
 
   let properties: CitizenProperty[] = [];
 
-  if (!fallbackProfile?.upicId && !fallbackProfile?.propertyNo) {
-    try {
-      properties = await fetchCitizenPropertiesFromApi('MobileNo', mobile);
-      if (properties.length > 0) {
-        const first = properties[0];
-        citizenProfile = {
-          name: first.ownerNameMarathi || citizenProfile.name,
-          upicId: first.upicNo || citizenProfile.upicId,
-          propertyNo: first.propertyNo || citizenProfile.propertyNo,
-          mobile: first.mobileNo || mobile,
-          ownerId: first.ownerId || citizenProfile.ownerId,
-        };
-      }
-    } catch (err) {
-      console.error("Failed to fetch citizen profile during login:", err);
+  try {
+    properties = await fetchCitizenPropertiesFromApi('MobileNo', mobile);
+    if (properties.length > 0) {
+      const selected = (targetOwnerId > 0 ? properties.find((p) => p.ownerId === targetOwnerId) : null) || properties[0];
+      citizenProfile = {
+        name: selected.ownerNameMarathi || citizenProfile.name,
+        upicId: selected.upicNo || citizenProfile.upicId,
+        propertyNo: selected.propertyNo || citizenProfile.propertyNo,
+        mobile: selected.mobileNo || mobile,
+        ownerId: selected.ownerId || citizenProfile.ownerId,
+      };
     }
+  } catch (err) {
+    console.error("Failed to fetch citizen profile during login:", err);
   }
 
   const sessionId = crypto.randomUUID();
@@ -120,6 +121,7 @@ async function establishCitizenSession(
   c.delete('rts_otp_txn');
   c.delete('rts_otp_code');
   c.delete('rts_otp_expires_at');
+  c.delete('rts_selected_owner_id');
 
   const requestedServiceId = Number(externalServiceId);
   if (!Number.isInteger(requestedServiceId) || requestedServiceId <= 0) {
@@ -135,10 +137,73 @@ async function establishCitizenSession(
   return { success: true, citizen: citizenProfile, externalDestination: navigation.destination, serviceRedirectError: null };
 }
 
+export async function searchCitizenPropertiesAction(
+  method: 'mobile' | 'upic' | 'property',
+  payload: { mobile?: string; upicId?: string; propertyNo?: string }
+): Promise<{ success: boolean; properties?: CitizenProperty[]; mobile?: string; error?: string }> {
+  let searchValue = '';
+  let searchType: 'MobileNo' | 'UpicId' | 'PropertyNo' = 'MobileNo';
+
+  if (method === 'mobile') {
+    searchValue = payload.mobile?.replace(/\D/g, '') || '';
+    if (!/^\d{10}$/.test(searchValue)) {
+      return { success: false, error: 'कृपया वैध १०-अंकी मोबाईल नंबर प्रविष्ट करा. / Please enter a valid 10-digit phone number.' };
+    }
+    searchType = 'MobileNo';
+  } else if (method === 'upic') {
+    searchValue = payload.upicId?.trim() || '';
+    if (!searchValue) {
+      return { success: false, error: 'कृपया युपीआयसी आयडी (UPIC ID) प्रविष्ट करा. / Please enter a UPIC ID.' };
+    }
+    searchType = 'UpicId';
+  } else if (method === 'property') {
+    searchValue = payload.propertyNo?.trim() || '';
+    if (!searchValue) {
+      return { success: false, error: 'कृपया मालमत्ता क्रमांक प्रविष्ट करा. / Please enter a Property Number.' };
+    }
+    searchType = 'PropertyNo';
+  }
+
+  try {
+    const properties = await fetchCitizenPropertiesFromApi(searchType, searchValue);
+    if (!properties || properties.length === 0) {
+      return {
+        success: false,
+        error: method === 'mobile'
+          ? 'हा मोबाईल नंबर नोंदणीकृत नाही. कृपया नोंदणीकृत मोबाईल नंबर प्रविष्ट करा. / This mobile number is not registered with any property.'
+          : method === 'upic'
+          ? 'हा UPIC आयडी नोंदणीकृत नाही. कृपया बरोबर UPIC आयडी प्रविष्ट करा. / This UPIC ID is not registered.'
+          : 'हा मालमत्ता क्रमांक नोंदणीकृत नाही. कृपया बरोबर मालमत्ता क्रमांक प्रविष्ट करा. / This Property Number is not registered.',
+      };
+    }
+
+    const mobile = properties[0].mobileNo || (method === 'mobile' ? searchValue : '');
+
+    let allProperties = properties;
+    if (searchType !== 'MobileNo' && mobile && /^\d{10}$/.test(mobile)) {
+      try {
+        const fullList = await fetchCitizenPropertiesFromApi('MobileNo', mobile);
+        if (fullList && fullList.length > 0) {
+          allProperties = fullList;
+        }
+      } catch {}
+    }
+
+    return {
+      success: true,
+      properties: allProperties,
+      mobile,
+    };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'मालमत्ता शोधण्यात अडचण आली. कृपया पुन्हा प्रयत्न करा.' };
+  }
+}
+
 export async function sendCitizenOtpAction(
   method: 'mobile' | 'upic' | 'property',
   payload: { mobile?: string; upicId?: string; propertyNo?: string },
-  _externalServiceId?: string
+  _externalServiceId?: string,
+  selectedOwnerId?: number
 ): Promise<CitizenLoginActionResult> {
   let searchValue = '';
   let searchType: 'MobileNo' | 'UpicId' | 'PropertyNo' = 'MobileNo';
@@ -202,6 +267,10 @@ export async function sendCitizenOtpAction(
     c.set('rts_otp_code', demoOtp, { httpOnly: true, sameSite: 'lax', path: '/' });
     c.set('rts_otp_expires_at', String(Date.now() + OTP_TTL_MS), { httpOnly: true, sameSite: 'lax', path: '/' });
 
+    if (selectedOwnerId) {
+      c.set('rts_selected_owner_id', String(selectedOwnerId), { httpOnly: true, sameSite: 'lax', path: '/' });
+    }
+
     return {
       success: true,
       directLogin: false,
@@ -260,6 +329,7 @@ export async function logoutCitizenAction() {
   c.delete('rts_otp_txn');
   c.delete('rts_otp_code');
   c.delete('rts_otp_expires_at');
+  c.delete('rts_selected_owner_id');
 
   return { success: true };
 }
