@@ -21,7 +21,7 @@
       "table": {
         "zoneNo": "Zone No",
         "zoneType": "Zone Type",
-        "remark": "Remark",
+        "remark": "Zone Description",
         "status": "Status",
         "actions": "Actions"
       }
@@ -41,8 +41,8 @@
           "placeholder": "e.g. Residential"
         },
         "remark": {
-          "label": "Remark",
-          "placeholder": "Enter remark"
+          "label": "Zone Description",
+          "placeholder": "Enter zone description"
         }
       },
       "validation": {
@@ -59,7 +59,9 @@
         "remarkAllZeros": "Remark cannot contain only zeros",
         "remarkFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         "fixErrors": "Please fix validation errors",
-        "duplicateError": "Please check Zone No and Zone Type - duplicates not allowed."
+        "duplicateError": "Please check Zone No and Zone Type - duplicates not allowed.",
+        "remarkMax": "Maximum length is 50 characters",
+        "zoneTypeMax": "Maximum length is 50 characters"
       },
       "status": {
         "label": "Active Status",

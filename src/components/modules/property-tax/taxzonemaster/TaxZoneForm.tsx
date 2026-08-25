@@ -76,6 +76,9 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
     } else if (!DESCRIPTION_REGEX.test(data.taxZoneType)) {
       e.taxZoneType = t("form.validation.zoneTypeFormat");
     }
+    else if (data.taxZoneType.length > 50) {
+      e.taxZoneType = t("form.validation.zoneTypeMax");
+    }
 
     // Remark: Use DESCRIPTION_REGEX (special chars in between, single space only)
     if (!data.remark?.trim()) {
@@ -84,6 +87,9 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
       e.remark = t("form.validation.remarkAllZeros");
     } else if (!DESCRIPTION_REGEX.test(data.remark)) {
       e.remark = t("form.validation.remarkFormat");
+    }
+    else if (data.remark.length > 50) {
+      e.remark = t("form.validation.remarkMax");
     }
 
     return e;
