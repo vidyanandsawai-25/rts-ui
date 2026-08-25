@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { MasterTable } from "@/components/common/MasterTable";
 import { Option } from "@/components/common/select";
-import { UpdateButton, CancelButton, SaveButton, EditButton, DeleteButton } from "@/components/common/ActionButtons";
+import { UpdateButton, SaveButton, EditButton, DeleteButton, ClearButton } from "@/components/common/ActionButtons";
 import { ToastContainer } from "@/components/common/Toast";
 import { NatureFactorCVMaster as NatureFactorCVMasterType } from "@/types/natureofbuilding-cv-weightageMaster.types";
 import { useNatureFactorCv } from "@/hooks/weightageMaster/natureFactorCv/useNatureFactorCv";
@@ -119,7 +119,7 @@ const NatureFactorCVMaster: React.FC<NatureFactorCVMasterProps> = ({
                     }}
                     disabled={isUpdating || isBulkUpdating}
                 />
-                <CancelButton
+                <ClearButton
                     size="sm"
                     onClick={() => handleCancel(row)}
                     disabled={!hasRowChanges || isUpdating || isBulkUpdating}
