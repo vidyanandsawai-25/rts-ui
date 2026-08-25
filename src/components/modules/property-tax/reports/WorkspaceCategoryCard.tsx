@@ -1,7 +1,8 @@
 'use client';
-import type { Category } from './ReportWorkspaceConfig';
+import type { Category } from '@/types/report.types';
 import Image from 'next/image';
-import { Badge } from '@/components/common';
+import { Button } from '@/components/common';
+
 interface CategoryCardProps {
   category: Category;
   label: string;
@@ -14,44 +15,45 @@ interface CategoryCardProps {
 export function CategoryCard({ category, label, count, reportsCountTemplate, isSelected, onClick }: CategoryCardProps) {
   const Icon = category.icon;
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
       onClick={onClick}
-      className={`relative rounded-xl border p-3 text-center cursor-pointer transition-all duration-300 flex flex-col items-center gap-2 w-full hover:-translate-y-1 hover:shadow-md focus:outline-none bg-white
+      className={`relative rounded-lg border p-2.5 text-center cursor-pointer transition-all duration-300 flex flex-col items-center gap-1.5 w-full h-auto focus:outline-none
+        ${category.bgColor}
         ${isSelected
-          ? `${category.borderColor} ${category.glowClass} border-2 shadow-lg scale-[1.03]`
-          : 'border-gray-200 text-gray-700 hover:border-gray-300'
+          ? `${category.borderColor} border-2 ${category.glowClass} shadow-md scale-[1.04] -translate-y-0.5`
+          : `border-gray-200 hover:-translate-y-0.5 hover:shadow-sm hover:${category.borderColor}`
         }`}
     >
+      {/* Selected dot indicator */}
       {isSelected && (
-        <Badge variant="secondary" className={`bg-transparent border-none px-0 hover:bg-transparent absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${category.color}`} style={{ backgroundColor: 'currentColor' }} />
+        <span className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full border ${category.borderColor} bg-white`} />
       )}
-      <Badge variant="secondary" className={`bg-transparent border-none px-0 hover:bg-transparent transition-all duration-300`}>
+
+      {/* Icon wrapper */}
+      <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 ${category.iconBg}`}>
         {category.logoBase64 && category.logoContentType ? (
           <Image
             src={`data:${category.logoContentType};base64,${category.logoBase64}`}
             alt={label}
-            width={24}
-            height={24}
-            className={`w-6 h-6 object-contain ${!isSelected && 'grayscale opacity-60'}`}
+            width={14}
+            height={14}
+            className={`w-3.5 h-3.5 object-contain ${!isSelected && 'opacity-70'}`}
           />
         ) : Icon ? (
-          <Icon className={`w-5 h-5 ${isSelected ? category.color : 'text-gray-500'}`} />
+          <Icon className={`w-3.5 h-3.5 transition-colors duration-300 ${category.color} ${!isSelected && 'opacity-80'}`} />
         ) : null}
-      </Badge>
-      <div className="flex flex-col items-center">
-        <Badge variant="secondary" className={`bg-transparent border-none px-0 hover:bg-transparent block text-xs font-bold leading-tight ${isSelected ? `${category.color} font-extrabold` : 'text-gray-700'}`}>
-          {label}
-        </Badge>
       </div>
-      <Badge variant="secondary" className={`bg-transparent border-none px-0 hover:bg-transparent text-[10px] font-bold mt-1.5 transition-all duration-300
-        ${isSelected
-          ? category.color
-          : 'text-gray-500'
-        }`}
-      >
+
+      {/* Label */}
+      <p className={`text-sm font-bold leading-tight transition-colors duration-300 ${category.color} ${!isSelected && 'opacity-80'}`}>
+        {label}
+      </p>
+
+      {/* Report count */}
+      <span className={`text-[9px] font-semibold transition-colors duration-300 ${category.color} ${!isSelected && 'opacity-60'}`}>
         {reportsCountTemplate.replace('{count}', String(count))}
-      </Badge>
-    </button>
+      </span>
+    </Button>
   );
 }

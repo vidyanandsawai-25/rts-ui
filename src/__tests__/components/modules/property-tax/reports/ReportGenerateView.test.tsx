@@ -1,8 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ReportGenerateView } from '@/components/modules/property-tax/reports/ReportGenerateView';
-import type { ReportDefinition, ReportWorkspaceCopy, ReportParamsPanelCopy } from '@/types/report.types';
-import type { Category } from '@/components/modules/property-tax/reports/ReportWorkspaceConfig';
+import type { Category, ReportDefinition, ReportWorkspaceCopy, ReportParamsPanelCopy } from '@/types/report.types';
 import { Home, BarChart2 } from 'lucide-react';
 
 // Mock next/image

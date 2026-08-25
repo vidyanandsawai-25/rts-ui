@@ -1,7 +1,6 @@
 import RateMasterView from "@/components/modules/property-tax/RVRateMaster/RateMasterView";
 import {
   getRateMasterData,
-  getZoneDescriptionsPaged,
   getRateUnitPolicy,
   getRateFrequencyPolicy,
   getGlobalFrequencyMismatch
@@ -31,12 +30,10 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
   // Fetch all master data in one call (for mapping, fetch all zones, not just paginated)
   const [
     allMasterData,
-    paginatedZonesResult,
     rateUnitPolicy,
     rateFrequencyPolicy
   ] = await Promise.all([
     getRateMasterData(1, -1), 
-    getZoneDescriptionsPaged(zonePage, zonePageSize),
     getRateUnitPolicy(),
     getRateFrequencyPolicy()
   ]);
@@ -56,28 +53,25 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
   const selectedUseGroup = params?.useGroup || (firstValidUseGroup?.value ?? '');
   const selectedYear = params?.year || (assessmentYears.length > 0 ? assessmentYears[0].value : "ALL");
 
-  // STEP 1: Use paginated zones for UI
-  const paginatedZones = paginatedZonesResult.items;
-  const totalZonePages = paginatedZonesResult.totalPages;
-  const totalZonesCount = paginatedZonesResult.totalCount;
-
-  // STEP 2: Get taxZoneIds for the current page of zones (for server-side filtering)
-  const paginatedTaxZoneIds = paginatedZones.map(z => z.taxZoneId);
-
-  // STEP 3: Fetch ONLY rates for the paginated zones (server-side zone pagination)
+  // Fetch ALL rates matching the filters (selectedZone, selectedUseGroup, selectedYear)
   const ratesResult = await getRateMasterPaged(
     1, 
-    -1, // Fetch all matching rates for the filtered zones
+    -1, // Fetch all matching rates
     constructionTypes, 
     zoneDescriptions, 
     selectedZone, 
     selectedUseGroup, 
     selectedYear,
-    paginatedTaxZoneIds // Pass only the current page's zone IDs
+    undefined // Do not restrict by taxZoneIds
   );
 
-  // Use the filtered rates directly (already filtered by taxZoneIds in getRateMasterPaged)
-  const filteredRates = ratesResult.items;
+  const allFilteredRates = ratesResult.items || [];
+  const totalZonesCount = allFilteredRates.length;
+  const totalZonePages = Math.ceil(totalZonesCount / zonePageSize);
+
+  // Paginate the rate master rows for UI display
+  const startIdx = (zonePage - 1) * zonePageSize;
+  const filteredRates = allFilteredRates.slice(startIdx, startIdx + zonePageSize);
 
   // STEP 4: Check for global frequency mismatch
   const globalFrequencyMismatch = await getGlobalFrequencyMismatch(

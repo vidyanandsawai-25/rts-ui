@@ -19,6 +19,22 @@ export interface ReportModule {
   logoBase64: string | null;
 }
 
+export type Step = 1 | 2 | 3 | 4;
+
+export interface Category {
+  id?: number;
+  key: string;
+  name?: string;
+  icon?: React.ElementType;
+  logoContentType?: string | null;
+  logoBase64?: string | null;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  glowClass: string;
+  iconBg: string;
+}
+
 export type ReportParameterType = 'text' | 'number' | 'date' | 'select' | 'boolean';
 
 export interface ReportParameterDefinition {

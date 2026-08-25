@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CategoryCard } from '@/components/modules/property-tax/reports/WorkspaceCategoryCard';
-import type { Category } from '@/components/modules/property-tax/reports/ReportWorkspaceConfig';
+import type { Category } from '@/types/report.types';
 import { Home } from 'lucide-react';
 
 // Mock next/image
@@ -42,6 +42,11 @@ describe('CategoryCard', () => {
   it('renders the label', () => {
     render(<CategoryCard {...defaultProps} />);
     expect(screen.getByText('Assessment')).toBeInTheDocument();
+  });
+
+  it('renders the module label with the larger font size', () => {
+    render(<CategoryCard {...defaultProps} />);
+    expect(screen.getByText('Assessment')).toHaveClass('text-sm');
   });
 
   it('renders the report count using the template', () => {

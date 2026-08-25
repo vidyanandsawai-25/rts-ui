@@ -8,11 +8,19 @@ import { toast } from 'sonner';
 import { ReportJobsList } from './ReportJobsList';
 import { useReportJobs } from '@/hooks/useReportJobs';
 
-import type { ReportsWorkspaceProps, ReportDefinition } from '@/types/report.types';
-import { CATEGORIES, type Step } from './ReportWorkspaceConfig';
+import type { ReportsWorkspaceProps, ReportDefinition, Step } from '@/types/report.types';
 import { ReportGenerateView } from './ReportGenerateView';
 import { ReportGeneratingOverlay } from './ReportGeneratingOverlay';
 import { ReportPreviewOverlay } from './ReportPreviewOverlay';
+
+const PALETTE = [
+  { color: 'text-[#800000]',  bgColor: 'bg-red-50',     borderColor: 'border-[#800000]',  glowClass: 'shadow-[#800000]/30',  iconBg: 'bg-white' },
+  { color: 'text-[#004c8c]',  bgColor: 'bg-blue-50',    borderColor: 'border-[#004c8c]',  glowClass: 'shadow-[#004c8c]/30',  iconBg: 'bg-white' },
+  { color: 'text-emerald-700',bgColor: 'bg-emerald-50', borderColor: 'border-emerald-500',glowClass: 'shadow-emerald-500/30',iconBg: 'bg-white' },
+  { color: 'text-violet-700', bgColor: 'bg-violet-50',  borderColor: 'border-violet-500', glowClass: 'shadow-violet-500/30', iconBg: 'bg-white' },
+  { color: 'text-amber-700',  bgColor: 'bg-amber-50',   borderColor: 'border-amber-500',  glowClass: 'shadow-amber-500/30',  iconBg: 'bg-white' },
+  { color: 'text-cyan-700',   bgColor: 'bg-cyan-50',    borderColor: 'border-cyan-500',   glowClass: 'shadow-cyan-500/30',   iconBg: 'bg-white' },
+];
 
 export function ReportsWorkspace({
   jobsCopy,
@@ -39,7 +47,6 @@ export function ReportsWorkspace({
 
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
   const [queuedRequestId, setQueuedRequestId] = useState<string | null>(null);
-  const [previewReport, setPreviewReport] = useState<ReportDefinition | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(true);
 
@@ -105,22 +112,19 @@ export function ReportsWorkspace({
     };
   }, [activeRequestId, isGenerating, refresh, workspaceCopy]);
 
+
   const dynamicCategories = useMemo(() => {
     if (reportModules && reportModules.length > 0) {
-      return reportModules.map((m) => ({
+      return reportModules.map((m, idx) => ({
         id: m.id,
         key: m.name.toLowerCase(),
         name: m.name,
         logoContentType: m.logoContentType,
         logoBase64: m.logoBase64,
-        color: 'text-[#800000]',
-        bgColor: 'bg-transparent',
-        borderColor: 'border-[#800000]',
-        glowClass: 'shadow-[#800000]/20',
-        iconBg: 'bg-transparent',
+        ...PALETTE[idx % PALETTE.length],
       }));
     }
-    return CATEGORIES;
+    return [];
   }, [reportModules]);
 
   const reportsByCategory = useMemo(() => {
@@ -219,7 +223,6 @@ export function ReportsWorkspace({
               reportDefinitions={reportDefinitions}
               onPreview={(requestId) => {
                 setActiveRequestId(requestId);
-                setPreviewReport(null);
                 setPdfLoading(true);
               }}
             />
@@ -238,11 +241,11 @@ export function ReportsWorkspace({
       {activeRequestId && !isGenerating && (
         <ReportPreviewOverlay
           requestId={activeRequestId}
-          report={previewReport}
+          report={null}
           pdfLoading={pdfLoading}
           copy={workspaceCopy}
           onPdfLoad={() => setPdfLoading(false)}
-          onClose={() => { setActiveRequestId(null); setPreviewReport(null); setActiveView('history'); }}
+          onClose={() => { setActiveRequestId(null); setActiveView('history'); }}
         />
       )}
 
