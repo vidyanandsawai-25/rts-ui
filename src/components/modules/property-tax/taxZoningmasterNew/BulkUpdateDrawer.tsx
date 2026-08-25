@@ -4,7 +4,8 @@ import { useRef, useMemo, useEffect } from "react";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/common/Card";
-import { DownloadButton, ImportButton, ApplyButton, CancelButton } from "@/components/common/ActionButtons";
+import { Input } from "@/components/common/Input";
+import { DownloadButton, ImportButton, ApplyButton, CancelButton, IconOnlyActionButton } from "@/components/common/ActionButtons";
 import { MasterTable, Column } from "@/components/common/MasterTable";
 import { BulkTaxZoningRangeRow } from "@/types/taxZoningRange.types";
 
@@ -97,12 +98,14 @@ export default function BulkUpdateDrawer({
             {tUi("subtitle")}
           </p>
         </div>
-        <button
+        <IconOnlyActionButton
+          icon={X}
+          variant="ghost"
+          size="sm"
+          aria-label="Close"
           onClick={onClose}
-          className="p-1.5 border border-white/20 hover:bg-white/10 rounded-md transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
+          className="h-auto w-auto gap-0 p-1.5 bg-transparent text-white border border-white/20 hover:bg-white/10 hover:text-white rounded-md transition-colors"
+        />
       </div>
 
       {/* Body Content */}
@@ -166,7 +169,8 @@ export default function BulkUpdateDrawer({
                 {tUi("step2Desc")}
               </p>
               <div className="mt-4 border-2 border-dashed border-[#b6c6d8] rounded-xl bg-[#f8fafc] flex flex-col items-center justify-center p-8 gap-3">
-                <input
+                <Input
+                  naked
                   type="file"
                   ref={fileInputRef}
                   className="hidden"

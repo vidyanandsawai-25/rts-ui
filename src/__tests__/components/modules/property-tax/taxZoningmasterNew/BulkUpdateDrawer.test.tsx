@@ -17,6 +17,7 @@ vi.mock('@/components/common/ActionButtons', () => ({
   ImportButton: ({ label, onClick, disabled, ...p }: any) => <button data-testid="import-btn" onClick={onClick} disabled={disabled} {...p}>{label}</button>,
   ApplyButton: ({ label, onClick, disabled, ...p }: any) => <button data-testid="apply-btn" onClick={onClick} disabled={disabled} {...p}>{label}</button>,
   CancelButton: ({ onClick, ...p }: any) => <button data-testid="cancel-btn" onClick={onClick} {...p}>Cancel</button>,
+  IconOnlyActionButton: ({ onClick, icon: _icon, "aria-label": ariaLabel, ...p }: any) => <button data-testid="close-btn" aria-label={ariaLabel} onClick={onClick} {...p} />,
 }));
 
 const baseProps = {
