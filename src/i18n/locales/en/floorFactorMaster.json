@@ -27,7 +27,8 @@
     },
     "messages": {
       "fromFloorGreaterError": "From floor cannot be greater than To floor",
-      "noRecordsFound": "No records found"
+      "noRecordsFound": "No records found",
+      "mandatoryFields": "Fields marked with * are mandatory"
     },
       "deleteConfirmation": {
       "title": "Type Of Floor",
