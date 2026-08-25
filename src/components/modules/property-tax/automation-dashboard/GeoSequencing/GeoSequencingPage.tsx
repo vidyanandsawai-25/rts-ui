@@ -14,7 +14,7 @@ import {
     getGeoSequencingSharedHeaderRows,
     getPropertyTypeIdParam
 } from './CommonGeoSequencingColumns';
-import { applyTableSort, SortConfig } from '@/lib/utils/automation-dashboard/sortUtils';
+import { applyTableSort, useTableSort } from '@/lib/utils/automation-dashboard/sortUtils';
 import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
@@ -116,21 +116,9 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescrip
         );
     }, [t, router, basePath, workflowStageId, locale]);
 
-    const [sortConfig, setSortConfig] = useState<SortConfig<GeoSequencingData> | null>(null);
+    const { sortConfig, handleSort } = useTableSort<GeoSequencingData>();
 
-    const handleSort = (key: keyof GeoSequencingData) => {
-        setSortConfig((current) => {
-            if (!current || current.key !== key) {
-                return { key, direction: 'asc' };
-            }
-            if (current.direction === 'asc') {
-                return { key, direction: 'desc' };
-            }
-            return null; // third state is unsorted
-        });
-    };
-
-    const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'zone', sortConfig, handleSort), [t, sortConfig]);
+    const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'zone', sortConfig, handleSort), [t, sortConfig, handleSort]);
 
     const tableData = useMemo<GeoSequencingData[]>(() => {
         if (!serverData || !serverData.zones) return [];

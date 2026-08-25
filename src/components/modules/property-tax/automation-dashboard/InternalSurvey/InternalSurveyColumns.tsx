@@ -200,10 +200,10 @@ export const getInternalSurveyHeaderRows = (
 ): HeaderCell[][] => {
     const topRow: HeaderCell[] = [
         {
-            label: <div className="font-bold text-[14px] text-slate-700 uppercase">{t('internalSurvey.columns.sr')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-700 uppercase">{t('internalSurvey.columns.sr')}</div>,
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[40px]'
+            headerClassName: 'bg-slate-50 min-w-[50px]'
         },
         {
             label: renderSortableHeader(

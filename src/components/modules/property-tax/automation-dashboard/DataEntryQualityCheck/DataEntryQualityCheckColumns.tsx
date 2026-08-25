@@ -142,7 +142,7 @@ const renderHeader = (title: string, showSort: boolean = false, activeSort: bool
 };
 
 const renderLeftHeader = (title: string, showSort: boolean = false, activeSort: boolean = false, isWard: boolean = false) => (
-    <div className={isWard ? "inline-flex items-center justify-start gap-0.5 font-bold text-[13px] leading-tight text-slate-700 uppercase whitespace-nowrap" : "flex items-center justify-start gap-1 font-bold text-[14px] text-slate-700 uppercase whitespace-nowrap"}>
+    <div className={isWard ? "inline-flex items-center justify-start gap-0.5 font-bold text-[13px] leading-tight text-slate-700 uppercase whitespace-nowrap" : "flex items-center justify-start gap-1 font-bold text-[15px] text-slate-700 uppercase whitespace-nowrap"}>
         {title} {showSort && (activeSort ? <ActiveSortIcon /> : <SortIcon />)}
     </div>
 );
@@ -153,7 +153,7 @@ export const getDataEntryHeaderRows = (level: 'division' | 'ward', t: any): Head
     return [
         [
             { label: <div className="font-bold text-[15px] text-slate-700 uppercase whitespace-nowrap">{t('dataEntryQualityCheck.columns.sr')}</div>, rowSpan: 2, align: 'center', headerClassName: 'bg-slate-50 min-w-[50px]' },
-            { label: renderLeftHeader(level === 'division' ? t('dataEntryQualityCheck.columns.division') : t('dataEntryQualityCheck.columns.wardNo'), true, true, isWard), rowSpan: 2, align: isWard ? 'center' : 'left', headerClassName: 'bg-slate-50 min-w-[180px]' },
+            { label: renderLeftHeader(level === 'division' ? t('dataEntryQualityCheck.columns.division') : t('dataEntryQualityCheck.columns.wardNo'), false, false, isWard), rowSpan: 2, align: isWard ? 'center' : 'left', headerClassName: 'bg-slate-50 min-w-[180px]' },
 
             { label: renderHeader(t('dataEntryQualityCheck.columns.internalSurvey'), false, false, isWard), colSpan: 2, align: 'center', headerClassName: 'bg-[#f0fdfa]' }, // teal-50
             { label: renderHeader(t('dataEntryQualityCheck.columns.dataEntry'), false, false, isWard), colSpan: 4, align: 'center', headerClassName: 'bg-[#f0f9ff]' }, // sky-50

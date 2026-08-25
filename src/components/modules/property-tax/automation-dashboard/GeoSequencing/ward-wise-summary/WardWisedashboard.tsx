@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft, MapPin } from 'lucide-react';
@@ -14,7 +14,7 @@ import {
     getPropertyTypeIdParam,
     GeoSequencingData
 } from '../CommonGeoSequencingColumns';
-import { SortConfig } from '@/lib/utils/automation-dashboard/sortUtils';
+import { applyTableSort, useTableSort } from '@/lib/utils/automation-dashboard/sortUtils';
 import { GeoSequencingWardWiseItems, GeoSequencingWard } from '@/types/automation-dashboard/geo-sequencing/geo-sequencing.type';
 import { useFormattedDate } from '@/hooks/automation-dashboard/useFormattedDate';
 import { AutomationTable } from '@/components/common/AutomationTable';
@@ -109,21 +109,9 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
         }
     ), [t, locale, zoneId, workflowStageId, basePath, router, zoneNo]);
 
-    const [sortConfig, setSortConfig] = useState<SortConfig<GeoSequencingData> | null>(null);
+    const { sortConfig, handleSort } = useTableSort<GeoSequencingData>();
 
-    const handleSort = (key: keyof GeoSequencingData) => {
-        setSortConfig((current) => {
-            if (!current || current.key !== key) {
-                return { key, direction: 'asc' };
-            }
-            if (current.direction === 'asc') {
-                return { key, direction: 'desc' };
-            }
-            return null;
-        });
-    };
-
-    const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'ward', sortConfig, handleSort), [t, sortConfig]);
+    const headerRows = useMemo(() => getGeoSequencingSharedHeaderRows(t, 'ward', sortConfig, handleSort), [t, sortConfig, handleSort]);
 
     const tableData = useMemo<GeoSequencingData[]>(() => {
         if (!summaryData?.wardData) return [];
@@ -157,9 +145,19 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
             inprocessStatusId: ward.assessmentStatusBreakdown?.assessmentInProcess?.statusId,
         }));
 
+        let sortedWards = mappedWards;
+        if (sortConfig) {
+            sortedWards = applyTableSort(mappedWards, sortConfig);
+        }
+
+        // Reassign SR numbers after sorting so they stay sequential
+        sortedWards.forEach((ward, index) => {
+            ward.sr = startSr + index + 1;
+        });
+
         if (summaryData.totalRow) {
             const total = summaryData.totalRow;
-            mappedWards.push({
+            sortedWards.push({
                 sr: t('geoSequencing.total'),
                 division: total.wardNo,
                 isTotal: true,
@@ -184,8 +182,8 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
                 inprocessStatusId: total.assessmentStatusBreakdown?.assessmentInProcess?.statusId,
             });
         }
-        return mappedWards;
-    }, [summaryData, t]);
+        return sortedWards;
+    }, [summaryData, t, sortConfig]);
 
     const summaryCardsData = useMemo(() => {
         if (!summaryData?.totalRow) return undefined;

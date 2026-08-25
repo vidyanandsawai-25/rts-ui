@@ -1,10 +1,8 @@
-
 import { getCommonDivisionColumn, getCommonSrColumn } from '../CommonColumns/CommonColumns';
 import type { Column, HeaderCell } from '@/components/common/AutomationTable';
 import type { SortConfig } from '@/lib/utils/automation-dashboard/sortUtils';
 import { renderSortableHeader, ViewType } from '../CommonColumns/SortHeader';
 import { formatIndianNumber } from '@/lib/utils/numberUtils';
-
 
 export type GeoSequencingData = {
     sr: number | string;
@@ -105,7 +103,7 @@ export const getGeoSequencingSharedHeaderRows = (
             label: <div className="font-bold text-[15px] text-slate-700 uppercase">{t('geoSequencing.columns.sr')}</div>,
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[40px]'
+            headerClassName: 'bg-slate-50 min-w-[50px]'
         },
         {
             label: renderSortableHeader(viewType === 'zone' ? t('geoSequencing.columns.division') : t('geoSequencing.columns.wardNo'), 'division', sortConfig, onSort, true, viewType),

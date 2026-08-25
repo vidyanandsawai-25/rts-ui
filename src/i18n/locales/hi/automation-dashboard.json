@@ -134,7 +134,7 @@
       "address": "पता",
       "additionalRevenue": "अतिरिक्त राजस्व",
       "newOldPropertyNo": "नई संपत्ति सं. | पुरानी संपत्ति सं.",
-      "srNo": "क्र. सं.",
+      "srNo": "क्र.सं.",
       "propertyType": "संपत्ति का प्रकार",
       "newRecord": "नया रिकॉर्ड",
       "oldWardNoConstructionYear": "पुराना वार्ड सं. | निर्माण वर्ष",
@@ -275,7 +275,7 @@
       "export": "निर्यात करें"
     },
     "columns": {
-      "sr": "क्र. सं.",
+      "sr": "क्र.सं.",
       "division": "प्रभाग",
       "wardNo": "वार्ड नं.",
       "internalSurvey": "आंतरिक सर्वेक्षण",
@@ -326,7 +326,7 @@
     "subtitle": "मंजूरी के लिए भेजने हेतु असेसमेंट चरण से संपत्तियां चुनें",
     "backToAssessment": "मूल्यांकन पर वापस जाएं",
     "selected": "चयनित",
-    "updateNoticeNo": "SR नोटिस नंबर अपडेट करें",
+    "updateNoticeNo": "क्र.सं. नोटिस नंबर अपडेट करें",
     "sendToApprove": "मंजूरी के लिए भेजें",
     "searchPlaceholder": "संपत्ति संख्या, मालिक, पता...",
     "filters": {
@@ -383,7 +383,7 @@
       "rented": "किराए पर"
     },
     "columns": {
-      "sr": "क्रमांक",
+      "sr": "क्र.सं.",
       "zoneNo": "ज़ोन नंबर",
       "totalStructure": "कुल संरचना",
       "totalUnit": "कुल यूनिट",
@@ -480,12 +480,12 @@
     "officerName": "अधिकारी का नाम",
     "pendingBuildings": "लंबित भवन",
     "total": "कुल",
-    "searchPlaceholder": "SR नोटिस नंबर द्वारा खोजें...",
+    "searchPlaceholder": "क्र.सं. नोटिस नंबर द्वारा खोजें...",
     "showing": "दिखाया जा रहा है",
     "of": "का",
     "columns": {
       "structureName": "संरचना का नाम",
-      "srNoticeNo": "एसआर नोटिस नंबर",
+      "srNoticeNo": "क्र.सं. नोटिस नंबर",
       "noOfUnits": "इकाइयों की संख्या",
       "demand": "मांग",
       "approve": "स्वीकृत करें"

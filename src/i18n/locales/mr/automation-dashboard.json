@@ -57,7 +57,7 @@
       "unassessed": "मूल्यांकन न झालेले"
     },
     "columns": {
-      "sr": "अनु. क्र.",
+      "sr": "अनु.क्र.",
       "division": "विभाग",
       "wardNo": "प्रभाग क्र.",
       "registeredProperties": "नोंदणीकृत मालमत्ता",
@@ -134,7 +134,7 @@
       "address": "पत्ता",
       "additionalRevenue": "अतिरिक्त महसूल",
       "newOldPropertyNo": "नवीन मालमत्ता क्र. | जुना मालमत्ता क्र.",
-      "srNo": "अनुक्रमांक",
+      "srNo": "अनु.क्र.",
       "propertyType": "मालमत्तेचा प्रकार",
       "newRecord": "नवीन नोंद",
       "oldWardNoConstructionYear": "जुना प्रभाग क्र. | बांधकाम वर्ष",
@@ -227,7 +227,7 @@
       "photos": "फोटो"
     },
     "columns": {
-      "sr": "अनु. क्र.",
+      "sr": "अनु.क्र.",
       "division": "विभाग",
       "geoSequencingProperties": "जिओ-सिक्वेन्सिंग मालमत्ता",
       "surveyProperties": "सर्वेक्षण मालमत्ता",
@@ -275,7 +275,7 @@
       "export": "निर्यात"
     },
     "columns": {
-      "sr": "अनुक्रमांक",
+      "sr": "अनु.क्र.",
       "division": "विभाग",
       "wardNo": "प्रभाग क्र.",
       "internalSurvey": "अंतर्गत सर्वेक्षण",
@@ -332,7 +332,7 @@
     "unit": "युनिट",
     "units": "युनिट्स",
     "columns": {
-      "sr": "क्र.",
+      "sr": "अनु.क्र.",
       "zoneWard": "झोन / वॉर्ड",
       "division": "विभाग",
       "divisionOffice": "विभागीय कार्यालय",
@@ -395,12 +395,12 @@
     "officerName": "अधिकाऱ्याचे नाव",
     "pendingBuildings": "प्रलंबित इमारती",
     "total": "एकूण",
-    "searchPlaceholder": "SR नोटीस क्र. ने शोधा...",
+    "searchPlaceholder": "अनु.क्र. नोटीस क्र. ने शोधा...",
     "showing": "दर्शवित आहे",
     "of": "पैकी",
     "columns": {
       "structureName": "रचनेचे नाव",
-      "srNoticeNo": "SR नोटीस क्र.",
+      "srNoticeNo": "अनु.क्र. नोटीस क्र.",
       "noOfUnits": "युनिट्सची संख्या",
       "demand": "मागणी",
       "approve": "मंजूर करा"
@@ -424,7 +424,7 @@
     "subtitle": "मंजुरीसाठी पाठवण्यासाठी मूल्यांकन टप्प्यातील मालमत्ता निवडा",
     "backToAssessment": "मूल्यांकनावर परत जा",
     "selected": "निवडले",
-    "updateNoticeNo": "SR नोटीस क्र. अपडेट करा",
+    "updateNoticeNo": "अनु.क्र. नोटीस क्र. अपडेट करा",
     "sendToApprove": "मंजुरीसाठी पाठवा",
     "searchPlaceholder": "मालमत्ता क्रमांक, मालक, पत्ता...",
     "filters": {
@@ -481,7 +481,7 @@
       "rented": "भाड्याने"
     },
     "columns": {
-      "sr": "अनु.",
+      "sr": "अनु.क्र.",
       "zoneNo": "झोन क्र.",
       "totalStructure": "एकूण रचना",
       "totalUnit": "एकूण युनिट",
