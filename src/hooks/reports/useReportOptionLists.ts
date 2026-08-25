@@ -18,7 +18,13 @@ export function useReportOptionLists({
   fetchWards?: any;
   fetchProperties?: any;
 }) {
-  const fyOptions = financialYears.map((y) => {
+  const sortedFinancialYears = [...(financialYears || [])].sort((a, b) => {
+    if (a.isActive && !b.isActive) return -1;
+    if (!a.isActive && b.isActive) return 1;
+    return (b.year || 0) - (a.year || 0);
+  });
+
+  const fyOptions = sortedFinancialYears.map((y) => {
     const label = y.yearCode || (y.year ? `${y.year}-${y.year + 1}` : y.description || `FY ${y.id}`);
     return { value: String(y.year ?? y.id), label };
   });

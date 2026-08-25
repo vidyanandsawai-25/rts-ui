@@ -103,7 +103,12 @@ export function ReportParamField({
     if (normSource.includes('financial') || normSource.includes('year') || normSource === 'fy') {
       if (financialYears && financialYears.length > 0) {
         const normKey = param.parameterKey.toLowerCase();
-        const mapped = financialYears.map((y) => {
+        const sortedYears = [...financialYears].sort((a, b) => {
+          if (a.isActive && !b.isActive) return -1;
+          if (!a.isActive && b.isActive) return 1;
+          return (b.year || 0) - (a.year || 0);
+        });
+        const mapped = sortedYears.map((y) => {
           const yearLabel = y.yearCode || (y.year ? `${y.year}-${y.year + 1}` : y.description || `FY ${y.id}`);
           const val = normKey.endsWith('id')
             ? String(y.id)

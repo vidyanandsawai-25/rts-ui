@@ -4,12 +4,13 @@ import { SlidersHorizontal } from 'lucide-react';
 import { Card, Badge } from '@/components/common';
 import { ReportParametersPanel } from './ReportParametersPanel';
 import { Stepper, CategoryCard, EmptyState, ReportListPanel, ReportTabsPanel } from './ReportWorkspaceComponents';
-import type { Category, Step } from './ReportWorkspaceConfig';
 import type { FinancialYear } from '@/types/financialYear.types';
 import type {
+  Category,
   ReportDefinition,
   ReportWorkspaceCopy,
   ReportParamsPanelCopy,
+  Step,
   ZoneSummary,
   WardSummary,
   PropertySummary,

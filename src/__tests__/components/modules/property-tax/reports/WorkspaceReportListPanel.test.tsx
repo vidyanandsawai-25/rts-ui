@@ -1,8 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ReportListPanel } from '@/components/modules/property-tax/reports/WorkspaceReportListPanel';
-import { ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
-import { Category } from '@/components/modules/property-tax/reports/ReportWorkspaceConfig';
+import type { Category, ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
 import { Home } from 'lucide-react';
 
 // ---------------------------------------------------------------------------

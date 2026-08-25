@@ -1,4 +1,4 @@
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Input, SearchSelect, MultiSelect, Badge, Button } from '@/components/common';
 import { SearchSelectPaginated } from '@/components/common/SearchSelectPaginated';
@@ -157,6 +157,7 @@ export function SmartLayoutFields({
                 fullWidth
                 placeholder={t('enterAmount')}
                 value={amountValue}
+                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 onKeyDown={(e) => {
                   if (e.key === '-' || e.key === 'e' || e.key === 'E') {
                     e.preventDefault();
@@ -192,8 +193,9 @@ export function SmartLayoutFields({
             fullWidth
             placeholder={t('eg1')}
             value={fromProperty}
-            onChange={(e) => setFromProperty(e.target.value)}
+            onChange={(e) => { if (e.target.value.length <= 5) setFromProperty(e.target.value); }}
             error={errors['fromPropertyNo']}
+            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
           <Input
             type="number"
@@ -203,8 +205,9 @@ export function SmartLayoutFields({
             fullWidth
             placeholder={t('eg10')}
             value={toProperty}
-            onChange={(e) => setToProperty(e.target.value)}
+            onChange={(e) => { if (e.target.value.length <= 5) setToProperty(e.target.value); }}
             error={errors['toPropertyNo']}
+            className=" [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
         </div>
       )}

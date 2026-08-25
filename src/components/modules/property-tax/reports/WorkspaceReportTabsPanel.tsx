@@ -2,8 +2,7 @@
 
 import { FileText, ChevronRight } from 'lucide-react';
 import { Card, Tabs, TabList, Tab, Badge } from '@/components/common';
-import type { ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
-import type { Category } from './ReportWorkspaceConfig';
+import type { Category, ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
 
 interface ReportTabsPanelProps {
   activeCategoryDef: Category;
