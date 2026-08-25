@@ -4,7 +4,7 @@ import { useActionState, useState, type FormEvent } from 'react';
 import { useFormStatus } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { AnimatedDigitInput, Button, ValidationMessage } from '@/components/common';
 
 import {
@@ -31,9 +31,13 @@ function VerifySubmitButton({ children }: { children: React.ReactNode }) {
 export function VerifyTwoFactorFormClient({
   locale,
   method = 'totp',
+  username = '',
+  onBackToLogin,
 }: {
   locale: string;
   method?: 'totp' | 'otp';
+  username?: string;
+  onBackToLogin?: () => void;
 }) {
   const t = useTranslations('login');
   const { getLocalizedError } = useLoginErrorMessages();
@@ -46,82 +50,114 @@ export function VerifyTwoFactorFormClient({
   const maxLength = useRecoveryCode ? RECOVERY_CODE_LENGTH : TOTP_LENGTH;
 
   return (
-    <form
-      key={state?.resetKey ?? 'idle'}
-      action={formAction}
-      onSubmit={(e: FormEvent<HTMLFormElement>) => {
-        if (code.trim().length === 0) {
-          e.preventDefault();
-        }
-      }}
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.3 }}
       className="space-y-4"
     >
-      <input type="hidden" name="locale" value={locale} />
-      <input type="hidden" name="useRecoveryCode" value={useRecoveryCode ? 'true' : 'false'} />
-
-      <AnimatePresence mode="wait">
-        {displayError ? (
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: [0, -10, 10, -10, 10, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            role="status"
-            aria-live="polite"
-          >
-            <ValidationMessage
-              type="error"
-              message={displayError}
-              visible
-              className="!mt-0 w-full justify-center rounded-lg px-3 py-3 text-center text-sm font-medium"
-            />
-          </motion.div>
+      <div className="flex flex-col items-center space-y-1 pb-1 text-center">
+        <div
+          className="mb-2 flex h-14 w-14 items-center justify-center rounded-full border border-cyan-200/60 bg-cyan-50/80 text-cyan-600 drop-shadow-md"
+          aria-hidden
+        >
+          <ShieldCheck className="h-8 w-8" strokeWidth={1.5} />
+        </div>
+        <h2 className="text-lg font-bold tracking-tight text-gray-900">
+          {t('twoFactorAuth')}
+        </h2>
+        {username ? (
+          <p className="text-xs text-gray-500">{t('signedInAs', { username })}</p>
         ) : null}
-      </AnimatePresence>
-
-      <p className="text-center text-sm text-gray-600">
-        {isOtp ? t('enterOtp') : useRecoveryCode ? t('enterRecoveryCode') : t('enterAuthenticatorCode')}
-      </p>
-
-      <AnimatedDigitInput
-        key={useRecoveryCode ? 'recovery' : 'totp'}
-        name="code"
-        value={code}
-        onChange={setCode}
-        maxLength={maxLength}
-        allowedPattern={useRecoveryCode ? RECOVERY_CODE_PATTERN : TOTP_PATTERN}
-        placeholder={useRecoveryCode ? 'ABCDE-FGHJK' : '••••••'}
-        inputMode={useRecoveryCode ? 'text' : 'numeric'}
-        autoFocus
-        className="h-14 text-center text-lg"
-        charClassName="text-xl"
-      />
-
-      <div className="flex justify-center pt-2">
-        <VerifySubmitButton>{t('verifyToken')}</VerifySubmitButton>
       </div>
 
-      <div className="flex flex-col items-center gap-2 pt-1 text-sm">
-        {!isOtp ? (
+      <form
+        key={state?.resetKey ?? 'idle'}
+        action={formAction}
+        onSubmit={(e: FormEvent<HTMLFormElement>) => {
+          if (code.trim().length === 0) {
+            e.preventDefault();
+          }
+        }}
+        className="space-y-4"
+      >
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="useRecoveryCode" value={useRecoveryCode ? 'true' : 'false'} />
+
+        <AnimatePresence mode="wait">
+          {displayError ? (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: [0, -10, 10, -10, 10, 0] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              role="status"
+              aria-live="polite"
+            >
+              <ValidationMessage
+                type="error"
+                message={displayError}
+                visible
+                className="!mt-0 w-full justify-center rounded-lg px-3 py-2.5 text-center text-xs font-medium [&_svg]:shrink-0"
+              />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <p className="text-center text-xs text-gray-600">
+          {isOtp ? t('enterOtp') : useRecoveryCode ? t('enterRecoveryCode') : t('enterAuthenticatorCode')}
+        </p>
+
+        <AnimatedDigitInput
+          key={useRecoveryCode ? 'recovery' : 'totp'}
+          name="code"
+          value={code}
+          onChange={setCode}
+          maxLength={maxLength}
+          allowedPattern={useRecoveryCode ? RECOVERY_CODE_PATTERN : TOTP_PATTERN}
+          placeholder={useRecoveryCode ? 'ABCDE-FGHJK' : '••••••'}
+          inputMode={useRecoveryCode ? 'text' : 'numeric'}
+          autoFocus
+          className="h-12 text-center text-lg"
+          charClassName="text-xl"
+        />
+
+        <div className="flex justify-center pt-2">
+          <VerifySubmitButton>{t('verifyToken')}</VerifySubmitButton>
+        </div>
+
+        <div className="flex flex-col items-center gap-2 pt-1 text-xs">
+          {!isOtp ? (
+            <button
+              type="button"
+              onClick={() => {
+                setUseRecoveryCode((v) => !v);
+                setCode('');
+              }}
+              className="font-medium text-cyan-700 hover:text-cyan-900 hover:underline"
+            >
+              {useRecoveryCode ? t('useAuthenticatorInstead') : t('useRecoveryCodeInstead')}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => {
-              setUseRecoveryCode((v) => !v);
-              setCode('');
+              if (onBackToLogin) {
+                onBackToLogin();
+                cancelTwoFactorChallengeAction().catch(() => {});
+              } else {
+                cancelTwoFactorChallengeAction(locale);
+              }
             }}
-            className="font-medium text-cyan-700 hover:text-cyan-900 hover:underline"
+            className="flex items-center gap-1 text-gray-500 hover:text-gray-700 hover:underline transition-colors"
           >
-            {useRecoveryCode ? t('useAuthenticatorInstead') : t('useRecoveryCodeInstead')}
+            <ArrowLeft size={13} />
+            <span>{t('backToLogin')}</span>
           </button>
-        ) : null}
-        <button
-          type="button"
-          onClick={() => cancelTwoFactorChallengeAction(locale)}
-          className="text-gray-500 hover:text-gray-700 hover:underline"
-        >
-          {t('backToLogin')}
-        </button>
-      </div>
-    </form>
+        </div>
+      </form>
+    </motion.div>
   );
 }
+

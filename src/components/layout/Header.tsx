@@ -242,8 +242,6 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
   const trimmedUserDisplayName = userDisplayName?.trim() || '';
   const displayName = trimmedUserDisplayName || t('app.defaultUser');
   const userInitial = displayName.charAt(0).toUpperCase();
-  const ulbCodeRaw = sanitizeInput(ulbData?.ulbCode ?? '') || '';
-  const idSubtitle = ulbCodeRaw ? `ID: ${ulbCodeRaw}-${new Date().getUTCFullYear()}` : '';
   const ipDisplay = clientIp?.trim() || t('userMenu.ipUnavailable');
 
   return (
@@ -378,11 +376,6 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
                   <span className="w-full truncate text-left text-xs font-semibold md:text-sm">
                     {displayName}
                   </span>
-                  {idSubtitle ? (
-                    <span className="w-full truncate text-left text-[10px] text-blue-100/90 md:text-xs">
-                      {idSubtitle}
-                    </span>
-                  ) : null}
                 </span>
                 <Badge
                   variant="outline"
@@ -413,11 +406,6 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
                   <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5 self-center">
                       <span className="truncate text-sm font-semibold">{displayName}</span>
-                      {ulbCodeRaw ? (
-                        <span className="truncate text-xs uppercase tracking-wide text-blue-200/90">
-                          {ulbCodeRaw}
-                        </span>
-                      ) : null}
                     </div>
                     <Badge
                       variant="outline"
