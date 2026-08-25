@@ -46,10 +46,6 @@ export function SessionTimeoutGuard() {
   const { locale: localeParam } = useParams();
   const locale = typeof localeParam === 'string' ? localeParam : 'en';
 
-  if (!pathname || isExemptPath(pathname)) {
-    return null;
-  }
-
   const [visible, setVisible] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(SESSION_TIMEOUT_REDIRECT_SECONDS);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
