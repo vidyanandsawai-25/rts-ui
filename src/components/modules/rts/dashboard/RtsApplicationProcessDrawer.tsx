@@ -21,7 +21,7 @@ import {
   Shield,
   XCircle,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import {
   Badge,
@@ -51,6 +51,7 @@ import {
 import { getAdminRtsDocumentDownloadUrl, getAdminRtsDocumentViewUrl } from '@/lib/api/rts/rtsdocument.client';
 import { hasApprovalOfficerAccess } from '@/lib/utils/rts/approval-officer-access';
 import { getRtsApplicationStatusBadgeProps } from '@/lib/utils/rts/application-status-badge';
+import { getApplicationFieldDisplayLabel } from '@/lib/utils/rts/application-field-label';
 import type {
   RtsApplicationApprovalFieldValuePayload,
   RtsApplicationViewDetailField,
@@ -174,6 +175,7 @@ export default function RtsApplicationProcessDrawer({
 }: RtsApplicationProcessDrawerProps) {
   const t = useTranslations('rts.applicationDashboard.processDrawer');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const { confirm } = useConfirm();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => getInitialOpenGroups(data, t('generalDetails')));
   const [activeDocumentIndex, setActiveDocumentIndex] = useState(0);
@@ -402,11 +404,15 @@ export default function RtsApplicationProcessDrawer({
     }
 
     const isDestructive = actionKey === 'canReject' || actionKey === 'canReturn';
+    const confirmationServiceName = record?.serviceName || verification?.serviceName || '';
 
     confirm({
       variant: isDestructive ? 'warning' : 'info',
       title: t(DECISION_CONFIRMATION_TITLE_KEYS[actionKey]),
-      description: t('confirmDecisionDescription'),
+      description: `${t('confirmDecisionDescription')}\n\n${t('confirmDecisionContext', {
+        applicationNo: headerApplicationNo,
+        serviceName: confirmationServiceName,
+      })}`,
       confirmText: t('confirmDecision'),
       cancelText: t('cancelDecision'),
       onConfirm: () => submitDecision(actionKey),
@@ -488,6 +494,7 @@ export default function RtsApplicationProcessDrawer({
       toast.success(result.message || t('submitChanges'));
       setInitialFieldValues(editedFieldValues);
       setIsEditing(false);
+      setOfficerRemark('');
       onSuccess?.();
     });
   };
@@ -907,7 +914,7 @@ export default function RtsApplicationProcessDrawer({
                                       <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-600" />
                                       <div className="min-w-0">
                                         <p className="text-sm font-semibold leading-relaxed text-slate-800">
-                                          {field.fieldLabel || t('declarationAccepted')}
+                                          {getApplicationFieldDisplayLabel(field, locale, t('declarationAccepted'))}
                                         </p>
                                         <p className="mt-1 text-xs font-bold text-emerald-700">{t('acceptedByApplicant')}</p>
                                       </div>
@@ -920,7 +927,7 @@ export default function RtsApplicationProcessDrawer({
                                 {group.fields.map((field) => (
                                   <div key={field.fieldDefinitionId} className="min-w-0">
                                     <Label htmlFor={`field-${field.fieldDefinitionId}`} className="mb-1 block text-[9px] font-bold uppercase tracking-wide text-slate-600">
-                                      {field.fieldLabel}
+                                      {getApplicationFieldDisplayLabel(field, locale, t('documentFallback'))}
                                     </Label>
                                     <Input
                                       fullWidth

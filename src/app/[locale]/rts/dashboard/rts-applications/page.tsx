@@ -9,6 +9,15 @@ import {
 
 type QueryValue = string | string[] | undefined;
 type SearchParams = Record<string, QueryValue>;
+type ApprovalSortBy = 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate';
+
+const SORT_BY_VALUES = new Set<ApprovalSortBy>([
+  'applicationNo',
+  'CreatedDate',
+  'ApplicantName',
+  'ApplicationStatus',
+  'UpdatedDate',
+]);
 
 function readQuery(query: SearchParams, canonical: string, legacy: string): string | undefined {
   const value = query[canonical] ?? query[legacy];
@@ -50,12 +59,32 @@ export default async function RtsApplicationDashboardPage({
 
   const departmentSlug = readQuery(query, 'department', 'Department')?.trim().toLowerCase() ?? '';
   const requestedServiceSlug = readQuery(query, 'service', 'Service')?.trim().toLowerCase() ?? '';
-  const rawStatus = readQuery(query, 'status', 'Status')?.trim().toLowerCase();
-  const status = ['submitted', 'pending', 'approved', 'rejected', 'reverted'].includes(rawStatus ?? '')
-    ? rawStatus
+  const rawStatus = readQuery(query, 'status', 'Status')?.trim();
+  const statusByNormalizedValue: Record<string, string> = {
+    pending: 'Pending',
+    'application verified': 'Application Verified',
+    'document verified': 'Document Verified',
+    approved: 'Approved',
+    rejected: 'Rejected',
+    reverted: 'Reverted',
+    'overdue applications': 'Overdue Applications',
+    "today's applications": "Today's Applications",
+    'todays applications': "Today's Applications",
+    duetoday: 'DueToday',
+  };
+  const status = rawStatus
+    ? statusByNormalizedValue[rawStatus.toLowerCase()]
     : undefined;
   const search = readQuery(query, 'search', 'Search')?.trim() ?? '';
   const pageNumber = getPositivePage(readQuery(query, 'pageNumber', 'PageNumber'));
+  const requestedSortBy = readQuery(query, 'sortBy', 'SortBy')?.trim();
+  const sortBy = requestedSortBy && SORT_BY_VALUES.has(requestedSortBy as ApprovalSortBy)
+    ? requestedSortBy as ApprovalSortBy
+    : undefined;
+  const requestedSortOrder = readQuery(query, 'sortOrder', 'SortOrder')?.trim().toLowerCase();
+  const sortOrder = requestedSortOrder === 'asc' || requestedSortOrder === 'desc'
+    ? requestedSortOrder
+    : undefined;
 
   const department = departments.find(
     (item) => toApplicationFilterSlug(item.departmentName) === departmentSlug
@@ -74,6 +103,8 @@ export default async function RtsApplicationDashboardPage({
     serviceId: service?.id,
     applicationNo: search || undefined,
     status,
+    sortBy,
+    sortOrder,
   });
 
   const requestedDocumentGuid = readQuery(query, 'doc', 'Doc')?.trim() ?? '';
@@ -138,6 +169,8 @@ export default async function RtsApplicationDashboardPage({
           service: service ? requestedServiceSlug : '',
           status: status ?? '',
           search,
+          sortBy: sortBy ?? '',
+          sortOrder: sortOrder ?? '',
         }}
         locale={locale}
         drawer={drawer}

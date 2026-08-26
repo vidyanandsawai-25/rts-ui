@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Check,
@@ -95,6 +96,15 @@ function serializeFormValue(value: any) {
   return text === "" ? null : text;
 }
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"]/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+  })[character] || character);
+}
+
 function getLocalizedLabelText(label: any, language: string): string {
   if (!label) return "";
   if (typeof label === "string") return label.trim();
@@ -128,6 +138,7 @@ export default function DynamicServiceFormClient({
 }: ServiceFormProps) {
   const router = useRouter();
   const { language } = useLanguage();
+  const t = useTranslations("rts.serviceForm");
 
   const [activeSection, setActiveSection] = useState(0);
   const [darkMode] = useState(false);
@@ -1349,22 +1360,11 @@ export default function DynamicServiceFormClient({
 
     const confirmation = await MySwal.fire({
       icon: "question",
-      title:
-        language === "en"
-          ? "Submit application?"
-          : language === "hi"
-            ? "आवेदन जमा करें?"
-            : "अर्ज सादर करायचा आहे का?",
-      text:
-        language === "en"
-          ? "Please confirm that the information and uploaded documents are correct before submitting."
-          : language === "hi"
-            ? "जमा करने से पहले कृपया पुष्टि करें कि जानकारी और अपलोड किए गए दस्तावेज़ सही हैं।"
-            : "सादर करण्यापूर्वी माहिती आणि अपलोड केलेली कागदपत्रे बरोबर असल्याची खात्री करा.",
+      title: t("confirmation.title"),
+      html: `<strong>${escapeHtml(t("confirmation.serviceName"))}: ${escapeHtml(serviceTitle)}</strong><br><br>${escapeHtml(t("confirmation.description"))}`,
       showCancelButton: true,
-      confirmButtonText:
-        language === "en" ? "Yes, Submit" : language === "hi" ? "हाँ, जमा करें" : "होय, सादर करा",
-      cancelButtonText: language === "en" ? "Cancel" : language === "hi" ? "रद्द करें" : "रद्द करा",
+      confirmButtonText: t("confirmation.confirm"),
+      cancelButtonText: t("confirmation.cancel"),
       confirmButtonColor: "#059669",
       cancelButtonColor: "#64748b",
       background: darkMode ? "#1f2937" : "#ffffff",

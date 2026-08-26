@@ -24,6 +24,7 @@ import {
 } from '@/lib/utils/rts/approval-officer-access';
 import { getUsernameFromCookieStore } from '@/lib/utils/cookie';
 import { submitApplicationWorkflowAction } from '@/lib/api/rts/rts-workflow.service';
+import { getPaymentStatus, type PaymentStatusResult } from '@/lib/api/rts/rtspayment.service';
 import type {
   RtsApplicationApprovalStage,
   RtsApplicationApprovalActionPayload,
@@ -106,9 +107,11 @@ export interface RtsApplicationProcessData {
 export interface RtsApplicationFullDetailData {
   details: RtsApplicationViewDetailsItem | null;
   stages: RtsApplicationApprovalStagesItem | null;
+  payment: PaymentStatusResult | null;
   errors: {
     details: string | null;
     stages: string | null;
+    payment: string | null;
   };
 }
 
@@ -188,26 +191,36 @@ export async function getRtsApplicationFullDetailDataAction(
     return {
       details: null,
       stages: null,
+      payment: null,
       errors: {
         details: 'Invalid application ID.',
         stages: 'Invalid application ID.',
+        payment: 'Invalid application ID.',
       },
     };
   }
 
-  const [detailsResult, stagesResult] = await Promise.allSettled([
+  const [detailsResult, stagesResult, paymentResult] = await Promise.allSettled([
     getApprovalApplicationDetails(applicationId),
     getApprovalApplicationStages(applicationId),
+    getPaymentStatus(applicationId),
   ]);
   const details = getProcessSectionResult(detailsResult);
   const stages = getProcessSectionResult(stagesResult);
+  const payment = getProcessSectionResult(paymentResult);
+
+  if (!payment.data) {
+    console.error(`Failed to load payment status for full application detail ${applicationId}.`, payment.error);
+  }
 
   return {
     details: details.data,
     stages: stages.data,
+    payment: payment.data,
     errors: {
       details: details.error,
       stages: stages.error,
+      payment: payment.error,
     },
   };
 }
@@ -521,7 +534,9 @@ export interface AdminApplicationGridRow {
   applicationDate: string;
   applicantName: string;
   serviceName: string;
+  serviceNameLocal: string | null;
   departmentName: string;
+  departmentNameLocal: string | null;
   currentStatus: string;
   currentStageName: string;
   remarks: string;
@@ -552,6 +567,8 @@ export interface RtsApplicationsDashboardFilters {
   serviceId?: number;
   applicationNo?: string;
   status?: string;
+  sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate';
+  sortOrder?: 'asc' | 'desc';
 }
 
 function parseSlaDays(sla: string | number | undefined | null): number {
@@ -576,6 +593,8 @@ export async function getRtsApplicationsDashboardAction(
         serviceId: filters.serviceId,
         applicationNo: filters.applicationNo,
         status: filters.status,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
       }).catch((err) => {
         console.error('Failed to fetch approval applications list:', err);
         return null;
@@ -643,7 +662,9 @@ export async function getRtsApplicationsDashboardAction(
         applicationDate: app.createdDate,
         applicantName: app.applicantName?.trim() || '—',
         serviceName: app.serviceName || 'Unknown Service',
+        serviceNameLocal: app.serviceNameLocal?.trim() || null,
         departmentName: app.departmentName || 'Unknown Department',
+        departmentNameLocal: app.departmentNameLocal?.trim() || null,
         currentStatus: app.applicationStatus,
         currentStageName,
         remarks,

@@ -4,6 +4,7 @@ import { getRtsMisDepartmentServicesAction } from "./actions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 type ApplicationSource = "rts" | "aaple-sarkar" | "offline";
+type MisStatusFilter = "Pending" | "Approved" | "Rejected" | "Overdue";
 
 function getFirstValue(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -23,6 +24,21 @@ function getApplicationSource(value: string | undefined): ApplicationSource {
       return "offline";
     default:
       return "rts";
+  }
+}
+
+function getStatusFilter(value: string | undefined): MisStatusFilter | "" {
+  switch (value?.trim().toLowerCase()) {
+    case "pending":
+      return "Pending";
+    case "approved":
+      return "Approved";
+    case "rejected":
+      return "Rejected";
+    case "overdue":
+      return "Overdue";
+    default:
+      return "";
   }
 }
 
@@ -53,6 +69,7 @@ export default async function RtsMISDashboardPage({
   const query = await searchParams;
   const applicationSource = getApplicationSource(getFirstValue(query.AppliSource));
   const pageNumber = getPageNumber(getFirstValue(query.PageNumber));
+  const status = getStatusFilter(getFirstValue(query.Status) ?? getFirstValue(query.status));
   const fromDate = getDate(getFirstValue(query.FromDate));
   const requestedToDate = getDate(getFirstValue(query.ToDate));
   const toDate = fromDate && requestedToDate && requestedToDate < fromDate
@@ -78,6 +95,7 @@ export default async function RtsMISDashboardPage({
         filters={{
           applicationSource,
           pageNumber,
+          status,
           fromDate,
           toDate,
         }}

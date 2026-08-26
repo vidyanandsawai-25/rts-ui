@@ -20,7 +20,8 @@ export interface RtsServiceApiItem {
   govtServiceCode?: number;
   serviceName: string;
   serviceNameLocal?: string | null;
-  departmentName: string | null;
+  // The RTSService list and get-by-id responses do not include this field.
+  departmentName?: string | null;
   id: number;
   description?: string | null;
   serviceUrl?: string | null;
@@ -39,6 +40,7 @@ export interface RtsServiceApiItem {
 }
 
 export interface RtsServiceQueryParams {
+  id?: number;
   ServiceName?: string;
   DepartmentId?: number;
   PageNumber?: number;

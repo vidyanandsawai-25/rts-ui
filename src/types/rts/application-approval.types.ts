@@ -65,8 +65,10 @@ export interface RtsApprovalApplicationListItem {
   sessionId: string | null;
   ownerId: number | null;
   departmentName: string;
+  departmentNameLocal: string | null;
   citizenName: string | null;
   serviceName: string;
+  serviceNameLocal: string | null;
   sla: string | null;
   remainingDays: number | null;
   dueDays: number | null;

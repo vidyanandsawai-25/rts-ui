@@ -1,4 +1,13 @@
 {
+  "serviceForm": {
+    "confirmation": {
+      "title": "Submit application?",
+      "serviceName": "Service Name",
+      "description": "Please confirm that the information and uploaded documents are correct before submitting.",
+      "confirm": "Yes, Submit",
+      "cancel": "Cancel"
+    }
+  },
   "login": {
     "brand": {
       "title": "Akola Municipal Corporation",
@@ -381,7 +390,10 @@
     "filters": {
       "applicationType": "Application Type",
       "allTypes": "All Types",
-      "allStatuses": "All Statuses"
+      "allDepartments": "All Departments",
+      "allServices": "All Services",
+      "allStatuses": "All Statuses",
+      "clearFilters": "Clear filters"
     },
     "table": {
                   "remark": "Remark",
@@ -527,6 +539,13 @@
       "recordPayment": "Record Payment",
       "freeService": "Free Municipal Service",
       "noGovernmentFeeRequired": "No government fee is required for this service.",
+      "governmentFeePending": "Government Fee Pending: ₹{amount}",
+      "paymentRequiredToProceed": "Payment is required for application processing to proceed.",
+      "governmentFeePaid": "Government Fee Paid: ₹{amount}",
+      "receiptNumber": "Receipt No.: {receiptNo}",
+      "officialReceiptAvailable": "Official municipal e-receipt is available.",
+      "viewReceipt": "View Receipt",
+      "receiptUnavailable": "The payment receipt is unavailable.",
       "recordPaymentNotRequired": "Payment recording is unavailable because this service has no required government fee.",
       "finishEditBeforeWorkflowAction": "Save or cancel the application edits before taking a workflow action.",
       "viewNoteSheet": "View Note Sheet",
@@ -596,6 +615,7 @@
       "confirmRejectAction": "Confirm Reject Action",
       "confirmRevertAction": "Confirm Revert Action",
       "confirmDecisionDescription": "Are you sure you want to continue with this action?",
+      "confirmDecisionContext": "Application No.: {applicationNo}\nService Name: {serviceName}",
       "confirmDecision": "Confirm",
       "cancelDecision": "Cancel",
       "documentsVerified": "Documents verified successfully.",

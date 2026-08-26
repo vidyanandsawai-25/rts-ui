@@ -4,6 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CheckCircle2,
   ChevronRight,
   Clock3,
@@ -43,6 +46,7 @@ interface DashboardProps {
   filters: {
     applicationSource: ApplicationSource;
     pageNumber: number;
+    status: MisStatusFilter | "";
     fromDate: string;
     toDate: string;
   };
@@ -108,6 +112,9 @@ interface PieDataPoint {
 
 type PaginationToken = number | "dots";
 type ApplicationSource = "rts" | "aaple-sarkar" | "offline";
+type MisStatusFilter = "Pending" | "Approved" | "Rejected" | "Overdue";
+type MisSortKey = "srNo" | "name" | "totalApplications" | "pending" | "approved" | "rejected" | "overdue" | "sla";
+type SortDirection = "asc" | "desc";
 
 function getModuleName(applicationSource: ApplicationSource): RtsMisDashboardModuleName {
   if (applicationSource === "aaple-sarkar") return "AapleSarkar";
@@ -252,14 +259,15 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { applicationSource, pageNumber, fromDate, toDate } = filters;
+  const { applicationSource, pageNumber, status, fromDate, toDate } = filters;
   const numberFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const [expandedDepartmentId, setExpandedDepartmentId] = useState<string | null>(null);
   const [servicesByDepartment, setServicesByDepartment] = useState<Record<string, ServiceRow[]>>({});
   const [loadingDepartmentId, setLoadingDepartmentId] = useState<string | null>(null);
   const [serviceErrors, setServiceErrors] = useState<Record<string, string>>({});
+  const [sort, setSort] = useState<{ key: MisSortKey; direction: SortDirection } | null>(null);
   const activeServiceRequests = useRef(new Set<string>());
-  const previousDashboardFilterKey = useRef(`${applicationSource}:${fromDate}:${toDate}`);
+  const previousDashboardFilterKey = useRef(`${applicationSource}:${status}:${fromDate}:${toDate}`);
 
   const formatNumber = (value: number) => numberFormatter.format(value);
   const moduleName = getModuleName(applicationSource);
@@ -301,7 +309,61 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     () => departments.find((department) => department.id === expandedDepartmentId) ?? null,
     [departments, expandedDepartmentId]
   );
-  const filteredDepartments = departments;
+  const compareMisRows = useCallback((first: Pick<DepartmentRow, MisSortKey>, second: Pick<DepartmentRow, MisSortKey>) => {
+    if (!sort) return 0;
+
+    let result: number;
+    if (sort.key === "name") {
+      result = new Intl.Collator(locale, { numeric: true, sensitivity: "base" }).compare(first.name, second.name);
+    } else {
+      result = Number(first[sort.key]) - Number(second[sort.key]);
+    }
+
+    return sort.direction === "asc" ? result : -result;
+  }, [locale, sort]);
+
+  const statusMetric = status === "Pending"
+    ? "pending"
+    : status === "Approved"
+      ? "approved"
+      : status === "Rejected"
+        ? "rejected"
+        : status === "Overdue"
+          ? "overdue"
+          : null;
+
+  const filteredDepartments = useMemo(() => {
+    const statusRows = statusMetric
+      ? departments.filter((department) => department[statusMetric] > 0)
+      : departments;
+    return sort ? [...statusRows].sort(compareMisRows) : statusRows;
+  }, [compareMisRows, departments, sort, statusMetric]);
+
+  const toggleSort = useCallback((key: MisSortKey) => {
+    setSort((current) => (
+      current?.key === key
+        ? { key, direction: current.direction === "asc" ? "desc" : "asc" }
+        : { key, direction: "asc" }
+    ));
+  }, []);
+
+  const sortableHeader = useCallback((key: MisSortKey, label: string) => {
+    const isActive = sort?.key === key;
+    const Icon = !isActive ? ArrowUpDown : sort.direction === "asc" ? ArrowUp : ArrowDown;
+
+    return (
+      <button
+        type="button"
+        onClick={() => toggleSort(key)}
+        aria-label={label}
+        aria-pressed={isActive}
+        className="group inline-flex items-center gap-1 rounded px-0.5 py-0.5 text-inherit transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+      >
+        <span>{label}</span>
+        <Icon aria-hidden className={`size-3 shrink-0 ${isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`} />
+      </button>
+    );
+  }, [sort, toggleSort]);
 
   const totals = useMemo(() => departments.reduce(
     (current, department) => ({
@@ -385,7 +447,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
   }, [expandedDepartment, fetchDepartmentServices]);
 
   useEffect(() => {
-    const filterKey = `${applicationSource}:${fromDate}:${toDate}`;
+    const filterKey = `${applicationSource}:${status}:${fromDate}:${toDate}`;
     if (previousDashboardFilterKey.current === filterKey) return;
     previousDashboardFilterKey.current = filterKey;
     activeServiceRequests.current.clear();
@@ -393,7 +455,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     setServicesByDepartment({});
     setLoadingDepartmentId(null);
     setServiceErrors({});
-  }, [applicationSource, fromDate, toDate]);
+  }, [applicationSource, fromDate, status, toDate]);
 
   const updateUrl = useCallback((updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -434,12 +496,16 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     updateUrl({ FromDate: null, ToDate: null, PageNumber: "1" });
   };
 
+  const changeStatusFilter = (nextStatus: MisStatusFilter | null) => {
+    updateUrl({ Status: nextStatus, PageNumber: "1" });
+  };
+
   const metrics = [
-    { count: totals.total, label: t("misDashboard.totalApplications"), detail: t("misDashboard.allSubmitted"), icon: FileText, colors: "bg-blue-50 text-[#0B5CD5] ring-blue-100", detailColor: "text-[#0B5CD5]" },
-    { count: totals.pending, label: t("misDashboard.pendingVerification"), detail: t("misDashboard.inProgress"), icon: Clock3, colors: "bg-amber-50 text-[#F39C12] ring-amber-100", detailColor: "text-[#C66922]" },
-    { count: totals.approved, label: t("misDashboard.approvedApplications"), detail: t("misDashboard.completed"), icon: CheckCircle2, colors: "bg-emerald-50 text-[#27AE60] ring-emerald-100", detailColor: "text-[#0F7A3F]" },
-    { count: totals.rejected, label: t("misDashboard.rejectedApplications"), detail: t("misDashboard.notApproved"), icon: XCircle, colors: "bg-rose-50 text-[#B22222] ring-rose-100", detailColor: "text-[#B22222]" },
-    { count: totals.overdue, label: t("misDashboard.overdueApplications"), detail: t("misDashboard.requiresAttention"), icon: Timer, colors: "bg-violet-50 text-[#8A2BE2] ring-violet-100", detailColor: "text-[#551A8B]" },
+    { count: totals.total, label: t("misDashboard.totalApplications"), detail: t("misDashboard.allSubmitted"), icon: FileText, colors: "bg-blue-50 text-[#0B5CD5] ring-blue-100", detailColor: "text-[#0B5CD5]", statusFilter: null },
+    { count: totals.pending, label: t("misDashboard.pendingVerification"), detail: t("misDashboard.inProgress"), icon: Clock3, colors: "bg-amber-50 text-[#F39C12] ring-amber-100", detailColor: "text-[#C66922]", statusFilter: "Pending" },
+    { count: totals.approved, label: t("misDashboard.approvedApplications"), detail: t("misDashboard.completed"), icon: CheckCircle2, colors: "bg-emerald-50 text-[#27AE60] ring-emerald-100", detailColor: "text-[#0F7A3F]", statusFilter: "Approved" },
+    { count: totals.rejected, label: t("misDashboard.rejectedApplications"), detail: t("misDashboard.notApproved"), icon: XCircle, colors: "bg-rose-50 text-[#B22222] ring-rose-100", detailColor: "text-[#B22222]", statusFilter: "Rejected" },
+    { count: totals.overdue, label: t("misDashboard.overdueApplications"), detail: t("misDashboard.requiresAttention"), icon: Timer, colors: "bg-violet-50 text-[#8A2BE2] ring-violet-100", detailColor: "text-[#551A8B]", statusFilter: "Overdue" },
   ];
 
   const visualizationSummary = expandedDepartment
@@ -505,35 +571,44 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
         rows.push({ id: `${department.id}-loading`, kind: "loading", srNo: null, name: t("misDashboard.loadingServices"), totalServices: null, totalApplications: null, fromRts: null, fromAapleSarkar: null, pending: null, approved: null, rejected: null, overdue: null, sla: null });
       } else if (error) {
         rows.push({ id: `${department.id}-error`, kind: "error", srNo: null, name: "", totalServices: null, totalApplications: null, fromRts: null, fromAapleSarkar: null, pending: null, approved: null, rejected: null, overdue: null, sla: null, department, error });
-      } else if (services.length === 0) {
-        rows.push({ id: `${department.id}-empty`, kind: "empty", srNo: null, name: t("misDashboard.noServicesFound"), totalServices: null, totalApplications: null, fromRts: null, fromAapleSarkar: null, pending: null, approved: null, rejected: null, overdue: null, sla: null });
       } else {
-        rows.push(...services.map((service) => ({
-          id: service.id,
-          kind: "service" as const,
-          srNo: service.srNo,
-          name: service.name,
-          totalServices: null,
-          totalApplications: service.totalApplications,
-          fromRts: service.fromRts,
-          fromAapleSarkar: service.fromAapleSarkar,
-          pending: service.pending,
-          approved: service.approved,
-          rejected: service.rejected,
-          overdue: service.overdue,
-          sla: service.sla,
-        })));
+        const statusServices = statusMetric
+          ? services.filter((service) => service[statusMetric] > 0)
+          : services;
+
+        if (statusServices.length === 0) {
+          rows.push({ id: `${department.id}-empty`, kind: "empty", srNo: null, name: t("misDashboard.noServicesFound"), totalServices: null, totalApplications: null, fromRts: null, fromAapleSarkar: null, pending: null, approved: null, rejected: null, overdue: null, sla: null });
+        } else {
+          const sortedServices = sort
+            ? [...statusServices].sort(compareMisRows)
+            : statusServices;
+          rows.push(...sortedServices.map((service) => ({
+            id: service.id,
+            kind: "service" as const,
+            srNo: service.srNo,
+            name: service.name,
+            totalServices: null,
+            totalApplications: service.totalApplications,
+            fromRts: service.fromRts,
+            fromAapleSarkar: service.fromAapleSarkar,
+            pending: service.pending,
+            approved: service.approved,
+            rejected: service.rejected,
+            overdue: service.overdue,
+            sla: service.sla,
+          })));
+        }
       }
 
       return rows;
     });
-  }, [expandedDepartment, loadingDepartmentId, paginatedDepartments, serviceErrors, servicesByDepartment, t]);
+  }, [compareMisRows, expandedDepartment, loadingDepartmentId, paginatedDepartments, serviceErrors, servicesByDepartment, sort, statusMetric, t]);
 
   const tableColumns = useMemo<Column<MisTableRow>[]>(() => {
     const numberCell = (value: unknown) => value === null ? "" : numberFormatter.format(Number(value));
-    const metricColumn = (key: keyof MisTableRow, label: string, width: string, cellClassName = ""): Column<MisTableRow> => ({
+    const metricColumn = (key: Exclude<MisSortKey, "srNo" | "name">, label: string, width: string, cellClassName = ""): Column<MisTableRow> => ({
       key,
-      label,
+      label: sortableHeader(key, label),
       width,
       align: "center",
       headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold",
@@ -543,14 +618,14 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
 
     return [
       {
-        key: "srNo", label: t("misDashboard.srNo"), width: "56px", align: "center", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "text-center font-extrabold", render: (value, row) => {
+        key: "srNo", label: sortableHeader("srNo", t("misDashboard.srNo")), width: "56px", align: "center", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "text-center font-extrabold", render: (value, row) => {
           if (row.kind === "department") return String(value ?? "");
           if (row.kind === "service") return toAlphabeticalLabel(Number(value) - 1);
           return "";
         }
       },
       {
-        key: "name", label: "Departments and Services", width: "220px", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "font-bold text-slate-900", render: (_value, row) => {
+        key: "name", label: sortableHeader("name", "Departments and Services"), width: "220px", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "font-bold text-slate-900", render: (_value, row) => {
           if (row.kind === "service") return <span className="flex items-start gap-2 break-words pl-2 text-left leading-5 text-slate-700"><CornerDownRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-400" /><span>{row.name}</span></span>;
           if (row.kind === "loading" || row.kind === "empty") return <span className="block break-words pl-5 text-slate-500">{row.name}</span>;
           if (row.kind === "error" && row.department) return <div className="flex items-center gap-3 pl-5 text-rose-600"><span>{row.error}</span><Button type="button" size="sm" className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" onClick={() => fetchDepartmentServices(row.department!)}>{t("misDashboard.retry")}</Button></div>;
@@ -574,9 +649,9 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
       metricColumn("approved", t("misDashboard.approved"), "90px", "text-[#0F7A3F]"),
       metricColumn("rejected", t("misDashboard.rejected"), "90px", "text-[#B22222]"),
       metricColumn("overdue", t("misDashboard.overdueCount"), "105px", "text-rose-700"),
-      { key: "sla", label: t("misDashboard.avgSla"), width: "95px", align: "center", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "text-center font-extrabold text-[#008B8B]", render: (value, row) => row.kind === "department" || row.kind === "service" ? t("misDashboard.daysValue", { value: Number(value).toFixed(1) }) : "" },
+      { key: "sla", label: sortableHeader("sla", t("misDashboard.avgSla")), width: "95px", align: "center", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "text-center font-extrabold text-[#008B8B]", render: (value, row) => row.kind === "department" || row.kind === "service" ? t("misDashboard.daysValue", { value: Number(value).toFixed(1) }) : "" },
     ];
-  }, [expandedDepartment, fetchDepartmentServices, numberFormatter, t]);
+  }, [expandedDepartment, fetchDepartmentServices, numberFormatter, sortableHeader, t]);
 
   return (
     <div className="space-y-3">
@@ -596,12 +671,24 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
       </Card>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {metrics.map((metric) => (
-          <Card key={metric.label} padding="none" className="flex min-h-[112px] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-1 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ring-4 ${metric.colors}`}><metric.icon className="h-6 w-6" strokeWidth={2.2} /></div>
-            <div className="min-w-0"><div className="text-[10px] font-bold leading-tight text-slate-500">{metric.label}</div><div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">{formatNumber(metric.count)}</div><div className={`mt-2 text-[11px] font-bold ${metric.detailColor}`}>{metric.detail}</div></div>
-          </Card>
-        ))}
+        {metrics.map((metric) => {
+          const isActive = metric.statusFilter === status;
+          return (
+            <Card key={metric.label} padding="none" className={`rounded-2xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${isActive ? "border-blue-400 ring-2 ring-blue-100" : "border-slate-200"}`}>
+              <button
+                type="button"
+                onClick={() => changeStatusFilter(
+                  isActive ? null : metric.statusFilter as MisStatusFilter | null
+                )}
+                aria-pressed={isActive}
+                className="flex min-h-[112px] w-full items-center gap-3 px-4 py-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ring-4 ${metric.colors}`}><metric.icon className="h-6 w-6" strokeWidth={2.2} /></div>
+                <div className="min-w-0"><div className="text-[10px] font-bold leading-tight text-slate-500">{metric.label}</div><div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">{formatNumber(metric.count)}</div><div className={`mt-2 text-[11px] font-bold ${metric.detailColor}`}>{metric.detail}</div></div>
+              </button>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="flex flex-col gap-2 lg:flex-row lg:items-start">

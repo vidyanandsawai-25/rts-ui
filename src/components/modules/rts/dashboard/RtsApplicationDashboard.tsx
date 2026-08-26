@@ -5,6 +5,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   AlertOctagon,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CalendarClock,
   CheckCircle2,
   Clock3,
@@ -51,7 +54,14 @@ interface RtsApplicationDashboardProps {
   pagination: { pageNumber: number; pageSize: number; totalCount: number; totalPages: number };
   departments: RtsDepartmentApiItem[];
   services: RtsServiceApiItem[];
-  filters: { department: string; service: string; status: string; search: string };
+  filters: {
+    department: string;
+    service: string;
+    status: string;
+    search: string;
+    sortBy: string;
+    sortOrder: string;
+  };
   locale: string;
   drawer: {
     mode: 'view' | 'process';
@@ -68,9 +78,30 @@ interface RtsApplicationDashboardProps {
 }
 
 type GridRow = AdminApplicationGridRow & Record<string, unknown> & { id: string };
+type ApplicationSortKey = 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate';
+type SortDirection = 'asc' | 'desc';
 
 const PAGE_SIZE_OPTIONS = [10];
-const STATUS_OPTIONS = ['submitted', 'pending', 'approved', 'rejected', 'reverted'];
+const STATUS_OPTIONS = [
+  'Pending',
+  'Application Verified',
+  'Document Verified',
+  'Approved',
+  'Rejected',
+  'Reverted',
+  'Overdue Applications',
+  "Today's Applications",
+  'DueToday',
+];
+
+function isPendingSlaOverdue(row: GridRow): boolean {
+  return (
+    row.currentStatus.trim().toLowerCase() === 'pending' &&
+    typeof row.remainingDays === 'number' &&
+    Number.isFinite(row.remainingDays) &&
+    row.remainingDays <= 0
+  );
+}
 
 export default function RtsApplicationDashboard({
   kpis,
@@ -101,13 +132,15 @@ export default function RtsApplicationDashboard({
 
   const deptOptions = useMemo(() => {
     return [
-      { label: 'All Departments', value: '' },
+      { label: t('applicationDashboard.filters.allDepartments'), value: '' },
       ...departments.map((department) => ({
-        label: department.departmentName,
+        label: locale === 'mr' && department.departmentNameLocal?.trim()
+          ? department.departmentNameLocal.trim()
+          : department.departmentName,
         value: toApplicationFilterSlug(department.departmentName),
       })),
     ];
-  }, [departments]);
+  }, [departments, locale, t]);
 
   const serviceOptions = useMemo(() => {
     const selectedDepartment = departments.find(
@@ -117,19 +150,21 @@ export default function RtsApplicationDashboard({
       ? services.filter((service) => service.departmentId === selectedDepartment.id)
       : [];
     return [
-      { label: 'All Services', value: '' },
+      { label: t('applicationDashboard.filters.allServices'), value: '' },
       ...availableServices.map((service) => ({
-        label: service.serviceName,
+        label: locale === 'mr' && service.serviceNameLocal?.trim()
+          ? service.serviceNameLocal.trim()
+          : service.serviceName,
         value: toApplicationFilterSlug(service.serviceName),
       })),
     ];
-  }, [departments, filters.department, services]);
+  }, [departments, filters.department, locale, services, t]);
 
   const statusOptions = useMemo(() => {
     return [
       { label: t('applicationDashboard.filters.allStatuses'), value: '' },
       ...STATUS_OPTIONS.map((status) => ({
-        label: status.charAt(0).toUpperCase() + status.slice(1),
+        label: status,
         value: status,
       })),
     ];
@@ -138,7 +173,7 @@ export default function RtsApplicationDashboard({
   const updateUrl = useCallback(
     (changes: Record<string, string>) => {
       const params = new URLSearchParams(window.location.search);
-      ['Department', 'Service', 'Status', 'Search', 'PageSize', 'PageNumber'].forEach((key) =>
+      ['Department', 'Service', 'Status', 'Search', 'PageSize', 'PageNumber', 'SortBy', 'SortOrder'].forEach((key) =>
         params.delete(key)
       );
 
@@ -152,6 +187,29 @@ export default function RtsApplicationDashboard({
     },
     [pathname, router]
   );
+
+  const sortableHeader = useCallback((key: ApplicationSortKey, label: string) => {
+    const isActive = filters.sortBy === key;
+    const direction = filters.sortOrder as SortDirection;
+    const Icon = !isActive ? ArrowUpDown : direction === 'asc' ? ArrowUp : ArrowDown;
+
+    return (
+      <button
+        type="button"
+        onClick={() => updateUrl({
+          sortBy: key,
+          sortOrder: isActive && direction === 'asc' ? 'desc' : 'asc',
+          pageNumber: '1',
+        })}
+        aria-label={label}
+        aria-pressed={isActive}
+        className="group inline-flex items-center gap-1 rounded px-0.5 py-0.5 text-inherit transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+      >
+        <span>{label}</span>
+        <Icon aria-hidden className={`size-3 shrink-0 ${isActive ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`} />
+      </button>
+    );
+  }, [filters.sortBy, filters.sortOrder, updateUrl]);
 
   const updateDrawerUrl = useCallback(
     (changes: Record<string, string>) => {
@@ -211,6 +269,23 @@ export default function RtsApplicationDashboard({
     return () => window.clearTimeout(timeoutId);
   }, [filters, searchTerm, updateUrl]);
 
+  const hasActiveTableFilters = Boolean(
+    filters.department || filters.service || filters.status || filters.search || filters.sortBy || filters.sortOrder
+  );
+
+  const clearTableFilters = useCallback(() => {
+    setSearchTerm('');
+    updateUrl({
+      department: '',
+      service: '',
+      status: '',
+      search: '',
+      sortBy: '',
+      sortOrder: '',
+      pageNumber: '1',
+    });
+  }, [updateUrl]);
+
   const formatDate = useCallback(
     (value: string) => {
       const date = new Date(value);
@@ -235,6 +310,7 @@ export default function RtsApplicationDashboard({
     borderClassName: string;
     valueClassName: string;
     iconClassName: string;
+    statusValue?: string;
   }
 
   const kpiCards: KpiCardItem[] = [
@@ -257,6 +333,7 @@ export default function RtsApplicationDashboard({
       borderClassName: 'border-l-[#F59E0B]',
       valueClassName: 'text-[#F59E0B]',
       iconClassName: 'bg-amber-50 border-amber-100 text-[#F59E0B]',
+      statusValue: 'Pending',
     },
     {
       key: 'approved',
@@ -267,6 +344,7 @@ export default function RtsApplicationDashboard({
       borderClassName: 'border-l-[#10B981]',
       valueClassName: 'text-[#10B981]',
       iconClassName: 'bg-emerald-50 border-emerald-100 text-[#10B981]',
+      statusValue: 'Approved',
     },
     {
       key: 'reverted',
@@ -277,6 +355,7 @@ export default function RtsApplicationDashboard({
       borderClassName: 'border-l-violet-500',
       valueClassName: 'text-violet-600',
       iconClassName: 'bg-violet-50 border-violet-100 text-violet-600',
+      statusValue: 'Reverted',
     },
     {
       key: 'rejected',
@@ -287,6 +366,7 @@ export default function RtsApplicationDashboard({
       borderClassName: 'border-l-[#EF4444]',
       valueClassName: 'text-[#EF4444]',
       iconClassName: 'bg-rose-50 border-rose-100 text-[#EF4444]',
+      statusValue: 'Rejected',
     },
     {
       key: 'overdue',
@@ -297,6 +377,7 @@ export default function RtsApplicationDashboard({
       borderClassName: 'border-l-[#DC2626]',
       valueClassName: 'text-[#DC2626]',
       iconClassName: 'bg-red-50 border-red-100 text-[#DC2626]',
+      statusValue: 'Overdue Applications',
     },
     {
       key: 'today',
@@ -307,6 +388,7 @@ export default function RtsApplicationDashboard({
       borderClassName: 'border-l-cyan-500',
       valueClassName: 'text-cyan-600',
       iconClassName: 'bg-cyan-50 border-cyan-100 text-cyan-600',
+      statusValue: "Today's Applications",
     },
     {
       key: 'dueToday',
@@ -317,6 +399,7 @@ export default function RtsApplicationDashboard({
       borderClassName: 'border-l-orange-500',
       valueClassName: 'text-orange-600',
       iconClassName: 'bg-orange-50 border-orange-100 text-orange-600',
+      statusValue: 'DueToday',
     },
   ];
 
@@ -324,7 +407,7 @@ export default function RtsApplicationDashboard({
     () => [
       {
         key: 'applicationNo',
-        label: t('applicationDashboard.table.applicationNo'),
+        label: sortableHeader('applicationNo', t('applicationDashboard.table.applicationNo')),
         align: 'center',
         render: (_value, row) => (
           <span className="font-semibold text-[#173B73]">{row.applicationNo}</span>
@@ -332,7 +415,7 @@ export default function RtsApplicationDashboard({
       },
       {
         key: 'applicationDate',
-        label: t('applicationDashboard.table.applicationDate'),
+        label: sortableHeader('CreatedDate', t('applicationDashboard.table.applicationDate')),
         align: 'center',
         render: (_value, row) => (
           <span className="font-medium text-slate-700">{formatDate(row.applicationDate)}</span>
@@ -340,7 +423,7 @@ export default function RtsApplicationDashboard({
       },
       {
         key: 'applicantName',
-        label: t('applicationDashboard.table.applicantName'),
+        label: sortableHeader('ApplicantName', t('applicationDashboard.table.applicantName')),
         render: (_value, row) => (
           <span className="font-medium text-slate-800">{row.applicantName}</span>
         ),
@@ -348,16 +431,25 @@ export default function RtsApplicationDashboard({
       {
         key: 'serviceName',
         label: t('applicationDashboard.table.serviceName'),
-        render: (_value, row) => (
-          <div className="flex flex-col">
-            <span className="font-[#173B73] text-[15px] font-bold tracking-tight text-[#173B73]">
-              {row.serviceName}
-            </span>
-            <span className="text-[12px] font-bold uppercase tracking-wider text-teal-600">
-              {row.departmentName}
-            </span>
-          </div>
-        ),
+        render: (_value, row) => {
+          const serviceName = locale === 'mr' && row.serviceNameLocal
+            ? row.serviceNameLocal
+            : row.serviceName;
+          const departmentName = locale === 'mr' && row.departmentNameLocal
+            ? row.departmentNameLocal
+            : row.departmentName;
+
+          return (
+            <div className="flex flex-col">
+              <span className="font-[#173B73] text-[15px] font-bold tracking-tight text-[#173B73]">
+                {serviceName}
+              </span>
+              <span className="text-[12px] font-bold uppercase tracking-wider text-teal-600">
+                {departmentName}
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: 'assignedTo',
@@ -377,7 +469,7 @@ export default function RtsApplicationDashboard({
       },
       {
         key: 'currentStatus',
-        label: t('applicationDashboard.table.status'),
+        label: sortableHeader('ApplicationStatus', t('applicationDashboard.table.status')),
         align: 'center',
         render: (_value, row) => (
           <Badge {...getRtsApplicationStatusBadgeProps(row.currentStatus)}>
@@ -387,7 +479,7 @@ export default function RtsApplicationDashboard({
       },
       {
         key: 'lastUpdatedDate',
-        label: t('applicationDashboard.table.lastUpdatedDate'),
+        label: sortableHeader('UpdatedDate', t('applicationDashboard.table.lastUpdatedDate')),
         align: 'center',
         render: (_value, row) => (
           <span className="font-medium text-slate-700">
@@ -432,7 +524,7 @@ export default function RtsApplicationDashboard({
         ),
       },
     ],
-    [t, formatDate, formatDays]
+    [locale, t, formatDate, formatDays, sortableHeader]
   );
 
   return (
@@ -460,7 +552,12 @@ export default function RtsApplicationDashboard({
               padding="none"
               className={`relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 border-l-[4px] ${metric.borderClassName}`}
             >
-              <div className="flex items-center justify-between px-3.5 py-4">
+              <button
+                type="button"
+                disabled={!metric.statusValue}
+                onClick={() => metric.statusValue && updateUrl({ status: metric.statusValue, pageNumber: '1' })}
+                className="flex w-full items-center justify-between px-3.5 py-4 text-left disabled:cursor-default"
+              >
                 <div className="flex flex-col min-w-0">
                   <span className="flex items-center gap-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate" title={metric.label}>
                     {metric.label}
@@ -489,7 +586,7 @@ export default function RtsApplicationDashboard({
                 >
                   <metric.icon className="size-5" strokeWidth={2.5} />
                 </div>
-              </div>
+              </button>
             </Card>
           );
         })}
@@ -568,6 +665,16 @@ export default function RtsApplicationDashboard({
               />
             </div>
 
+            {hasActiveTableFilters && (
+              <button
+                type="button"
+                onClick={clearTableFilters}
+                className="mt-5 inline-flex h-8 items-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                {t('applicationDashboard.filters.clearFilters')}
+              </button>
+            )}
+
           </div>
         </div>
 
@@ -609,6 +716,11 @@ export default function RtsApplicationDashboard({
           containerClassName="gap-0 [&>div]:!border-0 [&>div]:!shadow-none [&>div]:!rounded-none"
           theadClassName="!bg-[#143D7D] [&_tr]:!bg-[#143D7D] [&_th]:!bg-[#143D7D] [&_th]:!text-white [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-xs [&_th]:border-none"
           tableClassName="[&_tbody_tr]:hover:bg-blue-50 [&_tbody_tr]:h-[64px] [&_tbody_td]:py-3 [&_tbody_td]:text-sm [&_tbody_td]:align-middle [&_tbody_td[colspan]]:h-[160px] [&_tbody_td[colspan]]:align-middle [&_thead_tr]:border-none [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100"
+          rowClassName={(row) =>
+            isPendingSlaOverdue(row)
+              ? '!border-rose-200 !bg-rose-50/70 hover:!bg-rose-100/80 border-l-[3px] border-l-rose-400'
+              : ''
+          }
           footerLeftContent={
             <span className="text-[12px] text-slate-400">
               {t('applicationDashboard.pagination.showing', {
@@ -631,8 +743,12 @@ export default function RtsApplicationDashboard({
                 citizenName: drawer.record.applicantName,
                 submittedDate: formatDate(drawer.record.applicationDate),
                 slaLimit: drawer.record.expectedSlaDays,
-                serviceName: drawer.record.serviceName,
-                departmentName: drawer.record.departmentName,
+                serviceName: locale === 'mr' && drawer.record.serviceNameLocal
+                  ? drawer.record.serviceNameLocal
+                  : drawer.record.serviceName,
+                departmentName: locale === 'mr' && drawer.record.departmentNameLocal
+                  ? drawer.record.departmentNameLocal
+                  : drawer.record.departmentName,
                 applicationStatus: drawer.record.currentStatus || 'Pending',
               }
             : null

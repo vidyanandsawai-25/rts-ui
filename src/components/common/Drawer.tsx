@@ -32,6 +32,7 @@ export function Drawer({
   children,
   footer,
   hideHeader = false,
+  className,
   bodyClassName,
 }: DrawerProps) {
   const tLogin = useTranslations("login");
@@ -253,6 +254,7 @@ export function Drawer({
           focus:outline-none
           animate-in slide-in-from-right duration-300
           ${responsiveValidationClasses}
+          ${className || ""}
         `}
         role="dialog"
         aria-modal="true"

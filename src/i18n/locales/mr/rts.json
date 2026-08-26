@@ -1,4 +1,13 @@
 {
+  "serviceForm": {
+    "confirmation": {
+      "title": "अर्ज सादर करायचा आहे का?",
+      "serviceName": "सेवेचे नाव",
+      "description": "सादर करण्यापूर्वी माहिती आणि अपलोड केलेली कागदपत्रे बरोबर असल्याची खात्री करा.",
+      "confirm": "होय, सादर करा",
+      "cancel": "रद्द करा"
+    }
+  },
   "login": {
     "brand": {
       "title": "अकोला महानगरपालिका",
@@ -384,7 +393,10 @@
     "filters": {
       "applicationType": "अर्जाचा प्रकार",
       "allTypes": "सर्व प्रकार",
-      "allStatuses": "सर्व स्थिती"
+      "allDepartments": "सर्व विभाग",
+      "allServices": "सर्व सेवा",
+      "allStatuses": "सर्व स्थिती",
+      "clearFilters": "फिल्टर साफ करा"
     },
     "table": {
                   "remark": "Remark",
@@ -530,6 +542,13 @@
       "recordPayment": "भरणा नोंदवा",
       "freeService": "मोफत शासकीय सेवा",
       "noGovernmentFeeRequired": "या सेवेसाठी कोणतेही शासकीय शुल्क आवश्यक नाही.",
+      "governmentFeePending": "शासकीय सेवा शुल्क प्रलंबित: ₹{amount}",
+      "paymentRequiredToProceed": "अर्जावर पुढील प्रक्रिया सुरू करण्यासाठी शुल्क भरणे आवश्यक आहे.",
+      "governmentFeePaid": "शासकीय सेवा शुल्क प्राप्त: ₹{amount}",
+      "receiptNumber": "पावती क्र.: {receiptNo}",
+      "officialReceiptAvailable": "अधिकृत शासकीय ई-पावती उपलब्ध आहे.",
+      "viewReceipt": "पावती पहा",
+      "receiptUnavailable": "भरण्याची पावती उपलब्ध नाही.",
       "recordPaymentNotRequired": "या सेवेसाठी शासकीय शुल्क आवश्यक नसल्याने भरणा नोंदवता येणार नाही.",
       "finishEditBeforeWorkflowAction": "कार्यप्रवाह कृती करण्यापूर्वी अर्जातील बदल जतन करा किंवा रद्द करा.",
       "viewNoteSheet": "नोट शीट पहा",
@@ -599,6 +618,7 @@
       "confirmRejectAction": "नामंजुरी कृतीची पुष्टी करा",
       "confirmRevertAction": "परतावा कृतीची पुष्टी करा",
       "confirmDecisionDescription": "तुम्हाला या कृतीसह पुढे जायचे आहे का?",
+      "confirmDecisionContext": "अर्ज क्रमांक: {applicationNo}\nसेवेचे नाव: {serviceName}",
       "confirmDecision": "पुष्टी करा",
       "cancelDecision": "रद्द करा",
       "documentsVerified": "कागदपत्रे यशस्वीपणे पडताळली गेली.",

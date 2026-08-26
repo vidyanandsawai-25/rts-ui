@@ -10,17 +10,24 @@ import {
   Download,
   FileText,
   GitCommit,
+  IndianRupee,
   LoaderCircle,
   Paperclip,
+  Printer,
   Shield,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
 import { ApprovalStagesTimeline } from '@/components/modules/rts';
 import RtsApplicationNoteSheetModal from '@/components/modules/rts/dashboard/RtsApplicationNoteSheetModal';
+import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
 import { Badge, Button, Drawer, Input, Label, ViewButton } from '@/components/common';
 import type { RtsApplicationFullDetailData } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
+import { getPaymentReceiptAction } from '@/app/[locale]/service/payment/actions';
 import { getAdminRtsDocumentDownloadUrl, getAdminRtsDocumentViewUrl } from '@/lib/api/rts/rtsdocument.client';
+import { getApplicationFieldDisplayLabel } from '@/lib/utils/rts/application-field-label';
+import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
 
 export interface RtsApplicationFullDetailRecord {
   applicationId: number;
@@ -69,6 +76,7 @@ export default function RtsApplicationFullDetailView({
 }: RtsApplicationFullDetailViewProps) {
   const t = useTranslations('rts.applicationDashboard.processDrawer');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [activeDocumentIndex, setActiveDocumentIndex] = useState(0);
   const [documentPreviewUrl, setDocumentPreviewUrl] = useState<string | null>(null);
@@ -76,6 +84,8 @@ export default function RtsApplicationFullDetailView({
   const [documentPreviewError, setDocumentPreviewError] = useState<string | null>(null);
   const [isDocumentPreviewLoading, setIsDocumentPreviewLoading] = useState(false);
   const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
+  const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
+  const [isReceiptLoading, setIsReceiptLoading] = useState(false);
 
   const loading = Boolean(open && record && !data);
   const fieldGroups = useMemo(() => {
@@ -107,7 +117,11 @@ export default function RtsApplicationFullDetailView({
 
   const activeDocument = documents[Math.min(activeDocumentIndex, Math.max(documents.length - 1, 0))] ?? null;
   const stages = data?.stages ?? null;
+  const payment = data?.payment ?? null;
   const currentStageIndex = stages?.approvalStages.findIndex((stage) => stage.isCurrentStage) ?? -1;
+  const isFreeService = Boolean(payment && (!payment.isFeeRequired || payment.requiredFee <= 0));
+  const isPaymentSuccessful = payment?.paymentStatus.trim().toLowerCase() === 'success';
+  const canViewReceipt = Boolean(isPaymentSuccessful && payment?.receiptNo);
 
   useEffect(() => {
     if (!open || !activeDocument?.isUploaded || !activeDocument.guid) {
@@ -161,6 +175,22 @@ export default function RtsApplicationFullDetailView({
   const expandAll = () => setOpenGroups(Object.fromEntries(fieldGroups.map((group) => [group.title, true])));
   const collapseAll = () => setOpenGroups(Object.fromEntries(fieldGroups.map((group) => [group.title, false])));
 
+  const handleViewReceipt = async () => {
+    setIsReceiptLoading(true);
+    try {
+      const result = await getPaymentReceiptAction(record.applicationId);
+      if (result.success && result.data) {
+        setReceiptModalData(result.data);
+      } else {
+        toast.error(t('receiptUnavailable'));
+      }
+    } catch {
+      toast.error(t('receiptUnavailable'));
+    } finally {
+      setIsReceiptLoading(false);
+    }
+  };
+
   return (
     <>
       <Drawer
@@ -171,16 +201,31 @@ export default function RtsApplicationFullDetailView({
         bodyClassName="relative overflow-hidden"
         footer={
           <div className="flex w-full items-center justify-between gap-3">
-            <Button
-              type="button"
-              variant="secondary"
-              icon={FileText}
-              size="xs"
-              onClick={() => setIsNoteSheetOpen(true)}
-              className="rounded-lg px-3 text-xs font-bold"
-            >
-              {t('viewNoteSheet')}
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                icon={FileText}
+                size="xs"
+                onClick={() => setIsNoteSheetOpen(true)}
+                className="rounded-lg px-3 text-xs font-bold"
+              >
+                {t('viewNoteSheet')}
+              </Button>
+              {canViewReceipt && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  icon={Printer}
+                  size="xs"
+                  disabled={isReceiptLoading}
+                  onClick={handleViewReceipt}
+                  className="rounded-lg border-emerald-300 bg-emerald-50 px-3 text-xs font-bold text-emerald-800 hover:bg-emerald-100"
+                >
+                  {t('viewReceipt')}
+                </Button>
+              )}
+            </div>
             <Button variant="secondary" onClick={onClose} size="xs" className="rounded-lg px-5 text-xs font-bold">
               {tCommon('buttons.close')}
             </Button>
@@ -280,6 +325,41 @@ export default function RtsApplicationFullDetailView({
                       />
                     )}
                   </section>
+
+                  {payment && (
+                    isFreeService ? (
+                      <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+                          <div>
+                            <p className="text-xs font-extrabold text-emerald-900">{t('freeService')}</p>
+                            <p className="mt-1 text-[11px] font-medium text-emerald-700">{t('noGovernmentFeeRequired')}</p>
+                          </div>
+                        </div>
+                      </section>
+                    ) : isPaymentSuccessful ? (
+                      <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-extrabold text-emerald-900">{t('governmentFeePaid', { amount: payment.requiredFee })}</p>
+                            {payment.receiptNo && <p className="mt-1 truncate text-[11px] font-medium text-emerald-700">{t('receiptNumber', { receiptNo: payment.receiptNo })}</p>}
+                            <p className="mt-1 text-[11px] font-medium text-emerald-700">{t('officialReceiptAvailable')}</p>
+                          </div>
+                        </div>
+                      </section>
+                    ) : (
+                      <section className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <IndianRupee className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                          <div>
+                            <p className="text-xs font-extrabold text-amber-900">{t('governmentFeePending', { amount: payment.requiredFee })}</p>
+                            <p className="mt-1 text-[11px] font-medium text-amber-700">{t('paymentRequiredToProceed')}</p>
+                          </div>
+                        </div>
+                      </section>
+                    )
+                  )}
                 </div>
               </aside>
 
@@ -306,11 +386,11 @@ export default function RtsApplicationFullDetailView({
                             </button>
                             {isOpen && (declarationGroup ? (
                               <div className="p-4">
-                                {group.fields.map((field) => <div key={field.fieldDefinitionId} className="rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-4"><div className="flex items-start gap-3"><CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-600" /><div><p className="text-sm font-semibold leading-relaxed text-slate-800">{field.fieldLabel || t('declarationAccepted')}</p><p className="mt-1 text-xs font-bold text-emerald-700">{t('acceptedByApplicant')}</p></div></div></div>)}
+                                {group.fields.map((field) => <div key={field.fieldDefinitionId} className="rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-4"><div className="flex items-start gap-3"><CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-600" /><div><p className="text-sm font-semibold leading-relaxed text-slate-800">{getApplicationFieldDisplayLabel(field, locale, t('declarationAccepted'))}</p><p className="mt-1 text-xs font-bold text-emerald-700">{t('acceptedByApplicant')}</p></div></div></div>)}
                               </div>
                             ) : (
                               <div className="grid grid-cols-1 gap-x-5 gap-y-4 p-4 sm:grid-cols-2 xl:grid-cols-3">
-                                {group.fields.map((field) => <div key={field.fieldDefinitionId} className="min-w-0"><Label className="mb-1 block text-[9px] font-bold uppercase tracking-wide text-slate-600">{field.fieldLabel}</Label><Input fullWidth value={field.value ?? ''} disabled className="h-9 text-sm font-medium disabled:bg-slate-50 disabled:text-slate-700 disabled:opacity-100" /></div>)}
+                                {group.fields.map((field) => <div key={field.fieldDefinitionId} className="min-w-0"><Label className="mb-1 block text-[9px] font-bold uppercase tracking-wide text-slate-600">{getApplicationFieldDisplayLabel(field, locale, t('documentFallback'))}</Label><Input fullWidth value={field.value ?? ''} disabled className="h-9 text-sm font-medium disabled:bg-slate-50 disabled:text-slate-700 disabled:opacity-100" /></div>)}
                               </div>
                             ))}
                           </article>
@@ -356,6 +436,13 @@ export default function RtsApplicationFullDetailView({
             : null
         }
       />
+
+      {receiptModalData && (
+        <PaymentReceiptModal
+          receipt={receiptModalData}
+          onClose={() => setReceiptModalData(null)}
+        />
+      )}
     </>
   );
 }

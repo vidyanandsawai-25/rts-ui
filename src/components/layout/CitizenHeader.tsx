@@ -161,7 +161,7 @@ export function CitizenHeader({
                 activeLocale={activeLocale}
                 onLogout={handleLogout}
                 onOpenApplications={() => setIsDrawerOpen(true)}
-                hasMultipleProperties={properties.length > 1}
+                hasMultipleProperties={properties.length >= 1}
                 onOpenProperties={() => setIsPropertiesDrawerOpen(true)}
               />
             ) : (
