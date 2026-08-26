@@ -108,6 +108,7 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             loading={updateData.loadingProperties}
             selectedPropertyIds={updateData.selectedPropertyIds}
             allSelected={updateData.allSelected}
+            isPropertySelected={updateData.isPropertySelected}
             onSelectAll={updateData.handleSelectAll}
             onPropertySelect={updateData.handlePropertySelect}
             propertiesPage={updateData.propertiesPage}
@@ -145,7 +146,7 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             formWarnings={updateData.formWarnings}
             formSubmitted={updateData.formSubmitted}
             saving={updateData.saving}
-            selectedCount={updateData.allSelected ? updateData.totalCount : updateData.selectedPropertyIds.size}
+            selectedCount={updateData.selectedCount}
             onFieldChange={updateData.handleFormValueChange}
             onUpdate={updateData.handleSubmitBulkUpdate}
             onClear={updateData.handleFormClear}

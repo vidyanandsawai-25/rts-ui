@@ -120,12 +120,12 @@ export default async function Page({ searchParams }: PageProps) {
   const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, initialSourceTables, initialExcelTemplateFieldsResult, initialUpdateHistory, initialAllUpdateHistory, initialUpdateHistoryDetail] = await Promise.all([
     getAllWardsAction(),
     getAllWingsAction(),
-    getFieldRegistriesServer(pageNumber, pageSize).catch(() => ({
+    getFieldRegistriesServer(1, -1).catch(() => ({
       items: [],
       totalCount: 0,
-      pageNumber,
-      pageSize,
-      totalPages: 0,
+      pageNumber: 1,
+      pageSize: -1,
+      totalPages: 1,
       hasPrevious: false,
       hasNext: false
     })),

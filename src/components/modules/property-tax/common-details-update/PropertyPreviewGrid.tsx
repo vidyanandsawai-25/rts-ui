@@ -21,6 +21,7 @@ interface PropertyPreviewGridProps {
   loading: boolean;
   selectedPropertyIds: Set<number>;
   allSelected: boolean;
+  isPropertySelected?: (id: number) => boolean;
   onSelectAll: () => void;
   onPropertySelect: (id: number, checked: boolean) => void;
   propertiesPage: number;
@@ -49,6 +50,7 @@ export const PropertyPreviewGrid = ({
   loading,
   selectedPropertyIds,
   allSelected,
+  isPropertySelected,
   onSelectAll,
   onPropertySelect,
   propertiesPage,
@@ -83,7 +85,7 @@ export const PropertyPreviewGrid = ({
       render: (_value: any, row: PropertyPreviewRow) => (
         <Input
           type="checkbox"
-          checked={allSelected || selectedPropertyIds.has(row.id)}
+          checked={isPropertySelected ? isPropertySelected(row.id) : (allSelected || selectedPropertyIds.has(row.id))}
           onChange={(e) => onPropertySelect(row.id, e.target.checked)}
           aria-label={t("preview.selectRow", { id: row.propertyNo })}
           className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
@@ -144,7 +146,7 @@ export const PropertyPreviewGrid = ({
         loadingText={t("preview.loading")}
         tableClassName="min-w-max"
         rowClassName={(row) =>
-          selectedPropertyIds.has(row.id) ? "bg-blue-50" : ""
+          (isPropertySelected ? isPropertySelected(row.id) : selectedPropertyIds.has(row.id)) ? "bg-blue-50" : ""
         }
         headerTitle={t("preview.title")}
         headerExtra={

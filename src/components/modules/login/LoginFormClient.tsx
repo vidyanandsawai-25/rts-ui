@@ -23,6 +23,7 @@ import type { LoginFormProps } from '@/types/login.types';
 
 import { FormLoadingOverlay, LoginCredentialFields } from './LoginFormParts';
 import { InlineChangePasswordForm } from './InlineChangePasswordForm';
+import { VerifyTwoFactorFormClient } from './VerifyTwoFactorFormClient';
 import { KeyRound } from 'lucide-react';
 
 function LoginRateLimitHint() {
@@ -99,8 +100,13 @@ export function LoginFormClient({
 
   const [viewMode, setViewMode] = useState<'login' | 'changePassword'>('login');
   const [successInfo, setSuccessInfo] = useState<string | null>(null);
+  const [dismissedChallengeKey, setDismissedChallengeKey] = useState<string | null>(null);
 
   const [credState, credAction] = useActionState(loginCredentialsFormAction, null);
+
+  const isTwoFactorActive = Boolean(
+    credState?.requiresTwoFactor && credState.resetKey !== dismissedChallengeKey
+  );
 
   useEffect(() => {
     clearLegacyAuthClientStorage();
@@ -135,6 +141,19 @@ export function LoginFormClient({
         onSuccess={(msg) => {
           setSuccessInfo(msg);
           setViewMode('login');
+        }}
+      />
+    );
+  }
+
+  if (isTwoFactorActive) {
+    return (
+      <VerifyTwoFactorFormClient
+        locale={locale}
+        method={credState?.twoFactorMethod || 'totp'}
+        username={credState?.twoFactorUsername || username || ''}
+        onBackToLogin={() => {
+          setDismissedChallengeKey(credState?.resetKey ?? 'dismissed');
         }}
       />
     );

@@ -214,7 +214,7 @@ export const getApprovalHeaderRows = (
 ): HeaderCell[][] => {
     const topRow: HeaderCell[] = [
         {
-            label: <div className="flex items-center justify-start gap-1 font-bold text-[15px] text-slate-700 uppercase whitespace-nowrap">SR</div>,
+            label: <div className="flex items-center justify-center gap-1 font-bold text-[15px] text-slate-700 uppercase whitespace-nowrap">{t ? t('columns.sr') : 'SR'}</div>,
             rowSpan: 2,
             align: 'center',
             headerClassName: 'bg-slate-50 min-w-[50px] border border-slate-300'
@@ -233,37 +233,33 @@ export const getApprovalHeaderRows = (
         },
         {
             label: (
-                <div className="flex flex-col items-center justify-center font-bold text-[14px] text-slate-700 leading-tight">
-                    <span className="px-1 rounded text-[12px] mb-0.5">{t ? t('total') : 'Total'}</span>
-                    <span>{t ? t('structures') : 'Structures'}</span>
+                <div className="flex flex-col items-center justify-center font-bold text-[14px] text-slate-700 leading-tight text-center whitespace-pre-wrap">
+                    <span>{t ? t('totalStructures') : 'Total Structures'}</span>
                 </div>
             ),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 border border-slate-300'
+            headerClassName: 'bg-slate-50 border border-slate-300 px-2'
         },
         {
             label: (
-                <div className="flex flex-col items-center justify-center font-bold text-[14px] text-slate-700 leading-tight">
-                    <span className='px-1 rounded mb-0.5'>{t ? t('columns.totalUnits') : 'Total Units'}</span>
-                    <span>{t ? (t('totalUnitsSubmitted') as string).replace(t('columns.totalUnits') as string, '').trim() || 'Submitted' : 'Submitted'}</span>
+                <div className="flex flex-col items-center justify-center font-bold text-[14px] text-slate-700 leading-tight text-center whitespace-pre-wrap">
+                    <span>{t ? t('totalUnitsSubmitted') : 'Total Units Submitted'}</span>
                 </div>
             ),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 border border-slate-300'
+            headerClassName: 'bg-slate-50 border border-slate-300 px-2'
         },
         {
             label: (
-                <div className="flex flex-col items-center justify-center font-bold text-[14px] text-slate-700 leading-tight">
-                    <span>{t ? t('total') : 'Total'}</span>
-                    <span>{t ? (t('totalDemandCr') as string).replace(t('total') as string, '').replace('(Cr)', '').trim() || 'Demand' : 'Demand'}</span>
-                    <span>{'(Cr)'}</span>
+                <div className="flex flex-col items-center justify-center font-bold text-[14px] text-slate-700 leading-tight text-center whitespace-pre-wrap">
+                    <span>{t ? t('totalDemandCr') : 'Total Demand (Cr)'}</span>
                 </div>
             ),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-emerald-50 border border-slate-300'
+            headerClassName: 'bg-emerald-50 border border-slate-300 px-2'
         }
     ];
 

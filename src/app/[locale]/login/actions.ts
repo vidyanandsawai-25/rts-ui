@@ -135,27 +135,6 @@ async function completeLoginSession(
   redirect(`/${locale}/home?loginSuccess=1`);
 }
 
-/**
- * Stashes the pending MFA challenge and redirects to the verify-2FA step. No access/refresh
- * token exists yet — the user is not logged in until `verifyTwoFactorAction` succeeds.
- */
-async function redirectToTwoFactorChallenge(
-  locale: string,
-  auth: AuthLoginApiBody,
-  formUsername: string
-): Promise<never> {
-  const cookieStore = await cookies();
-  await persistPendingTwoFactorCookie(
-    cookieStore,
-    auth.challengeId as string,
-    auth.username || formUsername,
-    auth.challengeExpiresAt,
-    auth.twoFactorMethod === 'otp' ? 'otp' : 'totp'
-  );
-
-  redirect(`/${locale}/login/verify-2fa`);
-}
-
 // ---------------------------------------------------------------------------
 // Server Actions
 // ---------------------------------------------------------------------------
@@ -276,8 +255,21 @@ export async function validateCredentialsAction(formData: FormData) {
   // Step 5: Two-factor challenge — password was valid, but no session yet
   // ---------------------------------------------------------------------------
   if (hasPendingTwoFactorChallenge(normalizedAuth)) {
-    await redirectToTwoFactorChallenge(locale, normalizedAuth, validatedUsername);
-    // Note: redirectToTwoFactorChallenge redirects and never returns
+    const cookieStore = await cookies();
+    await persistPendingTwoFactorCookie(
+      cookieStore,
+      normalizedAuth.challengeId as string,
+      normalizedAuth.username || validatedUsername,
+      normalizedAuth.challengeExpiresAt,
+      normalizedAuth.twoFactorMethod === 'otp' ? 'otp' : 'totp'
+    );
+    return {
+      success: true as const,
+      requiresTwoFactor: true as const,
+      challengeId: normalizedAuth.challengeId,
+      username: normalizedAuth.username || validatedUsername,
+      method: (normalizedAuth.twoFactorMethod === 'otp' ? 'otp' : 'totp') as 'otp' | 'totp',
+    };
   }
 
   // ---------------------------------------------------------------------------
@@ -343,10 +335,13 @@ export async function fetchLoginBrandingAction(): Promise<{ ulbData: UlbMaster |
   return { ulbData };
 }
 export type LoginCredentialsFormState = {
-  message: string;
-  resetKey: string;
+  message?: string;
+  resetKey?: string;
   /** Wrong-password attempts left before lockout — only set alongside INVALID_CREDENTIALS. */
   remainingAttempts?: number;
+  requiresTwoFactor?: boolean;
+  twoFactorUsername?: string;
+  twoFactorMethod?: 'totp' | 'otp';
 } | null;
 
 export async function loginCredentialsFormAction(
@@ -355,6 +350,14 @@ export async function loginCredentialsFormAction(
 ): Promise<LoginCredentialsFormState> {
   try {
     const result = await validateCredentialsAction(formData);
+    if (result && 'requiresTwoFactor' in result && result.requiresTwoFactor) {
+      return {
+        requiresTwoFactor: true,
+        twoFactorUsername: result.username,
+        twoFactorMethod: result.method,
+        resetKey: crypto.randomUUID(),
+      };
+    }
     if (result && 'success' in result && result.success === false) {
       const errorCode = result.errorCode || 'LOGIN_FAILED';
       const remainingAttempts =
@@ -489,9 +492,11 @@ export async function verifyTwoFactorFormAction(
 /**
  * Abandons the pending 2FA challenge and returns to the credentials step ("Back to Login").
  */
-export async function cancelTwoFactorChallengeAction(locale: string = 'en') {
-  const safeLocale = sanitizeLocale(locale);
+export async function cancelTwoFactorChallengeAction(locale?: string) {
   const cookieStore = await cookies();
   await clearPendingTwoFactorCookie(cookieStore);
-  redirect(`/${safeLocale}/login`);
+  if (locale) {
+    const safeLocale = sanitizeLocale(locale);
+    redirect(`/${safeLocale}/login`);
+  }
 }

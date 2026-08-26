@@ -121,12 +121,12 @@ export default async function EditPage(props: EditPageProps) {
   const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, editData, initialSourceTables, initialUpdateHistory] = await Promise.all([
     getAllWardsAction(),
     getAllWingsAction(),
-    getFieldRegistriesServer(pageNumber, pageSize).catch(() => ({
+    getFieldRegistriesServer(1, -1).catch(() => ({
       items: [],
       totalCount: 0,
-      pageNumber,
-      pageSize,
-      totalPages: 0,
+      pageNumber: 1,
+      pageSize: -1,
+      totalPages: 1,
       hasPrevious: false,
       hasNext: false
     })),

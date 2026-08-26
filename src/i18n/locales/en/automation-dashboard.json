@@ -134,7 +134,7 @@
       "address": "ADDRESS",
       "additionalRevenue": "ADDITIONAL REVENUE",
       "newOldPropertyNo": "New Property No. | Old Property No.",
-      "srNo": "Sr. No.",
+      "srNo": "SR",
       "propertyType": "PROPERTY TYPE",
       "newRecord": "NEW RECORD",
       "oldWardNoConstructionYear": "Old Ward No. | Construction Year",
@@ -276,7 +276,7 @@
       "export": "Export"
     },
     "columns": {
-      "sr": "Sr. No",
+      "sr": "SR",
       "division": "Division",
       "wardNo": "Ward No",
       "internalSurvey": "Internal Survey",
@@ -332,7 +332,7 @@
     "unit": "Unit",
     "units": "Units",
     "columns": {
-      "sr": "Sr",
+      "sr": "SR",
       "zoneWard": "Zone / Ward",
       "division": "Division",
       "divisionOffice": "Division Office",

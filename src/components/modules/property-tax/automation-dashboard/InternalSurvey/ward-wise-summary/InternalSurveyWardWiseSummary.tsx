@@ -22,6 +22,7 @@ import { ExportDropdown } from '../ExportDropdown';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 import { getAssessmentStatusNavigationParams } from '@/lib/utils/automation-dashboard/assessmentStatusNavigation';
+import { applyTableSort, useTableSort } from '@/lib/utils/automation-dashboard/sortUtils';
 
 interface InternalSurveyWardWiseSummaryProps {
     zoneId: string;
@@ -118,7 +119,10 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
             router.push(`${basePath}/property-details-dashboard/${pathId}${query}`);
         }
     ), [t, locale, zoneId, workflowStageId, basePath, router, zoneNo]);
-    const headerRows = useMemo(() => getInternalSurveyHeaderRows(t, 'ward'), [t]);
+
+    const { sortConfig, handleSort } = useTableSort<InternalSurveyTableRow>();
+
+    const headerRows = useMemo(() => getInternalSurveyHeaderRows(t, 'ward', sortConfig, handleSort), [t, sortConfig, handleSort]);
 
     const tableData = useMemo(() => {
         if (!summaryData?.wardData) return [];
@@ -155,9 +159,15 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
             inprocessStatusId: ward.assessmentInprocess?.statusId,
         }));
 
+        const sortedWards = sortConfig ? applyTableSort([...mappedWards], sortConfig) : mappedWards;
+
+        sortedWards.forEach((row, index) => {
+            row.sr = startSr + index + 1;
+        });
+
         if (summaryData.totalRow) {
             const total = summaryData.totalRow;
-            mappedWards.push({
+            sortedWards.push({
                 sr: t('internalSurvey.total'),
                 division: total.wardNo,
                 isTotal: true,
@@ -186,8 +196,8 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
             });
         }
 
-        return mappedWards;
-    }, [summaryData, t]);
+        return sortedWards;
+    }, [summaryData, t, sortConfig]);
 
     const summaryCardsData = useMemo(() => {
         if (!summaryData?.totalRow) return undefined;

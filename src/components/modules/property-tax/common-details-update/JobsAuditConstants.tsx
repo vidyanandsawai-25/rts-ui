@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Column, TruncatedText, ViewButton } from "@/components/common";
 import { UpdateHistoryItem } from "@/types/common-details-update/common-details-update.types";
-import { format } from "date-fns";
 
 export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem) => void): Column<UpdateHistoryItem>[] => [
   {
@@ -12,10 +11,13 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
     render: (_, row) => {
       try {
         const dateObj = new Date(row.createdDate);
+        if (isNaN(dateObj.getTime())) return <span className="text-sm text-slate-700 whitespace-nowrap">{row.createdDate}</span>;
+        const dateStr = dateObj.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+        const timeStr = dateObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
         return (
           <div className="flex flex-col">
-            <span className="text-sm text-slate-700 whitespace-nowrap">{format(dateObj, "dd MMM yyyy")}</span>
-            <span className="text-xs text-slate-500 whitespace-nowrap">{format(dateObj, "hh:mm a")}</span>
+            <span className="text-sm text-slate-700 whitespace-nowrap">{dateStr}</span>
+            <span className="text-xs text-slate-500 whitespace-nowrap">{timeStr}</span>
           </div>
         );
       } catch (e) {
@@ -28,14 +30,14 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
     label: t("jobsAudit.columns.activityType"),
     headerClassName: "whitespace-nowrap",
     width: "80px",
-    render: (_, row) => <TruncatedText  text={row.activityType} className="text-sm text-slate-700 block truncate" />
+    render: (_, row) => <TruncatedText text={row.activityType} className="text-sm text-slate-700 block truncate" />
   },
   {
     key: "updateName",
     label: t("jobsAudit.columns.updateName"),
     headerClassName: "whitespace-nowrap",
     width: "100px",
-    render: (_, row) => <TruncatedText  text={row.updateName} className="text-sm text-slate-700 block truncate" />
+    render: (_, row) => <TruncatedText text={row.updateName} className="text-sm text-slate-700 block truncate" />
   },
   {
     key: "records",
@@ -49,7 +51,7 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
     label: t("jobsAudit.columns.doneBy"),
     headerClassName: "whitespace-nowrap",
     width: "100px",
-    render: (_, row) => <TruncatedText  text={row.doneBy} className="text-sm text-slate-700 font-medium block truncate" />
+    render: (_, row) => <TruncatedText text={row.doneBy} className="text-sm text-slate-700 font-medium block truncate" />
   },
   {
     key: "startTime",
@@ -67,7 +69,7 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
         if (isNaN(dateObj.getTime()) || dateObj.getFullYear() < 2000) {
           return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
         }
-        return <span className="text-sm text-slate-700 whitespace-nowrap">{format(dateObj, "hh:mm:ss a")}</span>;
+        return <span className="text-sm text-slate-700 whitespace-nowrap">{dateObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })}</span>;
       } catch (e) {
         return <span className="text-sm text-slate-700 whitespace-nowrap">{str || "-"}</span>;
       }
@@ -90,7 +92,7 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
         if (isNaN(dateObj.getTime()) || dateObj.getFullYear() < 2000) {
           return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
         }
-        return <span className="text-sm text-slate-700 whitespace-nowrap">{format(dateObj, "hh:mm:ss a")}</span>;
+        return <span className="text-sm text-slate-700 whitespace-nowrap">{dateObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })}</span>;
       } catch (e) {
         return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
       }
@@ -179,13 +181,20 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
     headerClassName: "whitespace-nowrap",
     align: "center",
     width: "100px",
-    render: (_, row) => (
-      <ViewButton
-        onClick={() => onViewClick(row)}
-        className="flex items-center gap-1.5 px-3 py-1.5 mx-auto border border-slate-300 rounded-md text-slate-700 text-sm hover:bg-slate-50 transition-colors shadow-sm bg-white"
-      >
-        {t("jobsAudit.columns.view")}
-      </ViewButton>
-    )
+    render: (_, row) => {
+      const isFailed = ["failed", "error"].includes(String(row.activityStatus || "").trim().toLowerCase());
+      return (
+        <ViewButton
+          onClick={() => onViewClick(row)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 mx-auto border rounded-md text-sm transition-colors shadow-sm ${
+            isFailed
+              ? "opacity-50 cursor-not-allowed bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-100 hover:text-slate-400"
+              : "border-slate-300 text-slate-700 hover:bg-slate-50 bg-white cursor-pointer"
+          }`}
+        >
+          {t("jobsAudit.columns.view")}
+        </ViewButton>
+      );
+    }
   }
 ];

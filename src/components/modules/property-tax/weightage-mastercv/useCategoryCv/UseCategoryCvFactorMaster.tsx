@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { MasterTable } from "@/components/common/MasterTable";
 import { Option } from "@/components/common/select";
-import { SaveButton, UpdateButton, CancelButton, EditButton, DeleteButton } from "@/components/common/ActionButtons";
+import { SaveButton, UpdateButton, EditButton, DeleteButton, ClearButton } from "@/components/common/ActionButtons";
 import { ToastContainer } from "@/components/common/Toast";
 import { UseFactorCVMaster, UseType } from "@/types/useCategoryCvFactor.types";
 import { useCategoryCv } from "@/hooks/weightageMaster/useCategoryCv/useCategoryCv";
@@ -168,7 +168,7 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
                     }}
                     disabled={isUpdating || isBulkUpdating}
                 />
-                <CancelButton
+                <ClearButton
                     size="sm"
                     onClick={() => handleCancel(row)}
                     disabled={!hasRowChanges || isUpdating || isBulkUpdating}

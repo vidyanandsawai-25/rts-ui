@@ -16,7 +16,7 @@ import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-da
 import { ExportDropdown } from './ExportDropdown';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
-import { applyTableSort, SortConfig } from '@/lib/utils/automation-dashboard/sortUtils';
+import { applyTableSort, useTableSort } from '@/lib/utils/automation-dashboard/sortUtils';
 import { getAssessmentStatusNavigationParams } from '@/lib/utils/automation-dashboard/assessmentStatusNavigation';
 interface InternalSurveyPageProps {
     serverData: InternalSurveyGridItems | null;
@@ -115,21 +115,9 @@ const InternalSurveyPage: React.FC<InternalSurveyPageProps> = ({ serverData, pro
         );
     }, [t, router, basePath, workflowStageId, locale]);
 
-    const [sortConfig, setSortConfig] = useState<SortConfig<InternalSurveyTableRow> | null>(null);
+    const { sortConfig, handleSort } = useTableSort<InternalSurveyTableRow>();
 
-    const handleSort = (key: keyof InternalSurveyTableRow) => {
-        setSortConfig((current) => {
-            if (!current || current.key !== key) {
-                return { key, direction: 'asc' };
-            }
-            if (current.direction === 'asc') {
-                return { key, direction: 'desc' };
-            }
-            return null;
-        });
-    };
-
-    const headerRows = useMemo(() => getInternalSurveyHeaderRows(t, 'zone', sortConfig, handleSort), [t, sortConfig]);
+    const headerRows = useMemo(() => getInternalSurveyHeaderRows(t, 'zone', sortConfig, handleSort), [t, sortConfig, handleSort]);
 
     const tableData: InternalSurveyTableRow[] = useMemo(() => {
         if (!serverData) return [];

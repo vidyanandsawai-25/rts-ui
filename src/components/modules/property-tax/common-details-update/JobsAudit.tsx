@@ -7,7 +7,6 @@ import { getJobsAuditColumns } from "./JobsAuditConstants";
 import { UpdateHistoryItem, CommonDetailsUpdateActions } from "@/types/common-details-update/common-details-update.types";
 import { PagedResponse } from "@/types/common.types";
 import { useTranslations } from "next-intl";
-import { format } from "date-fns";
 import { DownloadButton } from "@/components/common/ActionButtons";
 import { useJobsAudit } from "@/hooks/commonDetailsUpdate/useJobsAudit";
 
@@ -216,8 +215,15 @@ export const JobsAudit = ({ initialData, initialAllData, initialUpdateHistoryDet
                 </Badge>
                 <Badge variant="secondary" className="font-semibold">
                   {t("jobsAudit.modal.date")}: {selectedRow.createdDate ? (() => {
-                    try { return format(new Date(selectedRow.createdDate), "dd MMM yyyy, hh:mm a"); }
-                    catch { return selectedRow.createdDate; }
+                    try {
+                      const d = new Date(selectedRow.createdDate);
+                      if (isNaN(d.getTime())) return selectedRow.createdDate;
+                      const dateStr = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+                      const timeStr = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+                      return `${dateStr}, ${timeStr}`;
+                    } catch {
+                      return selectedRow.createdDate;
+                    }
                   })() : "-"}
                 </Badge>
                 <Badge variant="warning" className="font-semibold">

@@ -36,7 +36,6 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
     pageSize, setPageSize,
     submitting,
     handleEdit,
-    totalCount
   } = state;
 
 
@@ -212,18 +211,15 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
     }
   ], [handleEdit, setFields, t]);
 
-  const displayTotalCount = (fields.length < totalCount) ? totalCount : filteredFields.length;
-  const totalPages = Math.ceil(displayTotalCount / pageSize);
+  const displayTotalCount = filteredFields.length;
+  const totalPages = Math.max(1, Math.ceil(displayTotalCount / pageSize));
 
   const pagedData = useMemo(() => {
-    if (fields.length < totalCount) {
-      return filteredFields.map((f: BulkUpdateMaster) => f as unknown as Record<string, unknown>);
-    }
     const start = (pageNumber - 1) * pageSize;
     return filteredFields.slice(start, start + pageSize).map((f: BulkUpdateMaster) => f as unknown as Record<string, unknown>);
-  }, [filteredFields, fields.length, totalCount, pageNumber, pageSize]);
+  }, [filteredFields, pageNumber, pageSize]);
 
-  const totalEligible = displayTotalCount;
+  const totalEligible = fields.length;
   const activeFieldsCount = fields.filter((f) => f.isActive).length;
 
   return (
@@ -280,16 +276,13 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
         totalCount={displayTotalCount}
         totalPages={totalPages}
         onPageChange={setPageNumber}
-        onPageSizeChange={(size) => {
-          setPageSize(size);
-          setPageNumber(1);
-        }}
+        onPageSizeChange={setPageSize}
         paginationConfig={{
           enabled: true,
           showPageSizeSelector: true
         }}
         emptyText={t("fieldRegistry.emptyState.title")}
-        loading={submitting}
+        loading={state.loading || submitting}
         maxBodyHeightClassName="max-h-[330px]"
       />
     </div>
