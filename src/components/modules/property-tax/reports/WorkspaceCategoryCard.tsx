@@ -18,7 +18,7 @@ export function CategoryCard({ category, label, count, reportsCountTemplate, isS
     <Button
       variant="ghost"
       onClick={onClick}
-      className={`relative rounded-lg border p-2.5 text-center cursor-pointer transition-all duration-300 flex flex-col items-center gap-1.5 w-full h-auto focus:outline-none
+      className={`relative rounded-lg border p-2.5 text-center cursor-pointer transition-all duration-300 flex flex-col items-center w-full h-auto focus:outline-none [&>span]:flex [&>span]:w-full [&>span]:flex-col [&>span]:items-center [&>span]:gap-1.5
         ${category.bgColor}
         ${isSelected
           ? `${category.borderColor} border-2 ${category.glowClass} shadow-md scale-[1.04] -translate-y-0.5`

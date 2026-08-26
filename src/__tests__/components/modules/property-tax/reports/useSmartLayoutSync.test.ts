@@ -24,14 +24,14 @@ function reportParameter(parameterKey: string, label: string): ReportParameterDe
 
 describe('parseSelectedPropertyValue', () => {
   it('separates the exact property id and partition from a selected option', () => {
-    expect(parseSelectedPropertyValue('1/1|456', '1')).toEqual({
+    expect(parseSelectedPropertyValue('1-1|456', '1')).toEqual({
       propertyNo: '1',
       propertyId: '456',
     });
   });
 
   it('preserves slashes that are part of the property number', () => {
-    expect(parseSelectedPropertyValue('101/A/1|789', '1')).toEqual({
+    expect(parseSelectedPropertyValue('101/A-1|789', '1')).toEqual({
       propertyNo: '101/A',
       propertyId: '789',
     });
@@ -51,7 +51,7 @@ describe('parseSelectedPropertyValue', () => {
       wardId: ['60'],
       fromProperty: '',
       toProperty: '',
-      propertyNo: '1/A4|552377',
+      propertyNo: '1-A4|552377',
       partitionNo: 'A4',
       ownerIdList: '',
       selectedProperties: [],
@@ -112,7 +112,7 @@ describe('parseSelectedPropertyValue', () => {
       wardId: ['20'],
       fromProperty: '',
       toProperty: '',
-      propertyNo: '1/2|456',
+      propertyNo: '1-2|456',
       partitionNo: '2',
       ownerIdList: '',
       selectedProperties: [],

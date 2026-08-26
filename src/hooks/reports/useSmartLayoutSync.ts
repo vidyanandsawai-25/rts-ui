@@ -6,7 +6,7 @@ export function parseSelectedPropertyValue(value: string, partitionNo: string) {
   const displayValue = (separatorIndex >= 0 ? value.slice(0, separatorIndex) : value).trim();
   const propertyId = (separatorIndex >= 0 ? value.slice(separatorIndex + 1) : '').trim();
   const normalizedPartition = partitionNo.trim();
-  const partitionSuffix = normalizedPartition ? `/${normalizedPartition}` : '';
+  const partitionSuffix = normalizedPartition ? `-${normalizedPartition}` : '';
 
   const propertyNo = partitionSuffix && displayValue.endsWith(partitionSuffix)
     ? displayValue.slice(0, -partitionSuffix.length).trim()

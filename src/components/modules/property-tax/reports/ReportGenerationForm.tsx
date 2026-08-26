@@ -41,7 +41,7 @@ export function ReportGenerationForm({
 
   const reportOptions: Option[] = reportDefinitions.map((d) => ({
     value: d.reportCode,
-    label: d.reportName,
+    label: d.reportName.replace(/\s*\/\s*/g, ' ').trim(),
   }));
 
   return (

@@ -121,6 +121,7 @@ export function useReportPanelOrchestrator({
     isFetchingProperties,
     isLoadingMoreProperties,
     loadMoreProperties,
+    onPropertySearchChange,
   } = usePaginatedProperties(wardId, selectionMode);
 
   const {
@@ -140,6 +141,7 @@ export function useReportPanelOrchestrator({
     zoneId,
     wardId,
     selectionMode,
+    isPropertyDrawerOpen,
     fetchWards,
     fetchProperties,
   });
@@ -206,7 +208,8 @@ export function useReportPanelOrchestrator({
     setPropSearchQuery, setHasViewedProperties, setAmountOperator, setAmountValue,
     setPropertyDescription, setAssessmentStatus, handleResetAll,
     // paginated properties
-    paginatedProperties, hasMoreProperties, isFetchingProperties, isLoadingMoreProperties, loadMoreProperties,
+    paginatedProperties, hasMoreProperties, isFetchingProperties, isLoadingMoreProperties,
+    loadMoreProperties, onPropertySearchChange,
     // option lists
     fyOptions, zoneOptions, wards, wardOptions, wardLoading, properties, propLoading,
     propertyTypeMap, propertyDescriptionOptions, assessmentStatusOptions,

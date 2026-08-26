@@ -45,7 +45,8 @@ export function ReportParametersPanel(props: ReportParametersPanelProps) {
     setSelectionMode, setFinancialYear, setZoneId, setWardId, setFromProperty, setToProperty,
     setPropertyNo, setPartitionNo, setAmountOperator, setAmountValue, setPropertyDescription, setAssessmentStatus,
     setIsPropertyDrawerOpen, setSelectedProperties, setPropSearchQuery, setHasViewedProperties,
-    paginatedProperties, hasMoreProperties, isFetchingProperties, isLoadingMoreProperties, loadMoreProperties,
+    paginatedProperties, hasMoreProperties, isFetchingProperties, isLoadingMoreProperties,
+    loadMoreProperties, onPropertySearchChange,
     fyOptions, zoneOptions, wards, wardOptions, wardLoading,
     properties, propLoading, propertyTypeMap, propertyDescriptionOptions, assessmentStatusOptions,
     handleGenerateFromDrawer, extraParams, paramFieldCopy,
@@ -108,6 +109,7 @@ export function ReportParametersPanel(props: ReportParametersPanelProps) {
           loadMoreProperties={loadMoreProperties}
           isLoadingMoreProperties={isLoadingMoreProperties}
           isFetchingProperties={isFetchingProperties}
+          onPropertySearchChange={onPropertySearchChange}
           selectedProperties={selectedProperties}
           setIsPropertyDrawerOpen={setIsPropertyDrawerOpen}
           wardLoading={wardLoading}

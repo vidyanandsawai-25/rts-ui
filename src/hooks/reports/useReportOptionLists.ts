@@ -7,6 +7,7 @@ export function useReportOptionLists({
   zoneId,
   wardId,
   selectionMode,
+  isPropertyDrawerOpen,
   fetchWards,
   fetchProperties
 }: {
@@ -15,6 +16,7 @@ export function useReportOptionLists({
   zoneId: string;
   wardId: string[];
   selectionMode: string;
+  isPropertyDrawerOpen: boolean;
   fetchWards?: any;
   fetchProperties?: any;
 }) {
@@ -42,7 +44,7 @@ export function useReportOptionLists({
 
   const { properties, propLoading } = useProperties(
     wardId[0] || '',
-    selectionMode === 'property' || selectionMode === 'range',
+    (selectionMode === 'property' || selectionMode === 'range') && isPropertyDrawerOpen,
     fetchProperties
   );
 
