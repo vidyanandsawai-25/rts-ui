@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, FileText, GitCommit, Paperclip, CreditCard, Printer, CheckCircle2, Clock } from "lucide-react";
+import { Award, Download, FileText, GitCommit, Paperclip, CreditCard, Printer, CheckCircle2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 import { getApplicationDetailAction, type RtsApplicationDetailData } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import { ApprovalStagesTimeline } from "@/components/modules/rts";
 import RtsApplicationDocumentView from "@/components/modules/rts/dashboard/RtsApplicationDocumentView";
+import PrintableCertificateModal from "@/components/modules/rts/citizen/PrintableCertificateModal";
 import { Button, Drawer, ViewButton } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import {
@@ -72,6 +73,7 @@ export default function RtsCitizenViewDetailsDrawer({
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
+  const [isPrintCertModalOpen, setIsPrintCertModalOpen] = useState(false);
   const [viewingDoc, setViewingDoc] = useState<{
     fileUrl: string;
     downloadUrl: string;
@@ -345,6 +347,40 @@ export default function RtsCitizenViewDetailsDrawer({
               );
             })()}
 
+            {normalizedStatus === "approved" && (
+              <section className="rounded-xl border border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <Award className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-extrabold text-emerald-900">
+                        {language === "mr"
+                          ? "आपला अर्ज मंजूर झाला असून अधिकृत प्रमाणपत्र तयार आहे!"
+                          : "Your application has been approved and official certificate is issued!"}
+                      </p>
+                      <p className="text-[11px] font-medium text-emerald-700">
+                        {language === "mr"
+                          ? "खालील बटणावर क्लिक करून डिजिटल स्वाक्षरी असलेले प्रमाणपत्र पहा व डाउनलोड करा."
+                          : "Click below to view and download your digitally signed certificate."}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="primary"
+                    icon={Printer}
+                    onClick={() => setIsPrintCertModalOpen(true)}
+                    className="rounded-xl text-xs font-bold bg-[#4b70a6] hover:bg-[#3d5a8a] text-white shrink-0 px-4 py-2 shadow-sm"
+                  >
+                    {language === "mr" ? "प्रमाणपत्र पहा व प्रिंट करा" : "View & Print Certificate"}
+                  </Button>
+                </div>
+              </section>
+            )}
+
             {documents.length > 0 && (
               <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4.5 shadow-sm">
                 <h4 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold uppercase text-slate-800">
@@ -453,6 +489,14 @@ export default function RtsCitizenViewDetailsDrawer({
         <PaymentReceiptModal
           receipt={receiptModalData}
           onClose={() => setReceiptModalData(null)}
+        />
+      )}
+
+      {isPrintCertModalOpen && applicationNumber && (
+        <PrintableCertificateModal
+          isOpen={isPrintCertModalOpen}
+          onClose={() => setIsPrintCertModalOpen(false)}
+          applicationNo={applicationNumber}
         />
       )}
     </>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import {
+  Award,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -9,6 +10,7 @@ import {
   ChevronRight,
   ChevronUp,
   Download,
+  FileCheck2,
   FileText,
   GitCommit,
   IndianRupee,
@@ -19,6 +21,7 @@ import {
   RotateCcw,
   Save,
   Shield,
+  Sparkles,
   XCircle,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -36,6 +39,8 @@ import {
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { ApprovalStagesTimeline } from '@/components/modules/rts';
 import RtsApplicationNoteSheetModal from '@/components/modules/rts/dashboard/RtsApplicationNoteSheetModal';
+import RtsCertificateApprovalModal from '@/components/modules/rts/dashboard/RtsCertificateApprovalModal';
+import PrintableCertificateModal from '@/components/modules/rts/citizen/PrintableCertificateModal';
 import { RtsRecordOfflinePaymentModal } from '@/components/modules/rts/dashboard/RtsRecordOfflinePaymentModal';
 import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
 import { getPaymentReceiptAction } from '@/app/[locale]/service/payment/actions';
@@ -230,6 +235,8 @@ export default function RtsApplicationProcessDrawer({
   const verification = data?.verification ?? null;
   const [isPaidLocal, setIsPaidLocal] = useState<boolean | null>(null);
   const [receiptNoLocal, setReceiptNoLocal] = useState<string | null>(null);
+  const [isPrintCertModalOpen, setIsPrintCertModalOpen] = useState(false);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
 
   useEffect(() => {
     if (verification) {
@@ -589,6 +596,19 @@ export default function RtsApplicationProcessDrawer({
                   पावती पहा (Receipt)
                 </Button>
               )}
+
+              {verification?.canApprove && (
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="success"
+                  icon={Award}
+                  onClick={() => setIsCertModalOpen(true)}
+                  className="rounded-lg px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                >
+                  प्रमाणपत्र निर्णय व पूर्वदृश्य (Certificate & Sign)
+                </Button>
+              )}
             </div>
           </div>
 
@@ -611,17 +631,28 @@ export default function RtsApplicationProcessDrawer({
               <p className="truncate text-[11px] font-semibold text-blue-100"><u>{t('applicationNumber')}</u> : {headerApplicationNo}</p>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2">
+            {headerStatus?.toLowerCase().includes('approv') && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsPrintCertModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition"
+                >
+                  <FileCheck2 className="h-4 w-4" />
+                  प्रमाणपत्र पहा व प्रिंट करा
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCertModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-lg text-xs font-bold transition"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  प्रमाणपत्र संपादन
+                </button>
+              </>
+            )}
             {headerStatus && <Badge {...getRtsApplicationStatusBadgeProps(headerStatus)}>{headerStatus}</Badge>}
-            {/* <button
-              type="button"
-              onClick={closeDrawer}
-              aria-label={tCommon('buttons.close')}
-              title={tCommon('buttons.close')}
-              className="rounded-lg p-2 text-blue-100 transition hover:bg-white/15 hover:text-white"
-            >
-              <X className="h-5 w-5" />
-            </button> */}
           </div>
         </header>
 
@@ -989,6 +1020,29 @@ export default function RtsApplicationProcessDrawer({
         <PaymentReceiptModal
           receipt={receiptModalData}
           onClose={() => setReceiptModalData(null)}
+        />
+      )}
+
+      {isCertModalOpen && applicationId && (
+        <RtsCertificateApprovalModal
+          isOpen={isCertModalOpen}
+          onClose={() => setIsCertModalOpen(false)}
+          applicationId={applicationId}
+          applicationNo={headerApplicationNo}
+          serviceName={record?.serviceName || verification?.serviceName || undefined}
+          applicantName={applicantName}
+          onApproved={() => {
+            setIsCertModalOpen(false);
+            onSuccess?.();
+          }}
+        />
+      )}
+
+      {isPrintCertModalOpen && (
+        <PrintableCertificateModal
+          isOpen={isPrintCertModalOpen}
+          onClose={() => setIsPrintCertModalOpen(false)}
+          applicationNo={headerApplicationNo}
         />
       )}
     </>

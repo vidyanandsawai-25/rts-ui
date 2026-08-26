@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronUp,
   Download,
+  FileCheck2,
   FileText,
   GitCommit,
   IndianRupee,
@@ -15,6 +16,7 @@ import {
   Paperclip,
   Printer,
   Shield,
+  Sparkles,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -22,6 +24,8 @@ import { toast } from 'sonner';
 import { ApprovalStagesTimeline } from '@/components/modules/rts';
 import RtsApplicationNoteSheetModal from '@/components/modules/rts/dashboard/RtsApplicationNoteSheetModal';
 import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
+import RtsCertificateApprovalModal from '@/components/modules/rts/dashboard/RtsCertificateApprovalModal';
+import PrintableCertificateModal from '@/components/modules/rts/citizen/PrintableCertificateModal';
 import { Badge, Button, Drawer, Input, Label, ViewButton } from '@/components/common';
 import type { RtsApplicationFullDetailData } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import { getPaymentReceiptAction } from '@/app/[locale]/service/payment/actions';
@@ -86,6 +90,8 @@ export default function RtsApplicationFullDetailView({
   const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
+  const [isPrintCertModalOpen, setIsPrintCertModalOpen] = useState(false);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
 
   const loading = Boolean(open && record && !data);
   const fieldGroups = useMemo(() => {
@@ -124,9 +130,12 @@ export default function RtsApplicationFullDetailView({
   const canViewReceipt = Boolean(isPaymentSuccessful && payment?.receiptNo);
 
   useEffect(() => {
+    setActiveDocumentIndex(0);
+    setOpenGroups({});
+  }, [record?.appId]);
+
+  useEffect(() => {
     if (!open || !activeDocument?.isUploaded || !activeDocument.guid) {
-      // Resetting browser-preview state when the drawer has no active upload.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDocumentPreviewUrl(null);
       setDocumentPreviewType(null);
       setDocumentPreviewError(null);
@@ -172,6 +181,7 @@ export default function RtsApplicationFullDetailView({
 
   if (!record) return null;
 
+  const isApproved = record.applicationStatus?.toLowerCase().includes('approv');
   const expandAll = () => setOpenGroups(Object.fromEntries(fieldGroups.map((group) => [group.title, true])));
   const collapseAll = () => setOpenGroups(Object.fromEntries(fieldGroups.map((group) => [group.title, false])));
 
@@ -225,6 +235,17 @@ export default function RtsApplicationFullDetailView({
                   {t('viewReceipt')}
                 </Button>
               )}
+              {isApproved && (
+                <Button
+                  type="button"
+                  icon={FileCheck2}
+                  size="xs"
+                  onClick={() => setIsPrintCertModalOpen(true)}
+                  className="rounded-lg px-3 text-xs font-bold bg-[#4b70a6] hover:bg-[#3d5a8a] text-white"
+                >
+                  {t('viewCertificate')}
+                </Button>
+              )}
             </div>
             <Button variant="secondary" onClick={onClose} size="xs" className="rounded-lg px-5 text-xs font-bold">
               {tCommon('buttons.close')}
@@ -243,7 +264,30 @@ export default function RtsApplicationFullDetailView({
               <p className="truncate text-[11px] font-semibold text-blue-100"><u>{t('applicationNumber')}</u> : {record.appId}</p>
             </div>
           </div>
-          {record.applicationStatus && <Badge variant={statusBadgeVariant(record.applicationStatus)}>{record.applicationStatus}</Badge>}
+
+          <div className="flex items-center gap-2">
+            {isApproved && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsPrintCertModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition"
+                >
+                  <FileCheck2 className="h-4 w-4" />
+                  {t('viewAndPrintCertificate')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCertModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-lg text-xs font-bold transition"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {t('editCertificate')}
+                </button>
+              </>
+            )}
+            {record.applicationStatus && <Badge variant={statusBadgeVariant(record.applicationStatus)}>{record.applicationStatus}</Badge>}
+          </div>
         </header>
 
         <main className="min-h-0 flex-1 overflow-y-auto p-3 xl:overflow-hidden">
@@ -441,6 +485,28 @@ export default function RtsApplicationFullDetailView({
         <PaymentReceiptModal
           receipt={receiptModalData}
           onClose={() => setReceiptModalData(null)}
+        />
+      )}
+
+      {isCertModalOpen && record && (
+        <RtsCertificateApprovalModal
+          isOpen={isCertModalOpen}
+          onClose={() => setIsCertModalOpen(false)}
+          applicationId={record.applicationId}
+          applicationNo={record.appId}
+          serviceName={record.serviceName}
+          applicantName={record.citizenName || ''}
+          onApproved={() => {
+            setIsCertModalOpen(false);
+          }}
+        />
+      )}
+
+      {isPrintCertModalOpen && record && (
+        <PrintableCertificateModal
+          isOpen={isPrintCertModalOpen}
+          onClose={() => setIsPrintCertModalOpen(false)}
+          applicationNo={record.appId}
         />
       )}
     </>
