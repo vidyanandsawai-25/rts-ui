@@ -91,14 +91,14 @@ export default function PrintableCertificateModal({
     >
       <div className="flex flex-col h-[80vh]">
         {/* Actions Bar */}
-        <div className="bg-slate-50 border-b border-slate-200 px-5 py-2.5 flex justify-between items-center shrink-0">
+        <div className="bg-white border-b border-slate-200 px-5 py-3 flex flex-wrap justify-between items-center gap-3 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full border border-emerald-300">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Digitally Verified Certificate
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-full border border-emerald-300">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              Digitally Verified Official Certificate
             </span>
             {certificate && (
-              <span className="text-xs font-mono text-slate-600 font-semibold">
+              <span className="text-xs font-mono text-slate-700 font-bold bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
                 क्र.: {certificate.certificateNo}
               </span>
             )}
@@ -108,9 +108,9 @@ export default function PrintableCertificateModal({
             <Button
               onClick={handlePrint}
               disabled={loading || !certificate}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+              className="bg-[#4b70a6] hover:bg-[#3d5a8a] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm rounded-xl px-4 py-2"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-4 h-4" />
               प्रिंट / PDF डाऊनलोड करा (Print / Save PDF)
             </Button>
           </div>
