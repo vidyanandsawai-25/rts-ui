@@ -143,22 +143,19 @@ export default function RtsCertificateApprovalModal({
   };
 
   const handleIssueAndApprove = () => {
-    if (!actionRemark.trim()) {
-      toast.error("कृपया मंजुरी शेरा (Approval Remark) प्रविष्ट करा.");
-      return;
-    }
+    const finalRemark = actionRemark.trim() || "प्रमाणपत्र जारी / अद्ययावत करण्यात आले.";
 
     startTransition(async () => {
       const res = await issueCertificateAction(
         applicationId,
         officerInputs,
         customConditions || undefined,
-        actionRemark.trim(),
+        finalRemark,
         true
       );
 
       if (res.success) {
-        toast.success("✅ प्रमाणपत्र यशस्वीरीत्या जारी झाले व अर्ज मंजूर करण्यात आला!");
+        toast.success("✅ अधिकृत प्रमाणपत्र यशस्वीरीत्या जारी झाले व डिजिटल स्वाक्षरी करण्यात आली!");
         onApproved();
         onClose();
       } else {
