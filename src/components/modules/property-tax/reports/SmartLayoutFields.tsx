@@ -24,6 +24,7 @@ export function SmartLayoutFields({
   loadMoreProperties,
   isLoadingMoreProperties,
   isFetchingProperties,
+  onPropertySearchChange,
   selectedProperties,
   setIsPropertyDrawerOpen,
   wardLoading
@@ -235,9 +236,9 @@ export function SmartLayoutFields({
               if (val.includes('|')) {
                 labelVal = val.split('|')[0];
               }
-              if (labelVal.includes('/')) {
-                const parts = labelVal.split('/');
-                setPartitionNo(parts.slice(1).join('/').trim());
+              const separatorIndex = labelVal.lastIndexOf('-');
+              if (separatorIndex >= 0) {
+                setPartitionNo(labelVal.slice(separatorIndex + 1).trim());
               } else {
                 setPartitionNo('');
               }
@@ -247,6 +248,7 @@ export function SmartLayoutFields({
             onLoadMore={loadMoreProperties}
             isLoadingMore={isLoadingMoreProperties}
             isLoading={isFetchingProperties}
+            onSearchChange={onPropertySearchChange}
           />
         </div>
       )}

@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { WardSummary, PropertySummary, ReportDefinition, ReportParameterDefinition } from '@/types/report.types';
 import type { PropertyType } from '@/types/property-type.types';
 import { getPropertyTypesAction, getAssessmentTypesAction } from '@/app/[locale]/property-tax/reports/action';
-import { searchPropertiesByCategoryAction } from '@/app/[locale]/property-tax/add-taxes/actions';
+import { ptisSuggestionsClient } from '@/lib/api/ptis/tab/ptis-suggestions-client';
 
 // ─── small hook: fetch wards on zoneId change ─────────────────────────────────
 export function useWards(
@@ -40,18 +40,38 @@ export function useProperties(
 ) {
   const [properties, setProperties] = useState<PropertySummary[]>([]);
   const [loading, setLoading] = useState(false);
+  const loadedWardIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     const id = Number(wardId);
-    if (!enabled || !wardId || !fetchProperties || isNaN(id) || id <= 0) {
-      queueMicrotask(() => setProperties([]));
+    if (!wardId || !fetchProperties || isNaN(id) || id <= 0) {
+      loadedWardIdRef.current = null;
+      queueMicrotask(() => {
+        setProperties([]);
+        setLoading(false);
+      });
       return;
     }
+    // The full property list is only needed by the selection drawer. Keep an
+    // already loaded list cached while the drawer is closed.
+    if (!enabled) return;
+    if (loadedWardIdRef.current === id) return;
     let cancelled = false;
+    setProperties([]);
     setLoading(true);
     fetchProperties(id)
-      .then((p) => { if (!cancelled) setProperties(p); })
-      .catch(() => { if (!cancelled) setProperties([]); })
+      .then((p) => {
+        if (!cancelled) {
+          setProperties(p);
+          loadedWardIdRef.current = id;
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setProperties([]);
+          loadedWardIdRef.current = null;
+        }
+      })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [wardId, enabled, fetchProperties]);
@@ -78,101 +98,130 @@ export function useAssessmentTypes() {
 }
 
 // ─── small hook: fetch paginated properties on wardId change ────────────────
+type ReportPropertyOption = {
+  value: string;
+  label: string;
+  partitionNo: string;
+};
+
+function mapPropertySuggestions(items: Array<{
+  propertyId: number;
+  propertyNo: string;
+  partitionNo?: string;
+}>): ReportPropertyOption[] {
+  return items.map((property) => {
+    const part = property.partitionNo?.trim() ?? '';
+    const hasPart = part !== '' && part !== '0';
+    const rawLabel = hasPart ? `${property.propertyNo}-${part}` : property.propertyNo;
+
+    return {
+      value: property.propertyId ? `${rawLabel}|${property.propertyId}` : rawLabel,
+      label: rawLabel.replace(/\//g, '-'),
+      partitionNo: part,
+    };
+  });
+}
+
+function mergePropertyOptions(
+  initialOptions: ReportPropertyOption[],
+  suggestedOptions: ReportPropertyOption[]
+): ReportPropertyOption[] {
+  const seen = new Set<string>();
+  return [...initialOptions, ...suggestedOptions].filter((option) => {
+    if (seen.has(option.value)) return false;
+    seen.add(option.value);
+    return true;
+  });
+}
+
 export function usePaginatedProperties(wardId: string[], selectionMode: string) {
-  const [paginatedProperties, setPaginatedProperties] = useState<Array<{
-    value: string;
-    label: string;
-    partitionNo: string;
-  }>>([]);
-  const [hasMoreProperties, setHasMoreProperties] = useState(false);
-  const [propertyPage, setPropertyPage] = useState(1);
-  const [isFetchingProperties, setIsFetchingProperties] = useState(false);
-  const [isLoadingMoreProperties, setIsLoadingMoreProperties] = useState(false);
+  const [initialProperties, setInitialProperties] = useState<ReportPropertyOption[]>([]);
+  const [suggestedProperties, setSuggestedProperties] = useState<ReportPropertyOption[]>([]);
+  const [propertySearchQuery, setPropertySearchQuery] = useState('');
+  const [isLoadingInitialProperties, setIsLoadingInitialProperties] = useState(false);
+  const [isSearchingProperties, setIsSearchingProperties] = useState(false);
+  const selectedWardId = wardId[0] ?? '';
 
   useEffect(() => {
-    setPaginatedProperties([]);
-    setHasMoreProperties(false);
-    setPropertyPage(1);
-  }, [wardId]);
+    setInitialProperties([]);
+    setSuggestedProperties([]);
+    setPropertySearchQuery('');
 
-  const fetchPaginatedProperties = async () => {
-    if (wardId.length === 0 || isFetchingProperties) return;
-    setIsFetchingProperties(true);
-    try {
-      const res = await searchPropertiesByCategoryAction(2, wardId[0], 1, 100);
-      if (res?.items?.items) {
-        const mapped = res.items.items.map((b: any) => {
-          const part = b.partitionNo?.trim();
-          const hasPart = part && part !== '0' && part !== '';
-          const label = hasPart ? `${b.propertyNo}/${part}` : b.propertyNo;
-          const val = b.propertyId ? `${label}|${b.propertyId}` : label;
-          return { value: val, label, partitionNo: part || '' };
-        });
-        setPaginatedProperties(mapped);
-        setPropertyPage(1);
-        const totalPages = res.items.totalPages || Math.ceil((res.items.totalCount || 0) / 100);
-        setHasMoreProperties(1 < totalPages);
-      } else {
-        setPaginatedProperties([]);
-        setHasMoreProperties(false);
-      }
-    } catch {
-      // Empty fallback
-    } finally {
-      setIsFetchingProperties(false);
+    const numericWardId = Number(selectedWardId);
+    if (selectionMode !== 'property' || !Number.isFinite(numericWardId) || numericWardId <= 0) {
+      setIsLoadingInitialProperties(false);
+      return;
     }
-  };
 
-  const loadMoreProperties = async () => {
-    if (!hasMoreProperties || isLoadingMoreProperties || isFetchingProperties) return;
-    if (wardId.length === 0) return;
-    setIsLoadingMoreProperties(true);
-    try {
-      const nextPage = propertyPage + 1;
-      const res = await searchPropertiesByCategoryAction(2, wardId[0], nextPage, 100);
-      if (res?.items?.items) {
-        const mapped = res.items.items.map((b: any) => {
-          const part = b.partitionNo?.trim();
-          const hasPart = part && part !== '0' && part !== '';
-          const label = hasPart ? `${b.propertyNo}/${part}` : b.propertyNo;
-          const val = b.propertyId ? `${label}|${b.propertyId}` : label;
-          return { value: val, label, partitionNo: part || '' };
-        });
-        setPaginatedProperties(prev => {
-          const newItems = mapped.filter((m: any) => !prev.some(p => p.value === m.value));
-          return [...prev, ...newItems];
-        });
-        setPropertyPage(nextPage);
-        const totalPages = res.items.totalPages || Math.ceil((res.items.totalCount || 0) / 100);
-        setHasMoreProperties(nextPage < totalPages);
-      } else {
-        setHasMoreProperties(false);
-      }
-    } catch {
-      // Empty fallback
-    } finally {
-      setIsLoadingMoreProperties(false);
-    }
-  };
+    let active = true;
+    setIsLoadingInitialProperties(true);
+    ptisSuggestionsClient.getSuggestions({ wardId: numericWardId })
+      .then((result) => {
+        if (!active) return;
+        setInitialProperties(
+          result.success && result.data ? mapPropertySuggestions(result.data) : []
+        );
+      })
+      .catch(() => {
+        if (active) setInitialProperties([]);
+      })
+      .finally(() => {
+        if (active) setIsLoadingInitialProperties(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectionMode, selectedWardId]);
 
   useEffect(() => {
-    if (selectionMode === 'property' && wardId.length > 0) {
-      fetchPaginatedProperties();
+    const query = propertySearchQuery.trim();
+    const numericWardId = Number(selectedWardId);
+    if (
+      selectionMode !== 'property' ||
+      !query ||
+      !Number.isFinite(numericWardId) ||
+      numericWardId <= 0
+    ) {
+      setSuggestedProperties([]);
+      setIsSearchingProperties(false);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectionMode, wardId]);
+
+    let active = true;
+    const timer = setTimeout(() => {
+      setIsSearchingProperties(true);
+      ptisSuggestionsClient.getSuggestions({
+        wardId: numericWardId,
+        propertyNo: query,
+      })
+        .then((result) => {
+          if (!active) return;
+          setSuggestedProperties(
+            result.success && result.data ? mapPropertySuggestions(result.data) : []
+          );
+        })
+        .catch(() => {
+          if (active) setSuggestedProperties([]);
+        })
+        .finally(() => {
+          if (active) setIsSearchingProperties(false);
+        });
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [propertySearchQuery, selectedWardId, selectionMode]);
 
   return {
-    paginatedProperties,
-    hasMoreProperties,
-    propertyPage,
-    isFetchingProperties,
-    isLoadingMoreProperties,
-    fetchPaginatedProperties,
-    loadMoreProperties,
-    setPaginatedProperties,
-    setHasMoreProperties,
-    setPropertyPage
+    paginatedProperties: mergePropertyOptions(initialProperties, suggestedProperties),
+    hasMoreProperties: false,
+    isFetchingProperties: isLoadingInitialProperties || isSearchingProperties,
+    isLoadingMoreProperties: false,
+    loadMoreProperties: () => undefined,
+    onPropertySearchChange: setPropertySearchQuery,
   };
 }
 
