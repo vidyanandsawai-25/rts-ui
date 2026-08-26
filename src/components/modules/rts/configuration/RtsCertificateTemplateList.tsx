@@ -72,19 +72,15 @@ export default function RtsCertificateTemplateList({
 
   const handleOpenPreview = (t: RTSCertificateTemplate) => {
     setPreviewTitle(t.templateName);
-    // Build quick sample preview with placeholders rendered
-    let sample = t.bodyContent || "";
-    sample = sample.replace(/{{ApplicantName}}/gi, "श्री. रमेश शांताराम खोटरे");
-    sample = sample.replace(/{{ApplicantMobile}}/gi, "9876543210");
-    sample = sample.replace(/{{ApplicationNo}}/gi, "AKL2026004691");
-    sample = sample.replace(/{{AppliedDate}}/gi, new Date().toLocaleDateString("en-GB"));
-    sample = sample.replace(/{{ServiceNameMarathi}}/gi, t.serviceName || "लोकसेवा प्रमाणपत्र");
-    sample = sample.replace(/{{CertificateNo}}/gi, "CERT/RTS/AKL/2026/00042");
-    sample = sample.replace(/{{ULBNameMarathi}}/gi, "अकोला महानगरपालिका");
-    sample = sample.replace(/\[\[OrderNo\]\]/gi, "जा.क्र./मनपा/कर/२०२६/७८९");
-    sample = sample.replace(/\[\[ValidityPeriod\]\]/gi, "३१ मार्च २०२७ पर्यंत");
-    sample = sample.replace(/\[\[ChallanNo\]\]/gi, "CHL-2026-9901");
-    sample = sample.replace(/\[\[SpecialConditions\]\]/gi, "१. नियमानुसार कर भरणे बंधनकारक राहील.\n२. उल्लंघन झाल्यास परवाना रद्द होईल.");
+    let sample = t.bodyContent || "<div class='text-slate-400 p-4 text-center'>कोणताही टेम्पलेट मजकूर उपलब्ध नाही.</div>";
+    sample = sample.replace(/{{ApplicantName}}/gi, "<span class='bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 font-medium'>{{ApplicantName}}</span>");
+    sample = sample.replace(/{{ApplicantMobile}}/gi, "<span class='bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 font-medium'>{{ApplicantMobile}}</span>");
+    sample = sample.replace(/{{ApplicationNo}}/gi, "<span class='bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 font-mono'>{{ApplicationNo}}</span>");
+    sample = sample.replace(/{{AppliedDate}}/gi, "<span class='bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200'>{{AppliedDate}}</span>");
+    sample = sample.replace(/{{ServiceNameMarathi}}/gi, t.serviceName ? `<span class='font-bold text-slate-800'>${t.serviceName}</span>` : "<span class='bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200'>{{ServiceName}}</span>");
+    sample = sample.replace(/{{CertificateNo}}/gi, "<span class='bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200 font-mono'>{{CertificateNo}}</span>");
+    sample = sample.replace(/{{ULBNameMarathi}}/gi, "<span class='bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 font-bold'>{{ULBName}}</span>");
+    sample = sample.replace(/\[\[(\w+)\]\]/gi, "<span class='bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200 font-medium'>[भरावयाची माहिती: $1]</span>");
     setPreviewHtml(sample);
   };
 

@@ -38,22 +38,6 @@ interface RtsCertificateTemplateBuilderModalProps {
 
 type TabType = "basic" | "template" | "officerFields" | "conditions";
 
-const DEFAULT_BODY_TEMPLATE = `<div class="certificate-body space-y-4">
-    <p>प्रमाणित करण्यात येते की, अर्जदार <strong>{{ApplicantName}}</strong> (मोबाईल क्र.: <strong>{{ApplicantMobile}}</strong>) यांनी अकोला महानगरपालिकेकडे <strong>{{ServiceNameMarathi}}</strong> साठी अर्ज क्र. <strong>{{ApplicationNo}}</strong> अन्वये दिनांक <strong>{{AppliedDate}}</strong> रोजी अर्ज सादर केला होता.</p>
-
-    <p>सदर अर्जाची व कागदपत्रांची नियमानुसार सविस्तर छाननी व प्रत्यक्ष पाहणी करण्यात आली असून, सक्षम प्राधिकाऱ्यांच्या आदेशानुसार हे प्रमाणपत्र खालील अटी व शर्तींच्या अधीन राहून जारी करण्यात येत आहे:</p>
-
-    <div class="bg-slate-50 p-4 rounded border border-slate-200 text-sm space-y-2">
-        <div><strong>जावक / आदेश क्र.:</strong> [[OrderNo]]</div>
-        <div><strong>परवाना मुदत:</strong> [[ValidityPeriod]]</div>
-        <div><strong>शुल्क पावती क्र.:</strong> [[ChallanNo]]</div>
-        <div class="mt-2">
-            <strong>विशेष अटी व शर्ती:</strong>
-            <div class="mt-1 whitespace-pre-line">[[SpecialConditions]]</div>
-        </div>
-    </div>
-</div>`;
-
 export default function RtsCertificateTemplateBuilderModal({
   isOpen,
   onClose,
@@ -69,42 +53,10 @@ export default function RtsCertificateTemplateBuilderModal({
     templateName: "",
     templateCode: "",
     headerContent: "",
-    bodyContent: DEFAULT_BODY_TEMPLATE,
+    bodyContent: "",
     footerContent: "",
-    defaultConditions: [
-      "सदर प्रमाणपत्र कायदेशीर नियमांचे पालन करण्याच्या अटीवर वैध राहील.",
-      "प्रमाणपत्रातील माहिती खोटी आढळल्यास हे प्रमाणपत्र पूर्वसूचना न देता रद्द केले जाईल.",
-    ],
-    officerFields: [
-      {
-        fieldKey: "OrderNo",
-        fieldLabelMarathi: "जावक / आदेश क्रमांक",
-        fieldLabelEnglish: "Outward / Order No",
-        fieldType: "text",
-        isMandatory: true,
-      },
-      {
-        fieldKey: "ValidityPeriod",
-        fieldLabelMarathi: "परवाना वैधता मुदत",
-        fieldLabelEnglish: "Validity Period",
-        fieldType: "text",
-        isMandatory: false,
-      },
-      {
-        fieldKey: "ChallanNo",
-        fieldLabelMarathi: "शुल्क पावती क्र.",
-        fieldLabelEnglish: "Challan / Receipt No",
-        fieldType: "text",
-        isMandatory: false,
-      },
-      {
-        fieldKey: "SpecialConditions",
-        fieldLabelMarathi: "विशेष अटी व शर्ती",
-        fieldLabelEnglish: "Terms & Conditions",
-        fieldType: "textarea",
-        isMandatory: false,
-      },
-    ],
+    defaultConditions: [],
+    officerFields: [],
     isActive: true,
   });
 
@@ -118,7 +70,7 @@ export default function RtsCertificateTemplateBuilderModal({
         templateName: template.templateName,
         templateCode: template.templateCode,
         headerContent: template.headerContent || "",
-        bodyContent: template.bodyContent || DEFAULT_BODY_TEMPLATE,
+        bodyContent: template.bodyContent || "",
         footerContent: template.footerContent || "",
         defaultConditions: template.defaultConditions || [],
         officerFields: template.officerFields || [],
@@ -131,42 +83,10 @@ export default function RtsCertificateTemplateBuilderModal({
         templateName: "",
         templateCode: "",
         headerContent: "",
-        bodyContent: DEFAULT_BODY_TEMPLATE,
+        bodyContent: "",
         footerContent: "",
-        defaultConditions: [
-          "सदर प्रमाणपत्र कायदेशीर नियमांचे पालन करण्याच्या अटीवर वैध राहील.",
-          "प्रमाणपत्रातील माहिती खोटी आढळल्यास हे प्रमाणपत्र पूर्वसूचना न देता रद्द केले जाईल.",
-        ],
-        officerFields: [
-          {
-            fieldKey: "OrderNo",
-            fieldLabelMarathi: "जावक / आदेश क्रमांक",
-            fieldLabelEnglish: "Outward / Order No",
-            fieldType: "text",
-            isMandatory: true,
-          },
-          {
-            fieldKey: "ValidityPeriod",
-            fieldLabelMarathi: "परवाना वैधता मुदत",
-            fieldLabelEnglish: "Validity Period",
-            fieldType: "text",
-            isMandatory: false,
-          },
-          {
-            fieldKey: "ChallanNo",
-            fieldLabelMarathi: "शुल्क पावती क्र.",
-            fieldLabelEnglish: "Challan / Receipt No",
-            fieldType: "text",
-            isMandatory: false,
-          },
-          {
-            fieldKey: "SpecialConditions",
-            fieldLabelMarathi: "विशेष अटी व शर्ती",
-            fieldLabelEnglish: "Terms & Conditions",
-            fieldType: "textarea",
-            isMandatory: false,
-          },
-        ],
+        defaultConditions: [],
+        officerFields: [],
         isActive: true,
       });
       if (services[0]?.id) {
@@ -189,21 +109,22 @@ export default function RtsCertificateTemplateBuilderModal({
   const insertTag = (tagKey: string) => {
     setFormData((prev) => ({
       ...prev,
-      bodyContent: prev.bodyContent + ` ${tagKey} `,
+      bodyContent: prev.bodyContent ? `${prev.bodyContent} ${tagKey} ` : `${tagKey} `,
     }));
     toast.success(`टॅग जोडला: ${tagKey}`);
   };
 
   const addOfficerField = () => {
-    const newKey = `CustomField_${(formData.officerFields?.length || 0) + 1}`;
+    const count = (formData.officerFields?.length || 0) + 1;
+    const newKey = `Field_${count}`;
     setFormData((prev) => ({
       ...prev,
       officerFields: [
         ...(prev.officerFields || []),
         {
           fieldKey: newKey,
-          fieldLabelMarathi: "नवीन फील्ड",
-          fieldLabelEnglish: "New Field",
+          fieldLabelMarathi: `फील्ड ${count}`,
+          fieldLabelEnglish: `Field ${count}`,
           fieldType: "text",
           isMandatory: false,
         },
@@ -229,7 +150,7 @@ export default function RtsCertificateTemplateBuilderModal({
   const addCondition = () => {
     setFormData((prev) => ({
       ...prev,
-      defaultConditions: [...(prev.defaultConditions || []), "नवीन अट/शर्त"],
+      defaultConditions: [...(prev.defaultConditions || []), ""],
     }));
   };
 
@@ -365,7 +286,7 @@ export default function RtsCertificateTemplateBuilderModal({
                 <Input
                   value={formData.templateName}
                   onChange={(e) => setFormData((p) => ({ ...p, templateName: e.target.value }))}
-                  placeholder="उदा. फेरफार प्रमाणपत्र टेम्पलेट"
+                  placeholder="उदा. सेवा प्रमाणपत्र टेम्पलेट"
                 />
               </div>
 
@@ -376,7 +297,7 @@ export default function RtsCertificateTemplateBuilderModal({
                 <Input
                   value={formData.templateCode}
                   onChange={(e) => setFormData((p) => ({ ...p, templateCode: e.target.value.toUpperCase() }))}
-                  placeholder="उदा. CERT_PTIS_MUTATION"
+                  placeholder="उदा. CERT_SERVICE_CODE"
                 />
               </div>
 
@@ -433,7 +354,7 @@ export default function RtsCertificateTemplateBuilderModal({
                   value={formData.bodyContent}
                   onChange={(e) => setFormData((p) => ({ ...p, bodyContent: e.target.value }))}
                   className="w-full p-3 font-mono text-xs text-emerald-400 bg-slate-900 rounded-md border border-slate-700 focus:ring-1 focus:ring-blue-500 leading-relaxed"
-                  placeholder="<div>...</div>"
+                  placeholder="येथे HTML / मजकूर टेम्पलेट प्रविष्ट करा व वरील डायनॅमिक टॅग्ज जोडा..."
                 />
               </div>
             </div>
@@ -444,7 +365,7 @@ export default function RtsCertificateTemplateBuilderModal({
             <div className="space-y-3">
               <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                 <div className="text-xs text-slate-600">
-                  मंजुरी अधिकाऱ्याने अंतिम टप्प्यावर भरावयाचे इनपुट फील्ड्स कॉन्फिगर करा:
+                  मंजुरी अधिकाऱ्याने अंतिम टप्प्यावर भरावयाचे इनपुट पॅरामीटर्स कॉन्फिगर करा:
                 </div>
                 <button
                   type="button"
@@ -456,58 +377,64 @@ export default function RtsCertificateTemplateBuilderModal({
               </div>
 
               <div className="space-y-2 max-h-[50vh] overflow-y-auto">
-                {formData.officerFields?.map((field, idx) => (
-                  <div key={idx} className="p-3 bg-white border border-slate-200 rounded-md shadow-2xs grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-                    <div>
-                      <label className="text-[11px] font-medium text-slate-500">Field Key (Tag)</label>
-                      <Input
-                        value={field.fieldKey}
-                        onChange={(e) => updateOfficerField(idx, { fieldKey: e.target.value })}
-                        placeholder="e.g. OrderNo"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-medium text-slate-500">स्थानिक नाव (मराठी)</label>
-                      <Input
-                        value={field.fieldLabelMarathi}
-                        onChange={(e) => updateOfficerField(idx, { fieldLabelMarathi: e.target.value })}
-                        placeholder="उदा. जावक क्रमांक"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-medium text-slate-500">प्रकार (Field Type)</label>
-                      <select
-                        value={field.fieldType}
-                        onChange={(e) => updateOfficerField(idx, { fieldType: e.target.value as any })}
-                        className="w-full h-9 px-2 rounded-md border border-slate-300 text-xs bg-white"
-                      >
-                        <option value="text">Single Line Text</option>
-                        <option value="textarea">Multi-line Textarea</option>
-                        <option value="date">Date Picker</option>
-                        <option value="number">Number</option>
-                      </select>
-                    </div>
-                    <div className="flex items-center justify-between pt-4">
-                      <label className="flex items-center gap-1 text-xs text-slate-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={field.isMandatory}
-                          onChange={(e) => updateOfficerField(idx, { isMandatory: e.target.checked })}
-                          className="rounded text-blue-600"
-                        />
-                        आवश्यक?
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => removeOfficerField(idx)}
-                        className="text-red-500 hover:text-red-700 p-1"
-                        title="काढून टाका"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                {(!formData.officerFields || formData.officerFields.length === 0) ? (
+                  <div className="text-center py-6 text-xs text-slate-400 border border-dashed border-slate-200 rounded-md">
+                    कोणतेही इनपुट फील्ड कॉन्फिगर केलेले नाही. अधिकाऱ्याने काही माहिती भरावयाची असल्यास वरून फील्ड जोडा.
                   </div>
-                ))}
+                ) : (
+                  formData.officerFields.map((field, idx) => (
+                    <div key={idx} className="p-3 bg-white border border-slate-200 rounded-md shadow-2xs grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500">Field Key (Tag)</label>
+                        <Input
+                          value={field.fieldKey}
+                          onChange={(e) => updateOfficerField(idx, { fieldKey: e.target.value })}
+                          placeholder="e.g. OrderNo"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500">स्थानिक नाव (मराठी)</label>
+                        <Input
+                          value={field.fieldLabelMarathi}
+                          onChange={(e) => updateOfficerField(idx, { fieldLabelMarathi: e.target.value })}
+                          placeholder="उदा. जावक क्रमांक"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500">प्रकार (Field Type)</label>
+                        <select
+                          value={field.fieldType}
+                          onChange={(e) => updateOfficerField(idx, { fieldType: e.target.value as any })}
+                          className="w-full h-9 px-2 rounded-md border border-slate-300 text-xs bg-white"
+                        >
+                          <option value="text">Single Line Text</option>
+                          <option value="textarea">Multi-line Textarea</option>
+                          <option value="date">Date Picker</option>
+                          <option value="number">Number</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center justify-between pt-4">
+                        <label className="flex items-center gap-1 text-xs text-slate-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={field.isMandatory}
+                            onChange={(e) => updateOfficerField(idx, { isMandatory: e.target.checked })}
+                            className="rounded text-blue-600"
+                          />
+                          आवश्यक?
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => removeOfficerField(idx)}
+                          className="text-red-500 hover:text-red-700 p-1"
+                          title="काढून टाका"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -529,23 +456,29 @@ export default function RtsCertificateTemplateBuilderModal({
               </div>
 
               <div className="space-y-2 max-h-[50vh] overflow-y-auto">
-                {formData.defaultConditions?.map((cond, idx) => (
-                  <div key={idx} className="flex items-center gap-2 bg-white p-2 border border-slate-200 rounded-md">
-                    <span className="text-xs font-bold text-slate-500 w-6 text-center">{idx + 1}.</span>
-                    <Input
-                      value={cond}
-                      onChange={(e) => updateCondition(idx, e.target.value)}
-                      placeholder="अट प्रविष्ट करा..."
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeCondition(idx)}
-                      className="text-red-500 hover:text-red-700 p-1.5"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                {(!formData.defaultConditions || formData.defaultConditions.length === 0) ? (
+                  <div className="text-center py-6 text-xs text-slate-400 border border-dashed border-slate-200 rounded-md">
+                    कोणतीही अट जोडलेली नाही. आवश्यक असल्यास वरून अट जोडा.
                   </div>
-                ))}
+                ) : (
+                  formData.defaultConditions.map((cond, idx) => (
+                    <div key={idx} className="flex items-center gap-2 bg-white p-2 border border-slate-200 rounded-md">
+                      <span className="text-xs font-bold text-slate-500 w-6 text-center">{idx + 1}.</span>
+                      <Input
+                        value={cond}
+                        onChange={(e) => updateCondition(idx, e.target.value)}
+                        placeholder="अट प्रविष्ट करा..."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeCondition(idx)}
+                        className="text-red-500 hover:text-red-700 p-1.5"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

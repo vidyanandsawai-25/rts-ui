@@ -19,6 +19,7 @@ import {
 } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import type {
   CertificatePreviewResponse,
+  OfficerFieldConfig,
 } from "@/types/rts/certificate.types";
 
 interface RtsCertificateApprovalModalProps {
@@ -44,20 +45,14 @@ export default function RtsCertificateApprovalModal({
   const [loadingPreview, setLoadingPreview] = useState(true);
 
   const [previewData, setPreviewData] = useState<CertificatePreviewResponse | null>(null);
-  const [officerInputs, setOfficerInputs] = useState<Record<string, string>>({
-    OrderNo: `जा.क्र./मनपा/कर/${new Date().getFullYear()}/${Math.floor(100 + Math.random() * 900)}`,
-    ValidityPeriod: "३१ मार्च २०२७ पर्यंत",
-    ChallanNo: `CHL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-    SpecialConditions: "१. सदर बांधकाम/परवाना मंजूर नियमांच्या अधीन राहील.\n२. कोणतीही खोटी माहिती आढळल्यास परवाना रद्द केला जाईल.",
-  });
-
-  const [customConditions] = useState("");
-  const [actionRemark, setActionRemark] = useState("सर्व कागदपत्रे व स्थळ पाहणी तपासून अंतिम प्रमाणपत्र जारी करण्यात येत आहे.");
+  const [officerInputs, setOfficerInputs] = useState<Record<string, string>>({});
+  const [customConditions, setCustomConditions] = useState("");
+  const [actionRemark, setActionRemark] = useState("");
 
   // Fetch initial preview
   useEffect(() => {
     if (isOpen && applicationId) {
-      loadPreview(officerInputs, customConditions);
+      loadPreview({}, "");
     }
   }, [isOpen, applicationId]);
 
@@ -80,8 +75,12 @@ export default function RtsCertificateApprovalModal({
   const handleInputChange = (key: string, value: string) => {
     const updated = { ...officerInputs, [key]: value };
     setOfficerInputs(updated);
-    // Debounced or live refresh preview
     loadPreview(updated, customConditions);
+  };
+
+  const handleCustomConditionChange = (value: string) => {
+    setCustomConditions(value);
+    loadPreview(officerInputs, value);
   };
 
   const handleIssueAndApprove = () => {
@@ -103,6 +102,32 @@ export default function RtsCertificateApprovalModal({
       }
     });
   };
+
+  const fieldsToRender: OfficerFieldConfig[] = previewData?.requiredOfficerFields && previewData.requiredOfficerFields.length > 0
+    ? previewData.requiredOfficerFields
+    : [
+        {
+          fieldKey: "OrderNo",
+          fieldLabelMarathi: "जावक / आदेश क्रमांक",
+          fieldLabelEnglish: "Outward / Order No",
+          fieldType: "text",
+          isMandatory: true,
+        },
+        {
+          fieldKey: "ValidityPeriod",
+          fieldLabelMarathi: "परवाना वैधता मुदत",
+          fieldLabelEnglish: "Validity Period",
+          fieldType: "text",
+          isMandatory: false,
+        },
+        {
+          fieldKey: "ChallanNo",
+          fieldLabelMarathi: "शुल्क पावती क्र.",
+          fieldLabelEnglish: "Challan / Receipt No",
+          fieldType: "text",
+          isMandatory: false,
+        },
+      ];
 
   return (
     <Modal
@@ -134,7 +159,7 @@ export default function RtsCertificateApprovalModal({
 
         {/* 2-Column Split Interface */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden bg-slate-100">
-          {/* Left Column: Officer Inputs & Parameters (5 Cols) */}
+          {/* Left Column: Dynamic Officer Inputs & Parameters (5 Cols) */}
           <div className="lg:col-span-5 p-4 overflow-y-auto bg-white border-r border-slate-200 space-y-4 shadow-inner">
             <div className="border-b border-slate-100 pb-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
@@ -142,69 +167,58 @@ export default function RtsCertificateApprovalModal({
                 १. अधिकाऱ्याने भरावयाची अधिकृत माहिती (Officer Inputs)
               </h4>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                खालील माहिती टाईप करताच उजवीकडील प्रमाणपत्रात ती थेट लाईव्ह अपडेट होईल.
+                माहिती टाईप करताच उजवीकडील प्रमाणपत्रात ती थेट लाईव्ह अपडेट होईल.
               </p>
             </div>
 
-            {/* Dynamic Officer Input Fields */}
+            {/* Dynamic Render of Configured Officer Fields */}
             <div className="space-y-3">
+              {fieldsToRender.map((field) => (
+                <div key={field.fieldKey}>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    {field.fieldLabelMarathi || field.fieldLabelEnglish || field.fieldKey}
+                    {field.isMandatory && <span className="text-red-500 ml-0.5">*</span>}
+                  </label>
+                  {field.fieldType === "textarea" ? (
+                    <textarea
+                      rows={3}
+                      value={officerInputs[field.fieldKey] || ""}
+                      onChange={(e) => handleInputChange(field.fieldKey, e.target.value)}
+                      placeholder={`${field.fieldLabelMarathi || field.fieldLabelEnglish} प्रविष्ट करा...`}
+                      className="w-full p-2.5 text-xs rounded-md border border-slate-300 focus:ring-1 focus:ring-blue-500 leading-relaxed text-slate-800"
+                    />
+                  ) : (
+                    <Input
+                      type={field.fieldType === "number" ? "number" : field.fieldType === "date" ? "date" : "text"}
+                      value={officerInputs[field.fieldKey] || ""}
+                      onChange={(e) => handleInputChange(field.fieldKey, e.target.value)}
+                      placeholder={`${field.fieldLabelMarathi || field.fieldLabelEnglish} प्रविष्ट करा...`}
+                      className="text-xs"
+                    />
+                  )}
+                </div>
+              ))}
+
+              {/* Special Conditions if any */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  जावक / आदेश क्रमांक <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={officerInputs.OrderNo || ""}
-                  onChange={(e) => handleInputChange("OrderNo", e.target.value)}
-                  placeholder="उदा. जा.क्र./मनपा/कर/२०२६/७८९"
-                  className="text-xs"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    परवाना वैधता मुदत
-                  </label>
-                  <Input
-                    value={officerInputs.ValidityPeriod || ""}
-                    onChange={(e) => handleInputChange("ValidityPeriod", e.target.value)}
-                    placeholder="उदा. ३१ मार्च २०२७ पर्यंत"
-                    className="text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    शुल्क पावती क्रमांक
-                  </label>
-                  <Input
-                    value={officerInputs.ChallanNo || ""}
-                    onChange={(e) => handleInputChange("ChallanNo", e.target.value)}
-                    placeholder="उदा. CHL-2026-0042"
-                    className="text-xs"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  विशेष अटी व शर्ती (Terms & Conditions)
+                  विशेष अटी व शर्ती (Special Conditions)
                 </label>
                 <textarea
-                  rows={4}
-                  value={officerInputs.SpecialConditions || ""}
-                  onChange={(e) => handleInputChange("SpecialConditions", e.target.value)}
-                  placeholder="अटी प्रविष्ट करा..."
+                  rows={3}
+                  value={customConditions}
+                  onChange={(e) => handleCustomConditionChange(e.target.value)}
+                  placeholder="अटी व शर्ती प्रविष्ट करा..."
                   className="w-full p-2.5 text-xs rounded-md border border-slate-300 focus:ring-1 focus:ring-blue-500 leading-relaxed text-slate-800"
                 />
               </div>
 
-              {/* Standard Conditions Presets */}
+              {/* Standard Conditions Presets from Template Master */}
               {previewData?.defaultConditions && previewData.defaultConditions.length > 0 && (
                 <div className="bg-slate-50 p-2.5 rounded-md border border-slate-200">
                   <div className="text-[11px] font-bold text-slate-700 mb-1.5 flex items-center gap-1">
                     <ListPlus className="w-3.5 h-3.5 text-indigo-600" />
-                    मानक अटींचे प्रीसेट्स (क्लिक करून जोडा):
+                    टेम्पलेटमधील मानक अटी (क्लिक करून जोडा):
                   </div>
                   <div className="space-y-1">
                     {previewData.defaultConditions.map((cond, idx) => (
@@ -212,8 +226,8 @@ export default function RtsCertificateApprovalModal({
                         key={idx}
                         type="button"
                         onClick={() => {
-                          const current = officerInputs.SpecialConditions ? officerInputs.SpecialConditions + "\n" : "";
-                          handleInputChange("SpecialConditions", current + `${idx + 1}. ${cond}`);
+                          const current = customConditions ? customConditions + "\n" : "";
+                          handleCustomConditionChange(current + `${idx + 1}. ${cond}`);
                         }}
                         className="text-left w-full text-[11px] text-slate-600 hover:text-blue-700 hover:bg-blue-50/70 p-1 rounded transition-colors block border border-transparent hover:border-blue-200"
                       >
@@ -283,7 +297,7 @@ export default function RtsCertificateApprovalModal({
         <div className="border-t border-slate-200 px-5 py-3 bg-white flex flex-wrap justify-between items-center gap-3 shrink-0 rounded-b-lg">
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>मंजूर करताच डिजिटल स्वाक्षरी व QR कोडसह अधिकृत PDF तयार होईल.</span>
+            <span>मंजूर करताच डिजिटल स्वाक्षरी व QR कोडसह अधिकृत प्रमाणपत्र जारी होईल.</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -296,7 +310,7 @@ export default function RtsCertificateApprovalModal({
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md flex items-center gap-1.5"
             >
               <Award className="w-4 h-4" />
-              {isPending ? "प्रक्रिया होत आहे..." : "मंजूर करा व डिजिटल स्वाक्षरीने जारी करा (Approve & Issue Certificate)"}
+              {isPending ? "प्रक्रिया होत आहे..." : "मंजूर करा व डिजिटल स्वाक्षरीने जारी करा (Approve & Issue)"}
             </Button>
           </div>
         </div>
