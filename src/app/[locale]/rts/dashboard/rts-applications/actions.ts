@@ -731,3 +731,58 @@ export async function submitApplicationActionAction(
     };
   }
 }
+
+export async function getCertificatePreviewAction(
+  applicationId: number,
+  officerInputs?: Record<string, string>,
+  customConditions?: string
+) {
+  try {
+    const { getCertificatePreview } = await import('@/lib/api/rts/rtscertificate.service');
+    const result = await getCertificatePreview({
+      applicationId,
+      officerInputs,
+      customConditions,
+    });
+    return { success: true, data: result };
+  } catch (error: any) {
+    console.error('Failed to generate certificate preview:', error);
+    return { success: false, error: error?.message || 'Failed to generate preview' };
+  }
+}
+
+export async function issueCertificateAction(
+  applicationId: number,
+  officerInputs?: Record<string, string>,
+  customConditions?: string,
+  actionRemark?: string,
+  signAndApprove: boolean = true
+) {
+  try {
+    const { issueCertificate } = await import('@/lib/api/rts/rtscertificate.service');
+    const result = await issueCertificate({
+      applicationId,
+      officerInputs,
+      customConditions,
+      actionRemark,
+      signAndApprove,
+    });
+
+    revalidatePath('/rts/dashboard/rts-applications');
+    return { success: true, data: result };
+  } catch (error: any) {
+    console.error('Failed to issue certificate:', error);
+    return { success: false, error: error?.message || 'Failed to issue certificate' };
+  }
+}
+
+export async function getIssuedCertificateAction(applicationNo: string) {
+  try {
+    const { getIssuedCertificateByApplicationNo } = await import('@/lib/api/rts/rtscertificate.service');
+    const result = await getIssuedCertificateByApplicationNo(applicationNo);
+    return { success: true, data: result };
+  } catch (error: any) {
+    console.error('Failed to fetch issued certificate:', error);
+    return { success: false, error: error?.message || 'Certificate not found' };
+  }
+}

@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
+  Award,
   CheckCircle2,
   Clock,
+  FileCheck2,
   FileText,
   History,
   Paperclip,
   Shield,
+  Sparkles,
   Undo2,
   XCircle,
 } from "lucide-react";
@@ -18,6 +21,8 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 import { Badge, Card } from "@/components/common";
+import RtsCertificateApprovalModal from "./RtsCertificateApprovalModal";
+import PrintableCertificateModal from "../citizen/PrintableCertificateModal";
 import type {
   RtsApplicationDetailData,
   SubmitApplicationActionResult,
@@ -70,6 +75,8 @@ export default function RtsApplicationDetails({
 
   const [remark, setRemark] = useState("");
   const [documentChecks, setDocumentChecks] = useState<Record<number, boolean>>({});
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [isPrintCertModalOpen, setIsPrintCertModalOpen] = useState(false);
 
   const { workflow, answerGroups, applicationNo, applicationStatus, serviceName, departmentName } =
     data;
@@ -309,19 +316,37 @@ export default function RtsApplicationDetails({
             {!isActionable ? (
               <div className="rounded-xl bg-slate-100/50 py-6 text-center text-slate-400">
                 {normalizedStatus === "approved" && (
-                  <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-green-500" />
+                  <>
+                    <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-green-500" />
+                    <p className="text-xs font-bold text-slate-600 mb-3">
+                      {t("applicationDetails.applicationClosed")}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsPrintCertModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-xs transition"
+                    >
+                      <FileCheck2 className="h-4 w-4" />
+                      अधिकृत प्रमाणपत्र पहा व प्रिंट करा
+                    </button>
+                  </>
                 )}
                 {normalizedStatus === "rejected" && (
-                  <XCircle className="mx-auto mb-2 h-8 w-8 text-red-500" />
+                  <>
+                    <XCircle className="mx-auto mb-2 h-8 w-8 text-red-500" />
+                    <p className="text-xs font-bold text-slate-600">
+                      {t("applicationDetails.applicationClosed")}
+                    </p>
+                  </>
                 )}
                 {normalizedStatus === "returned" && (
-                  <Undo2 className="mx-auto mb-2 h-8 w-8 text-amber-500" />
+                  <>
+                    <Undo2 className="mx-auto mb-2 h-8 w-8 text-amber-500" />
+                    <p className="text-xs font-bold text-slate-600">
+                      {t("applicationDetails.awaitingResubmission")}
+                    </p>
+                  </>
                 )}
-                <p className="text-xs font-bold text-slate-600">
-                  {normalizedStatus === "returned"
-                    ? t("applicationDetails.awaitingResubmission")
-                    : t("applicationDetails.applicationClosed")}
-                </p>
               </div>
             ) : needsVerificationGate ? (
               <div className="space-y-4">
@@ -383,6 +408,29 @@ export default function RtsApplicationDetails({
               </p>
             ) : (
               <div className="space-y-4">
+                {/* Certificate Decision Feature for Approval Stages */}
+                {decisionActions.includes("approve") && (
+                  <div className="p-3 bg-linear-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-emerald-900 flex items-center gap-1">
+                        <Award className="w-3.5 h-3.5 text-emerald-600" />
+                        प्रमाणपत्र जारी करणे व अंतिम मंजुरी:
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-emerald-700">
+                      प्रमाणपत्रातील जावक क्र., मुदत व अटी भरून डिजिटल स्वाक्षरीने लगेच जारी करा.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsCertModalOpen(true)}
+                      className="w-full flex items-center justify-center gap-1.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-xs transition"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      प्रमाणपत्र निर्णय व पूर्वदृश्य (Certificate & Sign)
+                    </button>
+                  </div>
+                )}
+
                 <div className="space-y-1">
                   <label className="flex justify-between text-xs font-semibold text-slate-500">
                     {t("applicationDetails.remark")}
@@ -416,6 +464,29 @@ export default function RtsApplicationDetails({
           </Card>
         </div>
       </div>
+
+      {/* Certificate Approval Modal */}
+      {isCertModalOpen && (
+        <RtsCertificateApprovalModal
+          isOpen={isCertModalOpen}
+          onClose={() => setIsCertModalOpen(false)}
+          applicationId={workflow?.applicationId || 0}
+          applicationNo={applicationNo}
+          serviceName={serviceName || ""}
+          onApproved={() => {
+            router.refresh();
+          }}
+        />
+      )}
+
+      {/* Printable Certificate Modal */}
+      {isPrintCertModalOpen && (
+        <PrintableCertificateModal
+          isOpen={isPrintCertModalOpen}
+          onClose={() => setIsPrintCertModalOpen(false)}
+          applicationNo={applicationNo}
+        />
+      )}
     </div>
   );
 }

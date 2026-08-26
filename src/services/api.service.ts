@@ -51,6 +51,8 @@ class ApiClient {
     '/RTSApplication',
     '/RTSApplicationDocument',
     '/RTSApplicationTracking',
+    '/rts-certificate',
+    '/rts-certificate-verification',
   ];
 
   constructor() {
