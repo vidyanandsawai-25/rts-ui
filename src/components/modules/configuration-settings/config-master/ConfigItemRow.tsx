@@ -115,7 +115,12 @@ export function ConfigItemRow({ item, searchTerm = '' }: ConfigItemRowProps) {
                 const control = (item.controlType || '').toLowerCase();
                 if (val === 'true') return t('list.on') || 'ON';
                 if (val === 'false') return t('list.off') || 'OFF';
-                if (val !== '' && val !== null && val !== undefined) return String(val).replace('T', ' ');
+                if (val !== '' && val !== null && val !== undefined) {
+                  const valStr = String(val);
+                  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(valStr)
+                    ? valStr.replace('T', ' ')
+                    : valStr;
+                }
                 if (control === 'toggle' || control === 'checkbox') {
                   return item.isEnabled ? t('list.on') || 'ON' : t('list.off') || 'OFF';
                 }

@@ -100,6 +100,7 @@ export default getRequestConfig(async (params: any) => {
     assetGrievanceRemarkMessages,
     retrospectiveRuleLibraryMessages,
     taxZoningRangeMessages,
+    aliasMasterMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -240,6 +241,7 @@ export default getRequestConfig(async (params: any) => {
     import(`./locales/${validatedLocale}/assetGrievanceRemark.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/retrospectiveRuleLibrary.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxZoningRange.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/aliasMaster.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -331,6 +333,7 @@ export default getRequestConfig(async (params: any) => {
       assetGrievanceRemark: assetGrievanceRemarkMessages,
       retrospectiveRuleLibrary: retrospectiveRuleLibraryMessages,
       taxZoningRange: taxZoningRangeMessages?.taxZoningRange || taxZoningRangeMessages,
+      aliasMaster: aliasMasterMessages,
     },
   };
 });
