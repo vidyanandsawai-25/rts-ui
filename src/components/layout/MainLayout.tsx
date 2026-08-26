@@ -12,6 +12,8 @@ import { getUserIdFromCookies } from '@/lib/utils/auth-session';
 import { buildSidebarTree } from '@/lib/utils/sidebar-tree';
 import { buildSidebarTreeFromUserScreens } from '@/lib/utils/sidebar-tree-user';
 import { PermissionsProvider } from '@/lib/providers/PermissionsProvider';
+import { AliasLabelsProvider } from '@/lib/providers/AliasLabelsProvider';
+import { getAliasLabelsForLocale } from '@/lib/i18n/alias-labels';
 import { LayoutFooterWrapper } from './LayoutFooterWrapper';
 import type { UserScreenAccess } from '@/types/user-screen-access.types';
 import { getModules } from '@/lib/api/configuration-settings/screenAccess/master-data.service';
@@ -200,30 +202,33 @@ export async function MainLayout({ children, locale: localeProp }: MainLayoutPro
   const isReportRoute = pathname.split('/').some((segment) => segment === 'reports');
 
   const { rawScreens } = await getLayoutChromeData();
+  const aliasLabels = await getAliasLabelsForLocale(locale);
 
   return (
     <PermissionsProvider screens={rawScreens}>
-      <div className="flex min-h-screen flex-col bg-[#f8fafc]">
-        <Suspense fallback={null}>
-          <SidebarWithData locale={locale} />
-        </Suspense>
-        <Suspense fallback={<HeaderSkeleton />}>
-          <HeaderWithRequestContext />
-        </Suspense>
-        <main className="flex-1 transition-all duration-300 pt-20 flex flex-col layout-content-shifted">
-          <div className={`flex-1 w-full py-3 ${isPtisRoute ? 'px-1 md:px-2' : 'px-3 md:px-4'}`}>
-            {children}
-          </div>
-        </main>
-
-        <LayoutFooterWrapper>
-          <Suspense fallback={<FooterSkeleton />}>
-            <div className={isReportRoute ? '' : 'layout-content-shifted'}>
-              <FooterWithUlb />
-            </div>
+      <AliasLabelsProvider labels={aliasLabels}>
+        <div className="flex min-h-screen flex-col bg-[#f8fafc]">
+          <Suspense fallback={null}>
+            <SidebarWithData locale={locale} />
           </Suspense>
-        </LayoutFooterWrapper>
-      </div>
+          <Suspense fallback={<HeaderSkeleton />}>
+            <HeaderWithRequestContext />
+          </Suspense>
+          <main className="flex-1 transition-all duration-300 pt-20 flex flex-col layout-content-shifted">
+            <div className={`flex-1 w-full py-3 ${isPtisRoute ? 'px-1 md:px-2' : 'px-3 md:px-4'}`}>
+              {children}
+            </div>
+          </main>
+
+          <LayoutFooterWrapper>
+            <Suspense fallback={<FooterSkeleton />}>
+              <div className={isReportRoute ? '' : 'layout-content-shifted'}>
+                <FooterWithUlb />
+              </div>
+            </Suspense>
+          </LayoutFooterWrapper>
+        </div>
+      </AliasLabelsProvider>
     </PermissionsProvider>
   );
 }
