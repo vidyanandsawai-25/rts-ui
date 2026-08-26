@@ -40,7 +40,7 @@ type TabType = "basic" | "template" | "officerFields" | "conditions";
 
 const DEFAULT_BODY_TEMPLATE = `<div class="certificate-body space-y-4">
     <p>प्रमाणित करण्यात येते की, अर्जदार <strong>{{ApplicantName}}</strong> (मोबाईल क्र.: <strong>{{ApplicantMobile}}</strong>) यांनी अकोला महानगरपालिकेकडे <strong>{{ServiceNameMarathi}}</strong> साठी अर्ज क्र. <strong>{{ApplicationNo}}</strong> अन्वये दिनांक <strong>{{AppliedDate}}</strong> रोजी अर्ज सादर केला होता.</p>
-    
+
     <p>सदर अर्जाची व कागदपत्रांची नियमानुसार सविस्तर छाननी व प्रत्यक्ष पाहणी करण्यात आली असून, सक्षम प्राधिकाऱ्यांच्या आदेशानुसार हे प्रमाणपत्र खालील अटी व शर्तींच्या अधीन राहून जारी करण्यात येत आहे:</p>
 
     <div class="bg-slate-50 p-4 rounded border border-slate-200 text-sm space-y-2">
