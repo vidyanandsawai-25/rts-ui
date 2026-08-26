@@ -8,16 +8,20 @@ import {
   ChevronRight,
   ChevronUp,
   Download,
+  FileCheck2,
   FileText,
   GitCommit,
   LoaderCircle,
   Paperclip,
   Shield,
+  Sparkles,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ApprovalStagesTimeline } from '@/components/modules/rts';
 import RtsApplicationNoteSheetModal from '@/components/modules/rts/dashboard/RtsApplicationNoteSheetModal';
+import RtsCertificateApprovalModal from '@/components/modules/rts/dashboard/RtsCertificateApprovalModal';
+import PrintableCertificateModal from '@/components/modules/rts/citizen/PrintableCertificateModal';
 import { Badge, Button, Drawer, Input, Label, ViewButton } from '@/components/common';
 import type { RtsApplicationFullDetailData } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import { getAdminRtsDocumentDownloadUrl, getAdminRtsDocumentViewUrl } from '@/lib/api/rts/rtsdocument.client';
@@ -76,6 +80,8 @@ export default function RtsApplicationFullDetailView({
   const [documentPreviewError, setDocumentPreviewError] = useState<string | null>(null);
   const [isDocumentPreviewLoading, setIsDocumentPreviewLoading] = useState(false);
   const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
+  const [isPrintCertModalOpen, setIsPrintCertModalOpen] = useState(false);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
 
   const loading = Boolean(open && record && !data);
   const fieldGroups = useMemo(() => {
@@ -110,9 +116,12 @@ export default function RtsApplicationFullDetailView({
   const currentStageIndex = stages?.approvalStages.findIndex((stage) => stage.isCurrentStage) ?? -1;
 
   useEffect(() => {
+    setActiveDocumentIndex(0);
+    setOpenGroups({});
+  }, [record?.appId]);
+
+  useEffect(() => {
     if (!open || !activeDocument?.isUploaded || !activeDocument.guid) {
-      // Resetting browser-preview state when the drawer has no active upload.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDocumentPreviewUrl(null);
       setDocumentPreviewType(null);
       setDocumentPreviewError(null);
@@ -158,6 +167,7 @@ export default function RtsApplicationFullDetailView({
 
   if (!record) return null;
 
+  const isApproved = record.applicationStatus?.toLowerCase().includes('approv');
   const expandAll = () => setOpenGroups(Object.fromEntries(fieldGroups.map((group) => [group.title, true])));
   const collapseAll = () => setOpenGroups(Object.fromEntries(fieldGroups.map((group) => [group.title, false])));
 
@@ -171,16 +181,29 @@ export default function RtsApplicationFullDetailView({
         bodyClassName="relative overflow-hidden"
         footer={
           <div className="flex w-full items-center justify-between gap-3">
-            <Button
-              type="button"
-              variant="secondary"
-              icon={FileText}
-              size="xs"
-              onClick={() => setIsNoteSheetOpen(true)}
-              className="rounded-lg px-3 text-xs font-bold"
-            >
-              {t('viewNoteSheet')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                icon={FileText}
+                size="xs"
+                onClick={() => setIsNoteSheetOpen(true)}
+                className="rounded-lg px-3 text-xs font-bold"
+              >
+                {t('viewNoteSheet')}
+              </Button>
+              {isApproved && (
+                <Button
+                  type="button"
+                  icon={FileCheck2}
+                  size="xs"
+                  onClick={() => setIsPrintCertModalOpen(true)}
+                  className="rounded-lg px-3 text-xs font-bold bg-[#4b70a6] hover:bg-[#3d5a8a] text-white"
+                >
+                  अधिकृत प्रमाणपत्र (Certificate)
+                </Button>
+              )}
+            </div>
             <Button variant="secondary" onClick={onClose} size="xs" className="rounded-lg px-5 text-xs font-bold">
               {tCommon('buttons.close')}
             </Button>
@@ -198,7 +221,30 @@ export default function RtsApplicationFullDetailView({
               <p className="truncate text-[11px] font-semibold text-blue-100"><u>{t('applicationNumber')}</u> : {record.appId}</p>
             </div>
           </div>
-          {record.applicationStatus && <Badge variant={statusBadgeVariant(record.applicationStatus)}>{record.applicationStatus}</Badge>}
+          
+          <div className="flex items-center gap-2">
+            {isApproved && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsPrintCertModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition"
+                >
+                  <FileCheck2 className="h-4 w-4" />
+                  प्रमाणपत्र पहा व प्रिंट करा
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCertModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-lg text-xs font-bold transition"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  प्रमाणपत्र संपादन
+                </button>
+              </>
+            )}
+            {record.applicationStatus && <Badge variant={statusBadgeVariant(record.applicationStatus)}>{record.applicationStatus}</Badge>}
+          </div>
         </header>
 
         <main className="min-h-0 flex-1 overflow-y-auto p-3 xl:overflow-hidden">
@@ -356,6 +402,28 @@ export default function RtsApplicationFullDetailView({
             : null
         }
       />
+
+      {isCertModalOpen && record && (
+        <RtsCertificateApprovalModal
+          isOpen={isCertModalOpen}
+          onClose={() => setIsCertModalOpen(false)}
+          applicationId={record.applicationId}
+          applicationNo={record.appId}
+          serviceName={record.serviceName}
+          applicantName={record.citizenName || ''}
+          onApproved={() => {
+            setIsCertModalOpen(false);
+          }}
+        />
+      )}
+
+      {isPrintCertModalOpen && record && (
+        <PrintableCertificateModal
+          isOpen={isPrintCertModalOpen}
+          onClose={() => setIsPrintCertModalOpen(false)}
+          applicationNo={record.appId}
+        />
+      )}
     </>
   );
 }
