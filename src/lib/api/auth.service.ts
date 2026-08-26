@@ -45,9 +45,10 @@ let relaxedTlsDispatcher: import('undici').Dispatcher | undefined;
 async function authServerFetch(url: string, init: RequestInit): Promise<Response> {
   const useRelaxedTls =
     typeof window === 'undefined' &&
-    process.env.NODE_ENV === 'development' &&
     process.env.NTIS_STRICT_LOCAL_TLS !== '1' &&
-    LOCAL_HTTPS_RE.test(url);
+    (LOCAL_HTTPS_RE.test(url) ||
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0' ||
+      process.env.NODE_ENV === 'development');
 
   if (useRelaxedTls) {
     const undici = await import('undici');

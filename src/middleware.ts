@@ -9,7 +9,7 @@ import { NextResponse } from 'next/server';
 import { defaultLocale, locales } from './i18n/config';
 import {
   AUTH_COOKIES,
-  LOGOUT_CLEAR_COOKIES,
+  SESSION_TOKEN_COOKIES,
   SESSION_EXPIRED_LOGIN_ERROR,
 } from './components/modules/login/constants';
 import { getSessionValidityFromTokens } from './lib/utils/session-validity';
@@ -32,7 +32,7 @@ function localeAndPathWithoutLocale(pathname: string): { locale: string; pathWit
 }
 
 function clearAuthCookiesOnResponse(response: NextResponse): void {
-  for (const name of LOGOUT_CLEAR_COOKIES) {
+  for (const name of SESSION_TOKEN_COOKIES) {
     response.cookies.delete(name);
   }
 }
@@ -76,15 +76,6 @@ export default function middleware(request: NextRequest) {
   const isSessionExpiredOrWasLoggedIn = sessionExpired;
 
   const isLoginRoute = pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
-  // These steps are legitimately visited while `!isLoggedIn` (no session exists yet — that's the
-  // whole point of each one). They must be excluded from the "not logged in on a login route"
-  // cookie-clearing below, or the pending-challenge/reset-token cookie set by the previous step
-  // gets wiped by the very response that renders the page, before the user can act on it.
-  const isVerifyTwoFactorRoute = pathWithoutLocale === '/login/verify-2fa';
-  const isForgotPasswordVerifyOtpRoute = pathWithoutLocale === '/login/forgot-password/verify-otp';
-  const isForgotPasswordResetRoute = pathWithoutLocale === '/login/forgot-password/reset';
-  const isPendingChallengeRoute =
-    isVerifyTwoFactorRoute || isForgotPasswordVerifyOtpRoute || isForgotPasswordResetRoute;
   const isAccountSecurityRoute = pathWithoutLocale === '/account/security';
 
   // An admin-required 2FA setup that the user hasn't completed yet takes priority over
@@ -128,9 +119,6 @@ export default function middleware(request: NextRequest) {
   const intlResponse = intlMiddleware(request);
 
   if (intlResponse.headers.has('location')) {
-    if (!isPendingChallengeRoute && isLoginRoute) {
-      clearAuthCookiesOnResponse(intlResponse);
-    }
     applyAntiCacheHeaders(intlResponse.headers);
     return intlResponse;
   }
@@ -146,10 +134,6 @@ export default function middleware(request: NextRequest) {
   });
   response.headers.set('x-pathname', pathname);
   response.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
-
-  if (!isPendingChallengeRoute && isLoginRoute) {
-    clearAuthCookiesOnResponse(response);
-  }
 
   applyAntiCacheHeaders(response.headers);
   return response;
