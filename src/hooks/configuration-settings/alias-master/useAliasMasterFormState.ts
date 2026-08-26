@@ -17,7 +17,7 @@ export function useAliasMasterFormState({ initialData }: UseAliasMasterFormState
   const initialFormData = useMemo<AliasMasterFormModel>(() => {
     return {
       id: initialData?.id ?? null,
-      fieldName: initialData?.fieldName ?? "",
+      keyName: initialData?.keyName ?? "",
       labelName: initialData?.labelName ?? "",
       englishName: initialData?.englishName ?? "",
       regionalName: initialData?.regionalName ?? "",

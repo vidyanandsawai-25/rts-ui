@@ -23,12 +23,12 @@ export function useAliasMasterFormValidation({
   const validate = useCallback(
     (data: AliasMasterFormModel): Partial<Record<keyof AliasMasterFormModel, string>> => {
       const schema = {
-        fieldName: (value: unknown) => {
+        keyName: (value: unknown) => {
           if (isEdit) return undefined;
           const strVal = String(value ?? "").trim();
-          if (!strVal) return t("form.validation.fieldNameRequired");
-          if (strVal.length > 50) return t("form.validation.fieldNameMaxLength", { count: 50 });
-          if (isAllZeros(strVal) || !ASSET_MASTER_NAME_REGEX.test(strVal)) return t("form.validation.fieldNameFormat");
+          if (!strVal) return t("form.validation.keyNameRequired");
+          if (strVal.length > 50) return t("form.validation.keyNameMaxLength", { count: 50 });
+          if (isAllZeros(strVal) || !ASSET_MASTER_NAME_REGEX.test(strVal)) return t("form.validation.keyNameFormat");
           return undefined;
         },
         labelName: (value: unknown) => {

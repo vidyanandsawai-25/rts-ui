@@ -89,7 +89,7 @@ export function getAliasMasterColumns({
   };
 
   return [
-    { key: "fieldName", label: createSortableLabel(t("fieldName"), "fieldName"), width: "16%", render: (v) => (typeof v === "string" ? v : "") },
+    { key: "keyName", label: createSortableLabel(t("keyName"), "keyName"), width: "16%", render: (v) => (typeof v === "string" ? v : "") },
     { key: "labelName", label: createSortableLabel(t("labelName"), "labelName"), width: "18%", render: (v) => (typeof v === "string" ? v : "") },
     { key: "englishName", label: createSortableLabel(t("englishName"), "englishName"), width: "18%", render: (v) => (typeof v === "string" ? v : "-") },
     { key: "regionalName", label: t("regionalName"), width: "16%", render: (v) => (typeof v === "string" ? v : "-") },

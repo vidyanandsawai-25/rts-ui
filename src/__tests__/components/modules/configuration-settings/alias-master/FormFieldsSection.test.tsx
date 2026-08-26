@@ -40,7 +40,7 @@ describe("FormFieldsSection", () => {
 
   const formData: AliasMasterFormModel = {
     id: null,
-    fieldName: "Ward_No",
+    keyName: "Ward_No",
     labelName: "Ward No",
     englishName: "Sector",
     regionalName: "सेक्टर",
@@ -65,14 +65,14 @@ describe("FormFieldsSection", () => {
       />
     );
 
-    expect(screen.getByTestId("fieldName")).toHaveValue("Ward_No");
+    expect(screen.getByTestId("keyName")).toHaveValue("Ward_No");
     expect(screen.getByTestId("labelName")).toHaveValue("Ward No");
     expect(screen.getByTestId("englishName")).toHaveValue("Sector");
     expect(screen.getByTestId("regionalName")).toHaveValue("सेक्टर");
     expect(screen.getByTestId("hindiName")).toHaveValue("सेक्टर");
   });
 
-  it("disables the fieldName input when isEdit is true", () => {
+  it("disables the keyName input when isEdit is true", () => {
     render(
       <FormFieldsSection
         formData={formData}
@@ -85,10 +85,10 @@ describe("FormFieldsSection", () => {
       />
     );
 
-    expect(screen.getByTestId("fieldName")).toBeDisabled();
+    expect(screen.getByTestId("keyName")).toBeDisabled();
   });
 
-  it("keeps the fieldName input enabled when isEdit is false", () => {
+  it("keeps the keyName input enabled when isEdit is false", () => {
     render(
       <FormFieldsSection
         formData={formData}
@@ -101,7 +101,7 @@ describe("FormFieldsSection", () => {
       />
     );
 
-    expect(screen.getByTestId("fieldName")).not.toBeDisabled();
+    expect(screen.getByTestId("keyName")).not.toBeDisabled();
   });
 
   it("calls onChange and onBlur when a field is edited", () => {
@@ -140,7 +140,7 @@ describe("FormFieldsSection", () => {
     expect(screen.getByTestId("validation-message")).toHaveTextContent("Label name is required");
   });
 
-  it("exposes fieldNameRef via the imperative handle", () => {
+  it("exposes keyNameRef via the imperative handle", () => {
     const ref = React.createRef<FormFieldsSectionRef>();
     render(
       <FormFieldsSection
@@ -155,6 +155,6 @@ describe("FormFieldsSection", () => {
       />
     );
 
-    expect(ref.current?.fieldNameRef.current).toBe(screen.getByTestId("fieldName"));
+    expect(ref.current?.keyNameRef.current).toBe(screen.getByTestId("keyName"));
   });
 });

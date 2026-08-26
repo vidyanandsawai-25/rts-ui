@@ -12,7 +12,7 @@ describe("getAliasMasterColumns", () => {
   const baseRow: AliasMaster = {
     id: 1,
     aliasKey: "ALS-000001",
-    fieldName: "Ward_No",
+    keyName: "Ward_No",
     labelName: "Ward No",
     englishName: "Sector",
     regionalName: "सेक्टर",
@@ -23,7 +23,7 @@ describe("getAliasMasterColumns", () => {
   it("should return the expected column configuration", () => {
     const columns = getAliasMasterColumns({ t, tCommon, onSort, onToggleStatus });
     expect(columns.map((c) => c.key)).toEqual([
-      "fieldName",
+      "keyName",
       "labelName",
       "englishName",
       "regionalName",
@@ -32,10 +32,10 @@ describe("getAliasMasterColumns", () => {
     ]);
   });
 
-  it("should make fieldName, labelName, and englishName sortable but not regionalName/hindiName", () => {
+  it("should make keyName, labelName, and englishName sortable but not regionalName/hindiName", () => {
     const columns = getAliasMasterColumns({ t, tCommon, onSort, onToggleStatus });
 
-    expect(typeof columns[0].label).toBe("object"); // fieldName -> SortableHeader
+    expect(typeof columns[0].label).toBe("object"); // keyName -> SortableHeader
     expect(typeof columns[1].label).toBe("object"); // labelName -> SortableHeader
     expect(typeof columns[2].label).toBe("object"); // englishName -> SortableHeader
     expect(columns[3].label).toBe("trans_regionalName"); // plain string, not sortable
@@ -44,10 +44,10 @@ describe("getAliasMasterColumns", () => {
 
   it("should render string values and fall back to '-' for missing englishName/regionalName/hindiName", () => {
     const columns = getAliasMasterColumns({ t, tCommon, onSort, onToggleStatus });
-    const fieldNameCol = columns.find((c) => c.key === "fieldName")!;
+    const keyNameCol = columns.find((c) => c.key === "keyName")!;
     const englishCol = columns.find((c) => c.key === "englishName")!;
 
-    expect(fieldNameCol.render!("Ward_No", baseRow, 0)).toBe("Ward_No");
+    expect(keyNameCol.render!("Ward_No", baseRow, 0)).toBe("Ward_No");
     expect(englishCol.render!(undefined, { ...baseRow, englishName: null }, 0)).toBe("-");
   });
 
@@ -55,10 +55,10 @@ describe("getAliasMasterColumns", () => {
     const columns = getAliasMasterColumns({ t, tCommon, onSort, onToggleStatus });
     render(<div>{columns[0].label}</div>);
 
-    const sortButton = screen.getByRole("button", { name: /common_table\.sort\.by trans_fieldName/i });
+    const sortButton = screen.getByRole("button", { name: /common_table\.sort\.by trans_keyName/i });
     fireEvent.click(sortButton);
 
-    expect(onSort).toHaveBeenCalledWith("fieldName");
+    expect(onSort).toHaveBeenCalledWith("keyName");
   });
 
   it("should render a ToggleSwitch reflecting isActive and invoke onToggleStatus on click", () => {
