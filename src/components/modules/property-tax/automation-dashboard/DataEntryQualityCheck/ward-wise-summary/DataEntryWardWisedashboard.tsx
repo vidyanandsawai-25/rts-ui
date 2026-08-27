@@ -182,7 +182,7 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData, proper
         };
     }, [tableData, columns, headerRows, searchParams, summaryData]);
     return (
-        <div className="flex flex-col h-full gap-3 p-3">
+        <div className="flex flex-col h-full gap-2">
             {/* Custom Page Header */}
             <div className="flex items-center justify-between bg-[#fcfaff] px-4 py-3 rounded-lg shadow-sm border border-indigo-100/60">
                 <div className="flex-1 flex justify-start">
@@ -227,7 +227,7 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData, proper
                 columns={columns}
                 headerRows={headerRows}
                 containerClassName="h-full"
-                rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors cursor-pointer border-b border-slate-200"}
+                rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20" : "group transition-colors cursor-pointer border-b border-slate-200"}
                 loading={false}
                 totalCount={totalCount}
                 pageNumber={pageNumber}

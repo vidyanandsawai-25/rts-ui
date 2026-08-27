@@ -64,7 +64,7 @@ export const getDataEntryColumns = (
 ): Column<any>[] => {
     const renderClickableCell = (value: unknown, row: any, key: string) => (
         <div
-            className="w-full h-full p-3 text-center font-bold text-slate-900 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap flex items-center justify-center"
+            className="w-full h-full p-3 text-center font-bold text-[13px] text-slate-900 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap flex items-center justify-center"
             onClick={(e) => {
                 e.stopPropagation();
                 if (row.isTotal) return;
@@ -129,10 +129,10 @@ const renderHeader = (title: string, showSort: boolean = false, activeSort: bool
     ) : title;
 
     return (
-        <div className={isWard ? `inline-flex items-center justify-center gap-0.5 ${isSubHeader ? 'font-semibold text-[13px] text-slate-900' : 'font-bold text-[14px] text-slate-900'} leading-tight whitespace-nowrap` : `flex items-center justify-center gap-1 ${isSubHeader ? 'font-semibold text-[14px] text-slate-900' : 'font-bold text-[15px] text-slate-900'} whitespace-nowrap`}>
+        <div className={isWard ? `inline-flex items-center justify-center gap-0.5 ${isSubHeader ? 'font-bold text-sm text-slate-900' : 'font-bold text-[15px] text-slate-900'} leading-tight whitespace-nowrap` : `flex items-center justify-center gap-1 ${isSubHeader ? 'font-bold text-[14px] text-slate-900' : 'font-bold text-[15px] text-slate-900'} whitespace-nowrap`}>
             {formattedTitle}
             {exportText && (
-                <span className="inline-flex items-center gap-1 px-2 py-1.5 ml-1 text-[11px] font-semibold text-slate-600 bg-white border border-slate-300 rounded shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
+                <span className="inline-flex items-center gap-1 px-2 py-1.5 ml-2 text-[11px] font-semibold text-slate-700 bg-white border border-slate-400 rounded-md shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
                     <Download className="w-3 h-3" /> {exportText}   
                 </span>
             )}
@@ -142,7 +142,7 @@ const renderHeader = (title: string, showSort: boolean = false, activeSort: bool
 };
 
 const renderLeftHeader = (title: string, showSort: boolean = false, activeSort: boolean = false, isWard: boolean = false) => (
-    <div className={isWard ? "inline-flex items-center justify-start gap-0.5 font-bold text-[13px] leading-tight text-slate-900 uppercase whitespace-nowrap" : "flex items-center justify-start gap-1 font-bold text-[15px] text-slate-900 uppercase whitespace-nowrap"}>
+    <div className={isWard ? "inline-flex items-center justify-start gap-0.5 font-bold text-[14px] leading-tight text-slate-900 uppercase whitespace-nowrap" : "flex items-center justify-start gap-1 font-bold text-[15px] text-slate-900 uppercase whitespace-nowrap"}>
         {title} {showSort && (activeSort ? <ActiveSortIcon /> : <SortIcon />)}
     </div>
 );

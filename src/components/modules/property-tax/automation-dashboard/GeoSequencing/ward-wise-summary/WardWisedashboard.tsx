@@ -211,7 +211,7 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
     }, [tableData, zoneNo, summaryData, columns, headerRows]);
 
     return (
-        <div className="w-full h-[calc(100vh-140px)] flex flex-col p-4 bg-slate-50 gap-4 overflow-hidden">
+        <div className="w-full h-[calc(100vh-140px)] flex flex-col bg-slate-50 gap-2 overflow-hidden">
             {/* Custom Page Header */}
             <div className="flex items-center justify-between bg-[#f8f9fe] px-4 py-3 rounded-lg shadow-sm border border-indigo-100/60">
                 <div className="flex-1 flex justify-start">
@@ -250,8 +250,8 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
             <WardWiseSummaryCards data={summaryCardsData} />
 
             {/* Ward-wise Table */}
-            <div className="relative border-0 shadow-lg overflow-hidden transition-all duration-300 bg-white rounded-lg flex flex-col flex-1">
-                <div className="flex-1 p-0 overflow-auto max-h-[70vh] transition-all duration-300 border-t border-slate-200 [&_thead>tr:first-child]:bg-gradient-to-r [&_thead>tr:first-child]:from-indigo-100 [&_thead>tr:first-child]:to-purple-100 [&_thead>tr:first-child]:shadow-sm [&_thead>tr:nth-child(2)]:bg-gradient-to-r [&_thead>tr:nth-child(2)]:from-indigo-50 [&_thead>tr:nth-child(2)]:to-purple-50 [&_th]:border [&_th]:border-slate-300 [&_td]:border [&_td]:border-slate-300">
+            <div className="relative border-0 shadow-lg overflow-hidden bg-white rounded-lg flex flex-col flex-1">
+                <div className="flex-1 p-0 overflow-auto max-h-[70vh] border-t border-slate-200">
                     <AutomationTable<GeoSequencingData>
                         data={tableData}
                         columns={columns}

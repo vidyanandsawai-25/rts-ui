@@ -43,7 +43,7 @@ export const getGeoSequencingSharedColumns = (
 
     const renderClickableCell = (value: unknown, row: GeoSequencingData, key: string, colorClass: string) => (
         <div
-            className={`w-full h-full p-3 text-center font-bold whitespace-nowrap flex items-center justify-center cursor-pointer transition-colors ${colorClass}`}
+            className={`w-full h-full p-3 text-[13px] text-center font-bold whitespace-nowrap flex items-center justify-center cursor-pointer transition-colors ${colorClass}`}
             onClick={(e) => {
                 e.stopPropagation();
                 if (row.isTotal) return;
@@ -136,13 +136,13 @@ export const getGeoSequencingSharedHeaderRows = (
             headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
-            label: <div className="font-bold text-[15px] text-slate-900">{t('geoSequencing.columns.assessed')}<br />{t('geoSequencing.columns.properties')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-900 text-center whitespace-nowrap">{t('geoSequencing.columns.assessed')}<br />{t('geoSequencing.columns.properties')}</div>,
             colSpan: 2,
             align: 'center',
             headerClassName: 'bg-green-50 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
-            label: <div className="font-bold text-[15px] text-slate-900">{t('geoSequencing.columns.unassessed')}<br />{t('geoSequencing.columns.properties')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-900 text-center whitespace-nowrap">{t('geoSequencing.columns.unassessed')}<br />{t('geoSequencing.columns.properties')}</div>,
             colSpan: 2,
             align: 'center',
             headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
@@ -165,83 +165,82 @@ export const getGeoSequencingSharedHeaderRows = (
         {
             label: renderSortableHeader(t('geoSequencing.columns.structure'), 'geoStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-blue-50 min-w-[90px] hover:bg-blue-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.unit'), 'geoUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-blue-50 min-w-[90px] hover:bg-blue-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.residential'), 'propRes', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-purple-50 min-w-[110px] hover:bg-purple-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.nonResidential'), 'propNonRes', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-purple-50 min-w-[110px] hover:bg-purple-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.mixed'), 'propMixed', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-purple-50 min-w-[110px] hover:bg-purple-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.publicUtility'), 'propPublic', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-purple-50 min-w-[110px] hover:bg-purple-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.underConstruction'), 'propUnder', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-purple-50 min-w-[110px] hover:bg-purple-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.structure'), 'assessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-green-50 hover:bg-green-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-green-50 min-w-[90px] hover:bg-green-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.units'), 'assessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-green-50 hover:bg-green-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-green-50 min-w-[90px] hover:bg-green-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.structure'), 'unassessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-orange-50 min-w-[90px] hover:bg-orange-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.units'), 'unassessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-orange-50 min-w-[90px] hover:bg-orange-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.structure'), 'newlyStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-emerald-50 hover:bg-emerald-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-emerald-50 min-w-[80px] hover:bg-emerald-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.unit'), 'newlyUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-emerald-50 hover:bg-emerald-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-emerald-50 min-w-[80px] hover:bg-emerald-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.structure'), 'inprocessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-orange-50 min-w-[70px] hover:bg-orange-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('geoSequencing.columns.unit'), 'inprocessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: 'bg-orange-50 min-w-[70px] hover:bg-orange-100 transition-colors cursor-pointer border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         }
     ];
 
     return [topRow, bottomRow];
 };
-
 export const getPropertyTypeIdParam = (columnKey: string): string => {
     switch (columnKey) {
         case 'propRes': return '&PropertyTypeCategoryId=1';

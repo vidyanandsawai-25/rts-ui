@@ -47,7 +47,7 @@ export const getInternalSurveyColumns = (
 
     const renderClickableCell = (value: unknown, row: InternalSurveyTableRow, key: string, textClass: string) => (
         <div
-            className={`w-full h-full p-3 text-center font-bold ${textClass} flex items-center justify-center`}
+            className={`w-full h-full p-3 text-center font-bold text-[13px] ${textClass} flex items-center justify-center`}
             onClick={(e) => {
                 e.stopPropagation();
                 if (row.isTotal) return;
