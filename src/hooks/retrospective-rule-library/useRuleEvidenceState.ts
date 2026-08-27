@@ -1,35 +1,35 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { RuleComparatorCodeItem } from '@/types/retrospective-rule.types';
-import { getComparatorCodesAction } from '@/app/[locale]/configuration-settings/retrospective-rule-library/action';
+import type { RuleEvidenceStateItem } from '@/types/retrospective-rule.types';
+import { getRuleEvidenceStateAction } from '@/app/[locale]/property-tax/retrospective-rule-library/action';
 
-export interface UseRuleComparatorCodesReturn {
-  comparatorCodes: RuleComparatorCodeItem[];
+export interface UseRuleEvidenceStateReturn {
+  evidenceItems: RuleEvidenceStateItem[];
   isLoading: boolean;
   error: string | null;
-  refetchComparatorCodes: () => Promise<void>;
+  refetchEvidenceState: () => Promise<void>;
 }
 
-export function useRuleComparatorCodes(): UseRuleComparatorCodesReturn {
-  const [comparatorCodes, setComparatorCodes] = useState<RuleComparatorCodeItem[]>([]);
+export function useRuleEvidenceState(ruleId: string = '1'): UseRuleEvidenceStateReturn {
+  const [evidenceItems, setEvidenceItems] = useState<RuleEvidenceStateItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCodes = useCallback(async () => {
+  const fetchEvidenceState = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await getComparatorCodesAction();
+      const res = await getRuleEvidenceStateAction(ruleId);
       if (res.success && res.data && res.data.length > 0) {
-        setComparatorCodes(res.data);
+        setEvidenceItems(res.data);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch comparator codes');
+      setError(err instanceof Error ? err.message : 'Failed to fetch evidence conditions');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [ruleId]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -40,16 +40,16 @@ export function useRuleComparatorCodes(): UseRuleComparatorCodesReturn {
       }
     });
 
-    getComparatorCodesAction()
+    getRuleEvidenceStateAction(ruleId)
       .then((res) => {
         if (isCancelled) return;
         if (res.success && res.data && res.data.length > 0) {
-          setComparatorCodes(res.data);
+          setEvidenceItems(res.data);
         }
       })
       .catch((err: unknown) => {
         if (!isCancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to fetch comparator codes');
+          setError(err instanceof Error ? err.message : 'Failed to fetch evidence conditions');
         }
       })
       .finally(() => {
@@ -61,12 +61,12 @@ export function useRuleComparatorCodes(): UseRuleComparatorCodesReturn {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [ruleId]);
 
   return {
-    comparatorCodes,
+    evidenceItems,
     isLoading,
     error,
-    refetchComparatorCodes: fetchCodes,
+    refetchEvidenceState: fetchEvidenceState,
   };
 }

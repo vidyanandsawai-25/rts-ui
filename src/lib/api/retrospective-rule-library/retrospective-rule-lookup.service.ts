@@ -168,6 +168,32 @@ export async function fetchTaxCalculationModesServer(): Promise<{
   }
 }
 
+export async function fetchUseDateOptionsServer(): Promise<{
+  success: boolean;
+  items: RuleActionModeItem[];
+  error?: string;
+}> {
+  try {
+    const res = await fetchWithCertSupport<RuleActionModesApiResponse>(
+      '/RetrospectiveRuleAction/use-date-options'
+    );
+    if (res.success && res.data?.items) {
+      return { success: true, items: res.data.items };
+    }
+    return {
+      success: false,
+      items: [],
+      error: res.error?.message || 'Failed to fetch use date options',
+    };
+  } catch (error) {
+    return {
+      success: false,
+      items: [],
+      error: error instanceof Error ? error.message : 'Failed to fetch use date options',
+    };
+  }
+}
+
 export async function fetchComparatorCodesServer(): Promise<{
   success: boolean;
   items: RuleComparatorCodeItem[];

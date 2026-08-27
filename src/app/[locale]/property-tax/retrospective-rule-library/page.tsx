@@ -1,4 +1,4 @@
-import { RetrospectiveRuleLibrary } from '@/components/modules/configuration-settings/retrospective-rule-library';
+import { RetrospectiveRuleLibrary } from '@/components/modules/property-tax/retrospective-rule-library';
 import { getRetrospectiveRulesAction } from './action';
 
 export const dynamic = 'force-dynamic';

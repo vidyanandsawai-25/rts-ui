@@ -13,11 +13,11 @@ import type {
 } from '@/types/retrospective-rule.types';
 import { filterRetrospectiveRules, exportRulesToJson } from '@/lib/utils/retrospective-rule.utils';
 import { validateRetrospectiveRuleForm } from '@/lib/validations/retrospective-rule.validator';
-import { INITIAL_RETROSPECTIVE_RULES, INITIAL_RETROSPECTIVE_STATS } from '@/lib/api/configuration-settings/retrospective-rule-library/retrospective-rule.service';
+import { INITIAL_RETROSPECTIVE_RULES, INITIAL_RETROSPECTIVE_STATS } from '@/lib/api/retrospective-rule-library/retrospective-rule.service';
 import {
   getRuleDetailAction,
   saveRetrospectiveRuleAction,
-} from '@/app/[locale]/configuration-settings/retrospective-rule-library/action';
+} from '@/app/[locale]/property-tax/retrospective-rule-library/action';
 
 interface UseRetrospectiveRulesOptions {
   initialRules?: RetrospectiveRule[];
@@ -100,6 +100,24 @@ export function useRetrospectiveRules({
           availableEvidence.includes('OC') ||
           availableEvidence.includes('CC');
 
+        const mapIdToEvidence = (id?: number | null): string => {
+          if (!id) return '';
+          switch (id) {
+            case 1:
+              return 'OC';
+            case 2:
+              return 'CC';
+            case 3:
+              return 'ELECTRICITY';
+            case 4:
+              return 'CHANGE_DETECTION';
+            case 5:
+              return 'CONSTRUCTION_YEAR';
+            default:
+              return '';
+          }
+        };
+
         const fullRule: RetrospectiveRule = {
           ...rule,
           id: String(detail.rule?.id || rule.id),
@@ -114,10 +132,17 @@ export function useRetrospectiveRules({
           unavailableEvidence,
           compareEvidenceDates: detail.dateCondition?.comparatorCode ?? '',
           taxStartsFrom: detail.action?.taxStartMode ?? '',
+          useDate: mapIdToEvidence(detail.action?.startEvidenceTypeId),
+          offsetMonths: detail.action?.offsetMonths ?? '',
           retrospectiveLimit: detail.action?.retrospectiveLimitType ?? '',
+          earliestAllowedDate: detail.action?.cutoffDate ? detail.action.cutoffDate.slice(0, 10) : '',
           maximumYears: detail.action?.maximumYears ?? detail.dateCondition?.compareYears ?? detail.rule?.legalCapYears ?? '',
           taxCalculation: detail.action?.taxCalculationMode ?? '',
-          taxMultiplier: detail.action?.taxMultiplier ?? detail.action?.splitMultiplier ?? '',
+          taxMultiplier: detail.action?.taxMultiplier ?? '',
+          splitHigherRateStartsFrom: mapIdToEvidence(detail.action?.splitStartEvidenceTypeId),
+          splitHigherRateContinuesUpTo: mapIdToEvidence(detail.action?.splitEndEvidenceTypeId),
+          duringPeriodMultiplier: detail.action?.splitMultiplier ?? '',
+          afterPeriodMultiplier: detail.action?.afterSplitMultiplier ?? '',
         };
 
         setSelectedRule(fullRule);
@@ -144,26 +169,23 @@ export function useRetrospectiveRules({
       }
 
       // Helper: Map evidence code strings to numeric evidenceTypeIds
-      const mapEvidenceToId = (code: string): number => {
-        const normalized = code.toUpperCase().replace(/\s+/g, '_');
-        switch (normalized) {
-          case 'OC':
-            return 1;
-          case 'CC':
-            return 2;
-          case 'ELECTRICITY':
-            return 3;
-          case 'CHANGE_DETECTION':
-            return 4;
-          case 'CONSTRUCTION_YEAR':
-            return 5;
-          default:
-            return 1;
-        }
+      const mapEvidenceToId = (code?: string | null): number | null => {
+        if (!code) return null;
+        const normalized = code.trim().toUpperCase().replace(/\s+/g, '_');
+        if (normalized.includes('OC')) return 1;
+        if (normalized.includes('CC')) return 2;
+        if (normalized.includes('ELECTRICITY')) return 3;
+        if (normalized.includes('CHANGE_DETECTION')) return 4;
+        if (normalized.includes('CONSTRUCTION')) return 5;
+        return null;
       };
 
-      const availableIds = (input.availableEvidence || []).map(mapEvidenceToId);
-      const unavailableIds = (input.unavailableEvidence || []).map(mapEvidenceToId);
+      const availableIds = (input.availableEvidence || [])
+        .map((code) => mapEvidenceToId(code))
+        .filter((id): id is number => id !== null);
+      const unavailableIds = (input.unavailableEvidence || [])
+        .map((code) => mapEvidenceToId(code))
+        .filter((id): id is number => id !== null);
       const isAuth = availableIds.includes(1) || availableIds.includes(2);
 
       // Mapping helpers to ensure exact backend option enum codes
@@ -216,6 +238,12 @@ export function useRetrospectiveRules({
         return clean;
       };
 
+      const formatCutoffDate = (dateVal?: string | null): string | null => {
+        if (!dateVal) return null;
+        const parsed = new Date(dateVal);
+        return isNaN(parsed.getTime()) ? null : parsed.toISOString();
+      };
+
       const parsedRuleId = selectedRule?.id ? parseInt(String(selectedRule.id), 10) : NaN;
       const ruleId = Number.isFinite(parsedRuleId) && parsedRuleId > 0 ? parsedRuleId : null;
       const maxYearsNum =
@@ -226,6 +254,18 @@ export function useRetrospectiveRules({
         input.taxMultiplier !== undefined && input.taxMultiplier !== ''
           ? Number(input.taxMultiplier)
           : 1.0;
+
+      const startEvidenceTypeId = input.useDate
+        ? mapEvidenceToId(input.useDate)
+        : (availableIds[0] ?? null);
+
+      const splitStartEvidenceTypeId = input.splitHigherRateStartsFrom
+        ? mapEvidenceToId(input.splitHigherRateStartsFrom)
+        : null;
+
+      const splitEndEvidenceTypeId = input.splitHigherRateContinuesUpTo
+        ? mapEvidenceToId(input.splitHigherRateContinuesUpTo)
+        : null;
 
       const payload = {
         id: ruleId,
@@ -255,17 +295,17 @@ export function useRetrospectiveRules({
         },
         action: {
           taxStartMode: mapTaxStartMode(input.taxStartsFrom),
-          startEvidenceTypeId: availableIds[0] || null,
-          offsetMonths: 0,
+          startEvidenceTypeId: startEvidenceTypeId,
+          offsetMonths: input.offsetMonths !== undefined && input.offsetMonths !== '' ? Number(input.offsetMonths) : 0,
           retrospectiveLimitType: mapRetrospectiveLimitType(input.retrospectiveLimit),
           maximumYears: maxYearsNum,
-          cutoffDate: null,
+          cutoffDate: formatCutoffDate(input.earliestAllowedDate),
           taxCalculationMode: mapTaxCalculationMode(input.taxCalculation),
           taxMultiplier: multiplierNum,
-          splitStartEvidenceTypeId: null,
-          splitEndEvidenceTypeId: null,
-          splitMultiplier: null,
-          afterSplitMultiplier: null,
+          splitStartEvidenceTypeId: splitStartEvidenceTypeId,
+          splitEndEvidenceTypeId: splitEndEvidenceTypeId,
+          splitMultiplier: input.duringPeriodMultiplier !== undefined && input.duringPeriodMultiplier !== '' ? Number(input.duringPeriodMultiplier) : null,
+          afterSplitMultiplier: input.afterPeriodMultiplier !== undefined && input.afterPeriodMultiplier !== '' ? Number(input.afterPeriodMultiplier) : null,
         },
         penaltyRule: {
           isPenaltyApplicable: !isAuth,

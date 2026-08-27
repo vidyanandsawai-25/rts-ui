@@ -15,7 +15,7 @@ import {
   useConfirm,
 } from '@/components/common';
 
-import { getRetrospectiveRulesAction, deleteRetrospectiveRuleAction } from '@/app/[locale]/configuration-settings/retrospective-rule-library/action';
+import { getRetrospectiveRulesAction, deleteRetrospectiveRuleAction } from '@/app/[locale]/property-tax/retrospective-rule-library/action';
 import type { RetrospectiveRule } from '@/types/retrospective-rule.types';
 
 export interface DefaultDateRuleItem {

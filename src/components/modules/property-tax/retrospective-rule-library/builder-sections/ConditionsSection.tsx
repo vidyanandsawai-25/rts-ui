@@ -16,8 +16,8 @@ import {
 import type { EvidenceItemCode } from '@/types/retrospective-rule.types';
 
 import { Select } from '@/components/common';
-import { useRuleEvidenceState } from '@/hooks/configuration-settings/retrospective-rule-library/useRuleEvidenceState';
-import { useRuleComparatorCodes } from '@/hooks/configuration-settings/retrospective-rule-library/useRuleComparatorCodes';
+import { useRuleEvidenceState } from '@/hooks/retrospective-rule-library/useRuleEvidenceState';
+import { useRuleComparatorCodes } from '@/hooks/retrospective-rule-library/useRuleComparatorCodes';
 
 interface ConditionsSectionProps {
   ruleName: string;
@@ -87,15 +87,15 @@ export const ConditionsSection: React.FC<ConditionsSectionProps> = memo(({
   }, [comparatorCodes, selectedCompareValue]);
 
   const isItemChecked = (itemCode: string, list: EvidenceItemCode[]) => {
-    const norm = itemCode.toUpperCase();
+    const norm = itemCode.toUpperCase().replace(/[\s_]+/g, '');
     return list.some((i) => {
-      const s = String(i).toUpperCase();
-      return s === norm || (norm === 'ELECTRICITY' && s === 'ELECTRICITY') || (norm === 'CHANGE_DETECTION' && s.includes('CHANGE'));
+      const s = String(i).toUpperCase().replace(/[\s_]+/g, '');
+      return s === norm;
     });
   };
 
   return (
-    <section id="section-conditions" className="bg-white rounded-xl border border-gray-200/90 shadow-2xs overflow-hidden h-full flex flex-col justify-between">
+    <section id="section-conditions" className="bg-white rounded-xl border border-gray-200/90 shadow-2xs flex flex-col flex-1 h-full">
       <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
@@ -111,7 +111,7 @@ export const ConditionsSection: React.FC<ConditionsSectionProps> = memo(({
         </span>
       </div>
 
-      <div className="p-2.5 space-y-2 flex-1 flex flex-col justify-between">
+      <div className="p-2.5 space-y-2 flex flex-col">
         <div>
           <label className="block text-[11px] font-bold text-gray-700 mb-0.5">
             ✏ {t('ruleNameLabel')} <span className="text-rose-500 font-bold">*</span>

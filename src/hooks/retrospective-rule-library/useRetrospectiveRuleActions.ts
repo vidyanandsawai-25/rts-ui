@@ -4,12 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import type { RuleActionModeItem } from '@/types/retrospective-rule.types';
 import {
   getTaxStartModesAction,
+  getUseDateOptionsAction,
   getRetrospectiveLimitTypesAction,
   getTaxCalculationModesAction,
-} from '@/app/[locale]/configuration-settings/retrospective-rule-library/action';
+} from '@/app/[locale]/property-tax/retrospective-rule-library/action';
 
 export interface UseRetrospectiveRuleActionsReturn {
   taxStartModes: RuleActionModeItem[];
+  useDateOptions: RuleActionModeItem[];
   limitTypes: RuleActionModeItem[];
   taxCalculationModes: RuleActionModeItem[];
   isLoading: boolean;
@@ -19,6 +21,7 @@ export interface UseRetrospectiveRuleActionsReturn {
 
 export function useRetrospectiveRuleActions(): UseRetrospectiveRuleActionsReturn {
   const [taxStartModes, setTaxStartModes] = useState<RuleActionModeItem[]>([]);
+  const [useDateOptions, setUseDateOptions] = useState<RuleActionModeItem[]>([]);
   const [limitTypes, setLimitTypes] = useState<RuleActionModeItem[]>([]);
   const [taxCalculationModes, setTaxCalculationModes] = useState<RuleActionModeItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -28,14 +31,18 @@ export function useRetrospectiveRuleActions(): UseRetrospectiveRuleActionsReturn
     setIsLoading(true);
     setError(null);
     try {
-      const [startRes, limitRes, calcRes] = await Promise.all([
+      const [startRes, useDateRes, limitRes, calcRes] = await Promise.all([
         getTaxStartModesAction(),
+        getUseDateOptionsAction(),
         getRetrospectiveLimitTypesAction(),
         getTaxCalculationModesAction(),
       ]);
 
       if (startRes.success && startRes.data && startRes.data.length > 0) {
         setTaxStartModes(startRes.data);
+      }
+      if (useDateRes.success && useDateRes.data && useDateRes.data.length > 0) {
+        setUseDateOptions(useDateRes.data);
       }
       if (limitRes.success && limitRes.data && limitRes.data.length > 0) {
         setLimitTypes(limitRes.data);
@@ -61,13 +68,17 @@ export function useRetrospectiveRuleActions(): UseRetrospectiveRuleActionsReturn
 
     Promise.all([
       getTaxStartModesAction(),
+      getUseDateOptionsAction(),
       getRetrospectiveLimitTypesAction(),
       getTaxCalculationModesAction(),
     ])
-      .then(([startRes, limitRes, calcRes]) => {
+      .then(([startRes, useDateRes, limitRes, calcRes]) => {
         if (isCancelled) return;
         if (startRes.success && startRes.data && startRes.data.length > 0) {
           setTaxStartModes(startRes.data);
+        }
+        if (useDateRes.success && useDateRes.data && useDateRes.data.length > 0) {
+          setUseDateOptions(useDateRes.data);
         }
         if (limitRes.success && limitRes.data && limitRes.data.length > 0) {
           setLimitTypes(limitRes.data);
@@ -94,6 +105,7 @@ export function useRetrospectiveRuleActions(): UseRetrospectiveRuleActionsReturn
 
   return {
     taxStartModes,
+    useDateOptions,
     limitTypes,
     taxCalculationModes,
     isLoading,

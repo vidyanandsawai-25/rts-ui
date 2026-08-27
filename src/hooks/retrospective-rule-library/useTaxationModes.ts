@@ -6,7 +6,7 @@ import {
   getRateModesAction,
   getPercentageModesAction,
   getTaxPolicyAction,
-} from '@/app/[locale]/configuration-settings/retrospective-rule-library/action';
+} from '@/app/[locale]/property-tax/retrospective-rule-library/action';
 
 export interface TaxPolicyItem {
   id?: number;

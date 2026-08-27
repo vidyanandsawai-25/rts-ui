@@ -10,11 +10,12 @@ import {
   fetchPercentageModesServer,
   fetchRuleEvidenceStateServer,
   fetchTaxStartModesServer,
+  fetchUseDateOptionsServer,
   fetchRetrospectiveLimitTypesServer,
   fetchTaxCalculationModesServer,
   fetchComparatorCodesServer,
   fetchRuleDetailServer,
-} from '@/lib/api/configuration-settings/retrospective-rule-library/retrospective-rule.service';
+} from '@/lib/api/retrospective-rule-library/retrospective-rule.service';
 import type { ActionResult } from '@/types/common.types';
 import { handleServerError } from '@/lib/utils/server-action-error-handler';
 import { getUserIdFromCookies } from '@/lib/utils/cookie';
@@ -89,7 +90,7 @@ export async function saveRetrospectiveRuleAction(
       };
     }
 
-    revalidatePath(`/${locale}/configuration-settings/retrospective-rule-library`);
+    revalidatePath(`/${locale}/property-tax/retrospective-rule-library`);
     return {
       success: true,
       data: true,
@@ -130,7 +131,7 @@ export async function saveTaxPolicyAction(
       };
     }
 
-    revalidatePath(`/${locale}/configuration-settings/retrospective-rule-library`);
+    revalidatePath(`/${locale}/property-tax/retrospective-rule-library`);
     return {
       success: true,
       data: true,
@@ -179,7 +180,7 @@ export async function deleteRetrospectiveRuleAction(
       };
     }
 
-    revalidatePath(`/${locale}/configuration-settings/retrospective-rule-library`);
+    revalidatePath(`/${locale}/property-tax/retrospective-rule-library`);
     return {
       success: true,
       data: true,
@@ -318,6 +319,27 @@ export async function getTaxCalculationModesAction() {
     };
   } catch (error: unknown) {
     return handleServerError(error, 'fetching tax calculation modes');
+  }
+}
+
+/**
+ * Server Action to fetch use date options.
+ */
+export async function getUseDateOptionsAction() {
+  try {
+    const result = await fetchUseDateOptionsServer();
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || 'Failed to fetch use date options',
+      };
+    }
+    return {
+      success: true,
+      data: result.items,
+    };
+  } catch (error: unknown) {
+    return handleServerError(error, 'fetching use date options');
   }
 }
 /**

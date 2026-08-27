@@ -9,7 +9,7 @@ import type {
   RuleStatus,
 } from '@/types/retrospective-rule.types';
 import { validateRetrospectiveRuleForm } from '@/lib/validations/retrospective-rule.validator';
-import { saveTaxPolicyAction } from '@/app/[locale]/configuration-settings/retrospective-rule-library/action';
+import { saveTaxPolicyAction } from '@/app/[locale]/property-tax/retrospective-rule-library/action';
 import { getUserIdFromCookie } from '@/lib/utils/cookie';
 import { useConfirm } from '@/components/common';
 import { toast } from 'sonner';
@@ -54,8 +54,17 @@ export function useRetrospectiveRuleBuilder({
   const [taxStartsFrom, setTaxStartsFrom] = useState(() =>
     isEditMode && rule.taxStartsFrom ? rule.taxStartsFrom : ''
   );
+  const [useDate, setUseDate] = useState(() =>
+    isEditMode && rule.useDate ? rule.useDate : ''
+  );
+  const [offsetMonths, setOffsetMonths] = useState<number | ''>(() =>
+    isEditMode && rule.offsetMonths !== undefined ? rule.offsetMonths : ''
+  );
   const [retrospectiveLimit, setRetrospectiveLimit] = useState(() =>
     isEditMode && rule.retrospectiveLimit ? rule.retrospectiveLimit : ''
+  );
+  const [earliestAllowedDate, setEarliestAllowedDate] = useState(() =>
+    isEditMode && rule.earliestAllowedDate ? rule.earliestAllowedDate : ''
   );
   const [maximumYears, setMaximumYears] = useState<number | ''>(() =>
     isEditMode && rule.maximumYears !== undefined ? rule.maximumYears : ''
@@ -65,6 +74,18 @@ export function useRetrospectiveRuleBuilder({
   );
   const [taxMultiplier, setTaxMultiplier] = useState<number | ''>(() =>
     isEditMode && rule.taxMultiplier !== undefined ? rule.taxMultiplier : ''
+  );
+  const [splitHigherRateStartsFrom, setSplitHigherRateStartsFrom] = useState(() =>
+    isEditMode && rule.splitHigherRateStartsFrom ? rule.splitHigherRateStartsFrom : ''
+  );
+  const [splitHigherRateContinuesUpTo, setSplitHigherRateContinuesUpTo] = useState(() =>
+    isEditMode && rule.splitHigherRateContinuesUpTo ? rule.splitHigherRateContinuesUpTo : ''
+  );
+  const [duringPeriodMultiplier, setDuringPeriodMultiplier] = useState<number | ''>(() =>
+    isEditMode && rule.duringPeriodMultiplier !== undefined ? rule.duringPeriodMultiplier : ''
+  );
+  const [afterPeriodMultiplier, setAfterPeriodMultiplier] = useState<number | ''>(() =>
+    isEditMode && rule.afterPeriodMultiplier !== undefined ? rule.afterPeriodMultiplier : ''
   );
 
   const [prevRule, setPrevRule] = useState<RetrospectiveRule | null>(rule);
@@ -80,10 +101,17 @@ export function useRetrospectiveRuleBuilder({
       setUnavailableEvidence(rule.unavailableEvidence || []);
       setCompareEvidenceDates(rule.compareEvidenceDates || '');
       setTaxStartsFrom(rule.taxStartsFrom || '');
+      setUseDate(rule.useDate || '');
+      setOffsetMonths(rule.offsetMonths !== undefined ? rule.offsetMonths : '');
       setRetrospectiveLimit(rule.retrospectiveLimit || '');
+      setEarliestAllowedDate(rule.earliestAllowedDate || '');
       setMaximumYears(rule.maximumYears !== undefined ? rule.maximumYears : '');
       setTaxCalculation(rule.taxCalculation || '');
       setTaxMultiplier(rule.taxMultiplier !== undefined ? rule.taxMultiplier : '');
+      setSplitHigherRateStartsFrom(rule.splitHigherRateStartsFrom || '');
+      setSplitHigherRateContinuesUpTo(rule.splitHigherRateContinuesUpTo || '');
+      setDuringPeriodMultiplier(rule.duringPeriodMultiplier !== undefined ? rule.duringPeriodMultiplier : '');
+      setAfterPeriodMultiplier(rule.afterPeriodMultiplier !== undefined ? rule.afterPeriodMultiplier : '');
     } else {
       setRuleName('');
       setRuleCode('');
@@ -91,41 +119,84 @@ export function useRetrospectiveRuleBuilder({
       setUnavailableEvidence([]);
       setCompareEvidenceDates('');
       setTaxStartsFrom('');
+      setUseDate('');
+      setOffsetMonths('');
       setRetrospectiveLimit('');
+      setEarliestAllowedDate('');
       setMaximumYears('');
       setTaxCalculation('');
       setTaxMultiplier('');
+      setSplitHigherRateStartsFrom('');
+      setSplitHigherRateContinuesUpTo('');
+      setDuringPeriodMultiplier('');
+      setAfterPeriodMultiplier('');
     }
   }
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [testNotification, setTestNotification] = useState<string | null>(null);
 
-  // Mutually Exclusive Available Evidence Toggle
-  const toggleAvailableEvidence = useCallback((item: EvidenceItemCode) => {
-    setAvailableEvidence((prevAvail) => {
-      if (prevAvail.includes(item)) {
-        return prevAvail.filter((i) => i !== item);
-      }
-      setUnavailableEvidence((prevUnavail) => prevUnavail.filter((i) => i !== item));
-      return [...prevAvail, item];
-    });
+  // Standard List of Evidence Items for Complement Auto-Selection
+  const ALL_EVIDENCE_ITEMS: EvidenceItemCode[] = useMemo(
+    () => ['OC', 'CC', 'Electricity', 'Change Detection', 'Construction Year'],
+    []
+  );
+
+  const matchesEvidenceItem = useCallback((i1: EvidenceItemCode, i2: EvidenceItemCode) => {
+    const s1 = String(i1).toUpperCase().replace(/[\s_]+/g, '');
+    const s2 = String(i2).toUpperCase().replace(/[\s_]+/g, '');
+    return s1 === s2;
   }, []);
 
-  // Mutually Exclusive Unavailable Evidence Toggle
+  // Mutually Exclusive & Auto-Complement Available Evidence Toggle
+  const toggleAvailableEvidence = useCallback((item: EvidenceItemCode) => {
+    setAvailableEvidence((prevAvail) => {
+      const isCurrentlyAvail = prevAvail.some((i) => matchesEvidenceItem(i, item));
+      const nextAvail = isCurrentlyAvail
+        ? prevAvail.filter((i) => !matchesEvidenceItem(i, item))
+        : [...prevAvail, item];
+
+      // Auto-select all remaining items into unavailableEvidence
+      if (nextAvail.length > 0) {
+        const nextUnavail = ALL_EVIDENCE_ITEMS.filter(
+          (ev) => !nextAvail.some((a) => matchesEvidenceItem(a, ev))
+        );
+        setUnavailableEvidence(nextUnavail);
+      } else {
+        setUnavailableEvidence([]);
+      }
+
+      return nextAvail;
+    });
+  }, [ALL_EVIDENCE_ITEMS, matchesEvidenceItem]);
+
+  // Mutually Exclusive & Auto-Complement Unavailable Evidence Toggle
   const toggleUnavailableEvidence = useCallback((item: EvidenceItemCode) => {
     setUnavailableEvidence((prevUnavail) => {
-      if (prevUnavail.includes(item)) {
-        return prevUnavail.filter((i) => i !== item);
+      const isCurrentlyUnavail = prevUnavail.some((i) => matchesEvidenceItem(i, item));
+      const nextUnavail = isCurrentlyUnavail
+        ? prevUnavail.filter((i) => !matchesEvidenceItem(i, item))
+        : [...prevUnavail, item];
+
+      // Auto-select all remaining items into availableEvidence
+      if (nextUnavail.length > 0) {
+        const nextAvail = ALL_EVIDENCE_ITEMS.filter(
+          (ev) => !nextUnavail.some((u) => matchesEvidenceItem(u, ev))
+        );
+        setAvailableEvidence(nextAvail);
+      } else {
+        setAvailableEvidence([]);
       }
-      setAvailableEvidence((prevAvail) => prevAvail.filter((i) => i !== item));
-      return [...prevUnavail, item];
+
+      return nextUnavail;
     });
-  }, []);
+  }, [ALL_EVIDENCE_ITEMS, matchesEvidenceItem]);
 
   // Memoized Authorization Status
   const isAuthorized = useMemo(() => {
-    return availableEvidence.includes('OC') || availableEvidence.includes('CC');
+    return availableEvidence.some(
+      (ev) => String(ev).toUpperCase() === 'OC' || String(ev).toUpperCase() === 'CC'
+    );
   }, [availableEvidence]);
 
   // Handle Publish / Save Draft with Common Confirm Dialog
@@ -136,8 +207,8 @@ export function useRetrospectiveRuleBuilder({
         ruleTitle: ruleName,
         conditionDescription: `${availableEvidence.length > 0 ? availableEvidence.join(' or ') + ' is available' : 'No evidence available'} and ${compareEvidenceDates}`,
         evidenceCategory: isAuthorized ? 'Authorized: OC or CC available' : 'Unauthorized: OC & CC unavailable',
-        startLogicTitle: `Rolling ${maximumYears}-year boundary`,
-        startLogicBoundary: `Boundary: ${maximumYears} years`,
+        startLogicTitle: `Rolling ${maximumYears || 6}-year boundary`,
+        startLogicBoundary: `Boundary: ${maximumYears || 6} years`,
         commonTaxationBadge: 'Current-year for all years',
         commonTaxationDescription: 'Current-year percentage for all years',
         unauthorizedPenalty: isAuthorized ? 'Not applicable — OC/CC available' : 'Apply penalty as per the Act',
@@ -146,10 +217,17 @@ export function useRetrospectiveRuleBuilder({
         unavailableEvidence,
         compareEvidenceDates,
         taxStartsFrom,
+        useDate,
+        offsetMonths: offsetMonths || '',
         retrospectiveLimit,
+        earliestAllowedDate,
         maximumYears: maximumYears || '',
         taxCalculation,
         taxMultiplier: taxMultiplier || '',
+        splitHigherRateStartsFrom,
+        splitHigherRateContinuesUpTo,
+        duringPeriodMultiplier: duringPeriodMultiplier || '',
+        afterPeriodMultiplier: afterPeriodMultiplier || '',
       };
 
       const validation = validateRetrospectiveRuleForm(input, tVal);
@@ -209,9 +287,16 @@ export function useRetrospectiveRuleBuilder({
       isAuthorized,
       maximumYears,
       taxStartsFrom,
+      useDate,
+      offsetMonths,
       retrospectiveLimit,
+      earliestAllowedDate,
       taxCalculation,
       taxMultiplier,
+      splitHigherRateStartsFrom,
+      splitHigherRateContinuesUpTo,
+      duringPeriodMultiplier,
+      afterPeriodMultiplier,
       onPublish,
       onBack,
       tVal,
@@ -278,11 +363,18 @@ export function useRetrospectiveRuleBuilder({
       availSorted !== initialAvailSorted ||
       unavailSorted !== initialUnavailSorted ||
       compareEvidenceDates !== (rule.compareEvidenceDates || '') ||
-      taxStartsFrom !== (rule.taxStartsFrom || '') ||
-      retrospectiveLimit !== (rule.retrospectiveLimit || '') ||
+      taxStartsFrom !== (rule.taxStartsFrom || 'Selected evidence date') ||
+      useDate !== (rule.useDate || 'CC date') ||
+      String(offsetMonths) !== String(rule.offsetMonths ?? 6) ||
+      retrospectiveLimit !== (rule.retrospectiveLimit || 'Earliest chargeable date') ||
+      earliestAllowedDate !== (rule.earliestAllowedDate || '') ||
       String(maximumYears) !== String(rule.maximumYears ?? '') ||
-      taxCalculation !== (rule.taxCalculation || '') ||
-      String(taxMultiplier) !== String(rule.taxMultiplier ?? '')
+      taxCalculation !== (rule.taxCalculation || 'One multiplier for entire period') ||
+      String(taxMultiplier) !== String(rule.taxMultiplier ?? 1) ||
+      splitHigherRateStartsFrom !== (rule.splitHigherRateStartsFrom || 'CC date') ||
+      splitHigherRateContinuesUpTo !== (rule.splitHigherRateContinuesUpTo || 'OC date') ||
+      String(duringPeriodMultiplier) !== String(rule.duringPeriodMultiplier ?? 1.5) ||
+      String(afterPeriodMultiplier) !== String(rule.afterPeriodMultiplier ?? 1)
     );
   }, [
     mode,
@@ -293,10 +385,17 @@ export function useRetrospectiveRuleBuilder({
     unavailableEvidence,
     compareEvidenceDates,
     taxStartsFrom,
+    useDate,
+    offsetMonths,
     retrospectiveLimit,
+    earliestAllowedDate,
     maximumYears,
     taxCalculation,
     taxMultiplier,
+    splitHigherRateStartsFrom,
+    splitHigherRateContinuesUpTo,
+    duringPeriodMultiplier,
+    afterPeriodMultiplier,
   ]);
 
   return {
@@ -315,14 +414,28 @@ export function useRetrospectiveRuleBuilder({
     setCompareEvidenceDates,
     taxStartsFrom,
     setTaxStartsFrom,
+    useDate,
+    setUseDate,
+    offsetMonths,
+    setOffsetMonths,
     retrospectiveLimit,
     setRetrospectiveLimit,
+    earliestAllowedDate,
+    setEarliestAllowedDate,
     maximumYears,
     setMaximumYears,
     taxCalculation,
     setTaxCalculation,
     taxMultiplier,
     setTaxMultiplier,
+    splitHigherRateStartsFrom,
+    setSplitHigherRateStartsFrom,
+    splitHigherRateContinuesUpTo,
+    setSplitHigherRateContinuesUpTo,
+    duringPeriodMultiplier,
+    setDuringPeriodMultiplier,
+    afterPeriodMultiplier,
+    setAfterPeriodMultiplier,
     formErrors,
     testNotification,
     isAuthorized,

@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { RetrospectiveRuleLibraryClient } from '@/components/modules/configuration-settings/retrospective-rule-library/RetrospectiveRuleLibraryClient';
-import { INITIAL_RETROSPECTIVE_RULES, INITIAL_RETROSPECTIVE_STATS } from '@/lib/api/configuration-settings/retrospective-rule-library/retrospective-rule.service';
+import { RetrospectiveRuleLibraryClient } from '@/components/modules/property-tax/retrospective-rule-library/RetrospectiveRuleLibraryClient';
+import { INITIAL_RETROSPECTIVE_RULES, INITIAL_RETROSPECTIVE_STATS } from '@/lib/api/retrospective-rule-library/retrospective-rule.service';
 
 vi.mock('next-intl', () => ({
   useTranslations: (namespace?: string) => (key: string, values?: Record<string, string | number>) => {

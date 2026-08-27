@@ -5,7 +5,7 @@ import React, { memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { IndianRupee, Loader2 } from 'lucide-react';
 import { SaveButton, Badge } from '@/components/common';
-import { useTaxationModes } from '@/hooks/configuration-settings/retrospective-rule-library/useTaxationModes';
+import { useTaxationModes } from '@/hooks/retrospective-rule-library/useTaxationModes';
 
 interface TaxationSectionProps {
   taxationRate: string;

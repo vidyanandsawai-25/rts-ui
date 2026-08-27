@@ -6,7 +6,7 @@ import type {
   RetrospectiveRule,
   CreateRetrospectiveRuleInput,
 } from '@/types/retrospective-rule.types';
-import { useRetrospectiveRuleBuilder } from '@/hooks/configuration-settings/retrospective-rule-library/useRetrospectiveRuleBuilder';
+import { useRetrospectiveRuleBuilder } from '@/hooks/retrospective-rule-library/useRetrospectiveRuleBuilder';
 import { RetrospectiveRuleBuilderHeader } from './builder-sections/RetrospectiveRuleBuilderHeader';
 import { TaxationSection } from './builder-sections/TaxationSection';
 import { ConditionsSection } from './builder-sections/ConditionsSection';
@@ -41,14 +41,28 @@ export const RetrospectiveRuleBuilder: React.FC<RetrospectiveRuleBuilderProps> =
     setCompareEvidenceDates,
     taxStartsFrom,
     setTaxStartsFrom,
+    useDate,
+    setUseDate,
+    offsetMonths,
+    setOffsetMonths,
     retrospectiveLimit,
     setRetrospectiveLimit,
+    earliestAllowedDate,
+    setEarliestAllowedDate,
     maximumYears,
     setMaximumYears,
     taxCalculation,
     setTaxCalculation,
     taxMultiplier,
     setTaxMultiplier,
+    splitHigherRateStartsFrom,
+    setSplitHigherRateStartsFrom,
+    splitHigherRateContinuesUpTo,
+    setSplitHigherRateContinuesUpTo,
+    duringPeriodMultiplier,
+    setDuringPeriodMultiplier,
+    afterPeriodMultiplier,
+    setAfterPeriodMultiplier,
     formErrors,
     testNotification,
     isAuthorized,
@@ -115,14 +129,28 @@ export const RetrospectiveRuleBuilder: React.FC<RetrospectiveRuleBuilderProps> =
           <ActionsSection
             taxStartsFrom={taxStartsFrom}
             onTaxStartsFromChange={setTaxStartsFrom}
+            useDate={useDate}
+            onUseDateChange={setUseDate}
+            offsetMonths={offsetMonths}
+            onOffsetMonthsChange={(val) => setOffsetMonths(val as number | '')}
             retrospectiveLimit={retrospectiveLimit}
             onRetrospectiveLimitChange={setRetrospectiveLimit}
+            earliestAllowedDate={earliestAllowedDate}
+            onEarliestAllowedDateChange={setEarliestAllowedDate}
             maximumYears={maximumYears}
             onMaximumYearsChange={(val) => setMaximumYears(val as number | '')}
             taxCalculation={taxCalculation}
             onTaxCalculationChange={setTaxCalculation}
             taxMultiplier={taxMultiplier}
             onTaxMultiplierChange={(val) => setTaxMultiplier(val as number | '')}
+            splitHigherRateStartsFrom={splitHigherRateStartsFrom}
+            onSplitHigherRateStartsFromChange={setSplitHigherRateStartsFrom}
+            splitHigherRateContinuesUpTo={splitHigherRateContinuesUpTo}
+            onSplitHigherRateContinuesUpToChange={setSplitHigherRateContinuesUpTo}
+            duringPeriodMultiplier={duringPeriodMultiplier}
+            onDuringPeriodMultiplierChange={(val) => setDuringPeriodMultiplier(val as number | '')}
+            afterPeriodMultiplier={afterPeriodMultiplier}
+            onAfterPeriodMultiplierChange={(val) => setAfterPeriodMultiplier(val as number | '')}
             isAuthorized={isAuthorized}
             ruleCode={ruleCode}
             availableEvidence={availableEvidence}

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import type { RetrospectiveRuleLibraryProps, RetrospectiveRule } from '@/types/retrospective-rule.types';
-import { useRetrospectiveRules } from '@/hooks/configuration-settings/retrospective-rule-library/useRetrospectiveRules';
+import { useRetrospectiveRules } from '@/hooks/retrospective-rule-library/useRetrospectiveRules';
 import { ConfirmProvider } from '@/components/common';
 import { RetrospectiveRuleHeader } from './RetrospectiveRuleHeader';
 import { DefaultDateRulesSection } from './DefaultDateRulesSection';
