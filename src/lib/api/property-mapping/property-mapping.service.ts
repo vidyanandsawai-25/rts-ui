@@ -121,21 +121,37 @@ export const searchOldPropertiesAction = searchOldProperties;
  */
 export async function mergeSingleProperty(payload: PropertyMergeSinglePayload): Promise<{ success: boolean; message?: string; items?: { success: boolean; message?: string } } | null> {
   try {
-    // Build request payload — only include lat/lng/location if they have real values
+    // Build request payload with dual casing support for C# API DTO binders
     const requestPayload: Record<string, unknown> = {
       propertyId: payload.propertyId,
+      PropertyId: payload.propertyId,
       propertyOldId: payload.propertyOldId,
+      PropertyOldId: payload.propertyOldId,
+      createdBy: payload.CreatedBy,
+      CreatedBy: payload.CreatedBy,
     };
-    if (payload.CreatedBy) requestPayload.CreatedBy = payload.CreatedBy;
-    if (payload.latitude && payload.latitude !== "0") requestPayload.latitude = payload.latitude;
-    if (payload.longitude && payload.longitude !== "0") requestPayload.longitude = payload.longitude;
-    if (payload.location && payload.location !== "Default") requestPayload.location = payload.location;
+    if (payload.latitude && payload.latitude !== "0") {
+      requestPayload.latitude = payload.latitude;
+      requestPayload.Latitude = payload.latitude;
+    }
+    if (payload.longitude && payload.longitude !== "0") {
+      requestPayload.longitude = payload.longitude;
+      requestPayload.Longitude = payload.longitude;
+    }
+    if (payload.location && payload.location !== "Default") {
+      requestPayload.location = payload.location;
+      requestPayload.Location = payload.location;
+    }
 
     const response = await apiClient.post<{ success: boolean; message?: string; items?: { success: boolean; message?: string } }>(
       `/PropertyMergeSingle`,
       requestPayload
     );
-    return handleApiResponse(response, `Merge single property failed`);
+
+    if (response.success) {
+      return response.data || { success: true, message: "Property merged successfully" };
+    }
+    return { success: false, message: response.error || "Merge single property failed" };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Merge single property failed";
     return { success: false, message: msg };
@@ -150,16 +166,35 @@ export async function mergeMultipleProperties(payload: PropertyMergePayload): Pr
   try {
     const requestPayload: Record<string, unknown> = {
       propertyId: payload.propertyId,
+      PropertyId: payload.propertyId,
+      propertyOldIds: payload.propertyOldIds,
       PropertyOldIds: payload.propertyOldIds,
-      CreatedBy: payload.CreatedBy
+      createdBy: payload.CreatedBy,
+      CreatedBy: payload.CreatedBy,
     };
     
-    if (payload.latitude && payload.latitude !== "0") requestPayload.latitude = payload.latitude;
-    if (payload.longitude && payload.longitude !== "0") requestPayload.longitude = payload.longitude;
-    if (payload.location && payload.location !== "Default") requestPayload.location = payload.location;
+    if (payload.latitude && payload.latitude !== "0") {
+      requestPayload.latitude = payload.latitude;
+      requestPayload.Latitude = payload.latitude;
+    }
+    if (payload.longitude && payload.longitude !== "0") {
+      requestPayload.longitude = payload.longitude;
+      requestPayload.Longitude = payload.longitude;
+    }
+    if (payload.location && payload.location !== "Default") {
+      requestPayload.location = payload.location;
+      requestPayload.Location = payload.location;
+    }
 
-    const response = await apiClient.post<{ success: boolean; message?: string; items?: { success: boolean; message?: string } }>(`/PropertyMerge`, requestPayload);
-    return handleApiResponse(response, `Merge multiple properties failed`);
+    const response = await apiClient.post<{ success: boolean; message?: string; items?: { success: boolean; message?: string } }>(
+      `/PropertyMerge`,
+      requestPayload
+    );
+
+    if (response.success) {
+      return response.data || { success: true, message: "Properties merged successfully" };
+    }
+    return { success: false, message: response.error || "Merge multiple properties failed" };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Merge multiple properties failed";
     return { success: false, message: msg };
@@ -172,11 +207,28 @@ export async function mergeMultipleProperties(payload: PropertyMergePayload): Pr
  */
 export async function unmergeSingleProperty(payload: PropertyUnmergeSinglePayload): Promise<{ success: boolean; message?: string; items?: { success: boolean; message?: string } } | null> {
   try {
+    const requestPayload: Record<string, unknown> = {
+      propertyId: payload.propertyId,
+      PropertyId: payload.propertyId,
+      propertyOldId: payload.propertyOldId,
+      PropertyOldId: payload.propertyOldId,
+      isActive: payload.isActive,
+      IsActive: payload.isActive,
+      isPreviousDataUpdate: payload.isPreviousDataUpdate,
+      IsPreviousDataUpdate: payload.isPreviousDataUpdate,
+      updatedBy: payload.updatedBy,
+      UpdatedBy: payload.updatedBy,
+    };
+
     const response = await apiClient.put<{ success: boolean; message?: string; items?: { success: boolean; message?: string } }>(
       `/PropertyMergeSingle`,
-      payload
+      requestPayload
     );
-    return handleApiResponse(response, `Unmerge single property failed`);
+
+    if (response.success) {
+      return response.data || { success: true, message: "Property unmerged successfully" };
+    }
+    return { success: false, message: response.error || "Unmerge single property failed" };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Unmerge single property failed";
     return { success: false, message: msg };
@@ -189,11 +241,28 @@ export async function unmergeSingleProperty(payload: PropertyUnmergeSinglePayloa
  */
 export async function unmergeMultipleProperties(payload: PropertyUnmergeMultiplePayload): Promise<{ success: boolean; message?: string; items?: { success: boolean; message?: string } } | null> {
   try {
+    const requestPayload: Record<string, unknown> = {
+      propertyId: payload.propertyId,
+      PropertyId: payload.propertyId,
+      propertyOldIds: payload.propertyOldIds,
+      PropertyOldIds: payload.propertyOldIds,
+      isActive: payload.isActive,
+      IsActive: payload.isActive,
+      isPreviousDataUpdate: payload.isPreviousDataUpdate,
+      IsPreviousDataUpdate: payload.isPreviousDataUpdate,
+      updatedBy: payload.updatedBy,
+      UpdatedBy: payload.updatedBy,
+    };
+
     const response = await apiClient.put<{ success: boolean; message?: string; items?: { success: boolean; message?: string } }>(
       `/PropertyMerge`,
-      payload
+      requestPayload
     );
-    return handleApiResponse(response, `Unmerge multiple properties failed`);
+
+    if (response.success) {
+      return response.data || { success: true, message: "Properties unmerged successfully" };
+    }
+    return { success: false, message: response.error || "Unmerge multiple properties failed" };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Unmerge multiple properties failed";
     return { success: false, message: msg };

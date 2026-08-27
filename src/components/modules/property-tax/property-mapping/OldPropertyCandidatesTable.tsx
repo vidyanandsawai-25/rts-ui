@@ -61,9 +61,18 @@ export function CandidatesTable({
     return list;
   }, [autoCandidates, manualCandidates]);
 
-  const linkedCandidates = allCandidates.filter(c => activeCheckedIds.includes(c.id));
-  const unlinkedAuto = autoCandidates.filter(c => !activeCheckedIds.includes(c.id));
-  const unlinkedManual = manualCandidates.filter(c => !activeCheckedIds.includes(c.id));
+  const isCandidateLinked = (c: OldPropertyCandidate) => {
+    return (
+      mappedOldPropNos.includes(c.propNo) ||
+      c.isMapped ||
+      c.status === "Mapped" ||
+      activeCheckedIds.includes(c.id)
+    );
+  };
+
+  const linkedCandidates = allCandidates.filter(isCandidateLinked);
+  const unlinkedAuto = autoCandidates.filter((c) => !isCandidateLinked(c));
+  const unlinkedManual = manualCandidates.filter((c) => !isCandidateLinked(c));
 
   const is12Occupied = unlinkedAuto.length > 0;
 
@@ -112,7 +121,7 @@ export function CandidatesTable({
       align: "center",
       width: "110px",
       render: (_, row) => {
-        const isMapped = mappedOldPropNos.includes(row.propNo);
+        const isMapped = mappedOldPropNos.includes(row.propNo) || row.isMapped || row.status === "Mapped";
         if (isMapped) {
           return (
             <CheckCircle2 size={16} className="text-emerald-500 mx-auto" />
@@ -134,24 +143,19 @@ export function CandidatesTable({
       align: "center",
       width: "200px",
       render: (val, row) => {
-        const isMappedThisSession = mappedOldPropNos.includes(row.propNo);
+        const isMappedThisSession = mappedOldPropNos.includes(row.propNo) || (row.isMapped && row.status === "Mapped");
         let displayVal = String(val);
         let isMappedToCurrent = false;
 
-        if (isMappedThisSession) {
-          const targetStr = formatMappedProperty(row.belongsToNewId, currentWard, currentPartition);
+        if (isMappedThisSession || (row.isMapped && (row.mappedNewPropertyNo === row.belongsToNewId || !row.mappedNewPropertyNo))) {
+          const targetPropNo = row.mappedNewPropertyNo || row.belongsToNewId || "";
+          const targetStr = formatMappedProperty(targetPropNo, currentWard, currentPartition);
           displayVal = t("candidatesTable.statusBadge.mappedTo", { propNo: targetStr });
           isMappedToCurrent = true;
         } else if (row.isMapped) {
           if (row.mappedNewPropertyNo) {
-            if (row.mappedNewPropertyNo === row.belongsToNewId) {
-              const targetStr = formatMappedProperty(row.mappedNewPropertyNo, currentWard, currentPartition);
-              displayVal = t("candidatesTable.statusBadge.mappedTo", { propNo: targetStr });
-              isMappedToCurrent = true;
-            } else {
-              const targetStr = formatMappedProperty(row.mappedNewPropertyNo, row.ward, row.partitionNo);
-              displayVal = t("candidatesTable.statusBadge.mappedTo", { propNo: targetStr });
-            }
+            const targetStr = formatMappedProperty(row.mappedNewPropertyNo, row.ward, row.partitionNo);
+            displayVal = t("candidatesTable.statusBadge.mappedTo", { propNo: targetStr });
           } else {
             displayVal = t("candidatesTable.statusBadge.mapped");
             isMappedToCurrent = true;
