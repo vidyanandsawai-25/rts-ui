@@ -245,7 +245,7 @@ function DonutChart({
       <div className="space-y-0.8">
         {data.map((item) => {
           const percentage = Math.round((item.value / total) * 100);
-          return <div key={item.label} className="flex items-center gap-2 text-[11px] font-bold text-slate-700"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} /><span className="min-w-0 flex-1 truncate">{item.label}</span><span className="shrink-0 text-slate-900">{formatNumber(item.value)} ({percentage}%)</span></div>;
+          return <div key={item.label} className="flex items-center gap-2 text-[11px] font-bold text-slate-700"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} /><span className="min-w-0 flex-1 truncate">{item.label}</span><span className="shrink-0 text-slate-900">{formatNumber(item.value)} ({formatNumber(percentage)}%)</span></div>;
         })}
       </div>
     </div>
@@ -619,7 +619,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
     return [
       {
         key: "srNo", label: sortableHeader("srNo", t("misDashboard.srNo")), width: "56px", align: "center", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "text-center font-extrabold", render: (value, row) => {
-          if (row.kind === "department") return String(value ?? "");
+          if (row.kind === "department") return formatNumber(Number(value ?? 0));
           if (row.kind === "service") return toAlphabeticalLabel(Number(value) - 1);
           return "";
         }
@@ -636,7 +636,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
                 <ChevronRight className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
               </span>
               <span className="min-w-0 break-words leading-5">{row.name}</span>
-              <span title={`${row.totalServices ?? 0} ${t("misDashboard.totalServices")}`} className="inline-flex h-5 min-w-5 ml-3 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-1.5 text-[10px] font-extrabold text-[#0B5CD5]">{row.totalServices ?? 0}</span>
+              <span title={`${formatNumber(row.totalServices ?? 0)} ${t("misDashboard.totalServices")}`} className="inline-flex h-5 min-w-5 ml-3 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-1.5 text-[10px] font-extrabold text-[#0B5CD5]">{formatNumber(row.totalServices ?? 0)}</span>
             </div>
           );
         }
@@ -649,7 +649,7 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
       metricColumn("approved", t("misDashboard.approved"), "90px", "text-[#0F7A3F]"),
       metricColumn("rejected", t("misDashboard.rejected"), "90px", "text-[#B22222]"),
       metricColumn("overdue", t("misDashboard.overdueCount"), "105px", "text-rose-700"),
-      { key: "sla", label: sortableHeader("sla", t("misDashboard.avgSla")), width: "95px", align: "center", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "text-center font-extrabold text-[#008B8B]", render: (value, row) => row.kind === "department" || row.kind === "service" ? t("misDashboard.daysValue", { value: Number(value).toFixed(1) }) : "" },
+      { key: "sla", label: sortableHeader("sla", t("misDashboard.avgSla")), width: "95px", align: "center", headerClassName: "bg-[#0A3275] text-white text-[11px] font-bold", cellClassName: "text-center font-extrabold text-[#008B8B]", render: (value, row) => row.kind === "department" || row.kind === "service" ? t("misDashboard.daysValue", { value: numberFormatter.format(Number(value)) }) : "" },
     ];
   }, [expandedDepartment, fetchDepartmentServices, numberFormatter, sortableHeader, t]);
 
@@ -747,9 +747,9 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
             footerLeftContent={
               <span className="whitespace-nowrap my-1.5">
                 {tCommon("table.showingEntries", {
-                  start: departmentPageStart,
-                  end: departmentPageEnd,
-                  total: filteredDepartments.length,
+                  start: formatNumber(departmentPageStart),
+                  end: formatNumber(departmentPageEnd),
+                  total: formatNumber(filteredDepartments.length),
                 })}
               </span>
             }
@@ -821,8 +821,8 @@ export default function RtsMisDashboard({ misDashboardData, getDepartmentService
 
                         <span className="text-slate-800">
                           {t("misDashboard.countWithPercentage", {
-                            count: item.value,
-                            percentage,
+                            count: formatNumber(item.value),
+                            percentage: formatNumber(percentage),
                           })}
                         </span>
                       </div>

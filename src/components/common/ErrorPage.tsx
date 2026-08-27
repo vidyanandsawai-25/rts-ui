@@ -64,6 +64,7 @@ export function ErrorPage({
 
     const lower = cleanMsg.toLowerCase();
     if (
+      /^\d{3}$/.test(cleanMsg) ||
       lower.includes('timeout') ||
       lower.includes('fetch failed') ||
       lower.includes('failed to fetch') ||

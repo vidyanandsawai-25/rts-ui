@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Award, Download, FileText, GitCommit, Paperclip, CreditCard, Printer, CheckCircle2, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { getApplicationDetailAction, type RtsApplicationDetailData } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import { ApprovalStagesTimeline } from "@/components/modules/rts";
@@ -66,6 +66,10 @@ export default function RtsCitizenViewDetailsDrawer({
   onOpenReceipt,
 }: RtsCitizenViewDetailsDrawerProps) {
   const t = useTranslations("rts.citizenDashboard");
+  const locale = useLocale();
+  const numberFormatter = new Intl.NumberFormat(
+    locale === "mr" ? "mr-IN" : locale === "hi" ? "hi-IN" : "en-IN",
+  );
   const tCommon = useTranslations("common");
   const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatusResult | null>(null);
@@ -431,7 +435,7 @@ export default function RtsCitizenViewDetailsDrawer({
                     {t("approvalWorkflow")}
                   </h4>
                   <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">
-                    {t("stages", { count: resolvedDetail?.approvalStages?.length ?? 0 })}
+                    {t("stages", { count: numberFormatter.format(resolvedDetail?.approvalStages?.length ?? 0) })}
                   </span>
                 </div>
                 <ApprovalStagesTimeline

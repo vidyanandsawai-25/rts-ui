@@ -181,6 +181,9 @@ export default function RtsApplicationProcessDrawer({
   const t = useTranslations('rts.applicationDashboard.processDrawer');
   const tCommon = useTranslations('common');
   const locale = useLocale();
+  const numberFormatter = new Intl.NumberFormat(
+    locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
+  );
   const { confirm } = useConfirm();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => getInitialOpenGroups(data, t('generalDetails')));
   const [activeDocumentIndex, setActiveDocumentIndex] = useState(0);
@@ -265,6 +268,40 @@ export default function RtsApplicationProcessDrawer({
         return Boolean(verification[action.key]);
       })
     : [];
+
+  const predefinedRemarkOptions = [
+    ...(verification?.canVerifyDocument
+      ? [
+          t('remarkVerifyDocumentsValid'),
+          t('remarkVerifyDocumentsComplete'),
+        ]
+      : []),
+    ...(verification?.canApprove
+      ? [
+          t('remarkApproveRequirementsMet'),
+          t('remarkApproveApplicationReviewed'),
+        ]
+      : []),
+    ...(verification?.canReject
+      ? [
+          t('remarkRejectInvalidDocuments'),
+          t('remarkRejectEligibilityNotMet'),
+        ]
+      : []),
+    ...(verification?.canReturn
+      ? [
+          t('remarkRevertCorrectionRequired'),
+          t('remarkRevertAdditionalInformation'),
+        ]
+      : []),
+    ...(verification?.canEdit
+      ? [
+          t('remarkEditApplicationCorrected'),
+          t('remarkEditDetailsUpdated'),
+        ]
+      : []),
+  ];
+  const selectedPredefinedRemark = predefinedRemarkOptions.includes(officerRemark) ? officerRemark : '';
 
   useEffect(() => {
     if (!open || !verification || hasOfficerAccess) {
@@ -629,6 +666,11 @@ export default function RtsApplicationProcessDrawer({
             <div className="min-w-0">
               <p className="truncate text-base font-extrabold">{headerStage}</p>
               <p className="truncate text-[11px] font-semibold text-blue-100"><u>{t('applicationNumber')}</u> : {headerApplicationNo}</p>
+              <p className="truncate text-[10px] font-semibold text-blue-100/90">
+                <span className="font-extrabold"><u>{t('departmentName')}:</u></span> <span className="font-extrabold">{record?.departmentName || '-'}</span>
+                <span className="px-1">•</span>
+                <span className="font-extrabold"><u>{t('serviceName')}:</u></span> <span className="font-extrabold">{record?.serviceName || '-'}</span>
+              </p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -728,7 +770,10 @@ export default function RtsApplicationProcessDrawer({
                       <div className="flex min-w-0 items-center justify-between gap-0.5">
                         <p className="truncate text-xs font-extrabold text-slate-800" title={activeDocument.name}>{activeDocument.name}</p>
                         <span className="mr-2.5 shrink-0 text-[11px] font-semibold text-slate-400">
-                          {t('documentPosition', { current: Math.min(activeDocumentIndex, documents.length - 1) + 1, total: documents.length })}
+                          {t('documentPosition', {
+                            current: numberFormatter.format(Math.min(activeDocumentIndex, documents.length - 1) + 1),
+                            total: numberFormatter.format(documents.length),
+                          })}
                         </span>
                       </div>
                       <div>
@@ -855,6 +900,24 @@ export default function RtsApplicationProcessDrawer({
                     <Shield className="h-4 w-4 text-blue-600" />
                     <h2 className="text-xs font-extrabold uppercase tracking-wide text-slate-800">{t('allowedWorkflowActions')}</h2>
                   </div>
+                  <div className="mb-3 space-y-1.5">
+                    <Label htmlFor="predefined-officer-remark" className="text-xs font-bold text-slate-700">
+                      {t('predefinedRemarks')}
+                    </Label>
+                    <select
+                      id="predefined-officer-remark"
+                      value={selectedPredefinedRemark}
+                      disabled={!hasOfficerAccess || isSubmittingDecision || predefinedRemarkOptions.length === 0}
+                      onChange={(event) => setOfficerRemark(event.target.value)}
+                      className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                    >
+                      <option value="">{t('selectPredefinedRemark')}</option>
+                      {predefinedRemarkOptions.map((remark) => (
+                        <option key={remark} value={remark}>{remark}</option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] font-medium text-slate-500">{t('predefinedRemarkHint')}</p>
+                  </div>
                   <TextArea
                     label={t('officerRemarks')}
                     required
@@ -933,7 +996,7 @@ export default function RtsApplicationProcessDrawer({
                               className="flex w-full items-center justify-between gap-3 bg-slate-50 px-4 py-3 text-left transition hover:bg-blue-50/60"
                             >
                               <span className="text-xs font-extrabold uppercase tracking-wide text-blue-900">
-                                {group.title} <span className="ml-1 text-[10px] text-blue-600">({t('fieldCount', { count: group.fields.length })})</span>
+                                {group.title} <span className="ml-1 text-[10px] text-blue-600">({t('fieldCount', { count: numberFormatter.format(group.fields.length) })})</span>
                               </span>
                               {isOpen ? <ChevronUp className="h-4 w-4 text-slate-500" /> : <ChevronDown className="h-4 w-4 text-slate-500" />}
                             </button>

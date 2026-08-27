@@ -124,6 +124,12 @@ export default function RtsApplicationDashboard({
     () => new Intl.NumberFormat(locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN'),
     [locale]
   );
+  const percentageFormatter = useMemo(
+    () => new Intl.NumberFormat(locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN', {
+      maximumFractionDigits: 2,
+    }),
+    [locale]
+  );
 
   const gridRows = useMemo<GridRow[]>(
     () => rows.map((row) => ({ ...row, id: row.applicationNo })),
@@ -297,8 +303,10 @@ export default function RtsApplicationDashboard({
 
   const formatDays = useCallback(
     (value: number | null) =>
-      value === null ? t('applicationDashboard.table.na') : t('applicationDashboard.units.dayShort', { value }),
-    [t]
+      value === null
+        ? t('applicationDashboard.table.na')
+        : t('applicationDashboard.units.dayShort', { value: numberFormatter.format(Math.abs(value)) }),
+    [numberFormatter, t]
   );
 
   interface KpiCardItem {
@@ -494,7 +502,7 @@ export default function RtsApplicationDashboard({
         render: (_value, row) => (
           <span
             className={`font-semibold ${
-              row.remainingDays === 0 ? 'text-red-600 font-extrabold' : 'text-slate-700'
+              isPendingSlaOverdue(row) ? 'text-red-600 font-extrabold' : 'text-slate-700'
             }`}
           >
             {formatDays(row.remainingDays)}
@@ -571,9 +579,7 @@ export default function RtsApplicationDashboard({
                       <span className="text-[13px] font-bold text-slate-400">
                         (
                         {typeof metric.percentage === 'number'
-                          ? Number.isInteger(metric.percentage)
-                            ? metric.percentage
-                            : parseFloat(metric.percentage.toFixed(2))
+                          ? percentageFormatter.format(metric.percentage)
                           : metric.percentage}
                         %)
                       </span>
@@ -770,8 +776,12 @@ export default function RtsApplicationDashboard({
                 appId: drawer.record.applicationNo,
                 citizenName: drawer.record.applicantName,
                 submittedDate: formatDate(drawer.record.applicationDate),
-                serviceName: drawer.record.serviceName,
-                departmentName: drawer.record.departmentName,
+                serviceName: locale === 'mr' && drawer.record.serviceNameLocal
+                  ? drawer.record.serviceNameLocal
+                  : drawer.record.serviceName,
+                departmentName: locale === 'mr' && drawer.record.departmentNameLocal
+                  ? drawer.record.departmentNameLocal
+                  : drawer.record.departmentName,
                 applicationStatus: drawer.record.currentStatus || 'Pending',
               }
             : null
@@ -792,8 +802,12 @@ export default function RtsApplicationDashboard({
                 citizenName: drawer.record.applicantName,
                 submittedDate: formatDate(drawer.record.applicationDate),
                 slaLimit: drawer.record.expectedSlaDays,
-                serviceName: drawer.record.serviceName,
-                departmentName: drawer.record.departmentName,
+                serviceName: locale === 'mr' && drawer.record.serviceNameLocal
+                  ? drawer.record.serviceNameLocal
+                  : drawer.record.serviceName,
+                departmentName: locale === 'mr' && drawer.record.departmentNameLocal
+                  ? drawer.record.departmentNameLocal
+                  : drawer.record.departmentName,
                 applicationStatus: drawer.record.currentStatus || 'Pending',
               }
             : null
