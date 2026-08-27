@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useTransition } from 'react';
+import { useState, useMemo, useEffect, useRef, useTransition } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import * as Icons from 'lucide-react';
@@ -96,6 +96,8 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
   const [isCreatingExternalApplication, startExternalTransition] = useTransition();
+  const departmentScrollRef = useRef<HTMLElement | null>(null);
+  const departmentScrollFrameRef = useRef<number | null>(null);
 
   const [modalDetails, setModalDetails] = useState<{
     loading: boolean;
@@ -131,6 +133,33 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       active = false;
     };
   }, [isDetailsOpen, selectedServiceId]);
+
+  const stopDepartmentAutoScroll = () => {
+    if (departmentScrollFrameRef.current !== null) {
+      cancelAnimationFrame(departmentScrollFrameRef.current);
+      departmentScrollFrameRef.current = null;
+    }
+  };
+
+  const startDepartmentAutoScroll = (direction: -1 | 1) => {
+    stopDepartmentAutoScroll();
+
+    const scroll = () => {
+      const container = departmentScrollRef.current;
+      if (!container) return;
+
+      container.scrollLeft += direction * 6;
+      departmentScrollFrameRef.current = requestAnimationFrame(scroll);
+    };
+
+    departmentScrollFrameRef.current = requestAnimationFrame(scroll);
+  };
+
+  useEffect(() => () => {
+    if (departmentScrollFrameRef.current !== null) {
+      cancelAnimationFrame(departmentScrollFrameRef.current);
+    }
+  }, []);
 
   const totalServiceCount = useMemo(
     () => departments.reduce((acc, d) => acc + d.services.length, 0),
@@ -546,36 +575,56 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
               </div>
             ) : (
               <>
-                <nav
-                  aria-label={t('serviceBrowser.departmentsAriaLabel')}
-                  className="no-scrollbar flex w-full gap-2 overflow-x-auto border-b border-slate-100 bg-slate-50/70 px-3 py-3 sm:px-4"
-                >
-                  {deptCards.map((dept) => {
-                    const isActive = dept.id === resolvedActiveTab;
-                    return (
-                      <button
-                        key={dept.id}
-                        type="button"
-                        onClick={() => setActiveTab(dept.id)}
-                        className={`flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 text-[10px] font-black shadow-sm transition-all duration-200 sm:px-4 sm:text-xs ${
-                          isActive
-                            ? `${dept.bannerBg} scale-[1.02] border-transparent text-white shadow-md`
-                            : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-0.5 hover:border-blue-200 hover:text-blue-800'
-                        }`}
-                      >
-                        <span className={isActive ? 'text-white' : 'shrink-0 text-slate-400'}>
-                          {dept.icon}
-                        </span>
-                        <span className="whitespace-nowrap">{dept.title}</span>
-                        <span
-                          className={`rounded-full px-1.5 py-0.5 text-[8px] ${isActive ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-400'}`}
+                <div className="relative border-b border-slate-100 bg-slate-50/70">
+                  <nav
+                    ref={departmentScrollRef}
+                    aria-label={t('serviceBrowser.departmentsAriaLabel')}
+                    className="no-scrollbar flex w-full gap-2 overflow-x-auto px-3 py-3 sm:px-4"
+                  >
+                    {deptCards.map((dept) => {
+                      const isActive = dept.id === resolvedActiveTab;
+                      return (
+                        <button
+                          key={dept.id}
+                          type="button"
+                          onClick={() => setActiveTab(dept.id)}
+                          className={`flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 text-[10px] font-black shadow-sm transition-all duration-200 sm:px-4 sm:text-xs ${
+                            isActive
+                              ? `${dept.bannerBg} scale-[1.02] border-transparent text-white shadow-md`
+                              : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-0.5 hover:border-blue-200 hover:text-blue-800'
+                          }`}
                         >
-                          {dept.services.length}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </nav>
+                          <span className={isActive ? 'text-white' : 'shrink-0 text-slate-400'}>
+                            {dept.icon}
+                          </span>
+                          <span className="whitespace-nowrap">{dept.title}</span>
+                          <span
+                            className={`rounded-full px-1.5 py-0.5 text-[8px] ${isActive ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-400'}`}
+                          >
+                            {dept.services.length}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </nav>
+
+                  <div
+                    aria-hidden="true"
+                    onMouseEnter={() => startDepartmentAutoScroll(-1)}
+                    onMouseLeave={stopDepartmentAutoScroll}
+                    className="absolute inset-y-0 left-0 z-10 hidden w-10 cursor-w-resize items-center justify-start bg-gradient-to-r from-slate-100 via-slate-100/85 to-transparent pl-1.5 md:flex"
+                  >
+                    <Icons.ChevronLeft className="h-4 w-4 text-blue-700 drop-shadow-sm" />
+                  </div>
+                  <div
+                    aria-hidden="true"
+                    onMouseEnter={() => startDepartmentAutoScroll(1)}
+                    onMouseLeave={stopDepartmentAutoScroll}
+                    className="absolute inset-y-0 right-0 z-10 hidden w-10 cursor-e-resize items-center justify-end bg-gradient-to-l from-slate-100 via-slate-100/85 to-transparent pr-1.5 md:flex"
+                  >
+                    <Icons.ChevronRight className="h-4 w-4 text-blue-700 drop-shadow-sm" />
+                  </div>
+                </div>
 
                 <div className="p-3 sm:p-4">
                   {activeDept ? (
