@@ -1,7 +1,6 @@
 
 
 import { Column, HeaderCell } from '@/components/common/AutomationTable';
-import { ChevronRight } from 'lucide-react';
 import { PropertySubGridProperty } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 
@@ -11,7 +10,7 @@ export const getPropertyDashboardHeaderRows = (t: (key: string) => string): Head
       {
         label: t('columns.srNo'),
         rowSpan: 2,
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 w-8 border border-slate-300 bg-slate-50'
+        headerClassName: 'p-2 text-center font-semibold text-slate-900 w-8 border border-slate-300 bg-slate-50 text-[13px]'
       },
       {
         label: (
@@ -107,10 +106,10 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
     {
       key: 'propertyId',
       label: t('columns.srNo'),
+      cellClassName: 'w-12',
       render: (_val, _row, index) => (
-        <div className="flex items-center justify-between text-xs font-medium text-blue-600 px-1">
+        <div className="flex items-center justify-center text-xs font-bold text-black px-1 text-[13px]">
           <span>{index + 1}</span>
-          <ChevronRight size={14} className="text-blue-400" />
         </div>
       )
     },
@@ -120,7 +119,7 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
       render: (_, row) => {
         let wingsList: string[] = [];
         if (row.wingName) {
-            wingsList = row.wingName.split(',').map(w => w.trim()).filter(Boolean);
+          wingsList = row.wingName.split(',').map(w => w.trim()).filter(Boolean);
         }
 
         return (
@@ -276,9 +275,9 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
       label: t('columns.propertyType'),
       align: 'center',
       cellClassName: 'bg-purple-50/40',
-      render: (_, row) => {        
+      render: (_, row) => {
         return (
-          <div className="flex flex-col items-center gap-1.5">           
+          <div className="flex flex-col items-center gap-1.5">
             <span className="px-1.5 py-0.5 text-[11px] rounded-sm font-medium border border-teal-100 text-teal-600  bg-teal-50/50 bg-purple-500 whitespace-nowrap">
               {row.assessmentStatus || '-'}
             </span>

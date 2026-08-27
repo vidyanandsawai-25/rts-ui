@@ -217,7 +217,7 @@ export const getApprovalHeaderRows = (
             label: <div className="flex items-center justify-center gap-1 font-bold text-[15px] text-slate-700 uppercase whitespace-nowrap">{t ? t('columns.sr') : 'SR'}</div>,
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[50px] border border-slate-300'
+            headerClassName: 'bg-slate-50 min-w-[50px] border border-slate-300 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: (
@@ -229,7 +229,7 @@ export const getApprovalHeaderRows = (
             ),
             rowSpan: 2,
             align: 'left',
-            headerClassName: 'bg-slate-50 min-w-[180px] border border-slate-300'
+            headerClassName: 'bg-slate-50 min-w-[180px] border border-slate-300 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: (
@@ -239,7 +239,7 @@ export const getApprovalHeaderRows = (
             ),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 border border-slate-300 px-2'
+            headerClassName: 'bg-slate-50 border border-slate-300 px-2 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: (
@@ -249,7 +249,7 @@ export const getApprovalHeaderRows = (
             ),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 border border-slate-300 px-2'
+            headerClassName: 'bg-slate-50 border border-slate-300 px-2 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         },
         {
             label: (
@@ -259,7 +259,7 @@ export const getApprovalHeaderRows = (
             ),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-emerald-50 border border-slate-300 px-2'
+            headerClassName: 'bg-emerald-50 border border-slate-300 px-2 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
         }
     ];
 

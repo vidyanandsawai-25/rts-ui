@@ -64,7 +64,7 @@ export const getDataEntryColumns = (
 ): Column<any>[] => {
     const renderClickableCell = (value: unknown, row: any, key: string) => (
         <div
-            className="w-full h-full p-3 text-center font-bold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap flex items-center justify-center"
+            className="w-full h-full p-3 text-center font-bold text-slate-900 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap flex items-center justify-center"
             onClick={(e) => {
                 e.stopPropagation();
                 if (row.isTotal) return;
@@ -129,7 +129,7 @@ const renderHeader = (title: string, showSort: boolean = false, activeSort: bool
     ) : title;
 
     return (
-        <div className={isWard ? `inline-flex items-center justify-center gap-0.5 ${isSubHeader ? 'font-semibold text-[13px] text-slate-700' : 'font-bold text-[14px] text-slate-700'} leading-tight whitespace-nowrap` : `flex items-center justify-center gap-1 ${isSubHeader ? 'font-semibold text-[14px] text-slate-700' : 'font-bold text-[15px] text-slate-700'} whitespace-nowrap`}>
+        <div className={isWard ? `inline-flex items-center justify-center gap-0.5 ${isSubHeader ? 'font-semibold text-[13px] text-slate-900' : 'font-bold text-[14px] text-slate-900'} leading-tight whitespace-nowrap` : `flex items-center justify-center gap-1 ${isSubHeader ? 'font-semibold text-[14px] text-slate-900' : 'font-bold text-[15px] text-slate-900'} whitespace-nowrap`}>
             {formattedTitle}
             {exportText && (
                 <span className="inline-flex items-center gap-1 px-2 py-1.5 ml-1 text-[11px] font-semibold text-slate-600 bg-white border border-slate-300 rounded shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
@@ -142,7 +142,7 @@ const renderHeader = (title: string, showSort: boolean = false, activeSort: bool
 };
 
 const renderLeftHeader = (title: string, showSort: boolean = false, activeSort: boolean = false, isWard: boolean = false) => (
-    <div className={isWard ? "inline-flex items-center justify-start gap-0.5 font-bold text-[13px] leading-tight text-slate-700 uppercase whitespace-nowrap" : "flex items-center justify-start gap-1 font-bold text-[15px] text-slate-700 uppercase whitespace-nowrap"}>
+    <div className={isWard ? "inline-flex items-center justify-start gap-0.5 font-bold text-[13px] leading-tight text-slate-900 uppercase whitespace-nowrap" : "flex items-center justify-start gap-1 font-bold text-[15px] text-slate-900 uppercase whitespace-nowrap"}>
         {title} {showSort && (activeSort ? <ActiveSortIcon /> : <SortIcon />)}
     </div>
 );
@@ -152,59 +152,59 @@ export const getDataEntryHeaderRows = (level: 'division' | 'ward', t: any): Head
 
     return [
         [
-            { label: <div className="font-bold text-[15px] text-slate-700 uppercase whitespace-nowrap">{t('dataEntryQualityCheck.columns.sr')}</div>, rowSpan: 2, align: 'center', headerClassName: 'bg-slate-50 min-w-[50px]' },
-            { label: renderLeftHeader(level === 'division' ? t('dataEntryQualityCheck.columns.division') : t('dataEntryQualityCheck.columns.wardNo'), false, false, isWard), rowSpan: 2, align: isWard ? 'center' : 'left', headerClassName: 'bg-slate-50 min-w-[180px]' },
+            { label: <div className="font-bold text-[15px] text-slate-900 uppercase whitespace-nowrap">{t('dataEntryQualityCheck.columns.sr')}</div>, rowSpan: 2, align: 'center', headerClassName: 'bg-slate-50 min-w-[50px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderLeftHeader(level === 'division' ? t('dataEntryQualityCheck.columns.division') : t('dataEntryQualityCheck.columns.wardNo'), false, false, isWard), rowSpan: 2, align: isWard ? 'center' : 'left', headerClassName: 'bg-slate-50 min-w-[180px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.internalSurvey'), false, false, isWard), colSpan: 2, align: 'center', headerClassName: 'bg-[#f0fdfa]' }, // teal-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.dataEntry'), false, false, isWard), colSpan: 4, align: 'center', headerClassName: 'bg-[#f0f9ff]' }, // sky-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.photo'), false, false, isWard, t('dataEntryQualityCheck.buttons.export') || 'Export'), colSpan: 2, align: 'center', headerClassName: 'bg-[#faf5ff]' }, // purple-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.plan'), false, false, isWard, t('dataEntryQualityCheck.buttons.export') || 'Export'), colSpan: 2, align: 'center', headerClassName: 'bg-[#eef2ff]' }, // indigo-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.qualityAnalyst'), false, false, isWard), colSpan: 5, align: 'center', headerClassName: 'bg-[#fefce8]' }, // yellow-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.propertyType'), false, false, isWard), colSpan: 5, align: 'center', headerClassName: 'bg-[#fdf2f8]' }, // pink-50
+            { label: renderHeader(t('dataEntryQualityCheck.columns.internalSurvey'), false, false, isWard), colSpan: 2, align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // teal-50
+            { label: renderHeader(t('dataEntryQualityCheck.columns.dataEntry'), false, false, isWard), colSpan: 4, align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // purple-50
+            { label: renderHeader(t('dataEntryQualityCheck.columns.photo'), false, false, isWard, t('dataEntryQualityCheck.buttons.export') || 'Export'), colSpan: 2, align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // purple-50
+            { label: renderHeader(t('dataEntryQualityCheck.columns.plan'), false, false, isWard, t('dataEntryQualityCheck.buttons.export') || 'Export'), colSpan: 2, align: 'center', headerClassName: 'bg-indigo-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // indigo-50
+            { label: renderHeader(t('dataEntryQualityCheck.columns.qualityAnalyst'), false, false, isWard), colSpan: 5, align: 'center', headerClassName: 'bg-emerald-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // yellow-50
+            { label: renderHeader(t('dataEntryQualityCheck.columns.propertyType'), false, false, isWard), colSpan: 5, align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // pink-50
 
-            { label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('dataEntryQualityCheck.columns.assessed')}<br />{t('dataEntryQualityCheck.columns.properties')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-green-50' },
-            { label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('dataEntryQualityCheck.columns.unassessed')}<br />{t('dataEntryQualityCheck.columns.properties')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-orange-50' },
-            { label: <div className="font-bold text-[15px] text-slate-700 text-center"><span className="whitespace-nowrap">{t('dataEntryQualityCheck.columns.newlyAssessed')}</span><br />{t('dataEntryQualityCheck.columns.found')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-emerald-50' },
-            { label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('dataEntryQualityCheck.columns.assessment')}<br />{t('dataEntryQualityCheck.columns.inprocess')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-orange-50' },
+            { label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('dataEntryQualityCheck.columns.assessed')}<br />{t('dataEntryQualityCheck.columns.properties')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-green-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('dataEntryQualityCheck.columns.unassessed')}<br />{t('dataEntryQualityCheck.columns.properties')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: <div className="font-bold text-[15px] text-slate-900 text-center"><span className="whitespace-nowrap">{t('dataEntryQualityCheck.columns.newlyAssessed')}</span><br />{t('dataEntryQualityCheck.columns.found')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-emerald-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('dataEntryQualityCheck.columns.assessment')}<br />{t('dataEntryQualityCheck.columns.inprocess')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
         ],
         [
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#f0fdfa]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#f0fdfa]' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.completedStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#f0f9ff]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.completedUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#f0f9ff]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#f0f9ff]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#f0f9ff]' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.completedStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.completedUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.complete'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#faf5ff]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pending'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#faf5ff]' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.complete'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pending'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.complete'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#eef2ff]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pending'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#eef2ff]' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.complete'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-indigo-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pending'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-indigo-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.completedStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fefce8]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.completedUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fefce8]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fefce8]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fefce8]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.typeWise'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fefce8]' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.completedStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[90px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.completedUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[90px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[90px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[90px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.typeWise'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[90px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.residential'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fdf2f8]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.nonResidential'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fdf2f8]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.mixed'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fdf2f8]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.publicUtility'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fdf2f8]' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.underConstruction'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-[#fdf2f8]' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.residential'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 min-w-[80px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.nonResidential'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 min-w-[80px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.mixed'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 min-w-[80px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.publicUtility'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 min-w-[80px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.underConstruction'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 min-w-[80px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-green-50' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-green-50' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-green-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-green-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
         ]
     ];
 };

@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useDashboardSearch } from '@/hooks/automation-dashboard/useDashboardSearch';
@@ -16,7 +16,7 @@ import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/expor
 import { Send, ChevronDown } from 'lucide-react';
 import { getAssessmentColumns, getAssessmentHeaderRows } from './AssessmentColumns';
 import { AssessmentGridItems, AssessmentRow } from '@/types/automation-dashboard/assessment/assessmentgrid.type';
-import { Column } from '@/components/common';
+import { Column, LoadingPage } from '@/components/common';
 import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 
@@ -105,7 +105,6 @@ const mapServerDataToTable = (serverData: AssessmentGridItems | null | undefined
     return rows;
 };
 
-
 const TopFilters = ({ activeTab, onTabChange, t }: { activeTab: TabType, onTabChange: (t: TabType) => void, t: (key: string) => string }) => {
     const tabs: { label: TabType, displayLabel: string, defaultColor: string, activeColor: string }[] = [
         { label: 'Total', displayLabel: t('tabs.total'), defaultColor: 'text-blue-500', activeColor: 'text-blue-500 border-blue-500 bg-blue-50/50' },
@@ -154,7 +153,7 @@ const TopBar = ({ activeTab, onTabChange, t, tDashboard, exportConfig, propertyD
                         placeholder={t('searchPlaceholder')}
                         className="w-full flex-1 mb-0"
                     />
-                    <SearchButton 
+                    <SearchButton
                         onClick={handleSearch}
                         disabled={isPending || !searchTerm.trim()}
                     />
@@ -194,15 +193,21 @@ const AssessmentDetailsContent = ({ serverData, propertyDescriptions }: { server
     const tDashboard = useTranslations('automationDashboard');
     const locale = useLocale();
 
+    const [isPending, startTransition] = useTransition();
+    const [pendingTab, setPendingTab] = useState<TabType | null>(null);
+
     const currentTab = searchParams.get('tab') as TabType | null;
     const validTabs: TabType[] = ['Total', 'Assessed', 'Unassessed', 'Rented'];
     const activeTab = currentTab && validTabs.includes(currentTab) ? currentTab : 'Total';
 
     const handleTabChange = (tab: TabType) => {
+        setPendingTab(tab);
         const params = new URLSearchParams(searchParams.toString());
         params.set('tab', tab);
         params.set('type', tab); // Also update type for the backend
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        startTransition(() => {
+            router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        });
     };
 
     const returnUrl = `${pathname}?${searchParams.toString()}`;
@@ -224,7 +229,7 @@ const AssessmentDetailsContent = ({ serverData, propertyDescriptions }: { server
     }, [tableData, columns, activeTab, t]);
 
     return (
-        <div className="flex flex-col gap-4 h-full bg-slate-50">
+        <div className="flex flex-col gap-4 h-full relative">
             <AutomationTable
                 data={tableData}
                 columns={columns}
@@ -239,14 +244,26 @@ const AssessmentDetailsContent = ({ serverData, propertyDescriptions }: { server
                 paginationConfig={{ enabled: false, showPageSizeSelector: false }}
                 rowClassName={(row) => {
                     if (row.zoneName === 'GRAND TOTAL' || row.id?.startsWith('gtot-')) {
-                        return "bg-red-700 border-t-2 border-slate-400 text-slate-950 font-bold";
+                        return "border-t-2 border-slate-400 text-slate-950 font-bold";
                     }
                     if (row.zoneName === 'TOTAL' || row.id?.startsWith('tot-')) {
-                        return "bg-red-700 border-t-2 border-slate-400 text-slate-950 font-bold";
+                        return "border-t-2 border-slate-400 text-slate-950 font-bold";
                     }
                     return "hover:bg-slate-50/50 transition-colors group";
                 }}
             />
+            {isPending && (
+                <div
+                    className="absolute inset-0 bg-white/50 backdrop-blur-[2px] flex items-center justify-center z-50 [&_h2]:before:content-['Loading..._'] [&_p]:text-[0px] [&_p]:before:content-[var(--loading-desc)] [&_p]:before:text-sm [&_p]:before:text-gray-600"
+                    style={{ '--loading-desc': `"Loading the ${pendingTab || 'Total'} Property..."` } as React.CSSProperties}
+                >
+                    <LoadingPage
+                        translationNamespace="automationDashboard.assessment"
+                        messageKey={`tabs.${(pendingTab || 'Total').toLowerCase()}`}
+                        descriptionKey={`tabs.${(pendingTab || 'Total').toLowerCase()}`}
+                    />
+                </div>
+            )}
         </div>
     );
 };

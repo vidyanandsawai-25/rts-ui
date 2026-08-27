@@ -6,9 +6,9 @@ const renderClickableCell = (value: unknown, row: AssessmentRow, locale: string,
     if (value === undefined || value === null) return value as React.ReactNode;
     // Don't render links for grand total row if it doesn't have a specific zoneId (but 0 is valid for TOTAL)
     if (row.zoneId === undefined || row.zoneId === null) return <div className="w-full h-full p-3 flex items-center justify-center cursor-default">{value as React.ReactNode}</div>;
-    
+
     return (
-        <div 
+        <div
             onClick={() => router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${row.zoneId}?workflowStageId=${workflowStageId || ''}&stage=Assessment${row.zoneNo ? `&zoneNo=${row.zoneNo}` : ''}${extraQuery}&returnUrl=${encodeURIComponent(returnUrl)}`)}
             className="w-full h-full p-3 flex items-center justify-center cursor-pointer hover:bg-blue-50/50 hover:text-blue-800 transition-colors"
         >
@@ -29,73 +29,73 @@ export const getAssessmentHeaderRows = (tab: string, t: (key: string) => string)
             label: renderHeader(t('columns.sr'), true),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[50px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[50px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderHeader(t('columns.zoneNo'), true),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderHeader(t('columns.totalStructure'), true),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderHeader(t('columns.totalUnit'), true),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: <div className="font-bold text-[11px] lg:text-[15px] text-slate-900 uppercase">{t('columns.propertyClassification')}</div>,
             colSpan: tab === 'Unassessed' ? 7 : 8,
             align: 'center',
-            headerClassName: 'bg-fuchsia-200/50 py-3 border-b border-slate-200'
+            headerClassName: 'bg-fuchsia-200/50 py-3 px-1 border-b border-slate-200 border border-slate-300 text-center text-table-header text-slate-900 sticky top-0 z-20'
         }
     ],
     [
         {
             label: renderHeader(t('columns.type'), false),
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderHeader(t('columns.structure'), true),
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[100px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[100px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderHeader(t('columns.unit'), true),
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[100px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[100px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         ...(tab !== 'Unassessed' ? [{
             label: renderHeader(t('columns.oldDemand'), true),
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         } as HeaderCell] : []),
         {
             label: renderHeader(t('columns.currentDemand'), true),
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[130px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[130px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderHeader(t('columns.retroDemand'), true),
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[120px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderHeader(t('columns.totalDemand'), true),
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[130px] border-r border-slate-200'
+            headerClassName: 'bg-slate-50 min-w-[130px] border-r border-slate-200 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderHeader(t('columns.additionalRevenue'), true),
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[180px]'
+            headerClassName: 'bg-slate-50 min-w-[180px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         }
     ]
 ];
@@ -121,13 +121,13 @@ export const getAssessmentColumns = (
             align: 'left',
             cellClassName: "p-3 text-center text-table-header text-slate-950 font-bold border-b-2 border-r border-slate-300 min-w-[140px] select-none bg-[#f8fafc]",
             rowSpan: (row) => row.rowSpan ?? 0,
-            render: (value, row) => (row.zoneNo && value !== 'TOTAL' && value !== 'GRAND TOTAL') ? row.zoneNo : value as React.ReactNode
+            render: (value, row) => (row.zoneNo && value !== 'TOTAL' && value !== 'GRAND TOTAL') ? `${row.zoneNo} - ${value}` : value as React.ReactNode
         },
         {
             key: 'totalStructure',
             label: '',
             align: 'center',
-            cellClassName: '!p-0 text-center text-table-header text-slate-950 font-bold border-b-2 border-r border-slate-300 min-w-[90px] select-none bg-[#f8fafc]',
+            cellClassName: '!p-0 text-center text-table-header text-slate-950 font-bold border-b-2 border-r border-slate-300 min-w-[90px] select-none bg-[#f8fafc] h-[1px]',
             rowSpan: (row) => row.rowSpan ?? 0,
             render: (value, row) => renderClickableCell(value, row, locale, workflowStageId, returnUrl, router, '&Structure=true')
         },
@@ -135,7 +135,7 @@ export const getAssessmentColumns = (
             key: 'totalUnit',
             label: '',
             align: 'center',
-            cellClassName: "!p-0 text-center text-table-header text-slate-950 font-bold border-b-2 border-r border-slate-300 min-w-[90px] select-none bg-[#f8fafc]",
+            cellClassName: "!p-0 text-center text-table-header text-slate-950 font-bold border-b-2 border-r border-slate-300 min-w-[90px] select-none bg-[#f8fafc] h-[1px]",
             rowSpan: (row) => row.rowSpan ?? 0,
             render: (value, row) => renderClickableCell(value, row, locale, workflowStageId, returnUrl, router, '&Unit=true')
         },
@@ -163,7 +163,7 @@ export const getAssessmentColumns = (
                     'Owner': 'text-indigo-950 bg-indigo-50/50',
                     'Renter': 'text-purple-950 bg-purple-50/50'
                 };
-                const colorClass = colors[value as keyof typeof colors] || 'text-slate-700';
+                const colorClass = colors[value as keyof typeof colors] || 'text-slate-900';
                 return <div className={`h-full w-full py-3 -my-2 ${colorClass}`}>{value as React.ReactNode}</div>;
             }
         },
@@ -171,14 +171,14 @@ export const getAssessmentColumns = (
             key: 'structure',
             label: '',
             align: 'center',
-            cellClassName: "!p-0 text-center text-table-header text-slate-950 font-bold border-b-2 border-r border-slate-300 min-w-[80px] select-none bg-[#f8fafc]",
+            cellClassName: "!p-0 text-center text-table-header text-slate-950 font-bold border-b-2 border-r border-slate-300 min-w-[80px] select-none bg-[#f8fafc] h-[1px]",
             render: (value, row) => renderClickableCell(value, row, locale, workflowStageId, returnUrl, router, '&Structure=true')
         },
         {
             key: 'unit',
             label: '',
             align: 'center',
-            cellClassName: "!p-0 text-center text-table-header text-slate-950 font-bold border-b-2 border-r border-slate-300 min-w-[80px] select-none bg-[#f8fafc]",
+            cellClassName: "!p-0 text-center text-table-header text-slate-950 font-bold border-b-2 border-r border-slate-300 min-w-[80px] select-none bg-[#f8fafc] h-[1px]",
             render: (value, row) => renderClickableCell(value, row, locale, workflowStageId, returnUrl, router, '&Unit=true')
         },
         ...(tab !== 'Unassessed' ? [{

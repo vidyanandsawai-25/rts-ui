@@ -200,10 +200,10 @@ export const getInternalSurveyHeaderRows = (
 ): HeaderCell[][] => {
     const topRow: HeaderCell[] = [
         {
-            label: <div className="font-bold text-[15px] text-slate-700 uppercase">{t('internalSurvey.columns.sr')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-900 uppercase">{t('internalSurvey.columns.sr')}</div>,
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[50px]'
+            headerClassName: 'bg-slate-50 min-w-[50px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(
@@ -216,55 +216,55 @@ export const getInternalSurveyHeaderRows = (
             ),
             rowSpan: 2,
             align: 'left',
-            headerClassName: 'bg-slate-50 min-w-[180px] cursor-pointer hover:bg-slate-100 transition-colors'
+            headerClassName: 'bg-slate-50 min-w-[180px] cursor-pointer hover:bg-slate-100 transition-colors border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
-            label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('internalSurvey.columns.geoSequencingProperties')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('internalSurvey.columns.geoSequencingProperties')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-blue-50'
+            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
-            label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('internalSurvey.columns.surveyProperties')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('internalSurvey.columns.surveyProperties')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-blue-50'
+            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
-            label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('internalSurvey.columns.propertyType')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('internalSurvey.columns.propertyType')}</div>,
             colSpan: 5,
             align: 'center',
-            headerClassName: 'bg-purple-50'
+            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
-            label: <div className="font-bold text-[15px] text-slate-700 text-center whitespace-nowrap">{t('internalSurvey.columns.assessed')}<br />{t('internalSurvey.columns.properties')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-900 text-center whitespace-nowrap">{t('internalSurvey.columns.assessed')}<br />{t('internalSurvey.columns.properties')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-green-50'
+            headerClassName: 'bg-green-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
-            label: <div className="font-bold text-[15px] text-slate-700 text-center whitespace-nowrap">{t('internalSurvey.columns.unassessed')}<br />{t('internalSurvey.columns.properties')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-900 text-center whitespace-nowrap">{t('internalSurvey.columns.unassessed')}<br />{t('internalSurvey.columns.properties')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-orange-50'
+            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
-            label: <div className="font-bold text-[15px] text-slate-700 text-center"><span className="whitespace-nowrap">{t('internalSurvey.columns.newlyAssessed')}</span><br />{t('internalSurvey.columns.found')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-900 text-center"><span className="whitespace-nowrap">{t('internalSurvey.columns.newlyAssessed')}</span><br />{t('internalSurvey.columns.found')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-emerald-50'
+            headerClassName: 'bg-emerald-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
-            label: <div className="font-bold text-[15px] text-slate-700 text-center">{t('internalSurvey.columns.assessment')}<br />{t('internalSurvey.columns.inprocess')}</div>,
+            label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('internalSurvey.columns.assessment')}<br />{t('internalSurvey.columns.inprocess')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-orange-50'
+            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.photoCount'), 'photoCount', sortConfig, onSort, false, viewType),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-cyan-50'
+            headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         }
     ];
 
@@ -272,87 +272,87 @@ export const getInternalSurveyHeaderRows = (
         {
             label: renderSortableHeader(t('internalSurvey.columns.structure'), 'geoStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-blue-50'
+            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.unit'), 'geoUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-blue-50'
+            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.structure'), 'surveyStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-blue-50'
+            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.unit'), 'surveyUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-blue-50'
+            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.residential'), 'propRes', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-purple-50'
+            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.nonResidential'), 'propNonRes', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-purple-50'
+            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.mixedProperty'), 'propMixed', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-purple-50'
+            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.publicUtility'), 'propPublic', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-purple-50'
+            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.underConstruction'), 'propUnder', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-purple-50'
+            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.structure'), 'assessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-green-50'
+            headerClassName: 'bg-green-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.units'), 'assessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-green-50'
+            headerClassName: 'bg-green-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.structure'), 'unassessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-orange-50'
+            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.units'), 'unassessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-orange-50'
+            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.structure'), 'newlyStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-emerald-50'
+            headerClassName: 'bg-emerald-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.unit'), 'newlyUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-emerald-50'
+            headerClassName: 'bg-emerald-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.structure'), 'inprocessStruct', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-orange-50'
+            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.unit'), 'inprocessUnit', sortConfig, onSort, false, viewType),
             align: 'center',
-            headerClassName: 'bg-orange-50'
+            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
         }
     ];
 

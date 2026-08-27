@@ -1,4 +1,6 @@
 {
+  "wip": "प्रगति पर (Work in Progress)",
+  "featureWip": "यह सुविधा वर्तमान में प्रगति पर है।",
   "success": {
     "updatePropertySign": "संपत्ति को सफलतापूर्वक स्वीकृत किया गया।",
     "title": "सफल"

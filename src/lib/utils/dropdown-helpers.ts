@@ -59,7 +59,9 @@ export function normalizeToStringArray<T extends LookupRecord>(
   }
 
   // Lookup array - extract string options
-  return (options as T[]).map(item => {
+  return (options as T[])
+    .filter(item => item.isActive !== false && item.IsActive !== false)
+    .map(item => {
     const code = item.floorCode || 
                  item.typeOfUseCode || 
                  item.constructionCode ||      // For ConstructionTypeResponse
