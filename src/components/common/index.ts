@@ -193,3 +193,6 @@ export { TimePicker } from './TimePicker';
 export type { TimePickerProps } from './TimePicker';
 
 export { LanguageDropdown } from './LanguageDropdown';
+
+export { OfficialCertificateSheet } from './OfficialCertificateSheet';
+export type { OfficialCertificateSheetProps, OfficialCertificateData } from './OfficialCertificateSheet';

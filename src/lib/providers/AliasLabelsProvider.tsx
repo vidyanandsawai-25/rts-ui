@@ -3,7 +3,7 @@
 import { createContext, useContext, ReactNode } from 'react';
 
 interface AliasLabelsContextValue {
-  /** fieldName -> localized label override for the current locale, pre-resolved server-side. */
+  /** keyName -> localized label override for the current locale, pre-resolved server-side. */
   labels: Record<string, string>;
 }
 
@@ -30,14 +30,14 @@ export function useAliasLabelsContext(): AliasLabelsContextValue {
 }
 
 /**
- * Looks up a runtime Alias Master override for `fieldName` in the current locale.
+ * Looks up a runtime Alias Master override for `keyName` in the current locale.
  * Falls back to `fallback` (the existing static next-intl label) whenever no active
- * alias row exists for that field, its value for the current language is blank, or
+ * alias row exists for that key, its value for the current language is blank, or
  * no AliasLabelsProvider is mounted in the tree at all.
  * Never fetches on its own — reads from the pre-resolved Context populated once
  * server-side per request (see getAliasLabelsForLocale / AliasLabelsProvider mount).
  */
-export function useAliasLabel(fieldName: string, fallback: string): string {
+export function useAliasLabel(keyName: string, fallback: string): string {
   const { labels } = useAliasLabelsContext();
-  return labels[fieldName] || fallback;
+  return labels[keyName] || fallback;
 }

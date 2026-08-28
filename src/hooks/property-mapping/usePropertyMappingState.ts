@@ -248,7 +248,11 @@ export function usePropertyMappingState(
     return { ...initialFloorDataMap, ...customFloorDataMap };
   }, [initialFloorDataMap, customFloorDataMap]);
 
-  const refreshMappingState = (freshData: MappedPropertyApiResponse) => {
+  const refreshMappingState = (
+    freshData: MappedPropertyApiResponse,
+    mergedOverrideCandidates?: OldPropertyCandidate[],
+    unmappedPropNos?: string[]
+  ) => {
     if (!freshData?.items?.length) return;
     
     // 1. Update New Properties
@@ -284,8 +288,8 @@ export function usePropertyMappingState(
       rv: rvVal,
       tax: taxVal,
       cts: newInfo?.csn || first.oldCSN || "",
-      status: freshData.items.some(item => Boolean(item.oldPropertyNo)) ? "Mapped" : "Needs verification",
-      verificationResult: freshData.items.some(item => Boolean(item.oldPropertyNo)) ? "Verified & Mapped" : "Pending review",
+      status: (freshData.items.some(item => Boolean(item.oldPropertyNo)) || (mergedOverrideCandidates && mergedOverrideCandidates.length > 0)) ? "Mapped" : "Needs verification",
+      verificationResult: (freshData.items.some(item => Boolean(item.oldPropertyNo)) || (mergedOverrideCandidates && mergedOverrideCandidates.length > 0)) ? "Verified & Mapped" : "Pending review",
       remark: "",
       mappingType: first.mappingCategory === "SPLIT" ? "Split" : "1 → 1",
       ward: newInfo?.wardNo || "",
@@ -312,6 +316,24 @@ export function usePropertyMappingState(
       constructionYear: newDetails[0]?.constructionYear || ""
     };
 
+    const isUnmapped = (pNo: string) => {
+      if (!unmappedPropNos || unmappedPropNos.length === 0 || !pNo) return false;
+      const cleanP = pNo.trim().toLowerCase();
+      if (!cleanP) return false;
+
+      return unmappedPropNos.some((u) => {
+        if (!u) return false;
+        const cleanU = u.trim().toLowerCase();
+        if (cleanU === cleanP) return true;
+        const normU = cleanU.replace(/\s+/g, "");
+        const normP = cleanP.replace(/\s+/g, "");
+        if (normU === normP) return true;
+        const baseU = cleanU.split(" / ")[0].split(" - ")[0].trim();
+        const baseP = cleanP.split(" / ")[0].split(" - ")[0].trim();
+        return Boolean(baseU && baseP && baseU === baseP);
+      });
+    };
+
     const parsedCandidates = freshData.items
       .filter(item => Boolean(item.oldPropertyNo))
       .map((item, idx) => {
@@ -335,19 +357,17 @@ export function usePropertyMappingState(
           constructionYear: item.oldConstructionYear ? String(item.oldConstructionYear) : (item.oldAssessmentYear ? String(item.oldAssessmentYear) : "")
         });
 
-          // Extract the REAL Old Property ID:
-          // 1. transMastOldRecords uses 'propertyMastOldId' (NOT 'propertyId')
-          // 2. propertyDetailsOld uses 'propertyId' which IS the old property ID
-          // 3. item.propertyId is the NEW property ID — only use as last resort
-          const realOldPropertyId = item.transMastOldRecords?.[0]?.propertyMastOldId
-            ?? item.propertyDetailsOld?.[0]?.propertyId 
-            ?? item.propertyId;
+        const realOldPropertyId = item.transMastOldRecords?.[0]?.propertyMastOldId
+          ?? item.propertyDetailsOld?.[0]?.propertyId 
+          ?? item.propertyId;
+
+        const candIsUnmapped = isUnmapped(item.oldPropertyNo || "");
 
         return {
           id: String(realOldPropertyId) + "-initial-" + idx,
-          status: "Mapped" as const,
-          isMapped: true,
-          mappedNewPropertyNo: newInfo?.propertyNo || "",
+          status: (candIsUnmapped ? "Unmapped" : "Mapped") as "Mapped" | "Unmapped",
+          isMapped: !candIsUnmapped,
+          mappedNewPropertyNo: candIsUnmapped ? "" : (newInfo?.propertyNo || ""),
           propNo: item.oldPropertyNo || "",
           partitionNo: item.oldPartitionNo || undefined,
           owner: item.oldOwnerName || item.oldOccupierName || parsedNewProps[0].owner,
@@ -363,7 +383,7 @@ export function usePropertyMappingState(
           ],
           score: candScore,
           isHardConflict: false,
-          belongsToNewId: newInfo?.propertyNo || "",
+          belongsToNewId: candIsUnmapped ? "" : (newInfo?.propertyNo || ""),
           cts: item.oldCSN || parsedNewProps[0].cts,
           rv: itemRv,
           use: item.oldUseType || "",
@@ -373,12 +393,31 @@ export function usePropertyMappingState(
           constructionYear: item.oldConstructionYear ? String(item.oldConstructionYear) : (item.oldAssessmentYear ? String(item.oldAssessmentYear) : "")
         };
       });
-    setCandidates(parsedCandidates);
-    setActiveCheckedIds(parsedCandidates.filter(c => c.isMapped).map(c => c.id));
-    setMappedOldPropNos(parsedCandidates.filter(c => c.isMapped).map(c => c.propNo));
+
+    // Merge explicitly passed candidates (if any were confirmed in the current session)
+    const combinedCandidates: OldPropertyCandidate[] = [...parsedCandidates];
+    if (mergedOverrideCandidates) {
+      mergedOverrideCandidates.forEach(moc => {
+        if (isUnmapped(moc.propNo)) return;
+        const existingIdx = combinedCandidates.findIndex(c => c.propNo === moc.propNo && c.partitionNo === moc.partitionNo);
+        if (existingIdx >= 0) {
+          combinedCandidates[existingIdx] = { ...combinedCandidates[existingIdx], isMapped: true, status: "Mapped" as const, mappedNewPropertyNo: newInfo?.propertyNo || "" };
+        } else {
+          combinedCandidates.push({ ...moc, isMapped: true, status: "Mapped" as const, mappedNewPropertyNo: newInfo?.propertyNo || "" });
+        }
+      });
+    }
+
+    setCandidates(combinedCandidates);
+    setActiveCheckedIds(combinedCandidates.filter(c => c.isMapped).map(c => c.id));
+    setMappedOldPropNos(combinedCandidates.filter(c => c.isMapped).map(c => c.propNo));
 
     // 3. Update Mappings
-    const oldPropNos = freshData.items.map(i => i.oldPropertyNo).filter(Boolean) as string[];
+    const oldPropNos = Array.from(new Set([
+      ...freshData.items.map(i => i.oldPropertyNo).filter(Boolean) as string[],
+      ...(mergedOverrideCandidates ? mergedOverrideCandidates.map(c => c.propNo).filter(Boolean) : [])
+    ])).filter(p => !isUnmapped(p));
+
     if (oldPropNos.length > 0) {
       const isMultiple = oldPropNos.length > 1 || first.mappingCategory === "SPLIT" || first.mappingCategory === "MERGE";
       setMappings([{
@@ -392,6 +431,9 @@ export function usePropertyMappingState(
         mappedBy: currentUserName,
         mappedAt: new Date().toISOString().split('T')[0]
       }]);
+    } else {
+      setMappings([]);
+      setNewProperties(prev => prev.map(p => ({ ...p, status: "Needs verification", verificationResult: "Pending review" })));
     }
   };
 

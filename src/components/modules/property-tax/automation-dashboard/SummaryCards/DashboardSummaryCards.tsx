@@ -1,24 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { IndianRupee, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { MainCardsData } from '@/types/automation-dashboard/automation-maincard/automation-maincart.type';
 import { formatIndianNumber } from '@/lib/utils/format';
 import { useTranslations } from 'next-intl';
 
-const StandardMetrics = ({ value1, value2, value3, demandColor, t }: { value1?: string | number, value2?: string | number, value3?: string | number, demandColor: string, t: any }) => {
+const StandardMetrics = ({ value1, value2, value3, demandColor, t }: { value1?: string | number, value2?: string | number, value3?: string | number, demandColor: string, t: (key: string) => string }) => {
   const labelClass = "text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1";
   const valueClass = "text-[18px] text-slate-900 font-bold leading-none";
   return (
-    <div className="flex items-center justify-between gap-2 w-full mt-1">
+    <div className="flex items-center justify-between gap-3 mt-1">
       <div className="text-center flex-1">
         <p className={labelClass}>{t('metrics.structure')}</p>
         <p className={valueClass}>{value1 || '0'}</p>
       </div>
-      <div className="w-px h-8 bg-slate-200" />
+      <div className="h-8 w-px bg-slate-200" />
       <div className="text-center flex-1">
         <p className={labelClass}>{t('metrics.unit')}</p>
         <p className={valueClass}>{value2 || '0'}</p>
       </div>
-      <div className="w-px h-8 bg-slate-200" />
+      <div className="h-8 w-px bg-slate-200" />
       <div className="text-center flex-1">
         <p className={labelClass}>{t('metrics.demand')}</p>
         <p className={`text-[17px] font-bold leading-none ${demandColor}`}>{value3 || '0'}</p>
@@ -27,7 +27,7 @@ const StandardMetrics = ({ value1, value2, value3, demandColor, t }: { value1?: 
   );
 };
 
-const AssessmentSubCard = ({ title, data, theme, t }: { title: string, data: any, theme: 'emerald' | 'amber', t: any }) => {
+const AssessmentSubCard = ({ title, data, theme, t }: { title: string, data: { count?: string | number, units?: string | number, demand?: string | number }, theme: 'emerald' | 'amber', t: (key: string) => string }) => {
   const colors = theme === 'emerald'
     ? { bg: 'bg-emerald-50/70', border: 'border-emerald-100', title: 'text-emerald-700', label: 'text-emerald-600/70', value: 'text-emerald-700', divider: 'bg-emerald-200' }
     : { bg: 'bg-amber-50/70', border: 'border-amber-100', title: 'text-amber-700', label: 'text-amber-600/70', value: 'text-amber-800', divider: 'bg-amber-200' };
@@ -36,20 +36,20 @@ const AssessmentSubCard = ({ title, data, theme, t }: { title: string, data: any
   const valueClass = `text-[12px] font-bold ${colors.value}`;
 
   return (
-    <div className={`${colors.bg} rounded-lg px-2 py-1.5 border ${colors.border} flex flex-col justify-center`}>
+    <div className={`px-2 py-1.5 flex flex-col justify-center`}>
       <p className={`text-[10px] font-bold ${colors.title} mb-1 uppercase tracking-wide`}>{title}</p>
-      <div className="flex items-center justify-between gap-2 w-full mt-1">
-        <div className="text-center flex-1">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-center">
           <p className={labelClass}>{t('metrics.structure')}</p>
           <p className={valueClass}>{data?.count || '0'}</p>
         </div>
-        <div className={`w-px h-6 ${colors.divider}`} />
-        <div className="text-center flex-1">
+        <div className={`h-6 w-px ${colors.divider}`} />
+        <div className="text-center">
           <p className={labelClass}>{t('metrics.units')}</p>
           <p className={valueClass}>{data?.units || '0'}</p>
         </div>
-        <div className={`w-px h-6 ${colors.divider}`} />
-        <div className="text-center flex-1">
+        <div className={`h-6 w-px ${colors.divider}`} />
+        <div className="text-center">
           <p className={labelClass}>{t('metrics.demand')}</p>
           <p className={valueClass}>{data?.demand || '0'}</p>
         </div>
@@ -59,7 +59,7 @@ const AssessmentSubCard = ({ title, data, theme, t }: { title: string, data: any
 };
 
 export function DashboardSummaryCards({ serverData: apiStats }: { serverData?: MainCardsData | null }) {
-  
+
   const t = useTranslations('automationDashboard.summaryCards');
 
   const hasValidApiStats =
@@ -81,13 +81,13 @@ export function DashboardSummaryCards({ serverData: apiStats }: { serverData?: M
             return (
               <div
                 key={index}
-                className={`relative overflow-hidden bg-white border border-slate-200 border-l-4 ${card.border} rounded-xl p-4 shadow-sm`}
+                className={`relative overflow-hidden bg-white border border-slate-200 border-t-0 border-r-0 border-b-0 border-l-4 ${card.border} rounded-xl p-3 shadow-md`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 rounded-lg flex-shrink-0 bg-slate-100">
-                    <Icon className="w-4 h-4 text-slate-400" />
+                  <div className="p-1.5 rounded-full shadow-sm flex-shrink-0 bg-slate-400">
+                    <Icon className="w-4 h-4 text-white" />
                   </div>
-                  <h3 className="text-[13px] text-slate-700 font-medium truncate">{card.title}</h3>
+                  <h3 className="text-[13px] text-slate-700 font-bold leading-tight min-w-0 truncate">{card.title}</h3>
                 </div>
                 <p className="text-sm text-slate-500">{t('noData')}</p>
               </div>
@@ -102,24 +102,19 @@ export function DashboardSummaryCards({ serverData: apiStats }: { serverData?: M
   const approved = apiStats.assessmentApproved;
   const additional = apiStats.additionalRevenueGenerated;
 
-  const formatCurrencyIA = (val: number | undefined) => {
-    if (val === undefined || val === null || isNaN(val)) return "₹0.00";
-    if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)}Cr`;
-    if (val >= 100000) return `₹${(val / 100000).toFixed(2)}L`;
-    return `₹${formatIndianNumber(val)}`;
-  };
-
   const kpiCards = [
     {
       title: t('titles.previouslyRegistered'),
       borderColor: "border-l-purple-500",
-      iconBg: "bg-gradient-to-br from-purple-500 to-purple-600",
+      iconBg: "bg-purple-600",
+      iconBorder: "",
+      iconColor: "text-white",
       icon: IndianRupee,
       content: (
         <StandardMetrics
           value1={formatIndianNumber(prev.structureCount ?? prev.propertyCount)}
           value2={formatIndianNumber(prev.propertyCount ?? prev.unitCount)}
-          value3={formatCurrencyIA(prev.demand)}
+          value3={prev.demand ? (String(prev.demand).includes('₹') ? String(prev.demand) : `₹${prev.demand}`) : '₹0.00'}
           demandColor="text-purple-600"
           t={t}
         />
@@ -128,7 +123,9 @@ export function DashboardSummaryCards({ serverData: apiStats }: { serverData?: M
     {
       title: t('titles.assessmentApproved'),
       borderColor: "border-l-emerald-500",
-      iconBg: "bg-gradient-to-br from-emerald-500 to-emerald-600",
+      iconBg: "bg-emerald-500",
+      iconBorder: "",
+      iconColor: "text-white",
       icon: CheckCircle2,
       content: (
         <div className="grid grid-cols-2 gap-2 mt-1">
@@ -137,7 +134,7 @@ export function DashboardSummaryCards({ serverData: apiStats }: { serverData?: M
             data={{
               count: formatIndianNumber(approved.assessed?.structureCount),
               units: formatIndianNumber(approved.assessed?.unitCount),
-              demand: formatCurrencyIA(approved.assessed?.demand)
+              demand: approved.assessed?.demand ? (String(approved.assessed.demand).includes('₹') ? String(approved.assessed.demand) : `₹${approved.assessed.demand}`) : '₹0.00'
             }}
             theme="emerald"
             t={t}
@@ -147,7 +144,7 @@ export function DashboardSummaryCards({ serverData: apiStats }: { serverData?: M
             data={{
               count: formatIndianNumber(approved.unassessed?.structureCount),
               units: formatIndianNumber(approved.unassessed?.unitCount),
-              demand: formatCurrencyIA(approved.unassessed?.demand)
+              demand: approved.unassessed?.demand ? (String(approved.unassessed.demand).includes('₹') ? String(approved.unassessed.demand) : `₹${approved.unassessed.demand}`) : '₹0.00'
             }}
             theme="amber"
             t={t}
@@ -158,13 +155,15 @@ export function DashboardSummaryCards({ serverData: apiStats }: { serverData?: M
     {
       title: t('titles.additionalRevenue'),
       borderColor: "border-l-teal-500",
-      iconBg: "bg-gradient-to-br from-teal-500 to-teal-600",
+      iconBg: "bg-teal-500",
+      iconBorder: "",
+      iconColor: "text-white",
       icon: TrendingUp,
       content: (
         <StandardMetrics
           value1={formatIndianNumber(additional.structureCount)}
           value2={formatIndianNumber(additional.unitCount)}
-          value3={formatCurrencyIA(additional.demand)}
+          value3={additional.demand ? (String(additional.demand).includes('₹') ? String(additional.demand) : `₹${additional.demand}`) : '₹0.00'}
           demandColor="text-teal-600"
           t={t}
         />
@@ -180,13 +179,13 @@ export function DashboardSummaryCards({ serverData: apiStats }: { serverData?: M
           return (
             <div
               key={index}
-              className={`relative overflow-hidden w-full flex flex-col bg-white border border-slate-200 border-l-4 ${card.borderColor} rounded-xl p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-in-out`}
+              className={`relative overflow-hidden bg-white border border-slate-200 border-t-0 border-r-0 border-b-0 border-l-4 ${card.borderColor} rounded-xl p-3 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}
             >
-              <div className="flex items-center gap-2 mb-3">
-                <div className={`${card?.iconBg} p-1.5 rounded-lg flex-shrink-0`}>
-                  <Icon className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`${card?.iconBg} ${card?.iconBorder} p-1.5 rounded-full shadow-sm flex-shrink-0`}>
+                  <Icon className={`w-4 h-4 ${card?.iconColor || 'text-white'}`} />
                 </div>
-                <h3 className="text-[13px] text-slate-700 font-medium truncate">{card?.title}</h3>
+                <h3 className="text-[13px] text-slate-700 font-bold leading-tight truncate">{card?.title}</h3>
               </div>
 
               {card?.content}

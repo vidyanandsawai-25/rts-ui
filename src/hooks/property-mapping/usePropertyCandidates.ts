@@ -14,7 +14,21 @@ interface UsePropertyCandidatesProps {
   mappings: MappingLink[];
 }
 
-function getCandidateWithDynamicScore(cand: OldPropertyCandidate, currentNewProperty: NewProperty): OldPropertyCandidate {
+function getCandidateWithDynamicScore(
+  cand: OldPropertyCandidate,
+  currentNewProperty: NewProperty,
+  mappedOldPropNos: string[] = []
+): OldPropertyCandidate {
+  const isMappedToCurrent = mappedOldPropNos.includes(cand.propNo);
+
+  const updatedCand: OldPropertyCandidate = {
+    ...cand,
+    isMapped: isMappedToCurrent,
+    status: isMappedToCurrent ? ("Mapped" as const) : ("Unmapped" as const),
+    mappedNewPropertyNo: isMappedToCurrent ? currentNewProperty.propNo : "",
+    belongsToNewId: isMappedToCurrent ? currentNewProperty.propNo : (cand.belongsToNewId || ""),
+  };
+
   const newPropertyRef = {
     propNo: currentNewProperty.propNo || "",
     owner: currentNewProperty.owner || "",
@@ -32,22 +46,22 @@ function getCandidateWithDynamicScore(cand: OldPropertyCandidate, currentNewProp
   };
 
   const dynamicScore = calculateMatchScore(newPropertyRef, {
-    propNo: cand.propNo || "",
-    owner: cand.owner || "",
-    address: cand.address || "",
-    area: cand.area || 0,
-    floors: cand.floors || "",
-    tax: cand.tax || 0,
-    cts: cand.cts,
-    rv: cand.rv,
-    use: cand.use,
-    ward: cand.ward,
-    zone: cand.zone,
-    plotNo: cand.plotNo,
-    constructionYear: cand.constructionYear
+    propNo: updatedCand.propNo || "",
+    owner: updatedCand.owner || "",
+    address: updatedCand.address || "",
+    area: updatedCand.area || 0,
+    floors: updatedCand.floors || "",
+    tax: updatedCand.tax || 0,
+    cts: updatedCand.cts,
+    rv: updatedCand.rv,
+    use: updatedCand.use,
+    ward: updatedCand.ward,
+    zone: updatedCand.zone,
+    plotNo: updatedCand.plotNo,
+    constructionYear: updatedCand.constructionYear
   });
 
-  return { ...cand, score: dynamicScore };
+  return { ...updatedCand, score: dynamicScore };
 }
 
 export function usePropertyCandidates({
@@ -64,10 +78,14 @@ export function usePropertyCandidates({
   const [selectedFloorProperty, setSelectedFloorProperty] = useState("");
   const [hoveredFloorIndex, setHoveredFloorIndex] = useState<number | null>(null);
 
+  const mappedOldPropNos = useMemo(() => {
+    return Array.from(new Set(mappings.flatMap((m) => m.oldPropNos || []).filter(Boolean)));
+  }, [mappings]);
+
   const autoCandidates = useMemo(() => {
     if (!currentNewProperty) return [];
     const initialActive = candidates.filter(
-      (c) => (c.belongsToNewId === currentNewProperty.propNo || c.belongsToNewId === currentNewProperty.fullPropNo || c.isMapped) && c.propNo !== ""
+      (c) => (c.belongsToNewId === currentNewProperty.propNo || c.belongsToNewId === currentNewProperty.fullPropNo || c.isMapped || mappedOldPropNos.includes(c.propNo)) && c.propNo !== ""
     );
     const merged = [...initialActive];
     autoSearchedCandidates.forEach((ac) => {
@@ -75,13 +93,13 @@ export function usePropertyCandidates({
         merged.push(ac);
       }
     });
-    return merged.map(c => getCandidateWithDynamicScore(c, currentNewProperty));
-  }, [candidates, currentNewProperty, autoSearchedCandidates]);
+    return merged.map((c) => getCandidateWithDynamicScore(c, currentNewProperty, mappedOldPropNos));
+  }, [candidates, currentNewProperty, autoSearchedCandidates, mappedOldPropNos]);
 
   const manualCandidates = useMemo(() => {
     if (!currentNewProperty || !searchQuery.trim()) return [];
-    return serverSearchedCandidates.map(c => getCandidateWithDynamicScore(c, currentNewProperty));
-  }, [currentNewProperty, searchQuery, serverSearchedCandidates]);
+    return serverSearchedCandidates.map((c) => getCandidateWithDynamicScore(c, currentNewProperty, mappedOldPropNos));
+  }, [currentNewProperty, searchQuery, serverSearchedCandidates, mappedOldPropNos]);
 
   const activeCandidates = useMemo(() => {
     const merged = [...autoCandidates];
@@ -97,8 +115,8 @@ export function usePropertyCandidates({
     if (!currentNewProperty) return [];
     const custom = checkedCandidateIds[currentNewProperty.propNo];
     if (custom !== undefined) return custom;
-    return candidates.filter((c) => c.isMapped).map((c) => c.id);
-  }, [checkedCandidateIds, currentNewProperty, candidates]);
+    return activeCandidates.filter((c) => c.isMapped || c.status === "Mapped" || mappedOldPropNos.includes(c.propNo)).map((c) => c.id);
+  }, [checkedCandidateIds, currentNewProperty, activeCandidates, mappedOldPropNos]);
 
   const selectedCandidates = useMemo(() => {
     return activeCandidates.filter((c) => activeCheckedIds.includes(c.id));
@@ -120,7 +138,7 @@ export function usePropertyCandidates({
     }
 
     selectedCandidates.forEach((c) => {
-      if (c.status === "Mapped") return;
+      if (c.status === "Mapped" && mappedOldPropNos.includes(c.propNo)) return;
       const candKey = getFloorKey(c.propNo, c.partitionNo);
       if (activeFloorDataMap[candKey]) {
         tabs.push({
@@ -132,7 +150,7 @@ export function usePropertyCandidates({
       }
     });
     return tabs;
-  }, [currentNewProperty, selectedCandidates, activeFloorDataMap, t]);
+  }, [currentNewProperty, selectedCandidates, activeFloorDataMap, t, mappedOldPropNos]);
 
   useEffect(() => {
     if (floorPropertyTabs.length > 0) {
@@ -143,16 +161,12 @@ export function usePropertyCandidates({
     }
   }, [floorPropertyTabs, selectedFloorProperty]);
 
-  const mappedOldPropNos = useMemo(() => {
-    return mappings.flatMap((m) => m.oldPropNos);
-  }, [mappings]);
-
   const handleToggleCandidate = (id: string) => {
     if (!currentNewProperty) return;
     setCheckedCandidateIds((prev) => {
       const currentVal = prev[currentNewProperty.propNo] !== undefined
         ? prev[currentNewProperty.propNo]
-        : candidates.filter((c) => c.isMapped).map((c) => c.id);
+        : candidates.filter((c) => c.isMapped || mappedOldPropNos.includes(c.propNo)).map((c) => c.id);
       const updated = currentVal.includes(id) ? currentVal.filter((item) => item !== id) : [...currentVal, id];
       return { ...prev, [currentNewProperty.propNo]: updated };
     });
@@ -173,3 +187,4 @@ export function usePropertyCandidates({
     handleToggleCandidate,
   };
 }
+

@@ -226,7 +226,7 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
     }, [tableData, columns, headerRows, zoneNo, summaryData]);
 
     return (
-        <div className="flex flex-col h-full gap-3 p-3">
+        <div className="flex flex-col h-full gap-2">
             {/* Custom Page Header */}
             <div className="flex items-center justify-between bg-[#fcfaff] px-4 py-3 rounded-lg shadow-sm border border-purple-100/60">
                 <div className="flex-1 flex justify-start">
@@ -265,17 +265,17 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
             <InternalSurveyWardWiseSummaryCards data={summaryCardsData} />
 
             {/* Ward-wise Table */}
-            <div className="relative border-0 shadow-lg overflow-hidden transition-all duration-300 bg-white rounded-lg flex flex-col flex-1">
-                <div className="flex-1 p-0 overflow-auto max-h-[70vh] transition-all duration-300 border-t border-slate-200 [&_thead>tr:first-child]:bg-gradient-to-r [&_thead>tr:first-child]:from-indigo-100 [&_thead>tr:first-child]:to-purple-100 [&_thead>tr:first-child]:shadow-sm [&_thead>tr:nth-child(2)]:bg-gradient-to-r [&_thead>tr:nth-child(2)]:from-indigo-50 [&_thead>tr:nth-child(2)]:to-purple-50 [&_th]:border [&_th]:border-slate-300 [&_td]:border [&_td]:border-slate-300">
+            <div className="relative border-0 shadow-lg overflow-hidden bg-white rounded-lg flex flex-col flex-1">
+                <div className="flex-1 p-0 overflow-auto max-h-[70vh] border-t border-slate-200">
                     <AutomationTable
                         data={tableData}
                         columns={columns as unknown as Column<InternalSurveyTableRow>[]}
                         headerRows={headerRows}
                         containerClassName="h-full"
-                        tableClassName="w-full border-collapse text-xs border border-slate-300"
-                        theadClassName="sticky top-0 z-20 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)]"
+                        tableClassName="w-full border-collapse text-sm border border-slate-300"
+                        theadClassName="sticky top-0 z-20"
                         maxBodyHeightClassName="max-h-none"
-                        rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors border-b border-slate-200 cursor-pointer"}
+                        rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20" : "cursor-pointer"}
                         loading={false}
                         totalCount={totalCount}
                         pageNumber={pageNumber}

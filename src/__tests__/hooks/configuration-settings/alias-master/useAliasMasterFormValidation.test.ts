@@ -5,7 +5,7 @@ import type { AliasMasterFormModel } from "@/types/alias-master.types";
 
 const baseData: AliasMasterFormModel = {
   id: null,
-  fieldName: "Ward_No",
+  keyName: "Ward_No",
   labelName: "Ward No",
   englishName: "Sector",
   regionalName: "सेक्टर",
@@ -23,41 +23,41 @@ function setup(isEdit: boolean) {
 }
 
 describe("useAliasMasterFormValidation", () => {
-  describe("fieldName", () => {
-    it("requires fieldName when creating (isEdit=false)", () => {
+  describe("keyName", () => {
+    it("requires keyName when creating (isEdit=false)", () => {
       const { validate } = setup(false);
-      const errors = validate({ ...baseData, fieldName: "" });
-      expect(errors.fieldName).toBe("form.validation.fieldNameRequired");
+      const errors = validate({ ...baseData, keyName: "" });
+      expect(errors.keyName).toBe("form.validation.keyNameRequired");
     });
 
-    it("does not validate fieldName at all when editing (isEdit=true)", () => {
+    it("does not validate keyName at all when editing (isEdit=true)", () => {
       const { validate } = setup(true);
-      const errors = validate({ ...baseData, fieldName: "" });
-      expect(errors.fieldName).toBeUndefined();
+      const errors = validate({ ...baseData, keyName: "" });
+      expect(errors.keyName).toBeUndefined();
     });
 
-    it("rejects a fieldName longer than 50 characters", () => {
+    it("rejects a keyName longer than 50 characters", () => {
       const { validate } = setup(false);
-      const errors = validate({ ...baseData, fieldName: "A".repeat(51) });
-      expect(errors.fieldName).toContain("form.validation.fieldNameMaxLength");
+      const errors = validate({ ...baseData, keyName: "A".repeat(51) });
+      expect(errors.keyName).toContain("form.validation.keyNameMaxLength");
     });
 
-    it("rejects an all-zero fieldName", () => {
+    it("rejects an all-zero keyName", () => {
       const { validate } = setup(false);
-      const errors = validate({ ...baseData, fieldName: "000" });
-      expect(errors.fieldName).toBe("form.validation.fieldNameFormat");
+      const errors = validate({ ...baseData, keyName: "000" });
+      expect(errors.keyName).toBe("form.validation.keyNameFormat");
     });
 
-    it("rejects a fieldName with invalid characters", () => {
+    it("rejects a keyName with invalid characters", () => {
       const { validate } = setup(false);
-      const errors = validate({ ...baseData, fieldName: "Ward@No" });
-      expect(errors.fieldName).toBe("form.validation.fieldNameFormat");
+      const errors = validate({ ...baseData, keyName: "Ward@No" });
+      expect(errors.keyName).toBe("form.validation.keyNameFormat");
     });
 
-    it("accepts a well-formed fieldName", () => {
+    it("accepts a well-formed keyName", () => {
       const { validate } = setup(false);
-      const errors = validate({ ...baseData, fieldName: "Ward_No" });
-      expect(errors.fieldName).toBeUndefined();
+      const errors = validate({ ...baseData, keyName: "Ward_No" });
+      expect(errors.keyName).toBeUndefined();
     });
   });
 
@@ -144,12 +144,12 @@ describe("useAliasMasterFormValidation", () => {
         useAliasMasterFormValidation({
           submittedOnce: true,
           touched: {},
-          errors: { fieldName: "Required" },
+          errors: { keyName: "Required" },
           isEdit: false,
           t,
         })
       );
-      expect(result.current.showError("fieldName")).toBe(true);
+      expect(result.current.showError("keyName")).toBe(true);
     });
 
     it("returns false when there is no error even if touched/submitted", () => {

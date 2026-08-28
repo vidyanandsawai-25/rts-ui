@@ -123,23 +123,36 @@
       "retrospectiveTaxTitle": "पश्चलक्षी कर",
       "retrospectiveTaxSubtitle": "प्रारंभ, सीमा और गुणक चुनें।",
       "taxStartsFromLabel": "कर यहाँ से शुरू होता है",
+      "useDateLabel": "उपयोग तिथि",
+      "monthsAfterLabel": "महीनों के बाद",
+      "earliestAllowedDateLabel": "सबसे पहले की अनुमत तिथि",
       "taxStartsFromOptions": {
+        "selectedEvidenceDate": "चयनित साक्ष्य तिथि",
+        "afterSpecifiedMonths": "निर्दिष्ट महीनों के बाद",
         "maxLookback": "अधिकतम लुक-बैक तिथि",
         "fromOc": "OC तिथि से",
         "fixedCutoff": "निश्चित कटऑफ तिथि"
       },
       "limitLabel": "पश्चलक्षी सीमा",
       "limitOptions": {
-        "maxYears": "अधिकतम वर्ष",
-        "noLimit": "कोई सीमा नहीं"
+        "earliestChargeable": "सबसे पहले की प्रभार्य तिथि",
+        "noLimit": "कोई अतिरिक्त निगम सीमा नहीं",
+        "maxYears": "अधिकतम वर्ष"
       },
       "maxYearsLabel": "अधिकतम वर्ष",
+      "maxYearsPlaceholder": "उदाहरण: 6",
       "taxCalcLabel": "कर की गणना",
       "taxCalcOptions": {
         "oneMultiplier": "संपूर्ण अवधि के लिए एक गुणक",
-        "yearlyDynamic": "वार्षिक गतिशील गुणक"
+        "differentMultiplier": "दो तिथियों के बीच भिन्न गुणक"
       },
       "multiplierLabel": "कर गुणक",
+      "splitPeriodTitle": "विभाजित-अवधि कर गुणक",
+      "higherRateStartsFromLabel": "उच्च दर यहाँ से शुरू होती है",
+      "higherRateContinuesUpToLabel": "उच्च दर यहाँ तक जारी रहती है",
+      "duringPeriodLabel": "अवधि के दौरान गुणक",
+      "afterPeriodLabel": "अवधि के बाद गुणक",
+      "splitExampleText": "उदाहरण: CC और OC के बीच 1.5x दर; OC के बाद 1x दर लागू होगी।",
       "taxationUsedNotice": "उपयोग किया गया कराधान: सभी वर्षों के लिए चालू वर्ष दर; सभी वर्षों के लिए चालू वर्ष प्रतिशत।",
       "unauthorizedPenaltyTitle": "अनधिकृत निर्माण जुर्माना",
       "unauthorizedPenaltySubtitle": "केवल तभी दिखाया जाता है जब OC और CC दोनों अनुपलब्ध हों।",

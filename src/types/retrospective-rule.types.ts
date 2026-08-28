@@ -31,6 +31,13 @@ export interface RetrospectiveRule {
   availableEvidence?: EvidenceItemCode[];
   unavailableEvidence?: EvidenceItemCode[];
   compareEvidenceDates?: string;
+  useDate?: string;
+  earliestAllowedDate?: string;
+  splitHigherRateStartsFrom?: string;
+  splitHigherRateContinuesUpTo?: string;
+  duringPeriodMultiplier?: number | '';
+  afterPeriodMultiplier?: number | '';
+  offsetMonths?: number | '';
   taxStartsFrom?: string;
   retrospectiveLimit?: string;
   maximumYears?: number | '';
@@ -69,6 +76,13 @@ export interface CreateRetrospectiveRuleInput {
   availableEvidence?: EvidenceItemCode[];
   unavailableEvidence?: EvidenceItemCode[];
   compareEvidenceDates?: string;
+  useDate?: string;
+  earliestAllowedDate?: string;
+  splitHigherRateStartsFrom?: string;
+  splitHigherRateContinuesUpTo?: string;
+  duringPeriodMultiplier?: number | '';
+  afterPeriodMultiplier?: number | '';
+  offsetMonths?: number | '';
   taxStartsFrom?: string;
   retrospectiveLimit?: string;
   maximumYears?: number | '';

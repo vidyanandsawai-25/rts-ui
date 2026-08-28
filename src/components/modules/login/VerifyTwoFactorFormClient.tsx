@@ -32,11 +32,13 @@ export function VerifyTwoFactorFormClient({
   locale,
   method = 'totp',
   username = '',
+  challengeId,
   onBackToLogin,
 }: {
   locale: string;
   method?: 'totp' | 'otp';
   username?: string;
+  challengeId?: string;
   onBackToLogin?: () => void;
 }) {
   const t = useTranslations('login');
@@ -83,7 +85,9 @@ export function VerifyTwoFactorFormClient({
         className="space-y-4"
       >
         <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="method" value={method} />
         <input type="hidden" name="useRecoveryCode" value={useRecoveryCode ? 'true' : 'false'} />
+        {challengeId ? <input type="hidden" name="challengeId" value={challengeId} /> : null}
 
         <AnimatePresence mode="wait">
           {displayError ? (

@@ -123,23 +123,37 @@
       "retrospectiveTaxTitle": "मागील कार्यलक्ष्यी कर",
       "retrospectiveTaxSubtitle": "शुरुवात, मर्यादा आणि गुणक निवडा.",
       "taxStartsFromLabel": "कर येथून सुरू होतो",
+      "useDateLabel": "वापराची तारीख",
+      "monthsAfterLabel": "महिन्यांनंतर",
+      "earliestAllowedDateLabel": "सर्वात आधीची अनुमत तारीख",
       "taxStartsFromOptions": {
+        "selectedEvidenceDate": "निवडलेली पुरावा तारीख",
+        "afterSpecifiedMonths": "निर्दिष्ट महिन्यांनंतर",
         "maxLookback": "कमाल लुक-बॅक तारीख",
         "fromOc": "OC तारखेपासून",
         "fixedCutoff": "निश्चित कटऑफ तारीख"
       },
       "limitLabel": "मागील कार्यलक्ष्यी मर्यादा",
       "limitOptions": {
-        "maxYears": "कमाल वर्षे",
-        "noLimit": "मर्यादा नाही"
+        "earliestChargeable": "सर्वात आधीची आकारणीयोग्य तारीख",
+        "noLimit": "कोणतीही अतिरिक्त मर्यादा नाही",
+        "maxYears": "कमाल वर्षे"
       },
+      "earliestAllowedDateLabel": "सर्वात आधीची अनुमत तारीख",
       "maxYearsLabel": "कमाल वर्षे",
+      "maxYearsPlaceholder": "उदा: ६",
       "taxCalcLabel": "कर गणना",
       "taxCalcOptions": {
         "oneMultiplier": "संपूर्ण कालावधीसाठी एक गुणक",
-        "yearlyDynamic": "वार्षिक डायनॅमिक गुणक"
+        "differentMultiplier": "दोन तारखांमधील भिन्न गुणक"
       },
       "multiplierLabel": "कर गुणक",
+      "splitPeriodTitle": "विभाजित-कालावधी कर गुणक",
+      "higherRateStartsFromLabel": "उच्च दर येथून सुरू होतो",
+      "higherRateContinuesUpToLabel": "उच्च दर येथपर्यंत सुरू राहतो",
+      "duringPeriodLabel": "कालावधीदरम्यानचा गुणक",
+      "afterPeriodLabel": "कालावधीनंतरचा गुणक",
+      "splitExampleText": "उदा: CC आणि OC दरम्यान १.५x दर आकारला जाईल; OC नंतर मूळ १.०x दर पुनर्स्थापित होईल.",
       "taxationUsedNotice": "वापरलेली कर आकारणी: सर्व वर्षांसाठी चालू वर्षाचा दर; सर्व वर्षांसाठी चालू वर्षाची टक्केवारी.",
       "unauthorizedPenaltyTitle": "अनधिकृत बांधकाम दंड",
       "unauthorizedPenaltySubtitle": "केवळ जेव्हा OC आणि CC दोन्ही अनुपलब्ध असतात तेव्हाच दर्शविले जाते.",

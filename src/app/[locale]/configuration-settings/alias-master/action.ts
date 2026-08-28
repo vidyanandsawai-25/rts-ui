@@ -61,7 +61,7 @@ export async function getAliasMasterByIdAction(id: number | string): Promise<Ali
 
 export async function saveAliasMaster(id: string, formData: FormData) {
   let locale: string;
-  let fieldName: string;
+  let keyName: string;
   let labelName: string;
 
   try {
@@ -72,7 +72,7 @@ export async function saveAliasMaster(id: string, formData: FormData) {
     locale = String(formData.get("locale") ?? "").trim();
     if (!locale || !locales.includes(locale as (typeof locales)[number])) return { ok: false, error: "invalid_locale" };
 
-    fieldName = String(formData.get("fieldName") ?? "").trim();
+    keyName = String(formData.get("keyName") ?? "").trim();
     labelName = String(formData.get("labelName") ?? "").trim();
     const englishName = String(formData.get("englishName") ?? "").trim();
     const regionalName = String(formData.get("regionalName") ?? "").trim();
@@ -91,13 +91,13 @@ export async function saveAliasMaster(id: string, formData: FormData) {
         return { ok: false, error: "invalid_id" };
       }
       isUpdate = true;
-    } else if (fieldName === "") {
-      return { ok: false, error: "invalid_fieldName" };
+    } else if (keyName === "") {
+      return { ok: false, error: "invalid_keyName" };
     }
 
     const payload: AliasMasterFormModel = {
       id: numericId,
-      fieldName,
+      keyName,
       labelName,
       englishName,
       regionalName,

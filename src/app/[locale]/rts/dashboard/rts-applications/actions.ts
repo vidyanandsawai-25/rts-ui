@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { getRtsMisDashboardData } from '@/lib/api/rts/rtsmisdashboard.service';
 import { getAllRtsServices } from '@/lib/api/rts/rtsservices.service';
 import { getAllRtsDepartments } from '@/lib/api/rts/rtsdepartment.service';
@@ -922,13 +922,245 @@ export async function getCertificatePreviewAction(
   customConditions?: string
 ) {
   try {
-    const { getCertificatePreview } = await import('@/lib/api/rts/rtscertificate.service');
-    const result = await getCertificatePreview({
-      applicationId,
-      officerInputs,
-      customConditions,
-    });
-    return { success: true, data: result };
+    const { getCertificatePreview, getCertificateTemplateByServiceId } = await import('@/lib/api/rts/rtscertificate.service');
+    const { getPaymentReceipt } = await import('@/lib/api/rts/rtspayment.service');
+
+    const [previewRes, verificationRes, appDetailsRes, stagesRes, paymentReceiptRes] = await Promise.allSettled([
+      getCertificatePreview({ applicationId, officerInputs, customConditions }),
+      getApprovalApplicationVerification(applicationId),
+      getApprovalApplicationDetails(applicationId),
+      getApprovalApplicationStages(applicationId),
+      getPaymentReceipt(applicationId),
+    ]);
+
+    const previewData = previewRes.status === 'fulfilled' ? previewRes.value : null;
+    const verification = verificationRes.status === 'fulfilled' ? verificationRes.value : null;
+    const appDetails = appDetailsRes.status === 'fulfilled' ? appDetailsRes.value : null;
+    const stages = stagesRes.status === 'fulfilled' ? stagesRes.value : null;
+    const paymentReceipt = paymentReceiptRes.status === 'fulfilled' ? paymentReceiptRes.value : null;
+
+    const serviceId = verification?.serviceId;
+    let template = null;
+    if (serviceId) {
+      try {
+        template = await getCertificateTemplateByServiceId(serviceId);
+      } catch (err) {
+        console.warn("Could not fetch master template for preview service:", err);
+      }
+    }
+
+    if (template && template.bodyContent) {
+      let merged = template.bodyContent;
+      const todayFormatted = new Date().toLocaleDateString('en-GB');
+      const applicationNo = verification?.applicationNo || (appDetails as any)?.applicationNo || `RTS${applicationId}`;
+      const serviceName = verification?.serviceName || template.serviceName || "आर.टी.एस. सेवा";
+      const departmentName = template.departmentName || "लोकसेवा हक्क विभाग";
+
+      // 1. Standard Core Application Metadata
+      merged = merged.replace(/{{ApplicationNo}}/g, applicationNo);
+      merged = merged.replace(/{{ApplicationDate}}/g, todayFormatted);
+      merged = merged.replace(/{{ApprovalDate}}/g, todayFormatted);
+      merged = merged.replace(/{{AppliedDate}}/g, todayFormatted);
+      merged = merged.replace(/{{IssueDate}}/g, todayFormatted);
+      merged = merged.replace(/{{CertificateNo}}/g, previewData?.sampleCertificateNo || `CERT/${applicationNo}`);
+      merged = merged.replace(/{{ApplicantName}}/g, (previewData?.citizenAutoValues?.ApplicantName) || (appDetails as any)?.applicantName || "");
+      merged = merged.replace(/{{ApplicantMobile}}/g, (previewData?.citizenAutoValues?.ApplicantMobile) || "");
+      merged = merged.replace(/{{ServiceTitle}}/g, serviceName);
+      merged = merged.replace(/{{ServiceName}}/g, serviceName);
+      merged = merged.replace(/{{DepartmentName}}/g, departmentName);
+      merged = merged.replace(/{{OfficerName}}/g, "सक्षम प्राधिकारी / सह. आयुक्त");
+      merged = merged.replace(/{{ApprovedByOfficer}}/g, "सक्षम प्राधिकारी");
+      merged = merged.replace(/{{OfficerDesignation}}/g, "सक्षम प्राधिकारी");
+
+      // 2. Dynamic Form Fields (from rts.FieldValue & rts.FieldDefinition)
+      let applicantAddress = "";
+      if (appDetails?.applicationDetails && Array.isArray(appDetails.applicationDetails)) {
+        for (const field of appDetails.applicationDetails) {
+          const code = field.fieldCode;
+          const val = field.value ?? "";
+
+          if (code) {
+            merged = merged.replace(new RegExp(`{{Field:${code}}}`, 'gi'), val);
+            merged = merged.replace(new RegExp(`{{${code}}}`, 'gi'), val);
+            merged = merged.replace(new RegExp(`\\[\\[${code}\\]\\]`, 'gi'), val);
+
+            const lowerCode = code.toLowerCase();
+            if (
+              !applicantAddress &&
+              (lowerCode.includes("address") || lowerCode.includes("patt") || lowerCode.includes("location") || lowerCode.includes("area"))
+            ) {
+              applicantAddress = val;
+            }
+          }
+
+          if (field.fieldLabel) {
+            merged = merged.replace(new RegExp(`{{${field.fieldLabel}}}`, 'gi'), val);
+          }
+          if (field.fieldLabelLocal) {
+            merged = merged.replace(new RegExp(`{{${field.fieldLabelLocal}}}`, 'gi'), val);
+          }
+        }
+      }
+
+      merged = merged.replace(/{{ApplicantAddress}}/g, applicantAddress || "");
+
+      // 3. Dynamic Officer Inputs & Workflow Data
+      const officerData = officerInputs || {};
+      const realPaymentReceiptNo =
+        paymentReceipt?.receiptNo ||
+        verification?.receiptNo ||
+        officerData.ChallanNo ||
+        officerData.ReceiptNo ||
+        (verification?.isPaid || paymentReceipt ? `REC-${applicationNo}` : (verification?.feesRequired === false ? "शुल्क लागू नाही (विनामूल्य)" : "—"));
+
+      const realOfficerStageRemark =
+        stages?.approvalStages?.filter((s) => s.remark && s.remark.trim().length > 0)?.slice(-1)[0]?.remark ||
+        officerData.InspectionRemark ||
+        officerData.Remark ||
+        "";
+
+      if (!officerData.InspectionRemark && realOfficerStageRemark) {
+        officerData.InspectionRemark = realOfficerStageRemark;
+      }
+
+      const orderNo = officerData.OrderNo || officerData.OutwardNo || `मनपा/आर.टी.एस./२०२६/${applicationNo}`;
+      const validityPeriod = officerData.ValidityPeriod || "";
+
+      merged = merged.replace(/\[\[OrderNo\]\]/g, orderNo);
+      merged = merged.replace(/\[\[ValidityPeriod\]\]/g, validityPeriod || "—");
+      merged = merged.replace(/\[\[ChallanNo\]\]/g, realPaymentReceiptNo);
+      // Special Conditions Injection
+      if (customConditions && customConditions.trim().length > 0) {
+        if (merged.includes("[[SpecialConditions]]")) {
+          merged = merged.replace(/\[\[SpecialConditions\]\]/g, customConditions);
+        } else {
+          const conditionLines = customConditions.split(/[\r\n]+/).filter(c => c.trim().length > 0);
+          const formattedConditions = conditionLines.map(c => `<li>${c.trim()}</li>`).join("");
+
+          if (merged.includes("</ol>")) {
+            merged = merged.replace("</ol>", `${formattedConditions}</ol>`);
+          } else if (merged.includes("</ul>")) {
+            merged = merged.replace("</ul>", `${formattedConditions}</ul>`);
+          } else {
+            const extraBox = `
+              <div class='extra-conditions-box my-2 p-2.5 bg-amber-50/70 border border-amber-300 rounded text-xs text-slate-800'>
+                <div class='font-bold text-amber-900 mb-1'>विशेष अटी व शर्ती (Special Conditions):</div>
+                <ul class='list-disc pl-5 space-y-0.5'>${formattedConditions}</ul>
+              </div>
+            `;
+            if (merged.includes("{{DigitalSignature}}")) {
+              merged = merged.replace("{{DigitalSignature}}", `${extraBox}\n{{DigitalSignature}}`);
+            } else {
+              merged += extraBox;
+            }
+          }
+        }
+      } else {
+        merged = merged.replace(/\[\[SpecialConditions\]\]/g, "");
+      }
+
+      const standardLabels: Record<string, string> = {
+        OrderNo: "जावक / आदेश क्र.",
+        OutwardNo: "जावक क्र.",
+        ValidityPeriod: "वैधता मुदत",
+        ChallanNo: "शुल्क पावती क्र.",
+        ReceiptNo: "पावती क्र.",
+        InspectionRemark: "पडताळणी शेरा",
+        Remark: "शेरा",
+        SurveyNo: "सीटीएस / सर्व्हे क्र.",
+        ZoneType: "मंजूर झोन",
+      };
+
+      const dynamicOfficerItems: { label: string; value: string }[] = [];
+      const renderedKeys = new Set<string>();
+
+      if (Object.keys(officerData).length > 0) {
+        for (const [k, v] of Object.entries(officerData)) {
+          if (v && typeof v === "string" && v.trim().length > 0 && !renderedKeys.has(k.toLowerCase())) {
+            const lbl = standardLabels[k] || k;
+            const finalVal = k.toLowerCase().includes("challan") || k.toLowerCase().includes("receipt") ? realPaymentReceiptNo : v;
+            dynamicOfficerItems.push({ label: lbl, value: finalVal });
+            renderedKeys.add(k.toLowerCase());
+          }
+        }
+      }
+
+      if (dynamicOfficerItems.length > 0) {
+        const officerEntriesHtml = `
+          <div class='officer-dynamic-entries my-2 p-2.5 bg-amber-50/90 border border-amber-400 rounded-md space-y-1 relative z-10 text-xs'>
+            <div class='font-bold text-amber-950 flex items-center gap-1 text-[11px]'>
+              <span>📝</span> <span>अधिकारी निर्णय व तपासणी तपशील (Officer Inputs & Decision):</span>
+            </div>
+            <div class='grid grid-cols-1 md:grid-cols-2 gap-1.5 pt-1'>
+              ${dynamicOfficerItems
+                .map(
+                  (item) => `
+                <div><span class='font-bold text-slate-800'>${item.label}:</span> <span class='text-slate-950 font-semibold'>${item.value}</span></div>
+              `
+                )
+                .join("")}
+            </div>
+          </div>
+        `;
+
+        if (merged.includes("{{OfficerFieldsBlock}}")) {
+          merged = merged.replace(/{{OfficerFieldsBlock}}/g, officerEntriesHtml);
+        } else if (merged.includes("{{DigitalSignature}}")) {
+          merged = merged.replace("{{DigitalSignature}}", `${officerEntriesHtml}\n{{DigitalSignature}}`);
+        } else {
+          merged += officerEntriesHtml;
+        }
+      } else {
+        merged = merged.replace(/{{OfficerFieldsBlock}}/g, "");
+      }
+
+      // 4. Dynamic Scannable QR Code
+      let dynamicDomain = "";
+      try {
+        const headerList = await headers();
+        const host = headerList.get("x-forwarded-host") || headerList.get("host") || "localhost:3000";
+        const protocol = headerList.get("x-forwarded-proto") || (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
+        dynamicDomain = `${protocol}://${host}`;
+      } catch {
+        dynamicDomain = process.env.NEXT_PUBLIC_APP_URL || "";
+      }
+
+      const qrPayload = `${dynamicDomain}/mr/service/verify-certificate/${encodeURIComponent(applicationNo)}`;
+      const qrCodeBlock = `
+        <div class='inline-flex flex-col items-center justify-center p-1 bg-white border border-slate-300 rounded shadow-xs text-center' style='width: 76px;' title='${qrPayload}'>
+          <div style='width: 60px; height: 60px;' class='flex items-center justify-center bg-white'>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrPayload)}" alt="QR Verification" class="w-full h-full object-contain" />
+          </div>
+          <span class='text-slate-700 mt-0.5 font-bold' style='font-size: 7px;'>Scan to Verify</span>
+        </div>
+      `;
+      merged = merged.replace(/<div[^>]*class=['"][^'"]*inline-flex flex-col items-center[^'"]*['"][^>]*>[\s\S]*?<\/div>\s*<\/div>/gi, qrCodeBlock);
+      merged = merged.replace(/{{QRCodeText}}/g, qrCodeBlock);
+      merged = merged.replace(/{{QRCode}}/g, qrCodeBlock);
+
+      merged = merged.replace(/{{Field:([^}]+)}}/g, '—');
+      merged = merged.replace(/{{CustomConditionsList}}/g, '');
+
+      return {
+        success: true,
+        data: {
+          hasTemplate: true,
+          templateId: template.id,
+          templateName: template.templateName,
+          mergedHtml: merged,
+          citizenAutoValues: previewData?.citizenAutoValues || {},
+          requiredOfficerFields: template.officerFields?.length ? template.officerFields : (previewData?.requiredOfficerFields || []),
+          defaultConditions: template.defaultConditions?.length ? template.defaultConditions : (previewData?.defaultConditions || []),
+          sampleCertificateNo: previewData?.sampleCertificateNo,
+        },
+      };
+    }
+
+    if (previewData) {
+      return { success: true, data: previewData };
+    }
+
+    return { success: false, error: 'Failed to generate preview' };
   } catch (error: any) {
     console.error('Failed to generate certificate preview:', error);
     return { success: false, error: error?.message || 'Failed to generate preview' };
@@ -953,7 +1185,10 @@ export async function issueCertificateAction(
     });
 
     revalidatePath('/rts/dashboard/rts-applications');
-    return { success: true, data: result };
+    return {
+      success: true,
+      data: result,
+    };
   } catch (error: any) {
     console.error('Failed to issue certificate:', error);
     return { success: false, error: error?.message || 'Failed to issue certificate' };
@@ -962,8 +1197,216 @@ export async function issueCertificateAction(
 
 export async function getIssuedCertificateAction(applicationNo: string) {
   try {
-    const { getIssuedCertificateByApplicationNo } = await import('@/lib/api/rts/rtscertificate.service');
+    const { getIssuedCertificateByApplicationNo, getCertificateTemplateByServiceId } = await import('@/lib/api/rts/rtscertificate.service');
     const result = await getIssuedCertificateByApplicationNo(applicationNo);
+
+    if (result && result.serviceId) {
+      try {
+        const { getPaymentReceipt } = await import('@/lib/api/rts/rtspayment.service');
+        const [masterTemplate, appProcessData, verificationData, stagesData, paymentReceiptData] = await Promise.allSettled([
+          getCertificateTemplateByServiceId(result.serviceId),
+          result.applicationId ? getApprovalApplicationDetails(result.applicationId) : Promise.resolve(null),
+          result.applicationId ? getApprovalApplicationVerification(result.applicationId) : Promise.resolve(null),
+          result.applicationId ? getApprovalApplicationStages(result.applicationId) : Promise.resolve(null),
+          result.applicationId ? getPaymentReceipt(result.applicationId) : Promise.resolve(null),
+        ]);
+
+        const template = masterTemplate.status === 'fulfilled' ? masterTemplate.value : null;
+        const appDetails = appProcessData.status === 'fulfilled' ? appProcessData.value : null;
+        const verification = verificationData.status === 'fulfilled' ? verificationData.value : null;
+        const stages = stagesData.status === 'fulfilled' ? stagesData.value : null;
+        const paymentReceipt = paymentReceiptData.status === 'fulfilled' ? paymentReceiptData.value : null;
+
+        if (template && template.bodyContent) {
+          let merged = template.bodyContent;
+          const issueDateFormatted = result.issuedAt
+            ? new Date(result.issuedAt).toLocaleDateString('en-GB')
+            : new Date().toLocaleDateString('en-GB');
+
+          // 1. Standard Core Application Metadata
+          merged = merged.replace(/{{ApplicationNo}}/g, result.applicationNo || applicationNo);
+          merged = merged.replace(/{{ApplicationDate}}/g, issueDateFormatted);
+          merged = merged.replace(/{{ApprovalDate}}/g, issueDateFormatted);
+          merged = merged.replace(/{{AppliedDate}}/g, issueDateFormatted);
+          merged = merged.replace(/{{IssueDate}}/g, issueDateFormatted);
+          merged = merged.replace(/{{CertificateNo}}/g, result.certificateNo || `CERT/${result.applicationNo}`);
+          merged = merged.replace(/{{ApplicantName}}/g, result.applicantName || "");
+          merged = merged.replace(/{{ApplicantMobile}}/g, result.applicantMobile || "");
+          merged = merged.replace(/{{ServiceTitle}}/g, result.serviceName || "");
+          merged = merged.replace(/{{ServiceName}}/g, result.serviceName || "");
+          merged = merged.replace(/{{DepartmentName}}/g, result.departmentName || "");
+          merged = merged.replace(
+            /{{OfficerName}}/g,
+            result.issuedByUserName
+              ? `${result.issuedByUserName} (${result.issuedByOfficerDesignation || "सक्षम प्राधिकारी"})`
+              : "सक्षम प्राधिकारी"
+          );
+          merged = merged.replace(/{{ApprovedByOfficer}}/g, result.issuedByUserName || "सक्षम प्राधिकारी");
+          merged = merged.replace(/{{OfficerDesignation}}/g, result.issuedByOfficerDesignation || "सक्षम प्राधिकारी");
+
+          // 2. Dynamic Form Fields (from rts.FieldValue & rts.FieldDefinition)
+          let applicantAddress = "";
+          if (appDetails?.applicationDetails && Array.isArray(appDetails.applicationDetails)) {
+            for (const field of appDetails.applicationDetails) {
+              const code = field.fieldCode;
+              const val = field.value ?? "";
+
+              if (code) {
+                // Replace all variants: {{Field:Code}}, {{Code}}, [[Code]]
+                merged = merged.replace(new RegExp(`{{Field:${code}}}`, 'gi'), val);
+                merged = merged.replace(new RegExp(`{{${code}}}`, 'gi'), val);
+                merged = merged.replace(new RegExp(`\\[\\[${code}\\]\\]`, 'gi'), val);
+
+                // Detect address fields dynamically
+                const lowerCode = code.toLowerCase();
+                if (
+                  !applicantAddress &&
+                  (lowerCode.includes("address") || lowerCode.includes("patt") || lowerCode.includes("location") || lowerCode.includes("area"))
+                ) {
+                  applicantAddress = val;
+                }
+              }
+
+              if (field.fieldLabel) {
+                merged = merged.replace(new RegExp(`{{${field.fieldLabel}}}`, 'gi'), val);
+              }
+              if (field.fieldLabelLocal) {
+                merged = merged.replace(new RegExp(`{{${field.fieldLabelLocal}}}`, 'gi'), val);
+              }
+            }
+          }
+
+          merged = merged.replace(/{{ApplicantAddress}}/g, applicantAddress || "");
+
+          // 3. Dynamic Officer Inputs & Workflow Data (from officer approval + payment records + stages)
+          let officerInputsData: Record<string, string> = {};
+          if (result.digitalSignatureInfo) {
+            try {
+              const parsedSig = JSON.parse(result.digitalSignatureInfo);
+              if (parsedSig && typeof parsedSig === "object") {
+                officerInputsData = parsedSig.officerInputs || parsedSig;
+              }
+            } catch {
+              // Plain text or legacy signature string
+            }
+          }
+
+          // Real Receipt No from payment receipts table / verification
+          const realPaymentReceiptNo =
+            paymentReceipt?.receiptNo ||
+            verification?.receiptNo ||
+            officerInputsData.ChallanNo ||
+            officerInputsData.ReceiptNo ||
+            (verification?.isPaid || paymentReceipt ? `REC-${result.applicationNo}` : (verification?.feesRequired === false ? "शुल्क लागू नाही (विनामूल्य)" : "—"));
+
+          // Real Officer Inspection Remark from approval workflow stages
+          const realOfficerStageRemark =
+            stages?.approvalStages?.filter((s) => s.remark && s.remark.trim().length > 0)?.slice(-1)[0]?.remark ||
+            officerInputsData.InspectionRemark ||
+            officerInputsData.Remark ||
+            "";
+
+          const orderNo = officerInputsData.OrderNo || officerInputsData.OutwardNo || result.certificateNo || result.applicationNo;
+          const validityPeriod = officerInputsData.ValidityPeriod || "";
+
+          merged = merged.replace(/\[\[OrderNo\]\]/g, orderNo);
+          merged = merged.replace(/\[\[ValidityPeriod\]\]/g, validityPeriod || "—");
+          merged = merged.replace(/\[\[ChallanNo\]\]/g, realPaymentReceiptNo);
+          merged = merged.replace(/\[\[SpecialConditions\]\]/g, officerInputsData.SpecialConditions || "");
+
+          // Dynamically map all officer fields from actual inputs
+          const standardLabels: Record<string, string> = {
+            OrderNo: "जावक / आदेश क्र.",
+            OutwardNo: "जावक क्र.",
+            ValidityPeriod: "वैधता मुदत",
+            ChallanNo: "शुल्क पावती क्र.",
+            ReceiptNo: "पावती क्र.",
+            InspectionRemark: "पडताळणी शेरा",
+            Remark: "शेरा",
+          };
+
+          const dynamicOfficerItems: { label: string; value: string }[] = [];
+          const renderedKeys = new Set<string>();
+
+          if (Object.keys(officerInputsData).length > 0) {
+            for (const [k, v] of Object.entries(officerInputsData)) {
+              if (v && typeof v === "string" && !renderedKeys.has(k.toLowerCase())) {
+                const lbl = standardLabels[k] || k;
+                const finalVal = k.toLowerCase().includes("challan") || k.toLowerCase().includes("receipt") ? realPaymentReceiptNo : v;
+                dynamicOfficerItems.push({ label: lbl, value: finalVal });
+                renderedKeys.add(k.toLowerCase());
+              }
+            }
+          }
+
+          // If no specific custom inputs, populate only existing dynamic values
+          if (dynamicOfficerItems.length === 0) {
+            if (orderNo) dynamicOfficerItems.push({ label: "जावक / आदेश क्र.", value: orderNo });
+            if (validityPeriod) dynamicOfficerItems.push({ label: "वैधता मुदत", value: validityPeriod });
+            if (realPaymentReceiptNo && realPaymentReceiptNo !== "—") dynamicOfficerItems.push({ label: "शुल्क पावती क्र.", value: realPaymentReceiptNo });
+            if (realOfficerStageRemark) dynamicOfficerItems.push({ label: "पडताळणी शेरा", value: realOfficerStageRemark });
+          }
+
+          // Construct rich, official Officer Inputs Block if template has {{OfficerFieldsBlock}}
+          if (dynamicOfficerItems.length > 0) {
+            const officerEntriesHtml = `
+              <div class='officer-dynamic-entries my-2 p-3 bg-amber-50/90 border border-amber-400 rounded-md space-y-1.5 relative z-10'>
+                <div class='font-bold text-amber-950 flex items-center gap-1'>
+                  <span>📝</span> <span>अधिकारी निर्णय व पडताळणी तपशील (Officer Inputs & Remarks):</span>
+                </div>
+                <div class='grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-1'>
+                  ${dynamicOfficerItems
+                    .map(
+                      (item) => `
+                    <div><span class='font-bold text-slate-900'>${item.label}:</span> <span class='text-slate-950'>${item.value}</span></div>
+                  `
+                    )
+                    .join("")}
+                </div>
+              </div>
+            `;
+            merged = merged.replace(/{{OfficerFieldsBlock}}/g, officerEntriesHtml);
+          } else {
+            merged = merged.replace(/{{OfficerFieldsBlock}}/g, "");
+          }
+
+          // 4. Dynamic 100% Real Scannable QR Code linking to our internal verification page
+          let dynamicDomain = "";
+          try {
+            const headerList = await headers();
+            const host = headerList.get("x-forwarded-host") || headerList.get("host") || "localhost:3000";
+            const protocol = headerList.get("x-forwarded-proto") || (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
+            dynamicDomain = `${protocol}://${host}`;
+          } catch {
+            dynamicDomain = process.env.NEXT_PUBLIC_APP_URL || "";
+          }
+
+          const certLookupKey = result.certificateGuid || result.applicationNo || applicationNo;
+          const qrPayload = result.qrCodePayload || `${dynamicDomain}/mr/service/verify-certificate/${encodeURIComponent(certLookupKey)}`;
+
+          const qrCodeBlock = `
+            <div class='inline-flex flex-col items-center justify-center p-1 bg-white border border-slate-300 rounded shadow-xs text-center' style='width: 76px;' title='${qrPayload}'>
+              <div style='width: 60px; height: 60px;' class='flex items-center justify-center bg-white'>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrPayload)}" alt="QR Verification" class="w-full h-full object-contain" />
+              </div>
+              <span class='text-slate-700 mt-0.5 font-bold' style='font-size: 7px;'>Scan to Verify</span>
+            </div>
+          `;
+          merged = merged.replace(/<div[^>]*class=['"][^'"]*inline-flex flex-col items-center[^'"]*['"][^>]*>[\s\S]*?<\/div>\s*<\/div>/gi, qrCodeBlock);
+          merged = merged.replace(/{{QRCodeText}}/g, qrCodeBlock);
+          merged = merged.replace(/{{QRCode}}/g, qrCodeBlock);
+
+          // Clean up any remaining unreplaced placeholder tags
+          merged = merged.replace(/{{Field:([^}]+)}}/g, '—');
+          merged = merged.replace(/{{CustomConditionsList}}/g, '');
+
+          result.mergedHtmlContent = merged;
+        }
+      } catch (tmplErr) {
+        console.warn("Could not load master template for issued cert, using stored mergedHtmlContent:", tmplErr);
+      }
+    }
+
     return { success: true, data: result };
   } catch (error: any) {
     console.error('Failed to fetch issued certificate:', error);

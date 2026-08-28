@@ -342,6 +342,7 @@ export type LoginCredentialsFormState = {
   requiresTwoFactor?: boolean;
   twoFactorUsername?: string;
   twoFactorMethod?: 'totp' | 'otp';
+  challengeId?: string;
 } | null;
 
 export async function loginCredentialsFormAction(
@@ -355,6 +356,7 @@ export async function loginCredentialsFormAction(
         requiresTwoFactor: true,
         twoFactorUsername: result.username,
         twoFactorMethod: result.method,
+        challengeId: result.challengeId,
         resetKey: crypto.randomUUID(),
       };
     }
@@ -394,6 +396,8 @@ export async function validateTwoFactorCodeAction(formData: FormData) {
   const codeEntry = formData.get('code');
   const useRecoveryCodeEntry = formData.get('useRecoveryCode');
   const localeEntry = formData.get('locale');
+  const formChallengeId = formData.get('challengeId');
+  const formMethod = formData.get('method');
   const locale = sanitizeLocale(typeof localeEntry === 'string' ? localeEntry : 'en');
   const useRecoveryCode = useRecoveryCodeEntry === 'true' || useRecoveryCodeEntry === 'on';
 
@@ -408,7 +412,13 @@ export async function validateTwoFactorCodeAction(formData: FormData) {
 
   const cookieStore = await cookies();
   const pending = await readPendingTwoFactorCookie(cookieStore);
-  if (!pending) {
+  const challengeId =
+    (typeof formChallengeId === 'string' && formChallengeId.trim()) ||
+    pending?.challengeId;
+  const method = pending?.method || (formMethod === 'otp' ? 'otp' : 'totp');
+  const challengeUsername = pending?.username || '';
+
+  if (!challengeId) {
     // Challenge cookie missing or expired client-side — nothing left to verify.
     redirect(`/${locale}/login?error=sessionExpired`);
   }
@@ -417,12 +427,12 @@ export async function validateTwoFactorCodeAction(formData: FormData) {
 
   let response;
   try {
-    if (pending.method === 'otp') {
-      const otpRequest: VerifyLoginOtpRequest = { challengeId: pending.challengeId, code: rawCode };
+    if (method === 'otp') {
+      const otpRequest: VerifyLoginOtpRequest = { challengeId, code: rawCode };
       response = await authService.verifyLoginOtp(otpRequest);
     } else {
       const verifyRequest: VerifyTwoFactorRequest = {
-        challengeId: pending.challengeId,
+        challengeId,
         code: rawCode,
         useRecoveryCode,
       };
@@ -441,7 +451,10 @@ export async function validateTwoFactorCodeAction(formData: FormData) {
     // 423 (locked after too many attempts) and 401 (invalid/expired code) both land here.
     return {
       success: false as const,
-      errorCode: mapAuthErrorToCode(response?.statusCode, response?.error),
+      errorCode:
+        response?.statusCode === 401 || response?.statusCode === 400
+          ? AUTH_ERROR_CODES.VERIFICATION_FAILED
+          : mapAuthErrorToCode(response?.statusCode, response?.error),
       statusCode: response?.statusCode ?? 500,
       message: response?.error,
     };
@@ -460,14 +473,17 @@ export async function validateTwoFactorCodeAction(formData: FormData) {
   if (!normalizedAuth.success || !hasValidSessionTokens(normalizedAuth)) {
     return {
       success: false as const,
-      errorCode: mapAuthErrorToCode(response.statusCode ?? 401, normalizedAuth.message),
+      errorCode:
+        response.statusCode === 401 || response.statusCode === 400
+          ? AUTH_ERROR_CODES.VERIFICATION_FAILED
+          : mapAuthErrorToCode(response.statusCode ?? 401, normalizedAuth.message),
       statusCode: response.statusCode ?? 401,
       message: normalizedAuth.message,
     };
   }
 
   // Success — clears the pending-challenge cookie and establishes the real session.
-  await completeLoginSession(locale, normalizedAuth, sessionId, pending.username);
+  await completeLoginSession(locale, normalizedAuth, sessionId, challengeUsername);
   // Note: completeLoginSession redirects and never returns
 }
 

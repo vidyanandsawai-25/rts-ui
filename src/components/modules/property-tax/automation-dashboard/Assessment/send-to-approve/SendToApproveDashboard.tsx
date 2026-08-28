@@ -287,7 +287,7 @@ export default function SendToApproveDashboard({
     const columns = getSendToApproveColumns(selectedIds, handleSelectRow, handleDocumentClick, handleQcToggle, t);
     const headerRows = getSendToApproveHeaderRows(selectedIds, paginatedData, handleSelectAll, t);
     return (
-        <div className="flex flex-col h-full bg-slate-50/50 p-4 gap-4">
+        <div className="flex flex-col h-full bg-slate-50/50 gap-2">
             {/* Header Section */}
             <div className="flex flex-col rounded-lg border border-slate-200 shadow-sm bg-white flex-shrink-0">
                 <div className="flex items-center justify-between p-4 border-b border-slate-200">

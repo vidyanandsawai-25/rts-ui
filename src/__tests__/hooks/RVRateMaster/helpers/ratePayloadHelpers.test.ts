@@ -165,7 +165,7 @@ describe("ratePayloadHelpers", () => {
         );
 
         expect(inserts[0].rateSquareMeter).toBe(100);
-        expect(inserts[0].rateSquareFeet).toBe(1076.39); // 100 * 10.7639
+        expect(inserts[0].rateSquareFeet).toBe(9.29); // 100 / 10.7639
       });
 
       it("should store entered value in rateSquareFeet when unit is SqFeet", () => {
@@ -186,7 +186,7 @@ describe("ratePayloadHelpers", () => {
         );
 
         expect(inserts[0].rateSquareFeet).toBe(100);
-        expect(inserts[0].rateSquareMeter).toBe(9.29); // 100 / 10.7639
+        expect(inserts[0].rateSquareMeter).toBe(1076.39); // 100 * 10.7639
       });
 
       it("should calculate rateSquareFeet correctly when SqMeter is selected", () => {
@@ -207,8 +207,8 @@ describe("ratePayloadHelpers", () => {
         );
 
         expect(inserts[0].rateSquareMeter).toBe(50.5);
-        // 50.5 * 10.7639 = 543.58
-        expect(inserts[0].rateSquareFeet).toBeCloseTo(543.58, 1);
+        // 50.5 / 10.7639 = 4.69
+        expect(inserts[0].rateSquareFeet).toBeCloseTo(4.69, 1);
       });
 
       it("should calculate rateSquareMeter correctly when SqFeet is selected", () => {
@@ -229,8 +229,8 @@ describe("ratePayloadHelpers", () => {
         );
 
         expect(inserts[0].rateSquareFeet).toBe(107.64);
-        // 107.64 / 10.7639 = 10.00
-        expect(inserts[0].rateSquareMeter).toBeCloseTo(10.0, 1);
+        // 107.64 * 10.7639 = 1158.63
+        expect(inserts[0].rateSquareMeter).toBeCloseTo(1158.63, 1);
       });
 
       it("should detect updates based on rateUnit selection", () => {
@@ -308,8 +308,8 @@ describe("ratePayloadHelpers", () => {
           "1"
         );
 
-        // 33.33 * 10.7639 = 358.76
-        expect(inserts[0].rateSquareFeet).toBe(358.76);
+        // 33.33 / 10.7639 = 3.10
+        expect(inserts[0].rateSquareFeet).toBe(3.1);
       });
     });
   });

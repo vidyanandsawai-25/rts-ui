@@ -109,6 +109,7 @@
         "codeFormat": "Invalid format. Only English uppercase letters and underscore are allowed.",
         "nameRequired": "Attribute name is required",
         "nameMaxLength": "Maximum length is 100 characters",
+        "nameMinLength": "Attribute name must be at least 3 characters",
         "nameFormat": "Only letters, spaces, dash (-), and parentheses () allowed.",
         "dataTypeRequired": "Data type is required",
         "unitFormat": "Only letters and numbers allowed.",

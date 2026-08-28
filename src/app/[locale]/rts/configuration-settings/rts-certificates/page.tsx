@@ -1,5 +1,5 @@
 import { fetchCertificateTemplatesPageDataAction } from "./actions";
-import RtsCertificateTemplateList from "@/components/modules/rts/configuration/RtsCertificateTemplateList";
+import RtsCertificateMasterStudio from "@/components/modules/rts/configuration/RtsCertificateMasterStudio";
 
 type PageProps = {
   params: Promise<{
@@ -9,13 +9,14 @@ type PageProps = {
 
 export default async function RtsCertificateTemplatesPage({ params }: PageProps) {
   const { locale } = await params;
-  const { templates, services } = await fetchCertificateTemplatesPageDataAction();
+  const { templates, services, ulbInfo } = await fetchCertificateTemplatesPageDataAction();
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-4 px-2">
-      <RtsCertificateTemplateList
+    <div className="w-full min-h-screen">
+      <RtsCertificateMasterStudio
         initialTemplates={templates}
         services={services}
+        ulbInfo={ulbInfo}
         locale={locale}
       />
     </div>

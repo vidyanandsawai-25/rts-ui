@@ -125,6 +125,22 @@ export const DEPARTMENT_COOKIES = {
 /** Query param value for login page (`?error=sessionExpired`) after automatic session expiry. */
 export const SESSION_EXPIRED_LOGIN_ERROR = 'sessionExpired';
 
+/**
+ * Session token cookies that should be cleared when redirecting to login on session expiry or unauthorized access.
+ * Does NOT include transient in-flight flow cookies (PENDING_AUTH, PENDING_FORGOT_PASSWORD, PENDING_PASSWORD_RESET).
+ */
+export const SESSION_TOKEN_COOKIES = [
+  AUTH_COOKIES.AUTH_TOKEN,
+  AUTH_COOKIES.REFRESH_TOKEN,
+  AUTH_COOKIES.SESSION_ID,
+  AUTH_COOKIES.IS_LOGGED_IN,
+  AUTH_COOKIES.USER_NAME,
+  AUTH_COOKIES.USER_ID,
+  AUTH_COOKIES.LOGIN_USERNAME,
+  AUTH_COOKIES.SESSION_EXPIRES_AT,
+  AUTH_COOKIES.REQUIRES_TWO_FACTOR_SETUP,
+] as const;
+
 export const LOGOUT_CLEAR_COOKIES = [
   AUTH_COOKIES.AUTH_TOKEN,
   AUTH_COOKIES.REFRESH_TOKEN,

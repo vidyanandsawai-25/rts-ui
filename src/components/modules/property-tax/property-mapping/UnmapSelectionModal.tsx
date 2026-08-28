@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Trash2, X, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/common";
@@ -23,6 +24,12 @@ export function UnmapSelectionModal({
 }: UnmapSelectionModalProps) {
   const t = useTranslations("propertyMapping");
   const [deselectedProps, setDeselectedProps] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setDeselectedProps([]);
+    }
+  }, [isOpen, mapping]);
 
   if (!isOpen || !mapping) return null;
 

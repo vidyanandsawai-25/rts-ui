@@ -1,9 +1,8 @@
-
 export interface PropertyStats {
   propertyCount: number;
   structureCount: number;
   unitCount: number;
-  demand: number;
+  demand: number | string;
 }
 
 export interface AssessmentApprovedStats {

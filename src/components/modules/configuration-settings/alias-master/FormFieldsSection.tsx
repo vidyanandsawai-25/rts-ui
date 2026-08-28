@@ -15,7 +15,7 @@ interface FormFieldsSectionProps {
 }
 
 export interface FormFieldsSectionRef {
-  fieldNameRef: React.RefObject<HTMLInputElement | null>;
+  keyNameRef: React.RefObject<HTMLInputElement | null>;
 }
 
 export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFieldsSectionProps>(
@@ -28,27 +28,27 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
     onBlur,
     t,
   }, ref) => {
-    const fieldNameRef = React.useRef<HTMLInputElement>(null);
+    const keyNameRef = React.useRef<HTMLInputElement>(null);
 
     React.useImperativeHandle(ref, () => ({
-      fieldNameRef,
+      keyNameRef,
     }));
 
     return (
       <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
         <Input
-          ref={fieldNameRef}
-          name="fieldName"
-          label={t("form.fields.fieldName.label")}
+          ref={keyNameRef}
+          name="keyName"
+          label={t("form.fields.keyName.label")}
           required
           disabled={isEdit}
-          value={formData.fieldName}
+          value={formData.keyName}
           onChange={onChange}
           onBlur={onBlur}
-          placeholder={t("form.fields.fieldName.placeholder")}
+          placeholder={t("form.fields.keyName.placeholder")}
           fullWidth
         />
-        <ValidationMessage message={errors.fieldName} visible={showError("fieldName")} />
+        <ValidationMessage message={errors.keyName} visible={showError("keyName")} />
 
         <Input
           name="labelName"

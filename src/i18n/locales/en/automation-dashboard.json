@@ -1,4 +1,6 @@
 {
+  "wip": "Work in Progress",
+  "featureWip": "This feature is currently Work in Progress.",
   "success": {
     "updatePropertySign": "Property approved successfully.",
     "title": "Success"

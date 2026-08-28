@@ -1,7 +1,7 @@
 export interface RawAliasMaster {
   id?: number;
   aliasKey?: string | null;
-  fieldName?: string;
+  keyName?: string;
   labelName?: string;
   englishName?: string | null;
   regionalName?: string | null;
@@ -15,7 +15,7 @@ export interface AliasMaster {
   [key: string]: unknown;
   id: number;
   aliasKey: string | null;
-  fieldName: string;
+  keyName: string;
   labelName: string;
   englishName: string | null;
   regionalName: string | null;
@@ -45,7 +45,7 @@ export interface AliasMasterProps {
 
 export interface AliasMasterFormModel {
   id?: number | null;
-  fieldName: string;
+  keyName: string;
   labelName: string;
   englishName: string;
   regionalName: string;
@@ -64,13 +64,13 @@ export interface AliasMasterApiEnvelope {
 
 /** Lightweight shape returned per row by GET /alias-master/active (active rows only). */
 export interface RawAliasLabel {
-  fieldName: string;
+  keyName: string;
   englishName?: string | null;
   regionalName?: string | null;
   hindiName?: string | null;
 }
 
-/** fieldName -> per-language names, built from the /alias-master/active response. */
+/** keyName -> per-language names, built from the /alias-master/active response. */
 export type AliasLabelMap = Record<string, {
   englishName: string | null;
   regionalName: string | null;

@@ -41,8 +41,8 @@ export default function AliasMasterForm({
     const timer = setTimeout(() => {
       if (isEdit && statusToggleRef.current) {
         statusToggleRef.current.focus();
-      } else if (!isEdit && formFieldsRef.current?.fieldNameRef?.current) {
-        formFieldsRef.current.fieldNameRef.current.focus();
+      } else if (!isEdit && formFieldsRef.current?.keyNameRef?.current) {
+        formFieldsRef.current.keyNameRef.current.focus();
       }
     }, 150);
 

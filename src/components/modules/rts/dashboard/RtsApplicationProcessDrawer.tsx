@@ -634,7 +634,7 @@ export default function RtsApplicationProcessDrawer({
                 </Button>
               )}
 
-              {verification?.canApprove && (
+              {verification?.canApprove && Boolean(verification?.isFinalStage) && (
                 <Button
                   type="button"
                   size="xs"
@@ -1105,6 +1105,7 @@ export default function RtsApplicationProcessDrawer({
         <PrintableCertificateModal
           isOpen={isPrintCertModalOpen}
           onClose={() => setIsPrintCertModalOpen(false)}
+          applicationId={applicationId || undefined}
           applicationNo={headerApplicationNo}
         />
       )}
