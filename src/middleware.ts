@@ -66,6 +66,12 @@ export default function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}/service`, request.url));
   }
 
+  // Normalize duplicate /service/service paths (e.g. from legacy QR codes)
+  if (pathWithoutLocale.startsWith('/service/service/')) {
+    const normalizedPath = pathWithoutLocale.replace(/^\/service\/service\//, '/service/');
+    return NextResponse.redirect(new URL(`/${locale}${normalizedPath}`, request.url));
+  }
+
   // Citizen portal check
   const isCitizenRoute = pathWithoutLocale === '/service' || pathWithoutLocale.startsWith('/service/');
   const isCitizenLogin = pathWithoutLocale === '/service/login' || pathWithoutLocale.startsWith('/service/login/');
