@@ -123,24 +123,38 @@
       "retrospectiveTaxTitle": "Retrospective Tax",
       "retrospectiveTaxSubtitle": "Choose the start, limit and multiplier.",
       "taxStartsFromLabel": "Tax starts from",
+      "useDateLabel": "Use date",
+      "monthsAfterLabel": "Months after",
       "taxStartsFromOptions": {
+        "selectedEvidenceDate": "Selected evidence date",
+        "afterSpecifiedMonths": "After specified months",
         "maxLookback": "Maximum look-back date",
         "fromOc": "From OC date",
         "fixedCutoff": "Fixed cutoff date"
       },
       "limitLabel": "Retrospective limit",
       "limitOptions": {
-        "maxYears": "Maximum years",
-        "noLimit": "No limit"
+        "earliestChargeable": "Earliest chargeable date",
+        "noLimit": "No additional corporation limit",
+        "maxYears": "Maximum years"
       },
+      "earliestAllowedDateLabel": "Earliest allowed date",
       "maxYearsLabel": "Maximum years",
+      "maxYearsPlaceholder": "Example: 6",
       "taxCalcLabel": "Tax calculation",
       "taxCalcOptions": {
         "oneMultiplier": "One multiplier for entire period",
+        "differentMultiplier": "Different multiplier between two dates",
         "yearlyDynamic": "Yearly dynamic multiplier"
       },
       "multiplierLabel": "Tax multiplier",
-      "taxationUsedNotice": "Taxation used: Current-year for all years; Current-year percentage for all years • Six-year legal safeguard is automatic.",
+      "splitPeriodTitle": "Split-period tax multiplier",
+      "higherRateStartsFromLabel": "Higher rate starts from",
+      "higherRateContinuesUpToLabel": "Higher rate continues up to",
+      "duringPeriodLabel": "During period",
+      "afterPeriodLabel": "After period",
+      "splitExampleText": "Example: CC – OC at 1.5×, then from OC onward at 1×.",
+      "taxationUsedNotice": "Taxation used: Historical year-wise; Historical year-wise percentage • Six-year legal safeguard is automatic.",
       "unauthorizedPenaltyTitle": "Unauthorized Construction Penalty",
       "unauthorizedPenaltySubtitle": "Shown only when both OC and CC are unavailable.",
       "authorizedNotice": "Authorized construction - OC or CC available",

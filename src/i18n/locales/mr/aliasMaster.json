@@ -6,7 +6,7 @@
   "edit": "उपनाव संपादित करा",
   "delete": "उपनाव हटवा",
   "actions": "क्रिया",
-  "fieldName": "फील्ड नाव",
+  "keyName": "की नाव",
   "labelName": "लेबल नाव",
   "englishName": "इंग्रजी नाव",
   "regionalName": "प्रादेशिक नाव",
@@ -32,8 +32,8 @@
       "cancel": "रद्द करा"
     },
     "fields": {
-      "fieldName": {
-        "label": "फील्ड नाव",
+      "keyName": {
+        "label": "की नाव",
         "placeholder": "उदा. BuildingType"
       },
       "labelName": {
@@ -60,9 +60,9 @@
       "description": "उपनाव सध्या"
     },
     "validation": {
-      "fieldNameRequired": "फील्ड नाव आवश्यक आहे",
-      "fieldNameFormat": "फील्ड नावात अवैध अक्षरे आहेत",
-      "fieldNameMaxLength": "फील्ड नाव {count} अक्षरांपेक्षा जास्त असू शकत नाही",
+      "keyNameRequired": "की नाव आवश्यक आहे",
+      "keyNameFormat": "की नावात अवैध अक्षरे आहेत",
+      "keyNameMaxLength": "की नाव {count} अक्षरांपेक्षा जास्त असू शकत नाही",
       "labelNameRequired": "लेबल नाव आवश्यक आहे",
       "labelNameFormat": "लेबल नावात अवैध अक्षरे आहेत",
       "labelNameMaxLength": "लेबल नाव {count} अक्षरांपेक्षा जास्त असू शकत नाही",

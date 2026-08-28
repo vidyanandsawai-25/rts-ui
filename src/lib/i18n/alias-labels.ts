@@ -4,7 +4,7 @@ import { ALIAS_LOCALE_COLUMN, isAliasLocale } from "./alias-locale-map";
 
 /**
  * Resolves the active Alias Master overrides for one locale, projected down to a
- * flat fieldName -> label map. The underlying fetch is Next.js Data-Cache-backed
+ * flat keyName -> label map. The underlying fetch is Next.js Data-Cache-backed
  * (see getActiveAliasLabels), so this only causes a DB round-trip at most once per
  * cache TTL / revalidateTag bust — not once per request or per locale switch.
  *
@@ -23,9 +23,9 @@ export const getAliasLabelsForLocale = cache(async (locale: string): Promise<Rec
   }
 
   const labels: Record<string, string> = {};
-  for (const [fieldName, names] of Object.entries(map)) {
+  for (const [keyName, names] of Object.entries(map)) {
     const value = names[column];
-    if (value) labels[fieldName] = value;
+    if (value) labels[keyName] = value;
   }
   return labels;
 });

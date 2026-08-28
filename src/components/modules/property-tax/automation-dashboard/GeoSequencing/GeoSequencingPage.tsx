@@ -58,7 +58,7 @@ const TopBar = ({
                 <SearchButton 
                     label={t('geoSequencing.buttons.search')} 
                     onClick={handleSearch}
-                    disabled={isPending || !searchTerm.trim()}
+                    disabled={isPending || !searchTerm.trim()}                    
                 />
             </div>
             <div className="flex items-center gap-3">

@@ -39,16 +39,15 @@ interface UpdateCertificateTaxGuidelinePayload {
 function toUpdatePayload(item: TaxCalculationGuidelineDto): UpdateCertificateTaxGuidelinePayload {
   return {
     id: item.id,
-    guidelineCode: item.guidelineCode ?? '',
-    guidelineName: item.guidelineName ?? item.guidelineCode ?? '',
-    description: item.description ?? null,
-    guidelineGroup: item.guidelineGroup ?? null,
-    // DB column is NOT NULL — fall back to 999 so bulk-update never sends NULL
-    displayOrder: item.displayOrder ?? 999,
-    dataType: item.dataType ?? 'VARCHAR',
-    guidelineValue: item.guidelineValue ?? null,
-    allowedValues: item.allowedValues ?? null,
-    isActive: item.isActive !== false,
+    guidelineCode: item.guidelineCode!,
+    guidelineName: item.guidelineName || item.guidelineCode!,
+    description: item.description,
+    guidelineGroup: item.guidelineGroup,
+    displayOrder: item.displayOrder!,
+    dataType: item.dataType!,
+    guidelineValue: item.guidelineValue,
+    allowedValues: item.allowedValues,
+    isActive: item.isActive,
   };
 }
 

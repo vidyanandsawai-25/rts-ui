@@ -49,7 +49,7 @@ describe("AliasMaster List Component", () => {
     {
       id: 47,
       aliasKey: "ALS-000047",
-      fieldName: "Ward_No",
+      keyName: "Ward_No",
       labelName: "Ward No",
       englishName: "Sector",
       regionalName: "सेक्टर",
@@ -175,10 +175,10 @@ describe("AliasMaster List Component", () => {
       />
     );
 
-    const sortBtn = screen.getByRole("button", { name: /common\.table\.sort\.by aliasMaster\.fieldName/i });
+    const sortBtn = screen.getByRole("button", { name: /common\.table\.sort\.by aliasMaster\.keyName/i });
     fireEvent.click(sortBtn);
 
-    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("sortBy=fieldName"));
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("sortBy=keyName"));
   });
 
   test("triggers page change when pagination numbers are clicked", () => {

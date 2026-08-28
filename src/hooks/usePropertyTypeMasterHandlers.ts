@@ -66,19 +66,21 @@ export function usePropertyTypeMasterHandlers({
               router.refresh();
             });
           } else {
-            // Show appropriate error message based on status code
+            // Prefer the backend's specific message (e.g. linked property count)
+            // over generic fallbacks based on status code
             let errorMessage = tCommon("errors.deleteError");
+            const linkedCount = result.message?.match(/linked to (\d+) propert/i)?.[1];
 
-            if (result.statusCode === 409) {
-              // Record linked with another record or in use
-              errorMessage = t("apiErrors.referredInAutoWardEntry");
-            } else if (result.statusCode === 400) {
-              // Bad request / validation error
-              errorMessage = t("apiErrors.validationError");
-            } else if (result.statusCode === 404) {
+            if (result.statusCode === 404) {
               errorMessage = t("apiErrors.notFound");
+            } else if (linkedCount) {
+              errorMessage = t("apiErrors.linkedToProperties", { count: linkedCount });
             } else if (result.message) {
               errorMessage = result.message;
+            } else if (result.statusCode === 409) {
+              errorMessage = t("apiErrors.referredInAutoWardEntry");
+            } else if (result.statusCode === 400) {
+              errorMessage = t("apiErrors.validationError");
             }
             toast.error(errorMessage);
           }

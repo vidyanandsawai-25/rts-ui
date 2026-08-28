@@ -10,7 +10,7 @@ describe("useAliasMasterFormState", () => {
     expect(result.current.isEdit).toBe(false);
     expect(result.current.formData).toEqual({
       id: null,
-      fieldName: "",
+      keyName: "",
       labelName: "",
       englishName: "",
       regionalName: "",
@@ -28,7 +28,7 @@ describe("useAliasMasterFormState", () => {
     const initialData: AliasMaster = {
       id: 47,
       aliasKey: "ALS-000047",
-      fieldName: "Ward_No",
+      keyName: "Ward_No",
       labelName: "Ward No",
       englishName: "Sector",
       regionalName: "सेक्टर",
@@ -41,7 +41,7 @@ describe("useAliasMasterFormState", () => {
     expect(result.current.isEdit).toBe(true);
     expect(result.current.formData).toEqual({
       id: 47,
-      fieldName: "Ward_No",
+      keyName: "Ward_No",
       labelName: "Ward No",
       englishName: "Sector",
       regionalName: "सेक्टर",
@@ -54,7 +54,7 @@ describe("useAliasMasterFormState", () => {
     const initialData: AliasMaster = {
       id: 9,
       aliasKey: null,
-      fieldName: "BuildingType",
+      keyName: "BuildingType",
       labelName: "Building Type",
       englishName: null,
       regionalName: null,

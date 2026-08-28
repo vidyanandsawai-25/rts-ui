@@ -221,7 +221,7 @@ export default function RtsApplicationFullDetailView({
               <p className="truncate text-[11px] font-semibold text-blue-100"><u>{t('applicationNumber')}</u> : {record.appId}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {isApproved && (
               <>

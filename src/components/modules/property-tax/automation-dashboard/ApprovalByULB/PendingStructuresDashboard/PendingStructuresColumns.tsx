@@ -2,7 +2,7 @@
 import { Column } from '@/components/common/AutomationTable';
 import { X, Check } from 'lucide-react';
 import { BuildingWiseItem, AuthoritySignature } from '@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type';
-import Link from 'next/link';
+
 
 export type ExtendedBuildingWiseItem = BuildingWiseItem & {
     isTotal?: boolean;
@@ -10,7 +10,7 @@ export type ExtendedBuildingWiseItem = BuildingWiseItem & {
     [key: string]: unknown;
 };
 
-export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignature[] = [], t: (key: string) => string, locale: string = 'en', currentUrl: string = ''): Column<ExtendedBuildingWiseItem>[] => {
+export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignature[] = [], t: (key: string) => string, locale: string = 'en', currentUrl: string = '', router?: { push: (url: string) => void }): Column<ExtendedBuildingWiseItem>[] => {
     const baseColumns: Column<ExtendedBuildingWiseItem>[] = [
         {
             key: 'sr',
@@ -25,15 +25,17 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             label: t('columns.buildingNo'),
             align: 'left',
             colSpan: (row) => row.isTotal ? 0 : 1,
+            cellClassName: '!p-0',
             render: (_val, row) => {
                 if (row.isTotal) return null;
+                const url = `/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}${currentUrl ? `?returnUrl=${currentUrl}` : ''}`;
                 return (
-                    <Link
-                        href={`/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}${currentUrl ? `?returnUrl=${currentUrl}` : ''}`}
-                        className="text-gray-700 font-semibold hover:underline hover:text-indigo-800 transition-colors"
+                    <div
+                        onClick={() => router?.push(url)}
+                        className="flex items-center justify-start w-full h-full p-3 text-gray-700 font-semibold cursor-pointer hover:bg-slate-100 hover:text-indigo-800 transition-colors"
                     >
                         {row.buildingNo}
-                    </Link>
+                    </div>
                 );
             }
         },
@@ -42,15 +44,17 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             label: t('columns.noticeNo'),
             align: 'left',
             colSpan: (row) => row.isTotal ? 0 : 1,
+            cellClassName: '!p-0',
             render: (_val, row) => {
                 if (row.isTotal) return null;
+                const url = `/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}?noticeNo=${row.noticeNo}${currentUrl ? `&returnUrl=${currentUrl}` : ''}`;
                 return (
-                    <Link
-                        href={`/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}?noticeNo=${row.noticeNo}${currentUrl ? `&returnUrl=${currentUrl}` : ''}`}
-                        className="text-gray-700 font-semibold hover:underline hover:text-indigo-800 transition-colors"
+                    <div
+                        onClick={() => router?.push(url)}
+                        className="flex items-center justify-start w-full h-full p-3 text-gray-700 font-semibold cursor-pointer hover:bg-slate-100 hover:text-indigo-800 transition-colors"
                     >
                         {row.noticeNo}
-                    </Link>
+                    </div>
                 );
             }
         },

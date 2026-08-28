@@ -51,7 +51,7 @@ const baseProps: AliasMasterProps = {
 const row: AliasMaster = {
   id: 47,
   aliasKey: "ALS-000047",
-  fieldName: "Ward_No",
+  keyName: "Ward_No",
   labelName: "Ward No",
   englishName: "Sector",
   regionalName: "सेक्टर",
@@ -84,21 +84,21 @@ describe("useAliasMasterList", () => {
 
   it("navigates to page 1 with the new sortBy/asc order when a column is sorted for the first time", () => {
     const { result } = renderHook(() => useAliasMasterList(baseProps));
-    const fieldNameCol = result.current.columns.find((c) => c.key === "fieldName")!;
+    const keyNameCol = result.current.columns.find((c) => c.key === "keyName")!;
 
-    render(<div>{fieldNameCol.label}</div>);
-    fireEvent.click(screen.getByRole("button", { name: /common\.table\.sort\.by aliasMaster\.fieldName/i }));
+    render(<div>{keyNameCol.label}</div>);
+    fireEvent.click(screen.getByRole("button", { name: /common\.table\.sort\.by aliasMaster\.keyName/i }));
 
-    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("sortBy=fieldName"));
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("sortBy=keyName"));
     expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("sortOrder=asc"));
   });
 
   it("toggles sortOrder to desc when the currently-sorted column is clicked again", () => {
-    const { result } = renderHook(() => useAliasMasterList({ ...baseProps, sortBy: "fieldName", sortOrder: "asc" }));
-    const fieldNameCol = result.current.columns.find((c) => c.key === "fieldName")!;
+    const { result } = renderHook(() => useAliasMasterList({ ...baseProps, sortBy: "keyName", sortOrder: "asc" }));
+    const keyNameCol = result.current.columns.find((c) => c.key === "keyName")!;
 
-    render(<div>{fieldNameCol.label}</div>);
-    fireEvent.click(screen.getByRole("button", { name: /common\.table\.sort\.verb aliasMaster\.fieldName/i }));
+    render(<div>{keyNameCol.label}</div>);
+    fireEvent.click(screen.getByRole("button", { name: /common\.table\.sort\.verb aliasMaster\.keyName/i }));
 
     expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("sortOrder=desc"));
   });

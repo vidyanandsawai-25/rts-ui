@@ -152,6 +152,7 @@ export function LoginFormClient({
         locale={locale}
         method={credState?.twoFactorMethod || 'totp'}
         username={credState?.twoFactorUsername || username || ''}
+        challengeId={credState?.challengeId}
         onBackToLogin={() => {
           setDismissedChallengeKey(credState?.resetKey ?? 'dismissed');
         }}

@@ -2,7 +2,6 @@
  * Tax Calculation Guideline – Data Mapper
  * Converts between API DTOs and the UI form data model.
  */
-import { DEFAULT_TAX_GUIDELINE_FORM, FIELD_MAPPINGS } from '@/config/tax-calculation-guideline.config';
 import type {
   TaxCalculationGuidelineDto,
   TaxCalculationGuidelineFormData,
@@ -101,6 +100,58 @@ const PERSISTENCE_TO_DTO: Record<TaxPersistenceMode, string | null> = {
   'Assessment Year': 'ASSESSMENT_YEAR',
   'Floor Ledger': 'FLOOR_LEDGER',
   Select: null,
+};
+
+export const DEFAULT_TAX_GUIDELINE_FORM: TaxCalculationGuidelineFormData = {
+  generalSettings: {
+    enableCertificateBasedTax: false,
+    applyTaxOnlyForTaxableCertificateTypes: false,
+    financialYearStart: { month: 'Select', day: 'Select' },
+    certificateTaxScopeMode: 'Select',
+    minimumBackdateFinancialYear: undefined,
+  },
+  certificateDatePriority: {
+    priority1: 'Select',
+    priority2: 'Select',
+    priority3: 'Select',
+    priority4: 'Select',
+  },
+  ccOcRules: {
+    applyCcToOcSplit: false,
+    ccOcDifferenceThreshold: undefined,
+    ccOcDifferenceUnit: 'Select',
+    ccPeriodMultiplier: undefined,
+    ocPeriodMultiplier: undefined,
+    enableCurrentFyPartialPolicy: false,
+    ccPartialPolicyCode: 'Select',
+    ocPartialPolicyCode: 'Select',
+  },
+  electricBillRules: {
+    electricBillDateRule: 'Select',
+    addMonthsToElectricBillDate: undefined,
+    addMonthsUnit: 'Select',
+    electricBillMultiplier: undefined,
+    electricBillMinimumFinancialYear: undefined,
+    electricBillPartialPolicyCode: 'Select',
+  },
+  retrospectiveRules: {
+    enableRetrospectiveTax: false,
+    whenNoDateIsAvailable: 'Select',
+    lookbackYears: undefined,
+    defaultRetrospectiveMultiplier: undefined,
+  },
+  otherSettings: {
+    enableCurrentYearProration: false,
+    prorationType: 'Select',
+    taxPersistenceMode: 'Select',
+    doNotUpdateNettax: false,
+    guidelineChangeApplyMode: 'Select',
+    recalculateOnCertificateSave: false,
+    recalculateOnCertificateDelete: false,
+    allowFloorWiseCertificateMetadata: false,
+    floorPolicyDisplayRule: 'Select',
+  },
+  dynamicGuidelines: [],
 };
 
 // ─── Mapping Functions ─────────────────────────────────────────────────────
@@ -408,6 +459,60 @@ export function mapFormDataToDto(
     floorPolicyDisplayRule: formData.otherSettings.floorPolicyDisplayRule === 'Select' ? null : (formData.otherSettings.floorPolicyDisplayRule || null),
   };
 }
+
+export const FIELD_MAPPINGS: Record<string, {
+  section: string;
+  field: string;
+  type: string;
+}> = {
+  // General Settings
+  'ENABLE_CERTIFICATE_BASED_TAX': { section: 'generalSettings', field: 'enableCertificateBasedTax', type: 'boolean' },
+  'APPLY_ONLY_TAXABLE_CERT_TYPES': { section: 'generalSettings', field: 'applyTaxOnlyForTaxableCertificateTypes', type: 'boolean' },
+  'FINANCIAL_YEAR_START_MONTH': { section: 'generalSettings', field: 'financialYearStart.month', type: 'month' },
+  'FINANCIAL_YEAR_START_DAY': { section: 'generalSettings', field: 'financialYearStart.day', type: 'day' },
+  'MINIMUM_BACKDATE_FINANCIAL_YEAR': { section: 'generalSettings', field: 'minimumBackdateFinancialYear', type: 'number' },
+  'CERTIFICATE_TAX_SCOPE_MODE': { section: 'generalSettings', field: 'certificateTaxScopeMode', type: 'string' },
+
+  // Date Priority Rules
+  'DATE_PRIORITY_1': { section: 'certificateDatePriority', field: 'priority1', type: 'priority' },
+  'DATE_PRIORITY_2': { section: 'certificateDatePriority', field: 'priority2', type: 'priority' },
+  'DATE_PRIORITY_3': { section: 'certificateDatePriority', field: 'priority3', type: 'priority' },
+  'DATE_PRIORITY_4': { section: 'certificateDatePriority', field: 'priority4', type: 'priority' },
+
+  // CC & OC Rules
+  'ENABLE_CC_TO_OC_SPLIT': { section: 'ccOcRules', field: 'applyCcToOcSplit', type: 'boolean' },
+  'IGNORE_CC_TO_OC_IF_WITHIN_VALUE': { section: 'ccOcRules', field: 'ccOcDifferenceThreshold', type: 'number' },
+  'IGNORE_CC_TO_OC_IF_WITHIN_TYPE': { section: 'ccOcRules', field: 'ccOcDifferenceUnit', type: 'unit' },
+  'CC_PERIOD_MULTIPLIER': { section: 'ccOcRules', field: 'ccPeriodMultiplier', type: 'number' },
+  'OC_PERIOD_MULTIPLIER': { section: 'ccOcRules', field: 'ocPeriodMultiplier', type: 'number' },
+  'ENABLE_CURRENT_FY_PARTIAL_POLICY': { section: 'ccOcRules', field: 'enableCurrentFyPartialPolicy', type: 'boolean' },
+  'CC_PARTIAL_POLICY_CODE': { section: 'ccOcRules', field: 'ccPartialPolicyCode', type: 'string' },
+  'OC_PARTIAL_POLICY_CODE': { section: 'ccOcRules', field: 'ocPartialPolicyCode', type: 'string' },
+
+  // Electric Bill Rules
+  'ELECTRIC_BILL_DATE_RULE': { section: 'electricBillRules', field: 'electricBillDateRule', type: 'ebRule' },
+  'ELECTRIC_BILL_ADD_MONTHS': { section: 'electricBillRules', field: 'addMonthsToElectricBillDate', type: 'number' },
+  'ELECTRIC_BILL_MULTIPLIER': { section: 'electricBillRules', field: 'electricBillMultiplier', type: 'number' },
+  'ELECTRIC_BILL_MINIMUM_FINANCIAL_YEAR': { section: 'electricBillRules', field: 'electricBillMinimumFinancialYear', type: 'number' },
+  'ELECTRIC_BILL_PARTIAL_POLICY_CODE': { section: 'electricBillRules', field: 'electricBillPartialPolicyCode', type: 'string' },
+
+  // Retrospective Rules
+  'ENABLE_RETROSPECTIVE_TAX': { section: 'retrospectiveRules', field: 'enableRetrospectiveTax', type: 'boolean' },
+  'NO_DATE_RULE': { section: 'retrospectiveRules', field: 'whenNoDateIsAvailable', type: 'noDateRule' },
+  'LOOKBACK_YEARS': { section: 'retrospectiveRules', field: 'lookbackYears', type: 'number' },
+  'DEFAULT_RETROSPECTIVE_MULTIPLIER': { section: 'retrospectiveRules', field: 'defaultRetrospectiveMultiplier', type: 'number' },
+
+  // Other Settings
+  'ENABLE_CURRENT_YEAR_PRORATION': { section: 'otherSettings', field: 'enableCurrentYearProration', type: 'boolean' },
+  'PRORATION_METHOD': { section: 'otherSettings', field: 'prorationType', type: 'proration' },
+  'TAX_PERSISTENCE_MODE': { section: 'otherSettings', field: 'taxPersistenceMode', type: 'persistence' },
+  'DO_NOT_UPDATE_NETTAX': { section: 'otherSettings', field: 'doNotUpdateNettax', type: 'boolean' },
+  'GUIDELINE_CHANGE_APPLY_MODE': { section: 'otherSettings', field: 'guidelineChangeApplyMode', type: 'string' },
+  'RECALCULATE_ON_CERTIFICATE_SAVE': { section: 'otherSettings', field: 'recalculateOnCertificateSave', type: 'boolean' },
+  'RECALCULATE_ON_CERTIFICATE_DELETE': { section: 'otherSettings', field: 'recalculateOnCertificateDelete', type: 'boolean' },
+  'ALLOW_FLOOR_WISE_CERTIFICATE_METADATA': { section: 'otherSettings', field: 'allowFloorWiseCertificateMetadata', type: 'boolean' },
+  'FLOOR_POLICY_DISPLAY_RULE': { section: 'otherSettings', field: 'floorPolicyDisplayRule', type: 'string' }
+};
 
 /** Build initial form data from an API DTO (or defaults when dto is null). */
 export function buildInitialFormData(dto: TaxCalculationGuidelineDto | TaxCalculationGuidelineDto[] | null): TaxCalculationGuidelineFormData {

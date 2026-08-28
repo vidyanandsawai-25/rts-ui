@@ -132,6 +132,14 @@ export function mapAuthErrorToCode(statusCode: number | undefined, message?: str
   if (lowerMessage.includes('locked') || lowerMessage.includes('blocked')) {
     return 'ACCOUNT_LOCKED';
   }
+  if (
+    lowerMessage.includes('verification') ||
+    lowerMessage.includes('code') ||
+    lowerMessage.includes('totp') ||
+    lowerMessage.includes('otp')
+  ) {
+    return 'VERIFICATION_FAILED';
+  }
   if (lowerMessage.includes('expired')) {
     return 'SESSION_EXPIRED';
   }

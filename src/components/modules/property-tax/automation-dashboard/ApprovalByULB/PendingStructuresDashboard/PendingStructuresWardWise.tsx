@@ -42,7 +42,7 @@ const PendingStructuresWardWise = ({ wardId, serverData }: PendingStructuresWard
 
     const locale = pathname.split('/')[1] || 'en';
     const currentUrl = encodeURIComponent(`${pathname}?${searchParams.toString()}`);
-    const columns = useMemo(() => getPendingStructuresColumns(uniqueAuthorities, t, locale, currentUrl), [uniqueAuthorities, t, locale, currentUrl]);
+    const columns = useMemo(() => getPendingStructuresColumns(uniqueAuthorities, t, locale, currentUrl, router), [uniqueAuthorities, t, locale, currentUrl, router]);
 
     const tableData = useMemo(() => {
         if (!rawItems.length) return [];
@@ -86,7 +86,7 @@ const PendingStructuresWardWise = ({ wardId, serverData }: PendingStructuresWard
     };
 
     return (
-        <div className="flex flex-col h-full min-h-0 overflow-hidden gap-3 p-3">
+        <div className="flex flex-col h-full min-h-0 overflow-hidden gap-2">
             {/* Custom Page Header */}
             <div className="relative p-3 border-b border-slate-200 bg-slate-50 flex items-center rounded-t-2xl">
 

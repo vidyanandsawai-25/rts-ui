@@ -10,7 +10,7 @@ interface PageProps {
   searchParams: Promise<RawSearchParams>;
 }
 
-const ALLOWED_SORT_COLUMNS = ["fieldName", "labelName", "englishName"] as const;
+const ALLOWED_SORT_COLUMNS = ["keyName", "labelName", "englishName"] as const;
 const EMPTY_COUNTS: AliasMasterCounts = { totalCount: 0, activeCount: 0, inactiveCount: 0 };
 
 export default async function Page({ searchParams }: PageProps): Promise<React.ReactElement> {

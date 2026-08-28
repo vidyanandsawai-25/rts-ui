@@ -19,7 +19,7 @@ const ALIAS_MASTER_ACTIVE_CACHE_SECONDS = 300;
 const normalize = (item: RawAliasMaster): AliasMaster => ({
   id: item.id ?? 0,
   aliasKey: item.aliasKey ?? null,
-  fieldName: item.fieldName ?? "",
+  keyName: item.keyName ?? "",
   labelName: item.labelName ?? "",
   englishName: item.englishName ?? null,
   regionalName: item.regionalName ?? null,
@@ -73,7 +73,7 @@ export async function getAliasMasterById(id: number): Promise<AliasMaster | null
 
 export async function createAliasMaster(data: AliasMasterFormModel): Promise<AliasMaster> {
   const payload = {
-    fieldName: data.fieldName.trim(),
+    keyName: data.keyName.trim(),
     labelName: data.labelName.trim(),
     englishName: data.englishName.trim() || null,
     regionalName: data.regionalName.trim() || null,
@@ -129,8 +129,8 @@ export async function getActiveAliasLabels(): Promise<AliasLabelMap> {
 
   const map: AliasLabelMap = {};
   for (const item of response.data.items ?? []) {
-    if (!item.fieldName) continue;
-    map[item.fieldName] = {
+    if (!item.keyName) continue;
+    map[item.keyName] = {
       englishName: item.englishName ?? null,
       regionalName: item.regionalName ?? null,
       hindiName: item.hindiName ?? null,

@@ -28,7 +28,7 @@ vi.mock("@/app/[locale]/configuration-settings/alias-master/action", () => ({
 
 const initialFormData: AliasMasterFormModel = {
   id: null,
-  fieldName: "",
+  keyName: "",
   labelName: "",
   englishName: "",
   regionalName: "",
@@ -77,17 +77,17 @@ describe("useAliasMasterFormHandlers", () => {
   });
 
   describe("handleChange", () => {
-    it("sanitizes fieldName by stripping disallowed characters and clamping to 50 chars", () => {
+    it("sanitizes keyName by stripping disallowed characters and clamping to 50 chars", () => {
       const { result, setFormData } = setup();
 
       act(() => {
         result.current.handleChange({
-          target: { name: "fieldName", value: "Ward@No!!" },
+          target: { name: "keyName", value: "Ward@No!!" },
         } as React.ChangeEvent<HTMLInputElement>);
       });
 
       const updater = setFormData.mock.calls[0][0];
-      expect(updater({ ...initialFormData })).toEqual({ ...initialFormData, fieldName: "WardNo" });
+      expect(updater({ ...initialFormData })).toEqual({ ...initialFormData, keyName: "WardNo" });
     });
 
     it("sanitizes labelName and clamps to 100 chars", () => {
@@ -182,7 +182,7 @@ describe("useAliasMasterFormHandlers", () => {
     it("calls saveAliasMaster with an empty id when creating", async () => {
       vi.mocked(saveAliasMaster).mockResolvedValue({ ok: true, mode: "create" });
       const { result, setOpen } = setup({
-        formData: { ...initialFormData, fieldName: "Ward_No", labelName: "Ward No" },
+        formData: { ...initialFormData, keyName: "Ward_No", labelName: "Ward No" },
         isEdit: false,
       });
 
@@ -199,7 +199,7 @@ describe("useAliasMasterFormHandlers", () => {
     it("calls saveAliasMaster with the record id when editing", async () => {
       vi.mocked(saveAliasMaster).mockResolvedValue({ ok: true, mode: "update" });
       const { result } = setup({
-        formData: { ...initialFormData, id: 47, fieldName: "Ward_No", labelName: "Ward No" },
+        formData: { ...initialFormData, id: 47, keyName: "Ward_No", labelName: "Ward No" },
         isEdit: true,
       });
 
@@ -214,7 +214,7 @@ describe("useAliasMasterFormHandlers", () => {
     it("shows a duplicate-specific error toast", async () => {
       vi.mocked(saveAliasMaster).mockResolvedValue({ ok: false, error: "duplicate" });
       const { result } = setup({
-        formData: { ...initialFormData, fieldName: "Ward_No", labelName: "Ward No" },
+        formData: { ...initialFormData, keyName: "Ward_No", labelName: "Ward No" },
       });
 
       await act(async () => {
@@ -227,7 +227,7 @@ describe("useAliasMasterFormHandlers", () => {
     it("shows the server-provided message on an unknown API error", async () => {
       vi.mocked(saveAliasMaster).mockResolvedValue({ ok: false, error: "unknown", message: "Network Timeout" });
       const { result } = setup({
-        formData: { ...initialFormData, fieldName: "Ward_No", labelName: "Ward No" },
+        formData: { ...initialFormData, keyName: "Ward_No", labelName: "Ward No" },
       });
 
       await act(async () => {
@@ -240,7 +240,7 @@ describe("useAliasMasterFormHandlers", () => {
     it("falls back to the exception message when saveAliasMaster throws", async () => {
       vi.mocked(saveAliasMaster).mockRejectedValue(new Error("Database offline"));
       const { result } = setup({
-        formData: { ...initialFormData, fieldName: "Ward_No", labelName: "Ward No" },
+        formData: { ...initialFormData, keyName: "Ward_No", labelName: "Ward No" },
       });
 
       await act(async () => {

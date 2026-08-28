@@ -183,6 +183,8 @@ export interface TaxCalculationGuidelineDto {
   dataType?: 'BIT' | 'INT' | 'DECIMAL' | 'VARCHAR';
   guidelineValue?: string | null;
   allowedValues?: string | null;
+  parentGuidelineCode?: string | null;
+  parentGuidelineValue?: string | null;
 }
 
 // ─── Component Props ───────────────────────────────────────────────────────

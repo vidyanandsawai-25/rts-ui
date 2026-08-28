@@ -39,7 +39,7 @@ describe("useAliasMasterForm", () => {
       const { result } = renderHook(() => useAliasMasterForm({ initialData: null }));
 
       expect(result.current.isEdit).toBe(false);
-      expect(result.current.formData.fieldName).toBe("");
+      expect(result.current.formData.keyName).toBe("");
       expect(result.current.formData.labelName).toBe("");
       expect(result.current.formData.isActive).toBe(true);
     });
@@ -48,7 +48,7 @@ describe("useAliasMasterForm", () => {
       const initialData: AliasMaster = {
         id: 47,
         aliasKey: "ALS-000047",
-        fieldName: "Ward_No",
+        keyName: "Ward_No",
         labelName: "Ward No",
         englishName: "Sector",
         regionalName: "सेक्टर",
@@ -59,7 +59,7 @@ describe("useAliasMasterForm", () => {
       const { result } = renderHook(() => useAliasMasterForm({ initialData }));
 
       expect(result.current.isEdit).toBe(true);
-      expect(result.current.formData.fieldName).toBe("Ward_No");
+      expect(result.current.formData.keyName).toBe("Ward_No");
       expect(result.current.formData.englishName).toBe("Sector");
     });
   });
@@ -77,16 +77,16 @@ describe("useAliasMasterForm", () => {
       expect(result.current.formData.labelName).toBe("Ward No");
     });
 
-    it("sanitizes fieldName input on change", () => {
+    it("sanitizes keyName input on change", () => {
       const { result } = renderHook(() => useAliasMasterForm({ initialData: null }));
 
       act(() => {
         result.current.handleChange({
-          target: { name: "fieldName", value: "Ward@No!!" },
+          target: { name: "keyName", value: "Ward@No!!" },
         } as React.ChangeEvent<HTMLInputElement>);
       });
 
-      expect(result.current.formData.fieldName).toBe("WardNo");
+      expect(result.current.formData.keyName).toBe("WardNo");
     });
   });
 
@@ -98,7 +98,7 @@ describe("useAliasMasterForm", () => {
 
       act(() => {
         result.current.handleChange({
-          target: { name: "fieldName", value: "Ward_No" },
+          target: { name: "keyName", value: "Ward_No" },
         } as React.ChangeEvent<HTMLInputElement>);
         result.current.handleChange({
           target: { name: "labelName", value: "Ward No" },

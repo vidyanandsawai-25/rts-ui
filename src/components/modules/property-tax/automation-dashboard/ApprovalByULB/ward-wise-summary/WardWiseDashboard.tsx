@@ -54,7 +54,7 @@ export default function WardWiseDashboard({ zoneId, serverData }: WardWiseDashbo
     const zoneNoDisplay = serverData?.zoneData?.[0]?.zoneNo || '';
 
     return (
-        <div className="flex flex-col h-full min-h-0 overflow-hidden gap-3 p-3">
+        <div className="flex flex-col h-full min-h-0 overflow-hidden gap-2">
             {/* Custom Page Header */}
             <div className="relative p-3 border-b border-slate-200 bg-slate-50 flex items-center rounded-t-2xl">
                 <Button
@@ -76,16 +76,16 @@ export default function WardWiseDashboard({ zoneId, serverData }: WardWiseDashbo
 
             {/* Ward-wise Table */}
             <div className="border border-slate-200 shadow-md overflow-hidden bg-white rounded-2xl flex flex-col flex-1 min-h-0">
-                <div className="flex-1 p-0 flex flex-col min-h-0 transition-all duration-300 border-t border-slate-200 [&_thead>tr:first-child]:bg-gradient-to-r [&_thead>tr:first-child]:from-indigo-100 [&_thead>tr:first-child]:to-purple-100 [&_thead>tr:first-child]:shadow-sm [&_thead>tr:nth-child(2)]:bg-gradient-to-r [&_thead>tr:nth-child(2)]:from-indigo-50 [&_thead>tr:nth-child(2)]:to-purple-50 [&_th]:border [&_th]:border-slate-300 [&_td]:border [&_td]:border-slate-300">
+                <div className="flex-1 p-0 flex flex-col min-h-0 border-t border-slate-200">
                     <AutomationTable
                         data={tableData}
                         columns={columns}
                         headerRows={headerRows}
                         containerClassName="h-full flex flex-col min-h-0"
-                        tableClassName="w-full border-collapse text-xs border border-slate-300 [&_tbody>tr>td]:border [&_tbody>tr>td]:border-slate-300 hover:[&_tbody>tr]:bg-slate-50"
-                        theadClassName="sticky top-0 z-20 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)] [&>tr>th]:border [&>tr>th]:border-slate-300"
+                        tableClassName="w-full border-collapse text-sm border border-slate-300"
+                        theadClassName="sticky top-0 z-20"
                         maxBodyHeightClassName="flex-1 min-h-0"
-                        rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "border-b border-slate-200 odd:bg-white even:bg-sky-50/30 hover:bg-indigo-50/30 transition-colors cursor-pointer"}
+                        rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20" : "cursor-pointer"}
                         loading={false}
                         getRowKey={(row, index) => `${row.zoneId || 'total'}-${index}`}
                         onRowClick={(row) => {

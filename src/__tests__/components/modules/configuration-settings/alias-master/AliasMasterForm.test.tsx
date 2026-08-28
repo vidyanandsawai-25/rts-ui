@@ -50,7 +50,7 @@ describe("AliasMasterForm Component", () => {
   const mockInitialData: AliasMaster = {
     id: 47,
     aliasKey: "ALS-000047",
-    fieldName: "Ward_No",
+    keyName: "Ward_No",
     labelName: "Ward No",
     englishName: "Sector",
     regionalName: "सेक्टर",
@@ -62,17 +62,17 @@ describe("AliasMasterForm Component", () => {
     render(<AliasMasterForm id={null} initialData={null} />);
 
     expect(screen.getByText("aliasMaster.form.addTitle")).toBeInTheDocument();
-    expect(screen.getByLabelText("aliasMaster.form.fields.fieldName.label *")).toHaveValue("");
+    expect(screen.getByLabelText("aliasMaster.form.fields.keyName.label *")).toHaveValue("");
     expect(screen.getByLabelText("aliasMaster.form.fields.labelName.label *")).toHaveValue("");
     expect(screen.queryByText("aliasMaster.form.status.label")).not.toBeInTheDocument();
   });
 
-  test("renders in Edit mode with initial data prefilled, status toggle, and fieldName disabled", () => {
+  test("renders in Edit mode with initial data prefilled, status toggle, and keyName disabled", () => {
     render(<AliasMasterForm id={47} initialData={mockInitialData} />);
 
     expect(screen.getByText("aliasMaster.form.editTitle")).toBeInTheDocument();
-    expect(screen.getByLabelText("aliasMaster.form.fields.fieldName.label *")).toHaveValue("Ward_No");
-    expect(screen.getByLabelText("aliasMaster.form.fields.fieldName.label *")).toBeDisabled();
+    expect(screen.getByLabelText("aliasMaster.form.fields.keyName.label *")).toHaveValue("Ward_No");
+    expect(screen.getByLabelText("aliasMaster.form.fields.keyName.label *")).toBeDisabled();
     expect(screen.getByLabelText("aliasMaster.form.fields.labelName.label *")).toHaveValue("Ward No");
     expect(screen.getByLabelText("aliasMaster.form.fields.englishName.label")).toHaveValue("Sector");
     expect(screen.getByText("aliasMaster.form.status.label")).toBeInTheDocument();
@@ -85,12 +85,12 @@ describe("AliasMasterForm Component", () => {
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(screen.getByText("aliasMaster.form.validation.fieldNameRequired")).toBeInTheDocument();
+      expect(screen.getByText("aliasMaster.form.validation.keyNameRequired")).toBeInTheDocument();
       expect(screen.getByText("aliasMaster.form.validation.labelNameRequired")).toBeInTheDocument();
     });
   });
 
-  test("does not require fieldName in Edit mode", async () => {
+  test("does not require keyName in Edit mode", async () => {
     const { container } = render(<AliasMasterForm id={47} initialData={mockInitialData} />);
 
     vi.mocked(saveAliasMaster).mockResolvedValue({ ok: true, mode: "update" });
@@ -98,7 +98,7 @@ describe("AliasMasterForm Component", () => {
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(screen.queryByText("aliasMaster.form.validation.fieldNameRequired")).not.toBeInTheDocument();
+      expect(screen.queryByText("aliasMaster.form.validation.keyNameRequired")).not.toBeInTheDocument();
       expect(saveAliasMaster).toHaveBeenCalled();
     });
   });
@@ -108,7 +108,7 @@ describe("AliasMasterForm Component", () => {
 
     const { container } = render(<AliasMasterForm id={null} initialData={null} />);
 
-    fireEvent.change(screen.getByLabelText("aliasMaster.form.fields.fieldName.label *"), {
+    fireEvent.change(screen.getByLabelText("aliasMaster.form.fields.keyName.label *"), {
       target: { value: "Ward_No" },
     });
     fireEvent.change(screen.getByLabelText("aliasMaster.form.fields.labelName.label *"), {
@@ -155,7 +155,7 @@ describe("AliasMasterForm Component", () => {
     });
   });
 
-  test("shows error toast on duplicate fieldName submission", async () => {
+  test("shows error toast on duplicate keyName submission", async () => {
     vi.mocked(saveAliasMaster).mockResolvedValue({ ok: false, error: "duplicate" });
 
     const { container } = render(<AliasMasterForm id={47} initialData={mockInitialData} />);

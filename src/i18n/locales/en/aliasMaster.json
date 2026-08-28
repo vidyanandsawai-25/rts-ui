@@ -6,7 +6,7 @@
   "edit": "Edit Alias",
   "delete": "Delete Alias",
   "actions": "Actions",
-  "fieldName": "Field Name",
+  "keyName": "Key Name",
   "labelName": "Label Name",
   "englishName": "English Name",
   "regionalName": "Regional Name",
@@ -32,8 +32,8 @@
       "cancel": "Cancel"
     },
     "fields": {
-      "fieldName": {
-        "label": "Field Name",
+      "keyName": {
+        "label": "Key Name",
         "placeholder": "e.g. BuildingType"
       },
       "labelName": {
@@ -60,9 +60,9 @@
       "description": "Alias is currently"
     },
     "validation": {
-      "fieldNameRequired": "Field name is required",
-      "fieldNameFormat": "Field name contains invalid characters",
-      "fieldNameMaxLength": "Field name cannot exceed {count} characters",
+      "keyNameRequired": "Key name is required",
+      "keyNameFormat": "Key name contains invalid characters",
+      "keyNameMaxLength": "Key name cannot exceed {count} characters",
       "labelNameRequired": "Label name is required",
       "labelNameFormat": "Label name contains invalid characters",
       "labelNameMaxLength": "Label name cannot exceed {count} characters",

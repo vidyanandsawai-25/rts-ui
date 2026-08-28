@@ -54,10 +54,10 @@ export function useAliasMasterFormHandlers({
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     let sanitizedValue = value;
-    if (name === "fieldName" || name === "labelName") {
+    if (name === "keyName" || name === "labelName") {
       sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
-      if (sanitizedValue.length > (name === "fieldName" ? 50 : 100)) {
-        sanitizedValue = sanitizedValue.substring(0, name === "fieldName" ? 50 : 100);
+      if (sanitizedValue.length > (name === "keyName" ? 50 : 100)) {
+        sanitizedValue = sanitizedValue.substring(0, name === "keyName" ? 50 : 100);
       }
     } else if (name === "englishName" || name === "regionalName" || name === "hindiName") {
       sanitizedValue = value.replace(TRANSLATION_TEXT_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ").slice(0, 100);
@@ -68,7 +68,7 @@ export function useAliasMasterFormHandlers({
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const fieldName = name as keyof AliasMasterFormModel;
+    const keyName = name as keyof AliasMasterFormModel;
 
     setTouched((prev) => ({ ...prev, [name]: true }));
 
@@ -80,10 +80,10 @@ export function useAliasMasterFormHandlers({
     const fieldErrors = validate(updatedFormData);
     setErrors((prev) => {
       const newErrors = { ...prev };
-      if (fieldErrors[fieldName]) {
-        newErrors[fieldName] = fieldErrors[fieldName];
+      if (fieldErrors[keyName]) {
+        newErrors[keyName] = fieldErrors[keyName];
       } else {
-        delete newErrors[fieldName];
+        delete newErrors[keyName];
       }
       return newErrors;
     });
@@ -104,7 +104,7 @@ export function useAliasMasterFormHandlers({
     try {
       const fd = new FormData();
       fd.set("locale", locale);
-      fd.set("fieldName", formData.fieldName);
+      fd.set("keyName", formData.keyName);
       fd.set("labelName", formData.labelName);
       fd.set("englishName", formData.englishName || "");
       fd.set("regionalName", formData.regionalName || "");

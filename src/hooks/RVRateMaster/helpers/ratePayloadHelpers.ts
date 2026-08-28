@@ -96,13 +96,12 @@ export function buildPayloadFromMatrix(
       const enteredValue = isValEmpty ? 0 : Number(val);
       if (enteredValue < 0) return;
       const SQM_TO_SQFT = 10.7639104;
-      const SQFT_TO_SQM = 0.092903;
       const rateSquareMeterValue = rateUnit === 'SqMeter'
         ? enteredValue
-        : Number((enteredValue * SQFT_TO_SQM).toFixed(2));
+        : Number((enteredValue * SQM_TO_SQFT).toFixed(2));
       const rateSquareFeetValue = rateUnit === 'SqFeet'
         ? enteredValue
-        : Number((enteredValue * SQM_TO_SQFT).toFixed(2));
+        : Number((enteredValue / SQM_TO_SQFT).toFixed(2));
 
       const payload: RatePayload = {
         taxZoneId: Number(row.taxZoneId) || Number(zoneNoVal),
