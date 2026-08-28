@@ -6,8 +6,7 @@ import { toast } from 'sonner';
 import {
   saveTaxCalculationGuidelineAction,
 } from '@/app/[locale]/configuration-settings/tax-calculation-guideline/actions';
-import { buildInitialFormData } from '@/lib/api/configuration-settings/tax-calculation-guideline/tax-calculation-guideline.mapper';
-import { FIELD_MAPPINGS } from '@/config/tax-calculation-guideline.config';
+import { buildInitialFormData, FIELD_MAPPINGS } from '@/lib/api/configuration-settings/tax-calculation-guideline/tax-calculation-guideline.mapper';
 import type {
   TaxCalculationGuidelineDto,
   TaxCalculationGuidelineFormData,
