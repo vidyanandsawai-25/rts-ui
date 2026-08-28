@@ -39,7 +39,10 @@ import {
   computeOverdueDays,
   computeRemainingDays,
 } from '@/lib/utils/rts/application-grid';
-import type { RtsMisDashboardResponse } from '@/types/rts/rtsmisdashboard.types';
+import type {
+  RtsMisDashboardApplicationItem,
+  RtsMisDashboardResponse,
+} from '@/types/rts/rtsmisdashboard.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
 import type { ApplicationWorkflowState, RtsApprovalFlowStageApiItem, WorkflowActionType } from '@/types/rts/workflow.types';
 import type { ApplicationAnswerGroup, ApplicationAnswerItem } from '@/lib/utils/rts/application-answers';
@@ -568,7 +571,6 @@ export interface RtsApplicationsDashboardFilters {
   departmentId?: number;
   departmentName?: string;
   serviceId?: number;
-  serviceName?: string;
   applicationNo?: string;
   status?: string;
   sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate';
@@ -603,6 +605,51 @@ async function getAllApprovalApplications(
   }
 
   return { applications, totalCount: firstPage.totalCount };
+}
+
+async function getAllMisDashboardApplications(
+  filters: RtsApplicationsDashboardFilters
+): Promise<RtsMisDashboardApplicationItem[]> {
+  const pageSize = 10;
+  const requestPage = (pageNumber: number) => getRtsMisDashboardData({
+    Flag: 'RTSApplicationDashboard',
+    UpicId: null,
+    ApplicationNo: filters.applicationNo ?? null,
+    DeparmentId: filters.departmentId ?? null,
+    DeparmentName: filters.departmentName ?? null,
+    ServiceId: filters.serviceId ?? 0,
+    ModuleName: null,
+    FromDate: null,
+    ToDate: null,
+    pageNumber,
+    pageSize,
+    ApplicationStatus: filters.status ?? null,
+  });
+
+  const firstResponse = await requestPage(1);
+  if (!firstResponse.status) return [];
+
+  const applications = Array.isArray(firstResponse.data?.rtsApplicationDashboardDetails)
+    ? [...firstResponse.data.rtsApplicationDashboardDetails]
+    : [];
+  const totalRecords = firstResponse.data?.totalRecords ?? applications.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
+
+  for (let startPage = 2; startPage <= totalPages; startPage += 10) {
+    const endPage = Math.min(startPage + 9, totalPages);
+    const pageNumbers = Array.from(
+      { length: endPage - startPage + 1 },
+      (_, index) => startPage + index
+    );
+    const responses = await Promise.all(pageNumbers.map(requestPage));
+    responses.forEach((response) => {
+      if (response.status && Array.isArray(response.data?.rtsApplicationDashboardDetails)) {
+        applications.push(...response.data.rtsApplicationDashboardDetails);
+      }
+    });
+  }
+
+  return applications;
 }
 
 function compareNullable<T>(
@@ -666,7 +713,7 @@ export async function getRtsApplicationsDashboardAction(
   filters: RtsApplicationsDashboardFilters = { pageNumber: 1 }
 ): Promise<RtsApplicationsDashboardResult> {
   try {
-    const [approvalRes, cards, misResponse] = await Promise.all([
+    const [approvalRes, cards, misApplications] = await Promise.all([
       getAllApprovalApplications(filters).catch((err) => {
         console.error('Failed to fetch approval applications list:', err);
         return null;
@@ -675,20 +722,7 @@ export async function getRtsApplicationsDashboardAction(
         console.error('Failed to fetch RTS application dashboard cards API:', err);
         return null;
       }),
-      getRtsMisDashboardData({
-        Flag: 'RTSApplicationDashboard',
-        UpicId: null,
-        ApplicationNo: filters.applicationNo ?? null,
-        DeparmentId: filters.departmentId ?? null,
-        DeparmentName: filters.departmentName ?? null,
-        ServiceName: filters.serviceName ?? null,
-        ModuleName: null,
-        FromDate: null,
-        ToDate: null,
-        pageNumber: 0,
-        pageSize: 0,
-        ApplicationStatus: filters.status ?? null,
-      }).catch(() => null),
+      getAllMisDashboardApplications(filters).catch(() => []),
     ]);
 
     const kpis: ApplicationsDashboardKpis = {
@@ -766,10 +800,7 @@ export async function getRtsApplicationsDashboardAction(
       };
     });
 
-    const misItems = misResponse?.status && Array.isArray(misResponse.data?.rtsApplicationDashboardDetails)
-      ? misResponse.data.rtsApplicationDashboardDetails
-      : [];
-    const misRows: AdminApplicationGridRow[] = misItems.map((app) => ({
+    const misRows: AdminApplicationGridRow[] = misApplications.map((app) => ({
       source: 'mis',
       applicationId: 0,
       applicationNo: app.applicationNo,
