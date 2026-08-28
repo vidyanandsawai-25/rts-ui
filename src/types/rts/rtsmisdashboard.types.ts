@@ -40,10 +40,36 @@ export interface RtsMisDashboardUserApplicationItem {
   remark?: string | null;
 }
 
+export interface RtsMisDashboardApplicationItem {
+  id: number;
+  departmentId: number;
+  serviceId: number;
+  applicationNo: string;
+  applicationStatus: string;
+  applicantName: string | null;
+  applicantMobileNo: string | null;
+  remark: string | null;
+  createdDate: string;
+  updatedDate: string | null;
+  userId: number | null;
+  userName: string | null;
+  sessionId: string | null;
+  ownerId: number | null;
+  departmentName: string;
+  departmentNameLocal: string | null;
+  serviceName: string;
+  serviceNameLocal: string | null;
+  sla: string | number | null;
+  remainingDays: number | null;
+  dueDays: number | null;
+  overdueDays: number | null;
+}
+
 export interface RtsMisDashboardData {
-  serviceWiseData: RtsMisDashboardServiceItem[];
-  departmentWiseData: RtsMisDashboardDepartmentItem[];
-  userApplicationDashboardData: RtsMisDashboardUserApplicationItem[];
+  serviceWiseData: RtsMisDashboardServiceItem[] | null;
+  departmentWiseData: RtsMisDashboardDepartmentItem[] | null;
+  userApplicationDashboardData: RtsMisDashboardUserApplicationItem[] | null;
+  rtsApplicationDashboardDetails?: RtsMisDashboardApplicationItem[] | null;
 }
 
 export interface RtsMisDashboardResponse {
@@ -52,7 +78,7 @@ export interface RtsMisDashboardResponse {
   data: RtsMisDashboardData;
 }
 
-export type RtsMisDashboardFlag = 'admin' | 'user';
+export type RtsMisDashboardFlag = 'admin' | 'user' | 'RTSApplicationDashboard';
 
 export type RtsMisDashboardInputFlag = RtsMisDashboardFlag | 'Admin' | 'User';
 
@@ -61,14 +87,18 @@ export type RtsMisDashboardModuleName = '' | 'RTS' | 'AapleSarkar' | 'Offline';
 
 export interface RtsMisDashboardRequest {
   Flag: RtsMisDashboardFlag;
-  UpicId: string;
-  ApplicationNo: string;
+  UpicId: string | null;
+  ApplicationNo: string | null;
   // The backend contract uses this spelling, so preserve it in the request type.
   DeparmentId: number | null;
-  DeparmentName: string;
-  ModuleName: RtsMisDashboardModuleName;
+  DeparmentName: string | null;
+  ServiceName?: string | null;
+  ModuleName: RtsMisDashboardModuleName | null;
   FromDate: string | null;
   ToDate: string | null;
+  pageNumber?: number;
+  pageSize?: number;
+  ApplicationStatus?: string | null;
 }
 
 export type RtsMisDashboardRequestInput =

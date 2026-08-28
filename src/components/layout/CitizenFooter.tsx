@@ -113,7 +113,7 @@ export function CitizenFooter({ ulbData, isLoggedIn }: CitizenFooterProps) {
             {ulbData?.ulbAddress && (
               <div className="flex items-start gap-2">
                 <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
-                <span className="leading-snug text-left">{ulbData.ulbAddress}</span>
+                <span className="leading-snug text-left">{t('address')}</span>
               </div>
             )}
             {ulbData?.phoneNo && (

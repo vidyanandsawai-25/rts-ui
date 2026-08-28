@@ -100,8 +100,8 @@ function formatSubmittedDate(dateString?: string, language?: Language): string {
 
   const locale = language === "mr" ? "mr-IN" : language === "hi" ? "hi-IN" : "en-IN";
   return new Intl.DateTimeFormat(locale, {
-    day: "2-digit",
-    month: "short",
+    day: "numeric",
+    month: "long",
     year: "numeric",
   }).format(date);
 }

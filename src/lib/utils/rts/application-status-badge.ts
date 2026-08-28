@@ -30,7 +30,9 @@ export function getRtsApplicationStatusBadgeProps(
       className: 'border-orange-200 bg-orange-100 text-orange-800',
     };
   }
-  if (normalized === 'document verified') return { variant: 'warning' };
+  if (normalized === 'pending' || normalized === 'document verified') {
+    return { variant: 'warning' };
+  }
 
   return { variant: 'secondary' };
 }

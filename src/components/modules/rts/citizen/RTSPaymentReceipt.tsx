@@ -19,6 +19,20 @@ import { Button } from '@/components/common';
 import { getUlbDataFromCookies } from '@/lib/utils/cookie';
 import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
 
+function formatReceiptDate(value?: string): string {
+  const date = value ? new Date(value) : new Date();
+  if (Number.isNaN(date.getTime())) return '';
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${day}-${month}-${date.getFullYear()}`;
+}
+
+function getReceiptEmail(value?: string): string {
+  const email = value?.trim() ?? '';
+  return /@citizen\.portal$/i.test(email) ? '' : email;
+}
+
 export function printReceiptElement(receipt: PaymentReceiptResult) {
   if (typeof window === 'undefined') return;
 
@@ -31,16 +45,8 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
   printIframe.style.border = 'none';
   document.body.appendChild(printIframe);
 
-  const formattedDate = receipt.paymentDate
-    ? new Date(receipt.paymentDate).toLocaleString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      })
-    : new Date().toLocaleString('en-IN');
+  const formattedDate = formatReceiptDate(receipt.paymentDate);
+  const customerEmail = getReceiptEmail(receipt.customerEmail);
 
   const cookieUlb = getUlbDataFromCookies();
   const ulbNameEn = receipt.ulbName || cookieUlb.ulbName || 'MUNICIPAL CORPORATION';
@@ -147,6 +153,18 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
             font-weight: 700;
             margin-top: 2px;
           }
+          .service-context {
+            margin-top: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px 10px;
+            color: #dbeafe;
+            font-size: 9.5px;
+            font-weight: 700;
+          }
+          .service-context strong {
+            color: #ffffff;
+          }
           .header-right {
             text-align: right;
             display: flex;
@@ -175,7 +193,7 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
           }
           .meta-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 8px;
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -345,6 +363,10 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
                 <h1>${ulbNameMr}</h1>
                 <div class="corp-en">${ulbNameEn} • महाराष्ट्र शासन</div>
                 <div class="sub-title">शासकीय शुल्क ई-पावती / Official Government e-Receipt</div>
+                <div class="service-context">
+                  <span>Department / विभाग: <strong>${receipt.departmentNameLocal || receipt.departmentName || ''}</strong></span>
+                  <span>Service / सेवा: <strong>${receipt.serviceNameLocal || receipt.serviceName || ''}</strong></span>
+                </div>
               </div>
             </div>
             <div class="header-right">
@@ -364,7 +386,7 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
                 <span class="value">${receipt.applicationNo || 'N/A'}</span>
               </div>
               <div class="meta-item">
-                <span class="label">Receipt Date / दिनांक व वेळ</span>
+                <span class="label">Receipt Date / दिनांक</span>
                 <span class="value">${formattedDate}</span>
               </div>
               <div class="meta-item">
@@ -389,7 +411,7 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
                 </div>
                 <div class="info-item">
                   <span class="label">Email ID / ईमेल आयडी:</span>
-                  <span class="value">${receipt.customerEmail || 'N/A'}</span>
+                  <span class="value">${customerEmail}</span>
                 </div>
               </div>
             </div>
@@ -528,16 +550,8 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
     }
   };
 
-  const formattedDate = receipt.paymentDate
-    ? new Date(receipt.paymentDate).toLocaleString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      })
-    : new Date().toLocaleString('en-IN');
+  const formattedDate = formatReceiptDate(receipt.paymentDate);
+  const customerEmail = getReceiptEmail(receipt.customerEmail);
 
   const cookieUlb = getUlbDataFromCookies();
   const ulbNameEn = receipt.ulbName || cookieUlb.ulbName || 'MUNICIPAL CORPORATION';
@@ -587,6 +601,20 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
               <Receipt className="w-3.5 h-3.5" />
               <span>शासकीय शुल्क ई-पावती / Official Government e-Receipt</span>
             </p>
+            <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] font-semibold text-blue-100">
+              <span>
+                Department / विभाग:{' '}
+                <strong className="font-extrabold text-white">
+                  {receipt.departmentNameLocal || receipt.departmentName || ''}
+                </strong>
+              </span>
+              <span>
+                Service / सेवा:{' '}
+                <strong className="font-extrabold text-white">
+                  {receipt.serviceNameLocal || receipt.serviceName || ''}
+                </strong>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -604,7 +632,7 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
       {/* Receipt Body */}
       <div className="p-4 sm:p-6 space-y-4 text-slate-800 bg-white">
         {/* Receipt Identification Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 bg-slate-50 p-3 sm:p-3.5 rounded-xl border border-slate-200 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50 p-3 sm:p-3.5 rounded-xl border border-slate-200 text-xs">
           <div>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Receipt No. / पावती क्र.</span>
             <span className="font-mono font-extrabold text-blue-900 text-xs sm:text-sm break-all">{receipt.receiptNo || 'N/A'}</span>
@@ -614,7 +642,7 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
             <span className="font-mono font-extrabold text-slate-800 text-xs sm:text-sm break-all">{receipt.applicationNo || 'N/A'}</span>
           </div>
           <div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Date & Time / दिनांक व वेळ</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Receipt Date / दिनांक</span>
             <span className="font-semibold text-slate-700 text-xs">{formattedDate}</span>
           </div>
           <div>
@@ -653,7 +681,7 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
               <span className="text-slate-400 block font-medium text-[11px]">Email / ईमेल:</span>
               <span className="font-mono text-slate-700 text-xs break-all block flex items-center gap-1">
                 <Mail className="w-3 h-3 text-slate-400 shrink-0" />
-                <span>{receipt.customerEmail || 'N/A'}</span>
+                <span>{customerEmail}</span>
               </span>
             </div>
           </div>

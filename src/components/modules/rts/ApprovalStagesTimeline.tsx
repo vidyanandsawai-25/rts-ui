@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CheckCircle2, ChevronDown, ChevronUp, Clock, UserRoundPen, XCircle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Badge, type BadgeVariant } from '@/components/common/Badge';
 
 export interface StageItem {
@@ -28,15 +28,6 @@ interface ApprovalStagesTimelineProps {
 }
 
 type StageVisualState = 'completed' | 'current' | 'rejected' | 'returned' | 'pending';
-
-const OFFICER_DETAIL_LABELS = {
-  approvedBy: 'Approve by:',
-  officerName: 'Officer name:',
-  noStages: 'No approval workflow stages configured.',
-  slaPrefix: 'SLA:',
-  days: 'Days',
-  time: 'Time:',
-};
 
 function getNormalizedStatus(stage: StageItem): string {
   return stage.status?.trim().toLowerCase() ?? '';
@@ -102,24 +93,30 @@ export function cleanStageName(name: string): string {
   return name;
 }
 
-function formatStageDate(value?: string | null): string | null {
+function getIntlLocale(locale: string): string {
+  if (locale === 'mr') return 'mr-IN';
+  if (locale === 'hi') return 'hi-IN';
+  return 'en-IN';
+}
+
+function formatStageDate(value: string | null | undefined, locale: string): string | null {
   if (!value?.trim()) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
 
-  return new Intl.DateTimeFormat('en-IN', {
+  return new Intl.DateTimeFormat(getIntlLocale(locale), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
   }).format(date);
 }
 
-function formatStageTime(value?: string | null): string | null {
+function formatStageTime(value: string | null | undefined, locale: string): string | null {
   if (!value?.trim()) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
 
-  return new Intl.DateTimeFormat('en-IN', {
+  return new Intl.DateTimeFormat(getIntlLocale(locale), {
     hour: 'numeric',
     minute: '2-digit',
   }).format(date);
@@ -132,16 +129,17 @@ export function ApprovalStagesTimeline({
   isLoading = false,
 }: ApprovalStagesTimelineProps) {
   const t = useTranslations('rts.applicationDashboard.processDrawer');
+  const locale = useLocale();
   const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({});
 
   if (isLoading) {
-    return <div className="py-8 text-center text-xs font-medium text-slate-400">Loading approval workflow stages...</div>;
+    return <div className="py-8 text-center text-xs font-medium text-slate-400">{t('loadingApprovalStages')}</div>;
   }
 
   if (!stages || stages.length === 0) {
     return (
       <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-6 text-center text-xs font-medium text-slate-400">
-        {OFFICER_DETAIL_LABELS.noStages}
+        {t('noStages')}
       </div>
     );
   }
@@ -169,9 +167,9 @@ export function ApprovalStagesTimeline({
         const stageKey = String(stage.id || idx);
         const isExpanded = Boolean(expandedStages[stageKey]);
         const displayName = cleanStageName(stage.stageName);
-        const remark = stage.remark?.trim() || 'No remarks';
-        const recordedDate = formatStageDate(stage.createdDate);
-        const recordedTime = formatStageTime(stage.createdDate);
+        const remark = stage.remark?.trim() || t('noRemarks');
+        const recordedDate = formatStageDate(stage.createdDate, locale);
+        const recordedTime = formatStageTime(stage.createdDate, locale);
         const officerRole = stage.userName?.trim() || stage.assignedRole?.trim() || '';
         const officerName = [stage.firstName, stage.lastName]
           .filter((value): value is string => Boolean(value?.trim()))
@@ -192,6 +190,8 @@ export function ApprovalStagesTimeline({
         } else if (isCurrent) {
           statusText = 'In Progress';
           badgeVariant = 'warning';
+        } else if (visualState === 'pending') {
+          statusText = 'Pending';
         }
 
         return (
@@ -258,7 +258,9 @@ export function ApprovalStagesTimeline({
                     {stage.slaDays != null && (
                       <>
                         <span>•</span>
-                        <span>{OFFICER_DETAIL_LABELS.slaPrefix} {stage.slaDays} {OFFICER_DETAIL_LABELS.days}</span>
+                        <span>
+                          {t('slaPrefix')} {new Intl.NumberFormat(getIntlLocale(locale)).format(stage.slaDays)} {t('daysLabel')}
+                        </span>
                       </>
                     )}
                   </div>

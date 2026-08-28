@@ -13,7 +13,7 @@ import {
 import { ApprovalStagesTimeline } from '@/components/modules/rts';
 import { Button, ViewButton } from '@/components/common';
 import { Badge, Drawer } from '@/components/common';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import type { RtsApplicationProcessData } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 
@@ -59,9 +59,13 @@ interface DisplayDocument {
 
 function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadOnlyDetails, onOpenDocument }: ApplicationDrawerContentProps) {
   const tProcess = useTranslations('rts.applicationDashboard.processDrawer');
+  const locale = useLocale();
   const detail = data?.details ?? null;
   const stages = data?.stages ?? null;
   const loading = !data;
+  const numberFormatter = new Intl.NumberFormat(
+    locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
+  );
   const normalizedStatus = record.applicationStatus.trim().toLowerCase();
   const hasFinalApplicationStatus = normalizedStatus.includes('approved') || normalizedStatus.includes('reject');
 
@@ -131,7 +135,7 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
             </div>
             <div className="min-w-0">
               <span className="block text-[10px] uppercase font-semibold text-slate-400">{tProcess('slaTimeline')}</span>
-              <span className="font-extrabold text-blue-700">{tProcess('days', { count: record.slaLimit })}</span>
+              <span className="font-extrabold text-blue-700">{tProcess('days', { count: numberFormatter.format(record.slaLimit) })}</span>
             </div>
           </div>
         </section>
@@ -144,7 +148,7 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
               {tProcess('uploadedDocuments')}
             </h3>
             <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-              {tProcess('attachmentsCount', { count: documents.length })}
+              {tProcess('attachmentsCount', { count: numberFormatter.format(documents.length) })}
             </span>
           </div>
 
@@ -219,7 +223,7 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
               {tProcess('approvalWorkflow')}
             </h3>
             <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-              {tProcess('stagesRecorded', { count: stages?.approvalStages.length || 0 })}
+              {tProcess('stagesRecorded', { count: numberFormatter.format(stages?.approvalStages.length || 0) })}
             </span>
           </div>
 

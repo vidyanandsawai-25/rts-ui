@@ -49,7 +49,7 @@ export function UserProfileDropdown({
     mr: {
       profile: 'नागरिक तपशील',
       dashboard: 'डॅशबोर्ड विहंगावलोकन',
-      myApplications: 'माझे अर्जन',
+      myApplications: 'माझ्या अर्जाचा मागोवा घ्या',
       logout: 'लॉगआउट',
       upicId: 'UPIC आयडी',
       propertyNo: 'मालमत्ता क्रमांक',
@@ -58,8 +58,8 @@ export function UserProfileDropdown({
     },
     hi: {
       profile: 'नागरिक विवरण',
-      dashboard: 'डैशबोर्ड',
-      myApplications: 'माझे आवेदन',
+      dashboard: 'डैशबोर्ड का अवलोकन',
+      myApplications: 'मेरी आवेदन की स्थिति देखें',
       logout: 'लॉगआउट',
       upicId: 'UPIC आईडी',
       propertyNo: 'संपत्ति संख्या',

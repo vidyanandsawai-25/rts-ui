@@ -2,7 +2,8 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { FileText, Upload, X } from "lucide-react";
+import { Check, ChevronDown, Eye, FileText, Search, Upload, X } from "lucide-react";
+import DocumentFormPreview from "@/components/modules/rts/forms/DocumentFormPreview";
 import type {
   CheckboxField,
   FieldConfig,
@@ -228,6 +229,274 @@ function getControlClass(hasError: boolean, extraClass = "") {
 
 const FIELD_ERROR_CLASS = "mt-1 text-[10px] font-medium text-red-500";
 const getLabelColorClass = (hasError: boolean) => (hasError ? "text-red-500" : "text-slate-800");
+
+function DynamicFileField({
+  field,
+  lang,
+  value,
+  error,
+  showError,
+  onChange,
+}: {
+  field: any;
+  lang: "en" | "hi" | "mr";
+  value: unknown;
+  error?: string;
+  showError?: boolean;
+  onChange: (value: File | null) => void;
+}) {
+  const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
+  const hasError = Boolean(showError && error);
+  const selectedFile = value instanceof File ? value : null;
+  const isUploaded = Boolean(selectedFile || (typeof value === "string" && value.trim()));
+  const selectedFileName = selectedFile?.name ?? (typeof value === "string" ? value : "");
+  const placeholder = typeof field.placeholder === "string" ? field.placeholder : t(field.placeholder, lang);
+  const fileHint = selectedFileName || placeholder || "Upload required document";
+  const requiredIndicator = field.required ? <span className="text-[13px] text-red-500">*</span> : null;
+  const inputId = `file-input-${field.id}`;
+  const fieldLabel = t(field.label, lang);
+  const uploadText = lang === "hi" ? "अपलोड करें" : lang === "mr" ? "अपलोड करा" : "Upload";
+
+  return (
+    <div className="h-full">
+      <div
+        className={`flex h-full min-h-[72px] items-center gap-3 rounded-[8px] border bg-[#f9fafb] px-3 py-2 transition-colors ${
+          hasError
+            ? "border-red-400 bg-red-50/40"
+            : isUploaded
+              ? "border-[#27d3cf] bg-[#f8fffe]"
+              : "border-[#d8e1ec] hover:border-[#27d3cf]"
+        }`}
+      >
+        <label
+          htmlFor={inputId}
+          className="group flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+        >
+          <div
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] border transition-colors ${
+              hasError
+                ? "border-red-200 bg-white text-red-500"
+                : isUploaded
+                  ? "border-[#b9f0ec] bg-[#efffff] text-[#10b981]"
+                  : "border-[#dfe6ef] bg-[#f8fbff] text-[#98a7ba] group-hover:border-[#b9f0ec] group-hover:bg-[#efffff] group-hover:text-[#11b8b2]"
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className={`flex items-start gap-1 text-[12px] font-semibold ${hasError ? "text-red-500" : "text-[#1d3557]"}`}>
+              <span className="min-w-0 whitespace-normal break-words leading-4">{fieldLabel}</span>
+              {requiredIndicator}
+            </div>
+            <p className="whitespace-normal break-words text-[11px] leading-4 text-[#93a4b8]">{fileHint}</p>
+          </div>
+        </label>
+
+        <div className="flex shrink-0 items-center gap-2">
+          {selectedFile && (
+            <button
+              type="button"
+              onClick={() => setIsPreviewOpen(true)}
+              className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[6px] border border-blue-200 bg-blue-50 text-blue-600 transition-colors hover:bg-blue-100"
+              aria-label={`View ${fieldLabel}`}
+              title={`View ${fieldLabel}`}
+            >
+              <Eye className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <label
+            htmlFor={inputId}
+            className="inline-flex h-[30px] cursor-pointer items-center justify-center rounded-[6px] border border-[#8be9e2] bg-[#efffff] px-2 text-[#11b8b2] transition-colors hover:border-[#63e1d7] hover:bg-[#e6fffd]"
+            aria-label={isUploaded ? `Replace ${fieldLabel}` : `Upload ${fieldLabel}`}
+            title={isUploaded ? `Replace ${fieldLabel}` : `Upload ${fieldLabel}`}
+          >
+            <Upload className="h-3.5 w-3.5" />
+            {!isUploaded && <span className="ml-1 text-[11px] font-semibold">{uploadText}</span>}
+          </label>
+          {isUploaded && (
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[6px] border border-[#fecaca] bg-[#fff1f2] text-[#ef4444] transition-colors hover:bg-[#ffe4e6]"
+              aria-label={`Remove ${fieldLabel}`}
+              title={`Remove ${fieldLabel}`}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        <input
+          id={inputId}
+          type="file"
+          accept={field?.validation?.accept}
+          className="sr-only"
+          onChange={(event) => onChange(event.target.files?.[0] ?? null)}
+        />
+      </div>
+      {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+      <DocumentFormPreview
+        key={selectedFile ? `${selectedFile.name}:${selectedFile.lastModified}:${selectedFile.size}` : "empty"}
+        file={selectedFile}
+        open={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+      />
+    </div>
+  );
+}
+
+function DynamicSearchableSelectField({
+  field,
+  lang,
+  value,
+  error,
+  showError,
+  onChange,
+}: {
+  field: SelectField;
+  lang: "en" | "hi" | "mr";
+  value: unknown;
+  error?: string;
+  showError?: boolean;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState("");
+  const rootRef = React.useRef<HTMLDivElement | null>(null);
+  const hasError = Boolean(showError && error);
+  const selectedValue = typeof value === "string" ? value : "";
+  const selectedOption = field.options.find((option) => option.value === selectedValue);
+  const placeholder = lang === "hi" ? "चयन करें" : lang === "mr" ? "निवडा" : "Select";
+  const searchPlaceholder = lang === "hi" ? "विकल्प खोजें..." : lang === "mr" ? "पर्याय शोधा..." : "Search options...";
+  const noOptions = lang === "hi" ? "कोई विकल्प नहीं मिला" : lang === "mr" ? "पर्याय सापडला नाही" : "No options found";
+  const fieldLabel = t(field.label, lang);
+  const disabled = Boolean(field.disabled || field.readOnly);
+  const required = Boolean((field as SelectField & { required?: boolean }).required);
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const filteredOptions = field.options.filter((option) => {
+    if (!normalizedQuery) return true;
+    return `${option.value} ${t(option.label, lang)}`.toLocaleLowerCase().includes(normalizedQuery);
+  });
+
+  React.useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+        setQuery("");
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        setQuery("");
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  const selectOption = (option: { value: string }) => {
+    onChange(option.value);
+    setOpen(false);
+    setQuery("");
+  };
+
+  return (
+    <div className="relative" ref={rootRef}>
+      <label className={`mb-1 block text-[12px] font-medium ${getLabelColorClass(hasError)}`}>
+        <span className="inline-flex items-center gap-1">
+          <span>{fieldLabel}</span>
+          {required ? <span className="text-[13px] text-red-500">*</span> : null}
+        </span>
+      </label>
+
+      <button
+        type="button"
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={fieldLabel}
+        onClick={() => {
+          if (!disabled) setOpen((current) => !current);
+        }}
+        className={getControlClass(
+          hasError,
+          `flex h-[40px] items-center justify-between gap-2 py-2 text-left ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-400" : ""}`
+        )}
+      >
+        <span className={selectedOption ? "truncate" : "truncate text-slate-400"}>
+          {selectedOption ? t(selectedOption.label, lang) : placeholder}
+        </span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open ? (
+        <div className="absolute z-[60] mt-1 w-full overflow-hidden rounded-[6px] border border-slate-200 bg-white shadow-xl">
+          <div className="border-b border-slate-100 p-2">
+            <div className="flex h-9 items-center gap-2 rounded-[4px] border border-slate-200 bg-slate-50 px-2">
+              <Search className="h-4 w-4 shrink-0 text-slate-400" />
+              <input
+                autoFocus
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={searchPlaceholder}
+                className="min-w-0 flex-1 bg-transparent text-[13px] text-slate-800 outline-none placeholder:text-slate-400"
+              />
+            </div>
+          </div>
+          <div role="listbox" aria-label={fieldLabel} className="max-h-56 overflow-y-auto py-1">
+            <button
+              type="button"
+              role="option"
+              aria-selected={!selectedValue}
+              onClick={() => {
+                onChange("");
+                setOpen(false);
+                setQuery("");
+              }}
+              className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-[13px] text-slate-500 transition-colors hover:bg-cyan-50"
+            >
+              <span>{placeholder}</span>
+              {!selectedValue ? <Check className="h-4 w-4 text-[#11b8b2]" /> : null}
+            </button>
+            {filteredOptions.length ? (
+              filteredOptions.map((option) => {
+                const isSelected = option.value === selectedValue;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    onClick={() => selectOption(option)}
+                    className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-[13px] transition-colors ${
+                      isSelected ? "bg-cyan-50 font-semibold text-slate-900" : "text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="min-w-0 break-words">{t(option.label, lang)}</span>
+                    {isSelected ? <Check className="h-4 w-4 shrink-0 text-[#11b8b2]" /> : null}
+                  </button>
+                );
+              })
+            ) : (
+              <p className="px-3 py-4 text-center text-[13px] text-slate-500">{noOptions}</p>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+    </div>
+  );
+}
 
 export default function DynamicFieldRenderer(props: {
   field: any;
@@ -467,28 +736,17 @@ export default function DynamicFieldRenderer(props: {
       );
     }
 
-    // ✅ Normal select for all other fields
+    // Normal select fields use a filterable option list while keeping the same field layout.
     return (
       <div className={wrapClass}>
-        <label className={`mb-1 block text-[12px] font-medium ${getLabelColorClass(hasError)}`}>
-          <span className="inline-flex items-center gap-1">
-            <span>{t(f.label, lang)}</span>
-            {requiredIndicator}
-          </span>
-        </label>
-        <select
-          className={getControlClass(hasError, "h-[40px] py-2")}
-          value={values[f.id] ?? ""}
-          onChange={(e) => updateValue(f.id, sanitizeValue(e.target.value, f), f)}
-        >
-          <option value="">{lang === "hi" ? "चयन करें" : lang === "mr" ? "निवडा" : "Select"}</option>
-          {f.options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {t(o.label, lang)}
-            </option>
-          ))}
-        </select>
-        {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+        <DynamicSearchableSelectField
+          field={f}
+          lang={lang}
+          value={values[f.id]}
+          error={error}
+          showError={showError}
+          onChange={(value) => updateValue(f.id, sanitizeValue(value, f), f)}
+        />
       </div>
     );
   }
@@ -630,80 +888,16 @@ export default function DynamicFieldRenderer(props: {
 
   if (field.type === "file") {
     const f = field as any;
-    const currentValue = values[f.id];
-    const isUploaded = currentValue instanceof File || (typeof currentValue === "string" && currentValue.trim() !== "");
-    const selectedFileName =
-      currentValue instanceof File
-        ? currentValue.name
-        : typeof currentValue === "string"
-          ? currentValue
-          : "";
-    const fileHint = selectedFileName || placeholderText || "Upload required document";
-
     return (
       <div className={`${wrapClass} h-full`}>
-        <label
-          htmlFor={`file-input-${f.id}`}
-          className={`group flex h-full min-h-[72px] cursor-pointer items-center gap-3 rounded-[8px] border bg-[#f9fafb] px-3 py-2 transition-colors ${
-            hasError
-              ? "border-red-400 bg-red-50/40"
-              : isUploaded
-                ? "border-[#27d3cf] bg-[#f8fffe]"
-                : "border-[#d8e1ec] hover:border-[#27d3cf]"
-          }`}
-        >
-          <div
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] border transition-colors ${
-              hasError
-                ? "border-red-200 bg-white text-red-500"
-                : isUploaded
-                  ? "border-[#b9f0ec] bg-[#efffff] text-[#10b981]"
-                  : "border-[#dfe6ef] bg-[#f8fbff] text-[#98a7ba] group-hover:border-[#b9f0ec] group-hover:bg-[#efffff] group-hover:text-[#11b8b2]"
-            }`}
-          >
-            <FileText className="h-4 w-4" />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className={`flex items-start gap-1 text-[12px] font-semibold ${hasError ? "text-red-500" : "text-[#1d3557]"}`}>
-              <span className="min-w-0 whitespace-normal break-words leading-4">{t(f.label, lang)}</span>
-              {requiredIndicator}
-            </div>
-            <p className="whitespace-normal break-words text-[11px] leading-4 text-[#93a4b8]">{fileHint}</p>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2">
-            <div className="rounded-[6px] border border-[#8be9e2] bg-[#efffff] px-3 py-1 text-[11px] font-semibold text-[#11b8b2] transition-colors group-hover:border-[#63e1d7] group-hover:bg-[#e6fffd]">
-              <span className="inline-flex items-center justify-center gap-1">
-                <Upload className="h-3.5 w-3.5" />
-                {selectedFileName ? "Change" : "Upload"}
-              </span>
-            </div>
-            {isUploaded ? (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  updateValue(f.id, null, f);
-                }}
-                className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[6px] border border-[#fecaca] bg-[#fff1f2] text-[#ef4444] transition-colors hover:bg-[#ffe4e6]"
-                aria-label={`Remove ${t(f.label, lang)}`}
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            ) : null}
-          </div>
-
-          <input
-            id={`file-input-${f.id}`}
-            type="file"
-            accept={(f as any)?.validation?.accept}
-            className="sr-only"
-            onChange={(e) => updateValue(f.id, e.target.files?.[0] ?? null, f)}
-          />
-        </label>
-        {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+        <DynamicFileField
+          field={f}
+          lang={lang}
+          value={values[f.id]}
+          error={error}
+          showError={showError}
+          onChange={(value) => updateValue(f.id, value, f)}
+        />
       </div>
     );
   }

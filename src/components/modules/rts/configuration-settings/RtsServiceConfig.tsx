@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Folder } from "lucide-react";
 import {
   AddButton,
@@ -101,6 +101,8 @@ export default function RtsServiceConfig({
 }: RtsServiceConfigProps) {
   const t = useTranslations("common");
   const tRts = useTranslations("rts");
+  const locale = useLocale();
+  const numberFormatter = new Intl.NumberFormat(locale === "mr" ? "mr-IN" : locale === "hi" ? "hi-IN" : "en-IN");
   const { confirm } = useConfirm();
 
   const [isPending, startTransition] = useTransition();
@@ -457,6 +459,7 @@ export default function RtsServiceConfig({
         "border-r border-blue-300/60 text-white",
       cellClassName:
         "font-bold text-slate-500 border-r border-slate-100",
+      render: (value) => numberFormatter.format(Number(value)),
     },
     {
       key: "departmentName",

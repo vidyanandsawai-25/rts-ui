@@ -7,6 +7,7 @@ import type { RtsServiceApiItem, RtsServiceQueryParams } from "@/types/rts/servi
 function buildUrl(params: RtsServiceQueryParams = {}): string {
   const searchParams = new URLSearchParams();
 
+  if (params.id !== undefined) searchParams.set("id", String(params.id));
   if (params.ServiceName) searchParams.set("ServiceName", params.ServiceName);
   if (params.DepartmentId !== undefined) searchParams.set("DepartmentId", String(params.DepartmentId));
   if (params.PageNumber !== undefined) searchParams.set("PageNumber", String(params.PageNumber));

@@ -283,7 +283,7 @@ export async function searchCitizenMisApplicationsAction(
       upicResponse?.status &&
       (upicResponse.data?.userApplicationDashboardData?.length ?? 0) > 0
     ) {
-      return { success: true, items: upicResponse.data.userApplicationDashboardData };
+      return { success: true, items: upicResponse.data.userApplicationDashboardData ?? [] };
     }
 
     // 2. Try external live API (onesolutionakola.tabamc.in) by ApplicationNo
