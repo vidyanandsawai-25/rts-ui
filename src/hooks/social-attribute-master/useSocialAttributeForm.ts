@@ -116,11 +116,14 @@ export function useSocialAttributeForm({
           })(val);
           if (baseErr) return baseErr;
 
-          const strVal = String(val ?? '')
-            .trim()
-            .toLowerCase();
+          const strVal = String(val ?? '').trim();
+          if (strVal.length < 3) {
+            return t('form.validation.nameMinLength');
+          }
+
+          const lowerStrVal = strVal.toLowerCase();
           const isDuplicate = existingAttributes.some(
-            (attr) => attr.id !== id && attr.socialAttributeName.trim().toLowerCase() === strVal
+            (attr) => attr.id !== id && attr.socialAttributeName.trim().toLowerCase() === lowerStrVal
           );
           if (isDuplicate) return t('form.validation.nameExists');
           return undefined;
@@ -262,11 +265,41 @@ export function useSocialAttributeForm({
       if (errorMap[code]) return errorMap[code];
 
       if (code === 400) {
-        const msg = result.message?.toLowerCase() || '';
-        if (msg.includes('duplicate') || msg.includes('already exists')) {
+        const msg = result.message || '';
+        if (msg.trim().startsWith('{')) {
+          try {
+            const parsed = JSON.parse(msg);
+            if (parsed.errors && typeof parsed.errors === 'object') {
+              const errMsgs: string[] = [];
+              Object.entries(parsed.errors).forEach(([field, messages]) => {
+                if (Array.isArray(messages)) {
+                  messages.forEach((m) => {
+                    if (m === 'SocialAttribute_Name_MinLength') {
+                      errMsgs.push(t('form.validation.nameMinLength'));
+                    } else if (m === 'SocialAttribute_Code_MinLength') {
+                      errMsgs.push(t('form.validation.codeMinLength'));
+                    } else {
+                      errMsgs.push(`${field}: ${m}`);
+                    }
+                  });
+                } else if (typeof messages === 'string') {
+                  errMsgs.push(messages);
+                }
+              });
+              if (errMsgs.length > 0) return errMsgs.join(', ');
+            }
+            if (parsed.detail) return parsed.detail;
+            if (parsed.title) return parsed.title;
+          } catch (_e) {
+            // fallback if JSON parsing fails
+          }
+        }
+
+        const lowerMsg = msg.toLowerCase();
+        if (lowerMsg.includes('duplicate') || lowerMsg.includes('already exists')) {
           return t('apiErrors.duplicateRecord');
         }
-        return result.message || t('apiErrors.invalidData');
+        return msg || t('apiErrors.invalidData');
       }
 
       if (code >= 500) return tCommon('errors.serverError');
