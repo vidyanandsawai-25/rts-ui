@@ -102,7 +102,6 @@ export default async function RtsApplicationDashboardPage({
     departmentId: department?.id,
     departmentName: department?.departmentName,
     serviceId: service?.id,
-    serviceName: service?.serviceName,
     applicationNo: search || undefined,
     status,
     sortBy,

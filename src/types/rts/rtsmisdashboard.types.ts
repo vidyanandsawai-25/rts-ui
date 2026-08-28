@@ -70,6 +70,9 @@ export interface RtsMisDashboardData {
   departmentWiseData: RtsMisDashboardDepartmentItem[] | null;
   userApplicationDashboardData: RtsMisDashboardUserApplicationItem[] | null;
   rtsApplicationDashboardDetails?: RtsMisDashboardApplicationItem[] | null;
+  totalRecords?: number;
+  pageNumber?: number;
+  pageSize?: number;
 }
 
 export interface RtsMisDashboardResponse {
@@ -92,7 +95,7 @@ export interface RtsMisDashboardRequest {
   // The backend contract uses this spelling, so preserve it in the request type.
   DeparmentId: number | null;
   DeparmentName: string | null;
-  ServiceName?: string | null;
+  ServiceId?: number;
   ModuleName: RtsMisDashboardModuleName | null;
   FromDate: string | null;
   ToDate: string | null;
