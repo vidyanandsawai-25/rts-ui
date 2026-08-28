@@ -95,7 +95,7 @@ export interface RtsMisDashboardRequest {
   // The backend contract uses this spelling, so preserve it in the request type.
   DeparmentId: number | null;
   DeparmentName: string | null;
-  ServiceId?: number;
+  ServiceId?: number | null;
   ModuleName: RtsMisDashboardModuleName | null;
   FromDate: string | null;
   ToDate: string | null;

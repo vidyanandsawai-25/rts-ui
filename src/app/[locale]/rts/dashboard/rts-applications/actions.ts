@@ -617,7 +617,7 @@ async function getAllMisDashboardApplications(
     ApplicationNo: filters.applicationNo ?? null,
     DeparmentId: filters.departmentId ?? null,
     DeparmentName: filters.departmentName ?? null,
-    ServiceId: filters.serviceId ?? 0,
+    ServiceId: filters.serviceId ?? null,
     ModuleName: null,
     FromDate: null,
     ToDate: null,

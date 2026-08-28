@@ -32,7 +32,7 @@ export async function getRtsMisDashboardData(
     ToDate: payload.ToDate?.trim() || null,
     ...(isApplicationDashboard
       ? {
-          ServiceId: payload.ServiceId ?? 0,
+          ServiceId: payload.ServiceId ?? null,
           pageNumber: payload.pageNumber ?? 0,
           pageSize: payload.pageSize ?? 0,
           ApplicationStatus: payload.ApplicationStatus?.trim() || null,
