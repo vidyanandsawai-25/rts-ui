@@ -425,8 +425,8 @@ export default function RtsApplicationDetails({
               </p>
             ) : (
               <div className="space-y-4">
-                {/* Certificate Decision Feature for Approval Stages */}
-                {decisionActions.includes("approve") && (
+                {/* Certificate Decision Feature strictly for Final Approval Stage only */}
+                {decisionActions.includes("approve") && Boolean(currentStage?.isFinalStage) && (
                   <div className="p-3 bg-linear-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-emerald-900 flex items-center gap-1">

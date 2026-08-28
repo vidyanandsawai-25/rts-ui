@@ -421,6 +421,7 @@ export default function RtsApplicationFullDetailView({
         <PrintableCertificateModal
           isOpen={isPrintCertModalOpen}
           onClose={() => setIsPrintCertModalOpen(false)}
+          applicationId={record.applicationId}
           applicationNo={record.appId}
         />
       )}

@@ -145,6 +145,7 @@ export interface RtsApplicationApprovalStage {
   lastName?: string | null;
   createdDate?: string | null;
   isCurrentStage: boolean;
+  isFinalStage?: boolean;
   assignedToName?: string | null;
   assignedToRole?: string | null;
   completedDate?: string | null;

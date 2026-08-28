@@ -9,6 +9,7 @@ import {
   getAvailableTagsForService,
   updateCertificateTemplate,
 } from "@/lib/api/rts/rtscertificate.service";
+import { getUlbMaster } from "@/lib/api/configuration-settings/ulb-configuration/ulb-master.services";
 import type {
   CertificateAvailableTag,
   CreateRTSCertificateTemplateInput,
@@ -35,27 +36,87 @@ export type CertificateTemplateFormData = {
   isActive: boolean;
 };
 
+export interface CertificateUlbInfo {
+  ulbName: string;
+  ulbNameLocal: string;
+  ulbAddress: string;
+  emailId: string;
+  websiteUrl: string;
+  mobileNo: string;
+  ulbLogo: string;
+}
+
+import { getAllRtsDepartments } from "@/lib/api/rts/rtsdepartment.service";
+
 export async function fetchCertificateTemplatesPageDataAction(): Promise<{
   templates: RTSCertificateTemplate[];
   services: { id: string; name: string; departmentName?: string }[];
+  ulbInfo: CertificateUlbInfo;
 }> {
+  const defaultUlbInfo: CertificateUlbInfo = {
+    ulbName: "Akola Municipal Corporation, Akola",
+    ulbNameLocal: "अकोला महानगरपालिका, अकोला",
+    ulbAddress: "गांधी रोड, अकोला- ४४४००१",
+    emailId: "amc.akola@maharashtra.gov.in tpamcakola@rediffmail.com",
+    websiteUrl: "onesolutionakola.tabamc.in",
+    mobileNo: "0724-2434412",
+    ulbLogo: "/images/logo.png",
+  };
+
   try {
-    const [templates, services] = await Promise.all([
-      getAllCertificateTemplates(),
-      getAllRtsServices(),
+    const [templates, services, ulbMaster, departments] = await Promise.all([
+      getAllCertificateTemplates().catch(() => []),
+      getAllRtsServices().catch(() => []),
+      getUlbMaster().catch(() => null),
+      getAllRtsDepartments().catch(() => []),
     ]);
+
+    const deptMap = new Map<number, { name: string; nameLocal: string }>();
+    for (const d of departments) {
+      if (d.id) {
+        deptMap.set(d.id, {
+          name: d.departmentName || `Department ${d.id}`,
+          nameLocal: d.departmentNameLocal || d.departmentName || `विभाग ${d.id}`,
+        });
+      }
+    }
+
+    // Filter strictly to services where serviceUrl is NULL or EMPTY (excluding any with '#' or redirect URLs)
+    const certificateEligibleServices = services.filter((s) => {
+      const rawUrl = s.serviceUrl;
+      if (rawUrl === null || rawUrl === undefined) return true;
+      const url = String(rawUrl).trim();
+      return url === "" || url === "null" || url === "undefined";
+    });
+
+    const ulbInfo: CertificateUlbInfo = {
+      ulbName: ulbMaster?.ulbName || defaultUlbInfo.ulbName,
+      ulbNameLocal: ulbMaster?.ulbNameLocal || defaultUlbInfo.ulbNameLocal,
+      ulbAddress: ulbMaster?.ulbAddress || defaultUlbInfo.ulbAddress,
+      emailId: ulbMaster?.emailId || defaultUlbInfo.emailId,
+      websiteUrl: ulbMaster?.websiteUrl || defaultUlbInfo.websiteUrl,
+      mobileNo: ulbMaster?.mobileNo || defaultUlbInfo.mobileNo,
+      ulbLogo: ulbMaster?.ulbLogo || defaultUlbInfo.ulbLogo,
+    };
 
     return {
       templates,
-      services: services.map((s) => ({
-        id: String(s.id),
-        name: s.serviceName,
-        departmentName: s.departmentName ?? undefined,
-      })),
+      services: certificateEligibleServices.map((s) => {
+        const deptInfo = deptMap.get(s.departmentId);
+        return {
+          id: String(s.id),
+          name: s.serviceName,
+          nameLocal: s.serviceNameLocal || s.serviceName,
+          departmentId: s.departmentId,
+          departmentName: s.departmentName || deptInfo?.name || "General Administration",
+          departmentNameLocal: s.departmentNameLocal || deptInfo?.nameLocal || s.departmentName || "सामान्य प्रशासन",
+        };
+      }),
+      ulbInfo,
     };
   } catch (error) {
     console.error("Error fetching certificate templates page data:", error);
-    return { templates: [], services: [] };
+    return { templates: [], services: [], ulbInfo: defaultUlbInfo };
   }
 }
 
@@ -117,7 +178,7 @@ export async function saveCertificateTemplateAction(
     return { success: true, template: savedTemplate };
   } catch (error: any) {
     console.error("Error saving certificate template:", error);
-    return { success: false, error: error?.message || "Failed to save certificate template" };
+    return { success: false, error: error.message || "Failed to save template" };
   }
 }
 
@@ -125,13 +186,11 @@ export async function deleteCertificateTemplateAction(
   id: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const success = await deleteCertificateTemplate(id);
-    if (success) {
-      revalidatePath("/[locale]/rts/configuration-settings/rts-certificates", "page");
-    }
-    return { success };
+    const res = await deleteCertificateTemplate(id);
+    revalidatePath("/[locale]/rts/configuration-settings/rts-certificates", "page");
+    return { success: res };
   } catch (error: any) {
     console.error("Error deleting certificate template:", error);
-    return { success: false, error: error?.message || "Failed to delete certificate template" };
+    return { success: false, error: error.message || "Failed to delete template" };
   }
 }
