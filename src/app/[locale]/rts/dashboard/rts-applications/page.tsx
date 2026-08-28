@@ -100,7 +100,9 @@ export default async function RtsApplicationDashboardPage({
   const result = await getRtsApplicationsDashboardAction({
     pageNumber,
     departmentId: department?.id,
+    departmentName: department?.departmentName,
     serviceId: service?.id,
+    serviceName: service?.serviceName,
     applicationNo: search || undefined,
     status,
     sortBy,

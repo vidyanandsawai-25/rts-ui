@@ -31,6 +31,7 @@ import type {
   RtsApplicationApprovalFieldValuePayload,
   RtsApplicationApprovalStagesItem,
   RtsApplicationDocumentItem,
+  RtsApprovalApplicationListItem,
   RtsApplicationVerificationItem,
   RtsApplicationViewDetailsItem,
 } from '@/types/rts/application-approval.types';
@@ -529,6 +530,7 @@ export interface ApplicationsDashboardKpis {
 }
 
 export interface AdminApplicationGridRow {
+  source: 'approval' | 'mis';
   applicationId: number;
   applicationNo: string;
   applicationDate: string;
@@ -564,11 +566,89 @@ export interface RtsApplicationsDashboardResult {
 export interface RtsApplicationsDashboardFilters {
   pageNumber: number;
   departmentId?: number;
+  departmentName?: string;
   serviceId?: number;
+  serviceName?: string;
   applicationNo?: string;
   status?: string;
   sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate';
   sortOrder?: 'asc' | 'desc';
+}
+
+async function getAllApprovalApplications(
+  filters: RtsApplicationsDashboardFilters
+): Promise<{ applications: RtsApprovalApplicationListItem[]; totalCount: number } | null> {
+  const requestPage = (pageNumber: number) => getApprovalApplicationsPaged({
+    pageNumber,
+    departmentId: filters.departmentId,
+    serviceId: filters.serviceId,
+    applicationNo: filters.applicationNo,
+    status: filters.status,
+    sortBy: filters.sortBy,
+    sortOrder: filters.sortOrder,
+  });
+
+  const firstPage = await requestPage(1);
+  const applications = [...firstPage.applications];
+
+  // Keep concurrent backend requests bounded when a filter matches many pages.
+  for (let startPage = 2; startPage <= firstPage.totalPages; startPage += 10) {
+    const endPage = Math.min(startPage + 9, firstPage.totalPages);
+    const pageNumbers = Array.from(
+      { length: endPage - startPage + 1 },
+      (_, index) => startPage + index
+    );
+    const pages = await Promise.all(pageNumbers.map(requestPage));
+    pages.forEach((page) => applications.push(...page.applications));
+  }
+
+  return { applications, totalCount: firstPage.totalCount };
+}
+
+function compareNullable<T>(
+  left: T | null | undefined,
+  right: T | null | undefined,
+  compare: (a: T, b: T) => number
+): number {
+  if (left == null && right == null) return 0;
+  if (left == null) return 1;
+  if (right == null) return -1;
+  return compare(left, right);
+}
+
+function sortDashboardRows(
+  rows: AdminApplicationGridRow[],
+  sortBy?: RtsApplicationsDashboardFilters['sortBy'],
+  sortOrder?: RtsApplicationsDashboardFilters['sortOrder']
+): AdminApplicationGridRow[] {
+  const direction = sortBy ? (sortOrder === 'desc' ? -1 : 1) : -1;
+
+  return [...rows].sort((left, right) => {
+    let comparison = 0;
+    switch (sortBy) {
+      case 'applicationNo':
+        comparison = left.applicationNo.localeCompare(right.applicationNo, undefined, { numeric: true });
+        break;
+      case 'ApplicantName':
+        comparison = left.applicantName.localeCompare(right.applicantName, undefined, { sensitivity: 'base' });
+        break;
+      case 'ApplicationStatus':
+        comparison = left.currentStatus.localeCompare(right.currentStatus, undefined, { sensitivity: 'base' });
+        break;
+      case 'UpdatedDate':
+        comparison = compareNullable(left.lastUpdatedDate || null, right.lastUpdatedDate || null, (a, b) =>
+          new Date(a).getTime() - new Date(b).getTime()
+        );
+        break;
+      case 'CreatedDate':
+      default:
+        comparison = new Date(left.applicationDate).getTime() - new Date(right.applicationDate).getTime();
+        break;
+    }
+
+    if (comparison !== 0) return comparison * direction;
+    return right.applicationNo.localeCompare(left.applicationNo, undefined, { numeric: true });
+  });
 }
 
 function parseSlaDays(sla: string | number | undefined | null): number {
@@ -586,16 +666,8 @@ export async function getRtsApplicationsDashboardAction(
   filters: RtsApplicationsDashboardFilters = { pageNumber: 1 }
 ): Promise<RtsApplicationsDashboardResult> {
   try {
-    const [approvalRes, cards] = await Promise.all([
-      getApprovalApplicationsPaged({
-        pageNumber: filters.pageNumber,
-        departmentId: filters.departmentId,
-        serviceId: filters.serviceId,
-        applicationNo: filters.applicationNo,
-        status: filters.status,
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder,
-      }).catch((err) => {
+    const [approvalRes, cards, misResponse] = await Promise.all([
+      getAllApprovalApplications(filters).catch((err) => {
         console.error('Failed to fetch approval applications list:', err);
         return null;
       }),
@@ -603,6 +675,20 @@ export async function getRtsApplicationsDashboardAction(
         console.error('Failed to fetch RTS application dashboard cards API:', err);
         return null;
       }),
+      getRtsMisDashboardData({
+        Flag: 'RTSApplicationDashboard',
+        UpicId: null,
+        ApplicationNo: filters.applicationNo ?? null,
+        DeparmentId: filters.departmentId ?? null,
+        DeparmentName: filters.departmentName ?? null,
+        ServiceName: filters.serviceName ?? null,
+        ModuleName: null,
+        FromDate: null,
+        ToDate: null,
+        pageNumber: 0,
+        pageSize: 0,
+        ApplicationStatus: filters.status ?? null,
+      }).catch(() => null),
     ]);
 
     const kpis: ApplicationsDashboardKpis = {
@@ -626,7 +712,7 @@ export async function getRtsApplicationsDashboardAction(
     };
 
     const rawApps = approvalRes?.applications ?? [];
-    const rows: AdminApplicationGridRow[] = rawApps.map((app) => {
+    const approvalRows: AdminApplicationGridRow[] = rawApps.map((app) => {
       const slaDays = parseSlaDays(app.sla);
       const isActionable =
         app.applicationStatus.toLowerCase() === 'pending' ||
@@ -657,6 +743,7 @@ export async function getRtsApplicationsDashboardAction(
       const assignedToRole = '';
 
       return {
+        source: 'approval',
         applicationId: app.id,
         applicationNo: app.applicationNo,
         applicationDate: app.createdDate,
@@ -679,14 +766,59 @@ export async function getRtsApplicationsDashboardAction(
       };
     });
 
+    const misItems = misResponse?.status && Array.isArray(misResponse.data?.rtsApplicationDashboardDetails)
+      ? misResponse.data.rtsApplicationDashboardDetails
+      : [];
+    const misRows: AdminApplicationGridRow[] = misItems.map((app) => ({
+      source: 'mis',
+      applicationId: 0,
+      applicationNo: app.applicationNo,
+      applicationDate: app.createdDate,
+      applicantName: app.applicantName?.trim() || '—',
+      serviceName: app.serviceName || 'Unknown Service',
+      serviceNameLocal: app.serviceNameLocal?.trim() || null,
+      departmentName: app.departmentName || 'Unknown Department',
+      departmentNameLocal: app.departmentNameLocal?.trim() || null,
+      currentStatus: app.applicationStatus || 'Pending',
+      currentStageName: app.applicationStatus || 'Pending',
+      remarks: app.remark?.trim() || '—',
+      expectedSlaDays: typeof app.sla === 'number' ? app.sla : parseInt(String(app.sla ?? '0'), 10) || 0,
+      remainingDays: app.remainingDays,
+      dueDays: app.dueDays,
+      overdueDays: app.overdueDays,
+      lastUpdatedDate: app.updatedDate || app.createdDate,
+      assignedTo: app.userName?.trim() || '—',
+      assignedToName: app.userName?.trim() || '—',
+      assignedToRole: '',
+    }));
+
+    const rowsByApplicationNo = new Map<string, AdminApplicationGridRow>();
+    approvalRows.forEach((row) => rowsByApplicationNo.set(row.applicationNo.trim().toLowerCase(), row));
+    misRows.forEach((row) => {
+      const key = row.applicationNo.trim().toLowerCase();
+      if (!rowsByApplicationNo.has(key)) rowsByApplicationNo.set(key, row);
+    });
+
+    const sortedRows = sortDashboardRows(
+      Array.from(rowsByApplicationNo.values()),
+      filters.sortBy,
+      filters.sortOrder
+    );
+    const pageSize = 10;
+    const totalCount = sortedRows.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const pageNumber = Math.min(Math.max(filters.pageNumber, 1), totalPages);
+    const pageStart = (pageNumber - 1) * pageSize;
+    const rows = sortedRows.slice(pageStart, pageStart + pageSize);
+
     return {
       kpis,
       rows,
       pagination: {
-        pageNumber: approvalRes?.pageNumber ?? filters.pageNumber,
-        pageSize: 10,
-        totalCount: approvalRes?.totalCount ?? 0,
-        totalPages: approvalRes?.totalPages ?? 1,
+        pageNumber,
+        pageSize,
+        totalCount,
+        totalPages,
       },
     };
   } catch (error) {

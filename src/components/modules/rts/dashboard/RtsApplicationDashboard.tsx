@@ -433,7 +433,11 @@ export default function RtsApplicationDashboard({
         key: 'applicantName',
         label: sortableHeader('ApplicantName', t('applicationDashboard.table.applicantName')),
         render: (_value, row) => (
-          <span className="font-medium text-slate-800">{row.applicantName}</span>
+          <span className="font-medium text-slate-800">
+            {row.applicantName && !/^[-—]+$/.test(row.applicantName.trim())
+              ? row.applicantName
+              : t('applicationDashboard.table.citizenFallback')}
+          </span>
         ),
       },
       {
@@ -465,7 +469,9 @@ export default function RtsApplicationDashboard({
         render: (_value, row) => (
           <div className="flex flex-col">
             <span className="font-medium text-slate-800 text-[13px]">
-              {row.assignedToName || row.assignedTo || t('applicationDashboard.table.na')}
+              {[row.assignedToName, row.assignedTo].find(
+                (value) => value && !/^[-—]+$/.test(value.trim())
+              ) || t('applicationDashboard.table.officerFallback')}
             </span>
             {row.assignedToRole && (
               <span className="text-[11px] font-bold text-teal-600 uppercase tracking-wider mt-0.5">
@@ -691,19 +697,25 @@ export default function RtsApplicationDashboard({
           getRowKey={(row) => row.id}
           renderActions={(row) => (
             <div className="flex justify-center">
-              <ViewButton
-                onClick={() => updateDrawerUrl({ view: String(row.applicationId), process: '', doc: '' })}
-                aria-label={t('applicationDashboard.actions.viewDetailsAria', {
-                  appId: row.applicationNo,
-                })}
-                title={t('applicationDashboard.actions.viewDetailsAria', {
-                  appId: row.applicationNo,
-                })}
-                className="rounded-full px-3 text-xs font-semibold"
-                size="xs"
-              >
-                {t('applicationDashboard.actions.viewDetails')}
-              </ViewButton>
+              {row.source === 'approval' && row.applicationId > 0 ? (
+                <ViewButton
+                  onClick={() => updateDrawerUrl({ view: String(row.applicationId), process: '', doc: '' })}
+                  aria-label={t('applicationDashboard.actions.viewDetailsAria', {
+                    appId: row.applicationNo,
+                  })}
+                  title={t('applicationDashboard.actions.viewDetailsAria', {
+                    appId: row.applicationNo,
+                  })}
+                  className="rounded-full px-3 text-xs font-semibold"
+                  size="xs"
+                >
+                  {t('applicationDashboard.actions.viewDetails')}
+                </ViewButton>
+              ) : (
+                <span className="text-xs font-semibold text-slate-400">
+                  {t('applicationDashboard.table.na')}
+                </span>
+              )}
             </div>
           )}
           actionLabel={t('applicationDashboard.table.actions')}
