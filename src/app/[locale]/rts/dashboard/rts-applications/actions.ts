@@ -1094,7 +1094,8 @@ export async function getCertificatePreviewAction(
         dynamicDomain = process.env.NEXT_PUBLIC_APP_URL || "";
       }
 
-      const qrPayload = `${dynamicDomain}/mr/service/verify-certificate/${encodeURIComponent(applicationNo)}`;
+      let qrPayload = `${dynamicDomain}/mr/service/verify-certificate/${encodeURIComponent(applicationNo)}`;
+      qrPayload = qrPayload.replace('/service/service/', '/service/');
       const qrCodeBlock = `
         <div class='inline-flex flex-col items-center justify-center p-1 bg-white border border-slate-300 rounded shadow-xs text-center' style='width: 76px;' title='${qrPayload}'>
           <div style='width: 60px; height: 60px;' class='flex items-center justify-center bg-white'>
@@ -1351,7 +1352,8 @@ export async function getIssuedCertificateAction(applicationNo: string) {
           }
 
           const certLookupKey = result.certificateGuid || result.applicationNo || applicationNo;
-          const qrPayload = result.qrCodePayload || `${dynamicDomain}/mr/service/verify-certificate/${encodeURIComponent(certLookupKey)}`;
+          const rawQr = result.qrCodePayload || `${dynamicDomain}/mr/service/verify-certificate/${encodeURIComponent(certLookupKey)}`;
+          const qrPayload = rawQr.replace('/service/service/', '/service/');
 
           const qrCodeBlock = `
             <div class='inline-flex flex-col items-center justify-center p-1 bg-white border border-slate-300 rounded shadow-xs text-center' style='width: 76px;' title='${qrPayload}'>
