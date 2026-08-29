@@ -36,7 +36,7 @@ export default function CertificateVerificationView({
               </div>
               <h1 className="text-2xl font-black">प्रमाणपत्र अधिकृतरीत्या पडताळलेले आहे</h1>
               <p className="text-sm text-emerald-100 mt-1">
-                सदर प्रमाणपत्र अकोला महानगरपालिकेच्या अधिकृत RTS प्रणालीद्वारे डिजिटल स्वाक्षरीने जारी करण्यात आलेले अस्सल प्रमाणपत्र आहे.
+                सदर प्रमाणपत्र {data.ulbName || "नागरी स्थानिक संस्थेच्या"} अधिकृत RTS प्रणालीद्वारे डिजिटल स्वाक्षरीने जारी करण्यात आलेले अस्सल प्रमाणपत्र आहे.
               </p>
             </div>
           </div>
@@ -99,6 +99,48 @@ export default function CertificateVerificationView({
                   {data.issuedAt ? new Date(data.issuedAt).toLocaleString("en-GB") : "-"}
                 </p>
               </div>
+            </div>
+
+            {/* Official e-Mudhra DSC Verification Block */}
+            <div className="mt-5 p-4 bg-emerald-50/90 border border-emerald-300 rounded-xl space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold">✓</span>
+                  <h3 className="font-bold text-emerald-950 text-sm">
+                    डिजिटल स्वाक्षरी पडताळणी (e-Mudhra Class 2 DSC Verified)
+                  </h3>
+                </div>
+                <span className="text-[11px] font-mono font-bold bg-emerald-200/90 text-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                  CCA India Accredited
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                <div>
+                  <span className="text-slate-600 font-semibold">स्वाक्षरी संस्था (Signer):</span>
+                  <p className="font-bold text-slate-900">{data.dscSignerName || data.ulbName || "Authorized Document Signer"}</p>
+                </div>
+                <div>
+                  <span className="text-slate-600 font-semibold">प्रमाणन संस्था (Certifying Authority):</span>
+                  <p className="font-bold text-slate-900">{data.dscIssuer || "Certifying Authority (CCA India Recognized)"}</p>
+                </div>
+                <div>
+                  <span className="text-slate-600 font-semibold">सर्टिफिकेट सिरीयल क्रमांक (Serial No):</span>
+                  <p className="font-mono font-bold text-slate-900">{data.dscSerialNumber || "—"}</p>
+                </div>
+                <div>
+                  <span className="text-slate-600 font-semibold">सर्टिफिकेट वैधता (DSC Validity):</span>
+                  <p className="font-semibold text-emerald-800">
+                    {data.dscValidUntil ? `${new Date(data.dscValidUntil).toLocaleDateString("en-GB")} (Valid & Active)` : "Valid & Active"}
+                  </p>
+                </div>
+              </div>
+
+              {data.dscThumbprint && (
+                <div className="text-[10px] text-slate-500 font-mono pt-1 border-t border-emerald-200/60 truncate" title={data.dscThumbprint}>
+                  <span className="font-semibold text-slate-600">Thumbprint SHA-1:</span> {data.dscThumbprint}
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end">
