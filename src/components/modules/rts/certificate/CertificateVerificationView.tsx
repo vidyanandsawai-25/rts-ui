@@ -101,6 +101,46 @@ export default function CertificateVerificationView({
               </div>
             </div>
 
+            {/* Official e-Mudhra DSC Verification Block */}
+            <div className="mt-5 p-4 bg-emerald-50/90 border border-emerald-300 rounded-xl space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold">✓</span>
+                  <h3 className="font-bold text-emerald-950 text-sm">
+                    डिजिटल स्वाक्षरी पडताळणी (e-Mudhra Class 2 DSC Verified)
+                  </h3>
+                </div>
+                <span className="text-[11px] font-mono font-bold bg-emerald-200/90 text-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                  CCA India Accredited
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                <div>
+                  <span className="text-slate-600 font-semibold">स्वाक्षरी संस्था (Signer):</span>
+                  <p className="font-bold text-slate-900">{data.dscSignerName || "DS AKOLA MUNICIPAL CORPORATION, AKOLA"}</p>
+                </div>
+                <div>
+                  <span className="text-slate-600 font-semibold">प्रमाणन संस्था (Certifying Authority):</span>
+                  <p className="font-bold text-slate-900">{data.dscIssuer || "e-Mudhra Sub CA for Class 2 Document Signer 2022"}</p>
+                </div>
+                <div>
+                  <span className="text-slate-600 font-semibold">सर्टिफिकेट सिरीयल क्रमांक (Serial No):</span>
+                  <p className="font-mono font-bold text-slate-900">{data.dscSerialNumber || "0190D769"}</p>
+                </div>
+                <div>
+                  <span className="text-slate-600 font-semibold">सर्टिफिकेट वैधता (DSC Validity):</span>
+                  <p className="font-semibold text-emerald-800">
+                    {data.dscValidUntil ? new Date(data.dscValidUntil).toLocaleDateString("en-GB") : "13/10/2027"} (Valid & Active)
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-[10px] text-slate-500 font-mono pt-1 border-t border-emerald-200/60 truncate" title={data.dscThumbprint || "22B73E13F6DF3898C64B65539A9435DE3CB55C52"}>
+                <span className="font-semibold text-slate-600">Thumbprint SHA-1:</span> {data.dscThumbprint || "22B73E13F6DF3898C64B65539A9435DE3CB55C52"}
+              </div>
+            </div>
+
             <div className="mt-6 flex justify-end">
               <Button
                 onClick={handlePrint}

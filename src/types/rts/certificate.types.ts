@@ -110,5 +110,11 @@ export interface CertificateVerificationResponse {
   issuedByOfficer?: string;
   officerDesignation?: string;
   isDigitallySigned: boolean;
+  digitalSignatureInfo?: string;
+  dscSignerName?: string;
+  dscIssuer?: string;
+  dscSerialNumber?: string;
+  dscThumbprint?: string;
+  dscValidUntil?: string;
   mergedHtmlContent?: string;
 }
