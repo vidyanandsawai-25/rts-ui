@@ -13,7 +13,7 @@ import {
 } from '@/app/[locale]/service/login/actions';
 import { type CitizenProperty } from '@/lib/api/citizen-property.service';
 import { LoginFormCouncilLogo } from '../../login/LoginFormCouncilLogo';
-import { Landmark, Building2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Landmark, Building2, CheckCircle2 } from 'lucide-react';
 
 type LoginMethod = 'mobile' | 'upic' | 'property';
 type LoginStep = 'phone' | 'properties' | 'otp';
@@ -364,13 +364,16 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-100 via-cyan-100 to-blue-100 px-4 py-10 overflow-auto">
-      <button
+      <Button
+        type="button"
         onClick={() => router.push(`/${locale}/service`)}
-        className="absolute top-4 left-4 z-50 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/90 backdrop-blur border border-slate-200 shadow-md text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all active:scale-95 cursor-pointer"
+        variant="secondary"
+        size="sm"
+        icon={ArrowLeft}
+        className="absolute top-4 left-4 sm:top-5 sm:left-6 z-50 rounded-xl bg-white/90 px-3.5 font-bold text-slate-700 shadow-md backdrop-blur hover:bg-slate-50"
       >
-        <span className="text-sm font-black">&larr;</span>
-        <span>{locale === 'mr' ? 'मागे' : locale === 'hi' ? 'पीछे' : 'Back'}</span>
-      </button>
+        {locale === 'mr' ? 'मागे' : locale === 'hi' ? 'पीछे' : 'Back'}
+      </Button>
 
       <div className="w-full max-w-md my-auto">
         <Card className="overflow-hidden rounded-2xl border border-white/40 bg-white/80 shadow-2xl backdrop-blur-md transition-all duration-500 ease-in-out">

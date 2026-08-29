@@ -4,6 +4,7 @@ import type { LoginFormProps } from '@/types/login.types';
 
 import { UlbBrandingHeader } from './UlbBrandingHeader';
 import { LoginFormClient } from './LoginFormClient';
+import { LoginBackButton } from './LoginBackButton';
 
 /**
  * Server Component shell: branding and copy are rendered on the server.
@@ -12,6 +13,9 @@ import { LoginFormClient } from './LoginFormClient';
 export function LoginForm({ copy, ulbData, ...clientProps }: LoginFormProps) {
   return (
     <div className="w-full max-w-md">
+      <div className="fixed left-5 top-4 z-50 sm:left-6 sm:top-5">
+        <LoginBackButton />
+      </div>
       <Card className="overflow-hidden rounded-2xl border border-white/40 bg-white/80 shadow-2xl backdrop-blur-md transition-all duration-500 ease-in-out">
         <CardHeader className="flex flex-col items-center space-y-1 pb-2 pt-6 sm:pt-8 text-center">
           <UlbBrandingHeader ulbData={ulbData} />
