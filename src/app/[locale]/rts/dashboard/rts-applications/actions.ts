@@ -41,6 +41,7 @@ import {
 } from '@/lib/utils/rts/application-grid';
 import type {
   RtsMisDashboardApplicationItem,
+  RtsMisDashboardDepartmentItem,
   RtsMisDashboardResponse,
 } from '@/types/rts/rtsmisdashboard.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
@@ -607,9 +608,14 @@ async function getAllApprovalApplications(
   return { applications, totalCount: firstPage.totalCount };
 }
 
+interface MisDashboardApplicationsResult {
+  applications: RtsMisDashboardApplicationItem[];
+  departmentWiseData: RtsMisDashboardDepartmentItem[];
+}
+
 async function getAllMisDashboardApplications(
   filters: RtsApplicationsDashboardFilters
-): Promise<RtsMisDashboardApplicationItem[]> {
+): Promise<MisDashboardApplicationsResult> {
   const pageSize = 10;
   const requestPage = (pageNumber: number) => getRtsMisDashboardData({
     Flag: 'RTSApplicationDashboard',
@@ -627,10 +633,15 @@ async function getAllMisDashboardApplications(
   });
 
   const firstResponse = await requestPage(1);
-  if (!firstResponse.status) return [];
+  if (!firstResponse.status) {
+    return { applications: [], departmentWiseData: [] };
+  }
 
   const applications = Array.isArray(firstResponse.data?.rtsApplicationDashboardDetails)
     ? [...firstResponse.data.rtsApplicationDashboardDetails]
+    : [];
+  const departmentWiseData = Array.isArray(firstResponse.data?.departmentWiseData)
+    ? firstResponse.data.departmentWiseData
     : [];
   const totalRecords = firstResponse.data?.totalRecords ?? applications.length;
   const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
@@ -649,7 +660,32 @@ async function getAllMisDashboardApplications(
     });
   }
 
-  return applications;
+  return { applications, departmentWiseData };
+}
+
+function asDashboardCount(value: number | null | undefined): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
+function getMisDepartmentKpis(departments: RtsMisDashboardDepartmentItem[]) {
+  return departments.reduce(
+    (totals, department) => ({
+      total: totals.total + asDashboardCount(department.totalApplications),
+      pending: totals.pending + asDashboardCount(department.pending),
+      approved: totals.approved + asDashboardCount(department.approved),
+      rejected: totals.rejected + asDashboardCount(department.rejected),
+      // Do not use overdueApplications: the backend identifies overdue totals with overdueCount.
+      overdue: totals.overdue + asDashboardCount(department.overdueCount),
+      reverted: totals.reverted + asDashboardCount(department.reverted),
+      today: totals.today + asDashboardCount(department.todayApplications),
+      dueToday: totals.dueToday + asDashboardCount(department.dueToday),
+    }),
+    { total: 0, pending: 0, approved: 0, rejected: 0, overdue: 0, reverted: 0, today: 0, dueToday: 0 }
+  );
+}
+
+function getKpiPercentage(value: number, total: number): number {
+  return total > 0 ? Math.round((value / total) * 100) : 0;
 }
 
 function compareNullable<T>(
@@ -713,7 +749,7 @@ export async function getRtsApplicationsDashboardAction(
   filters: RtsApplicationsDashboardFilters = { pageNumber: 1 }
 ): Promise<RtsApplicationsDashboardResult> {
   try {
-    const [approvalRes, cards, misApplications] = await Promise.all([
+    const [approvalRes, cards, misDashboard] = await Promise.all([
       getAllApprovalApplications(filters).catch((err) => {
         console.error('Failed to fetch approval applications list:', err);
         return null;
@@ -722,26 +758,36 @@ export async function getRtsApplicationsDashboardAction(
         console.error('Failed to fetch RTS application dashboard cards API:', err);
         return null;
       }),
-      getAllMisDashboardApplications(filters).catch(() => []),
+      getAllMisDashboardApplications(filters).catch(() => ({ applications: [], departmentWiseData: [] })),
     ]);
 
+    const misKpis = getMisDepartmentKpis(misDashboard.departmentWiseData);
+    const total = (cards?.totalApplications ?? approvalRes?.totalCount ?? 0) + misKpis.total;
+    const pending = (cards?.pending ?? 0) + misKpis.pending;
+    const approved = (cards?.approved ?? 0) + misKpis.approved;
+    const rejected = (cards?.rejected ?? 0) + misKpis.rejected;
+    const overdue = (cards?.overdueApplications ?? 0) + misKpis.overdue;
+    const reverted = (cards?.reverted ?? 0) + misKpis.reverted;
+    const today = (cards?.todayApplications ?? 0) + misKpis.today;
+    const dueToday = (cards?.dueToday ?? 0) + misKpis.dueToday;
+
     const kpis: ApplicationsDashboardKpis = {
-      total: cards?.totalApplications ?? approvalRes?.totalCount ?? 0,
-      pending: cards?.pending ?? 0,
-      approved: cards?.approved ?? 0,
-      rejected: cards?.rejected ?? 0,
-      overdue: cards?.overdueApplications ?? 0,
-      reverted: cards?.reverted ?? 0,
-      today: cards?.todayApplications ?? 0,
-      dueToday: cards?.dueToday ?? 0,
+      total,
+      pending,
+      approved,
+      rejected,
+      overdue,
+      reverted,
+      today,
+      dueToday,
       inProgress: 0,
-      pendingPercentage: cards?.pendingPercentage ?? 0,
-      approvedPercentage: cards?.approvedPercentage ?? 0,
-      rejectedPercentage: cards?.rejectedPercentage ?? 0,
-      revertedPercentage: cards?.revertedPercentage ?? 0,
-      todayPercentage: cards?.todayPercentage ?? 0,
-      dueTodayPercentage: cards?.dueTodayPercentage ?? 0,
-      overduePercentage: cards?.overduePercentage ?? 0,
+      pendingPercentage: getKpiPercentage(pending, total),
+      approvedPercentage: getKpiPercentage(approved, total),
+      rejectedPercentage: getKpiPercentage(rejected, total),
+      revertedPercentage: getKpiPercentage(reverted, total),
+      todayPercentage: getKpiPercentage(today, total),
+      dueTodayPercentage: getKpiPercentage(dueToday, total),
+      overduePercentage: getKpiPercentage(overdue, total),
       isLive: true,
     };
 
@@ -800,7 +846,7 @@ export async function getRtsApplicationsDashboardAction(
       };
     });
 
-    const misRows: AdminApplicationGridRow[] = misApplications.map((app) => ({
+    const misRows: AdminApplicationGridRow[] = misDashboard.applications.map((app) => ({
       source: 'mis',
       applicationId: 0,
       applicationNo: app.applicationNo,

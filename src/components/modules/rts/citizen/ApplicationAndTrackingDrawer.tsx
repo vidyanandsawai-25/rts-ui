@@ -517,7 +517,7 @@ export default function ApplicationAndTrackingDrawer({
                       </div>
                     </div>
                   </div>
-                ) : (
+                ) : paymentInfo?.isFeeRequired === true && Number(paymentInfo.requiredFee) > 0 ? (
                   <div className="mt-3.5 p-3 rounded-xl bg-white border border-slate-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <div className={`p-2 rounded-lg ${paymentInfo?.paymentStatus === 'SUCCESS' || paymentInfo?.paymentStatus === 'Success' ? 'bg-emerald-100 text-emerald-700' : 'bg-teal-100 text-teal-700'}`}>
@@ -526,8 +526,8 @@ export default function ApplicationAndTrackingDrawer({
                       <div>
                         <div className="text-xs font-bold text-slate-800">
                           {paymentInfo?.paymentStatus === 'SUCCESS' || paymentInfo?.paymentStatus === 'Success'
-                            ? `Fee Paid / भरलेले शुल्क: ₹${Number(paymentInfo?.requiredFee ?? 50).toFixed(2)}`
-                            : `Government Fee / शासकीय शुल्क: ₹${Number(paymentInfo?.requiredFee ?? 50).toFixed(2)}`}
+                            ? `Fee Paid / भरलेले शुल्क: ₹${Number(paymentInfo.requiredFee).toFixed(2)}`
+                            : `Government Fee / शासकीय शुल्क: ₹${Number(paymentInfo.requiredFee).toFixed(2)}`}
                         </div>
                         <div className="text-[11px] text-slate-500 font-medium">
                           {paymentInfo?.paymentStatus === 'SUCCESS' || paymentInfo?.paymentStatus === 'Success'
@@ -570,7 +570,7 @@ export default function ApplicationAndTrackingDrawer({
                       </button>
                     )}
                   </div>
-                )}
+                ) : null}
 
                 {/* Issued Official Certificate Banner if Approved */}
                 {((selectedApplication.status && selectedApplication.status.toLowerCase() === 'approved') || (detail?.applicationStatus && detail.applicationStatus.toLowerCase() === 'approved')) && (
@@ -655,14 +655,14 @@ export default function ApplicationAndTrackingDrawer({
         </div>
       </div>
 
-      {showPaymentModal && selectedApplication && (
+      {showPaymentModal && selectedApplication && paymentInfo?.isFeeRequired === true && Number(paymentInfo.requiredFee) > 0 && (
         <PaymentCheckoutModal
           applicationId={parseInt(selectedApplication.applicationNo.replace(/\D/g, ''), 10)}
           applicationNo={selectedApplication.applicationNo}
           serviceName={selectedApplication.serviceName}
           customerName={(selectedApplication as any).applicantName || (detail as any)?.applicantName}
           customerMobile={(selectedApplication as any).mobileNo || (detail as any)?.mobileNo}
-          fees={paymentInfo?.requiredFee || 50}
+          fees={paymentInfo.requiredFee}
           onClose={() => setShowPaymentModal(false)}
           onSuccess={(receipt) => {
             setReceiptModalData(receipt);

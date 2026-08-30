@@ -739,9 +739,9 @@ export default function RtsApplicationDashboard({
           tableClassName="[&_tbody_tr]:hover:bg-blue-50 [&_tbody_tr]:h-[64px] [&_tbody_td]:py-3 [&_tbody_td]:text-sm [&_tbody_td]:align-middle [&_tbody_td[colspan]]:h-[160px] [&_tbody_td[colspan]]:align-middle [&_thead_tr]:border-none [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100"
           rowClassName={(row) =>
             isApplicationApproved(row)
-              ? '!border-emerald-200 !bg-emerald-50/70 hover:!bg-emerald-100/80 shadow-[inset_3px_0_0_#34d399]'
+              ? '!border-emerald-200 !bg-emerald-50/70 hover:!bg-emerald-100/80 shadow-[inset_3px_0_0_#34d39970]'
               : isSlaOverdue(row)
-              ? '!border-rose-200 !bg-rose-50/70 hover:!bg-rose-100/80 shadow-[inset_3px_0_0_#fb7185]'
+              ? '!border-rose-200 !bg-rose-50/70 hover:!bg-rose-100/80 shadow-[inset_3px_0_0_#fb718570]'
               : ''
           }
           footerLeftContent={
