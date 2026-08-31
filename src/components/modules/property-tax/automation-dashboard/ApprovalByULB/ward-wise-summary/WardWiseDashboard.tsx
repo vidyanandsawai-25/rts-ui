@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft } from 'lucide-react';
 import { AutomationTable } from '@/components/common/AutomationTable';
@@ -17,6 +17,7 @@ interface WardWiseDashboardProps {
 export default function WardWiseDashboard({ zoneId, serverData }: WardWiseDashboardProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const pathname = usePathname();
     const locale = useLocale();
     const t = useTranslations('automationDashboard.approvalByULB');
     const basePath = `/${locale}/property-tax/automation-dashboard`;
@@ -53,6 +54,24 @@ export default function WardWiseDashboard({ zoneId, serverData }: WardWiseDashbo
     const zoneNameDisplay = serverData?.zoneData?.[0]?.zoneName || '';
     const zoneNoDisplay = serverData?.zoneData?.[0]?.zoneNo || '';
 
+    const handlePageChange = useCallback((page: number) => {
+        const queryParams = new URLSearchParams(searchParams.toString());
+        queryParams.set('pageNumber', page.toString());
+        router.push(`${pathname}?${queryParams.toString()}`);
+    }, [searchParams, router, pathname]);
+
+    const handlePageSizeChange = useCallback((size: number) => {
+        const queryParams = new URLSearchParams(searchParams.toString());
+        queryParams.set('pageNumber', '1');
+        queryParams.set('pageSize', size.toString());
+        router.push(`${pathname}?${queryParams.toString()}`);
+    }, [searchParams, router, pathname]);
+
+    const pageNumber = serverData?.pageNumber || 1;
+    const pageSize = serverData?.pageSize || 10;
+    const totalCount = serverData?.totalCount || 0;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
     return (
         <div className="flex flex-col h-full min-h-0 overflow-hidden gap-2">
             {/* Custom Page Header */}
@@ -85,7 +104,7 @@ export default function WardWiseDashboard({ zoneId, serverData }: WardWiseDashbo
                         tableClassName="w-full border-collapse text-sm border border-slate-300"
                         theadClassName="sticky top-0 z-20"
                         maxBodyHeightClassName="flex-1 min-h-0"
-                        rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20" : "cursor-pointer"}
+                        rowClassName={(row) => row.isTotal ? "bg-purple-200 dark:bg-purple-900/50 text-slate-900 dark:text-slate-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] border-t-2 border-slate-300 dark:border-slate-600 hover:bg-purple-200 dark:hover:bg-purple-900/70 transition-colors" : "group transition-colors border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"}
                         loading={false}
                         getRowKey={(row, index) => `${row.zoneId || 'total'}-${index}`}
                         onRowClick={(row) => {
@@ -97,6 +116,13 @@ export default function WardWiseDashboard({ zoneId, serverData }: WardWiseDashbo
                                 }
                             }
                         }}
+                        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+                        pageNumber={pageNumber}
+                        pageSize={pageSize}
+                        totalCount={totalCount}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
                     />
                 </div>
             </div>

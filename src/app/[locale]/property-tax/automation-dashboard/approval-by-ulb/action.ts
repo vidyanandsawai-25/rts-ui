@@ -36,13 +36,18 @@ export async function getApprovalByUlbGridDetailsAction(): Promise<ActionResult<
     }
 }
 
-export async function getWardWiseApprovalByUlbGridDetailsAction(zoneId: string | number): Promise<ActionResult<ApprovalByUlbItems>> {
+export async function getWardWiseApprovalByUlbGridDetailsAction(
+    zoneId: string | number,
+    pageNumber: number = 1,
+    pageSize: number = 10
+): Promise<ActionResult<ApprovalByUlbItems>> {
     try {
-        logger.info("getWardWiseApprovalByUlbGridDetailsAction: Fetching ward-wise grid details", { zoneId });
-        const data = await getWardWiseApprovalByUlbGridDetails(zoneId);
+        logger.info("getWardWiseApprovalByUlbGridDetailsAction: Fetching ward-wise grid details", { zoneId, pageNumber, pageSize });
+        const data = await getWardWiseApprovalByUlbGridDetails(zoneId, pageNumber, pageSize);       
+
         return { success: true, data };
     } catch (error) {
-        logger.error("Failed to fetch ward-wise approval by ULB grid details", { zoneId }, error);
+        logger.error("Failed to fetch ward-wise approval by ULB grid details", { zoneId, pageNumber, pageSize }, error);
         if (error instanceof ApiError) {
             return { success: false, error: error.message, statusCode: error.statusCode };
         }

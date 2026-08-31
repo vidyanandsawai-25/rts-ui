@@ -20,8 +20,20 @@ export async function getApprovalByUlbGridDetails(): Promise<ApprovalByUlbItems 
     return responseData.items?.[0] ?? null;
 }
 
-export async function getWardWiseApprovalByUlbGridDetails(zoneId: string | number): Promise<ApprovalByUlbItems | null> {
-    const response = await apiClient.get<ApprovalByUlbResponse>(`/PropertySignature/dashboard/sign-grid/zone/${zoneId}`, { cache: "force-cache" });
+export async function getWardWiseApprovalByUlbGridDetails(
+    zoneId: string | number,
+    pageNumber: number = 1,
+    pageSize: number = 10
+): Promise<ApprovalByUlbItems | null> {
+    const params = new URLSearchParams();
+    params.append("ZoneId", zoneId.toString());
+    params.append("pageNumber", pageNumber.toString());
+    params.append("pageSize", pageSize.toString());
+
+    const response = await apiClient.get<ApprovalByUlbResponse>(
+        `/PropertySignature/dashboard/Ward-Wise-Summary/zone?${params.toString()}`,
+        { cache: "force-cache" }
+    );
     const t = await getTranslations("automationDashboard");
 
     const responseData = handleApiResponse(response, t("errors.fetchApprovalByUlbDetails") || "Failed to fetch ward-wise approval by ULB details");

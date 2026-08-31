@@ -133,9 +133,7 @@ const ApprovalbyUlbDashboard = ({ serverData, exportData, exportRoleName }: Appr
                 columns={columns}
                 headerRows={headerRows}
                 data={tableData}
-                tableClassName="border-collapse w-full border border-slate-300 [&_tbody>tr>td]:border [&_tbody>tr>td]:border-slate-300 hover:[&_tbody>tr]:bg-slate-50"
-                theadClassName="[&>tr>th]:border [&>tr>th]:border-slate-300"
-                rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-indigo-200 [&>td]:!border-r" : "group transition-colors hover:bg-slate-50"}
+                rowClassName={(row) => row.isTotal ? "bg-purple-200 dark:bg-purple-900/50 text-slate-900 dark:text-slate-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] border-t-2 border-slate-300 dark:border-slate-600 hover:bg-purple-200 dark:hover:bg-purple-900/70 transition-colors" : "group transition-colors border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"}
                 getRowKey={(row, index) => `${row.zoneId || 'total'}-${index}`}
                 onRowClick={(row) => {
                     if (!row.isTotal) {

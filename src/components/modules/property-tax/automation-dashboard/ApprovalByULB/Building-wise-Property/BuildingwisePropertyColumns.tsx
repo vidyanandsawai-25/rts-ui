@@ -3,50 +3,54 @@ import { Column, HeaderCell } from '@/components/common/AutomationTable';
 import { PropertyWiseItem } from '@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type';
 import { Check, X } from 'lucide-react';
 import { handleLocationClick } from '@/lib/utils/automation-dashboard/mapUtils';
+import { getViewDocumentUrl } from '@/lib/utils/document-utils';
+
+export const BORDER_CLASS = '!border-slate-400';
 
 export const getBuildingwisePropertyHeaderRows = (t: (key: string) => string): HeaderCell[][] => {
   return [
     [
-      { label: t('approvalByULB.buildingWiseProperty.headers.wardNo').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 min-w-[70px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.newOldPropertyNo').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 whitespace-pre-line min-w-[120px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.description').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 min-w-[90px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.ownerOccupierName').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 whitespace-pre-line min-w-[140px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.address').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 min-w-[180px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.societyBuilderName').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 whitespace-pre-line min-w-[140px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.wingFlatNo').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 whitespace-pre-line min-w-[100px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.propertyDetails').toUpperCase(), colSpan: 2, headerClassName: 'p-2 text-center text-sm font-bold text-slate-700 border border-slate-300 bg-amber-50' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.propertyType').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 min-w-[80px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.totalDemand').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-emerald-50 min-w-[80px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.documentsImage').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-blue-50 whitespace-pre-line min-w-[80px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.actions').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-slate-50 min-w-[80px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.clerkSign').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-indigo-50 whitespace-pre-line min-w-[60px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.taxInsp').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-cyan-50 whitespace-pre-line min-w-[60px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.asstComm').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-purple-50 whitespace-pre-line min-w-[60px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.dyCommTax').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-pink-50 whitespace-pre-line min-w-[60px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.addlComm').toUpperCase(), rowSpan: 2, headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-teal-50 whitespace-pre-line min-w-[60px]' }
+      { label: t('approvalByULB.buildingWiseProperty.headers.wardNo').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 min-w-[70px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.newOldPropertyNo').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 whitespace-pre-line min-w-[120px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.description').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 min-w-[90px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.ownerOccupierName').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 whitespace-pre-line min-w-[140px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.address').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 min-w-[180px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.societyBuilderName').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 whitespace-pre-line min-w-[140px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.wingFlatNo').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 whitespace-pre-line min-w-[100px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.propertyDetails').toUpperCase(), colSpan: 2, headerClassName: `p-2 text-center text-sm font-bold text-slate-700 ${BORDER_CLASS} bg-amber-100` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.propertyType').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 min-w-[80px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.totalDemand').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-emerald-100 min-w-[80px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.documentsImage').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-blue-100 whitespace-pre-line min-w-[80px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.actions').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 min-w-[80px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.clerkSign').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-indigo-100 whitespace-pre-line min-w-[60px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.taxInsp').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-cyan-100 whitespace-pre-line min-w-[60px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.asstComm').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-purple-100 whitespace-pre-line min-w-[60px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.dyCommTax').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-pink-100 whitespace-pre-line min-w-[60px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.addlComm').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-teal-100 whitespace-pre-line min-w-[60px]` }
     ],
     [
-      { label: t('approvalByULB.buildingWiseProperty.headers.oldRecord').toUpperCase(), headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-red-50 min-w-[130px]' },
-      { label: t('approvalByULB.buildingWiseProperty.headers.newRecord').toUpperCase(), headerClassName: 'p-2 text-sm text-center text-table-header text-slate-700 border border-slate-300 bg-emerald-50 min-w-[130px]' }
+      { label: t('approvalByULB.buildingWiseProperty.headers.oldRecord').toUpperCase(), headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-red-100 min-w-[130px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.newRecord').toUpperCase(), headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-emerald-100 min-w-[130px]` }
     ]
   ];
 };
 
 export const getBuildingwisePropertyColumns = (
   t: (key: string) => string,
-  onTrackingClick?: (row: PropertyWiseItem) => void
+  onTrackingClick?: (row: PropertyWiseItem) => void,
+  onImageClick?: (row: PropertyWiseItem) => void
 ): Column<PropertyWiseItem>[] => {
   return [
     {
       key: 'wardNo',
       label: t('approvalByULB.buildingWiseProperty.headers.wardNo'),
-      cellClassName: 'align-center',
+      cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => <div className="text-center text-slate-700 text-xs font-medium">{row.wardNo || 'N/A'}</div>
     },
     {
       key: 'newPropertyNo',
       label: t('approvalByULB.buildingWiseProperty.headers.newOldPropertyNo'),
-      cellClassName: 'align-center',
+      cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex flex-col text-center">
           <div className="text-slate-800 font-semibold text-xs">{row.newPropertyNo || 'N/A'}</div>
@@ -59,13 +63,13 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'description',
       label: t('approvalByULB.buildingWiseProperty.headers.description'),
-      cellClassName: 'align-center',
+      cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => <div className="text-center text-slate-700 text-xs font-medium">{row.description || 'N/A'}</div>
     },
     {
       key: 'ownerName',
       label: t('approvalByULB.buildingWiseProperty.headers.ownerOccupierName'),
-      cellClassName: 'align-center',
+      cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex flex-col text-left text-xs leading-tight break-words gap-1">
           <div className="text-slate-800 font-medium">
@@ -80,13 +84,13 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'address',
       label: t('approvalByULB.buildingWiseProperty.headers.address'),
-       cellClassName: 'align-middle uppercase',
+      cellClassName: `align-middle uppercase border ${BORDER_CLASS}`,
       render: (_, row) => <div className="text-left text-slate-700 text-xs font-medium">{row.address || 'N/A'}</div>
     },
     {
       key: 'societyName',
       label: t('approvalByULB.buildingWiseProperty.headers.societyBuilderName'),
-      cellClassName: 'align-center',
+      cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex flex-col text-left text-xs leading-tight break-words gap-1">
           <div className="text-slate-800 font-medium">
@@ -101,7 +105,7 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'wingNo',
       label: t('approvalByULB.buildingWiseProperty.headers.wingFlatNo'),
-      cellClassName: 'align-center',
+      cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex flex-col text-left text-xs leading-tight break-words gap-1">
           <div className="text-slate-800 font-medium">
@@ -116,7 +120,7 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'oldRecord',
       label: t('approvalByULB.buildingWiseProperty.headers.oldRecord'),
-      cellClassName: 'bg-red-50/30 align-center',
+      cellClassName: `bg-red-50 align-center ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="space-y-0.5 text-xs p-1">
           <div className="flex items-start justify-between gap-1">
@@ -145,7 +149,7 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'newRecord',
       label: t('approvalByULB.buildingWiseProperty.headers.newRecord'),
-      cellClassName: 'bg-emerald-50/30 align-center',
+      cellClassName: `bg-emerald-50 align-center ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="space-y-0.5 text-xs p-1">
           <div className="flex items-start justify-between gap-1">
@@ -174,46 +178,51 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'propertyType',
       label: t('approvalByULB.buildingWiseProperty.headers.propertyType'),
-      cellClassName: 'align-center',
+      cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => <div className="text-center text-slate-800 font-medium text-xs">{row.propertyType || 'N/A'}</div>
     },
     {
       key: 'totalDemand',
       label: t('approvalByULB.buildingWiseProperty.headers.totalDemand'),
-      cellClassName: 'align-center',
+      cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => <div className="text-center font-bold text-green-700 text-xs">{t('approvalByULB.buildingWiseProperty.currencySymbol')}{row.totalDemand?.toLocaleString('en-IN') || 0}</div>
     },
     {
-      key: 'documents',
+      key: 'documentGuid',
       label: t('approvalByULB.buildingWiseProperty.headers.documentsImage'),
-      cellClassName: 'align-middle',
-      render: (_, _row) => {
-        const imageUrl = 'df9f9f30-86c6-4da4-84e8-31e2faa2492e'
+      cellClassName: `align-middle ${BORDER_CLASS}`,
+      render: (_, row) => {
+        const documentGuid = (row.documents as string)?.trim();
 
         return (
-          <div className="flex justify-center">
-            <div className="h-9 w-9 rounded overflow-hidden border border-slate-300 bg-slate-100 flex items-center justify-center">
-              {imageUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
+          <div className="flex justify-center cursor-pointer" onClick={() => onImageClick?.(row)}>
+            {documentGuid ? (
+              <div className="relative w-10 h-10 bg-gray-100 border-2 border-gray-200 rounded overflow-hidden hover:border-blue-400 transition-colors">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={imageUrl}
+                  src={getViewDocumentUrl(documentGuid)}
                   alt="Document"
-                  className="h-full w-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                  className="w-full h-full object-cover"
                   loading="lazy"
                   decoding="async"
                 />
-              ) : (
-                <span className="text-slate-500 text-xs">{t('approvalByULB.buildingWiseProperty.na')}</span>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="w-10 h-10 bg-gray-100 border-2 border-gray-200 rounded overflow-hidden flex flex-wrap gap-[1px] p-[1px] hover:border-blue-400 transition-colors">
+                <div className="w-[calc(50%-1px)] h-[calc(50%-1px)] bg-gray-300"></div>
+                <div className="w-[calc(50%-1px)] h-[calc(50%-1px)] bg-gray-400"></div>
+                <div className="w-[calc(50%-1px)] h-[calc(50%-1px)] bg-gray-400"></div>
+                <div className="w-[calc(50%-1px)] h-[calc(50%-1px)] bg-gray-300"></div>
+              </div>
+            )}
           </div>
-        );
+        )
       }
     },
     {
       key: 'actions',
       label: t('approvalByULB.buildingWiseProperty.headers.actions'),
-      cellClassName: 'align-middle',
+      cellClassName: `align-middle ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex flex-col items-center justify-center gap-1.5 py-1 text-xs">
           <button
@@ -234,7 +243,7 @@ export const getBuildingwisePropertyColumns = (
             className="h-8 w-8 hover:bg-slate-100 transition-colors flex items-center justify-center rounded-full overflow-hidden mx-auto cursor-pointer mt-0.5"
             title="Location"
             onClick={() => handleLocationClick(row, row.wardNo, row.propertyId)}
-          >           
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://thaneautomationdashboard.tabamc.in/_next/static/media/map%20icon.11lzpgxlb~sr1.png"
@@ -248,7 +257,7 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'clerkSign',
       label: t('approvalByULB.buildingWiseProperty.headers.clerkSign'),
-      cellClassName: 'align-middle bg-indigo-50/30',
+      cellClassName: `align-middle bg-indigo-50 ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex justify-center items-center">
           {row.clerkSign ? <Check className="h-4 w-4 text-emerald-600 inline-block" /> : <X className="h-4 w-4 text-rose-600 inline-block" />}
@@ -258,7 +267,7 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'taxInspectorSign',
       label: t('approvalByULB.buildingWiseProperty.headers.taxInsp'),
-      cellClassName: 'align-middle bg-cyan-50/30',
+      cellClassName: `align-middle bg-cyan-50 ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex justify-center items-center">
           {row.taxInspectorSign ? <Check className="h-4 w-4 text-emerald-600 inline-block" /> : <X className="h-4 w-4 text-rose-600 inline-block" />}
@@ -268,7 +277,7 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'assistantCommissionerSign',
       label: t('approvalByULB.buildingWiseProperty.headers.asstComm'),
-      cellClassName: 'align-middle bg-purple-50/30',
+      cellClassName: `align-middle bg-purple-50 ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex justify-center items-center">
           {row.assistantCommissionerSign ? <Check className="h-4 w-4 text-emerald-600 inline-block" /> : <X className="h-4 w-4 text-rose-600 inline-block" />}
@@ -278,7 +287,7 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'deputyCommissionerSign',
       label: t('approvalByULB.buildingWiseProperty.headers.dyCommTax'),
-      cellClassName: 'align-middle bg-pink-50/30',
+      cellClassName: `align-middle bg-pink-50 ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex justify-center items-center">
           {row.deputyCommissionerSign ? <Check className="h-4 w-4 text-emerald-600 inline-block" /> : <X className="h-4 w-4 text-rose-600 inline-block" />}
@@ -288,7 +297,7 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'additionalCommissionerSign',
       label: t('approvalByULB.buildingWiseProperty.headers.addlComm'),
-      cellClassName: 'align-middle bg-teal-50/30',
+      cellClassName: `align-middle bg-teal-50 ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex justify-center items-center">
           {row.additionalCommissionerSign ? <Check className="h-4 w-4 text-emerald-600 inline-block" /> : <X className="h-4 w-4 text-rose-600 inline-block" />}

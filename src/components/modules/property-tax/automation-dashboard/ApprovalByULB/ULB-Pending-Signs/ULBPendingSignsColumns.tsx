@@ -19,30 +19,30 @@ export const getULBPendingSignsHeaderRows = (t: (key: string) => string): Header
             {
                 label: t('ulbPendingSigns.columns.structureName'),
                 rowSpan: 1,
-                headerClassName: 'p-3 text-left font-bold text-slate-700 bg-red-50/50 border-r border-b border-slate-200'
+                headerClassName: 'p-3 text-left font-bold text-slate-700 bg-red-50 border-r border-b border-slate-200'
             },
             {
                 label: t('ulbPendingSigns.columns.srNoticeNo'),
                 rowSpan: 1,
-                headerClassName: 'p-3 text-left font-bold text-slate-700 bg-yellow-50/50 border-r border-b border-slate-200'
+                headerClassName: 'p-3 text-left font-bold text-slate-700 bg-yellow-50 border-r border-b border-slate-200'
             },
             {
                 label: t('ulbPendingSigns.columns.noOfUnits'),
                 rowSpan: 1,
                 align: 'center',
-                headerClassName: 'p-3 text-center font-bold text-slate-700 bg-blue-50/50 border-r border-b border-slate-200'
+                headerClassName: 'p-3 text-center font-bold text-slate-700 bg-blue-50 border-r border-b border-slate-200'
             },
             {
                 label: t('ulbPendingSigns.columns.demand'),
                 rowSpan: 1,
                 align: 'center',
-                headerClassName: 'p-3 text-center font-bold text-slate-700 bg-emerald-50/50 border-r border-b border-slate-200'
+                headerClassName: 'p-3 text-center font-bold text-slate-700 bg-emerald-50 border-r border-b border-slate-200'
             },
             {
                 label: t('ulbPendingSigns.columns.approve'),
                 rowSpan: 1,
                 align: 'center',
-                headerClassName: 'p-3 text-center font-bold text-slate-700 bg-purple-50/50 border-b border-slate-200'
+                headerClassName: 'p-3 text-center font-bold text-slate-700 bg-purple-50 border-b border-slate-200'
             }
         ]
     ];

@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { Button } from '@/components/common/ActionButton';
 import { ArrowLeft, MapPin } from 'lucide-react';
-import { DataEntryWardWiseSummaryItems, DataEntryWardData } from '@/types/automation-dashboard/data-entry-quality-check/data-entry-quality-check.type';
-import { getDataEntryColumns, getDataEntryHeaderRows, DataEntryData } from '../DataEntryQualityCheckColumns';
+import { DataEntryWardWiseSummaryItems, DataEntryWardData, DataEntryData } from '@/types/automation-dashboard/data-entry-quality-check/data-entry-quality-check.type';
+import { getDataEntryColumns, getDataEntryHeaderRows } from '../DataEntryQualityCheckColumns';
 import { DataEnteryWardWiseSummaryCards } from './DataEnteryWardWiseSummaryCards';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 import { DashboardFilterBar } from '@/components/modules/property-tax/automation-dashboard/CommonFilterDashbaord/DashboardFilterBar';
@@ -227,7 +227,7 @@ export default function DataEntryWardWisedashboard({ zoneId, summaryData, proper
                 columns={columns}
                 headerRows={headerRows}
                 containerClassName="h-full"
-                rowClassName={(row) => row.isTotal ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20" : "group transition-colors cursor-pointer border-b border-slate-200"}
+                rowClassName={(row) => row.isTotal ? "bg-purple-200 dark:bg-purple-900/50 text-slate-900 dark:text-slate-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] border-t-2 border-slate-300 dark:border-slate-600 hover:bg-purple-200 dark:hover:bg-purple-900/70 transition-colors" : "group transition-colors border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"}
                 loading={false}
                 totalCount={totalCount}
                 pageNumber={pageNumber}

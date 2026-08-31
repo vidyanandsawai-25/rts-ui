@@ -5,12 +5,16 @@ import { PropertySubGridProperty } from '@/types/automation-dashboard/property-d
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 
 export const getPropertyDashboardHeaderRows = (t: (key: string) => string): HeaderCell[][] => {
+  const commonHeaderClass = 'p-2 font-semibold text-slate-900 border !border-slate-400';
+  const centerHeaderClass = `${commonHeaderClass} text-center`;
+  const defaultHeaderClass = `${centerHeaderClass} bg-slate-50`;
+
   return [
     [
       {
         label: t('columns.srNo'),
         rowSpan: 2,
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 w-8 border border-slate-300 bg-slate-50 text-[13px]'
+        headerClassName: `${defaultHeaderClass} w-8 text-[13px]`
       },
       {
         label: (
@@ -24,33 +28,33 @@ export const getPropertyDashboardHeaderRows = (t: (key: string) => string): Head
           </>
         ),
         rowSpan: 2,
-        headerClassName: 'p-2 text-left font-semibold text-slate-900 border border-slate-300 bg-slate-50 w-[190px] min-w-[190px]'
+        headerClassName: `${commonHeaderClass} text-left bg-slate-50 w-[190px] min-w-[190px]`
       },
       {
         label: t('columns.categoryAndDesc'),
         rowSpan: 2,
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 border border-slate-300 bg-slate-50 w-[200px] min-w-[200px] max-w-[200px]'
+        headerClassName: `${defaultHeaderClass} w-[200px] min-w-[200px] max-w-[200px]`
       },
       {
         label: t('columns.ownerAndOccupier'),
         rowSpan: 2,
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 border border-slate-300 bg-slate-50 whitespace-normal break-words w-[270px] min-w-[270px]'
+        headerClassName: `${defaultHeaderClass} whitespace-normal break-words w-[270px] min-w-[270px]`
       },
       {
         label: t('columns.mobile'),
         rowSpan: 2,
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 border border-slate-300 bg-slate-50 w-[90px]'
+        headerClassName: `${defaultHeaderClass} w-[90px]`
       },
       {
         label: t('columns.address'),
         rowSpan: 2,
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 border border-slate-300 bg-slate-50 whitespace-normal break-words w-[250px] min-w-[250px]'
+        headerClassName: `${defaultHeaderClass} whitespace-normal break-words w-[250px] min-w-[250px]`
       },
       {
         label: t('columns.propertyDetailsNewVsOld'),
         colSpan: 2,
         align: 'center',
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 bg-amber-50 border border-slate-300'
+        headerClassName: `${centerHeaderClass} bg-amber-100`
       },
       {
         label: (
@@ -59,7 +63,7 @@ export const getPropertyDashboardHeaderRows = (t: (key: string) => string): Head
           </div>
         ),
         rowSpan: 2,
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 bg-emerald-50 border border-slate-300 w-[90px]'
+        headerClassName: `${centerHeaderClass} bg-emerald-100 w-[90px]`
       },
       {
         label: (
@@ -68,7 +72,7 @@ export const getPropertyDashboardHeaderRows = (t: (key: string) => string): Head
           </div>
         ),
         rowSpan: 2,
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 bg-purple-50 border border-slate-300 w-[80px]'
+        headerClassName: `${centerHeaderClass} bg-purple-100 w-[80px]`
       },
       {
         label: (
@@ -77,36 +81,37 @@ export const getPropertyDashboardHeaderRows = (t: (key: string) => string): Head
           </>
         ),
         rowSpan: 2,
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 bg-blue-50 border border-slate-300 w-[90px]'
+        headerClassName: `${centerHeaderClass} bg-blue-100 w-[90px]`
       },
       {
         label: t('columns.actions'),
         rowSpan: 2,
         align: 'center',
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 border border-slate-300 bg-slate-50 w-[60px]'
+        headerClassName: `${defaultHeaderClass} w-[60px]`
       }
     ],
     [
       {
         label: t('columns.oldRecord'),
         align: 'center',
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 bg-red-50 border border-slate-300 w-[130px] min-w-[130px] max-w-[130px]'
+        headerClassName: `${centerHeaderClass} bg-red-50 w-[130px] min-w-[130px] max-w-[130px]`
       },
       {
         label: t('columns.newRecord'),
         align: 'center',
-        headerClassName: 'p-2 text-center font-semibold text-slate-900 bg-emerald-50 border border-slate-300 w-[130px] min-w-[130px] max-w-[130px]'
+        headerClassName: `${centerHeaderClass} bg-emerald-50 w-[130px] min-w-[130px] max-w-[130px]`
       }
     ]
   ];
 };
 
 export const getPropertyDashboardColumns = (t: (key: string) => string, onImageClick?: (row: PropertySubGridProperty) => void): Column<PropertySubGridProperty>[] => {
+  const commonCellClass = 'border !border-slate-600';
   return [
     {
       key: 'propertyId',
       label: t('columns.srNo'),
-      cellClassName: 'w-12',
+      cellClassName: `${commonCellClass} w-12`,
       render: (_val, _row, index) => (
         <div className="flex items-center justify-center text-xs font-bold text-black px-1 text-[13px]">
           <span>{index + 1}</span>
@@ -116,6 +121,7 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
     {
       key: 'propertyNo',
       label: t('columns.propertyDetails'),
+      cellClassName: commonCellClass,
       render: (_, row) => {
         let wingsList: string[] = [];
         if (row.wingName) {
@@ -145,7 +151,7 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
     {
       key: 'category',
       label: t('columns.categoryAndDesc'),
-      cellClassName: 'w-[160px] min-w-[160px] max-w-[160px] whitespace-normal break-words',
+      cellClassName: `${commonCellClass} w-[160px] min-w-[160px] max-w-[160px] whitespace-normal break-words`,
       render: (_, row) => (
         <div className="flex flex-col text-[11px] leading-tight gap-0.5">
           <div className="inline-flex items-center justify-center rounded-md px-2 py-0.5 w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-transparent [a&]:hover:bg-primary/90 bg-gray-100 text-blue-700 border-0 text-xs font-medium">
@@ -170,6 +176,7 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
     {
       key: 'ownerName',
       label: t('columns.ownerAndOccupier'),
+      cellClassName: commonCellClass,
       render: (_, row) => (
         <div className="flex flex-col text-xs leading-tight gap-1">
           <div><span className="font-bold text-gray-900">{t('labels.owner')}</span> <span className="font-bold text-gray-900">{row.ownerName || '-'}</span></div>
@@ -184,17 +191,19 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
       key: 'mobileNo',
       label: t('columns.mobile'),
       align: 'center',
+      cellClassName: commonCellClass,
       render: (val) => <div className="text-xs font-bold text-gray-900">{val as string || '-'}</div>
     },
     {
       key: 'address',
       label: t('columns.address'),
+      cellClassName: commonCellClass,
       render: (val) => <div className="text-xs font-bold text-gray-900 uppercase leading-tight">{val as string || '-'}</div>
     },
     {
       key: 'oldRecord',
       label: t('columns.oldRecord'),
-      cellClassName: 'bg-red-50/40 w-[130px] min-w-[130px] max-w-[130px]',
+      cellClassName: `${commonCellClass} bg-red-50 w-[130px] min-w-[130px] max-w-[130px]`,
       render: (_, row) => {
         const r = row.propertyDetailsComparison?.oldRecord;
         return (
@@ -230,7 +239,7 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
     {
       key: 'newRecord',
       label: t('columns.newRecord'),
-      cellClassName: 'bg-emerald-50/40 w-[130px] min-w-[130px] max-w-[130px]',
+      cellClassName: `${commonCellClass} bg-emerald-50 w-[130px] min-w-[130px] max-w-[130px]`,
       render: (_, row) => {
         const r = row.propertyDetailsComparison?.newRecord;
         return (
@@ -267,14 +276,14 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
       key: 'additionalRevenue', // Changed from propertyId to prevent duplicate key warning
       label: t('columns.additionalRevenue'),
       align: 'center',
-      cellClassName: 'bg-emerald-50/40',
+      cellClassName: `${commonCellClass} bg-emerald-50`,
       render: () => <div className="text-[11px] font-semibold text-gray-800">0</div>
     },
     {
       key: 'assessmentStatus',
       label: t('columns.propertyType'),
       align: 'center',
-      cellClassName: 'bg-purple-50/40',
+      cellClassName: `${commonCellClass} bg-purple-50`,
       render: (_, row) => {
         return (
           <div className="flex flex-col items-center gap-1.5">
@@ -289,6 +298,7 @@ export const getPropertyDashboardColumns = (t: (key: string) => string, onImageC
       key: 'documentGuid',
       label: t('columns.documents'),
       align: 'center',
+      cellClassName: commonCellClass,
       render: (_, row) => {
         const documentGuid = row.documentGuid?.trim();
 
