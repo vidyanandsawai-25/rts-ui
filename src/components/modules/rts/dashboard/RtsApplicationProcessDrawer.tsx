@@ -561,7 +561,7 @@ export default function RtsApplicationProcessDrawer({
                   (action.key === 'canApprove' || action.key === 'canVerifyDocument') &&
                   Boolean(verification?.feesRequired && !effectiveIsPaid);
                 const isRecordPaymentDisabled = action.key === 'canPay' && isFreeService;
-                
+
                 const actionLabel = action.key === 'canPay'
                   ? 'शुल्क स्वीकारा (Record Payment)'
                   : action.key === 'canApprove'

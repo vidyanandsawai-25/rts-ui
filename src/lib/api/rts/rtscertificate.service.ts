@@ -166,4 +166,3 @@ export async function getDscMetadata(): Promise<DigitalSignatureMetadata | null>
     return null;
   }
 }
-

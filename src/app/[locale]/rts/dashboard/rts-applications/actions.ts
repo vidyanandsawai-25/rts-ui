@@ -1465,5 +1465,3 @@ export async function fetchTrackApplicationHistoryAction(applicationId: number) 
     return { success: false, error: error?.message || 'Failed to fetch history', data: [] as RTSTrackApplicationHistoryItem[] };
   }
 }
-
-
