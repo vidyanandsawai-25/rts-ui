@@ -512,7 +512,16 @@ export async function citizenResubmitApplicationAction(
       updatedBy: 0,
       remark: remark?.trim() || "Application corrected and resubmitted by citizen",
       status: "Corrected",
-      fieldValue: fieldValues.map((field) => ({ ...field, updatedBy: 0 })),
+      fieldValue: fieldValues.map((field) => ({
+        fieldDefinitionId: field.fieldDefinitionId,
+        textValue: field.textValue ?? null,
+        numberValue: field.numberValue ?? null,
+        dateValue: field.dateValue ?? null,
+        booleanValue: field.booleanValue ?? null,
+        documentGuid: field.documentGuid ?? null,
+        updatedBy: 0,
+        isActive: true,
+      })),
     });
 
     return {

@@ -16,7 +16,6 @@ import {
   Paperclip,
   Printer,
   Shield,
-  Sparkles,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';

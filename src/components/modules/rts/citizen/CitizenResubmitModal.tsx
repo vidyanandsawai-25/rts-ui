@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import {
   AlertTriangle,
-  FileText,
   Loader2,
   Paperclip,
   RotateCcw,
@@ -17,7 +16,7 @@ import {
   citizenResubmitApplicationAction,
   uploadCitizenDocumentAction,
 } from "@/app/[locale]/service/dashboard/actions";
-import type { ApplicationAnswerGroup } from "@/types/rts/form.types";
+import type { ApplicationAnswerGroup, ApplicationAnswerItem } from "@/lib/utils/rts/application-answers";
 
 export interface CitizenResubmitModalProps {
   isOpen: boolean;
@@ -63,17 +62,18 @@ export default function CitizenResubmitModal({
   >(() => {
     const initial: Record<number, any> = {};
     for (const group of answerGroups) {
-      for (const field of group.fields || []) {
+      const fields = group.answers || (group as any).fields || [];
+      for (const field of fields) {
         initial[field.fieldDefinitionId] = {
           fieldDefinitionId: field.fieldDefinitionId,
-          fieldLabel: field.fieldLabel || `Field ${field.fieldDefinitionId}`,
+          fieldLabel: field.label || (field as any).fieldLabel || `Field ${field.fieldDefinitionId}`,
           fieldType: field.fieldType || "Text",
-          textValue: field.textValue ?? "",
-          numberValue: field.numberValue ?? null,
-          dateValue: field.dateValue ?? null,
-          booleanValue: field.booleanValue ?? null,
-          documentGuid: field.documentGuid ?? null,
-          documentName: field.documentName ?? null,
+          textValue: field.displayValue === "—" ? "" : (field.displayValue || (field as any).textValue || ""),
+          numberValue: (field as any).numberValue ?? null,
+          dateValue: (field as any).dateValue ?? null,
+          booleanValue: (field as any).booleanValue ?? null,
+          documentGuid: field.documentGuid ?? (field as any).documentGuid ?? null,
+          documentName: (field as any).documentName ?? null,
         };
       }
     }
@@ -213,34 +213,38 @@ export default function CitizenResubmitModal({
                 कोणतीही अतिरिक्त माहिती आढळली नाही. कृपया खाली आपला शेरा लिहून पुन्हा सादर करा.
               </p>
             ) : (
-              answerGroups.map((group, gIdx) => (
-                <div key={gIdx} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
-                  <h4 className="text-xs font-bold text-slate-800">{group.groupName}</h4>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {group.fields.map((field) => {
-                      const current = fieldValues[field.fieldDefinitionId];
-                      const isDoc =
-                        field.fieldType?.toLowerCase().includes("file") ||
-                        field.fieldType?.toLowerCase().includes("doc") ||
-                        field.fieldType?.toLowerCase().includes("upload") ||
-                        Boolean(field.documentGuid);
+              answerGroups.map((group, gIdx) => {
+                const groupFields = group.answers || (group as any).fields || [];
+                const groupName = group.groupTitle || (group as any).groupName || `Group ${gIdx + 1}`;
+                return (
+                  <div key={gIdx} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                    <h4 className="text-xs font-bold text-slate-800">{groupName}</h4>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {groupFields.map((field: ApplicationAnswerItem | any) => {
+                        const current = fieldValues[field.fieldDefinitionId];
+                        const label = field.label || field.fieldLabel || `Field ${field.fieldDefinitionId}`;
+                        const isDoc =
+                          field.fieldType?.toLowerCase().includes("file") ||
+                          field.fieldType?.toLowerCase().includes("doc") ||
+                          field.fieldType?.toLowerCase().includes("upload") ||
+                          Boolean(field.documentGuid);
 
-                      if (isDoc) {
-                        return (
-                          <div
-                            key={field.fieldDefinitionId}
-                            className="sm:col-span-2 rounded-lg border border-slate-200 bg-white p-3 space-y-2"
-                          >
-                            <label className="block text-xs font-bold text-slate-800">
-                              {field.fieldLabel}
-                            </label>
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <Paperclip className="h-4 w-4 text-slate-400 shrink-0" />
-                                <span className="text-xs text-slate-700 truncate font-medium">
-                                  {current?.documentName || current?.textValue || "कागदपत्र उपलब्ध आहे"}
-                                </span>
-                              </div>
+                        if (isDoc) {
+                          return (
+                            <div
+                              key={field.fieldDefinitionId}
+                              className="sm:col-span-2 rounded-lg border border-slate-200 bg-white p-3 space-y-2"
+                            >
+                              <label className="block text-xs font-bold text-slate-800">
+                                {label}
+                              </label>
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Paperclip className="h-4 w-4 text-slate-400 shrink-0" />
+                                  <span className="text-xs text-slate-700 truncate font-medium">
+                                    {current?.documentName || current?.textValue || "कागदपत्र उपलब्ध आहे"}
+                                  </span>
+                                </div>
                               <label className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 border border-orange-300 rounded-lg cursor-pointer transition-colors shrink-0">
                                 {uploadingFieldId === field.fieldDefinitionId ? (
                                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -281,8 +285,9 @@ export default function CitizenResubmitModal({
                     })}
                   </div>
                 </div>
-              ))
-            )}
+              );
+            })
+          )}
 
             {/* Citizen Remark */}
             <div className="space-y-1.5 pt-2">

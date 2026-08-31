@@ -102,6 +102,7 @@ export interface RtsApplicationDetailData {
   totalApprovalStages?: number;
   documents?: RtsApplicationDocumentItem[];
   verification?: RtsApplicationVerificationItem | null;
+  remark?: string | null;
 }
 
 export interface RtsApplicationProcessData {
@@ -472,6 +473,7 @@ export async function getApplicationDetailAction(
           totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
           documents: viewDetails.documents ?? [],
           verification: null,
+          remark: (applicationHeader as any)?.remark ?? (viewDetails as any)?.remark ?? null,
         };
       }
 
@@ -491,6 +493,7 @@ export async function getApplicationDetailAction(
         totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
         documents: [],
         verification: null,
+        remark: null,
       };
     } catch (err) {
       console.error(`Error in getApplicationDetailAction for ${applicationNo}:`, err);

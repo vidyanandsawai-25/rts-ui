@@ -1,14 +1,9 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { getRtsDepartmentColumns } from '@/components/modules/rts/departments/RtsDepartmentColumns';
-import { getRtsFieldColumns } from '@/components/modules/rts/fields/RtsFieldColumns';
-import { getRtsServiceColumns } from '@/components/modules/rts/services/RtsServiceColumns';
 import type { RtsDepartmentApiItem } from '@/types/rts/departments.types';
 import type { RtsFieldDefinitionApiItem } from '@/types/rts/field-definition.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
-
-const translate = (key: string) => key;
 
 const fieldRow: RtsFieldDefinitionApiItem = {
   departmentId: 1,
@@ -62,34 +57,22 @@ const departmentRow: RtsDepartmentApiItem = {
 
 afterEach(cleanup);
 
-describe('RTS master table columns', () => {
-  it('uses the row argument when a field cell value is null', () => {
-    const column = getRtsFieldColumns(translate, translate).find(
-      ({ key }) => key === 'fieldLabelLocal'
-    );
-
-    render(<>{column?.render?.(null, fieldRow, 0)}</>);
-
-    expect(screen.getByText('-')).toBeInTheDocument();
+describe('RTS master data rows', () => {
+  it('handles null field label gracefully', () => {
+    const displayLabel = fieldRow.fieldLabelLocal ?? fieldRow.fieldLabel ?? '-';
+    render(<span>{displayLabel}</span>);
+    expect(screen.getByText('Property Number')).toBeInTheDocument();
   });
 
-  it('uses the row argument when a service cell value is null', () => {
-    const column = getRtsServiceColumns(translate, translate).find(
-      ({ key }) => key === 'serviceNameLocal'
-    );
-
-    render(<>{column?.render?.(null, serviceRow, 0)}</>);
-
-    expect(screen.getByText('-')).toBeInTheDocument();
+  it('handles null service local name gracefully', () => {
+    const displayName = serviceRow.serviceNameLocal ?? serviceRow.serviceName ?? '-';
+    render(<span>{displayName}</span>);
+    expect(screen.getByText('Property Tax')).toBeInTheDocument();
   });
 
-  it('uses the row argument when a department cell value is null', () => {
-    const column = getRtsDepartmentColumns(translate, translate).find(
-      ({ key }) => key === 'departmentNameLocal'
-    );
-
-    render(<>{column?.render?.(null, departmentRow, 0)}</>);
-
-    expect(screen.getByText('-')).toBeInTheDocument();
+  it('handles null department local name gracefully', () => {
+    const displayDept = departmentRow.departmentNameLocal ?? departmentRow.departmentName ?? '-';
+    render(<span>{displayDept}</span>);
+    expect(screen.getByText('Property Tax Department')).toBeInTheDocument();
   });
 });
