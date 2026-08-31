@@ -1415,3 +1415,55 @@ export async function getIssuedCertificateAction(applicationNo: string) {
     return { success: false, error: error?.message || 'Certificate not found' };
   }
 }
+
+export async function fetchDscMetadataAction() {
+  try {
+    const { getDscMetadata } = await import('@/lib/api/rts/rtscertificate.service');
+    const metadata = await getDscMetadata();
+    return { success: true, data: metadata };
+  } catch (error: any) {
+    console.error('Failed to fetch DSC metadata:', error);
+    return { success: false, error: error?.message || 'Failed to fetch DSC metadata' };
+  }
+}
+
+export interface RTSTrackApplicationHistoryItem {
+  id: number;
+  applicationId: number;
+  applicationNo?: string;
+  approvalFlowId: number;
+  approvalFlowStageId?: number;
+  stageName?: string;
+  actionByUserId?: number;
+  actionByUserName?: string;
+  actionByOfficerName?: string;
+  action: string;
+  status: string;
+  remark?: string;
+  isReverted: boolean;
+  isDigitallySigned: boolean;
+  digitalSignatureInfo?: string;
+  createdDate: string;
+}
+
+export async function fetchTrackApplicationHistoryAction(applicationId: number) {
+  try {
+    const { apiClient } = await import('@/services/api.service');
+    const response = await apiClient.get<unknown>(`/RTSApplicationApproval/${applicationId}/track-history`, {
+      cache: 'no-store',
+    }, false);
+
+    if (!response.success || !response.data) {
+      return { success: false, data: [] as RTSTrackApplicationHistoryItem[] };
+    }
+
+    const dataObj = response.data as Record<string, unknown>;
+    const items = dataObj?.items ?? response.data ?? [];
+    return { success: true, data: (Array.isArray(items) ? items : []) as RTSTrackApplicationHistoryItem[] };
+  } catch (error: any) {
+    console.error('Failed to fetch track history:', error);
+    return { success: false, error: error?.message || 'Failed to fetch history', data: [] as RTSTrackApplicationHistoryItem[] };
+  }
+}
+
+

@@ -40,6 +40,8 @@ interface Service {
   sla: string | number | null;
   fees: number | null;
   feesRequired: boolean;
+  isCertificateRequired?: boolean;
+  isSmsEnabled?: boolean;
   displayOrder: number;
   isActive: boolean;
 }
@@ -88,6 +90,8 @@ type ServiceRow = Record<string, unknown> & {
   sla: string | number | null;
   fees: number | null;
   feesRequired: boolean;
+  isCertificateRequired?: boolean;
+  isSmsEnabled?: boolean;
   displayOrder: number;
   isActive: boolean;
 };
@@ -434,6 +438,8 @@ export default function RtsServiceConfig({
         sla: service.sla,
         fees: service.fees,
         feesRequired: service.feesRequired,
+        isCertificateRequired: service.isCertificateRequired,
+        isSmsEnabled: service.isSmsEnabled,
         displayOrder: service.displayOrder,
         isActive: service.isActive,
         departmentName:

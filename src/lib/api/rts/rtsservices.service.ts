@@ -70,6 +70,9 @@ export async function createRtsService(payload: {
   sla?: number;
   fees?: number;
   isFeesRequired?: boolean;
+  isCertificateRequired?: boolean;
+  isSmsEnabled?: boolean;
+  serviceCode?: string;
 }): Promise<RtsServiceApiItem> {
   const response = await apiClient.post<RtsServiceApiItem>("/RTSService", payload);
   if (!response.success || !response.data) {
@@ -94,6 +97,9 @@ export async function updateRtsService(
     sla?: number;
     fees?: number;
     isFeesRequired?: boolean;
+    isCertificateRequired?: boolean;
+    isSmsEnabled?: boolean;
+    serviceCode?: string;
   }
 ): Promise<RtsServiceApiItem> {
   const response = await apiClient.put<RtsServiceApiItem>(`/RTSService/${id}`, payload);

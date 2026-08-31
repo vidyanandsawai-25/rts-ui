@@ -243,8 +243,9 @@ export default function RtsApplicationFullDetailView({
                   type="button"
                   icon={FileCheck2}
                   size="xs"
+                  variant="success"
                   onClick={() => setIsPrintCertModalOpen(true)}
-                  className="rounded-lg px-3 text-xs font-bold bg-[#4b70a6] hover:bg-[#3d5a8a] text-white"
+                  className="rounded-lg px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   {t('viewCertificate')}
                 </Button>

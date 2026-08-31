@@ -35,7 +35,8 @@ export async function requestOtp(mobile: string): Promise<RequestOtpResponse> {
         txnId: res.data.txnId,
         expiresInSeconds: res.data.expiresInSeconds || 120,
         demoOtp: (res.data as any).otp || res.data.demoOtp,
-        isLive: true,
+        isLive: res.data.isLive ?? true,
+        directLogin: res.data.directLogin ?? false,
       };
     }
     throw new Error(res?.data?.message || "Failed to send OTP via SMS Gateway.");

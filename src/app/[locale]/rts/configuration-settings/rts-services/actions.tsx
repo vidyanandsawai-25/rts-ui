@@ -26,6 +26,8 @@ type ConfigService = {
   sla: string | number | null;
   fees: number | null;
   feesRequired: boolean;
+  isCertificateRequired: boolean;
+  isSmsEnabled: boolean;
   displayOrder: number;
   isActive: boolean;
 };
@@ -50,6 +52,8 @@ function toConfigService(service: {
   fees?: number | null;
   feesRequired?: boolean | null;
   isFeesRequired?: boolean | null;
+  isCertificateRequired?: boolean | null;
+  isSmsEnabled?: boolean | null;
   displayOrder?: number;
   isActive: boolean;
 }): ConfigService {
@@ -62,6 +66,8 @@ function toConfigService(service: {
     sla: service.sla ?? null,
     fees: service.fees ?? null,
     feesRequired: Boolean(service.feesRequired ?? service.isFeesRequired),
+    isCertificateRequired: service.isCertificateRequired !== false,
+    isSmsEnabled: service.isSmsEnabled !== false,
     displayOrder: service.displayOrder ?? 0,
     isActive: service.isActive,
   };

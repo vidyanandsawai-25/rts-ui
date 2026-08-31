@@ -81,12 +81,9 @@ export async function fetchCertificateTemplatesPageDataAction(): Promise<{
       }
     }
 
-    // Filter strictly to services where serviceUrl is NULL or EMPTY (excluding any with '#' or redirect URLs)
+    // Filter services based on IsCertificateRequired column from ServiceMaster (Default is true if null/undefined)
     const certificateEligibleServices = services.filter((s) => {
-      const rawUrl = s.serviceUrl;
-      if (rawUrl === null || rawUrl === undefined) return true;
-      const url = String(rawUrl).trim();
-      return url === "" || url === "null" || url === "undefined";
+      return s.isCertificateRequired !== false;
     });
 
     const ulbInfo: CertificateUlbInfo = {

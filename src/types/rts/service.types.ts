@@ -36,6 +36,9 @@ export interface RtsServiceApiItem {
   fees?: number | null;
   feesRequired?: boolean | null;
   isFeesRequired?: boolean | null;
+  isCertificateRequired?: boolean | null;
+  isSmsEnabled?: boolean | null;
+  serviceCode?: string | null;
   [key: string]: unknown;
 }
 
