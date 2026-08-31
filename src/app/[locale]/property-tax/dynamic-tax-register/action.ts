@@ -81,6 +81,17 @@ async function parseApiErrorMessage(responseText: string): Promise<string | null
   }
 }
 
+/** Cleans technical backend error messages (such as database field names or raw entity IDs) into user-friendly text. */
+function sanitizeErrorMessage(msg: string): string {
+  const cleaned = msg.trim();
+  if (/RuleDefinitionId\s*=\s*0/i.test(cleaned) || /RuleDefinitionId.*does not exist/i.test(cleaned)) {
+    return "Selected Rule Name does not exist or is inactive. Please select a valid Rule Name.";
+  }
+  return cleaned
+    .replace(/RuleDefinitionId/gi, "Rule Name")
+    .replace(/TaxId/gi, "Tax ID");
+}
+
 /** Wraps an unknown error into a uniform ActionResult failure, extracting a readable
  *  message instead of surfacing the raw ASP.NET error JSON to the user. `fallbackKey` is
  *  a key under the `dynamicTaxRegister.actionErrors` namespace, resolved to the request's locale. */
@@ -94,9 +105,10 @@ async function toFailure(error: unknown, fallbackKey: string): Promise<ActionRes
     // fallback the user always saw the generic text and the real reason was silently dropped.
     const parsed = await parseApiErrorMessage(error.responseText);
     const readable = parsed ?? (error.error?.trim() ? error.error : null);
-    return { success: false, error: readable ?? fallback, statusCode: error.statusCode };
+    const finalError = readable ? sanitizeErrorMessage(readable) : fallback;
+    return { success: false, error: finalError, statusCode: error.statusCode };
   }
-  if (error instanceof Error) return { success: false, error: error.message };
+  if (error instanceof Error) return { success: false, error: sanitizeErrorMessage(error.message) };
   return { success: false, error: fallback };
 }
 

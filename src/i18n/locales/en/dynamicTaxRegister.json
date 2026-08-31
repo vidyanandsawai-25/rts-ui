@@ -170,6 +170,7 @@
     "noRowsYet": "No condition rules yet. Click \"Add Condition Rule\" to define one.",
     "alwaysMatches": "— always matches —",
     "rangeSeparator": "–",
+    "rangeToInvalid": "\"To\" value must be greater than or equal to \"From\" value",
     "addCondition": "Add Condition",
     "fieldPlaceholder": "Field",
     "operatorPlaceholder": "Operator",
@@ -181,7 +182,7 @@
     "moveDown": "Move down",
     "deleteRowAria": "Delete row",
     "deleteRowTitle": "Delete this condition rule",
-    "deleteRowDescription": "This permanently deletes this condition rule immediately — it cannot be undone.",
+    "deleteRowDescription": "This permanently deletes this condition rule immediately.",
     "scopeNotConfigured": "Condition fields haven't been configured yet for the Dynamic Tax Register. Ask an admin to set up the \"DynamicTaxRegisterCondition\" Rule Scope and its fields before adding condition rules.",
     "saveConfiguration": "Save Configuration",
     "unsavedChanges": "Unsaved changes",
@@ -453,7 +454,8 @@
       "saveFailedRetry": "Save failed — please try again",
       "rowDeleted": "Condition rule deleted",
       "deleteFailed": "Failed to delete condition rule",
-      "duplicateRows": "Duplicate condition rule — two rows have the same conditions, year, and result. Remove the duplicate before saving."
+      "duplicateRows": "Duplicate condition rule — two rows have the same conditions, year, and result. Remove the duplicate before saving.",
+      "rangeInvalid": "Invalid range in condition — \"To\" value must be greater than or equal to \"From\" value."
     }
   }
 }

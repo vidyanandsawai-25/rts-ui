@@ -14,6 +14,7 @@ import {
   saveConditionRuleRowsAction,
   deleteConditionRuleRowAction,
 } from '@/app/[locale]/property-tax/dynamic-tax-register/action';
+import { isRangeOperator, isInvalidRange } from '@/lib/utils/dynamic-tax-register/dynamicTaxFormatters';
 import type { DynamicTaxNav } from '../shared/useDynamicTaxNav';
 
 export interface DynamicTaxConditionRowOpsParams {
@@ -280,10 +281,21 @@ export function useDynamicTaxConditionRowOps({
         return nextRowIdRef.current;
       });
 
-      // Block exact-duplicate rows (same conditions + year + result) before hitting the server —
-      // the backend enforces the same rule, this just gives instant feedback.
+      // Block exact-duplicate rows or invalid range conditions before hitting the server
       const seenSignatures = new Set<string>();
       for (const row of rowsToSave) {
+        for (const cond of row.conditions) {
+          if (isRangeOperator(cond.operator)) {
+            const arr = Array.isArray(cond.value) ? cond.value : [cond.value];
+            const from = arr[0] ?? '';
+            const to = arr[1] ?? '';
+            const field = fields.find((f) => f.fieldId === cond.fieldId);
+            if (isInvalidRange(from, to, field?.dataType)) {
+              toast.error(t('messages.condition.rangeInvalid'));
+              return false;
+            }
+          }
+        }
         const signature = conditionSignature(row);
         if (seenSignatures.has(signature)) {
           toast.error(t('messages.condition.duplicateRows'));

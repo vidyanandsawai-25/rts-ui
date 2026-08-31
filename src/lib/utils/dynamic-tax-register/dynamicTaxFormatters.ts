@@ -51,11 +51,27 @@ function operatorLabel(field: FieldConfig | undefined, operatorCode: string): st
   return op?.label ?? operatorCode;
 }
 
-/** Range operators (see ConditionValueInput.RANGE_OPERATORS / the backend evaluator) — their
- *  value is a [min, max] pair, rendered as "min – max" rather than a comma-joined list. */
-const RANGE_OPERATOR_CODES = ['BETWEEN', 'VALUE_BETWEEN_RANGE'];
-const isRangeOperator = (operatorCode: string): boolean =>
+export const RANGE_OPERATOR_CODES = ['BETWEEN', 'VALUE_BETWEEN_RANGE'];
+export const isRangeOperator = (operatorCode: string): boolean =>
   RANGE_OPERATOR_CODES.includes(operatorCode.trim().replace(/\s+/g, '_').toUpperCase());
+
+/** Validates if a range operator's "To" value is less than its "From" value.
+ *  Returns true if invalid (i.e. to < from), false if valid or incomplete. */
+export function isInvalidRange(from: string, to: string, dataType?: string): boolean {
+  if (from === '' || to === '') return false;
+  const boundType = dataType === 'DATE' ? 'date' : 'number';
+  if (boundType === 'number') {
+    const numFrom = parseFloat(from);
+    const numTo = parseFloat(to);
+    return !isNaN(numFrom) && !isNaN(numTo) && numTo < numFrom;
+  }
+  const dateFrom = new Date(from).getTime();
+  const dateTo = new Date(to).getTime();
+  if (!isNaN(dateFrom) && !isNaN(dateTo)) {
+    return dateTo < dateFrom;
+  }
+  return to < from;
+}
 
 function fieldLabel(field: FieldConfig | undefined, fieldId: string): string {
   return field?.fieldName || fieldId;
