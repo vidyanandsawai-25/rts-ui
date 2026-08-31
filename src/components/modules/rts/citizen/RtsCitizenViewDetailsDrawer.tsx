@@ -9,7 +9,7 @@ import { getApplicationDetailAction, type RtsApplicationDetailData } from "@/app
 import { ApprovalStagesTimeline } from "@/components/modules/rts";
 import RtsApplicationDocumentView from "@/components/modules/rts/dashboard/RtsApplicationDocumentView";
 import PrintableCertificateModal from "@/components/modules/rts/citizen/PrintableCertificateModal";
-import CitizenResubmitModal from "@/components/modules/rts/citizen/CitizenResubmitModal";
+import CitizenResubmitDrawer from "@/components/modules/rts/citizen/CitizenResubmitDrawer";
 import { Button, Drawer, ViewButton } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import {
@@ -548,7 +548,7 @@ export default function RtsCitizenViewDetailsDrawer({
       )}
 
       {isResubmitOpen && application && (
-        <CitizenResubmitModal
+        <CitizenResubmitDrawer
           isOpen={isResubmitOpen}
           onClose={() => setIsResubmitOpen(false)}
           applicationId={resolvedDetail?.verification?.applicationId || parseInt(application.applicationNo.replace(/\D/g, ""), 10) || 0}
@@ -556,6 +556,7 @@ export default function RtsCitizenViewDetailsDrawer({
           serviceName={application.serviceName}
           officerRemark={resolvedDetail?.remark || application.remark || ""}
           answerGroups={resolvedDetail?.answerGroups || []}
+          documents={resolvedDetail?.documents || []}
           onSuccess={() => {
             onClose();
           }}

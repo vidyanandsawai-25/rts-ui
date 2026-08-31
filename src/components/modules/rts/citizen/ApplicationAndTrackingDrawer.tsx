@@ -32,7 +32,7 @@ import {
 import { PaymentCheckoutModal } from "./PaymentCheckoutModal";
 import { PaymentReceiptModal } from "./PaymentReceiptModal";
 import PrintableCertificateModal from "./PrintableCertificateModal";
-import CitizenResubmitModal from "./CitizenResubmitModal";
+import CitizenResubmitDrawer from "./CitizenResubmitDrawer";
 import type { PaymentReceiptResult, PaymentStatusResult } from "@/lib/api/rts/rtspayment.service";
 import type { RtsApplicationApprovalStage } from "@/types/rts/application-approval.types";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
@@ -765,7 +765,7 @@ export default function ApplicationAndTrackingDrawer({
       )}
 
       {showResubmitModal && selectedApplication && (
-        <CitizenResubmitModal
+        <CitizenResubmitDrawer
           isOpen={showResubmitModal}
           onClose={() => setShowResubmitModal(false)}
           applicationId={detail?.verification?.applicationId || parseInt(selectedApplication.applicationNo.replace(/\D/g, ""), 10) || 0}
@@ -773,6 +773,7 @@ export default function ApplicationAndTrackingDrawer({
           serviceName={selectedApplication.serviceName}
           officerRemark={detail?.remark || stages.find((s) => s.remark)?.remark || ""}
           answerGroups={detail?.answerGroups || []}
+          documents={detail?.documents || []}
           onSuccess={() => {
             void selectApplication(selectedApplication);
           }}
