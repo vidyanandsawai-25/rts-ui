@@ -646,8 +646,8 @@ export default function ApplicationAndTrackingDrawer({
                           <button
                             type="button"
                             onClick={() => {
-                              const sId = detail?.verification?.serviceId || (selectedApplication as any)?.serviceId || (selectedApplication as any)?.govtServiceCode || 66;
-                              const dId = (detail?.verification as any)?.departmentId || (selectedApplication as any)?.departmentId || 10;
+                              const sId = detail?.serviceId || detail?.verification?.serviceId || (selectedApplication as any)?.serviceId || (selectedApplication as any)?.govtServiceCode || 68;
+                              const dId = detail?.departmentId || (detail?.verification as any)?.departmentId || (selectedApplication as any)?.departmentId || (selectedApplication as any)?.deptId || 11;
                               onClose();
                               router.push(`/${locale}/service/${sId}?deptId=${dId}&applicationNo=${encodeURIComponent(selectedApplication.applicationNo)}&mode=resubmit`);
                             }}

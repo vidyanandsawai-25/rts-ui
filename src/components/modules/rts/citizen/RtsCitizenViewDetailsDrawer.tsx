@@ -454,8 +454,8 @@ export default function RtsCitizenViewDetailsDrawer({
                       <button
                         type="button"
                         onClick={() => {
-                          const sId = resolvedDetail?.verification?.serviceId || (application as any)?.serviceId || (application as any)?.govtServiceCode || 66;
-                          const dId = (resolvedDetail?.verification as any)?.departmentId || (application as any)?.departmentId || 10;
+                          const sId = resolvedDetail?.serviceId || resolvedDetail?.verification?.serviceId || (application as any)?.serviceId || (application as any)?.govtServiceCode || 68;
+                          const dId = resolvedDetail?.departmentId || (resolvedDetail?.verification as any)?.departmentId || (application as any)?.departmentId || (application as any)?.deptId || 11;
                           onClose();
                           router.push(`/${locale}/service/${sId}?deptId=${dId}&applicationNo=${encodeURIComponent(application.applicationNo)}&mode=resubmit`);
                         }}

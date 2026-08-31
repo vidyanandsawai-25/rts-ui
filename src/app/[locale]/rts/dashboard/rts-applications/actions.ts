@@ -460,11 +460,11 @@ export async function getApplicationDetailAction(
 
         return {
           applicationNo,
-          departmentId: applicationHeader?.departmentId ?? 0,
-          departmentName: null,
-          serviceId: applicationHeader?.serviceId ?? 0,
-          serviceName: null,
-          applicationStatus: applicationHeader?.applicationStatus ?? 'pending',
+          departmentId: (viewDetails as any)?.departmentId || applicationHeader?.departmentId || 0,
+          departmentName: (viewDetails as any)?.departmentName || null,
+          serviceId: (viewDetails as any)?.serviceId || applicationHeader?.serviceId || 0,
+          serviceName: (viewDetails as any)?.serviceName || null,
+          applicationStatus: (viewDetails as any)?.applicationStatus || applicationHeader?.applicationStatus || 'pending',
           answerGroups,
           workflow: null,
           approvalFlowStages,
@@ -473,7 +473,7 @@ export async function getApplicationDetailAction(
           totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
           documents: viewDetails.documents ?? [],
           verification: null,
-          remark: (applicationHeader as any)?.remark ?? (viewDetails as any)?.remark ?? null,
+          remark: (viewDetails as any)?.remark ?? (applicationHeader as any)?.remark ?? null,
         };
       }
 
