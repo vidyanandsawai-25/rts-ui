@@ -187,6 +187,7 @@ export async function getApprovalApplicationStages(
         approvalStages: [],
         completedStages: 0,
         totalApprovalStages: 0,
+        isRevertedToCitizen: false,
       };
     }
 
@@ -202,6 +203,7 @@ export async function getApprovalApplicationStages(
       approvalStages: [],
       completedStages: 0,
       totalApprovalStages: 0,
+      isRevertedToCitizen: false,
     };
   }
 }

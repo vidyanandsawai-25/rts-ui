@@ -100,6 +100,7 @@ export interface RtsApplicationDetailData {
   approvalStages?: RtsApplicationApprovalStage[];
   completedStages?: number;
   totalApprovalStages?: number;
+  isRevertedToCitizen?: boolean;
   documents?: RtsApplicationDocumentItem[];
   verification?: RtsApplicationVerificationItem | null;
   remark?: string | null;
@@ -471,6 +472,7 @@ export async function getApplicationDetailAction(
           approvalStages: stageDetails?.approvalStages ?? [],
           completedStages: stageDetails?.completedStages ?? 0,
           totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
+          isRevertedToCitizen: stageDetails?.isRevertedToCitizen ?? false,
           documents: viewDetails.documents ?? [],
           verification: null,
           remark: (viewDetails as any)?.remark ?? (applicationHeader as any)?.remark ?? null,
@@ -491,6 +493,7 @@ export async function getApplicationDetailAction(
         approvalStages: stageDetails?.approvalStages ?? [],
         completedStages: stageDetails?.completedStages ?? 0,
         totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
+        isRevertedToCitizen: stageDetails?.isRevertedToCitizen ?? false,
         documents: [],
         verification: null,
         remark: null,
@@ -513,6 +516,7 @@ export async function getApplicationDetailAction(
     approvalStages: [],
     completedStages: 0,
     totalApprovalStages: 0,
+    isRevertedToCitizen: false,
     documents: [],
   };
 }

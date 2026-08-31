@@ -205,6 +205,7 @@ export default function ApplicationAndTrackingDrawer({
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("rts.citizenHeader");
+  const tDashboard = useTranslations("rts.citizenDashboard");
   const [searchValue, setSearchValue] = useState("");
   const [applications, setApplications] = useState<RtsMisDashboardUserApplicationItem[]>([]);
   const [selectedApplication, setSelectedApplication] = useState<RtsMisDashboardUserApplicationItem | null>(null);
@@ -632,29 +633,26 @@ export default function ApplicationAndTrackingDrawer({
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="text-xs font-bold text-orange-950">
-                          अर्ज त्रुटी दुरुस्तीसाठी परत पाठवला आहे (Application Reverted)
+                          {tDashboard("applicationRevertedTitle")}
                         </div>
                         <div className="text-[11px] text-orange-800 font-medium mt-0.5">
-                          अधिकाऱ्याने अर्जात अतिरिक्त माहिती किंवा कागदपत्रांची पूर्तता करण्यास सांगितले आहे.
+                          {tDashboard("applicationRevertedDescription")}
                         </div>
                         {detail?.remark && (
                           <div className="mt-2 p-2 rounded-lg bg-white/80 border border-orange-200 text-xs text-orange-900">
-                            <strong>अधिकाऱ्याचा शेरा:</strong> {detail.remark}
+                            <strong>{tDashboard("officerRemark")}:</strong> {detail.remark}
                           </div>
                         )}
                         <div className="mt-3">
                           <button
                             type="button"
                             onClick={() => {
-                              const sId = detail?.serviceId || detail?.verification?.serviceId || (selectedApplication as any)?.serviceId || (selectedApplication as any)?.govtServiceCode || 68;
-                              const dId = detail?.departmentId || (detail?.verification as any)?.departmentId || (selectedApplication as any)?.departmentId || (selectedApplication as any)?.deptId || 11;
-                              onClose();
-                              router.push(`/${locale}/service/${sId}?deptId=${dId}&applicationNo=${encodeURIComponent(selectedApplication.applicationNo)}&mode=resubmit`);
+                              setShowResubmitModal(true);
                             }}
                             className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 rounded-lg shadow-md shadow-orange-600/20 transition-all cursor-pointer"
                           >
                             <RotateCcw className="w-3.5 h-3.5" />
-                            अर्जात दुरुस्ती करा व पुन्हा सादर करा (Edit & Resubmit)
+                            {tDashboard("editAndResubmit")}
                           </button>
                         </div>
                       </div>
@@ -778,16 +776,18 @@ export default function ApplicationAndTrackingDrawer({
           onClose={() => setShowResubmitModal(false)}
           applicationId={detail?.verification?.applicationId || parseInt(selectedApplication.applicationNo.replace(/\D/g, ""), 10) || 0}
           applicationNo={selectedApplication.applicationNo}
-          serviceId={detail?.verification?.serviceId || (selectedApplication as any)?.serviceId || (selectedApplication as any)?.govtServiceCode}
+          serviceId={detail?.serviceId || detail?.verification?.serviceId || (selectedApplication as any)?.serviceId || (selectedApplication as any)?.govtServiceCode}
           serviceName={selectedApplication.serviceName}
-          officerRemark={detail?.remark || stages.find((s) => s.remark)?.remark || ""}
+          officerRemark={detail?.remark || stages.find((stage) => stage.remark)?.remark || ""}
           answerGroups={detail?.answerGroups || []}
           documents={detail?.documents || []}
           onSuccess={() => {
+            setShowResubmitModal(false);
             void selectApplication(selectedApplication);
           }}
         />
       )}
+
     </Drawer>
   );
 }
