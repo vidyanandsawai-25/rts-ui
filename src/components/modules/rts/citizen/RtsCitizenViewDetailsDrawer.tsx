@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Award, Download, FileText, GitCommit, Paperclip, CreditCard, Printer, CheckCircle2, Clock, AlertTriangle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
@@ -66,6 +67,7 @@ export default function RtsCitizenViewDetailsDrawer({
   onOpenPayment,
   onOpenReceipt,
 }: RtsCitizenViewDetailsDrawerProps) {
+  const router = useRouter();
   const t = useTranslations("rts.citizenDashboard");
   const locale = useLocale();
   const numberFormatter = new Intl.NumberFormat(
@@ -424,6 +426,46 @@ export default function RtsCitizenViewDetailsDrawer({
                   >
                     {language === "mr" ? "प्रमाणपत्र पहा व प्रिंट करा" : "View & Print Certificate"}
                   </Button>
+                </div>
+              </section>
+            )}
+
+            {application?.status && (application.status.toLowerCase().includes("revert") || application.status.toLowerCase().includes("return")) && (
+              <section className="rounded-xl border border-orange-300 bg-gradient-to-r from-orange-50 via-white to-amber-50 p-4 shadow-sm">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-orange-600 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div>
+                      <p className="text-xs font-extrabold text-orange-950">
+                        {language === "mr" ? "अर्ज त्रुटी दुरुस्तीसाठी परत आला आहे (Application Reverted)" : "Application Reverted for Correction"}
+                      </p>
+                      <p className="text-[11px] font-medium text-orange-800">
+                        {language === "mr" ? "अधिकाऱ्याने अर्जात आवश्यक बदल किंवा कागदपत्रे पुन्हा जोडण्यास सांगितले आहे." : "The officer requested corrections or document re-uploads."}
+                      </p>
+                    </div>
+                    {resolvedDetail?.remark && (
+                      <div className="p-2.5 rounded-lg bg-white/90 border border-orange-200 text-xs text-orange-950 font-bold">
+                        “{resolvedDetail.remark}”
+                      </div>
+                    )}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const sId = resolvedDetail?.verification?.serviceId || (application as any)?.serviceId || (application as any)?.govtServiceCode || 66;
+                          const dId = resolvedDetail?.verification?.departmentId || (application as any)?.departmentId || 10;
+                          onClose();
+                          router.push(`/${locale}/service/${sId}?deptId=${dId}&applicationNo=${encodeURIComponent(application.applicationNo)}&mode=resubmit`);
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 rounded-lg shadow-md shadow-orange-600/20 transition-all cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        {language === "mr" ? "अर्जात दुरुस्ती करा व पुन्हा सादर करा (Edit & Resubmit)" : "Edit & Resubmit Application"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </section>
             )}

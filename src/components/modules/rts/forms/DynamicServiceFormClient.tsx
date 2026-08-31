@@ -72,6 +72,12 @@ interface ServiceFormProps {
   isLoggedIn?: boolean;
   serviceFees?: number;
   feesRequired?: boolean;
+  isResubmitMode?: boolean;
+  resubmitApplicationId?: number;
+  resubmitApplicationNo?: string;
+  officerRemark?: string | null;
+  prefilledValues?: Record<string, any>;
+  existingDocuments?: any[];
 }
 
 const iconMap: Record<string, LucideIcon> = {
@@ -135,6 +141,12 @@ export default function DynamicServiceFormClient({
   isLoggedIn = false,
   serviceFees,
   feesRequired,
+  isResubmitMode = false,
+  resubmitApplicationId,
+  resubmitApplicationNo,
+  officerRemark,
+  prefilledValues,
+  existingDocuments,
 }: ServiceFormProps) {
   const router = useRouter();
   const { language } = useLanguage();
@@ -179,7 +191,7 @@ export default function DynamicServiceFormClient({
   const baseSteps = useMemo(() => apiConfig?.steps || [], [apiConfig]);
 
   /**
-   * Initialize default values from API/defaultValue.
+   * Initialize default values from API/defaultValue or prefilledValues in resubmit mode.
    */
   useEffect(() => {
     setFormData((prev) => {
@@ -188,6 +200,23 @@ export default function DynamicServiceFormClient({
       for (const step of baseSteps || []) {
         for (const field of step.fields || []) {
           const key = String(field.id);
+          const rawId = field.rawApi?.id ? String(field.rawApi.id) : null;
+          const fieldDefId = field.fieldDefinitionId ? String(field.fieldDefinitionId) : null;
+          const code = field.rawApi?.fieldCode ? String(field.rawApi.fieldCode) : null;
+
+          if (prefilledValues) {
+            const val =
+              prefilledValues[key] ??
+              (code ? prefilledValues[code] : undefined) ??
+              (rawId ? prefilledValues[rawId] : undefined) ??
+              (fieldDefId ? prefilledValues[fieldDefId] : undefined);
+
+            if (val !== undefined && val !== null && val !== "") {
+              next[key] = val;
+              continue;
+            }
+          }
+
           if (Object.prototype.hasOwnProperty.call(next, key)) continue;
 
           if (field.type === "checkbox") {
@@ -221,12 +250,13 @@ export default function DynamicServiceFormClient({
 
       return next;
     });
-  }, [baseSteps]);
+  }, [baseSteps, prefilledValues]);
 
   const steps = useMemo(() => baseSteps, [baseSteps]);
 
-  // Draft restoration check on mount
+  // Draft restoration check on mount (skip in resubmit mode)
   useEffect(() => {
+    if (isResubmitMode) return;
     try {
       let foundKey: string | null = null;
       let foundData: any = null;
@@ -1127,6 +1157,88 @@ export default function DynamicServiceFormClient({
       return;
     }
 
+    if (isResubmitMode && resubmitApplicationId) {
+      setIsSubmitting(true);
+      try {
+        const { citizenResubmitApplicationAction, uploadCitizenDocumentAction } = await import(
+          "@/app/[locale]/service/dashboard/actions"
+        );
+
+        const fieldValuesPayload: any[] = [];
+        for (const step of baseSteps || []) {
+          for (const field of step.fields || []) {
+            const fieldDefId = Number(field.rawApi?.id || field.fieldDefinitionId || field.id);
+            if (!fieldDefId || isNaN(fieldDefId)) continue;
+
+            const val = formData[String(field.id)];
+            let docGuid: string | null = null;
+
+            if (val instanceof File) {
+              const fd = new FormData();
+              fd.append("file", val);
+              const upRes = await uploadCitizenDocumentAction(fd);
+              if (upRes.success && upRes.documentGuid) {
+                docGuid = upRes.documentGuid;
+              }
+            } else if (typeof val === "string" && val.startsWith("guid:")) {
+              docGuid = val.replace("guid:", "");
+            } else {
+              const existDoc = existingDocuments?.find((d) => d.fieldDefinitionId === fieldDefId);
+              if (existDoc?.documentGuid) {
+                docGuid = existDoc.documentGuid;
+              }
+            }
+
+            fieldValuesPayload.push({
+              fieldDefinitionId: fieldDefId,
+              textValue: typeof val === "string" ? val : null,
+              numberValue: typeof val === "number" ? val : null,
+              dateValue: field.type === "date" && typeof val === "string" ? val : null,
+              booleanValue: typeof val === "boolean" ? val : null,
+              documentGuid: docGuid,
+            });
+          }
+        }
+
+        const res = await citizenResubmitApplicationAction(
+          resubmitApplicationId,
+          "Application updated and resubmitted by citizen with corrections.",
+          fieldValuesPayload
+        );
+
+        if (res.success) {
+          await MySwal.fire({
+            icon: "success",
+            title: language === "en" ? "Application Resubmitted!" : "अर्ज पुन्हा सादर झाला!",
+            text: res.message || "आपला अर्ज दुरुस्त करून यशस्वीरित्या पुन्हा सादर करण्यात आला आहे.",
+            confirmButtonColor: "#059669",
+            background: darkMode ? "#1f2937" : "#ffffff",
+            color: darkMode ? "#ffffff" : "#000000",
+          });
+          router.replace(`/${locale}/service/dashboard`);
+        } else {
+          MySwal.fire({
+            icon: "error",
+            title: language === "en" ? "Resubmit Failed" : "पुन्हा सादर करणे अयशस्वी",
+            text: res.message || "Failed to resubmit application.",
+            confirmButtonColor: "#ef4444",
+            background: darkMode ? "#1f2937" : "#ffffff",
+            color: darkMode ? "#ffffff" : "#000000",
+          });
+        }
+      } catch (err: any) {
+        MySwal.fire({
+          icon: "error",
+          title: language === "en" ? "Error" : "त्रुटी",
+          text: err?.message || "An unexpected error occurred.",
+          confirmButtonColor: "#ef4444",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -1134,6 +1246,10 @@ export default function DynamicServiceFormClient({
       const step = payload.currentStep || "Step1";
       const applicationId = ensureApplicationId();
       const submitBundle = buildSubmitFormData();
+
+      if (!submitApplicationAction) {
+        throw new Error("submitApplicationAction is missing");
+      }
 
       const response = await submitApplicationAction(submitBundle);
 
@@ -1671,6 +1787,36 @@ export default function DynamicServiceFormClient({
         </aside>
 
         <main className="flex-1 overflow-y-auto p-2 sm:p-3 lg:p-4" ref={scrollContainerRef}>
+          {isResubmitMode && (
+            <div className="mb-3 sm:mb-4 rounded-xl border-2 border-orange-300 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-orange-600 text-white shadow-sm mt-0.5">
+                  <AlertCircle className="h-5 w-5" />
+                </div>
+                <div className="space-y-1.5 min-w-0 flex-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-black uppercase tracking-wide text-orange-950">
+                      {language === "en" ? "Officer Remark / Reason for Correction:" : "अधिकाऱ्याचा शेरा / दुरुस्तीचे कारण:"}
+                    </h3>
+                    <span className="text-[10px] font-bold text-orange-800 bg-orange-200/80 px-2 py-0.5 rounded-full">
+                      {language === "en" ? "Action Required" : "तातडीने पूर्तता आवश्यक"}
+                    </span>
+                  </div>
+                  {officerRemark && (
+                    <div className="rounded-xl border border-orange-200 bg-white/95 p-3 text-xs text-orange-950 font-bold shadow-xs">
+                      “{officerRemark}”
+                    </div>
+                  )}
+                  <p className="text-[11px] font-medium text-orange-900 leading-relaxed">
+                    {language === "en"
+                      ? "Please correct the required details or re-upload the documents as instructed above, then click 'Update & Resubmit Application'."
+                      : "कृपया वरील सूचनेनुसार आवश्यक त्या फील्ड्समध्ये दुरुस्ती करा किंवा कागदपत्रे पुन्हा अपलोड करून खालील 'दुरुस्ती करून पुन्हा सादर करा' बटणावर क्लिक करा."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {sections.map((section: any, index: number) => {
             if (!isConditionMet(section.showIf, formData)) {
               return null;
@@ -1769,22 +1915,36 @@ export default function DynamicServiceFormClient({
             <button
               onClick={handleSubmitRequest}
               disabled={isSubmitting}
-              className={`flex items-center justify-center px-4 sm:px-6 py-1.5 rounded-md bg-gradient-to-r from-green-500 to-teal-600 text-white shadow font-medium text-xs transition-all
+              className={`flex items-center justify-center px-4 sm:px-6 py-1.5 rounded-md ${
+                isResubmitMode
+                  ? "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700"
+                  : "bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
+              } text-white shadow font-medium text-xs transition-all
                 ${isSubmitting
                   ? "opacity-70 cursor-not-allowed pointer-events-none"
-                  : "hover:from-green-600 hover:to-teal-700"
+                  : ""
                 }`}
             >
               {isSubmitting ? (
                 <span className="flex items-center">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Submitting...
+                  {isResubmitMode
+                    ? language === "en"
+                      ? "Resubmitting..."
+                      : "सादर होत आहे..."
+                    : "Submitting..."}
                 </span>
               ) : (
                 <>
                   <CheckCircle className="w-4 h-4 mr-1.5" />
-                  <span className="hidden sm:inline">
-                    {language === "en" ? "Submit Application" : "जमा करें"}
+                  <span>
+                    {isResubmitMode
+                      ? language === "en"
+                        ? "Update & Resubmit Application"
+                        : "दुरुस्ती करून पुन्हा सादर करा"
+                      : language === "en"
+                      ? "Submit Application"
+                      : "जमा करें"}
                   </span>
                 </>
               )}
