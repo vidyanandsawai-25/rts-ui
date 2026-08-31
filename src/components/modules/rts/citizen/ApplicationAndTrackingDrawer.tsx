@@ -389,6 +389,7 @@ export default function ApplicationAndTrackingDrawer({
   };
 
   const stages = detail?.approvalStages ?? [];
+  const hasWorkflowStages = stages.length > 0;
   const progress = detail ? progressPercentage(detail) : 0;
   const terminalStageIndex = stages.findIndex(isTerminalStage);
 
@@ -494,13 +495,17 @@ export default function ApplicationAndTrackingDrawer({
                   value={selectedApplication.applicationNo}
                   className="mt-1 h-8 w-full rounded border-2 border-fuchsia-200 bg-white px-2 text-xs font-semibold text-slate-700 outline-none"
                 />
-                <div className="mt-3 flex items-center justify-between text-xs font-medium text-slate-600">
-                  <span>{COPY.overallProgress}</span>
-                  <span className="font-bold text-fuchsia-700">{progress}%</span>
-                </div>
-                <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
-                  <div className="h-full bg-gradient-to-r from-fuchsia-600 to-purple-600" style={{ width: `${progress}%` }} />
-                </div>
+                {hasWorkflowStages && (
+                  <>
+                    <div className="mt-3 flex items-center justify-between text-xs font-medium text-slate-600">
+                      <span>{COPY.overallProgress}</span>
+                      <span className="font-bold text-fuchsia-700">{progress}%</span>
+                    </div>
+                    <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
+                      <div className="h-full bg-gradient-to-r from-fuchsia-600 to-purple-600" style={{ width: `${progress}%` }} />
+                    </div>
+                  </>
+                )}
 
                 {/* Government Payment Status & Pay Now Banner */}
                 {paymentInfo?.isFeeRequired === false || (paymentInfo?.requiredFee !== undefined && Number(paymentInfo.requiredFee) <= 0) ? (
@@ -601,7 +606,7 @@ export default function ApplicationAndTrackingDrawer({
                 )}
               </section>
 
-              {stages.length > 0 && (
+              {hasWorkflowStages && (
                 <>
                   <div className="flex items-center gap-2 py-1">
                     <div className="h-px flex-1 bg-gradient-to-r from-fuchsia-300 to-fuchsia-500" />
