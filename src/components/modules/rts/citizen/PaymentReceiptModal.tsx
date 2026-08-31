@@ -26,10 +26,10 @@ export const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({ receip
           <div className="w-8 h-8 rounded-lg bg-[#143D7D] text-white flex items-center justify-center shrink-0 shadow-sm">
             <Building2 className="w-4 h-4" />
           </div>
-          <span className="font-bold text-gray-800 text-base">Official Payment Receipt / शासकीय ई-पावती</span>
+          <span className="font-bold text-gray-800 text-base">शासकीय शुल्क ई-पावती</span>
         </div>
       }
-      subtitle={`Receipt No: ${receipt.receiptNo || 'N/A'} • Application No: ${receipt.applicationNo || 'N/A'}`}
+      subtitle={`पावती क्र.: ${receipt.receiptNo || '-'} • अर्ज क्र.: ${receipt.applicationNo || '-'}`}
       footer={
         <div className="flex items-center justify-between w-full">
           <Button
@@ -37,16 +37,16 @@ export const PaymentReceiptModal: React.FC<PaymentReceiptModalProps> = ({ receip
             variant="secondary"
             onClick={onClose}
           >
-            Close / बंद करा
+            बंद करा
           </Button>
           <Button
             type="button"
             variant="primary"
             onClick={handlePrint}
             icon={Printer}
-            className="bg-[#143D7D] hover:bg-[#0f2e5e] text-white font-bold cursor-pointer"
+            className="bg-[#0F3675] hover:bg-[#0A2552] text-white font-bold cursor-pointer"
           >
-            Print Receipt / पावती प्रिंट करा
+            पावती प्रिंट करा
           </Button>
         </div>
       }

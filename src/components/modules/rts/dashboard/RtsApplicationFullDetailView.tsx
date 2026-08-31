@@ -275,26 +275,6 @@ export default function RtsApplicationFullDetailView({
             </div>
 
             <div className="flex items-center gap-2">
-              {isApproved && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setIsPrintCertModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition"
-                  >
-                    <FileCheck2 className="h-4 w-4" />
-                    {t('viewAndPrintCertificate')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsCertModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-lg text-xs font-bold transition"
-                  >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {t('editCertificate')}
-                  </button>
-                </>
-              )}
               {record.applicationStatus && <Badge variant={statusBadgeVariant(record.applicationStatus)}>{record.applicationStatus}</Badge>}
             </div>
           </header>

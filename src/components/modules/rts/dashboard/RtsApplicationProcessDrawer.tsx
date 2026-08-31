@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import {
+  Award,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -600,10 +601,6 @@ export default function RtsApplicationProcessDrawer({
                         return;
                       }
                       if (action.key === 'canApprove') {
-                        if (verification?.isFinalStage) {
-                          setIsCertModalOpen(true);
-                          return;
-                        }
                         requestDecisionConfirmation('canApprove');
                         return;
                       }
@@ -623,6 +620,25 @@ export default function RtsApplicationProcessDrawer({
                   </Button>
                 );
               })}
+
+              {/* Certificate: Visible to Final Stage Officer or when application is approved */}
+              {Boolean(
+                verification?.isFinalStage ||
+                verification?.applicationStatus?.toLowerCase() === 'approved' ||
+                record?.applicationStatus?.toLowerCase() === 'approved' ||
+                (data?.verification?.applicationStatus && data.verification.applicationStatus.toLowerCase() === 'approved')
+              ) && (
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="secondary"
+                  icon={Award}
+                  onClick={() => setIsCertModalOpen(true)}
+                  className="rounded-lg px-3 text-xs font-bold text-purple-800 border-purple-300 bg-purple-50 hover:bg-purple-100"
+                >
+                  प्रमाणपत्र (Certificate)
+                </Button>
+              )}
 
               {/* Note Sheet: Visible to ALL officers once first verification is done / history exists */}
               {Boolean(

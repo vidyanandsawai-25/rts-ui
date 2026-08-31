@@ -73,8 +73,8 @@ export default function CertificateVerificationView({
           <div className="flex items-center gap-3">
             <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-blue-100 bg-slate-50 p-1">
               <Image
-                src={data.ulbLogo || "/images/akola-seal.png"}
-                alt={data.ulbName || "ULB Seal"}
+                src={data.ulbLogo || "/images/logo.png"}
+                alt={data.ulbName || "ULB Logo"}
                 width={40}
                 height={40}
                 className="h-full w-full object-contain"

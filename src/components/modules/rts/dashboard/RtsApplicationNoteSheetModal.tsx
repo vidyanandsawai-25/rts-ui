@@ -56,13 +56,16 @@ export default function RtsApplicationNoteSheetModal({
     sealUrl: string;
     code: string;
     address: string;
-  }>({
-    nameLocal: 'अकोला महानगरपालिका, अकोला',
-    nameEnglish: 'AKOLA MUNICIPAL CORPORATION',
-    logoUrl: '/images/logo.png',
-    sealUrl: '/images/ulb-seal.png',
-    code: 'AK001',
-    address: 'एम. जी. रोड, मुख्य प्रशासकीय इमारत, अकोला, महाराष्ट्र - ४४४००१',
+  }>(() => {
+    const cookieData = getUlbDataFromCookies();
+    return {
+      nameLocal: cookieData.ulbNameLocal || cookieData.ulbName || '',
+      nameEnglish: (cookieData.ulbName || '').toUpperCase(),
+      logoUrl: (cookieData.ulbLogo || '/images/logo.png').trim(),
+      sealUrl: '/images/ulb-seal.png',
+      code: cookieData.ulbCode || '',
+      address: cookieData.ulbAddress || '',
+    };
   });
 
   // Dynamic Digital Signature Metadata
@@ -75,12 +78,12 @@ export default function RtsApplicationNoteSheetModal({
 
     const cookieData = getUlbDataFromCookies();
     setUlbInfo({
-      nameLocal: cookieData.ulbNameLocal || 'अकोला महानगरपालिका, अकोला',
-      nameEnglish: (cookieData.ulbName || 'AKOLA MUNICIPAL CORPORATION').toUpperCase(),
+      nameLocal: cookieData.ulbNameLocal || cookieData.ulbName || '',
+      nameEnglish: (cookieData.ulbName || '').toUpperCase(),
       logoUrl: (cookieData.ulbLogo || '/images/logo.png').trim(),
       sealUrl: '/images/ulb-seal.png',
-      code: cookieData.ulbCode || 'AK001',
-      address: cookieData.ulbAddress || 'एम. जी. रोड, मुख्य प्रशासकीय इमारत, अकोला, महाराष्ट्र - ४४४००१',
+      code: cookieData.ulbCode || '',
+      address: cookieData.ulbAddress || '',
     });
 
     // Fetch live DSC certificate metadata from backend
@@ -106,8 +109,37 @@ export default function RtsApplicationNoteSheetModal({
   const applicationNo = data?.verification?.applicationNo || record.appId || 'N/A';
   const serviceName = record.serviceName || 'Public Service';
   const departmentName = record.departmentName?.trim() || '-';
-  const serviceFees = data?.verification?.serviceFees ?? null;
-  const feesRequired = data?.verification?.feesRequired ?? false;
+
+  // Extract payment history and fees from trackHistory, verification, or record
+  const paymentHistoryItem = trackHistory.find(
+    (h) =>
+      h.action?.toLowerCase().includes('payment') ||
+      h.remark?.includes('₹') ||
+      h.remark?.toLowerCase().includes('fee') ||
+      h.remark?.toLowerCase().includes('receipt')
+  );
+
+  const extractedFeeFromHistory = (() => {
+    if (!paymentHistoryItem?.remark) return null;
+    const match = paymentHistoryItem.remark.match(/₹\s*([\d,]+(?:\.\d+)?)/);
+    if (match && match[1]) {
+      return parseFloat(match[1].replace(/,/g, ''));
+    }
+    const matchRs = paymentHistoryItem.remark.match(/(?:Rs\.?|INR)\s*([\d,]+(?:\.\d+)?)/i);
+    if (matchRs && matchRs[1]) {
+      return parseFloat(matchRs[1].replace(/,/g, ''));
+    }
+    return null;
+  })();
+
+  const serviceFees =
+    (data?.verification?.serviceFees !== null && data?.verification?.serviceFees !== undefined && data?.verification.serviceFees > 0)
+      ? data.verification.serviceFees
+      : extractedFeeFromHistory !== null
+      ? extractedFeeFromHistory
+      : (record as any)?.serviceFees ?? (record as any)?.amountPaid ?? (record as any)?.fees ?? null;
+
+  const feesRequired = data?.verification?.feesRequired ?? (serviceFees !== null && serviceFees > 0) ?? false;
 
   // Extract applicant name from dynamic fields if not in record
   const applicantField = data?.details?.applicationDetails?.find((f) => {
@@ -506,11 +538,16 @@ export default function RtsApplicationNoteSheetModal({
                 <div className="p-1.5">
                   <span className="text-slate-500 text-[8.5px] uppercase font-bold block">शासकीय शुल्क (Fee):</span>
                   <span className="font-bold text-emerald-800 text-[10.5px]">
-                    {serviceFees !== null && serviceFees > 0
-                      ? `₹ ${serviceFees.toLocaleString(locale === 'mr' ? 'mr-IN' : 'en-IN')}`
-                      : feesRequired
-                      ? 'शुल्क लागू (As per demand)'
-                      : 'विनामूल्य (Free)'}
+                    {serviceFees !== null && serviceFees > 0 ? (
+                      <span>
+                        ₹ {serviceFees.toLocaleString(locale === 'mr' ? 'mr-IN' : 'en-IN')}
+                        {paymentHistoryItem ? ' (Paid)' : ''}
+                      </span>
+                    ) : feesRequired ? (
+                      'शुल्क लागू (As per demand)'
+                    ) : (
+                      'विनामूल्य (Free)'
+                    )}
                   </span>
                 </div>
                 <div className="p-1.5">

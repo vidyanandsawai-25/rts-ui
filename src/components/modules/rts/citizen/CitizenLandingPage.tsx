@@ -251,8 +251,8 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         locale === 'mr'
           ? 'ही सेवा सध्या प्रगतीपथावर आहे / उपलब्ध नाही.'
           : locale === 'hi'
-          ? 'यह सेवा वर्तमान में उपलब्ध नहीं है।'
-          : 'This service is currently under development / not available.'
+            ? 'यह सेवा वर्तमान में उपलब्ध नहीं है।'
+            : 'This service is currently under development / not available.'
       );
       return;
     }
@@ -273,8 +273,8 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
             locale === 'mr'
               ? 'तुमच्या ब्राउझरने नवीन टॅब ब्लॉक केला आहे. कृपया पॉप-अपला परवानगी द्या.'
               : locale === 'hi'
-              ? 'आपके ब्राउज़र ने नया टैब ब्लॉक कर दिया है। कृपया पॉप-अप की अनुमति दें।'
-              : 'Your browser blocked the external service tab. Please allow pop-ups and try again.'
+                ? 'आपके ब्राउज़र ने नया टैब ब्लॉक कर दिया है। कृपया पॉप-अप की अनुमति दें।'
+                : 'Your browser blocked the external service tab. Please allow pop-ups and try again.'
           );
           return;
         }
@@ -588,11 +588,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                           key={dept.id}
                           type="button"
                           onClick={() => setActiveTab(dept.id)}
-                          className={`flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 text-[10px] font-black shadow-sm transition-all duration-200 sm:px-4 sm:text-xs ${
-                            isActive
+                          className={`flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 text-[10px] font-black shadow-sm transition-all duration-200 sm:px-4 sm:text-xs ${isActive
                               ? `${dept.bannerBg} scale-[1.02] border-transparent text-white shadow-md`
                               : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-0.5 hover:border-blue-200 hover:text-blue-800'
-                          }`}
+                            }`}
                         >
                           <span className={isActive ? 'text-white' : 'shrink-0 text-slate-400'}>
                             {dept.icon}

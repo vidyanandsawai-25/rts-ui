@@ -57,11 +57,19 @@ export async function getRtsApplicationServicesAction(): Promise<RtsServiceApiIt
   }
 }
 
-export async function getUserMisDashboardAction(): Promise<RtsMisDashboardResponse> {
+export async function getUserMisDashboardAction(upicId?: string): Promise<RtsMisDashboardResponse> {
   try {
+    const cookieStore = await cookies();
+    const resolvedUpicId =
+      upicId ||
+      cookieStore.get('citizen_upic')?.value ||
+      cookieStore.get('upic')?.value ||
+      cookieStore.get('upic_id')?.value ||
+      null;
+
     return await getRtsMisDashboardData({
       Flag: 'user',
-      UpicId: 'AKLMC000010',
+      UpicId: resolvedUpicId,
     });
   } catch (error) {
     console.error('Failed to fetch User MIS Dashboard:', error);

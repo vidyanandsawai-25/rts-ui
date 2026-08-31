@@ -319,7 +319,7 @@ export const OfficialCertificateSheet: React.FC<OfficialCertificateSheetProps> =
 
       {/* Official Government Tracking Footer */}
       <div className="footer-tracking-block mt-4 pt-1.5 border-t border-slate-400 flex justify-between items-center text-[9px] text-slate-500 font-mono">
-        <div>{ulbName || "अकोला महानगरपालिका"} | {deptName || "लोकसेवा हक्क विभाग"}</div>
+        <div>{ulbName || (isMr ? "महानगरपालिका प्रशासन" : "Municipal Administration")} | {deptName || (isMr ? "लोकसेवा हक्क विभाग" : "Right to Services Department")}</div>
         <div>RTS Portal Official Certificate | MahaOnline / Aaple Sarkar</div>
       </div>
     </div>
