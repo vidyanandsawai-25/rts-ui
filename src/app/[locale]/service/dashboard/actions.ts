@@ -488,3 +488,65 @@ export async function getServiceDetailsModalInfoAction(serviceId: number): Promi
     return { documents: [], receivingOfficer: "लिपिक (Ward Lipik)" };
   }
 }
+
+export async function citizenResubmitApplicationAction(
+  applicationId: number,
+  remark: string,
+  fieldValues: Array<{
+    fieldDefinitionId: number;
+    textValue?: string | null;
+    numberValue?: number | null;
+    dateValue?: string | null;
+    booleanValue?: boolean | null;
+    documentGuid?: string | null;
+  }>
+): Promise<{ success: boolean; message: string }> {
+  if (!Number.isInteger(applicationId) || applicationId <= 0) {
+    return { success: false, message: "अवैध अर्ज क्रमांक / Invalid Application ID" };
+  }
+
+  try {
+    const { verifyAndCorrectApproval } = await import("@/lib/api/rts/rts-application-approval.service");
+    const result = await verifyAndCorrectApproval(applicationId, {
+      isActive: true,
+      updatedBy: 0,
+      remark: remark?.trim() || "Application corrected and resubmitted by citizen",
+      status: "Corrected",
+      fieldValue: fieldValues.map((field) => ({ ...field, updatedBy: 0 })),
+    });
+
+    return {
+      success: true,
+      message: result?.message || "आपला अर्ज दुरुस्त करून यशस्वीरित्या पुन्हा सादर करण्यात आला आहे!",
+    };
+  } catch (error) {
+    console.error("citizenResubmitApplicationAction error:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "अर्ज पुन्हा सादर करताना त्रुटी आली.",
+    };
+  }
+}
+
+export async function uploadCitizenDocumentAction(
+  formData: FormData
+): Promise<{ success: boolean; documentGuid?: string; fileName?: string; error?: string }> {
+  try {
+    const file = formData.get("file") as File | null;
+    if (!file) {
+      return { success: false, error: "कोणतीही फाईल आढळली नाही." };
+    }
+    const { uploadRtsDocument } = await import("@/lib/api/rts/rtsdocument.service");
+    const result = await uploadRtsDocument({ file });
+    if (result && result.documentGuid) {
+      return { success: true, documentGuid: result.documentGuid, fileName: file.name };
+    }
+    return { success: false, error: "कागदपत्र अपलोड करण्यात अडचण आली." };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "कागदपत्र अपलोड अयशस्वी.",
+    };
+  }
+}
+

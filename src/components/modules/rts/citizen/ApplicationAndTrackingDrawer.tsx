@@ -32,6 +32,7 @@ import {
 import { PaymentCheckoutModal } from "./PaymentCheckoutModal";
 import { PaymentReceiptModal } from "./PaymentReceiptModal";
 import PrintableCertificateModal from "./PrintableCertificateModal";
+import CitizenResubmitModal from "./CitizenResubmitModal";
 import type { PaymentReceiptResult, PaymentStatusResult } from "@/lib/api/rts/rtspayment.service";
 import type { RtsApplicationApprovalStage } from "@/types/rts/application-approval.types";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
@@ -210,6 +211,7 @@ export default function ApplicationAndTrackingDrawer({
   const [paymentInfo, setPaymentInfo] = useState<PaymentStatusResult | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [showResubmitModal, setShowResubmitModal] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
 
   useEffect(() => {
@@ -637,6 +639,16 @@ export default function ApplicationAndTrackingDrawer({
                             <strong>अधिकाऱ्याचा शेरा:</strong> {detail.remark}
                           </div>
                         )}
+                        <div className="mt-3">
+                          <button
+                            type="button"
+                            onClick={() => setShowResubmitModal(true)}
+                            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 rounded-lg shadow-md shadow-orange-600/20 transition-all cursor-pointer"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            अर्जात दुरुस्ती करा व पुन्हा सादर करा (Edit & Resubmit)
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -749,6 +761,21 @@ export default function ApplicationAndTrackingDrawer({
           isOpen={showCertificateModal}
           onClose={() => setShowCertificateModal(false)}
           applicationNo={selectedApplication.applicationNo}
+        />
+      )}
+
+      {showResubmitModal && selectedApplication && (
+        <CitizenResubmitModal
+          isOpen={showResubmitModal}
+          onClose={() => setShowResubmitModal(false)}
+          applicationId={detail?.verification?.applicationId || parseInt(selectedApplication.applicationNo.replace(/\D/g, ""), 10) || 0}
+          applicationNo={selectedApplication.applicationNo}
+          serviceName={selectedApplication.serviceName}
+          officerRemark={detail?.remark || stages.find((s) => s.remark)?.remark || ""}
+          answerGroups={detail?.answerGroups || []}
+          onSuccess={() => {
+            void selectApplication(selectedApplication);
+          }}
         />
       )}
     </Drawer>
