@@ -14,7 +14,8 @@ import {
   AlertTriangle,
   RotateCcw,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button, Drawer, Input } from "@/components/common";
 import {
@@ -201,6 +202,8 @@ export default function ApplicationAndTrackingDrawer({
   initialSearchValue,
   initialReceiptValue,
 }: ApplicationAndTrackingDrawerProps) {
+  const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("rts.citizenHeader");
   const [searchValue, setSearchValue] = useState("");
   const [applications, setApplications] = useState<RtsMisDashboardUserApplicationItem[]>([]);
@@ -644,7 +647,7 @@ export default function ApplicationAndTrackingDrawer({
                             type="button"
                             onClick={() => {
                               const sId = detail?.verification?.serviceId || (selectedApplication as any)?.serviceId || (selectedApplication as any)?.govtServiceCode || 66;
-                              const dId = detail?.verification?.departmentId || (selectedApplication as any)?.departmentId || 10;
+                              const dId = (detail?.verification as any)?.departmentId || (selectedApplication as any)?.departmentId || 10;
                               onClose();
                               router.push(`/${locale}/service/${sId}?deptId=${dId}&applicationNo=${encodeURIComponent(selectedApplication.applicationNo)}&mode=resubmit`);
                             }}

@@ -21,6 +21,7 @@ interface ServicePageProps {
     submit?: string;
     applicationNo?: string;
     status?: string;
+    mode?: string;
   }>;
 }
 
