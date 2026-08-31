@@ -575,4 +575,3 @@ export async function uploadCitizenDocumentAction(
     };
   }
 }
-
