@@ -63,4 +63,47 @@ describe('ptisSearchService.searchProperties', () => {
     expect(result.data).toHaveLength(2);
     expect(result.data?.[0].propertyNo).toBe('S1');
   });
+
+  it('should fetch a page of property and partition suggestions', async () => {
+    (fetchWithCertSupport as Mock).mockResolvedValue({
+      success: true,
+      data: {
+        items: [
+          {
+            id: 201,
+            propertyNo: 'P-201',
+            partitionNo: 'A',
+            wardId: 7,
+          },
+        ],
+        totalCount: 250,
+        pageNumber: 2,
+        pageSize: 100,
+        totalPages: 3,
+        hasNext: true,
+      },
+    });
+
+    const result = await ptisSearchService.getPropertySuggestionsPage(
+      7,
+      'P',
+      'A',
+      2,
+      100
+    );
+
+    expect(fetchWithCertSupport).toHaveBeenCalledWith(
+      '/Property?WardId=7&PageNumber=2&PageSize=100&PropertyNo=P&PartitionNo=A'
+    );
+    expect(result.success).toBe(true);
+    expect(result.data?.items).toEqual([
+      expect.objectContaining({
+        propertyId: 201,
+        propertyNo: 'P-201',
+        partitionNo: 'A',
+      }),
+    ]);
+    expect(result.data?.hasNext).toBe(true);
+    expect(result.data?.totalPages).toBe(3);
+  });
 });

@@ -51,6 +51,8 @@ export function buildCanonicalSmartLayoutParameters({
   ownerIdList,
   selectedProperties,
   selectionMode,
+  propertyDescription,
+  assessmentStatus,
 }: CanonicalSmartLayoutInput): Record<string, string> {
   const parsed = selectionMode === 'property' && propertyNo
     ? parseSelectedPropertyValue(propertyNo, partitionNo)
@@ -69,6 +71,8 @@ export function buildCanonicalSmartLayoutParameters({
     ownerId: selectionMode === 'property' ? propertyIds : '',
     partitionNo: selectionMode === 'property' ? partitionNo : '',
     propertySelectionMode: selectionMode,
+    PropertyTypeId: propertyDescription.join(','),
+    AssessmentTypeId: assessmentStatus.join(','),
   };
 }
 
@@ -153,6 +157,14 @@ export function useSmartLayoutSync({
         handleParamChange(key, searchCategoryVal);
       } else if (/partition/i.test(keyLabel)) {
         handleParamChange(key, partitionNo);
+      } else if (/assessment/i.test(keyLabel)) {
+        handleParamChange(key, assessmentVal);
+      } else if (/property.*desc|prop.*desc/i.test(keyLabel)) {
+        handleParamChange(key, propDescVal);
+      } else if (/property.*type|prop.*type/i.test(keyLabel)) {
+        handleParamChange(key, propDescVal);
+      } else if (key.toLowerCase() === 'type') {
+        handleParamChange(key, propDescVal);
       } else if (/property.*id|prop.*id/i.test(keyLabel)) {
         handleParamChange(key, selectedPropertyId);
       } else if (/owner.*id/i.test(keyLabel)) {
@@ -165,14 +177,6 @@ export function useSmartLayoutSync({
         handleParamChange(key, amountValue);
       } else if (/top.*n/i.test(keyLabel)) {
         handleParamChange(key, topNVal);
-      } else if (/assessment/i.test(keyLabel)) {
-        handleParamChange(key, assessmentVal);
-      } else if (/property.*desc/i.test(keyLabel)) {
-        handleParamChange(key, propDescVal);
-      } else if (key.toLowerCase() === 'type') {
-        handleParamChange(key, propDescVal);
-      } else if (/property.*type/i.test(keyLabel)) {
-        handleParamChange(key, propDescVal);
       }
     });
 

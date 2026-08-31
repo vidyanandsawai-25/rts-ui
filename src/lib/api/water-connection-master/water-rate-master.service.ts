@@ -131,7 +131,7 @@ export async function updateWaterRate(
 
 export async function deleteWaterRate(id: number, _userId: number): Promise<void> {
   const response = await apiClient.delete(
-    `/WaterRateMaster/${encodeURIComponent(String(id))}`
+    `/WaterRateMaster/${encodeURIComponent(String(id))}/purge`
   );
   if (!response.success) {
     throw new ApiError(response.statusCode ?? 500, response.error ?? "Failed to delete water rate", "deleteWaterRate");

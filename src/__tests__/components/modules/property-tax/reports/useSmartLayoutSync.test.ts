@@ -131,4 +131,56 @@ describe('parseSelectedPropertyValue', () => {
       expect(handleParamChange).toHaveBeenCalledWith('PropertyId', '456');
     });
   });
+
+  it('maps selected property type and assessment type IDs to report filters', async () => {
+    const handleParamChange = vi.fn();
+    const parameters = [
+      reportParameter('PropertyTypeId', 'Property Description'),
+      reportParameter('AssessmentTypeId', 'Assessment Type'),
+    ];
+
+    renderHook(() => useSmartLayoutSync({
+      financialYear: '2026',
+      zoneId: '10',
+      wardId: ['20'],
+      fromProperty: '',
+      toProperty: '',
+      propertyNo: '',
+      partitionNo: '',
+      ownerIdList: '',
+      selectedProperties: [],
+      selectionMode: 'ward',
+      amountOperator: 'greater_than',
+      amountValue: '',
+      propertyDescription: ['11', '12'],
+      assessmentStatus: ['3', '4'],
+      parameters,
+      handleParamChange,
+    }));
+
+    await waitFor(() => {
+      expect(handleParamChange).toHaveBeenCalledWith('PropertyTypeId', '11,12');
+      expect(handleParamChange).toHaveBeenCalledWith('AssessmentTypeId', '3,4');
+    });
+
+    expect(buildCanonicalSmartLayoutParameters({
+      financialYear: '2026',
+      zoneId: '10',
+      wardId: ['20'],
+      fromProperty: '',
+      toProperty: '',
+      propertyNo: '',
+      partitionNo: '',
+      ownerIdList: '',
+      selectedProperties: [],
+      selectionMode: 'ward',
+      amountOperator: 'greater_than',
+      amountValue: '',
+      propertyDescription: ['11', '12'],
+      assessmentStatus: ['3', '4'],
+    })).toMatchObject({
+      PropertyTypeId: '11,12',
+      AssessmentTypeId: '3,4',
+    });
+  });
 });

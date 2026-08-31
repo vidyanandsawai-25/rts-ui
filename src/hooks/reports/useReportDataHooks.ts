@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { WardSummary, PropertySummary, ReportDefinition, ReportParameterDefinition } from '@/types/report.types';
 import type { PropertyType } from '@/types/property-type.types';
 import { getPropertyTypesAction, getAssessmentTypesAction } from '@/app/[locale]/property-tax/reports/action';
@@ -135,17 +135,33 @@ function mergePropertyOptions(
 }
 
 export function usePaginatedProperties(wardId: string[], selectionMode: string) {
+  const pageSize = 100;
   const [initialProperties, setInitialProperties] = useState<ReportPropertyOption[]>([]);
   const [suggestedProperties, setSuggestedProperties] = useState<ReportPropertyOption[]>([]);
   const [propertySearchQuery, setPropertySearchQuery] = useState('');
   const [isLoadingInitialProperties, setIsLoadingInitialProperties] = useState(false);
   const [isSearchingProperties, setIsSearchingProperties] = useState(false);
+  const [isLoadingMoreProperties, setIsLoadingMoreProperties] = useState(false);
+  const [hasMoreInitialProperties, setHasMoreInitialProperties] = useState(false);
+  const [hasMoreSuggestedProperties, setHasMoreSuggestedProperties] = useState(false);
+  const initialPageRef = useRef(1);
+  const suggestedPageRef = useRef(1);
+  const searchQueryRef = useRef('');
+  const requestContextRef = useRef('');
   const selectedWardId = wardId[0] ?? '';
 
   useEffect(() => {
+    const requestContext = `${selectionMode}:${selectedWardId}`;
+    requestContextRef.current = requestContext;
+    searchQueryRef.current = '';
+    initialPageRef.current = 1;
+    suggestedPageRef.current = 1;
     setInitialProperties([]);
     setSuggestedProperties([]);
     setPropertySearchQuery('');
+    setHasMoreInitialProperties(false);
+    setHasMoreSuggestedProperties(false);
+    setIsLoadingMoreProperties(false);
 
     const numericWardId = Number(selectedWardId);
     if (selectionMode !== 'property' || !Number.isFinite(numericWardId) || numericWardId <= 0) {
@@ -155,15 +171,27 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
 
     let active = true;
     setIsLoadingInitialProperties(true);
-    ptisSuggestionsClient.getSuggestions({ wardId: numericWardId })
+    ptisSuggestionsClient.getSuggestionsPage({
+      wardId: numericWardId,
+      pageNumber: 1,
+      pageSize,
+    })
       .then((result) => {
-        if (!active) return;
-        setInitialProperties(
-          result.success && result.data ? mapPropertySuggestions(result.data) : []
+        if (!active || requestContextRef.current !== requestContext) return;
+        const options = result.success && result.data
+          ? mapPropertySuggestions(result.data)
+          : [];
+        setInitialProperties(options);
+        initialPageRef.current = result.pagination?.pageNumber ?? 1;
+        setHasMoreInitialProperties(
+          result.success && (result.pagination?.hasMore ?? options.length >= pageSize)
         );
       })
       .catch(() => {
-        if (active) setInitialProperties([]);
+        if (active && requestContextRef.current === requestContext) {
+          setInitialProperties([]);
+          setHasMoreInitialProperties(false);
+        }
       })
       .finally(() => {
         if (active) setIsLoadingInitialProperties(false);
@@ -172,7 +200,7 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
     return () => {
       active = false;
     };
-  }, [selectionMode, selectedWardId]);
+  }, [selectionMode, selectedWardId, pageSize]);
 
   useEffect(() => {
     const query = propertySearchQuery.trim();
@@ -184,6 +212,8 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
       numericWardId <= 0
     ) {
       setSuggestedProperties([]);
+      suggestedPageRef.current = 1;
+      setHasMoreSuggestedProperties(false);
       setIsSearchingProperties(false);
       return;
     }
@@ -191,18 +221,28 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
     let active = true;
     const timer = setTimeout(() => {
       setIsSearchingProperties(true);
-      ptisSuggestionsClient.getSuggestions({
+      ptisSuggestionsClient.getSuggestionsPage({
         wardId: numericWardId,
         propertyNo: query,
+        pageNumber: 1,
+        pageSize,
       })
         .then((result) => {
-          if (!active) return;
-          setSuggestedProperties(
-            result.success && result.data ? mapPropertySuggestions(result.data) : []
+          if (!active || searchQueryRef.current.trim() !== query) return;
+          const options = result.success && result.data
+            ? mapPropertySuggestions(result.data)
+            : [];
+          setSuggestedProperties(options);
+          suggestedPageRef.current = result.pagination?.pageNumber ?? 1;
+          setHasMoreSuggestedProperties(
+            result.success && (result.pagination?.hasMore ?? options.length >= pageSize)
           );
         })
         .catch(() => {
-          if (active) setSuggestedProperties([]);
+          if (active && searchQueryRef.current.trim() === query) {
+            setSuggestedProperties([]);
+            setHasMoreSuggestedProperties(false);
+          }
         })
         .finally(() => {
           if (active) setIsSearchingProperties(false);
@@ -213,15 +253,99 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
       active = false;
       clearTimeout(timer);
     };
-  }, [propertySearchQuery, selectedWardId, selectionMode]);
+  }, [propertySearchQuery, selectedWardId, selectionMode, pageSize]);
+
+  const loadMoreProperties = useCallback((searchQuery?: string) => {
+    const currentQuery = searchQueryRef.current.trim();
+    const requestedQuery = searchQuery?.trim();
+    if (requestedQuery !== undefined && requestedQuery !== currentQuery) return;
+
+    const numericWardId = Number(selectedWardId);
+    const isSearch = currentQuery !== '';
+    const hasMore = isSearch ? hasMoreSuggestedProperties : hasMoreInitialProperties;
+    if (
+      selectionMode !== 'property' ||
+      !Number.isFinite(numericWardId) ||
+      numericWardId <= 0 ||
+      !hasMore ||
+      isLoadingMoreProperties ||
+      isLoadingInitialProperties ||
+      isSearchingProperties
+    ) {
+      return;
+    }
+
+    const requestContext = requestContextRef.current;
+    const nextPage = (isSearch ? suggestedPageRef.current : initialPageRef.current) + 1;
+    setIsLoadingMoreProperties(true);
+
+    ptisSuggestionsClient.getSuggestionsPage({
+      wardId: numericWardId,
+      propertyNo: isSearch ? currentQuery : undefined,
+      pageNumber: nextPage,
+      pageSize,
+    })
+      .then((result) => {
+        if (
+          requestContextRef.current !== requestContext ||
+          searchQueryRef.current.trim() !== currentQuery
+        ) {
+          return;
+        }
+
+        const options = result.success && result.data
+          ? mapPropertySuggestions(result.data)
+          : [];
+        const pageHasMore = result.success
+          && (result.pagination?.hasMore ?? options.length >= pageSize);
+
+        if (isSearch) {
+          setSuggestedProperties((previous) => mergePropertyOptions(previous, options));
+          suggestedPageRef.current = result.pagination?.pageNumber ?? nextPage;
+          setHasMoreSuggestedProperties(pageHasMore);
+        } else {
+          setInitialProperties((previous) => mergePropertyOptions(previous, options));
+          initialPageRef.current = result.pagination?.pageNumber ?? nextPage;
+          setHasMoreInitialProperties(pageHasMore);
+        }
+      })
+      .catch(() => {
+        if (requestContextRef.current !== requestContext) return;
+        if (isSearch) setHasMoreSuggestedProperties(false);
+        else setHasMoreInitialProperties(false);
+      })
+      .finally(() => {
+        if (requestContextRef.current === requestContext) {
+          setIsLoadingMoreProperties(false);
+        }
+      });
+  }, [
+    selectedWardId,
+    selectionMode,
+    hasMoreSuggestedProperties,
+    hasMoreInitialProperties,
+    isLoadingMoreProperties,
+    isLoadingInitialProperties,
+    isSearchingProperties,
+    pageSize,
+  ]);
+
+  const onPropertySearchChange = useCallback((query: string) => {
+    searchQueryRef.current = query;
+    setPropertySearchQuery(query);
+  }, []);
+
+  const hasMoreProperties = propertySearchQuery.trim() !== ''
+    ? hasMoreSuggestedProperties
+    : hasMoreInitialProperties;
 
   return {
     paginatedProperties: mergePropertyOptions(initialProperties, suggestedProperties),
-    hasMoreProperties: false,
+    hasMoreProperties,
     isFetchingProperties: isLoadingInitialProperties || isSearchingProperties,
-    isLoadingMoreProperties: false,
-    loadMoreProperties: () => undefined,
-    onPropertySearchChange: setPropertySearchQuery,
+    isLoadingMoreProperties,
+    loadMoreProperties,
+    onPropertySearchChange,
   };
 }
 

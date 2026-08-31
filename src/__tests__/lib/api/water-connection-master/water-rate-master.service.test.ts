@@ -209,7 +209,7 @@ describe("Water Rate Master Service", () => {
 
       await deleteWaterRate(1, 123);
 
-      expect(apiClient.delete).toHaveBeenCalledWith("/WaterRateMaster/1");
+      expect(apiClient.delete).toHaveBeenCalledWith("/WaterRateMaster/1/purge");
     });
   });
 });

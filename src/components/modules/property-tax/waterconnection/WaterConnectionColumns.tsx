@@ -75,16 +75,6 @@ export function getWaterConnectionColumns(
       ),
     },
     {
-      key: "category",
-      label: t("list.table.category"),
-      width: "10%",
-      render: (value) => (
-        <span className="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full border border-yellow-300 text-yellow-700 bg-yellow-50">
-          {String(value)}
-        </span>
-      ),
-    },
-    {
       key: "applicableCharges",
       label: t("list.table.applicableCharges"),
       width: "13%",

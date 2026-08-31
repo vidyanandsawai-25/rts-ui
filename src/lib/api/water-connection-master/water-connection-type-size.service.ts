@@ -119,7 +119,7 @@ export async function updateTapType(
 
 export async function deleteTapType(id: number, _userId: number): Promise<void> {
   const response = await apiClient.delete(
-    `/WaterConnectionType/${encodeURIComponent(String(id))}`
+    `/WaterConnectionType/${encodeURIComponent(String(id))}/purge`
   );
   if (!response.success) {
     throw new ApiError(response.statusCode ?? 500, response.error ?? "Failed to delete", "deleteTapType");
@@ -206,7 +206,7 @@ export async function updateTapSize(
 
 export async function deleteTapSize(id: number, _userId: number): Promise<void> {
   const response = await apiClient.delete(
-    `/WaterConnectionSize/${encodeURIComponent(String(id))}`
+    `/WaterConnectionSize/${encodeURIComponent(String(id))}/purge`
   );
   if (!response.success) {
     throw new ApiError(response.statusCode ?? 500, response.error ?? "Failed to delete", "deleteTapSize");
