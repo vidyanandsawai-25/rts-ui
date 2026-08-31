@@ -4,13 +4,11 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   AlertTriangle,
   Building,
-  CheckCircle2,
   ChevronDown,
   Download,
   Eye,
   FileCheck,
   FileText,
-  HelpCircle,
   Loader2,
   MapPin,
   Paperclip,
@@ -33,7 +31,7 @@ import {
   getCitizenRtsDocumentDownloadUrl,
   getCitizenRtsDocumentViewUrl,
 } from "@/lib/api/rts/rtsdocument.client";
-import type { ApplicationAnswerGroup, ApplicationAnswerItem } from "@/lib/utils/rts/application-answers";
+import type { ApplicationAnswerGroup } from "@/lib/utils/rts/application-answers";
 import type { RtsApplicationDocumentItem } from "@/types/rts/application-approval.types";
 import type { RtsFieldDefinitionApiItem } from "@/types/rts/field-definition.types";
 
