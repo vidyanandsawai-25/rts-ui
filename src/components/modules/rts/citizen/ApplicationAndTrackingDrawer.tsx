@@ -770,6 +770,7 @@ export default function ApplicationAndTrackingDrawer({
           onClose={() => setShowResubmitModal(false)}
           applicationId={detail?.verification?.applicationId || parseInt(selectedApplication.applicationNo.replace(/\D/g, ""), 10) || 0}
           applicationNo={selectedApplication.applicationNo}
+          serviceId={detail?.verification?.serviceId || (selectedApplication as any)?.serviceId || (selectedApplication as any)?.govtServiceCode}
           serviceName={selectedApplication.serviceName}
           officerRemark={detail?.remark || stages.find((s) => s.remark)?.remark || ""}
           answerGroups={detail?.answerGroups || []}

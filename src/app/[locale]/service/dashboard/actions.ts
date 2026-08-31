@@ -537,6 +537,23 @@ export async function citizenResubmitApplicationAction(
   }
 }
 
+export async function getServiceFieldDefinitionsForResubmitAction(
+  serviceId: number
+): Promise<{ success: boolean; data?: any[]; error?: string }> {
+  if (!serviceId || serviceId <= 0) {
+    return { success: false, error: "Invalid Service ID" };
+  }
+
+  try {
+    const { getAllRtsFieldDefinitions } = await import("@/lib/api/rts/rtsfielddefinition.service");
+    const items = await getAllRtsFieldDefinitions({ ServiceId: serviceId });
+    return { success: true, data: items };
+  } catch (err) {
+    console.error("getServiceFieldDefinitionsForResubmitAction error:", err);
+    return { success: false, error: err instanceof Error ? err.message : "Failed to load field definitions" };
+  }
+}
+
 export async function uploadCitizenDocumentAction(
   formData: FormData
 ): Promise<{ success: boolean; documentGuid?: string; fileName?: string; error?: string }> {

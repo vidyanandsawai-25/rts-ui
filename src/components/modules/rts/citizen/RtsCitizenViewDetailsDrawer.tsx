@@ -553,6 +553,7 @@ export default function RtsCitizenViewDetailsDrawer({
           onClose={() => setIsResubmitOpen(false)}
           applicationId={resolvedDetail?.verification?.applicationId || parseInt(application.applicationNo.replace(/\D/g, ""), 10) || 0}
           applicationNo={application.applicationNo}
+          serviceId={resolvedDetail?.verification?.serviceId || (application as any)?.serviceId || (application as any)?.govtServiceCode}
           serviceName={application.serviceName}
           officerRemark={resolvedDetail?.remark || application.remark || ""}
           answerGroups={resolvedDetail?.answerGroups || []}
