@@ -1207,15 +1207,22 @@ export default function DynamicServiceFormClient({
         );
 
         if (res.success) {
+          const appNo = resubmitApplicationNo || `RTS${resubmitApplicationId}`;
           await MySwal.fire({
             icon: "success",
             title: language === "en" ? "Application Resubmitted!" : "अर्ज पुन्हा सादर झाला!",
-            text: res.message || "आपला अर्ज दुरुस्त करून यशस्वीरित्या पुन्हा सादर करण्यात आला आहे.",
+            text: res.message || (language === "en" ? "Your application has been updated and resubmitted successfully." : "आपला अर्ज दुरुस्त करून यशस्वीरित्या पुन्हा सादर करण्यात आला आहे."),
+            confirmButtonText: language === "en" ? "🔍 View Application & Track Status" : "🔍 अर्ज व ट्रॅकिंग स्थिती पहा",
             confirmButtonColor: "#059669",
             background: darkMode ? "#1f2937" : "#ffffff",
             color: darkMode ? "#ffffff" : "#000000",
           });
-          router.replace(`/${locale}/service/dashboard`);
+
+          if (isLoggedIn) {
+            router.replace(`/${locale}/service/dashboard?details=${encodeURIComponent(appNo)}`);
+          } else {
+            router.replace(`/${locale}?track=${encodeURIComponent(appNo)}&applicaAndtracking=true`);
+          }
         } else {
           MySwal.fire({
             icon: "error",
@@ -1364,9 +1371,9 @@ export default function DynamicServiceFormClient({
                  </div>`,
           showCancelButton: true,
           confirmButtonText: language === "en" ? "💳 Pay Government Fee Now" : language === "hi" ? "💳 अभी शुल्क भरें" : "💳 आताच शुल्क भरा",
-          cancelButtonText: language === "en" ? "Pay Later / Go to Dashboard" : language === "hi" ? "बाद में भरें / डैशबोर्ड पर जाएं" : "नंतर भरा / डॅशबोर्डवर जा",
+          cancelButtonText: language === "en" ? "🔍 Track Application" : language === "hi" ? "🔍 आवेदन ट्रैक करें" : "🔍 अर्ज ट्रॅक करा",
           confirmButtonColor: "#059669",
-          cancelButtonColor: "#64748b",
+          cancelButtonColor: "#2563eb",
           background: darkMode ? "#1f2937" : "#ffffff",
           color: darkMode ? "#ffffff" : "#000000",
           customClass: { popup: "rounded-xl shadow-xl border border-teal-500/20" },
@@ -1381,9 +1388,9 @@ export default function DynamicServiceFormClient({
             setShowSuccessPaymentModal(true);
           } else {
             if (isLoggedIn) {
-              router.replace(`/${locale}/service/dashboard`);
+              router.replace(`/${locale}/service/dashboard?details=${encodeURIComponent(newId)}`);
             } else {
-              router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+              router.replace(`/${locale}?track=${encodeURIComponent(newId)}&applicaAndtracking=true`);
             }
           }
         });
@@ -1396,19 +1403,19 @@ export default function DynamicServiceFormClient({
               ? "आवेदन सबमिट हुआ!"
               : "अर्ज यशस्वीरित्या सादर झाला!",
           html: `<div class="space-y-3 p-2 text-center">
-                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Application Tracking ID</p>
+                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">${language === "en" ? "Application Tracking ID" : "अर्ज ट्रॅकिंग आयडी"}</p>
                    <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
                  </div>`,
-          timer: 2500,
-          showConfirmButton: false,
+          confirmButtonText: language === "en" ? "🔍 View Application & Track Status" : "🔍 अर्ज व ट्रॅकिंग स्थिती पहा",
+          confirmButtonColor: "#059669",
           background: darkMode ? "#1f2937" : "#ffffff",
           color: darkMode ? "#ffffff" : "#000000",
           customClass: { popup: "rounded-xl shadow-xl border border-teal-500/20" },
         }).then(() => {
           if (isLoggedIn) {
-            router.replace(`/${locale}/service/dashboard`);
+            router.replace(`/${locale}/service/dashboard?details=${encodeURIComponent(newId)}`);
           } else {
-            router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+            router.replace(`/${locale}?track=${encodeURIComponent(newId)}&applicaAndtracking=true`);
           }
         });
       }
