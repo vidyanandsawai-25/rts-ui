@@ -182,7 +182,7 @@
     "moveDown": "खाली हलवा",
     "deleteRowAria": "पंक्ती हटवा",
     "deleteRowTitle": "हा अट नियम हटवा",
-    "deleteRowDescription": "हे या अट नियम कायमचे लगेच हटवेल — हे पूर्ववत करता येणार नाही.",
+    "deleteRowDescription": "हे या अट नियम कायमचे लगेच हटवेल.",
     "scopeNotConfigured": "डायनॅमिक टॅक्स रजिस्टरसाठी अट फील्ड अद्याप कॉन्फिगर केलेले नाहीत. अट नियम जोडण्यापूर्वी प्रशासकाला \"DynamicTaxRegisterCondition\" रूल स्कोप आणि त्याचे फील्ड सेट करण्यास सांगा.",
     "saveConfiguration": "कॉन्फिगरेशन जतन करा",
     "unsavedChanges": "जतन न केलेले बदल",

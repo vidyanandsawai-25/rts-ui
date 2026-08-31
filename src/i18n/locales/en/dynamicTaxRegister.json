@@ -182,7 +182,7 @@
     "moveDown": "Move down",
     "deleteRowAria": "Delete row",
     "deleteRowTitle": "Delete this condition rule",
-    "deleteRowDescription": "This permanently deletes this condition rule immediately — it cannot be undone.",
+    "deleteRowDescription": "This permanently deletes this condition rule immediately.",
     "scopeNotConfigured": "Condition fields haven't been configured yet for the Dynamic Tax Register. Ask an admin to set up the \"DynamicTaxRegisterCondition\" Rule Scope and its fields before adding condition rules.",
     "saveConfiguration": "Save Configuration",
     "unsavedChanges": "Unsaved changes",
