@@ -23,6 +23,12 @@ export interface RtsMisDashboardDepartmentItem {
   rejected: number | null;
   overdueCount: number | null;
   sla: number | null;
+  reverted?: number | null;
+  todayApplications?: number | null;
+  // Some deployments return this alongside overdueCount. The dashboard uses
+  // overdueCount as the authoritative overdue metric.
+  overdueApplications?: number | null;
+  dueToday?: number | null;
   // Older deployments can include source counts; the updated API may omit them.
   fromAapleSarkar?: number | null;
   fromRTS?: number | null;
@@ -95,7 +101,7 @@ export interface RtsMisDashboardRequest {
   // The backend contract uses this spelling, so preserve it in the request type.
   DeparmentId: number | null;
   DeparmentName: string | null;
-  ServiceId?: number;
+  ServiceId?: number | null;
   ModuleName: RtsMisDashboardModuleName | null;
   FromDate: string | null;
   ToDate: string | null;

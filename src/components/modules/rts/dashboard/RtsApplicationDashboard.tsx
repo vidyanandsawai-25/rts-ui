@@ -94,13 +94,16 @@ const STATUS_OPTIONS = [
   'DueToday',
 ];
 
-function isPendingSlaOverdue(row: GridRow): boolean {
+function isSlaOverdue(row: GridRow): boolean {
   return (
-    row.currentStatus.trim().toLowerCase() === 'pending' &&
     typeof row.remainingDays === 'number' &&
     Number.isFinite(row.remainingDays) &&
     row.remainingDays <= 0
   );
+}
+
+function isApplicationApproved(row: GridRow): boolean {
+  return row.currentStatus.trim().toLowerCase() === 'approved';
 }
 
 export default function RtsApplicationDashboard({
@@ -508,7 +511,7 @@ export default function RtsApplicationDashboard({
         render: (_value, row) => (
           <span
             className={`font-semibold ${
-              isPendingSlaOverdue(row) ? 'text-red-600 font-extrabold' : 'text-slate-700'
+              isSlaOverdue(row) ? 'text-red-600 font-extrabold' : 'text-slate-700'
             }`}
           >
             {formatDays(row.remainingDays)}
@@ -735,8 +738,10 @@ export default function RtsApplicationDashboard({
           theadClassName="!bg-[#143D7D] [&_tr]:!bg-[#143D7D] [&_th]:!bg-[#143D7D] [&_th]:!text-white [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-xs [&_th]:border-none"
           tableClassName="[&_tbody_tr]:hover:bg-blue-50 [&_tbody_tr]:h-[64px] [&_tbody_td]:py-3 [&_tbody_td]:text-sm [&_tbody_td]:align-middle [&_tbody_td[colspan]]:h-[160px] [&_tbody_td[colspan]]:align-middle [&_thead_tr]:border-none [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-100"
           rowClassName={(row) =>
-            isPendingSlaOverdue(row)
-              ? '!border-rose-200 !bg-rose-50/70 hover:!bg-rose-100/80 border-l-[3px] border-l-rose-400'
+            isApplicationApproved(row)
+              ? '!border-emerald-200 !bg-emerald-50/70 hover:!bg-emerald-100/80 shadow-[inset_3px_0_0_#34d39970]'
+              : isSlaOverdue(row)
+              ? '!border-rose-200 !bg-rose-50/70 hover:!bg-rose-100/80 shadow-[inset_3px_0_0_#fb718570]'
               : ''
           }
           footerLeftContent={
