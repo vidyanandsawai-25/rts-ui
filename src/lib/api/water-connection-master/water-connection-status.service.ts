@@ -96,7 +96,7 @@ export async function updateTapStatus(
 
 export async function deleteTapStatus(id: number, _userId: number): Promise<void> {
   const response = await apiClient.delete(
-    `/WaterConnectionStatus/${encodeURIComponent(String(id))}`
+    `/WaterConnectionStatus/${encodeURIComponent(String(id))}/purge`
   );
   if (!response.success) {
     throw new ApiError(response.statusCode ?? 500, response.error ?? "Failed to delete", "deleteTapStatus");

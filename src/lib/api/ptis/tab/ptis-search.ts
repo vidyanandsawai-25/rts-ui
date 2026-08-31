@@ -129,6 +129,71 @@ export const ptisSearchService = {
     };
   },
 
+  async getPropertySuggestionsPage(
+    wardId: number,
+    propertyNo?: string,
+    partitionNo?: string,
+    pageNumber = 1,
+    pageSize = 100
+  ): Promise<{
+    success: boolean;
+    data?: PagedResult<PropwiseSuggestionItem>;
+    error?: string;
+  }> {
+    const params = new URLSearchParams({
+      WardId: wardId.toString(),
+      PageNumber: pageNumber.toString(),
+      PageSize: pageSize.toString(),
+    });
+    if (propertyNo) params.append('PropertyNo', propertyNo);
+    if (partitionNo) params.append('PartitionNo', partitionNo);
+
+    const response = await fetchWithCertSupport<PagedResult<PropertySearchResult>>(
+      `/Property?${params.toString()}`
+    );
+
+    if (!response.success || !response.data?.items) {
+      return {
+        success: false,
+        error: getErrorFormattedMessage(response.error, 'No properties found'),
+      };
+    }
+
+    const responsePageNumber = response.data.pageNumber || pageNumber;
+    const responsePageSize = response.data.pageSize || pageSize;
+    const totalCount = response.data.totalCount ?? response.data.items.length;
+    const totalPages = response.data.totalPages
+      ?? (responsePageSize > 0 ? Math.ceil(totalCount / responsePageSize) : 1);
+    const hasNext = response.data.hasNext ?? responsePageNumber < totalPages;
+
+    const items = response.data.items
+      .map((item): PropwiseSuggestionItem => ({
+        propertyId: Number(item.propertyId ?? item.id ?? 0),
+        propertyNo: String(item.propertyNo ?? ''),
+        partitionNo: item.partitionNo != null ? String(item.partitionNo) : null,
+        wardId: item.wardId != null ? Number(item.wardId) : wardId,
+        wardNo: item.wardNo != null ? String(item.wardNo) : undefined,
+        upicId: item.upicId != null ? String(item.upicId) : undefined,
+        displayLabel: item.displayProperty != null
+          ? String(item.displayProperty)
+          : String(item.propertyNo ?? ''),
+      }))
+      .filter((item) => item.propertyId > 0 && item.propertyNo.trim() !== '');
+
+    return {
+      success: true,
+      data: {
+        items,
+        totalCount,
+        pageNumber: responsePageNumber,
+        pageSize: responsePageSize,
+        totalPages,
+        hasPrevious: response.data.hasPrevious ?? responsePageNumber > 1,
+        hasNext,
+      },
+    };
+  },
+
   /**
    * Fetches the complete list of active wards.
    */

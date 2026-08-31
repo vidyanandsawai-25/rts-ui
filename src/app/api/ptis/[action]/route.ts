@@ -13,6 +13,8 @@ export async function GET(
       const wardId = searchParams.get('wardId');
       const propertyNo = searchParams.get('propertyNo') || undefined;
       const partitionNo = searchParams.get('partitionNo') || undefined;
+      const pageNumberParam = searchParams.get('pageNumber');
+      const pageSizeParam = searchParams.get('pageSize');
       const maxResults = searchParams.get('maxResults');
 
       if (!wardId) {
@@ -24,8 +26,50 @@ export async function GET(
         return NextResponse.json({ success: false, error: 'Invalid Ward ID' }, { status: 400 });
       }
 
-      const resolvedMaxResults = maxResults ? parseInt(maxResults, 10) : 100;
+      if (pageNumberParam !== null || pageSizeParam !== null) {
+        const requestedPageNumber = Number(pageNumberParam || '1');
+        const requestedPageSize = Number(pageSizeParam || '100');
+        const pageNumber = Number.isInteger(requestedPageNumber) && requestedPageNumber > 0
+          ? requestedPageNumber
+          : 1;
+        const pageSize = Number.isInteger(requestedPageSize) && requestedPageSize > 0
+          ? Math.min(requestedPageSize, 100)
+          : 100;
 
+        const result = await ptisSearchService.getPropertySuggestionsPage(
+          resolvedWardId,
+          propertyNo,
+          partitionNo,
+          pageNumber,
+          pageSize
+        );
+
+        if (result.success && result.data && Array.isArray(result.data.items)) {
+          // Return propertyId alongside propertyNo, partitionNo and displayLabel,
+          // but keep other internal database keys (zoneId, zoneNo, wardId, wardNo, upicId) hidden.
+          const filtered = result.data.items.map((item) => ({
+            propertyId: item.propertyId,
+            propertyNo: item.propertyNo,
+            partitionNo: item.partitionNo,
+            displayLabel: item.displayLabel,
+          }));
+          return NextResponse.json({
+            success: true,
+            data: filtered,
+            pagination: {
+              pageNumber: result.data.pageNumber,
+              pageSize: result.data.pageSize,
+              totalCount: result.data.totalCount,
+              totalPages: result.data.totalPages ?? 0,
+              hasMore: result.data.hasNext === true,
+            },
+          });
+        }
+
+        return NextResponse.json(result);
+      }
+
+      const resolvedMaxResults = maxResults ? parseInt(maxResults, 10) : 100;
       const result = await ptisSearchService.getPropertySuggestionsByPropwise(
         resolvedWardId,
         propertyNo,
@@ -34,8 +78,6 @@ export async function GET(
       );
 
       if (result.success && result.data && Array.isArray(result.data)) {
-        // Return propertyId alongside propertyNo, partitionNo and displayLabel,
-        // but keep other internal database keys (zoneId, zoneNo, wardId, wardNo, upicId) hidden.
         const filtered = result.data.map((item) => ({
           propertyId: item.propertyId,
           propertyNo: item.propertyNo,

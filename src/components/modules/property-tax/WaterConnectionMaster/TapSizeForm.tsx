@@ -12,7 +12,7 @@ import {
   SaveButton,
   Input,
   ValidationMessage,
-  
+
 } from "@/components/common";
 import { StatusToggleField } from "./StatusToggleField";
 
@@ -24,13 +24,16 @@ import {
   updateTapSizeAction,
 } from "@/app/[locale]/property-tax/water-connection-master/actions";
 import {
-  POSITIVE_INTEGER_REGEX,
   LETTERS_ONLY_REGEX,
   LETTERS_ONLY_SANITIZE,
 } from "@/lib/utils/validation-rules";
+import { sanitizePositiveDecimal } from "@/lib/utils/validation";
 
-const MAX_NAME = 2;
+const MAX_INTEGER_DIGITS = 2;
+const MAX_DECIMAL_PLACES = 2;
+const MAX_NAME = MAX_INTEGER_DIGITS + MAX_DECIMAL_PLACES + 1;
 const MAX_UNIT = 7;
+const POSITIVE_TAP_SIZE_REGEX = /^(?=.*[1-9])\d{1,2}(?:\.\d{1,2})?$/;
 
 export interface TapSizeFormProps {
   id: number | null;
@@ -52,7 +55,7 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
 
   const [formData, setFormData] = useState<TapSizeFormModel>({
     sizeName: initialData?.sizeName ?? "",
-    unit: initialData?.unit ?? "",
+    unit: initialData?.unit ?? "Inch",
     isActive: initialData?.isActive ?? true,
   });
   const [touched, setTouched] = useState<Partial<Record<keyof TapSizeFormModel, boolean>>>({});
@@ -62,7 +65,7 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
       const errs: Partial<Record<keyof TapSizeFormModel, string>> = {};
       if (!data.sizeName.trim())
         errs.sizeName = t("validation.sizeNameRequired");
-      else if (!POSITIVE_INTEGER_REGEX.test(data.sizeName.trim()))
+      else if (!POSITIVE_TAP_SIZE_REGEX.test(data.sizeName.trim()))
         errs.sizeName = t("validation.sizeNameInvalid");
       else if (data.sizeName.trim().length > MAX_NAME)
         errs.sizeName = t("validation.sizeNameLength", { count: MAX_NAME });
@@ -82,20 +85,31 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
   const showError = (field: keyof TapSizeFormModel) =>
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
-   const handleChange = (field: keyof TapSizeFormModel, value: string | boolean) => {
-   if (typeof value === "string") {
-     let sanitizedValue = value.normalize("NFC");
-     
-     if (field === "sizeName") {
-       sanitizedValue = sanitizedValue.replace(/[^0-9]/g, "");
-     } else if (field === "unit") {
-       sanitizedValue = sanitizedValue.replace(LETTERS_ONLY_SANITIZE, "");
-     }
-     
-     value = sanitizedValue.replace(/\s+/g, " ").trimStart();
-   }
-   setFormData((prev) => ({ ...prev, [field]: value }));
- };
+  const handleChange = (field: keyof TapSizeFormModel, value: string | boolean) => {
+    if (typeof value === "string") {
+      let sanitizedValue = value.normalize("NFC");
+
+      if (field === "sizeName") {
+        sanitizedValue = sanitizePositiveDecimal(
+          sanitizedValue,
+          MAX_DECIMAL_PLACES
+        );
+        if (sanitizedValue.startsWith(".")) {
+          sanitizedValue = `0${sanitizedValue}`;
+        }
+        const [integerPart, decimalPart] = sanitizedValue.split(".");
+        sanitizedValue = integerPart.slice(0, MAX_INTEGER_DIGITS);
+        if (decimalPart !== undefined) {
+          sanitizedValue += `.${decimalPart}`;
+        }
+      } else if (field === "unit") {
+        sanitizedValue = sanitizedValue.replace(LETTERS_ONLY_SANITIZE, "");
+      }
+
+      value = sanitizedValue.replace(/\s+/g, " ").trimStart();
+    }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleBlur = (field: keyof TapSizeFormModel) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -185,11 +199,12 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
 
         <div className="space-y-4">
           <div>
-            
+
             <Input
               label={t("form.sizeName.label")}
               required
               id="tap-size-name"
+              inputMode="decimal"
               value={formData.sizeName}
               onChange={(e) => handleChange("sizeName", e.target.value)}
               onBlur={() => handleBlur("sizeName")}
@@ -206,16 +221,17 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
           </div>
 
           <div>
-            
+
             <Input
               label={t("form.unit.label")}
-              required
+
               id="tap-size-unit"
               value={formData.unit}
               onChange={(e) => handleChange("unit", e.target.value)}
               onBlur={() => handleBlur("unit")}
               placeholder={t("form.unit.placeholder")}
               maxLength={MAX_UNIT}
+              disabled
               aria-invalid={showError("unit") ? "true" : "false"}
               aria-describedby={showError("unit") ? "tap-size-unit-error" : undefined}
             />
