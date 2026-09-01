@@ -49,6 +49,7 @@ import {
   WardOption,
   WingOption,
   CreateFieldRegistryDto,
+  UpdateFieldRegistryDto,
   FieldRegistrySchema,
   FieldRegistryTable,
   FieldRegistryColumn,
@@ -492,17 +493,6 @@ function formatExcelError(rawMessage: string, t: (key: string) => string): strin
   const rawMsg = (rawMessage || "").toLowerCase();
 
   if (
-    rawMsg.includes("missing required column") ||
-    rawMsg.includes("wrong update group") ||
-    rawMsg.includes("column") ||
-    rawMsg.includes("wardno") ||
-    rawMsg.includes("propertyno") ||
-    rawMsg.includes("partitionno") ||
-    rawMsg.includes("match")
-  ) {
-    return t("messages.wrongUpdateGroup");
-  }
-  if (
     rawMsg.includes("empty") ||
     rawMsg.includes("no data") ||
     rawMsg.includes("no rows") ||
@@ -510,17 +500,35 @@ function formatExcelError(rawMessage: string, t: (key: string) => string): strin
   ) {
     return t("messages.noDataRows");
   }
+
   if (
     rawMsg.includes("file format") ||
     rawMsg.includes("invalid file") ||
     rawMsg.includes("wrong file") ||
     rawMsg.includes("extension") ||
-    rawMsg.includes("format")
+    rawMsg.includes("format") ||
+    rawMsg.includes("invalid file type")
   ) {
     return t("messages.wrongFileType");
   }
 
-  return t("excelUpload.validations.validationFailedMsg");
+  if (
+    rawMsg.includes("missing required column") ||
+    rawMsg.includes("wrong update group") ||
+    rawMsg.includes("column") ||
+    rawMsg.includes("wardno") ||
+    rawMsg.includes("propertyno") ||
+    rawMsg.includes("partitionno") ||
+    rawMsg.includes("match") ||
+    rawMsg.includes("not found") ||
+    rawMsg.includes("updatable value") ||
+    rawMsg.includes("update type") ||
+    rawMsg.includes("unrecognized table")
+  ) {
+    return t("messages.wrongUpdateGroup");
+  }
+
+  return t("messages.wrongUpdateGroup");
 }
 
 export async function importExcelAction(
@@ -581,7 +589,7 @@ export async function exportExcelAction(
 
 export async function updateFieldRegistryAction(
   updateCode: string,
-  payload: CreateFieldRegistryDto & { isActive?: boolean }
+  payload: UpdateFieldRegistryDto | (CreateFieldRegistryDto & { isActive?: boolean })
 ): Promise<ActionResult<unknown>> {
   try {
     const result = await updateFieldRegistryServer(updateCode, payload);

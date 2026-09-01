@@ -6,7 +6,8 @@ import { TruncatedText } from "@/components/common/TruncatedText";
 export const getPreviewColumns = (
   t: (key: string) => string,
   fieldConfigs?: BulkUpdateFieldConfig[],
-  optionsMap?: Record<string, SelectOption[]>
+  optionsMap?: Record<string, SelectOption[]>,
+  lookupMap?: Record<string, Record<string, string>>
 ): Column<PropertyPreviewRow>[] => {
   const base: Column<PropertyPreviewRow>[] = [
     {
@@ -68,14 +69,20 @@ export const getPreviewColumns = (
             }
           }
 
-          // Map ID to label if it's a dropdown/select and we have options for it
+          // Map ID to label if it's a dropdown/select and we have lookup/options for it
           let displayValue = value === null || value === undefined || value === '' ? '-' : String(value);
           
-          if (displayValue !== '-' && optionsMap && config.fieldName in optionsMap) {
-            const options = optionsMap[config.fieldName];
-            const matchedOption = options.find(opt => String(opt.value) === String(value));
-            if (matchedOption) {
-              displayValue = matchedOption.label;
+          if (displayValue !== '-') {
+            const strVal = String(value);
+            // 1. Check cumulative lookup map first (immune to dropdown search clearing)
+            if (lookupMap && config.fieldName in lookupMap && lookupMap[config.fieldName][strVal]) {
+              displayValue = lookupMap[config.fieldName][strVal];
+            } else if (optionsMap && config.fieldName in optionsMap) {
+              const options = optionsMap[config.fieldName];
+              const matchedOption = options.find(opt => String(opt.value) === strVal);
+              if (matchedOption) {
+                displayValue = matchedOption.label;
+              }
             }
           }
 

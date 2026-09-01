@@ -67,15 +67,15 @@ export const PropertyRangeFields = ({
   loadingToPropertyOptions,
   fieldClassName,
 }: PropertyRangeFieldsProps) => {
+  const colClass = fieldClassName || "col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 relative z-[60] flex flex-col [&_ul]:!max-h-[240px] [&_[role=listbox]]:!max-h-[240px]";
+
   return (
     <>
       {activeScopeDetails?.options.includes("Property No") && (
-        <div className="col-span-12 lg:col-span-2 relative z-[60]">
-          <div className="block text-sm font-medium mb-1.5 text-slate-700">
-            {t("filter.propertyNo")} <span className="text-red-500 ml-0.5">*</span>
-          </div>
+        <div className={colClass}>
           <SearchSelectPaginated
             id="property-no-select"
+            label={t("filter.propertyNo")}
             key={`prop-no-${filterValues.wardId}`}
             options={propertyOptions || fromPropertyOptions}
             value={filterValues.fromPropertyNo}
@@ -95,12 +95,10 @@ export const PropertyRangeFields = ({
       )}
 
       {activeScopeDetails?.options.includes("From Property") && (
-        <div className={fieldClassName || "col-span-12 lg:col-span-2 relative z-[60]"}>
-          <div className="block text-sm font-medium mb-1.5 text-slate-700">
-            {t("filter.fromPropertyNo")} <span className="text-red-500 ml-0.5">*</span>
-          </div>
+        <div className={colClass}>
           <SearchSelectPaginated
             id="from-property-select"
+            label={t("filter.fromPropertyNo")}
             key={`from-prop-${filterValues.wardId}`}
             options={fromPropertyOptions}
             value={filterValues.fromPropertyNo}
@@ -120,12 +118,10 @@ export const PropertyRangeFields = ({
       )}
 
       {activeScopeDetails?.options.includes("To Property") && (
-        <div className={fieldClassName || "col-span-12 lg:col-span-2 relative z-[60]"}>
-          <div className="block text-sm font-medium mb-1.5 text-slate-700">
-            {t("filter.toPropertyNo")} <span className="text-red-500 ml-0.5">*</span>
-          </div>
+        <div className={colClass}>
           <SearchSelectPaginated
             id="to-property-select"
+            label={t("filter.toPropertyNo")}
             key={`to-prop-${filterValues.fromPropertyNo}`}
             options={toPropertyOptions}
             value={filterValues.toPropertyNo}

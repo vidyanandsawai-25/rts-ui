@@ -1,18 +1,21 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useTransition } from "react";
-import { toast } from "sonner";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useState, useEffect } from "react";
+import { useToast } from "@/components/common";
+import { useSearchParams, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   BulkUpdateMaster,
   FieldRegistrySchema,
   FieldRegistryTable,
-  FieldRegistryColumn,
   SourceTableField,
   CommonDetailsUpdateActions,
   BulkUpdateDefinitionPayload
 } from "@/types/common-details-update/common-details-update.types";
-import { addBulkUpdateDefinitionAction, updateFieldRegistryAction } from "@/app/[locale]/property-tax/common-details-update/actions";
+import {
+  addBulkUpdateDefinitionAction,
+  getSourceTablesAction,
+  getSourceTableFieldsAction
+} from "@/app/[locale]/property-tax/common-details-update/actions";
 
 interface FieldConfigForm {
   fieldName: string[];
@@ -33,12 +36,10 @@ export const useFieldRegistryForm = (
   initialSourceTableFields: SourceTableField[] = [],
   actions?: CommonDetailsUpdateActions
 ) => {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const locale = useLocale();
   const t = useTranslations("commonDetailsUpdate");
-  const [, startTransition] = useTransition();
+  const toast = useToast();
 
   const [sourceModule, setSourceModuleState] = useState(searchParams.get("sourceModule") || "");
   const [sourceTable, setSourceTableState] = useState(searchParams.get("sourceTable") || "");
@@ -63,8 +64,6 @@ export const useFieldRegistryForm = (
   ]);
 
   const [tables, setTables] = useState<FieldRegistryTable[]>(initialSourceTables);
-  const [columns] = useState<FieldRegistryColumn[]>([]);
-
   const [sourceTableFields, setSourceTableFields] = useState<SourceTableField[]>(initialSourceTableFields);
 
   useEffect(() => {
@@ -72,27 +71,40 @@ export const useFieldRegistryForm = (
   }, [initialSourceTableFields]);
 
   useEffect(() => {
-    if (actions?.getSourceTablesAction) {
-      actions.getSourceTablesAction().then((res) => {
-        if (res?.success && res?.data) {
+    let isMounted = true;
+    const fetchTables = actions?.getSourceTablesAction || getSourceTablesAction;
+    if (fetchTables) {
+      fetchTables().then((res) => {
+        if (isMounted && res?.success && res?.data) {
           setTables(res.data as FieldRegistryTable[]);
         }
       });
     }
-  }, [actions]);
+    return () => {
+      isMounted = false;
+    };
+  }, [actions?.getSourceTablesAction]);
 
   useEffect(() => {
-    if (sourceTable && actions?.getSourceTableFieldsAction) {
-      actions.getSourceTableFieldsAction(Number(sourceTable)).then((res) => {
-        if (res?.success && res?.data) {
-          setSourceTableFields(res.data as SourceTableField[]);
-        }
-      });
+    let isMounted = true;
+    if (sourceTable) {
+      const fetchFields = actions?.getSourceTableFieldsAction || getSourceTableFieldsAction;
+      if (fetchFields) {
+        fetchFields(Number(sourceTable)).then((res) => {
+          if (isMounted && res?.success && res?.data) {
+            setSourceTableFields(res.data as SourceTableField[]);
+          }
+        });
+      }
+    } else {
+      setSourceTableFields([]);
     }
-  }, [sourceTable, actions]);
+    return () => {
+      isMounted = false;
+    };
+  }, [sourceTable, actions?.getSourceTableFieldsAction]);
 
-  const [loadingTables, _setLoadingTables] = useState(false);
-  const [loadingColumns, _setLoadingColumns] = useState(false);
+  const [loadingTables] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const schemas = initialSchemas;
@@ -107,7 +119,7 @@ export const useFieldRegistryForm = (
       const params = new URLSearchParams(window.location.search);
       if (val) params.set("sourceModule", val); else params.delete("sourceModule");
       params.delete("sourceTable");
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
     }
   };
 
@@ -120,7 +132,7 @@ export const useFieldRegistryForm = (
       const params = new URLSearchParams(window.location.search);
       if (params.get("sourceTable") === val) return;
       if (val) params.set("sourceTable", val); else params.delete("sourceTable");
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
     }
   };
 
@@ -222,29 +234,23 @@ export const useFieldRegistryForm = (
         maxLength: "",
         validationRegex: "",
       }]);
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("sourceModule");
-      params.delete("sourceTable");
-      params.delete("databaseColumn");
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
       await refreshFieldsList();
-      startTransition(() => { router.refresh(); });
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        params.delete("sourceModule");
+        params.delete("sourceTable");
+        params.delete("databaseColumn");
+        window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+      }
     } else {
       toast.error(res.error || t("messages.saveFailed"));
     }
     setSubmitting(false);
   };
 
-  const handleEdit = (item: BulkUpdateMaster) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", "fieldRegistry");
-    router.push(`/${locale}/property-tax/common-details-update/edit/${encodeURIComponent(item.updateCode)}?${params.toString()}`);
-  };
-
   return {
     sourceModule, setSourceModule,
     sourceTable, setSourceTable,
-    databaseColumn: "", setDatabaseColumn: () => { },
     updateCode, setUpdateCode,
     displaySequence, setDisplaySequence,
     description, setDescription,
@@ -254,10 +260,8 @@ export const useFieldRegistryForm = (
     addFieldConfig,
     updateFieldConfig,
     deleteFieldConfig,
-    schemas, tables, columns, sourceTableFields,
-    loadingSchemas, loadingTables, loadingColumns, submitting,
+    schemas, tables, sourceTableFields,
+    loadingSchemas, loadingTables, submitting,
     handleAddFieldToRegistry,
-    handleEdit,
-    updateFieldRegistry: updateFieldRegistryAction,
   };
 };

@@ -105,14 +105,14 @@ export const PropertySelectionCriteria = ({
   renderChildrenInline = false,
   children,
 }: PropertySelectionCriteriaProps) => {
+  const colClass = fieldClassName || "col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 relative z-[60] flex flex-col [&_ul]:!max-h-[240px] [&_[role=listbox]]:!max-h-[240px]";
+
   return (
-    <div className="grid grid-cols-12 gap-x-2 items-start relative z-50">
-      <div className="col-span-12 lg:col-span-2 relative z-[60]">
-        <div className="block text-sm font-medium mb-1.5 text-slate-700">
-          {t("propertyCriteria.selectionCriteria")}
-        </div>
+    <div className="grid grid-cols-12 gap-2.5 sm:gap-3 items-start relative z-50 [&_ul]:!max-h-[240px] [&_[role=listbox]]:!max-h-[240px]">
+      <div className={colClass}>
         <SearchSelect
           id="scope-select"
+          label={t("propertyCriteria.selectionCriteria")}
           value={selectedScopeId ? String(selectedScopeId) : ""}
           onChange={(_, val) => handleScopeChange(Number(val))}
           options={scopeOptions.map(opt => ({
@@ -126,28 +126,24 @@ export const PropertySelectionCriteria = ({
       </div>
 
       {activeScopeDetails?.options.includes("Zone") && (
-        <div className="col-span-12 lg:col-span-2 relative z-[60]">
-          <div className="block text-sm font-medium mb-1.5 text-slate-700">
-            {t("filter.zoneNumber")} <span className="text-red-500 ml-0.5">*</span>
-          </div>
+        <div className={colClass}>
           <SearchSelect
             id="zone-select"
+            label={t("filter.zoneNumber")}
             value={filterValues.zoneId}
             onChange={(_, val) => handleZoneChange(val)}
             options={zoneOptions}
-            placeholder={t("filter.selectZone")} // Add translation
+            placeholder={t("filter.selectZone")}
             required
           />
         </div>
       )}
 
       {activeScopeDetails?.options.includes("Ward") && (
-        <div className="col-span-12 lg:col-span-2 relative z-[60]">
-          <div className="block text-sm font-medium mb-1.5 text-slate-700">
-            {t("filter.wardNumber")} <span className="text-red-500 ml-0.5">*</span>
-          </div>
+        <div className={colClass}>
           <SearchSelect
             id="ward-select"
+            label={t("filter.wardNumber")}
             value={filterValues.wardId}
             onChange={(_, val) => handleWardChange(val)}
             options={wardOptions}
@@ -159,12 +155,10 @@ export const PropertySelectionCriteria = ({
       )}
 
       {activeScopeDetails?.options.includes("Property Type") && activeScopeDetails?.name !== "WardSector" && (
-        <div className="col-span-12 lg:col-span-2 relative z-[60]">
-          <div className="block text-sm font-medium mb-1.5 text-slate-700">
-            {t("filter.propertyType")} <span className="text-red-500 ml-0.5">*</span>
-          </div>
+        <div className={colClass}>
           <SearchSelect
             id="property-type-select"
+            label={t("filter.propertyType")}
             options={propertyTypeOptions}
             value={filterValues.propertyTypeId}
             onChange={(_, val) =>
@@ -213,19 +207,22 @@ export const PropertySelectionCriteria = ({
       />
 
       {!hideActionButtons && (
-        <div className="col-span-12 lg:col-span-2 flex gap-2 shrink-0 items-end mt-6">
-          <SaveButton
-            label={loadingShowProperties ? t("loading.message") : t("filter.show")}
-            onClick={handleShowProperties}
-            disabled={loadingShowProperties || !canShowProperties}
-            size="sm"
-          />
-          <CancelButton
-            label={t("filter.clear")}
-            onClick={handleFilterCancel}
-            size="sm"
-            disabled={!hasAnyFilterValue}
-          />
+        <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 flex flex-col justify-end">
+          <div className="h-[20px] mb-1.5 hidden sm:block" />
+          <div className="flex gap-2 shrink-0 items-center">
+            <SaveButton
+              label={loadingShowProperties ? t("loading.message") : t("filter.show")}
+              onClick={handleShowProperties}
+              disabled={loadingShowProperties || !canShowProperties}
+              size="sm"
+            />
+            <CancelButton
+              label={t("filter.clear")}
+              onClick={handleFilterCancel}
+              size="sm"
+              disabled={!hasAnyFilterValue}
+            />
+          </div>
         </div>
       )}
 

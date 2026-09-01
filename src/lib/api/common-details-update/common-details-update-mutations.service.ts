@@ -1,7 +1,7 @@
 import { apiClient } from "@/services/api.service";
 import { getTranslations } from "next-intl/server";
 import { ApiError } from "@/lib/utils/api";
-import { BulkUpdatePayload, BulkUpdateResponse, CreateFieldRegistryDto, ActionResult, ExcelImportResponse, ExcelValidationResponse, BulkUpdateDefinitionPayload } from "@/types/common-details-update/common-details-update.types";
+import { BulkUpdatePayload, BulkUpdateResponse, CreateFieldRegistryDto, ActionResult, ExcelImportResponse, ExcelValidationResponse, BulkUpdateDefinitionPayload, UpdateFieldRegistryDto } from "@/types/common-details-update/common-details-update.types";
 import { createLogger } from "@/lib/utils/server-logger";
 import { cookies } from "next/headers";
 import { getAppConfig } from "@/config/app.config";
@@ -288,7 +288,7 @@ export async function setFieldRegistryStatusServer(
 
 export async function updateFieldRegistryServer(
   updateCode: string,
-  payload: CreateFieldRegistryDto & { isActive?: boolean }
+  payload: UpdateFieldRegistryDto | (CreateFieldRegistryDto & { isActive?: boolean })
 ): Promise<ActionResult<unknown>> {
   try {
     logger.info("updateFieldRegistryServer: Updating field registry", { 

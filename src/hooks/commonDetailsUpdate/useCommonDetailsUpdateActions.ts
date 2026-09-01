@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/components/common";
 import { useRouter } from "next/navigation";
 import { logger } from "@/lib/utils/logger";
 import {
@@ -77,6 +77,7 @@ export const useCommonDetailsUpdateActions = (
 ) => {
   const [saving, setSaving] = useState(false);
   const router = useRouter();
+  const toast = useToast();
 
   const loadFieldConfigs = useCallback(async (
     updateCode: string,
@@ -93,7 +94,7 @@ export const useCommonDetailsUpdateActions = (
     } catch {
       toast.error(t("messages.configLoadFailed"));
     }
-  }, [t, actions]);
+  }, [t, actions, toast]);
 
   const loadProperties = useCallback(async (
     params: PropertyFilterParams,
@@ -110,15 +111,18 @@ export const useCommonDetailsUpdateActions = (
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("messages.fetchPropertiesFailed"));
     }
-  }, [t, actions]);
+  }, [t, actions, toast]);
 
   const loadPreviewListByCategory = useCallback(async (
     params: PropertyFilterByCategoryParams,
     onSuccess: (data: PagedResponse<PropertyPreviewRow>) => void
   ) => {
     try {
-      if (!actions.getPreviewListByCategoryAction) return;
-      if (!params.UpdateCode) {
+      if (!actions.getPreviewListByCategoryAction) {
+        onSuccess({ items: [], totalCount: 0, pageNumber: 1, pageSize: params.PageSize || 10, totalPages: 0, hasPrevious: false, hasNext: false });
+        return;
+      }
+      if (!params.UpdateCode || (Array.isArray(params.UpdateCode) && params.UpdateCode.length === 0)) {
         onSuccess({ items: [], totalCount: 0, pageNumber: 1, pageSize: params.PageSize || 10, totalPages: 0, hasPrevious: false, hasNext: false });
         return;
       }
@@ -127,11 +131,13 @@ export const useCommonDetailsUpdateActions = (
         onSuccess(result.data);
       } else {
         toast.error(result.error || t("messages.fetchPropertiesFailed"));
+        onSuccess({ items: [], totalCount: 0, pageNumber: 1, pageSize: params.PageSize || 10, totalPages: 0, hasPrevious: false, hasNext: false });
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("messages.fetchPropertiesFailed"));
+      onSuccess({ items: [], totalCount: 0, pageNumber: 1, pageSize: params.PageSize || 10, totalPages: 0, hasPrevious: false, hasNext: false });
     }
-  }, [t, actions]);
+  }, [t, actions, toast]);
 
   const loadWings = useCallback(async (
     wardId: number,
@@ -392,7 +398,7 @@ export const useCommonDetailsUpdateActions = (
     } finally {
       setSaving(false);
     }
-  }, [t, router, actions]);
+  }, [t, router, actions, toast]);
 
   return {
     saving,

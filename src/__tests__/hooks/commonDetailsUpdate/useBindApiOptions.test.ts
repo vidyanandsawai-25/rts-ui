@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useBindApiOptions } from '@/hooks/commonDetailsUpdate/useBindApiOptions';
 import { getDynamicOptionsAction } from '@/app/[locale]/property-tax/common-details-update/actions';
@@ -21,7 +21,7 @@ describe('useBindApiOptions', () => {
     expect(result.current.loadingMap).toEqual({});
   });
 
-  it('should fetch options when bindApi is provided', async () => {
+  it('should fetch options when bindApi is provided and field is focused', async () => {
     const mockData = [
       { id: 1, name: 'Option A' },
       { id: 2, name: 'Option B' },
@@ -42,8 +42,9 @@ describe('useBindApiOptions', () => {
 
     const { result } = renderHook(() => useBindApiOptions(fieldConfigs as any));
 
-    // Initially loading
-    expect(result.current.loadingMap.testField).toBe(true);
+    act(() => {
+      result.current.onFocus('testField');
+    });
 
     // Wait for the hook to finish fetching
     await waitFor(() => {
@@ -82,6 +83,10 @@ describe('useBindApiOptions', () => {
 
     const { result } = renderHook(() => useBindApiOptions(fieldConfigs as any));
 
+    act(() => {
+      result.current.onFocus('fallbackField');
+    });
+
     await waitFor(() => {
       expect(result.current.loadingMap.fallbackField).toBe(false);
     });
@@ -102,6 +107,10 @@ describe('useBindApiOptions', () => {
     ];
 
     const { result } = renderHook(() => useBindApiOptions(fieldConfigs as any));
+
+    act(() => {
+      result.current.onFocus('errorField');
+    });
 
     await waitFor(() => {
       expect(result.current.loadingMap.errorField).toBe(false);

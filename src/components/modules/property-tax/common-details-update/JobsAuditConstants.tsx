@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { Column, TruncatedText, ViewButton } from "@/components/common";
+import { Column, TruncatedText, ViewButton, Badge, BadgeVariant } from "@/components/common";
 import { UpdateHistoryItem } from "@/types/common-details-update/common-details-update.types";
+
+export const getStatusVariant = (status?: string | null): BadgeVariant => {
+  return (status || "").trim().toLowerCase() === "success" ? "success" : "destructive";
+};
 
 export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem) => void): Column<UpdateHistoryItem>[] => [
   {
@@ -158,8 +162,20 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
     key: "activityStatus",
     label: t("jobsAudit.columns.status"),
     headerClassName: "whitespace-nowrap",
-    width: "60px",
-    render: (_, row) => <TruncatedText  text={row.activityStatus} className="text-sm text-slate-700 block truncate" />
+    width: "80px",
+    render: (_, row) => {
+      const status = row.activityStatus?.trim();
+      if (!status) return <span className="text-sm text-slate-700 whitespace-nowrap">-</span>;
+      return (
+        <Badge
+          variant={getStatusVariant(status)}
+          size="sm"
+          className="font-semibold whitespace-nowrap capitalize"
+        >
+          {status}
+        </Badge>
+      );
+    }
   },
   {
     key: "remarks",
@@ -182,7 +198,7 @@ export const getJobsAuditColumns = (t: any, onViewClick: (row: UpdateHistoryItem
     align: "center",
     width: "100px",
     render: (_, row) => {
-      const isFailed = ["failed", "error"].includes(String(row.activityStatus || "").trim().toLowerCase());
+      const isFailed = String(row.activityStatus || "").trim().toLowerCase() === "failed";
       return (
         <ViewButton
           onClick={() => onViewClick(row)}

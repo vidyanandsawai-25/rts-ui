@@ -2,15 +2,19 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useCommonDetailsUpdateActions } from '@/hooks/commonDetailsUpdate/useCommonDetailsUpdateActions';
-import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-    warning: vi.fn(),
-  },
+const mockToast = {
+  success: vi.fn(),
+  error: vi.fn(),
+  warning: vi.fn(),
+  info: vi.fn(),
+  toast: vi.fn(),
+};
+const toast = mockToast;
+
+vi.mock('@/components/common', () => ({
+  useToast: () => mockToast,
 }));
 
 vi.mock('next/navigation', () => ({

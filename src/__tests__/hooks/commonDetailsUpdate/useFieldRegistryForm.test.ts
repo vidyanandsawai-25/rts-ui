@@ -3,7 +3,6 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useFieldRegistryForm } from '@/hooks/commonDetailsUpdate/useFieldRegistryForm';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { toast } from 'sonner';
 import { addBulkUpdateDefinitionAction } from '@/app/[locale]/property-tax/common-details-update/actions';
 
 // Mock next/navigation
@@ -19,18 +18,25 @@ vi.mock('next-intl', () => ({
   useTranslations: vi.fn(() => vi.fn((key) => key)),
 }));
 
-// Mock sonner
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
+const mockToast = {
+  success: vi.fn(),
+  error: vi.fn(),
+  warning: vi.fn(),
+  info: vi.fn(),
+  toast: vi.fn(),
+};
+const toast = mockToast;
+
+// Mock @/components/common
+vi.mock('@/components/common', () => ({
+  useToast: () => mockToast,
 }));
 
 // Mock server actions
 vi.mock('@/app/[locale]/property-tax/common-details-update/actions', () => ({
   addBulkUpdateDefinitionAction: vi.fn(),
-  updateFieldRegistryAction: vi.fn(),
+  getSourceTablesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  getSourceTableFieldsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
 }));
 
 // Mock React useTransition
@@ -75,14 +81,16 @@ describe('useFieldRegistryForm', () => {
   const emptyTableFields: any[] = [];
   const emptyObject = {};
 
-  it('should initialize with default state', () => {
+  it('should initialize with default state', async () => {
     const { result } = renderHook(() => useFieldRegistryForm(emptyFields, mockRefreshList, emptySchemas, emptyTables, emptyTableFields, emptyObject));
 
-    expect(result.current.sourceModule).toBe('');
-    expect(result.current.sourceTable).toBe('');
-    expect(result.current.fieldConfigs.length).toBe(1);
-    expect(result.current.fieldConfigs[0].fieldName).toEqual([]);
-    expect(result.current.tables).toEqual([]);
+    await waitFor(() => {
+      expect(result.current.sourceModule).toBe('');
+      expect(result.current.sourceTable).toBe('');
+      expect(result.current.fieldConfigs.length).toBe(1);
+      expect(result.current.fieldConfigs[0].fieldName).toEqual([]);
+      expect(result.current.tables).toEqual([]);
+    });
   });
 
   it('should load tables if action provided', async () => {
@@ -101,8 +109,12 @@ describe('useFieldRegistryForm', () => {
     expect(mockGetTables).toHaveBeenCalled();
   });
 
-  it('should add and remove field configs', () => {
+  it('should add and remove field configs', async () => {
     const { result } = renderHook(() => useFieldRegistryForm(emptyFields, mockRefreshList, emptySchemas, emptyTables, emptyTableFields, emptyObject));
+
+    await waitFor(() => {
+      expect(result.current.fieldConfigs.length).toBe(1);
+    });
 
     act(() => {
       result.current.addFieldConfig();
@@ -118,6 +130,10 @@ describe('useFieldRegistryForm', () => {
   it('should validate before submitting and show error if missing fields', async () => {
     const { result } = renderHook(() => useFieldRegistryForm(emptyFields, mockRefreshList, emptySchemas, emptyTables, emptyTableFields, emptyObject));
 
+    await waitFor(() => {
+      expect(result.current.fieldConfigs.length).toBe(1);
+    });
+
     await act(async () => {
       await result.current.handleAddFieldToRegistry();
     });
@@ -129,14 +145,13 @@ describe('useFieldRegistryForm', () => {
     vi.mocked(addBulkUpdateDefinitionAction).mockResolvedValue({ success: true } as any);
     
     const mockFields = [{ id: 10, tableFieldName: 'col1' }] as any;
-    const mockAddAction = vi.fn();
     const mockGetTableFields = vi.fn().mockResolvedValue({ success: true, data: mockFields }) as any;
+    const mockActions = {
+      getSourceTableFieldsAction: mockGetTableFields,
+    };
 
     const { result } = renderHook(() => 
-      useFieldRegistryForm(emptyFields, mockRefreshList, emptySchemas, emptyTables, emptyTableFields, { 
-        addFieldRegistryAction: mockAddAction,
-        getSourceTableFieldsAction: mockGetTableFields
-      })
+      useFieldRegistryForm(emptyFields, mockRefreshList, emptySchemas, emptyTables, emptyTableFields, mockActions)
     );
 
     act(() => {
@@ -162,16 +177,5 @@ describe('useFieldRegistryForm', () => {
     });
     expect(toast.success).toHaveBeenCalledWith('messages.fieldSavedSuccessfully');
     expect(mockRefreshList).toHaveBeenCalled();
-    expect(mockRouter.refresh).toHaveBeenCalled();
-  });
-
-  it('should navigate to edit page on handleEdit', () => {
-    const { result } = renderHook(() => useFieldRegistryForm(emptyFields, mockRefreshList, emptySchemas, emptyTables, emptyTableFields, emptyObject));
-    
-    act(() => {
-      result.current.handleEdit({ updateCode: 'EDIT_CODE' } as any);
-    });
-
-    expect(mockRouter.push).toHaveBeenCalledWith('/en/property-tax/common-details-update/edit/EDIT_CODE?tab=fieldRegistry');
   });
 });

@@ -138,7 +138,7 @@ export const ExcelUploadTable = ({ t, validationData: rawData }: ExcelUploadTabl
         data={rowsList}
         columns={columns}
         emptyText={t("excelUpload.emptyData")}
-        maxBodyHeightClassName="max-h-[300px]"
+        maxBodyHeightClassName="max-h-[420px] min-h-[300px]"
       />
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { Modal } from "@/components/common/Modal";
-import { Button, Input } from "@/components/common";
+import { CancelButton, Input, SaveButton } from "@/components/common";
 import { useState } from "react";
 
 interface RemarksConfirmationModalProps {
@@ -21,41 +21,58 @@ export function RemarksConfirmationModal({
 }: RemarksConfirmationModalProps) {
   const [remarks, setRemarks] = useState("");
 
+  const handleClose = () => {
+    setRemarks("");
+    onClose();
+  };
+
   const handleConfirm = () => {
-    onConfirm(remarks);
+    if (!remarks.trim()) return;
+    onConfirm(remarks.trim());
     setRemarks(""); // Reset for next time
   };
 
-  const handleSkip = () => {
-    onConfirm("");
-    setRemarks(""); // Reset for next time
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && remarks.trim()) {
+      e.preventDefault();
+      handleConfirm();
+    }
   };
 
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title={title || t("excelUpload.remarksModal.title")}
+      footer={
+        <>
+          <CancelButton
+            label={t("excelUpload.remarksModal.cancelBtn")}
+            onClick={handleClose}
+          />
+          <SaveButton
+            label={t("excelUpload.remarksModal.confirmBtn")}
+            onClick={handleConfirm}
+            disabled={!remarks.trim()}
+          />
+        </>
+      }
     >
-      <div className="p-5 space-y-4">
+      <div className="space-y-4">
         <div>
           <Input
+            required
             label={t("excelUpload.remarksModal.remarkLabel")}
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder={t("excelUpload.remarksModal.remarkPlaceholder")}
             className="w-full"
+            autoFocus
           />
-        </div>
-        <div className="flex justify-end gap-3 mt-6">
-          <Button onClick={handleSkip} className="px-4 py-2 text-sm font-medium">
-            {t("excelUpload.remarksModal.skipBtn")}
-          </Button>
-          <Button variant="primary" onClick={handleConfirm} className="px-4 py-2 text-sm font-medium">
-            {t("excelUpload.remarksModal.confirmBtn")}
-          </Button>
         </div>
       </div>
     </Modal>
   );
 }
+

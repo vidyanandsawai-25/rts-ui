@@ -72,6 +72,7 @@ function parseApiResponseOptions(apiDataRaw: any, config: BulkUpdateFieldConfig)
 
 export const useBindApiOptions = (fieldConfigs: BulkUpdateFieldConfig[]) => {
   const [optionsMap, setOptionsMap] = useState<Record<string, SelectOption[]>>({});
+  const [lookupMap, setLookupMap] = useState<Record<string, Record<string, string>>>({});
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
   const [loadingMoreMap, setLoadingMoreMap] = useState<Record<string, boolean>>({});
   const [hasMoreMap, setHasMoreMap] = useState<Record<string, boolean>>({});
@@ -109,6 +110,17 @@ export const useBindApiOptions = (fieldConfigs: BulkUpdateFieldConfig[]) => {
             return { ...prev, [fieldName]: [...existing, ...filteredNew] };
           });
 
+          // Accumulate into cumulative lookup map for table description resolution
+          setLookupMap((prev) => {
+            const currentLookup = { ...(prev[fieldName] || {}) };
+            newOpts.forEach((opt) => {
+              if (opt.value) {
+                currentLookup[String(opt.value)] = opt.label;
+              }
+            });
+            return { ...prev, [fieldName]: currentLookup };
+          });
+
           pageMapRef.current[fieldName] = pageNum;
           searchMapRef.current[fieldName] = searchQuery;
 
@@ -144,20 +156,60 @@ export const useBindApiOptions = (fieldConfigs: BulkUpdateFieldConfig[]) => {
     []
   );
 
+  // Prefetch comprehensive lookup dictionary for table display
+  const fetchLookup = useCallback(async (config: BulkUpdateFieldConfig) => {
+    if (!config.bindApi) return;
+    const fieldName = config.fieldName;
+    try {
+      const response = await getDynamicOptionsAction(config.bindApi, {
+        SearchTerm: "",
+        PageSize: 1000,
+        PageNumber: 1,
+      });
+      if (response.success && response.data) {
+        const fullOpts = parseApiResponseOptions(response.data, config);
+        setLookupMap((prev) => {
+          const currentLookup = { ...(prev[fieldName] || {}) };
+          fullOpts.forEach((opt) => {
+            if (opt.value) {
+              currentLookup[String(opt.value)] = opt.label;
+            }
+          });
+          return { ...prev, [fieldName]: currentLookup };
+        });
+      }
+    } catch (_e) {
+      // Ignore prefetch error
+    }
+  }, []);
+
   useEffect(() => {
     if (!fieldConfigs || fieldConfigs.length === 0) {
       setOptionsMap({});
+      setLookupMap({});
       setLoadingMap({});
       setHasMoreMap({});
       return;
     }
 
+    // Prefetch lookup table for grid view descriptions in background without showing loading state on form dropdowns
     fieldConfigs.forEach((c) => {
       if (c.bindApi) {
-        fetchFieldOptions(c, 1, "", false);
+        fetchLookup(c);
       }
     });
-  }, [fieldConfigs, fetchFieldOptions]);
+  }, [fieldConfigs, fetchLookup]);
+
+  const onFieldFocus = useCallback(
+    (fieldName: string) => {
+      const config = fieldConfigs.find((c) => c.fieldName === fieldName);
+      if (!config || !config.bindApi) return;
+      if (!optionsMap[fieldName] || optionsMap[fieldName].length === 0) {
+        fetchFieldOptions(config, 1, "", false);
+      }
+    },
+    [fieldConfigs, optionsMap, fetchFieldOptions]
+  );
 
   const onLoadMore = useCallback(
     (fieldName: string, searchQuery?: string) => {
@@ -183,9 +235,11 @@ export const useBindApiOptions = (fieldConfigs: BulkUpdateFieldConfig[]) => {
 
   return {
     optionsMap,
+    lookupMap,
     loadingMap,
     loadingMoreMap,
     hasMoreMap,
+    onFocus: onFieldFocus,
     onLoadMore,
     onSearchChange,
   };

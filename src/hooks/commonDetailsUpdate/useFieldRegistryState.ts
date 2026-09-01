@@ -1,6 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useCallback } from "react";
-import { useSearchParams, usePathname } from "next/navigation";
+/* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect */
+import { useState, useCallback, useEffect } from "react";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { PagedResponse } from "@/types/common.types";
 import { BulkUpdateMaster, FieldRegistrySchema, CommonDetailsUpdateActions, FieldRegistryTable, SourceTableField } from "@/types/common-details-update/common-details-update.types";
 import { useFieldRegistryForm } from "./useFieldRegistryForm";
@@ -14,6 +14,7 @@ export const useFieldRegistryState = (
 ) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const router = useRouter();
 
   const [fields, setFields] = useState<BulkUpdateMaster[]>(() => {
     if (Array.isArray(initialFields)) {
@@ -39,34 +40,56 @@ export const useFieldRegistryState = (
   const [searchTerm, setSearchTermState] = useState(searchParams.get("searchTerm") || "");
   const [loading, setLoading] = useState(false);
 
-  const initialPageNumber = Number(searchParams.get("pageNumber") || searchParams.get("page") || "1");
-  const initialPageSize = Number(searchParams.get("pageSize") || "10");
+  const pageParam = Number(searchParams.get("pageNumber") || searchParams.get("page")) || 1;
+  const sizeParam = Number(searchParams.get("pageSize")) || 10;
 
-  const [pageNumber, setPageNumberState] = useState(initialPageNumber);
-  const [pageSize, setPageSizeState] = useState(initialPageSize);
+  const [pageNumber, setPageNumberState] = useState(pageParam);
+  const [pageSize, setPageSizeState] = useState(sizeParam);
+
+  useEffect(() => {
+    setPageNumberState(pageParam);
+  }, [pageParam]);
+
+  useEffect(() => {
+    setPageSizeState(sizeParam);
+  }, [sizeParam]);
+
+  useEffect(() => {
+    if (Array.isArray(initialFields)) {
+      setFields(initialFields);
+      setTotalCount(initialFields.length);
+    } else if (initialFields && "items" in initialFields) {
+      setFields(initialFields.items || []);
+      setTotalCount(initialFields.totalCount || (initialFields.items ? initialFields.items.length : 0));
+    }
+    setLoading(false);
+  }, [initialFields]);
 
   const setStatusFilter = (val: string) => {
     setStatusFilterState(val);
-    setPageNumberState(1);
+    setPageNumber(1);
   };
 
   const setSearchTerm = (val: string) => {
     setSearchTermState(val);
     setPageNumberState(1);
     if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
+      const params = new URLSearchParams(searchParams.toString());
       if (val) params.set("searchTerm", val); else params.delete("searchTerm");
-      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+      params.set("pageNumber", "1");
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }
   };
 
-  const refreshFieldsList = useCallback(async (targetPage?: number, targetSize?: number) => {
+  const refreshFieldsList = useCallback(async (targetPage?: number, targetSize?: number, showLoading: boolean = true) => {
     if (!actions.getFieldRegistriesAction) return;
 
-    const pNum = targetPage !== undefined ? targetPage : pageNumber;
-    const pSize = targetSize !== undefined ? targetSize : pageSize;
+    const pNum = targetPage !== undefined ? targetPage : 1;
+    const pSize = targetSize !== undefined ? targetSize : -1;
 
-    setLoading(true);
+    if (showLoading) {
+      setLoading(true);
+    }
     try {
       const res = await actions.getFieldRegistriesAction(pNum, pSize);
       if (res.success && res.data) {
@@ -80,43 +103,46 @@ export const useFieldRegistryState = (
         }
       }
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
-  }, [actions.getFieldRegistriesAction, pageNumber, pageSize]);
+  }, [actions.getFieldRegistriesAction]);
 
   const setPageNumber = useCallback((val: number) => {
-    setLoading(true);
     setPageNumberState(val);
     if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
+      const params = new URLSearchParams(searchParams.toString());
       params.set("pageNumber", String(val));
-      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+      if (!params.has("pageSize")) {
+        params.set("pageSize", String(pageSize));
+      }
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }
-    setTimeout(() => {
-      setLoading(false);
-    }, 150);
-  }, [pathname]);
+  }, [pathname, router, searchParams, pageSize]);
 
   const setPageSize = useCallback((val: number) => {
-    setLoading(true);
     setPageSizeState(val);
     setPageNumberState(1);
     if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
+      const params = new URLSearchParams(searchParams.toString());
       params.set("pageSize", String(val));
       params.set("pageNumber", "1");
-      window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }
-    setTimeout(() => {
-      setLoading(false);
-    }, 150);
-  }, [pathname]);
+  }, [pathname, router, searchParams]);
 
-  const formState = useFieldRegistryForm(fields, refreshFieldsList, initialSchemas, initialSourceTables, initialSourceTableFields);
+  const formState = useFieldRegistryForm(fields, refreshFieldsList, initialSchemas, initialSourceTables, initialSourceTableFields, actions);
 
   const toggleFieldStatus = async (code: string, isActive: boolean) => {
     if (actions.setFieldRegistryStatusAction) {
-      return await actions.setFieldRegistryStatusAction(code, isActive);
+      setLoading(true);
+      try {
+        return await actions.setFieldRegistryStatusAction(code, isActive);
+      } catch (err) {
+        setLoading(false);
+        throw err;
+      }
     }
     return { success: false, error: "Action not available" };
   };

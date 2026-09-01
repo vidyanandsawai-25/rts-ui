@@ -102,8 +102,8 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
   const zoneId = raw.zoneId?.trim() || "";
   const sourceid = raw.sourceid?.trim() || "";
   const sourceTable = raw.sourceTable?.trim() || "";
-  const auditPage = Math.max(MIN_PAGE, Math.min(MAX_PAGE, Number(raw.auditPage) || 1));
-  const auditPageSize = Math.max(MIN_PAGE, Math.min(MAX_PAGE_SIZE, Number(raw.auditPageSize) || 10));
+  const auditPage = Math.max(MIN_PAGE, Math.min(MAX_PAGE, Number(raw.auditPage ?? raw.pageNumber ?? raw.page) || 1));
+  const auditPageSize = Math.max(MIN_PAGE, Math.min(MAX_PAGE_SIZE, Number(raw.auditPageSize ?? raw.pageSize) || 10));
   const auditUser = raw.auditUser?.trim() || "";
   const auditSearch = raw.auditSearch?.trim() || "";
   const activityId = raw.activityId?.trim() || "";
@@ -115,7 +115,8 @@ export default async function Page({ searchParams }: PageProps) {
   const { pageNumber, pageSize, searchTerm, selectedField, wardId, wardNo, fromProperty, toProperty, wing, tab, scopeId, zoneId, sourceid, sourceTable, auditPage, auditPageSize, auditUser, auditSearch, activityId } = sanitizeParams(await searchParams);
 
   const menuItems = await getMenuItemsAction();
-  const defaultCode = selectedField || (menuItems[0]?.updateCode || "");
+  const isExcelUpload = tab.toLowerCase() === "excelupload";
+  const defaultCode = isExcelUpload ? (selectedField || "") : (selectedField || (menuItems[0]?.updateCode || ""));
 
   const [wardsResult, wingsResult, initialFieldRegistries, initialSchemas, initialScopeOptions, initialFieldConfigs, initialSourceTables, initialExcelTemplateFieldsResult, initialUpdateHistory, initialAllUpdateHistory, initialUpdateHistoryDetail] = await Promise.all([
     getAllWardsAction(),
@@ -188,6 +189,8 @@ export default async function Page({ searchParams }: PageProps) {
   };
 
   const actions = {
+    getMenuItemsAction,
+    getExcelTemplateFieldsAction,
     getFieldConfigsAction,
     getFilteredPropertiesAction,
     getPreviewListByCategoryAction,

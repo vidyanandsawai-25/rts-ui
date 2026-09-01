@@ -40,6 +40,7 @@ interface PropertyPreviewGridProps {
   actions?: Record<string, any>;
   hideCheckbox?: boolean;
   optionsMap?: Record<string, SelectOption[]>;
+  lookupMap?: Record<string, Record<string, string>>;
 }
 
 export const PropertyPreviewGrid = ({
@@ -64,9 +65,10 @@ export const PropertyPreviewGrid = ({
   fieldConfigs,
   hideCheckbox = false,
   optionsMap = {},
+  lookupMap = {},
 }: PropertyPreviewGridProps) => {
 
-  const baseColumns = getPreviewColumns(t, fieldConfigs, optionsMap);
+  const baseColumns = getPreviewColumns(t, fieldConfigs, optionsMap, lookupMap);
 
   // Prepend checkbox column for selection if not hidden
   const columns: Column<PropertyPreviewRow>[] = [

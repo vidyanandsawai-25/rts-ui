@@ -1,19 +1,10 @@
-
-"use client";
-
-import { toast } from "sonner";
-import { Upload, CheckCircle2 } from "lucide-react";
-import { Button, Badge, Checkbox, Input, Label } from "@/components/common";
+import { Upload, CheckCircle2, HelpCircle } from "lucide-react";
+import { Button, Badge, Checkbox, Input, Label, Tooltip, useToast } from "@/components/common";
+import { SearchSelectPaginated } from "@/components/common/SearchSelectPaginated";
 import { BulkUpdateMaster, CommonDetailsUpdateActions } from "@/types/common-details-update/common-details-update.types";
-
 import { Modal } from "@/components/common/Modal";
-
-import { HelpCircle } from "lucide-react";
-
 import { useTranslations } from "next-intl";
-
 import { PropertySelectionCriteria } from "./PropertySelectionCriteria";
-import { EnabledFieldList } from "./EnabledFieldList";
 import { ExcelUploadTable } from "./ExcelUploadTable";
 import { RemarksConfirmationModal } from "./RemarksConfirmationModal";
 import { DownloadButton, UploadButton } from "@/components/common/ActionButtons";
@@ -29,6 +20,7 @@ interface ExcelUploadProps {
 
 export const ExcelUpload = ({ updateData, actions, locale = "en" }: ExcelUploadProps) => {
   const t = useTranslations("commonDetailsUpdate");
+  const toast = useToast();
 
   const {
     downloading,
@@ -39,6 +31,7 @@ export const ExcelUpload = ({ updateData, actions, locale = "en" }: ExcelUploadP
     setIsGuidelineOpen,
     selectedFile,
     validationData,
+    setValidationData,
     showRemarkModal,
     setShowRemarkModal,
     fileInputRef,
@@ -46,10 +39,26 @@ export const ExcelUpload = ({ updateData, actions, locale = "en" }: ExcelUploadP
     handleFileChange,
     handleValidateExcel,
     handleConfirmUpload,
-  } = useExcelUpload({ updateData, actions });
+    groupOptions,
+    loadingGroups,
+    loadGroupOptions,
+  } = useExcelUpload({ updateData, actions, locale });
+
+  const handleToggleDownloadWithData = (targetChecked?: boolean) => {
+    const nextVal = targetChecked !== undefined ? targetChecked : !downloadWithData;
+    if (nextVal) {
+      const isGroupSelected = Boolean(updateData?.selectedCode);
+      if (!isGroupSelected) {
+        toast.error(t("excelUpload.validations.selectFieldFirst"));
+        return;
+      }
+    }
+    setDownloadWithData(nextVal);
+  };
 
   return (
     <div className="flex flex-col space-y-2 h-full border border-blue-200 rounded-xl bg-white overflow-hidden">
+      {/* Top Header */}
       <div className="bg-[#F8FAFF] px-4 py-3 border-b border-blue-200 flex justify-between items-center mb-0">
         <div>
           <h3 className="text-sm font-semibold text-[#1E3A8A]">{t("excelUpload.title")}</h3>
@@ -69,7 +78,8 @@ export const ExcelUpload = ({ updateData, actions, locale = "en" }: ExcelUploadP
       <div className="space-y-2">
         {updateData && (
           <div className="border border-blue-200 rounded-xl bg-white overflow-visible mb-2 m-2">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-blue-200 bg-[#F8FAFF] rounded-t-xl">
+            {/* Header & Guidelines */}
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-blue-200 bg-[#F8FAFF] rounded-t-xl">
               <div>
                 <h3 className="text-sm font-semibold text-[#1E3A8A]">
                   {t("excelUpload.actionSectionTitle")}
@@ -78,16 +88,112 @@ export const ExcelUpload = ({ updateData, actions, locale = "en" }: ExcelUploadP
                   {t("excelUpload.actionSectionDesc")}
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon={HelpCircle}
-                  onClick={() => setIsGuidelineOpen(true)}
-                  className="text-slate-700 bg-amber-50 border-amber-200 hover:bg-amber-100 hover:border-amber-300 transition-colors [&>svg]:text-amber-500 font-bold"
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={HelpCircle}
+                onClick={() => setIsGuidelineOpen(true)}
+                className="text-slate-700 bg-amber-50 border-amber-200 hover:bg-amber-100 hover:border-amber-300 transition-colors [&>svg]:text-amber-500 font-bold"
+              >
+                {t("excelUpload.viewGuidelinesBtn")}
+              </Button>
+            </div>
+
+            {/* Action Bar: 1. Enabled Group List -> 2. Download With Data -> 3. Download Template -> 4. Upload Excel -> 5. Validate Excel */}
+            <div className="p-3 relative">
+              <div className="flex flex-wrap items-end gap-3.5 relative z-30">
+                {/* 1. Enabled Group List Dropdown */}
+                <div className="flex-1 min-w-[220px] max-w-[300px] relative z-40 [&_ul]:!max-h-[240px] [&_[role=listbox]]:!max-h-[240px]">
+                  <div className="h-[20px] flex items-center mb-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 truncate" title={t("fieldList.title")}>
+                      {t("fieldList.title")}
+                    </Label>
+                  </div>
+                  <SearchSelectPaginated
+                    options={groupOptions}
+                    value={updateData.selectedCode || ""}
+                    onChange={(_, val) => {
+                      setValidationData(null);
+                      updateData.handleMenuSelect(val, false);
+                    }}
+                    placeholder={t("fieldList.selectFieldPlaceholder")}
+                    noOptionsPlaceholder={t("fieldList.selectFieldPlaceholder")}
+                    onInputFocus={() => {
+                      loadGroupOptions();
+                    }}
+                    isLoading={loadingGroups}
+                    className="w-full h-[40px]"
+                  />
+                </div>
+
+                {/* 2. Download With Data */}
+                <div
+                  className="flex items-center gap-2 h-[40px] px-3 border border-blue-200 hover:border-blue-400 hover:bg-blue-100/60 rounded-lg bg-blue-50/40 shrink-0 transition-all duration-200 cursor-pointer shadow-sm"
+                  onClick={() => handleToggleDownloadWithData()}
                 >
-                  {t("excelUpload.viewGuidelinesBtn")}
-                </Button>
+                  <Checkbox
+                    checked={downloadWithData}
+                    className="border-blue-300 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white cursor-pointer"
+                    onCheckedChange={(checked) => {
+                      handleToggleDownloadWithData(Boolean(checked));
+                    }}
+                    id="downloadWithData"
+                  />
+                  <Label
+                    htmlFor="downloadWithData"
+                    className="text-xs sm:text-sm font-medium cursor-pointer whitespace-nowrap text-slate-700 select-none"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleToggleDownloadWithData();
+                    }}
+                  >
+                    {t("excelUpload.downloadWithData")}
+                  </Label>
+                </div>
+
+                {/* 3. Download Template */}
+                <DownloadButton
+                  size="md"
+                  onClick={handleDownloadTemplate}
+                  disabled={downloading}
+                  isLoading={downloading}
+                  label={
+                    downloadWithData
+                      ? (t("excelUpload.downloadExcelWithDataBtn"))
+                      : t("excelUpload.downloadTemplateBtn")
+                  }
+                  className="!bg-white !border !border-blue-300 hover:!border-blue-500 !text-[#0F5FC2] hover:!bg-blue-50 font-semibold h-[40px] shrink-0 transition-all duration-300 ease-out whitespace-nowrap shadow-sm"
+                />
+
+                {/* 4. Upload Excel (Choose Excel File to Upload Excel) */}
+                <div className="flex items-center border border-dashed border-blue-300 hover:border-blue-500 rounded-lg p-1 bg-blue-50/40 hover:bg-blue-50/80 h-[40px] overflow-hidden max-w-[250px] shrink-0 transition-all duration-200">
+                  <UploadButton
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    label={t("excelUpload.chooseExcelFileBtn")}
+                    className="!bg-white !text-blue-700 !border !border-blue-300 hover:!border-blue-500 hover:!bg-blue-50 hover:!text-blue-800 font-medium shrink-0 whitespace-nowrap mr-2 h-full text-xs transition-all duration-200 shadow-sm"
+                  />
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <Tooltip
+                      content={selectedFile ? selectedFile.name : t("excelUpload.noFileChosen")}
+                      placement="top"
+                    >
+                      <span className="text-xs text-slate-600 truncate font-medium block cursor-default">
+                        {selectedFile ? selectedFile.name : t("excelUpload.noFileChosen")}
+                      </span>
+                    </Tooltip>
+                  </div>
+                  <Input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept=".xlsx, .xls"
+                    className="hidden"
+                  />
+                </div>
+
+                {/* 5. Validate Excel */}
                 <Button
                   variant="primary"
                   size="sm"
@@ -95,175 +201,79 @@ export const ExcelUpload = ({ updateData, actions, locale = "en" }: ExcelUploadP
                   disabled={uploading || !selectedFile}
                   isLoading={uploading}
                   icon={CheckCircle2}
-                  className="shadow-sm font-bold"
+                  className="h-[40px] px-4 shadow-sm font-bold shrink-0"
                 >
                   {t("excelUpload.validateExcelBtn")}
                 </Button>
               </div>
-            </div>
-            <div className="p-2">
-              <PropertySelectionCriteria
-                key={updateData.resetKey}
-                t={t}
-                selectedScopeId={updateData.selectedScopeId}
-                handleScopeChange={updateData.handleScopeChange}
-                scopeOptions={updateData.scopeOptions}
-                loadingScopeOptions={updateData.loadingScopeOptions}
-                activeScopeDetails={updateData.activeScopeDetails}
-                filterValues={updateData.filterValues}
-                setFilterValues={updateData.setFilterValues}
-                handleZoneChange={updateData.handleZoneChange}
-                zoneOptions={updateData.zoneOptions}
-                handleWardChange={updateData.handleWardChange}
-                wardOptions={updateData.wardOptions}
-                propertyTypeOptions={updateData.propertyTypeOptions}
-                propertyOptions={updateData.propertyOptions}
-                fromPropertyOptions={updateData.fromPropertyOptions}
-                toPropertyOptions={updateData.toPropertyOptions}
-                handlePropertyDropdownFocus={updateData.handlePropertyDropdownFocus}
-                handleFromPropertyChange={updateData.handleFromPropertyChange}
-                handleToPropertyChange={updateData.handleToPropertyChange}
-                loadingPropertyOptions={updateData.loadingPropertyOptions}
-                isPropertyDropdownDisabled={!updateData.filterValues.wardId}
-                filterSubmitted={updateData.filterSubmitted}
-                loadingShowProperties={updateData.loadingShowProperties}
-                canShowProperties={updateData.canShowProperties}
-                handleShowProperties={updateData.handleShowProperties}
-                handleFilterCancel={updateData.handleBack}
-                hasAnyFilterValue={updateData.hasAnyFilterValue}
-                hasMore={updateData.propertyDropdownHasMore}
-                onLoadMore={updateData.handleLoadMorePropertyOptions}
-                isLoadingMore={updateData.loadingMorePropertyOptions}
-                propertySearchTerm={updateData.propertySearchTerm}
-                onPropertySearchChange={updateData.handlePropertyDropdownSearch}
-                fromHasMore={updateData.fromPropertyDropdownHasMore}
-                onFromLoadMore={updateData.handleLoadMoreFromPropertyOptions}
-                isFromLoadingMore={updateData.loadingMoreFromPropertyOptions}
-                fromPropertySearchTerm={updateData.fromPropertySearchTerm}
-                onFromPropertySearchChange={updateData.handleFromPropertyDropdownSearch}
-                loadingFromPropertyOptions={updateData.loadingFromPropertyOptions}
-                toHasMore={updateData.toPropertyDropdownHasMore}
-                onToLoadMore={updateData.handleLoadMoreToPropertyOptions}
-                isToLoadingMore={updateData.loadingMoreToPropertyOptions}
-                toPropertySearchTerm={updateData.toPropertySearchTerm}
-                onToPropertySearchChange={updateData.handleToPropertyDropdownSearch}
-                loadingToPropertyOptions={updateData.loadingToPropertyOptions}
-                hideActionButtons={true}
-                renderChildrenInline={true}
+
+              {/* Next Row: Criteria Fields (Only when Download With Data is selected) */}
+              <div
+                className={`grid transition-all duration-300 ease-out relative z-10 ${
+                  downloadWithData
+                    ? "grid-rows-[1fr] opacity-100 mt-3 pt-3 border-t border-blue-100 p-2.5 overflow-visible"
+                    : "grid-rows-[0fr] opacity-0 mt-0 pt-0 border-t-0 p-0 pointer-events-none overflow-hidden"
+                }`}
               >
-                {/* Embedded Action Buttons */}
-                <div className={`col-span-12 lg:col-span-12 flex-1 flex self-end flex-wrap md:flex-nowrap items-end gap-3 relative z-[50] mt-2 xl:mt-0 w-full ${(() => {
-                  const activeOptions = updateData.activeScopeDetails?.options || [];
-                  let fieldsCount = 1; // Scope field
-                  if (activeOptions.includes("Zone")) fieldsCount++;
-                  if (activeOptions.includes("Ward")) fieldsCount++;
-                  if (activeOptions.includes("Property Type") && updateData.activeScopeDetails?.name !== "WardSector") fieldsCount++;
-                  if (activeOptions.includes("Property No")) fieldsCount++;
-                  if (activeOptions.includes("From Property")) fieldsCount++;
-                  if (activeOptions.includes("To Property")) fieldsCount++;
-
-                  const usedCols = Math.min(fieldsCount * 2, 12);
-                  const remainingCols = 12 - usedCols;
-
-                  const colSpanMap: Record<number, string> = {
-                    10: "xl:col-span-10 2xl:col-span-10",
-                    8: "xl:col-span-8 2xl:col-span-8",
-                    6: "xl:col-span-6 2xl:col-span-6",
-                    4: "xl:col-span-4 2xl:col-span-4",
-                    2: "xl:col-span-2 2xl:col-span-2",
-                    0: "xl:col-span-12 2xl:col-span-12",
-                  };
-                  return colSpanMap[remainingCols] || "xl:col-span-12 2xl:col-span-12";
-                })()}`}>
-                  <DownloadButton
-                    size="md"
-                    onClick={handleDownloadTemplate}
-                    disabled={downloading}
-                    isLoading={downloading}
-                    label={t("excelUpload.downloadTemplateBtn")}
-                    className="bg-white border-[#0F5FC2] text-[#0F5FC2] hover:bg-blue-50 border-2 font-semibold h-[42px] min-w-[130px] shrink-0"
+                <div className="min-h-0 overflow-visible">
+                  <PropertySelectionCriteria
+                    key={updateData.resetKey}
+                    t={t}
+                    selectedScopeId={updateData.selectedScopeId}
+                    handleScopeChange={updateData.handleScopeChange}
+                    scopeOptions={updateData.scopeOptions}
+                    loadingScopeOptions={updateData.loadingScopeOptions}
+                    activeScopeDetails={updateData.activeScopeDetails}
+                    filterValues={updateData.filterValues}
+                    setFilterValues={updateData.setFilterValues}
+                    handleZoneChange={updateData.handleZoneChange}
+                    zoneOptions={updateData.zoneOptions}
+                    handleWardChange={updateData.handleWardChange}
+                    wardOptions={updateData.wardOptions}
+                    propertyTypeOptions={updateData.propertyTypeOptions}
+                    propertyOptions={updateData.propertyOptions}
+                    fromPropertyOptions={updateData.fromPropertyOptions}
+                    toPropertyOptions={updateData.toPropertyOptions}
+                    handlePropertyDropdownFocus={updateData.handlePropertyDropdownFocus}
+                    handleFromPropertyChange={updateData.handleFromPropertyChange}
+                    handleToPropertyChange={updateData.handleToPropertyChange}
+                    loadingPropertyOptions={updateData.loadingPropertyOptions}
+                    isPropertyDropdownDisabled={!updateData.filterValues.wardId}
+                    filterSubmitted={updateData.filterSubmitted}
+                    loadingShowProperties={updateData.loadingShowProperties}
+                    canShowProperties={updateData.canShowProperties}
+                    handleShowProperties={updateData.handleShowProperties}
+                    handleFilterCancel={updateData.handleBack}
+                    hasAnyFilterValue={updateData.hasAnyFilterValue}
+                    hasMore={updateData.propertyDropdownHasMore}
+                    onLoadMore={updateData.handleLoadMorePropertyOptions}
+                    isLoadingMore={updateData.loadingMorePropertyOptions}
+                    propertySearchTerm={updateData.propertySearchTerm}
+                    onPropertySearchChange={updateData.handlePropertyDropdownSearch}
+                    fromHasMore={updateData.fromPropertyDropdownHasMore}
+                    onFromLoadMore={updateData.handleLoadMoreFromPropertyOptions}
+                    isFromLoadingMore={updateData.loadingMoreFromPropertyOptions}
+                    fromPropertySearchTerm={updateData.fromPropertySearchTerm}
+                    onFromPropertySearchChange={updateData.handleFromPropertyDropdownSearch}
+                    loadingFromPropertyOptions={updateData.loadingFromPropertyOptions}
+                    toHasMore={updateData.toPropertyDropdownHasMore}
+                    onToLoadMore={updateData.handleLoadMoreToPropertyOptions}
+                    isToLoadingMore={updateData.loadingMoreToPropertyOptions}
+                    toPropertySearchTerm={updateData.toPropertySearchTerm}
+                    onToPropertySearchChange={updateData.handleToPropertyDropdownSearch}
+                    loadingToPropertyOptions={updateData.loadingToPropertyOptions}
+                    hideActionButtons={true}
                   />
-
-                  <div className="flex items-center gap-2 min-h-[42px] shrink-0">
-                    <Checkbox
-                      checked={downloadWithData}
-                      className="border-blue-300 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
-                      onCheckedChange={(checked) => {
-                        if (checked && updateData && !updateData.hasAnyFilterValue) {
-                          toast.error(t("messages.downloadWithDataCriteria"));
-                          return;
-                        }
-                        setDownloadWithData(!!checked);
-                      }}
-                      id="downloadWithData"
-                    />
-
-                    <Label
-                      htmlFor="downloadWithData"
-                      className="text-sm font-medium cursor-pointer whitespace-nowrap"
-                      onClick={(e) => {
-                        e.preventDefault();
-
-                        if (
-                          !downloadWithData &&
-                          updateData &&
-                          !updateData.hasAnyFilterValue
-                        ) {
-                          toast.error(t("messages.downloadWithDataCriteria"));
-                          return;
-                        }
-
-                        setDownloadWithData(!downloadWithData);
-                      }}
-                    >
-                      {t("excelUpload.downloadWithData")}
-                    </Label>
-                  </div>
-
-                  <div className="flex-1 min-w-[160px] flex items-center border border-dashed border-blue-300 rounded-lg p-1.5 bg-blue-50/50 h-[42px] overflow-hidden">
-                    <UploadButton
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      label={t("excelUpload.chooseExcelFileBtn")}
-                      className="!bg-white !text-blue-700 !border-blue-200 hover:!bg-blue-50 hover:!border-blue-300 hover:!text-blue-700 font-medium shrink-0 whitespace-nowrap mr-2 h-full"
-                    />
-
-                    <span className="text-sm text-slate-600 truncate font-medium min-w-0">
-                      {selectedFile
-                        ? selectedFile.name
-                        : t("excelUpload.noFileChosen")}
-                    </span>
-
-                    <Input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      accept=".xlsx, .xls"
-                      className="hidden"
-                    />
-                  </div>
                 </div>
-
-              </PropertySelectionCriteria>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Dynamic Fields & API Data Preview */}
+        {/* Full-width Excel Table & Summary */}
         {updateData && (
-          <div className="flex flex-col lg:flex-row gap-4 h-[380px] m-2">
-            {/* Left: Enabled Field List (Single Select for Excel Upload) */}
-            <div className="w-full lg:w-1/3">
-              <EnabledFieldList
-                t={t}
-                filteredMenuItems={updateData.filteredMenuItems}
-                selectedCodes={updateData.selectedCodes}
-                handleMenuSelect={updateData.handleMenuSelect}
-                locale={locale}
-                selectionType="single"
-              />
-            </div>
-            <div className="flex flex-col min-h-0 h-full overflow-hidden transition-all duration-300 flex-1">
+          <div className="flex flex-col min-h-0 m-2">
+            <div className="flex flex-col min-h-0 h-full overflow-hidden transition-all duration-300 flex-1 w-full">
               <ExcelUploadTable t={t} validationData={validationData} />
             </div>
           </div>

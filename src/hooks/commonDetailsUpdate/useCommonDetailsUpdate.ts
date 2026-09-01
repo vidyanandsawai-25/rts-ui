@@ -2,7 +2,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
+import { useToast } from "@/components/common";
 import {
   BulkUpdateFieldConfig,
   PropertyPreviewRow,
@@ -48,40 +48,56 @@ const fetchAndMergeProperties = async (
   codes: string[],
   loadFn: (params: PropertyFilterByCategoryParams, onSuccess: (data: PagedResponse<PropertyPreviewRow>) => void) => Promise<void>
 ): Promise<{ items: PropertyPreviewRow[], totalCount: number }> => {
-  if (!codes.length) return { items: [], totalCount: 0 };
+  if (!codes || !codes.length) return { items: [], totalCount: 0 };
 
-  const mergedProperties: PropertyPreviewRow[] = [];
-  let finalTotalCount = 0;
-
-  for (const code of codes) {
-    await new Promise<void>((resolve, reject) => {
-      loadFn(
-        { ...baseParams, UpdateCode: code } as PropertyFilterByCategoryParams,
-        (data) => {
-          finalTotalCount = data.totalCount;
-          data.items.forEach(newItem => {
-            const existingIndex = mergedProperties.findIndex(p => p.id === newItem.id);
-            if (existingIndex !== -1) {
-              const existing = mergedProperties[existingIndex];
-              const merged = { ...existing };
-              for (const key in newItem) {
-                const newVal = newItem[key];
-                if (newVal !== null && newVal !== undefined && newVal !== '-' && newVal !== '') {
-                  merged[key] = newVal;
-                }
-              }
-              mergedProperties[existingIndex] = merged;
-            } else {
-              mergedProperties.push(newItem);
-            }
+  try {
+    const results = await Promise.all(
+      codes.map(code =>
+        new Promise<{ items: PropertyPreviewRow[], totalCount: number }>((resolve) => {
+          loadFn(
+            { ...baseParams, UpdateCode: code } as PropertyFilterByCategoryParams,
+            (data) => resolve({ items: data?.items || [], totalCount: data?.totalCount || 0 })
+          ).catch((err) => {
+            console.error(`Error loading properties for code ${code}:`, err);
+            resolve({ items: [], totalCount: 0 });
           });
-          resolve();
-        }
-      ).catch(reject);
-    });
-  }
+        })
+      )
+    );
 
-  return { items: mergedProperties, totalCount: finalTotalCount };
+    const mergedMap = new Map<number, PropertyPreviewRow>();
+    let finalTotalCount = 0;
+
+    for (const data of results) {
+      if (data?.totalCount && data.totalCount > 0) {
+        finalTotalCount = data.totalCount;
+      }
+      if (data?.items && Array.isArray(data.items)) {
+        data.items.forEach((newItem) => {
+          if (!newItem || !newItem.id) return;
+          if (!mergedMap.has(newItem.id)) {
+            mergedMap.set(newItem.id, { ...newItem });
+          } else {
+            const existing = mergedMap.get(newItem.id)!;
+            const existingObj = existing as Record<string, unknown>;
+            const newObj = newItem as Record<string, unknown>;
+
+            for (const key of Object.keys(newObj)) {
+              const val = newObj[key];
+              if (val !== null && val !== undefined && val !== "" && val !== "-") {
+                existingObj[key] = val;
+              }
+            }
+          }
+        });
+      }
+    }
+
+    return { items: Array.from(mergedMap.values()), totalCount: finalTotalCount };
+  } catch (error) {
+    console.error("Failed to fetch and merge properties:", error);
+    return { items: [], totalCount: 0 };
+  }
 };
 
 export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
@@ -107,25 +123,29 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const toast = useToast();
   const [_isPending, startTransition] = useTransition();
 
   const activeMenuItems = useMemo(() => {
     return (menuItems || []).filter((item) => item.isActive !== false);
   }, [menuItems]);
 
+  const currentTab = searchParams.get("tab") || "updateFields";
+  const isExcelUploadTab = currentTab.toLowerCase() === "excelupload";
+
   const [selectedCode, setSelectedCode] = useState<string>(
-    initialField ? initialField.split(',')[0] : activeMenuItems[0]?.updateCode || ""
+    initialField ? initialField.split(',')[0] : isExcelUploadTab ? "" : activeMenuItems[0]?.updateCode || ""
   );
   const [selectedCodes, setSelectedCodes] = useState<string[]>(
-    initialField ? initialField.split(',') : activeMenuItems.length > 0 && activeMenuItems[0]?.updateCode ? [activeMenuItems[0].updateCode] : []
+    initialField ? initialField.split(',') : isExcelUploadTab ? [] : activeMenuItems.length > 0 && activeMenuItems[0]?.updateCode ? [activeMenuItems[0].updateCode] : []
   );
   const [menuSearch, setMenuSearch] = useState("");
   const [fieldConfigs, setFieldConfigs] = useState<BulkUpdateFieldConfig[]>(
-    props.initialFieldConfigs || []
+    isExcelUploadTab && !initialField ? [] : props.initialFieldConfigs || []
   );
   const [loadingConfigs, setLoadingConfigs] = useState(false);
 
-  const { optionsMap, loadingMap, loadingMoreMap, hasMoreMap, onLoadMore, onSearchChange } = useBindApiOptions(fieldConfigs);
+  const { optionsMap, lookupMap, loadingMap, loadingMoreMap, hasMoreMap, onFocus, onLoadMore, onSearchChange } = useBindApiOptions(fieldConfigs);
 
   let defaultWardId = initialWardId || "";
   if (initialWardNo && wardsData?.items) {
@@ -274,16 +294,43 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
   const initialLoadPropertiesRef = useRef(false);
   const prevSelectedCodeRef = useRef(selectedCode);
 
+  const selectedCodesRef = useRef<string[]>(selectedCodes);
+  useEffect(() => {
+    selectedCodesRef.current = selectedCodes;
+  }, [selectedCodes]);
+
+  const menuSelectRequestIdRef = useRef<number>(0);
+  const showPropertiesRequestIdRef = useRef<number>(0);
+  const reloadPropertiesDebouncedRef = useRef<NodeJS.Timeout | null>(null);
+  const handleShowPropertiesRef = useRef<((targetPage?: any, targetPageSize?: any, preserveSelection?: boolean, searchTermOverride?: string, silent?: boolean) => Promise<void>) | null>(null);
+
   // Synchronize selected codes when URL searchParams change (e.g. Tab change or Clear params)
   // window.history.replaceState does not trigger this, so manual checkbox clicks won't be reverted.
   useEffect(() => {
     const tab = searchParams.get("tab") || "updateFields";
     if (tab === "fieldRegistry" || tab === "auditMonitor") return;
 
+    if (tab.toLowerCase() === "excelupload") {
+      const fieldParam = searchParams.get("field");
+      if (!fieldParam) {
+        selectedCodesRef.current = [];
+        setSelectedCodes([]);
+        setSelectedCode("");
+        setFieldConfigs([]);
+        return;
+      }
+      const codes = fieldParam.split(",").filter(Boolean);
+      selectedCodesRef.current = codes;
+      setSelectedCodes(codes);
+      setSelectedCode(codes[0] || "");
+      return;
+    }
+
     const fieldParam = searchParams.get("field");
     if (!fieldParam) {
       if (activeMenuItems && activeMenuItems.length > 0 && activeMenuItems[0]?.updateCode) {
         const defaultCode = activeMenuItems[0].updateCode;
+        selectedCodesRef.current = [defaultCode];
         setSelectedCodes([defaultCode]);
         setSelectedCode(defaultCode);
 
@@ -318,12 +365,14 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
           setLoadingConfigs(false);
         });
       } else {
+        selectedCodesRef.current = [];
         setSelectedCode("");
         setSelectedCodes([]);
       }
     } else {
       const codes = fieldParam.split(',');
-      if (selectedCodes.join(',') !== fieldParam) {
+      if (selectedCodesRef.current.join(',') !== fieldParam) {
+        selectedCodesRef.current = codes;
         setSelectedCodes(codes);
         setSelectedCode(codes[0]);
       }
@@ -418,10 +467,12 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
 
   // Initial field selection from menuItems without forcing router.replace on page load
   useEffect(() => {
+    const tab = searchParams.get("tab") || "updateFields";
+    if (tab.toLowerCase() !== "updatefields") return;
     if (!selectedCode && menuItems.length > 0 && menuItems[0]?.updateCode) {
       setSelectedCode(menuItems[0].updateCode);
     }
-  }, [selectedCode, menuItems]);
+  }, [selectedCode, menuItems, searchParams]);
 
   // Load dependent options (Zone / Ward / Property Type) when activeScopeDetails changes
   useEffect(() => {
@@ -786,54 +837,74 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
 
   const handleMenuSelect = useCallback(
     async (code: string, isMultiSelect: boolean = false) => {
+      const currentCodes = selectedCodesRef.current;
+
       // Prevent unchecking the last selected group (in both single and multi-select modes)
-      if (selectedCodes.length === 1 && selectedCodes[0] === code) {
+      if (currentCodes.length === 1 && currentCodes[0] === code) {
         return;
       }
 
-      let newCodes = [code];
+      let newCodes: string[];
 
       if (isMultiSelect) {
-        if (selectedCodes.includes(code)) {
-          newCodes = selectedCodes.filter(c => c !== code);
+        if (currentCodes.includes(code)) {
+          newCodes = currentCodes.filter(c => c !== code);
         } else {
-          newCodes = [...selectedCodes, code];
+          newCodes = [...currentCodes, code];
         }
+      } else {
+        newCodes = [code];
       }
 
+      selectedCodesRef.current = newCodes;
       setSelectedCodes(newCodes);
 
-      // Update URL to match selected codes
-      if (newCodes.length > 0) {
-        setSelectedCode(newCodes[0]); // Keep selectedCode pointing to the first one for backwards compatibility
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("field", newCodes.join(","));
+      // Update URL without triggering router transition race conditions
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        if (newCodes.length > 0) {
+          setSelectedCode(newCodes[0]);
+          params.set("field", newCodes.join(","));
+        } else {
+          setSelectedCode("");
+          params.delete("field");
+        }
         const newUrl = `${pathname}?${params.toString()}`;
-        startTransition(() => {
-          router.replace(newUrl, { scroll: false });
-        });
-      } else {
-        setSelectedCode("");
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete("field");
-        const newUrl = `${pathname}?${params.toString()}`;
-        startTransition(() => {
-          router.replace(newUrl, { scroll: false });
-        });
+        window.history.replaceState(null, "", newUrl);
       }
 
-      // Fetch configs for all selected codes
-      setLoadingConfigs(true);
+      // Debounce both field config loading AND table data loading so they complete at the same time
+      if (reloadPropertiesDebouncedRef.current) {
+        clearTimeout(reloadPropertiesDebouncedRef.current);
+      }
 
-      const fetchPromises = newCodes.map(c =>
-        new Promise<BulkUpdateFieldConfig[]>((resolve) => {
-          loadFieldConfigs(c, resolve);
-        })
-      );
+      reloadPropertiesDebouncedRef.current = setTimeout(async () => {
+        const targetCodes = selectedCodesRef.current;
+        if (!targetCodes.length) return;
 
-      Promise.all(fetchPromises).then((results) => {
+        const requestId = ++menuSelectRequestIdRef.current;
+        setLoadingConfigs(true);
+
+        const configPromises = targetCodes.map(c =>
+          new Promise<BulkUpdateFieldConfig[]>((resolve) => {
+            loadFieldConfigs(c, resolve);
+          })
+        );
+
+        // Fetch configs and reload table data at the exact same time
+        const [configResults] = await Promise.all([
+          Promise.all(configPromises),
+          (filterSubmitted || properties.length > 0) && canShowProperties
+            ? handleShowPropertiesRef.current?.(propertiesPage, propertiesPageSize, true, undefined, true)
+            : Promise.resolve()
+        ]);
+
+        if (requestId !== menuSelectRequestIdRef.current) {
+          return;
+        }
+
         // Combine all field configs
-        const rawCombinedConfigs = results.flat();
+        const rawCombinedConfigs = configResults.flat();
         const uniqueConfigs: BulkUpdateFieldConfig[] = [];
         const seenFields = new Set<string>();
         for (const config of rawCombinedConfigs) {
@@ -849,7 +920,6 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
         setFormValues(prev => {
           const newValues: Record<string, string | number | boolean> = {};
           uniqueConfigs.forEach((f) => {
-            // Keep existing value if it exists, otherwise use default
             if (prev[f.fieldName] !== undefined) {
               newValues[f.fieldName] = prev[f.fieldName];
             } else if (f.defaultValue != null) {
@@ -862,11 +932,11 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
           });
           return newValues;
         });
-      }).finally(() => {
+
         setLoadingConfigs(false);
-      });
+      }, 350);
     },
-    [loadFieldConfigs, pathname, searchParams, router, selectedCodes]
+    [loadFieldConfigs, pathname, filterSubmitted, properties.length, canShowProperties, propertiesPage, propertiesPageSize]
   );
 
   const loadPropertyOptionsByCategory = useCallback(async (page: number, append = false, queryOverride?: string, zoneIdOverride?: string, wardIdOverride?: string) => {
@@ -1277,7 +1347,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     }
   }, [updateUrlParams, activeScopeDetails, filterValues.wardId, filterValues.fromPropertyNo, loadToPropertyOptions]);
 
-  const handleShowProperties = useCallback(async (targetPage: any = 1, targetPageSize: any = propertiesPageSize, preserveSelection: boolean = false, searchTermOverride?: string) => {
+  const handleShowProperties = useCallback(async (targetPage: any = 1, targetPageSize: any = propertiesPageSize, preserveSelection: boolean = false, searchTermOverride?: string, silent: boolean = false) => {
     const pageNum = typeof targetPage === "number" ? targetPage : 1;
     const sizeNum = typeof targetPageSize === "number" ? targetPageSize : propertiesPageSize;
     const activeSearchTerm = searchTermOverride !== undefined ? searchTermOverride : propertiesSearchTerm;
@@ -1332,13 +1402,16 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
       PageSize: sizeNum,
     };
 
-    fetchAndMergeProperties(baseParams, selectedCodes, loadPreviewListByCategory)
+    const reqId = ++showPropertiesRequestIdRef.current;
+    const currentCodes = selectedCodesRef.current.length > 0 ? selectedCodesRef.current : selectedCodes;
+    fetchAndMergeProperties(baseParams, currentCodes, loadPreviewListByCategory)
       .then((data) => {
+        if (reqId !== showPropertiesRequestIdRef.current) return;
         setProperties(data.items);
         setTotalCount(data.totalCount);
         setPropertiesPage(pageNum);
         // Show success toast with count or info toast when no properties found
-        if (!preserveSelection) {
+        if (!preserveSelection && !silent) {
           if (data.totalCount > 0) {
             toast.success(t("messages.propertiesLoaded", { count: data.totalCount }));
           } else {
@@ -1358,31 +1431,16 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
         });
       })
       .finally(() => {
-        setLoadingProperties(false);
-        setLoadingShowProperties(false);
+        if (reqId === showPropertiesRequestIdRef.current) {
+          setLoadingProperties(false);
+          setLoadingShowProperties(false);
+        }
       });
-  }, [filterValues, loadPreviewListByCategory, selectedCodes, canShowProperties, t, updateUrlParams, activeScopeDetails, propertiesPageSize, propertiesSearchTerm]);
-
-  const previousSelectedCodesRef = useRef(selectedCodes);
+  }, [filterValues, loadPreviewListByCategory, canShowProperties, t, updateUrlParams, activeScopeDetails, propertiesPageSize, propertiesSearchTerm]);
 
   useEffect(() => {
-    const prevCodes = previousSelectedCodesRef.current;
-    previousSelectedCodesRef.current = selectedCodes;
-
-    const isDifferent = prevCodes.length !== selectedCodes.length || prevCodes.some((code, i) => code !== selectedCodes[i]);
-    if (!isDifferent) return;
-
-    if (prevCodes.length === 0 && selectedCodes.length > 0) {
-      return;
-    }
-
-    if (filterSubmitted && canShowProperties && selectedCodes.length > 0) {
-      const timer = setTimeout(() => {
-        handleShowProperties(propertiesPage, propertiesPageSize, true);
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedCodes, filterSubmitted, canShowProperties, handleShowProperties, propertiesPage, propertiesPageSize]);
+    handleShowPropertiesRef.current = handleShowProperties;
+  }, [handleShowProperties]);
 
   const handleBack = useCallback((showToast: boolean = true) => {
     setFilterValues({ zoneId: "", wardId: "", fromPropertyNo: "", toPropertyNo: "", wingId: "", propertyTypeId: "" });
@@ -1411,11 +1469,16 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
 
     setResetKey(prev => prev + 1);
 
-    // Clear URL parameters
+    // Clear URL parameters while preserving current tab
     startTransition(() => {
-      router.replace(pathname, { scroll: false });
+      const currentTab = searchParams.get("tab");
+      if (currentTab) {
+        router.replace(`${pathname}?tab=${currentTab}`, { scroll: false });
+      } else {
+        router.replace(pathname, { scroll: false });
+      }
     });
-  }, [pathname, router, t]);
+  }, [pathname, router, t, searchParams, toast]);
 
   const handleSelectAll = useCallback(() => {
     if (allSelected || isSelectAllAcrossPages) {
@@ -1577,8 +1640,16 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     const { errors: yearErrors } = validateYearFields(formValues, fieldConfigs, properties);
     Object.assign(clientErrors, yearErrors);
 
+    const remarksVal = String(formValues["remarks"] || "").trim();
+    if (!remarksVal) {
+      clientErrors["remarks"] = t("messages.remarksRequired") || "Remarks is required";
+    }
+
     if (Object.keys(clientErrors).length > 0) {
       setFormErrors(clientErrors);
+      if (!remarksVal) {
+        toast.error(t("messages.remarksRequired") || "Remarks is required");
+      }
       return;
     }
 
@@ -1602,7 +1673,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
 
     // If 'selectAllAcrossPages' is true, we must load ALL property IDs based on the current filter criteria
     if (isSelectAllAcrossPages) {
-      const toastId = toast.loading(t("messages.fetchingAllProperties"));
+      toast.info(t("messages.fetchingAllProperties"));
 
       let wingLabel = "";
       if (filterValues.wingId && allWingOptions) {
@@ -1659,10 +1730,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
         });
       } catch (_error) {
         toast.error(t("messages.somethingWrong"));
-        toast.dismiss(toastId);
         return; // abort update if we can't fetch all IDs
-      } finally {
-        toast.dismiss(toastId);
       }
     } else {
       idsToUpdate = selectedPropertyIds.size > 0
@@ -1755,8 +1823,8 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
       handleFormClear();
       setSelectedPropertyIds(new Set());
       setIsSelectAllAcrossPages(false);
-      // After successful update, refresh the properties list to show updated data
-      await handleShowProperties();
+      // After successful update, refresh the properties list to show updated data without redundant loaded toast
+      await handleShowProperties(propertiesPage, propertiesPageSize, false, undefined, true);
     }
   }, [
     isFormValid,
@@ -1779,6 +1847,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     selectedScopeId,
     validateYearFields,
     t,
+    toast,
   ]);
 
   const paginationInfo = useMemo(() => {
@@ -1802,6 +1871,8 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     t,
     locale,
     // Menu
+    menuItems: props.menuItems || [],
+    activeMenuItems,
     filteredMenuItems,
     selectedCodes,
     selectedCode,
@@ -1890,9 +1961,11 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     isFormValid,
     saving,
     optionsMap,
+    lookupMap,
     bindApiLoadingMap: loadingMap,
     bindApiLoadingMoreMap: loadingMoreMap,
     bindApiHasMoreMap: hasMoreMap,
+    handleBindApiFocus: onFocus,
     handleBindApiLoadMore: onLoadMore,
     handleBindApiSearchChange: onSearchChange,
     handleFormValueChange,
