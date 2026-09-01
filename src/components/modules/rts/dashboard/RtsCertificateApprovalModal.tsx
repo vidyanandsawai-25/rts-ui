@@ -86,6 +86,19 @@ export default function RtsCertificateApprovalModal({
       const res = await getCertificatePreviewAction(applicationId, officerInputs);
       if (res.success && res.data) {
         setPreviewData(res.data);
+        if (Object.keys(inputs).length === 0 && res.data.requiredOfficerFields) {
+          const auto = res.data.citizenAutoValues || {};
+          const initialInputs: Record<string, string> = {};
+          for (const f of res.data.requiredOfficerFields) {
+            const key = f.fieldKey || (f as any).key || "";
+            if (key && (auto[key] || f.defaultValue)) {
+              initialInputs[key] = auto[key] || f.defaultValue || "";
+            }
+          }
+          if (Object.keys(initialInputs).length > 0) {
+            setOfficerInputs((prev) => ({ ...initialInputs, ...prev }));
+          }
+        }
       } else {
         toast.error(res.error || (isMr ? "प्रमाणपत्र पूर्वदृश्य मिळवण्यात अडचण आली." : "Failed to load certificate preview."));
       }

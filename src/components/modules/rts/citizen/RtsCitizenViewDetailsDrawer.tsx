@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Award, Download, FileText, GitCommit, Paperclip, CreditCard, Printer, CheckCircle2, Clock } from "lucide-react";
+import { Award, Download, FileText, GitCommit, Paperclip, CreditCard, Printer, CheckCircle2, Clock, AlertTriangle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -9,6 +9,7 @@ import { getApplicationDetailAction, type RtsApplicationDetailData } from "@/app
 import { ApprovalStagesTimeline } from "@/components/modules/rts";
 import RtsApplicationDocumentView from "@/components/modules/rts/dashboard/RtsApplicationDocumentView";
 import PrintableCertificateModal from "@/components/modules/rts/citizen/PrintableCertificateModal";
+import CitizenResubmitDrawer from "@/components/modules/rts/citizen/CitizenResubmitDrawer";
 import { Button, Drawer, ViewButton } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import {
@@ -75,6 +76,7 @@ export default function RtsCitizenViewDetailsDrawer({
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatusResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isResubmitOpen, setIsResubmitOpen] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
   const [isPrintCertModalOpen, setIsPrintCertModalOpen] = useState(false);
@@ -181,6 +183,8 @@ export default function RtsCitizenViewDetailsDrawer({
       : null;
   const isLoadingDetails = detailData ? false : loading;
   const normalizedStatus = normalizeStatus(application.status);
+  const isRevertedToCitizen = resolvedDetail?.isRevertedToCitizen === true;
+  const revertedRemark = resolvedDetail?.remark || application.remark;
   const documents = [
     ...(resolvedDetail?.documents ?? []).map((document, index) => ({
       id: document.documentId || index + 1,
@@ -259,6 +263,42 @@ export default function RtsCitizenViewDetailsDrawer({
                 </div>
               </div>
             </section>
+
+            {/* Reverted / Action Required Alert Card */}
+            {isRevertedToCitizen && (
+              <section className="rounded-xl border border-orange-200 bg-gradient-to-r from-orange-50 via-white to-orange-50/50 p-4 shadow-sm space-y-3">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                    <AlertTriangle className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <p className="text-xs font-black text-orange-950">
+                      {t("applicationRevertedTitle")}
+                    </p>
+                    <p className="text-[11px] font-medium text-orange-800">
+                      {t("applicationRevertedDescription")}
+                    </p>
+                    {revertedRemark && (
+                      <div className="p-2.5 rounded-lg bg-white/90 border border-orange-200 text-xs text-orange-950 font-medium">
+                        <strong>{t("officerRemark")}:</strong> {revertedRemark}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="pt-1 flex justify-end">
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="primary"
+                    icon={RotateCcw}
+                    onClick={() => setIsResubmitOpen(true)}
+                    className="rounded-lg text-xs font-bold bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-md shadow-orange-600/20 px-4 py-2"
+                  >
+                    {t("editAndResubmit")}
+                  </Button>
+                </div>
+              </section>
+            )}
 
             {/* Payment state is owned by /RTSPayment/status, not approval-officer metadata. */}
             {resolvedPaymentStatus && (() => {
@@ -503,6 +543,22 @@ export default function RtsCitizenViewDetailsDrawer({
           applicationNo={applicationNumber}
         />
       )}
+
+      {isResubmitOpen && application && (
+        <CitizenResubmitDrawer
+          isOpen={isResubmitOpen}
+          onClose={() => setIsResubmitOpen(false)}
+          applicationId={resolvedDetail?.verification?.applicationId || parseInt(application.applicationNo.replace(/\D/g, ""), 10) || 0}
+          applicationNo={application.applicationNo}
+          serviceId={resolvedDetail?.serviceId || resolvedDetail?.verification?.serviceId || (application as any)?.serviceId || (application as any)?.govtServiceCode}
+          serviceName={application.serviceName}
+          officerRemark={revertedRemark || ""}
+          answerGroups={resolvedDetail?.answerGroups || []}
+          documents={resolvedDetail?.documents || []}
+          onSuccess={onClose}
+        />
+      )}
+
     </>
   );
 }

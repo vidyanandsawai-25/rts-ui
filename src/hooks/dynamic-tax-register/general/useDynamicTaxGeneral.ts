@@ -105,7 +105,9 @@ export function useDynamicTaxGeneral(
   const [status, setStatus] = useState(taxRow?.status === 'DEACTIVE' ? 'deactive' : 'active');
   const [assessmentStatus, setAssessmentStatus] = useState(taxRow?.assessmentStatus ? 'active' : 'deactive');
   const [oldTaxStatus, setOldTaxStatus] = useState(taxRow?.oldTaxStatus ? 'active' : 'deactive');
-  const [ruleDefinitionId, setRuleDefinitionId] = useState(String(taxRow?.ruleDefinitionId ?? ''));
+  const initialRuleDefId =
+    taxRow?.ruleDefinitionId && Number(taxRow.ruleDefinitionId) > 0 ? String(taxRow.ruleDefinitionId) : '';
+  const [ruleDefinitionId, setRuleDefinitionId] = useState(initialRuleDefId);
   // Tracks whether the admin explicitly picked a different Rule Name this
   // session. HYBRID taxes carry a RuleDefinitionId too (their condition-side
   // rule), so we must NOT re-derive CalculationMode from that rule's type
@@ -330,6 +332,11 @@ export function useDynamicTaxGeneral(
       toast.error(t(aliasError));
       return { ok: false };
     }
+    // Validate Rule Name for an existing tax — require a valid rule before saving settings or changing status.
+    if (!ruleDefinitionId || Number(ruleDefinitionId) <= 0) {
+      toast.error(t('messages.general.selectRuleNameRequired'));
+      return { ok: false };
+    }
 
     setSavingSettings(true);
     try {
@@ -369,7 +376,7 @@ export function useDynamicTaxGeneral(
         assessmentStatus: assessmentStatus === 'active',
         oldTaxStatus: oldTaxStatus === 'active',
         calculationMode: displayCalcMode,
-        ruleDefinitionId: ruleDefinitionId ? Number(ruleDefinitionId) : null,
+        ruleDefinitionId: ruleDefinitionId && Number(ruleDefinitionId) > 0 ? Number(ruleDefinitionId) : null,
         updatedBy: 1,
         // Always sent, even when this client sees no mode change: if its view of the tax was
         // stale, the backend 409s instead of deleting configuration nobody was warned about.

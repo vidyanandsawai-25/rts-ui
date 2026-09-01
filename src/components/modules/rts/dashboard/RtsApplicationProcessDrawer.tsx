@@ -157,8 +157,8 @@ function createFieldUpdatePayload(
 }
 
 const ACTIONS: Array<{
-  key: 'canVerifyDocument' | 'canApprove' | 'canReject' | 'canReturn' | 'canPay' | 'canViewNoteSheet';
-  labelKey: 'verifyDocuments' | 'approveApplication' | 'rejectApplication' | 'revertToCitizen' | 'recordPayment' | 'viewNoteSheet';
+  key: 'canVerifyDocument' | 'canApprove' | 'canReject' | 'canReturn' | 'canPay';
+  labelKey: 'verifyDocuments' | 'approveApplication' | 'rejectApplication' | 'revertToCitizen' | 'recordPayment';
   icon: typeof Shield;
   variant: ButtonVariant;
 }> = [
@@ -167,7 +167,6 @@ const ACTIONS: Array<{
     { key: 'canReject', labelKey: 'rejectApplication', icon: XCircle, variant: 'danger' },
     { key: 'canReturn', labelKey: 'revertToCitizen', icon: RotateCcw, variant: 'secondary' },
     { key: 'canPay', labelKey: 'recordPayment', icon: IndianRupee, variant: 'primary' },
-    { key: 'canViewNoteSheet', labelKey: 'viewNoteSheet', icon: FileText, variant: 'secondary' },
   ];
 
 export default function RtsApplicationProcessDrawer({
@@ -234,6 +233,7 @@ export default function RtsApplicationProcessDrawer({
   );
 
   const stages = data?.stages ?? null;
+  const isRevertedToCitizen = stages?.isRevertedToCitizen === true;
 
   const verification = data?.verification ?? null;
   const [isPaidLocal, setIsPaidLocal] = useState<boolean | null>(null);
@@ -258,7 +258,7 @@ export default function RtsApplicationProcessDrawer({
   );
 
   const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
-  const availableActions = verification
+  const availableActions = (verification && hasOfficerAccess)
     ? ACTIONS.filter((action) => {
         if (action.key === 'canPay') {
           // If already paid, DO NOT show "Record Payment" button!
@@ -437,6 +437,11 @@ export default function RtsApplicationProcessDrawer({
       return;
     }
 
+    if (actionKey === 'canVerifyDocument' && isRevertedToCitizen) {
+      toast.error(t('verificationUnavailableWhileReverted'));
+      return;
+    }
+
     if (actionKey === 'canApprove' && verification?.feesRequired && !effectiveIsPaid) {
       toast.warning(`नागरिकाचे शासकीय शुल्क (₹${verification.serviceFees ?? 0}) प्रलंबित असल्याने अर्ज मंजूर करता येणार नाही. प्रथम शुल्क जमा करणे आवश्यक आहे.`);
       return;
@@ -556,17 +561,22 @@ export default function RtsApplicationProcessDrawer({
       footer={
         <div className="flex w-full items-end justify-between gap-4">
           <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
-            {verification && !hasOfficerAccess && (
-              <p className="text-xs font-medium text-amber-700">{t('officerAccessDenied')}</p>
-            )}
             <div className="flex flex-wrap items-center justify-start gap-2">
               {availableActions.map((action) => {
-                const isEditLockedWorkflowAction =
-                  isEditing && action.key !== 'canViewNoteSheet';
+                const isEditLockedWorkflowAction = isEditing;
                 const isApproveBlockedByFee =
                   (action.key === 'canApprove' || action.key === 'canVerifyDocument') &&
                   Boolean(verification?.feesRequired && !effectiveIsPaid);
                 const isRecordPaymentDisabled = action.key === 'canPay' && isFreeService;
+                const isVerificationBlockedByCitizenResubmission =
+                  action.key === 'canVerifyDocument' && isRevertedToCitizen;
+
+                const actionLabel = action.key === 'canPay'
+                  ? 'शुल्क स्वीकारा (Record Payment)'
+                  : action.key === 'canApprove'
+                    ? (verification?.isFinalStage ? 'अंतिम मंजूर करा (Approve)' : 'पुढील टप्प्यावर पाठवा (Forward)')
+                    : t(action.labelKey);
+
                 return (
                   <Button
                     key={action.key}
@@ -579,13 +589,16 @@ export default function RtsApplicationProcessDrawer({
                       !hasOfficerAccess ||
                       isEditLockedWorkflowAction ||
                       isApproveBlockedByFee ||
-                      isRecordPaymentDisabled
+                      isRecordPaymentDisabled ||
+                      isVerificationBlockedByCitizenResubmission
                     }
                     title={
                       !hasOfficerAccess
                         ? t('officerAccessDenied')
                         : isEditLockedWorkflowAction
                           ? t('finishEditBeforeWorkflowAction')
+                        : isVerificationBlockedByCitizenResubmission
+                          ? t('verificationUnavailableWhileReverted')
                         : isApproveBlockedByFee
                           ? 'शासकीय शुल्क प्रलंबित असल्याने कार्यवाही / मंजुरी करता येत नाही. प्रथम शुल्क स्वीकारा.'
                           : isRecordPaymentDisabled
@@ -593,18 +606,17 @@ export default function RtsApplicationProcessDrawer({
                             : undefined
                     }
                     onClick={() => {
-                      if (action.key === 'canViewNoteSheet') {
-                        setIsNoteSheetOpen(true);
-                        return;
-                      }
                       if (action.key === 'canPay') {
                         if (isFreeService) return;
                         setIsOfflinePaymentModalOpen(true);
                         return;
                       }
+                      if (action.key === 'canApprove') {
+                        requestDecisionConfirmation('canApprove');
+                        return;
+                      }
                       if (
                         action.key === 'canVerifyDocument' ||
-                        action.key === 'canApprove' ||
                         action.key === 'canReject' ||
                         action.key === 'canReturn'
                       ) {
@@ -615,12 +627,50 @@ export default function RtsApplicationProcessDrawer({
                     }}
                     className="rounded-lg px-3 text-xs font-bold"
                   >
-                    {action.key === 'canPay' ? 'शुल्क स्वीकारा (Record Payment)' : t(action.labelKey)}
+                    {actionLabel}
                   </Button>
                 );
               })}
 
-              {effectiveIsPaid && (
+              {/* Certificate: Visible to Final Stage Officer or when application is approved */}
+              {Boolean(
+                verification?.isFinalStage ||
+                verification?.applicationStatus?.toLowerCase() === 'approved' ||
+                record?.applicationStatus?.toLowerCase() === 'approved' ||
+                (data?.verification?.applicationStatus && data.verification.applicationStatus.toLowerCase() === 'approved')
+              ) && (
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="secondary"
+                  icon={Award}
+                  onClick={() => setIsCertModalOpen(true)}
+                  className="rounded-lg px-3 text-xs font-bold text-purple-800 border-purple-300 bg-purple-50 hover:bg-purple-100"
+                >
+                  प्रमाणपत्र (Certificate)
+                </Button>
+              )}
+
+              {/* Note Sheet: Visible to ALL officers once first verification is done / history exists */}
+              {Boolean(
+                verification?.canViewNoteSheet ||
+                (verification?.stageOrder && verification.stageOrder > 1) ||
+                (data?.stages && (data.stages.completedStages ?? 0) > 0)
+              ) && (
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="secondary"
+                  icon={FileText}
+                  onClick={() => setIsNoteSheetOpen(true)}
+                  className="rounded-lg px-3 text-xs font-bold text-blue-800 border-blue-300 bg-blue-50 hover:bg-blue-100"
+                >
+                  टिप्पणी पहा (Note Sheet)
+                </Button>
+              )}
+
+              {/* Payment Receipt: Visible to ALL officers once payment is recorded */}
+              {Boolean(effectiveIsPaid || verification?.receiptNo) && (
                 <Button
                   type="button"
                   size="xs"
@@ -631,19 +681,6 @@ export default function RtsApplicationProcessDrawer({
                   className="rounded-lg px-3 text-xs font-bold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
                 >
                   पावती पहा (Receipt)
-                </Button>
-              )}
-
-              {verification?.canApprove && Boolean(verification?.isFinalStage) && (
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="success"
-                  icon={Award}
-                  onClick={() => setIsCertModalOpen(true)}
-                  className="rounded-lg px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                >
-                  प्रमाणपत्र निर्णय व पूर्वदृश्य (Certificate & Sign)
                 </Button>
               )}
             </div>
@@ -895,41 +932,42 @@ export default function RtsApplicationProcessDrawer({
                   ) : null
                 )}
 
-                <section className="rounded-xl border border-blue-200 bg-white p-4 shadow-sm mb-1">
-                  <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3">
-                    <Shield className="h-4 w-4 text-blue-600" />
-                    <h2 className="text-xs font-extrabold uppercase tracking-wide text-slate-800">{t('allowedWorkflowActions')}</h2>
-                  </div>
-                  <div className="mb-3 space-y-1.5">
-                    <Label htmlFor="predefined-officer-remark" className="text-xs font-bold text-slate-700">
-                      {t('predefinedRemarks')}
-                    </Label>
-                    <select
-                      id="predefined-officer-remark"
-                      value={selectedPredefinedRemark}
-                      disabled={!hasOfficerAccess || isSubmittingDecision || predefinedRemarkOptions.length === 0}
+                {hasOfficerAccess ? (
+                  <section className="rounded-xl border border-blue-200 bg-white p-4 shadow-sm mb-1">
+                    <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3">
+                      <Shield className="h-4 w-4 text-blue-600" />
+                      <h2 className="text-xs font-extrabold uppercase tracking-wide text-slate-800">{t('allowedWorkflowActions')}</h2>
+                    </div>
+                    <div className="mb-3 space-y-1.5">
+                      <Label htmlFor="predefined-officer-remark" className="text-xs font-bold text-slate-700">
+                        {t('predefinedRemarks')}
+                      </Label>
+                      <select
+                        id="predefined-officer-remark"
+                        value={selectedPredefinedRemark}
+                        disabled={isSubmittingDecision || predefinedRemarkOptions.length === 0}
+                        onChange={(event) => setOfficerRemark(event.target.value)}
+                        className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                      >
+                        <option value="">{t('selectPredefinedRemark')}</option>
+                        {predefinedRemarkOptions.map((remark) => (
+                          <option key={remark} value={remark}>{remark}</option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] font-medium text-slate-500">{t('predefinedRemarkHint')}</p>
+                    </div>
+                    <TextArea
+                      label={t('officerRemarks')}
+                      required
+                      rows={4}
+                      className="min-h-24 text-xs"
+                      value={officerRemark}
+                      disabled={isSubmittingDecision}
                       onChange={(event) => setOfficerRemark(event.target.value)}
-                      className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-                    >
-                      <option value="">{t('selectPredefinedRemark')}</option>
-                      {predefinedRemarkOptions.map((remark) => (
-                        <option key={remark} value={remark}>{remark}</option>
-                      ))}
-                    </select>
-                    <p className="text-[10px] font-medium text-slate-500">{t('predefinedRemarkHint')}</p>
-                  </div>
-                  <TextArea
-                    label={t('officerRemarks')}
-                    required
-                    rows={4}
-                    className="min-h-24 text-xs"
-                    value={officerRemark}
-                    disabled={!hasOfficerAccess || isSubmittingDecision}
-                    onChange={(event) => setOfficerRemark(event.target.value)}
-                    placeholder={t('remarkPlaceholder')}
-                  />
-
-                </section>
+                      placeholder={t('remarkPlaceholder')}
+                    />
+                  </section>
+                ) : null}
                 </div>
               </aside>
 

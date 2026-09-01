@@ -14,6 +14,7 @@ import type {
   RTSIssuedCertificate,
   UpdateRTSCertificateTemplateInput,
   UpdateRTSCertificateLibraryTemplateInput,
+  DigitalSignatureMetadata,
 } from "@/types/rts/certificate.types";
 
 function extractItems<T>(data: unknown): T {
@@ -204,4 +205,15 @@ export async function verifyCertificatePublic(
   }
 
   return extractItems<CertificateVerificationResponse>(response.data);
+}
+
+export async function getDscMetadata(): Promise<DigitalSignatureMetadata | null> {
+  try {
+    const response = await apiClient.get<unknown>('/rts-certificate/dsc-metadata', {
+      cache: 'no-store',
+    }, false);
+    return response.success && response.data ? extractItems<DigitalSignatureMetadata>(response.data) : null;
+  } catch {
+    return null;
+  }
 }

@@ -246,7 +246,7 @@ describe('ConnectionsTable', () => {
       expect(screen.getByText('Active')).toBeInTheDocument();
     });
 
-    it('should display category badges', () => {
+    it('should not display the category column', () => {
       renderWithIntl(
         <ConnectionsTable
           {...defaultProps}
@@ -256,11 +256,8 @@ describe('ConnectionsTable', () => {
         />
       );
 
-      // Categories from mock data - may appear multiple times
-      const residentialElements = screen.getAllByText('Residential');
-      expect(residentialElements.length).toBeGreaterThan(0);
-      const commercialElements = screen.getAllByText('Commercial');
-      expect(commercialElements.length).toBeGreaterThan(0);
+      expect(screen.queryByText('Category')).not.toBeInTheDocument();
+      expect(screen.queryByText('Residential')).not.toBeInTheDocument();
     });
   });
 

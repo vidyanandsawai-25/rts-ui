@@ -29,6 +29,7 @@ export interface RtsApplicationDetailData {
   applicationStatus: string;
   answerGroups: ApplicationAnswerGroup[];
   workflow: ApplicationWorkflowState | null;
+  remark?: string | null;
 }
 
 export interface SubmitApplicationActionResult {

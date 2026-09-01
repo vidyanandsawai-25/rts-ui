@@ -1,8 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, Download, FileCheck2, Search, User, XCircle } from "lucide-react";
-import { useTranslations } from "next-intl";
+import {
+  ArrowLeft,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  Download,
+  FileCheck2,
+  Search,
+  User,
+  XCircle,
+  AlertTriangle,
+  RotateCcw,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button, Drawer, Input } from "@/components/common";
 import {
@@ -20,6 +33,7 @@ import {
 import { PaymentCheckoutModal } from "./PaymentCheckoutModal";
 import { PaymentReceiptModal } from "./PaymentReceiptModal";
 import PrintableCertificateModal from "./PrintableCertificateModal";
+import CitizenResubmitDrawer from "./CitizenResubmitDrawer";
 import type { PaymentReceiptResult, PaymentStatusResult } from "@/lib/api/rts/rtspayment.service";
 import type { RtsApplicationApprovalStage } from "@/types/rts/application-approval.types";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
@@ -33,7 +47,7 @@ type ApplicationAndTrackingDrawerProps = {
 };
 
 type StageVisual = "approved" | "rejected" | "current" | "pending";
-type ApplicationStatusVisual = "approved" | "rejected" | "pending";
+type ApplicationStatusVisual = "approved" | "rejected" | "reverted" | "pending";
 
 const COPY = {
   searchPlaceholder: "UPIC ID किंवा अर्ज क्रमांक प्रविष्ट करा / Enter UPIC or Application No",
@@ -43,20 +57,20 @@ const COPY = {
   unableToLoadApplications: "अर्जांची माहिती लोड करता आली नाही. / Unable to load applications.",
   unableToLoad: "अर्जाचा तपशील लोड करता आला नाही. / Unable to load application details.",
   loading: "शोधत आहे... / Loading applications...",
-  loadingDetails: "अर्जाचा तपशील लोड होत आहे... / Loading application details...",
-  searchResults: "सापडलेले अर्ज / Applications found",
-  selectApplication: "तपशील पाहण्यासाठी व पेमेंट करण्यासाठी अर्ज निवडा / Select an application to view details & pay",
-  backToResults: "मागे जा / Back to applications",
+  loadingDetails: "तपशील लोड करत आहे... / Loading application details...",
+  searchResults: "शोध निकाल / Search Results",
+  selectApplication: "तपशील पाहण्यासाठी अर्जावर क्लिक करा. / Click an application to view details.",
+  backToResults: "निकाल पृष्ठावर परत जा / Back to Results",
   applicationId: "अर्ज क्रमांक / Application ID",
   overallProgress: "एकूण प्रगती / Overall Progress",
   approvalStages: "मंजुरी टप्पे / Approval Stages",
   officer: "अधिकारी / Officer",
   remark: "शेरा / Remark",
-  noRemarks: "कोणताही शेरा उपलब्ध नाही. / No remarks available.",
-  pending: "प्रलंबित / Pending",
+  noRemarks: "कोणताही शेरा उपलब्ध नाही. / No remarks recorded.",
   approved: "मंजूर / Approved",
   rejected: "नामंजूर / Rejected",
-  inProgress: "प्रगतीत / In Progress",
+  inProgress: "प्रगतीपथावर / In Progress",
+  pending: "प्रलंबित / Pending",
 } as const;
 
 function isTerminalStage(stage: RtsApplicationApprovalStage): boolean {
@@ -96,6 +110,7 @@ function statusLabel(visual: StageVisual): string {
 function applicationStatusVisual(status: string): ApplicationStatusVisual {
   const normalizedStatus = status.toLowerCase();
   if (normalizedStatus.includes("reject") || normalizedStatus.includes("disapprove")) return "rejected";
+  if (normalizedStatus.includes("revert") || normalizedStatus.includes("return")) return "reverted";
   if (
     normalizedStatus.includes("approve") ||
     normalizedStatus.includes("accept") ||
@@ -113,9 +128,10 @@ function ApplicationStatusIndicator({ status }: { status: string }) {
   const styles = {
     approved: "border-emerald-200 bg-emerald-50 text-emerald-700",
     rejected: "border-rose-200 bg-rose-50 text-rose-700",
+    reverted: "border-orange-300 bg-orange-50 text-orange-800",
     pending: "border-amber-200 bg-amber-50 text-amber-700",
   }[visual];
-  const Icon = visual === "approved" ? CheckCircle2 : visual === "rejected" ? XCircle : Clock3;
+  const Icon = visual === "approved" ? CheckCircle2 : visual === "rejected" ? XCircle : visual === "reverted" ? RotateCcw : Clock3;
 
   return (
     <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${styles}`}>
@@ -186,7 +202,10 @@ export default function ApplicationAndTrackingDrawer({
   initialSearchValue,
   initialReceiptValue,
 }: ApplicationAndTrackingDrawerProps) {
+  const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("rts.citizenHeader");
+  const tDashboard = useTranslations("rts.citizenDashboard");
   const [searchValue, setSearchValue] = useState("");
   const [applications, setApplications] = useState<RtsMisDashboardUserApplicationItem[]>([]);
   const [selectedApplication, setSelectedApplication] = useState<RtsMisDashboardUserApplicationItem | null>(null);
@@ -196,6 +215,7 @@ export default function ApplicationAndTrackingDrawer({
   const [paymentInfo, setPaymentInfo] = useState<PaymentStatusResult | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [showResubmitModal, setShowResubmitModal] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
 
   useEffect(() => {
@@ -604,6 +624,65 @@ export default function ApplicationAndTrackingDrawer({
                     </button>
                   </div>
                 )}
+                {/* Reverted / Correction Required Alert Banner */}
+                {((selectedApplication.status && (selectedApplication.status.toLowerCase().includes('revert') || selectedApplication.status.toLowerCase().includes('return'))) || (detail?.applicationStatus && (detail.applicationStatus.toLowerCase().includes('revert') || detail.applicationStatus.toLowerCase().includes('return')))) && (
+                  <div className="mt-3.5 p-3.5 rounded-xl bg-orange-50/90 border border-orange-200 shadow-sm flex flex-col gap-2">
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-2 rounded-lg bg-orange-100 text-orange-700 shrink-0 mt-0.5">
+                        <AlertTriangle className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-bold text-orange-950">
+                          {tDashboard("applicationRevertedTitle")}
+                        </div>
+                        <div className="text-[11px] text-orange-800 font-medium mt-0.5">
+                          {tDashboard("applicationRevertedDescription")}
+                        </div>
+                        {detail?.remark && (
+                          <div className="mt-2 p-2 rounded-lg bg-white/80 border border-orange-200 text-xs text-orange-900">
+                            <strong>{tDashboard("officerRemark")}:</strong> {detail.remark}
+                          </div>
+                        )}
+                        <div className="mt-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowResubmitModal(true);
+                            }}
+                            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 rounded-lg shadow-md shadow-orange-600/20 transition-all cursor-pointer"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            {tDashboard("editAndResubmit")}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Disapproved / Rejected Alert Banner */}
+                {((selectedApplication.status && (selectedApplication.status.toLowerCase().includes('reject') || selectedApplication.status.toLowerCase().includes('disapprove'))) || (detail?.applicationStatus && (detail.applicationStatus.toLowerCase().includes('reject') || detail.applicationStatus.toLowerCase().includes('disapprove')))) && (
+                  <div className="mt-3.5 p-3.5 rounded-xl bg-rose-50/90 border border-rose-200 shadow-sm flex flex-col gap-2">
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-2 rounded-lg bg-rose-100 text-rose-700 shrink-0 mt-0.5">
+                        <XCircle className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-bold text-rose-950">
+                          अर्ज नामंजूर केला आहे (Application Disapproved / Rejected)
+                        </div>
+                        <div className="text-[11px] text-rose-800 font-medium mt-0.5">
+                          सदर अर्ज नियमांनुसार किंवा अपात्रतेमुळे नामंजूर करण्यात आला आहे.
+                        </div>
+                        {detail?.remark && (
+                          <div className="mt-2 p-2 rounded-lg bg-white/80 border border-rose-200 text-xs text-rose-900">
+                            <strong>नामंजूर करण्याचे कारण / शेरा:</strong> {detail.remark}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </section>
 
               {hasWorkflowStages && (
@@ -690,6 +769,25 @@ export default function ApplicationAndTrackingDrawer({
           applicationNo={selectedApplication.applicationNo}
         />
       )}
+
+      {showResubmitModal && selectedApplication && (
+        <CitizenResubmitDrawer
+          isOpen={showResubmitModal}
+          onClose={() => setShowResubmitModal(false)}
+          applicationId={detail?.verification?.applicationId || parseInt(selectedApplication.applicationNo.replace(/\D/g, ""), 10) || 0}
+          applicationNo={selectedApplication.applicationNo}
+          serviceId={detail?.serviceId || detail?.verification?.serviceId || (selectedApplication as any)?.serviceId || (selectedApplication as any)?.govtServiceCode}
+          serviceName={selectedApplication.serviceName}
+          officerRemark={detail?.remark || stages.find((stage) => stage.remark)?.remark || ""}
+          answerGroups={detail?.answerGroups || []}
+          documents={detail?.documents || []}
+          onSuccess={() => {
+            setShowResubmitModal(false);
+            void selectApplication(selectedApplication);
+          }}
+        />
+      )}
+
     </Drawer>
   );
 }

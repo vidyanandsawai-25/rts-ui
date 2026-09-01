@@ -165,8 +165,8 @@ export default function ServiceGrid({
         locale === "mr"
           ? "ही सेवा सध्या प्रगतीपथावर आहे / उपलब्ध नाही."
           : locale === "hi"
-          ? "यह सेवा वर्तमान में उपलब्ध नहीं है।"
-          : "This service is currently under development / not available."
+            ? "यह सेवा वर्तमान में उपलब्ध नहीं है।"
+            : "This service is currently under development / not available."
       );
       return;
     }
@@ -186,8 +186,8 @@ export default function ServiceGrid({
           locale === "mr"
             ? "तुमच्या ब्राउझरने नवीन टॅब ब्लॉक केला आहे. कृपया पॉप-अपला परवानगी द्या."
             : locale === "hi"
-            ? "आपके ब्राउज़र ने नया टैब ब्लॉक कर दिया है। कृपया पॉप-अप की अनुमति दें।"
-            : "Your browser blocked the external service tab. Please allow pop-ups and try again."
+              ? "आपके ब्राउज़र ने नया टैब ब्लॉक कर दिया है। कृपया पॉप-अप की अनुमति दें।"
+              : "Your browser blocked the external service tab. Please allow pop-ups and try again."
         );
         return;
       }

@@ -155,6 +155,8 @@ export interface CertificateVerificationResponse {
   departmentName?: string;
   applicantName?: string;
   ulbName?: string;
+  ulbLogo?: string;
+  ulbAddress?: string;
   issuedAt?: string;
   issuedByOfficer?: string;
   officerDesignation?: string;
@@ -166,4 +168,19 @@ export interface CertificateVerificationResponse {
   dscThumbprint?: string;
   dscValidUntil?: string;
   mergedHtmlContent?: string;
+}
+
+export interface DigitalSignatureMetadata {
+  isAvailable: boolean;
+  signerName: string;
+  signerSubject: string;
+  issuer: string;
+  serialNumber: string;
+  thumbprint: string;
+  validFrom?: string;
+  validTo?: string;
+  algorithm: string;
+  hasPrivateKey: boolean;
+  organization: string;
+  location: string;
 }

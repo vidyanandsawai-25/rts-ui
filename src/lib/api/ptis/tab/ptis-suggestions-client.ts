@@ -7,38 +7,71 @@ interface SuggestionPayloadItem {
   displayLabel?: string;
 }
 
-export const ptisSuggestionsClient = {
-  async getSuggestions(params: {
-    wardId: number;
-    propertyNo?: string;
-    partitionNo?: string;
-  }): Promise<{ success: boolean; data?: PropertyListItem[]; error?: string }> {
-    const searchParams = new URLSearchParams();
-    searchParams.append('wardId', params.wardId.toString());
-    if (params.propertyNo) searchParams.append('propertyNo', params.propertyNo);
-    if (params.partitionNo) searchParams.append('partitionNo', params.partitionNo);
+export interface PropertySuggestionPagination {
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasMore: boolean;
+}
 
-    try {
-      const res = await fetch(`/api/ptis/suggestions?${searchParams.toString()}`, {
-        cache: 'no-store',
-      });
-      const result = await res.json();
-      if (result.success && result.data) {
-        const suggestions: PropertyListItem[] = result.data.map((item: SuggestionPayloadItem) => ({
-          propertyId: item.propertyId,
-          propertyNo: item.propertyNo,
-          partitionNo: item.partitionNo || '',
-          upicId: '',
-          ownerName: '',
-          address: '',
-          displayProperty: item.displayLabel || item.propertyNo,
-        }));
-        return { success: true, data: suggestions };
-      }
-      return { success: false, error: result.error || 'Failed to fetch suggestions' };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Network error';
-      return { success: false, error: message };
+interface PropertySuggestionParams {
+  wardId: number;
+  propertyNo?: string;
+  partitionNo?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+interface PropertySuggestionResult {
+  success: boolean;
+  data?: PropertyListItem[];
+  pagination?: PropertySuggestionPagination;
+  error?: string;
+}
+
+async function fetchSuggestions(
+  params: PropertySuggestionParams
+): Promise<PropertySuggestionResult> {
+  const searchParams = new URLSearchParams();
+  searchParams.append('wardId', params.wardId.toString());
+  if (params.propertyNo) searchParams.append('propertyNo', params.propertyNo);
+  if (params.partitionNo) searchParams.append('partitionNo', params.partitionNo);
+  if (params.pageNumber != null) searchParams.append('pageNumber', String(params.pageNumber));
+  if (params.pageSize != null) searchParams.append('pageSize', String(params.pageSize));
+
+  try {
+    const res = await fetch(`/api/ptis/suggestions?${searchParams.toString()}`, {
+      cache: 'no-store',
+    });
+    const result = await res.json();
+    if (result.success && result.data) {
+      const suggestions: PropertyListItem[] = result.data.map((item: SuggestionPayloadItem) => ({
+        propertyId: item.propertyId,
+        propertyNo: item.propertyNo,
+        partitionNo: item.partitionNo || '',
+        upicId: '',
+        ownerName: '',
+        address: '',
+        displayProperty: item.displayLabel || item.propertyNo,
+      }));
+      return { success: true, data: suggestions, pagination: result.pagination };
     }
+    return { success: false, error: result.error || 'Failed to fetch suggestions' };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Network error';
+    return { success: false, error: message };
+  }
+}
+
+export const ptisSuggestionsClient = {
+  getSuggestions(params: Omit<PropertySuggestionParams, 'pageNumber' | 'pageSize'>) {
+    return fetchSuggestions(params);
+  },
+
+  getSuggestionsPage(
+    params: PropertySuggestionParams & { pageNumber: number; pageSize: number }
+  ) {
+    return fetchSuggestions(params);
   }
 };

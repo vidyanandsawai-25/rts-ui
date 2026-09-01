@@ -57,11 +57,19 @@ export async function getRtsApplicationServicesAction(): Promise<RtsServiceApiIt
   }
 }
 
-export async function getUserMisDashboardAction(): Promise<RtsMisDashboardResponse> {
+export async function getUserMisDashboardAction(upicId?: string): Promise<RtsMisDashboardResponse> {
   try {
+    const cookieStore = await cookies();
+    const resolvedUpicId =
+      upicId ||
+      cookieStore.get('citizen_upic')?.value ||
+      cookieStore.get('upic')?.value ||
+      cookieStore.get('upic_id')?.value ||
+      null;
+
     return await getRtsMisDashboardData({
       Flag: 'user',
-      UpicId: 'AKLMC000010',
+      UpicId: resolvedUpicId,
     });
   } catch (error) {
     console.error('Failed to fetch User MIS Dashboard:', error);
@@ -92,8 +100,10 @@ export interface RtsApplicationDetailData {
   approvalStages?: RtsApplicationApprovalStage[];
   completedStages?: number;
   totalApprovalStages?: number;
+  isRevertedToCitizen?: boolean;
   documents?: RtsApplicationDocumentItem[];
   verification?: RtsApplicationVerificationItem | null;
+  remark?: string | null;
 }
 
 export interface RtsApplicationProcessData {
@@ -451,19 +461,21 @@ export async function getApplicationDetailAction(
 
         return {
           applicationNo,
-          departmentId: applicationHeader?.departmentId ?? 0,
-          departmentName: null,
-          serviceId: applicationHeader?.serviceId ?? 0,
-          serviceName: null,
-          applicationStatus: applicationHeader?.applicationStatus ?? 'pending',
+          departmentId: (viewDetails as any)?.departmentId || applicationHeader?.departmentId || 0,
+          departmentName: (viewDetails as any)?.departmentName || null,
+          serviceId: (viewDetails as any)?.serviceId || applicationHeader?.serviceId || 0,
+          serviceName: (viewDetails as any)?.serviceName || null,
+          applicationStatus: (viewDetails as any)?.applicationStatus || applicationHeader?.applicationStatus || 'pending',
           answerGroups,
           workflow: null,
           approvalFlowStages,
           approvalStages: stageDetails?.approvalStages ?? [],
           completedStages: stageDetails?.completedStages ?? 0,
           totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
+          isRevertedToCitizen: stageDetails?.isRevertedToCitizen ?? false,
           documents: viewDetails.documents ?? [],
           verification: null,
+          remark: (viewDetails as any)?.remark ?? (applicationHeader as any)?.remark ?? null,
         };
       }
 
@@ -481,8 +493,10 @@ export async function getApplicationDetailAction(
         approvalStages: stageDetails?.approvalStages ?? [],
         completedStages: stageDetails?.completedStages ?? 0,
         totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
+        isRevertedToCitizen: stageDetails?.isRevertedToCitizen ?? false,
         documents: [],
         verification: null,
+        remark: null,
       };
     } catch (err) {
       console.error(`Error in getApplicationDetailAction for ${applicationNo}:`, err);
@@ -502,6 +516,7 @@ export async function getApplicationDetailAction(
     approvalStages: [],
     completedStages: 0,
     totalApprovalStages: 0,
+    isRevertedToCitizen: false,
     documents: [],
   };
 }
@@ -1476,5 +1491,55 @@ export async function getIssuedCertificateAction(applicationNo: string) {
   } catch (error: unknown) {
     console.error('Failed to fetch issued certificate:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Certificate not found' };
+  }
+}
+
+export async function fetchDscMetadataAction() {
+  try {
+    const { getDscMetadata } = await import('@/lib/api/rts/rtscertificate.service');
+    const metadata = await getDscMetadata();
+    return { success: true, data: metadata };
+  } catch (error: any) {
+    console.error('Failed to fetch DSC metadata:', error);
+    return { success: false, error: error?.message || 'Failed to fetch DSC metadata' };
+  }
+}
+
+export interface RTSTrackApplicationHistoryItem {
+  id: number;
+  applicationId: number;
+  applicationNo?: string;
+  approvalFlowId: number;
+  approvalFlowStageId?: number;
+  stageName?: string;
+  actionByUserId?: number;
+  actionByUserName?: string;
+  actionByOfficerName?: string;
+  action: string;
+  status: string;
+  remark?: string;
+  isReverted: boolean;
+  isDigitallySigned: boolean;
+  digitalSignatureInfo?: string;
+  createdDate: string;
+}
+
+export async function fetchTrackApplicationHistoryAction(applicationId: number) {
+  try {
+    const { apiClient } = await import('@/services/api.service');
+    const response = await apiClient.get<unknown>(`/RTSApplicationApproval/${applicationId}/track-history`, {
+      cache: 'no-store',
+    }, false);
+
+    if (!response.success || !response.data) {
+      return { success: false, data: [] as RTSTrackApplicationHistoryItem[] };
+    }
+
+    const dataObj = response.data as Record<string, unknown>;
+    const items = dataObj?.items ?? response.data ?? [];
+    return { success: true, data: (Array.isArray(items) ? items : []) as RTSTrackApplicationHistoryItem[] };
+  } catch (error: any) {
+    console.error('Failed to fetch track history:', error);
+    return { success: false, error: error?.message || 'Failed to fetch history', data: [] as RTSTrackApplicationHistoryItem[] };
   }
 }

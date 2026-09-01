@@ -225,6 +225,32 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
         );
 
         if (otpRes.success) {
+          if (otpRes.directLogin) {
+            setInfo(t('messages.loginSuccess') || 'लॉगिन यशस्वी झाले.');
+            if (otpRes.externalDestination) {
+              window.location.href = otpRes.externalDestination;
+              return;
+            }
+
+            let targetUrl = redirectUrl || `/${locale}/service/dashboard`;
+            if (externalServiceId) {
+              const errorCode = otpRes.serviceRedirectError || 'service-unavailable';
+              targetUrl = `/${locale}/service/dashboard?serviceRedirectError=${encodeURIComponent(errorCode)}`;
+            } else {
+              const cleanUpic = (otpRes.citizen?.upicId || upicId || '').trim().toUpperCase();
+              if (cleanUpic) {
+                if (targetUrl.includes('upicNo=')) {
+                  targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
+                } else {
+                  const sep = targetUrl.includes('?') ? '&' : '?';
+                  targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
+                }
+              }
+            }
+            window.location.href = targetUrl;
+            return;
+          }
+
           setMaskedPhone(otpRes.maskedPhone || '');
           setStep('otp');
           setInfo(t('messages.otpSent'));
@@ -261,6 +287,32 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
         );
 
         if (otpRes.success) {
+          if (otpRes.directLogin) {
+            setInfo(t('messages.loginSuccess') || 'लॉगिन यशस्वी झाले.');
+            if (otpRes.externalDestination) {
+              window.location.href = otpRes.externalDestination;
+              return;
+            }
+
+            let targetUrl = redirectUrl || `/${locale}/service/dashboard`;
+            if (externalServiceId) {
+              const errorCode = otpRes.serviceRedirectError || 'service-unavailable';
+              targetUrl = `/${locale}/service/dashboard?serviceRedirectError=${encodeURIComponent(errorCode)}`;
+            } else {
+              const cleanUpic = (otpRes.citizen?.upicId || upicId || '').trim().toUpperCase();
+              if (cleanUpic) {
+                if (targetUrl.includes('upicNo=')) {
+                  targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
+                } else {
+                  const sep = targetUrl.includes('?') ? '&' : '?';
+                  targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
+                }
+              }
+            }
+            window.location.href = targetUrl;
+            return;
+          }
+
           setMaskedPhone(otpRes.maskedPhone || '');
           setStep('otp');
           setInfo(t('messages.otpSent'));

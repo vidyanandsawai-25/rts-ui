@@ -21,6 +21,7 @@ interface ServicePageProps {
     submit?: string;
     applicationNo?: string;
     status?: string;
+    mode?: string;
   }>;
 }
 
@@ -143,6 +144,34 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
 
   const hasFieldDefinitions = Array.isArray(fieldDefinitions) && fieldDefinitions.length > 0;
 
+  const isResubmitMode = resolvedSearchParams?.mode === "resubmit" || resolvedSearchParams?.mode === "edit";
+  let prefilledValues: Record<string, any> = {};
+  let existingDocuments: any[] = [];
+  let officerRemark: string | null = null;
+  let resubmitAppId: number = 0;
+
+  if (isResubmitMode && resolvedSearchParams?.applicationNo) {
+    try {
+      const { getApplicationDetailAction } = await import("@/app/[locale]/rts/dashboard/rts-applications/actions");
+      const detail = await getApplicationDetailAction(resolvedSearchParams.applicationNo);
+      if (detail) {
+        officerRemark = detail.remark || null;
+        resubmitAppId = detail.verification?.applicationId || parseInt(resolvedSearchParams.applicationNo.replace(/\D/g, ""), 10) || 0;
+        existingDocuments = detail.documents || [];
+
+        for (const group of detail.answerGroups || []) {
+          for (const ans of group.answers || []) {
+            const val = ans.displayValue === "—" ? "" : ans.displayValue;
+            if (ans.fieldCode) prefilledValues[ans.fieldCode] = val;
+            if (ans.fieldDefinitionId) prefilledValues[String(ans.fieldDefinitionId)] = val;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load resubmit app details:", e);
+    }
+  }
+
   return (
     <CitizenLayout>
       {hasFieldDefinitions ? (
@@ -160,6 +189,12 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
           isLoggedIn={isLoggedIn}
           serviceFees={rtsService?.fees ?? 0}
           feesRequired={Boolean(rtsService?.feesRequired || rtsService?.isFeesRequired || (rtsService?.fees && rtsService.fees > 0))}
+          isResubmitMode={isResubmitMode}
+          resubmitApplicationId={resubmitAppId}
+          resubmitApplicationNo={resolvedSearchParams?.applicationNo}
+          officerRemark={officerRemark}
+          prefilledValues={prefilledValues}
+          existingDocuments={existingDocuments}
         />
       ) : (
         <div className="mx-auto flex w-full max-w-[960px] flex-1 items-center justify-center px-4 py-10">

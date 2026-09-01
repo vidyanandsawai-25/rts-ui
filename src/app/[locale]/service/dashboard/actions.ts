@@ -170,10 +170,10 @@ export async function getCitizenDashboardRouteState(
 type ExternalServiceNavigationActionResult =
   | ExternalServiceNavigationResult
   | {
-      success: false;
-      errorCode: 'login-required' | 'missing-citizen-profile';
-      error: string;
-    };
+    success: false;
+    errorCode: 'login-required' | 'missing-citizen-profile';
+    error: string;
+  };
 
 /** Resolves a legacy service URL without creating an RTS application record. */
 export async function resolveExternalServiceNavigationAction(
@@ -442,23 +442,136 @@ export async function getServiceDetailsModalInfoAction(serviceId: number): Promi
       };
     });
 
-    // Extract receiving officer from Approval Stage 1
+    // Extract receiving officer from Approval Stage 1 with officer name
     let receivingOfficer = "-";
     const rawData = stagesResponse?.data as any;
-    const stages: Array<{ stageOrder: number; stageName: string }> =
-      rawData?.data?.stages || rawData?.stages || [];
+    const stages: Array<{
+      stageOrder?: number;
+      sequenceNo?: number;
+      stageName?: string;
+      stageNameLocal?: string;
+      roleName?: string;
+      officerName?: string;
+      officerUserName?: string;
+      userId?: number;
+    }> =
+      (Array.isArray(rawData) ? rawData : null) ||
+      (Array.isArray(rawData?.data) ? rawData.data : null) ||
+      (Array.isArray(rawData?.data?.stages) ? rawData.data.stages : null) ||
+      (Array.isArray(rawData?.stages) ? rawData.stages : null) ||
+      [];
 
     if (stages && stages.length > 0) {
-      const sortedStages = [...stages].sort((a, b) => a.stageOrder - b.stageOrder);
+      const sortedStages = [...stages].sort(
+        (a, b) => (a.stageOrder ?? a.sequenceNo ?? 1) - (b.stageOrder ?? b.sequenceNo ?? 1)
+      );
       const stage1 = sortedStages[0];
-      if (stage1?.stageName) {
-        receivingOfficer = stage1.stageName.trim();
+      const officer = stage1?.officerName?.trim() || "";
+      const designation = (stage1?.stageName || stage1?.roleName || stage1?.stageNameLocal || "Ward Lipik").trim();
+
+      if (officer && designation) {
+        receivingOfficer = `${officer} - ${designation}`;
+      } else if (officer) {
+        receivingOfficer = officer;
+      } else {
+        receivingOfficer = designation;
       }
+    }
+
+    if (receivingOfficer === "-" || !receivingOfficer) {
+      receivingOfficer = "लिपिक (Ward Lipik)";
     }
 
     return { documents, receivingOfficer };
   } catch (error) {
     console.error("Failed to fetch service details modal info:", error);
-    return { documents: [], receivingOfficer: "-" };
+    return { documents: [], receivingOfficer: "लिपिक (Ward Lipik)" };
+  }
+}
+
+export async function citizenResubmitApplicationAction(
+  applicationId: number,
+  remark: string,
+  fieldValues: Array<{
+    fieldDefinitionId: number;
+    textValue?: string | null;
+    numberValue?: number | null;
+    dateValue?: string | null;
+    booleanValue?: boolean | null;
+    documentGuid?: string | null;
+  }>
+): Promise<{ success: boolean; message: string }> {
+  if (!Number.isInteger(applicationId) || applicationId <= 0) {
+    return { success: false, message: "अवैध अर्ज क्रमांक / Invalid Application ID" };
+  }
+
+  try {
+    const { verifyAndCorrectApproval } = await import("@/lib/api/rts/rts-application-approval.service");
+    const result = await verifyAndCorrectApproval(applicationId, {
+      isActive: true,
+      updatedBy: 0,
+      remark: remark?.trim() || "Application corrected and resubmitted by citizen",
+      status: "Corrected",
+      fieldValue: fieldValues.map((field) => ({
+        fieldDefinitionId: field.fieldDefinitionId,
+        textValue: field.textValue ?? null,
+        numberValue: field.numberValue ?? null,
+        dateValue: field.dateValue ?? null,
+        booleanValue: field.booleanValue ?? null,
+        documentGuid: field.documentGuid ?? null,
+        updatedBy: 0,
+        isActive: true,
+      })),
+    });
+
+    return {
+      success: true,
+      message: result?.message || "आपला अर्ज दुरुस्त करून यशस्वीरित्या पुन्हा सादर करण्यात आला आहे!",
+    };
+  } catch (error) {
+    console.error("citizenResubmitApplicationAction error:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "अर्ज पुन्हा सादर करताना त्रुटी आली.",
+    };
+  }
+}
+
+export async function getServiceFieldDefinitionsForResubmitAction(
+  serviceId: number
+): Promise<{ success: boolean; data?: any[]; error?: string }> {
+  if (!serviceId || serviceId <= 0) {
+    return { success: false, error: "Invalid Service ID" };
+  }
+
+  try {
+    const { getAllRtsFieldDefinitions } = await import("@/lib/api/rts/rtsfielddefinition.service");
+    const items = await getAllRtsFieldDefinitions({ ServiceId: serviceId });
+    return { success: true, data: items };
+  } catch (err) {
+    console.error("getServiceFieldDefinitionsForResubmitAction error:", err);
+    return { success: false, error: err instanceof Error ? err.message : "Failed to load field definitions" };
+  }
+}
+
+export async function uploadCitizenDocumentAction(
+  formData: FormData
+): Promise<{ success: boolean; documentGuid?: string; fileName?: string; error?: string }> {
+  try {
+    const file = formData.get("file") as File | null;
+    if (!file) {
+      return { success: false, error: "कोणतीही फाईल आढळली नाही." };
+    }
+    const { uploadRtsDocument } = await import("@/lib/api/rts/rtsdocument.service");
+    const result = await uploadRtsDocument({ file });
+    if (result && result.documentGuid) {
+      return { success: true, documentGuid: result.documentGuid, fileName: file.name };
+    }
+    return { success: false, error: "कागदपत्र अपलोड करण्यात अडचण आली." };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "कागदपत्र अपलोड अयशस्वी.",
+    };
   }
 }

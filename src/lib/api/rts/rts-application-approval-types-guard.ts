@@ -224,6 +224,7 @@ export function normalizeRtsApplicationApprovalStagesItem(
   return {
     totalApprovalStages: parseNumber(data.totalApprovalStages),
     completedStages: parseNumber(data.completedStages),
+    isRevertedToCitizen: Boolean(data.isRevertedToCitizen),
     approvalStages,
   };
 }

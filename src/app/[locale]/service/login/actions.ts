@@ -257,7 +257,27 @@ export async function sendCitizenOtpAction(
     const resp = await requestOtp(mobile);
     const c = await cookies();
 
-    // Live or Demo OTP mode (always show OTP step)
+    // If directLogin is true (SMS Gateway or OTP Template disabled in DB), automatically establish session
+    if (resp.directLogin) {
+      if (selectedOwnerId) {
+        c.set('rts_selected_owner_id', String(selectedOwnerId), { httpOnly: true, sameSite: 'lax', path: '/' });
+      }
+      const firstProp = properties?.[0];
+      const fallback = firstProp ? {
+        name: firstProp.ownerNameMarathi || (firstProp as any).ownerNameEnglish || (firstProp as any).ownerName || 'नागरिक',
+        upicId: firstProp.upicNo || '',
+        propertyNo: firstProp.propertyNo || '',
+        ownerId: selectedOwnerId || firstProp.ownerId || 0,
+      } : undefined;
+
+      const sessionResult = await establishCitizenSession(mobile, c, fallback, _externalServiceId);
+      return {
+        ...sessionResult,
+        directLogin: true,
+      };
+    }
+
+    // Live OTP mode (show OTP verification step)
     const txnId = resp.txnId;
     const demoOtp = resp.demoOtp || '123456';
     const maskedPhone = `+91 ${mobile.slice(0, 2)}******${mobile.slice(8)}`;
