@@ -82,21 +82,32 @@ runs:
         Write-Output "Version   : $version"
         Write-Output "Branch    : $branch"
         Write-Output "Path Mode : $pathMode"
+        Write-Output ""
 
-        # Validate version
+        # --------------------------------------------------------
+        # Validate release version
+        # --------------------------------------------------------
+
         if ($version -notmatch '^\d+\.\d+\.\d+\.\d+$') {
           Write-Error "Invalid version format: $version"
-          Write-Error "Expected format: x.y.z.w"
+          Write-Error "Expected format: x.y.z.w (example: 2.0.0.0)"
           exit 1
         }
 
+        # --------------------------------------------------------
         # Validate path mode
+        # --------------------------------------------------------
+
         if ($pathMode -notin @('standalone', 'orchestrated')) {
           Write-Error "Invalid path-mode: $pathMode"
+          Write-Error "Allowed values: standalone, orchestrated"
           exit 1
         }
 
-        # Parse branch environment map safely
+        # --------------------------------------------------------
+        # Parse branch environment map
+        # --------------------------------------------------------
+
         try {
           $branchEnvMap = $env:BRANCH_ENV_MAP_JSON | ConvertFrom-Json
         }
@@ -109,7 +120,7 @@ runs:
           $branchEnvMap.PSObject.Properties[$branch]
 
         # IMPORTANT:
-        # Never silently map unknown branches to production.
+        # Never silently map an unknown branch to production.
         if (-not $environmentProperty) {
           Write-Error "No environment mapping exists for branch: $branch"
           exit 1
@@ -118,13 +129,14 @@ runs:
         $environment = $environmentProperty.Value
 
         if ([string]::IsNullOrWhiteSpace($environment)) {
-          Write-Error "Environment mapping for '$branch' is empty."
+          Write-Error "Environment mapping for branch '$branch' is empty."
           exit 1
         }
 
-        # Get actual NTIS UI source commit.
-        # This is safer than github.sha because orchestrated builds
-        # originate from the ntis-devops workflow.
+        # --------------------------------------------------------
+        # Determine actual checked-out NTIS UI commit
+        # --------------------------------------------------------
+
         try {
           $sourceSha = (git rev-parse HEAD).Trim()
         }
@@ -135,21 +147,25 @@ runs:
 
         $artifactName = "ntis-ui-$environment-v$version"
 
+        # --------------------------------------------------------
+        # Set outputs
+        # --------------------------------------------------------
+
         "version=$version" >> $env:GITHUB_OUTPUT
         "artifact-name=$artifactName" >> $env:GITHUB_OUTPUT
         "environment=$environment" >> $env:GITHUB_OUTPUT
         "branch=$branch" >> $env:GITHUB_OUTPUT
         "source-sha=$sourceSha" >> $env:GITHUB_OUTPUT
 
-        Write-Output ""
         Write-Output "Environment : $environment"
         Write-Output "Commit      : $sourceSha"
         Write-Output "Artifact    : $artifactName"
+        Write-Output ""
         Write-Output "Validation completed successfully."
 
 
     # ============================================================
-    # 2. SETUP NODE + NPM CACHE
+    # 2. VERIFY PACKAGE LOCK
     # ============================================================
 
     - name: Verify package lock
@@ -157,14 +173,18 @@ runs:
       run: |
         if (-not (Test-Path 'package-lock.json')) {
           Write-Error "package-lock.json not found."
-          Write-Error "A lock file is required for deterministic package builds."
+          Write-Error "npm ci requires package-lock.json."
           exit 1
         }
 
         Write-Output "package-lock.json verified."
 
 
-    - name: Setup Node.js
+    # ============================================================
+    # 3. SETUP NODE + NPM CACHE
+    # ============================================================
+
+    - name: Setup Node.js with npm cache
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
@@ -173,7 +193,7 @@ runs:
 
 
     # ============================================================
-    # 3. INSTALL DEPENDENCIES
+    # 4. INSTALL DEPENDENCIES
     # ============================================================
 
     - name: Install dependencies
@@ -181,7 +201,8 @@ runs:
       run: |
         $start = Get-Date
 
-        Write-Output "Installing dependencies..."
+        Write-Output ""
+        Write-Output "Installing dependencies using npm ci..."
 
         npm ci --prefer-offline --no-audit --no-fund
 
@@ -192,12 +213,13 @@ runs:
 
         $elapsed = (Get-Date) - $start
 
+        Write-Output ""
         Write-Output "Dependencies installed successfully."
         Write-Output "Install time: $([math]::Round($elapsed.TotalSeconds, 2)) seconds"
 
 
     # ============================================================
-    # 4. RESTORE NEXT.JS BUILD CACHE
+    # 5. RESTORE NEXT.JS BUILD CACHE
     # ============================================================
 
     - name: Restore Next.js build cache
@@ -216,13 +238,9 @@ runs:
           ${{ runner.os }}-ntis-ui-next-${{ inputs.branch }}-
           ${{ runner.os }}-ntis-ui-next-
 
-    # GitHub caches are immutable; a cache miss can be saved after
-    # a successful job, and restore keys allow reuse of older
-    # compatible caches. :contentReference[oaicite:1]{index=1}
-
 
     # ============================================================
-    # 5. BUILD
+    # 6. BUILD NEXT.JS / TURBOPACK
     # ============================================================
 
     - name: Build with Turbopack
@@ -236,8 +254,10 @@ runs:
 
         Write-Output ""
         Write-Output "============================================"
-        Write-Output "Building NTIS UI v$version"
+        Write-Output "BUILDING NTIS UI"
         Write-Output "============================================"
+        Write-Output "Version : $version"
+        Write-Output ""
 
         npm run build:production
 
@@ -249,19 +269,20 @@ runs:
         $elapsed = (Get-Date) - $start
 
         Write-Output ""
-        Write-Output "Build completed successfully."
+        Write-Output "Turbopack build completed successfully."
         Write-Output "Build time: $([math]::Round($elapsed.TotalSeconds, 2)) seconds"
 
 
     # ============================================================
-    # 6. VERIFY BUILD OUTPUT
-    #
-    # Removed expensive recursive .next scanning.
+    # 7. VERIFY BUILD OUTPUT
     # ============================================================
 
     - name: Verify build output
       shell: pwsh
       run: |
+        Write-Output ""
+        Write-Output "Verifying Next.js standalone build..."
+
         $requiredPaths = @(
           '.next',
           '.next\standalone',
@@ -278,11 +299,17 @@ runs:
 
         }
 
-        Write-Output "Next.js standalone output verified."
+        Write-Output "Next.js standalone build verified successfully."
 
 
     # ============================================================
-    # 7. CREATE DEPLOYMENT PACKAGE
+    # 8. CREATE DEPLOYMENT PACKAGE
+    #
+    # IMPORTANT:
+    # We MOVE .next\standalone instead of copying it.
+    #
+    # This avoids copying thousands of small node_modules files
+    # and significantly reduces package preparation time.
     # ============================================================
 
     - name: Create deployment package
@@ -297,100 +324,123 @@ runs:
         $start = Get-Date
 
         Write-Output ""
-        Write-Output "Creating deployment package: $deploymentDir"
+        Write-Output "============================================"
+        Write-Output "CREATING DEPLOYMENT PACKAGE"
+        Write-Output "============================================"
+        Write-Output "Directory: $deploymentDir"
+        Write-Output ""
+
+        # --------------------------------------------------------
+        # Remove previous deployment directory if present
+        # --------------------------------------------------------
 
         if (Test-Path $deploymentDir) {
+
+          Write-Output "Removing previous deployment directory..."
+
           Remove-Item `
             -Path $deploymentDir `
             -Recurse `
             -Force
         }
 
-        New-Item `
-          -ItemType Directory `
-          -Path $deploymentDir `
-          -Force | Out-Null
+
+        # --------------------------------------------------------
+        # Move standalone application
+        #
+        # Faster than Copy-Item / Robocopy on the same disk.
+        # --------------------------------------------------------
+
+        if (-not (Test-Path '.next\standalone')) {
+
+          Write-Error ".next\standalone not found."
+          exit 1
+        }
+
+        Write-Output "Moving standalone application..."
+
+        Move-Item `
+          -Path '.next\standalone' `
+          -Destination $deploymentDir
 
 
         # --------------------------------------------------------
-        # FAST COPY FUNCTION
+        # Prepare deployment .next directory
         # --------------------------------------------------------
 
-        function Copy-DirectoryFast {
+        $deploymentNextDir =
+          "$deploymentDir\.next"
 
-          param (
-            [string]$Source,
-            [string]$Destination
-          )
-
-          if (-not (Test-Path $Source)) {
-            Write-Error "Source directory missing: $Source"
-            exit 1
-          }
+        if (-not (Test-Path $deploymentNextDir)) {
 
           New-Item `
             -ItemType Directory `
-            -Path $Destination `
+            -Path $deploymentNextDir `
             -Force | Out-Null
-
-          robocopy `
-            "$Source" `
-            "$Destination" `
-            /E `
-            /MT:16 `
-            /R:2 `
-            /W:1 `
-            /NFL `
-            /NDL `
-            /NJH `
-            /NJS `
-            /NP
-
-          $code = $LASTEXITCODE
-
-          # Robocopy 0-7 = success / acceptable differences
-          # 8+ = actual failure
-          if ($code -ge 8) {
-            Write-Error "Robocopy failed with exit code $code"
-            exit $code
-          }
-
         }
 
 
         # --------------------------------------------------------
-        # Copy standalone application
+        # Move Next.js static files
         # --------------------------------------------------------
 
-        Copy-DirectoryFast `
-          '.next\standalone' `
-          $deploymentDir
+        if (-not (Test-Path '.next\static')) {
 
+          Write-Error ".next\static not found."
+          exit 1
+        }
 
-        # --------------------------------------------------------
-        # Copy Next.js static files
-        # --------------------------------------------------------
-
-        Copy-DirectoryFast `
-          '.next\static' `
+        $staticDestination =
           "$deploymentDir\.next\static"
 
+        if (Test-Path $staticDestination) {
+
+          Remove-Item `
+            -Path $staticDestination `
+            -Recurse `
+            -Force
+        }
+
+        Write-Output "Moving Next.js static files..."
+
+        Move-Item `
+          -Path '.next\static' `
+          -Destination $staticDestination
+
 
         # --------------------------------------------------------
-        # Copy public assets
+        # Move public assets
         # --------------------------------------------------------
 
         if (Test-Path 'public') {
 
-          Copy-DirectoryFast `
-            'public' `
+          $publicDestination =
             "$deploymentDir\public"
+
+          if (Test-Path $publicDestination) {
+
+            Remove-Item `
+              -Path $publicDestination `
+              -Recurse `
+              -Force
+          }
+
+          Write-Output "Moving public assets..."
+
+          Move-Item `
+            -Path 'public' `
+            -Destination $publicDestination
+
+        }
+        else {
+
+          Write-Output "Public directory not present. Skipping."
 
         }
 
 
         # --------------------------------------------------------
-        # Ensure locale files exist
+        # Verify locale files
         # --------------------------------------------------------
 
         $localeDestination =
@@ -403,11 +453,19 @@ runs:
         }
         elseif (Test-Path 'src\i18n\locales') {
 
+          Write-Output "Locale files not included in standalone output."
           Write-Output "Copying locale files..."
 
-          Copy-DirectoryFast `
-            'src\i18n\locales' `
-            $localeDestination
+          New-Item `
+            -ItemType Directory `
+            -Path "$deploymentDir\src\i18n" `
+            -Force | Out-Null
+
+          Copy-Item `
+            -Path 'src\i18n\locales' `
+            -Destination $localeDestination `
+            -Recurse `
+            -Force
 
         }
         else {
@@ -418,14 +476,16 @@ runs:
 
 
         # --------------------------------------------------------
-        # Existing .env behavior preserved
+        # Preserve existing .env behavior
         #
         # IMPORTANT:
-        # This should eventually be replaced with GitHub
-        # variables/secrets if .env is removed from Git.
+        # After you remove .env from Git, replace this with
+        # GitHub Variables / GitHub Secrets based configuration.
         # --------------------------------------------------------
 
         if (Test-Path '.env') {
+
+          Write-Output "Copying runtime .env..."
 
           Copy-Item `
             -Path '.env' `
@@ -451,12 +511,12 @@ runs:
         } |
         ConvertTo-Json -Depth 5 |
         Set-Content `
-          "$deploymentDir\package.json" `
+          -Path "$deploymentDir\package.json" `
           -Encoding UTF8
 
 
         # --------------------------------------------------------
-        # Verify package
+        # Verify deployment package
         # --------------------------------------------------------
 
         if (-not (Test-Path "$deploymentDir\server.js")) {
@@ -466,16 +526,32 @@ runs:
 
         }
 
+        if (-not (Test-Path "$deploymentDir\.next\static")) {
+
+          Write-Error "Deployment package invalid: .next/static missing."
+          exit 1
+
+        }
+
 
         $elapsed = (Get-Date) - $start
 
         Write-Output ""
-        Write-Output "Deployment package created successfully."
-        Write-Output "Package time: $([math]::Round($elapsed.TotalSeconds, 2)) seconds"
+        Write-Output "============================================"
+        Write-Output "DEPLOYMENT PACKAGE READY"
+        Write-Output "============================================"
+        Write-Output "Version      : $version"
+        Write-Output "Directory    : $deploymentDir"
+        Write-Output "Package time : $([math]::Round($elapsed.TotalSeconds, 2)) seconds"
 
 
     # ============================================================
-    # 8. CREATE ZIP
+    # 9. CREATE ZIP ARCHIVE
+    #
+    # Uses tar.exe first because it is generally faster on Windows
+    # for packages containing many small files.
+    #
+    # Compress-Archive is retained as a fallback.
     # ============================================================
 
     - name: Create zip archive
@@ -488,22 +564,40 @@ runs:
         $version = $env:PACKAGE_VERSION
         $environment = $env:TARGET_ENVIRONMENT
 
-        $deploymentDir = "ntis-ui-v$version"
+        $deploymentDir =
+          "ntis-ui-v$version"
 
         $zipFile =
           "ntis-ui-$environment-v$version.zip"
 
         $start = Get-Date
 
+        Write-Output ""
+        Write-Output "============================================"
+        Write-Output "CREATING ZIP ARCHIVE"
+        Write-Output "============================================"
+        Write-Output "Archive: $zipFile"
+        Write-Output ""
+
+        # --------------------------------------------------------
+        # Remove existing archive
+        # --------------------------------------------------------
+
         if (Test-Path $zipFile) {
-          Remove-Item $zipFile -Force
+
+          Remove-Item `
+            -Path $zipFile `
+            -Force
         }
 
-        Write-Output "Creating archive: $zipFile"
 
-        # Prefer Windows native tar/bsdtar because it is generally
-        # faster for many small Next.js/node_modules files.
+        # --------------------------------------------------------
+        # Prefer tar.exe
+        # --------------------------------------------------------
+
         if (Get-Command tar.exe -ErrorAction SilentlyContinue) {
+
+          Write-Output "Using tar.exe for compression..."
 
           tar.exe `
             -a `
@@ -513,14 +607,16 @@ runs:
             .
 
           if ($LASTEXITCODE -ne 0) {
+
             Write-Error "tar.exe archive creation failed."
             exit $LASTEXITCODE
+
           }
 
         }
         else {
 
-          Write-Warning "tar.exe unavailable."
+          Write-Warning "tar.exe not found."
           Write-Warning "Using Compress-Archive fallback."
 
           Compress-Archive `
@@ -531,9 +627,13 @@ runs:
         }
 
 
+        # --------------------------------------------------------
+        # Verify archive
+        # --------------------------------------------------------
+
         if (-not (Test-Path $zipFile)) {
 
-          Write-Error "ZIP package was not created."
+          Write-Error "ZIP archive was not created."
           exit 1
 
         }
@@ -545,7 +645,8 @@ runs:
             2
           )
 
-        $elapsed = (Get-Date) - $start
+        $elapsed =
+          (Get-Date) - $start
 
 
         Write-Output ""
@@ -555,9 +656,15 @@ runs:
 
 
     # ============================================================
-    # 9. UPLOAD PACKAGE TO AZURE
+    # 10. UPLOAD PACKAGE TO AZURE BLOB STORAGE
     #
-    # SAME AZURE PATH LOGIC AS YOUR CURRENT WORKFLOW.
+    # Existing Azure path structure is preserved.
+    #
+    # ORCHESTRATED:
+    #   qa/2.0.0.0/ui/package.zip
+    #
+    # STANDALONE:
+    #   ui/2.0.0.0/package.zip
     # ============================================================
 
     - name: Upload to Azure Blob Storage
@@ -565,8 +672,12 @@ runs:
 
       env:
         PACKAGE_VERSION: ${{ steps.version_setup.outputs.version }}
-        TARGET_ENVIRONMENT: ${{ steps.version_setup.outputs.environment }}
-        PATH_MODE: ${{ inputs.path-mode }}
+
+        TARGET_ENVIRONMENT:
+          ${{ steps.version_setup.outputs.environment }}
+
+        PATH_MODE:
+          ${{ inputs.path-mode }}
 
         PACKAGE_CONTAINER:
           ${{ inputs.package-container-name }}
@@ -585,9 +696,8 @@ runs:
         $connectionString =
           $env:PACKAGE_CONNECTION_STRING
 
-
         # --------------------------------------------------------
-        # KEEP EXISTING PATH STRUCTURE
+        # Determine Azure destination
         # --------------------------------------------------------
 
         if ($pathMode -eq 'orchestrated') {
@@ -607,6 +717,7 @@ runs:
         $zipFile =
           "ntis-ui-$environment-v$version.zip"
 
+
         $zipBlob =
           "$basePath/$zipFile".Replace('\', '/')
 
@@ -619,8 +730,12 @@ runs:
         Write-Output "Path      : $basePath"
         Write-Output "Package   : $zipFile"
         Write-Output "Blob      : $zipBlob"
-        Write-Output "============================================"
+        Write-Output ""
 
+
+        # --------------------------------------------------------
+        # Verify ZIP exists
+        # --------------------------------------------------------
 
         if (-not (Test-Path $zipFile)) {
 
@@ -630,6 +745,10 @@ runs:
         }
 
 
+        # --------------------------------------------------------
+        # Verify Azure CLI
+        # --------------------------------------------------------
+
         if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
 
           Write-Error "Azure CLI is not installed or unavailable in PATH."
@@ -637,6 +756,10 @@ runs:
 
         }
 
+
+        # --------------------------------------------------------
+        # Upload
+        # --------------------------------------------------------
 
         $start = Get-Date
 
@@ -646,7 +769,8 @@ runs:
           --container-name "$containerName" `
           --file "$zipFile" `
           --name "$zipBlob" `
-          --overwrite
+          --overwrite true `
+          --only-show-errors
 
 
         if ($LASTEXITCODE -ne 0) {
@@ -657,10 +781,15 @@ runs:
         }
 
 
-        $elapsed = (Get-Date) - $start
+        $elapsed =
+          (Get-Date) - $start
 
 
         Write-Output ""
-        Write-Output "Package successfully uploaded to Azure."
-        Write-Output "Blob: $zipBlob"
-        Write-Output "Upload time: $([math]::Round($elapsed.TotalSeconds, 2)) seconds"
+        Write-Output "============================================"
+        Write-Output "PACKAGE UPLOADED SUCCESSFULLY"
+        Write-Output "============================================"
+        Write-Output "Version     : $version"
+        Write-Output "Environment : $environment"
+        Write-Output "Blob        : $zipBlob"
+        Write-Output "Upload time : $([math]::Round($elapsed.TotalSeconds, 2)) seconds"
