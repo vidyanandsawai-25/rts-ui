@@ -141,6 +141,44 @@ describe('useDepartmentConfig', () => {
     expect(onSuccess).toHaveBeenCalled();
   });
 
+  it('auto-expands department when toggling to enabled (ON) while collapsing others', () => {
+    const onSuccess = vi.fn();
+    const { result } = renderHook(() => useDepartmentConfig(initial, 1, onSuccess, 'DEF'));
+
+    expect(result.current.expandedDepts).toEqual([]);
+
+    act(() => {
+      result.current.handleToggleDept(1);
+    });
+
+    expect(result.current.departments[0].isEnabled).toBe(true);
+    expect(result.current.expandedDepts).toEqual([1]);
+  });
+
+  it('correctly calculates isSaveDisabled when department is ON with 0 active submodules', () => {
+    const onSuccess = vi.fn();
+    const { result } = renderHook(() => useDepartmentConfig(initial, 1, onSuccess, 'DEF'));
+
+    // Initially dept is disabled, so isSaveDisabled is false
+    expect(result.current.isSaveDisabled).toBe(false);
+
+    // Toggle dept ON (submodule is still disabled/inactive)
+    act(() => {
+      result.current.handleToggleDept(1);
+    });
+
+    // Dept is ON but 0 submodules active -> save should be disabled
+    expect(result.current.isSaveDisabled).toBe(true);
+
+    // Enable submodule
+    act(() => {
+      result.current.handleToggleSubmodule(1, 2);
+    });
+
+    // Dept is ON and 1 submodule active -> save should be enabled
+    expect(result.current.isSaveDisabled).toBe(false);
+  });
+
   it('handles save failure', async () => {
     const onSuccess = vi.fn();
     saveAction.mockResolvedValue({ success: false, error: 'bad' });

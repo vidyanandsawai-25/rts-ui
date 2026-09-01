@@ -46,6 +46,7 @@ export default function DepartmentConfigModal({
     expandedDepts,
     isPending,
     isDirty,
+    isSaveDisabled,
     toggleDeptExpansion,
     handleToggleDept,
     handleToggleSubmodule,
@@ -108,9 +109,9 @@ export default function DepartmentConfigModal({
           <Button
             variant="primary"
             onClick={handleSaveAll}
-            disabled={isPending || !isDirty}
+            disabled={isPending || !isDirty || isSaveDisabled}
             isLoading={isPending}
-            className="flex-1 sm:flex-none px-10 h-12 rounded-xl font-bold bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-200 transition-all cursor-pointer"
+            className="flex-1 sm:flex-none px-10 h-12 rounded-xl font-bold bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-200 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             icon={isPending ? undefined : Save}
           >
             {isPending

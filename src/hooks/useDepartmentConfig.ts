@@ -40,12 +40,22 @@ export function useDepartmentConfig(
   };
 
   const handleToggleDept = (deptId: number) => {
-    setDepartments((prev) =>
-      prev.map((d) => (d.id === deptId ? { 
-        ...d, 
-        isEnabled: !d.isEnabled,
-      } : d))
-    );
+    setDepartments((prev) => {
+      const nextDepartments = prev.map((d) => {
+        if (d.id !== deptId) return d;
+        return {
+          ...d,
+          isEnabled: !d.isEnabled,
+        };
+      });
+
+      const updatedDept = nextDepartments.find((d) => d.id === deptId);
+      if (updatedDept?.isEnabled) {
+        setExpandedDepts([deptId]);
+      }
+
+      return nextDepartments;
+    });
   };
 
   const handleToggleSubmodule = (deptId: number, subId: number) => {
@@ -262,11 +272,20 @@ export function useDepartmentConfig(
     });
   };
 
+  const isSaveDisabled = useMemo(() => {
+    return departments.some(
+      (dept) =>
+        dept.isEnabled &&
+        (dept.submodules.length === 0 || dept.submodules.every((sub) => !sub.isEnabled))
+    );
+  }, [departments]);
+
   return {
     departments,
     expandedDepts,
     isPending,
     isDirty,
+    isSaveDisabled,
     toggleDeptExpansion,
     handleToggleDept,
     handleToggleSubmodule,

@@ -57,6 +57,32 @@ describe('Config Master Subcomponents', () => {
     expect(onToggleExpansion).toHaveBeenCalledWith(1);
   });
 
+  it('allows clicking Hide button on DepartmentRow when department is disabled', () => {
+    const onToggleExpansion = vi.fn();
+    render(
+      <DepartmentRow
+        dept={{
+          id: 1,
+          name: 'Trade License',
+          code: 'TL',
+          isEnabled: false,
+          value: '',
+          configValueId: 0,
+          submoduleCount: 2,
+          submodules: [],
+        }}
+        isExpanded={true}
+        onToggleExpansion={onToggleExpansion}
+        onToggle={vi.fn()}
+      />
+    );
+
+    const hideButton = screen.getByRole('button', { name: /hide/i });
+    expect(hideButton).not.toBeDisabled();
+    fireEvent.click(hideButton);
+    expect(onToggleExpansion).toHaveBeenCalledWith(1);
+  });
+
   it('search bar accepts input', () => {
     render(<ConfigSearchBar />);
     const input = screen.getByRole('textbox');
