@@ -31,9 +31,10 @@ export async function getWardWiseApprovalByUlbGridDetails(
     params.append("pageSize", pageSize.toString());
 
     const response = await apiClient.get<ApprovalByUlbResponse>(
-        `/PropertySignature/dashboard/Ward-Wise-Summary/zone?${params.toString()}`,
+        `/PropertySignature/dashboard/ward-wise-summary/zone?${params.toString()}`,
         { cache: "force-cache" }
     );
+
     const t = await getTranslations("automationDashboard");
 
     const responseData = handleApiResponse(response, t("errors.fetchApprovalByUlbDetails") || "Failed to fetch ward-wise approval by ULB details");
