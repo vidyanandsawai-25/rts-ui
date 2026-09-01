@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useCombinePropertyFilters } from '@/hooks/combineProperty/useCombinePropertyFilters';
+import { useCombinePropertyFilters, compareSubProperty } from '@/hooks/combineProperty/useCombinePropertyFilters';
 import { CombinePropertyItem } from '@/types/combine-property.types';
 import { toast } from 'sonner';
 
@@ -143,7 +143,7 @@ describe('useCombinePropertyFilters', () => {
 
   it('clears filters correctly', () => {
     mockSearchParamsData = new URLSearchParams('basePropertyId=1&wardId=10&method=individual&individual=2');
-    const { result } = renderHook(() => 
+    const { result } = renderHook(() =>
       useCombinePropertyFilters(mockBaseList, mockSubList, mockT, mockOnClearReview)
     );
 
@@ -152,5 +152,65 @@ describe('useCombinePropertyFilters', () => {
     });
 
     expect(mockPush).toHaveBeenCalledWith('/test-path?basePropertyId=1&wardId=10&method=individual');
+  });
+
+  // Regression coverage for a reported bug: Base Property "12-1" (propertyNo "12", partition "1")
+  // as From and "13" (propertyNo "13", no partition) as To was incorrectly flagged invalid,
+  // because the old sort ordered candidates by partition alone — an empty partition sorts before
+  // any non-empty one, so "13" ranked ahead of "12-1" regardless of the real property numbers.
+  describe('range validation with mixed partitioned/un-partitioned properties', () => {
+    const mixedList = [
+      { id: 100, propertyNo: '12', fromProperty: '1' } as CombinePropertyItem, // "12-1"
+      { id: 101, propertyNo: '13', fromProperty: '' } as CombinePropertyItem, // "13"
+    ];
+
+    it('does not flag "12-1" -> "13" as invalid', () => {
+      mockSearchParamsData = new URLSearchParams('from=100');
+      const { result } = renderHook(() =>
+        useCombinePropertyFilters(mockBaseList, mixedList, mockT, mockOnClearReview)
+      );
+
+      act(() => {
+        result.current.handleRangeToChange('to', '101');
+      });
+
+      expect(toast.error).not.toHaveBeenCalled();
+    });
+
+    it('still flags a genuinely reversed range ("13" -> "12-1") as invalid', () => {
+      mockSearchParamsData = new URLSearchParams('from=101');
+      const { result } = renderHook(() =>
+        useCombinePropertyFilters(mockBaseList, mixedList, mockT, mockOnClearReview)
+      );
+
+      act(() => {
+        result.current.handleRangeToChange('to', '100');
+      });
+
+      expect(toast.error).toHaveBeenCalledWith('rangeInvalidError');
+    });
+  });
+});
+
+describe('compareSubProperty', () => {
+  const item = (propertyNo: string, fromProperty: string) =>
+    ({ propertyNo, fromProperty } as CombinePropertyItem);
+
+  it('orders a partitioned property before a higher, un-partitioned one (the reported bug case)', () => {
+    expect(compareSubProperty(item('12', '1'), item('13', ''))).toBeLessThan(0);
+    expect(compareSubProperty(item('13', ''), item('12', '1'))).toBeGreaterThan(0);
+  });
+
+  it('falls back to comparing the partition when property numbers match', () => {
+    expect(compareSubProperty(item('12', '1'), item('12', '2'))).toBeLessThan(0);
+    expect(compareSubProperty(item('12', '2'), item('12', '1'))).toBeGreaterThan(0);
+  });
+
+  it('sorts property numbers numerically, not lexicographically', () => {
+    expect(compareSubProperty(item('2', ''), item('10', ''))).toBeLessThan(0);
+  });
+
+  it('returns 0 for identical property/partition values', () => {
+    expect(compareSubProperty(item('12', '1'), item('12', '1'))).toBe(0);
   });
 });
