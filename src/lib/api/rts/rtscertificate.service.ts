@@ -6,11 +6,14 @@ import type {
   CertificatePreviewRequest,
   CertificatePreviewResponse,
   CertificateVerificationResponse,
+  CreateRTSCertificateLibraryTemplateInput,
   CreateRTSCertificateTemplateInput,
   IssueCertificateRequest,
   RTSCertificateTemplate,
+  RTSCertificateLibraryTemplate,
   RTSIssuedCertificate,
   UpdateRTSCertificateTemplateInput,
+  UpdateRTSCertificateLibraryTemplateInput,
 } from "@/types/rts/certificate.types";
 
 function extractItems<T>(data: unknown): T {
@@ -27,7 +30,7 @@ function extractItems<T>(data: unknown): T {
 }
 
 export async function getAllCertificateTemplates(): Promise<RTSCertificateTemplate[]> {
-  const response = await apiClient.get<unknown>("/rts-certificate/templates", {
+  const response = await apiClient.get<unknown>("/rts-certificate/service-configurations", {
     cache: "no-store",
   }, false);
 
@@ -39,7 +42,7 @@ export async function getAllCertificateTemplates(): Promise<RTSCertificateTempla
 }
 
 export async function getCertificateTemplateById(id: number): Promise<RTSCertificateTemplate | null> {
-  const response = await apiClient.get<unknown>(`/rts-certificate/templates/${id}`, {
+  const response = await apiClient.get<unknown>(`/rts-certificate/service-configurations/${id}`, {
     cache: "no-store",
   }, false);
 
@@ -47,7 +50,7 @@ export async function getCertificateTemplateById(id: number): Promise<RTSCertifi
 }
 
 export async function getCertificateTemplateByServiceId(serviceId: number): Promise<RTSCertificateTemplate | null> {
-  const response = await apiClient.get<unknown>(`/rts-certificate/templates/by-service/${serviceId}`, {
+  const response = await apiClient.get<unknown>(`/rts-certificate/service-configurations/by-service/${serviceId}`, {
     cache: "no-store",
   }, false);
 
@@ -55,7 +58,7 @@ export async function getCertificateTemplateByServiceId(serviceId: number): Prom
 }
 
 export async function getAvailableTagsForService(serviceId: number): Promise<CertificateAvailableTag[]> {
-  const response = await apiClient.get<unknown>(`/rts-certificate/templates/available-tags/${serviceId}`, {
+  const response = await apiClient.get<unknown>(`/rts-certificate/service-configurations/available-tags/${serviceId}`, {
     cache: "no-store",
   }, false);
 
@@ -65,7 +68,7 @@ export async function getAvailableTagsForService(serviceId: number): Promise<Cer
 export async function createCertificateTemplate(
   payload: CreateRTSCertificateTemplateInput
 ): Promise<RTSCertificateTemplate> {
-  const response = await apiClient.post<unknown>("/rts-certificate/templates", payload, undefined, false);
+  const response = await apiClient.post<unknown>("/rts-certificate/service-configurations", payload, undefined, false);
 
   if (!response.success || !response.data) {
     throw new Error(response.error || "Failed to create certificate template");
@@ -78,7 +81,7 @@ export async function updateCertificateTemplate(
   id: number,
   payload: UpdateRTSCertificateTemplateInput
 ): Promise<RTSCertificateTemplate> {
-  const response = await apiClient.put<unknown>(`/rts-certificate/templates/${id}`, payload, undefined, false);
+  const response = await apiClient.put<unknown>(`/rts-certificate/service-configurations/${id}`, payload, undefined, false);
 
   if (!response.success || !response.data) {
     throw new Error(response.error || "Failed to update certificate template");
@@ -88,8 +91,56 @@ export async function updateCertificateTemplate(
 }
 
 export async function deleteCertificateTemplate(id: number): Promise<boolean> {
-  const response = await apiClient.delete<unknown>(`/rts-certificate/templates/${id}`, undefined, false);
+  const response = await apiClient.delete<unknown>(`/rts-certificate/service-configurations/${id}`, undefined, false);
   return response.success && !!response.data;
+}
+
+export async function getAllCertificateLibraryTemplates(): Promise<RTSCertificateLibraryTemplate[]> {
+  const response = await apiClient.get<unknown>("/rts-certificate-templates", {
+    cache: "no-store",
+  }, false);
+  return response.success && response.data
+    ? extractItems<RTSCertificateLibraryTemplate[]>(response.data) ?? []
+    : [];
+}
+
+export async function getCertificateLibraryTemplateById(
+  id: number
+): Promise<RTSCertificateLibraryTemplate | null> {
+  const response = await apiClient.get<unknown>(`/rts-certificate-templates/${id}`, {
+    cache: "no-store",
+  }, false);
+  return response.success && response.data
+    ? extractItems<RTSCertificateLibraryTemplate>(response.data)
+    : null;
+}
+
+export async function createCertificateLibraryTemplate(
+  payload: CreateRTSCertificateLibraryTemplateInput
+): Promise<RTSCertificateLibraryTemplate> {
+  const response = await apiClient.post<unknown>("/rts-certificate-templates", payload, undefined, false);
+  if (!response.success || !response.data) {
+    throw new Error(response.error || "Failed to create reusable certificate template");
+  }
+  return extractItems<RTSCertificateLibraryTemplate>(response.data);
+}
+
+export async function updateCertificateLibraryTemplate(
+  id: number,
+  payload: UpdateRTSCertificateLibraryTemplateInput
+): Promise<RTSCertificateLibraryTemplate> {
+  const response = await apiClient.put<unknown>(`/rts-certificate-templates/${id}`, payload, undefined, false);
+  if (!response.success || !response.data) {
+    throw new Error(response.error || "Failed to update reusable certificate template");
+  }
+  return extractItems<RTSCertificateLibraryTemplate>(response.data);
+}
+
+export async function deleteCertificateLibraryTemplate(id: number): Promise<boolean> {
+  const response = await apiClient.delete<unknown>(`/rts-certificate-templates/${id}`, undefined, false);
+  return response.success && response.data
+    ? Boolean(extractItems<boolean>(response.data))
+    : false;
 }
 
 export async function getCertificatePreview(

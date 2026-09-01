@@ -8,6 +8,21 @@ export interface OfficerFieldConfig {
   options?: string[];
 }
 
+export interface RTSCertificateServiceOption {
+  id: string;
+  name: string;
+  nameLocal?: string;
+  departmentId?: number;
+  departmentName?: string;
+  departmentNameLocal?: string;
+}
+
+export interface RTSCertificateDepartmentOption {
+  id: string;
+  name: string;
+  nameLocal?: string;
+}
+
 export interface RTSCertificateTemplate {
   id: number;
   serviceId: number;
@@ -18,6 +33,8 @@ export interface RTSCertificateTemplate {
   headerContent?: string;
   bodyContent: string;
   footerContent?: string;
+  /** Certificate canvas document. Undefined means the API has not exposed canvas persistence yet. */
+  designJson?: string | null;
   defaultConditionsJson?: string;
   officerFieldsConfigJson?: string;
   isActive: boolean;
@@ -34,12 +51,43 @@ export interface CreateRTSCertificateTemplateInput {
   headerContent?: string;
   bodyContent: string;
   footerContent?: string;
+  designJson?: string | null;
   defaultConditionsJson?: string;
   officerFieldsConfigJson?: string;
   isActive?: boolean;
 }
 
 export interface UpdateRTSCertificateTemplateInput extends CreateRTSCertificateTemplateInput {
+  id: number;
+}
+
+export interface RTSCertificateLibraryTemplate {
+  id: number;
+  templateName: string;
+  templateCode: string;
+  description?: string;
+  headerContent?: string;
+  bodyContent: string;
+  footerContent?: string;
+  designJson?: string | null;
+  isActive: boolean;
+  createdDate: string;
+  updatedDate?: string;
+}
+
+export interface CreateRTSCertificateLibraryTemplateInput {
+  templateName: string;
+  templateCode: string;
+  description?: string;
+  headerContent?: string;
+  bodyContent: string;
+  footerContent?: string;
+  designJson?: string | null;
+  isActive?: boolean;
+}
+
+export interface UpdateRTSCertificateLibraryTemplateInput
+  extends CreateRTSCertificateLibraryTemplateInput {
   id: number;
 }
 
@@ -86,6 +134,7 @@ export interface RTSIssuedCertificate {
   departmentName: string;
   applicantName: string;
   applicantMobile: string;
+  officerInputs: Record<string, string>;
   mergedHtmlContent: string;
   qrCodePayload?: string;
   issuedByUserId: number;
