@@ -14,8 +14,7 @@ import {
   AlertTriangle,
   RotateCcw,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button, Drawer, Input } from "@/components/common";
 import {
@@ -202,8 +201,6 @@ export default function ApplicationAndTrackingDrawer({
   initialSearchValue,
   initialReceiptValue,
 }: ApplicationAndTrackingDrawerProps) {
-  const router = useRouter();
-  const locale = useLocale();
   const t = useTranslations("rts.citizenHeader");
   const tDashboard = useTranslations("rts.citizenDashboard");
   const [searchValue, setSearchValue] = useState("");
