@@ -210,8 +210,53 @@ export function useWardFormLogic({
         refreshRouter();
         if (onSuccess) onSuccess();
       } else {
-        toast.error(result.error || t("wardForm.updateError"));
-        setErrors({ wardNo: result.error || t("wardForm.updateError") });
+        const errorMsg = result.error || "";
+        let handled = false;
+        
+        if (errorMsg.includes('"errors":')) {
+          try {
+            const parsed = JSON.parse(errorMsg);
+            if (parsed.errors) {
+              const serverErrors: WardFormErrors = {};
+              
+              if (parsed.errors.Description) {
+                const descErr = parsed.errors.Description[0];
+                serverErrors.description = descErr.includes("MaxLen") ? t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH }) : descErr;
+                handled = true;
+              }
+              
+              if (parsed.errors.WardNo) {
+                const noErr = parsed.errors.WardNo[0];
+                serverErrors.wardNo = noErr.includes("MaxLen") ? t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH }) : noErr;
+                handled = true;
+              }
+              
+              if (parsed.errors.SequenceNo) {
+                serverErrors.sequenceNo = parsed.errors.SequenceNo[0];
+                handled = true;
+              }
+              
+              if (handled) {
+                setErrors(serverErrors);
+                toast.error(parsed.title || t("wardForm.updateError"));
+              }
+            }
+          } catch (_e) {
+            // Ignore parse errors
+          }
+        }
+        
+        if (!handled) {
+          const lowerMsg = errorMsg.toLowerCase();
+          if (lowerMsg.includes("name") || lowerMsg.includes("description") || lowerMsg.includes("maxlen")) {
+            setErrors({ description: lowerMsg.includes("maxlen") ? t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH }) : t("messages.duplicateWardName", { name: form.description }) });
+          } else if (lowerMsg.includes("ward") || lowerMsg.includes("already exists") || lowerMsg.includes("duplicate")) {
+            setErrors({ wardNo: t("messages.duplicateWardNo", { wardNo: form.wardNo }) });
+          } else {
+            toast.error(errorMsg || t("wardForm.updateError"));
+            setErrors({ wardNo: errorMsg || t("wardForm.updateError") });
+          }
+        }
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("messages.unexpectedError"));
