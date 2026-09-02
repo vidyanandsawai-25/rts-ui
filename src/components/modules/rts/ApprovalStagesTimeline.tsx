@@ -106,7 +106,7 @@ function formatStageDate(value: string | null | undefined, locale: string): stri
 
   return new Intl.DateTimeFormat(getIntlLocale(locale), {
     day: 'numeric',
-    month: 'short',
+    month: 'long',
     year: 'numeric',
   }).format(date);
 }

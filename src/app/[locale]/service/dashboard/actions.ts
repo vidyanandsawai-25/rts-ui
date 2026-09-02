@@ -398,7 +398,14 @@ export async function searchCitizenMisApplicationsAction(
   }
 }
 
-/** Fetches dynamic documents and first-stage receiving officer for a selected service modal */
+export type ServiceReceivingOfficer = {
+  stageOrder: number;
+  fullName: string | null;
+  userName: string | null;
+  designation: string | null;
+};
+
+/** Fetches dynamic documents and workflow officers for a selected service modal. */
 export async function getServiceDetailsModalInfoAction(serviceId: number): Promise<{
   documents: { en: string; mr?: string; hi?: string }[];
   receivingOfficer: string;
@@ -407,6 +414,7 @@ export async function getServiceDetailsModalInfoAction(serviceId: number): Promi
     userName: string | null;
     designation: string | null;
   };
+  receivingOfficers: ServiceReceivingOfficer[];
 }> {
   try {
     const { getRtsFieldDefinitionsByServiceId } = await import("@/lib/api/rts/rtsfielddefinition.service");
@@ -442,7 +450,7 @@ export async function getServiceDetailsModalInfoAction(serviceId: number): Promi
       };
     });
 
-    // Extract the receiving officer from the first approval stage.
+    // Preserve the first officer for existing consumers and expose every stage for the modal list.
     let receivingOfficer = "-";
     let receivingOfficerDetails = {
       fullName: null as string | null,
@@ -451,26 +459,31 @@ export async function getServiceDetailsModalInfoAction(serviceId: number): Promi
     };
     const stages = workflow?.stages ?? [];
 
-    if (stages && stages.length > 0) {
-      const stage1 = stages[0];
-      const fullName = [stage1?.firstName, stage1?.middleName, stage1?.lastName]
+    const receivingOfficers = stages.map((stage) => {
+      const fullName = [stage.firstName, stage.middleName, stage.lastName]
         .map((value) => value?.trim())
         .filter((value): value is string => Boolean(value))
-        .join(" ") || stage1?.officerName?.trim() || null;
-      const userName = stage1?.userName?.trim() || null;
-      const designation = stage1?.stageName?.trim() || null;
+        .join(" ") || stage.officerName?.trim() || null;
+      const userName = stage.userName?.trim() || null;
+      const designation = stage.stageName?.trim() || null;
 
-      receivingOfficerDetails = { fullName, userName, designation };
-      receivingOfficer = fullName || userName || designation || "-";
+      return { stageOrder: stage.stageOrder, fullName, userName, designation };
+    });
+
+    if (receivingOfficers.length > 0) {
+      const firstOfficer = receivingOfficers[0];
+      receivingOfficerDetails = firstOfficer;
+      receivingOfficer = firstOfficer.fullName || firstOfficer.userName || firstOfficer.designation || "-";
     }
 
-    return { documents, receivingOfficer, receivingOfficerDetails };
+    return { documents, receivingOfficer, receivingOfficerDetails, receivingOfficers };
   } catch (error) {
     console.error("Failed to fetch service details modal info:", error);
     return {
       documents: [],
       receivingOfficer: "-",
       receivingOfficerDetails: { fullName: null, userName: null, designation: null },
+      receivingOfficers: [],
     };
   }
 }

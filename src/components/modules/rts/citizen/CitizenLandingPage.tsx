@@ -108,11 +108,18 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       userName: string | null;
       designation: string | null;
     };
+    receivingOfficers: Array<{
+      stageOrder: number;
+      fullName: string | null;
+      userName: string | null;
+      designation: string | null;
+    }>;
   }>({
     loading: false,
     documents: [],
     receivingOfficer: '-',
     receivingOfficerDetails: { fullName: null, userName: null, designation: null },
+    receivingOfficers: [],
   });
 
   useEffect(() => {
@@ -122,6 +129,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         documents: [],
         receivingOfficer: '-',
         receivingOfficerDetails: { fullName: null, userName: null, designation: null },
+        receivingOfficers: [],
       });
       return;
     }
@@ -138,6 +146,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           documents: info.documents,
           receivingOfficer: info.receivingOfficer,
           receivingOfficerDetails: info.receivingOfficerDetails,
+          receivingOfficers: info.receivingOfficers,
         });
       } catch {
         if (!active) return;
@@ -146,6 +155,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           documents: [],
           receivingOfficer: '-',
           receivingOfficerDetails: { fullName: null, userName: null, designation: null },
+          receivingOfficers: [],
         });
       }
     })();
@@ -767,6 +777,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           const officerDisplay = officerDetails.userName
             ? `${fullName} (${officerDetails.userName})`
             : fullName;
+          const receivingOfficers = modalDetails.receivingOfficers;
 
           const transDocs: string[] = modalDetails.documents.map((doc) => {
             if (locale === 'mr') return doc.mr || doc.en;
@@ -818,19 +829,45 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                 </div>
 
                 <section className="rounded-xl border border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-xl bg-emerald-500/10 p-2.5 text-emerald-600 shrink-0">
+                  <div className="flex items-center gap-3 border-b border-emerald-100 pb-3">
+                    <div className="rounded-xl bg-emerald-500/10 p-2.5 text-emerald-600">
                       <UserCheck className="w-5 h-5" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] uppercase font-bold tracking-wider text-emerald-600">
-                        {t('serviceDetails.receivingOfficer')}
-                      </p>
-                      <p className="mt-1 break-words text-base font-extrabold leading-snug text-slate-800">
-                        {officerDisplay}
-                      </p>
-                    </div>
+                    <p className="text-[10px] uppercase font-bold tracking-wider text-emerald-600">
+                      {t('serviceDetails.receivingOfficer')}
+                    </p>
                   </div>
+                  {receivingOfficers.length > 0 ? (
+                    <div className="pt-3">
+                      {receivingOfficers.map((officer, index) => {
+                        const name = officer.fullName || t('serviceDetails.notAssigned');
+                        const display = officer.userName ? `${name} (${officer.userName})` : name;
+
+                        return (
+                          <div key={`${officer.stageOrder}-${officer.userName ?? officer.designation ?? 'officer'}`} className="flex gap-3 pb-3 last:pb-0">
+                            <div className="flex w-6 shrink-0 flex-col items-center">
+                              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-extrabold text-white">
+                                {officer.stageOrder}
+                              </span>
+                              {index < receivingOfficers.length - 1 && <span className="mt-1 w-px flex-1 bg-emerald-200" />}
+                            </div>
+                            <div className="min-w-0 flex-1 pt-0.5">
+                              <div className="flex flex-wrap items-start justify-between gap-2">
+                                <p className="min-w-0 break-words text-sm font-extrabold leading-snug text-slate-800">{display}</p>
+                                <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                                  {officer.designation || `Stage ${officer.stageOrder}`}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="pt-3 break-words text-base font-extrabold leading-snug text-slate-800">
+                      {officerDisplay}
+                    </p>
+                  )}
                 </section>
 
                 <div className="bg-white p-5 border border-slate-200 rounded-xl space-y-3">

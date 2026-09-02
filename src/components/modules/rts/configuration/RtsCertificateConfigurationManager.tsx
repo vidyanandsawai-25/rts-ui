@@ -75,7 +75,7 @@ type CertificateRegistryRow = Record<string, unknown> & {
   template?: RTSCertificateTemplate;
 };
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 const PREVIEW_ZOOM_MIN = 40;
 const PREVIEW_ZOOM_MAX = 150;
 const PREVIEW_ZOOM_STEP = 10;
@@ -118,7 +118,7 @@ export default function RtsCertificateConfigurationManager({
   );
   const dateFormatter = new Intl.DateTimeFormat(
     activeLocale === "mr" ? "mr-IN" : activeLocale === "hi" ? "hi-IN" : "en-IN",
-    { day: "2-digit", month: "short", year: "numeric" }
+    { day: "2-digit", month: "long", year: "numeric" }
   );
 
   const [templates, setTemplates] = useState(initialTemplates);
@@ -789,7 +789,7 @@ export default function RtsCertificateConfigurationManager({
         totalPages={totalPages}
         onPageChange={setPage}
         paginationConfig={{ enabled: totalPages > 1, showPageSizeSelector: false }}
-        maxBodyHeightClassName="min-h-[260px] max-h-[calc(100vh-340px)]"
+        maxBodyHeightClassName="max-h-none"
         theadClassName={RTS_DASHBOARD_TABLE_HEAD_CLASS}
         tableClassName={`${RTS_DASHBOARD_TABLE_CLASS} border-collapse text-left text-sm`}
         containerClassName={RTS_DASHBOARD_TABLE_CONTAINER_CLASS}
