@@ -20,6 +20,7 @@ interface ServicePageProps {
     deptId?: string;
     submit?: string;
     applicationNo?: string;
+    applicationId?: string;
     status?: string;
     mode?: string;
   }>;
@@ -153,10 +154,14 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
   if (isResubmitMode && resolvedSearchParams?.applicationNo) {
     try {
       const { getApplicationDetailAction } = await import("@/app/[locale]/rts/dashboard/rts-applications/actions");
-      const detail = await getApplicationDetailAction(resolvedSearchParams.applicationNo);
+      const approvalApplicationId = pickNumber(resolvedSearchParams.applicationId);
+      const detail = await getApplicationDetailAction(
+        resolvedSearchParams.applicationNo,
+        approvalApplicationId
+      );
       if (detail) {
         officerRemark = detail.remark || null;
-        resubmitAppId = detail.verification?.applicationId || parseInt(resolvedSearchParams.applicationNo.replace(/\D/g, ""), 10) || 0;
+        resubmitAppId = approvalApplicationId || detail.verification?.applicationId || parseInt(resolvedSearchParams.applicationNo.replace(/\D/g, ""), 10) || 0;
         existingDocuments = detail.documents || [];
 
         for (const group of detail.answerGroups || []) {
@@ -164,6 +169,12 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
             const val = ans.displayValue === "—" ? "" : ans.displayValue;
             if (ans.fieldCode) prefilledValues[ans.fieldCode] = val;
             if (ans.fieldDefinitionId) prefilledValues[String(ans.fieldDefinitionId)] = val;
+          }
+        }
+
+        for (const document of existingDocuments) {
+          if (document.fieldDefinitionId && document.documentGuid) {
+            prefilledValues[String(document.fieldDefinitionId)] = `guid:${document.documentGuid}`;
           }
         }
       }

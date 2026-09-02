@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Award, Download, FileText, GitCommit, Paperclip, CreditCard, Printer, CheckCircle2, Clock, AlertTriangle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 
 import { getApplicationDetailAction, type RtsApplicationDetailData } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
+import { resolveCitizenResubmitNavigationAction } from "@/app/[locale]/service/dashboard/actions";
 import { ApprovalStagesTimeline } from "@/components/modules/rts";
 import RtsApplicationDocumentView from "@/components/modules/rts/dashboard/RtsApplicationDocumentView";
 import PrintableCertificateModal from "@/components/modules/rts/citizen/PrintableCertificateModal";
-import CitizenResubmitDrawer from "@/components/modules/rts/citizen/CitizenResubmitDrawer";
 import { Button, Drawer, ViewButton } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import {
@@ -68,6 +69,7 @@ export default function RtsCitizenViewDetailsDrawer({
 }: RtsCitizenViewDetailsDrawerProps) {
   const t = useTranslations("rts.citizenDashboard");
   const locale = useLocale();
+  const router = useRouter();
   const numberFormatter = new Intl.NumberFormat(
     locale === "mr" ? "mr-IN" : locale === "hi" ? "hi-IN" : "en-IN",
   );
@@ -76,7 +78,7 @@ export default function RtsCitizenViewDetailsDrawer({
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatusResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [isResubmitOpen, setIsResubmitOpen] = useState(false);
+  const [isOpeningResubmit, setIsOpeningResubmit] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
   const [isPrintCertModalOpen, setIsPrintCertModalOpen] = useState(false);
@@ -185,6 +187,28 @@ export default function RtsCitizenViewDetailsDrawer({
   const normalizedStatus = normalizeStatus(application.status);
   const isRevertedToCitizen = resolvedDetail?.isRevertedToCitizen === true;
   const revertedRemark = resolvedDetail?.remark || application.remark;
+  const handleOpenResubmit = async () => {
+    if (isOpeningResubmit) return;
+
+    setIsOpeningResubmit(true);
+    try {
+      const result = await resolveCitizenResubmitNavigationAction(application.applicationNo);
+      if (!result.success) {
+        console.error("Unable to resolve citizen correction form:", result.error);
+        toast.error(t("resubmitUnavailable"));
+        return;
+      }
+
+      router.push(
+        `/${locale}/service/${result.serviceId}?deptId=${result.departmentId}&applicationNo=${encodeURIComponent(result.applicationNo)}&applicationId=${result.applicationId}&mode=resubmit`
+      );
+    } catch (error) {
+      console.error("Failed to open citizen correction form:", error);
+      toast.error(t("resubmitUnavailable"));
+    } finally {
+      setIsOpeningResubmit(false);
+    }
+  };
   const documents = [
     ...(resolvedDetail?.documents ?? []).map((document, index) => ({
       id: document.documentId || index + 1,
@@ -291,7 +315,8 @@ export default function RtsCitizenViewDetailsDrawer({
                     size="xs"
                     variant="primary"
                     icon={RotateCcw}
-                    onClick={() => setIsResubmitOpen(true)}
+                    disabled={isOpeningResubmit}
+                    onClick={handleOpenResubmit}
                     className="rounded-lg text-xs font-bold bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-md shadow-orange-600/20 px-4 py-2"
                   >
                     {t("editAndResubmit")}
@@ -541,21 +566,6 @@ export default function RtsCitizenViewDetailsDrawer({
           isOpen={isPrintCertModalOpen}
           onClose={() => setIsPrintCertModalOpen(false)}
           applicationNo={applicationNumber}
-        />
-      )}
-
-      {isResubmitOpen && application && (
-        <CitizenResubmitDrawer
-          isOpen={isResubmitOpen}
-          onClose={() => setIsResubmitOpen(false)}
-          applicationId={resolvedDetail?.verification?.applicationId || parseInt(application.applicationNo.replace(/\D/g, ""), 10) || 0}
-          applicationNo={application.applicationNo}
-          serviceId={resolvedDetail?.serviceId || resolvedDetail?.verification?.serviceId || (application as any)?.serviceId || (application as any)?.govtServiceCode}
-          serviceName={application.serviceName}
-          officerRemark={revertedRemark || ""}
-          answerGroups={resolvedDetail?.answerGroups || []}
-          documents={resolvedDetail?.documents || []}
-          onSuccess={onClose}
         />
       )}
 
