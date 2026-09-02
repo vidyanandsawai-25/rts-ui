@@ -7,6 +7,7 @@
   "passwordPlaceholder": "Enter your password",
   "signIn": "SIGN IN",
   "forgotPassword": "Forgot Password?",
+  "capsLockOn": "Caps Lock is on",
   "rememberMe": "Remember Me",
   "enterOtp": "Please enter the 6-digit token sent to your registered mobile number.",
   "otpHint": "",

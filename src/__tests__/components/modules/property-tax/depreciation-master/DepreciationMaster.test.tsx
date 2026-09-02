@@ -581,5 +581,33 @@ describe("DepreciationMaster", () => {
       // Should only show column A since that's the only data
       expect(screen.getByText("A")).toBeInTheDocument();
     });
+
+    it("should validate overlap against allRanges across all pages even if not in current page data", async () => {
+      const user = userEvent.setup();
+      // Current page only has range 0-10, but allRanges has 0-10 and 21-30 (page 2)
+      const multiPageProps = {
+        ...defaultProps,
+        allRanges: [
+          { id: "0-10", min: 0, max: 10, label: "0-10" },
+          { id: "11-20", min: 11, max: 20, label: "11-20" },
+          { id: "21-30", min: 21, max: 30, label: "21-30" },
+        ],
+      };
+
+      render(<DepreciationMaster {...multiPageProps} />);
+
+      const minInput = screen.getByPlaceholderText("Enter min");
+      const maxInput = screen.getByPlaceholderText("Enter max");
+      const addButton = screen.getByRole("button", { name: /Add Range/i });
+
+      // Try adding range that overlaps with 21-30 (which is on page 2)
+      await user.type(minInput, "25");
+      await user.type(maxInput, "35");
+      await user.click(addButton);
+
+      // Should detect overlap with page 2 range and not call addRangeAction
+      expect(addRangeAction).not.toHaveBeenCalled();
+      expect(screen.getByText(/overlaps with existing range/i)).toBeInTheDocument();
+    });
   });
 });

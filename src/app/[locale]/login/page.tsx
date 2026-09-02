@@ -62,6 +62,7 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
     showPassword: t('showPassword'),
     hidePassword: t('hidePassword'),
     forgotPassword: t('forgotPassword'),
+    capsLockOn: t('capsLockOn'),
   };
 
   const backgroundStyle = backgroundSrc

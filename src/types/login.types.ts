@@ -21,6 +21,7 @@ export interface LoginFormCopy {
   showPassword: string;
   hidePassword: string;
   forgotPassword?: string;
+  capsLockOn?: string;
 }
 
 export interface LoginFormProps {

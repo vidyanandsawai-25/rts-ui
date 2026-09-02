@@ -36,6 +36,120 @@ export interface SmartLayoutSyncProps {
 
 type CanonicalSmartLayoutInput = Omit<SmartLayoutSyncProps, 'handleParamChange' | 'parameters'>;
 
+/**
+ * Map the smart-layout controls to the exact parameter keys configured for the
+ * selected report. This is called again at submit time so Generate cannot race
+ * the effect that mirrors control state into paramValues.
+ */
+export function buildSmartLayoutMetadataParameters(
+  {
+    financialYear,
+    zoneId,
+    wardId,
+    fromProperty,
+    toProperty,
+    propertyNo,
+    partitionNo,
+    ownerIdList,
+    selectedProperties,
+    selectionMode,
+    amountOperator,
+    amountValue,
+    propertyDescription,
+    assessmentStatus,
+  }: CanonicalSmartLayoutInput,
+  parameters: ReportParameterDefinition[],
+): Record<string, string> {
+  const values: Record<string, string> = {};
+  const wardValue = wardId.join(',');
+  const propertyTypeIds = propertyDescription.join(',');
+  const assessmentTypeIds = assessmentStatus.join(',');
+
+  let propertyNumber = selectionMode === 'property'
+    ? (propertyNo || selectedProperties.join(','))
+    : '';
+  let selectedPropertyId = '';
+
+  if (selectionMode === 'property' && propertyNo) {
+    const parsedProperty = parseSelectedPropertyValue(propertyNo, partitionNo);
+    propertyNumber = parsedProperty.propertyNo;
+    selectedPropertyId = parsedProperty.propertyId;
+  }
+
+  const fromPropertyValue = selectionMode === 'range'
+    ? fromProperty
+    : (selectionMode === 'property' ? propertyNumber : '');
+  const toPropertyValue = selectionMode === 'range'
+    ? toProperty
+    : (selectionMode === 'property' ? propertyNumber : '');
+  const topNValue = amountOperator === 'top' ? amountValue : '';
+
+  let searchCategoryValue = '';
+  if (selectionMode === 'range') searchCategoryValue = '4';
+  else if (selectionMode === 'property') searchCategoryValue = '3';
+  else if (selectionMode === 'ward') searchCategoryValue = '2';
+  else if (selectionMode === 'zone') searchCategoryValue = '1';
+
+  const sortedParameters = [...parameters].sort((a, b) => {
+    const isAProperty = /^property|^prop/i.test(a.parameterKey)
+      && !/from|to|desc|type/i.test(a.parameterKey);
+    const isBProperty = /^property|^prop/i.test(b.parameterKey)
+      && !/from|to|desc|type/i.test(b.parameterKey);
+    if (isAProperty && !isBProperty) return -1;
+    if (!isAProperty && isBProperty) return 1;
+    return 0;
+  });
+
+  sortedParameters.forEach((parameter) => {
+    const key = parameter.parameterKey;
+    const keyAndLabel = `${key} ${parameter.label}`.toLowerCase();
+
+    if (/year|financial/i.test(keyAndLabel)) {
+      values[key] = financialYear;
+    } else if (/zone/i.test(keyAndLabel)) {
+      values[key] = zoneId;
+    } else if (/ward/i.test(keyAndLabel)) {
+      values[key] = wardValue;
+    } else if (/from.*prop|fromprop|prop.*from/i.test(keyAndLabel)) {
+      values[key] = fromPropertyValue;
+    } else if (/to.*prop|toprop|prop.*to/i.test(keyAndLabel)) {
+      values[key] = toPropertyValue;
+    } else if (/search.*cat|category/i.test(keyAndLabel)) {
+      values[key] = searchCategoryValue;
+    } else if (/partition/i.test(keyAndLabel)) {
+      values[key] = partitionNo;
+    } else if (/assessment/i.test(keyAndLabel)) {
+      values[key] = assessmentTypeIds;
+    } else if (/property.*desc|prop.*desc/i.test(keyAndLabel)) {
+      values[key] = propertyTypeIds;
+    } else if (/property.*type|prop.*type/i.test(keyAndLabel)) {
+      values[key] = propertyTypeIds;
+    } else if (key.toLowerCase() === 'type') {
+      values[key] = propertyTypeIds;
+    } else if (/property.*id|prop.*id/i.test(keyAndLabel)) {
+      values[key] = selectedPropertyId;
+    } else if (/owner.*id/i.test(keyAndLabel)) {
+      values[key] = selectedPropertyId || ownerIdList;
+    } else if (
+      /^(property|prop)/i.test(keyAndLabel)
+      && !/from|to|desc|type|partition|id/i.test(keyAndLabel)
+    ) {
+      values[key] = propertyNumber;
+    } else if (
+      /amount.*op|amount.*filter|amount.*condition/i.test(keyAndLabel)
+      || /lessthan|greaterthan/i.test(keyAndLabel)
+    ) {
+      values[key] = amountOperator;
+    } else if (/amount/i.test(keyAndLabel) || /totaltax/i.test(keyAndLabel)) {
+      values[key] = amountValue;
+    } else if (/top.*n/i.test(keyAndLabel)) {
+      values[key] = topNValue;
+    }
+  });
+
+  return values;
+}
+
 /** Values consumed directly by the report data providers.
  * Build these from the current controls at submit time so Generate cannot race
  * the effect which mirrors smart-layout state into paramValues.
@@ -76,29 +190,12 @@ export function buildCanonicalSmartLayoutParameters({
   };
 }
 
-/**
- * WarrentNotice currently excludes a property whenever an explicit finance
- * year has no TransMast row, even when that property has pending tax. For an
- * individual warrant, send 0 so required-field validation still passes while
- * the provider uses its active-year path without dropping the exact property
- * selected by ownerId.
- */
 export function prepareReportSubmissionParameters(
-  reportCode: string,
-  selectionMode: string,
+  _reportCode: string,
+  _selectionMode: string,
   parameters: Record<string, string>,
 ): Record<string, string> {
-  const result = { ...parameters };
-  const normalizedReportCode = reportCode.toLowerCase().replace(/[_\s-]+/g, '');
-
-  if (normalizedReportCode === 'warrentnotice' && selectionMode === 'property') {
-    Object.keys(result).forEach((key) => {
-      const normalizedKey = key.toLowerCase().replace(/[_\s-]+/g, '');
-      if (normalizedKey === 'financeyear') result[key] = '0';
-    });
-  }
-
-  return result;
+  return { ...parameters };
 }
 
 export function useSmartLayoutSync({

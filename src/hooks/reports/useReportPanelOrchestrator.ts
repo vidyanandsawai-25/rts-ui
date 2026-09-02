@@ -12,6 +12,7 @@ import type { FinancialYear } from '@/types/financialYear.types';
 import { useReportParameters } from '@/hooks/reports/useReportParameters';
 import {
   buildCanonicalSmartLayoutParameters,
+  buildSmartLayoutMetadataParameters,
   prepareReportSubmissionParameters,
   useSmartLayoutSync,
 } from '@/hooks/reports/useSmartLayoutSync';
@@ -96,17 +97,20 @@ export function useReportPanelOrchestrator({
   } = actions;
 
   const handleSubmit = (overrideParams?: Record<string, string>) => {
-    const canonicalValues = buildCanonicalSmartLayoutParameters({
+    const smartLayoutInput = {
       financialYear, zoneId, wardId, fromProperty, toProperty, propertyNo, partitionNo,
       ownerIdList, selectedProperties, selectionMode, amountOperator, amountValue,
       propertyDescription, assessmentStatus,
-    });
+    };
+    const canonicalValues = buildCanonicalSmartLayoutParameters(smartLayoutInput);
+    const metadataValues = buildSmartLayoutMetadataParameters(smartLayoutInput, parameters);
 
     const submissionParameters = prepareReportSubmissionParameters(
       report?.reportCode ?? '',
       selectionMode,
       {
         ...paramValues,
+        ...metadataValues,
         ...canonicalValues,
         ...overrideParams,
       },

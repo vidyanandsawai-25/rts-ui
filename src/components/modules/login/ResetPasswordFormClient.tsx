@@ -4,11 +4,12 @@ import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, Loader2, ArrowUp } from 'lucide-react';
 import { Input, Label, Button, ValidationMessage } from '@/components/common';
 
 import { resetPasswordFormAction } from '@/app/[locale]/login/forgot-password/actions';
 import { useLoginErrorMessages } from '@/hooks/useLoginErrorMessages';
+import { useCapsLock } from '@/hooks/useCapsLock';
 import {
   LOGIN_PRIMARY_SUBMIT_CLASS,
   LOGIN_PASSWORD_INPUT_CLASS,
@@ -35,6 +36,9 @@ export function ResetPasswordFormClient({ locale }: { locale: string }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const { isCapsLockOn, checkCapsLock, handleBlur: handleCapsLockBlur } = useCapsLock();
+  const labelCapsLockOn = t('capsLockOn');
 
   const displayError = state?.rawMessage || getLocalizedError(state?.message);
 
@@ -77,6 +81,10 @@ export function ResetPasswordFormClient({ locale }: { locale: string }) {
             type={showPassword ? 'text' : 'password'}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            onKeyDown={checkCapsLock}
+            onKeyUp={checkCapsLock}
+            onClick={checkCapsLock}
+            onBlur={handleCapsLockBlur}
             placeholder={t('enterNewPassword')}
             minLength={AUTH_CONSTRAINTS.PASSWORD_MIN_LENGTH}
             maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
@@ -119,6 +127,10 @@ export function ResetPasswordFormClient({ locale }: { locale: string }) {
             type={showPassword ? 'text' : 'password'}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            onKeyDown={checkCapsLock}
+            onKeyUp={checkCapsLock}
+            onClick={checkCapsLock}
+            onBlur={handleCapsLockBlur}
             placeholder={t('reEnterNewPassword')}
             minLength={AUTH_CONSTRAINTS.PASSWORD_MIN_LENGTH}
             maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
@@ -128,6 +140,15 @@ export function ResetPasswordFormClient({ locale }: { locale: string }) {
           />
         </div>
       </div>
+
+      {isCapsLockOn && (
+        <div className="flex items-center gap-1.5 rounded-md bg-amber-50 border border-amber-300/80 px-2.5 py-1 text-xs font-semibold text-amber-800 shadow-xs" role="status" aria-live="polite">
+          <span className="flex h-4 w-4 items-center justify-center rounded bg-amber-200/80 text-amber-800">
+            <ArrowUp size={11} className="stroke-[3]" />
+          </span>
+          <span>{labelCapsLockOn}</span>
+        </div>
+      )}
 
       <div className="flex justify-center pt-2">
         <SubmitButton>{t('resetPasswordButton')}</SubmitButton>

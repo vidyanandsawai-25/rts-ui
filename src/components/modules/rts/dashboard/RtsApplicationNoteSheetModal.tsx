@@ -384,7 +384,7 @@ export default function RtsApplicationNoteSheetModal({
 
   const qrVerificationUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/${locale}/service/verify-certificate/${encodeURIComponent(applicationNo)}`
-    : `https://akolacity.gov.in/${locale}/service/verify-certificate/${encodeURIComponent(applicationNo)}`;
+    : `/${locale}/service/verify-certificate/${encodeURIComponent(applicationNo)}`;
 
   return (
     <>

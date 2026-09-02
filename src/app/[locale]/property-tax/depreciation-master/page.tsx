@@ -34,6 +34,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   return (
     <DepreciationMaster
       data={res.data.rows}
+      allRanges={res.data.allRanges}
       constructionTypes={res.data.constructionTypes}
       pageNumber={res.data.pageNumber}
       pageSize={res.data.pageSize}

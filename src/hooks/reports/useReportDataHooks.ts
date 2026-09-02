@@ -134,6 +134,24 @@ function mergePropertyOptions(
   });
 }
 
+function parsePropertySearchQuery(query: string) {
+  const normalizedQuery = query.trim();
+  const separatorIndex = normalizedQuery.lastIndexOf('-');
+
+  if (separatorIndex <= 0) {
+    return { propertyNo: normalizedQuery, partitionNo: undefined };
+  }
+
+  const propertyNo = normalizedQuery.slice(0, separatorIndex).trim();
+  const partitionNo = normalizedQuery.slice(separatorIndex + 1).trim();
+
+  if (!propertyNo || !partitionNo) {
+    return { propertyNo: normalizedQuery, partitionNo: undefined };
+  }
+
+  return { propertyNo, partitionNo };
+}
+
 export function usePaginatedProperties(wardId: string[], selectionMode: string) {
   const pageSize = 100;
   const [initialProperties, setInitialProperties] = useState<ReportPropertyOption[]>([]);
@@ -220,10 +238,11 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
 
     let active = true;
     const timer = setTimeout(() => {
+      const searchFilters = parsePropertySearchQuery(query);
       setIsSearchingProperties(true);
       ptisSuggestionsClient.getSuggestionsPage({
         wardId: numericWardId,
-        propertyNo: query,
+        ...searchFilters,
         pageNumber: 1,
         pageSize,
       })
@@ -277,11 +296,14 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
 
     const requestContext = requestContextRef.current;
     const nextPage = (isSearch ? suggestedPageRef.current : initialPageRef.current) + 1;
+    const searchFilters = isSearch
+      ? parsePropertySearchQuery(currentQuery)
+      : { propertyNo: undefined, partitionNo: undefined };
     setIsLoadingMoreProperties(true);
 
     ptisSuggestionsClient.getSuggestionsPage({
       wardId: numericWardId,
-      propertyNo: isSearch ? currentQuery : undefined,
+      ...searchFilters,
       pageNumber: nextPage,
       pageSize,
     })

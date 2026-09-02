@@ -86,13 +86,13 @@ export interface ReportBand {
 
 // Default ULB Fallback Data
 const DEFAULT_ULB: CertificateUlbInfo = {
-  ulbName: "AKOLA MUNICIPAL CORPORATION, AKOLA",
-  ulbNameLocal: "अकोला महानगरपालिका, अकोला",
-  ulbAddress: "गांधी रोड, अकोला- ४४४००१",
-  emailId: "amc.akola@maharashtra.gov.in tpamcakola@rediffmail.com",
-  websiteUrl: "onesolutionakola.tabamc.in",
-  mobileNo: "0724-2434412",
-  ulbLogo: "/images/logo.png",
+  ulbName: "",
+  ulbNameLocal: "",
+  ulbAddress: "",
+  emailId: "",
+  websiteUrl: "",
+  mobileNo: "",
+  ulbLogo: "/images/org_logo.png",
 };
 
 // Available Toolbox Elements
@@ -1291,7 +1291,7 @@ export default function RtsCertificateTemplateBuilderModal({
                               <div className="official-seal-stamp inline-block text-center">
                                 <img
                                   src="/images/ulb-seal.png"
-                                  alt="अकोला महानगरपालिका अधिकृत शिक्का"
+                                  alt={`${activeUlb.ulbNameLocal || activeUlb.ulbName || "स्थानिक स्वराज्य संस्था"} अधिकृत शिक्का`}
                                   className="w-28 h-28 object-contain transform -rotate-6 filter drop-shadow-xs inline-block"
                                   onError={(e) => ((e.target as HTMLElement).style.display = "none")}
                                 />

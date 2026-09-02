@@ -16,9 +16,11 @@ interface UseDepreciationHandlersParams {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   t: any;
   locale: string;
+  pageNumber?: number;
   pageSize: number;
   dbRows: DepreciationRow[];
   ranges: RangeRow[];
+  allRanges?: RangeRow[];
   effectiveSelectedRangeId: string | null;
   pendingChanges: Record<number, number>;
   setPendingChanges: React.Dispatch<React.SetStateAction<Record<number, number>>>;
@@ -39,9 +41,11 @@ interface UseDepreciationHandlersParams {
 export function useDepreciationHandlers({
   t,
   locale,
+  pageNumber,
   pageSize,
   dbRows,
   ranges,
+  allRanges,
   effectiveSelectedRangeId,
   pendingChanges,
   setPendingChanges,
@@ -61,6 +65,7 @@ export function useDepreciationHandlers({
   const router = useRouter();
   const pathname = usePathname();
   const { validateMinMax, sanitizeInput, checkOverlap, checkGap } = useDepreciationValidation(t);
+  const effectiveAllRanges = allRanges && allRanges.length > 0 ? allRanges : ranges;
 
   const buildUrl = useCallback(
     (page: number, size: number) => {
@@ -195,13 +200,13 @@ export function useDepreciationHandlers({
 
     if (!result.valid) return;
 
-    const overlapping = checkOverlap(Number(minValue), Number(maxValue), ranges);
+    const overlapping = checkOverlap(Number(minValue), Number(maxValue), effectiveAllRanges);
     if (overlapping) {
       setMinError(t("errors.overlap", { range: `${overlapping.min}-${overlapping.max}` }));
       return;
     }
 
-    const gapResult = checkGap(Number(minValue), Number(maxValue), ranges);
+    const gapResult = checkGap(Number(minValue), Number(maxValue), effectiveAllRanges);
     if (gapResult !== null) {
       if (gapResult.field === 'max') {
         setMaxError(t("errors.gapMax", { expectedMax: gapResult.expectedValue }));
@@ -230,11 +235,11 @@ export function useDepreciationHandlers({
     } finally {
       setSaving(false);
     }
-  }, [minValue, maxValue, ranges, locale, t, validateMinMax, checkOverlap, checkGap, setMinError, setMaxError, setSaving, setMinValue, setMaxValue, reloadData]);
+  }, [minValue, maxValue, effectiveAllRanges, locale, t, validateMinMax, checkOverlap, checkGap, setMinError, setMaxError, setSaving, setMinValue, setMaxValue, reloadData]);
 
   const handleDeleteRange = useCallback(async () => {
     if (!effectiveSelectedRangeId) return;
-    const range = ranges.find((r) => r.id === effectiveSelectedRangeId);
+    const range = effectiveAllRanges.find((r) => r.id === effectiveSelectedRangeId);
     if (!range) return;
 
     confirm({
@@ -263,13 +268,22 @@ export function useDepreciationHandlers({
         }
       },
     });
-  }, [effectiveSelectedRangeId, ranges, locale, t, confirm, setSaving, reloadData]);
+  }, [effectiveSelectedRangeId, effectiveAllRanges, locale, t, confirm, setSaving, reloadData]);
 
   const handleRangeSelection = useCallback(
     (rangeId: string | null) => {
       setSelectedRangeId(rangeId);
+      if (rangeId && pageSize > 0 && effectiveAllRanges.length > 0) {
+        const rangeIndex = effectiveAllRanges.findIndex((r) => r.id === rangeId);
+        if (rangeIndex !== -1) {
+          const targetPage = Math.floor(rangeIndex / pageSize) + 1;
+          if (pageNumber && targetPage !== pageNumber) {
+            router.push(buildUrl(targetPage, pageSize));
+          }
+        }
+      }
     },
-    [setSelectedRangeId]
+    [setSelectedRangeId, pageSize, effectiveAllRanges, pageNumber, router, buildUrl]
   );
 
   return {

@@ -2,6 +2,7 @@ import TaxZoneForm from "@/components/modules/property-tax/taxzonemaster/TaxZone
 import { getTaxZoneByIdAction } from "../../action";
 import { notFound } from "next/navigation";
 import { ApiError } from "@/lib/utils/api";
+import { PageContainer } from "@/components/common/PageContainer";
 
 interface PageProps {
   params: Promise<{
@@ -26,8 +27,8 @@ export default async function EditPage({ params }: PageProps) {
   }
 
   return (
-    <>
+    <PageContainer className="p-4 sm:p-6">
       <TaxZoneForm initialData={taxZoneData} />
-    </>
+    </PageContainer>
   );
 }

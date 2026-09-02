@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   CheckCircle2,
@@ -19,6 +19,7 @@ import {
   FileText,
   Eye,
   BadgeCheck,
+  Clock,
 } from "lucide-react";
 import { Badge, Card } from "@/components/common";
 import type { CertificateVerificationResponse } from "@/types/rts/certificate.types";
@@ -34,6 +35,11 @@ export default function CertificateVerificationView({
 }: CertificateVerificationViewProps) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"summary" | "certificate">("summary");
+  const [verificationTime, setVerificationTime] = useState<string>("");
+
+  useEffect(() => {
+    setVerificationTime(new Date().toLocaleTimeString(locale === "mr" ? "mr-IN" : "en-IN"));
+  }, [locale]);
 
   const handlePrint = () => {
     window.print();
@@ -86,7 +92,7 @@ export default function CertificateVerificationView({
             </div>
             <div>
               <p className="text-xs font-extrabold uppercase tracking-wider text-blue-900 sm:text-sm">
-                {data.ulbName || "अकोला महानगरपालिका, अकोला"}
+                {data.ulbName || "महाराष्ट्र शासन लोकसेवा हक्क"}
               </p>
               <p className="text-[11px] font-medium text-slate-500">
                 महाराष्ट्र लोकसेवा हक्क अधिनियम २०१५ • सार्वजनिक प्रमाणपत्र पडताळणी पोर्टल
@@ -125,7 +131,7 @@ export default function CertificateVerificationView({
                   प्रमाणपत्र अधिकृतरीत्या पडताळलेले व अस्सल आहे
                 </h1>
                 <p className="mt-1.5 text-xs sm:text-sm text-emerald-100/95 leading-relaxed max-w-3xl">
-                  सदर प्रमाणपत्र <strong>{data.ulbName || "अकोला महानगरपालिका"}</strong> च्या अधिकृत RTS प्रणालीद्वारे डिजिटल स्वाक्षरीने (DSC) जारी करण्यात आलेले अस्सल व वैध शासकीय प्रमाणपत्र आहे.
+                  सदर प्रमाणपत्र {data.ulbName ? <strong>{data.ulbName}</strong> : "सक्षम प्राधिकरणा"} च्या अधिकृत RTS प्रणालीद्वारे डिजिटल स्वाक्षरीने (DSC) जारी करण्यात आलेले अस्सल व वैध शासकीय प्रमाणपत्र आहे.
                 </p>
 
                 <div className="mt-4 flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-2 border-t border-emerald-600/60 text-[11px] text-emerald-100">
@@ -134,7 +140,50 @@ export default function CertificateVerificationView({
                     IT Act 2000 (कलम ६) & RTS Act 2015
                   </span>
                   <span className="hidden sm:inline">•</span>
-                  <span>पडताळणी वेळ: <strong>{new Date().toLocaleTimeString(locale === "mr" ? "mr-IN" : "en-IN")} (IST)</strong></span>
+                  <span>पडताळणी वेळ: <strong suppressHydrationWarning>{verificationTime ? `${verificationTime} (IST)` : "—"}</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : data.applicationNo ? (
+          <div className="rounded-2xl bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-700 p-6 sm:p-8 text-white shadow-lg border border-amber-500">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/20 border-2 border-white/50">
+                <Clock className="h-10 w-10 text-white" />
+              </div>
+              <div className="flex-1 space-y-3">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-0.5 text-xs font-extrabold uppercase tracking-wider">
+                  Application Registered • In Process
+                </div>
+                <h1 className="text-xl sm:text-2xl font-black leading-snug">
+                  अर्ज प्रणालीमध्ये नोंदणीकृत असून प्रक्रियेत आहे
+                </h1>
+                <p className="text-xs sm:text-sm text-amber-50 leading-relaxed max-w-3xl">
+                  {data.message}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 text-xs">
+                  <div className="rounded-lg bg-black/20 p-2.5">
+                    <span className="text-[10px] text-amber-200 uppercase font-semibold">अर्ज क्रमांक:</span>
+                    <p className="font-mono font-bold text-white">{data.applicationNo}</p>
+                  </div>
+                  {data.applicantName && (
+                    <div className="rounded-lg bg-black/20 p-2.5">
+                      <span className="text-[10px] text-amber-200 uppercase font-semibold">अर्जदाराचे नाव:</span>
+                      <p className="font-bold text-white truncate">{data.applicantName}</p>
+                    </div>
+                  )}
+                  {data.serviceName && (
+                    <div className="rounded-lg bg-black/20 p-2.5">
+                      <span className="text-[10px] text-amber-200 uppercase font-semibold">सेवा:</span>
+                      <p className="font-bold text-white truncate">{data.serviceName}</p>
+                    </div>
+                  )}
+                  {data.departmentName && (
+                    <div className="rounded-lg bg-black/20 p-2.5">
+                      <span className="text-[10px] text-amber-200 uppercase font-semibold">विभाग:</span>
+                      <p className="font-bold text-white truncate">{data.departmentName}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -231,7 +280,7 @@ export default function CertificateVerificationView({
                           अधिकृत प्रमाणपत्र नोंदणी तपशील
                         </h2>
                         <p className="text-[11px] font-medium text-slate-500">
-                          अकोला महानगरपालिका RTS डेटाबेस नोंदणीकृत माहिती
+                          {data.ulbName ? `${data.ulbName} RTS डेटाबेस नोंदणीकृत माहिती` : "RTS डेटाबेस नोंदणीकृत माहिती"}
                         </p>
                       </div>
                     </div>
@@ -288,7 +337,7 @@ export default function CertificateVerificationView({
                         <Building2 className="h-3.5 w-3.5 text-slate-600" /> संबंधित विभाग:
                       </span>
                       <p className="text-xs sm:text-sm font-bold text-slate-800">
-                        {data.departmentName || "नगर रचना विभाग (Town Planning)"}
+                        {data.departmentName || "—"}
                       </p>
                     </div>
 
@@ -298,11 +347,13 @@ export default function CertificateVerificationView({
                         <BadgeCheck className="h-3.5 w-3.5 text-teal-600" /> सक्षम प्राधिकारी (Officer):
                       </span>
                       <p className="text-xs sm:text-sm font-bold text-slate-900">
-                        {data.issuedByOfficer || "सक्षम प्राधिकारी"}
+                        {data.issuedByOfficer || "—"}
                       </p>
-                      <p className="text-[11px] font-semibold text-slate-500">
-                        {data.officerDesignation || "सहाय्यक नगर रचनाकार"}
-                      </p>
+                      {data.officerDesignation && (
+                        <p className="text-[11px] font-semibold text-slate-500">
+                          {data.officerDesignation}
+                        </p>
+                      )}
                     </div>
 
                     {/* Issued Date */}
@@ -310,7 +361,7 @@ export default function CertificateVerificationView({
                       <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5 text-purple-600" /> जारी दिनांक व वेळ:
                       </span>
-                      <p className="text-xs sm:text-sm font-bold text-slate-900">
+                      <p className="text-xs sm:text-sm font-bold text-slate-900" suppressHydrationWarning>
                         {formattedIssueDate}
                       </p>
                     </div>
@@ -321,7 +372,7 @@ export default function CertificateVerificationView({
                         <Building2 className="h-3.5 w-3.5 text-rose-600" /> स्थानिक स्वराज्य संस्था:
                       </span>
                       <p className="text-xs sm:text-sm font-bold text-slate-900">
-                        {data.ulbName || "अकोला महानगरपालिका"}
+                        {data.ulbName || "—"}
                       </p>
                     </div>
                   </div>
@@ -353,21 +404,21 @@ export default function CertificateVerificationView({
                     <div className="rounded-xl bg-white/90 p-3 border border-emerald-200/70">
                       <span className="text-[10.5px] font-semibold text-slate-500 uppercase">स्वाक्षरी संस्था (Signer):</span>
                       <p className="mt-0.5 font-bold text-slate-900">
-                        {data.dscSignerName || data.ulbName || "अकोला महानगरपालिका"}
+                        {data.dscSignerName || data.ulbName || "—"}
                       </p>
                     </div>
 
                     <div className="rounded-xl bg-white/90 p-3 border border-emerald-200/70">
                       <span className="text-[10.5px] font-semibold text-slate-500 uppercase">प्रमाणन संस्था (Certifying Authority):</span>
                       <p className="mt-0.5 font-bold text-slate-900">
-                        {data.dscIssuer || "CCA India Recognized CA (eMudhra / Capricorn)"}
+                        {data.dscIssuer || "—"}
                       </p>
                     </div>
 
                     <div className="rounded-xl bg-white/90 p-3 border border-emerald-200/70">
                       <span className="text-[10.5px] font-semibold text-slate-500 uppercase">सर्टिफिकेट सिरीयल क्रमांक:</span>
                       <p className="mt-0.5 font-mono font-bold text-slate-900 break-all">
-                        {data.dscSerialNumber || "17208930819777977461"}
+                        {data.dscSerialNumber || "—"}
                       </p>
                     </div>
 
@@ -380,7 +431,7 @@ export default function CertificateVerificationView({
 
                     <div className="rounded-xl bg-white/90 p-3 border border-emerald-200/70">
                       <span className="text-[10.5px] font-semibold text-slate-500 uppercase">वैधता स्थिती (Validity):</span>
-                      <p className="mt-0.5 font-extrabold text-emerald-800 flex items-center gap-1">
+                      <p className="mt-0.5 font-extrabold text-emerald-800 flex items-center gap-1" suppressHydrationWarning>
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                         {formattedValidUntil}
                       </p>
@@ -430,11 +481,13 @@ export default function CertificateVerificationView({
       <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500 print:hidden mt-12">
         <div className="mx-auto max-w-5xl px-4 space-y-1">
           <p className="font-semibold text-slate-700">
-            {data.ulbName || "अकोला महानगरपालिका, अकोला"} • RTS ई-गव्हर्नन्स प्रणाली
+            {data.ulbName ? `${data.ulbName} • ` : ""}RTS ई-गव्हर्नन्स प्रणाली
           </p>
-          <p className="text-[11px] text-slate-400">
-            {data.ulbAddress || "एम. जी. रोड, मुख्य प्रशासकीय इमारत, अकोला, महाराष्ट्र - ४४४००१"}
-          </p>
+          {data.ulbAddress && (
+            <p className="text-[11px] text-slate-400">
+              {data.ulbAddress}
+            </p>
+          )}
         </div>
       </footer>
     </div>

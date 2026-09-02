@@ -1,4 +1,4 @@
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
@@ -18,6 +18,7 @@ const enCopy: LoginFormCopy = {
   signIn: String(enLogin.signIn),
   showPassword: String(enLogin.showPassword),
   hidePassword: String(enLogin.hidePassword),
+  capsLockOn: String(enLogin.capsLockOn ?? 'Caps Lock is on'),
 };
 
 const { mockLoginAction } = vi.hoisted(() => ({
@@ -307,5 +308,74 @@ describe('LoginForm', () => {
     expect(
       screen.getByPlaceholderText(String(enLogin.passwordPlaceholder)) as HTMLInputElement
     ).toHaveValue('');
+  });
+
+  it('displays Caps Lock indicator when Caps Lock is on while interacting with password field', async () => {
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
+
+    const passwordInput = screen.getByPlaceholderText(
+      String(enLogin.passwordPlaceholder)
+    ) as HTMLInputElement;
+
+    // Caps Lock warning should initially not be visible
+    expect(screen.queryByTestId('caps-lock-warning')).not.toBeInTheDocument();
+
+    // Trigger keydown with CapsLock modifier active
+    const capsOnEvent = new KeyboardEvent('keydown', { key: 'a', bubbles: true });
+    Object.defineProperty(capsOnEvent, 'getModifierState', {
+      value: (key: string) => key === 'CapsLock',
+    });
+    await act(async () => {
+      passwordInput.dispatchEvent(capsOnEvent);
+    });
+
+    // Warning and badge should now be displayed
+    await waitFor(() => {
+      expect(screen.getByTestId('caps-lock-warning')).toBeInTheDocument();
+      expect(screen.getByText('Caps Lock is on')).toBeInTheDocument();
+    });
+
+    // Toggling CapsLock off removes the warning
+    const capsOffEvent = new KeyboardEvent('keyup', { key: 'CapsLock', bubbles: true });
+    Object.defineProperty(capsOffEvent, 'getModifierState', {
+      value: () => false,
+    });
+    await act(async () => {
+      passwordInput.dispatchEvent(capsOffEvent);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('caps-lock-warning')).not.toBeInTheDocument();
+    });
+  });
+
+  it('hides Caps Lock indicator when password field loses focus (blur)', async () => {
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
+
+    const passwordInput = screen.getByPlaceholderText(
+      String(enLogin.passwordPlaceholder)
+    ) as HTMLInputElement;
+
+    // Activate CapsLock warning
+    const capsOnEvent = new KeyboardEvent('keydown', { key: 'a', bubbles: true });
+    Object.defineProperty(capsOnEvent, 'getModifierState', {
+      value: (key: string) => key === 'CapsLock',
+    });
+    await act(async () => {
+      passwordInput.dispatchEvent(capsOnEvent);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('caps-lock-warning')).toBeInTheDocument();
+    });
+
+    // Blur the password field
+    await act(async () => {
+      fireEvent.blur(passwordInput);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('caps-lock-warning')).not.toBeInTheDocument();
+    });
   });
 });

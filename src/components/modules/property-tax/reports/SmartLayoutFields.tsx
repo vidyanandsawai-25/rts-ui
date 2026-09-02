@@ -44,6 +44,16 @@ export function SmartLayoutFields({
     fyOptions, zoneOptions, wardOptions, propertyDescriptionOptions, assessmentStatusOptions
   } = options;
 
+  const propertyDisplayOptions = propertyNo.includes('|') && !paginatedProperties.some(
+    (option: { value: string }) =>
+      String(option.value).toLowerCase() === String(propertyNo).toLowerCase()
+  )
+    ? [{
+        value: propertyNo,
+        label: propertyNo.slice(0, propertyNo.lastIndexOf('|')).replace(/\//g, '-'),
+      }, ...paginatedProperties]
+    : paginatedProperties;
+
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 items-start">
@@ -220,7 +230,7 @@ export function SmartLayoutFields({
             name="propertyNo"
             label={t('propertyNo')}
             required
-            options={paginatedProperties}
+            options={propertyDisplayOptions}
             placeholder={t('egPropertyNo')}
             value={propertyNo}
             onChange={(_, val) => {
