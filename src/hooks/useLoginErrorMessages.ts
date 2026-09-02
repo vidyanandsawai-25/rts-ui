@@ -35,23 +35,66 @@ const AUTH_ERROR_TO_LOGIN_I18N_KEY: Record<string, string> = {
   [AUTH_ERROR_CODES.CURRENT_PASSWORD_REQUIRED]: 'currentPasswordRequired',
   [AUTH_ERROR_CODES.NEW_PASSWORD_REQUIRED]: 'newPasswordRequired',
   [AUTH_ERROR_CODES.PASSWORD_TOO_SHORT]: 'passwordMinLength',
+  [AUTH_ERROR_CODES.PASSWORD_TOO_LONG]: 'PASSWORD_TOO_LONG',
   [AUTH_ERROR_CODES.PASSWORD_DIFFERENT_REQUIRED]: 'newPasswordMustBeDifferent',
   [AUTH_ERROR_CODES.PASSWORDS_MISMATCH]: 'passwordsMismatch',
   [AUTH_ERROR_CODES.CHANGE_PASSWORD_FAILED]: 'changePasswordFailed',
   [AUTH_ERROR_CODES.INVALID_CURRENT_PASSWORD]: 'invalidCurrentPassword',
-  // Common backend error text mappings
+  // Common backend and action error text mappings
   'Current password is incorrect.': 'invalidCurrentPassword',
+  'Current password is incorrect': 'invalidCurrentPassword',
+  'Invalid current password.': 'invalidCurrentPassword',
+  'Invalid current password': 'invalidCurrentPassword',
+  'Please enter your current password.': 'currentPasswordRequired',
+  'Please enter your current password': 'currentPasswordRequired',
   'Current password is required.': 'currentPasswordRequired',
+  'Current password is required': 'currentPasswordRequired',
+  'Please enter a new password.': 'newPasswordRequired',
+  'Please enter a new password': 'newPasswordRequired',
   'New password is required.': 'newPasswordRequired',
+  'New password is required': 'newPasswordRequired',
   'New password must be different from current password.': 'newPasswordMustBeDifferent',
+  'New password must be different from current password': 'newPasswordMustBeDifferent',
   'New password and confirmation password do not match.': 'passwordsMismatch',
+  'New password and confirmation password do not match': 'passwordsMismatch',
+  'Passwords do not match.': 'passwordsMismatch',
+  'Passwords do not match': 'passwordsMismatch',
   'Password must be at least 6 characters long.': 'passwordMinLength',
+  'Password must be at least 6 characters long': 'passwordMinLength',
+  'Password cannot exceed 25 characters.': 'PASSWORD_TOO_LONG',
+  'Password cannot exceed 25 characters': 'PASSWORD_TOO_LONG',
+  'Password cannot exceed 8 characters.': 'PASSWORD_TOO_LONG',
+  'Password cannot exceed 8 characters': 'PASSWORD_TOO_LONG',
+  'Password must contain at least one uppercase letter (A-Z).': 'passwordRequireUppercase',
+  'Password must contain at least one uppercase letter (A-Z)': 'passwordRequireUppercase',
+  'Password must contain at least one lowercase letter (a-z).': 'passwordRequireLowercase',
+  'Password must contain at least one lowercase letter (a-z)': 'passwordRequireLowercase',
+  'Password must contain at least one number (0-9).': 'passwordRequireDigit',
+  'Password must contain at least one number (0-9)': 'passwordRequireDigit',
+  'Password must contain at least one special character.': 'passwordRequireSpecial',
+  'Password must contain at least one special character': 'passwordRequireSpecial',
+  'Unable to process the new password. Please choose a different password.': 'passwordProcessError',
+  'Unable to process the new password. Please choose a different password': 'passwordProcessError',
   'User not found or account is inactive.': 'ACCOUNT_INACTIVE',
+  'User not found or account is inactive': 'ACCOUNT_INACTIVE',
+  'User not found.': 'Auth_UserNotFound',
+  'User not found': 'Auth_UserNotFound',
   'Failed to change password.': 'changePasswordFailed',
+  'Failed to change password': 'changePasswordFailed',
   'Failed to update password.': 'changePasswordFailed',
+  'Failed to update password': 'changePasswordFailed',
   'All password fields are required.': 'passwordsRequired',
+  'All password fields are required': 'passwordsRequired',
   'Username is required to change password.': 'usernameRequired',
+  'Username is required to change password': 'usernameRequired',
+  'Username is required.': 'usernameRequired',
   'Username is required': 'usernameRequired',
+  'Please enter your username.': 'usernameRequired',
+  'Please enter your username': 'usernameRequired',
+  'An error occurred while updating the password.': 'changePasswordFailed',
+  'An error occurred while updating the password': 'changePasswordFailed',
+  'An unexpected error occurred.': 'unexpectedError',
+  'An unexpected error occurred': 'unexpectedError',
 };
 
 /**
@@ -65,30 +108,49 @@ export function useLoginErrorMessages() {
     (errorCode: string | undefined): string => {
       if (!errorCode) return '';
 
-      const suffix = AUTH_ERROR_TO_LOGIN_I18N_KEY[errorCode] ?? errorCode;
-      const primary = `errors.${suffix}`;
+      const trimmed = errorCode.trim();
 
-      if (typeof t.has === 'function' && t.has(primary)) {
-        return t(primary);
+      const mappedKey = AUTH_ERROR_TO_LOGIN_I18N_KEY[trimmed] ?? AUTH_ERROR_TO_LOGIN_I18N_KEY[errorCode];
+      if (mappedKey) {
+        const primary = `errors.${mappedKey}`;
+        if (typeof t.has === 'function' && t.has(primary)) {
+          return t(primary);
+        }
+        try {
+          return t(primary);
+        } catch {
+          // fall through
+        }
       }
 
-      const fallbackCode = `errors.${errorCode}`;
-      if (typeof t.has === 'function' && t.has(fallbackCode)) {
-        return t(fallbackCode);
+      const directKey = `errors.${trimmed}`;
+      if (typeof t.has === 'function' && t.has(directKey)) {
+        return t(directKey);
+      }
+
+      // Fuzzy / dynamic policy matching
+      if (/password must be at least \d+ characters/i.test(trimmed)) {
+        if (typeof t.has === 'function' && t.has('errors.passwordMinLength')) {
+          return t('errors.passwordMinLength');
+        }
+      }
+
+      if (/password cannot exceed \d+ characters/i.test(trimmed)) {
+        if (typeof t.has === 'function' && t.has('errors.PASSWORD_TOO_LONG')) {
+          return t('errors.PASSWORD_TOO_LONG');
+        }
+      }
+
+      // If the error contains spaces, it's an unmapped natural language message from API/action.
+      // Return it as-is to avoid displaying raw i18n missing key prefixes like "login.errors. ...".
+      if (trimmed.includes(' ')) {
+        return trimmed;
       }
 
       try {
-        return t(primary);
+        return t('errors.LOGIN_FAILED');
       } catch {
-        try {
-          return t(fallbackCode);
-        } catch {
-          try {
-            return t('errors.LOGIN_FAILED');
-          } catch {
-            return errorCode;
-          }
-        }
+        return errorCode;
       }
     },
     [t]

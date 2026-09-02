@@ -16,6 +16,7 @@ import {
   LOGIN_USERNAME_ICON_ACCENT,
   LOGIN_PASSWORD_ICON_ACCENT,
   AUTH_ERROR_CODES,
+  AUTH_CONSTRAINTS,
 } from './constants';
 
 export interface InlineChangePasswordFormProps {
@@ -52,7 +53,9 @@ export function InlineChangePasswordForm({
   const newPasswordId = useId();
   const confirmPasswordId = useId();
 
-  const isLengthValid = newPassword.length >= 6;
+  const isLengthValid =
+    newPassword.length >= AUTH_CONSTRAINTS.PASSWORD_MIN_LENGTH &&
+    newPassword.length <= AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH;
   const passwordsMatch = newPassword.length > 0 && newPassword === confirmPassword;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -75,8 +78,13 @@ export function InlineChangePasswordForm({
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < AUTH_CONSTRAINTS.PASSWORD_MIN_LENGTH) {
       setErrorMessage(getLocalizedError(AUTH_ERROR_CODES.PASSWORD_TOO_SHORT));
+      return;
+    }
+
+    if (newPassword.length > AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH) {
+      setErrorMessage(getLocalizedError(AUTH_ERROR_CODES.PASSWORD_TOO_LONG));
       return;
     }
 
@@ -195,6 +203,7 @@ export function InlineChangePasswordForm({
               onBlur={handleCapsLockBlur}
               placeholder={t('enterCurrentPassword')}
               disabled={isPending}
+              maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
               className={LOGIN_PASSWORD_INPUT_CLASS}
               fullWidth
               autoComplete="current-password"
@@ -238,6 +247,8 @@ export function InlineChangePasswordForm({
               onBlur={handleCapsLockBlur}
               placeholder={t('newPasswordPlaceholder')}
               disabled={isPending}
+              minLength={AUTH_CONSTRAINTS.PASSWORD_MIN_LENGTH}
+              maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
               className={LOGIN_PASSWORD_INPUT_CLASS}
               fullWidth
               autoComplete="new-password"
@@ -286,6 +297,8 @@ export function InlineChangePasswordForm({
               onBlur={handleCapsLockBlur}
               placeholder={t('confirmPasswordPlaceholder')}
               disabled={isPending}
+              minLength={AUTH_CONSTRAINTS.PASSWORD_MIN_LENGTH}
+              maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
               className={`${LOGIN_PASSWORD_INPUT_CLASS} ${
                 confirmPassword.length > 0
                   ? passwordsMatch

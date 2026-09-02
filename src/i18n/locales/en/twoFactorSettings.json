@@ -69,6 +69,7 @@
     "alreadyEnabled": "Two-factor authentication is already enabled.",
     "notEnabled": "Two-factor authentication is not enabled.",
     "setupNotStarted": "Authenticator setup has not been started.",
-    "emailNotOnFile": "Your account has no email address on file. Contact an administrator to add one before setting up two-factor authentication."
+    "emailNotOnFile": "Your account has no email address on file. Contact an administrator to add one before setting up two-factor authentication.",
+    "userNotFound": "User not found."
   }
 }

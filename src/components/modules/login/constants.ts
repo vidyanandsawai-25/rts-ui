@@ -18,9 +18,9 @@ export const AUTH_CONSTRAINTS = {
   /** Maximum username length */
   USERNAME_MAX_LENGTH: 50,
   /** Minimum password length (display only - backend validates actual policy) */
-  PASSWORD_MIN_LENGTH: 8,
-  /** Maximum password length (prevent DoS via very long passwords) */
-  PASSWORD_MAX_LENGTH: 128,
+  PASSWORD_MIN_LENGTH: 6,
+  /** Maximum password length */
+  PASSWORD_MAX_LENGTH: 25,
 } as const;
 
 // ---------------------------------------------------------------------------

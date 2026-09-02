@@ -17,8 +17,14 @@ interface ApiError extends Error {
 let relaxedTlsDispatcher: unknown;
 
 async function serverFetch(url: string, init: RequestInit): Promise<Response> {
-  const isDev = process.env.NODE_ENV === 'development' && process.env.NTIS_STRICT_LOCAL_TLS !== '1';
-  if (typeof window === 'undefined' && isDev && LOCAL_HTTPS_RE.test(url)) {
+  const useRelaxedTls =
+    typeof window === 'undefined' &&
+    process.env.NTIS_STRICT_LOCAL_TLS !== '1' &&
+    (LOCAL_HTTPS_RE.test(url) ||
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0' ||
+      process.env.NODE_ENV === 'development');
+
+  if (useRelaxedTls) {
     const { Agent, fetch: uFetch } = await import('undici');
     relaxedTlsDispatcher ??= new Agent({ connect: { rejectUnauthorized: false } });
     return uFetch(url, {

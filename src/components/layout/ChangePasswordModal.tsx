@@ -7,7 +7,7 @@ import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common';
 import { changePasswordAction } from '@/app/[locale]/account/change-password.action';
 import { useLoginErrorMessages } from '@/hooks/useLoginErrorMessages';
-import { AUTH_ERROR_CODES } from '@/components/modules/login/constants';
+import { AUTH_ERROR_CODES, AUTH_CONSTRAINTS } from '@/components/modules/login/constants';
 
 export interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -33,8 +33,10 @@ export function ChangePasswordModal({ isOpen, onClose, onSuccess, userName }: Ch
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // Password rules validation - 6+ characters
-  const isLengthValid = newPassword.length >= 6;
+  // Password rules validation - 6 to 25 characters
+  const isLengthValid =
+    newPassword.length >= AUTH_CONSTRAINTS.PASSWORD_MIN_LENGTH &&
+    newPassword.length <= AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH;
   const passwordsMatch = newPassword.length > 0 && newPassword === confirmPassword;
 
   const handleResetForm = () => {
@@ -71,8 +73,13 @@ export function ChangePasswordModal({ isOpen, onClose, onSuccess, userName }: Ch
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < AUTH_CONSTRAINTS.PASSWORD_MIN_LENGTH) {
       setErrorMessage(getLocalizedError(AUTH_ERROR_CODES.PASSWORD_TOO_SHORT));
+      return;
+    }
+
+    if (newPassword.length > AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH) {
+      setErrorMessage(getLocalizedError(AUTH_ERROR_CODES.PASSWORD_TOO_LONG));
       return;
     }
 
@@ -188,6 +195,7 @@ export function ChangePasswordModal({ isOpen, onClose, onSuccess, userName }: Ch
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder={t('enterCurrentPassword')}
                 disabled={isPending}
+                maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
                 required
                 className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-100 transition-all"
               />
@@ -218,6 +226,8 @@ export function ChangePasswordModal({ isOpen, onClose, onSuccess, userName }: Ch
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder={t('enterNewPassword')}
                 disabled={isPending}
+                minLength={AUTH_CONSTRAINTS.PASSWORD_MIN_LENGTH}
+                maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
                 required
                 className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-100 transition-all"
               />
@@ -262,6 +272,8 @@ export function ChangePasswordModal({ isOpen, onClose, onSuccess, userName }: Ch
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder={t('reEnterNewPassword')}
                 disabled={isPending}
+                minLength={AUTH_CONSTRAINTS.PASSWORD_MIN_LENGTH}
+                maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
                 required
                 className={`w-full rounded-lg border bg-white py-2 pl-9 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 disabled:bg-gray-100 transition-all ${
                   confirmPassword.length > 0
