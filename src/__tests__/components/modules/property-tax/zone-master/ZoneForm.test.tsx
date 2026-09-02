@@ -303,7 +303,7 @@ describe("ZoneForm", () => {
   describe("Validation Constants", () => {
     it("exports correct max length constants", () => {
       expect(ZONE_WARD_NO_MAX_LENGTH).toBe(10);
-      expect(ZONE_WARD_NAME_MAX_LENGTH).toBe(100);
+      expect(ZONE_WARD_NAME_MAX_LENGTH).toBe(50);
     });
   });
 });

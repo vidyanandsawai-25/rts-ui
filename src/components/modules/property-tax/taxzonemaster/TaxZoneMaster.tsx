@@ -4,12 +4,15 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
+import { PageContainer } from "@/components/common/PageContainer";
+import TableHeader from "@/components/common/TableHeader";
 import type { TaxZone, TaxZoneMasterProps } from "@/types/taxzone.types";
 import { deleteTaxZoneAction } from "@/app/[locale]/property-tax/taxzone-master/taxzone/action";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useTranslations, useLocale } from "next-intl";
 import { getTaxZoneColumns } from "./TaxZoneColumn";
+import { TaxZoneMasterToolbar } from "./TaxZoneMasterToolbar";
 
 export default function TaxZoneMaster({
   data,
@@ -80,33 +83,41 @@ export default function TaxZoneMaster({
   };
 
   return (
-    <div className="space-y-6">
-      <MasterTable<TaxZone>
-        columns={columns}
-        data={normalizedData}
-        loading={false}
-        pageNumber={pageNumber}
-        pageSize={pageSize}
-        totalCount={totalCount}
-        totalPages={totalPages}
-        onPageChange={changePage}
-        onPageSizeChange={changePageSize}
-        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
-        
-        renderActions={(row) => (
-          <>
-            <EditButton
-              aria-label={tCommon("table.actions.edit")}
-              onClick={() =>
-                router.push(`${base}/edit/${row.id}`)
-              }
-            />
-            <DeleteButton aria-label={tCommon("table.actions.delete")} onClick={() => handleDelete(row)} />
-          </>
-        )}
-        actionLabel={t("list.table.actions")}
-        getRowKey={(row) => row.id}
-      />
-    </div>
+    <PageContainer className="p-4 sm:p-6">
+      <div className="space-y-6">
+        <TableHeader
+          title={t("list.title")}
+          subtitle={t("list.subtitle")}
+          icon="mapPin"
+          rightContent={<TaxZoneMasterToolbar />}
+        />
+        <MasterTable<TaxZone>
+          columns={columns}
+          data={normalizedData}
+          loading={false}
+          pageNumber={pageNumber}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          totalPages={totalPages}
+          onPageChange={changePage}
+          onPageSizeChange={changePageSize}
+          paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+
+          renderActions={(row) => (
+            <>
+              <EditButton
+                aria-label={tCommon("table.actions.edit")}
+                onClick={() =>
+                  router.push(`${base}/edit/${row.id}`)
+                }
+              />
+              <DeleteButton aria-label={tCommon("table.actions.delete")} onClick={() => handleDelete(row)} />
+            </>
+          )}
+          actionLabel={t("list.table.actions")}
+          getRowKey={(row) => row.id}
+        />
+      </div>
+    </PageContainer>
   );
 }

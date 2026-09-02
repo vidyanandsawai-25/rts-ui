@@ -136,6 +136,8 @@ export function useCreatePropertyForm({
       newErrors.ownerName = t("createProperty.errors.ownerNameRequired");
     } else if (formData.ownerName.trim().length < 2) {
       newErrors.ownerName = t("createProperty.errors.ownerNameMinLength");
+    } else if (formData.ownerName.trim().length > 50) {
+      newErrors.ownerName = t("createProperty.errors.ownerNameMaxLength");
     }
 
     if (formData.isBulkCreate) {

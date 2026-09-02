@@ -47,6 +47,7 @@ export type RangeRow = {
 export type DepreciationMasterProps = {
   data: DepreciationRow[];
   constructionTypes: DepreciationConstructionType[];
+  allRanges?: RangeRow[];
   pageNumber: number;
   pageSize: number;
   totalCount: number;

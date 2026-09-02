@@ -101,7 +101,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
             {/* Construction Type */}
             <div className="flex flex-col gap-1.5">
                 <span className="text-[12px] font-medium text-gray-600 ml-0.5">{t('filters.constructionType')}</span>
-                <div className="w-[180px] z-30">
+                <div className="w-[280px] z-30">
                     <MultiSelect
                         name="constructionType"
                         options={constructionTypeOptions}

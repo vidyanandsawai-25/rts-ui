@@ -11,7 +11,7 @@ import {
   getDepreciationPaged,
   syncDepreciationRatesFromPage,
 } from '@/lib/api/depreciation.services';
-import type { ActionResult, DepreciationConstructionType, DepreciationRow } from '@/types/depreciation.types';
+import type { ActionResult, DepreciationConstructionType, DepreciationRow, RangeRow } from '@/types/depreciation.types';
 import { ApiError } from '@/lib/utils/api';
 
 const getPagePath = (locale: string) => `/${locale}/property-tax/depreciation-master`;
@@ -78,6 +78,7 @@ export async function fetchRangesPagedServerAction(
   success: boolean;
   data?: {
     rows: DepreciationRow[];
+    allRanges: RangeRow[];
     constructionTypes: DepreciationConstructionType[];
     pageNumber: number;
     pageSize: number;
@@ -128,6 +129,16 @@ export async function fetchRangesPagedServerAction(
       return firstA.minYear - firstB.minYear;
     });
 
+    const allRanges: import('@/types/depreciation.types').RangeRow[] = allRangeGroups.map((group) => {
+      const first = group[0];
+      return {
+        id: `${first.minYear}-${first.maxYear}`,
+        min: first.minYear,
+        max: first.maxYear,
+        label: `${first.minYear}-${first.maxYear}`,
+      };
+    });
+
     // Total ranges
     const totalRanges = allRangeGroups.length;
 
@@ -161,6 +172,7 @@ export async function fetchRangesPagedServerAction(
       success: true,
       data: {
         rows,
+        allRanges,
         constructionTypes,
         pageNumber: clampedPageNumber,
         pageSize: rangePageSize,

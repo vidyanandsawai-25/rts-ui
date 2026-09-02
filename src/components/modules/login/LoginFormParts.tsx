@@ -2,10 +2,11 @@
 
 import React, { useId, useState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
-import { Eye, EyeOff, User, Lock, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, User, Lock, Loader2, ArrowUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Input, Button, Label } from '@/components/common';
+import { useCapsLock } from '@/hooks/useCapsLock';
 
 import type { UseLoginFormReturn } from '@/hooks/useLoginForm';
 import type { LoginFormCopy } from '@/types/login.types';
@@ -86,6 +87,7 @@ export function LoginCredentialFields({
 }) {
   const t = useTranslations('login');
   const { formData, errors, handleChange, handleBlur, showError } = loginForm;
+  const { isCapsLockOn, checkCapsLock, handleBlur: handleCapsLockBlur } = useCapsLock();
   const [showPassword, setShowPassword] = useState(false);
   const usernameId = useId();
   const passwordId = useId();
@@ -114,6 +116,12 @@ export function LoginCredentialFields({
   const labelHidePassword = t('hidePassword') || copy?.hidePassword;
   const labelSignIn = t('signIn') || copy?.signIn;
   const labelForgotPassword = (t('forgotPassword') || copy?.forgotPassword || 'Forgot Password').replace('?', '');
+  const labelCapsLockOn = t('capsLockOn') || copy?.capsLockOn || 'Caps Lock is on';
+
+  const handlePasswordBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    handleCapsLockBlur();
+    handleBlur(e);
+  };
 
   return (
     <>
@@ -159,7 +167,10 @@ export function LoginCredentialFields({
               type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={handleChange}
-              onBlur={handleBlur}
+              onBlur={handlePasswordBlur}
+              onKeyDown={checkCapsLock}
+              onKeyUp={checkCapsLock}
+              onClick={checkCapsLock}
               placeholder={placeholderPassword}
               maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
               className={LOGIN_PASSWORD_INPUT_CLASS}
@@ -184,10 +195,29 @@ export function LoginCredentialFields({
               </Button>
             ) : null}
           </div>
-          <div className="flex justify-end pt-1">
+          <div className="flex items-center justify-between pt-1 min-h-[24px]">
+            {isCapsLockOn ? (
+              <motion.div
+                initial={{ opacity: 0, y: -2 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -2 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-1.5 rounded-md bg-amber-50 border border-amber-300/80 px-2 py-0.5 text-xs font-semibold text-amber-800 shadow-xs"
+                role="status"
+                aria-live="polite"
+                data-testid="caps-lock-warning"
+              >
+                <span className="flex h-4 w-4 items-center justify-center rounded bg-amber-200/80 text-amber-800">
+                  <ArrowUp size={11} className="stroke-[3]" />
+                </span>
+                <span>{labelCapsLockOn}</span>
+              </motion.div>
+            ) : (
+              <div />
+            )}
             <a
               href={`/${locale}/login/forgot-password`}
-              className="text-sm font-semibold text-cyan-600 hover:text-cyan-800 hover:underline transition-colors"
+              className="text-sm font-semibold text-cyan-600 hover:text-cyan-800 hover:underline transition-colors ml-auto"
             >
               {labelForgotPassword}
             </a>

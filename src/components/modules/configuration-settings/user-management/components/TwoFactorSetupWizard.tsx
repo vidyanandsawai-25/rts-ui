@@ -89,9 +89,8 @@ export function TwoFactorSetupWizard({
     }
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` intentionally excluded:
-  // useTranslations returns a new reference every render, but re-calling beginSetup
-  // generates a new TOTP secret, invalidating any QR code the user already scanned.
+  // `t` intentionally excluded: useTranslations returns a new reference every render,
+  // but re-calling beginSetup generates a new TOTP secret, invalidating any QR code the user already scanned.
   useEffect(() => {
     if (askFirst) return;
     let active = true;
@@ -107,6 +106,7 @@ export function TwoFactorSetupWizard({
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, askFirst]);
 
   async function confirmEnable(code: string) {

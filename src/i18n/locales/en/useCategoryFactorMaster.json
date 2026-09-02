@@ -63,6 +63,11 @@
       "fetchTypeOfUseFailed": "Failed to fetch TypeOfUse records",
       "deleteFailed": "Failed to delete Use Factor CV Master"
     },
+    "apiErrors": {
+      "notFound": "Type Of Use Weightage record not found.",
+      "validationError": "Invalid request. Please check the entered values and try again.",
+      "referredInAutoWardEntry": "This Type Of Use Weightage cannot be deleted because it is already used in Capital Value tax calculations. Please remove the dependent records first."
+    },
     "deleteConfirmation": {
       "title": "Type Of Use",
       "description": "Are you sure you want to delete this record?",

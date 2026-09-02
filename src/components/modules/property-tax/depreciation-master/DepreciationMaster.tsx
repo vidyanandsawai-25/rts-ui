@@ -14,6 +14,7 @@ function makeRangeId(min: number, max: number): string {
 export default function DepreciationMaster({
   data,
   constructionTypes: initialConstructionTypes,
+  allRanges: initialAllRanges,
   pageNumber,
   pageSize,
   totalCount,
@@ -57,15 +58,17 @@ export default function DepreciationMaster({
       rateMap[id][row.constructionTypeId] = row.rate ?? 0;
     });
 
-    const sortedRanges = Array.from(rangeMap.values()).sort((a, b) => a.min - b.min);
+    const currentPageRanges = Array.from(rangeMap.values()).sort((a, b) => a.min - b.min);
+    const effectiveAllRanges = initialAllRanges && initialAllRanges.length > 0 ? initialAllRanges : currentPageRanges;
 
     return {
       dbRows: data,
-      ranges: sortedRanges,
+      ranges: currentPageRanges,
+      allRanges: effectiveAllRanges,
       baseRatesByRange: rateMap,
-      defaultSelectedRangeId: sortedRanges[0]?.id ?? null,
+      defaultSelectedRangeId: effectiveAllRanges[0]?.id ?? currentPageRanges[0]?.id ?? null,
     };
-  }, [data]);
+  }, [data, initialAllRanges]);
 
   // Merge base rates with local overrides
   const ratesByRange = useMemo(() => {
@@ -79,15 +82,15 @@ export default function DepreciationMaster({
   }, [derivedState.baseRatesByRange, localRateOverrides]);
 
   // Destructure for easier access
-  const { dbRows, ranges, defaultSelectedRangeId } = derivedState;
+  const { dbRows, ranges, allRanges, defaultSelectedRangeId } = derivedState;
 
   // Use selected range or fallback to default
   const effectiveSelectedRangeId = useMemo(() => {
-    if (selectedRangeId && ranges.some((r) => r.id === selectedRangeId)) {
+    if (selectedRangeId && allRanges.some((r) => r.id === selectedRangeId)) {
       return selectedRangeId;
     }
     return defaultSelectedRangeId;
-  }, [selectedRangeId, ranges, defaultSelectedRangeId]);
+  }, [selectedRangeId, allRanges, defaultSelectedRangeId]);
 
   /* ================= HANDLERS HOOK ================= */
   const {
@@ -103,9 +106,11 @@ export default function DepreciationMaster({
   } = useDepreciationHandlers({
     t,
     locale,
+    pageNumber,
     pageSize,
     dbRows,
     ranges,
+    allRanges,
     effectiveSelectedRangeId,
     pendingChanges,
     setPendingChanges,
@@ -161,6 +166,7 @@ export default function DepreciationMaster({
       minError={minError}
       maxError={maxError}
       ranges={ranges}
+      allRanges={allRanges}
       effectiveSelectedRangeId={effectiveSelectedRangeId}
       saving={saving}
       handleMinChange={handleMinChange}

@@ -9,7 +9,7 @@ export { CODE_REGEX as ZONE_WARD_NO_REGEX, CODE_SANITIZE as ZONE_WARD_NO_SANITIZ
 
 // Field length constraints
 export const ZONE_WARD_NO_MAX_LENGTH = 10;
-export const ZONE_WARD_NAME_MAX_LENGTH = 100;
+export const ZONE_WARD_NAME_MAX_LENGTH = 50;
 
 // Description/Name sanitization
 export { DESCRIPTION_SANITIZE as ZONE_WARD_NAME_SANITIZE };

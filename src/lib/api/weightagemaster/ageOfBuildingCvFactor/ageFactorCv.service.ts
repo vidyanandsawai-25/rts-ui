@@ -172,7 +172,11 @@ export async function deleteAgeFactorCVMaster(
   if (id <= 0) {
     throw new ApiError(400, t ? t('errors.validIdRequired') : 'Valid AgeFactorCV ID is required', 'Validation');
   }
-  return apiClient.delete<unknown>(`/AgeFactorCVMaster/${id}/purge`);
+  const response = await apiClient.delete<unknown>(`/AgeFactorCVMaster/${id}/purge`);
+  if (!response.success) {
+    throw new ApiError(response.statusCode || 500, response.error || response.message || 'Failed to delete Age Factor CV Master', 'Delete Age Factor CV Master failed');
+  }
+  return response;
 }
 
 /**

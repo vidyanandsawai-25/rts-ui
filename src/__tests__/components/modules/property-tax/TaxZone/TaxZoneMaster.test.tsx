@@ -12,6 +12,7 @@ vi.mock("next/navigation", () => ({
     refresh: vi.fn(),
   }),
   usePathname: () => "/property-tax/taxzone",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock sonner toast
@@ -127,17 +128,21 @@ describe("TaxZoneMaster", () => {
 
   it("renders tax zone master list with data", () => {
     setup();
-    
-    // Note: Title and subtitle are now in TaxZoneMasterLayoutContent (layout component)
-    // TaxZoneMaster only renders the table with data
+
+    expect(screen.getByText("Tax Zone Master")).toBeInTheDocument();
+    expect(screen.getByText("Manage zones and their types")).toBeInTheDocument();
     expect(screen.getByText("Z1")).toBeInTheDocument();
     expect(screen.getByText("Residential")).toBeInTheDocument();
     expect(screen.getByText("Z2")).toBeInTheDocument();
     expect(screen.getByText("Commercial")).toBeInTheDocument();
   });
 
-  // Note: Search input and Add Zone button are now in TaxZoneMasterToolbar (layout component)
-  // and should be tested separately if needed
+  it("renders the Add Zone button and search box", () => {
+    setup();
+
+    expect(screen.getByText("Add Zone")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search by Zone No, Zone Type, Remark...")).toBeInTheDocument();
+  });
 
   it("displays action buttons for each row", () => {
     setup();
@@ -148,8 +153,6 @@ describe("TaxZoneMaster", () => {
     expect(editButtons).toHaveLength(2);
     expect(deleteButtons).toHaveLength(2);
   });
-
-  // Note: Search functionality is now in TaxZoneMasterToolbar (layout component)
 
   it("displays no data message when data is empty", () => {
     setup({ data: [], totalCount: 0 });
