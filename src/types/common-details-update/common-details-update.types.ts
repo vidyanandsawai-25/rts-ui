@@ -203,6 +203,7 @@ export interface FieldRegistrySchema {
 
 export interface FieldRegistryTable {
   id?: number;
+  moduleLabel?: string | null;
   tableName: string;
   referenceTableName?: string;
 }
@@ -246,7 +247,30 @@ export interface CreateFieldRegistryDto {
   fieldConfigs: FieldRegistryFieldConfigDto[];
 }
 
+export interface UpdateFieldRegistryDto {
+  updatedBy?: number;
+  updateName: string;
+  referenceTableName: string;
+  isApprovalRequired: boolean;
+  isActive: boolean;
+  fieldConfigs: {
+    id?: number;
+    fieldName: string;
+    displayName: string;
+    controlType: string;
+    dataType: string;
+    placeholder?: string | null;
+    isRequired: boolean;
+    maxLength?: number | null;
+    validationRegex?: string | null;
+    defaultValue?: string | null;
+    bindApi?: string | null;
+    apiResponse?: string | null;
+  }[];
+}
+
 export interface FieldRegistryFieldConfigDto {
+  id?: number;
   fieldName: string;
   displayName: string;
   controlType: string;
@@ -257,6 +281,7 @@ export interface FieldRegistryFieldConfigDto {
   validationRegex?: string | null;
   defaultValue?: string | null;
   bindApi?: string | null;
+  apiResponse?: string | null;
   sequenceNo?: number;
 }
 

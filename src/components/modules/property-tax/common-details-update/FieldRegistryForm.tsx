@@ -34,7 +34,10 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
   } = state;
 
   const tableOptions = useMemo(() => {
-    const options = tables.map((t) => ({ label: t.tableName, value: String(t.id) }));
+    const options = tables.map((t) => ({
+      label: t.moduleLabel ? `${t.moduleLabel} ${t.tableName}` : t.tableName,
+      value: String(t.id)
+    }));
     if (sourceTable && !options.some(o => o.value === sourceTable)) {
       const sTable = sourceTable.toLowerCase();
       const sTableClean = sTable.replace(/[\s_]/g, '');
@@ -61,7 +64,9 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
         );
       });
 
-      const displayLabel = matchedTable ? matchedTable.tableName : sourceTable;
+      const displayLabel = matchedTable
+        ? (matchedTable.moduleLabel ? `${matchedTable.moduleLabel} ${matchedTable.tableName}` : matchedTable.tableName)
+        : sourceTable;
       options.push({ label: displayLabel, value: sourceTable });
     }
     return options;
@@ -92,23 +97,14 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
               {t('fieldRegistry.addFieldFromDb.subtitle')}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <SaveButton
-              size="xs"
-              type="button"
-              label={t('fieldRegistry.addFieldFromDb.saveFields')}
-              onClick={handleAddFieldToRegistry}
-              disabled={disableSave}
-            />
-          </div>
         </div>
       </div>
 
       <CardContent className="p-2 pb-0 bg-blue-50/30">
         <div className="flex flex-wrap gap-4 items-end pb-3">
-          <div className="w-[250px]">
+          <div className="w-[265px] [&_ul]:!max-h-[260px] [&_[role=listbox]]:!max-h-[260px]">
             <div className="block text-sm font-medium mb-1.5 text-slate-700">
-              {t('fieldRegistry.addFieldFromDb.sourceTable')}
+              {t('fieldRegistry.addFieldFromDb.sourceTable')} <span className="text-red-500 ml-0.5">*</span>
             </div>
             <SearchSelect
               value={sourceTable}
@@ -120,7 +116,7 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
           
           {fieldConfigs.map((config, index) => (
             <div key={index} className="flex items-end gap-4">
-              <div className="w-[240px]">
+              <div className="w-[255px]">
                 <div className="block text-sm font-medium mb-1.5 text-slate-700">
                   {t('fieldRegistry.addFieldFromDb.fieldName')} <span className="text-red-500 ml-0.5">*</span>
                 </div>
@@ -154,13 +150,13 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
                   placeholder={config.fieldName && config.fieldName.length > 0 ? config.fieldName.join(", ") : t('fieldRegistry.addFieldFromDb.selectFieldName') || 'Select Field Name'}
                   selectSize="sm"
                   disabled={submitting || !sourceTable}
-                  className="text-sm [&>button]:h-9 [&>button]:py-1.5 [&>button:disabled]:opacity-60 [&>div.absolute]:!max-h-65 [&>div.absolute>div[role=listbox]]:!max-h-40"
+                  className="text-sm [&>button]:h-9 [&>button]:py-1.5 [&>button:disabled]:opacity-60 [&>div.absolute]:!max-h-96 [&>div.absolute>div[role=listbox]]:!max-h-[260px]"
                 />
               </div>
             </div>
           ))}
 
-          <div className="w-[200px]">
+          <div className="w-[215px]">
             <div className="block text-sm font-medium mb-1.5 text-slate-700">
               {t('fieldRegistry.addFieldFromDb.updateCode')} <span className="text-red-500 ml-0.5">*</span>
             </div>
@@ -172,6 +168,17 @@ export const FieldRegistryForm = ({ t, state }: FieldRegistryFormProps) => {
               placeholder={t('fieldRegistry.addFieldFromDb.updateNamePlaceholder')}
               className="w-full h-9 text-slate-900"
               disabled={submitting}
+            />
+          </div>
+
+          <div className="flex items-center">
+            <SaveButton
+              size="sm"
+              type="button"
+              label={t('fieldRegistry.addFieldFromDb.saveFields')}
+              onClick={handleAddFieldToRegistry}
+              disabled={disableSave}
+              className="h-9 font-semibold shadow-sm"
             />
           </div>
         </div>

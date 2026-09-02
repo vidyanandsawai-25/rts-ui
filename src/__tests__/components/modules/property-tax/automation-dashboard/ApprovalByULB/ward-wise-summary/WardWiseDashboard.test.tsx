@@ -10,6 +10,7 @@ vi.mock("next/navigation", () => ({
     push: mockPush,
   }),
   useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/mock-path",
 }));
 
 // Mock next-intl

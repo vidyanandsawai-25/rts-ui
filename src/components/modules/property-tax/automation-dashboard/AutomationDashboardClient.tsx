@@ -107,7 +107,7 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
                                     className={`min-w-0 w-full h-full text-left outline-none block ${isClickable ? 'cursor-pointer transition-transform active:scale-[0.98]' : 'cursor-not-allowed'}`}
                                 >
                                     <div className={`w-full h-full ${!isClickable ? 'pointer-events-none' : ''}`}>
-                                        <WorkflowTabButton tab={tab} isActive={isActive} icon={Icon} colors={colors} />
+                                        <WorkflowTabButton tab={tab} isActive={isActive} icon={Icon} colors={colors} isClickable={isClickable} />
                                     </div>
                                 </div>
                             );

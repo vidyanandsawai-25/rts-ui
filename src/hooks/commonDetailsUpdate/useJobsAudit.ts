@@ -40,8 +40,8 @@ export const useJobsAudit = ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const auditPage = Number(searchParams.get("auditPage")) || 1;
-  const auditPageSize = Number(searchParams.get("auditPageSize")) || 10;
+  const auditPage = Number(searchParams.get("auditPage") || searchParams.get("pageNumber") || searchParams.get("page")) || 1;
+  const auditPageSize = Number(searchParams.get("auditPageSize") || searchParams.get("pageSize")) || 10;
   const auditUser = searchParams.get("auditUser") || "all";
   const auditSearch = searchParams.get("auditSearch") || "";
 
@@ -96,8 +96,14 @@ export const useJobsAudit = ({
     });
     // Preserve tab
     newParams.set("tab", "auditMonitor");
+    if (!newParams.has("auditPage")) {
+      newParams.set("auditPage", String(auditPage));
+    }
+    if (!newParams.has("auditPageSize")) {
+      newParams.set("auditPageSize", String(auditPageSize));
+    }
     router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
-  }, [searchParams, pathname, router, providedUpdateUrlParams]);
+  }, [searchParams, pathname, router, providedUpdateUrlParams, auditPage, auditPageSize]);
 
   const itemsList = useMemo(() => {
     if (!initialData) return [];
@@ -358,7 +364,7 @@ export const useJobsAudit = ({
       } else {
         toast.error(
           ("error" in result ? result.error : "") || t("messages.somethingWrong")
-        );
+        );  
       }
     } catch {
       toast.error(t("messages.somethingWrong"));

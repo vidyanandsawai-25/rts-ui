@@ -125,7 +125,7 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             fromPropertyNo={updateData.filterValues.fromPropertyNo}
             toPropertyNo={updateData.filterValues.toPropertyNo}
             optionsMap={updateData.optionsMap}
-            
+            lookupMap={updateData.lookupMap}
           />
         </div>
 
@@ -157,6 +157,7 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             loadingMap={updateData.bindApiLoadingMap}
             hasMoreMap={updateData.bindApiHasMoreMap}
             loadingMoreMap={updateData.bindApiLoadingMoreMap}
+            onFocus={updateData.handleBindApiFocus}
             onLoadMore={updateData.handleBindApiLoadMore}
             onSearchChange={updateData.handleBindApiSearchChange}
           />

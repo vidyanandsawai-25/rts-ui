@@ -8,7 +8,6 @@ import {
   CardTitle,
   SaveButton,
   CancelButton,
-  Label,
   Input
 } from "@/components/common";
 import { BulkUpdateFieldConfig, BulkUpdateMaster, SelectOption } from "@/types/common-details-update/common-details-update.types";
@@ -36,6 +35,7 @@ interface BulkUpdateFormProps {
   loadingMap?: Record<string, boolean>;
   hasMoreMap?: Record<string, boolean>;
   loadingMoreMap?: Record<string, boolean>;
+  onFocus?: (fieldName: string) => void;
   onLoadMore?: (fieldName: string, searchQuery?: string) => void;
   onSearchChange?: (fieldName: string, searchQuery: string) => void;
 }
@@ -61,6 +61,7 @@ export const BulkUpdateForm = ({
   loadingMap = {},
   hasMoreMap = {},
   loadingMoreMap = {},
+  onFocus,
   onLoadMore,
   onSearchChange,
 }: BulkUpdateFormProps) => {
@@ -133,6 +134,7 @@ export const BulkUpdateForm = ({
                   isLoading={loadingMap[overrideConfig.fieldName]}
                   hasMore={hasMoreMap[overrideConfig.fieldName]}
                   isLoadingMore={loadingMoreMap[overrideConfig.fieldName]}
+                  onFocus={() => onFocus?.(overrideConfig.fieldName)}
                   onLoadMore={(sq) => onLoadMore?.(overrideConfig.fieldName, sq)}
                   onSearchChange={(sq) => onSearchChange?.(overrideConfig.fieldName, sq)}
                 />
@@ -143,19 +145,18 @@ export const BulkUpdateForm = ({
 
         {/* Common Remarks Field */}
         {selectedMenuItem && !loadingConfigs && fieldConfigs.length > 0 && (
-          <div className="mt-2 border-t border-slate-200">
-            <div className="space-y-1.5 w-full ">
-              <Label className="text-sm font-semibold text-slate-700">
-                {t("form.remarks")}
-              </Label>
-              <Input
-                type="text"
-                placeholder={t("form.remarksPlaceholder")}
-                value={String(formValues["remarks"] || "")}
-                onChange={(e) => onFieldChange("remarks", e.target.value)}
-                className="w-full"
-              />
-            </div>
+          <div className="mt-2 border-t border-slate-200 pt-2">
+            <Input
+              label={t("form.remarks")}
+              required
+              type="text"
+              placeholder={t("form.remarksPlaceholder")}
+              value={String(formValues["remarks"] || "")}
+              onChange={(e) => onFieldChange("remarks", e.target.value)}
+              error={formSubmitted && !String(formValues["remarks"] || "").trim() ? (formErrors["remarks"] || t("messages.remarksRequired")) : formErrors["remarks"]}
+              className="w-full"
+              fullWidth
+            />
           </div>
         )}
       </CardContent>
@@ -192,7 +193,7 @@ export const BulkUpdateForm = ({
               size="sm"
               label={saving ? t("form.updating") : t("form.update")}
               onClick={onUpdate}
-              disabled={saving || selectedFieldsCount === 0 || selectedCount === 0}
+              disabled={saving || selectedFieldsCount === 0 || selectedCount === 0 || !String(formValues["remarks"] || "").trim()}
             />
           </div>
         </div>

@@ -2,8 +2,20 @@ import { useCallback, useMemo, useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { CombinePropertyItem } from '@/types/combine-property.types';
+import { comparePropertyNo } from '@/hooks/taxZoningRange/useTaxZoningRange';
 
 export type SelectionMethod = 'range' | 'individual';
+
+/** Two-level natural sort — PropertyNo first, then partition (fromProperty) — mirroring the
+ *  backend's `OrderBy(PropertyNo, NaturalStringComparer).ThenBy(PartitionNo, NaturalStringComparer)`.
+ *  Sorting by partition alone (the previous behavior) put un-partitioned properties like "13"
+ *  ahead of partitioned ones like "12-1" regardless of the actual property number, since an empty
+ *  partition string sorts before any non-empty one. */
+export function compareSubProperty(a: CombinePropertyItem, b: CombinePropertyItem): number {
+  const byPropertyNo = comparePropertyNo(a.propertyNo || '', b.propertyNo || '');
+  if (byPropertyNo !== 0) return byPropertyNo;
+  return comparePropertyNo(a.fromProperty || '', b.fromProperty || '');
+}
 
 export function useCombinePropertyFilters(
   basePropertyList: CombinePropertyItem[],
@@ -52,9 +64,7 @@ export function useCombinePropertyFilters(
   );
 
   const computedParams = useMemo(() => {
-    const sortedSubPropertyList = [...subPropertyList].sort((a, b) => {
-      return (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' });
-    });
+    const sortedSubPropertyList = [...subPropertyList].sort(compareSubProperty);
     let slice: CombinePropertyItem[] = [];
     if (selectionMethod === 'range' && rangeFrom && rangeTo) {
       const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeFrom);
@@ -119,7 +129,7 @@ export function useCombinePropertyFilters(
   const handleRangeFromChange = (_name: string, value: string) => {
     onClearReview();
     if (rangeTo) {
-      const sortedSubPropertyList = [...subPropertyList].sort((a, b) => (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' }));
+      const sortedSubPropertyList = [...subPropertyList].sort(compareSubProperty);
       const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === value);
       const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeTo);
       if (fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx) {
@@ -142,7 +152,7 @@ export function useCombinePropertyFilters(
   const handleRangeToChange = (_name: string, value: string) => {
     onClearReview();
     if (rangeFrom) {
-      const sortedSubPropertyList = [...subPropertyList].sort((a, b) => (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' }));
+      const sortedSubPropertyList = [...subPropertyList].sort(compareSubProperty);
       const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeFrom);
       const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === value);
       if (fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx) {
@@ -195,7 +205,7 @@ export function useCombinePropertyFilters(
   const selectedCount = useMemo(() => {
     if (selectionMethod === 'individual') return selectedProperties.length;
     if (selectionMethod === 'range' && rangeFrom && rangeTo) {
-      const sortedSubPropertyList = [...subPropertyList].sort((a, b) => (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' }));
+      const sortedSubPropertyList = [...subPropertyList].sort(compareSubProperty);
       const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeFrom);
       const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeTo);
       if (fromIdx === -1 || toIdx === -1) return 0;
@@ -206,7 +216,7 @@ export function useCombinePropertyFilters(
 
   const isRangeInvalid = useMemo(() => {
     if (selectionMethod !== 'range' || !rangeFrom || !rangeTo) return false;
-    const sortedSubPropertyList = [...subPropertyList].sort((a, b) => (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' }));
+    const sortedSubPropertyList = [...subPropertyList].sort(compareSubProperty);
     const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeFrom);
     const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeTo);
     return fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx;

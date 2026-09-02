@@ -4,12 +4,17 @@ import { MapPin, Download } from 'lucide-react';
 import { Classification, ZoneDataRow } from '@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type';
 
 const roleColors = [
-    { header: 'bg-fuchsia-50', text: 'text-rose-900' },
-    { header: 'bg-cyan-50', text: 'text-teal-700' },
-    { header: 'bg-blue-50', text: 'text-blue-700' },
-    { header: 'bg-emerald-50', text: 'text-emerald-700' },
-    { header: 'bg-violet-50', text: 'text-violet-700' }
+    { header: 'bg-fuchsia-100', text: 'text-rose-900' },
+    { header: 'bg-cyan-100', text: 'text-teal-700' },
+    { header: 'bg-blue-100', text: 'text-blue-700' },
+    { header: 'bg-emerald-100', text: 'text-emerald-700' },
+    { header: 'bg-violet-100', text: 'text-violet-700' }
 ];
+
+export const commonBorderClass = 'border-slate-400 dark:border-slate-600';
+export const commonApprovalCellClass = `border ${commonBorderClass} p-1 text-center font-bold`;
+export const commonApprovalHeaderClass = `border ${commonBorderClass} p-1 text-center text-table-header text-slate-700 sticky top-0 z-20`;
+export const commonApprovalSubHeaderClass = `border ${commonBorderClass} p-1 text-center text-table-header text-slate-700 min-w-[60px] sticky top-[42px] z-20`;
 
 export interface RoleDef {
     id: number;
@@ -30,7 +35,7 @@ export const getApprovalColumns = (
     onDivisionClick?: (zoneId: string, zoneName: string) => void,
     t?: (key: string) => string
 ): Column<ZoneDataRow>[] => {
-    const defaultCellClass = 'p-3 text-center font-bold text-slate-700 border-r border-slate-300 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap';
+    const defaultCellClass = `border ${commonBorderClass} p-3 text-center font-bold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap`;
     const baseColumns: Column<ZoneDataRow>[] = [
         {
             key: 'sr',
@@ -43,7 +48,7 @@ export const getApprovalColumns = (
             key: 'zoneName',
             label: t ? t('columns.zoneWard') : '',
             align: 'left',
-            cellClassName: '!p-0 border-r border-slate-300 border-l-2 border-l-transparent group-hover:border-l-indigo-500',
+            cellClassName: `!p-0 border ${commonBorderClass} group-hover:border-l-indigo-500`,
             render: (value, row) => {
                 if (row.isTotal) {
                     return <div className="text-black font-bold text-center w-full block p-3">{row.zoneName || (t ? t('total') : 'Total')}</div>;
@@ -73,21 +78,21 @@ export const getApprovalColumns = (
             key: 'totalStructure',
             label: '',
             align: 'center',
-            cellClassName: 'border border-slate-300 p-1 text-center font-bold text-blue-900',
+            cellClassName: `${commonApprovalCellClass} text-blue-900`,
             render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
         },
         {
             key: 'totalUnit',
             label: '',
             align: 'center',
-            cellClassName: 'border border-slate-300 p-1 text-center font-bold text-blue-900',
+            cellClassName: `${commonApprovalCellClass} text-blue-900`,
             render: (value) => ((value as number) ?? 0).toLocaleString('en-IN')
         },
         {
             key: 'totalDemand',
             label: '',
             align: 'center',
-            cellClassName: 'border border-slate-300 p-1 text-center font-bold text-green-900 min-w-[80px]',
+            cellClassName: `${commonApprovalCellClass} text-green-900 min-w-[80px]`,
             render: (_, row) => {
                 const demand = (row.totalDemand as number | undefined) ?? row.classifications?.find((x: Classification) => x.type === 'Total')?.totalDemand ?? row.classifications?.find((x: Classification) => x.type === 'Clerk')?.totalDemand ?? 0;
                 if (demand >= 10000000) {
@@ -109,7 +114,7 @@ export const getApprovalColumns = (
 
     roles.forEach(({ id: roleId, name: _role }, idx) => {
         const textClass = dynamicTextColors[idx % dynamicTextColors.length];
-        const baseRoleClass = `border border-slate-300 p-1 text-center font-bold ${textClass}`;
+        const baseRoleClass = `${commonApprovalCellClass} ${textClass}`;
 
         baseColumns.push(
             {
@@ -155,7 +160,7 @@ export const getApprovalColumns = (
         );
     });
 
-    const totalCellClass = 'border border-slate-300 p-1 text-center font-bold text-amber-950';
+    const totalCellClass = `${commonApprovalCellClass} text-amber-950`;
     baseColumns.push(
         {
             key: `finalTotal_signedStruct`,
@@ -217,7 +222,7 @@ export const getApprovalHeaderRows = (
             label: <div className="flex items-center justify-center gap-1 font-bold text-[15px] text-slate-700 uppercase whitespace-nowrap">{t ? t('columns.sr') : 'SR'}</div>,
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[50px] border border-slate-300 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: `bg-slate-50 min-w-[50px] ${commonApprovalHeaderClass}`
         },
         {
             label: (
@@ -229,7 +234,7 @@ export const getApprovalHeaderRows = (
             ),
             rowSpan: 2,
             align: 'left',
-            headerClassName: 'bg-slate-50 min-w-[180px] border border-slate-300 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: `bg-slate-50 min-w-[180px] ${commonApprovalHeaderClass}`
         },
         {
             label: (
@@ -239,7 +244,7 @@ export const getApprovalHeaderRows = (
             ),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 border border-slate-300 px-2 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: `bg-slate-50 px-2 ${commonApprovalHeaderClass}`
         },
         {
             label: (
@@ -249,7 +254,7 @@ export const getApprovalHeaderRows = (
             ),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 border border-slate-300 px-2 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: `bg-slate-50 px-2 ${commonApprovalHeaderClass}`
         },
         {
             label: (
@@ -259,7 +264,7 @@ export const getApprovalHeaderRows = (
             ),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-emerald-50 border border-slate-300 px-2 border border-slate-300 p-1 text-center text-table-header text-slate-700 sticky top-0 z-20'
+            headerClassName: `bg-emerald-50 px-2 ${commonApprovalHeaderClass}`
         }
     ];
 
@@ -289,7 +294,7 @@ export const getApprovalHeaderRows = (
             ),
             colSpan: 4,
             align: 'center',
-            headerClassName: `${color.header} border border-slate-300 p-2`
+            headerClassName: `${color.header} border ${commonBorderClass} p-2`
         });
 
         bottomRow.push(
@@ -301,7 +306,7 @@ export const getApprovalHeaderRows = (
                     </>
                 ),
                 align: 'center',
-                headerClassName: `${color.header} border border-slate-300 p-1 text-center text-table-header text-slate-700 min-w-[60px] sticky top-[42px] z-20`
+                headerClassName: `${color.header} ${commonApprovalSubHeaderClass}`
             },
             {
                 label: (
@@ -311,7 +316,7 @@ export const getApprovalHeaderRows = (
                     </>
                 ),
                 align: 'center',
-                headerClassName: `${color.header} border border-slate-300 p-1 text-center text-table-header text-slate-700 min-w-[60px] sticky top-[42px] z-20`
+                headerClassName: `${color.header} ${commonApprovalSubHeaderClass}`
             },
             {
                 label: (
@@ -321,7 +326,7 @@ export const getApprovalHeaderRows = (
                     </>
                 ),
                 align: 'center',
-                headerClassName: `${color.header} border border-slate-300 p-1 text-center text-table-header text-slate-700 min-w-[60px] sticky top-[42px] z-20`
+                headerClassName: `${color.header} ${commonApprovalSubHeaderClass}`
             },
             {
                 label: (
@@ -331,7 +336,7 @@ export const getApprovalHeaderRows = (
                     </>
                 ),
                 align: 'center',
-                headerClassName: `${color.header} border border-slate-300 p-1 text-center text-table-header text-slate-700 min-w-[60px] sticky top-[42px] z-20`
+                headerClassName: `${color.header} ${commonApprovalSubHeaderClass}`
             }
         );
     });
@@ -340,7 +345,7 @@ export const getApprovalHeaderRows = (
         label: <div className="flex items-center justify-center gap-1 font-bold text-[14px] text-slate-700 whitespace-nowrap">{t ? t('total') : 'Total'}</div>,
         colSpan: 4,
         align: 'center',
-        headerClassName: `bg-amber-50 border border-slate-300 p-2`
+        headerClassName: `bg-amber-50 border ${commonBorderClass} p-2`
     });
 
     bottomRow.push(

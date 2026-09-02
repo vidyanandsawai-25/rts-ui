@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { MasterTable, Select, SearchInput, Badge, TruncatedText } from "@/components/common";
 import { Modal } from "@/components/common/Modal";
 import { DashboardCard } from "@/components/common/DashboardCard";
-import { getJobsAuditColumns } from "./JobsAuditConstants";
+import { getJobsAuditColumns, getStatusVariant } from "./JobsAuditConstants";
 import { UpdateHistoryItem, CommonDetailsUpdateActions } from "@/types/common-details-update/common-details-update.types";
 import { PagedResponse } from "@/types/common.types";
 import { useTranslations } from "next-intl";
@@ -236,12 +236,8 @@ export const JobsAudit = ({ initialData, initialAllData, initialUpdateHistoryDet
                 )}
                 {selectedRow.activityStatus && (
                   <Badge
-                    variant={
-                      selectedRow.activityStatus.toLowerCase() === "success" || selectedRow.activityStatus.toLowerCase() === "completed"
-                        ? "success"
-                        : "destructive"
-                    }
-                    className="font-semibold"
+                    variant={getStatusVariant(selectedRow.activityStatus)}
+                    className="font-semibold capitalize"
                   >
                     {selectedRow.activityStatus}
                   </Badge>

@@ -19,6 +19,7 @@ interface DynamicFormFieldProps {
   isLoading?: boolean;
   hasMore?: boolean;
   isLoadingMore?: boolean;
+  onFocus?: () => void;
   onLoadMore?: (searchQuery?: string) => void;
   onSearchChange?: (searchQuery: string) => void;
 }
@@ -34,6 +35,7 @@ export const DynamicFormField = ({
   isLoading = false,
   hasMore = false,
   isLoadingMore = false,
+  onFocus,
   onLoadMore,
   onSearchChange,
 }: DynamicFormFieldProps) => {
@@ -81,6 +83,7 @@ export const DynamicFormField = ({
             isLoading={isLoading}
             hasMore={hasMore}
             isLoadingMore={isLoadingMore}
+            onInputFocus={onFocus}
             onLoadMore={onLoadMore}
             onSearchChange={onSearchChange}
           />
@@ -271,7 +274,7 @@ export const DynamicFormField = ({
           />
         );
     }
-  }, [config, value, onChange, placeholder, dropdownOptions, displayName, isLoading, hasMore, isLoadingMore, onLoadMore, onSearchChange]);
+  }, [config, value, onChange, placeholder, dropdownOptions, displayName, isLoading, hasMore, isLoadingMore, onFocus, onLoadMore, onSearchChange]);
 
   if (config.controlType === "checkbox") {
     return <div className="py-1">{fieldElement}</div>;

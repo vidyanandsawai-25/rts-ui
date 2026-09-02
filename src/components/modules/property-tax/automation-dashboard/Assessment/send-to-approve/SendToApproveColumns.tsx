@@ -8,6 +8,8 @@ import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 import Link from 'next/link';
 import { handleLocationClick } from '@/lib/utils/automation-dashboard/mapUtils';
 
+export const BORDER_CLASS = '!border-slate-400';
+
 export const getSendToApproveHeaderRows = (
     selectedIds: string[],
     _data: SendToApproveData[],
@@ -29,7 +31,7 @@ export const getSendToApproveHeaderRows = (
                     </div>
                 ),
                 rowSpan: 2,
-                headerClassName: 'p-2 text-center w-12 border-r border-slate-300 bg-white shadow-[1px_0_0_#cbd5e1] z-10 sticky left-0'
+                headerClassName: `p-2 text-center min-w-[50px] border ${BORDER_CLASS} bg-white z-10 sticky left-0`
             },
             {
                 label: (
@@ -43,33 +45,33 @@ export const getSendToApproveHeaderRows = (
                     </>
                 ),
                 rowSpan: 2,
-                headerClassName: 'p-2 text-left font-bold text-slate-700 border-r border-slate-300 bg-white w-[180px] min-w-[180px]'
+                headerClassName: `p-2 text-left font-bold text-slate-700 border ${BORDER_CLASS} bg-white w-[180px] min-w-[180px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.categoryAndDesc') : "CATEGORY & DESC",
                 rowSpan: 2,
-                headerClassName: 'p-2 text-center font-bold text-slate-700 border-r border-slate-300 bg-white w-[140px] min-w-[140px]'
+                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-white w-[140px] min-w-[140px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.ownerAndOccupier') : "OWNER, OCCUPIER & SHOP",
                 rowSpan: 2,
-                headerClassName: 'p-2 text-center font-bold text-slate-700 border-r border-slate-300 bg-white whitespace-normal break-words w-[240px] min-w-[240px]'
+                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-white whitespace-normal break-words w-[240px] min-w-[240px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.mobile') : "MOBILE",
                 rowSpan: 2,
-                headerClassName: 'p-2 text-center font-bold text-slate-700 border-r border-slate-300 bg-white w-[100px]'
+                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-white w-[100px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.address') : "ADDRESS",
                 rowSpan: 2,
-                headerClassName: 'p-2 text-center font-bold text-slate-700 border-r border-slate-300 bg-white whitespace-normal break-words w-[250px] min-w-[250px]'
+                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-white whitespace-normal break-words w-[250px] min-w-[250px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.propertyDetailsNewVsOld') : "PROPERTY DETAILS (NEW VS OLD)",
                 colSpan: 2,
                 align: 'center',
-                headerClassName: 'p-2 text-center font-bold text-slate-700 bg-amber-50/50 border-r border-b border-slate-300'
+                headerClassName: `p-2 text-center font-bold text-slate-700 bg-amber-100 border ${BORDER_CLASS}`
             },
             {
                 label: (
@@ -81,7 +83,7 @@ export const getSendToApproveHeaderRows = (
                     </>
                 ),
                 rowSpan: 2,
-                headerClassName: 'p-2 text-center font-bold text-slate-700 border-l border-r border-slate-300 bg-teal-50/30 w-[180px]'
+                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-teal-100 w-[180px]`
             },
             {
                 label: (
@@ -92,7 +94,7 @@ export const getSendToApproveHeaderRows = (
                     </>
                 ),
                 rowSpan: 2,
-                headerClassName: 'p-2 text-center font-bold text-slate-700 bg-emerald-50/50 border-r border-slate-300 w-[100px]'
+                headerClassName: `p-2 text-center font-bold text-slate-700 bg-emerald-100 border ${BORDER_CLASS} w-[100px]`
             },
             {
                 label: (
@@ -103,7 +105,7 @@ export const getSendToApproveHeaderRows = (
                     </>
                 ),
                 rowSpan: 2,
-                headerClassName: 'p-2 text-center font-bold text-slate-700 bg-purple-50/50 border-r border-slate-300 w-[100px]'
+                headerClassName: `p-2 text-center font-bold text-slate-700 bg-purple-100 border ${BORDER_CLASS} w-[100px]`
             },
             {
                 label: (
@@ -116,25 +118,25 @@ export const getSendToApproveHeaderRows = (
                     </>
                 ),
                 rowSpan: 2,
-                headerClassName: 'p-2 text-center font-bold border-r border-slate-300 w-[100px]'
+                headerClassName: `p-2 text-center font-bold border ${BORDER_CLASS} w-[100px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.actions') : "ACTIONS",
                 rowSpan: 2,
                 align: 'center',
-                headerClassName: 'p-2 text-center font-bold text-slate-700 border-slate-300 bg-white w-[80px]'
+                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-white w-[80px]`
             }
         ],
         [
             {
                 label: t ? t('propertyDetailsDashboard.columns.oldRecord') : "OLD RECORD",
                 align: 'center',
-                headerClassName: 'p-2 text-center font-bold text-slate-700 bg-red-50/30 border-r border-slate-300 w-[180px] min-w-[150px]'
+                headerClassName: `p-2 text-center font-bold text-slate-700 bg-red-100 border ${BORDER_CLASS} w-[180px] min-w-[150px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.newRecord') : "NEW RECORD",
                 align: 'center',
-                headerClassName: 'p-2 text-center font-bold text-slate-700 bg-emerald-50/30 !border-r border-slate-300 w-[180px] min-w-[150px]'
+                headerClassName: `p-2 text-center font-bold text-slate-700 bg-emerald-100 border ${BORDER_CLASS} w-[180px] min-w-[150px]`
             }
         ]
     ];
@@ -257,8 +259,8 @@ export const getSendToApproveColumns = (
         {
             key: 'id',
             label: '',
-            width: '48px',
-            cellClassName: 'p-2 text-center border-b border-r border-slate-300 shadow-[1px_0_0_#cbd5e1] z-10 sticky left-0 transition-colors bg-white',
+            width: '80px',
+            cellClassName: `p-2 text-center border ${BORDER_CLASS} z-10 sticky left-0 transition-colors bg-white`,
             render: (_val, row) => {
                 const isSelected = selectedIds.includes(row.id);
                 return (
@@ -275,7 +277,7 @@ export const getSendToApproveColumns = (
         {
             key: 'propertyNo',
             label: t ? t('propertyDetailsDashboard.columns.propertyDetails') : 'PROPERTY DETAILS',
-            cellClassName: 'p-2 border border-slate-300 align-middle',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle`,
             render: (_, row) => (
                 <>
                     <div className="font-semibold text-slate-900 text-[11px]">{row.propertyNo.new}</div>
@@ -292,7 +294,7 @@ export const getSendToApproveColumns = (
             key: 'category',
             label: t ? t('propertyDetailsDashboard.columns.categoryAndDesc') : 'CATEGORY & DESC',
             align: 'center',
-            cellClassName: 'p-2 border border-slate-300 align-middle text-center',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle text-center`,
             render: (_, row) => (
                 <div className="w-full text-center text-[11px]">
                     <div className="mb-1">
@@ -316,7 +318,7 @@ export const getSendToApproveColumns = (
         {
             key: 'owner',
             label: t ? t('propertyDetailsDashboard.columns.ownerAndOccupier') : 'OWNER, OCCUPIER & SHOP',
-            cellClassName: 'p-2 border border-slate-300 align-middle',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle`,
             render: (_, row) => (
                 <div className="space-y-0.5 text-[11px] font-semibold whitespace-normal break-words">
                     <div className="text-gray-900">
@@ -337,19 +339,19 @@ export const getSendToApproveColumns = (
             key: 'mobile',
             label: t ? t('propertyDetailsDashboard.columns.mobile') : 'MOBILE',
             align: 'center',
-            cellClassName: 'p-2 border border-slate-300 align-middle text-center',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle text-center`,
             render: (val) => <div className="text-[12px] font-bold text-slate-900">{val as string}</div>
         },
         {
             key: 'address',
             label: t ? t('propertyDetailsDashboard.columns.address') : 'ADDRESS',
-            cellClassName: 'p-2 border border-slate-300 align-middle',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle`,
             render: (val) => <div className="text-[11px] font-bold text-slate-900 uppercase leading-snug break-words whitespace-normal">{val as string}</div>
         },
         {
             key: 'oldRecord',
             label: t ? t('propertyDetailsDashboard.columns.oldRecord') : 'OLD RECORD',
-            cellClassName: 'p-2 border border-slate-300 align-middle bg-red-50/10',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle bg-red-50`,
             render: (_, row) => {
                 const r = row.oldRecord;
                 return (
@@ -377,7 +379,7 @@ export const getSendToApproveColumns = (
         {
             key: 'newRecord',
             label: t ? t('propertyDetailsDashboard.columns.newRecord') : 'NEW RECORD',
-            cellClassName: 'p-2 border border-slate-300 align-middle bg-emerald-50/10',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle bg-emerald-50`,
             render: (_, row) => {
                 const r = row.newRecord;
                 return (
@@ -405,7 +407,7 @@ export const getSendToApproveColumns = (
         {
             key: 'qcChecklist',
             label: t ? t('sendToApprove.columns.qcChecklist') : 'QC CHECKLIST',
-            cellClassName: 'p-2 border border-slate-300 align-middle bg-teal-50/10',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle bg-teal-50`,
             render: (_, row) => (
                 <QcChecklistCell
                     row={row}
@@ -419,7 +421,7 @@ export const getSendToApproveColumns = (
             key: 'additionalRevenue',
             label: t ? t('propertyDetailsDashboard.columns.additionalRevenue') : 'ADDITIONAL REVENUE',
             align: 'center',
-            cellClassName: 'p-2 border border-slate-300 align-middle text-slate-700 bg-emerald-50',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle text-slate-700 bg-emerald-50`,
             render: (val) => (
                 <div className="text-[12px] font-bold text-slate-900">{val as number}</div>
             )
@@ -428,7 +430,7 @@ export const getSendToApproveColumns = (
             key: 'propertyType',
             label: t ? t('propertyDetailsDashboard.columns.propertyType') : 'PROPERTY TYPE',
             align: 'center',
-            cellClassName: 'p-2 border border-slate-300 align-middle bg-purple-50',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle bg-purple-50`,
             render: (_, row) => (
                 <span className="px-2 py-1 text-[11px] rounded-md font-bold text-slate-700 border border-slate-200 bg-slate-50">
                     {row.propertyType}
@@ -439,7 +441,7 @@ export const getSendToApproveColumns = (
             key: 'documents',
             label: t ? t('propertyDetailsDashboard.columns.documents') : 'DOCUMENTS',
             align: 'center',
-            cellClassName: 'p-2 border border-slate-300 align-middle',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle`,
             render: (_, row) => {
                 const documentGuid = row.documentGuid?.trim();
                 const planDocumentGuid = row.planDocumentGuid?.trim();
@@ -504,7 +506,7 @@ export const getSendToApproveColumns = (
             key: 'actions',
             label: t ? t('propertyDetailsDashboard.columns.actions') : 'ACTIONS',
             align: 'center',
-            cellClassName: 'p-2 border border-slate-300 align-middle bg-slate-50/50',
+            cellClassName: `p-2 border ${BORDER_CLASS} align-middle bg-slate-50`,
             render: (_, row) => (
                 <div className="flex flex-col items-center justify-center gap-1.5 py-1">
                     <Link

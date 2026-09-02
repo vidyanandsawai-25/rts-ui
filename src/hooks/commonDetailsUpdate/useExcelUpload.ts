@@ -1,15 +1,19 @@
-import { useState, useRef } from "react";
-import { toast } from "sonner";
+import { useState, useRef, useMemo, useCallback } from "react";
+import { useToast } from "@/components/common";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { logger } from "@/lib/utils/logger";
 import {
+  BulkUpdateMaster,
   CommonDetailsUpdateActions,
   ExcelValidationResponse
 } from "@/types/common-details-update/common-details-update.types";
 import {
   exportExcelAction,
   importExcelAction,
-  validateExcelAction
+  validateExcelAction,
+  getExcelTemplateFieldsAction,
+  getMenuItemsAction
 } from "@/app/[locale]/property-tax/common-details-update/actions";
 export function normalizeValidationPayload(raw: unknown): ExcelValidationResponse["items"] | null {
   if (!raw) return null;
@@ -157,12 +161,50 @@ interface UseExcelUploadOptions {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateData?: any;
   actions?: Partial<CommonDetailsUpdateActions>;
+  locale?: string;
 }
 
 export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
-  const { updateData, actions } = options;
+  const { updateData, actions, locale = "en" } = options;
   const searchParams = useSearchParams();
   const t = useTranslations("commonDetailsUpdate");
+  const toast = useToast();
+
+  const [groupItems, setGroupItems] = useState<BulkUpdateMaster[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
+  const groupsFetchedRef = useRef(false);
+
+  const loadGroupOptions = useCallback(async () => {
+    if (groupsFetchedRef.current || loadingGroups) return;
+    setLoadingGroups(true);
+    try {
+      const getExcelTemplateFieldsFn = actions?.getExcelTemplateFieldsAction || getExcelTemplateFieldsAction;
+      const res = await getExcelTemplateFieldsFn();
+      if (res && res.success && res.data && Array.isArray(res.data)) {
+        setGroupItems(res.data.filter((item: BulkUpdateMaster) => item.isActive !== false));
+        groupsFetchedRef.current = true;
+      } else {
+        const getMenuItemsFn = actions?.getMenuItemsAction || getMenuItemsAction;
+        const items = await getMenuItemsFn();
+        if (Array.isArray(items)) {
+          setGroupItems(items.filter((item: BulkUpdateMaster) => item.isActive !== false));
+          groupsFetchedRef.current = true;
+        }
+      }
+    } catch (err) {
+      logger.error("Failed to load group options", { error: err as Error });
+    } finally {
+      setLoadingGroups(false);
+    }
+  }, [actions, loadingGroups]);
+
+  const groupOptions = useMemo(() => {
+    const list = groupItems;
+    return list.map((item: BulkUpdateMaster) => ({
+      label: locale === "mr" && item.updateNameMarathi ? item.updateNameMarathi : item.updateName,
+      value: item.updateCode,
+    }));
+  }, [groupItems, locale]);
 
   const [downloading, setDownloading] = useState(false);
   const [downloadWithData, setDownloadWithData] = useState(false);
@@ -183,12 +225,22 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
   const handleDownloadTemplate = async () => {
     const fieldCode = searchParams.get("field");
     if (!fieldCode) {
-      toast.warning(t("excelUpload.validations.selectFieldFirst"));
+      toast.error(t("excelUpload.validations.selectFieldFirst"));
       return;
     }
 
+    if (downloadWithData) {
+      const isCriteriaValid = updateData?.canShowProperties !== undefined
+        ? updateData.canShowProperties
+        : Boolean(searchParams.get("wardId") || updateData?.filterValues?.wardId);
+
+      if (!isCriteriaValid) {
+        toast.error(t("messages.downloadWithDataCriteria"));
+        return;
+      }
+    }
+
     setDownloading(true);
-    const toastId = toast.loading(t("excelUpload.validations.downloading"));
 
     try {
       const exportParams: { updateCode: string; [key: string]: unknown } = {
@@ -228,7 +280,8 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${fieldCode}_Template.xlsx`;
+        const fileSuffix = downloadWithData ? "With_Data" : "Template";
+        a.download = `${fieldCode}_${fileSuffix}.xlsx`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -239,15 +292,14 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
           setDownloadWithData(false);
         }
 
-        toast.success(t("messages.excelDownloadSuccess"), { id: toastId });
+        toast.success(t("messages.excelDownloadSuccess"));
       } else {
         toast.error(
-          ("error" in res ? res.error : "") || t("excelUpload.validations.downloadFailed"),
-          { id: toastId }
+          ("error" in res ? res.error : "") || t("excelUpload.validations.downloadFailed")
         );
       }
     } catch (_err) {
-      toast.error(t("excelUpload.validations.downloadFailed"), { id: toastId });
+      toast.error(t("excelUpload.validations.downloadFailed"));
     } finally {
       setDownloading(false);
     }
@@ -271,19 +323,65 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
       }
       // Clear previous validation results when selecting a new file
       setValidationData(null);
-      setSelectedFile(file);
+
+      // Auto-detect and select Group from file name
+      // File name format examples: CONSTRUCTION_YEAR_Template.xlsx, CONSTRUCTION_YEAR_With_Data.xlsx, BLOCK_NO.xlsx
+      const baseName = file.name.replace(/\.[^/.]+$/, "");
+      const cleanedName = baseName.replace(/_(with_data|template|data)$/i, "").trim();
+
+      // Ensure group list is loaded
+      if (!groupsFetchedRef.current) {
+        loadGroupOptions();
+      }
+
+      const candidateList: BulkUpdateMaster[] = (groupItems.length > 0
+        ? groupItems
+        : (updateData?.activeMenuItems || updateData?.filteredMenuItems || updateData?.menuItems || [])) as BulkUpdateMaster[];
+
+      let matchedCode = "";
+      if (candidateList.length > 0) {
+        const normCleaned = cleanedName.toLowerCase().replace(/[\s_-]/g, "");
+        const found = candidateList.find((item: BulkUpdateMaster) => {
+          const itemCode = (item.updateCode || "").toLowerCase();
+          const itemName = (item.updateName || "").toLowerCase();
+          const normItemCode = itemCode.replace(/[\s_-]/g, "");
+          const normItemName = itemName.replace(/[\s_-]/g, "");
+          return (
+            itemCode === cleanedName.toLowerCase() ||
+            normItemCode === normCleaned ||
+            itemName === cleanedName.toLowerCase() ||
+            normItemName === normCleaned ||
+            baseName.toLowerCase().startsWith(itemCode)
+          );
+        });
+        if (found) {
+          matchedCode = found.updateCode;
+        }
+      }
+
+      if (matchedCode) {
+        setSelectedFile(file);
+        if (updateData?.handleMenuSelect) {
+          updateData.handleMenuSelect(matchedCode, false);
+        }
+      } else {
+        // If file format/name does not match any valid group template, reset file and show wrong file format message immediately
+        setSelectedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        toast.error(t("messages.excelFileNotMatchGroup"));
+      }
     }
   };
 
   const handleValidateExcel = () => {
     const fieldCode = searchParams.get("field");
     if (!fieldCode) {
-      toast.warning(t("excelUpload.validations.selectFieldFirst"));
+      toast.error(t("excelUpload.validations.selectFieldFirst"));
       return;
     }
 
     if (!selectedFile) {
-      toast.warning(t("excelUpload.validations.selectFileFirst"));
+      toast.error(t("excelUpload.validations.selectFileFirst"));
       return;
     }
 
@@ -297,7 +395,6 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
     // Clear old validation data before performing new validation/import
     setValidationData(null);
     setUploading(true);
-    const toastId = toast.loading(t("excelUpload.validations.validatingExcel"));
 
     try {
       const formData = new FormData();
@@ -326,17 +423,14 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
       }
 
       if (valRes.success) {
-        const isAllRejected =
-          Boolean(currentValData) &&
-          (currentValData?.totalRows || 0) > 0 &&
-          (currentValData?.flaggedRowCount || 0) === currentValData?.totalRows;
+        const flaggedCount = currentValData?.flaggedRowCount || 0;
 
-        if (isAllRejected) {
-          toast.error(t("excelUpload.validations.dataRejectedMsg"), { id: toastId });
+        if (flaggedCount > 0) {
+          toast.error(t("excelUpload.validations.dataRejectedMsg"));
           return;
         }
 
-        toast.success(t("excelUpload.validations.excelValidatedMsg"), { id: toastId });
+        toast.success(t("excelUpload.validations.excelValidatedMsg"));
 
         // Step 2: Import Excel
         const impRes = await importExcelFn(formData);
@@ -359,36 +453,31 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
           }
         }
 
-        const isImpAllRejected =
-          Boolean(finalValData) &&
-          (finalValData?.totalRows || 0) > 0 &&
-          (finalValData?.flaggedRowCount || 0) === finalValData?.totalRows;
-
-        if (isImpAllRejected) {
+        const impFlaggedCount = finalValData?.flaggedRowCount || 0;
+        if (impFlaggedCount > 0) {
           toast.error(t("excelUpload.validations.dataRejectedMsg"));
-        } else if (finalValData && (finalValData.flaggedRowCount || 0) > 0) {
-          toast.warning(t("excelUpload.validations.dataRejectedMsg"));
         } else if (impRes.success) {
           toast.success(t("excelUpload.validations.bulkUpdateSuccessMsg"));
+          setSelectedFile(null);
+          if (fileInputRef.current) fileInputRef.current.value = "";
+          setDownloadWithData(false);
+          if (updateData?.handleMenuSelect) {
+            updateData.handleMenuSelect("", false);
+          }
+          if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            params.delete("field");
+            window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+          }
         } else {
           toast.error(("error" in impRes ? impRes.error : "") || t("excelUpload.validations.bulkUploadFailedMsg"));
         }
       } else {
         const rawErr = ("error" in valRes ? valRes.error : "") || "";
         const lower = rawErr.toLowerCase();
-        let errMsg = t("excelUpload.validations.validationFailedMsg");
+        let errMsg = rawErr || t("messages.wrongUpdateGroup");
 
         if (
-          lower.includes("missing required column") ||
-          lower.includes("wrong update group") ||
-          lower.includes("column") ||
-          lower.includes("wardno") ||
-          lower.includes("propertyno") ||
-          lower.includes("partitionno") ||
-          lower.includes("match")
-        ) {
-          errMsg = t("messages.wrongUpdateGroup");
-        } else if (
           lower.includes("empty") ||
           lower.includes("no data") ||
           lower.includes("no rows") ||
@@ -400,15 +489,31 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
           lower.includes("invalid file") ||
           lower.includes("wrong file") ||
           lower.includes("extension") ||
-          lower.includes("format")
+          lower.includes("format") ||
+          lower.includes("invalid file type")
         ) {
           errMsg = t("messages.wrongFileType");
+        } else if (
+          lower.includes("missing required column") ||
+          lower.includes("wrong update group") ||
+          lower.includes("column") ||
+          lower.includes("wardno") ||
+          lower.includes("propertyno") ||
+          lower.includes("partitionno") ||
+          lower.includes("match") ||
+          lower.includes("not found") ||
+          lower.includes("updatable value") ||
+          lower.includes("update type") ||
+          lower.includes("unrecognized table") ||
+          lower.includes("validation failed")
+        ) {
+          errMsg = t("messages.wrongUpdateGroup");
         }
 
-        toast.error(errMsg, { id: toastId });
+        toast.error(errMsg);
       }
     } catch (_err) {
-      toast.error(t("excelUpload.validations.validationFailedMsg"), { id: toastId });
+      toast.error(t("messages.wrongUpdateGroup"));
     } finally {
       setUploading(false);
     }
@@ -432,5 +537,8 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
     handleFileChange,
     handleValidateExcel,
     handleConfirmUpload,
+    groupOptions,
+    loadingGroups,
+    loadGroupOptions,
   };
 };

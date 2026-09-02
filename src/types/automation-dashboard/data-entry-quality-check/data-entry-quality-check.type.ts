@@ -109,3 +109,55 @@ export interface DataEntryWardWiseSummaryResponse {
   errors: unknown | null;
   correlationId: string | null;
 }
+
+export type DataEntryData = {
+  sr: number | string;
+  division: string;
+  wardNo: string;
+  isTotal?: boolean;
+  wardId?: number | string;
+  zoneId?: number | string;
+  zoneNo?: string;
+
+  structure: string | number;
+  unit: string | number;
+
+  isStruct: string | number;
+  isUnit: string | number;
+
+  deCompStruct: string | number;
+  deCompUnit: string | number;
+  dePendStruct: string | number;
+  dePendUnit: string | number;
+
+  photoComp: string | number;
+  photoPend: string | number;
+
+  planComp: string | number;
+  planPend: string | number;
+
+  qaCompStruct: string | number;
+  qaCompUnit: string | number;
+  qaPendStruct: string | number;
+  qaPendUnit: string | number;
+  qaTypeWise: string | number;
+
+  propRes: string | number;
+  propNonRes: string | number;
+  propMixed: string | number;
+  propPublic: string | number;
+  propUnder: string | number;
+
+  assessStruct: string | number;
+  assessUnit: string | number;
+  unassessStruct: string | number;
+  unassessUnit: string | number;
+  newlyStruct: string | number;
+  newlyUnit: string | number;
+  inprocessStruct: string | number;
+  inprocessUnit: string | number;
+  assessedStatusId?: number;
+  unassessedStatusId?: number;
+  newlyAssessedStatusId?: number;
+  inprocessStatusId?: number;
+};

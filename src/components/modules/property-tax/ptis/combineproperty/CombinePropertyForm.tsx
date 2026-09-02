@@ -8,6 +8,7 @@ import { type SearchSelectOption } from '@/components/common/SearchSelect';
 import { CancelButton, AddButton } from '@/components/common/ActionButtons';
 import { CombinePropertyItem, PropertyCombineDetails } from '@/types/combine-property.types';
 import { useCombinePropertyForm } from '@/hooks/combineProperty/useCombineProperty';
+import { compareSubProperty } from '@/hooks/combineProperty/useCombinePropertyFilters';
 import { getCombinePropertyColumns, getCombinePropertyHistoryColumns, PropertyRow } from './combinePropertyColumns';
 import { MasterTable } from '@/components/common/MasterTable';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -164,9 +165,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   }, [basePropertyList]);
 
   const SUB_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
-    const sortedList = [...(subPropertyList || [])].sort((a, b) => {
-      return (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' });
-    });
+    const sortedList = [...(subPropertyList || [])].sort(compareSubProperty);
     return sortedList.map(toSelectOption);
   }, [subPropertyList]);
 

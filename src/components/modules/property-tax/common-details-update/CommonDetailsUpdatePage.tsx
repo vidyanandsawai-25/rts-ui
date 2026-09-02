@@ -47,13 +47,6 @@ export default function CommonDetailsUpdatePage(
     if (pNo) params.set("propertyNo", pNo);
     if (partNo) params.set("partitionNo", partNo);
 
-// addFieldRegistryAction,
-//     updateFieldRegistryAction,
-//     getFieldRegistryTablesAction,
-//     getFieldRegistryColumnsAction,
-//     setFieldRegistryStatusAction,
-
-
     router.push(`/${locale}/property-tax/ptis?${params.toString()}`);
   };
 
@@ -78,6 +71,14 @@ export default function CommonDetailsUpdatePage(
           newParams.delete(key);
         }
       }
+
+      if (newTab === "fieldRegistry") {
+        newParams.set("pageNumber", "1");
+        newParams.set("pageSize", "10");
+      } else if (newTab === "auditMonitor") {
+        newParams.set("auditPage", "1");
+        newParams.set("auditPageSize", "10");
+      }
       
       router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     }
@@ -86,6 +87,38 @@ export default function CommonDetailsUpdatePage(
       setIsTabSwitching(false);
     }, 150);
   };
+
+  // Ensure default pagination parameters exist in URL if tab is directly loaded
+  useState(() => {
+    if (typeof window === "undefined") return;
+    const currentTab = searchParams.get("tab") || "updateFields";
+    let needsUpdate = false;
+    const newParams = new URLSearchParams(searchParams.toString());
+
+    if (currentTab === "fieldRegistry") {
+      if (!newParams.has("pageNumber")) {
+        newParams.set("pageNumber", "1");
+        needsUpdate = true;
+      }
+      if (!newParams.has("pageSize")) {
+        newParams.set("pageSize", "10");
+        needsUpdate = true;
+      }
+    } else if (currentTab === "auditMonitor") {
+      if (!newParams.has("auditPage")) {
+        newParams.set("auditPage", "1");
+        needsUpdate = true;
+      }
+      if (!newParams.has("auditPageSize")) {
+        newParams.set("auditPageSize", "10");
+        needsUpdate = true;
+      }
+    }
+
+    if (needsUpdate) {
+      router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+    }
+  });
 
 
   return (
@@ -220,8 +253,6 @@ export default function CommonDetailsUpdatePage(
                   initialSourceTables={props.initialSourceTables}
                   initialSourceTableFields={props.initialSourceTableFields}
                   setFieldRegistryStatusAction={props.setFieldRegistryStatusAction}
-                  editUpdateCode={props.editUpdateCode}
-                  initialEditData={props.initialEditData}
                   actions={props.actions}
                 />
               </TabPanel>

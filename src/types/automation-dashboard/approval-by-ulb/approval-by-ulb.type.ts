@@ -30,6 +30,9 @@ export interface ApprovalByUlbItems {
     zoneData: ZoneDataRow[];
     totalRow: ZoneDataRow | null;
     grandTotalRow: ZoneDataRow | null;
+    pageNumber?: number;
+    pageSize?: number;
+    totalCount?: number;
 }
 
 export interface ApprovalByUlbResponse {

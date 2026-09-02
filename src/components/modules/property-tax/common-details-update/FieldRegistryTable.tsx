@@ -1,21 +1,19 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
-import { useMemo, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import {
   MasterTable,
   Column,
   Select,
   SearchInput,
   ToggleSwitch,
-  EditButton,
   Tooltip,
   Badge,
   Label,
-  TruncatedText
+  TruncatedText,
+  useToast
 } from "@/components/common";
 import { BulkUpdateMaster } from "@/types/common-details-update/common-details-update.types";
-import { toast } from "sonner";
 
 import { useFieldRegistryState } from "@/hooks/commonDetailsUpdate/useFieldRegistryState";
 
@@ -25,8 +23,7 @@ interface FieldRegistryTableProps {
 }
 
 export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
+  const toast = useToast();
   const {
     fields, setFields, refreshFieldsList,
 
@@ -34,8 +31,6 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
     searchTerm, setSearchTerm,
     pageNumber, setPageNumber,
     pageSize, setPageSize,
-    submitting,
-    handleEdit,
   } = state;
 
 
@@ -86,9 +81,6 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
       if (refreshFieldsList) {
         await refreshFieldsList();
       }
-      startTransition(() => {
-        router.refresh();
-      });
     } else {
       setFields((prev) =>
         prev.map((f: BulkUpdateMaster) =>
@@ -98,26 +90,37 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
         )
       );
       toast.error(res.error || t("messages.updateFailed"));
+      if (refreshFieldsList) {
+        await refreshFieldsList();
+      }
     }
   };
 
   const filteredFields = useMemo(() => {
-    return fields.filter((f: BulkUpdateMaster) => {
-      const fieldNamesStr = f.fieldConfigs
-        ? f.fieldConfigs.map((fc) => fc.fieldName).join(" ")
-        : (f as unknown as Record<string, unknown>).fieldName as string || "";
+    return fields
+      .filter((f: BulkUpdateMaster) => {
+        const fieldNamesStr = f.fieldConfigs
+          ? f.fieldConfigs.map((fc) => fc.fieldName).join(" ")
+          : (f as unknown as Record<string, unknown>).fieldName as string || "";
 
-      const matchesSearch = !searchTerm.trim() ||
-        f.updateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        f.updateCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        fieldNamesStr.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = !searchTerm.trim() ||
+          f.updateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          f.updateCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          fieldNamesStr.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesStatus = statusFilter === "all" ||
-        (statusFilter === "active" && f.isActive) ||
-        (statusFilter === "inactive" && !f.isActive);
+        const matchesStatus = statusFilter === "all" ||
+          (statusFilter === "active" && f.isActive) ||
+          (statusFilter === "inactive" && !f.isActive);
 
-      return matchesSearch && matchesStatus;
-    });
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => {
+        // Active groups first
+        if (a.isActive !== b.isActive) {
+          return a.isActive ? -1 : 1;
+        }
+        return (a.updateName || "").localeCompare(b.updateName || "");
+      });
   }, [fields, searchTerm, statusFilter]);
 
 
@@ -192,15 +195,9 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
       key: "actions",
       label: t("fieldRegistry.table.action"),
       align: "center",
-      width: "140px",
+      width: "120px",
       render: (_, row) => (
-        <div className="flex items-center justify-center gap-3">
-          {handleEdit && (
-            <EditButton
-              size="xs"
-              onClick={() => handleEdit(row)}
-            />
-          )}
+        <div className="flex items-center justify-center">
           <ToggleSwitch
             checked={row.isActive}
             onChange={(checked) => handleToggleStatus(row, checked)}
@@ -209,7 +206,7 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
         </div>
       )
     }
-  ], [handleEdit, setFields, t]);
+  ], [setFields, t]);
 
   const displayTotalCount = filteredFields.length;
   const totalPages = Math.max(1, Math.ceil(displayTotalCount / pageSize));
@@ -282,7 +279,7 @@ export const FieldRegistryTable = ({ t, state }: FieldRegistryTableProps) => {
           showPageSizeSelector: true
         }}
         emptyText={t("fieldRegistry.emptyState.title")}
-        loading={state.loading || submitting}
+        loading={state.loading}
         maxBodyHeightClassName="max-h-[330px]"
       />
     </div>

@@ -110,14 +110,12 @@ export function DepartmentRow({
             variant={isExpanded ? 'primary' : 'secondary'}
             size="sm"
             onClick={() => onToggleExpansion(dept.id)}
-            disabled={!dept.isEnabled}
             icon={isExpanded ? ChevronUp : ChevronRight}
             className={cn(
               'h-10 px-6 text-xs font-bold border-slate-200 transition-all rounded-xl w-full sm:w-auto cursor-pointer',
               isExpanded
                 ? 'bg-violet-600 text-white border-violet-600 hover:bg-violet-700 shadow-md shadow-violet-200'
-                : 'bg-white text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300',
-              !dept.isEnabled && 'opacity-50 cursor-not-allowed grayscale'
+                : 'bg-white text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'
             )}
           >
             {isExpanded

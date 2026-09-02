@@ -55,10 +55,10 @@ const TopBar = ({
                     className="w-full flex-1 mb-0"
                 />
 
-                <SearchButton 
-                    label={t('geoSequencing.buttons.search')} 
+                <SearchButton
+                    label={t('geoSequencing.buttons.search')}
                     onClick={handleSearch}
-                    disabled={isPending || !searchTerm.trim()}                    
+                    disabled={isPending || !searchTerm.trim()}
                 />
             </div>
             <div className="flex items-center gap-3">
@@ -211,7 +211,7 @@ const GeoSequencingPage = ({ serverData, defaultWorkflowStageId, propertyDescrip
             headerExtra={<TopBar t={t} propertyDescriptions={propertyDescriptions} exportConfig={exportConfig} />}
             containerClassName="h-full"
             paginationConfig={{ enabled: false, showPageSizeSelector: false }}
-            rowClassName={(row) => row.sr === t('geoSequencing.total') ? "bg-gradient-to-r from-indigo-100 to-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]" : "group transition-colors border-b border-slate-200 hover:bg-transparent"}
+            rowClassName={(row) => row.sr === t('geoSequencing.total') ? "bg-purple-200 dark:bg-purple-900/50 text-slate-900 dark:text-slate-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] border-t-2 border-slate-300 dark:border-slate-600 hover:bg-purple-200 dark:hover:bg-purple-900/70 transition-colors" : "group transition-colors border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"}
         />
     );
 };

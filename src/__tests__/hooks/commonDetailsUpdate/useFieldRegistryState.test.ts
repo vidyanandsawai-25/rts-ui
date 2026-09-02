@@ -17,31 +17,38 @@ vi.mock('next-intl', () => ({
   useTranslations: vi.fn(() => (key: string) => key),
 }));
 
+// Mock @/components/common
+vi.mock('@/components/common', () => ({
+  useToast: () => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+    toast: vi.fn(),
+  }),
+}));
+
 // Mock useFieldRegistryForm to isolate state tests
-vi.mock('./useFieldRegistryForm', () => ({
+vi.mock('@/hooks/commonDetailsUpdate/useFieldRegistryForm', () => ({
   useFieldRegistryForm: vi.fn(() => ({
     mockFormState: true,
   })),
 }));
 
 describe('useFieldRegistryState', () => {
+  const mockRouter = {
+    push: vi.fn(),
+    replace: vi.fn(),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useRouter).mockReturnValue({
-      push: vi.fn(),
-      replace: vi.fn(),
-    } as any);
+    vi.mocked(useRouter).mockReturnValue(mockRouter as any);
     vi.mocked(useSearchParams).mockReturnValue({
       get: vi.fn().mockReturnValue(null),
+      toString: vi.fn().mockReturnValue(''),
     } as any);
     vi.mocked(usePathname).mockReturnValue('/mock-path');
-    
-    // Mock window.history
-    Object.defineProperty(window, 'location', {
-      value: { search: '' },
-      writable: true
-    });
-    vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
   });
 
   const emptyArray1: any[] = [];
@@ -88,10 +95,9 @@ describe('useFieldRegistryState', () => {
     });
 
     expect(result.current.searchTerm).toBe('new search');
-    expect(window.history.replaceState).toHaveBeenCalledWith(
-      null,
-      '',
-      '/mock-path?searchTerm=new+search'
+    expect(mockRouter.replace).toHaveBeenCalledWith(
+      '/mock-path?searchTerm=new+search&pageNumber=1',
+      { scroll: false }
     );
   });
 
@@ -103,10 +109,9 @@ describe('useFieldRegistryState', () => {
     });
 
     expect(result.current.pageNumber).toBe(2);
-    expect(window.history.replaceState).toHaveBeenCalledWith(
-      null,
-      '',
-      '/mock-path?pageNumber=2'
+    expect(mockRouter.replace).toHaveBeenCalledWith(
+      '/mock-path?pageNumber=2&pageSize=10',
+      { scroll: false }
     );
   });
 
@@ -124,10 +129,9 @@ describe('useFieldRegistryState', () => {
 
     expect(result.current.pageSize).toBe(20);
     expect(result.current.pageNumber).toBe(1);
-    expect(window.history.replaceState).toHaveBeenCalledWith(
-      null,
-      '',
-      '/mock-path?pageSize=20&pageNumber=1'
+    expect(mockRouter.replace).toHaveBeenCalledWith(
+      '/mock-path?pageSize=20&pageNumber=1',
+      { scroll: false }
     );
   });
 
@@ -149,7 +153,7 @@ describe('useFieldRegistryState', () => {
       await result.current.refreshFieldsList();
     });
 
-    expect(mockAction).toHaveBeenCalledWith(1, 10);
+    expect(mockAction).toHaveBeenCalledWith(1, -1);
     expect(result.current.fields).toEqual([{ id: 2, fieldName: 'refreshed' }]);
     expect(result.current.totalCount).toBe(1);
   });

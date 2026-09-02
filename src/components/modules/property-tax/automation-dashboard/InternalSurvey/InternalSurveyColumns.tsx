@@ -5,6 +5,8 @@ import { renderSortableHeader, ViewType } from '../CommonColumns/SortHeader';
 import { getCommonDivisionColumn, getCommonSrColumn } from '../CommonColumns/CommonColumns';
 import { formatIndianNumber } from '@/lib/utils/numberUtils';
 
+export const commonBorderClass = 'border-slate-400';
+
 export type InternalSurveyTableRow = {
     sr: number | string;
     division: string;
@@ -43,11 +45,15 @@ export const getInternalSurveyColumns = (
     onPropertyCellClick?: (row: InternalSurveyTableRow, key: string) => void
 ): Column<InternalSurveyTableRow>[] => {
 
+    const srColumn = getCommonSrColumn<InternalSurveyTableRow>();
+    srColumn.cellClassName = `p-3 text-slate-900 font-bold border ${commonBorderClass}`;
+
     const divisionColumn = getCommonDivisionColumn<InternalSurveyTableRow>(onRowClick, linkHref);
+    divisionColumn.cellClassName = `!p-0 border ${commonBorderClass} border-l-transparent group-hover:border-l-indigo-500`;
 
     const renderClickableCell = (value: unknown, row: InternalSurveyTableRow, key: string, textClass: string) => (
         <div
-            className={`w-full h-full p-3 text-center font-bold text-[13px] ${textClass} flex items-center justify-center`}
+            className={`w-full h-full p-3 text-center font-bold text-[13px] flex items-center justify-center transition-colors ${row.isTotal ? 'text-slate-900' : textClass}`}
             onClick={(e) => {
                 e.stopPropagation();
                 if (row.isTotal) return;
@@ -58,135 +64,37 @@ export const getInternalSurveyColumns = (
         </div>
     );
 
+    const commonCellClass = `!p-0 border ${commonBorderClass}`;
+    const cellStyles = {
+        geo: 'text-indigo-950 hover:bg-indigo-50 cursor-pointer',
+        property: 'text-purple-950 hover:bg-purple-50 cursor-pointer',
+        assessed: 'text-green-900 hover:bg-green-100 cursor-pointer',
+        unassessed: 'text-orange-900 hover:bg-orange-100 cursor-pointer',
+        newlyAssessed: 'text-emerald-950 hover:bg-emerald-100 cursor-pointer',
+        photo: 'text-cyan-900 cursor-pointer'
+    };
+
     const baseColumns: Column<InternalSurveyTableRow>[] = [
-        getCommonSrColumn<InternalSurveyTableRow>(),
+        srColumn,
         divisionColumn,
-        {
-            key: 'geoStruct',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border-r border-slate-300 hover:bg-indigo-50 transition-colors',
-            render: (value, row) => renderClickableCell(value, row, 'geoStruct', 'text-indigo-950')
-        },
-        {
-            key: 'geoUnit',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border-r border-slate-300 hover:bg-indigo-50 transition-colors',
-            render: (value, row) => renderClickableCell(value, row, 'geoUnit', 'text-indigo-950')
-        },
-        {
-            key: 'surveyStruct',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border-r border-slate-300 hover:bg-indigo-50 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'surveyStruct', 'text-indigo-950')
-        },
-        {
-            key: 'surveyUnit',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border-r border-slate-300 hover:bg-indigo-50 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'surveyUnit', 'text-indigo-950')
-        },
-        {
-            key: 'propRes',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border-r border-slate-300 hover:bg-purple-50 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'propRes', 'text-purple-950')
-        },
-        {
-            key: 'propNonRes',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border-r border-slate-300 hover:bg-purple-50 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'propNonRes', 'text-purple-950')
-        },
-        {
-            key: 'propMixed',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border-r border-slate-300 hover:bg-purple-50 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'propMixed', 'text-purple-950')
-        },
-        {
-            key: 'propPublic',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border-r border-slate-300 hover:bg-purple-50 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'propPublic', 'text-purple-950')
-        },
-        {
-            key: 'propUnder',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border-r border-slate-300 hover:bg-purple-50 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'propUnder', 'text-purple-950')
-        },
-        {
-            key: 'assessStruct',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border border-slate-300 hover:bg-green-100 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'assessStruct', 'text-green-900')
-        },
-        {
-            key: 'assessUnit',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border border-slate-300 hover:bg-green-100 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'assessUnit', 'text-green-900')
-        },
-        {
-            key: 'unassessStruct',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border border-slate-300 hover:bg-orange-100 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'unassessStruct', 'text-orange-900')
-        },
-        {
-            key: 'unassessUnit',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border border-slate-300 hover:bg-orange-100 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'unassessUnit', 'text-orange-900')
-        },
-        {
-            key: 'newlyStruct',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border border-slate-300 hover:bg-emerald-100 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'newlyStruct', 'text-emerald-950')
-        },
-        {
-            key: 'newlyUnit',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border border-slate-300 hover:bg-emerald-100 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'newlyUnit', 'text-emerald-950')
-        },
-        {
-            key: 'inprocessStruct',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border border-slate-300 hover:bg-orange-100 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'inprocessStruct', 'text-orange-900')
-        },
-        {
-            key: 'inprocessUnit',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border border-slate-300 hover:bg-orange-100 transition-colors cursor-pointer',
-            render: (value, row) => renderClickableCell(value, row, 'inprocessUnit', 'text-orange-900')
-        },
-        {
-            key: 'photoCount',
-            label: '',
-            align: 'center',
-            cellClassName: '!p-0 border border-slate-300',
-            render: (value, row) => renderClickableCell(value, row, 'photoCount', 'text-cyan-900')
-        }
+        { key: 'geoStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'geoStruct', cellStyles.geo) },
+        { key: 'geoUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'geoUnit', cellStyles.geo) },
+        { key: 'surveyStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'surveyStruct', cellStyles.geo) },
+        { key: 'surveyUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'surveyUnit', cellStyles.geo) },
+        { key: 'propRes', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'propRes', cellStyles.property) },
+        { key: 'propNonRes', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'propNonRes', cellStyles.property) },
+        { key: 'propMixed', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'propMixed', cellStyles.property) },
+        { key: 'propPublic', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'propPublic', cellStyles.property) },
+        { key: 'propUnder', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'propUnder', cellStyles.property) },
+        { key: 'assessStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'assessStruct', cellStyles.assessed) },
+        { key: 'assessUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'assessUnit', cellStyles.assessed) },
+        { key: 'unassessStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'unassessStruct', cellStyles.unassessed) },
+        { key: 'unassessUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'unassessUnit', cellStyles.unassessed) },
+        { key: 'newlyStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'newlyStruct', cellStyles.newlyAssessed) },
+        { key: 'newlyUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'newlyUnit', cellStyles.newlyAssessed) },
+        { key: 'inprocessStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'inprocessStruct', cellStyles.unassessed) },
+        { key: 'inprocessUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'inprocessUnit', cellStyles.unassessed) },
+        { key: 'photoCount', label: '', align: 'center', cellClassName: commonCellClass, render: (v, r) => renderClickableCell(v, r, 'photoCount', cellStyles.photo) }
     ];
 
     return baseColumns;
@@ -198,12 +106,25 @@ export const getInternalSurveyHeaderRows = (
     sortConfig?: SortConfig<InternalSurveyTableRow> | null,
     onSort?: (key: keyof InternalSurveyTableRow) => void
 ): HeaderCell[][] => {
+
+    //all header cloumn highte and width manged
+    const commonHeaderClass = `border ${commonBorderClass} px-2 py-1 text-center text-table-header text-slate-900 sticky top-0 z-20`;
+
+    const bgColors = {
+        geo: 'bg-blue-100',
+        property: 'bg-purple-100',
+        assessed: 'bg-green-100',
+        unassessed: 'bg-orange-100',
+        newlyAssessed: 'bg-emerald-100',
+        photo: 'bg-cyan-100'
+    };
+
     const topRow: HeaderCell[] = [
         {
             label: <div className="font-bold text-[15px] text-slate-900 uppercase">{t('internalSurvey.columns.sr')}</div>,
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-slate-50 min-w-[50px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
+            headerClassName: `bg-slate-50 min-w-[50px] ${commonHeaderClass}`
         },
         {
             label: renderSortableHeader(
@@ -216,144 +137,76 @@ export const getInternalSurveyHeaderRows = (
             ),
             rowSpan: 2,
             align: 'left',
-            headerClassName: 'bg-slate-50 min-w-[180px] cursor-pointer hover:bg-slate-100 transition-colors border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
+            headerClassName: `bg-slate-50 min-w-[180px] cursor-pointer hover:bg-slate-100 transition-colors ${commonHeaderClass}`
         },
         {
             label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('internalSurvey.columns.geoSequencingProperties')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
+            headerClassName: `${bgColors.geo} ${commonHeaderClass}`
         },
         {
             label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('internalSurvey.columns.surveyProperties')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
+            headerClassName: `${bgColors.geo} ${commonHeaderClass}`
         },
         {
             label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('internalSurvey.columns.propertyType')}</div>,
             colSpan: 5,
             align: 'center',
-            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
+            headerClassName: `${bgColors.property} ${commonHeaderClass}`
         },
         {
             label: <div className="font-bold text-[15px] text-slate-900 text-center whitespace-nowrap">{t('internalSurvey.columns.assessed')}<br />{t('internalSurvey.columns.properties')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-green-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
+            headerClassName: `${bgColors.assessed} ${commonHeaderClass}`
         },
         {
             label: <div className="font-bold text-[15px] text-slate-900 text-center whitespace-nowrap">{t('internalSurvey.columns.unassessed')}<br />{t('internalSurvey.columns.properties')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
+            headerClassName: `${bgColors.unassessed} ${commonHeaderClass}`
         },
         {
             label: <div className="font-bold text-[15px] text-slate-900 text-center"><span className="whitespace-nowrap">{t('internalSurvey.columns.newlyAssessed')}</span><br />{t('internalSurvey.columns.found')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-emerald-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
+            headerClassName: `${bgColors.newlyAssessed} ${commonHeaderClass}`
         },
         {
             label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('internalSurvey.columns.assessment')}<br />{t('internalSurvey.columns.inprocess')}</div>,
             colSpan: 2,
             align: 'center',
-            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
+            headerClassName: `${bgColors.unassessed} ${commonHeaderClass}`
         },
         {
             label: renderSortableHeader(t('internalSurvey.columns.photoCount'), 'photoCount', sortConfig, onSort, false, viewType),
             rowSpan: 2,
             align: 'center',
-            headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
+            headerClassName: `${bgColors.photo} ${commonHeaderClass}`
         }
     ];
 
     const bottomRow: HeaderCell[] = [
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'geoStruct', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.unit'), 'geoUnit', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'surveyStruct', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.unit'), 'surveyUnit', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-blue-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.residential'), 'propRes', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.nonResidential'), 'propNonRes', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.mixedProperty'), 'propMixed', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.publicUtility'), 'propPublic', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.underConstruction'), 'propUnder', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'assessStruct', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-green-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.units'), 'assessUnit', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-green-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'unassessStruct', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.units'), 'unassessUnit', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'newlyStruct', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-emerald-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.unit'), 'newlyUnit', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-emerald-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.structure'), 'inprocessStruct', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        },
-        {
-            label: renderSortableHeader(t('internalSurvey.columns.unit'), 'inprocessUnit', sortConfig, onSort, false, viewType),
-            align: 'center',
-            headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20'
-        }
+        { label: renderSortableHeader(t('internalSurvey.columns.structure'), 'geoStruct', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.geo} min-w-[90px] hover:bg-blue-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.unit'), 'geoUnit', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.geo} min-w-[90px] hover:bg-blue-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.structure'), 'surveyStruct', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.geo} min-w-[90px] hover:bg-blue-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.unit'), 'surveyUnit', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.geo} min-w-[90px] hover:bg-blue-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.residential'), 'propRes', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.property} min-w-[110px] hover:bg-purple-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.nonResidential'), 'propNonRes', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.property} min-w-[110px] hover:bg-purple-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.mixedProperty'), 'propMixed', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.property} min-w-[110px] hover:bg-purple-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.publicUtility'), 'propPublic', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.property} min-w-[110px] hover:bg-purple-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.underConstruction'), 'propUnder', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.property} min-w-[110px] hover:bg-purple-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.structure'), 'assessStruct', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.assessed} min-w-[90px] hover:bg-green-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.units'), 'assessUnit', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.assessed} min-w-[90px] hover:bg-green-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.structure'), 'unassessStruct', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.unassessed} min-w-[90px] hover:bg-orange-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.units'), 'unassessUnit', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.unassessed} min-w-[90px] hover:bg-orange-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.structure'), 'newlyStruct', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.newlyAssessed} min-w-[90px] hover:bg-emerald-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.unit'), 'newlyUnit', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.newlyAssessed} min-w-[90px] hover:bg-emerald-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.structure'), 'inprocessStruct', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.unassessed} min-w-[90px] hover:bg-orange-100 transition-colors cursor-pointer ${commonHeaderClass}` },
+        { label: renderSortableHeader(t('internalSurvey.columns.unit'), 'inprocessUnit', sortConfig, onSort, false, viewType), align: 'center', headerClassName: `${bgColors.unassessed} min-w-[90px] hover:bg-orange-100 transition-colors cursor-pointer ${commonHeaderClass}` }
     ];
 
     return [topRow, bottomRow];

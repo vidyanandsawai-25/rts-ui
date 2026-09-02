@@ -10,13 +10,19 @@ export type ExtendedBuildingWiseItem = BuildingWiseItem & {
     [key: string]: unknown;
 };
 
+export const BORDER_CLASS = 'border-slate-400';
+export const HEADER_CLASS = 'bg-blue-200';
+
+const clickableCellClasses = "flex items-center justify-start w-full h-full p-3 text-gray-700 font-semibold cursor-pointer hover:bg-slate-100 hover:text-indigo-800 transition-colors";
+
 export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignature[] = [], t: (key: string) => string, locale: string = 'en', currentUrl: string = '', router?: { push: (url: string) => void }): Column<ExtendedBuildingWiseItem>[] => {
     const baseColumns: Column<ExtendedBuildingWiseItem>[] = [
         {
             key: 'sr',
             label: t('columns.sr'),
             align: 'center',
-            cellClassName: 'font-semibold text-slate-700',
+            cellClassName: `font-semibold text-slate-700 border ${BORDER_CLASS}`,
+            headerClassName: `border ${BORDER_CLASS} ${HEADER_CLASS}`,
             colSpan: (row) => row.isTotal ? 3 : 1,
             render: (_val, row, index) => row.isTotal ? <span className="font-bold text-center block w-full text-slate-800">{t('total')}</span> : (index + 1)
         },
@@ -25,14 +31,15 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             label: t('columns.buildingNo'),
             align: 'left',
             colSpan: (row) => row.isTotal ? 0 : 1,
-            cellClassName: '!p-0',
+            cellClassName: `!p-0 border ${BORDER_CLASS}`,
+            headerClassName: `border ${BORDER_CLASS} ${HEADER_CLASS}`,
             render: (_val, row) => {
                 if (row.isTotal) return null;
                 const url = `/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}${currentUrl ? `?returnUrl=${currentUrl}` : ''}`;
                 return (
                     <div
                         onClick={() => router?.push(url)}
-                        className="flex items-center justify-start w-full h-full p-3 text-gray-700 font-semibold cursor-pointer hover:bg-slate-100 hover:text-indigo-800 transition-colors"
+                        className={clickableCellClasses}
                     >
                         {row.buildingNo}
                     </div>
@@ -44,14 +51,15 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             label: t('columns.noticeNo'),
             align: 'left',
             colSpan: (row) => row.isTotal ? 0 : 1,
-            cellClassName: '!p-0',
+            cellClassName: `!p-0 border ${BORDER_CLASS}`,
+            headerClassName: `border ${BORDER_CLASS} ${HEADER_CLASS}`,
             render: (_val, row) => {
                 if (row.isTotal) return null;
                 const url = `/${locale}/property-tax/automation-dashboard/approval-by-ulb/building-wise-property/${row.buildingNo}?noticeNo=${row.noticeNo}${currentUrl ? `&returnUrl=${currentUrl}` : ''}`;
                 return (
                     <div
                         onClick={() => router?.push(url)}
-                        className="flex items-center justify-start w-full h-full p-3 text-gray-700 font-semibold cursor-pointer hover:bg-slate-100 hover:text-indigo-800 transition-colors"
+                        className={clickableCellClasses}
                     >
                         {row.noticeNo}
                     </div>
@@ -62,13 +70,15 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             key: 'units',
             label: t('columns.units'),
             align: 'center',
-            cellClassName: 'font-semibold text-slate-700'
+            cellClassName: `font-semibold text-slate-700 border ${BORDER_CLASS}`,
+            headerClassName: `border ${BORDER_CLASS} ${HEADER_CLASS}`
         },
         {
             key: 'demand',
             label: t('columns.demandCr'),
             align: 'center',
-            cellClassName: 'font-semibold text-slate-700',
+            cellClassName: `font-semibold text-slate-700 border ${BORDER_CLASS}`,
+            headerClassName: `border ${BORDER_CLASS} ${HEADER_CLASS}`,
             render: (_val, row) => {
                 if (row.isTotal) return row.demand;
                 const demand = row.totalDemand || 0;
@@ -87,6 +97,8 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             key: `auth_${auth.signAuthorityId}`,
             label: auth.authorityName,
             align: 'center',
+            cellClassName: `border ${BORDER_CLASS}`,
+            headerClassName: `border ${BORDER_CLASS} ${HEADER_CLASS}`,
             render: (_val, row) => {
                 if (row.isTotal) {
                     return <span className="font-bold text-slate-800">{(row[`total_auth_${auth.signAuthorityId}`] as React.ReactNode) ?? 0}</span>;

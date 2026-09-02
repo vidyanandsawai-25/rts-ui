@@ -2,67 +2,19 @@
 import { ArrowUpDown, ArrowUp, Download } from 'lucide-react';
 import { Column } from '@/components/common/AutomationTable';
 import { HeaderCell } from '@/components/common/AutomationTable';
+import { DataEntryData } from '@/types/automation-dashboard/data-entry-quality-check/data-entry-quality-check.type';
 import { getCommonDivisionColumn, getCommonSrColumn, getCommonWardColumn } from '../CommonColumns/CommonColumns';
 
-export type DataEntryData = {
-    sr: number | string;
-    division: string;
-    wardNo: string;
-    isTotal?: boolean;
-    wardId?: number | string;
-    zoneNo?: string;
-
-    structure: string | number;
-    unit: string | number;
-
-    isStruct: string | number;
-    isUnit: string | number;
-
-    deCompStruct: string | number;
-    deCompUnit: string | number;
-    dePendStruct: string | number;
-    dePendUnit: string | number;
-
-    photoComp: string | number;
-    photoPend: string | number;
-
-    planComp: string | number;
-    planPend: string | number;
-
-    qaCompStruct: string | number;
-    qaCompUnit: string | number;
-    qaPendStruct: string | number;
-    qaPendUnit: string | number;
-    qaTypeWise: string | number;
-
-    propRes: string | number;
-    propNonRes: string | number;
-    propMixed: string | number;
-    propPublic: string | number;
-    propUnder: string | number;
-
-    assessStruct: string | number;
-    assessUnit: string | number;
-    unassessStruct: string | number;
-    unassessUnit: string | number;
-    newlyStruct: string | number;
-    newlyUnit: string | number;
-    inprocessStruct: string | number;
-    inprocessUnit: string | number;
-    assessedStatusId?: number;
-    unassessedStatusId?: number;
-    newlyAssessedStatusId?: number;
-    inprocessStatusId?: number;
-};
+export const commonBorderClass = 'border-slate-400';
 
 export const getDataEntryColumns = (
     level: 'division' | 'ward',
     _t: any,
-    onDivisionClick?: (divisionCode: string, row: any) => void,
+    onDivisionClick?: (divisionCode: string, row: DataEntryData) => void,
     divisionLinkHref?: (divisionCode: string) => string,
-    onPropertyCellClick?: (row: any, key: string) => void
-): Column<any>[] => {
-    const renderClickableCell = (value: unknown, row: any, key: string) => (
+    onPropertyCellClick?: (row: DataEntryData, key: keyof DataEntryData | string) => void
+): Column<DataEntryData>[] => {
+    const renderClickableCell = (value: unknown, row: DataEntryData, key: string) => (
         <div
             className="w-full h-full p-3 text-center font-bold text-[13px] text-slate-900 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap flex items-center justify-center"
             onClick={(e) => {
@@ -75,46 +27,46 @@ export const getDataEntryColumns = (
         </div>
     );
 
-    const cellClass = '!p-0 border-r border-slate-300';
+    const commonCellClass = `!p-0 border ${commonBorderClass}`;
 
     return [
-        getCommonSrColumn<any>(),
-        level === 'division' ? getCommonDivisionColumn<any>(onDivisionClick, divisionLinkHref) : getCommonWardColumn<any>(),
+        (() => { const c = getCommonSrColumn<DataEntryData>(); c.cellClassName = `p-3 text-slate-900 font-bold border ${commonBorderClass}`; return c; })(),
+        level === 'division' ? (() => { const c = getCommonDivisionColumn<DataEntryData>(onDivisionClick, divisionLinkHref); c.cellClassName = `!p-0 border ${commonBorderClass}`; return c; })() : (() => { const c = getCommonWardColumn<DataEntryData>(); c.cellClassName = `p-3 flex justify-center items-center border ${commonBorderClass} cursor-pointer hover:bg-indigo-50/50 transition-colors`; return c; })(),
 
-        { key: 'isStruct', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'isStruct') },
-        { key: 'isUnit', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'isUnit') },
+        { key: 'isStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'isStruct') },
+        { key: 'isUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'isUnit') },
 
-        { key: 'deCompStruct', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'deCompStruct') },
-        { key: 'deCompUnit', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'deCompUnit') },
-        { key: 'dePendStruct', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'dePendStruct') },
-        { key: 'dePendUnit', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'dePendUnit') },
+        { key: 'deCompStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'deCompStruct') },
+        { key: 'deCompUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'deCompUnit') },
+        { key: 'dePendStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'dePendStruct') },
+        { key: 'dePendUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'dePendUnit') },
 
-        { key: 'photoComp', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'photoComp') },
-        { key: 'photoPend', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'photoPend') },
+        { key: 'photoComp', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'photoComp') },
+        { key: 'photoPend', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'photoPend') },
 
-        { key: 'planComp', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'planComp') },
-        { key: 'planPend', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'planPend') },
+        { key: 'planComp', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'planComp') },
+        { key: 'planPend', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'planPend') },
 
-        { key: 'qaCompStruct', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'qaCompStruct') },
-        { key: 'qaCompUnit', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'qaCompUnit') },
-        { key: 'qaPendStruct', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'qaPendStruct') },
-        { key: 'qaPendUnit', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'qaPendUnit') },
-        { key: 'qaTypeWise', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'qaTypeWise') },
+        { key: 'qaCompStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'qaCompStruct') },
+        { key: 'qaCompUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'qaCompUnit') },
+        { key: 'qaPendStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'qaPendStruct') },
+        { key: 'qaPendUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'qaPendUnit') },
+        { key: 'qaTypeWise', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'qaTypeWise') },
 
-        { key: 'propRes', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'propRes') },
-        { key: 'propNonRes', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'propNonRes') },
-        { key: 'propMixed', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'propMixed') },
-        { key: 'propPublic', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'propPublic') },
-        { key: 'propUnder', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'propUnder') },
+        { key: 'propRes', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'propRes') },
+        { key: 'propNonRes', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'propNonRes') },
+        { key: 'propMixed', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'propMixed') },
+        { key: 'propPublic', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'propPublic') },
+        { key: 'propUnder', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'propUnder') },
 
-        { key: 'assessStruct', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'assessStruct') },
-        { key: 'assessUnit', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'assessUnit') },
-        { key: 'unassessStruct', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'unassessStruct') },
-        { key: 'unassessUnit', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'unassessUnit') },
-        { key: 'newlyStruct', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'newlyStruct') },
-        { key: 'newlyUnit', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'newlyUnit') },
-        { key: 'inprocessStruct', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'inprocessStruct') },
-        { key: 'inprocessUnit', label: '', align: 'center', cellClassName: cellClass, render: (v: any, r: any) => renderClickableCell(v, r, 'inprocessUnit') },
+        { key: 'assessStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'assessStruct') },
+        { key: 'assessUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'assessUnit') },
+        { key: 'unassessStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'unassessStruct') },
+        { key: 'unassessUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'unassessUnit') },
+        { key: 'newlyStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'newlyStruct') },
+        { key: 'newlyUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'newlyUnit') },
+        { key: 'inprocessStruct', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'inprocessStruct') },
+        { key: 'inprocessUnit', label: '', align: 'center', cellClassName: commonCellClass, render: (v: unknown, r: DataEntryData) => renderClickableCell(v, r, 'inprocessUnit') },
     ];
 };
 
@@ -133,7 +85,7 @@ const renderHeader = (title: string, showSort: boolean = false, activeSort: bool
             {formattedTitle}
             {exportText && (
                 <span className="inline-flex items-center gap-1 px-2 py-1.5 ml-2 text-[11px] font-semibold text-slate-700 bg-white border border-slate-400 rounded-md shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
-                    <Download className="w-3 h-3" /> {exportText}   
+                    <Download className="w-3 h-3" /> {exportText}
                 </span>
             )}
             {showSort && (activeSort ? <ActiveSortIcon /> : <SortIcon />)}
@@ -150,61 +102,73 @@ const renderLeftHeader = (title: string, showSort: boolean = false, activeSort: 
 export const getDataEntryHeaderRows = (level: 'division' | 'ward', t: any): HeaderCell[][] => {
     const isWard = level === 'ward';
 
+    const commonHeaderClass = `border ${commonBorderClass} px-2 py-1 text-center text-table-header text-slate-900 sticky top-0 z-20`;
+
+    const bgColors = {
+        geo: 'bg-slate-100',
+        property: 'bg-purple-100',
+        assessed: 'bg-green-100',
+        unassessed: 'bg-orange-100',
+        newlyAssessed: 'bg-emerald-50',
+        photo: 'bg-cyan-50',
+        plan: 'bg-indigo-50'
+    };
+
     return [
         [
-            { label: <div className="font-bold text-[15px] text-slate-900 uppercase whitespace-nowrap">{t('dataEntryQualityCheck.columns.sr')}</div>, rowSpan: 2, align: 'center', headerClassName: 'bg-slate-50 min-w-[50px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderLeftHeader(level === 'division' ? t('dataEntryQualityCheck.columns.division') : t('dataEntryQualityCheck.columns.wardNo'), false, false, isWard), rowSpan: 2, align: isWard ? 'center' : 'left', headerClassName: 'bg-slate-50 min-w-[180px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: <div className="font-bold text-[15px] text-slate-900 uppercase whitespace-nowrap">{t('dataEntryQualityCheck.columns.sr')}</div>, rowSpan: 2, align: 'center', headerClassName: `${bgColors.geo} min-w-[50px] ${commonHeaderClass}` },
+            { label: renderLeftHeader(level === 'division' ? t('dataEntryQualityCheck.columns.division') : t('dataEntryQualityCheck.columns.wardNo'), false, false, isWard), rowSpan: 2, align: isWard ? 'center' : 'left', headerClassName: `${bgColors.geo} min-w-[180px] ${commonHeaderClass}` },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.internalSurvey'), false, false, isWard), colSpan: 2, align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // teal-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.dataEntry'), false, false, isWard), colSpan: 4, align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // purple-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.photo'), false, false, isWard, t('dataEntryQualityCheck.buttons.export') || 'Export'), colSpan: 2, align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // purple-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.plan'), false, false, isWard, t('dataEntryQualityCheck.buttons.export') || 'Export'), colSpan: 2, align: 'center', headerClassName: 'bg-indigo-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // indigo-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.qualityAnalyst'), false, false, isWard), colSpan: 5, align: 'center', headerClassName: 'bg-emerald-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // yellow-50
-            { label: renderHeader(t('dataEntryQualityCheck.columns.propertyType'), false, false, isWard), colSpan: 5, align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' }, // pink-50
+            { label: renderHeader(t('dataEntryQualityCheck.columns.internalSurvey'), false, false, isWard), colSpan: 2, align: 'center', headerClassName: `${bgColors.photo} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.dataEntry'), false, false, isWard), colSpan: 4, align: 'center', headerClassName: `${bgColors.property} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.photo'), false, false, isWard, t('dataEntryQualityCheck.buttons.export') || 'Export'), colSpan: 2, align: 'center', headerClassName: `${bgColors.photo} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.plan'), false, false, isWard, t('dataEntryQualityCheck.buttons.export') || 'Export'), colSpan: 2, align: 'center', headerClassName: `${bgColors.plan} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.qualityAnalyst'), false, false, isWard), colSpan: 5, align: 'center', headerClassName: `${bgColors.newlyAssessed} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.propertyType'), false, false, isWard), colSpan: 5, align: 'center', headerClassName: `${bgColors.property} ${commonHeaderClass}` },
 
-            { label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('dataEntryQualityCheck.columns.assessed')}<br />{t('dataEntryQualityCheck.columns.properties')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-green-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('dataEntryQualityCheck.columns.unassessed')}<br />{t('dataEntryQualityCheck.columns.properties')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: <div className="font-bold text-[15px] text-slate-900 text-center"><span className="whitespace-nowrap">{t('dataEntryQualityCheck.columns.newlyAssessed')}</span><br />{t('dataEntryQualityCheck.columns.found')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-emerald-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('dataEntryQualityCheck.columns.assessment')}<br />{t('dataEntryQualityCheck.columns.inprocess')}</div>, colSpan: 2, align: 'center', headerClassName: 'bg-orange-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('dataEntryQualityCheck.columns.assessed')}<br />{t('dataEntryQualityCheck.columns.properties')}</div>, colSpan: 2, align: 'center', headerClassName: `${bgColors.assessed} ${commonHeaderClass}` },
+            { label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('dataEntryQualityCheck.columns.unassessed')}<br />{t('dataEntryQualityCheck.columns.properties')}</div>, colSpan: 2, align: 'center', headerClassName: `${bgColors.unassessed} ${commonHeaderClass}` },
+            { label: <div className="font-bold text-[15px] text-slate-900 text-center"><span className="whitespace-nowrap">{t('dataEntryQualityCheck.columns.newlyAssessed')}</span><br />{t('dataEntryQualityCheck.columns.found')}</div>, colSpan: 2, align: 'center', headerClassName: `${bgColors.newlyAssessed} ${commonHeaderClass}` },
+            { label: <div className="font-bold text-[15px] text-slate-900 text-center">{t('dataEntryQualityCheck.columns.assessment')}<br />{t('dataEntryQualityCheck.columns.inprocess')}</div>, colSpan: 2, align: 'center', headerClassName: `${bgColors.unassessed} ${commonHeaderClass}` },
         ],
         [
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.photo} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.photo} ${commonHeaderClass}` },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.completedStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.completedUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.completedStructure'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.property} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.completedUnit'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.property} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingStructure'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.property} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingUnit'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.property} ${commonHeaderClass}` },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.complete'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pending'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-cyan-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.complete'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.photo} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pending'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.photo} ${commonHeaderClass}` },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.complete'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-indigo-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pending'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-indigo-50 border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.complete'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.plan} ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pending'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.plan} ${commonHeaderClass}` },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.completedStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[90px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.completedUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[90px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingStructure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[90px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingUnit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[90px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.typeWise'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[90px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.completedStructure'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.newlyAssessed} min-w-[90px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.completedUnit'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.newlyAssessed} min-w-[90px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingStructure'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.newlyAssessed} min-w-[90px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.pendingUnit'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.newlyAssessed} min-w-[90px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.typeWise'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.newlyAssessed} min-w-[90px] ${commonHeaderClass}` },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.residential'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 min-w-[80px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.nonResidential'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 min-w-[80px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.mixed'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 min-w-[80px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.publicUtility'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 min-w-[80px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.underConstruction'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-purple-50 min-w-[80px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.residential'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.property} min-w-[80px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.nonResidential'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.property} min-w-[80px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.mixed'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.property} min-w-[80px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.publicUtility'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.property} min-w-[80px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.underConstruction'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.property} min-w-[80px] ${commonHeaderClass}` },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-green-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-green-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.assessed} min-w-[70px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.assessed} min-w-[70px] ${commonHeaderClass}` },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.unassessed} min-w-[70px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.units'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.unassessed} min-w-[70px] ${commonHeaderClass}` },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-emerald-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.newlyAssessed} min-w-[70px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.newlyAssessed} min-w-[70px] ${commonHeaderClass}` },
 
-            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
-            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: 'bg-orange-50 min-w-[70px] border border-slate-300 p-1 text-center text-table-header text-slate-900 sticky top-0 z-20' },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.structure'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.unassessed} min-w-[70px] ${commonHeaderClass}` },
+            { label: renderHeader(t('dataEntryQualityCheck.columns.unit'), false, false, isWard, '', true), align: 'center', headerClassName: `${bgColors.unassessed} min-w-[70px] ${commonHeaderClass}` },
         ]
     ];
 };

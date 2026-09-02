@@ -17,14 +17,15 @@ interface WorkflowTabButtonProps {
         ring: string;
         bgTint: string;
     };
+    isClickable?: boolean;
 }
 
-export function WorkflowTabButton({ tab, isActive, icon: Icon, colors }: WorkflowTabButtonProps) {
+export function WorkflowTabButton({ tab, isActive, icon: Icon, colors, isClickable = true }: WorkflowTabButtonProps) {
     const t = useTranslations('automationDashboard.summaryCards.metrics');
 
     return (
         <div
-            className={`w-full min-w-0 transition-all duration-300 rounded-xl p-2 border-2 relative overflow-hidden bg-white group hover:shadow-lg hover:-translate-y-0.5 flex flex-col ${isActive ? `shadow-lg ${colors.border} ${colors.ring} ring-2` : "shadow-sm border-slate-300"}`}
+            className={`w-full min-w-0 transition-all duration-300 rounded-xl p-2 border-2 relative overflow-hidden flex flex-col ${isClickable ? 'bg-white dark:bg-slate-900 group hover:shadow-lg hover:-translate-y-0.5' : 'bg-slate-200 dark:bg-slate-900 opacity-80'} ${isActive ? `shadow-lg ${colors.border} ${colors.ring} ring-2` : "shadow-sm border-slate-300 dark:border-slate-700"}`}
         >
             {/* Active: clear tint so card is obviously selected */}
             {isActive && (
@@ -50,13 +51,13 @@ export function WorkflowTabButton({ tab, isActive, icon: Icon, colors }: Workflo
 
                 <div className="flex items-center gap-2 justify-center">
                     <div className="text-center">
-                        <p className="text-[10px] font-bold mb-0.5 text-slate-600">{t('structure')}</p>
-                        <p className="text-sm font-bold text-black">{tab.data.structure}</p>
+                        <p className="text-[10px] font-bold mb-0.5 text-slate-600 dark:text-slate-400">{t('structure')}</p>
+                        <p className="text-sm font-bold text-black dark:text-white">{tab.data.structure}</p>
                     </div>
-                    <div className="h-6 w-px bg-slate-300" />
+                    <div className="h-6 w-px bg-slate-300 dark:bg-slate-600" />
                     <div className="text-center">
-                        <p className="text-[10px] font-bold mb-0.5 text-slate-600">{t('unit')}</p>
-                        <p className="text-sm font-bold text-black">{tab.data.unit}</p>
+                        <p className="text-[10px] font-bold mb-0.5 text-slate-600 dark:text-slate-400">{t('unit')}</p>
+                        <p className="text-sm font-bold text-black dark:text-white">{tab.data.unit}</p>
                     </div>
                 </div>
             </div>

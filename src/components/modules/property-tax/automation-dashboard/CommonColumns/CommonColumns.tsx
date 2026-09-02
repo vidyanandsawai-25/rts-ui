@@ -1,4 +1,4 @@
- 
+
 
 import { MapPin } from 'lucide-react';
 import { Column } from '@/components/common/AutomationTable';
@@ -9,7 +9,7 @@ export const getCommonSrColumn = <T extends { sr: string | number, isTotal?: boo
     key: 'sr' as keyof T,
     label: '',
     align: 'center',
-    cellClassName: 'p-3 text-slate-900 font-bold border-l-2 border-l-transparent border-r border-slate-300',
+    cellClassName: 'p-3 text-slate-900 font-bold border border-slate-400',
     render: (val, row) => row.isTotal ? null : (val as ReactNode)
 });
 
@@ -20,7 +20,7 @@ export const getCommonDivisionColumn = <T extends { sr: string | number, divisio
     key: 'division' as keyof T,
     label: '',
     align: 'left',
-    cellClassName: '!p-0 border-r border-slate-300 border-l-2 border-l-transparent group-hover:border-l-indigo-500',
+    cellClassName: '!p-0 border border-slate-400',
     render: (val, row) => {
         if (row.isTotal) {
             return <div className="text-black font-bold text-center w-full block p-3">{row.sr}</div>;
@@ -68,7 +68,7 @@ export const getCommonWardColumn = <T extends { sr: string | number, wardNo: str
     key: 'wardNo' as keyof T,
     label: '',
     align: 'left',
-    cellClassName: 'p-3 border-r flex justify-center items-center border-slate-300 cursor-pointer hover:bg-indigo-50/50 transition-colors border-l-2 border-l-transparent group-hover:border-l-indigo-500',
+    cellClassName: 'p-3 border border-slate-400 flex justify-center items-center cursor-pointer hover:bg-indigo-50/50 transition-colors',
     render: (val, row) => {
         if (row.isTotal) {
             return <div className="text-black font-bold text-center w-full block">{row.sr}</div>;

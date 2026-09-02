@@ -122,15 +122,15 @@ const PendingStructuresWardWise = ({ wardId, serverData }: PendingStructuresWard
 
             {/* Table Area */}
             <div className="border border-slate-200 shadow-md overflow-hidden bg-white rounded-2xl flex flex-col flex-1 min-h-0">
-                <div className="flex-1 p-0 flex flex-col min-h-0 transition-all duration-300 border-t border-slate-200">
+                <div className="flex-1 p-0 flex flex-col min-h-0 border-t border-slate-200">
                     <AutomationTable
                         data={tableData}
                         columns={columns}
                         containerClassName="h-full flex flex-col min-h-0"
-                        tableClassName="w-full border-collapse text-xs border border-slate-300 [&_tbody>tr>td]:border [&_tbody>tr>td]:border-slate-300 hover:[&_tbody>tr]:bg-slate-50"
-                        theadClassName="sticky top-0 z-20 bg-gradient-to-r from-teal-50 to-cyan-50 shadow-[0_1px_0_0_#cbd5e1,0_2px_4px_rgba(0,0,0,0.04)] [&>tr>th]:border [&>tr>th]:border-slate-300 [&>tr>th]:py-3 [&>tr>th]:!text-black"
+                        tableClassName="w-full border-collapse text-xs border border-slate-300"
+                        theadClassName="sticky top-0 z-20"
                         maxBodyHeightClassName="flex-1 min-h-0"
-                        rowClassName={(row) => row.isTotal ? "bg-purple-100/50 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] [&>td]:!border-purple-200" : "border-b border-slate-200 odd:bg-white even:bg-teal-50/25 hover:bg-indigo-50/25 transition-colors cursor-pointer"}
+                        rowClassName={(row) => row.isTotal ? "bg-purple-100/50 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] border-t-2 border-slate-300 transition-colors" : "border-b border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"}
                         loading={false}
                         totalCount={serverData?.totalCount || 0}
                         pageNumber={serverData?.pageNumber || 1}

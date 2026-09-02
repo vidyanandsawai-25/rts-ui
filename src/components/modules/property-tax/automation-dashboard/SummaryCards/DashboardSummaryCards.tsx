@@ -38,7 +38,7 @@ const AssessmentSubCard = ({ title, data, theme, t }: { title: string, data: { c
   return (
     <div className={`px-2 py-1.5 flex flex-col justify-center`}>
       <p className={`text-[10px] font-bold ${colors.title} mb-1 uppercase tracking-wide`}>{title}</p>
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 border-t border-slate-200 pt-2 mt-1">
         <div className="text-center">
           <p className={labelClass}>{t('metrics.structure')}</p>
           <p className={valueClass}>{data?.count || '0'}</p>
@@ -128,7 +128,7 @@ export function DashboardSummaryCards({ serverData: apiStats }: { serverData?: M
       iconColor: "text-white",
       icon: CheckCircle2,
       content: (
-        <div className="grid grid-cols-2 gap-2 mt-1">
+        <div className="grid grid-cols-2 gap-2 mt-1 divide-x divide-slate-200">
           <AssessmentSubCard
             title={t('titles.assessed')}
             data={{
