@@ -103,11 +103,26 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     loading: boolean;
     documents: { en: string; mr?: string; hi?: string }[];
     receivingOfficer: string;
-  }>({ loading: false, documents: [], receivingOfficer: '-' });
+    receivingOfficerDetails: {
+      fullName: string | null;
+      userName: string | null;
+      designation: string | null;
+    };
+  }>({
+    loading: false,
+    documents: [],
+    receivingOfficer: '-',
+    receivingOfficerDetails: { fullName: null, userName: null, designation: null },
+  });
 
   useEffect(() => {
     if (!isDetailsOpen || !selectedServiceId) {
-      setModalDetails({ loading: false, documents: [], receivingOfficer: '-' });
+      setModalDetails({
+        loading: false,
+        documents: [],
+        receivingOfficer: '-',
+        receivingOfficerDetails: { fullName: null, userName: null, designation: null },
+      });
       return;
     }
 
@@ -122,10 +137,16 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
           loading: false,
           documents: info.documents,
           receivingOfficer: info.receivingOfficer,
+          receivingOfficerDetails: info.receivingOfficerDetails,
         });
       } catch {
         if (!active) return;
-        setModalDetails({ loading: false, documents: [], receivingOfficer: '-' });
+        setModalDetails({
+          loading: false,
+          documents: [],
+          receivingOfficer: '-',
+          receivingOfficerDetails: { fullName: null, userName: null, designation: null },
+        });
       }
     })();
 
@@ -741,10 +762,11 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
             transFees = Number(serviceItem.fees) > 0 ? `₹${serviceItem.fees}` : t('serviceDetails.free');
           }
 
-          const transOfficer =
-            modalDetails.receivingOfficer && modalDetails.receivingOfficer !== '-'
-              ? modalDetails.receivingOfficer
-              : '-';
+          const officerDetails = modalDetails.receivingOfficerDetails;
+          const fullName = officerDetails.fullName || t('serviceDetails.notAssigned');
+          const officerDisplay = officerDetails.userName
+            ? `${fullName} (${officerDetails.userName})`
+            : fullName;
 
           const transDocs: string[] = modalDetails.documents.map((doc) => {
             if (locale === 'mr') return doc.mr || doc.en;
@@ -770,7 +792,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                     {applyError}
                   </div>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 shrink-0">
                       <Clock className="w-5 h-5" />
@@ -793,18 +815,23 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                       <p className="text-sm font-extrabold text-slate-800">{transFees}</p>
                     </div>
                   </div>
-                  <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 shrink-0">
+                </div>
+
+                <section className="rounded-xl border border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-emerald-500/10 p-2.5 text-emerald-600 shrink-0">
                       <UserCheck className="w-5 h-5" />
                     </div>
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] uppercase font-bold tracking-wider text-emerald-600">
                         {t('serviceDetails.receivingOfficer')}
                       </p>
-                      <p className="text-sm font-extrabold text-slate-800">{transOfficer}</p>
+                      <p className="mt-1 break-words text-base font-extrabold leading-snug text-slate-800">
+                        {officerDisplay}
+                      </p>
                     </div>
                   </div>
-                </div>
+                </section>
 
                 <div className="bg-white p-5 border border-slate-200 rounded-xl space-y-3">
                   <h5 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">

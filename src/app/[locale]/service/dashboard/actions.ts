@@ -402,19 +402,19 @@ export async function searchCitizenMisApplicationsAction(
 export async function getServiceDetailsModalInfoAction(serviceId: number): Promise<{
   documents: { en: string; mr?: string; hi?: string }[];
   receivingOfficer: string;
+  receivingOfficerDetails: {
+    fullName: string | null;
+    userName: string | null;
+    designation: string | null;
+  };
 }> {
   try {
     const { getRtsFieldDefinitionsByServiceId } = await import("@/lib/api/rts/rtsfielddefinition.service");
-    const { apiClient } = await import("@/services/api.service");
+    const { getApprovalFlowStagesByServiceId } = await import("@/lib/api/rts/rts-workflow.service");
 
-    const [fields, stagesResponse] = await Promise.all([
+    const [fields, workflow] = await Promise.all([
       getRtsFieldDefinitionsByServiceId(serviceId).catch(() => []),
-      apiClient
-        .get<{
-          flowId?: number;
-          stages?: Array<{ stageOrder: number; stageName: string }>;
-        }>(`/ApprovalFlowMaster/stages/${serviceId}`, { cache: "no-store" }, false)
-        .catch(() => null),
+      getApprovalFlowStagesByServiceId(serviceId).catch(() => null),
     ]);
 
     // Extract dynamic documents
@@ -442,50 +442,36 @@ export async function getServiceDetailsModalInfoAction(serviceId: number): Promi
       };
     });
 
-    // Extract receiving officer from Approval Stage 1 with officer name
+    // Extract the receiving officer from the first approval stage.
     let receivingOfficer = "-";
-    const rawData = stagesResponse?.data as any;
-    const stages: Array<{
-      stageOrder?: number;
-      sequenceNo?: number;
-      stageName?: string;
-      stageNameLocal?: string;
-      roleName?: string;
-      officerName?: string;
-      officerUserName?: string;
-      userId?: number;
-    }> =
-      (Array.isArray(rawData) ? rawData : null) ||
-      (Array.isArray(rawData?.data) ? rawData.data : null) ||
-      (Array.isArray(rawData?.data?.stages) ? rawData.data.stages : null) ||
-      (Array.isArray(rawData?.stages) ? rawData.stages : null) ||
-      [];
+    let receivingOfficerDetails = {
+      fullName: null as string | null,
+      userName: null as string | null,
+      designation: null as string | null,
+    };
+    const stages = workflow?.stages ?? [];
 
     if (stages && stages.length > 0) {
-      const sortedStages = [...stages].sort(
-        (a, b) => (a.stageOrder ?? a.sequenceNo ?? 1) - (b.stageOrder ?? b.sequenceNo ?? 1)
-      );
-      const stage1 = sortedStages[0];
-      const officer = stage1?.officerName?.trim() || "";
-      const designation = (stage1?.stageName || stage1?.roleName || stage1?.stageNameLocal || "Ward Lipik").trim();
+      const stage1 = stages[0];
+      const fullName = [stage1?.firstName, stage1?.middleName, stage1?.lastName]
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value))
+        .join(" ") || stage1?.officerName?.trim() || null;
+      const userName = stage1?.userName?.trim() || null;
+      const designation = stage1?.stageName?.trim() || null;
 
-      if (officer && designation) {
-        receivingOfficer = `${officer} - ${designation}`;
-      } else if (officer) {
-        receivingOfficer = officer;
-      } else {
-        receivingOfficer = designation;
-      }
+      receivingOfficerDetails = { fullName, userName, designation };
+      receivingOfficer = fullName || userName || designation || "-";
     }
 
-    if (receivingOfficer === "-" || !receivingOfficer) {
-      receivingOfficer = "लिपिक (Ward Lipik)";
-    }
-
-    return { documents, receivingOfficer };
+    return { documents, receivingOfficer, receivingOfficerDetails };
   } catch (error) {
     console.error("Failed to fetch service details modal info:", error);
-    return { documents: [], receivingOfficer: "लिपिक (Ward Lipik)" };
+    return {
+      documents: [],
+      receivingOfficer: "-",
+      receivingOfficerDetails: { fullName: null, userName: null, designation: null },
+    };
   }
 }
 

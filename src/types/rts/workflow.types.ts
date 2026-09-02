@@ -26,6 +26,24 @@ export interface RtsApprovalFlowStageApiItem {
   canPay: boolean;
   isFinalStage: boolean;
   isActive?: boolean;
+  userName?: string | null;
+  firstName?: string | null;
+  middleName?: string | null;
+  lastName?: string | null;
+  officerName?: string | null;
+}
+
+/** GET /ApprovalFlowMaster/stages/{serviceId} response payload. */
+export interface RtsApprovalFlowStagesByServiceItem {
+  flowId: number;
+  serviceId: number;
+  flowName: string;
+  stages: RtsApprovalFlowStageApiItem[];
+}
+
+export interface RtsApprovalFlowStagesByServiceApiResponse {
+  status: boolean;
+  data?: RtsApprovalFlowStagesByServiceItem;
 }
 
 export type WorkflowActionType =

@@ -6,6 +6,8 @@ import type {
   ApplicationWorkflowState,
   RtsApprovalFlowApiItem,
   RtsApprovalFlowStageApiItem,
+  RtsApprovalFlowStagesByServiceApiResponse,
+  RtsApprovalFlowStagesByServiceItem,
   SubmitWorkflowActionPayload,
 } from "@/types/rts/workflow.types";
 
@@ -158,4 +160,25 @@ export async function submitApplicationWorkflowAction(
   }
 
   throw new Error(response.error || "Failed to submit workflow action");
+}
+
+/** Retrieves a service workflow with its assigned officer details for each stage. */
+export async function getApprovalFlowStagesByServiceId(
+  serviceId: number
+): Promise<RtsApprovalFlowStagesByServiceItem | null> {
+  const response = await apiClient.get<RtsApprovalFlowStagesByServiceApiResponse>(
+    `/ApprovalFlowMaster/stages/${encodeURIComponent(String(serviceId))}`,
+    { cache: "no-store" },
+    false
+  );
+
+  const payload = response.data?.data;
+  if (!response.success || !payload) {
+    throw new Error(response.error || "Failed to fetch approval flow stages for service");
+  }
+
+  return {
+    ...payload,
+    stages: [...(payload.stages ?? [])].sort((a, b) => a.stageOrder - b.stageOrder),
+  };
 }
