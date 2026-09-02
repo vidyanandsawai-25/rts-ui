@@ -100,6 +100,7 @@ export interface RtsApplicationDetailData {
   approvalStages?: RtsApplicationApprovalStage[];
   completedStages?: number;
   totalApprovalStages?: number;
+  isRevertedToCitizen?: boolean;
   documents?: RtsApplicationDocumentItem[];
   verification?: RtsApplicationVerificationItem | null;
   remark?: string | null;
@@ -471,6 +472,7 @@ export async function getApplicationDetailAction(
           approvalStages: stageDetails?.approvalStages ?? [],
           completedStages: stageDetails?.completedStages ?? 0,
           totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
+          isRevertedToCitizen: stageDetails?.isRevertedToCitizen ?? false,
           documents: viewDetails.documents ?? [],
           verification: null,
           remark: (viewDetails as any)?.remark ?? (applicationHeader as any)?.remark ?? null,
@@ -491,6 +493,7 @@ export async function getApplicationDetailAction(
         approvalStages: stageDetails?.approvalStages ?? [],
         completedStages: stageDetails?.completedStages ?? 0,
         totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
+        isRevertedToCitizen: stageDetails?.isRevertedToCitizen ?? false,
         documents: [],
         verification: null,
         remark: null,
@@ -513,6 +516,7 @@ export async function getApplicationDetailAction(
     approvalStages: [],
     completedStages: 0,
     totalApprovalStages: 0,
+    isRevertedToCitizen: false,
     documents: [],
   };
 }
@@ -973,6 +977,16 @@ export async function submitApplicationActionAction(
   }
 }
 
+function escapeCertificateMultilineText(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/\r?\n/g, '<br />');
+}
+
 export async function getCertificatePreviewAction(
   applicationId: number,
   officerInputs?: Record<string, string>,
@@ -1009,7 +1023,7 @@ export async function getCertificatePreviewAction(
     if (template && template.bodyContent) {
       let merged = template.bodyContent;
       const todayFormatted = new Date().toLocaleDateString('en-GB');
-      const applicationNo = verification?.applicationNo || (appDetails as any)?.applicationNo || `RTS${applicationId}`;
+      const applicationNo = verification?.applicationNo || `RTS${applicationId}`;
       const serviceName = verification?.serviceName || template.serviceName || "आर.टी.एस. सेवा";
       const departmentName = template.departmentName || "लोकसेवा हक्क विभाग";
 
@@ -1020,7 +1034,7 @@ export async function getCertificatePreviewAction(
       merged = merged.replace(/{{AppliedDate}}/g, todayFormatted);
       merged = merged.replace(/{{IssueDate}}/g, todayFormatted);
       merged = merged.replace(/{{CertificateNo}}/g, previewData?.sampleCertificateNo || `CERT/${applicationNo}`);
-      merged = merged.replace(/{{ApplicantName}}/g, (previewData?.citizenAutoValues?.ApplicantName) || (appDetails as any)?.applicantName || "");
+      merged = merged.replace(/{{ApplicantName}}/g, previewData?.citizenAutoValues?.ApplicantName || "");
       merged = merged.replace(/{{ApplicantMobile}}/g, (previewData?.citizenAutoValues?.ApplicantMobile) || "");
       merged = merged.replace(/{{ServiceTitle}}/g, serviceName);
       merged = merged.replace(/{{ServiceName}}/g, serviceName);
@@ -1063,6 +1077,9 @@ export async function getCertificatePreviewAction(
 
       // 3. Dynamic Officer Inputs & Workflow Data
       const officerData = officerInputs || {};
+      const officerRemarkHtml = escapeCertificateMultilineText(officerData.OfficerRemark || "");
+      merged = merged.replace(/{{OfficerRemark}}/gi, officerRemarkHtml);
+      merged = merged.replace(/\[\[OfficerRemark\]\]/gi, officerRemarkHtml);
       const realPaymentReceiptNo =
         paymentReceipt?.receiptNo ||
         verification?.receiptNo ||
@@ -1133,7 +1150,7 @@ export async function getCertificatePreviewAction(
 
       if (Object.keys(officerData).length > 0) {
         for (const [k, v] of Object.entries(officerData)) {
-          if (v && typeof v === "string" && v.trim().length > 0 && !renderedKeys.has(k.toLowerCase())) {
+          if (k.toLowerCase() !== "officerremark" && v && typeof v === "string" && v.trim().length > 0 && !renderedKeys.has(k.toLowerCase())) {
             const lbl = standardLabels[k] || k;
             const finalVal = k.toLowerCase().includes("challan") || k.toLowerCase().includes("receipt") ? realPaymentReceiptNo : v;
             dynamicOfficerItems.push({ label: lbl, value: finalVal });
@@ -1219,9 +1236,9 @@ export async function getCertificatePreviewAction(
     }
 
     return { success: false, error: 'Failed to generate preview' };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to generate certificate preview:', error);
-    return { success: false, error: error?.message || 'Failed to generate preview' };
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to generate preview' };
   }
 }
 
@@ -1247,9 +1264,9 @@ export async function issueCertificateAction(
       success: true,
       data: result,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to issue certificate:', error);
-    return { success: false, error: error?.message || 'Failed to issue certificate' };
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to issue certificate' };
   }
 }
 
@@ -1337,8 +1354,8 @@ export async function getIssuedCertificateAction(applicationNo: string) {
           merged = merged.replace(/{{ApplicantAddress}}/g, applicantAddress || "");
 
           // 3. Dynamic Officer Inputs & Workflow Data (from officer approval + payment records + stages)
-          let officerInputsData: Record<string, string> = {};
-          if (result.digitalSignatureInfo) {
+          let officerInputsData: Record<string, string> = result.officerInputs || {};
+          if (Object.keys(officerInputsData).length === 0 && result.digitalSignatureInfo) {
             try {
               const parsedSig = JSON.parse(result.digitalSignatureInfo);
               if (parsedSig && typeof parsedSig === "object") {
@@ -1348,6 +1365,10 @@ export async function getIssuedCertificateAction(applicationNo: string) {
               // Plain text or legacy signature string
             }
           }
+
+          const officerRemarkHtml = escapeCertificateMultilineText(officerInputsData.OfficerRemark || "");
+          merged = merged.replace(/{{OfficerRemark}}/gi, officerRemarkHtml);
+          merged = merged.replace(/\[\[OfficerRemark\]\]/gi, officerRemarkHtml);
 
           // Real Receipt No from payment receipts table / verification
           const realPaymentReceiptNo =
@@ -1388,7 +1409,7 @@ export async function getIssuedCertificateAction(applicationNo: string) {
 
           if (Object.keys(officerInputsData).length > 0) {
             for (const [k, v] of Object.entries(officerInputsData)) {
-              if (v && typeof v === "string" && !renderedKeys.has(k.toLowerCase())) {
+              if (k.toLowerCase() !== "officerremark" && v && typeof v === "string" && !renderedKeys.has(k.toLowerCase())) {
                 const lbl = standardLabels[k] || k;
                 const finalVal = k.toLowerCase().includes("challan") || k.toLowerCase().includes("receipt") ? realPaymentReceiptNo : v;
                 dynamicOfficerItems.push({ label: lbl, value: finalVal });
@@ -1467,9 +1488,9 @@ export async function getIssuedCertificateAction(applicationNo: string) {
     }
 
     return { success: true, data: result };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to fetch issued certificate:', error);
-    return { success: false, error: error?.message || 'Certificate not found' };
+    return { success: false, error: error instanceof Error ? error.message : 'Certificate not found' };
   }
 }
 

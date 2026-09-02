@@ -156,6 +156,7 @@ export interface RtsApplicationApprovalStage {
 export interface RtsApplicationApprovalStagesItem {
   totalApprovalStages: number;
   completedStages: number;
+  isRevertedToCitizen: boolean;
   approvalStages: RtsApplicationApprovalStage[];
 }
 

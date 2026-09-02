@@ -3,19 +3,30 @@
 import { revalidatePath } from "next/cache";
 import { getAllRtsServices } from "@/lib/api/rts/rtsservices.service";
 import {
+  createCertificateLibraryTemplate,
   createCertificateTemplate,
+  deleteCertificateLibraryTemplate,
   deleteCertificateTemplate,
+  getAllCertificateLibraryTemplates,
   getAllCertificateTemplates,
   getAvailableTagsForService,
+  updateCertificateLibraryTemplate,
   updateCertificateTemplate,
 } from "@/lib/api/rts/rtscertificate.service";
 import { getUlbMaster } from "@/lib/api/configuration-settings/ulb-configuration/ulb-master.services";
 import type {
   CertificateAvailableTag,
+  CreateRTSCertificateLibraryTemplateInput,
   CreateRTSCertificateTemplateInput,
+  RTSCertificateDepartmentOption,
+  RTSCertificateLibraryTemplate,
+  RTSCertificateServiceOption,
   RTSCertificateTemplate,
   UpdateRTSCertificateTemplateInput,
+  UpdateRTSCertificateLibraryTemplateInput,
 } from "@/types/rts/certificate.types";
+import { getRtsFieldDefinitionsByServiceId } from "@/lib/api/rts/rtsfielddefinition.service";
+import type { RtsFieldDefinitionApiItem } from "@/types/rts/field-definition.types";
 
 export type CertificateTemplateFormData = {
   id?: number;
@@ -25,6 +36,7 @@ export type CertificateTemplateFormData = {
   headerContent?: string;
   bodyContent: string;
   footerContent?: string;
+  designJson?: string | null;
   defaultConditions?: string[];
   officerFields?: {
     fieldKey: string;
@@ -33,6 +45,18 @@ export type CertificateTemplateFormData = {
     fieldType: "text" | "textarea" | "number" | "date" | "select";
     isMandatory: boolean;
   }[];
+  isActive: boolean;
+};
+
+export type CertificateLibraryTemplateFormData = {
+  id?: number;
+  templateName: string;
+  templateCode: string;
+  description?: string;
+  headerContent?: string;
+  bodyContent: string;
+  footerContent?: string;
+  designJson?: string | null;
   isActive: boolean;
 };
 
@@ -50,7 +74,9 @@ import { getAllRtsDepartments } from "@/lib/api/rts/rtsdepartment.service";
 
 export async function fetchCertificateTemplatesPageDataAction(): Promise<{
   templates: RTSCertificateTemplate[];
-  services: { id: string; name: string; departmentName?: string }[];
+  libraryTemplates: RTSCertificateLibraryTemplate[];
+  departments: RTSCertificateDepartmentOption[];
+  services: RTSCertificateServiceOption[];
   ulbInfo: CertificateUlbInfo;
 }> {
   const defaultUlbInfo: CertificateUlbInfo = {
@@ -64,8 +90,9 @@ export async function fetchCertificateTemplatesPageDataAction(): Promise<{
   };
 
   try {
-    const [templates, services, ulbMaster, departments] = await Promise.all([
+    const [templates, libraryTemplates, services, ulbMaster, departments] = await Promise.all([
       getAllCertificateTemplates().catch(() => []),
+      getAllCertificateLibraryTemplates().catch(() => []),
       getAllRtsServices().catch(() => []),
       getUlbMaster().catch(() => null),
       getAllRtsDepartments().catch(() => []),
@@ -98,6 +125,14 @@ export async function fetchCertificateTemplatesPageDataAction(): Promise<{
 
     return {
       templates,
+      libraryTemplates,
+      departments: departments
+        .filter((department) => department.id !== null && department.id !== undefined)
+        .map((department) => ({
+          id: String(department.id),
+          name: department.departmentName || `Department ${department.id}`,
+          nameLocal: department.departmentNameLocal || department.departmentName || `विभाग ${department.id}`,
+        })),
       services: certificateEligibleServices.map((s) => {
         const deptInfo = deptMap.get(s.departmentId);
         return {
@@ -106,14 +141,18 @@ export async function fetchCertificateTemplatesPageDataAction(): Promise<{
           nameLocal: s.serviceNameLocal || s.serviceName,
           departmentId: s.departmentId,
           departmentName: s.departmentName || deptInfo?.name || "General Administration",
-          departmentNameLocal: s.departmentNameLocal || deptInfo?.nameLocal || s.departmentName || "सामान्य प्रशासन",
+          departmentNameLocal:
+            (typeof s.departmentNameLocal === "string" ? s.departmentNameLocal : "") ||
+            deptInfo?.nameLocal ||
+            s.departmentName ||
+            "सामान्य प्रशासन",
         };
       }),
       ulbInfo,
     };
   } catch (error) {
     console.error("Error fetching certificate templates page data:", error);
-    return { templates: [], services: [], ulbInfo: defaultUlbInfo };
+    return { templates: [], libraryTemplates: [], departments: [], services: [], ulbInfo: defaultUlbInfo };
   }
 }
 
@@ -122,6 +161,18 @@ export async function fetchAvailableTagsAction(serviceId: number): Promise<Certi
     return await getAvailableTagsForService(serviceId);
   } catch (error) {
     console.error("Error fetching available tags:", error);
+    return [];
+  }
+}
+
+export async function fetchCertificateServiceFieldsAction(
+  serviceId: number,
+  departmentId?: number
+): Promise<RtsFieldDefinitionApiItem[]> {
+  try {
+    return await getRtsFieldDefinitionsByServiceId(serviceId, departmentId);
+  } catch (error) {
+    console.error("Error fetching certificate service fields:", error);
     return [];
   }
 }
@@ -151,6 +202,7 @@ export async function saveCertificateTemplateAction(
         headerContent: formData.headerContent,
         bodyContent: formData.bodyContent,
         footerContent: formData.footerContent,
+        designJson: formData.designJson,
         defaultConditionsJson,
         officerFieldsConfigJson,
         isActive: formData.isActive,
@@ -164,6 +216,7 @@ export async function saveCertificateTemplateAction(
         headerContent: formData.headerContent,
         bodyContent: formData.bodyContent,
         footerContent: formData.footerContent,
+        designJson: formData.designJson,
         defaultConditionsJson,
         officerFieldsConfigJson,
         isActive: formData.isActive,
@@ -173,9 +226,12 @@ export async function saveCertificateTemplateAction(
 
     revalidatePath("/[locale]/rts/configuration-settings/rts-certificates", "page");
     return { success: true, template: savedTemplate };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error saving certificate template:", error);
-    return { success: false, error: error.message || "Failed to save template" };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to save template",
+    };
   }
 }
 
@@ -186,8 +242,54 @@ export async function deleteCertificateTemplateAction(
     const res = await deleteCertificateTemplate(id);
     revalidatePath("/[locale]/rts/configuration-settings/rts-certificates", "page");
     return { success: res };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error deleting certificate template:", error);
-    return { success: false, error: error.message || "Failed to delete template" };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete template",
+    };
+  }
+}
+
+export async function saveCertificateLibraryTemplateAction(
+  formData: CertificateLibraryTemplateFormData
+): Promise<{ success: boolean; error?: string; template?: RTSCertificateLibraryTemplate }> {
+  try {
+    let savedTemplate: RTSCertificateLibraryTemplate;
+    if (formData.id) {
+      const payload: UpdateRTSCertificateLibraryTemplateInput = {
+        ...formData,
+        id: formData.id,
+      };
+      savedTemplate = await updateCertificateLibraryTemplate(formData.id, payload);
+    } else {
+      const payload: CreateRTSCertificateLibraryTemplateInput = formData;
+      savedTemplate = await createCertificateLibraryTemplate(payload);
+    }
+
+    revalidatePath("/[locale]/rts/configuration-settings/rts-certificates", "page");
+    return { success: true, template: savedTemplate };
+  } catch (error: unknown) {
+    console.error("Error saving reusable certificate template:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to save reusable template",
+    };
+  }
+}
+
+export async function deleteCertificateLibraryTemplateAction(
+  id: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const success = await deleteCertificateLibraryTemplate(id);
+    revalidatePath("/[locale]/rts/configuration-settings/rts-certificates", "page");
+    return { success };
+  } catch (error: unknown) {
+    console.error("Error deleting reusable certificate template:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete reusable template",
+    };
   }
 }

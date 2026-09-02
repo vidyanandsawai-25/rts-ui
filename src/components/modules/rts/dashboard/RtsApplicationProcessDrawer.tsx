@@ -233,6 +233,7 @@ export default function RtsApplicationProcessDrawer({
   );
 
   const stages = data?.stages ?? null;
+  const isRevertedToCitizen = stages?.isRevertedToCitizen === true;
 
   const verification = data?.verification ?? null;
   const [isPaidLocal, setIsPaidLocal] = useState<boolean | null>(null);
@@ -436,6 +437,11 @@ export default function RtsApplicationProcessDrawer({
       return;
     }
 
+    if (actionKey === 'canVerifyDocument' && isRevertedToCitizen) {
+      toast.error(t('verificationUnavailableWhileReverted'));
+      return;
+    }
+
     if (actionKey === 'canApprove' && verification?.feesRequired && !effectiveIsPaid) {
       toast.warning(`नागरिकाचे शासकीय शुल्क (₹${verification.serviceFees ?? 0}) प्रलंबित असल्याने अर्ज मंजूर करता येणार नाही. प्रथम शुल्क जमा करणे आवश्यक आहे.`);
       return;
@@ -562,6 +568,8 @@ export default function RtsApplicationProcessDrawer({
                   (action.key === 'canApprove' || action.key === 'canVerifyDocument') &&
                   Boolean(verification?.feesRequired && !effectiveIsPaid);
                 const isRecordPaymentDisabled = action.key === 'canPay' && isFreeService;
+                const isVerificationBlockedByCitizenResubmission =
+                  action.key === 'canVerifyDocument' && isRevertedToCitizen;
 
                 const actionLabel = action.key === 'canPay'
                   ? 'शुल्क स्वीकारा (Record Payment)'
@@ -581,13 +589,16 @@ export default function RtsApplicationProcessDrawer({
                       !hasOfficerAccess ||
                       isEditLockedWorkflowAction ||
                       isApproveBlockedByFee ||
-                      isRecordPaymentDisabled
+                      isRecordPaymentDisabled ||
+                      isVerificationBlockedByCitizenResubmission
                     }
                     title={
                       !hasOfficerAccess
                         ? t('officerAccessDenied')
                         : isEditLockedWorkflowAction
                           ? t('finishEditBeforeWorkflowAction')
+                        : isVerificationBlockedByCitizenResubmission
+                          ? t('verificationUnavailableWhileReverted')
                         : isApproveBlockedByFee
                           ? 'शासकीय शुल्क प्रलंबित असल्याने कार्यवाही / मंजुरी करता येत नाही. प्रथम शुल्क स्वीकारा.'
                           : isRecordPaymentDisabled
