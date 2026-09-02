@@ -2,6 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   buildCanonicalSmartLayoutParameters,
+  buildSmartLayoutMetadataParameters,
   parseSelectedPropertyValue,
   prepareReportSubmissionParameters,
   useSmartLayoutSync,
@@ -68,34 +69,15 @@ describe('parseSelectedPropertyValue', () => {
     });
   });
 
-  it('uses the active-year sentinel only for an individual WarrentNotice', () => {
-    const parameters = prepareReportSubmissionParameters('WarrentNotice', 'property', {
+  it('passes parameters through unchanged for all reports', () => {
+    expect(prepareReportSubmissionParameters('WarrentNotice', 'property', {
       financeyear: '2026',
-      zoneId: '15',
       wardId: '60',
-      propertyNo: '1',
-      propertyId: '552377',
-      ownerId: '552377',
-      partitionNo: 'A4',
-    });
+    })).toEqual({ financeyear: '2026', wardId: '60' });
 
-    expect(parameters).toHaveProperty('financeyear', '0');
-    expect(parameters).toMatchObject({
-      propertyNo: '1',
-      propertyId: '552377',
-      ownerId: '552377',
-      partitionNo: 'A4',
-    });
-  });
-
-  it('keeps the year for other reports and WarrentNotice range mode', () => {
-    expect(prepareReportSubmissionParameters('DocumentNotice', 'property', {
+    expect(prepareReportSubmissionParameters('DocumentNotice', 'ward', {
       financeyear: '2026',
-    })).toHaveProperty('financeyear', '2026');
-
-    expect(prepareReportSubmissionParameters('WarrentNotice', 'range', {
-      financeyear: '2026',
-    })).toHaveProperty('financeyear', '2026');
+    })).toEqual({ financeyear: '2026' });
   });
 
   it('maps an individual selection to the exact property id and partition filters', async () => {
@@ -181,6 +163,41 @@ describe('parseSelectedPropertyValue', () => {
     })).toMatchObject({
       PropertyTypeId: '11,12',
       AssessmentTypeId: '3,4',
+    });
+  });
+
+  it('builds exact ward-wise report metadata at submit time', () => {
+    const parameters = [
+      reportParameter('FinanceYear', 'Financial Year'),
+      reportParameter('ZoneId', 'Zone No.'),
+      reportParameter('WardId', 'Ward No.'),
+      reportParameter('SearchCategory', 'Property Selection'),
+      reportParameter('PropertyTypeId', 'Property Description'),
+      reportParameter('AssessmentTypeId', 'Assessment Type'),
+    ];
+
+    expect(buildSmartLayoutMetadataParameters({
+      financialYear: '2026',
+      zoneId: '15',
+      wardId: ['60'],
+      fromProperty: '',
+      toProperty: '',
+      propertyNo: '',
+      partitionNo: '',
+      ownerIdList: '',
+      selectedProperties: [],
+      selectionMode: 'ward',
+      amountOperator: 'greater_than',
+      amountValue: '',
+      propertyDescription: [],
+      assessmentStatus: [],
+    }, parameters)).toEqual({
+      FinanceYear: '2026',
+      ZoneId: '15',
+      WardId: '60',
+      SearchCategory: '2',
+      PropertyTypeId: '',
+      AssessmentTypeId: '',
     });
   });
 });

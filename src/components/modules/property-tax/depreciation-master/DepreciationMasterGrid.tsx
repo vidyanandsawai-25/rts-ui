@@ -13,6 +13,7 @@ interface DepreciationMasterGridProps {
   minError: string | null;
   maxError: string | null;
   ranges: RangeRow[];
+  allRanges?: RangeRow[];
   effectiveSelectedRangeId: string | null;
   saving: boolean;
   handleMinChange: (value: string) => void;
@@ -40,6 +41,7 @@ export function DepreciationMasterGrid({
   minError,
   maxError,
   ranges,
+  allRanges,
   effectiveSelectedRangeId,
   saving,
   handleMinChange,
@@ -72,7 +74,7 @@ export function DepreciationMasterGrid({
             maxValue={maxValue}
             minError={minError}
             maxError={maxError}
-            ranges={ranges}
+            ranges={allRanges && allRanges.length > 0 ? allRanges : ranges}
             selectedRangeId={effectiveSelectedRangeId}
             saving={saving}
             onMinChange={handleMinChange}

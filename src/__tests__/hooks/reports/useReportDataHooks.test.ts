@@ -88,7 +88,62 @@ describe('usePaginatedProperties', () => {
     expect(mockGetSuggestionsPage).toHaveBeenNthCalledWith(2, {
       wardId: 7,
       propertyNo: undefined,
+      partitionNo: undefined,
       pageNumber: 2,
+      pageSize: 100,
+    });
+  });
+
+  it('searches the property number and partition separately', async () => {
+    mockGetSuggestionsPage
+      .mockResolvedValueOnce({
+        success: true,
+        data: [],
+        pagination: {
+          pageNumber: 1,
+          pageSize: 100,
+          totalCount: 0,
+          totalPages: 0,
+          hasMore: false,
+        },
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        data: [
+          {
+            ...makeProperty(22),
+            propertyNo: '32',
+            partitionNo: 'A22',
+          },
+        ],
+        pagination: {
+          pageNumber: 1,
+          pageSize: 100,
+          totalCount: 1,
+          totalPages: 1,
+          hasMore: false,
+        },
+      });
+
+    const { result } = renderHook(() => usePaginatedProperties(['7'], 'property'));
+
+    await waitFor(() => {
+      expect(result.current.isFetchingProperties).toBe(false);
+    });
+
+    act(() => {
+      result.current.onPropertySearchChange('32-A2');
+    });
+
+    await waitFor(() => {
+      expect(mockGetSuggestionsPage).toHaveBeenCalledTimes(2);
+    });
+
+    expect(mockGetSuggestionsPage).toHaveBeenNthCalledWith(2, {
+      wardId: 7,
+      propertyNo: '32',
+      partitionNo: 'A2',
+      pageNumber: 1,
       pageSize: 100,
     });
   });

@@ -31,16 +31,21 @@ export function useReportOptionLists({
     return { value: String(y.year ?? y.id), label };
   });
 
-  const zoneOptions = zones.map((z) => ({
-    value: String(z.id),
-    label: z.description ? `${z.zoneNo} - ${z.description}` : z.zoneNo || `Zone ${z.id}`,
-  }));
+  const zoneOptions = zones.map((z) => {
+    const zoneNo = (z.zoneNo || '').trim();
+    const desc = (z.description || '').trim();
+    const isSameMeaning = zoneNo.toLowerCase().replace(/\s+/g, '') === desc.toLowerCase().replace(/\s+/g, '');
+    const label = desc && !isSameMeaning ? `${zoneNo} - ${desc}` : desc || zoneNo || `Zone ${z.id}`;
+    return { value: String(z.id), label };
+  });
 
   const { wards, wardLoading } = useWards(zoneId, fetchWards);
-  const wardOptions = wards.map((w) => ({
-    value: String(w.id),
-    label: (w.description && w.description !== w.wardNo) ? `${w.wardNo} - ${w.description}` : w.wardNo || `Ward ${w.id}`,
-  }));
+  const wardOptions = wards.map((w) => {
+    const wardNo = (w.wardNo || '').trim();
+    const desc = (w.description || '').trim();
+    const label = wardNo || desc || `Ward ${w.id}`;
+    return { value: String(w.id), label };
+  });
 
   const { properties, propLoading } = useProperties(
     wardId[0] || '',
