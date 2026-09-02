@@ -1,7 +1,11 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ============================================================
+# NTIS UI - Git Ignore
+# ============================================================
 
-# dependencies
-/node_modules
+# ------------------------------------------------------------
+# Node dependencies
+# ------------------------------------------------------------
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,35 +14,89 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# npm / yarn / pnpm logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
 
-# local environment configuration and secrets
+# ------------------------------------------------------------
+# Next.js generated files
+# ------------------------------------------------------------
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+
+# ------------------------------------------------------------
+# CI/CD generated deployment packages
+# ------------------------------------------------------------
+ntis-ui-v*/
+ntis-ui-*-v*.zip
+
+# Temporary archives
+*.zip
+*.7z
+*.tar
+*.gz
+
+# ------------------------------------------------------------
+# Test / coverage output
+# ------------------------------------------------------------
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# ------------------------------------------------------------
+# Environment files & Secrets
+# ------------------------------------------------------------
 .env*
+!.env.example
+!.env.sample
 
 # .NET configuration files, if any are added to this repository
 **/appsettings*.json
 
-# vercel
-.vercel
+# ------------------------------------------------------------
+# Credentials / certificates / private keys
+# ------------------------------------------------------------
+*.pfx
+*.p12
+*.key
+*.pem
+*.publishsettings
+*.PublishSettings
 
-# typescript
+secrets/
+credentials/
+
+# ------------------------------------------------------------
+# Windows / macOS / IDE
+# ------------------------------------------------------------
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.idea/
+
+# ------------------------------------------------------------
+# TypeScript / build info
+# ------------------------------------------------------------
 *.tsbuildinfo
 next-env.d.ts
+
+# ------------------------------------------------------------
+# Temporary files
+# ------------------------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.cache
+*.log
