@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { Layers, Map } from 'lucide-react';
 
-import { AddButton, Tabs, SearchInput } from '@/components/common';
+import { AddButton, SearchInput } from '@/components/common';
 import { TEXT_SANITIZE } from '@/lib/utils/validation-rules';
 
 export function TaxZoneMasterToolbar() {
@@ -18,10 +17,7 @@ export function TaxZoneMasterToolbar() {
 
   const base = `/${locale}/property-tax/taxzone-master`;
 
-  // Detect active tab
-  const activeTab = pathname.includes('/taxzoning') ? 'taxzoning' : 'taxzone';
-
-  // Search state (only for taxzone)
+  // Search state
   const currentSearchTerm = searchParams.get('search') ?? '';
   const [search, setSearch] = useState<string>(currentSearchTerm);
   const [prevSearchFromUrl, setPrevSearchFromUrl] = useState(currentSearchTerm);
@@ -33,7 +29,6 @@ export function TaxZoneMasterToolbar() {
   }
 
   useEffect(() => {
-    if (activeTab !== 'taxzone') return;
     if (pathname.endsWith('/add') || pathname.includes('/edit/')) return;
 
     const timer = setTimeout(() => {
@@ -59,39 +54,24 @@ export function TaxZoneMasterToolbar() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [search, activeTab, currentSearchTerm, pathname, router, searchParams]);
+  }, [search, currentSearchTerm, pathname, router, searchParams]);
 
   return (
     <div className="flex items-center gap-3">
-      {activeTab === 'taxzone' && (
-        <div className="hidden md:flex items-center">
-          <SearchInput
-            value={search}
-            onChange={(value) => setSearch(value.replace(TEXT_SANITIZE, ''))}
-            placeholder={tZone('list.filters.search')}
-            className="mb-0 w-64 lg:w-80 text-gray-900"
-          />
-        </div>
-      )}
-
-      {activeTab === 'taxzone' && (
-        <AddButton
-          label={tZone('list.buttons.add')}
-          onClick={() => {
-            router.push(`${base}/taxzone/add`)
-          }}
+      <div className="hidden md:flex items-center">
+        <SearchInput
+          value={search}
+          onChange={(value) => setSearch(value.replace(TEXT_SANITIZE, ''))}
+          placeholder={tZone('list.filters.search')}
+          className="mb-0 w-64 lg:w-80 text-gray-900"
         />
-      )}
+      </div>
 
-      <Tabs
-        className="flex items-center gap-3 mt-0 flex-row"
-        value={activeTab}
-        variant="pills"
-        items={[
-          { value: 'taxzone', label: tZone('list.tabs.taxZone'), icon: Layers, content: null },
-          { value: 'taxzoning', label: tZone('list.tabs.taxZoning'), icon: Map, content: null },
-        ]}
-        onChange={(v) => router.push(`${base}/${v}`)}
+      <AddButton
+        label={tZone('list.buttons.add')}
+        onClick={() => {
+          router.push(`${base}/taxzone/add`)
+        }}
       />
     </div>
   );
