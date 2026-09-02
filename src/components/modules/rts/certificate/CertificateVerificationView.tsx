@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   CheckCircle2,
@@ -34,6 +34,11 @@ export default function CertificateVerificationView({
 }: CertificateVerificationViewProps) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"summary" | "certificate">("summary");
+  const [verificationTime, setVerificationTime] = useState<string>("");
+
+  useEffect(() => {
+    setVerificationTime(new Date().toLocaleTimeString(locale === "mr" ? "mr-IN" : "en-IN"));
+  }, [locale]);
 
   const handlePrint = () => {
     window.print();
@@ -134,7 +139,7 @@ export default function CertificateVerificationView({
                     IT Act 2000 (कलम ६) & RTS Act 2015
                   </span>
                   <span className="hidden sm:inline">•</span>
-                  <span>पडताळणी वेळ: <strong>{new Date().toLocaleTimeString(locale === "mr" ? "mr-IN" : "en-IN")} (IST)</strong></span>
+                  <span>पडताळणी वेळ: <strong suppressHydrationWarning>{verificationTime ? `${verificationTime} (IST)` : "—"}</strong></span>
                 </div>
               </div>
             </div>
@@ -310,7 +315,7 @@ export default function CertificateVerificationView({
                       <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5 text-purple-600" /> जारी दिनांक व वेळ:
                       </span>
-                      <p className="text-xs sm:text-sm font-bold text-slate-900">
+                      <p className="text-xs sm:text-sm font-bold text-slate-900" suppressHydrationWarning>
                         {formattedIssueDate}
                       </p>
                     </div>
@@ -380,7 +385,7 @@ export default function CertificateVerificationView({
 
                     <div className="rounded-xl bg-white/90 p-3 border border-emerald-200/70">
                       <span className="text-[10.5px] font-semibold text-slate-500 uppercase">वैधता स्थिती (Validity):</span>
-                      <p className="mt-0.5 font-extrabold text-emerald-800 flex items-center gap-1">
+                      <p className="mt-0.5 font-extrabold text-emerald-800 flex items-center gap-1" suppressHydrationWarning>
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                         {formattedValidUntil}
                       </p>
