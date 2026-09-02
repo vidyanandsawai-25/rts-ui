@@ -101,7 +101,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = Rea
             {/* Construction Type */}
             <div className="flex flex-col gap-1.5">
                 <Label className="text-[12px] text-gray-600 ml-0.5">{t('filters.constructionType')}</Label>
-                <div className="w-[180px] z-30">
+                <div className="w-[280px] z-30">
                     <SearchSelect
                         name="constructionType"
                         options={constructionTypeOptions}

@@ -48,6 +48,11 @@
       "bulkUpdateFailed": "Failed to bulk update nature factor weightage records",
       "bulkCreateFailed": "Failed to bulk create nature factor weightage records"
     },
+    "apiErrors": {
+      "notFound": "Construction Type Weightage record not found.",
+      "validationError": "Invalid request. Please check the entered values and try again.",
+      "referredInAutoWardEntry": "This Construction Type Weightage cannot be deleted because it is already used in Capital Value tax calculations. Please remove the dependent records first."
+    },
     "deleteConfirmation": {
       "title": "Type Of Nature",
       "description": "Are you sure you want to delete this record?.",
