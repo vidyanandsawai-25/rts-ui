@@ -19,6 +19,7 @@ import {
   FileText,
   Eye,
   BadgeCheck,
+  Clock,
 } from "lucide-react";
 import { Badge, Card } from "@/components/common";
 import type { CertificateVerificationResponse } from "@/types/rts/certificate.types";
@@ -140,6 +141,49 @@ export default function CertificateVerificationView({
                   </span>
                   <span className="hidden sm:inline">•</span>
                   <span>पडताळणी वेळ: <strong suppressHydrationWarning>{verificationTime ? `${verificationTime} (IST)` : "—"}</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : data.applicationNo ? (
+          <div className="rounded-2xl bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-700 p-6 sm:p-8 text-white shadow-lg border border-amber-500">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/20 border-2 border-white/50">
+                <Clock className="h-10 w-10 text-white" />
+              </div>
+              <div className="flex-1 space-y-3">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-0.5 text-xs font-extrabold uppercase tracking-wider">
+                  Application Registered • In Process
+                </div>
+                <h1 className="text-xl sm:text-2xl font-black leading-snug">
+                  अर्ज प्रणालीमध्ये नोंदणीकृत असून प्रक्रियेत आहे
+                </h1>
+                <p className="text-xs sm:text-sm text-amber-50 leading-relaxed max-w-3xl">
+                  {data.message}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 text-xs">
+                  <div className="rounded-lg bg-black/20 p-2.5">
+                    <span className="text-[10px] text-amber-200 uppercase font-semibold">अर्ज क्रमांक:</span>
+                    <p className="font-mono font-bold text-white">{data.applicationNo}</p>
+                  </div>
+                  {data.applicantName && (
+                    <div className="rounded-lg bg-black/20 p-2.5">
+                      <span className="text-[10px] text-amber-200 uppercase font-semibold">अर्जदाराचे नाव:</span>
+                      <p className="font-bold text-white truncate">{data.applicantName}</p>
+                    </div>
+                  )}
+                  {data.serviceName && (
+                    <div className="rounded-lg bg-black/20 p-2.5">
+                      <span className="text-[10px] text-amber-200 uppercase font-semibold">सेवा:</span>
+                      <p className="font-bold text-white truncate">{data.serviceName}</p>
+                    </div>
+                  )}
+                  {data.departmentName && (
+                    <div className="rounded-lg bg-black/20 p-2.5">
+                      <span className="text-[10px] text-amber-200 uppercase font-semibold">विभाग:</span>
+                      <p className="font-bold text-white truncate">{data.departmentName}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
