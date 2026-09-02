@@ -223,7 +223,7 @@
     "wardNoMaxLength": "Ward No cannot exceed {count} characters",
     "wardNoAllZeros": "Ward No cannot contain only zeros",
     "wardNameRequired": "Ward Name is required",
-    "wardNameMaxLength": "ward name can exceed the range",
+    "wardNameMaxLength": "ward name cannot exceed 50 characters",
     "wardNameAllZeros": "Ward Name cannot contain only zeros",
     "wardNameEnRequired": "Ward Name (English) is required",
     "wardNameRegRequired": "Ward Name (Regional) is required",
