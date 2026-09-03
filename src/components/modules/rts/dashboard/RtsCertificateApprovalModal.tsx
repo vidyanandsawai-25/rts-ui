@@ -46,7 +46,9 @@ export default function RtsCertificateApprovalModal({
   const [loadingPreview, setLoadingPreview] = useState(true);
 
   const [previewData, setPreviewData] = useState<CertificatePreviewResponse | null>(null);
-  const [officerRemark, setOfficerRemark] = useState("");
+  const [officerInputs, setOfficerInputs] = useState<Record<string, string>>({
+    OfficerRemark: "",
+  });
 
   // Fetch initial preview
   useEffect(() => {
@@ -60,6 +62,18 @@ export default function RtsCertificateApprovalModal({
         if (!isCurrent) return;
         if (res.success && res.data) {
           setPreviewData(res.data);
+          // Initialize any required officer fields with default values
+          if (res.data.requiredOfficerFields && res.data.requiredOfficerFields.length > 0) {
+            setOfficerInputs((prev) => {
+              const next = { ...prev };
+              for (const f of res.data.requiredOfficerFields) {
+                if (next[f.fieldKey] === undefined) {
+                  next[f.fieldKey] = f.defaultValue || "";
+                }
+              }
+              return next;
+            });
+          }
         } else {
           toast.error(res.error || (isMr ? "प्रमाणपत्र पूर्वदृश्य मिळवण्यात अडचण आली." : "Failed to load certificate preview."));
         }
@@ -78,12 +92,11 @@ export default function RtsCertificateApprovalModal({
     };
   }, [isOpen, applicationId, isMr]);
 
-  const loadPreview = async (remark: string) => {
+  const loadPreview = async (inputs?: Record<string, string>) => {
     setLoadingPreview(true);
     try {
-      const normalizedRemark = remark.trim();
-      const officerInputs: Record<string, string> = normalizedRemark ? { OfficerRemark: normalizedRemark } : {};
-      const res = await getCertificatePreviewAction(applicationId, officerInputs);
+      const activeInputs = inputs || officerInputs;
+      const res = await getCertificatePreviewAction(applicationId, activeInputs);
       if (res.success && res.data) {
         setPreviewData(res.data);
       } else {
@@ -96,9 +109,30 @@ export default function RtsCertificateApprovalModal({
     }
   };
 
+  const handleInputChange = (key: string, value: string) => {
+    setOfficerInputs((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
   const handleIssueAndApprove = () => {
-    const finalRemark = officerRemark.trim();
-    if (!finalRemark) {
+    // Validate mandatory officer fields from template configuration
+    if (previewData?.requiredOfficerFields && previewData.requiredOfficerFields.length > 0) {
+      for (const field of previewData.requiredOfficerFields) {
+        if (field.isMandatory && !officerInputs[field.fieldKey]?.trim()) {
+          toast.warning(
+            isMr
+              ? `कृपया '${field.fieldLabelMarathi || field.fieldKey}' माहिती प्रविष्ट करा.`
+              : `Please enter '${field.fieldLabelEnglish || field.fieldKey}'.`
+          );
+          return;
+        }
+      }
+    }
+
+    const finalRemark = (officerInputs["OfficerRemark"] || officerInputs["OfficerRemarks"] || "").trim();
+    if (!finalRemark && (!previewData?.requiredOfficerFields || previewData.requiredOfficerFields.length === 0)) {
       toast.warning(isMr ? "कृपया अधिकाऱ्याचा शेरा प्रविष्ट करा." : "Please enter the officer remark.");
       return;
     }
@@ -106,7 +140,7 @@ export default function RtsCertificateApprovalModal({
     startTransition(async () => {
       const res = await issueCertificateAction(
         applicationId,
-        { OfficerRemark: finalRemark },
+        officerInputs,
         undefined,
         finalRemark,
         true
@@ -208,26 +242,87 @@ export default function RtsCertificateApprovalModal({
             <div className="border-b border-slate-100 pb-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
                 <Layers className="w-3.5 h-3.5 text-[#4b70a6]" />
-                {isMr ? "१. अधिकाऱ्याचा शेरा" : "1. Officer Remark"}
+                {isMr ? "१. अधिकारी निर्णय व फील्ड्स" : "1. Officer Decision & Inputs"}
               </h4>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                {isMr ? "हा शेरा प्रमाणपत्रातील {{OfficerRemark}} टॅगच्या ठिकाणी दिसेल." : "This remark appears at the {{OfficerRemark}} tag in the certificate."}
+                {isMr
+                  ? "या सेवेसाठी निश्चित केलेली सर्व फील्ड्स व अंतिम शेरा भरा."
+                  : "Fill all designated fields and final remark for this certificate."}
               </p>
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="certificate-officer-remark" className="block text-xs font-bold text-slate-700">
-                {isMr ? "अधिकाऱ्याचा शेरा" : "Officer Remark"}
-                <span className="ml-0.5 text-red-500">*</span>
-              </label>
-              <textarea
-                id="certificate-officer-remark"
-                value={officerRemark}
-                onChange={(event) => setOfficerRemark(event.target.value)}
-                onBlur={() => loadPreview(officerRemark)}
-                placeholder={isMr ? "प्रमाणपत्रावर दाखवायचा अधिकाऱ्याचा शेरा येथे प्रविष्ट करा..." : "Enter the officer remark to display on the certificate..."}
-                className="min-h-40 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm leading-6 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#4b70a6]/30"
-              />
+            {/* Dynamic Officer Fields configured in Template */}
+            <div className="space-y-3">
+              {previewData?.requiredOfficerFields && previewData.requiredOfficerFields.length > 0 ? (
+                previewData.requiredOfficerFields.map((field) => {
+                  const val = officerInputs[field.fieldKey] || "";
+                  const label = isMr ? (field.fieldLabelMarathi || field.fieldLabelEnglish) : (field.fieldLabelEnglish || field.fieldLabelMarathi);
+                  return (
+                    <div key={field.fieldKey} className="space-y-1">
+                      <label htmlFor={`officer-field-${field.fieldKey}`} className="block text-xs font-bold text-slate-700">
+                        {label}
+                        {field.isMandatory && <span className="ml-0.5 text-red-500">*</span>}
+                      </label>
+                      {field.fieldType === "textarea" ? (
+                        <textarea
+                          id={`officer-field-${field.fieldKey}`}
+                          value={val}
+                          onChange={(e) => handleInputChange(field.fieldKey, e.target.value)}
+                          onBlur={() => loadPreview(officerInputs)}
+                          placeholder={`${label} प्रविष्ट करा...`}
+                          className="min-h-20 w-full resize-y rounded-lg border border-slate-300 bg-white p-2.5 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#4b70a6]/30"
+                        />
+                      ) : field.fieldType === "select" && field.options && field.options.length > 0 ? (
+                        <select
+                          id={`officer-field-${field.fieldKey}`}
+                          value={val}
+                          onChange={(e) => {
+                            handleInputChange(field.fieldKey, e.target.value);
+                            loadPreview({ ...officerInputs, [field.fieldKey]: e.target.value });
+                          }}
+                          className="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#4b70a6]/30"
+                        >
+                          <option value="">-- निवडा --</option>
+                          {field.options.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          id={`officer-field-${field.fieldKey}`}
+                          type={field.fieldType === "number" ? "number" : field.fieldType === "date" ? "date" : "text"}
+                          value={val}
+                          onChange={(e) => handleInputChange(field.fieldKey, e.target.value)}
+                          onBlur={() => loadPreview(officerInputs)}
+                          placeholder={`${label} प्रविष्ट करा...`}
+                          className="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#4b70a6]/30"
+                        />
+                      )}
+                    </div>
+                  );
+                })
+              ) : null}
+
+              {/* Officer Remark Field (Standard fallback if not explicitly in config) */}
+              {(!previewData?.requiredOfficerFields ||
+                !previewData.requiredOfficerFields.some((f) =>
+                  f.fieldKey.toLowerCase() === "officerremark" || f.fieldKey.toLowerCase() === "officerremarks"
+                )) && (
+                <div className="space-y-1.5 pt-1">
+                  <label htmlFor="certificate-officer-remark" className="block text-xs font-bold text-slate-700">
+                    {isMr ? "अधिकाऱ्याचा अंतिम शेरा (Officer Remark)" : "Officer Remark"}
+                    <span className="ml-0.5 text-red-500">*</span>
+                  </label>
+                  <textarea
+                    id="certificate-officer-remark"
+                    value={officerInputs["OfficerRemark"] || ""}
+                    onChange={(event) => handleInputChange("OfficerRemark", event.target.value)}
+                    onBlur={() => loadPreview(officerInputs)}
+                    placeholder={isMr ? "प्रमाणपत्रावर दाखवायचा अधिकाऱ्याचा शेरा येथे प्रविष्ट करा..." : "Enter the officer remark to display on the certificate..."}
+                    className="min-h-32 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm leading-6 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#4b70a6]/30"
+                  />
+                </div>
+              )}
               <p className="text-[10px] text-slate-500">
                 {isMr ? "पूर्वदृश्य अद्ययावत करण्यासाठी मजकूर भरल्यानंतर बाहेर क्लिक करा किंवा Refresh वापरा." : "Click outside after editing, or use Refresh, to update the preview."}
               </p>
@@ -244,7 +339,7 @@ export default function RtsCertificateApprovalModal({
 
               <button
                 type="button"
-                onClick={() => loadPreview(officerRemark)}
+                onClick={() => loadPreview(officerInputs)}
                 className="text-[11px] text-[#4b70a6] hover:text-[#3d5a8a] flex items-center gap-1 font-semibold"
                 title={isMr ? "रिफ्रेश करा" : "Refresh"}
               >
@@ -282,7 +377,16 @@ export default function RtsCertificateApprovalModal({
             </Button>
             <Button
               onClick={handleIssueAndApprove}
-              disabled={isPending || loadingPreview || !officerRemark.trim()}
+              disabled={
+                isPending ||
+                loadingPreview ||
+                (Boolean(previewData?.requiredOfficerFields?.length) &&
+                  previewData!.requiredOfficerFields.some(
+                    (f) => f.isMandatory && !officerInputs[f.fieldKey]?.trim()
+                  )) ||
+                (!previewData?.requiredOfficerFields?.length &&
+                  !(officerInputs["OfficerRemark"] || "").trim())
+              }
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md flex items-center gap-1.5 rounded-xl px-4 py-2"
             >
               <Award className="w-4 h-4" />

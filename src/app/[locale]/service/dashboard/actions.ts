@@ -403,16 +403,25 @@ export type ServiceReceivingOfficer = {
   fullName: string | null;
   userName: string | null;
   designation: string | null;
+  zoneName?: string | null;
+  mobileNo?: string | null;
+  email?: string | null;
+  officeAddress?: string | null;
+  officerRole?: string | null;
 };
 
 /** Fetches dynamic documents and workflow officers for a selected service modal. */
-export async function getServiceDetailsModalInfoAction(serviceId: number): Promise<{
+export async function getServiceDetailsModalInfoAction(serviceId: number, locale: string = "mr"): Promise<{
   documents: { en: string; mr?: string; hi?: string }[];
   receivingOfficer: string;
   receivingOfficerDetails: {
     fullName: string | null;
     userName: string | null;
     designation: string | null;
+    zoneName?: string | null;
+    mobileNo?: string | null;
+    email?: string | null;
+    officeAddress?: string | null;
   };
   receivingOfficers: ServiceReceivingOfficer[];
 }> {
@@ -450,30 +459,76 @@ export async function getServiceDetailsModalInfoAction(serviceId: number): Promi
       };
     });
 
-    // Preserve the first officer for existing consumers and expose every stage for the modal list.
+    let receivingOfficers: ServiceReceivingOfficer[] = [];
+
+    // 1. Fetch official Zone-wise RTS Officer Allocations
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5268";
+      const officerRes = await fetch(`${apiBase}/api/rts-service-officers/by-service/${serviceId}`, {
+        cache: 'no-store'
+      });
+      if (officerRes.ok) {
+        const json = await officerRes.json();
+        if (json.success && Array.isArray(json.items) && json.items.length > 0) {
+          const isEnglish = locale === 'en';
+          receivingOfficers = json.items.map((item: any, idx: number) => {
+            const zone = isEnglish
+              ? (item.zoneName || item.zoneNameLocal)
+              : (item.zoneNameLocal || item.zoneName);
+            const name = isEnglish
+              ? (item.officerName || item.officerNameLocal)
+              : (item.officerNameLocal || item.officerName);
+            const desig = isEnglish
+              ? (item.designation || item.designationLocal)
+              : (item.designationLocal || item.designation);
+            const addr = isEnglish
+              ? (item.officeAddress || item.officeAddressLocal)
+              : (item.officeAddressLocal || item.officeAddress);
+
+            return {
+              stageOrder: item.displayOrder || idx + 1,
+              fullName: name || null,
+              userName: zone || null,
+              designation: desig || null,
+              zoneName: zone || null,
+              mobileNo: item.mobileNo || null,
+              email: item.email || null,
+              officeAddress: addr || null,
+              officerRole: item.officerRole || "DesignatedOfficer",
+            };
+          });
+        }
+      }
+    } catch (allocErr) {
+      console.warn("Could not fetch zone officer allocations:", allocErr);
+    }
+
+    // 2. Fallback to workflow stages if no zone officer allocations are configured
+    if (receivingOfficers.length === 0) {
+      const stages = workflow?.stages ?? [];
+      receivingOfficers = stages.map((stage) => {
+        const fullName = [stage.firstName, stage.middleName, stage.lastName]
+          .map((value) => value?.trim())
+          .filter((value): value is string => Boolean(value))
+          .join(" ") || stage.officerName?.trim() || null;
+        const userName = stage.userName?.trim() || null;
+        const designation = stage.stageName?.trim() || null;
+
+        return { stageOrder: stage.stageOrder, fullName, userName, designation };
+      });
+    }
+
     let receivingOfficer = "-";
-    let receivingOfficerDetails = {
-      fullName: null as string | null,
-      userName: null as string | null,
-      designation: null as string | null,
+    let receivingOfficerDetails: ServiceReceivingOfficer = {
+      stageOrder: 1,
+      fullName: null,
+      userName: null,
+      designation: null,
     };
-    const stages = workflow?.stages ?? [];
-
-    const receivingOfficers = stages.map((stage) => {
-      const fullName = [stage.firstName, stage.middleName, stage.lastName]
-        .map((value) => value?.trim())
-        .filter((value): value is string => Boolean(value))
-        .join(" ") || stage.officerName?.trim() || null;
-      const userName = stage.userName?.trim() || null;
-      const designation = stage.stageName?.trim() || null;
-
-      return { stageOrder: stage.stageOrder, fullName, userName, designation };
-    });
 
     if (receivingOfficers.length > 0) {
-      const firstOfficer = receivingOfficers[0];
-      receivingOfficerDetails = firstOfficer;
-      receivingOfficer = firstOfficer.fullName || firstOfficer.userName || firstOfficer.designation || "-";
+      receivingOfficerDetails = receivingOfficers[0];
+      receivingOfficer = receivingOfficerDetails.fullName || receivingOfficerDetails.userName || receivingOfficerDetails.designation || "-";
     }
 
     return { documents, receivingOfficer, receivingOfficerDetails, receivingOfficers };

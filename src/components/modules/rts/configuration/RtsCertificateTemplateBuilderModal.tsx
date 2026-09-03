@@ -181,7 +181,7 @@ export default function RtsCertificateTemplateBuilderModal({
           showAddress: true,
           showEmail: true,
           showDivider: true,
-          topTrackingCode: `AKL-MC-RTS-${serviceId}-2026`,
+          topTrackingCode: `${activeUlb.ulbName ? activeUlb.ulbName.replace(/[^a-zA-Z]/g, '').slice(0, 5).toUpperCase() : 'ULB'}-RTS-${serviceId}-${new Date().getFullYear()}`,
         },
       },
       {
@@ -190,9 +190,9 @@ export default function RtsCertificateTemplateBuilderModal({
         title: "जावक क्र. व दिनांक",
         enabled: true,
         data: {
-          outwardPrefix: "जा.क्र. अमनपा/RTS/[[OutwardNo]]/",
+          outwardPrefix: `जा.क्र. ${activeUlb.ulbNameLocal || activeUlb.ulbName || "मनपा"}/RTS/[[OutwardNo]]/`,
           outwardTag: "",
-          outwardSuffix: "२०२६",
+          outwardSuffix: `${new Date().getFullYear()}`,
           datePrefix: "दिनांक: ",
           dateTag: "{{ApprovalDate}}",
         },
@@ -425,14 +425,14 @@ export default function RtsCertificateTemplateBuilderModal({
           showAddress: true,
           showEmail: true,
           showDivider: true,
-          topTrackingCode: "AKL-MC-RTS-2026",
+          topTrackingCode: `${activeUlb.ulbName ? activeUlb.ulbName.replace(/[^a-zA-Z]/g, '').slice(0, 5).toUpperCase() : 'ULB'}-RTS-${new Date().getFullYear()}`,
         };
         break;
       case "DISPATCH_DATE":
         defaultData = {
-          outwardPrefix: "जा.क्र. अमनपा/RTS/[[OutwardNo]]/",
+          outwardPrefix: `जा.क्र. ${activeUlb.ulbNameLocal || activeUlb.ulbName || "मनपा"}/RTS/[[OutwardNo]]/`,
           outwardTag: "",
-          outwardSuffix: "२०२६",
+          outwardSuffix: `${new Date().getFullYear()}`,
           datePrefix: "दिनांक: ",
           dateTag: "{{ApprovalDate}}",
         };
@@ -597,7 +597,7 @@ export default function RtsCertificateTemplateBuilderModal({
         case "HEADER_LETTERHEAD":
           html += `
             <div class='header-letterhead mb-3'>
-              ${b.data.topTrackingCode ? `<div class='flex justify-between items-center text-[10px] text-slate-500 font-mono mb-1'><div>${b.data.topTrackingCode}</div><div>1/1065739/2026</div></div>` : ""}
+              ${b.data.topTrackingCode ? `<div class='flex justify-between items-center text-[10px] text-slate-500 font-mono mb-1'><div>${b.data.topTrackingCode}</div><div>1/RTS/${new Date().getFullYear()}</div></div>` : ""}
               <div class='flex items-start justify-between gap-4'>
                 ${b.data.showLogo ? `<div class='w-20 shrink-0 text-center'><img src='${activeUlb.ulbLogo}' alt='ULB Logo' class='max-h-20 max-w-full object-contain mx-auto' onerror="this.style.display='none'"/><div class='text-[9px] font-bold text-slate-700 mt-0.5'>${activeUlb.ulbNameLocal}</div></div>` : "<div></div>"}
                 <div class='text-center flex-1'>
@@ -711,7 +711,7 @@ export default function RtsCertificateTemplateBuilderModal({
               <div class='left-sign text-center text-xs'>
                 ${b.data.showLeftClerkSign ? `
                   <div class='h-12 flex items-center justify-center font-serif italic text-slate-700 font-bold text-sm transform -rotate-6 border-b border-slate-400 pb-1'>
-                    / / 2026
+                    / / ${new Date().getFullYear()}
                   </div>
                   <div class='text-[11px] text-slate-600 font-medium mt-1'>${b.data.leftSignLabel || "लिपिक / शाखा"}</div>
                 ` : "<div></div>"}
@@ -1290,7 +1290,7 @@ export default function RtsCertificateTemplateBuilderModal({
                             {band.data.showCenterSealStamp && (
                               <div className="official-seal-stamp inline-block text-center">
                                 <img
-                                  src="/images/ulb-seal.png"
+                                  src={activeUlb.ulbLogo || "/images/ulb-seal.png"}
                                   alt={`${activeUlb.ulbNameLocal || activeUlb.ulbName || "स्थानिक स्वराज्य संस्था"} अधिकृत शिक्का`}
                                   className="w-28 h-28 object-contain transform -rotate-6 filter drop-shadow-xs inline-block"
                                   onError={(e) => ((e.target as HTMLElement).style.display = "none")}
@@ -1308,15 +1308,16 @@ export default function RtsCertificateTemplateBuilderModal({
                                     <span className="text-emerald-700 font-bold text-sm">✔</span>
                                     <span>Digitally Signed (DSC Verified)</span>
                                   </div>
-                                  <div className="font-bold text-slate-900 text-xs">Rajay Narayanrao Sable</div>
-                                  <div className="text-[10px] text-slate-700 font-medium">
+                                  <div className="font-bold text-slate-900 text-xs">{activeUlb.ulbName ? `DS ${activeUlb.ulbName.toUpperCase()}` : "DS MUNICIPAL CORPORATION"}</div>
+                                  <div className="text-[10px] text-slate-700 font-semibold mt-0.5">Authorized Signatory: <span className="text-slate-950 font-bold">{band.data.officerName || "सक्षम प्राधिकारी"}</span></div>
+                                  <div className="text-[9px] text-slate-600 font-medium">
                                     {band.data.officerDesignation || "सहायक संचालक / विभाग प्रमुख"}
                                   </div>
                                   <div className="text-[9px] text-slate-500 font-mono mt-0.5">
-                                    Date: 12-08-2026 18:14:06 IST
+                                    Date: {new Date().toLocaleDateString('en-GB')} IST
                                   </div>
                                   <div className="text-[9px] text-emerald-700 font-bold mt-1 flex items-center gap-1">
-                                    <span>🔒</span> <span>e-Sign Verified & Authentic</span>
+                                    <span>🔒</span> <span>e-Sign Verified & Authentic (Official RTS)</span>
                                   </div>
                                 </div>
                                 <div className="text-xs font-bold text-slate-900 mt-1">

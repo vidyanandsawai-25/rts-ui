@@ -257,6 +257,12 @@ export default function RtsApplicationProcessDrawer({
     )
   );
 
+  const isApproved = Boolean(
+    verification?.applicationStatus?.toLowerCase() === 'approved' ||
+    record?.applicationStatus?.toLowerCase() === 'approved' ||
+    (data?.verification?.applicationStatus && data.verification.applicationStatus.toLowerCase() === 'approved')
+  );
+
   const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
   const availableActions = (verification && hasOfficerAccess)
     ? ACTIONS.filter((action) => {
@@ -612,6 +618,10 @@ export default function RtsApplicationProcessDrawer({
                         return;
                       }
                       if (action.key === 'canApprove') {
+                        if (verification?.isFinalStage) {
+                          setIsCertModalOpen(true);
+                          return;
+                        }
                         requestDecisionConfirmation('canApprove');
                         return;
                       }
@@ -632,22 +642,17 @@ export default function RtsApplicationProcessDrawer({
                 );
               })}
 
-              {/* Certificate: Visible to Final Stage Officer or when application is approved */}
-              {Boolean(
-                verification?.isFinalStage ||
-                verification?.applicationStatus?.toLowerCase() === 'approved' ||
-                record?.applicationStatus?.toLowerCase() === 'approved' ||
-                (data?.verification?.applicationStatus && data.verification.applicationStatus.toLowerCase() === 'approved')
-              ) && (
+              {/* View Official Issued Certificate: Visible once the application is officially approved */}
+              {Boolean(isApproved) && (
                 <Button
                   type="button"
                   size="xs"
                   variant="secondary"
                   icon={Award}
-                  onClick={() => setIsCertModalOpen(true)}
-                  className="rounded-lg px-3 text-xs font-bold text-purple-800 border-purple-300 bg-purple-50 hover:bg-purple-100"
+                  onClick={() => setIsPrintCertModalOpen(true)}
+                  className="rounded-lg px-3 text-xs font-bold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
                 >
-                  प्रमाणपत्र (Certificate)
+                  अधिकृत प्रमाणपत्र पहा (View Certificate)
                 </Button>
               )}
 

@@ -113,6 +113,10 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       fullName: string | null;
       userName: string | null;
       designation: string | null;
+      zoneName?: string | null;
+      mobileNo?: string | null;
+      email?: string | null;
+      officeAddress?: string | null;
     }>;
   }>({
     loading: false,
@@ -121,6 +125,8 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
     receivingOfficerDetails: { fullName: null, userName: null, designation: null },
     receivingOfficers: [],
   });
+
+  const [selectedZoneIndex, setSelectedZoneIndex] = useState(0);
 
   useEffect(() => {
     if (!isDetailsOpen || !selectedServiceId) {
@@ -131,15 +137,17 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
         receivingOfficerDetails: { fullName: null, userName: null, designation: null },
         receivingOfficers: [],
       });
+      setSelectedZoneIndex(0);
       return;
     }
 
     let active = true;
     setModalDetails((prev) => ({ ...prev, loading: true }));
+    setSelectedZoneIndex(0);
 
     void (async () => {
       try {
-        const info = await getServiceDetailsModalInfoAction(Number(selectedServiceId));
+        const info = await getServiceDetailsModalInfoAction(Number(selectedServiceId), locale);
         if (!active) return;
         setModalDetails({
           loading: false,
@@ -828,43 +836,91 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
                   </div>
                 </div>
 
-                <section className="rounded-xl border border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4">
-                  <div className="flex items-center gap-3 border-b border-emerald-100 pb-3">
-                    <div className="rounded-xl bg-emerald-500/10 p-2.5 text-emerald-600">
-                      <UserCheck className="w-5 h-5" />
+                <section className="rounded-xl border border-emerald-200/90 bg-emerald-50/50 p-3 shadow-2xs">
+                  <div className="flex items-center justify-between pb-2 border-b border-emerald-100">
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-lg bg-emerald-500/10 p-1.5 text-emerald-600">
+                        <UserCheck className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold tracking-wider text-emerald-700 leading-none">
+                          {t('serviceDetails.receivingOfficer')}
+                        </p>
+                        <p className="text-[11px] font-bold text-slate-700 mt-0.5 leading-tight">
+                          {locale === 'mr' ? 'प्रभाग समितीनिहाय पदनिर्देशित अधिकारी' : 'Prabhag Samiti-wise Designated Officers'}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-[10px] uppercase font-bold tracking-wider text-emerald-600">
-                      {t('serviceDetails.receivingOfficer')}
-                    </p>
+                    {receivingOfficers.length > 1 && (
+                      <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">
+                        {receivingOfficers.length} {locale === 'mr' ? 'प्रभाग' : 'Prabhags'}
+                      </span>
+                    )}
                   </div>
+
                   {receivingOfficers.length > 0 ? (
-                    <div className="pt-3">
-                      {receivingOfficers.map((officer, index) => {
-                        const name = officer.fullName || t('serviceDetails.notAssigned');
-                        const display = officer.userName ? `${name} (${officer.userName})` : name;
+                    <div className="pt-2 space-y-2">
+                      {/* Prabhag Samiti Tabs if multiple zones */}
+                      {receivingOfficers.length > 1 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-white rounded-lg border border-emerald-200/80">
+                          {receivingOfficers.map((officer, idx) => (
+                            <button
+                              key={`${officer.stageOrder}-${idx}`}
+                              type="button"
+                              onClick={() => setSelectedZoneIndex(idx)}
+                              className={`py-1.5 px-2 text-xs font-bold rounded-md transition-all text-center truncate ${
+                                selectedZoneIndex === idx
+                                  ? "bg-emerald-600 text-white shadow-xs"
+                                  : "text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
+                              }`}
+                              title={officer.zoneName || `Prabhag ${idx + 1}`}
+                            >
+                              {officer.zoneName || `Prabhag ${idx + 1}`}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Compact Card for Selected Prabhag Samiti */}
+                      {(() => {
+                        const activeOfficer = receivingOfficers[selectedZoneIndex] || receivingOfficers[0];
+                        if (!activeOfficer) return null;
 
                         return (
-                          <div key={`${officer.stageOrder}-${officer.userName ?? officer.designation ?? 'officer'}`} className="flex gap-3 pb-3 last:pb-0">
-                            <div className="flex w-6 shrink-0 flex-col items-center">
-                              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-extrabold text-white">
-                                {officer.stageOrder}
-                              </span>
-                              {index < receivingOfficers.length - 1 && <span className="mt-1 w-px flex-1 bg-emerald-200" />}
-                            </div>
-                            <div className="min-w-0 flex-1 pt-0.5">
-                              <div className="flex flex-wrap items-start justify-between gap-2">
-                                <p className="min-w-0 break-words text-sm font-extrabold leading-snug text-slate-800">{display}</p>
-                                <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                                  {officer.designation || `Stage ${officer.stageOrder}`}
+                          <div className="bg-white rounded-lg border border-emerald-200 p-2.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                            <div className="min-w-0 flex-1 space-y-0.5">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-sm font-extrabold text-slate-900 leading-snug">
+                                  {activeOfficer.fullName || '-'}
+                                </span>
+                                <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold">
+                                  {activeOfficer.designation || '-'}
                                 </span>
                               </div>
+                              {activeOfficer.officeAddress && (
+                                <p className="text-[11px] text-slate-500 flex items-center gap-1">
+                                  <span className="text-xs">📍</span>
+                                  <span className="truncate">{activeOfficer.officeAddress}</span>
+                                </p>
+                              )}
                             </div>
+
+                            {activeOfficer.mobileNo && (
+                              <a
+                                href={`tel:${activeOfficer.mobileNo}`}
+                                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-bold shadow-xs transition-colors shrink-0"
+                                title={`Call ${activeOfficer.fullName}`}
+                              >
+                                <span>📞</span>
+                                <span>{activeOfficer.mobileNo}</span>
+                              </a>
+                            )}
                           </div>
                         );
-                      })}
+                      })()}
                     </div>
                   ) : (
-                    <p className="pt-3 break-words text-base font-extrabold leading-snug text-slate-800">
+                    <p className="pt-2 text-sm font-bold text-slate-700">
                       {officerDisplay}
                     </p>
                   )}
