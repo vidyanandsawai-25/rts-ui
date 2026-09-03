@@ -235,6 +235,31 @@ function getControlClass(hasError: boolean, extraClass = "") {
 const FIELD_ERROR_CLASS = "mt-1 text-[10px] font-medium text-red-500";
 const getLabelColorClass = (hasError: boolean) => (hasError ? "text-red-500" : "text-slate-800");
 
+function getFileValidationHint(field: any, lang: "en" | "hi" | "mr") {
+  const validation = field?.validation ?? {};
+  const formats = Array.isArray(validation.acceptedFormats)
+    ? validation.acceptedFormats.filter((format: unknown): format is string => typeof format === "string" && format.trim())
+    : typeof validation.accept === "string"
+      ? validation.accept.split(",").map((format: string) => format.trim()).filter(Boolean)
+      : [];
+  const formatText = formats
+    .map((format: string) => format.replace(/^\./, "").replace(/\/.+$/, "").toUpperCase())
+    .join(", ");
+  const maxSize = Number(validation.maxFileSizeMb);
+  const sizeText = Number.isFinite(maxSize) && maxSize > 0 ? `${maxSize} MB` : "";
+
+  if (!formatText && !sizeText) return "";
+
+  const labels = lang === "mr"
+    ? { formats: "प्रकार", size: "कमाल आकार" }
+    : lang === "hi"
+      ? { formats: "प्रकार", size: "अधिकतम आकार" }
+      : { formats: "Types", size: "Max size" };
+  return [formatText && `${labels.formats}: ${formatText}`, sizeText && `${labels.size}: ${sizeText}`]
+    .filter(Boolean)
+    .join(" • ");
+}
+
 function DynamicFileField({
   field,
   lang,
@@ -276,8 +301,7 @@ function DynamicFileField({
           ? "पहले अपलोड किया गया दस्तावेज़"
           : "Previously uploaded document"
       : typeof value === "string" ? value : "");
-  const placeholder = typeof field.placeholder === "string" ? field.placeholder : t(field.placeholder, lang);
-  const fileHint = selectedFileName || placeholder || "Upload required document";
+  const fileHint = selectedFileName || getFileValidationHint(field, lang);
   const requiredIndicator = field.required ? <span className="text-[13px] text-red-500">*</span> : null;
   const inputId = `file-input-${field.id}`;
   const fieldLabel = t(field.label, lang);
