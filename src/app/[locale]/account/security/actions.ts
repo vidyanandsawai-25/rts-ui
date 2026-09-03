@@ -24,12 +24,12 @@ export type TwoFactorActionErrorCode =
   | 'NOT_ENABLED'
   | 'SETUP_NOT_STARTED'
   | 'EMAIL_NOT_ON_FILE'
+  | 'USER_NOT_FOUND'
   | 'GENERIC_ERROR';
 
-/** Generic action result — mirrors `ApiResponse<T>` without exposing raw HTTP status handling to client components. */
 export type TwoFactorActionResult<T> =
   | { success: true; data: T }
-  | { success: false; errorCode: TwoFactorActionErrorCode };
+  | { success: false; errorCode: TwoFactorActionErrorCode; errorMessage?: string };
 
 /** Maps the controller's plain-text error message to a stable client-facing code (avoids leaking raw server strings). */
 function mapErrorMessage(message: string | undefined, statusCode: number | undefined): TwoFactorActionErrorCode {
@@ -38,16 +38,27 @@ function mapErrorMessage(message: string | undefined, statusCode: number | undef
     if (normalized.includes('already enabled')) return 'ALREADY_ENABLED';
     if (normalized.includes('not enabled')) return 'NOT_ENABLED';
     if (normalized.includes('not been started')) return 'SETUP_NOT_STARTED';
-    if (normalized.includes('no email address')) return 'EMAIL_NOT_ON_FILE';
+    if (normalized.includes('no email address') || normalized.includes('email not on file')) return 'EMAIL_NOT_ON_FILE';
   }
-  if (statusCode === 401) return 'INVALID_CODE';
+  if (statusCode === 401 && normalized.includes('user not found')) {
+    return 'USER_NOT_FOUND';
+  }
+  if (
+    statusCode === 401 ||
+    statusCode === 400 ||
+    normalized.includes('invalid') ||
+    normalized.includes('code') ||
+    normalized.includes('expired')
+  ) {
+    return 'INVALID_CODE';
+  }
   return 'GENERIC_ERROR';
 }
 
 export async function getTwoFactorStatusAction(): Promise<TwoFactorActionResult<TwoFactorStatusResponse>> {
   const res = await twoFactorService.getStatus();
   if (!res.success || !res.data) {
-    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode) };
+    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode), errorMessage: res.error };
   }
   return { success: true, data: res.data };
 }
@@ -55,7 +66,7 @@ export async function getTwoFactorStatusAction(): Promise<TwoFactorActionResult<
 export async function beginTwoFactorSetupAction(): Promise<TwoFactorActionResult<TwoFactorSetupResponse>> {
   const res = await twoFactorService.beginSetup();
   if (!res.success || !res.data) {
-    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode) };
+    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode), errorMessage: res.error };
   }
   return { success: true, data: res.data };
 }
@@ -68,7 +79,7 @@ export async function enableTwoFactorAction(
 
   const res = await twoFactorService.enable({ code });
   if (!res.success || !res.data) {
-    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode) };
+    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode), errorMessage: res.error };
   }
   return { success: true, data: res.data };
 }
@@ -81,7 +92,7 @@ export async function confirmTwoFactorEmailAction(
 
   const res = await twoFactorService.confirmEmail({ code });
   if (!res.success || !res.data) {
-    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode) };
+    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode), errorMessage: res.error };
   }
   return { success: true, data: res.data };
 }
@@ -94,7 +105,7 @@ export async function regenerateRecoveryCodesAction(
 
   const res = await twoFactorService.regenerateRecoveryCodes({ code });
   if (!res.success || !res.data) {
-    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode) };
+    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode), errorMessage: res.error };
   }
   return { success: true, data: res.data };
 }
@@ -107,7 +118,7 @@ export async function disableTwoFactorAction(
 
   const res = await twoFactorService.disable({ code });
   if (!res.success) {
-    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode) };
+    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode), errorMessage: res.error };
   }
   return { success: true, data: true };
 }
@@ -120,7 +131,7 @@ export async function resetTwoFactorAction(
 
   const res = await twoFactorService.reset({ code });
   if (!res.success || !res.data) {
-    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode) };
+    return { success: false, errorCode: mapErrorMessage(res.error, res.statusCode), errorMessage: res.error };
   }
   return { success: true, data: res.data };
 }

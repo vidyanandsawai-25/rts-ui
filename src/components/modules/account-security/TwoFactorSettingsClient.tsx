@@ -42,6 +42,8 @@ function errorMessageKey(errorCode: TwoFactorActionErrorCode): string {
       return 'errors.emailNotOnFile';
     case 'INVALID_CODE':
       return 'errors.invalidCode';
+    case 'USER_NOT_FOUND':
+      return 'errors.userNotFound';
     default:
       return 'errors.genericError';
   }

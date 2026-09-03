@@ -51,6 +51,14 @@ export async function changePasswordAction(
     };
   }
 
+  if (newPassword.length > 25) {
+    return {
+      success: false,
+      errorCode: AUTH_ERROR_CODES.PASSWORD_TOO_LONG,
+      error: 'Password cannot exceed 25 characters.',
+    };
+  }
+
   if (newPassword !== confirmPassword) {
     return {
       success: false,

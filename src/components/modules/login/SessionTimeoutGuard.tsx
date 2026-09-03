@@ -23,13 +23,16 @@ import { redirectSessionExpiredOnClient } from '@/lib/utils/session-unauthorized
 /** Max delay for a single `setTimeout` (ms). */
 const MAX_TIMEOUT_MS = 2_147_483_647;
 
-function isExemptPath(pathname: string): boolean {
+function isBypassedPath(pathname: string): boolean {
   if (!pathname) return true;
   const segments = pathname.split('/').filter(Boolean);
   const first = segments[0];
   const hasLocale = (locales as readonly string[]).includes(first);
   const routeSegment = hasLocale ? segments[1] : first;
-  return !routeSegment || routeSegment === 'login' || routeSegment === 'service';
+  const secondSegment = hasLocale ? segments[2] : segments[1];
+  if (!routeSegment || routeSegment === 'login' || routeSegment === 'service') return true;
+  if (routeSegment === 'account' && secondSegment === 'security') return true;
+  return false;
 }
 
 function hasLoggedInFlag(): boolean {
@@ -156,7 +159,7 @@ export function SessionTimeoutGuard() {
   }, [locale, startCountdown]);
 
   useEffect(() => {
-    if (!pathname || isExemptPath(pathname)) return;
+    if (!pathname || isBypassedPath(pathname)) return;
 
     logoutStartedRef.current = false;
     redirectingRef.current = false;
@@ -236,7 +239,7 @@ export function SessionTimeoutGuard() {
 
     const verifyTabAndAuthState = () => {
       if (redirectingRef.current) return;
-      if (!pathname || isExemptPath(pathname)) return;
+      if (!pathname || isBypassedPath(pathname)) return;
 
       const loggedIn = hasLoggedInFlag();
       const isNewLogin = window.location.search.includes('loginSuccess=1');
@@ -254,12 +257,20 @@ export function SessionTimeoutGuard() {
           sessionStorage.setItem('is_tab_active_session', 'true');
         } catch {}
       } else if (!isTabSessionActive) {
-        redirectingRef.current = true;
-        clearLegacyAuthClientStorage();
+        const expiresUnix = knownExpiryUnixRef.current ?? getSessionExpiresAtUnixFromCookie();
+        if (expiresUnix !== null && isSessionExpiredAtUnix(expiresUnix)) {
+          redirectingRef.current = true;
+          clearLegacyAuthClientStorage();
+          try {
+            sessionStorage.removeItem('is_tab_active_session');
+          } catch {}
+          window.location.replace(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}&requireVerification=1`);
+          return;
+        }
+
         try {
-          sessionStorage.removeItem('is_tab_active_session');
+          sessionStorage.setItem('is_tab_active_session', 'true');
         } catch {}
-        window.location.replace(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}&requireVerification=1`);
       }
     };
 
@@ -306,7 +317,7 @@ export function SessionTimeoutGuard() {
   // Inactivity detection: redirect to login after 10 minutes of no user interaction
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!pathname || isExemptPath(pathname) || !hasLoggedInFlag()) return;
+    if (!pathname || isBypassedPath(pathname) || !hasLoggedInFlag()) return;
 
     let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
     let lastReset = Date.now();

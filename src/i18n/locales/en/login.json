@@ -51,9 +51,9 @@
   "enterCurrentPassword": "Enter current password",
   "usernameOrEmail": "Username / Email",
   "usernameOrEmailPlaceholder": "Enter your username or email",
-  "minCharsRequirement": "At least 6 characters",
-  "minCharsMet": "✓ Minimum 6 characters met",
-  "minCharsShort": "• Must be at least 6 characters",
+  "minCharsRequirement": "Between 6 and 25 characters",
+  "minCharsMet": "✓ 6 to 25 characters met",
+  "minCharsShort": "• Must be between 6 and 25 characters",
   "passwordsMatch": "✓ Passwords match",
   "passwordsDoNotMatch": "• Passwords do not match",
   "updatePassword": "Update Password",
@@ -110,7 +110,7 @@
     "PASSWORD_REQUIRED": "Password is required",
     "USERNAME_TOO_SHORT": "Username is too short",
     "USERNAME_TOO_LONG": "Username exceeds maximum length",
-    "PASSWORD_TOO_LONG": "Password exceeds maximum length",
+    "PASSWORD_TOO_LONG": "Password cannot exceed 25 characters.",
     "INVALID_OTP": "Invalid verification code",
     "INVALID_OTP_FORMAT": "Please enter a valid 6-digit code",
     "USER_NOT_FOUND": "User not found",
@@ -145,6 +145,14 @@
     "PASSWORD_TOO_SHORT": "Password must be at least 6 characters long.",
     "PASSWORD_DIFFERENT_REQUIRED": "New password must be different from current password.",
     "CHANGE_PASSWORD_FAILED": "Failed to update password. Please try again.",
-    "INVALID_CURRENT_PASSWORD": "Current password is incorrect."
+    "INVALID_CURRENT_PASSWORD": "Current password is incorrect.",
+    "serviceUnavailable": "Service is temporarily unavailable. Please try again later.",
+    "SERVICE_UNAVAILABLE": "Service is temporarily unavailable. Please try again later.",
+    "passwordRequireUppercase": "Password must contain at least one uppercase letter (A-Z).",
+    "passwordRequireLowercase": "Password must contain at least one lowercase letter (a-z).",
+    "passwordRequireDigit": "Password must contain at least one number (0-9).",
+    "passwordRequireSpecial": "Password must contain at least one special character.",
+    "passwordProcessError": "Unable to process the new password. Please choose a different password.",
+    "unexpectedError": "An unexpected error occurred. Please try again."
   }
 }
