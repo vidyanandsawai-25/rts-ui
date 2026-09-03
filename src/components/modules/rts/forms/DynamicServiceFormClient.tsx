@@ -1179,6 +1179,13 @@ export default function DynamicServiceFormClient({
               const upRes = await uploadCitizenDocumentAction(fd);
               if (upRes.success && upRes.documentGuid) {
                 docGuid = upRes.documentGuid;
+              } else {
+                throw new Error(
+                  upRes.error ||
+                    (language === "en"
+                      ? "The replacement document could not be uploaded."
+                      : "नवीन कागदपत्र अपलोड करता आले नाही.")
+                );
               }
             } else if (typeof val === "string" && val.startsWith("guid:")) {
               docGuid = val.replace("guid:", "");
@@ -1191,7 +1198,7 @@ export default function DynamicServiceFormClient({
 
             fieldValuesPayload.push({
               fieldDefinitionId: fieldDefId,
-              textValue: typeof val === "string" ? val : null,
+              textValue: field.type !== "file" && typeof val === "string" ? val : null,
               numberValue: typeof val === "number" ? val : null,
               dateValue: field.type === "date" && typeof val === "string" ? val : null,
               booleanValue: typeof val === "boolean" ? val : null,
@@ -1872,6 +1879,16 @@ export default function DynamicServiceFormClient({
                     if (!shouldRenderField(field)) return null;
 
                     const fieldId = String(field?.id ?? "");
+                    const fieldDefinitionId = Number(
+                      field?.rawApi?.id || field?.fieldDefinitionId || field?.backendFieldId
+                    );
+                    const existingDocument = isResubmitMode
+                      ? existingDocuments?.find(
+                          (document) =>
+                            Number(document?.fieldDefinitionId) === fieldDefinitionId &&
+                            Boolean(document?.documentGuid)
+                        )
+                      : undefined;
                     const fieldError = getFieldError(field);
                     const showError = !!fieldError && hasAttemptedSubmit;
                     return (
@@ -1891,6 +1908,7 @@ export default function DynamicServiceFormClient({
                         setOpenCheckboxDropdown={setOpenCheckboxDropdown}
                         onChange={handleInputChange}
                         markTouched={markTouched}
+                        existingDocument={existingDocument}
                       />
                     );
                   })}

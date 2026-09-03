@@ -4,6 +4,7 @@ import { AlertCircle, Download, FileText, LoaderCircle, RotateCcw, X, ZoomIn, Zo
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 
 import { Button, Drawer } from '@/components/common';
@@ -112,12 +113,13 @@ export default function RtsApplicationDocumentView({
     });
   };
 
-  return (
+  const drawer = (
     <Drawer
       open={open}
       onClose={handleClose}
       width="md"
       hideHeader
+      className="z-[210]"
       bodyClassName="relative overflow-hidden"
       footer={
         <div className="flex w-full items-center justify-end gap-2">
@@ -224,4 +226,7 @@ export default function RtsApplicationDocumentView({
       </div>
     </Drawer>
   );
+
+  // Keep nested document previews above the fixed citizen portal header.
+  return typeof document === 'undefined' ? null : createPortal(drawer, document.body);
 }

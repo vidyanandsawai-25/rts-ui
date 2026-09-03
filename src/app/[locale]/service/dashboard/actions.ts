@@ -11,6 +11,7 @@
 import { cookies } from "next/headers";
 import { getDashboardDepartments } from "@/lib/api/dashboard";
 import { getRtsMisDashboardData } from "@/lib/api/rts/rtsmisdashboard.service";
+import { getApprovalApplicationsPaged } from "@/lib/api/rts/rts-application-approval.service";
 import {
   resolveExternalServiceNavigation,
   type ExternalServiceNavigationResult,
@@ -174,6 +175,94 @@ type ExternalServiceNavigationActionResult =
     errorCode: 'login-required' | 'missing-citizen-profile';
     error: string;
   };
+
+export type CitizenResubmitNavigationResult =
+  | {
+      success: true;
+      applicationNo: string;
+      applicationId: number;
+      serviceId: number;
+      departmentId: number;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+/** Resolves full-form resubmit routing without changing the MIS dashboard model. */
+export async function resolveCitizenResubmitNavigationAction(
+  applicationNo: string
+): Promise<CitizenResubmitNavigationResult> {
+  const normalizedApplicationNo = applicationNo.trim();
+  if (!normalizedApplicationNo) {
+    return { success: false, error: "Invalid application number." };
+  }
+
+  try {
+    const profileCookie = (await cookies()).get("rts_citizen_profile")?.value;
+    if (!profileCookie) {
+      return { success: false, error: "Citizen session is unavailable." };
+    }
+
+    const profile = JSON.parse(profileCookie) as CitizenProfileCookie;
+    const upicId = profile.upicId?.trim();
+    if (!upicId) {
+      return { success: false, error: "Citizen profile is incomplete." };
+    }
+
+    const misResponse = await getRtsMisDashboardData({ Flag: "user", UpicId: upicId });
+    const belongsToCitizen = misResponse.status &&
+      (misResponse.data.userApplicationDashboardData ?? []).some(
+        (application) =>
+          application.applicationNo.trim().toLowerCase() ===
+          normalizedApplicationNo.toLowerCase()
+      );
+
+    if (!belongsToCitizen) {
+      return { success: false, error: "Application is not available for this citizen." };
+    }
+
+    const approvalApplications = await getApprovalApplicationsPaged({
+      applicationNo: normalizedApplicationNo,
+      pageNumber: 1,
+    });
+    const application = approvalApplications.applications.find(
+      (candidate) =>
+        candidate.applicationNo.trim().toLowerCase() ===
+        normalizedApplicationNo.toLowerCase()
+    );
+
+    if (!application) {
+      return { success: false, error: "Application details are unavailable." };
+    }
+
+    const applicationId = Number(application.id);
+    const serviceId = Number(application.serviceId);
+    const departmentId = Number(application.departmentId);
+
+    if (
+      !Number.isInteger(applicationId) || applicationId <= 0 ||
+      !Number.isInteger(serviceId) || serviceId <= 0 ||
+      !Number.isInteger(departmentId) || departmentId <= 0
+    ) {
+      return { success: false, error: "Application routing details are unavailable." };
+    }
+
+    return {
+      success: true,
+      applicationNo: application.applicationNo || normalizedApplicationNo,
+      applicationId,
+      serviceId,
+      departmentId,
+    };
+  } catch (error) {
+    console.error("Failed to resolve citizen resubmit navigation:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unable to resolve correction form.",
+    };
+  }
+}
 
 /** Resolves a legacy service URL without creating an RTS application record. */
 export async function resolveExternalServiceNavigationAction(

@@ -4,6 +4,11 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { Check, ChevronDown, Eye, FileText, Search, Upload, X } from "lucide-react";
 import DocumentFormPreview from "@/components/modules/rts/forms/DocumentFormPreview";
+import RtsApplicationDocumentView from "@/components/modules/rts/dashboard/RtsApplicationDocumentView";
+import {
+  getCitizenRtsDocumentDownloadUrl,
+  getCitizenRtsDocumentViewUrl,
+} from "@/lib/api/rts/rtsdocument.client";
 import type {
   CheckboxField,
   FieldConfig,
@@ -237,19 +242,40 @@ function DynamicFileField({
   error,
   showError,
   onChange,
+  existingDocument,
 }: {
   field: any;
   lang: "en" | "hi" | "mr";
   value: unknown;
   error?: string;
   showError?: boolean;
-  onChange: (value: File | null) => void;
+  onChange: (value: File | string | null) => void;
+  existingDocument?: {
+    documentGuid?: string | null;
+    documentName?: string | null;
+  };
 }) {
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
+  const [isExistingPreviewOpen, setIsExistingPreviewOpen] = React.useState(false);
   const hasError = Boolean(showError && error);
   const selectedFile = value instanceof File ? value : null;
-  const isUploaded = Boolean(selectedFile || (typeof value === "string" && value.trim()));
-  const selectedFileName = selectedFile?.name ?? (typeof value === "string" ? value : "");
+  const valueDocumentGuid =
+    typeof value === "string" && value.startsWith("guid:")
+      ? value.slice("guid:".length).trim()
+      : "";
+  const existingDocumentGuid = existingDocument?.documentGuid?.trim() || valueDocumentGuid;
+  const isUploaded = Boolean(
+    selectedFile || existingDocumentGuid || (typeof value === "string" && value.trim())
+  );
+  const selectedFileName = selectedFile?.name ??
+    existingDocument?.documentName?.trim() ??
+    (valueDocumentGuid
+      ? lang === "mr"
+        ? "पूर्वी अपलोड केलेले कागदपत्र"
+        : lang === "hi"
+          ? "पहले अपलोड किया गया दस्तावेज़"
+          : "Previously uploaded document"
+      : typeof value === "string" ? value : "");
   const placeholder = typeof field.placeholder === "string" ? field.placeholder : t(field.placeholder, lang);
   const fileHint = selectedFileName || placeholder || "Upload required document";
   const requiredIndicator = field.required ? <span className="text-[13px] text-red-500">*</span> : null;
@@ -293,10 +319,13 @@ function DynamicFileField({
         </label>
 
         <div className="flex shrink-0 items-center gap-2">
-          {selectedFile && (
+          {(selectedFile || existingDocumentGuid) && (
             <button
               type="button"
-              onClick={() => setIsPreviewOpen(true)}
+              onClick={() => {
+                if (selectedFile) setIsPreviewOpen(true);
+                else setIsExistingPreviewOpen(true);
+              }}
               className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[6px] border border-blue-200 bg-blue-50 text-blue-600 transition-colors hover:bg-blue-100"
               aria-label={`View ${fieldLabel}`}
               title={`View ${fieldLabel}`}
@@ -313,10 +342,12 @@ function DynamicFileField({
             <Upload className="h-3.5 w-3.5" />
             {!isUploaded && <span className="ml-1 text-[11px] font-semibold">{uploadText}</span>}
           </label>
-          {isUploaded && (
+          {selectedFile && (
             <button
               type="button"
-              onClick={() => onChange(null)}
+              onClick={() =>
+                onChange(existingDocumentGuid ? `guid:${existingDocumentGuid}` : null)
+              }
               className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[6px] border border-[#fecaca] bg-[#fff1f2] text-[#ef4444] transition-colors hover:bg-[#ffe4e6]"
               aria-label={`Remove ${fieldLabel}`}
               title={`Remove ${fieldLabel}`}
@@ -341,6 +372,16 @@ function DynamicFileField({
         open={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
       />
+      {isExistingPreviewOpen && existingDocumentGuid && (
+        <RtsApplicationDocumentView
+          open
+          onClose={() => setIsExistingPreviewOpen(false)}
+          fileUrl={getCitizenRtsDocumentViewUrl(existingDocumentGuid)}
+          downloadUrl={getCitizenRtsDocumentDownloadUrl(existingDocumentGuid)}
+          fileName={existingDocument?.documentName || `${fieldLabel}.pdf`}
+          label={fieldLabel}
+        />
+      )}
     </div>
   );
 }
@@ -506,8 +547,12 @@ export default function DynamicFieldRenderer(props: {
   onChange?: (id: string, value: any, field?: any) => void;
   error?: string;
   showError?: boolean;
+  existingDocument?: {
+    documentGuid?: string | null;
+    documentName?: string | null;
+  };
 }) {
-  const { field, lang, values, setValue, onChange, error, showError } = props;
+  const { field, lang, values, setValue, onChange, error, showError, existingDocument } = props;
   const updateValue: (id: string, value: any, field?: any) => void =
     setValue ??
     onChange ??
@@ -897,6 +942,7 @@ export default function DynamicFieldRenderer(props: {
           error={error}
           showError={showError}
           onChange={(value) => updateValue(f.id, value, f)}
+          existingDocument={existingDocument}
         />
       </div>
     );

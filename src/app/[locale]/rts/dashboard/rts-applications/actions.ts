@@ -395,9 +395,12 @@ export async function verifyAndCorrectApprovalAction(
  * available) rather than failing the whole page.
  */
 export async function getApplicationDetailAction(
-  applicationNo: string
+  applicationNo: string,
+  applicationId?: number
 ): Promise<RtsApplicationDetailData | null> {
-  const numericId = parseInt(applicationNo.replace(/\D/g, ''), 10);
+  const numericId = Number.isInteger(applicationId) && Number(applicationId) > 0
+    ? Number(applicationId)
+    : parseInt(applicationNo.replace(/\D/g, ''), 10);
 
   if (Number.isFinite(numericId) && numericId > 0) {
     try {
