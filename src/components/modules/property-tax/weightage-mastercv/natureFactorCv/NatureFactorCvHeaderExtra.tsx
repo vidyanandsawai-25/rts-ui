@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { NatureFactorCvHeaderExtraProps } from "@/types/natureofbuilding-cv-weightageMaster.types";
 import { POSITIVE_DECIMAL_INVALID_KEYS, sanitizePositiveDecimal } from "@/lib/utils/validation";
 import { toast } from "sonner";
+import { useOptionTooltips } from "@/hooks/weightageMaster/useOptionTooltips";
 
 
 export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps> = React.memo(({
@@ -33,8 +34,10 @@ export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps>
     isApplyDisabled,
     isBulkUpdateDisabled
 }) => {
+    const { containerRef: optionTooltipsRef, tooltip } = useOptionTooltips<HTMLDivElement>();
     return (
-        <div className="w-full">
+        <div ref={optionTooltipsRef} className="w-full">
+            {tooltip}
             <div className="flex items-end gap-4 mb-3 flex-wrap">
                 <div className="min-w-[140px]">
                     <SearchSelect
