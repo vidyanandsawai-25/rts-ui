@@ -238,7 +238,7 @@ const getLabelColorClass = (hasError: boolean) => (hasError ? "text-red-500" : "
 function getFileValidationHint(field: any, lang: "en" | "hi" | "mr") {
   const validation = field?.validation ?? {};
   const formats = Array.isArray(validation.acceptedFormats)
-    ? validation.acceptedFormats.filter((format: unknown): format is string => typeof format === "string" && format.trim())
+    ? validation.acceptedFormats.filter((format: unknown): format is string => typeof format === "string" && Boolean(format.trim()))
     : typeof validation.accept === "string"
       ? validation.accept.split(",").map((format: string) => format.trim()).filter(Boolean)
       : [];
