@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-
 import {
   downloadAdminRtsDocument,
   viewAdminRtsDocument,
@@ -34,7 +33,6 @@ export async function GET(
       "Cache-Control": "private, no-store",
       "Content-Type": backendResponse.headers.get("content-type") ?? "application/octet-stream",
       "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "SAMEORIGIN",
     });
     const contentDisposition = backendResponse.headers.get("content-disposition");
     const contentLength = backendResponse.headers.get("content-length");
@@ -44,7 +42,7 @@ export async function GET(
 
     return new NextResponse(backendResponse.body, { headers });
   } catch (error) {
-    console.error("Failed to proxy RTS document:", error);
+    console.error("Failed to proxy RTS document from fallback route:", error);
     return NextResponse.json(
       { message: "The document service is temporarily unavailable." },
       { status: 502 }

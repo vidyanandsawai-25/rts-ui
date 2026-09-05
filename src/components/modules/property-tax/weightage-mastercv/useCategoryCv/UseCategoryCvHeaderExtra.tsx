@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { Option } from "@/components/common/select";
 import { POSITIVE_DECIMAL_INVALID_KEYS, sanitizePositiveDecimal } from "@/lib/utils/validation";
 import { toast } from "sonner";
+import { useOptionTooltips } from "@/hooks/weightageMaster/useOptionTooltips";
 
 interface UseCategoryCvHeaderExtraProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,8 +58,10 @@ export function UseCategoryCvHeaderExtra({
     isBulkUpdating,
     isUpdating,
 }: UseCategoryCvHeaderExtraProps) {
+    const { containerRef: optionTooltipsRef, tooltip } = useOptionTooltips<HTMLDivElement>();
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-[#DCEAFF] p-4 flex flex-wrap items-end gap-4 w-full">
+        <div ref={optionTooltipsRef} className="bg-white rounded-xl shadow-sm border border-[#DCEAFF] p-4 flex flex-wrap items-end gap-4 w-full">
+            {tooltip}
             <div className="min-w-[140px] z-30">
                 <SearchSelect
                     name="assessmentYear"

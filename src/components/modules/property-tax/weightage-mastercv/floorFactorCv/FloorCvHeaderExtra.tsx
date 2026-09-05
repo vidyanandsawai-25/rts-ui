@@ -8,6 +8,7 @@ import { ApplyButton, ClearButton, UpdateButton, AddButton } from "@/components/
 import { CancelButton } from "@/components/common";
 import { FloorCvHeaderExtraProps } from "@/types/floor-cv-weightageMaster.types";
 import { POSITIVE_DECIMAL_INVALID_KEYS, sanitizePositiveDecimal } from "@/lib/utils/validation";
+import { useOptionTooltips } from "@/hooks/weightageMaster/useOptionTooltips";
 
 export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(({
     t,
@@ -38,8 +39,10 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
     handleGenerateAll,
     addToast,
 }) => {
+    const { containerRef: optionTooltipsRef, tooltip } = useOptionTooltips<HTMLDivElement>();
     return (
-        <div className="w-full">
+        <div ref={optionTooltipsRef} className="w-full">
+            {tooltip}
             <div className="flex items-end gap-4 mb-3 flex-wrap">
 
                 <div className="min-w-[140px]">

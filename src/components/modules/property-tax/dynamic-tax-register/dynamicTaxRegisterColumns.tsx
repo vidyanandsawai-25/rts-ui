@@ -4,6 +4,23 @@ import type { Column } from '@/components/common/MasterTable';
 import type { DynamicTaxRegisterRow, CalculationMode } from '@/types/dynamic-tax-register.types';
 import { Badge, StatusBadge } from '@/components/common';
 import { ConfigureButton } from '@/components/common/ActionButtons';
+import { Tooltip } from '@/components/common/Tooltip';
+
+/** Tax Name / Regional Name are free text and can run long (e.g. auto-generated
+ *  tax codes) — truncate past 20 characters and reveal the full value on hover
+ *  rather than letting the row stretch the table's width. */
+const NAME_TRUNCATE_LIMIT = 20;
+
+function renderTruncatableName(value: unknown) {
+  const text = (value as string) || '';
+  if (!text) return <span>-</span>;
+  if (text.length <= NAME_TRUNCATE_LIMIT) return <span>{text}</span>;
+  return (
+    <Tooltip content={text}>
+      <span className="cursor-help">{text.slice(0, NAME_TRUNCATE_LIMIT)}...</span>
+    </Tooltip>
+  );
+}
 
 export interface GetDynamicTaxRegisterColumnsParams {
   t: (key: string) => string;
@@ -37,6 +54,7 @@ export function getDynamicTaxRegisterColumns({
       width: '170px',
       align: 'left',
       cellClassName: 'font-semibold text-slate-800 text-xs',
+      render: renderTruncatableName,
     },
     {
       key: 'taxNameAlias',
@@ -44,9 +62,10 @@ export function getDynamicTaxRegisterColumns({
       width: '140px',
       align: 'left',
       cellClassName: 'text-slate-700 text-xs',
-      // Optional field — show the same em dash the other nullable columns use rather than a blank
-      // cell, so an unset alias reads as "none recorded" instead of a rendering gap.
-      render: (val: unknown) => <span>{(val as string) || '-'}</span>,
+      // Optional field — renderTruncatableName already shows the same em dash the other
+      // nullable columns use rather than a blank cell, so an unset alias reads as "none
+      // recorded" instead of a rendering gap.
+      render: renderTruncatableName,
     },
     {
       key: 'taxCode',

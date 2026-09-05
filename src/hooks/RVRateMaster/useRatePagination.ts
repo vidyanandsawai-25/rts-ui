@@ -22,10 +22,19 @@ export function useRatePagination({
 }: UseRatePaginationProps) {
   const router = useRouter();
 
+  const getCalculatedTotalPages = (totalCount?: number, pageSize?: number, fallbackTotalPages?: number) => {
+    if (totalCount && pageSize && pageSize > 0) {
+      return Math.max(1, Math.ceil(totalCount / pageSize));
+    }
+    return fallbackTotalPages ?? Math.max(1, Math.ceil(zoneDescriptions.length / (pageSize || 100)));
+  };
+
   // Pagination state for matrix grid
   const [matrixPageNumber, setMatrixPageNumber] = useState(paginatedZonesData?.pageNumber ?? 1);
   const [matrixPageSize, setMatrixPageSize] = useState(paginatedZonesData?.pageSize ?? 100);
-  const [matrixTotalPages, setMatrixTotalPages] = useState(paginatedZonesData?.totalPages ?? Math.ceil(zoneDescriptions.length / 100));
+  const [matrixTotalPages, setMatrixTotalPages] = useState(
+    getCalculatedTotalPages(paginatedZonesData?.totalCount, paginatedZonesData?.pageSize, paginatedZonesData?.totalPages)
+  );
   const [matrixTotalCount, setMatrixTotalCount] = useState(paginatedZonesData?.totalCount ?? zoneDescriptions.length);
   const [paginatedZoneDescriptions, setPaginatedZoneDescriptions] = useState(paginatedZonesData?.items ?? zoneDescriptions.slice(0, 100));
 
@@ -34,7 +43,12 @@ export function useRatePagination({
     if (paginatedZonesData) {
       /* eslint-disable react-hooks/set-state-in-effect */
       setPaginatedZoneDescriptions(paginatedZonesData.items);
-      setMatrixTotalPages(paginatedZonesData.totalPages);
+      const computedTotalPages = getCalculatedTotalPages(
+        paginatedZonesData.totalCount,
+        paginatedZonesData.pageSize,
+        paginatedZonesData.totalPages
+      );
+      setMatrixTotalPages(computedTotalPages);
       setMatrixTotalCount(paginatedZonesData.totalCount);
       setMatrixPageNumber(paginatedZonesData.pageNumber);
       setMatrixPageSize(paginatedZonesData.pageSize);

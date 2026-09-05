@@ -315,6 +315,7 @@ export default function RtsApplicationViewDrawer({
   onOpenDocument,
 }: RtsApplicationViewDrawerProps) {
   const tCommon = useTranslations('common');
+  const locale = useLocale();
 
   if (!record) return null;
 
@@ -336,7 +337,18 @@ export default function RtsApplicationViewDrawer({
             </div>
           </div>
           <div className="ml-4 flex shrink-0 items-center gap-3">
-            <Badge {...getRtsApplicationStatusBadgeProps(record.applicationStatus)}>{record.applicationStatus}</Badge>
+            <Badge {...getRtsApplicationStatusBadgeProps(record.applicationStatus)}>
+              {locale === 'mr'
+                ? {
+                    Pending: 'प्रलंबित',
+                    'Application Verified': 'अर्ज पडताळणी पूर्ण',
+                    'Document Verified': 'कागदपत्र पडताळणी पूर्ण',
+                    Approved: 'मंजूर',
+                    Rejected: 'नामंजूर',
+                    Reverted: 'पुनर्निर्देशित',
+                  }[record.applicationStatus] || record.applicationStatus
+                : record.applicationStatus}
+            </Badge>
           </div>
         </div>
       }
@@ -358,7 +370,18 @@ export default function RtsApplicationViewDrawer({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <Badge {...getRtsApplicationStatusBadgeProps(record.applicationStatus)}>{record.applicationStatus}</Badge>
+            <Badge {...getRtsApplicationStatusBadgeProps(record.applicationStatus)}>
+              {locale === 'mr'
+                ? {
+                    Pending: 'प्रलंबित',
+                    'Application Verified': 'अर्ज पडताळणी पूर्ण',
+                    'Document Verified': 'कागदपत्र पडताळणी पूर्ण',
+                    Approved: 'मंजूर',
+                    Rejected: 'नामंजूर',
+                    Reverted: 'पुनर्निर्देशित',
+                  }[record.applicationStatus] || record.applicationStatus
+                : record.applicationStatus}
+            </Badge>
             {/* <button
               type="button"
               onClick={onClose}

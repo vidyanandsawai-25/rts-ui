@@ -104,6 +104,8 @@ export interface CertificatePreviewRequest {
   customConditions?: string;
 }
 
+export type RTSCertificateType = 0 | 1 | 2; // 0 = None, 1 = Digital, 2 = Manual
+
 export interface CertificatePreviewResponse {
   hasTemplate: boolean;
   templateId: number;
@@ -113,6 +115,7 @@ export interface CertificatePreviewResponse {
   requiredOfficerFields: OfficerFieldConfig[];
   defaultConditions: string[];
   sampleCertificateNo?: string;
+  certificateType?: RTSCertificateType;
 }
 
 export interface IssueCertificateRequest {
@@ -121,6 +124,8 @@ export interface IssueCertificateRequest {
   customConditions?: string;
   actionRemark?: string;
   signAndApprove?: boolean;
+  certificateType?: RTSCertificateType;
+  documentGuid?: string;
 }
 
 export interface RTSIssuedCertificate {
@@ -143,6 +148,10 @@ export interface RTSIssuedCertificate {
   issuedAt: string;
   isDigitallySigned: boolean;
   digitalSignatureInfo?: string;
+  certificateType?: RTSCertificateType;
+  documentGuid?: string;
+  documentDownloadUrl?: string;
+  departmentCollectionNotice?: string;
 }
 
 export interface CertificateVerificationResponse {
@@ -168,6 +177,10 @@ export interface CertificateVerificationResponse {
   dscThumbprint?: string;
   dscValidUntil?: string;
   mergedHtmlContent?: string;
+  certificateType?: RTSCertificateType;
+  documentGuid?: string;
+  documentDownloadUrl?: string;
+  departmentCollectionNotice?: string;
 }
 
 export interface DigitalSignatureMetadata {

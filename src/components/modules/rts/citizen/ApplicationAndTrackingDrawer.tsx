@@ -14,7 +14,7 @@ import {
   AlertTriangle,
   RotateCcw,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button, Drawer, Input } from "@/components/common";
 import {
@@ -201,6 +201,7 @@ export default function ApplicationAndTrackingDrawer({
   initialSearchValue,
   initialReceiptValue,
 }: ApplicationAndTrackingDrawerProps) {
+  const locale = useLocale();
   const t = useTranslations("rts.citizenHeader");
   const tDashboard = useTranslations("rts.citizenDashboard");
   const [searchValue, setSearchValue] = useState("");
@@ -473,7 +474,9 @@ export default function ApplicationAndTrackingDrawer({
                   >
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-semibold text-slate-800">{application.serviceName}</p>
+                        <p className="font-semibold text-slate-800">
+                          {locale === "mr" ? application.serviceNameLocal || application.serviceName : application.serviceName}
+                        </p>
                         <ApplicationStatusIndicator status={application.status} />
                       </div>
                       <p className="mt-1 text-xs font-medium text-fuchsia-700">{application.applicationNo}</p>
@@ -499,7 +502,9 @@ export default function ApplicationAndTrackingDrawer({
               </button>
               <section className="rounded-lg border-2 border-fuchsia-200 bg-gradient-to-br from-fuchsia-50 to-violet-50 p-3 text-sm text-slate-700">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="font-medium text-slate-800">{selectedApplication.serviceName}</h4>
+                  <h4 className="font-medium text-slate-800">
+                    {locale === "mr" ? selectedApplication.serviceNameLocal || selectedApplication.serviceName : selectedApplication.serviceName}
+                  </h4>
                   <ApplicationStatusIndicator status={selectedApplication.status} />
                 </div>
                 <p className="mt-1 text-xs text-slate-600">{formatSubmittedDate(selectedApplication.submittedDate)}</p>
@@ -596,29 +601,38 @@ export default function ApplicationAndTrackingDrawer({
 
                 {/* Issued Official Certificate Banner if Approved */}
                 {((selectedApplication.status && selectedApplication.status.toLowerCase() === 'approved') || (detail?.applicationStatus && detail.applicationStatus.toLowerCase() === 'approved')) && (
-                  <div className="mt-3.5 p-3.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-lg bg-blue-100 text-blue-700">
-                        <FileCheck2 className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-blue-900">
-                          अधिकृत प्रमाणपत्र जारी झाले आहे (Certificate Issued)
+                  <div className="mt-3.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm p-3.5 space-y-2.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-lg bg-blue-100 text-blue-700">
+                          <FileCheck2 className="w-5 h-5" />
                         </div>
-                        <div className="text-[11px] text-blue-700 font-medium">
-                          डिजिटल स्वाक्षरी व QR कोडसह अधिकृत प्रमाणपत्र उपलब्ध आहे
+                        <div>
+                          <div className="text-xs font-bold text-blue-900">
+                            अधिकृत प्रमाणपत्र जारी झाले आहे (Certificate Issued)
+                          </div>
+                          <div className="text-[11px] text-blue-700 font-medium">
+                            अधिकृत प्रमाणपत्र पाहण्यासाठी किंवा डाउनलोड करण्यासाठी खालील बटण वापरा
+                          </div>
                         </div>
                       </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowCertificateModal(true)}
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg shadow-md shadow-blue-600/20 transition-all cursor-pointer shrink-0"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        प्रमाणपत्र पहा / डाऊनलोड
+                      </button>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setShowCertificateModal(true)}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg shadow-md shadow-blue-600/20 transition-all cursor-pointer"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      Download Certificate
-                    </button>
+                    <div className="pt-2 border-t border-blue-200/80 flex items-start gap-1.5 text-[11px] font-bold text-amber-900 bg-amber-50/90 rounded-lg p-2">
+                      <span className="text-amber-600">⚠️</span>
+                      <span>
+                        महत्त्वाची सूचना: सदर मूळ अधिकृत प्रमाणपत्र अर्जदाराने संबंधित विभागामधून जमा (collect) करून घ्यावे.
+                      </span>
+                    </div>
                   </div>
                 )}
                 {/* Reverted / Correction Required Alert Banner */}

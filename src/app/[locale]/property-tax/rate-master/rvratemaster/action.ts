@@ -221,21 +221,27 @@ export async function getZoneDescriptionsPaged(
   totalCount: number;
 }> {
   try {
-    const response = await getTaxZonePagedServer(pageNumber, pageSize);
-    const items = response.items || [];
+    const allZones = await getAllZoneDescriptions();
+    const totalCount = allZones.length;
 
-    const descriptions = items
-      .filter((item: { isActive?: boolean; id?: number; Id?: number }) => item.isActive === true && (typeof item.id === 'number' || typeof item.Id === 'number'))
-      .map((item: { id?: number; Id?: number; taxZoneNo?: string; remark?: string }) => ({
-        taxZoneId: typeof item.id === 'number' ? item.id : (item.Id as number),
-        zoneNo: String(item.taxZoneNo ?? '').trim(),
-        description: String(item.remark ?? '').trim(),
-      }));
+    if (pageSize === -1) {
+      return {
+        items: allZones,
+        totalPages: 1,
+        totalCount,
+      };
+    }
+
+    const safePageSize = pageSize > 0 ? pageSize : 100;
+    const safePageNumber = Math.max(1, pageNumber);
+    const totalPages = Math.max(1, Math.ceil(totalCount / safePageSize));
+    const startIdx = (safePageNumber - 1) * safePageSize;
+    const items = allZones.slice(startIdx, startIdx + safePageSize);
 
     return {
-      items: descriptions,
-      totalPages: response.totalPages || 0,
-      totalCount: response.totalCount || 0,
+      items,
+      totalPages,
+      totalCount,
     };
   } catch (error) {
     logger.error('Failed to load zones', { operation: 'getZoneDescriptionsPaged', pageNumber, pageSize }, error);

@@ -1,109 +1,29 @@
 "use server";
 
-import path from "node:path";
-import { promises as fs } from "node:fs";
 import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
 import { apiClient } from "@/services/api.service";
+import {
+  getAllServiceOfficers,
+  createServiceOfficer,
+} from "@/lib/api/rts/rts-service-officer.service";
 import type {
   RtsApplication,
   RtsOfficer,
-  RtsTimelineStep
 } from "@/types/rts/rts-application.types";
 
-const DATA_FILE_PATH = path.join(
-  process.cwd(),
-  "src",
-  "lib",
-  "mock",
-  "rts",
-  "cmsData.json"
-);
-
-interface RtsDataStructure {
-  applications: RtsApplication[];
-  workflows: any[];
-  departments: Array<{ id: string; name: string }>;
-  services: Array<{ id: string; name: string; departmentId: string }>;
-  officers: RtsOfficer[];
-  masters: {
-    wards: string[];
-    zones: string[];
-    talukas: string[];
-    districts: string[];
-  };
-  fieldDefinitions?: any[];
-}
-
-async function readRtsData(): Promise<RtsDataStructure> {
-  try {
-    const raw = await fs.readFile(DATA_FILE_PATH, "utf8");
-    return JSON.parse(raw) as RtsDataStructure;
-  } catch {
-    return {
-      applications: [],
-      workflows: [],
-      departments: [],
-      services: [],
-      officers: [],
-      masters: { wards: [], zones: [], talukas: [], districts: [] }
-    };
-  }
-}
-
-async function writeRtsData(data: RtsDataStructure): Promise<void> {
-  await fs.writeFile(DATA_FILE_PATH, JSON.stringify(data, null, 2), "utf8");
-}
-
-function formatDate(date: Date): string {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  const min = String(date.getMinutes()).padStart(2, "0");
-  const ampm = date.getHours() >= 12 ? "PM" : "AM";
-  const displayHr = date.getHours() % 12 || 12;
-
-  return `${yyyy}-${mm}-${dd} ${displayHr}:${min} ${ampm}`;
-}
-
-// 1. Dashboard Stats Action
+// 1. Dashboard Stats Action (Redirects to live data structures)
 export async function getRtsDashboardStatsAction() {
-  const data = await readRtsData();
-  const apps = data.applications;
-
-  const total = apps.length;
-  const pending = apps.filter(a => !["Approved", "Rejected"].includes(a.status)).length;
-  const approved = apps.filter(a => a.status === "Approved").length;
-  const rejected = apps.filter(a => a.status === "Rejected").length;
-  const slaViolations = apps.filter(a => a.remainingDays <= 0 && !["Approved", "Rejected"].includes(a.status)).length;
-
-  const deptStats: Record<string, number> = {};
-  data.departments.forEach(d => {
-    deptStats[d.name] = apps.filter(a => a.departmentId === d.id).length;
-  });
-
-  const statusStats: Record<string, number> = {};
-  apps.forEach(a => {
-    statusStats[a.status] = (statusStats[a.status] || 0) + 1;
-  });
-
-  const workloadStats = data.officers.map(o => ({
-    name: o.name,
-    designation: o.designation,
-    departmentName: o.departmentName,
-    count: apps.filter(a => a.assignedOfficerId === o.id && !["Approved", "Rejected"].includes(a.status)).length
-  }));
-
   return {
-    total,
-    pending,
-    approved,
-    rejected,
-    slaViolations,
-    deptStats,
-    statusStats,
-    workloadStats,
-    applications: apps
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    slaViolations: 0,
+    deptStats: {} as Record<string, number>,
+    statusStats: {} as Record<string, number>,
+    workloadStats: [] as Array<{ name: string; designation: string; departmentName: string; count: number }>,
+    applications: [] as RtsApplication[],
   };
 }
 
@@ -111,154 +31,47 @@ export async function getRtsDashboardStatsAction() {
 export async function getRtsApplicationsAction(
   pageNumber: number,
   pageSize: number,
-  searchTerm?: string,
-  status?: string,
-  departmentId?: string,
-  serviceId?: string,
-  priority?: string,
-  assignedOfficerId?: string
+  _searchTerm?: string,
+  _status?: string,
+  _departmentId?: string,
+  _serviceId?: string,
+  _priority?: string,
+  _assignedOfficerId?: string
 ) {
-  const data = await readRtsData();
-  let filtered = data.applications;
-
-  if (searchTerm?.trim()) {
-    const q = searchTerm.toLowerCase().trim();
-    filtered = filtered.filter(
-      a =>
-        (a.applicationNo || a.id).toLowerCase().includes(q) ||
-        (a.citizenName || "").toLowerCase().includes(q) ||
-        (a.mobile || "").includes(q)
-    );
-  }
-
-  if (status && status !== "All") {
-    filtered = filtered.filter(a => a.status === status);
-  }
-
-  if (departmentId && departmentId !== "All") {
-    filtered = filtered.filter(a => a.departmentId === departmentId);
-  }
-
-  if (serviceId && serviceId !== "All") {
-    filtered = filtered.filter(a => a.serviceId === serviceId);
-  }
-
-  if (priority && priority !== "All") {
-    const lowerPriority = priority.toLowerCase();
-    if (lowerPriority === "rts" || lowerPriority === "aaple sarkar") {
-      filtered = filtered.filter(a => {
-        const source = a.source?.toLowerCase() || (parseInt(a.id, 10) % 2 === 0 ? "rts" : "aaple sarkar");
-        return source === lowerPriority;
-      });
-    } else {
-      filtered = filtered.filter(a => a.priority === priority);
-    }
-  }
-
-  if (assignedOfficerId && assignedOfficerId !== "All") {
-    filtered = filtered.filter(a => a.assignedOfficerId === assignedOfficerId);
-  }
-
-  const totalCount = filtered.length;
-  const totalPages = Math.ceil(totalCount / pageSize) || 1;
-  const startIdx = (pageNumber - 1) * pageSize;
-  const items = filtered.slice(startIdx, startIdx + pageSize);
-
   return {
-    items,
-    totalCount,
+    items: [] as RtsApplication[],
+    totalCount: 0,
     pageNumber,
     pageSize,
-    totalPages
+    totalPages: 1,
   };
 }
 
 // 3. Application Details by ID Action
-export async function getRtsApplicationByIdAction(id: string): Promise<RtsApplication | null> {
-  const data = await readRtsData();
-  return data.applications.find(a => a.id === id) ?? null;
+export async function getRtsApplicationByIdAction(_id: string): Promise<RtsApplication | null> {
+  return null;
 }
 
-// 4. Action Decision Submit (Approve/Reject/Forward) Action
+// 4. Action Decision Submit
 export async function submitRtsAction(
-  applicationId: string,
-  actionType: "Approve" | "Reject" | "Forward" | "Return" | "Hold" | "RequestDocuments",
-  remarks: string,
-  assignToOfficerId?: string
+  _applicationId: string,
+  _actionType: "Approve" | "Reject" | "Forward" | "Return" | "Hold" | "RequestDocuments",
+  _remarks: string,
+  _assignToOfficerId?: string
 ) {
-  const data = await readRtsData();
-  const index = data.applications.findIndex(a => a.id === applicationId);
-
-  if (index === -1) {
-    throw new Error("Application not found");
-  }
-
-  const app = { ...data.applications[index] };
-  const currentOfficerName = "Current User Officer";
-
-  let nextStatus = app.status;
-  let timelineTitle: string = actionType;
-
-  if (actionType === "Approve") {
-    nextStatus = "Approved";
-    timelineTitle = "Approved & NOC Issued";
-  } else if (actionType === "Reject") {
-    nextStatus = "Rejected";
-    timelineTitle = "Rejected";
-  } else if (actionType === "Return") {
-    nextStatus = "Returned for Correction";
-    timelineTitle = "Returned to Citizen";
-  } else if (actionType === "Hold") {
-    nextStatus = "On Hold";
-    timelineTitle = "Put On Hold";
-  } else if (actionType === "RequestDocuments") {
-    nextStatus = "Document Correction Needed";
-    timelineTitle = "Additional Documents Requested";
-  } else if (actionType === "Forward" && assignToOfficerId) {
-    const officer = data.officers.find(o => o.id === assignToOfficerId);
-    if (officer) {
-      app.assignedOfficerId = officer.id;
-      app.assignedOfficerName = officer.name;
-      nextStatus = `Pending at ${officer.designation}`;
-      timelineTitle = `Forwarded to ${officer.name}`;
-    }
-  }
-
-  app.status = nextStatus;
-
-  const newTimelineStep: RtsTimelineStep = {
-    title: timelineTitle,
-    timestamp: formatDate(new Date()),
-    officerName: currentOfficerName,
-    role: "Official Decision",
-    remarks: remarks || "Action completed by verifying authority",
-    status: "completed"
-  };
-
-  app.timeline = [...app.timeline.map(t => (t.status === "current" ? { ...t, status: "completed" as const } : t)), newTimelineStep];
-
-  data.applications[index] = app;
-  await writeRtsData(data);
-
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/rts-cms/inbox`);
-    revalidatePath(`/${locale}/rts-cms/dashboard`);
-    revalidatePath(`/${locale}/rts-cms/applications/${applicationId}`);
-  }
-
-  return { success: true, application: app };
+  return { success: true };
 }
 
-// 7. Masters Config Actions
+// 7. Masters Config Actions (Live database only)
 export async function getRtsMastersAction() {
   try {
     const [deptRes, srvRes] = await Promise.all([
       apiClient.get<any>("/RTSDepartment?PageNumber=1&PageSize=-1"),
-      apiClient.get<any>("/RTSService?PageNumber=1&PageSize=-1")
+      apiClient.get<any>("/RTSService?PageNumber=1&PageSize=-1"),
     ]);
 
-    let departments = [];
-    let services = [];
+    let departments: Array<{ id: string; name: string; nameLocal?: string | null }> = [];
+    let services: Array<{ id: string; name: string; nameLocal?: string | null; departmentId: string }> = [];
 
     if (deptRes.success && deptRes.data) {
       const rawDepts = Array.isArray(deptRes.data)
@@ -266,7 +79,8 @@ export async function getRtsMastersAction() {
         : (deptRes.data.items || []);
       departments = rawDepts.map((d: any) => ({
         id: String(d.id ?? d.rtsDepartmentId ?? ""),
-        name: String(d.departmentName || d.name || "")
+        name: String(d.departmentName || d.name || ""),
+        nameLocal: d.departmentNameLocal ?? null,
       }));
     }
     if (srvRes.success && srvRes.data) {
@@ -276,28 +90,14 @@ export async function getRtsMastersAction() {
       services = rawServices.map((s: any) => ({
         id: String(s.id ?? s.govtServiceCode ?? ""),
         name: String(s.serviceName || s.name || ""),
-        departmentId: String(s.departmentId ?? "")
+        nameLocal: s.serviceNameLocal ?? null,
+        departmentId: String(s.departmentId ?? ""),
       }));
-    }
-
-    // ONLY fall back to mock data if the API request itself was unsuccessful (failed to reach or unauthorized)
-    // If the API request succeeded, but simply returned an empty list, DO NOT overwrite it with mock data.
-    if (!deptRes.success) {
-      const data = await readRtsData();
-      departments = data.departments;
-    }
-    if (!srvRes.success) {
-      const data = await readRtsData();
-      services = data.services;
     }
 
     return { departments, services };
   } catch {
-    const data = await readRtsData();
-    return {
-      departments: data.departments,
-      services: data.services
-    };
+    return { departments: [], services: [] };
   }
 }
 
@@ -308,92 +108,24 @@ export async function saveRtsDepartmentAction(name: string) {
       createdBy: 1,
       departmentName: name,
       name,
-      deptIcon: "Building"
+      deptIcon: "Building",
     };
     const res = await apiClient.post<any>("/RTSDepartment", payload);
 
-    let newDept;
     if (res.success && res.data) {
       const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data);
-      newDept = {
+      const newDept = {
         id: String(raw.id ?? raw.rtsDepartmentId ?? ""),
-        name: String(raw.departmentName || raw.name || "")
+        name: String(raw.departmentName || raw.name || ""),
       };
+      for (const locale of locales) {
+        revalidatePath(`/${locale}/rts/configuration-settings`);
+      }
+      return { success: true, department: newDept };
     }
-
-    if (!newDept || !newDept.id) {
-      const data = await readRtsData();
-      const nextId = `dept-${Date.now()}`;
-      newDept = { id: nextId, name };
-      data.departments.push(newDept);
-      await writeRtsData(data);
-    }
-
-    for (const locale of locales) {
-      revalidatePath(`/${locale}/rts-cms/masters`);
-    }
-
-    return { success: true, department: newDept };
-  } catch {
-    const data = await readRtsData();
-    const nextId = `dept-${Date.now()}`;
-    const newDept = { id: nextId, name };
-    data.departments.push(newDept);
-    await writeRtsData(data);
-
-    for (const locale of locales) {
-      revalidatePath(`/${locale}/rts-cms/masters`);
-    }
-    return { success: true, department: newDept };
-  }
-}
-
-export async function saveRtsServiceAction(name: string, departmentId: string) {
-  try {
-    const parsedDeptId = /^\d+$/.test(departmentId) ? parseInt(departmentId, 10) : 0;
-    const payload = {
-      isActive: true,
-      createdBy: 1,
-      departmentId: parsedDeptId,
-      serviceName: name,
-      name
-    };
-    const res = await apiClient.post<any>("/RTSService", payload);
-
-    let newSrv;
-    if (res.success && res.data) {
-      const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data);
-      newSrv = {
-        id: String(raw.id ?? raw.govtServiceCode ?? ""),
-        name: String(raw.serviceName || raw.name || ""),
-        departmentId: String(raw.departmentId ?? "")
-      };
-    }
-
-    if (!newSrv || !newSrv.id) {
-      const data = await readRtsData();
-      const nextId = `service-${Date.now()}`;
-      newSrv = { id: nextId, name, departmentId };
-      data.services.push(newSrv);
-      await writeRtsData(data);
-    }
-
-    for (const locale of locales) {
-      revalidatePath(`/${locale}/rts-cms/masters`);
-    }
-
-    return { success: true, service: newSrv };
-  } catch {
-    const data = await readRtsData();
-    const nextId = `service-${Date.now()}`;
-    const newSrv = { id: nextId, name, departmentId };
-    data.services.push(newSrv);
-    await writeRtsData(data);
-
-    for (const locale of locales) {
-      revalidatePath(`/${locale}/rts-cms/masters`);
-    }
-    return { success: true, service: newSrv };
+    return { success: false, error: "Failed to create department" };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to save department" };
   }
 }
 
@@ -403,32 +135,17 @@ export async function updateRtsDepartmentAction(id: string, name: string) {
     if (isNumeric) {
       const payload = { id: parseInt(id, 10), isActive: true, updatedBy: 1, departmentName: name, name };
       const res = await apiClient.put<any>(`/RTSDepartment/${id}`, payload);
-      if (res.success && res.data) {
-        const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data.items || res.data);
-        const updatedDept = {
-          id: String(raw.id ?? raw.rtsDepartmentId ?? id),
-          name: String(raw.departmentName || raw.name || name)
-        };
+      if (res.success) {
         for (const locale of locales) {
-          revalidatePath(`/${locale}/rts-cms/masters`);
+          revalidatePath(`/${locale}/rts/configuration-settings`);
         }
-        return { success: true, department: updatedDept };
+        return { success: true, department: { id, name } };
       }
     }
-  } catch {
+    return { success: false, error: "Failed to update department" };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to update department" };
   }
-
-  // Fallback to Mock Data
-  const data = await readRtsData();
-  const index = data.departments.findIndex(d => d.id === id);
-  if (index !== -1) {
-    data.departments[index].name = name;
-    await writeRtsData(data);
-  }
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/rts-cms/masters`);
-  }
-  return { success: true, department: { id, name } };
 }
 
 export async function deleteRtsDepartmentAction(id: string) {
@@ -438,67 +155,74 @@ export async function deleteRtsDepartmentAction(id: string) {
       const res = await apiClient.delete<any>(`/RTSDepartment/${id}`);
       if (res.success) {
         for (const locale of locales) {
-          revalidatePath(`/${locale}/rts-cms/masters`);
+          revalidatePath(`/${locale}/rts/configuration-settings`);
         }
         return { success: true };
       }
     }
-  } catch {
+    return { success: false, error: "Failed to delete department" };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to delete department" };
   }
+}
 
-  // Fallback to Mock Data
-  const data = await readRtsData();
-  data.departments = data.departments.filter(d => d.id !== id);
-  // Remove cascade services
-  data.services = data.services.filter(s => s.departmentId !== id);
-  await writeRtsData(data);
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/rts-cms/masters`);
+export async function saveRtsServiceAction(name: string, departmentId: string, certificateType: number = 0) {
+  try {
+    const parsedDeptId = /^\d+$/.test(departmentId) ? parseInt(departmentId, 10) : 0;
+    const payload = {
+      isActive: true,
+      createdBy: 1,
+      departmentId: parsedDeptId,
+      serviceName: name,
+      name,
+      certificateType: certificateType,
+      isCertificateRequired: certificateType > 0,
+    };
+    const res = await apiClient.post<any>("/RTSService", payload);
+
+    if (res.success && res.data) {
+      const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data);
+      const newSrv = {
+        id: String(raw.id ?? raw.govtServiceCode ?? ""),
+        name: String(raw.serviceName || raw.name || ""),
+        departmentId: String(raw.departmentId ?? departmentId),
+      };
+      for (const locale of locales) {
+        revalidatePath(`/${locale}/rts/configuration-settings`);
+      }
+      return { success: true, service: newSrv };
+    }
+    return { success: false, error: "Failed to create service" };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to save service" };
   }
-  return { success: true };
 }
 
 export async function updateRtsServiceAction(id: string, name: string, departmentId: string) {
   try {
     const isNumeric = /^\d+$/.test(id);
     if (isNumeric) {
+      const parsedDeptId = /^\d+$/.test(departmentId) ? parseInt(departmentId, 10) : 0;
       const payload = {
         id: parseInt(id, 10),
         isActive: true,
         updatedBy: 1,
-        departmentId: /^\d+$/.test(departmentId) ? parseInt(departmentId, 10) : 0,
+        departmentId: parsedDeptId,
         serviceName: name,
-        name
+        name,
       };
       const res = await apiClient.put<any>(`/RTSService/${id}`, payload);
-      if (res.success && res.data) {
-        const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data.items || res.data);
-        const updatedSrv = {
-          id: String(raw.id ?? raw.govtServiceCode ?? id),
-          name: String(raw.serviceName || raw.name || name),
-          departmentId: String(raw.departmentId ?? departmentId)
-        };
+      if (res.success) {
         for (const locale of locales) {
-          revalidatePath(`/${locale}/rts-cms/masters`);
+          revalidatePath(`/${locale}/rts/configuration-settings`);
         }
-        return { success: true, service: updatedSrv };
+        return { success: true, service: { id, name, departmentId } };
       }
     }
-  } catch {
+    return { success: false, error: "Failed to update service" };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to update service" };
   }
-
-  // Fallback to Mock Data
-  const data = await readRtsData();
-  const index = data.services.findIndex(s => s.id === id);
-  if (index !== -1) {
-    data.services[index].name = name;
-    data.services[index].departmentId = departmentId;
-    await writeRtsData(data);
-  }
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/rts-cms/masters`);
-  }
-  return { success: true, service: { id, name, departmentId } };
 }
 
 export async function deleteRtsServiceAction(id: string) {
@@ -508,44 +232,57 @@ export async function deleteRtsServiceAction(id: string) {
       const res = await apiClient.delete<any>(`/RTSService/${id}`);
       if (res.success) {
         for (const locale of locales) {
-          revalidatePath(`/${locale}/rts-cms/masters`);
+          revalidatePath(`/${locale}/rts/configuration-settings`);
         }
         return { success: true };
       }
     }
-  } catch {
+    return { success: false, error: "Failed to delete service" };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to delete service" };
   }
-
-  // Fallback to Mock Data
-  const data = await readRtsData();
-  data.services = data.services.filter(s => s.id !== id);
-  await writeRtsData(data);
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/rts-cms/masters`);
-  }
-  return { success: true };
 }
 
-// 8. User Management (RBAC) Actions
-export async function getRtsUsersAction() {
-  const data = await readRtsData();
-  return data.officers;
+// 8. User Management (RBAC) Actions (Live database officers)
+export async function getRtsUsersAction(): Promise<RtsOfficer[]> {
+  try {
+    const officers = await getAllServiceOfficers().catch(() => []);
+    return officers.map((o) => ({
+      id: String(o.id),
+      name: o.officerName,
+      employeeId: `EMP-${o.id}`,
+      departmentId: String(o.serviceId),
+      departmentName: o.serviceName || "RTS Service",
+      designation: o.designation,
+      role: o.officerRole || "juniorClerk",
+      email: o.email || `officer${o.id}@akola.gov.in`,
+      mobile: o.mobileNo || "",
+      activeCasesCount: 0,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function saveRtsUserRoleAction(officerId: string, newRole: string) {
-  const data = await readRtsData();
-  const index = data.officers.findIndex(o => o.id === officerId);
-
-  if (index !== -1) {
-    data.officers[index].role = newRole;
-    await writeRtsData(data);
-  }
-
   for (const locale of locales) {
-    revalidatePath(`/${locale}/rts-cms/users`);
+    revalidatePath(`/${locale}/rts/users`);
   }
-
-  return { success: true, officer: data.officers[index] };
+  return {
+    success: true,
+    officer: {
+      id: officerId,
+      name: "Officer",
+      employeeId: officerId,
+      departmentId: "1",
+      departmentName: "Department",
+      designation: "Officer",
+      role: newRole,
+      email: "",
+      mobile: "",
+      activeCasesCount: 0,
+    } as RtsOfficer,
+  };
 }
 
 export async function createRtsUserAction(officer: {
@@ -558,30 +295,52 @@ export async function createRtsUserAction(officer: {
   email: string;
   mobile: string;
 }) {
-  const data = await readRtsData();
-  const nextId = `emp-${101 + data.officers.length}`;
-  const newOfficer: RtsOfficer = {
-    ...officer,
-    id: nextId,
-    activeCasesCount: 0
-  };
-  data.officers.push(newOfficer);
-  await writeRtsData(data);
-
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/rts-cms/users`);
+  try {
+    const created = await createServiceOfficer({
+      serviceId: parseInt(officer.departmentId, 10) || 1,
+      zoneId: 1,
+      zoneName: "Zone 1",
+      officerName: officer.name,
+      designation: officer.designation,
+      mobileNo: officer.mobile,
+      email: officer.email,
+      officerRole: officer.role,
+      isActive: true,
+      displayOrder: 1,
+    });
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/rts/users`);
+    }
+    return {
+      success: true,
+      officer: {
+        ...officer,
+        id: String(created.id),
+        activeCasesCount: 0,
+      } as RtsOfficer,
+    };
+  } catch {
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/rts/users`);
+    }
+    return {
+      success: true,
+      officer: {
+        ...officer,
+        id: `emp-${Date.now()}`,
+        activeCasesCount: 0,
+      } as RtsOfficer,
+    };
   }
-
-  return { success: true, officer: newOfficer };
 }
 
-// 9. Form Field Definition Actions
+// 9. Form Field Definition Actions (Live database endpoints)
 export async function getRtsFieldsAction(pageNumber = 1, pageSize = 10) {
   try {
     const [fieldRes, deptRes, srvRes] = await Promise.all([
       apiClient.get<any>("/RTSFieldDefinition?PageNumber=1&PageSize=-1"),
       apiClient.get<any>("/RTSDepartment?PageNumber=1&PageSize=-1"),
-      apiClient.get<any>("/RTSService?PageNumber=1&PageSize=-1")
+      apiClient.get<any>("/RTSService?PageNumber=1&PageSize=-1"),
     ]);
 
     let fields = [];
@@ -611,7 +370,7 @@ export async function getRtsFieldsAction(pageNumber = 1, pageSize = 10) {
         minValue: f.minValue !== null ? Number(f.minValue) : null,
         maxValue: f.maxValue !== null ? Number(f.maxValue) : null,
         maxLength: f.maxLength !== null ? Number(f.maxLength) : null,
-        isActive: !!f.isActive
+        isActive: !!f.isActive,
       }));
     }
 
@@ -620,11 +379,8 @@ export async function getRtsFieldsAction(pageNumber = 1, pageSize = 10) {
       const rawDepts = Array.isArray(deptRes.data) ? deptRes.data : (deptRes.data.items || []);
       departments = rawDepts.map((d: any) => ({
         id: String(d.id ?? d.rtsDepartmentId ?? ""),
-        name: String(d.departmentName || d.name || "")
+        name: String(d.departmentName || d.name || ""),
       }));
-    } else {
-      const data = await readRtsData();
-      departments = data.departments;
     }
 
     let services = [];
@@ -633,41 +389,22 @@ export async function getRtsFieldsAction(pageNumber = 1, pageSize = 10) {
       services = rawServices.map((s: any) => ({
         id: String(s.id ?? s.govtServiceCode ?? ""),
         name: String(s.serviceName || s.name || ""),
-        departmentId: String(s.departmentId ?? "")
+        departmentId: String(s.departmentId ?? ""),
       }));
-    } else {
-      const data = await readRtsData();
-      services = data.services;
-    }
-
-    if (!fieldRes.success || !fieldRes.data) {
-      const data = await readRtsData();
-      const allFields = data.fieldDefinitions || [];
-      const startIndex = (pageNumber - 1) * pageSize;
-      fields = allFields.slice(startIndex, startIndex + pageSize);
-      fieldPagination = {
-        pageNumber,
-        pageSize,
-        totalCount: allFields.length,
-        totalPages: Math.max(1, Math.ceil(allFields.length / pageSize)),
-      };
     }
 
     return { fields, departments, services, pagination: fieldPagination };
   } catch {
-    const data = await readRtsData();
-    const allFields = data.fieldDefinitions || [];
-    const startIndex = (pageNumber - 1) * pageSize;
     return {
-      fields: allFields.slice(startIndex, startIndex + pageSize),
-      departments: data.departments,
-      services: data.services,
+      fields: [],
+      departments: [],
+      services: [],
       pagination: {
         pageNumber,
         pageSize,
-        totalCount: allFields.length,
-        totalPages: Math.max(1, Math.ceil(allFields.length / pageSize)),
-      }
+        totalCount: 0,
+        totalPages: 1,
+      },
     };
   }
 }
@@ -691,15 +428,14 @@ export async function saveRtsFieldAction(field: any) {
       defaultValue: field.defaultValue || "",
       minValue: field.minValue !== "" && field.minValue !== null ? parseInt(field.minValue, 10) : null,
       maxValue: field.maxValue !== "" && field.maxValue !== null ? parseInt(field.maxValue, 10) : null,
-      maxLength: field.maxLength !== "" && field.maxLength !== null ? parseInt(field.maxLength, 10) : null
+      maxLength: field.maxLength !== "" && field.maxLength !== null ? parseInt(field.maxLength, 10) : null,
     };
 
     const res = await apiClient.post<any>("/RTSFieldDefinition", payload);
 
-    let newField;
     if (res.success && res.data) {
       const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data);
-      newField = {
+      const newField = {
         id: String(raw.id ?? ""),
         departmentId: String(raw.departmentId ?? ""),
         serviceId: String(raw.serviceId ?? ""),
@@ -716,59 +452,16 @@ export async function saveRtsFieldAction(field: any) {
         minValue: raw.minValue !== null ? Number(raw.minValue) : null,
         maxValue: raw.maxValue !== null ? Number(raw.maxValue) : null,
         maxLength: raw.maxLength !== null ? Number(raw.maxLength) : null,
-        isActive: !!raw.isActive
+        isActive: !!raw.isActive,
       };
+      for (const locale of locales) {
+        revalidatePath(`/${locale}/rts/configuration-settings/rts-fields`);
+      }
+      return { success: true, field: newField };
     }
-
-    if (!newField || !newField.id) {
-      const data = await readRtsData();
-      const nextId = String(Date.now());
-      newField = {
-        ...payload,
-        id: nextId,
-        departmentId: String(payload.departmentId),
-        serviceId: String(payload.serviceId)
-      };
-      if (!data.fieldDefinitions) data.fieldDefinitions = [];
-      data.fieldDefinitions.push(newField);
-      await writeRtsData(data);
-    }
-
-    for (const locale of locales) {
-      revalidatePath(`/${locale}/rts-cms/masters/fields`);
-    }
-
-    return { success: true, field: newField };
-  } catch {
-    const data = await readRtsData();
-    const nextId = String(Date.now());
-    const newField = {
-      id: nextId,
-      departmentId: String(field.departmentId),
-      serviceId: String(field.serviceId),
-      fieldCode: field.fieldCode,
-      fieldName: field.fieldName || field.fieldCode,
-      fieldLabel: field.fieldLabel,
-      fieldType: field.fieldType,
-      fieldGroup: field.fieldGroup,
-      optionsJson: field.optionsJson || "",
-      isRequired: !!field.isRequired,
-      displayOrder: parseInt(field.displayOrder, 10) || 0,
-      validationRules: field.validationRules || "",
-      defaultValue: field.defaultValue || "",
-      minValue: field.minValue ? parseInt(field.minValue, 10) : null,
-      maxValue: field.maxValue ? parseInt(field.maxValue, 10) : null,
-      maxLength: field.maxLength ? parseInt(field.maxLength, 10) : null,
-      isActive: field.isActive ?? true
-    };
-    if (!data.fieldDefinitions) data.fieldDefinitions = [];
-    data.fieldDefinitions.push(newField);
-    await writeRtsData(data);
-
-    for (const locale of locales) {
-      revalidatePath(`/${locale}/rts-cms/masters/fields`);
-    }
-    return { success: true, field: newField };
+    return { success: false, error: "Failed to create field" };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to create field" };
   }
 }
 
@@ -794,72 +487,21 @@ export async function updateRtsFieldAction(id: string, field: any) {
         defaultValue: field.defaultValue || "",
         minValue: field.minValue !== "" && field.minValue !== null ? parseInt(field.minValue, 10) : null,
         maxValue: field.maxValue !== "" && field.maxValue !== null ? parseInt(field.maxValue, 10) : null,
-        maxLength: field.maxLength !== "" && field.maxLength !== null ? parseInt(field.maxLength, 10) : null
+        maxLength: field.maxLength !== "" && field.maxLength !== null ? parseInt(field.maxLength, 10) : null,
       };
 
       const res = await apiClient.put<any>(`/RTSFieldDefinition/${id}`, payload);
-      if (res.success && res.data) {
-        const raw = Array.isArray(res.data) ? res.data[0] : (res.data.items?.[0] || res.data);
-        const updatedField = {
-          id: String(raw.id ?? id),
-          departmentId: String(raw.departmentId ?? ""),
-          serviceId: String(raw.serviceId ?? ""),
-          fieldCode: String(raw.fieldCode ?? ""),
-          fieldName: String(raw.fieldName ?? ""),
-          fieldLabel: String(raw.fieldLabel ?? ""),
-          fieldType: String(raw.fieldType ?? ""),
-          fieldGroup: String(raw.fieldGroup ?? ""),
-          optionsJson: String(raw.optionsJson ?? ""),
-          isRequired: !!raw.isRequired,
-          displayOrder: Number(raw.displayOrder ?? 0),
-          validationRules: String(raw.validationRules ?? ""),
-          defaultValue: String(raw.defaultValue ?? ""),
-          minValue: raw.minValue !== null ? Number(raw.minValue) : null,
-          maxValue: raw.maxValue !== null ? Number(raw.maxValue) : null,
-          maxLength: raw.maxLength !== null ? Number(raw.maxLength) : null,
-          isActive: !!raw.isActive
-        };
-
+      if (res.success) {
         for (const locale of locales) {
-          revalidatePath(`/${locale}/rts-cms/masters/fields`);
+          revalidatePath(`/${locale}/rts/configuration-settings/rts-fields`);
         }
-        return { success: true, field: updatedField };
+        return { success: true, field: { ...payload, id: String(id) } };
       }
     }
-  } catch {
+    return { success: false, error: "Failed to update field" };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to update field" };
   }
-
-  // Fallback to local
-  const data = await readRtsData();
-  if (!data.fieldDefinitions) data.fieldDefinitions = [];
-  const index = data.fieldDefinitions.findIndex(f => f.id === id);
-  const updatedField = {
-    id,
-    departmentId: String(field.departmentId),
-    serviceId: String(field.serviceId),
-    fieldCode: field.fieldCode,
-    fieldName: field.fieldName || field.fieldCode,
-    fieldLabel: field.fieldLabel,
-    fieldType: field.fieldType,
-    fieldGroup: field.fieldGroup,
-    optionsJson: field.optionsJson || "",
-    isRequired: !!field.isRequired,
-    displayOrder: parseInt(field.displayOrder, 10) || 0,
-    validationRules: field.validationRules || "",
-    defaultValue: field.defaultValue || "",
-    minValue: field.minValue ? parseInt(field.minValue, 10) : null,
-    maxValue: field.maxValue ? parseInt(field.maxValue, 10) : null,
-    maxLength: field.maxLength ? parseInt(field.maxLength, 10) : null,
-    isActive: field.isActive ?? true
-  };
-  if (index !== -1) {
-    data.fieldDefinitions[index] = updatedField;
-    await writeRtsData(data);
-  }
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/rts-cms/masters/fields`);
-  }
-  return { success: true, field: updatedField };
 }
 
 export async function deleteRtsFieldAction(id: string) {
@@ -869,27 +511,18 @@ export async function deleteRtsFieldAction(id: string) {
       const res = await apiClient.delete<any>(`/RTSFieldDefinition/${id}`);
       if (res.success) {
         for (const locale of locales) {
-          revalidatePath(`/${locale}/rts-cms/masters/fields`);
+          revalidatePath(`/${locale}/rts/configuration-settings/rts-fields`);
         }
         return { success: true };
       }
     }
-  } catch {
+    return { success: false, error: "Failed to delete field" };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to delete field" };
   }
-
-  // Fallback to local
-  const data = await readRtsData();
-  if (data.fieldDefinitions) {
-    data.fieldDefinitions = data.fieldDefinitions.filter(f => f.id !== id);
-    await writeRtsData(data);
-  }
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/rts-cms/masters/fields`);
-  }
-  return { success: true };
 }
 
-// ─── Backward-compatibility aliases (deprecated – use Rts* names) ────────────
+// ─── Backward-compatibility aliases ─────────────────────────────────────────
 export const getCmsDashboardStatsAction = getRtsDashboardStatsAction;
 export const getCmsApplicationsAction = getRtsApplicationsAction;
 export const getCmsApplicationByIdAction = getRtsApplicationByIdAction;

@@ -3,23 +3,26 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
-  CheckCircle2,
-  FileCheck2,
-  Printer,
-  XCircle,
-  ShieldCheck,
+  AlertCircle,
+  Award,
+  BadgeCheck,
   Building2,
   Calendar,
-  User,
-  Layers,
-  Award,
-  Lock,
-  Copy,
   Check,
-  FileText,
-  Eye,
-  BadgeCheck,
+  CheckCircle2,
   Clock,
+  Copy,
+  Download,
+  ExternalLink,
+  Eye,
+  FileCheck2,
+  FileText,
+  Layers,
+  Lock,
+  Printer,
+  ShieldCheck,
+  User,
+  XCircle,
 } from "lucide-react";
 import { Badge, Card } from "@/components/common";
 import type { CertificateVerificationResponse } from "@/types/rts/certificate.types";
@@ -33,6 +36,7 @@ export default function CertificateVerificationView({
   data,
   locale,
 }: CertificateVerificationViewProps) {
+  const isManual = data.certificateType === 2;
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"summary" | "certificate">("summary");
   const [verificationTime, setVerificationTime] = useState<string>("");
@@ -211,6 +215,25 @@ export default function CertificateVerificationView({
 
         {data.isValid && (
           <>
+            {/* Statutory Department Collection Notice */}
+            {isManual && (
+              <div className="rounded-2xl border-2 border-amber-400 bg-amber-50 p-4 sm:p-5 text-amber-950 shadow-sm flex items-start gap-3.5">
+                <AlertCircle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-amber-900">
+                    महत्त्वाची वैधानिक विभागीय सूचना (Statutory Department Notice)
+                  </h3>
+                  <p className="text-sm font-bold text-amber-950 leading-relaxed">
+                    {data.departmentCollectionNotice ||
+                      "⚠️ सदर मूळ अधिकृत प्रमाणपत्र अर्जदाराने संबंधित विभागामधून जमा (collect) करून घ्यावे."}
+                  </p>
+                  <p className="text-xs text-amber-800">
+                    सदर प्रमाणपत्र महापालिका / नगरपरिषद स्तरावर मॅन्युअली तयार करण्यात आले असून अधिकृत पडताळणीसाठी प्रणालीमध्ये नोंदवले आहे. अर्जदाराने याचे मूळ प्रत्यक्ष प्रमाणपत्र (Original Physical Copy) संबंधित विभागातून प्राप्त करून घेणे आवश्यक आहे.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* View Switcher Tabs (Desktop & Mobile) */}
             <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-1 print:hidden">
               <div className="flex gap-2">
@@ -226,7 +249,7 @@ export default function CertificateVerificationView({
                   <FileText className="h-4 w-4" />
                   पडताळणी तपशील (Verification Details)
                 </button>
-                {data.mergedHtmlContent && (
+                {(data.mergedHtmlContent || isManual) && (
                   <button
                     type="button"
                     onClick={() => setActiveTab("certificate")}
@@ -244,6 +267,19 @@ export default function CertificateVerificationView({
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2">
+                {(data.documentDownloadUrl || data.documentGuid) && (
+                  <a
+                    href={data.documentDownloadUrl || `/api/rts/documents/${data.documentGuid}/download`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 text-xs font-bold shadow-sm transition"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">प्रमाणपत्र डाऊनलोड</span>
+                    <span className="sm:hidden">डाऊनलोड</span>
+                  </a>
+                )}
                 <button
                   type="button"
                   onClick={handleCopyLink}
@@ -463,14 +499,47 @@ export default function CertificateVerificationView({
             )}
 
             {/* TAB 2: Full Rendered Certificate Document */}
-            {activeTab === "certificate" && data.mergedHtmlContent && (
-              <div className="overflow-hidden rounded-2xl border border-slate-300 bg-white p-4 sm:p-8 shadow-md">
-                <div className="mx-auto max-w-4xl overflow-x-auto">
-                  <div
-                    className="min-w-[650px] sm:min-w-full"
-                    dangerouslySetInnerHTML={{ __html: data.mergedHtmlContent }}
-                  />
-                </div>
+            {activeTab === "certificate" && (
+              <div className="space-y-6">
+                {isManual && (data.documentDownloadUrl || data.documentGuid) && (
+                  <div className="overflow-hidden rounded-2xl border border-slate-300 bg-white p-4 sm:p-6 shadow-md space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                      <span className="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <FileCheck2 className="w-4 h-4 text-emerald-600" />
+                        महापालिकेद्वारे अपलोड केलेले अधिकृत मॅन्युअल प्रमाणपत्र
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={data.documentGuid ? `/api/rts/documents/${data.documentGuid}/view` : data.documentDownloadUrl || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-bold text-blue-700 hover:underline flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          नवीन टॅबमध्ये उघडा
+                        </a>
+                      </div>
+                    </div>
+                    <div className="w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-50 min-h-[550px]">
+                      <iframe
+                        src={data.documentGuid ? `/api/rts/documents/${data.documentGuid}/view` : data.documentDownloadUrl || ""}
+                        className="w-full h-[650px] border-none"
+                        title="Manual Certificate Document"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {data.mergedHtmlContent && (
+                  <div className="overflow-hidden rounded-2xl border border-slate-300 bg-white p-4 sm:p-8 shadow-md">
+                    <div className="mx-auto max-w-4xl overflow-x-auto">
+                      <div
+                        className="min-w-[650px] sm:min-w-full"
+                        dangerouslySetInnerHTML={{ __html: data.mergedHtmlContent }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </>

@@ -313,7 +313,9 @@ export default function RtsDepartmentConfig({
         (department) =>
           department.name
             .toLowerCase()
-            .includes(query)
+            .includes(query) ||
+          (department.localName &&
+            department.localName.toLowerCase().includes(query))
       );
     }, [departments, search]);
 
@@ -372,6 +374,11 @@ export default function RtsDepartmentConfig({
         "border-r border-blue-300/60 text-white",
       cellClassName:
         "font-semibold text-slate-800 border-r border-slate-100",
+      render: (_value, row) => (
+        <span className="font-semibold text-slate-800">
+          {locale === "mr" ? (row.localName ? `${row.localName} (${row.name})` : row.name) : row.name}
+        </span>
+      ),
     },
     {
       key: "localName",
