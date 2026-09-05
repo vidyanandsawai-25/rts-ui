@@ -661,7 +661,7 @@ export interface RtsApplicationsDashboardFilters {
   serviceId?: number;
   applicationNo?: string;
   status?: string;
-  sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate';
+  sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays';
   sortOrder?: 'asc' | 'desc';
 }
 
@@ -828,6 +828,11 @@ function sortDashboardRows(
           right.lastUpdatedDate || null,
           (a, b) => new Date(a).getTime() - new Date(b).getTime()
         );
+        break;
+      case 'RemainingDays':
+        if (left.remainingDays == null && right.remainingDays != null) return 1;
+        if (left.remainingDays != null && right.remainingDays == null) return -1;
+        comparison = (left.remainingDays ?? 0) - (right.remainingDays ?? 0);
         break;
       case 'CreatedDate':
       default:

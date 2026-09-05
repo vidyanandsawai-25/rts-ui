@@ -9,7 +9,7 @@ import {
 
 type QueryValue = string | string[] | undefined;
 type SearchParams = Record<string, QueryValue>;
-type ApprovalSortBy = 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate';
+type ApprovalSortBy = 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays';
 
 const SORT_BY_VALUES = new Set<ApprovalSortBy>([
   'applicationNo',
@@ -17,6 +17,7 @@ const SORT_BY_VALUES = new Set<ApprovalSortBy>([
   'ApplicantName',
   'ApplicationStatus',
   'UpdatedDate',
+  'RemainingDays',
 ]);
 
 function readQuery(query: SearchParams, canonical: string, legacy: string): string | undefined {

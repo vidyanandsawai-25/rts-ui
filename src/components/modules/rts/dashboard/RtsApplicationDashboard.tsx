@@ -79,7 +79,7 @@ interface RtsApplicationDashboardProps {
 }
 
 type GridRow = AdminApplicationGridRow & Record<string, unknown> & { id: string };
-type ApplicationSortKey = 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate';
+type ApplicationSortKey = 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays';
 type SortDirection = 'asc' | 'desc';
 
 const PAGE_SIZE_OPTIONS = [10];
@@ -534,7 +534,7 @@ export default function RtsApplicationDashboard({
       },
       {
         key: 'remainingDays',
-        label: t('applicationDashboard.table.daysRemainingOverdue'),
+        label: sortableHeader('RemainingDays', t('applicationDashboard.table.daysRemainingOverdue')),
         align: 'center',
         render: (_value, row) => (
           <span

@@ -162,7 +162,7 @@ export interface GetRtsApplicationApprovalListParams {
   serviceId?: number;
   applicationNo?: string;
   status?: string;
-  sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate';
+  sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays';
   sortOrder?: 'asc' | 'desc';
 }
 
