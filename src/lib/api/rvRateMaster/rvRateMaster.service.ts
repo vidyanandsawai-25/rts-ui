@@ -76,7 +76,7 @@ export async function getRateMasterTableData(
         const rateMaster = groupedData.get(key)!;
         const constructionTypeId = Number(item.constructionTypeId);
         const construction = constructionTypes.find(ct => Number(ct.constructionId) === constructionTypeId);
-        
+
         if (construction) {
           const constructionCode = construction.constructionCode || construction.constructionId;
           const rateIndex = rateMaster.rates.findIndex(r => r.rateCategory === constructionCode);

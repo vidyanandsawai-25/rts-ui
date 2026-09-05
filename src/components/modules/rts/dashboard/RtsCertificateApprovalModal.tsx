@@ -371,7 +371,7 @@ export default function RtsCertificateApprovalModal({
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-slate-900 truncate">{uploadedFileName}</p>
                         <p className="text-[10px] text-emerald-700 font-semibold">
-                          {uploadedFileSize ? `${(uploadedFileSize / 1024).toFixed(1)} KB` : "Uploaded"} • 
+                          {uploadedFileSize ? `${(uploadedFileSize / 1024).toFixed(1)} KB` : "Uploaded"} •
                           <span className="text-emerald-800 ml-1">जोडण्यात आले ✓</span>
                         </p>
                       </div>
