@@ -32,6 +32,7 @@ interface DepreciationMasterGridProps {
   handleUpdateRates: () => void;
   handlePageChange: (page: number) => void;
   handlePageSizeChange: (size: number) => void;
+  values?: Record<string, string | number | Date>;
 }
 
 export function DepreciationMasterGrid({
@@ -60,12 +61,13 @@ export function DepreciationMasterGrid({
   handleUpdateRates,
   handlePageChange,
   handlePageSizeChange,
+  values,
 }: DepreciationMasterGridProps) {
   return (
     <PageContainer>
       <div className="space-y-4">
-        <TableHeader title={t("title")}
-          subtitle={t("subtitle")}
+        <TableHeader title={t("title", values)}
+          subtitle={t("subtitle", values)}
           icon={FileText}
         />
         <div className="grid grid-cols-12 gap-4">
@@ -83,6 +85,7 @@ export function DepreciationMasterGrid({
             onSelectRange={handleRangeSelection}
             onDeleteRange={handleDeleteRange}
             t={t}
+            values={values}
           />
           <RightPanel
             matrixColumns={matrixColumns}
@@ -98,6 +101,7 @@ export function DepreciationMasterGrid({
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
             t={t}
+            values={values}
           />
         </div>
       </div>

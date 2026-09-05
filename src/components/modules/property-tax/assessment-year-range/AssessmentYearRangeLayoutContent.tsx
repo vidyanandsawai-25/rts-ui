@@ -3,6 +3,7 @@
 import { CalendarRange } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import TableHeader from "@/components/common/TableHeader";
 import { AssessmentYearRangeToolbar } from "./AssessmentYearRangeToolbar";
 import { useAssessmentYearRangeError } from "./AssessmentYearRangeErrorContext";
@@ -23,12 +24,15 @@ export function AssessmentYearRangeLayoutContent({
   const isCapitalValue = pathname.includes("/capitalvalue");
   const t = isCapitalValue ? tCV : tRV;
 
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.entity"));
+  const values = { assessment: assessmentLabel, entity: assessmentLabel };
+
   return (
     <div className="">
       {!hasError && (
         <TableHeader
-          title={t("list.title")}
-          subtitle={t("list.subtitle")}
+          title={t("list.title", values)}
+          subtitle={t("list.subtitle", values)}
           icon={CalendarRange}
           rightContent={<AssessmentYearRangeToolbar />}
         />

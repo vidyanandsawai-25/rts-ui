@@ -1,16 +1,22 @@
 {
   "shared": {
-    "title": "Assessment Year Range",
-    "subtitle": "Manage assessment year ranges for property tax calculations",
+    "aliasFallback": {
+      "entity": "Assessment"
+    },
+    "title": "{assessment} Year Range",
+    "subtitle": "Manage {assessment} year ranges for property tax calculations",
     "tabs": {
       "rateableValue": "Rateable Value",
       "capitalValue": "Capital Value"
     }
   },
   "rateableValue": {
+    "aliasFallback": {
+      "entity": "Assessment"
+    },
     "list": {
-      "title": "Assessment Year Range (Rateable Value)",
-      "subtitle": "Manage assessment year ranges for rateable value calculations",
+      "title": "{assessment} Year Range (Rateable Value)",
+      "subtitle": "Manage {assessment} year ranges for rateable value calculations",
       "buttons": {
         "add": "Add Year Range",
         "edit": "Edit",
@@ -26,10 +32,10 @@
       }
     },
     "form": {
-      "addTitle": "Add Assessment Year Range",
-      "editTitle": "Edit Assessment Year Range",
-      "subtitle": "Create new assessment year range",
-      "editSubtitle": "Update assessment year range details",
+      "addTitle": "Add {assessment} Year Range",
+      "editTitle": "Edit {assessment} Year Range",
+      "subtitle": "Create new {assessment} year range",
+      "editSubtitle": "Update {assessment} year range details",
       "fields": {
         "fromYear": {
           "label": "From Year",
@@ -61,15 +67,15 @@
     },
     "delete": {
       "confirmTitle": "Delete Year Range?",
-      "confirmDescription": "Are you sure you want to delete this assessment year range?"
+      "confirmDescription": "Are you sure you want to delete this {assessment} year range?"
     },
     "apiErrors": {
       "duplicateRecord": "This year range overlaps with an existing range. Please use different years.",
       "invalidData": "Invalid data provided. Please check all fields.",
-      "notFound": "Assessment year range not found.",
+      "notFound": "{assessment} year range not found.",
       "inUse": "Cannot delete this year range as it is in use.",
-      "referredInYearRange": "Cannot delete this AssessmentYearRange because it is referenced in Rate Master",
-      "cannotDeactivateYearRange": "Cannot deactivate this AssessmentYearRange because it is referenced in Rate Master",
+      "referredInYearRange": "Cannot delete this {assessment} Year Range because it is referenced in Rate Master",
+      "cannotDeactivateYearRange": "Cannot deactivate this {assessment} Year Range because it is referenced in Rate Master",
       "operationFailed": "Operation failed. Please try again later."
     },
     "success": {
@@ -91,9 +97,12 @@
     }
   },
   "capitalValue": {
+    "aliasFallback": {
+      "entity": "Assessment"
+    },
     "list": {
-      "title": "Assessment Year Range (Capital Value)",
-      "subtitle": "Manage assessment year ranges for capital value calculations",
+      "title": "{assessment} Year Range (Capital Value)",
+      "subtitle": "Manage {assessment} year ranges for capital value calculations",
       "buttons": {
         "add": "Add Year Range",
         "edit": "Edit",
@@ -109,10 +118,10 @@
       }
     },
     "form": {
-      "addTitle": "Add Assessment Year Range",
-      "editTitle": "Edit Assessment Year Range",
-      "subtitle": "Create new assessment year range",
-      "editSubtitle": "Update assessment year range details",
+      "addTitle": "Add {assessment} Year Range",
+      "editTitle": "Edit {assessment} Year Range",
+      "subtitle": "Create new {assessment} year range",
+      "editSubtitle": "Update {assessment} year range details",
       "fields": {
         "fromYear": {
           "label": "From Year",
@@ -144,15 +153,15 @@
     },
     "delete": {
       "confirmTitle": "Delete Year Range?",
-      "confirmDescription": "Are you sure you want to delete this assessment year range?"
+      "confirmDescription": "Are you sure you want to delete this {assessment} year range?"
     },
     "apiErrors": {
       "duplicateRecord": "This year range overlaps with an existing range. Please use different years.",
       "invalidData": "Invalid data provided. Please check all fields.",
-      "notFound": "Assessment year range not found.",
+      "notFound": "{assessment} year range not found.",
       "inUse": "Cannot delete this year range as it is in use.",
-      "referredInYearRange": "Cannot delete this AssessmentYearRangeCV because it is referenced in Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master",
-      "cannotDeactivateYearRange": "Cannot deactivate this AssessmentYearRangeCV because it is referenced in Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master",
+      "referredInYearRange": "Cannot delete this {assessment} Year Range CV because it is referenced in Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master",
+      "cannotDeactivateYearRange": "Cannot deactivate this {assessment} Year Range CV because it is referenced in Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master",
       "operationFailed": "Operation failed. Please try again later."
     },
     "success": {

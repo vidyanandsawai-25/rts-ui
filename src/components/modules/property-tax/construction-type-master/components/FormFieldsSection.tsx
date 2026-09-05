@@ -11,7 +11,10 @@ interface FormFieldsSectionProps {
   handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
   errors: Partial<Record<keyof ConstructionTypeFormModel, string>>;
   showError: (field: keyof ConstructionTypeFormModel) => boolean;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
+  isActive?: boolean;
+  isEdit?: boolean;
+  constructionTypeLabel?: string;
 }
 
 export const FormFieldsSection = ({
@@ -24,14 +27,16 @@ export const FormFieldsSection = ({
   t,
   isActive = true,
   isEdit = false,
-}: FormFieldsSectionProps & { isActive?: boolean; isEdit?: boolean }) => {
+  constructionTypeLabel,
+}: FormFieldsSectionProps) => {
+  const values = { constructionType: constructionTypeLabel ?? "", entity: constructionTypeLabel ?? "" };
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       <Input
         name="constructionCode"
-        label={t("form.fields.constructionCode.label")}
+        label={t("form.fields.constructionCode.label", values)}
         required
-        placeholder={t("form.fields.constructionCode.placeholder")}
+        placeholder={t("form.fields.constructionCode.placeholder", values)}
         value={formData.constructionCode}
         onChange={handleChange}
         onBlur={handleBlur}
@@ -46,9 +51,9 @@ export const FormFieldsSection = ({
 
       <Input
         name="description"
-        label={t("form.fields.description.label")}
+        label={t("form.fields.description.label", values)}
         required={true}
-        placeholder={t("form.fields.description.placeholder")}
+        placeholder={t("form.fields.description.placeholder", values)}
         value={formData.description}
         onChange={handleChange}
         onBlur={handleBlur}
@@ -63,7 +68,7 @@ export const FormFieldsSection = ({
 
       <Input
         name="searchSequence"
-        label={t("form.fields.searchSequence.label")}
+        label={t("form.fields.searchSequence.label", values)}
         type="number"
         min={1}
         value={searchSequenceValue}

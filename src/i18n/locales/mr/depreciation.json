@@ -1,8 +1,13 @@
 {
   "depreciationMaster": {
+    "aliasFallback": {
+      "assessment": "मूल्यांकन",
+      "constructionType": "बांधकाम प्रकार",
+      "entity": "मूल्यांकन"
+    },
     "title": "घसारा",
-    "subtitle": "मालमत्ता कर व्यवस्थापन प्रणाली",
-    "assessmentYear": "मूल्यांकन वर्ष",
+    "subtitle": "मालमत्ता कर {assessment} प्रणाली",
+    "assessmentYear": "{assessment} वर्ष",
     "createRange": "रेंज तयार करा",
     "min": "किमान वय",
     "max": "कमाल वय",
@@ -35,9 +40,9 @@
     "messages": {
       "noChanges": "अपडेट करण्यासाठी कोणते बदल नाहीत.",
       "updating": "{count} रेकॉर्ड अपडेट होत आहेत...",
-      "creatingRange": "सर्व बांधकाम प्रकारांसाठी रेंज तयार होत आहे..."
+      "creatingRange": "सर्व {constructionType}ांसाठी रेंज तयार होत आहे..."
     },
-   "errors": {
+    "errors": {
       "load": "घसारा डेटा लोड करण्यात अयशस्वी.",
       "add": "रेंज जोडण्यात अयशस्वी.",
       "update": "दर अद्ययावत करण्यात अयशस्वी.",
@@ -65,6 +70,13 @@
     "loading": {
       "message": "घटती किंमत मास्टर लोड होत आहे...",
       "description": "कृपया प्रतीक्षा करा, घटती किंमत डेटा मिळवत आहे"
+    },
+    "pagination": {
+      "showing": "पृष्ठ {page} मध्ये {totalPages} पैकी {ranges} श्रेणी दाखवत आहे",
+      "total": "एकूण: {count} श्रेणी",
+      "constructionTypes": "{constructionType}",
+      "showingTypes": "या पृष्ठावर {total} पैकी {shown} प्रकार दाखवत आहे",
+      "typesMayBeOnOtherPages": "काही {constructionType} इतर पृष्ठांवर असू शकतात. सर्व डेटा पाहण्यासाठी नेव्हिगेट करा."
     }
   }
 }
