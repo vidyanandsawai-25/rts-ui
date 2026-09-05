@@ -56,9 +56,68 @@ export function transformBackendRatesToMatrix(
   zoneDescriptions: IZoneDescription[],
   isOpenPlot: boolean = false
 ): IRateMaster[] {
+  if (!backendData || backendData.length === 0) {
+    return [];
+  }
+
   const taxZoneIdToNo = new Map(zoneDescriptions.map(z => [z.taxZoneId, String(z.zoneNo).trim()]));
   const groupedData = new Map<string, IRateMaster>();
 
+  // 1. Collect all distinct combinations of (rateSection, [useGroup], assessmentYear) present in backendData
+  type Combo = {
+    rateSectionNo: string;
+    typeOfUseGroupId: string;
+    yearRangeRVId: string;
+  };
+  const distinctCombos = new Map<string, Combo>();
+
+  backendData.forEach((item) => {
+    const rateSectionId = item.rateSectionId;
+    const rateSectionNo = item.rateSectionNo || String(rateSectionId);
+    const typeOfUseGroupId = String(item.typeOfUseGroupId);
+    const yearRangeRVId = String(item.yearRangeRVId ?? item.yearRangeId ?? '');
+    const comboKey = isOpenPlot 
+      ? [rateSectionNo, yearRangeRVId].join('|')
+      : [rateSectionNo, typeOfUseGroupId, yearRangeRVId].join('|');
+
+    if (!distinctCombos.has(comboKey)) {
+      distinctCombos.set(comboKey, {
+        rateSectionNo,
+        typeOfUseGroupId: isOpenPlot ? "" : typeOfUseGroupId,
+        yearRangeRVId,
+      });
+    }
+  });
+
+  // 2. Pre-populate rows for all active tax zones from zoneDescriptions for each distinct combo (preserving zoneDescriptions order)
+  distinctCombos.forEach((combo) => {
+    zoneDescriptions.forEach((z) => {
+      const taxZoneNo = String(z.zoneNo).trim();
+      const key = isOpenPlot 
+        ? [taxZoneNo, combo.rateSectionNo, combo.yearRangeRVId].join('|')
+        : [taxZoneNo, combo.rateSectionNo, combo.typeOfUseGroupId, combo.yearRangeRVId].join('|');
+
+      if (!groupedData.has(key)) {
+        const initialRates = constructionTypes.map(ct => ({
+          rateCategory: ct.constructionCode || ct.constructionId,
+          ratePerSqMtr: null,
+          ratePerSqFt: null,
+          rateRemark: undefined as string | undefined
+        }));
+
+        groupedData.set(key, {
+          id: `zone-${z.taxZoneId}-${combo.rateSectionNo}-${combo.typeOfUseGroupId}-${combo.yearRangeRVId}`,
+          rateSection: combo.rateSectionNo,
+          zoneNo: taxZoneNo,
+          useGroup: combo.typeOfUseGroupId,
+          assessmentYear: combo.yearRangeRVId,
+          rates: initialRates,
+        });
+      }
+    });
+  });
+
+  // 3. Populate existing rates from backendData
   backendData.forEach((item) => {
     try {
       const taxZoneId = item.taxZoneId;
@@ -66,7 +125,7 @@ export function transformBackendRatesToMatrix(
       const typeOfUseGroupId = String(item.typeOfUseGroupId);
       const rateSectionId = item.rateSectionId;
       const rateSectionNo = item.rateSectionNo || String(rateSectionId);
-      const yearRangeRVId = item.yearRangeRVId ?? item.yearRangeId;
+      const yearRangeRVId = String(item.yearRangeRVId ?? item.yearRangeId ?? '');
       // Use a composite key to avoid overwriting data for the same zone with different section/useGroup/year
       const key = isOpenPlot 
         ? [taxZoneNo, rateSectionNo, yearRangeRVId].join('|')
@@ -85,13 +144,16 @@ export function transformBackendRatesToMatrix(
           rateSection: rateSectionNo,
           zoneNo: taxZoneNo,
           useGroup: isOpenPlot ? "" : typeOfUseGroupId,
-          assessmentYear: `${yearRangeRVId}`,
+          assessmentYear: yearRangeRVId,
           rates: initialRates,
         });
       }
 
       const group = groupedData.get(key);
       if (group) {
+        if (item.id && (!group.id || group.id.startsWith('zone-'))) {
+          group.id = String(item.id);
+        }
         const matchId = isOpenPlot ? Number(item.typeOfUseGroupId) : Number(item.constructionTypeId);
         const construction = constructionTypes.find(ct => {
           const ctId = isOpenPlot ? Number(ct.typeOfUseGroupId) : Number(ct.constructionId);

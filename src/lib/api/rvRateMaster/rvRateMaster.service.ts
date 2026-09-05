@@ -4,6 +4,8 @@ import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
 import { getTranslations } from 'next-intl/server';
 
+import { transformBackendRatesToMatrix } from "./rvRateMaster.helpers";
+
 /**
  * Get rate master table columns configuration
  */
@@ -47,51 +49,7 @@ export async function getRateMasterTableData(
 
     const data = response.data;
     const backendData: IBackendRateMaster[] = data.items || [];
-    const taxZoneIdToNo = new Map(zoneDescriptions.map(z => [z.taxZoneId, z.zoneNo]));
-    const groupedData = new Map<string, IRateMaster>();
-
-    backendData.forEach(item => {
-      try {
-        const taxZoneNo = taxZoneIdToNo.get(item.taxZoneId) || item.taxZoneNo || String(item.taxZoneId);
-        const typeOfUseGroupId = String(item.typeOfUseGroupId);
-        const rateSectionNo = item.rateSectionNo || String(item.rateSectionId);
-        const yearRangeRVId = String(item.yearRangeRVId || item.yearRangeId);
-        const key = `${taxZoneNo}-${typeOfUseGroupId}-${rateSectionNo}-${yearRangeRVId}-${item.year}`;
-
-        if (!groupedData.has(key)) {
-          groupedData.set(key, {
-            id: String(item.id),
-            rateSection: rateSectionNo,
-            zoneNo: taxZoneNo,
-            assessmentYear: yearRangeRVId,
-            useGroup: typeOfUseGroupId,
-            rates: constructionTypes.map(ct => ({
-              rateCategory: ct.constructionCode || ct.constructionId,
-              ratePerSqMtr: null,
-              ratePerSqFt: null
-            }))
-          });
-        }
-
-        const rateMaster = groupedData.get(key)!;
-        const constructionTypeId = Number(item.constructionTypeId);
-        const construction = constructionTypes.find(ct => Number(ct.constructionId) === constructionTypeId);
-        
-        if (construction) {
-          const constructionCode = construction.constructionCode || construction.constructionId;
-          const rateIndex = rateMaster.rates.findIndex(r => r.rateCategory === constructionCode);
-          if (rateIndex !== -1) {
-            rateMaster.rates[rateIndex].ratePerSqMtr = item.rateSquareMeter;
-            rateMaster.rates[rateIndex].ratePerSqFt = item.rateSquareFeet;
-            rateMaster.rates[rateIndex].id = item.id;
-          }
-        }
-      } catch (_err) {
-        // Logging should be handled in action.ts
-      }
-    });
-
-    return Array.from(groupedData.values());
+    return transformBackendRatesToMatrix(backendData, constructionTypes, zoneDescriptions, false);
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
