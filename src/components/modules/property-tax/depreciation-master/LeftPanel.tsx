@@ -17,16 +17,17 @@ export function LeftPanel({
   onSelectRange,
   onDeleteRange,
   t,
+  values,
 }: Readonly<LeftPanelProps>) {
   return (
     <div className="col-span-12 lg:col-span-2">
       <div className="bg-white rounded-2xl border shadow-sm h-155 flex flex-col p-2 space-y-6">
         <div className="grid grid-cols-2 gap-1.5 [&_label]:text-xs [&_label]:min-h-[32px]">
           <Input
-            label={t("min")}
+            label={t("min", values)}
             required
             type="text"
-            placeholder={t("minPlaceholder")}
+            placeholder={t("minPlaceholder", values)}
             value={minValue}
             onChange={(e) => onMinChange(e.target.value)}
             onKeyDown={(e) => {
@@ -40,10 +41,10 @@ export function LeftPanel({
             className="text-xs"
           />
           <Input
-            label={t("max")}
+            label={t("max", values)}
             required
             type="text"
-            placeholder={t("maxPlaceholder")}
+            placeholder={t("maxPlaceholder", values)}
             value={maxValue}
             onChange={(e) => onMaxChange(e.target.value)}
             onKeyDown={(e) => {
@@ -66,13 +67,13 @@ export function LeftPanel({
           }}
           disabled={saving}
           className="w-full text-xs py-1.5"
-          label={t("addRange")}
+          label={t("addRange", values)}
         />
 
         <div className="flex-1 overflow-y-auto space-y-1.5 border-t pt-3">
           {ranges.length === 0 ? (
             <div className="text-center text-gray-400 py-6 text-xs">
-              {t("noRanges") || "No ranges available"}
+              {t("noRanges", values) || "No ranges available"}
             </div>
           ) : (
             ranges.map((r) => {
@@ -111,7 +112,7 @@ export function LeftPanel({
           }}
           disabled={saving || !selectedRangeId}
           className="w-full text-xs py-1.5"
-          aria-label={t("deleteRange")}
+          aria-label={t("deleteRange", values)}
         />
       </div>
     </div>

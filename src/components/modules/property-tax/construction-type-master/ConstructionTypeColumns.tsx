@@ -71,12 +71,14 @@ function SortableHeader({
  * @returns Array of column definitions
  */
 export function getConstructionTypeColumns(
-  t: (key: string) => string,
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string) => string,
   sortBy?: string,
   sortOrder?: string,
-  onSort?: (key: string) => void
+  onSort?: (key: string) => void,
+  constructionTypeLabel?: string
 ): Column<ConstructionType>[] {
+  const values = { constructionType: constructionTypeLabel ?? "", entity: constructionTypeLabel ?? "" };
   // Whitelisted sortable columns
   const sortableColumns = ["constructionCode", "description", "searchSequence"];
  
@@ -99,25 +101,25 @@ export function getConstructionTypeColumns(
   return [
     {
       key: "constructionCode",
-      label: createSortableLabel(t("list.table.constructionCode"), "constructionCode"),
+      label: createSortableLabel(t("list.table.constructionCode", values), "constructionCode"),
       width: "20%",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
       key: "description",
-      label: createSortableLabel(t("list.table.description"), "description"),
+      label: createSortableLabel(t("list.table.description", values), "description"),
       width: "20%",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
       key: "searchSequence",
-      label: createSortableLabel(t("list.table.searchSequence"), "searchSequence"),
+      label: createSortableLabel(t("list.table.searchSequence", values), "searchSequence"),
       width: "20%",
       render: (value) => (typeof value === "number" ? value : ""),
     },
     {
       key: "isActive",
-      label: createSortableLabel(t("list.table.status"), "isActive"),
+      label: createSortableLabel(t("list.table.status", values), "isActive"),
       width: "20%",
       isStatus: true,
     },

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { JSX } from "react";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import type { RangeRow, DepreciationMasterProps } from "@/types/depreciation.types";
 import { DepreciationMasterGrid } from "./DepreciationMasterGrid";
 import { useDepreciationHandlers } from "./useDepreciationHandlers";
@@ -23,6 +24,18 @@ export default function DepreciationMaster({
 }: Readonly<DepreciationMasterProps>): JSX.Element {
   const t = useTranslations("depreciation.depreciationMaster");
   const locale = localeProp ?? "en";
+
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.assessment") || t("aliasFallback.entity"));
+  const constructionTypeLabel = useAliasLabel("Construction_Type", t("aliasFallback.constructionType") || t("aliasFallback.entity"));
+
+  const values = useMemo(
+    () => ({
+      assessment: assessmentLabel,
+      constructionType: constructionTypeLabel,
+      entity: assessmentLabel,
+    }),
+    [assessmentLabel, constructionTypeLabel]
+  );
 
   /* ----------------------------- State ----------------------------- */
   const [saving, setSaving] = useState(false);
@@ -125,6 +138,7 @@ export default function DepreciationMaster({
     setSelectedRangeId,
     minValue,
     maxValue,
+    values,
   });
 
   // GRID MAPPING & RENDERING
@@ -185,6 +199,7 @@ export default function DepreciationMaster({
       handleUpdateRates={handleUpdateRates}
       handlePageChange={handlePageChange}
       handlePageSizeChange={handlePageSizeChange}
+      values={values}
     />
   );
 }

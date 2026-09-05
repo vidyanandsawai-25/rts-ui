@@ -11,8 +11,9 @@ interface FormFieldsSectionProps {
   handleBlur: (field: "fromYear" | "toYear") => void;
   errors: Partial<Record<keyof AssessmentYearRangeFormModel, string>>;
   showError: (field: keyof AssessmentYearRangeFormModel) => boolean;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   disabled?: boolean;
+  assessmentLabel?: string;
 }
 
 export const FormFieldsSection = ({
@@ -24,14 +25,17 @@ export const FormFieldsSection = ({
   showError,
   t,
   disabled = false,
+  assessmentLabel,
 }: FormFieldsSectionProps) => {
+  const values = { assessment: assessmentLabel ?? "", entity: assessmentLabel ?? "" };
+
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       <Input
         name="fromYear"
-        label={t("form.fields.fromYear.label")}
+        label={t("form.fields.fromYear.label", values)}
         required
-        placeholder={t("form.fields.fromYear.placeholder")}
+        placeholder={t("form.fields.fromYear.placeholder", values)}
         value={fromYearValue}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
           handleYearChange("fromYear", e.target.value)
@@ -51,9 +55,9 @@ export const FormFieldsSection = ({
 
       <Input
         name="toYear"
-        label={t("form.fields.toYear.label")}
+        label={t("form.fields.toYear.label", values)}
         required
-        placeholder={t("form.fields.toYear.placeholder")}
+        placeholder={t("form.fields.toYear.placeholder", values)}
         value={toYearValue}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
           handleYearChange("toYear", e.target.value)

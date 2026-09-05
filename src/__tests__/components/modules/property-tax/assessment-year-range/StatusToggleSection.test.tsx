@@ -82,8 +82,8 @@ describe("StatusToggleSection (AssessmentYearRange)", () => {
   it("uses correct translation functions", () => {
     render(<StatusToggleSection {...defaultProps} />);
     
-    expect(mockT).toHaveBeenCalledWith("form.status.label");
-    expect(mockT).toHaveBeenCalledWith("form.status.description");
+    expect(mockT).toHaveBeenCalledWith("form.status.label", expect.anything());
+    expect(mockT).toHaveBeenCalledWith("form.status.description", expect.anything());
     expect(mockTCommon).toHaveBeenCalledWith("status.active");
   });
 

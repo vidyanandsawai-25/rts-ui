@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
 import { AddButton, Tabs } from "@/components/common";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 type TabKey = "rateablevalue" | "capitalvalue";
 
@@ -22,6 +23,9 @@ export function AssessmentYearRangeToolbar() {
   const activeTab: TabKey = pathname.includes("/capitalvalue") ? "capitalvalue" : "rateablevalue";
   const t = activeTab === "rateablevalue" ? tRV : tCV;
 
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.entity"));
+  const values = { assessment: assessmentLabel, entity: assessmentLabel };
+
   return (
     <div className="flex items-center gap-3">
       <Tabs
@@ -37,7 +41,7 @@ export function AssessmentYearRangeToolbar() {
 
       <AddButton
         className="w-full"
-        label={t("form.addTitle")}
+        label={t("form.addTitle", values)}
         onClick={() => router.push(`${base}/${activeTab}/add`)}
       />
     </div>

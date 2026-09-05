@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import {
   createConstructionAction,
   updateConstructionAction,
@@ -37,6 +38,12 @@ export function useConstructionForm({
   const tCommon = useTranslations("common");
   const isEdit = Boolean(id);
 
+  const constructionTypeLabel = useAliasLabel("Construction_Type", t("aliasFallback.entity"));
+  const values = useMemo(
+    () => ({ constructionType: constructionTypeLabel, entity: constructionTypeLabel }),
+    [constructionTypeLabel]
+  );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
@@ -57,23 +64,24 @@ export function useConstructionForm({
 
   const validate = useCallback(
     (data: ConstructionTypeFormModel): Partial<Record<keyof ConstructionTypeFormModel, string>> => {
+      const tWithValues = (key: string, v?: Record<string, string | number | Date>) => t(key, { ...values, ...v });
       const schema = {
-        constructionCode: commonValidations.masterCode(t, CONSTRUCTION_CODE_MAX, {
+        constructionCode: commonValidations.masterCode(tWithValues, CONSTRUCTION_CODE_MAX, {
           required: 'form.validation.constructionCodeRequired',
           format: 'form.validation.constructionCodeFormat',
           maxLength: 'form.validation.constructionCodeMaxLength',
         }),
-        description: commonValidations.masterDescription(t, DESCRIPTION_MAX, {
+        description: commonValidations.masterDescription(tWithValues, DESCRIPTION_MAX, {
           required: 'form.validation.descriptionRequired',
           format: 'form.validation.descriptionFormat',
           maxLength: 'form.validation.descriptionMaxLength',
         }),
-        searchSequence: commonValidations.masterSearchSequence(t, 'form.validation.sequenceInvalid'),
-        isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
+        searchSequence: commonValidations.masterSearchSequence(tWithValues, 'form.validation.sequenceInvalid'),
+        isActive: commonValidations.masterActiveStatus(tWithValues, isEdit, 'form.validation.mustBeActive'),
       };
       return validateForm(data, schema);
     },
-    [t, isEdit]
+    [t, isEdit, values]
   );
 
   const showError = useCallback((field: keyof ConstructionTypeFormModel): boolean =>
@@ -148,8 +156,8 @@ export function useConstructionForm({
 
   const mapApiError = useCallback((result: { statusCode?: number; message?: string }) => {
     const errorMap: Record<number, string> = {
-      409: t("apiErrors.duplicateRecord"),
-      404: t("apiErrors.notFound"),
+      409: t("apiErrors.duplicateRecord", values),
+      404: t("apiErrors.notFound", values),
       401: tCommon("errors.unauthorized"),
       403: tCommon("errors.unauthorized"),
     };
@@ -160,14 +168,14 @@ export function useConstructionForm({
     if (code === 400) {
       const msg = result.message?.toLowerCase() || "";
       if (msg.includes("duplicate") || msg.includes("already exists")) {
-        return t("apiErrors.duplicateRecord");
+        return t("apiErrors.duplicateRecord", values);
       }
-      return result.message || t("apiErrors.invalidData");
+      return result.message || t("apiErrors.invalidData", values);
     }
 
     if (code >= 500) return tCommon("errors.serverError");
-    return result.message || t("apiErrors.operationFailed");
-  }, [t, tCommon]);
+    return result.message || t("apiErrors.operationFailed", values);
+  }, [t, tCommon, values]);
 
   const [open, setOpen] = useState(true);
   const [, startTransition] = React.useTransition();
@@ -197,13 +205,13 @@ export function useConstructionForm({
 
     // Numbers only not allowed for constructionCode
     if (!HAS_LETTER_REGEX.test(formData.constructionCode)) {
-      toast.error(t("form.validation.constructionCodeNumbersOnlyNotAllowed"));
+      toast.error(t("form.validation.constructionCodeNumbersOnlyNotAllowed", values));
       return;
     }
 
     // Numbers only not allowed for description
     if (!HAS_LETTER_REGEX.test(formData.description)) {
-      toast.error(t("form.validation.descriptionNumbersOnlyNotAllowed"));
+      toast.error(t("form.validation.descriptionNumbersOnlyNotAllowed", values));
       return;
     }
 
@@ -219,8 +227,8 @@ export function useConstructionForm({
       }
 
       toast.success(isEdit
-        ? t("success.updated", { code: formData.constructionCode })
-        : t("success.created", { code: formData.constructionCode })
+        ? t("success.updated", { code: formData.constructionCode, ...values })
+        : t("success.created", { code: formData.constructionCode, ...values })
       );
 
       onSuccess();
@@ -258,5 +266,6 @@ export function useConstructionForm({
     t,
     tCommon,
     isEdit,
+    constructionTypeLabel,
   };
 }

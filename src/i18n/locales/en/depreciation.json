@@ -1,8 +1,13 @@
 {
   "depreciationMaster": {
+    "aliasFallback": {
+      "assessment": "Assessment",
+      "constructionType": "Construction Type",
+      "entity": "Assessment"
+    },
     "title": "Depreciation Master",
-    "subtitle": "Property Tax Assessment System",
-    "assessmentYear": "Assessment Year",
+    "subtitle": "Property Tax {assessment} System",
+    "assessmentYear": "{assessment} Year",
     "createRange": "Create Range",
     "min": "Minimum Age",
     "max": "Maximum Age",
@@ -29,14 +34,12 @@
     "success": {
       "deleted": "Range deleted successfully.",
       "updated": "Rates updated successfully.",
-      "added": "Range added successfully.",
-      "come":"added"
-        
+      "added": "Range added successfully."
     },
     "messages": {
       "noChanges": "No changes to update.",
       "updating": "Updating {count} records...",
-      "creatingRange": "Creating range for all construction types..."
+      "creatingRange": "Creating range for all {constructionType}s..."
     },
     "noRanges": "No ranges found",
     "errors": {
@@ -71,9 +74,9 @@
     "pagination": {
       "showing": "Showing {ranges} ranges on page {page} of {totalPages}",
       "total": "Total: {count} ranges",
-      "constructionTypes": "Construction Types",
+      "constructionTypes": "{constructionType}s",
       "showingTypes": "Showing {shown} of {total} types on this page",
-      "typesMayBeOnOtherPages": "Some construction types may be on other pages. Navigate to see all data."
+      "typesMayBeOnOtherPages": "Some {constructionType}s may be on other pages. Navigate to see all data."
     }
   }
 }

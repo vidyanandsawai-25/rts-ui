@@ -9,8 +9,9 @@ interface StatusToggleSectionProps {
   isActive: boolean;
   handleToggleStatus: () => void;
   error?: string;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   tCommon: (key: string) => string;
+  constructionTypeLabel?: string;
 }
 
 export const StatusToggleSection = ({
@@ -20,8 +21,11 @@ export const StatusToggleSection = ({
   error,
   t,
   tCommon,
+  constructionTypeLabel,
 }: StatusToggleSectionProps) => {
   if (!isEdit) return null;
+
+  const values = { constructionType: constructionTypeLabel ?? "", entity: constructionTypeLabel ?? "" };
 
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-4">
@@ -45,9 +49,9 @@ export const StatusToggleSection = ({
             {isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
           </div>
           <div>
-            <div className="font-medium text-gray-900">{t("form.status.label")}</div>
+            <div className="font-medium text-gray-900">{t("form.status.label", values)}</div>
             <div className="text-sm text-gray-500">
-              {t("form.status.description")}
+              {t("form.status.description", values)}
               {isActive ? ` ${tCommon("status.active")}` : ` ${tCommon("status.inactive")}`}
             </div>
           </div>

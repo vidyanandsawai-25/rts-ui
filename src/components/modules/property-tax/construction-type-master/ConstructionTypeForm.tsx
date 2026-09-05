@@ -34,12 +34,15 @@ export default function ConstructionTypeForm({
     t,
     tCommon,
     isEdit,
+    constructionTypeLabel,
   } = useConstructionForm({
     id,
     initialData,
     onSuccess: () => {},
     onCancel: () => {},
   });
+
+  const values = { constructionType: constructionTypeLabel, entity: constructionTypeLabel };
 
   return (
     <Drawer
@@ -53,10 +56,10 @@ export default function ConstructionTypeForm({
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t("form.editTitle") : t("form.addTitle")}
+              {isEdit ? t("form.editTitle", values) : t("form.addTitle", values)}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit ? t("form.editSubtitle") : t("form.subtitle")}
+              {isEdit ? t("form.editSubtitle", values) : t("form.subtitle", values)}
             </div>
           </div>
         </div>
@@ -69,7 +72,7 @@ export default function ConstructionTypeForm({
             disabled={isSubmitting}
           />
           <SaveButton
-            label={isEdit ? t("form.actions.update") : t("form.actions.save")}
+            label={isEdit ? t("form.actions.update", values) : t("form.actions.save", values)}
             type="submit"
             form="form"
             isLoading={isSubmitting}
@@ -85,6 +88,7 @@ export default function ConstructionTypeForm({
           error={errors.isActive}
           t={t}
           tCommon={tCommon}
+          constructionTypeLabel={constructionTypeLabel}
         />
 
         <FormFieldsSection
@@ -97,6 +101,7 @@ export default function ConstructionTypeForm({
           t={t}
           isActive={isActive}
           isEdit={isEdit}
+          constructionTypeLabel={constructionTypeLabel}
         />
 
         <ValidationSection tCommon={tCommon} />

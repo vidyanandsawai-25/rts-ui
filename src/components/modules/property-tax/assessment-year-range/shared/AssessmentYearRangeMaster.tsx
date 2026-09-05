@@ -8,6 +8,7 @@ import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { Select } from "@/components/common";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import {
   AssessmentYearRange,
   AssessmentYearRangeConfig,
@@ -39,6 +40,12 @@ export function AssessmentYearRangeMaster<T extends AssessmentYearRange>({
   const tCommon = useTranslations("common");
   const locale = useLocale();
 
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.entity"));
+  const values = React.useMemo(
+    () => ({ assessment: assessmentLabel, entity: assessmentLabel }),
+    [assessmentLabel]
+  );
+
   const { confirm } = useConfirm();
   const [isPending, startTransition] = React.useTransition();
 
@@ -58,7 +65,8 @@ export function AssessmentYearRangeMaster<T extends AssessmentYearRange>({
     tCommon,
     sortBy,
     sortOrder,
-    handleSort
+    handleSort,
+    assessmentLabel
   );
 
   const handleEdit = useCallback(
@@ -79,28 +87,27 @@ export function AssessmentYearRangeMaster<T extends AssessmentYearRange>({
       
       confirm({
         variant: "delete",
-        title: `${t("list.table.fromYear")}: ${fromYear} - ${t("list.table.toYear")}: ${toYear}`,
-        description: t("delete.confirmDescription"),
+        title: `${t("list.table.fromYear", values)}: ${fromYear} - ${t("list.table.toYear", values)}: ${toYear}`,
+        description: t("delete.confirmDescription", values),
         meta: { name: `${fromYear} - ${toYear}` },
         onConfirm: async () => {
           const fd = new FormData();
           fd.append("id", String(id));
           const result = await deleteAction(fd);
           if (result.success) {
-            toast.success(t("success.deleted", { fromYear, toYear }));
+            toast.success(t("success.deleted", { fromYear, toYear, ...values }));
             startTransition(() => router.refresh());
           } else {
             const errorMessage =
-              // result.statusCode === 409 ? t("apiErrors.inUse") :
-              result.statusCode === 409 ? t("apiErrors.referredInYearRange") :
-              result.statusCode === 404 ? t("apiErrors.notFound") :
+              result.statusCode === 409 ? t("apiErrors.referredInYearRange", values) :
+              result.statusCode === 404 ? t("apiErrors.notFound", values) :
               result.message || tCommon("errors.deleteError");
             toast.error(errorMessage);
           }
         },
       });
     },
-    [confirm, router, t, tCommon, deleteAction, startTransition]
+    [confirm, router, t, tCommon, deleteAction, startTransition, values]
   );
 
   const { start, end, total } = paginationInfo;

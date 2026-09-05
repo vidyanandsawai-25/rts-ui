@@ -1,16 +1,22 @@
 {
   "shared": {
-    "title": "मूल्यांकन वर्ष सीमा",
-    "subtitle": "संपत्ति कर गणना के लिए मूल्यांकन वर्ष सीमाएं प्रबंधित करें",
+    "aliasFallback": {
+      "entity": "मूल्यांकन"
+    },
+    "title": "{assessment} वर्ष सीमा",
+    "subtitle": "संपत्ति कर गणना के लिए {assessment} वर्ष सीमाएं प्रबंधित करें",
     "tabs": {
       "rateableValue": "मूल्य योग्य मूल्य",
       "capitalValue": "पूंजी मूल्य"
     }
   },
   "rateableValue": {
+    "aliasFallback": {
+      "entity": "मूल्यांकन"
+    },
     "list": {
-      "title": "मूल्यांकन वर्ष सीमा (मूल्य योग्य मूल्य)",
-      "subtitle": "मूल्य योग्य मूल्य गणना के लिए मूल्यांकन वर्ष सीमाएं प्रबंधित करें",
+      "title": "{assessment} वर्ष सीमा (मूल्य योग्य मूल्य)",
+      "subtitle": "मूल्य योग्य मूल्य गणना के लिए {assessment} वर्ष सीमाएं प्रबंधित करें",
       "buttons": {
         "add": "वर्ष सीमा जोड़ें",
         "edit": "संपादित करें",
@@ -26,10 +32,10 @@
       }
     },
     "form": {
-      "addTitle": "मूल्यांकन वर्ष सीमा जोड़ें",
-      "editTitle": "मूल्यांकन वर्ष सीमा संपादित करें",
-      "subtitle": "नई मूल्यांकन वर्ष सीमा बनाएं",
-      "editSubtitle": "मूल्यांकन वर्ष सीमा विवरण अपडेट करें",
+      "addTitle": "{assessment} वर्ष सीमा जोड़ें",
+      "editTitle": "{assessment} वर्ष सीमा संपादित करें",
+      "subtitle": "नई {assessment} वर्ष सीमा बनाएं",
+      "editSubtitle": "{assessment} वर्ष सीमा विवरण अपडेट करें",
       "fields": {
         "fromYear": {
           "label": "वर्ष से",
@@ -61,16 +67,16 @@
     },
     "delete": {
       "confirmTitle": "वर्ष सीमा हटाएं?",
-      "confirmDescription": "क्या आप वाकई इस मूल्यांकन वर्ष सीमा को हटाना चाहते हैं?"
+      "confirmDescription": "क्या आप वाकई इस {assessment} वर्ष सीमा को हटाना चाहते हैं?"
     },
     "apiErrors": {
       "duplicateRecord": "यह वर्ष सीमा मौजूदा सीमा के साथ ओवरलैप होती है। कृपया अलग वर्ष उपयोग करें।",
       "invalidData": "अमान्य डेटा प्रदान किया गया। कृपया सभी फ़ील्ड जांचें।",
-      "notFound": "मूल्यांकन वर्ष सीमा नहीं मिली।",
+      "notFound": "{assessment} वर्ष सीमा नहीं मिली।",
       "inUse": "इस वर्ष सीमा का उपयोग हो रहा है इसलिए हटाया नहीं जा सकता।",
-      "referredInYearRange": "इस AssessmentYearRange को हटाया नहीं जा सकता क्योंकि यह Rate Master में संदर्भित है।",
-      "cannotDeactivateYearRange": "इस AssessmentYearRange को निष्क्रिय नहीं किया जा सकता क्योंकि यह Rate Master में संदर्भित है।",
-      "operationFailed": "ऑपरेशन विफल। कृपया बाद में पुनः प्रयास करें。"
+      "referredInYearRange": "इस {assessment} Year Range को हटाया नहीं जा सकता क्योंकि यह Rate Master में संदर्भित है।",
+      "cannotDeactivateYearRange": "इस {assessment} Year Range को निष्क्रिय नहीं किया जा सकता क्योंकि यह Rate Master में संदर्भित है।",
+      "operationFailed": "ऑपरेशन विफल। कृपया बाद में पुनः प्रयास करें।"
     },
     "success": {
       "created": "वर्ष सीमा {fromYear}-{toYear} सफलतापूर्वक बनाई गई",
@@ -91,9 +97,12 @@
     }
   },
   "capitalValue": {
+    "aliasFallback": {
+      "entity": "मूल्यांकन"
+    },
     "list": {
-      "title": "मूल्यांकन वर्ष सीमा (पूंजी मूल्य)",
-      "subtitle": "पूंजी मूल्य गणना के लिए मूल्यांकन वर्ष सीमाएं प्रबंधित करें",
+      "title": "{assessment} वर्ष सीमा (पूंजी मूल्य)",
+      "subtitle": "पूंजी मूल्य गणना के लिए {assessment} वर्ष सीमाएं प्रबंधित करें",
       "buttons": {
         "add": "वर्ष सीमा जोड़ें",
         "edit": "संपादित करें",
@@ -109,10 +118,10 @@
       }
     },
     "form": {
-      "addTitle": "मूल्यांकन वर्ष सीमा जोड़ें",
-      "editTitle": "मूल्यांकन वर्ष सीमा संपादित करें",
-      "subtitle": "नई मूल्यांकन वर्ष सीमा बनाएं",
-      "editSubtitle": "मूल्यांकन वर्ष सीमा विवरण अपडेट करें",
+      "addTitle": "{assessment} वर्ष सीमा जोड़ें",
+      "editTitle": "{assessment} वर्ष सीमा संपादित करें",
+      "subtitle": "नई {assessment} वर्ष सीमा बनाएं",
+      "editSubtitle": "{assessment} वर्ष सीमा विवरण अपडेट करें",
       "fields": {
         "fromYear": {
           "label": "वर्ष से",
@@ -144,15 +153,15 @@
     },
     "delete": {
       "confirmTitle": "वर्ष सीमा हटाएं?",
-      "confirmDescription": "क्या आप वाकई इस मूल्यांकन वर्ष सीमा को हटाना चाहते हैं?"
+      "confirmDescription": "क्या आप वाकई इस {assessment} वर्ष सीमा को हटाना चाहते हैं?"
     },
     "apiErrors": {
       "duplicateRecord": "यह वर्ष सीमा मौजूदा सीमा के साथ ओवरलैप होती है। कृपया अलग वर्ष उपयोग करें।",
       "invalidData": "अमान्य डेटा प्रदान किया गया। कृपया सभी फ़ील्ड जांचें।",
-      "notFound": "मूल्यांकन वर्ष सीमा नहीं मिली।",
-      "inUse": "इस वर्ष सीमा को हटाया नहीं जा सकता क्योंकि यह उपयोग में है।",
-      "referredInYearRange": "इस AssessmentYearRangeCV को हटाया नहीं जा सकता क्योंकि यह Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master में संदर्भित है।",
-      "cannotDeactivateYearRange": "इस AssessmentYearRangeCV को निष्क्रिय नहीं किया जा सकता क्योंकि यह Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master में संदर्भित है।",
+      "notFound": "{assessment} वर्ष सीमा नहीं मिली।",
+      "inUse": "इस वर्ष सीमा का उपयोग हो रहा है इसलिए हटाया नहीं जा सकता।",
+      "referredInYearRange": "इस {assessment} Year Range CV को हटाया नहीं जा सकता क्योंकि यह Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master में संदर्भित है।",
+      "cannotDeactivateYearRange": "इस {assessment} Year Range CV को निष्क्रिय नहीं किया जा सकता क्योंकि यह Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master में संदर्भित है।",
       "operationFailed": "ऑपरेशन विफल। कृपया बाद में पुनः प्रयास करें।"
     },
     "success": {
