@@ -25,12 +25,14 @@ export function useMatrixDataBuilder({
   paginatedZoneDescriptions,
   zoneDescriptions,
   rateCategories,
-  matrixStorageKey,
+  matrixStorageKey: _matrixStorageKey,
   allZoneEdits,
 }: MatrixDataBuilderProps): MatrixRow[] {
 
   return useMemo(() => {
-    const activeZones = paginatedZoneDescriptions || zoneDescriptions;
+    const activeZones = paginatedZoneDescriptions && paginatedZoneDescriptions.length > 0
+      ? paginatedZoneDescriptions
+      : zoneDescriptions;
 
     // In add mode, always return undefined
     if (mode === 'add' && !id && !editData && !bulkEditData) {
@@ -48,29 +50,7 @@ export function useMatrixDataBuilder({
       });
     }
 
-    // Edit mode: check sessionStorage first
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem(matrixStorageKey);
-      if (stored) {
-        try {
-          const parsedData = JSON.parse(stored);
-          if (Array.isArray(parsedData) && parsedData.length > 0) {
-            return (parsedData as MatrixRow[]).map((row, idx: number) => {
-              const baseRow = {
-                ...row,
-                zoneNo: row.zoneNo ?? (row as unknown as { zone?: string }).zone ?? activeZones[idx]?.zoneNo ?? '',
-              };
-              const edits = allZoneEdits[baseRow.zoneNo as string] || {};
-              return { ...baseRow, ...edits };
-            });
-          }
-        } catch (_e) {
-          // Failed to parse stored matrix data
-        }
-      }
-    }
-
-    // Create from editData/bulkEditData
+    // Edit/delete mode: create rows for activeZones and merge with bulkEditData / editData and allZoneEdits
     return activeZones.map((z, idx) => {
       const rateValues: Record<string, number | undefined> = {};
       if (bulkEditData?.length) {
@@ -101,5 +81,5 @@ export function useMatrixDataBuilder({
       const edits = allZoneEdits[z.zoneNo] || {};
       return { ...baseData, ...edits };
     });
-  }, [mode, id, editData, bulkEditData, paginatedZoneDescriptions, zoneDescriptions, rateCategories, matrixStorageKey, allZoneEdits]);
+  }, [mode, id, editData, bulkEditData, paginatedZoneDescriptions, zoneDescriptions, rateCategories, allZoneEdits]);
 }

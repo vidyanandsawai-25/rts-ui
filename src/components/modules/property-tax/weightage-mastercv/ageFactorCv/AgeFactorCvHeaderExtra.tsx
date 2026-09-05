@@ -14,6 +14,7 @@ import {
 } from "@/components/common/ActionButtons";
 import { POSITIVE_DECIMAL_INVALID_KEYS, sanitizePositiveDecimal } from "@/lib/utils/validation";
 import { toast } from "sonner";
+import { useOptionTooltips } from "@/hooks/weightageMaster/useOptionTooltips";
 
 interface AgeFactorCvHeaderExtraProps {
     t: (key: string, values?: Record<string, string | number>) => string;
@@ -82,8 +83,10 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
     handleGenerateAll,
     editableRowsCount,
 }) => {
+    const { containerRef: optionTooltipsRef, tooltip } = useOptionTooltips<HTMLDivElement>();
     return (
-        <>
+        <div ref={optionTooltipsRef} className="contents">
+            {tooltip}
             {/* Assessment Year */}
             <div className="flex flex-col gap-1.5">
                 <span className="text-[12px] font-medium text-gray-600 ml-0.5">{t('filters.assessmentYear')}</span>
@@ -298,6 +301,6 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                     className="h-[34px] px-4 font-bold border-[#DCEAFF] text-[#1E3A8A]"
                 />
             </div>
-        </>
+        </div>
     );
 };
