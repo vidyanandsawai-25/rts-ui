@@ -4,7 +4,7 @@ import { getRtsMisDepartmentServicesAction } from "./actions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 type ApplicationSource = "rts" | "aaple-sarkar" | "offline";
-type MisStatusFilter = "Pending" | "Approved" | "Rejected" | "Overdue";
+type MisStatusFilter = "Pending" | "Approved" | "Rejected" | "Reverted" | "Overdue";
 
 function getFirstValue(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -35,6 +35,8 @@ function getStatusFilter(value: string | undefined): MisStatusFilter | "" {
       return "Approved";
     case "rejected":
       return "Rejected";
+    case "reverted":
+      return "Reverted";
     case "overdue":
       return "Overdue";
     default:

@@ -169,6 +169,8 @@ export function normalizeRtsApplicationViewDetailsItem(
       fieldDefinitionId: parseNumber(d.fieldDefinitionId),
       documentId: parseNumber(d.documentId),
       documentName: parseString(d.documentName, 'Document'),
+      documentNameLocal: parseNullableString(d.documentNameLocal),
+      local: parseNullableString(d.local) ?? parseNullableString(d.documentNameLocal),
       documentGuid: parseString(d.documentGuid),
       documentUrl: parseNullableString(d.documentUrl),
       storagePath: parseNullableString(d.storagePath),
@@ -179,6 +181,14 @@ export function normalizeRtsApplicationViewDetailsItem(
   });
 
   return {
+    applicationId: parseNumber(data.applicationId),
+    applicationNo: parseString(data.applicationNo),
+    serviceId: parseNumber(data.serviceId),
+    serviceName: parseString(data.serviceName),
+    departmentId: parseNumber(data.departmentId),
+    departmentName: parseString(data.departmentName),
+    applicationStatus: parseString(data.applicationStatus),
+    remark: parseNullableString(data.remark),
     documents,
     applicationDetails,
   };
@@ -255,6 +265,9 @@ export function normalizeRtsApplicationVerificationItem(
     canPay: Boolean(data.canPay ?? data.CanPay),
     canEdit: Boolean(data.canEdit ?? data.CanEdit),
     canViewNoteSheet: Boolean(data.canViewNoteSheet ?? data.CanViewNoteSheet),
+    canIssueCertificate: Boolean(data.canIssueCertificate ?? data.CanIssueCertificate),
+    canEditCertificate: Boolean(data.canEditCertificate ?? data.CanEditCertificate),
+    isManualCertificate: Boolean(data.isManualCertificate ?? data.IsManualCertificate),
     serviceId: parseNullableNumber(data.serviceId ?? data.ServiceId),
     serviceName: parseNullableString(data.serviceName ?? data.ServiceName),
     serviceFees: parseNullableNumber(data.serviceFees ?? data.ServiceFees),

@@ -555,7 +555,11 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                     <p className="text-xs sm:text-sm font-bold text-cyan-900">{locale === 'mr' ? 'नोंदणीकृत मालमत्ता' : 'Registered Properties'}</p>
                     <span className="bg-cyan-600 text-white text-[10px] sm:text-xs font-extrabold px-2 py-0.5 rounded-full">{propertiesList.length} {locale === 'mr' ? 'आढळल्या' : 'Found'}</span>
                   </div>
-                  <p className="text-[11px] text-cyan-800 mt-1 font-medium">{locale === 'mr' ? 'कृपया ज्या मालमत्तेसाठी लॉगिन करायचे आहे ती निवडा:' : 'Please select the property to log in with:'}</p>
+                  {propertiesList.length > 1 && (
+                    <p className="mt-1 text-[11px] font-medium leading-5 text-cyan-800" aria-live="polite">
+                      {t('properties.multipleLinkedInstruction')}
+                    </p>
+                  )}
                 </div>
                 <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 -mr-1">
                   {propertiesList.map((prop) => {

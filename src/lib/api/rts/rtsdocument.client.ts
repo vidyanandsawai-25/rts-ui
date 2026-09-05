@@ -12,7 +12,9 @@ function getRtsDocumentProxyUrl(
   action: RtsDocumentAction,
   audience: RtsDocumentAudience
 ): string {
-  const proxyBasePath = audience === "admin" ? "/api/rts/documents" : "/api/service/documents";
+  // The established admin proxy forwards the authenticated bearer token to the
+  // document API. The RTS-specific route is not registered by the active app router.
+  const proxyBasePath = audience === "admin" ? "/api/documents" : "/api/service/documents";
   return `${proxyBasePath}/${encodeURIComponent(documentGuid.trim())}/${action}`;
 }
 

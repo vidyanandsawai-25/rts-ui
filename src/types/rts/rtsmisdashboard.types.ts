@@ -6,6 +6,7 @@ export interface RtsMisDashboardServiceItem {
   pending: number | null;
   approved: number | null;
   rejected: number | null;
+  reverted?: number | null;
   overdueCount: number | null;
   sla: number | null;
   // Older deployments can include source counts; the updated API may omit them.
