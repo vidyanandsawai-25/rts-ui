@@ -32,9 +32,9 @@ describe("getAssessmentYearRangeColumns", () => {
       mockOnSort
     );
     
-    expect(mockT).toHaveBeenCalledWith("list.table.fromYear");
-    expect(mockT).toHaveBeenCalledWith("list.table.toYear");
-    expect(mockT).toHaveBeenCalledWith("list.table.status");
+    expect(mockT).toHaveBeenCalledWith("list.table.fromYear", expect.anything());
+    expect(mockT).toHaveBeenCalledWith("list.table.toYear", expect.anything());
+    expect(mockT).toHaveBeenCalledWith("list.table.status", expect.anything());
   });
 
   it("marks isActive column with isStatus flag", () => {

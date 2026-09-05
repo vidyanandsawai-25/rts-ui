@@ -64,12 +64,14 @@ function SortableHeader({
  * Generic function that works for both RV and CV.
  */
 export function getAssessmentYearRangeColumns<T extends AssessmentYearRange>(
-  t: (key: string) => string,
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string) => string,
   sortBy?: string,
   sortOrder?: string,
-  onSort?: (key: string) => void
+  onSort?: (key: string) => void,
+  assessmentLabel?: string
 ): Column<T>[] {
+  const values = { assessment: assessmentLabel ?? "", entity: assessmentLabel ?? "" };
   // Only fromYear and toYear are sortable
   const sortableColumns = ["fromYear", "toYear"];
 
@@ -92,19 +94,19 @@ export function getAssessmentYearRangeColumns<T extends AssessmentYearRange>(
   return [
     {
       key: "fromYear",
-      label: createSortableLabel(t("list.table.fromYear"), "fromYear"),
+      label: createSortableLabel(t("list.table.fromYear", values), "fromYear"),
       width: "25%",
       render: (_, row: T) => row.fromYear,
     },
     {
       key: "toYear",
-      label: createSortableLabel(t("list.table.toYear"), "toYear"),
+      label: createSortableLabel(t("list.table.toYear", values), "toYear"),
       width: "25%",
       render: (_, row: T) => row.toYear,
     },
     {
       key: "isActive",
-      label: createSortableLabel(t("list.table.status"), "isActive"),
+      label: createSortableLabel(t("list.table.status", values), "isActive"),
       width: "25%",
       isStatus: true,
     },

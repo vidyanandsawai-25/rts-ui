@@ -12,6 +12,7 @@ import { deleteConstructionTypeAction } from "@/app/[locale]/property-tax/constr
 import TableHeader from "@/components/common/TableHeader";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { PageContainer, SearchInput, Select } from "@/components/common";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { getConstructionTypeColumns } from "./ConstructionTypeColumns";
 import { useConstructionSearch } from "@/hooks/constructiontypemaster/useConstructionSearch";
 import { useConstructionPagination } from "@/hooks/constructiontypemaster/useConstructionPagination";
@@ -31,6 +32,12 @@ export function ConstructionTypeMaster({
   const t = useTranslations("construction.constructionType");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+
+  const constructionTypeLabel = useAliasLabel("Construction_Type", t("aliasFallback.entity"));
+  const values = React.useMemo(
+    () => ({ constructionType: constructionTypeLabel, entity: constructionTypeLabel }),
+    [constructionTypeLabel]
+  );
 
   const { confirm } = useConfirm();
   const [isPending, startTransition] = React.useTransition();
@@ -68,7 +75,7 @@ export function ConstructionTypeMaster({
     [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm]
   );
 
-  const columns = getConstructionTypeColumns(t, tCommon, sortBy, sortOrder, handleSort);
+  const columns = getConstructionTypeColumns(t, tCommon, sortBy, sortOrder, handleSort, constructionTypeLabel);
 
   const handleEdit = useCallback(
     (row: ConstructionType) => {
@@ -83,8 +90,8 @@ export function ConstructionTypeMaster({
     (row: ConstructionType) => {
       confirm({
         variant: "delete",
-        title: `${t("list.table.constructionCode")}: ${row.constructionCode}`,
-        description: `${t("delete.confirmDescription")}`,
+        title: `${t("list.table.constructionCode", values)}: ${row.constructionCode}`,
+        description: `${t("delete.confirmDescription", values)}`,
         meta: {
           name: row.description,
         },
@@ -94,7 +101,7 @@ export function ConstructionTypeMaster({
           const result = await deleteConstructionTypeAction(fd);
           if (result.success) {
             toast.success(
-              t("success.deleted", { code: row.constructionCode })
+              t("success.deleted", { code: row.constructionCode, ...values })
             );
             startTransition(() => {
               router.refresh();
@@ -105,12 +112,12 @@ export function ConstructionTypeMaster({
 
             if (result.statusCode === 409) {
               // Record linked with another record or in use
-              errorMessage = t("apiErrors.inUse");
+              errorMessage = t("apiErrors.inUse", values);
             } else if (result.statusCode === 400) {
               // Bad request / validation error
-              errorMessage = t("apiErrors.validationError");
+              errorMessage = t("apiErrors.validationError", values);
             } else if (result.statusCode === 404) {
-              errorMessage = t("apiErrors.notFound");
+              errorMessage = t("apiErrors.notFound", values);
             } else if (result.message) {
               errorMessage = result.message;
             }
@@ -119,7 +126,7 @@ export function ConstructionTypeMaster({
         },
       });
     },
-    [confirm, router, t, tCommon]
+    [confirm, router, t, tCommon, values]
   );
   /* ================= UI ================= */
   const { start, end, total } = paginationInfo;
@@ -127,10 +134,10 @@ export function ConstructionTypeMaster({
     <PageContainer>
       <div className="space-y-4">
         <TableHeader
-          title={t("list.title")}
-          subtitle={t("list.subtitle")}
+          title={t("list.title", values)}
+          subtitle={t("list.subtitle", values)}
           icon={HardHat}
-          actionLabel={t("list.buttons.add")}
+          actionLabel={t("list.buttons.add", values)}
           onActionClick={() => {
             startTransition(() => {
               router.push(`/${locale}/property-tax/constructiontype/add`);
@@ -147,7 +154,7 @@ export function ConstructionTypeMaster({
               <SearchInput
                 value={search}
                 onChange={handleSearchChange}
-                placeholder={t("list.filters.search") || "Search Construction Type..."}
+                placeholder={t("list.filters.search", values) || "Search Construction Type..."}
                 className="mb-0 w-full text-gray-900"
               />
             </div>

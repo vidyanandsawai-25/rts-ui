@@ -6,11 +6,11 @@ type RangeValidationResult = {
   maxError: string | null;
 };
 
-type TranslationFn = (key: string) => string;
+type TranslationFn = (key: string, values?: Record<string, string | number | Date>) => string;
 
 type ExistingRange = { min: number; max: number };
 
-export function useDepreciationValidation(t: TranslationFn) {
+export function useDepreciationValidation(t: TranslationFn, values?: Record<string, string | number | Date>) {
   /**
    * Returns the first existing range that [newMin, newMax] overlaps with, or null if none.
    * Uses inclusive boundary comparison: ranges sharing an endpoint are considered overlapping.
@@ -31,30 +31,30 @@ export function useDepreciationValidation(t: TranslationFn) {
     const errors = { minError: null as string | null, maxError: null as string | null };
 
     // Required validation
-    if (!min) errors.minError = t("errors.minMax");
-    if (!max) errors.maxError = t("errors.minMax");
+    if (!min) errors.minError = t("errors.minMax", values);
+    if (!max) errors.maxError = t("errors.minMax", values);
     if (errors.minError || errors.maxError) return errors;
 
     // Number validation - allow negative for now to catch them in next step
-    if (!/^-?\d+$/.test(min)) errors.minError = t("errors.mustBeNumber");
-    if (!/^-?\d+$/.test(max)) errors.maxError = t("errors.mustBeNumber");
+    if (!/^-?\d+$/.test(min)) errors.minError = t("errors.mustBeNumber", values);
+    if (!/^-?\d+$/.test(max)) errors.maxError = t("errors.mustBeNumber", values);
     if (errors.minError || errors.maxError) return errors;
 
     const minNum = Number(min);
     const maxNum = Number(max);
 
     // Negative validation (after ensuring it's a valid number)
-    if (minNum < 0) errors.minError = t("errors.cannotBeNegative");
-    if (maxNum < 0) errors.maxError = t("errors.cannotBeNegative");
+    if (minNum < 0) errors.minError = t("errors.cannotBeNegative", values);
+    if (maxNum < 0) errors.maxError = t("errors.cannotBeNegative", values);
     if (errors.minError || errors.maxError) return errors;
 
     // Range and limit validation
-    if (minNum > 999) errors.minError = t("errors.mustBe999OrLess");
-    if (maxNum > 999) errors.maxError = t("errors.mustBe999OrLess");
-    if (minNum >= maxNum) errors.maxError = t("errors.invalidRange");
+    if (minNum > 999) errors.minError = t("errors.mustBe999OrLess", values);
+    if (maxNum > 999) errors.maxError = t("errors.mustBe999OrLess", values);
+    if (minNum >= maxNum) errors.maxError = t("errors.invalidRange", values);
 
     return errors;
-  }, [t]);
+  }, [t, values]);
 
   /**
    * Validate min and max values with basic rules (no overlap check)

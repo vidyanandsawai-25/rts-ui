@@ -44,6 +44,7 @@ export function AssessmentYearRangeForm<T extends AssessmentYearRange>({
     t,
     tCommon,
     isEdit,
+    assessmentLabel,
   } = useAssessmentYearRangeForm({
     config,
     id,
@@ -51,6 +52,8 @@ export function AssessmentYearRangeForm<T extends AssessmentYearRange>({
     createAction,
     updateAction,
   });
+
+  const values = { assessment: assessmentLabel, entity: assessmentLabel };
 
   return (
     <Drawer
@@ -64,10 +67,10 @@ export function AssessmentYearRangeForm<T extends AssessmentYearRange>({
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t("form.editTitle") : t("form.addTitle")}
+              {isEdit ? t("form.editTitle", values) : t("form.addTitle", values)}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit ? t("form.editSubtitle") : t("form.subtitle")}
+              {isEdit ? t("form.editSubtitle", values) : t("form.subtitle", values)}
             </div>
           </div>
         </div>
@@ -80,7 +83,7 @@ export function AssessmentYearRangeForm<T extends AssessmentYearRange>({
             disabled={isSubmitting}
           />
           <SaveButton
-            label={isEdit ? t("form.actions.update") : t("form.actions.save")}
+            label={isEdit ? t("form.actions.update", values) : t("form.actions.save", values)}
             type="submit"
             form="assessment-year-range-form"
             isLoading={isSubmitting}
@@ -96,6 +99,7 @@ export function AssessmentYearRangeForm<T extends AssessmentYearRange>({
           error={errors.isActive}
           t={t}
           tCommon={tCommon}
+          assessmentLabel={assessmentLabel}
         />
 
         <FormFieldsSection
@@ -107,6 +111,7 @@ export function AssessmentYearRangeForm<T extends AssessmentYearRange>({
           showError={showError}
           t={t}
           disabled={!isActive}
+          assessmentLabel={assessmentLabel}
         />
 
         <ValidationSection tCommon={tCommon} />

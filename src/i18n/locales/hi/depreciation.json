@@ -1,8 +1,13 @@
 {
   "depreciationMaster": {
+    "aliasFallback": {
+      "assessment": "मूल्यांकन",
+      "constructionType": "निर्माण प्रकार",
+      "entity": "मूल्यांकन"
+    },
     "title": "घसारा",
-    "subtitle": "संपत्ति कर प्रबंधन प्रणाली",
-    "assessmentYear": "मूल्यांकन वर्ष",
+    "subtitle": "संपत्ति कर {assessment} प्रणाली",
+    "assessmentYear": "{assessment} वर्ष",
     "createRange": "रेंज बनाएं",
     "min": "न्यूनतम आयु",
     "max": "अधिकतम आयु",
@@ -35,9 +40,9 @@
     "messages": {
       "noChanges": "अपडेट करने के लिए कोई बदलाव नहीं।",
       "updating": "{count} रिकॉर्ड अपडेट हो रहे हैं...",
-      "creatingRange": "सभी निर्माण प्रकारों के लिए रेंज बनाई जा रही है..."
+      "creatingRange": "सभी {constructionType}ों के लिए रेंज बनाई जा रही है..."
     },
-   "errors": {
+    "errors": {
       "load": "घसारा डेटा लोड करने में विफल।",
       "add": "रेंज जोड़ने में विफल।",
       "update": "दर अपडेट करने में विफल।",
@@ -69,10 +74,9 @@
     "pagination": {
       "showing": "पृष्ठ {page} में से {totalPages} पर {ranges} श्रेणियां दिखा रहे हैं",
       "total": "कुल: {count} श्रेणियां",
-      "constructionTypes": "निर्माण प्रकार",
+      "constructionTypes": "{constructionType}",
       "showingTypes": "इस पृष्ठ पर {total} में से {shown} प्रकार दिखा रहे हैं",
-      "typesMayBeOnOtherPages": "कुछ निर्माण प्रकार अन्य पृष्ठों पर हो सकते हैं। सभी डेटा देखने के लिए नेविगेट करें।"
+      "typesMayBeOnOtherPages": "कुछ {constructionType} अन्य पृष्ठों पर हो सकते हैं। सभी डेटा देखने के लिए नेविगेट करें।"
     }
-
   }
 }

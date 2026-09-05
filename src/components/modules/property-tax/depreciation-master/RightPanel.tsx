@@ -19,13 +19,14 @@ export function RightPanel({
   onPageChange,
   onPageSizeChange,
   t,
+  values,
 }: Readonly<RightPanelProps>) {
   return (
     <div className="col-span-12 lg:col-span-10">
       <div className="bg-white rounded-2xl border shadow-sm h-155 flex flex-col">
         <div className="p-4 border-b flex justify-between items-center bg-gray-50/50 rounded-t-2xl">
           <span className="font-bold text-gray-700 uppercase text-xs tracking-wider">
-            {t("createDepChart")}
+            {t("createDepChart", values)}
           </span>
         </div>
 
@@ -33,15 +34,15 @@ export function RightPanel({
           <MatrixGrid
             columns={matrixColumns}
             rows={matrixRows}
-            metaColumns={[{ id: "range", label: t("ageRange"), width: "120px" }]}
+            metaColumns={[{ id: "range", label: t("ageRange", values), width: "120px" }]}
             mode="edit"
             editableColumns={editableColumnIds}
             onCellChange={onCellChange}
             cellMaxValue={99}
             translations={{
-              action: t("action"),
-              currencySymbol: t("currencySymbol"),
-              deleteRow: t("deleteRow"),
+              action: t("action", values),
+              currencySymbol: t("currencySymbol", values),
+              deleteRow: t("deleteRow", values),
             }}
           />
         </div>
@@ -59,7 +60,7 @@ export function RightPanel({
 
         <div className="p-4 border-t flex justify-end rounded-b-2xl">
           <SaveButton
-            label={saving ? t("processing") : `${t("updateRates")}`}
+            label={saving ? t("processing", values) : `${t("updateRates", values)}`}
             onClick={onUpdateRates}
             disabled={saving}
           />

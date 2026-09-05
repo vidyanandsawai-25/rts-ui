@@ -1,16 +1,22 @@
 {
   "shared": {
-    "title": "मूल्यांकन वर्ष श्रेणी",
-    "subtitle": "मालमत्ता कर गणनेसाठी मूल्यांकन वर्ष श्रेण्या व्यवस्थापित करा",
+    "aliasFallback": {
+      "entity": "मूल्यांकन"
+    },
+    "title": "{assessment} वर्ष श्रेणी",
+    "subtitle": "मालमत्ता कर गणनेसाठी {assessment} वर्ष श्रेणी व्यवस्थापित करा",
     "tabs": {
       "rateableValue": "मूल्यांकनीय मूल्य",
       "capitalValue": "भांडवली मूल्य"
     }
   },
   "rateableValue": {
+    "aliasFallback": {
+      "entity": "मूल्यांकन"
+    },
     "list": {
-      "title": "मूल्यांकन वर्ष श्रेणी (मूल्यांकनीय मूल्य)",
-      "subtitle": "मूल्यांकनीय मूल्य गणनेसाठी मूल्यांकन वर्ष श्रेण्या व्यवस्थापित करा",
+      "title": "{assessment} वर्ष श्रेणी (मूल्यांकनीय मूल्य)",
+      "subtitle": "मूल्यांकनीय मूल्य गणनेसाठी {assessment} वर्ष श्रेणी व्यवस्थापित करा",
       "buttons": {
         "add": "वर्ष श्रेणी जोडा",
         "edit": "संपादित करा",
@@ -26,10 +32,10 @@
       }
     },
     "form": {
-      "addTitle": "मूल्यांकन वर्ष श्रेणी जोडा",
-      "editTitle": "मूल्यांकन वर्ष श्रेणी संपादित करा",
-      "subtitle": "नवीन मूल्यांकन वर्ष श्रेणी तयार करा",
-      "editSubtitle": "मूल्यांकन वर्ष श्रेणी तपशील अद्यतनित करा",
+      "addTitle": "{assessment} वर्ष श्रेणी जोडा",
+      "editTitle": "{assessment} वर्ष श्रेणी संपादित करा",
+      "subtitle": "नवीन {assessment} वर्ष श्रेणी तयार करा",
+      "editSubtitle": "{assessment} वर्ष श्रेणी तपशील अद्यतनित करा",
       "fields": {
         "fromYear": {
           "label": "वर्षापासून",
@@ -60,17 +66,17 @@
       }
     },
     "delete": {
-      "confirmTitle": "वर्ष श्रेणी हटवायची?",
-      "confirmDescription": "तुम्हाला खात्री आहे की तुम्ही ही मूल्यांकन वर्ष श्रेणी हटवू इच्छिता?"
+      "confirmTitle": "वर्ष श्रेणी हटवा?",
+      "confirmDescription": "तुम्हाला नक्की ही {assessment} वर्ष श्रेणी हटवायची आहे का?"
     },
     "apiErrors": {
-      "duplicateRecord": "ही वर्ष श्रेणी विद्यमान श्रेणीशी आच्छादित होते. कृपया वेगळी वर्षे वापरा.",
+      "duplicateRecord": "ही वर्ष श्रेणी अस्तित्वात असलेल्या श्रेणीसह ओव्हरलॅप होते. कृपया भिन्न वर्षे वापरा.",
       "invalidData": "अवैध डेटा प्रदान केला. कृपया सर्व फील्ड तपासा.",
-      "notFound": "मूल्यांकन वर्ष श्रेणी सापडली नाही.",
-      "inUse": "ही वर्ष श्रेणी वापरात असल्याने हटवता येत नाही.",
-      "referredInYearRange": "हे AssessmentYearRange वगळता येणार नाही कारण ते Rate Master मध्ये संदर्भित आहे.",
-      "cannotDeactivateYearRange": "हे AssessmentYearRange निष्क्रिय करता येणार नाही कारण ते Rate Master मध्ये संदर्भित आहे.",
-      "operationFailed": "ऑपरेशन अयशस्वी. कृपया नंतर पुन्हा प्रयत्न करा."
+      "notFound": "{assessment} वर्ष श्रेणी सापडली नाही.",
+      "inUse": "ही वर्ष श्रेणी वापरात असल्याने ती हटवता येत नाही.",
+      "referredInYearRange": "ही {assessment} Year Range दर मास्टरमध्ये संदर्भित असल्याने ती हटवता येत नाही",
+      "cannotDeactivateYearRange": "ही {assessment} Year Range दर मास्टरमध्ये संदर्भित असल्याने ती निष्क्रिय करता येत नाही",
+      "operationFailed": "क्रिया अयशस्वी झाली. कृपया नंतर पुन्हा प्रयत्न करा."
     },
     "success": {
       "created": "वर्ष श्रेणी {fromYear}-{toYear} यशस्वीरित्या तयार केली",
@@ -91,9 +97,12 @@
     }
   },
   "capitalValue": {
+    "aliasFallback": {
+      "entity": "मूल्यांकन"
+    },
     "list": {
-      "title": "मूल्यांकन वर्ष श्रेणी (भांडवली मूल्य)",
-      "subtitle": "भांडवली मूल्य गणनेसाठी मूल्यांकन वर्ष श्रेण्या व्यवस्थापित करा",
+      "title": "{assessment} वर्ष श्रेणी (भांडवली मूल्य)",
+      "subtitle": "भांडवली मूल्य गणनेसाठी {assessment} वर्ष श्रेणी व्यवस्थापित करा",
       "buttons": {
         "add": "वर्ष श्रेणी जोडा",
         "edit": "संपादित करा",
@@ -109,10 +118,10 @@
       }
     },
     "form": {
-      "addTitle": "मूल्यांकन वर्ष श्रेणी जोडा",
-      "editTitle": "मूल्यांकन वर्ष श्रेणी संपादित करा",
-      "subtitle": "नवीन मूल्यांकन वर्ष श्रेणी तयार करा",
-      "editSubtitle": "मूल्यांकन वर्ष श्रेणी तपशील अद्यतनित करा",
+      "addTitle": "{assessment} वर्ष श्रेणी जोडा",
+      "editTitle": "{assessment} वर्ष श्रेणी संपादित करा",
+      "subtitle": "नवीन {assessment} वर्ष श्रेणी तयार करा",
+      "editSubtitle": "{assessment} वर्ष श्रेणी तपशील अद्यतनित करा",
       "fields": {
         "fromYear": {
           "label": "वर्षापासून",
@@ -143,17 +152,17 @@
       }
     },
     "delete": {
-      "confirmTitle": "वर्ष श्रेणी हटवायची?",
-      "confirmDescription": "तुम्हाला खात्री आहे की तुम्ही ही मूल्यांकन वर्ष श्रेणी हटवू इच्छिता?"
+      "confirmTitle": "वर्ष श्रेणी हटवा?",
+      "confirmDescription": "तुम्हाला नक्की ही {assessment} वर्ष श्रेणी हटवायची आहे का?"
     },
     "apiErrors": {
-      "duplicateRecord": "ही वर्ष श्रेणी विद्यमान श्रेणीशी आच्छादित होते. कृपया वेगळी वर्षे वापरा.",
+      "duplicateRecord": "ही वर्ष श्रेणी अस्तित्वात असलेल्या श्रेणीसह ओव्हरलॅप होते. कृपया भिन्न वर्षे वापरा.",
       "invalidData": "अवैध डेटा प्रदान केला. कृपया सर्व फील्ड तपासा.",
-      "notFound": "मूल्यांकन वर्ष श्रेणी सापडली नाही.",
-      "inUse": "ही वर्ष श्रेणी वापरात असल्याने हटवता येत नाही.",
-      "referredInYearRange": "हे AssessmentYearRangeCV वगळता येणार नाही कारण ते Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master मध्ये संदर्भित आहे.",
-      "cannotDeactivateYearRange": "हे AssessmentYearRangeCV निष्क्रिय करता येणार नाही कारण ते Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master मध्ये संदर्भित आहे.",
-      "operationFailed": "ऑपरेशन अयशस्वी. कृपया नंतर पुन्हा प्रयत्न करा."
+      "notFound": "{assessment} वर्ष श्रेणी सापडली नाही.",
+      "inUse": "ही वर्ष श्रेणी वापरात असल्याने ती हटवता येत नाही.",
+      "referredInYearRange": "ही {assessment} Year Range CV वय घटक CV मास्टर, मजला घटक CV मास्टर, निसर्ग घटक CV मास्टरमध्ये संदर्भित असल्याने ती हटवता येत नाही",
+      "cannotDeactivateYearRange": "ही {assessment} Year Range CV वय घटक CV मास्टर, मजला घटक CV मास्टर, निसर्ग घटक CV मास्टरमध्ये संदर्भित असल्याने ती निष्क्रिय करता येत नाही",
+      "operationFailed": "क्रिया अयशस्वी झाली. कृपया नंतर पुन्हा प्रयत्न करा."
     },
     "success": {
       "created": "वर्ष श्रेणी {fromYear}-{toYear} यशस्वीरित्या तयार केली",

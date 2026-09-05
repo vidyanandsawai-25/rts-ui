@@ -68,7 +68,8 @@ export type LeftPanelProps = {
   onAddRange: () => void;
   onSelectRange: (id: string) => void;
   onDeleteRange: () => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
+  values?: Record<string, string | number | Date>;
 };
 
 export type RightPanelProps = {
@@ -84,5 +85,6 @@ export type RightPanelProps = {
   onUpdateRates: () => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
+  values?: Record<string, string | number | Date>;
 };

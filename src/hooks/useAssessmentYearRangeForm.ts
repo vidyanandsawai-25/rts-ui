@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import {
   AssessmentYearRange,
   AssessmentYearRangeConfig,
@@ -33,6 +34,11 @@ export function useAssessmentYearRangeForm({
   const locale = useLocale();
   const t = useTranslations(config.translationNamespace);
   const tCommon = useTranslations("common");
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.entity"));
+  const values = useMemo(
+    () => ({ assessment: assessmentLabel, entity: assessmentLabel }),
+    [assessmentLabel]
+  );
   const isEdit = Boolean(id);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,35 +77,35 @@ export function useAssessmentYearRangeForm({
 
       // From Year validation
       if (!data.fromYear && data.fromYear !== 0) {
-        newErrors.fromYear = t("form.validation.fromYearRequired");
+        newErrors.fromYear = t("form.validation.fromYearRequired", values);
       } else if (!Number.isFinite(fromYear) || !/^\d{4}$/.test(String(data.fromYear))) {
-        newErrors.fromYear = t("form.validation.yearFormat");
+        newErrors.fromYear = t("form.validation.yearFormat", values);
       } else if (fromYear < MIN_YEAR || fromYear > MAX_YEAR) {
-        newErrors.fromYear = t("form.validation.yearRange", { min: MIN_YEAR, max: MAX_YEAR });
+        newErrors.fromYear = t("form.validation.yearRange", { min: MIN_YEAR, max: MAX_YEAR, ...values });
       }
 
       // To Year validation
       if (!data.toYear && data.toYear !== 0) {
-        newErrors.toYear = t("form.validation.toYearRequired");
+        newErrors.toYear = t("form.validation.toYearRequired", values);
       } else if (!Number.isFinite(toYear) || !/^\d{4}$/.test(String(data.toYear))) {
-        newErrors.toYear = t("form.validation.yearFormat");
+        newErrors.toYear = t("form.validation.yearFormat", values);
       } else if (toYear < MIN_YEAR || toYear > MAX_YEAR) {
-        newErrors.toYear = t("form.validation.yearRange", { min: MIN_YEAR, max: MAX_YEAR });
+        newErrors.toYear = t("form.validation.yearRange", { min: MIN_YEAR, max: MAX_YEAR, ...values });
       }
 
       // Cross-field validation: fromYear <= toYear
       if (!newErrors.fromYear && !newErrors.toYear && fromYear > toYear) {
-        newErrors.fromYear = t("form.validation.fromYearGreaterThanToYear");
+        newErrors.fromYear = t("form.validation.fromYearGreaterThanToYear", values);
       }
 
       // Active status validation for new records
       if (!isEdit && !data.isActive) {
-        newErrors.isActive = t("form.validation.mustBeActive");
+        newErrors.isActive = t("form.validation.mustBeActive", values);
       }
 
       return newErrors;
     },
-    [t, isEdit]
+    [t, isEdit, values]
   );
 
   const showError = useCallback(
@@ -159,8 +165,8 @@ export function useAssessmentYearRangeForm({
   const mapApiError = useCallback(
     (result: { statusCode?: number; message?: string }) => {
       const errorMap: Record<number, string> = {
-        409: t("apiErrors.duplicateRecord"),
-        404: t("apiErrors.notFound"),
+        409: t("apiErrors.duplicateRecord", values),
+        404: t("apiErrors.notFound", values),
         401: tCommon("errors.unauthorized"),
         403: tCommon("errors.unauthorized"),
       };
@@ -171,18 +177,18 @@ export function useAssessmentYearRangeForm({
       if (code === 400) {
         const msg = result.message?.toLowerCase() || "";
         if (msg.includes("cannot deactivate") || msg.includes("referenced in") || msg.includes("in use")) {
-          return t("apiErrors.cannotDeactivateYearRange");
+          return t("apiErrors.cannotDeactivateYearRange", values);
         }
         if (msg.includes("duplicate") || msg.includes("already exists") || msg.includes("overlap")) {
-          return t("apiErrors.duplicateRecord");
+          return t("apiErrors.duplicateRecord", values);
         }
-        return result.message || t("apiErrors.invalidData");
+        return result.message || t("apiErrors.invalidData", values);
       }
 
       if (code >= 500) return tCommon("errors.serverError");
-      return result.message || t("apiErrors.operationFailed");
+      return result.message || t("apiErrors.operationFailed", values);
     },
-    [t, tCommon]
+    [t, tCommon, values]
   );
 
   const [open, setOpen] = useState(true);
@@ -276,8 +282,8 @@ export function useAssessmentYearRangeForm({
 
       toast.success(
         isEdit
-          ? t("success.updated", { fromYear: formData.fromYear, toYear: formData.toYear })
-          : t("success.created", { fromYear: formData.fromYear, toYear: formData.toYear })
+          ? t("success.updated", { fromYear: formData.fromYear, toYear: formData.toYear, ...values })
+          : t("success.created", { fromYear: formData.fromYear, toYear: formData.toYear, ...values })
       );
 
       startTransition(() => {
@@ -315,5 +321,6 @@ export function useAssessmentYearRangeForm({
     t,
     tCommon,
     isEdit,
+    assessmentLabel,
   };
 }

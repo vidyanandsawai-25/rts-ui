@@ -53,10 +53,10 @@ describe("FormFieldsSection (AssessmentYearRange)", () => {
   it("renders labels using translation keys", () => {
     render(<FormFieldsSection {...defaultProps} />);
 
-    expect(mockT).toHaveBeenCalledWith("form.fields.fromYear.label");
-    expect(mockT).toHaveBeenCalledWith("form.fields.toYear.label");
-    expect(mockT).toHaveBeenCalledWith("form.fields.fromYear.placeholder");
-    expect(mockT).toHaveBeenCalledWith("form.fields.toYear.placeholder");
+    expect(mockT).toHaveBeenCalledWith("form.fields.fromYear.label", expect.anything());
+    expect(mockT).toHaveBeenCalledWith("form.fields.toYear.label", expect.anything());
+    expect(mockT).toHaveBeenCalledWith("form.fields.fromYear.placeholder", expect.anything());
+    expect(mockT).toHaveBeenCalledWith("form.fields.toYear.placeholder", expect.anything());
   });
 
   it("calls handleYearChange when fromYear value changes", () => {
