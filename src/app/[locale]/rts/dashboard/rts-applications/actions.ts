@@ -1324,7 +1324,9 @@ export async function issueCertificateAction(
   officerInputs?: Record<string, string>,
   customConditions?: string,
   actionRemark?: string,
-  signAndApprove: boolean = true
+  signAndApprove: boolean = true,
+  certificateType: import('@/types/rts/certificate.types').RTSCertificateType = 1,
+  documentGuid?: string
 ) {
   try {
     const { issueCertificate } = await import('@/lib/api/rts/rtscertificate.service');
@@ -1334,6 +1336,8 @@ export async function issueCertificateAction(
       customConditions,
       actionRemark,
       signAndApprove,
+      certificateType,
+      documentGuid,
     });
 
     revalidatePath('/rts/dashboard/rts-applications');
@@ -1344,6 +1348,40 @@ export async function issueCertificateAction(
   } catch (error: unknown) {
     console.error('Failed to issue certificate:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Failed to issue certificate' };
+  }
+}
+
+export async function uploadManualCertificateAction(formData: FormData) {
+  try {
+    const file = formData.get('file') as File;
+    if (!file) {
+      return { success: false, error: 'No file provided' };
+    }
+    const applicationIdStr = formData.get('applicationId') as string;
+    const applicationId = applicationIdStr ? parseInt(applicationIdStr, 10) : undefined;
+
+    const { uploadDocument } = await import('@/lib/api/document.service');
+    const uploadResult = await uploadDocument(file, {
+      referenceTableName: 'RTS.IssuedCertificate',
+      referenceTableId: applicationId,
+      bindingPurpose: 'ManualCertificate',
+      isPrimaryDocument: true,
+    });
+
+    return {
+      success: true,
+      data: {
+        documentGuid: uploadResult.documentGuid,
+        fileName: uploadResult.fileName,
+        fileSizeBytes: uploadResult.fileSizeBytes,
+      },
+    };
+  } catch (error: unknown) {
+    console.error('Failed to upload manual certificate:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to upload manual certificate',
+    };
   }
 }
 
@@ -1362,6 +1400,10 @@ export async function getIssuedCertificateAction(applicationNo: string) {
       officialHtml = officialHtml.replace(/\{\{CurrentDate\}\}/gi, todayFormatted);
       officialHtml = officialHtml.replace(/\[\[CurrentDate\]\]/gi, todayFormatted);
       result.mergedHtmlContent = officialHtml;
+      return { success: true, data: result };
+    }
+
+    if (result && result.certificateType === 2) {
       return { success: true, data: result };
     }
 

@@ -417,7 +417,7 @@ export default function RtsCitizenViewDetailsDrawer({
             })()}
 
             {normalizedStatus === "approved" && (
-              <section className="rounded-xl border border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm">
+              <section className="rounded-xl border border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -431,8 +431,8 @@ export default function RtsCitizenViewDetailsDrawer({
                       </p>
                       <p className="text-[11px] font-medium text-emerald-700">
                         {language === "mr"
-                          ? "खालील बटणावर क्लिक करून डिजिटल स्वाक्षरी असलेले प्रमाणपत्र पहा व डाउनलोड करा."
-                          : "Click below to view and download your digitally signed certificate."}
+                          ? "खालील बटणावर क्लिक करून अधिकृत प्रमाणपत्र पहा व डाउनलोड करा."
+                          : "Click below to view and download your official certificate."}
                       </p>
                     </div>
                   </div>
@@ -446,6 +446,15 @@ export default function RtsCitizenViewDetailsDrawer({
                   >
                     {language === "mr" ? "प्रमाणपत्र पहा व प्रिंट करा" : "View & Print Certificate"}
                   </Button>
+                </div>
+
+                <div className="pt-2 border-t border-emerald-200/70 flex items-start gap-1.5 text-[11px] font-bold text-amber-900 bg-amber-50/90 rounded-lg p-2">
+                  <span className="text-amber-600">⚠️</span>
+                  <span>
+                    {language === "mr"
+                      ? "महत्त्वाची सूचना: सदर मूळ अधिकृत प्रमाणपत्र अर्जदाराने संबंधित विभागामधून जमा (collect) करून घ्यावे."
+                      : "Important Notice: Please collect the original official physical certificate from the respective department."}
+                  </span>
                 </div>
               </section>
             )}

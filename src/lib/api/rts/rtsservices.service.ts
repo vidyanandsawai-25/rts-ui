@@ -57,6 +57,13 @@ export async function getServicesByDepartment(departmentId: number): Promise<Rts
   return response.items;
 }
 
+function unwrapServiceItem<T>(data: unknown): T {
+  if (data && typeof data === "object" && "items" in data && (data as { items?: unknown }).items) {
+    return (data as { items: T }).items;
+  }
+  return data as T;
+}
+
 export async function createRtsService(payload: {
   departmentId: number;
   serviceName: string;
@@ -67,18 +74,28 @@ export async function createRtsService(payload: {
   displayOrder?: number;
   isActive: boolean;
   createdBy?: number;
-  sla?: number;
+  sla?: string | number;
   fees?: number;
+  feesRequired?: boolean;
   isFeesRequired?: boolean;
+  certificateType?: number;
   isCertificateRequired?: boolean;
   isSmsEnabled?: boolean;
   serviceCode?: string;
+  govtServiceCode?: number;
 }): Promise<RtsServiceApiItem> {
-  const response = await apiClient.post<RtsServiceApiItem>("/RTSService", payload);
+  const feesReq = payload.feesRequired ?? payload.isFeesRequired ?? false;
+  const formattedPayload = {
+    ...payload,
+    feesRequired: feesReq,
+    isFeesRequired: feesReq,
+    sla: payload.sla != null ? String(payload.sla) : undefined,
+  };
+  const response = await apiClient.post<unknown>("/RTSService", formattedPayload);
   if (!response.success || !response.data) {
     throw new Error(response.error || "Failed to create RTS service");
   }
-  return response.data;
+  return unwrapServiceItem<RtsServiceApiItem>(response.data);
 }
 
 export async function updateRtsService(
@@ -94,19 +111,29 @@ export async function updateRtsService(
     displayOrder?: number;
     isActive: boolean;
     updatedBy?: number;
-    sla?: number;
+    sla?: string | number;
     fees?: number;
+    feesRequired?: boolean;
     isFeesRequired?: boolean;
+    certificateType?: number;
     isCertificateRequired?: boolean;
     isSmsEnabled?: boolean;
     serviceCode?: string;
+    govtServiceCode?: number;
   }
 ): Promise<RtsServiceApiItem> {
-  const response = await apiClient.put<RtsServiceApiItem>(`/RTSService/${id}`, payload);
+  const feesReq = payload.feesRequired ?? payload.isFeesRequired ?? false;
+  const formattedPayload = {
+    ...payload,
+    feesRequired: feesReq,
+    isFeesRequired: feesReq,
+    sla: payload.sla != null ? String(payload.sla) : undefined,
+  };
+  const response = await apiClient.put<unknown>(`/RTSService/${id}`, formattedPayload);
   if (!response.success || !response.data) {
     throw new Error(response.error || "Failed to update RTS service");
   }
-  return response.data;
+  return unwrapServiceItem<RtsServiceApiItem>(response.data);
 }
 
 export async function deleteRtsService(id: number): Promise<void> {

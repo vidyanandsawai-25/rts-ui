@@ -49,8 +49,8 @@ interface RtsField {
 interface RtsFieldsConfigProps {
   data: {
     fields: RtsField[];
-    departments: { id: string; name: string }[];
-    services: { id: string; name: string; departmentId: string }[];
+    departments: { id: string; name: string; nameLocal?: string | null }[];
+    services: { id: string; name: string; nameLocal?: string | null; departmentId: string }[];
   };
   locale: string;
   saveField: (field: {
@@ -171,6 +171,7 @@ function createEmptyFieldFormValues(defaults?: Partial<FieldFormValues>): FieldF
 
 export default function RtsFieldsConfig({
   data,
+  locale,
   saveField,
   updateField,
   deleteField,
@@ -642,7 +643,9 @@ export default function RtsFieldsConfig({
       render: (_value, field) => {
         const dept = data.departments.find((department) => department.id === field.departmentId);
         const service = data.services.find((item) => item.id === field.serviceId);
-        return <div className="flex flex-col gap-0.5"><span className="text-[12px] font-bold uppercase text-slate-800">{field.fieldCode}</span><span className="text-[10px] font-medium text-slate-400">{dept?.name || t("fields.unknownDepartment")} / {service?.name || t("fields.unknownService")}</span></div>;
+        const deptName = dept ? (locale === "mr" ? dept.nameLocal || dept.name : dept.name) : t("fields.unknownDepartment");
+        const serviceName = service ? (locale === "mr" ? service.nameLocal || service.name : service.name) : t("fields.unknownService");
+        return <div className="flex flex-col gap-0.5"><span className="text-[12px] font-bold uppercase text-slate-800">{field.fieldCode}</span><span className="text-[10px] font-medium text-slate-400">{deptName} / {serviceName}</span></div>;
       },
     },
     { key: "fieldLabel", label: t("fields.fieldLabel"), headerClassName: "border-r border-blue-300/60 text-white", cellClassName: "border-r border-slate-100 font-semibold text-slate-700" },
@@ -693,7 +696,10 @@ export default function RtsFieldsConfig({
               value={selectedDeptId}
               options={[
                 { value: "All", label: t("fields.allDepartments") },
-                ...data.departments.map((department) => ({ value: department.id, label: department.name })),
+                ...data.departments.map((department) => ({
+                  value: department.id,
+                  label: locale === "mr" ? department.nameLocal || department.name : department.name,
+                })),
               ]}
               onChange={(_, value) => {
                 setSelectedDeptId(value);
@@ -715,7 +721,10 @@ export default function RtsFieldsConfig({
                     ? t("fields.selectDepartmentFirst")
                     : t("fields.allServices"),
                 },
-                ...filteredServicesForFilter.map((service) => ({ value: service.id, label: service.name })),
+                ...filteredServicesForFilter.map((service) => ({
+                  value: service.id,
+                  label: locale === "mr" ? service.nameLocal || service.name : service.name,
+                })),
               ]}
               onChange={(_, value) => {
                 setSelectedServiceId(value);
@@ -790,7 +799,10 @@ export default function RtsFieldsConfig({
                   <Select
                     required
                     value={editForm.departmentId}
-                    options={data.departments.map((department) => ({ value: department.id, label: department.name }))}
+                    options={data.departments.map((department) => ({
+                      value: department.id,
+                      label: locale === "mr" ? department.nameLocal || department.name : department.name,
+                    }))}
                     placeholder={t("fields.selectDepartment")}
                     onChange={(_, value) => setEditForm(previous => ({ ...previous, departmentId: value, serviceId: "" }))}
                     selectSize="sm"
@@ -802,7 +814,10 @@ export default function RtsFieldsConfig({
                   <Select
                     required
                     value={editForm.serviceId}
-                    options={filteredServicesForEditForm.map((service) => ({ value: service.id, label: service.name }))}
+                    options={filteredServicesForEditForm.map((service) => ({
+                      value: service.id,
+                      label: locale === "mr" ? service.nameLocal || service.name : service.name,
+                    }))}
                     placeholder={!editForm.departmentId ? t("fields.selectDepartmentFirst") : t("fields.selectService")}
                     onChange={(_, value) => setEditForm(previous => ({ ...previous, serviceId: value }))}
                     disabled={!editForm.departmentId}
@@ -948,11 +963,30 @@ export default function RtsFieldsConfig({
                         <div className="grid gap-4 lg:grid-cols-2">
                           <div className="space-y-1">
                             <Label required className="text-[11px] font-bold text-slate-700">{t("fields.departmentName")}</Label>
-                            <Select value={field.departmentId} options={data.departments.map((department) => ({ value: department.id, label: department.name }))} placeholder={t("fields.selectDepartment")} onChange={(_, value) => updateDraftField(index, { departmentId: value })} selectSize="sm" />
+                            <Select
+                              value={field.departmentId}
+                              options={data.departments.map((department) => ({
+                                value: department.id,
+                                label: locale === "mr" ? department.nameLocal || department.name : department.name,
+                              }))}
+                              placeholder={t("fields.selectDepartment")}
+                              onChange={(_, value) => updateDraftField(index, { departmentId: value })}
+                              selectSize="sm"
+                            />
                           </div>
                           <div className="space-y-1">
                             <Label required className="text-[11px] font-bold text-slate-700">{t("fields.specificService")}</Label>
-                            <Select value={field.serviceId} options={services.map((service) => ({ value: service.id, label: service.name }))} placeholder={!field.departmentId ? t("fields.selectDepartmentFirst") : t("fields.selectService")} onChange={(_, value) => updateDraftField(index, { serviceId: value })} disabled={!field.departmentId} selectSize="sm" />
+                            <Select
+                              value={field.serviceId}
+                              options={services.map((service) => ({
+                                value: service.id,
+                                label: locale === "mr" ? service.nameLocal || service.name : service.name,
+                              }))}
+                              placeholder={!field.departmentId ? t("fields.selectDepartmentFirst") : t("fields.selectService")}
+                              onChange={(_, value) => updateDraftField(index, { serviceId: value })}
+                              disabled={!field.departmentId}
+                              selectSize="sm"
+                            />
                           </div>
                         </div>
 

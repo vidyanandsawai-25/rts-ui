@@ -36,11 +36,13 @@ type ConfigField = {
 type ConfigDepartment = {
   id: string;
   name: string;
+  nameLocal?: string | null;
 };
 
 type ConfigService = {
   id: string;
   name: string;
+  nameLocal?: string | null;
   departmentId: string;
 };
 
@@ -66,21 +68,25 @@ type FieldPayload = {
 function toConfigDepartment(department: {
   id: number;
   departmentName: string;
+  departmentNameLocal?: string | null;
 }): ConfigDepartment {
   return {
     id: String(department.id),
     name: department.departmentName,
+    nameLocal: department.departmentNameLocal ?? null,
   };
 }
 
 function toConfigService(service: {
   id: number;
   serviceName: string;
+  serviceNameLocal?: string | null;
   departmentId: number;
 }): ConfigService {
   return {
     id: String(service.id),
     name: service.serviceName,
+    nameLocal: service.serviceNameLocal ?? null,
     departmentId: String(service.departmentId),
   };
 }

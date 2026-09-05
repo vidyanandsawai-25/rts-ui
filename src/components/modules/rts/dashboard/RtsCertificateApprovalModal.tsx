@@ -2,19 +2,25 @@
 
 import { useEffect, useState, useTransition } from "react";
 import {
+  AlertCircle,
   Award,
+  CheckCircle2,
+  ExternalLink,
+  FileCheck,
   FileText,
   Layers,
   Loader2,
   RotateCw,
   ShieldCheck,
   Sparkles,
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Modal, OfficialCertificateSheet } from "@/components/common";
 import {
   getCertificatePreviewAction,
   issueCertificateAction,
+  uploadManualCertificateAction,
 } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import type { CertificatePreviewResponse } from "@/types/rts/certificate.types";
 
@@ -49,6 +55,44 @@ export default function RtsCertificateApprovalModal({
   const [officerInputs, setOfficerInputs] = useState<Record<string, string>>({
     OfficerRemark: "",
   });
+
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [uploadedDocGuid, setUploadedDocGuid] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [uploadedFileSize, setUploadedFileSize] = useState<number | null>(null);
+
+  const isManualMode = previewData?.certificateType === 2;
+
+  const handleManualFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error(isMr ? "फाईलचा आकार जास्तीत जास्त १० MB असावा." : "File size must not exceed 10 MB.");
+      return;
+    }
+
+    setIsUploadingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("applicationId", applicationId.toString());
+
+      const res = await uploadManualCertificateAction(formData);
+      if (res.success && res.data) {
+        setUploadedDocGuid(res.data.documentGuid);
+        setUploadedFileName(res.data.fileName || file.name);
+        setUploadedFileSize(res.data.fileSizeBytes || file.size);
+        toast.success(isMr ? "मॅन्युअल प्रमाणपत्र फाईल यशस्वीरीत्या अपलोड झाली!" : "Manual certificate uploaded successfully!");
+      } else {
+        toast.error(res.error || (isMr ? "फाईल अपलोड करताना अडचण आली." : "Failed to upload file."));
+      }
+    } catch {
+      toast.error(isMr ? "सर्व्हरशी संपर्क होऊ शकला नाही." : "Server error during file upload.");
+    } finally {
+      setIsUploadingDoc(false);
+    }
+  };
 
   // Fetch initial preview
   useEffect(() => {
@@ -117,8 +161,10 @@ export default function RtsCertificateApprovalModal({
   };
 
   const handleIssueAndApprove = () => {
-    // Validate mandatory officer fields from template configuration
-    if (previewData?.requiredOfficerFields && previewData.requiredOfficerFields.length > 0) {
+    const isManual = isManualMode;
+
+    // Validate mandatory officer fields from template configuration (only in non-manual mode)
+    if (!isManual && previewData?.requiredOfficerFields && previewData.requiredOfficerFields.length > 0) {
       for (const field of previewData.requiredOfficerFields) {
         if (field.isMandatory && !officerInputs[field.fieldKey]?.trim()) {
           toast.warning(
@@ -132,8 +178,17 @@ export default function RtsCertificateApprovalModal({
     }
 
     const finalRemark = (officerInputs["OfficerRemark"] || officerInputs["OfficerRemarks"] || "").trim();
-    if (!finalRemark && (!previewData?.requiredOfficerFields || previewData.requiredOfficerFields.length === 0)) {
+    if (!finalRemark && (!previewData?.requiredOfficerFields || previewData.requiredOfficerFields.length === 0 || isManual)) {
       toast.warning(isMr ? "कृपया अधिकाऱ्याचा शेरा प्रविष्ट करा." : "Please enter the officer remark.");
+      return;
+    }
+
+    if (isManual && !uploadedDocGuid) {
+      toast.warning(
+        isMr
+          ? "कृपया मॅन्युअल प्रमाणपत्राची फाईल (PDF/Image) अपलोड करा."
+          : "Please upload the manual certificate file (PDF/Image)."
+      );
       return;
     }
 
@@ -143,11 +198,21 @@ export default function RtsCertificateApprovalModal({
         officerInputs,
         undefined,
         finalRemark,
-        true
+        true,
+        isManual ? 2 : 1,
+        uploadedDocGuid || undefined
       );
 
       if (res.success) {
-        toast.success(isMr ? "अधिकृत प्रमाणपत्र यशस्वीरीत्या जारी झाले व डिजिटल स्वाक्षरी करण्यात आली!" : "Official certificate issued and digitally signed successfully!");
+        toast.success(
+          isManual
+            ? (isMr
+                ? "मॅन्युअल प्रमाणपत्र यशस्वीरीत्या अपलोड झाले व अर्ज मंजूर करण्यात आला!"
+                : "Manual certificate uploaded and application approved successfully!")
+            : (isMr
+                ? "अधिकृत प्रमाणपत्र यशस्वीरीत्या जारी झाले व डिजिटल स्वाक्षरी करण्यात आली!"
+                : "Official certificate issued and digitally signed successfully!")
+        );
         onApproved();
         onClose();
       } else {
@@ -251,9 +316,89 @@ export default function RtsCertificateApprovalModal({
               </p>
             </div>
 
-            {/* Dynamic Officer Fields configured in Template */}
+            {/* Upload Manual Certificate Box (Mode 2: Manual Certificate) */}
+            {isManualMode && (
+              <div className="bg-amber-50/90 border-2 border-dashed border-amber-300 rounded-xl p-3.5 space-y-3 shadow-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                    <Upload className="w-4 h-4 text-amber-600" />
+                    {isMr ? "मॅन्युअल प्रमाणपत्र फाईल अपलोड करा" : "Upload Manual Certificate File"}
+                  </span>
+                  <span className="text-[10px] bg-amber-200/80 text-amber-900 font-bold px-2 py-0.5 rounded-md">
+                    PDF / Image
+                  </span>
+                </div>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  {isMr
+                    ? "सदर सेवेसाठी महापालिकेद्वारे मॅन्युअली तयार केलेले प्रमाणपत्र येथे अपलोड करणे आवश्यक आहे."
+                    : "Upload the manually prepared physical certificate document for this application."}
+                </p>
+
+                <input
+                  type="file"
+                  id="manual-certificate-file-input"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleManualFileUpload}
+                  disabled={isUploadingDoc || isPending}
+                  className="hidden"
+                />
+
+                {!uploadedDocGuid ? (
+                  <label
+                    htmlFor="manual-certificate-file-input"
+                    className={`w-full flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-slate-300 bg-white hover:bg-slate-50 cursor-pointer transition text-center ${
+                      isUploadingDoc ? "opacity-50 pointer-events-none" : ""
+                    }`}
+                  >
+                    {isUploadingDoc ? (
+                      <Loader2 className="w-6 h-6 animate-spin text-blue-600 mb-1" />
+                    ) : (
+                      <Upload className="w-6 h-6 text-slate-400 mb-1" />
+                    )}
+                    <span className="text-xs font-bold text-blue-700">
+                      {isUploadingDoc
+                        ? (isMr ? "अपलोड होत आहे..." : "Uploading...")
+                        : (isMr ? "फाईल निवडा (Choose File)" : "Select File")}
+                    </span>
+                    <span className="text-[10px] text-slate-400 mt-0.5">
+                      PDF, JPG, PNG (कमाल १० MB)
+                    </span>
+                  </label>
+                ) : (
+                  <div className="bg-white border border-emerald-300 rounded-xl p-2.5 flex items-center justify-between gap-3 shadow-2xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-900 truncate">{uploadedFileName}</p>
+                        <p className="text-[10px] text-emerald-700 font-semibold">
+                          {uploadedFileSize ? `${(uploadedFileSize / 1024).toFixed(1)} KB` : "Uploaded"} • 
+                          <span className="text-emerald-800 ml-1">जोडण्यात आले ✓</span>
+                        </p>
+                      </div>
+                    </div>
+                    <label
+                      htmlFor="manual-certificate-file-input"
+                      className="text-[11px] font-bold text-blue-700 hover:text-blue-900 cursor-pointer shrink-0 underline"
+                    >
+                      {isMr ? "बदला" : "Change"}
+                    </label>
+                  </div>
+                )}
+
+                <div className="bg-amber-100/70 border border-amber-300/80 rounded-lg p-2 text-[10.5px] text-amber-900 font-bold flex items-start gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
+                  <span>
+                    {isMr
+                      ? "महत्त्वाची सूचना: सदर मूळ अधिकृत प्रमाणपत्र संबंधित विभागामधून जमा (collect) करून घ्यावे."
+                      : "Important Notice: Original physical certificate must be collected from the respective department."}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Dynamic Officer Fields configured in Template (hidden in manual mode) */}
             <div className="space-y-3">
-              {previewData?.requiredOfficerFields && previewData.requiredOfficerFields.length > 0 ? (
+              {!isManualMode && previewData?.requiredOfficerFields && previewData.requiredOfficerFields.length > 0 ? (
                 previewData.requiredOfficerFields.map((field) => {
                   const val = officerInputs[field.fieldKey] || "";
                   const label = isMr ? (field.fieldLabelMarathi || field.fieldLabelEnglish) : (field.fieldLabelEnglish || field.fieldLabelMarathi);
@@ -334,24 +479,113 @@ export default function RtsCertificateApprovalModal({
             <div className="w-full flex justify-between items-center mb-2 px-1">
               <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-emerald-600" />
-                {isMr ? "२. लाईव्ह प्रमाणपत्र पूर्वदृश्य" : "2. Live Certificate Preview"}
+                {isManualMode
+                  ? (isMr ? "२. जोडलेले मॅन्युअल प्रमाणपत्र पूर्वदृश्य" : "2. Attached Manual Certificate Preview")
+                  : (isMr ? "२. लाईव्ह प्रमाणपत्र पूर्वदृश्य" : "2. Live Certificate Preview")}
               </span>
 
-              <button
-                type="button"
-                onClick={() => loadPreview(officerInputs)}
-                className="text-[11px] text-[#4b70a6] hover:text-[#3d5a8a] flex items-center gap-1 font-semibold"
-                title={isMr ? "रिफ्रेश करा" : "Refresh"}
-              >
-                <RotateCw className={`w-3 h-3 ${loadingPreview ? "animate-spin" : ""}`} />
-                {isMr ? "रिफ्रेश करा" : "Refresh"}
-              </button>
+              {uploadedDocGuid && (
+                <a
+                  href={`/api/rts/documents/${uploadedDocGuid}/view`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-[#4b70a6] hover:text-[#3d5a8a] flex items-center gap-1 font-semibold underline"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  {isMr ? "नवीन टॅबमध्ये पहा" : "Open in new tab"}
+                </a>
+              )}
+
+              {!isManualMode && (
+                <button
+                  type="button"
+                  onClick={() => loadPreview(officerInputs)}
+                  className="text-[11px] text-[#4b70a6] hover:text-[#3d5a8a] flex items-center gap-1 font-semibold"
+                  title={isMr ? "रिफ्रेश करा" : "Refresh"}
+                >
+                  <RotateCw className={`w-3 h-3 ${loadingPreview ? "animate-spin" : ""}`} />
+                  {isMr ? "रिफ्रेश करा" : "Refresh"}
+                </button>
+              )}
             </div>
 
             {loadingPreview ? (
               <div className="w-full h-96 flex flex-col items-center justify-center bg-white rounded-lg border border-slate-300 shadow-xs text-slate-400">
                 <Loader2 className="w-8 h-8 animate-spin text-[#4b70a6] mb-2" />
                 <span className="text-xs font-semibold">{isMr ? "प्रमाणपत्र तयार होत आहे..." : "Generating certificate..."}</span>
+              </div>
+            ) : isManualMode ? (
+              <div className="w-full space-y-3">
+                {/* Mandatory Statutory Notice */}
+                <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-3 flex items-start gap-2.5 text-amber-950 shadow-xs">
+                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h5 className="text-xs font-bold">
+                      {isMr ? "महत्त्वाची वैधानिक सूचना (Statutory Notice):" : "Important Statutory Notice:"}
+                    </h5>
+                    <p className="text-xs font-semibold text-amber-900 mt-0.5">
+                      {isMr
+                        ? "⚠️ सदर मूळ अधिकृत प्रमाणपत्र अर्जदाराने संबंधित विभागामधून जमा (collect) करून घ्यावे."
+                        : "⚠️ The original official certificate must be collected by the applicant from the respective department."}
+                    </p>
+                  </div>
+                </div>
+
+                {uploadedDocGuid ? (
+                  <div className="w-full bg-white rounded-xl border border-slate-300 shadow-xs p-3 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span className="text-xs font-bold text-slate-800">
+                          {uploadedFileName || (isMr ? "अपलोड केलेले प्रमाणपत्र" : "Uploaded Certificate")}
+                        </span>
+                      </div>
+                      <a
+                        href={`/api/rts/documents/${uploadedDocGuid}/download`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-bold text-[#4b70a6] hover:underline flex items-center gap-1"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        {isMr ? "डाऊनलोड करा" : "Download"}
+                      </a>
+                    </div>
+                    {/* Embedded preview */}
+                    <div className="w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-50 min-h-[500px]">
+                      {uploadedFileName?.toLowerCase().endsWith(".pdf") ? (
+                        <iframe
+                          src={`/api/rts/documents/${uploadedDocGuid}/view`}
+                          className="w-full h-[540px] border-none"
+                          title="Manual Certificate PDF"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-4">
+                          <img
+                            src={`/api/rts/documents/${uploadedDocGuid}/view`}
+                            alt="Manual Certificate"
+                            className="max-h-[520px] object-contain rounded-md shadow-xs"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-96 flex flex-col items-center justify-center bg-white rounded-xl border-2 border-dashed border-amber-300 p-6 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+                      <Upload className="w-6 h-6" />
+                    </div>
+                    <div className="max-w-md">
+                      <h4 className="text-sm font-bold text-slate-800">
+                        {isMr ? "मॅन्युअल प्रमाणपत्र अद्याप अपलोड केलेले नाही" : "Manual Certificate Not Uploaded Yet"}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {isMr
+                          ? "सदर सेवेसाठी महापालिकेद्वारे मॅन्युअली तयार केलेले प्रमाणपत्र डाव्या बाजूच्या पॅनेलमधून निवडून अपलोड करा. त्यानंतरच अर्ज मंजूर करता येईल."
+                          : "Please select and upload the manually prepared corporation certificate from the left panel. Approval is enabled after upload."}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : previewData?.mergedHtml ? (
               <OfficialCertificateSheet htmlContent={previewData.mergedHtml} />
@@ -368,7 +602,15 @@ export default function RtsCertificateApprovalModal({
         <div className="border-t border-slate-200 px-5 py-3 bg-white flex flex-wrap justify-between items-center gap-3 shrink-0 rounded-b-lg">
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>{isMr ? "मंजूर करताच डिजिटल स्वाक्षरी व QR कोडसह अधिकृत प्रमाणपत्र जारी होईल." : "Approval issues the official certificate with a digital signature and QR code."}</span>
+            <span>
+              {isManualMode
+                ? (isMr
+                    ? "मंजूर करताच मॅन्युअल प्रमाणपत्र नागरिकाला उपलब्ध होईल व मूळ प्रत जमा करण्याची सूचना दिसेल."
+                    : "On approval, the manual certificate becomes available to the citizen with collection notice.")
+                : (isMr
+                    ? "मंजूर करताच डिजिटल स्वाक्षरी व QR कोडसह अधिकृत प्रमाणपत्र जारी होईल."
+                    : "Approval issues the official certificate with a digital signature and QR code.")}
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -380,17 +622,24 @@ export default function RtsCertificateApprovalModal({
               disabled={
                 isPending ||
                 loadingPreview ||
-                (Boolean(previewData?.requiredOfficerFields?.length) &&
+                (isManualMode && (!uploadedDocGuid || !(officerInputs["OfficerRemark"] || "").trim())) ||
+                (!isManualMode &&
+                  Boolean(previewData?.requiredOfficerFields?.length) &&
                   previewData!.requiredOfficerFields.some(
                     (f) => f.isMandatory && !officerInputs[f.fieldKey]?.trim()
                   )) ||
-                (!previewData?.requiredOfficerFields?.length &&
+                (!isManualMode &&
+                  !previewData?.requiredOfficerFields?.length &&
                   !(officerInputs["OfficerRemark"] || "").trim())
               }
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md flex items-center gap-1.5 rounded-xl px-4 py-2"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md flex items-center gap-1.5 rounded-xl px-4 py-2 cursor-pointer transition-all"
             >
               <Award className="w-4 h-4" />
-              {isPending ? "प्रक्रिया होत आहे..." : "मंजूर करा व डिजिटल स्वाक्षरीने जारी करा (Sign & Approve)"}
+              {isPending
+                ? (isMr ? "प्रक्रिया होत आहे..." : "Processing...")
+                : isManualMode
+                ? (isMr ? "मॅन्युअल प्रमाणपत्र जोडून मंजूर करा (Approve & Attach)" : "Attach Manual Certificate & Approve")
+                : (isMr ? "मंजूर करा व डिजिटल स्वाक्षरीने जारी करा (Sign & Approve)" : "Approve & Issue with Digital Signature")}
             </Button>
           </div>
         </div>

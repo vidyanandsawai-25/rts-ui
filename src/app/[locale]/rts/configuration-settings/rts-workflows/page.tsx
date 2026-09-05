@@ -1,4 +1,9 @@
-import { getRtsMastersAction } from "@/app/[locale]/rts/actions";
+import {
+  getRtsWorkflowsDataAction,
+  getWorkflowStagesByServiceIdAction,
+  saveWorkflowWithStagesAction,
+  deleteWorkflowAction,
+} from "./actions";
 import RtsWorkflowsConfig from "@/components/modules/rts/configuration-settings/RtsWorkflowsConfig";
 
 interface PageProps {
@@ -7,27 +12,16 @@ interface PageProps {
 
 export default async function RtsWorkflowsPage({ params }: PageProps) {
   const { locale } = await params;
-  const masters = await getRtsMastersAction();
-
-  const initialWorkflows = masters.services.slice(0, 10).map(
-    (service: { id: string; name: string }, index: number) => ({
-      id: index + 1,
-      serviceId: Number(service.id),
-      flowName: `${service.name} Approval Flow`,
-      isActive: true,
-      stagesCount: 2,
-    })
-  );
+  const data = await getRtsWorkflowsDataAction();
 
   return (
     <div className="w-full">
       <RtsWorkflowsConfig
-        data={{
-          workflows: initialWorkflows,
-          departments: masters.departments,
-          services: masters.services,
-        }}
+        data={data}
         locale={locale}
+        getStagesByServiceId={getWorkflowStagesByServiceIdAction}
+        saveWorkflow={saveWorkflowWithStagesAction}
+        deleteWorkflow={deleteWorkflowAction}
       />
     </div>
   );

@@ -20,18 +20,45 @@ interface WorkflowItem {
   [key: string]: unknown;
 }
 
+export interface StageConfigItem {
+  id?: number;
+  stageOrder: number;
+  stageName: string;
+  employeeTypeId: number;
+  slaDays: number;
+  canVerifyDocument: boolean;
+  canApprove: boolean;
+  canReject: boolean;
+  canReturn: boolean;
+  canPay: boolean;
+  isFinalStage: boolean;
+}
+
 interface RtsWorkflowsConfigProps {
   data: {
     workflows: WorkflowItem[];
-    departments: { id: string; name: string }[];
-    services: { id: string; name: string; departmentId: string }[];
+    departments: { id: string; name: string; nameLocal?: string | null }[];
+    services: { id: string; name: string; nameLocal?: string | null; departmentId: string }[];
   };
   locale: string;
+  getStagesByServiceId?: (serviceId: number) => Promise<StageConfigItem[]>;
+  saveWorkflow?: (data: {
+    serviceId: number;
+    flowName: string;
+    stages: StageConfigItem[];
+  }) => Promise<{ success: boolean; workflow?: WorkflowItem; error?: string }>;
+  deleteWorkflow?: (id: number) => Promise<{ success: boolean; error?: string }>;
 }
 
 type WorkflowTableRow = Record<string, unknown> & WorkflowItem;
 
-export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
+export default function RtsWorkflowsConfig({
+  data,
+  locale,
+  getStagesByServiceId,
+  saveWorkflow,
+  deleteWorkflow,
+}: RtsWorkflowsConfigProps) {
   const t = useTranslations("rts");
   const { confirm } = useConfirm();
   const [isPending, startTransition] = useTransition();
@@ -111,28 +138,76 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
     setFormServiceId(data.services[0]?.id || "");
     setFormFlowName("");
     setFormIsActive(true);
+    setStages([
+      {
+        stageOrder: 1,
+        stageName: locale === "mr" ? "कागदपत्र पडताळणी" : "Document Verification",
+        employeeTypeId: 1,
+        slaDays: 2,
+        canVerifyDocument: true,
+        canApprove: false,
+        canReject: false,
+        canReturn: true,
+        canPay: false,
+        isFinalStage: false,
+      },
+      {
+        stageOrder: 2,
+        stageName: locale === "mr" ? "अंतिम मंजुरी" : "Final Approval",
+        employeeTypeId: 3,
+        slaDays: 3,
+        canVerifyDocument: false,
+        canApprove: true,
+        canReject: true,
+        canReturn: true,
+        canPay: false,
+        isFinalStage: true,
+      },
+    ]);
     setIsDrawerOpen(true);
   };
 
-  const handleOpenEditDrawer = (item: WorkflowItem) => {
+  const handleOpenEditDrawer = async (item: WorkflowItem) => {
     setEditingWorkflow(item);
     setFormServiceId(String(item.serviceId));
     setFormFlowName(item.flowName);
     setFormIsActive(item.isActive);
     setIsDrawerOpen(true);
+
+    if (getStagesByServiceId) {
+      try {
+        const loadedStages = await getStagesByServiceId(item.serviceId);
+        if (loadedStages && loadedStages.length > 0) {
+          setStages(loadedStages);
+        }
+      } catch {
+        // preserve existing stages
+      }
+    }
   };
 
   const handleDeleteWorkflow = (id: number) => {
     confirm({
       variant: "delete",
       title: t("workflowMaster.title"),
-      description: "Are you sure you want to delete this approval workflow?",
+      description: locale === "mr" ? "तुम्हाला नक्की हा कार्यप्रवाह हटवायचा आहे का?" : "Are you sure you want to delete this approval workflow?",
       onConfirm: async () => {
-        startTransition(() => {
-          setWorkflowsList(prev => prev.filter(w => w.id !== id));
-          toast.success("Approval workflow deleted successfully.");
+        startTransition(async () => {
+          try {
+            if (deleteWorkflow) {
+              const res = await deleteWorkflow(id);
+              if (!res.success) {
+                toast.error(res.error || (locale === "mr" ? "हटवण्यात त्रुटी आली." : "Failed to delete workflow."));
+                return;
+              }
+            }
+            setWorkflowsList((prev) => prev.filter((w) => w.id !== id));
+            toast.success(locale === "mr" ? "कार्यप्रवाह यशस्वीरित्या हटवला गेला." : "Approval workflow deleted successfully.");
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Error deleting workflow");
+          }
         });
-      }
+      },
     });
   };
 
@@ -165,34 +240,35 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formFlowName.trim()) {
-      toast.error("Flow name is required.");
+      toast.error(locale === "mr" ? "कार्यप्रवाहाचे नाव आवश्यक आहे." : "Flow name is required.");
       return;
     }
 
-    startTransition(() => {
-      if (editingWorkflow) {
-        setWorkflowsList(prev => prev.map(w => w.id === editingWorkflow.id ? {
-          ...w,
-          serviceId: Number(formServiceId),
-          flowName: formFlowName,
-          isActive: formIsActive
-        } : w));
-        toast.success("Workflow updated successfully.");
-      } else {
-        const newId = Date.now();
-        setWorkflowsList(prev => [
-          {
-            id: newId,
+    startTransition(async () => {
+      try {
+        if (saveWorkflow) {
+          const res = await saveWorkflow({
             serviceId: Number(formServiceId),
-            flowName: formFlowName,
-            isActive: formIsActive,
-            stagesCount: stages.length
-          },
-          ...prev
-        ]);
-        toast.success("New approval workflow created successfully.");
+            flowName: formFlowName.trim(),
+            stages,
+          });
+          if (res.success && res.workflow) {
+            setWorkflowsList((prev) => [
+              res.workflow!,
+              ...prev.filter((w) => w.id !== res.workflow!.id),
+            ]);
+            toast.success(locale === "mr" ? "कार्यप्रवाह यशस्वीरित्या जतन केला." : "Workflow saved successfully.");
+            setIsDrawerOpen(false);
+            return;
+          } else if (!res.success) {
+            toast.error(res.error || (locale === "mr" ? "कार्यप्रवाह जतन करण्यात त्रुटी आली." : "Failed to save workflow."));
+            return;
+          }
+        }
+        setIsDrawerOpen(false);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Error saving workflow");
       }
-      setIsDrawerOpen(false);
     });
   };
 
@@ -219,9 +295,12 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
       label: t("workflowMaster.colService"),
       render: (_, row) => {
         const serviceObj = data.services.find(s => String(s.id) === String(row.serviceId));
+        const serviceName = serviceObj
+          ? (locale === "mr" ? serviceObj.nameLocal || serviceObj.name : serviceObj.name)
+          : `Service #${row.serviceId}`;
         return (
           <span className="font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md text-xs">
-            {serviceObj ? serviceObj.name : `Service #${row.serviceId}`}
+            {serviceName}
           </span>
         );
       },
@@ -279,7 +358,9 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
             >
               <option value="All" className="text-slate-900 font-semibold">{t("workflowMaster.allDepts")}</option>
               {data.departments.map(d => (
-                <option key={d.id} value={d.id} className="text-slate-900 font-semibold">{d.name}</option>
+                <option key={d.id} value={d.id} className="text-slate-900 font-semibold">
+                  {locale === "mr" ? d.nameLocal || d.name : d.name}
+                </option>
               ))}
             </select>
           </div>
@@ -296,7 +377,9 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
             >
               <option value="All" className="text-slate-900 font-semibold">{t("workflowMaster.allServices")}</option>
               {filteredServicesForFilter.map(s => (
-                <option key={s.id} value={s.id} className="text-slate-900 font-semibold">{s.name}</option>
+                <option key={s.id} value={s.id} className="text-slate-900 font-semibold">
+                  {locale === "mr" ? s.nameLocal || s.name : s.name}
+                </option>
               ))}
             </select>
           </div>
@@ -384,7 +467,9 @@ export default function RtsWorkflowsConfig({ data }: RtsWorkflowsConfigProps) {
                 required
               >
                 {data.services.map(s => (
-                  <option key={s.id} value={s.id} className="text-slate-900 font-semibold">{s.name}</option>
+                  <option key={s.id} value={s.id} className="text-slate-900 font-semibold">
+                    {locale === "mr" ? s.nameLocal || s.name : s.name}
+                  </option>
                 ))}
               </select>
             </div>

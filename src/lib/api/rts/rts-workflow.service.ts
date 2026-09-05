@@ -19,6 +19,20 @@ import type {
  * "RTS" prefix, even though they back RTS.ApprovalFlowMaster etc.
  */
 
+export async function getAllApprovalFlows(): Promise<RtsApprovalFlowApiItem[]> {
+  const response = await apiClient.get<PagedResponse<RtsApprovalFlowApiItem>>(
+    `/ApprovalFlowMaster?PageNumber=1&PageSize=-1`,
+    { cache: "no-store" },
+    false
+  );
+
+  if (!response.success || !response.data) {
+    return [];
+  }
+
+  return response.data.items ?? [];
+}
+
 export async function getApprovalFlowByServiceId(
   serviceId: number
 ): Promise<RtsApprovalFlowApiItem | null> {
@@ -118,6 +132,14 @@ export async function deleteApprovalFlowStage(id: number): Promise<void> {
 
   if (!response.success) {
     throw new Error(response.error || "Failed to delete approval flow stage");
+  }
+}
+
+export async function deleteApprovalFlow(id: number): Promise<void> {
+  const response = await apiClient.delete<unknown>(`/ApprovalFlowMaster/${id}`);
+
+  if (!response.success) {
+    throw new Error(response.error || "Failed to delete approval flow");
   }
 }
 

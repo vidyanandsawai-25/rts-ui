@@ -94,6 +94,18 @@ const STATUS_OPTIONS = [
   'DueToday',
 ];
 
+const STATUS_MARATHI_MAP: Record<string, string> = {
+  Pending: 'प्रलंबित',
+  'Application Verified': 'अर्ज पडताळणी पूर्ण',
+  'Document Verified': 'कागदपत्र पडताळणी पूर्ण',
+  Approved: 'मंजूर',
+  Rejected: 'नामंजूर',
+  Reverted: 'पुनर्निर्देशित',
+  'Overdue Applications': 'मुदत उलटलेले अर्ज',
+  "Today's Applications": 'आजचे अर्ज',
+  DueToday: 'आज मुदत असलेले',
+};
+
 function isSlaOverdue(row: GridRow): boolean {
   return (
     typeof row.remainingDays === 'number' &&
@@ -173,11 +185,11 @@ export default function RtsApplicationDashboard({
     return [
       { label: t('applicationDashboard.filters.allStatuses'), value: '' },
       ...STATUS_OPTIONS.map((status) => ({
-        label: status,
+        label: locale === 'mr' ? STATUS_MARATHI_MAP[status] || status : status,
         value: status,
       })),
     ];
-  }, [t]);
+  }, [locale, t]);
 
   const updateUrl = useCallback(
     (changes: Record<string, string>) => {
@@ -490,7 +502,9 @@ export default function RtsApplicationDashboard({
         align: 'center',
         render: (_value, row) => (
           <Badge {...getRtsApplicationStatusBadgeProps(row.currentStatus)}>
-            {row.currentStatus.charAt(0).toUpperCase() + row.currentStatus.slice(1)}
+            {locale === 'mr'
+              ? STATUS_MARATHI_MAP[row.currentStatus] || row.currentStatus
+              : row.currentStatus.charAt(0).toUpperCase() + row.currentStatus.slice(1)}
           </Badge>
         ),
       },
