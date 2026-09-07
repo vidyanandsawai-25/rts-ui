@@ -16,7 +16,8 @@ interface FormFieldsSectionProps {
   errors: Partial<Record<keyof PropertyTypeFormModel, string>>;
   showError: (field: keyof PropertyTypeFormModel) => boolean;
   categories: PropertyTypeCategory[];
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
+  categoryLabel?: string;
   isActive?: boolean;
   isEdit?: boolean;
 }
@@ -37,10 +38,12 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
     showError,
     categories,
     t,
+    categoryLabel,
     isActive = true,
     isEdit = false,
   }, ref) => {
     const propertyDescriptionRef = React.useRef<HTMLInputElement>(null);
+    const category = categoryLabel || t("aliasFallback.category");
 
     React.useImperativeHandle(ref, () => ({
       propertyDescriptionRef,
@@ -95,20 +98,20 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
 
       <div>
         <Select
-          label={t("form.fields.category.label")}
+          label={t("form.fields.category.label", { category })}
           required
           value={formData.propertyTypeCategoryId && formData.propertyTypeCategoryId !== 0 ? String(formData.propertyTypeCategoryId) : ""}
           onChange={(_, value) => handleCategoryChange(value)}
           options={[
-            { label: t("form.fields.category.placeholder"), value: "", disabled: true },
+            { label: t("form.fields.category.placeholder", { category }), value: "", disabled: true },
             ...categories.map((cat) => ({
               label: cat.propertyTypeCategory,
               value: String(cat.id),
             })),
           ]}
-          placeholder={t("form.fields.category.placeholder")}
+          placeholder={t("form.fields.category.placeholder", { category })}
           className="text-gray-700"
-          ariaLabel={t("form.fields.category.label")}
+          ariaLabel={t("form.fields.category.label", { category })}
         />
         <ValidationMessage
           message={errors.propertyTypeCategoryId}

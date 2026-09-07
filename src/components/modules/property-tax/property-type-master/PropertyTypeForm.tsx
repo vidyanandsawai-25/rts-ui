@@ -51,6 +51,8 @@ export default function PropertyTypeForm({
     t,
     tCommon,
     isEdit,
+    categoryLabel,
+    typeOfUseLabel,
   } = usePropertyTypeForm({
     id,
     initialData,
@@ -89,6 +91,7 @@ export default function PropertyTypeForm({
     initialTypeOfUseIds,
     typeOfUseList,
     t,
+    typeOfUseLabel,
   });
 
   // Use the extracted submit hook for multi-step submission logic
@@ -167,6 +170,7 @@ export default function PropertyTypeForm({
               showError={showError}
               categories={categories}
               t={t}
+              categoryLabel={categoryLabel}
               isActive={isActive}
               isEdit={isEdit}
             />
@@ -183,6 +187,7 @@ export default function PropertyTypeForm({
             onSelectAll={handleSelectAll}
             onClearAll={handleClearAll}
             t={t}
+            typeOfUseLabel={typeOfUseLabel}
           />
         </div>
       </form>

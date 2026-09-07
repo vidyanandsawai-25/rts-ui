@@ -11,6 +11,7 @@ import { Select } from "@/components/common";
 import { getMoujaColumns } from "./MoujaColumns";
 import { useMoujaPagination } from "@/hooks/moujamaster/useMoujaPagination";
 import { useMoujaMasterHandlers } from "@/hooks/moujamaster/useMoujaMasterHandlers";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 /* ================= PAGE ================= */
 export function MoujaMaster({
@@ -27,6 +28,8 @@ export function MoujaMaster({
   const t = useTranslations("mouja.moujaMaster");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+
+  const moujaLabel = useAliasLabel("Mouja", t("aliasFallback.entity"));
 
   const { confirm } = useConfirm();
   const [isPending, startTransition] = React.useTransition();
@@ -61,7 +64,7 @@ export function MoujaMaster({
     [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm, startTransition]
   );
 
-  const columns = getMoujaColumns(t, tCommon, sortBy, sortOrder, handleSort);
+  const columns = getMoujaColumns(t, tCommon, sortBy, sortOrder, handleSort, moujaLabel);
 
   /* ================= TABLE ACTION HANDLERS ================= */
   const { handleEdit, handleDelete } = useMoujaMasterHandlers({
@@ -70,6 +73,7 @@ export function MoujaMaster({
     tCommon,
     confirm,
     startTransition,
+    moujaLabel,
   });
 
   /* ================= UI ================= */

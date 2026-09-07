@@ -144,6 +144,9 @@ describe("MoujaMaster", () => {
   const mockMessages = {
     mouja: {
       moujaMaster: {
+        aliasFallback: {
+          entity: "Mouja",
+        },
         list: {
           title: "Mouja Master",
           subtitle: "Manage Mouja",

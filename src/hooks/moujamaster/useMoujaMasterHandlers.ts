@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { Mouja } from "@/types/mouja.types";
@@ -13,6 +13,7 @@ interface UseMoujaMasterHandlersProps {
   tCommon: TranslationFunction;
   confirm: ConfirmContextType['confirm'];
   startTransition: React.TransitionStartFunction;
+  moujaLabel?: string;
 }
 
 /**
@@ -31,8 +32,13 @@ export function useMoujaMasterHandlers({
   tCommon,
   confirm,
   startTransition,
+  moujaLabel,
 }: UseMoujaMasterHandlersProps) {
   const router = useRouter();
+  const values = useMemo(
+    () => (moujaLabel ? { mouja: moujaLabel, entity: moujaLabel } : undefined),
+    [moujaLabel]
+  );
 
   const handleEdit = useCallback(
     (row: Mouja) => {
@@ -48,7 +54,7 @@ export function useMoujaMasterHandlers({
       confirm({
         variant: "delete",
         title: `${row.moujaNo} - ${row.moujaName}`,
-        description: `${t("delete.confirmDescription")}`,
+        description: `${t("delete.confirmDescription", values)}`,
         meta: {
           name: row.moujaName,
         },
@@ -58,7 +64,7 @@ export function useMoujaMasterHandlers({
           const result = await deleteMoujaAction(fd);
           if (result.success) {
             toast.success(
-              t("success.deleted", { code: row.moujaNo })
+              t("success.deleted", { code: row.moujaNo, ...values })
             );
             startTransition(() => {
               router.refresh();
@@ -67,11 +73,11 @@ export function useMoujaMasterHandlers({
             let errorMessage = tCommon("errors.deleteError");
 
             if (result.statusCode === 409) {
-              errorMessage = t("apiErrors.inUse");
+              errorMessage = t("apiErrors.inUse", values);
             } else if (result.statusCode === 400) {
-              errorMessage = t("apiErrors.validationError");
+              errorMessage = t("apiErrors.validationError", values);
             } else if (result.statusCode === 404) {
-              errorMessage = t("apiErrors.notFound");
+              errorMessage = t("apiErrors.notFound", values);
             } else if (result.message) {
               errorMessage = result.message;
             }
@@ -80,7 +86,7 @@ export function useMoujaMasterHandlers({
         },
       });
     },
-    [confirm, router, t, tCommon, startTransition]
+    [confirm, router, t, tCommon, startTransition, values]
   );
 
   return {

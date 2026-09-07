@@ -1,5 +1,11 @@
 {
   "propertyType": {
+    "aliasFallback": {
+      "category": "श्रेणी",
+      "typeOfUse": "वापराचा प्रकार",
+      "ward": "प्रभाग",
+      "entity": "मालमत्ता प्रकार"
+    },
     "list": {
       "title": "मालमत्ता प्रकार मास्टर",
       "subtitle": "मालमत्ता प्रकार आणि त्यांचे वर्गीकरण व्यवस्थापित करा",
@@ -16,9 +22,9 @@
         "propertyDescription": "मालमत्ता वर्णन",
         "type": "प्रकार",
         "propertyTypeGroup": "मालमत्ता प्रकार गट",
-        "category": "मालमत्ता प्रकार श्रेणी",
+        "category": "मालमत्ता प्रकार {category}",
         "searchSequence": "शोध क्रम",
-        "typeOfUseValidation": "वापराचा प्रकार प्रमाणीकरण",
+        "typeOfUseValidation": "{typeOfUse} प्रमाणीकरण",
         "status": "स्थिती",
         "actions": "क्रिया"
       },
@@ -56,8 +62,8 @@
           "label": "शोध क्रम"
         },
         "category": {
-          "label": "मालमत्ता प्रकार श्रेणी",
-          "placeholder": "श्रेणी निवडा"
+          "label": "मालमत्ता प्रकार {category}",
+          "placeholder": "{category} निवडा"
         }
       },
       "validation": {
@@ -71,7 +77,7 @@
         "propertyTypeGroupRequired": "मालमत्ता प्रकार गट आवश्यक आहे",
         "propertyTypeGroupMaxLength": "कमाल लांबी 100 वर्ण आहे",
         "sequenceInvalid": "शोध क्रम 0 किंवा त्यापेक्षा जास्त असावा",
-        "categoryRequired": "मालमत्ता प्रकार श्रेणी आवश्यक आहे",
+        "categoryRequired": "मालमत्ता प्रकार {category} आवश्यक आहे",
         "mustBeActive": "सेव्ह करण्यासाठी मालमत्ता प्रकार सक्रिय असणे आवश्यक आहे"
       },
       "status": {
@@ -84,24 +90,24 @@
         "update": "अद्यतन करा"
       },
       "typeOfUseSection": {
-        "title": "वापराचा प्रकार असाइनमेंट",
-        "noItems": "वापराचा प्रकार सापडला नाही.",
+        "title": "{typeOfUse} असाइनमेंट",
+        "noItems": "{typeOfUse} सापडला नाही.",
         "selected": "{count} निवडले",
         "search": "शोधा",
         "searchPlaceholder": "कोड किंवा वर्णनाने शोधा...",
-        "typeLabel": "प्रकार उपयोग",
+        "typeLabel": "{typeOfUse}",
         "allTypes": "सर्व प्रकार",
         "selectAll": "सर्व निवडा",
         "clear": "सर्व काढा",
         "noMatches": "जुळणारे आयटम सापडले नाहीत.",
-        "hint": "या मालमत्ता प्रकारासाठी लागू असलेले वापराचे प्रकार कोड निवडा",
-        "saveFailed": "वापराचा प्रकार प्रमाणीकरण सेव्ह करण्यात अयशस्वी",
-        "saveWarning": "मालमत्ता प्रकार तयार झाला, परंतु वापराचा प्रकार नियुक्त करता आला नाही. कृपया वापराचा प्रकार जोडण्यासाठी रेकॉर्ड संपादित करा."
+        "hint": "या मालमत्ता प्रकारासाठी लागू असलेले {typeOfUse} कोड निवडा",
+        "saveFailed": "{typeOfUse} प्रमाणीकरण सेव्ह करण्यात अयशस्वी",
+        "saveWarning": "मालमत्ता प्रकार तयार झाला, परंतु {typeOfUse} नियुक्त करता आला नाही. कृपया {typeOfUse} जोडण्यासाठी रेकॉर्ड संपादित करा."
       }
     },
     "modal": {
-      "title": "वापराचा प्रकार प्रमाणीकरण",
-      "subtitle": "नियुक्त केलेले वापराचे प्रकार कोड",
+      "title": "{typeOfUse} प्रमाणीकरण",
+      "subtitle": "नियुक्त केलेले {typeOfUse} कोड",
       "propertySubtitle": "नियुक्त: {description}",
       "close": "बंद करा"
     },
@@ -119,9 +125,9 @@
       "notFound": "मालमत्ता प्रकार सापडला नाही.",
       "inUse": "ही नोंद वापरात असल्याने हटवता येत नाही.",
       "operationFailed": "ऑपरेशन अयशस्वी. कृपया नंतर पुन्हा प्रयत्न करा.",
-      "referredInAutoWardEntry": "ही नोंद हटवता येत नाही कारण ती ऑटो वार्ड एंट्रीमध्ये संदर्भित आहे.",
+      "referredInAutoWardEntry": "ही नोंद हटवता येत नाही कारण ती ऑटो {ward} एंट्रीमध्ये संदर्भित आहे.",
       "linkedToProperties": "हा मालमत्ता प्रकार हटवता येत नाही कारण तो {count} मालमत्तांशी जोडलेला आहे.",
-      "cannotDeactivateReferred": "ही नोंद निष्क्रिय करता येणार नाही कारण ती ऑटो वार्ड एंट्रीमध्ये संदर्भित आहे.",
+      "cannotDeactivateReferred": "ही नोंद निष्क्रिय करता येणार नाही कारण ती ऑटो {ward} एंट्रीमध्ये संदर्भित आहे.",
       "linkedRecordError": "ही मालमत्ता प्रकार इतर नोंदींशी जोडलेला असल्याने सुधारणा करता येत नाही."
     },
     "success": {
@@ -134,7 +140,7 @@
       "propertyDescriptionRequired": "मालमत्ता वर्णन आवश्यक आहे",
       "typeRequired": "प्रकार आवश्यक आहे",
       "propertyTypeGroupRequired": "मालमत्ता प्रकार गट आवश्यक आहे",
-      "categoryRequired": "मालमत्ता प्रकार श्रेणी आवश्यक आहे",
+      "categoryRequired": "मालमत्ता प्रकार {category} आवश्यक आहे",
       "idRequiredForUpdate": "अद्यतनासाठी मालमत्ता प्रकार ID आवश्यक आहे",
       "createFailed": "मालमत्ता प्रकार तयार करण्यात अयशस्वी",
       "updateFailed": "मालमत्ता प्रकार अद्यतन करण्यात अयशस्वी",

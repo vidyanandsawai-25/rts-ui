@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { MapPin } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton } from "@/components/common";
@@ -33,12 +34,18 @@ export default function MoujaForm({
     t,
     tCommon,
     isEdit,
+    moujaLabel,
   } = useMoujaForm({
     id,
     initialData,
     onSuccess: () => {},
     onCancel: () => {},
   });
+
+  const values = useMemo(
+    () => (moujaLabel ? { mouja: moujaLabel, entity: moujaLabel } : undefined),
+    [moujaLabel]
+  );
 
   return (
     <Drawer
@@ -52,10 +59,10 @@ export default function MoujaForm({
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t("form.editTitle") : t("form.addTitle")}
+              {isEdit ? t("form.editTitle", values) : t("form.addTitle", values)}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit ? t("form.editSubtitle") : t("form.subtitle")}
+              {isEdit ? t("form.editSubtitle", values) : t("form.subtitle", values)}
             </div>
           </div>
         </div>
@@ -68,7 +75,7 @@ export default function MoujaForm({
             disabled={isSubmitting}
           />
           <SaveButton
-            label={isEdit ? t("form.actions.update") : t("form.actions.save")}
+            label={isEdit ? t("form.actions.update", values) : t("form.actions.save", values)}
             type="submit"
             form="form"
             isLoading={isSubmitting}
@@ -84,6 +91,7 @@ export default function MoujaForm({
           error={errors.isActive}
           t={t}
           tCommon={tCommon}
+          moujaLabel={moujaLabel}
         />
 
         <FormFieldsSection
@@ -93,6 +101,7 @@ export default function MoujaForm({
           errors={errors}
           showError={showError}
           t={t}
+          moujaLabel={moujaLabel}
         />
 
         <ValidationSection tCommon={tCommon} />

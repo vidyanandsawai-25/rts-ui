@@ -1,5 +1,11 @@
 {
   "propertyType": {
+    "aliasFallback": {
+      "category": "Category",
+      "typeOfUse": "Type of Use",
+      "ward": "Ward",
+      "entity": "Property Type"
+    },
     "list": {
       "title": "Property Type Master",
       "subtitle": "Manage property types and their classifications",
@@ -16,9 +22,9 @@
         "propertyDescription": "Property Description",
         "type": "Type",
         "propertyTypeGroup": "Property Type Group",
-        "category": "Property Type Category",
+        "category": "Property Type {category}",
         "searchSequence": "Search Sequence",
-        "typeOfUseValidation": "Type of Use Validation",
+        "typeOfUseValidation": "{typeOfUse} Validation",
         "status": "Status",
         "actions": "Actions"
       },
@@ -56,8 +62,8 @@
           "label": "Search Sequence"
         },
         "category": {
-          "label": "Property Type Category",
-          "placeholder": "Select category"
+          "label": "Property Type {category}",
+          "placeholder": "Select {category}"
         }
       },
       "validation": {
@@ -71,7 +77,7 @@
         "propertyTypeGroupRequired": "Property type group is required",
         "propertyTypeGroupMaxLength": "Maximum length is 100 characters",
         "sequenceInvalid": "Search sequence must be 0 or greater",
-        "categoryRequired": "Property Type Category is required",
+        "categoryRequired": "Property Type {category} is required",
         "mustBeActive": "Property Type must be active to save"
       },
       "status": {
@@ -84,24 +90,24 @@
         "update": "Update"
       },
       "typeOfUseSection": {
-        "title": "Type of Use Assignment",
-        "noItems": "No Type of Use found.",
+        "title": "{typeOfUse} Assignment",
+        "noItems": "No {typeOfUse} found.",
         "selected": "{count} selected",
         "search": "Search",
         "searchPlaceholder": "Search by code or description...",
-        "typeLabel": "Type Of Use",
+        "typeLabel": "{typeOfUse}",
         "allTypes": "All Types",
         "selectAll": "Select All",
         "clear": "Clear All",
         "noMatches": "No matching items found.",
-        "hint": "Select the type of use codes applicable to this property type",
-        "saveFailed": "Failed to save type of use validations",
-        "saveWarning": "Property type created, but type of use could not be assigned. Please edit the record to add type of use."
+        "hint": "Select the {typeOfUse} codes applicable to this property type",
+        "saveFailed": "Failed to save {typeOfUse} validations",
+        "saveWarning": "Property type created, but {typeOfUse} could not be assigned. Please edit the record to add {typeOfUse}."
       }
     },
     "modal": {
-      "title": "Type of Use Validation",
-      "subtitle": "Assigned type of use codes",
+      "title": "{typeOfUse} Validation",
+      "subtitle": "Assigned {typeOfUse} codes",
       "propertySubtitle": "Assigned to: {description}",
       "close": "Close"
     },
@@ -119,9 +125,9 @@
       "notFound": "Property type not found.",
       "inUse": "Cannot delete this record as it is in use.",
       "operationFailed": "Operation failed. Please try again later.",
-      "referredInAutoWardEntry": "Cannot delete this record as it is referred in Auto Ward Entry",
+      "referredInAutoWardEntry": "Cannot delete this record as it is referred in Auto {ward} Entry",
       "linkedToProperties": "Cannot delete this Property Type because it is linked to {count} properties.",
-      "cannotDeactivateReferred": "Cannot deactivate this record because it is referenced in Auto Ward Entry",
+      "cannotDeactivateReferred": "Cannot deactivate this record because it is referenced in Auto {ward} Entry",
       "linkedRecordError": "Cannot modify this property type because it is linked to other records."
     },
     "success": {
@@ -134,7 +140,7 @@
       "propertyDescriptionRequired": "Property description is required",
       "typeRequired": "Type is required",
       "propertyTypeGroupRequired": "Property type group is required",
-      "categoryRequired": "Property type category is required",
+      "categoryRequired": "Property type {category} is required",
       "idRequiredForUpdate": "Property Type ID is required for update",
       "createFailed": "Failed to create property type",
       "updateFailed": "Failed to update property type",

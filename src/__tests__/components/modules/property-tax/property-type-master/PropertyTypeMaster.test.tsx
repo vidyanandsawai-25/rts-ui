@@ -89,6 +89,12 @@ describe("PropertyTypeMaster", () => {
   const mockMessages = {
     propertyType: {
       propertyType: {
+        aliasFallback: {
+          category: "Category",
+          typeOfUse: "Type of Use",
+          ward: "Ward",
+          entity: "Property Type",
+        },
         list: {
           title: "Property Type Master",
           subtitle: "Manage Property Types",
@@ -118,6 +124,7 @@ describe("PropertyTypeMaster", () => {
           inUse: "In use",
           validationError: "Validation error",
           notFound: "Not found",
+          referredInAutoWardEntry: "Cannot delete this record as it is referred in Auto {ward} Entry",
         },
       },
     },
