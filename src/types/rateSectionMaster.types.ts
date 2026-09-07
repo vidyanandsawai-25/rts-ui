@@ -232,6 +232,9 @@ export interface RateSectionListProps {
   initialWardCounts?: Record<string, number>;
   totalCount?: number;
   onDeleteSuccess?: () => void;
+  rateSectionAlias?: string;
+  wardAlias?: string;
+  wardsAlias?: string;
 }
 
 /**
@@ -295,6 +298,7 @@ export interface RateSectionCardProps {
   searchParams: URLSearchParams;
   pathname: string;
   t: (key: string, values?: Record<string, string | number>) => string;
+  rateSectionAlias?: string;
 }
 
 /**
@@ -354,4 +358,6 @@ export interface HandleRateSectionDeleteParams {
   onDeleteSuccess?: () => void;
   t: (key: string, values?: Record<string, string | number>) => string;
   setDeletingId: (id: string | null) => void;
+  rateSectionAlias?: string;
+  wardsAlias?: string;
 }

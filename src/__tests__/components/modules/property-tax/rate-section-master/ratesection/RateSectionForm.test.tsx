@@ -74,7 +74,7 @@ vi.mock("@/components/common", () => ({
       </div>
     ) : null
   ),
-  Input: ({ label, value, onChange, onBlur, error, placeholder, readOnly, required, name, maxLength, disabled, className }: {
+  Input: ({ label, value, onChange, onBlur, error, placeholder, readOnly, required, name, maxLength, disabled, className, ...rest }: {
     label: string;
     value: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -87,11 +87,12 @@ vi.mock("@/components/common", () => ({
     maxLength?: number;
     disabled?: boolean;
     className?: string;
+    [key: string]: unknown;
   }) => (
     <div>
       <label>{label}{required && ' *'}</label>
       <input
-        data-testid={`input-${label.replace(/\s+/g, '-').toLowerCase()}`}
+        data-testid={(rest['data-testid'] as string) || `input-${label.replace(/\s+/g, '-').toLowerCase()}`}
         name={name}
         value={value}
         onChange={onChange}

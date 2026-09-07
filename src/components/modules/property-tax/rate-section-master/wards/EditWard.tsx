@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Edit, CheckCircle2, X, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
 import { SaveButton, CancelButton, ToggleSwitch, Input, ValidationMessage } from "@/components/common";
@@ -15,8 +16,24 @@ import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } fr
 const WARD_NO_MAX_LENGTH = 10;
 const DESCRIPTION_MAX_LENGTH = 100;
 
-export default function EditWard({ open, onClose, id, wardId, sections, initialWardData }: EditWardProps) {
+export default function EditWard({
+  open,
+  onClose,
+  id,
+  wardId,
+  sections,
+  initialWardData,
+  wardAlias: propWardAlias,
+  rateSectionAlias: propRateSectionAlias
+}: EditWardProps) {
   const t = useTranslations("rateSectionMaster");
+  const defaultWard = useAliasLabel("Ward", t("defaults.ward"));
+  const defaultRateSection = useAliasLabel(
+    "Rate_Section",
+    useAliasLabel("Rate_Section_Name", useAliasLabel("Rate Section", t("defaults.rateSection")))
+  );
+  const ward = propWardAlias || defaultWard;
+  const rateSection = propRateSectionAlias || defaultRateSection;
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [editData, setEditData] = useState<EditWardData | null>(null);
@@ -28,10 +45,10 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
     
     async function loadWardData() {
       if (open && id) {
-        const ward = sections.find(s => String(s.id) === id);
-        if (ward) {
+        const currentWard = sections.find(s => String(s.id) === id);
+        if (currentWard) {
           // Get wardId from ward object or URL param - handle case-insensitive property names
-          const rawWardId = ward.wardId ?? (ward as Record<string, unknown>)["WardId"];
+          const rawWardId = currentWard.wardId ?? (currentWard as Record<string, unknown>)["WardId"];
           const actualWardId = typeof rawWardId === 'number' ? rawWardId : (wardId ? Number(wardId) : 0);
           
           // Try to get description from initialWardData first
@@ -57,11 +74,11 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
           // Only set state if component is still mounted
           if (isMounted) {
             setEditData({ 
-              rateSectionId: ward.rateSectionId ?? 0, 
+              rateSectionId: currentWard.rateSectionId ?? 0, 
               id: Number(actualWardId) || 0, 
-              wardNo: ward.wardNo ?? '',
+              wardNo: currentWard.wardNo ?? '',
               description: wardDescription, 
-              isActive: ward.isActive ?? false,
+              isActive: currentWard.isActive ?? false,
               zoneId: zoneId,
               sequenceNo: sequenceNo
             });
@@ -87,16 +104,16 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
     
     // Ward No validation
     if (!editData.wardNo?.trim()) {
-      newErrors.wardNo = t('validation.required', { label: t('wards.wardNo') });
+      newErrors.wardNo = t('validation.required', { label: t('wards.wardNo', { ward }) });
     } else if (!CODE_REGEX.test(editData.wardNo.trim())) {
-      newErrors.wardNo = t('validation.invalidCharacters', { label: t('wards.wardNo') });
+      newErrors.wardNo = t('validation.invalidCharacters', { label: t('wards.wardNo', { ward }) });
     }
     
     // Description validation
     if (!editData.description?.trim()) {
-      newErrors.description = t('validation.required', { label: t('form.description') });
+      newErrors.description = t('validation.required', { label: t('form.description', { rateSection }) });
     } else if (!DESCRIPTION_REGEX.test(editData.description.trim())) {
-      newErrors.description = t('validation.invalidCharacters', { label: t('form.description') });
+      newErrors.description = t('validation.invalidCharacters', { label: t('form.description', { rateSection }) });
     }
     
     setErrors(newErrors);
@@ -130,9 +147,9 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
         sequenceNo: editData.sequenceNo,
         isActive: editData.isActive
       });
-      if (result.success) { toast.success(t('wards.updateSuccess')); onClose(); router.refresh(); }
-      else toast.error(result.message || result.error || t('wards.updateError'));
-    } catch { toast.error(t('wards.updateError')); }
+      if (result.success) { toast.success(t('wards.updateSuccess', { ward })); onClose(); router.refresh(); }
+      else toast.error(result.message || result.error || t('wards.updateError', { ward }));
+    } catch { toast.error(t('wards.updateError', { ward })); }
     setLoading(false);
   };
 
@@ -144,8 +161,8 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
             <Edit size={20} />
           </div>
           <div>
-            <div className="text-lg font-bold text-blue-900">{t("wards.editTitle")}</div>
-            {editData && <div className="text-sm text-slate-500">{t("wards.editDescription")}</div>}
+            <div className="text-lg font-bold text-blue-900">{t("wards.editTitle", { ward })}</div>
+            {editData && <div className="text-sm text-slate-500">{t("wards.editDescription", { ward })}</div>}
           </div>
         </div>
       }
@@ -169,7 +186,7 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
                     {t('wards.activeStatus')}
                   </div>
                   <div className={cn("text-sm", editData.isActive ? "text-gray-500" : "text-gray-400")}>
-                    {editData.isActive ? t('wards.statusActive') : t('wards.statusInactive')}
+                    {editData.isActive ? t('wards.statusActive', { ward }) : t('wards.statusInactive', { ward })}
                   </div>
                 </div>
               </div>
@@ -177,7 +194,7 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-md border-2 border-[#6F8EC0]/40 p-3">
-            <Input label={t("wards.wardNo")} type="text" required value={editData.wardNo}
+            <Input label={t("wards.wardNo", { ward })} type="text" required value={editData.wardNo}
               placeholder={t("wards.wardNoPlaceholder")} onChange={e => handleWardNoChange(e.target.value)}
               onBlur={() => handleBlur("wardNo")}
               maxLength={WARD_NO_MAX_LENGTH}
@@ -186,8 +203,8 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
             <ValidationMessage message={errors.wardNo} visible={showError("wardNo")} />
           </div>
           <div className="bg-white rounded-lg shadow-md border-2 border-[#6F8EC0]/40 p-3">
-            <Input label={t("form.description")} type="text" required value={editData.description}
-              placeholder={t("form.descriptionPlaceholder")} onChange={e => handleDescriptionChange(e.target.value)}
+            <Input label={t("form.description", { rateSection })} type="text" required value={editData.description}
+              placeholder={t("form.descriptionPlaceholder", { rateSection })} onChange={e => handleDescriptionChange(e.target.value)}
               onBlur={() => handleBlur("description")}
               maxLength={DESCRIPTION_MAX_LENGTH}
               data-testid="input-form.description"

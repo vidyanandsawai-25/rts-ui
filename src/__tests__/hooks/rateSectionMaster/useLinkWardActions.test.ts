@@ -127,7 +127,9 @@ describe("useLinkWardActions", () => {
         await result.current.moveToSelected();
       });
 
-      expect(toast.error).toHaveBeenCalledWith("wards.rateSectionNotFound");
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringContaining("wards.rateSectionNotFound")
+      );
     });
 
     it("should prompt confirmation for wards already in other rate section and link if confirmed", async () => {
@@ -156,7 +158,9 @@ describe("useLinkWardActions", () => {
 
       expect(mockConfirm).toHaveBeenCalled();
       expect(linkWardsToRateSectionAction).toHaveBeenCalledWith(1, ["W2"]);
-      expect(toast.success).toHaveBeenCalledWith("wards.saveSuccess");
+      expect(toast.success).toHaveBeenCalledWith(
+        expect.stringContaining("wards.saveSuccess")
+      );
     });
 
     it("should successfully link valid wards", async () => {
@@ -185,7 +189,9 @@ describe("useLinkWardActions", () => {
 
       expect(defaultParams.setLoading).toHaveBeenCalledWith(true);
       expect(linkWardsToRateSectionAction).toHaveBeenCalledWith(1, ["W3"]);
-      expect(toast.success).toHaveBeenCalledWith("wards.saveSuccess");
+      expect(toast.success).toHaveBeenCalledWith(
+        expect.stringContaining("wards.saveSuccess")
+      );
       expect(defaultParams.setSelectedWards).toHaveBeenCalled();
       expect(defaultParams.setWardAssignments).toHaveBeenCalled();
       expect(mockRouter.refresh).toHaveBeenCalled();
@@ -258,7 +264,9 @@ describe("useLinkWardActions", () => {
         await result.current.moveToSelected();
       });
 
-      expect(toast.error).toHaveBeenCalledWith("wards.saveError");
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringContaining("wards.saveError")
+      );
       expect(defaultParams.setLoading).toHaveBeenCalledWith(false);
     });
   });
@@ -292,7 +300,9 @@ describe("useLinkWardActions", () => {
         await result.current.moveToAvailable();
       });
 
-      expect(toast.error).toHaveBeenCalledWith("wards.rateSectionNotFound");
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringContaining("wards.rateSectionNotFound")
+      );
     });
 
     it("should successfully remove wards", async () => {
@@ -368,7 +378,9 @@ describe("useLinkWardActions", () => {
         await result.current.moveToAvailable();
       });
 
-      expect(toast.error).toHaveBeenCalledWith("wards.deleteError");
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringContaining("wards.deleteError")
+      );
       expect(defaultParams.setLoading).toHaveBeenCalledWith(false);
     });
   });

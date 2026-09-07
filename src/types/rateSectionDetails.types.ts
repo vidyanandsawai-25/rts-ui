@@ -214,6 +214,9 @@ export interface WardListProps {
   selectedWard?: string | null;
   onWardSelect?: (wardNo: string) => void;
   onWardsChanged?: () => void;
+  rateSectionAlias?: string;
+  wardAlias?: string;
+  wardsAlias?: string;
 }
 
 /**
@@ -221,6 +224,7 @@ export interface WardListProps {
  */
 export interface GetWardColumnsParams {
   t: (key: string, values?: Record<string, string | number>) => string;
+  wardAlias?: string;
 }
 
 /**
@@ -248,6 +252,9 @@ export interface LinkWardProps {
   ssrViewAllWardsTotalCount?: number;
   /** SSR pre-fetched total pages for View All tab */
   ssrViewAllWardsTotalPages?: number;
+  rateSectionAlias?: string;
+  wardAlias?: string;
+  wardsAlias?: string;
 }
 
 /**
@@ -275,6 +282,9 @@ export interface EditWardProps {
   sections: SectionItem[];
   /** SSR pre-fetched ward data - if provided, avoids client-side API call */
   initialWardData?: WardItem;
+  rateSectionAlias?: string;
+  wardAlias?: string;
+  wardsAlias?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -292,6 +302,9 @@ export interface HandleWardDeleteParams {
   setDeletedIds: (updater: (prev: Set<number>) => Set<number>) => void;
   onWardsChanged?: () => void;
   t: (key: string, values?: Record<string, string | number>) => string;
+  wardAlias?: string;
+  rateSectionAlias?: string;
+  wardsAlias?: string;
 }
 
 /**
@@ -348,6 +361,8 @@ export interface WardTableProps {
   onEdit: (row: SectionItem) => void;
   onDelete: (row: SectionItem) => void;
   emptyText: string;
+  wardAlias?: string;
+  rateSectionAlias?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -373,6 +388,8 @@ export interface AvailableWardsProps {
   onSelectAll?: (isChecked: boolean) => void;
   isSelectAllActive?: boolean;
   selectAllLoading?: boolean;
+  wardAlias?: string;
+  wardsAlias?: string;
 }
 
 /**
@@ -395,6 +412,8 @@ export interface ViewWardsProps {
   onSelectAll?: (isChecked: boolean) => void;
   isSelectAllActive?: boolean;
   selectAllLoading?: boolean;
+  wardAlias?: string;
+  wardsAlias?: string;
 }
 
 /**
@@ -417,6 +436,9 @@ export interface RateSectionWardsProps {
   isSelectAllActive?: boolean;
   selectAllLoading?: boolean;
   allSelectedWards?: string[];
+  rateSectionAlias?: string;
+  wardAlias?: string;
+  wardsAlias?: string;
 }
 
 /**
@@ -454,4 +476,7 @@ export interface LinkWardTabsProps {
   onAvailableSelectAll?: (isChecked: boolean) => void;
   onViewAllSelectAll?: (isChecked: boolean) => void;
   t: (key: string, values?: Record<string, string | number>) => string;
+  rateSectionAlias?: string;
+  wardAlias?: string;
+  wardsAlias?: string;
 }
