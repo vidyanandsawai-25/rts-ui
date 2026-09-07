@@ -48,7 +48,7 @@ export async function getRtsMisDepartmentServicesAction(
 
   const response = await getRtsMisDashboardData({
     Flag: "admin",
-    UpicId: "",
+    UpicId: null,
     DeparmentId: departmentId,
     DeparmentName: normalizedDepartmentName,
     ModuleName: moduleName,

@@ -88,6 +88,11 @@ export interface RtsMisDashboardResponse {
   data: RtsMisDashboardData;
 }
 
+export interface CitizenLandingApplicationCounts {
+  received: number;
+  delivered: number;
+}
+
 export type RtsMisDashboardFlag = 'admin' | 'user' | 'RTSApplicationDashboard';
 
 export type RtsMisDashboardInputFlag = RtsMisDashboardFlag | 'Admin' | 'User';
@@ -99,15 +104,15 @@ export interface RtsMisDashboardRequest {
   Flag: RtsMisDashboardFlag;
   UpicId: string | null;
   ApplicationNo: string | null;
-  // The backend contract uses this spelling, so preserve it in the request type.
+  // The backend contract intentionally uses the misspelled "Deparment" keys.
   DeparmentId: number | null;
   DeparmentName: string | null;
   ServiceId?: number | null;
   ModuleName: RtsMisDashboardModuleName | null;
   FromDate: string | null;
   ToDate: string | null;
-  pageNumber?: number;
-  pageSize?: number;
+  pageNumber?: number | null;
+  pageSize?: number | null;
   ApplicationStatus?: string | null;
 }
 

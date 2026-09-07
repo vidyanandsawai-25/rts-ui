@@ -31,6 +31,7 @@ import {
   prepareExternalServiceNavigation,
 } from '@/lib/utils/rts/service-navigation';
 import type { DepartmentDTO } from '@/types/rts-citizen.types';
+import type { CitizenLandingApplicationCounts } from '@/types/rts/rtsmisdashboard.types';
 import { CitizenJourneyHero } from './CitizenJourneyHero';
 import ApplicationAndTrackingDrawer from './ApplicationAndTrackingDrawer';
 
@@ -41,6 +42,7 @@ interface CitizenLandingPageProps {
   ulbData?: unknown;
   /** Departments with services — fetched from DB by page.tsx */
   departments?: DepartmentDTO[];
+  applicationCounts?: CitizenLandingApplicationCounts | null;
 }
 
 type I18nLabel = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
@@ -84,7 +86,11 @@ function pickLang(v: I18nLabel | string | undefined, lang: string): string {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLandingPageProps) {
+export function CitizenLandingPage({
+  isLoggedIn,
+  departments = [],
+  applicationCounts = null,
+}: CitizenLandingPageProps) {
   const locale = useLocale();
   const t = useTranslations('rts.landing');
   const router = useRouter();
@@ -452,6 +458,7 @@ export function CitizenLandingPage({ isLoggedIn, departments = [] }: CitizenLand
       <div className="w-full space-y-5">
         <CitizenJourneyHero
           serviceCount={totalServiceCount}
+          applicationCounts={applicationCounts}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onApply={handleActionClick}

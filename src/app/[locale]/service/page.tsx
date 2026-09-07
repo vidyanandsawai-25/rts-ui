@@ -5,6 +5,7 @@ import { CitizenLandingPage } from '@/components/modules/rts/citizen/CitizenLand
 import { CitizenLayout } from '@/components/layout';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
 import { getDashboardDepartments } from '@/lib/api/dashboard';
+import { getCitizenLandingApplicationCountsAction } from './actions';
 import type { DepartmentDTO } from '@/types/rts-citizen.types';
 
 interface ServicePageProps {
@@ -37,15 +38,21 @@ export default async function ServicePage({ params }: ServicePageProps) {
   const cookieStore = await cookies();
   const hasSession = cookieStore.has('rts_session');
 
-  // Fetch departments + services from DB (parallel with branding)
   const [{ ulbData }, departments] = await Promise.all([
     fetchLoginBrandingAction(),
     getDashboardDepartments().catch((): DepartmentDTO[] => []),
   ]);
 
+  const applicationCounts = await getCitizenLandingApplicationCountsAction().catch(() => null);
+
   return (
     <CitizenLayout>
-      <CitizenLandingPage isLoggedIn={hasSession} ulbData={ulbData} departments={departments} />
+      <CitizenLandingPage
+        isLoggedIn={hasSession}
+        ulbData={ulbData}
+        departments={departments}
+        applicationCounts={applicationCounts}
+      />
     </CitizenLayout>
   );
 }
