@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { IZoneDescription } from "@/types/RVRateMaster";
 
@@ -22,12 +22,12 @@ export function useRatePagination({
 }: UseRatePaginationProps) {
   const router = useRouter();
 
-  const getCalculatedTotalPages = (totalCount?: number, pageSize?: number, fallbackTotalPages?: number) => {
+  const getCalculatedTotalPages = useCallback((totalCount?: number, pageSize?: number, fallbackTotalPages?: number) => {
     if (totalCount && pageSize && pageSize > 0) {
       return Math.max(1, Math.ceil(totalCount / pageSize));
     }
     return fallbackTotalPages ?? Math.max(1, Math.ceil(zoneDescriptions.length / (pageSize || 100)));
-  };
+  }, [zoneDescriptions]);
 
   // Pagination state for matrix grid
   const [matrixPageNumber, setMatrixPageNumber] = useState(paginatedZonesData?.pageNumber ?? 1);
@@ -54,7 +54,7 @@ export function useRatePagination({
       setMatrixPageSize(paginatedZonesData.pageSize);
       /* eslint-enable react-hooks/set-state-in-effect */
     }
-  }, [paginatedZonesData]);
+  }, [paginatedZonesData, getCalculatedTotalPages]);
 
   // Handle pagination changes via URL navigation
   const handleMatrixPaginationChange = (newPageNumber: number, newPageSize: number) => {
