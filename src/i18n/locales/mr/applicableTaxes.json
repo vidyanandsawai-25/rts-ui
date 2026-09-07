@@ -15,7 +15,8 @@
         "unexpectedError": "एक अनपेक्षित त्रुटी आली",
         "fetchAssessmentYears": "आकारणी वर्षे लोड करण्यात अयशस्वी",
         "fetchUseGroups": "वापर गट लोड करण्यात अयशस्वी",
-        "fetchTaxApplicability": "कर लागूता तपशील लोड करण्यात अयशस्वी"
+        "fetchTaxApplicability": "कर लागूता तपशील लोड करण्यात अयशस्वी",
+        "fetchTaxCalculation": "कर गणना डेटा मिळवण्यात अयशस्वी"
     },
     "success": {
         "updateTaxApplicability": "{name} साठी कर लागूता स्थिती यशस्वीरित्या अद्यतनित केली गेली"
@@ -48,5 +49,27 @@
     "selectAsseYear": "आकारणी निवडा",
     "selectFloorUse": "उपयोग निवडा",
     "confirmActive": "तुम्हाला खात्री आहे की तुम्ही स्थिती लागू मध्ये बदलू इच्छिता?",
-    "confirmInactive": "तुम्हाला खात्री आहे की तुम्ही स्थिती सवलत दिलेले मध्ये बदलू इच्छिता?"
+    "confirmInactive": "तुम्हाला खात्री आहे की तुम्ही स्थिती सवलत दिलेले मध्ये बदलू इच्छिता?",
+    "appliedTaxes": "लागू कर",
+    "mixedUsePropertyTaxDetails": "मिश्रित-वापर मालमत्ता कर तपशील",
+    "mixedConstruction": "मिश्रित बांधकाम",
+    "ruleSet": "नियम सेट:",
+    "totalTax": "एकूण कर",
+    "totalTaxLabel": "एकूण कर:",
+    "residentialRV": "निवासी RV",
+    "commercialRV": "व्यावसायिक RV",
+    "area": "क्षेत्र",
+    "toilets": "शौचालये",
+    "showInactive": "निष्क्रिय दर्शवा",
+    "print": "प्रिंट करा",
+    "done": "पूर्ण",
+    "applicableTo": "यावर लागू",
+    "residentialAndShop": "निवासी + दुकान",
+    "residential": "निवासी",
+    "commercialOnly": "केवळ व्यावसायिक",
+    "wholeProperty": "संपूर्ण मालमत्ता",
+    "ruleRate": "नियम / दर",
+    "statusOnOff": "स्थिती चालू / बंद",
+    "amount": "रक्कम",
+    "currencySymbol": "₹"
 }
