@@ -8,6 +8,7 @@ import { useLockUnlockColumns } from "./useLockUnlockColumns";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 export interface UseLockUnlockMasterProps {
   wardIdFromUrl: string;
@@ -33,6 +34,8 @@ export function useLockUnlockMaster({
 }: UseLockUnlockMasterProps) {
   const { confirm } = useConfirm();
   const t = useTranslations("lockUnlock");
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+  const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -309,15 +312,15 @@ export function useLockUnlockMaster({
   const fetchProperties = useCallback(
     (pageNum: number, pageSz: number, searchTerm: string = propertySearchTerm, resetSelection: boolean = false) => {
       if (formData.searchCategory !== 1 && !formData.wardId) {
-        toast.error(t("messages.selectWardRequired"));
+        toast.error(t("messages.selectWardRequired", { ward: wardAlias }));
         return;
       }
 
-      const isSearchActive = !!searchTerm;
+      const isSearchActive = !searchTerm;
 
       if (formData.searchCategory !== 1 && formData.searchCategory !== 2 && formData.searchCategory !== 3) {
         if (!isSearchActive && (!formData.fromProperty || !formData.toProperty)) {
-          toast.error(t("messages.validationError"));
+          toast.error(t("messages.validationError", { ward: wardAlias }));
           return;
         }
       }
@@ -339,13 +342,13 @@ export function useLockUnlockMaster({
           };
 
           if (formData.searchCategory === 1) {
-            if (!formData.zoneId) throw new Error(t("messages.selectZoneRequired"));
+            if (!formData.zoneId) throw new Error(t("messages.selectZoneRequired", { zone: zoneAlias }));
             params.ZoneId = Number(formData.zoneId);
           } else if (formData.searchCategory === 2) {
-            if (!formData.wardId) throw new Error(t("messages.selectWardRequired"));
+            if (!formData.wardId) throw new Error(t("messages.selectWardRequired", { ward: wardAlias }));
             params.WardId = Number(formData.wardId);
           } else if (formData.searchCategory === 3) {
-            if (!formData.wardId) throw new Error(t("messages.selectWardRequired"));
+            if (!formData.wardId) throw new Error(t("messages.selectWardRequired", { ward: wardAlias }));
             if (!formData.propertyNos || formData.propertyNos.length === 0) throw new Error(t("messages.selectPropertyDropdownRequired"));
 
             const partitions = new Set<string>();
@@ -372,10 +375,10 @@ export function useLockUnlockMaster({
 
           } else if (formData.searchCategory === 4) {
             if (!isSearchActive && !formData.wardId && (!formData.fromProperty || !formData.toProperty)) {
-              throw new Error(t("messages.validationError"));
+              throw new Error(t("messages.validationError", { ward: wardAlias }));
             }
             if (!formData.wardId) {
-              throw new Error(t("messages.selectWardRequired"));
+              throw new Error(t("messages.selectWardRequired", { ward: wardAlias }));
             }
             if (!isSearchActive && (!formData.fromProperty || !formData.toProperty)) {
               throw new Error(t("messages.selectFromToPropertyRequired"));
@@ -430,24 +433,24 @@ export function useLockUnlockMaster({
         }
       })();
     },
-    [propertySearchTerm, formData.wardId, formData.fromProperty, formData.toProperty, formData.propertyNos, formData.searchCategory, formData.zoneId, propertyOptions, getPropertyQueryRange, t, resetSelectionState]
+    [propertySearchTerm, formData.wardId, formData.fromProperty, formData.toProperty, formData.propertyNos, formData.searchCategory, formData.zoneId, propertyOptions, getPropertyQueryRange, t, resetSelectionState, wardAlias, zoneAlias]
   );
 
   // Show (initial load) and search should reset selection
   const handleShow = useCallback((fromShowButton = false) => {
     if (formData.searchCategory === 1) {
       if (!formData.zoneId) {
-        toast.error(t("messages.selectZoneRequired"));
+        toast.error(t("messages.selectZoneRequired", { zone: zoneAlias }));
         return;
       }
     } else if (formData.searchCategory === 2) {
       if (!formData.wardId) {
-        toast.error(t("messages.selectWardRequired"));
+        toast.error(t("messages.selectWardRequired", { ward: wardAlias }));
         return;
       }
     } else if (formData.searchCategory === 3) {
       if (!formData.wardId) {
-        toast.error(t("messages.selectWardAndPropertyRequired"));
+        toast.error(t("messages.selectWardAndPropertyRequired", { ward: wardAlias }));
         return;
       }
       if (!formData.propertyNos || formData.propertyNos.length === 0) {
@@ -456,7 +459,7 @@ export function useLockUnlockMaster({
       }
     } else if (formData.searchCategory === 4) {
       if (!formData.wardId) {
-        toast.error(t("messages.selectWardRequired"));
+        toast.error(t("messages.selectWardRequired", { ward: wardAlias }));
         return;
       }
       if (!formData.fromProperty || !formData.toProperty) {
@@ -498,7 +501,7 @@ export function useLockUnlockMaster({
     transitionFn(() => {
       router.push(`${pathname}?${params.toString()}`);
     });
-  }, [formData, searchParams, pathname, router, t, pagination.pageSize, propertyOptions]);
+  }, [formData, searchParams, pathname, router, t, pagination.pageSize, propertyOptions, zoneAlias, wardAlias]);
 
   const handleSearchButtonClick = useCallback((termOverride?: unknown) => {
     const termToSearch = typeof termOverride === 'string' ? termOverride : propertySearchTerm;

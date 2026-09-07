@@ -4,17 +4,23 @@
   "common": {
     "loading": "लोड हो रहा है..."
   },
+  "defaults": {
+    "zone": "जोन / नोड",
+    "ward": "वार्ड / सेक्टर",
+    "propertyNo": "संपत्ति क्र.",
+    "partition": "विभाजन"
+  },
   "scopeSelectionCard": {
     "title": "1. स्कोप चयन",
     "subtitle": "स्कोप चुनें। केवल प्रासंगिक फ़ील्ड नीचे दिखाई देंगे।",
     "options": {
       "zone": {
-        "label": "ज़ोन / नोड",
-        "sublabel": "ज़ोन के अनुसार चयन"
+        "label": "{zone}",
+        "sublabel": "{zone} के अनुसार चयन"
       },
       "ward": {
-        "label": "वार्ड / सेक्टर",
-        "sublabel": "मल्टी वार्ड चयन"
+        "label": "{ward}",
+        "sublabel": "मल्टी {ward} चयन"
       },
       "building": {
         "label": "इमारत के अनुसार",
@@ -28,12 +34,12 @@
   },
   "selectPropertyCard": {
     "title": "संपत्ति चुनें",
-    "zone": "ज़ोन / नोड",
-    "selectZone": "ज़ोन चुनें",
-    "propertyNo": "संपत्ति क्र.",
-    "selectProperties": "संपत्तियां चुनें",
-    "wardNo": "वार्ड क्र.",
-    "selectWard": "वार्ड चुनें",
+    "zone": "{zone}",
+    "selectZone": "{zone} चुनें",
+    "propertyNo": "{propertyNo}",
+    "selectProperties": "संपत्ति चुनें",
+    "wardNo": "{ward} क्र.",
+    "selectWard": "{ward} चुनें",
     "fromProperty": "संपत्ति क्र. से",
     "selectStartRange": "प्रारंभिक सीमा चुनें",
     "toProperty": "संपत्ति क्र. तक",
@@ -54,16 +60,16 @@
     "allTypes": "सभी प्रकार"
   },
   "resultsTable": {
-    "title": "बल्क ऑपरेशन्स ({count} संपत्तियां चुनी गईं)",
+    "title": "बल्क ऑपरेशन्स ({count} संपत्ति चुनी गईं)",
     "propertyMasterTitle": "",
     "lockButton": "चयनित स्क्रीन लॉक करें",
     "unlockButton": "चयनित स्क्रीन अनलॉक करें",
-    "searchPropertyPlaceholder": "संपत्ति क्रमांक या विभाजन क्रमांक से खोजें...",
+    "searchPropertyPlaceholder": "{propertyNo} या {partition} संख्या द्वारा खोजें...",
     "searchButton": "खोजें",
-    "placeholderText": "कृपया वार्ड और संपत्ति सीमा चुनें, फिर संपत्तियां देखने के लिए \"दिखाएं\" पर क्लिक करें.",
+    "placeholderText": "कृपया {ward} और संपत्ति सीमा चुनें, फिर संपत्ति देखने के लिए \"दिखाएं\" पर क्लिक करें.",
     "noResultsFound": "कोई संपत्ति नहीं मिली।",
     "columns": {
-      "propertyDetail": "संपत्ति क्र.",
+      "propertyDetail": "{propertyNo}",
       "screenNames": "स्क्रीन के नाम",
       "status": "स्थिति",
       "lockUnlock": "लॉक/अनलॉक",
@@ -102,17 +108,17 @@
     "saveFailed": "लॉक्स को अपडेट करने में विफल।",
     "selectPropertyRequired": "कृपया टेबल में से कम से कम एक संपत्ति चुनें।",
     "selectScreenRequired": "लॉक/अनलॉक करने के लिए कृपया कम से कम एक स्क्रीन चुनें।",
-    "selectZoneRequired": "कृपया एक ज़ोन चुनें",
-    "selectWardRequired": "कृपया एक वार्ड चुनें",
-    "selectWardAndPropertyRequired": "कृपया एक वार्ड और कम से कम एक संपत्ति चुनें",
+    "selectZoneRequired": "कृपया एक {zone} चुनें",
+    "selectWardRequired": "कृपया एक {ward} चुनें",
+    "selectWardAndPropertyRequired": "कृपया एक {ward} और कम से कम एक संपत्ति चुनें",
     "selectPropertyDropdownRequired": "कृपया कम से कम एक संपत्ति चुनें",
     "selectFromToPropertyRequired": "कृपया संपत्ति क्र. से और संपत्ति क्र. तक चुनें",
     "bulkLockTitle": "संपत्ति बल्क लॉक करें",
     "bulkUnlockTitle": "संपत्ति बल्क अनलॉक करें",
     "bulkConfirmDescription": "क्या आप सुनिश्चित हैं कि आप चयनित {propertyCount, plural, =1 {1 संपत्ति} other {# संपत्तियों}} के लिए चयनित स्क्रीन {action} करना चाहते हैं?",
     "bulkConfirmDescriptionRange": "क्या आप सुनिश्चित हैं कि आप संपत्ति {fromProperty} से {toProperty} तक की {propertyCount} संपत्तियों के लिए चयनित स्क्रीन {action} करना चाहते हैं?",
-    "alreadyLockedIgnored": "(जो संपत्तियां पहले से लॉक हैं उन्हें अनदेखा कर दिया जाएगा)",
-    "alreadyUnlockedIgnored": "(जो संपत्तियां पहले से अनलॉक हैं उन्हें अनदेखा कर दिया जाएगा)",
+    "alreadyLockedIgnored": "(जो संपत्ति पहले से लॉक हैं उन्हें अनदेखा कर दिया जाएगा)",
+    "alreadyUnlockedIgnored": "(जो संपत्ति पहले से अनलॉक हैं उन्हें अनदेखा कर दिया जाएगा)",
     "exactLockedIgnored": "({ignoredCount} पहले से लॉक की गई {ignoredCount, plural, =1 {संपत्ति} other {संपत्तियों}} को अनदेखा कर दिया जाएगा)",
     "exactUnlockedIgnored": "({ignoredCount} पहले से अनलॉक की गई {ignoredCount, plural, =1 {संपत्ति} other {संपत्तियों}} को अनदेखा कर दिया जाएगा)",
     "bulkConfirmDescriptionScope": "क्या आप सुनिश्चित हैं कि आप चयनित स्कोप (लगभग <highlight>{propertyCount}</highlight> संपत्तियों) के लिए चयनित {screenCount} स्क्रीन <warning>{action}</warning> करना चाहते हैं? इस बल्क अपडेट ऑपरेशन में बड़ी संख्या में रिकॉर्ड संशोधित होते हैं और इसे पूरा होने में कई मिनट लग सकते हैं। कृपया विंडो बंद न करें।",
@@ -130,11 +136,11 @@
     "processingTitle": "अनुरोध संसाधित किया जा रहा है",
     "processingMessage": "कृपया प्रतीक्षा करें जबकि संपत्तियों को अद्यतन किया जा रहा है। इसमें कुछ क्षण लग सकते हैं...",
     "clearedFilters": "सभी फ़िल्टर साफ़ कर दिए गए।",
-    "validationError": "कृपया सभी आवश्यक फ़ील्ड भरें (वार्ड क्र., संपत्ति क्र. से और संपत्ति क्र. तक)।",
-    "fetchSuccess": "संपत्तियां सफलतापूर्वक प्राप्त की गईं।",
+    "validationError": "कृपया सभी आवश्यक फ़ील्ड भरें ({ward} क्र., संपत्ति क्र. से और संपत्ति क्र. तक)।",
+    "fetchSuccess": "संपत्ति सफलतापूर्वक प्राप्त की गईं।",
     "fetchNoResults": "कोई संपत्ति नहीं मिली।",
-    "fetchFailed": "संपत्तियां लोड करने में विफल।",
-    "fetchWardsError": "वार्ड प्राप्त करने में त्रुटि:",
+    "fetchFailed": "संपत्ति लोड करने में विफल।",
+    "fetchWardsError": "{wards} प्राप्त करने में त्रुटि:",
     "searchValidationError": "कृपया खोजने के लिए कोई मान दर्ज करें।",
     "validationGreaterProperty": "संपत्ति क्र. तक, संपत्ति क्र. से से बड़ा होना चाहिए।"
   },

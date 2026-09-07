@@ -1,13 +1,20 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { PropertySelectionCard } from "@/components/modules/property-tax/lockunlock/PropertySelectionCard";
+import { AliasLabelsProvider } from "@/lib/providers/AliasLabelsProvider";
 
 vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string) => {
+  useTranslations: () => (key: string, values?: Record<string, string>) => {
     const translations: Record<string, string> = {
-      "selectPropertyCard.title": "Select properties",
+      "selectPropertyCard.title": "Select Properties",
       "selectPropertyCard.showButton": "Show",
       "selectPropertyCard.clearButton": "Clear all",
+      "selectPropertyCard.fromProperty": "From Property",
+      "selectPropertyCard.toProperty": "To Property",
+      "selectPropertyCard.wardNo": `${values?.ward || "Ward"} no`,
+      "selectPropertyCard.selectWard": `Select ${values?.ward || "Ward"}`,
+      "selectPropertyCard.zone": `${values?.zone || "Zone"}`,
+      "selectPropertyCard.selectZone": `Select ${values?.zone || "Zone"}`,
     };
     return translations[key] || key;
   },
@@ -45,7 +52,7 @@ describe("PropertySelectionCard", () => {
   it("should render SelectProperty card components", () => {
     render(<PropertySelectionCard {...mockProps} />);
 
-    expect(screen.getByText("Select properties")).toBeInTheDocument();
+    expect(screen.getByText(/Select Properties/i)).toBeInTheDocument();
     expect(screen.getByText("Show")).toBeInTheDocument();
     expect(screen.getByText("Clear all")).toBeInTheDocument();
   });
@@ -64,5 +71,20 @@ describe("PropertySelectionCard", () => {
     const clearBtn = screen.getByRole("button", { name: /clear all/i });
     fireEvent.click(clearBtn);
     expect(mockProps.handleClearAll).toHaveBeenCalled();
+  });
+
+  it("should render with custom aliases when AliasLabelsProvider is provided", () => {
+    const customLabels = {
+      Ward: "Sector",
+      Zone: "Division",
+    };
+
+    render(
+      <AliasLabelsProvider labels={customLabels}>
+        <PropertySelectionCard {...mockProps} />
+      </AliasLabelsProvider>
+    );
+
+    expect(screen.getByText("Sector no")).toBeInTheDocument();
   });
 });
