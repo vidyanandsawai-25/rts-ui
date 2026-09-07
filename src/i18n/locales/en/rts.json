@@ -879,6 +879,7 @@
     "application": "Application",
     "applicationNumber": "Application Number",
     "propertyNumber": "Property No.",
+    "upicNumber": "UPIC No.",
     "submittedDate": "Submitted Date",
     "submittedOn": "Submitted On",
     "slaTimeline": "SLA Timeline",

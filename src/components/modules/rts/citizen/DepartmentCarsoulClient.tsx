@@ -293,17 +293,6 @@ export default function DepartmentCarsoulClient({
           </div>
 
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600 rounded-l-xl" />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('approvedApplications')}</p>
-              <p className="mt-0.5 text-xl font-extrabold text-emerald-600">{approvedCount}</p>
-            </div>
-            <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-emerald-50/50 text-emerald-600 group-hover:scale-105 transition-transform shrink-0">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500 rounded-l-xl" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('pendingApplications')}</p>
@@ -313,6 +302,18 @@ export default function DepartmentCarsoulClient({
               <Clock className="w-5 h-5" />
             </div>
           </div>
+
+          <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600 rounded-l-xl" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('approvedApplications')}</p>
+              <p className="mt-0.5 text-xl font-extrabold text-emerald-600">{approvedCount}</p>
+            </div>
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-emerald-50/50 text-emerald-600 group-hover:scale-105 transition-transform shrink-0">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+          </div>
+          
 
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-600 rounded-l-xl" />
@@ -376,6 +377,8 @@ export default function DepartmentCarsoulClient({
                     const isAppRejected = app.normalizedStatus === "rejected";
                     const isAppReverted = app.normalizedStatus === "reverted";
                     const serviceName = lang === "mr" && app.serviceNameLocal ? app.serviceNameLocal : app.serviceName;
+                    const propertyNo = app.propertyNo?.trim() || "—";
+                    const applicationUpicId = app.upicId?.trim() || "—";
 
                     const matchedService = departments
                       .flatMap((d) => d.services)
@@ -406,7 +409,20 @@ export default function DepartmentCarsoulClient({
                     return (
                       <tr key={index} className="hover:bg-slate-50/50 transition-colors">
                         <td className="py-2.5 px-3">
-                          <span className="block text-[9px] font-mono font-bold text-slate-400 mb-0.5">{app.applicationNo}</span>
+                          <div className="mb-1 space-y-0.5 text-[9px] leading-tight text-slate-500">
+                            <div>
+                              <span className="font-semibold">{t('applicationNumber')}:</span>{' '}
+                              <span className="font-mono font-bold text-slate-700">{app.applicationNo}</span>
+                            </div>
+                            <div>
+                              <span className="font-semibold">{t('propertyNumber')}:</span>{' '}
+                              <span className="font-mono font-bold text-slate-700">{propertyNo}</span>
+                            </div>
+                            <div>
+                              <span className="font-semibold">{t('upicNumber')}:</span>{' '}
+                              <span className="font-mono font-bold text-slate-700">{applicationUpicId}</span>
+                            </div>
+                          </div>
                           <span className="font-bold text-slate-900">{serviceName}</span>
                         </td>
                         <td className="py-2.5 px-3 text-slate-600">{formatSubmittedDate(app.submittedDate, lang)}</td>

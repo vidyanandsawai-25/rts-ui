@@ -41,6 +41,8 @@ export interface RtsMisDashboardUserApplicationItem {
   serviceName: string;
   serviceNameLocal?: string | null;
   applicationNo: string;
+  propertyNo: string | null;
+  upicId: string | null;
   sla: number;
   submittedDate: string;
   status: string;
