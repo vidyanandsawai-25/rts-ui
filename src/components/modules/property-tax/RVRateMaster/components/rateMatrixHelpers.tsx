@@ -17,7 +17,8 @@ export function buildMatrixColumns(
   singleColorClassHeader: string,
   tCommon: ReturnType<typeof import("next-intl").useTranslations>,
   rateUnit: "SqMeter" | "SqFeet" = "SqMeter",
-  t?: ReturnType<typeof import("next-intl").useTranslations>
+  t?: ReturnType<typeof import("next-intl").useTranslations>,
+  aliasLabels?: Record<string, string>
 ) {
   // Filter out zone columns
   const filteredCategories = rateCategories.filter(cat =>
@@ -26,7 +27,7 @@ export function buildMatrixColumns(
   );
 
   const rateUnitLabel = rateUnit === "SqMeter" ? tCommon('rateUnitSqMeter') : tCommon('rateUnitSqFeet');
-  const tooltipHeader = t ? t('tooltips.associatedTypesOfUse') : 'Associated Types of Use:';
+  const tooltipHeader = t ? t('tooltips.associatedTypesOfUse', aliasLabels) : 'Associated Types of Use:';
 
   return filteredCategories.map((cat) => {
     const code = (cat.constructionCode || cat.constructionId).trim().toUpperCase();
@@ -68,7 +69,8 @@ export function buildMatrixColumns(
  * Build matrix meta columns (zone column)
  */
 export function buildMatrixMetaColumns(
-  t: ReturnType<typeof import("next-intl").useTranslations>
+  t: ReturnType<typeof import("next-intl").useTranslations>,
+  aliasLabels?: Record<string, string>
 ) {
   return [
     {
@@ -76,7 +78,7 @@ export function buildMatrixMetaColumns(
       label: (
         <span className="inline-flex items-center gap-0.5 text-[11px] md:text-[12px] font-bold text-blue-700 whitespace-nowrap">
           <MapPin size={11} />
-          {t('columns.taxZoneNo')}
+          {t('columns.taxZoneNo', aliasLabels)}
         </span>
       ),
       width: "70px"

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { getRateMasterByFilters, getOpenPlotTypeOfUseDetailsAction, getTypeOfUseDetailsAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import type { RateCategory, ITypeOfUseDetails } from "@/types/RVRateMaster";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface RateCategoriesSyncProps {
   rateCategories: RateCategory[];
@@ -20,6 +21,8 @@ export function useRateCategoriesSync({
   assessmentYear,
   t,
 }: RateCategoriesSyncProps) {
+  const rateSectionLabel = useAliasLabel("Rate_Section", t("aliasFallback.rateSection"));
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
   const [hasConfiguredRates, setHasConfiguredRates] = useState(false);
   const [isConfigureRatesOpen, setIsConfigureRatesOpen] = useState(false);
   const [localRateCategories, setLocalRateCategories] = useState<RateCategory[]>(rateCategories);
@@ -211,7 +214,7 @@ export function useRateCategoriesSync({
           setLocalRateCategories(toAddCategories);
           if (alreadyConfiguredCodes.length > 0) {
             const codesStr = `'${alreadyConfiguredCodes.join(", ")}'`;
-            toast.success(t('messages.validationRatesAlreadyExistSome', { codes: codesStr }) || `Rates already exist for ${codesStr}. Only unconfigured use types are shown.`);
+            toast.success(t('messages.validationRatesAlreadyExistSome', { codes: codesStr, use: useLabel }) || `Rates already exist for ${codesStr}. Only unconfigured use types are shown.`);
           }
         } else {
           const allCategories: RateCategory[] = [];
@@ -311,7 +314,7 @@ export function useRateCategoriesSync({
 
   const handleConfigureRatesClick = async () => {
     if (!selectedZone || selectedZone === "ALL" || !assessmentYear || assessmentYear === "ALL") {
-      toast.error(t('messages.selectRateSection'));
+      toast.error(t('messages.selectRateSection', { rateSection: rateSectionLabel }));
       return;
     }
     try {
@@ -321,8 +324,8 @@ export function useRateCategoriesSync({
       const details = detailsResult.items || [];
 
       confirm({
-        title: t('dialogs.configureUseTypeTitle'),
-        description: t('dialogs.configureUseTypeDescription'),
+        title: t('dialogs.configureUseTypeTitle', { use: useLabel }),
+        description: t('dialogs.configureUseTypeDescription', { use: useLabel }),
         confirmText: t('dialogs.confirmYes'),
         cancelText: t('dialogs.confirmNo'),
         onConfirm: () => {

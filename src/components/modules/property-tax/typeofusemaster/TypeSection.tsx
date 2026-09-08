@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { Tooltip } from "@/components/common/Tooltip";
 import type { UseGroup, UseType, TranslatorFunction } from "@/types/typeOfUse.types";
 import { clsx, getTypeApiId, getGroupApiId } from "./typeOfUseMasterUtils";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface TypeSectionProps {
   paginatedTypes: UseType[];
@@ -46,20 +47,22 @@ export function TypeSection({
   const router = useRouter();
   const locale = useLocale();
 
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+
   return (
     <div className="lg:col-span-5 rounded-2xl border border-slate-200 bg-white shadow-sm min-h-[400px] lg:h-[600px] flex flex-col overflow-hidden">
       <div className="flex flex-col gap-3 rounded-t-2xl border-b border-slate-100 px-4 py-3 bg-white z-10 flex-shrink-0 sm:flex-row sm:items-center sm:justify-between">
-        <div className="font-semibold text-slate-900">{t('type.title')}</div>
+        <div className="font-semibold text-slate-900">{t('type.title', { typeOfUse: typeOfUseLabel })}</div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end sm:flex-1 sm:gap-4">
           <SearchInput
             className="mb-0 w-full sm:max-w-xs"
             value={typeSearch}
             onChange={onTypeSearchChange}
-            placeholder={t('type.searchPlaceholder')}
+            placeholder={t('type.searchPlaceholder', { typeOfUse: typeOfUseLabel })}
           />
           <AddButton
             size="md"
-            label={t('type.add')}
+            label={t('type.add', { typeOfUse: typeOfUseLabel })}
             onClick={() => {
               const group = allGroups.find(
                 (g) => g.typeOfUseGroupId === selectedGroupId
@@ -83,7 +86,7 @@ export function TypeSection({
           onPageChange={onPageChange}
           onPageSizeChange={onPageSizeChange}
           pageSizeOptions={[5, 10, 20, 50]}
-          emptyText={t('type.noTypes')}
+          emptyText={t('type.noTypes', { typeOfUse: typeOfUseLabel })}
           maxHeightClassName="max-h-[320px] sm:max-h-[350px] lg:max-h-[415px] overflow-y-auto"
           className="border-none rounded-none shadow-none"
           renderCard={(typeItem) => {

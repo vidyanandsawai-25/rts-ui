@@ -1,4 +1,5 @@
 import { Building2 } from "lucide-react";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface RateMasterFormHeaderProps {
   id?: string | null;
@@ -9,6 +10,9 @@ interface RateMasterFormHeaderProps {
  * Form header component for rate master form
  */
 export function RateMasterFormHeader({ id, t }: RateMasterFormHeaderProps) {
+  const zoneLabel = useAliasLabel("Zone", t("aliasFallback.zone"));
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+
   return (
     <div className="mb-3 bg-[#f5f8fd] rounded-t-xl border-b-4 border-blue-500">
       <div className="flex items-center justify-between gap-2">
@@ -21,7 +25,9 @@ export function RateMasterFormHeader({ id, t }: RateMasterFormHeaderProps) {
               {id ? t('messages.editRateDetails') : t('messages.generateNewRateDetails')}
             </h1>
             <p className="text-xs text-gray-600 mt-0.5">
-              {id ? t('messages.updateRateDetails') : t('messages.fillRateDetails')}
+              {id
+                ? t('messages.updateRateDetails', { zone: zoneLabel, use: useLabel })
+                : t('messages.fillRateDetails', { zone: zoneLabel, use: useLabel })}
             </p>
           </div>
         </div>

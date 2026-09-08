@@ -4,6 +4,7 @@ import { CheckCircle, MapPin, Calendar, Users, CalendarClock, Ruler } from "luci
 import { StatusBadge, MatrixGrid } from "@/components/common";
 import { MatrixGridPagination } from "@/components/common/MatrixGrid";
 import { GridContainerCard, GridContainerCardHeader, GridContainerCardContent } from "@/components/common/GridContainerCard";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import type { IRateMaster, IRateValue, ISelectOption, MatrixColumn } from "@/types/RVRateMaster";
 
 interface RateViewGridProps {
@@ -63,6 +64,7 @@ export function RateViewGrid({
   t,
   tCommon,
 }: RateViewGridProps) {
+  const taxZoneLabel = useAliasLabel("Tax Zone", t("aliasFallback.taxZone"));
   const useGroupLabel = useGroups.find(u => u.value === selectedUseGroup)?.label || selectedUseGroup || "";
   const matrixTranslations = {
     action: tCommon('table.columns.actions'),
@@ -140,7 +142,7 @@ export function RateViewGrid({
                     label: (
                       <span className="inline-flex items-center gap-0.5 text-[11px] md:text-[12px] font-bold text-blue-700 whitespace-nowrap">
                         <MapPin size={11} />
-                        {t("columns.taxZoneNo")}
+                        {t("columns.taxZoneNo", { taxZone: taxZoneLabel })}
                       </span>
                     ),
                     width: "70px"

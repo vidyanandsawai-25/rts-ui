@@ -1,6 +1,7 @@
 import { CheckCircle2 } from 'lucide-react';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch';
 import type { TranslatorFunction } from '@/types/typeOfUse.types';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface SubTypeStatusSectionProps {
   isActive: boolean;
@@ -9,6 +10,8 @@ interface SubTypeStatusSectionProps {
 }
 
 export function SubTypeStatusSection({ isActive, onToggle, t }: SubTypeStatusSectionProps) {
+  const subTypeOfUseLabel = useAliasLabel("Sub_Type_Of_Use", t("aliasFallback.subTypeOfUse"));
+
   return (
     <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4">
       <div className="flex items-center justify-between gap-4">
@@ -21,7 +24,7 @@ export function SubTypeStatusSection({ isActive, onToggle, t }: SubTypeStatusSec
               {t('subtype.fields.status')}
             </div>
             <div className="text-sm text-slate-500">
-              {t('subtype.title')} {t('status.isCurrently')}{' '}
+              {t('subtype.title', { subTypeOfUse: subTypeOfUseLabel })} {t('status.isCurrently')}{' '}
               <span
                 className={
                   isActive ? 'text-emerald-700 font-medium' : 'text-slate-600 font-medium'

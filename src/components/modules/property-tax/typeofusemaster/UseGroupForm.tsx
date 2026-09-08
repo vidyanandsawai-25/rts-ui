@@ -22,6 +22,7 @@ import { validateForm } from '@/lib/utils/validation-helpers';
 import { sanitizeCode, sanitizeText } from '@/lib/utils/sanitization';
 import { useGroupFormValidation } from '@/hooks/TypeOfUseMaster/useGroupFormValidation';
 import { GroupIconSelector, getIconKey } from './GroupIconSelector';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 type FieldErrors = {
   code?: string;
@@ -32,6 +33,8 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
   const t = useTranslations('typeofusemaster');
   const router = useRouter();
   const isEdit = Boolean(id);
+
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
 
   const [formData, setFormData] = useState<UseGroup>(
     initialData || {
@@ -123,11 +126,11 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
         }
 
         // Show backend error message
-        toast.error(errorMessage || t('messages.updateGroupFailed'));
+        toast.error(errorMessage || t('messages.updateGroupFailed', { use: useLabel }));
         return;
       }
 
-      toast.success(t('messages.groupUpdated'));
+      toast.success(t('messages.groupUpdated', { use: useLabel }));
     } else {
       const result = await createUseGroup({
         code: formData.typeOfUseGroupCode,
@@ -158,11 +161,11 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
         }
 
         // Show backend error message
-        toast.error(errorMessage || t('messages.createGroupFailed'));
+        toast.error(errorMessage || t('messages.createGroupFailed', { use: useLabel }));
         return;
       }
 
-      toast.success(t('messages.groupCreated'));
+      toast.success(t('messages.groupCreated', { use: useLabel }));
     }
 
     router.back();
@@ -180,10 +183,10 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t('group.edit') : t('group.add')}
+              {isEdit ? t('group.edit', { use: useLabel }) : t('group.add', { use: useLabel })}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit ? t('group.editSubtitle') : t('group.addSubtitle')}
+              {isEdit ? t('group.editSubtitle', { use: useLabel }) : t('group.addSubtitle', { use: useLabel })}
             </div>
           </div>
         </div>
@@ -219,7 +222,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
                 <div>
                   <div className="text-base font-semibold text-slate-900">{t('group.fields.status')}</div>
                   <div className="text-sm text-slate-500">
-                    {t('group.title')} {t('status.isCurrently')} <span className={isActiveStatus ? "text-emerald-700 font-medium" : "text-slate-600 font-medium"}>{isActiveStatus ? t('status.active') : t('status.inactive')}</span>
+                    {t('group.title', { use: useLabel })} {t('status.isCurrently')} <span className={isActiveStatus ? "text-emerald-700 font-medium" : "text-slate-600 font-medium"}>{isActiveStatus ? t('status.active') : t('status.inactive')}</span>
                   </div>
                 </div>
               </div>

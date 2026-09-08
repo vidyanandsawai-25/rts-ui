@@ -5,6 +5,7 @@ import { AddButton, DeleteButton, EditButton, SearchInput } from "@/components/c
 import { MasterTable, type Column } from "@/components/common/MasterTable";
 import type { UseSubType, UseType, TranslatorFunction } from "@/types/typeOfUse.types";
 import type { SubTypeTableRow } from "./TypeOfUseMasterColumns";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface SubTypeSectionProps {
   selectedType: UseType | undefined | null;
@@ -54,12 +55,14 @@ export function SubTypeSection({
   const router = useRouter();
   const locale = useLocale();
 
+  const subTypeOfUseLabel = useAliasLabel("Sub_Type_Of_Use", t("aliasFallback.subTypeOfUse"));
+
   return (
     <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white shadow-sm lg:h-[600px] flex flex-col">
       <div className="flex gap-3 rounded-t-2xl border-b border-slate-100 px-4 py-3 sticky top-0 bg-white justify-between z-10 flex-col sm:flex-row sm:items-center sm:justify-between">
         {/* Top row: Title + badge */}
         <div className="font-semibold text-slate-900 flex flex-wrap items-center gap-2">
-          {t('subtype.title')}
+          {t('subtype.title', { subTypeOfUse: subTypeOfUseLabel })}
           {selectedType && (
             <span className="rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 border border-blue-200">
               {selectedType.typeOfUseCode}
@@ -69,7 +72,7 @@ export function SubTypeSection({
             <div className="flex items-center gap-1 text-xs text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-300">
               <Layers3 className="h-4 w-4" />
               <span>
-                {subTotalCount} {t("subtype.title")}
+                {subTotalCount} {t("subtype.title", { subTypeOfUse: subTypeOfUseLabel })}
               </span>
             </div>
           )}
@@ -80,12 +83,12 @@ export function SubTypeSection({
           <SearchInput
             value={subTypeSearch}
             onChange={onSearchChange}
-            placeholder={t('subtype.searchPlaceholder')}
+            placeholder={t('subtype.searchPlaceholder', { subTypeOfUse: subTypeOfUseLabel })}
             className="mb-0 flex-1 min-w-[180px] text-gray-700"
           />
           <AddButton
             size="md"
-            label={t('subtype.add')}
+            label={t('subtype.add', { subTypeOfUse: subTypeOfUseLabel })}
             disabled={!selectedTypeId}
             onClick={() =>
               router.push(

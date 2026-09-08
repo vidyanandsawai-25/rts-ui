@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { UseSubType } from '@/types/typeOfUse.types';
 import type { Validator } from '@/lib/utils/validation-helpers';
 import { DESCRIPTION_REGEX, isAllZeros } from '@/lib/utils/validation-rules';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 // Translator function type
 type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
@@ -19,6 +20,9 @@ export function useSubTypeFormValidation({
   isEdit,
   t,
 }: UseSubTypeFormValidationProps) {
+  const subTypeOfUseLabel = useAliasLabel("Sub_Type_Of_Use", t("aliasFallback.subTypeOfUse"));
+  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
+
   // Normalization helper
   const normalize = (v: string) => v.trim().toLowerCase();
 
@@ -43,20 +47,20 @@ export function useSubTypeFormValidation({
 
       typeOfUseCategoryId: (value: unknown) => {
         const categoryId = Number(value);
-        if (!categoryId) return t('messages.categoryRequired');
+        if (!categoryId) return t('messages.categoryRequired', { category: categoryLabel });
         return undefined;
       },
 
       description: (value: unknown) => {
         const desc = String(value ?? '').trim();
 
-        if (!desc) return t('messages.subTypeNameRequired');
-        if (isAllZeros(desc)) return t('messages.subTypeNameLabel') + ' ' + t('messages.cannotBeAllZeros');
+        if (!desc) return t('messages.subTypeNameRequired', { subTypeOfUse: subTypeOfUseLabel });
+        if (isAllZeros(desc)) return t('messages.subTypeNameLabel', { subTypeOfUse: subTypeOfUseLabel }) + ' ' + t('messages.cannotBeAllZeros');
         if (desc.length > 80)
-          return t('messages.subTypeNameLabel') + ' ' + t('messages.maxLength', { count: 80 });
+          return t('messages.subTypeNameLabel', { subTypeOfUse: subTypeOfUseLabel }) + ' ' + t('messages.maxLength', { count: 80 });
         if (!DESCRIPTION_REGEX.test(desc))
-          return t('messages.subTypeNameLabel') + ' ' + t('messages.allowedChars');
-        if (isDuplicateDescription(desc)) return t('messages.duplicateSubTypeName');
+          return t('messages.subTypeNameLabel', { subTypeOfUse: subTypeOfUseLabel }) + ' ' + t('messages.allowedChars');
+        if (isDuplicateDescription(desc)) return t('messages.duplicateSubTypeName', { subTypeOfUse: subTypeOfUseLabel });
 
         return undefined;
       },

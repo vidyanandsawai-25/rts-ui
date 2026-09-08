@@ -37,6 +37,13 @@ const mockUpdateUseGroup = vi.mocked(updateUseGroup);
 
 const mockMessages = {
   typeofusemaster: {
+    aliasFallback: {
+      entity: "Type of Use",
+      typeOfUse: "Type of Use",
+      subTypeOfUse: "Sub-Type of Use",
+      use: "Use",
+      category: "Category",
+    },
     group: {
       add: "Add Use Group",
       addSubtitle: "Create a new Use Group",

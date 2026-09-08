@@ -7,7 +7,8 @@ import { Tooltip } from "@/components/common/Tooltip";
  * @returns Array of column definitions
  */
 export function getPolicyConfigurationColumns(
-  t: (key: string) => string
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  categoryLabel?: string
 ): Column<PolicyConfiguration>[] {
   return [
     {
@@ -22,7 +23,7 @@ export function getPolicyConfigurationColumns(
     },
     {
       key: "category",
-      label: t("list.table.category"),
+      label: t("list.table.category", { category: categoryLabel ?? t("aliasFallback.category") }),
       width: "10%",
       render: (value) => (
         <span className="font-medium text-gray-800">{String(value)}</span>

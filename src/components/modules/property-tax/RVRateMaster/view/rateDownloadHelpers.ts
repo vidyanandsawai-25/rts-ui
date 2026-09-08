@@ -178,7 +178,8 @@ function gridsToCSV(
   rateSection: string,
   rateUnit: "SqMeter" | "SqFeet",
   t: ReturnType<typeof import("next-intl").useTranslations>,
-  isOpenPlot: boolean = false
+  isOpenPlot: boolean = false,
+  aliasLabels?: Record<string, string>
 ): string {
   const csvLines: string[] = [];
 
@@ -195,15 +196,15 @@ function gridsToCSV(
     : t('downloadHeaders.rateSqMtr');
 
   const headerRow = [
-    escapeCsvValue(t('downloadHeaders.rateSection')),
-    escapeCsvValue(t('downloadHeaders.assessmentYearRange')),
+    escapeCsvValue(t('downloadHeaders.rateSection', aliasLabels)),
+    escapeCsvValue(t('downloadHeaders.assessmentYearRange', aliasLabels)),
   ];
 
   if (!isOpenPlot) {
-    headerRow.push(escapeCsvValue(t('downloadHeaders.useGroup')));
+    headerRow.push(escapeCsvValue(t('downloadHeaders.useGroup', aliasLabels)));
   }
 
-  headerRow.push(escapeCsvValue(t('downloadHeaders.taxZoneNo')));
+  headerRow.push(escapeCsvValue(t('downloadHeaders.taxZoneNo', aliasLabels)));
 
   allColumns.forEach(col => {
     const label = `${col} (${rateUnitLabel})`;
@@ -249,10 +250,11 @@ export async function downloadDetailedRates(
   t: ReturnType<typeof import("next-intl").useTranslations>,
   rateCategories: (string | RateCategory)[],
   useGroups: ISelectOption[] = [],
-  isOpenPlot: boolean = false
+  isOpenPlot: boolean = false,
+  aliasLabels?: Record<string, string>
 ) {
   if (!selectedZone || selectedZone === 'ALL') {
-    toast.error(t('messages.selectRateSection'));
+    toast.error(t('messages.selectRateSection', aliasLabels));
     return;
   }
 
@@ -283,7 +285,7 @@ export async function downloadDetailedRates(
     const grids = groupRatesIntoGrids(allRates, rateCategories, rateUnit, isOpenPlot, useGroups);
 
     // Convert grids to CSV with translations
-    const csvContent = gridsToCSV(grids, zoneName, rateUnit, t, isOpenPlot);
+    const csvContent = gridsToCSV(grids, zoneName, rateUnit, t, isOpenPlot, aliasLabels);
 
     const BOM = '\uFEFF';
     const csvWithBOM = BOM + csvContent;

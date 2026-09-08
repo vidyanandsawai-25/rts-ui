@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import type { ISelectOption, IZoneDescription, RateCategory } from "@/types/RVRateMaster";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 type MatrixRow = {
   id: number;
@@ -49,18 +50,22 @@ export function useRateCopyHandlers(props: RateCopyHandlersProps) {
   } = props;
 
   const { confirm } = useConfirm();
+  const rateSectionLabel = useAliasLabel("Rate_Section", t("aliasFallback.rateSection"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.assessment"));
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
 
   const handleGenerateMatrix = async () => {
     if (!selectedZone) {
-      toast.error(t('messages.selectRateSection'));
+      toast.error(t('messages.selectRateSection', { rateSection: rateSectionLabel }));
       return;
     }
     if (!isOpenPlot && !selectedUseGroup) {
-      toast.error(t('messages.selectUseGroup'));
+      toast.error(t('messages.selectUseGroup', { typeOfUse: typeOfUseLabel }));
       return;
     }
     if (!assessmentYear) {
-      toast.error(t('messages.validationSelectAssessmentYear'));
+      toast.error(t('messages.validationSelectAssessmentYear', { assessment: assessmentLabel }));
       return;
     }
     const isEditMode = !!id || !!editData || !!bulkEditData;
@@ -229,15 +234,15 @@ export function useRateCopyHandlers(props: RateCopyHandlersProps) {
 
   const handleCopyRatesWithValidation = () => {
     if (!sourceUseGroup) {
-      toast.error(t('messages.selectUseGroupCopy'));
+      toast.error(t('messages.selectUseGroupCopy', { use: useLabel }));
       return;
     }
     if (!selectedZone) {
-      toast.error(t('messages.selectRateSection'));
+      toast.error(t('messages.selectRateSection', { rateSection: rateSectionLabel }));
       return;
     }
     if (!selectedUseGroup) {
-      toast.error(t('messages.selectUseGroup'));
+      toast.error(t('messages.selectUseGroup', { typeOfUse: typeOfUseLabel }));
       return;
     }
     handleCopyRates();

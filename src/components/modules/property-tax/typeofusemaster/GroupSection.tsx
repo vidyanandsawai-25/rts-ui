@@ -13,6 +13,8 @@ import {
   getTypeApiId,
 } from "./typeOfUseMasterUtils";
 
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
+
 interface GroupSectionProps {
   groups: UseGroup[];
   allTypes: UseType[];
@@ -43,22 +45,27 @@ export function GroupSection({
 }: GroupSectionProps) {
   const router = useRouter();
   const locale = useLocale();
+
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col gap-3">
       {/* Header section with Title and Add Buttons */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-        <div className="font-semibold text-slate-900 text-base">{t('group.title')}</div>
+        <div className="font-semibold text-slate-900 text-base">{t('group.title', { use: useLabel })}</div>
         <div className="flex items-center gap-2">
           <AddButton
             size="sm"
-            label={t('group.add')}
+            label={t('group.add', { use: useLabel })}
             onClick={() =>
               router.push(`/${locale}/property-tax/typeofusemaster/group/add`)
             }
           />
           <AddButton
             size="sm"
-            label={t('category.add') || "Add Category"}
+            label={t('category.add', { category: categoryLabel }) || "Add Category"}
             onClick={() =>
               router.push(`/${locale}/property-tax/typeofusemaster/category`)
             }
@@ -124,7 +131,7 @@ export function GroupSection({
                       <div className="flex gap-2 shrink-0">
                         <EditButton
                           size="sm"
-                          title={t('buttons.edit') + ' ' + t('group.title')}
+                          title={t('buttons.edit') + ' ' + t('group.title', { use: useLabel })}
                           onClick={(e) => {
                             e.stopPropagation();
                             router.push(
@@ -136,7 +143,7 @@ export function GroupSection({
                         />
                         <DeleteButton
                           size="sm"
-                          title={t('buttons.delete') + ' ' + t('group.title')}
+                          title={t('buttons.delete') + ' ' + t('group.title', { use: useLabel })}
                           onClick={(e) => {
                             e.stopPropagation();
                             onDeleteGroup(g);
@@ -148,7 +155,7 @@ export function GroupSection({
 
                   <div className="mt-1 text-xs flex items-center gap-2">
                     <span className="text-slate-600">
-                      {g.countOfTypes ?? 0} {t('type.title')}
+                      {g.countOfTypes ?? 0} {t('type.title', { typeOfUse: typeOfUseLabel })}
                     </span>
                     <StatusBadge value={g.status ?? "Active"} />
                   </div>

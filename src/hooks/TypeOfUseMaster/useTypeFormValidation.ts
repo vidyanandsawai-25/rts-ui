@@ -10,6 +10,7 @@ import type { UseType } from '@/types/typeOfUse.types';
 import type { Validator } from '@/lib/utils/validation-helpers';
 import { CODE_REGEX, DESCRIPTION_REGEX, isAllZeros } from '@/lib/utils/validation-rules';
 import { normalize } from '@/lib/utils/sanitization';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
 
@@ -28,6 +29,8 @@ export function useTypeFormValidation({
   isEdit,
   t,
 }: UseTypeFormValidationProps) {
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
   
   // Duplicate check for type code
   const isDuplicateCode = (code: string): boolean => {
@@ -55,11 +58,11 @@ export function useTypeFormValidation({
       typeOfUseCode: (value: unknown) => {
         const code = String(value ?? '').trim();
         
-        if (!code) return t('type.fields.typeId') + ' ' + t('messages.createError');
-        if (isAllZeros(code)) return t('type.fields.typeId') + ' ' + t('messages.cannotBeAllZeros');
-        if (code.length > 10) return t('type.fields.typeId') + ' ' + t('messages.maxLength', { count: 10 });
-        if (!CODE_REGEX.test(code)) return t('type.fields.typeId') + ' ' + t('messages.onlyAlphanumeric');
-        if (isDuplicateCode(code)) return t('messages.duplicateTypeId');
+        if (!code) return t('type.fields.typeId', { typeOfUse: typeOfUseLabel }) + ' ' + t('messages.createError');
+        if (isAllZeros(code)) return t('type.fields.typeId', { typeOfUse: typeOfUseLabel }) + ' ' + t('messages.cannotBeAllZeros');
+        if (code.length > 10) return t('type.fields.typeId', { typeOfUse: typeOfUseLabel }) + ' ' + t('messages.maxLength', { count: 10 });
+        if (!CODE_REGEX.test(code)) return t('type.fields.typeId', { typeOfUse: typeOfUseLabel }) + ' ' + t('messages.onlyAlphanumeric');
+        if (isDuplicateCode(code)) return t('messages.duplicateTypeId', { typeOfUse: typeOfUseLabel });
         
         return undefined;
       },
@@ -72,13 +75,13 @@ export function useTypeFormValidation({
       
       typeOfUseGroupId: (value: unknown) => {
         const groupId = Number(value);
-        if (!groupId) return t('messages.groupRequired');
+        if (!groupId) return t('messages.groupRequired', { typeOfUse: typeOfUseLabel });
         return undefined;
       },
       
       typeOfUseCategoryId: (value: unknown) => {
         const categoryId = Number(value);
-        if (!categoryId) return t('messages.categoryRequired');
+        if (!categoryId) return t('messages.categoryRequired', { category: categoryLabel });
         return undefined;
       },
       

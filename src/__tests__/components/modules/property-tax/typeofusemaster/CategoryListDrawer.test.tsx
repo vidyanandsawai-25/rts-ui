@@ -61,6 +61,13 @@ vi.mock("sonner", () => ({
 
 const mockMessages = {
   typeofusemaster: {
+    aliasFallback: {
+      entity: "Type of Use",
+      typeOfUse: "Type of Use",
+      subTypeOfUse: "Sub-Type of Use",
+      use: "Use",
+      category: "Category",
+    },
     category: {
       title: "Use Category",
       searchPlaceholder: "Search category...",

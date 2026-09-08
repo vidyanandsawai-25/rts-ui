@@ -40,6 +40,13 @@ const mockUpdateUseType = vi.mocked(updateUseType);
 
 const mockMessages = {
   typeofusemaster: {
+    aliasFallback: {
+      entity: "Type of Use",
+      typeOfUse: "Type of Use",
+      subTypeOfUse: "Sub-Type of Use",
+      use: "Use",
+      category: "Category",
+    },
     group: {
       mandatoryNote: "Fields marked with * are mandatory",
     },
