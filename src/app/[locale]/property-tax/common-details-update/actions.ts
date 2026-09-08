@@ -536,9 +536,11 @@ export async function importExcelAction(
 ): Promise<ActionResult<ExcelImportResponse>> {
   try {
     const result = await importExcelServer(formData);
+    revalidatePath("/[locale]/property-tax/common-details-update", "page");
     return { success: true, data: result };
   } catch (error) {
     logger.error("Excel import execution failed", {}, error);
+    revalidatePath("/[locale]/property-tax/common-details-update", "page");
     const t = await getTranslations("commonDetailsUpdate");
     if (error instanceof ApiError) {
       const errorMessage = formatExcelError(error.message, t);

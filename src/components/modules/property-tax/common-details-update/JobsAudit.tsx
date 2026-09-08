@@ -9,6 +9,7 @@ import { PagedResponse } from "@/types/common.types";
 import { useTranslations } from "next-intl";
 import { DownloadButton } from "@/components/common/ActionButtons";
 import { useJobsAudit } from "@/hooks/commonDetailsUpdate/useJobsAudit";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface JobsAuditProps {
   initialData?: PagedResponse<UpdateHistoryItem> | null;
@@ -19,6 +20,7 @@ interface JobsAuditProps {
 
 export const JobsAudit = ({ initialData, initialAllData, initialUpdateHistoryDetail, actions }: JobsAuditProps) => {
   const t = useTranslations("commonDetailsUpdate");
+  const propertyNoLabel = useAliasLabel("Property_No", t("aliasFallback.propertyNo"));
 
   const auditState = useJobsAudit({
     initialData,
@@ -181,7 +183,7 @@ export const JobsAudit = ({ initialData, initialAllData, initialUpdateHistoryDet
               {/* SearchBar */}
               <div className="w-full sm:w-80 lg:w-96 xl:w-[380px] flex-shrink-0 min-w-0">
                 <SearchInput
-                  placeholder={t("jobsAudit.filters.searchPlaceholder")}
+                  placeholder={t("jobsAudit.filters.searchPlaceholder", { propertyNo: propertyNoLabel })}
                   value={searchTerm}
                   onChange={handleSearchChange}
                   className="w-full !mb-0"
@@ -277,7 +279,7 @@ export const JobsAudit = ({ initialData, initialAllData, initialUpdateHistoryDet
                   {/* Search Bar */}
                   <div className="w-full sm:w-64 flex-shrink-0">
                     <SearchInput
-                      placeholder={t("jobsAudit.modal.searchPlaceholder")}
+                      placeholder={t("jobsAudit.modal.searchPlaceholder", { propertyNo: propertyNoLabel })}
                       value={modalSearchTerm}
                       onChange={setModalSearchTerm}
                       className="w-full !mb-0"

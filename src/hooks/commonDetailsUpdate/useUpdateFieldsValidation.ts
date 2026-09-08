@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { BulkUpdateFieldConfig, PropertyPreviewRow } from "@/types/common-details-update/common-details-update.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 /**
  * Safely compiles a regex pattern string from backend configurations.
@@ -107,6 +108,9 @@ export interface YearValidationResult {
 export const useYearValidation = (
   t: (key: string, values?: Record<string, string | number>) => string
 ) => {
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.assessment"));
+  const constructionYearLabel = useAliasLabel("Construction_Year", t("aliasFallback.constructionYear"));
+
   const validateYearFields = useCallback(
     (
       formValues: Record<string, string | number | boolean>,
@@ -188,7 +192,10 @@ export const useYearValidation = (
             if (!isNaN(numAssessment) && !isNaN(numConstruction)) {
               if (numAssessment < numConstruction) {
                 // Priority goes to Assessment Year -> ONLY show error message under Assessment Year field!
-                const msg = t("messages.assessmentYearLessThanConstruction");
+                const msg = t("messages.assessmentYearLessThanConstruction", {
+                  assessment: assessmentLabel,
+                  constructionYear: constructionYearLabel,
+                });
                 if (assessmentConfig) {
                   errors[assessmentConfig.fieldName] = msg;
                 }
@@ -198,17 +205,23 @@ export const useYearValidation = (
         }
         // CASE B: Single AssessmentYear field present in form -> Continuous Warning under field (Amber/Yellow)
         else if (assessmentConfig && !constructionConfig) {
-          warnings[assessmentConfig.fieldName] = t("messages.makeSureAssessmentYearGreater");
+          warnings[assessmentConfig.fieldName] = t("messages.makeSureAssessmentYearGreater", {
+            assessment: assessmentLabel,
+            constructionYear: constructionYearLabel,
+          });
         }
         // CASE C: Single ConstructionYear field present in form -> Continuous Warning under field (Amber/Yellow)
         else if (constructionConfig && !assessmentConfig) {
-          warnings[constructionConfig.fieldName] = t("messages.makeSureConstructionYearLessThan");
+          warnings[constructionConfig.fieldName] = t("messages.makeSureConstructionYearLessThan", {
+            assessment: assessmentLabel,
+            constructionYear: constructionYearLabel,
+          });
         }
       }
 
       return { errors, warnings };
     },
-    [t]
+    [t, assessmentLabel, constructionYearLabel]
   );
 
   return {
