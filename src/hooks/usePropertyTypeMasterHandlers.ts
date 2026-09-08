@@ -15,6 +15,7 @@ interface UsePropertyTypeMasterHandlersProps {
   tCommon: TranslationFunction;
   confirm: ConfirmContextType['confirm'];
   startTransition: React.TransitionStartFunction;
+  wardLabel?: string;
 }
 
 /**
@@ -33,6 +34,7 @@ export function usePropertyTypeMasterHandlers({
   tCommon,
   confirm,
   startTransition,
+  wardLabel,
 }: UsePropertyTypeMasterHandlersProps) {
   const router = useRouter();
 
@@ -47,6 +49,7 @@ export function usePropertyTypeMasterHandlers({
 
   const handleDelete = useCallback(
     (row: PropertyType) => {
+      const ward = wardLabel || t("aliasFallback.ward");
       confirm({
         variant: "delete",
         title: `${t("list.table.propertyDescription")}: ${row.propertyDescription}`,
@@ -78,7 +81,7 @@ export function usePropertyTypeMasterHandlers({
             } else if (result.message) {
               errorMessage = result.message;
             } else if (result.statusCode === 409) {
-              errorMessage = t("apiErrors.referredInAutoWardEntry");
+              errorMessage = t("apiErrors.referredInAutoWardEntry", { ward });
             } else if (result.statusCode === 400) {
               errorMessage = t("apiErrors.validationError");
             }
@@ -87,7 +90,7 @@ export function usePropertyTypeMasterHandlers({
         },
       });
     },
-    [confirm, router, t, tCommon, startTransition]
+    [confirm, router, t, tCommon, startTransition, wardLabel]
   );
 
   return {

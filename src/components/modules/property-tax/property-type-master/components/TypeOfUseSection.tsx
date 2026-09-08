@@ -19,6 +19,7 @@ interface TypeOfUseSectionProps {
   onClearAll: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   t: (...args: any[]) => string;
+  typeOfUseLabel?: string;
 }
 
 export const TypeOfUseSection = ({
@@ -30,7 +31,9 @@ export const TypeOfUseSection = ({
   onSelectAll,
   onClearAll,
   t,
+  typeOfUseLabel,
 }: TypeOfUseSectionProps) => {
+  const typeOfUse = typeOfUseLabel || t("aliasFallback.typeOfUse");
   // --- Search & filter state ---
   const [touSearchTerm, setTouSearchTerm] = useState("");
   const [manualTouType, setManualTouType] = useState<string>("ALL");
@@ -95,7 +98,7 @@ export const TypeOfUseSection = ({
         <div className="p-4 border-b border-[#DCEAFF] bg-white/50 space-y-3 shrink-0">
           <div className="flex justify-between items-center">
             <label className="text-sm font-semibold text-gray-700">
-              {t("form.typeOfUseSection.title")}
+              {t("form.typeOfUseSection.title", { typeOfUse })}
             </label>
             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
               {t("form.typeOfUseSection.selected", { count: selectedTypeOfUseIds.size })}
@@ -129,7 +132,7 @@ export const TypeOfUseSection = ({
             {/* Type Filter */}
             <div className="w-[140px]">
               <label className="block text-xs font-medium text-gray-600 mb-1">
-                {t("form.typeOfUseSection.typeLabel")}
+                {t("form.typeOfUseSection.typeLabel", { typeOfUse })}
               </label>
               <Select
                 value={effectiveTouType}
@@ -163,7 +166,7 @@ export const TypeOfUseSection = ({
         <div className="flex-1 overflow-y-auto p-4 min-h-0">
           {typeOfUseList.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
-              <span className="text-sm">{t("form.typeOfUseSection.noItems")}</span>
+              <span className="text-sm">{t("form.typeOfUseSection.noItems", { typeOfUse })}</span>
             </div>
           ) : filteredTypeOfUseList.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
@@ -229,7 +232,7 @@ export const TypeOfUseSection = ({
 
         <div className="p-2 border-t border-[#DCEAFF] bg-white/50 text-center shrink-0">
           <p className="text-[10px] text-gray-400">
-            {t("form.typeOfUseSection.hint")}
+            {t("form.typeOfUseSection.hint", { typeOfUse })}
           </p>
         </div>
       </div>

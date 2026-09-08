@@ -4,17 +4,23 @@
   "common": {
     "loading": "लोड होत आहे..."
   },
+  "defaults": {
+    "zone": "झोन / नोड",
+    "ward": "प्रभाग / सेक्टर",
+    "propertyNo": "मालमत्ता क्र.",
+    "partition": "विभाजन"
+  },
   "scopeSelectionCard": {
     "title": "1. स्कोप निवड",
     "subtitle": "स्कोप निवडा. फक्त संबंधित फील्ड खाली दिसतील.",
     "options": {
       "zone": {
-        "label": "झोन / नोड",
-        "sublabel": "झोननुसार निवड"
+        "label": "{zone}",
+        "sublabel": "{zone}नुसार निवड"
       },
       "ward": {
-        "label": "वॉर्ड / सेक्टर",
-        "sublabel": "मल्टी वॉर्ड निवड"
+        "label": "{ward}",
+        "sublabel": "मल्टी {ward} निवड"
       },
       "building": {
         "label": "इमारतीनुसार",
@@ -28,12 +34,12 @@
   },
   "selectPropertyCard": {
     "title": "मालमत्ता निवडा",
-    "zone": "झोन / नोड",
-    "selectZone": "झोन निवडा",
-    "propertyNo": "मालमत्ता क्र.",
+    "zone": "{zone}",
+    "selectZone": "{zone} निवडा",
+    "propertyNo": "{propertyNo}",
     "selectProperties": "मालमत्ता निवडा",
-    "wardNo": "वॉर्ड क्र.",
-    "selectWard": "वॉर्ड निवडा",
+    "wardNo": "{ward} क्र.",
+    "selectWard": "{ward} निवडा",
     "fromProperty": "मालमत्ता क्र. पासून",
     "selectStartRange": "सुरुवातीची श्रेणी निवडा",
     "toProperty": "मालमत्ता क्र. पर्यंत",
@@ -58,12 +64,12 @@
     "propertyMasterTitle": "",
     "lockButton": "निवडलेल्या स्क्रीन लॉक करा",
     "unlockButton": "निवडलेल्या स्क्रीन अनलॉक करा",
-    "searchPropertyPlaceholder": "मालमत्ता क्रमांक किंवा विभाजन क्रमांकाद्वारे शोधा...",
+    "searchPropertyPlaceholder": "{propertyNo} किंवा {partition} क्रमांकाद्वारे शोधा...",
     "searchButton": "शोधा",
-    "placeholderText": "कृपया वॉर्ड आणि मालमत्ता श्रेणी निवडा, नंतर मालमत्ता पाहण्यासाठी \"दाखवा\" वर क्लिक करा.",
+    "placeholderText": "कृपया {ward} आणि मालमत्ता श्रेणी निवडा, नंतर मालमत्ता पाहण्यासाठी \"दाखवा\" वर क्लिक करा.",
     "noResultsFound": "कोणतीही मालमत्ता आढळली नाही.",
     "columns": {
-      "propertyDetail": "मालमत्ता क्र.",
+      "propertyDetail": "{propertyNo}",
       "screenNames": "स्क्रीनचे नाव",
       "status": "स्थिती",
       "lockUnlock": "लॉक/अनलॉक",
@@ -102,9 +108,9 @@
     "saveFailed": "लॉक्स अपडेट करण्यात अयशस्वी.",
     "selectPropertyRequired": "कृपया टेबलमधून किमान एक मालमत्ता निवडा.",
     "selectScreenRequired": "लॉक/अनलॉक करण्यासाठी कृपया किमान एक स्क्रीन निवडा.",
-    "selectZoneRequired": "कृपया एक झोन निवडा",
-    "selectWardRequired": "कृपया एक प्रभाग निवडा",
-    "selectWardAndPropertyRequired": "कृपया एक प्रभाग आणि किमान एक मालमत्ता निवडा",
+    "selectZoneRequired": "कृपया एक {zone} निवडा",
+    "selectWardRequired": "कृपया एक {ward} निवडा",
+    "selectWardAndPropertyRequired": "कृपया एक {ward} आणि किमान एक मालमत्ता निवडा",
     "selectPropertyDropdownRequired": "कृपया किमान एक मालमत्ता निवडा",
     "selectFromToPropertyRequired": "कृपया मालमत्ता क्र. पासून आणि मालमत्ता क्र. पर्यंत निवडा",
     "bulkLockTitle": "मालमत्ता बल्क लॉक करा",
@@ -130,11 +136,11 @@
     "processingTitle": "विनंतीवर प्रक्रिया सुरू आहे",
     "processingMessage": "कृपया प्रतीक्षा करा, मालमत्ता अपडेट केल्या जात आहेत. यास काही क्षण लागू शकतात...",
     "clearedFilters": "सर्व फिल्टर्स साफ केले.",
-    "validationError": "कृपया सर्व आवश्यक फील्ड भरा (वॉर्ड क्र., मालमत्ता क्र. पासून आणि मालमत्ता क्र. पर्यंत).",
+    "validationError": "कृपया सर्व आवश्यक फील्ड भरा ({ward} क्र., मालमत्ता क्र. पासून आणि मालमत्ता क्र. पर्यंत).",
     "fetchSuccess": "मालमत्ता यशस्वीरित्या प्राप्त झाल्या.",
     "fetchNoResults": "कोणतीही मालमत्ता आढळली नाही.",
     "fetchFailed": "मालमत्ता लोड करण्यात अयशस्वी.",
-    "fetchWardsError": "वॉर्ड प्राप्त करण्यात त्रुटी:",
+    "fetchWardsError": "{wards} प्राप्त करण्यात त्रुटी:",
     "searchValidationError": "कृपया शोधण्यासाठी मूल्य प्रविष्ट करा.",
     "validationGreaterProperty": "मालमत्ता क्र. पर्यंत, मालमत्ता क्र. पासून पेक्षा मोठा असणे आवश्यक आहे."
   },

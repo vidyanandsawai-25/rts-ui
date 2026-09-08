@@ -1,9 +1,10 @@
 import { ApplicableTaxes } from "@/components/modules/property-tax/ptis/applicable-taxes/ApplicableTaxes";
+import { TaxCalculationResponse } from '@/types/applicable-taxes.types';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import {
   getAssessmentYearsAction,
   getTypeOfUseAction,
-  getTaxApplicabilityAction,
+  getTaxCalculationAction,
   getTaxApplicabilityByPropertyIdAction
 } from './action';
 
@@ -30,14 +31,15 @@ export default async function ApplicablePage({ params, searchParams }: PageProps
   const typeOfUseParam = typeof searchParamsResolved.typeOfUse === 'string' ? searchParamsResolved.typeOfUse : '';
   const selectedTypeOfUse = (typeOfUseParam && !isNaN(Number(typeOfUseParam)) && Number(typeOfUseParam) > 0) ? typeOfUseParam : '';
 
-  const pageNumber = typeof searchParamsResolved.pageNumber === 'string' ? Number(searchParamsResolved.pageNumber) : 1;
-  const pageSize = typeof searchParamsResolved.pageSize === 'string' ? Number(searchParamsResolved.pageSize) : 10;
+  // const pageNumber = typeof searchParamsResolved.pageNumber === 'string' ? Number(searchParamsResolved.pageNumber) : 1;
+  // const pageSize = typeof searchParamsResolved.pageSize === 'string' ? Number(searchParamsResolved.pageSize) : 10;
 
   const [asseYearsResponse, useGroupsResponse, propertyDataResult] = await Promise.all([
     getAssessmentYearsAction(valuationTab, 1, -1),
     getTypeOfUseAction(1, -1),
-    !isNaN(propertyId) ? getTaxApplicabilityByPropertyIdAction(propertyId) : Promise.resolve(null),
+    propertyId ? getTaxApplicabilityByPropertyIdAction(propertyId) : Promise.resolve(null),
   ]);
+
 
   if (!asseYearsResponse.success) {
     throw new Error(asseYearsResponse.error || t("errors.fetchAssessmentYears"));
@@ -58,7 +60,7 @@ export default async function ApplicablePage({ params, searchParams }: PageProps
     const matchedAsseYear = asseYearsResponse.data?.items.find(
       (ay) => ay.fromYear <= startYear && ay.toYear >= startYear
     );
-    
+
     finalAsseYear = matchedAsseYear ? String(matchedAsseYear.id) : String(propertyData.financeYearId);
   }
 
@@ -70,26 +72,19 @@ export default async function ApplicablePage({ params, searchParams }: PageProps
     ? Number(finalAsseYear)
     : undefined;
 
-  const typeOfUseId = finalTypeOfUse && finalTypeOfUse !== 'undefined' && !isNaN(Number(finalTypeOfUse))
-    ? Number(finalTypeOfUse)
-    : undefined;
+  // const typeOfUseId = finalTypeOfUse && finalTypeOfUse !== 'undefined' && !isNaN(Number(finalTypeOfUse))
+  //   ? Number(finalTypeOfUse)
+  //   : undefined;
 
-  const rvOrCv = valuationTab === 'capital' ? 'CV' : 'RV';
+  // const rvOrCv = valuationTab === 'capital' ? 'CV' : 'RV';
 
-  let taxApplicabilityResponse = null;
-  if (!isNaN(propertyId) && financialYearId !== undefined && typeOfUseId !== undefined) {
-    const taxApplicabilityResult = await getTaxApplicabilityAction({
-      propertyId,
-      financialYearId,
-      typeOfUseId,
-      rvOrCv,
-      pageNumber,
-      pageSize,
-    });
-    if (!taxApplicabilityResult.success) {
-      throw new Error(taxApplicabilityResult.error || t("errors.fetchTaxApplicability"));
+  let taxApplicabilityResponse: TaxCalculationResponse | null = null;
+  if (propertyId && financialYearId) {
+    const taxCalculationResult = await getTaxCalculationAction(propertyId, financialYearId);
+    if (!taxCalculationResult.success) {
+      throw new Error(taxCalculationResult.error || t("errors.fetchTaxCalculation"));
     }
-    taxApplicabilityResponse = taxApplicabilityResult.data || null;
+    taxApplicabilityResponse = taxCalculationResult.data || null;
   }
 
   return (

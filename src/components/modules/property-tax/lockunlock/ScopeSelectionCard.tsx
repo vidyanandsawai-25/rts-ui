@@ -4,14 +4,7 @@ import { MapPin, Grid, Building2, Home } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/common";
-
-
-const SCOPE_ICONS = [
-  { id: 1, key: "zone", icon: MapPin },
-  { id: 2, key: "ward", icon: Grid },
-  { id: 3, key: "building", icon: Building2 },
-  { id: 4, key: "propertyRange", icon: Home },
-];
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface ScopeSelectionCardProps {
   selectedCategory: number;
@@ -20,6 +13,36 @@ interface ScopeSelectionCardProps {
 
 export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectionCardProps) {
   const t = useTranslations("lockUnlock");
+  const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+
+  const options = [
+    {
+      id: 1,
+      icon: MapPin,
+      label: t("scopeSelectionCard.options.zone.label", { zone: zoneAlias }),
+      sublabel: t("scopeSelectionCard.options.zone.sublabel", { zone: zoneAlias }),
+    },
+    {
+      id: 2,
+      icon: Grid,
+      label: t("scopeSelectionCard.options.ward.label", { ward: wardAlias }),
+      sublabel: t("scopeSelectionCard.options.ward.sublabel", { ward: wardAlias }),
+    },
+    {
+      id: 3,
+      icon: Building2,
+      label: t("scopeSelectionCard.options.building.label"),
+      sublabel: t("scopeSelectionCard.options.building.sublabel"),
+    },
+    {
+      id: 4,
+      icon: Home,
+      label: t("scopeSelectionCard.options.propertyRange.label"),
+      sublabel: t("scopeSelectionCard.options.propertyRange.sublabel"),
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-3">
       <div>
@@ -28,7 +51,7 @@ export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectio
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        {SCOPE_ICONS.map((option) => {
+        {options.map((option) => {
           const isSelected = selectedCategory === option.id;
           const Icon = option.icon;
 
@@ -73,10 +96,10 @@ export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectio
                   isSelected ? "text-blue-700" : "text-slate-700"
                 )}
               >
-                {t(`scopeSelectionCard.options.${option.key}.label`)}
+                {option.label}
               </span>
               <span className="text-[10px] text-slate-500 mt-0.5 text-center leading-tight whitespace-normal text-left hidden sm:inline-block">
-                {t(`scopeSelectionCard.options.${option.key}.sublabel`)}
+                {option.sublabel}
               </span>
             </Card>
           );

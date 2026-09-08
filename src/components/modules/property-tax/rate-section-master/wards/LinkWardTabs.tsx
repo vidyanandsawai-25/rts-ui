@@ -35,8 +35,13 @@ export default function LinkWardTabs({
   viewAllSelectAllLoading,
   onAvailableSelectAll,
   onViewAllSelectAll,
-  t
+  t,
+  wardAlias,
+  wardsAlias
 }: LinkWardTabsProps) {
+  const ward = wardAlias || t("defaults.ward");
+  const wards = wardsAlias || t("defaults.wards");
+
   return (
     <div className="flex-1 flex flex-col rounded-xl overflow-visible bg-gradient-to-br from-blue-50/80 to-indigo-50/80 backdrop-blur-md border-2 border-blue-200/50 shadow-lg">
       <div className="bg-gradient-to-r from-[#1A86E8] via-[#1A86E8] to-[#1A86E8] px-2 py-2 shadow-md">
@@ -51,7 +56,7 @@ export default function LinkWardTabs({
               value: "available",
               label: (
                 <span className="flex items-center gap-2">
-                  {t("wards.availableWards")}
+                  {t("wards.availableWards", { wards })}
                   <Badge size="sm" variant="default">
                     {totalUnassignedForHeader}
                   </Badge>
@@ -63,7 +68,7 @@ export default function LinkWardTabs({
               value: "viewAll",
               label: (
                 <span className="flex items-center gap-2">
-                  {t("wards.viewWards")}
+                  {t("wards.viewWards", { wards })}
                   <Badge size="sm" variant="default">
                     {totalViewAllCount}
                   </Badge>
@@ -92,6 +97,8 @@ export default function LinkWardTabs({
           onSelectAll={onAvailableSelectAll}
           isSelectAllActive={isAvailableSelectAllActive}
           selectAllLoading={availableSelectAllLoading}
+          wardAlias={ward}
+          wardsAlias={wards}
         />
       )}
 
@@ -113,6 +120,8 @@ export default function LinkWardTabs({
           onSelectAll={onViewAllSelectAll}
           isSelectAllActive={isViewAllSelectAllActive}
           selectAllLoading={viewAllSelectAllLoading}
+          wardAlias={ward}
+          wardsAlias={wards}
         />
       )}
     </div>

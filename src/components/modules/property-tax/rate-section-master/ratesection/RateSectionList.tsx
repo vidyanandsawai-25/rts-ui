@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
 import { Layers } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { RateSectionListProps, RateItem } from "@/types/rateSectionMaster.types";
 import { useConfirm } from "@/components/common";
 import { CardList } from "@/components/common/CardList";
@@ -17,9 +18,19 @@ export default function RateSectionList({
   newlyCreatedRateNo,
   initialWardCounts = {},
   totalCount = 0,
-  onDeleteSuccess
+  onDeleteSuccess,
+  rateSectionAlias: propRateSectionAlias,
+  wardsAlias: propWardsAlias
 }: RateSectionListProps) {
   const t = useTranslations("rateSectionMaster");
+  const defaultRateSection = useAliasLabel(
+    "Rate_Section",
+    useAliasLabel("Rate_Section_Name", useAliasLabel("Rate Section", t("defaults.rateSection")))
+  );
+  const defaultWards = useAliasLabel("Wards", t("defaults.wards"));
+  const rateSection = propRateSectionAlias || defaultRateSection;
+  const wards = propWardsAlias || defaultWards;
+
   const { confirm } = useConfirm();
   const router = useRouter();
   const pathname = usePathname();
@@ -51,8 +62,8 @@ export default function RateSectionList({
 
     confirm({
       variant: "delete",
-      title: t("dialogs.deleteTitle"),
-      description: t("dialogs.deleteDescription", { name: displayName }),
+      title: t("dialogs.deleteTitle", { rateSection }),
+      description: t("dialogs.deleteDescription", { name: displayName, rateSection }),
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
       onConfirm: () => handleRateSectionDelete({
@@ -65,7 +76,9 @@ export default function RateSectionList({
         router,
         onDeleteSuccess,
         t,
-        setDeletingId
+        setDeletingId,
+        rateSectionAlias: rateSection,
+        wardsAlias: wards
       }),
     });
   };
@@ -73,9 +86,9 @@ export default function RateSectionList({
   return (
     <div className="p-3">
       <RateSectionListHeader
-        title={t('list.title')}
-        searchPlaceholder={t('list.searchPlaceholder')}
-        addButtonLabel={t('list.addRateSection')}
+        title={t('list.title', { rateSection })}
+        searchPlaceholder={t('list.searchPlaceholder', { rateSection })}
+        addButtonLabel={t('list.addRateSection', { rateSection })}
         searchValue={searchValue}
         onSearchChange={setSearchValue}
         onAddClick={() => {
@@ -93,7 +106,7 @@ export default function RateSectionList({
         totalPages={totalPages}
         onPageChange={handlePageChange}
         onPageSizeChange={changePageSize}
-        emptyText={searchValue ? t('list.noRateSectionsFound') : t('list.noRateSectionsAvailable')}
+        emptyText={searchValue ? t('list.noRateSectionsFound', { rateSection }) : t('list.noRateSectionsAvailable', { rateSection })}
         emptyIcon={<Layers className="w-12 h-12 mx-auto mb-2 text-gray-300" />}
         renderCard={(rate, index) => {
           const rateId = String(rate.id);
@@ -114,6 +127,7 @@ export default function RateSectionList({
               searchParams={searchParams}
               pathname={pathname}
               t={t}
+              rateSectionAlias={rateSection}
             />
           );
         }}

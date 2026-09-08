@@ -17,7 +17,8 @@ export default function RateSectionCard({
   deletingId,
   searchParams,
   pathname,
-  t
+  t,
+  rateSectionAlias
 }: RateSectionCardProps) {
   const router = useRouter();
 
@@ -48,16 +49,20 @@ export default function RateSectionCard({
     }
   };
 
+  const resolvedRateSectionAlias = rateSectionAlias || t('defaults.rateSection');
+
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     const rateGuid = rate.id;
     if (rateGuid) {
       onDelete(
         String(rateGuid),
-        description || t('messages.thisRateSection')
+        description || t('messages.thisRateSection', { rateSection: resolvedRateSectionAlias })
       );
     }
   };
+
+  const fallbackName = t('list.fallbackName', { rateSection: resolvedRateSectionAlias });
 
   return (
     <div
@@ -100,12 +105,12 @@ export default function RateSectionCard({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2 mb-1">
-              <Tooltip content={description || t('list.fallbackName')} placement="top">
+              <Tooltip content={description || fallbackName} placement="top">
                 <h4
                   className={`font-bold text-sm ${isSelected ? "text-[#2C4A75]" : "text-gray-900"
                     }`}
                 >
-                  {(description && description.length > 30) ? `${description.substring(0, 30)}...` : (description || t('list.fallbackName'))}
+                  {(description && description.length > 30) ? `${description.substring(0, 30)}...` : (description || fallbackName)}
                 </h4>
               </Tooltip>
 

@@ -31,8 +31,9 @@ interface UsePropertyTypeFormHandlersProps {
   validate: (data: PropertyTypeFormModel) => Partial<Record<keyof PropertyTypeFormModel, string>>;
   isEdit: boolean;
   locale: string;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   tCommon: (key: string) => string;
+  wardLabel?: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -65,6 +66,7 @@ export function usePropertyTypeFormHandlers({
   locale,
   t,
   tCommon,
+  wardLabel,
   onSuccess,
   onCancel,
 }: UsePropertyTypeFormHandlersProps) {
@@ -72,9 +74,10 @@ export function usePropertyTypeFormHandlers({
   const [, startTransition] = React.useTransition();
 
   const mapApiError = useCallback((result: { statusCode?: number; message?: string }) => {
+    const ward = wardLabel || t("aliasFallback.ward");
     const msg = result.message?.toLowerCase() || "";
     if (msg.includes("cannot deactivate") || msg.includes("referenced in") || msg.includes("in use")) {
-      return t("apiErrors.cannotDeactivateReferred");
+      return t("apiErrors.cannotDeactivateReferred", { ward });
     }
 
     const errorMap: Record<number, string> = {
@@ -96,7 +99,7 @@ export function usePropertyTypeFormHandlers({
 
     if (code >= 500) return tCommon("errors.serverError");
     return result.message || t("apiErrors.operationFailed");
-  }, [t, tCommon]);
+  }, [t, tCommon, wardLabel]);
 
   const closeAndRoute = useCallback(() => {
     setOpen(false);

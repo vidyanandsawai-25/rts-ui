@@ -5,7 +5,7 @@ import { ConfirmProvider } from "@/components/common";
 import { notFound } from "next/navigation";
 import React from "react";
 import type { SectionItem, RateItem } from "@/types/rateSectionMaster.types";
-import { RateSectionContent } from "@/components/modules/property-tax/rate-section-master";
+import RateSectionContent from "@/components/modules/property-tax/rate-section-master/RateSectionContent";
 
 interface PageProps {
   params: Promise<{

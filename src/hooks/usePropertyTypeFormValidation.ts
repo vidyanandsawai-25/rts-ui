@@ -18,6 +18,7 @@ interface UsePropertyTypeFormValidationProps {
   touched: Record<string, boolean>;
   errors: Partial<Record<keyof PropertyTypeFormModel, string>>;
   t: (key: string, values?: Record<string, string | number | Date>) => string;
+  categoryLabel?: string;
 }
 
 /**
@@ -36,9 +37,11 @@ export function usePropertyTypeFormValidation({
   touched,
   errors,
   t,
+  categoryLabel,
 }: UsePropertyTypeFormValidationProps) {
   const validate = useCallback(
     (data: PropertyTypeFormModel): Partial<Record<keyof PropertyTypeFormModel, string>> => {
+      const category = categoryLabel || t('aliasFallback.category');
       const schema = {
         propertyDescription: (value: unknown) => {
           // First run standard master description validation
@@ -98,7 +101,7 @@ export function usePropertyTypeFormValidation({
         propertyTypeCategoryId: (value: unknown) => {
           const numValue = Number(value);
           if (!numValue || numValue === 0) {
-            return t('form.validation.categoryRequired');
+            return t('form.validation.categoryRequired', { category });
           }
           return undefined;
         },
@@ -106,7 +109,7 @@ export function usePropertyTypeFormValidation({
       };
       return validateForm(data, schema);
     },
-    [t, isEdit]
+    [t, isEdit, categoryLabel]
   );
 
   const showError = useCallback((field: keyof PropertyTypeFormModel): boolean =>

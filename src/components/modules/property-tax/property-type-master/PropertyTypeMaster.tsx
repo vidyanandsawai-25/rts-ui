@@ -16,6 +16,7 @@ import { usePropertyTypePagination } from "@/hooks/usePropertyTypePagination";
 import { useTypeOfUseModal } from "@/hooks/useTypeOfUseModal";
 import { usePropertyTypeMasterHandlers } from "@/hooks/usePropertyTypeMasterHandlers";
 import TypeOfUseModal from "./TypeOfUseModal";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 /* ================= PAGE ================= */
 export function PropertyTypeMaster({
@@ -36,6 +37,10 @@ export function PropertyTypeMaster({
   const tCommon = useTranslations("common");
   const locale = useLocale();
 
+  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+  const wardLabel = useAliasLabel("Ward", t("aliasFallback.ward"));
+
   const { confirm } = useConfirm();
   const [isPending, startTransition] = React.useTransition();
   
@@ -55,6 +60,7 @@ export function PropertyTypeMaster({
     tCommon,
     confirm,
     startTransition,
+    wardLabel,
   });
   
   /* ================= SEARCH ================= */
@@ -93,7 +99,19 @@ export function PropertyTypeMaster({
     [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm]
   );
 
-  const columns = getPropertyTypeColumns(t, tCommon, sortBy, sortOrder, handleSort, categories, typeOfUseList, typeOfUseValidation, handleTypeOfUseClick);
+  const columns = getPropertyTypeColumns(
+    t,
+    tCommon,
+    sortBy,
+    sortOrder,
+    handleSort,
+    categories,
+    typeOfUseList,
+    typeOfUseValidation,
+    handleTypeOfUseClick,
+    categoryLabel,
+    typeOfUseLabel
+  );
 
   /* ================= UI ================= */
   const { start, end, total } = paginationInfo;
@@ -176,6 +194,7 @@ export function PropertyTypeMaster({
         items={modalItems}
         onClose={closeModal}
         propertyDescription={modalPropertyDescription}
+        typeOfUseLabel={typeOfUseLabel}
       />
     </PageContainer>
   );

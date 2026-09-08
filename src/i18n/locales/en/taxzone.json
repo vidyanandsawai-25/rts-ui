@@ -55,13 +55,13 @@
         "zoneTypeAllZeros": "Zone Type cannot contain only zeros",
         "zoneTypeFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         "zoneTypeExists": "Duplicate zone type is not allowed",
-        "remarkRequired": "Remark is required",
+        "remarkRequired": "Zone Description is required",
         "remarkAllZeros": "Remark cannot contain only zeros",
         "remarkFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         "fixErrors": "Please fix validation errors",
         "duplicateError": "Please check Zone No and Zone Type - duplicates not allowed.",
-        "remarkMax": "Maximum length is 50 characters",
-        "zoneTypeMax": "Maximum length is 50 characters"
+        "remarkMax": "Maximum length is 15 characters",
+        "zoneTypeMax": "Maximum length is 15 characters"
       },
       "status": {
         "label": "Active Status",

@@ -41,6 +41,7 @@ export function FormFieldsSection({
         onBlur={onBlur}
         placeholder={t("form.fields.zoneType.placeholder")}
         fullWidth
+        maxLength={15}
       />
       <ValidationMessage message={errors.taxZoneType} visible={showError("taxZoneType")} />
 
@@ -53,6 +54,7 @@ export function FormFieldsSection({
         onBlur={onBlur}
         placeholder={t("form.fields.remark.placeholder")}
         fullWidth
+        maxLength={15}
       />
       <ValidationMessage message={errors.remark} visible={showError("remark")} />
     </div>

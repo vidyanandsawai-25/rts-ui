@@ -83,9 +83,48 @@ export interface ApplicableTaxesProps {
   asseYearsResponse: PagedResponse<AssessmentYearRangeItem> | null;
   useGroupsResponse: PagedResponse<TypeOfUseItem> | null;
   valuationTab: string;
-  taxApplicabilityPagedResponse: PagedResponse<TaxApplicabilityData> | null;
+  taxApplicabilityPagedResponse: TaxCalculationResponse | null;
   taxApplicabilityPropertyData?: TaxApplicabilityPropertyData[] | null;
   initialAsseYear?: string;
   initialTypeOfUse?: string;
+}
+
+export interface TaxCalculationSummary {
+  totalTax: number;
+  residentialRV: number;
+  commercialRV: number;
+  area: number;
+  toilets: number;
+}
+
+export type TaxCalculationItem = {
+  taxId: number;
+  taxName: string;
+  calculationModeId: number;
+  calculationMode: string;
+  ruleDefinitionId: number;
+  typeOfUseIds: string | null;
+  descriptions: string | null;
+  types: string | null;
+  baseTypes: string | null;
+  averageTaxPercentage: number | null;
+  resultModes: string | null;
+  resultBases: string | null;
+  resultValues: string | null;
+  mappingData: string | null;
+  taxAmount: number;
+  isApplicable: boolean;
+  isActive: boolean;
+  assessmentStatus: boolean;
+} & Record<string, unknown>;
+
+export interface TaxCalculationResponse {
+  propertyId: number;
+  assessmentYearRangeId: number;
+  typeOfUseId: number;
+  applicableCount: number;
+  exemptedCount: number;
+  summary: TaxCalculationSummary;
+  taxCalculations: TaxCalculationItem[];
 }
 

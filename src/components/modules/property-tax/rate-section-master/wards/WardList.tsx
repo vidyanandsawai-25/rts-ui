@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { WardListProps } from "@/types/rateSectionMaster.types";
 import { useConfirm } from "@/components/common";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { TEXT_SANITIZE } from "@/lib/utils/validation";
 import WardTable from "./WardTable";
 import WardListHeader from "./WardListHeader";
@@ -21,8 +22,21 @@ export default function WardList({
   selectedRateSection: propSelectedRateSection,
   selectedRateSectionLabel: propSelectedRateSectionLabel,
   onWardsChanged,
+  rateSectionAlias: propRateSectionAlias,
+  wardAlias: propWardAlias,
+  wardsAlias: propWardsAlias
 }: WardListProps) {
   const t = useTranslations("rateSectionMaster");
+  const defaultRateSection = useAliasLabel(
+    "Rate_Section",
+    useAliasLabel("Rate_Section_Name", useAliasLabel("Rate Section", t("defaults.rateSection")))
+  );
+  const defaultWard = useAliasLabel("Ward", t("defaults.ward"));
+  const defaultWards = useAliasLabel("Wards", t("defaults.wards"));
+  const rateSection = propRateSectionAlias || defaultRateSection;
+  const ward = propWardAlias || defaultWard;
+  const wards = propWardsAlias || defaultWards;
+
   const router = useRouter();
   const { confirm } = useConfirm();
   const searchParams = useSearchParams();
@@ -107,15 +121,15 @@ export default function WardList({
   return (
     <div className="flex flex-col h-full">
       <WardListHeader
-        title={t('wards.title')}
+        title={t('wards.title', { wards })}
         effectiveSelectedRateSection={effectiveSelectedRateSection}
         rateSectionLabel={rateSectionLabel}
-        selectRateSectionText={t("wards.selectRateSection")}
+        selectRateSectionText={t("wards.selectRateSection", { rateSection })}
         totalCount={totalCount}
-        totalWardsLabel={t('list.totalWards')}
+        totalWardsLabel={t('list.totalWards', { wards })}
         search={search}
-        searchPlaceholder={t('wards.searchWardNo')}
-        linkWardLabel={t('wards.linkWard')}
+        searchPlaceholder={t('wards.searchWardNo', { ward })}
+        linkWardLabel={t('wards.linkWard', { ward })}
         onSearch={handleSearch}
         onAddWard={handleAddWard}
       />
@@ -123,7 +137,7 @@ export default function WardList({
       <div className="flex-1 px-4 pb-4">
         {!effectiveSelectedRateSection ? (
           <div className="flex items-center justify-center h-full text-gray-500">
-            {t('wards.selectRateSectionToView')}
+            {t('wards.selectRateSectionToView', { rateSection, wards })}
           </div>
         ) : (
           <WardTable
@@ -142,9 +156,14 @@ export default function WardList({
               confirm,
               setDeletedIds,
               onWardsChanged,
-              t
+              t,
+              wardAlias: ward,
+              rateSectionAlias: rateSection,
+              wardsAlias: wards
             })}
-            emptyText={t('wards.noWardsFound')}
+            emptyText={t('wards.noWardsFound', { wards })}
+            wardAlias={ward}
+            rateSectionAlias={rateSection}
           />
         )}
       </div>

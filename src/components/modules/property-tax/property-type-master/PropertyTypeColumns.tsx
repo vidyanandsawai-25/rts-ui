@@ -77,7 +77,7 @@ function SortableHeader({
  * @returns Array of column definitions
  */
 export function getPropertyTypeColumns(
-  t: (key: string) => string,
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string) => string,
   sortBy?: string,
   sortOrder?: string,
@@ -85,7 +85,9 @@ export function getPropertyTypeColumns(
   categories?: PropertyTypeCategory[],
   typeOfUseList?: UseType[],
   typeOfUseValidation?: PropertyTypeAndTypeOfUseValidation[],
-  onTypeOfUseClick?: (row: PropertyType) => void
+  onTypeOfUseClick?: (row: PropertyType) => void,
+  categoryLabel?: string,
+  typeOfUseLabel?: string
 ): Column<PropertyType>[] {
   // Only propertyDescription and type are sortable
   const sortableColumns = ["propertyDescription", "type"];
@@ -148,7 +150,7 @@ export function getPropertyTypeColumns(
     },
     {
       key: "propertyTypeCategoryId",
-      label: createSortableLabel(t("list.table.category"), "propertyTypeCategoryId"),
+      label: createSortableLabel(t("list.table.category", { category: categoryLabel ?? t("aliasFallback.category") }), "propertyTypeCategoryId"),
       width: "14%",
       render: (value) => {
         if (value === null || value === undefined) return "-";
@@ -164,7 +166,7 @@ export function getPropertyTypeColumns(
     },
     {
       key: "typeOfUseValidation",
-      label: t("list.table.typeOfUseValidation"),
+      label: t("list.table.typeOfUseValidation", { typeOfUse: typeOfUseLabel ?? t("aliasFallback.typeOfUse") }),
       width: "18%",
       render: (_value, row) => {
         const propertyTypeId = row?.id;

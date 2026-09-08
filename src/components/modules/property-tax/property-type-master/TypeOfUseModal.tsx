@@ -10,6 +10,7 @@ interface TypeOfUseModalProps {
   items: TypeOfUseItem[];
   onClose: () => void;
   propertyDescription?: string | null;
+  typeOfUseLabel?: string;
 }
 
 export default function TypeOfUseModal({
@@ -17,14 +18,16 @@ export default function TypeOfUseModal({
   items,
   onClose,
   propertyDescription = null,
+  typeOfUseLabel,
 }: TypeOfUseModalProps) {
   const t = useTranslations("propertyType.propertyType");
+  const typeOfUse = typeOfUseLabel || t("aliasFallback.typeOfUse");
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={t("modal.title")}
-      subtitle={propertyDescription ? t("modal.propertySubtitle", { description: propertyDescription }) : t("modal.subtitle")}
+      title={t("modal.title", { typeOfUse })}
+      subtitle={propertyDescription ? t("modal.propertySubtitle", { description: propertyDescription }) : t("modal.subtitle", { typeOfUse })}
       count={items.length}
       maxWidth="xl"
       footer={

@@ -71,6 +71,13 @@ interface ButtonProps {
   onClick: () => void;
 }
 
+interface CheckboxProps {
+  id: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  label?: string;
+}
+
 // Mock common UI components to simplify render tree
 vi.mock('@/components/common', () => {
   return {
@@ -101,22 +108,34 @@ vi.mock('@/components/common', () => {
     ),
     Button: ({ children, onClick }: ButtonProps) => (
       <button data-testid="common-button" onClick={onClick}>{children}</button>
+    ),
+    Checkbox: ({ id, checked, onCheckedChange, label }: CheckboxProps) => (
+      <div>
+        <input
+          type="checkbox"
+          data-testid={`checkbox-${id}`}
+          id={id}
+          checked={checked}
+          onChange={(e) => onCheckedChange(e.target.checked)}
+        />
+        {label && <label htmlFor={id}>{label}</label>}
+      </div>
     )
   };
 });
 
 import type { Column } from '@/components/common';
-import type {
-  TaxApplicabilityItem,
+import { 
+  AssessmentYearRangeItem, 
+  TaxCalculationItem, 
+  TaxCalculationResponse,
   PagedResponse,
-  AssessmentYearRangeItem,
-  TypeOfUseItem,
-  TaxApplicabilityData,
+  TypeOfUseItem
 } from '@/types/applicable-taxes.types';
 
 interface TaxesTableTemplateProps {
-  columns: Column<TaxApplicabilityItem>[];
-  data: TaxApplicabilityItem[];
+  columns: Column<TaxCalculationItem>[];
+  data: TaxCalculationItem[];
   pageNumber: number;
   totalCount: number;
   onPageChange: (page: number) => void;
@@ -143,7 +162,7 @@ vi.mock('@/components/modules/property-tax/ptis/applicable-taxes/TaxesTableTempl
               <tr key={i} data-testid="table-row">
                 {columns.map((col) => (
                   <td key={col.key as string} data-testid={`cell-${col.key as string}`}>
-                    {col.render ? col.render(row[col.key as keyof TaxApplicabilityItem], row, i) : String(row[col.key as keyof TaxApplicabilityItem] || '')}
+                    {col.render ? col.render(row[col.key as keyof TaxCalculationItem], row, i) : String(row[col.key as keyof TaxCalculationItem] || '')}
                   </td>
                 ))}
               </tr>
@@ -184,29 +203,18 @@ const mockUseGroupsResponse: PagedResponse<TypeOfUseItem> = {
   hasNext: false,
 };
 
-const mockTaxApplicabilityPagedResponse: PagedResponse<TaxApplicabilityData> = {
-  items: [
-    {
-      propertyId: 123,
-      financialYearId: 1,
-      typeOfUseId: 2,
-      applicableCount: 2,
-      exemptedCount: 1,
-      applicableTaxes: [
-        { taxId: 10, taxHead: 'Property Tax', taxCode: 'PT01', calculationType: 'Rate based', taxPercentage: 12.5, taxAmount: 0, isApplicable: true, isActive: true },
-        { taxId: 12, taxHead: 'Education Cess', taxCode: 'EC01', calculationType: 'Percentage', taxPercentage: 2.0, taxAmount: 0, isApplicable: true, isActive: true },
-      ],
-      exemptedTaxes: [
-        { taxId: 11, taxHead: 'Water Tax', taxCode: 'WT01', calculationType: 'Flat rate', taxPercentage: 5.0, taxAmount: 0, isApplicable: false, isActive: false },
-      ],
-    }
+const mockTaxApplicabilityPagedResponse: TaxCalculationResponse = {
+  propertyId: 123,
+  assessmentYearRangeId: 1,
+  typeOfUseId: 2,
+  applicableCount: 2,
+  exemptedCount: 1,
+  summary: { totalTax: 1000, residentialRV: 500, commercialRV: 500, area: 150, toilets: 2 },
+  taxCalculations: [
+    { taxId: 10, taxName: 'Property Tax', taxCode: 'PT01', calculationModeId: 1, calculationMode: 'Mode 1', ruleDefinitionId: 1, typeOfUseIds: null, descriptions: null, types: null, baseTypes: null, averageTaxPercentage: 12.5, resultModes: null, resultBases: null, resultValues: null, mappingData: null, taxAmount: 0, isApplicable: true, isActive: true, assessmentStatus: true },
+    { taxId: 12, taxName: 'Education Cess', taxCode: 'EC01', calculationModeId: 1, calculationMode: 'Mode 1', ruleDefinitionId: 1, typeOfUseIds: null, descriptions: null, types: null, baseTypes: null, averageTaxPercentage: 2.0, resultModes: null, resultBases: null, resultValues: null, mappingData: null, taxAmount: 0, isApplicable: true, isActive: true, assessmentStatus: true },
+    { taxId: 11, taxName: 'Water Tax', taxCode: 'WT01', calculationModeId: 1, calculationMode: 'Mode 1', ruleDefinitionId: 1, typeOfUseIds: null, descriptions: null, types: null, baseTypes: null, averageTaxPercentage: 5.0, resultModes: null, resultBases: null, resultValues: null, mappingData: null, taxAmount: 0, isApplicable: false, isActive: false, assessmentStatus: false }
   ],
-  totalCount: 3,
-  pageNumber: 1,
-  pageSize: 10,
-  totalPages: 1,
-  hasPrevious: false,
-  hasNext: false,
 };
 
 describe('ApplicableTaxes Screen Suite', () => {
@@ -227,19 +235,15 @@ describe('ApplicableTaxes Screen Suite', () => {
     );
 
     // Verify property information card
-    expect(screen.getByText('applicableTaxes.property')).toBeInTheDocument();
-    expect(screen.getByText('W-01 / P-100')).toBeInTheDocument();
+    expect(screen.getByText(/applicableTaxes\.property/i)).toBeInTheDocument();
+    expect(screen.getByText(/W-01 \/ P-100/i)).toBeInTheDocument();
 
     // Verify select dropdown components
     expect(screen.getByTestId('search-select-applicableTaxes.selectAsseYear')).toBeInTheDocument();
-    expect(screen.getByTestId('search-select-applicableTaxes.selectFloorUse')).toBeInTheDocument();
 
     // Verify selection list lengths mapping only active items
     const yearSelect = screen.getByTestId('search-select-applicableTaxes.selectAsseYear');
     expect(yearSelect.children.length).toBe(3); // placeholder + 2 active years
-    
-    const useSelect = screen.getByTestId('search-select-applicableTaxes.selectFloorUse');
-    expect(useSelect.children.length).toBe(3); // placeholder + 2 active use groups
   });
 
   test('Updates parameters on dropdown changes', () => {
@@ -281,35 +285,36 @@ describe('ApplicableTaxes Screen Suite', () => {
 
   test('Pagination works and switches page lists', () => {
     // Generate 15 active taxes to test pagination
-    const largeTaxes: TaxApplicabilityItem[] = Array.from({ length: 15 }, (_, i) => ({
+    const largeTaxes: TaxCalculationItem[] = Array.from({ length: 15 }, (_, i) => ({
       taxId: i,
-      taxHead: `Tax ${i}`,
+      taxName: `Tax ${i}`,
       taxCode: `T${i}`,
-      calculationType: 'Rate based',
-      taxPercentage: 1.0,
+      calculationModeId: 1,
+      calculationMode: 'Mode 1',
+      ruleDefinitionId: 1,
+      typeOfUseIds: null,
+      descriptions: null,
+      types: null,
+      baseTypes: null,
+      averageTaxPercentage: 1.0,
+      resultModes: null,
+      resultBases: null,
+      resultValues: null,
+      mappingData: null,
       taxAmount: 0,
       isApplicable: true,
       isActive: true,
+      assessmentStatus: true,
     }));
 
-    const largePagedResponse: PagedResponse<TaxApplicabilityData> = {
-      items: [
-        {
-          propertyId: 123,
-          financialYearId: 1,
-          typeOfUseId: 2,
-          applicableCount: 15,
-          exemptedCount: 0,
-          applicableTaxes: largeTaxes.slice(0, 10),
-          exemptedTaxes: [],
-        }
-      ],
-      totalCount: 15,
-      pageNumber: 1,
-      pageSize: 10,
-      totalPages: 2,
-      hasPrevious: false,
-      hasNext: true,
+    const largePagedResponse: TaxCalculationResponse = {
+      propertyId: 123,
+      assessmentYearRangeId: 1,
+      typeOfUseId: 2,
+      applicableCount: 15,
+      exemptedCount: 0,
+      summary: { totalTax: 0, residentialRV: 0, commercialRV: 0, area: 0, toilets: 0 },
+      taxCalculations: largeTaxes.slice(0, 10),
     };
 
     render(
@@ -411,7 +416,7 @@ describe('ApplicableTaxes Screen Suite', () => {
       />
     );
 
-    fireEvent.click(screen.getByTestId('common-button')); // Fixed footer button has no direct label in mock
+    fireEvent.click(screen.getByText('applicableTaxes.done')); // Fixed footer button
     expect(mockPush).toHaveBeenCalledWith(
       '/en/property-tax/ptis?propertyId=123&wardNo=W-01&propertyNo=P-100&asseYear=1&floorUse=2'
     );

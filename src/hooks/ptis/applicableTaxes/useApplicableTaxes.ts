@@ -77,13 +77,13 @@ export function useApplicableTaxes({
     ? typeOfUseParam
     : (initialTypeOfUse || '');
   const searchQuery = searchParams.get('search') || '';
+  const showInactiveParam = searchParams.get('showInactive');
+  const showInactive = showInactiveParam === 'true';
 
-  const items = useMemo(() => taxApplicabilityPagedResponse?.items || [], [taxApplicabilityPagedResponse]);
-
-  const pageNumber = taxApplicabilityPagedResponse?.pageNumber || 1;
-  const pageSize = taxApplicabilityPagedResponse?.pageSize || 10;
-  const totalPages = taxApplicabilityPagedResponse?.totalPages || 1;
-  const totalCount = taxApplicabilityPagedResponse?.totalCount || 0;
+  const items = useMemo(() => taxApplicabilityPagedResponse?.taxCalculations || [], [taxApplicabilityPagedResponse]);
+  const summary = useMemo(() => taxApplicabilityPagedResponse?.summary || {
+    totalTax: 0, residentialRV: 0, commercialRV: 0, area: 0, toilets: 0
+  }, [taxApplicabilityPagedResponse]);
 
   const handleToggleStatus = useCallback((id: number, newStatus: boolean, taxHeadName: string) => {
     confirm({
@@ -129,9 +129,14 @@ export function useApplicableTaxes({
     router.push(`/${locale}/property-tax/ptis?${newParams.toString()}`);
   };
 
-  const handleParamChange = useCallback((key: string, val: string) => {
+  const handleParamChange = useCallback((key: string, val: string | boolean) => {
     const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set(key, val);
+    if (typeof val === 'boolean') {
+      newParams.set(key, String(val));
+    } else {
+      newParams.set(key, val);
+    }
+    
     if (key !== 'pageNumber') {
       newParams.set('pageNumber', '1');
     }
@@ -149,16 +154,24 @@ export function useApplicableTaxes({
   }, [handleParamChange]);
 
   const filteredTaxes = useMemo(() => {
-    const rawTaxes = [
-      ...(items[0]?.applicableTaxes || []),
-      ...(items[0]?.exemptedTaxes || [])
-    ].sort((a, b) => a.taxId - b.taxId);
-    return rawTaxes.filter(item => {
-      if (!item.isActive) return false;
-      const matchesSearch = item.taxHead.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesSearch;
+    return items.filter(item => {
+      // Apply show inactive filter
+      const isEffectiveActive = Boolean(item.isApplicable && item.isActive);
+      if (!showInactive && !isEffectiveActive) return false;
+      
+      // Apply search filter
+      if (searchQuery) {
+        const matchesSearch = item.taxName?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesSearch;
+      }
+      return true;
     });
-  }, [items, searchQuery]);
+  }, [items, searchQuery, showInactive]);
+
+  const pageNumber = 1;
+  const pageSize = filteredTaxes.length > 0 ? filteredTaxes.length : 10;
+  const totalPages = 1;
+  const totalCount = filteredTaxes.length;
 
   const paginatedData = useMemo(() => {
     return filteredTaxes;
@@ -175,6 +188,9 @@ export function useApplicableTaxes({
     useTypeOptions,
     selectedAsseYear,
     selectedTypeOfUse,
+    searchQuery,
+    showInactive,
+    summary,
     pageNumber,
     pageSize,
     totalPages,

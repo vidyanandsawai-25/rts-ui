@@ -18,6 +18,7 @@ import { ScreenSelectionCard } from "./ScreenSelectionCard";
 
 import { ScopeSelectionCard } from "./ScopeSelectionCard";
 import { ZoneItem } from "@/types/zoneMaster.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 export interface LockUnlockMasterProps {
   zones?: ZoneItem[];
@@ -40,6 +41,9 @@ export default function LockUnlockMaster({
 }: LockUnlockMasterProps): React.ReactElement {
   const searchParams = useSearchParams();
   const t = useTranslations("lockUnlock");
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+  const partitionAlias = useAliasLabel("Partition", t("defaults.partition"));
+  const propertyNoAlias = useAliasLabel("Property_No", useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo"))));
 
   const {
     formData,
@@ -165,7 +169,8 @@ export default function LockUnlockMaster({
                       value={propertySearchTerm}
                       onChange={handlePropertySearch}
                       placeholder={t(
-                        "resultsTable.searchPropertyPlaceholder"
+                        "resultsTable.searchPropertyPlaceholder",
+                        { propertyNo: propertyNoAlias, partition: partitionAlias }
                       )}
                       className="!mb-0"
                     />
@@ -238,7 +243,9 @@ export default function LockUnlockMaster({
                     <div className="flex flex-col items-center justify-center gap-2 py-8">
                       <ShieldAlert className="w-8 h-8 text-slate-300" />
                       <p className="text-xs font-semibold text-slate-500">
-                        {t("resultsTable.placeholderText")}
+                        {t("resultsTable.placeholderText", {
+                          ward: wardAlias,
+                        })}
                       </p>
                     </div>
                   ) as unknown as string

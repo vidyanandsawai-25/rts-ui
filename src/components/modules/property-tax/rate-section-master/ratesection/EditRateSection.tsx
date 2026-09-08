@@ -1,8 +1,7 @@
-"use client";
-
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { toast } from "sonner";
 import { ToggleSwitch } from "@/components/common";
 import { updateRateSectionAction } from "@/app/[locale]/property-tax/rate-section-master/actions";
@@ -13,6 +12,10 @@ import { validateRateSectionForm, sanitizeRateSectionInput } from "./RateSection
 
 export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rates }: EditRateSectionHookProps) {
   const t = useTranslations("rateSectionMaster");
+  const rateSection = useAliasLabel(
+    "Rate_Section",
+    useAliasLabel("Rate_Section_Name", useAliasLabel("Rate Section", t("defaults.rateSection")))
+  );
   const router = useRouter();
   const rate = initialData || rates.find((r: RateItem) => String(r.id) === String(zoneId));
 
@@ -38,8 +41,8 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
 
   // Use shared validation from RateSectionForm
   const validate = useCallback((data: RateSectionFormState): RateSectionFormErrors => {
-    return validateRateSectionForm(data, t);
-  }, [t]);
+    return validateRateSectionForm(data, t, rateSection);
+  }, [t, rateSection]);
 
   const showError = (field: keyof RateSectionFormErrors): boolean => (submittedOnce || touched[field]) && !!errors[field];
 
@@ -79,11 +82,11 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
         description: trimmedName, isActive: form.isActive ?? false
       });
       if (result.success) {
-        toast.success(t('messages.updateSuccess', { name: trimmedName }));
+        toast.success(t('messages.updateSuccess', { name: trimmedName, rateSection }));
         handleClose();
         router.refresh();
         if (onUpdate) onUpdate({ ...rate, description: trimmedName, isActive: form.isActive } as RateItem);
-      } else toast.error(result.error || t('messages.updateError'));
+      } else toast.error(result.error || t('messages.updateError', { rateSection }));
     } finally {
       setLoading(false);
     }
@@ -104,18 +107,18 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
       
       if (result.success) {
         setForm((p) => ({ ...p, isActive: newStatus }));
-        toast.success(t('messages.updateSuccess', { name: `${form.zoneCode} - ${trimmedName}` }));
+        toast.success(t('messages.updateSuccess', { name: `${form.zoneCode ? `${form.zoneCode} - ` : ''}${trimmedName}`, rateSection }));
         router.refresh();
         if (onUpdate) {
           onUpdate({ ...rate, description: trimmedName, isActive: newStatus } as RateItem);
         }
       } else {
-        const errorMsg = result.message || result.error || t('messages.updateError');
+        const errorMsg = result.message || result.error || t('messages.updateError', { rateSection });
         toast.error(errorMsg);
       }
     } catch (error: unknown) {
       const err = error as { message?: string };
-      const errorMsg = err.message || t('messages.updateError');
+      const errorMsg = err.message || t('messages.updateError', { rateSection });
       toast.error(errorMsg);
     } finally {
       setLoading(false);
@@ -127,6 +130,10 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
 
 export function EditRateSectionContent({ form, handleToggleStatus }: EditRateSectionContentProps) {
   const t = useTranslations("rateSectionMaster");
+  const rateSection = useAliasLabel(
+    "Rate_Section",
+    useAliasLabel("Rate_Section_Name", useAliasLabel("Rate Section", t("defaults.rateSection")))
+  );
   const isActiveStatus = Boolean(form.isActive);
 
   return (
@@ -143,7 +150,7 @@ export function EditRateSectionContent({ form, handleToggleStatus }: EditRateSec
               {t('form.activeStatus')}
             </div>
             <div className={cn("text-sm", isActiveStatus ? "text-gray-500" : "text-gray-400")}>
-              {isActiveStatus ? t('form.activeStatusText') : t('form.inactiveStatusText')}
+              {isActiveStatus ? t('form.activeStatusText', { rateSection }) : t('form.inactiveStatusText', { rateSection })}
             </div>
           </div>
         </div>

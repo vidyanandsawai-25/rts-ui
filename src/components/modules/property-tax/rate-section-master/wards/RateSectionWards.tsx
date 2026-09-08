@@ -30,9 +30,13 @@ export default function RateSectionWards({
   onPageSizeChange,
   onSelectAll,
   isSelectAllActive = false,
-  selectAllLoading = false
+  selectAllLoading = false,
+  rateSectionAlias,
+  wardsAlias
 }: RateSectionWardsProps) {
   const t = useTranslations("rateSectionMaster");
+  const rateSection = rateSectionAlias || t("defaults.rateSection");
+  const wards = wardsAlias || t("defaults.wards");
 
   const totalSelectedPages = Math.ceil(filteredSelected.length / selectedPageSize) || 1;
 
@@ -59,7 +63,7 @@ export default function RateSectionWards({
       <div className="bg-gradient-to-r from-[#1A86E8] via-[#1A86E8] to-[#1A86E8] px-4 py-3 font-semibold text-sm text-[#fff] shadow-md">
         <div className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2">
-            {t('wards.wardsInRateSection')}
+            {t('wards.wardsInRateSection', { wards, rateSection })}
             <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-white/20 text-white border border-white/30">
               {selectedWardsTotalCount}
             </span>
@@ -80,7 +84,7 @@ export default function RateSectionWards({
           className="w-full rounded-sm  border-gray-300 mb-0"
           value={selectedSearch}
           onChange={onSearch}
-          placeholder={t("wards.searchSelected")}
+          placeholder={t("wards.searchSelected", { wards })}
         />
       </div>
 
@@ -105,7 +109,7 @@ export default function RateSectionWards({
         {paginatedSelected.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-8">
             <Map size={40} className="text-gray-300 mb-3" />
-            <p className="text-sm">{t("wards.emptyState")}</p>
+            <p className="text-sm">{t("wards.emptyState", { wards, rateSection })}</p>
           </div>
         )}
  

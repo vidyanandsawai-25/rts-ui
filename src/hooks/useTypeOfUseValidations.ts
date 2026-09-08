@@ -9,7 +9,8 @@ import { logger } from "@/lib/utils/logger";
 interface UseTypeOfUseValidationsProps {
   initialTypeOfUseIds?: number[];
   typeOfUseList: UseType[];
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
+  typeOfUseLabel?: string;
 }
 
 /**
@@ -27,6 +28,7 @@ export function useTypeOfUseValidations({
   initialTypeOfUseIds = [],
   typeOfUseList,
   t,
+  typeOfUseLabel,
 }: UseTypeOfUseValidationsProps) {
   const [initialIds] = useState<Set<number>>(new Set(initialTypeOfUseIds));
   const [selectedTypeOfUseIds, setSelectedTypeOfUseIds] = useState<Set<number>>(
@@ -70,6 +72,7 @@ export function useTypeOfUseValidations({
     propertyTypeId: number | null | undefined,
     isEdit: boolean
   ): Promise<{ success: boolean; warning?: boolean }> => {
+    const typeOfUse = typeOfUseLabel || t("aliasFallback.typeOfUse");
     const hasSelectionsToSave = selectedTypeOfUseIds.size > 0;
     const shouldSaveValidations = propertyTypeId && (isEdit || hasSelectionsToSave);
 
@@ -80,7 +83,7 @@ export function useTypeOfUseValidations({
           Array.from(selectedTypeOfUseIds)
         );
         if (!result.success) {
-          toast.error(result.message || t("form.typeOfUseSection.saveFailed"));
+          toast.error(result.message || t("form.typeOfUseSection.saveFailed", { typeOfUse }));
           return { success: false };
         }
       } catch (error) {
@@ -89,7 +92,7 @@ export function useTypeOfUseValidations({
           propertyTypeId,
           selectedCount: selectedTypeOfUseIds.size 
         });
-        toast.error(t("form.typeOfUseSection.saveFailed"));
+        toast.error(t("form.typeOfUseSection.saveFailed", { typeOfUse }));
         return { success: false };
       }
     } else if (!isEdit && hasSelectionsToSave && !propertyTypeId) {
@@ -99,7 +102,7 @@ export function useTypeOfUseValidations({
         hasSelectionsToSave,
         selectedCount: selectedTypeOfUseIds.size
       });
-      toast.warning(t("form.typeOfUseSection.saveWarning"));
+      toast.warning(t("form.typeOfUseSection.saveWarning", { typeOfUse }));
       return { success: true, warning: true };
     }
 
