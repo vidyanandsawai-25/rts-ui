@@ -5,6 +5,7 @@ import { getRateMasterByFilters, deleteRateMasterAction } from "@/app/[locale]/p
 import type { IBackendRateMaster, RateCategory } from "@/types/RVRateMaster";
 import { buildRateSubmissions, fetchBackendRatesForSubmission,  processRateSubmissions, NO_RATES_TO_UPDATE_ERROR} from "./helpers/rateBulkOperations";
 import { validateMatrixHasRates, parseMatrixData, formatUseGroupLabels, getOperationResult } from "./helpers/rateOperationValidation";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 interface UseRateMasterOperationsProps {
   mode: "add" | "edit" | "delete";
   id?: string;
@@ -33,6 +34,8 @@ export function useRateMasterOperations({
   isOpenPlot = false,
 }: UseRateMasterOperationsProps) {
   const t = useTranslations("ptis_RVRateMaster");
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.assessment"));
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
 
   const getUseGroupLabel = useCallback((useGroup: string) => {
     if (!useGroup) return "";
@@ -45,7 +48,7 @@ export function useRateMasterOperations({
   // Bulk create handler
   const handleBulkCreate = useCallback(async (completeMatrixData: Array<Record<string, unknown>>) => {
     if (!assessmentYear) {
-      toast.error(t('messages.validationSelectAssessmentYear'));
+      toast.error(t('messages.validationSelectAssessmentYear', { assessment: assessmentLabel }));
       return { success: false };
     }
 
@@ -90,18 +93,18 @@ export function useRateMasterOperations({
       toast.success(t('messages.ratesAddedSuccess', { groups: useGroupLabels }));
       return { success: true };
     } else if (result.partialSuccess) {
-      toast.warning(t('messages.ratesAddedPartial', { count: successCount, errors: errorMessages.join('; ') }));
+      toast.warning(t('messages.ratesAddedPartial', { count: successCount, errors: errorMessages.join('; '), use: useLabel }));
       return { success: true };
     } else {
       toast.error(t('messages.ratesAddedFailed', { errors: errorMessages.join('; ') }));
       return { success: false };
     }
-  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, mode, id, t, rateFrequency, rateUnit, getUseGroupLabel, isOpenPlot]);
+  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, mode, id, t, rateFrequency, rateUnit, getUseGroupLabel, isOpenPlot, assessmentLabel, useLabel]);
 
   // Bulk update handler
   const handleBulkUpdate = useCallback(async (completeMatrixData: Array<Record<string, unknown>>) => {
     if (!assessmentYear) {
-      toast.error(t('messages.validationSelectAssessmentYear'));
+      toast.error(t('messages.validationSelectAssessmentYear', { assessment: assessmentLabel }));
       return { success: false };
     }
 
@@ -142,13 +145,13 @@ export function useRateMasterOperations({
       toast.success(t('messages.ratesUpdatedSuccess', { groups: useGroupLabels }));
       return { success: true };
     } else if (result.partialSuccess) {
-      toast.warning(t('messages.ratesUpdatedPartial', { count: successCount, errors: nonUpdateErrors.join('; ') }));
+      toast.warning(t('messages.ratesUpdatedPartial', { count: successCount, errors: nonUpdateErrors.join('; '), use: useLabel }));
       return { success: true };
     } else {
       toast.error(t('messages.ratesUpdatedFailed', { errors: nonUpdateErrors.join('; ') }));
       return { success: false };
     }
-  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, rateUnit, getUseGroupLabel, isOpenPlot]);
+  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, rateUnit, getUseGroupLabel, isOpenPlot, assessmentLabel, useLabel]);
 
   // Delete handler
   const handleDelete = useCallback(async (latestBackendRates: IBackendRateMaster[]) => {

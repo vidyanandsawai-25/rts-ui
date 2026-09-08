@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useState, useMemo, useEffect } from "react";
 import { RateMatrixTabs } from "./RateMatrixTabs";
 import { applyMultiplierToMatrix } from "@/hooks/RVRateMaster/helpers/ratePayloadHelpers";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { buildMatrixColumns, buildMatrixMetaColumns, buildMatrixRows, buildCategoryColorMap, filterRateCategories } from "./rateMatrixHelpers";
 
 // Maximum allowed rate value
@@ -136,9 +137,16 @@ export function RateMatrixSection({
   const singleColorClassHeader = "text-blue-700";
 
   const categoryColorMap = buildCategoryColorMap(rateCategories, singleColorClass);
+  const taxZoneLabel = useAliasLabel("Tax Zone", t("aliasFallback.taxZone"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+  const aliasLabels = useMemo(() => ({
+    taxZone: taxZoneLabel,
+    typeOfUse: typeOfUseLabel,
+  }), [taxZoneLabel, typeOfUseLabel]);
+
   const filteredCategories = filterRateCategories(rateCategories);
-  const matrixColumns = buildMatrixColumns(filteredCategories, singleColorClassHeader, tCommon, rateUnit, t);
-  const matrixMetaColumns = buildMatrixMetaColumns(t);
+  const matrixColumns = buildMatrixColumns(filteredCategories, singleColorClassHeader, tCommon, rateUnit, t, aliasLabels);
+  const matrixMetaColumns = buildMatrixMetaColumns(t, aliasLabels);
   const matrixRows = buildMatrixRows(gridData, filteredCategories, zoneRemarksMap);
 
   return (

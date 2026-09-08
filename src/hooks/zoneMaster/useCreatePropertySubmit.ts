@@ -6,6 +6,7 @@ import { WardItem } from "@/types/wardMaster.types";
 import { CreatePropertyFormData } from "@/types/zone-master/properties/create-property-drawer.types";
 import { PropertyRangeCreatePayload } from "@/types/zone-master/properties/property-range.types";
 import { createPropertyRangeAction } from "@/app/[locale]/property-tax/zone-master/property.actions";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface UseCreatePropertySubmitProps {
   formData: CreatePropertyFormData;
@@ -32,6 +33,10 @@ export function useCreatePropertySubmit({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const locale = useLocale();
+  const taxZoneAlias = useAliasLabel(
+    "Tax_Zone",
+    useAliasLabel("Tax Zone", t("defaults.taxZone"))
+  );
 
   const handleSubmit = useCallback(async () => {
     if (!validateForm() || !selectedWard) return;
@@ -82,7 +87,7 @@ export function useCreatePropertySubmit({
           if (result.error) {
             const errorMsg = result.error;
             if (errorMsg.includes('TaxZoneId')) {
-              toast.error(t("createProperty.errors.taxZoneRequired"));
+              toast.error(t("createProperty.errors.taxZoneRequired", { taxZone: taxZoneAlias }));
             } else {
               toast.error(errorMsg);
             }
@@ -93,13 +98,13 @@ export function useCreatePropertySubmit({
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : '';
         if (errorMsg.includes('TaxZoneId')) {
-          toast.error(t("createProperty.errors.taxZoneRequired"));
+          toast.error(t("createProperty.errors.taxZoneRequired", { taxZone: taxZoneAlias }));
         } else {
           toast.error(t("createProperty.errors.createFailed"));
         }
       }
     });
-  }, [formData, selectedWard, validateForm, resetForm, onSuccess, onClose, startTransition, t, locale]);
+  }, [formData, selectedWard, validateForm, resetForm, onSuccess, onClose, startTransition, t, locale, taxZoneAlias]);
 
   const handleClose = useCallback(() => {
     resetForm();

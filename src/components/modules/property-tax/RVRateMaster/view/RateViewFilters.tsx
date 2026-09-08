@@ -4,6 +4,7 @@ import { MapPin, Calendar, Users } from "lucide-react";
 import { SearchSelect } from "@/components/common";
 import { Label } from "@/components/common/label";
 import type { ISelectOption } from "@/types/RVRateMaster";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface RateViewFiltersProps {
   zones: ISelectOption[];
@@ -34,13 +35,17 @@ export function RateViewFilters({
   disabled = false,
   isOpenPlot = false,
 }: RateViewFiltersProps) {
+  const rateSectionLabel = useAliasLabel("Rate_Section", t("aliasFallback.rateSection"));
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.assessment"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+
   return (
     <div className={`grid grid-cols-1 ${isOpenPlot ? 'md:grid-cols-2 w-[500px]' : 'md:grid-cols-3 w-200'} gap-1.5`}>
       {/* Rate Section */}
       <div className="flex flex-col gap-1">
         <Label htmlFor="zone-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
           <MapPin className="w-3.5 h-3.5 text-blue-500" />
-          {t('filters.rateSection')}
+          {t('filters.rateSection', { rateSection: rateSectionLabel })}
         </Label>
         <SearchSelect
           id="zone-select"
@@ -58,7 +63,7 @@ export function RateViewFilters({
       <div className="flex flex-col gap-1">
         <Label htmlFor="year-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
           <Calendar className="w-3.5 h-3.5 text-blue-500" />
-          {t('filters.assessmentYear')}
+          {t('filters.assessmentYear', { assessment: assessmentLabel })}
         </Label>
         <SearchSelect
           id="year-select"
@@ -77,7 +82,7 @@ export function RateViewFilters({
         <div className="flex flex-col gap-1">
           <Label htmlFor="useGroup-select" className="flex items-center gap-1 text-xs font-medium text-gray-700">
             <Users className="w-3.5 h-3.5 text-blue-500" />
-            {t('filters.typeOfUseGroup')}
+            {t('filters.typeOfUseGroup', { typeOfUse: typeOfUseLabel })}
           </Label>
           <SearchSelect
             id="useGroup-select"

@@ -5,6 +5,7 @@ import { Badge, Card, CardHeader, Input, MasterTable, SearchInput } from "@/comp
 import { PropertyPreviewRow, BulkUpdateMaster, BulkUpdateFieldConfig, SelectOption } from "@/types/common-details-update/common-details-update.types";
 import { getPreviewColumns } from "./CommonDetailsUpdateColumns";
 import { Column } from "@/components/common/MasterTable";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface PaginationInfo {
   start: number;
@@ -67,8 +68,10 @@ export const PropertyPreviewGrid = ({
   optionsMap = {},
   lookupMap = {},
 }: PropertyPreviewGridProps) => {
+  const propertyNoLabel = useAliasLabel("Property_No", t("aliasFallback.propertyNo"));
+  const partitionLabel = useAliasLabel("Partition", t("aliasFallback.partition"));
 
-  const baseColumns = getPreviewColumns(t, fieldConfigs, optionsMap, lookupMap);
+  const baseColumns = getPreviewColumns(t, fieldConfigs, optionsMap, lookupMap, propertyNoLabel);
 
   // Prepend checkbox column for selection if not hidden
   const columns: Column<PropertyPreviewRow>[] = [
@@ -166,7 +169,7 @@ export const PropertyPreviewGrid = ({
             <SearchInput
               value={searchTerm}
               onChange={onSearchChange}
-              placeholder={t("preview.searchPlaceholder")}
+              placeholder={t("preview.searchPlaceholder", { propertyNo: propertyNoLabel, partition: partitionLabel })}
               className="w-80 mb-0"
             />
           </div>

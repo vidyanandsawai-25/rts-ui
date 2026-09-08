@@ -20,6 +20,7 @@ import { CancelButton, SaveButton, ValidationMessage } from '@/components/common
 import { validateForm } from '@/lib/utils/validation-helpers';
 import { sanitizeCode, sanitizeText } from '@/lib/utils/sanitization';
 import { useCategoryFormValidation } from '@/hooks/TypeOfUseMaster/useCategoryFormValidation';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 type FieldErrors = {
   code?: string;
@@ -30,6 +31,8 @@ export default function UseCategoryForm({ id, initialData, allCategories: allCat
   const t = useTranslations('typeofusemaster');
   const router = useRouter();
   const isEdit = Boolean(id);
+
+  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
 
   const [formData, setFormData] = useState({
     code: initialData?.typeOfUseCategoryCode || "",
@@ -107,7 +110,7 @@ export default function UseCategoryForm({ id, initialData, allCategories: allCat
           if (isDup) {
             setErrors((p) => ({
               ...p,
-              name: t('category.messages.duplicateName'),
+              name: t('category.messages.duplicateName', { category: categoryLabel }),
             }));
             setTouched((p) => ({
               ...p,
@@ -116,11 +119,11 @@ export default function UseCategoryForm({ id, initialData, allCategories: allCat
             return;
           }
 
-          toast.error(errorMessage || t('category.messages.updateFailed'));
+          toast.error(errorMessage || t('category.messages.updateFailed', { category: categoryLabel }));
           return;
         }
 
-        toast.success(t('category.messages.categoryUpdated'));
+        toast.success(t('category.messages.categoryUpdated', { category: categoryLabel }));
       } else {
         const result = await createTypeOfUseCategory({
           code: formData.code,
@@ -140,7 +143,7 @@ export default function UseCategoryForm({ id, initialData, allCategories: allCat
           if (isDup) {
             setErrors((p) => ({
               ...p,
-              name: t('category.messages.duplicateName'),
+              name: t('category.messages.duplicateName', { category: categoryLabel }),
             }));
             setTouched((p) => ({
               ...p,
@@ -149,16 +152,16 @@ export default function UseCategoryForm({ id, initialData, allCategories: allCat
             return;
           }
 
-          toast.error(errorMessage || t('category.messages.createFailed'));
+          toast.error(errorMessage || t('category.messages.createFailed', { category: categoryLabel }));
           return;
         }
 
-        toast.success(t('category.messages.categoryCreated'));
+        toast.success(t('category.messages.categoryCreated', { category: categoryLabel }));
       }
 
       router.back();
     } catch {
-      toast.error(isEdit ? t('category.messages.updateFailed') : t('category.messages.createFailed'));
+      toast.error(isEdit ? t('category.messages.updateFailed', { category: categoryLabel }) : t('category.messages.createFailed', { category: categoryLabel }));
     } finally {
       setIsSubmitting(false);
     }
@@ -176,10 +179,10 @@ export default function UseCategoryForm({ id, initialData, allCategories: allCat
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t('category.edit') : t('category.add')}
+              {isEdit ? t('category.edit', { category: categoryLabel }) : t('category.add', { category: categoryLabel })}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit ? t('category.editSubtitle') : t('category.addSubtitle')}
+              {isEdit ? t('category.editSubtitle', { category: categoryLabel }) : t('category.addSubtitle', { category: categoryLabel })}
             </div>
           </div>
         </div>
@@ -217,7 +220,7 @@ export default function UseCategoryForm({ id, initialData, allCategories: allCat
                 <div>
                   <div className="text-base font-semibold text-slate-900">{t('category.fields.status')}</div>
                   <div className="text-sm text-slate-500">
-                    {t('category.title')} {t('status.isCurrently')} <span className={isActiveStatus ? "text-emerald-700 font-medium" : "text-slate-600 font-medium"}>{isActiveStatus ? t('status.active') : t('status.inactive')}</span>
+                    {t('category.title', { category: categoryLabel })} {t('status.isCurrently')} <span className={isActiveStatus ? "text-emerald-700 font-medium" : "text-slate-600 font-medium"}>{isActiveStatus ? t('status.active') : t('status.inactive')}</span>
                   </div>
                 </div>
               </div>
@@ -237,7 +240,7 @@ export default function UseCategoryForm({ id, initialData, allCategories: allCat
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
               <Input
-                label={t('category.fields.categoryCode')}
+                label={t('category.fields.categoryCode', { category: categoryLabel })}
                 name="code"
                 value={formData.code}
                 onChange={(e) => {
@@ -267,7 +270,7 @@ export default function UseCategoryForm({ id, initialData, allCategories: allCat
             {/* Category Name */}
             <div className="flex flex-col">
               <Input
-                label={t('category.fields.categoryName')}
+                label={t('category.fields.categoryName', { category: categoryLabel })}
                 name="name"
                 value={formData.name}
                 onChange={(e) => {

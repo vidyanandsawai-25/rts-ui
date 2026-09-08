@@ -4,6 +4,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Layers, Map as MapIcon } from "lucide-react";
 import TableHeader from "@/components/common/TableHeader";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import ZoneList from "./zones/ZoneList";
 import WardPropertyTabs from "./properties/WardPropertyTabs";
 import ZoneForm from "./zones/ZoneForm";
@@ -65,6 +66,11 @@ export default function ZoneContent({
   const searchParams = useSearchParams();
   const t = useTranslations("zoneMaster");
 
+  const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
+  const zonesAlias = useAliasLabel("Zones", t("defaults.zones"));
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+  const wardsAlias = useAliasLabel("Wards", t("defaults.wards"));
+
   // Destructure for cleaner access
   const { zones, pageNumber: zonePageNumber, pageSize: zonePageSize, totalCount: zoneTotalCount, totalPages: zoneTotalPages, searchTerm: zoneSearchTerm } = zonePagination;
   const { wards, pageNumber: wardPageNumber, pageSize: wardPageSize, totalCount: wardTotalCount, totalPages: wardTotalPages, searchTerm: wardSearchTerm } = wardPagination;
@@ -119,19 +125,19 @@ export default function ZoneContent({
     <>
       <div className="space-y-2 mb-0">
         <TableHeader
-          title={t("title")}
-          subtitle={t("description")}
+          title={t("title", { zone: zoneAlias })}
+          subtitle={t("description", { zones: zonesAlias, ward: wardAlias })}
           icon={Layers}
           rightContent={
             <div className="flex items-center gap-3">
               <DashboardCard
-                label={t("totalZones")}
+                label={t("totalZones", { zones: zonesAlias })}
                 value={dashboardTotalZones}
                 icon={<Layers className="w-5 h-5 text-[#1A86E8]" />}
                 className="min-w-[140px]"
               />
               <DashboardCard
-                label={t("totalWards")}
+                label={t("totalWards", { wards: wardsAlias })}
                 value={dashboardTotalWards}
                 icon={<MapIcon className="w-5 h-5 text-[#1A86E8]" />}
                 className="min-w-[140px]"

@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FolderHeart } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchNavigation } from "@/hooks/useSearchNavigation";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface CategoryListDrawerProps {
   categories: TypeOfUseCategory[];
@@ -32,6 +33,9 @@ export default function CategoryListDrawer({
   const searchParams = useSearchParams();
   const locale = useLocale();
   const { confirm } = useConfirm();
+
+  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
   
   const initialSearchTerm = searchParams.get("q") || "";
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
@@ -75,15 +79,15 @@ export default function CategoryListDrawer({
         try {
           const result = await deleteTypeOfUseCategory(category.id);
           if (result.success) {
-            toast.success(t("category.messages.categoryDeleted"));
+            toast.success(t("category.messages.categoryDeleted", { category: categoryLabel }));
             router.refresh();
           } else if (result.statusCode === 409) {
-            toast.error(t("category.messages.inUseError", { name: category.typeOfUseCategoryName }));
+            toast.error(t("category.messages.inUseError", { name: category.typeOfUseCategoryName, category: categoryLabel }));
           } else {
-            toast.error(result.message || t("category.messages.deleteFailed"));
+            toast.error(result.message || t("category.messages.deleteFailed", { category: categoryLabel }));
           }
         } catch {
-          toast.error(t("category.messages.deleteFailed"));
+          toast.error(t("category.messages.deleteFailed", { category: categoryLabel }));
         } finally {
           setIsDeleting(false);
         }
@@ -95,11 +99,11 @@ export default function CategoryListDrawer({
     () => [
       {
         key: "typeOfUseCategoryCode",
-        label: t("category.fields.categoryCode"),
+        label: t("category.fields.categoryCode", { category: categoryLabel }),
       },
       {
         key: "typeOfUseCategoryName",
-        label: t("category.fields.categoryName"),
+        label: t("category.fields.categoryName", { category: categoryLabel }),
       },
       {
         key: "isActive" as keyof TypeOfUseCategory,
@@ -110,19 +114,19 @@ export default function CategoryListDrawer({
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [t, isDeleting]
+    [t, isDeleting, categoryLabel]
   );
 
   const renderActions = (row: TypeOfUseCategory) => (
     <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
       <EditButton
         size="sm"
-        title={t("buttons.edit") + " " + t("category.title")}
+        title={t("buttons.edit") + " " + t("category.title", { typeOfUse: typeOfUseLabel, category: categoryLabel })}
         onClick={() => router.push(`/${locale}/property-tax/typeofusemaster/category/edit/${row.id}`)}
       />
       <DeleteButton
         size="sm"
-        title={t("buttons.delete") + " " + t("category.title")}
+        title={t("buttons.delete") + " " + t("category.title", { typeOfUse: typeOfUseLabel, category: categoryLabel })}
         onClick={() => handleDelete(row)}
         disabled={isDeleting || !row.isActive}
       />
@@ -142,10 +146,10 @@ export default function CategoryListDrawer({
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {t("category.title")}
+              {t("category.title", { typeOfUse: typeOfUseLabel, category: categoryLabel })}
             </div>
             <div className="text-sm text-slate-500">
-              {t("category.searchPlaceholder")}
+              {t("category.searchPlaceholder", { category: categoryLabel })}
             </div>
           </div>
         </div>
@@ -157,13 +161,13 @@ export default function CategoryListDrawer({
             <SearchInput
               value={searchTerm}
               onChange={setSearchTerm}
-              placeholder={t("category.searchPlaceholder")}
+              placeholder={t("category.searchPlaceholder", { category: categoryLabel })}
               className="mb-0 text-gray-700 w-full"
             />
           </div>
           <AddButton
             size="md"
-            label={t("category.addNew")}
+            label={t("category.addNew", { category: categoryLabel })}
             onClick={() => router.push(`/${locale}/property-tax/typeofusemaster/category/add`)}
           />
         </div>
@@ -172,7 +176,7 @@ export default function CategoryListDrawer({
           <MasterTable
             data={categories}
             columns={columns}
-            emptyText={t("category.noCategories")}
+            emptyText={t("category.noCategories", { category: categoryLabel })}
             pageNumber={pageNumber}
             pageSize={pageSize}
             totalCount={totalCount}

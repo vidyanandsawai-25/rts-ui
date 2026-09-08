@@ -39,6 +39,10 @@ vi.mock("@/components/modules/property-tax/RVRateMaster/RateMasterForm", () => (
 
 const mockMessages = {
   ptis_RVRateMaster: {
+    aliasFallback: {
+      zone: "Zone",
+      use: "Use",
+    },
     messages: {
       editRateDetails: "Edit Rate Details",
       updateRateDetails: "Update rate details for selected zone and use group",

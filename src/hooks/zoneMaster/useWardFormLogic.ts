@@ -13,6 +13,7 @@ interface UseWardFormLogicProps {
   initialData?: WardItem | null;
   onClose: () => void;
   onSuccess?: () => void;
+  wardAlias?: string;
   t: (key: string, values?: Record<string, unknown>) => string;
 }
 
@@ -23,6 +24,7 @@ export function useWardFormLogic({
   initialData,
   onClose,
   onSuccess,
+  wardAlias,
   t,
 }: UseWardFormLogicProps) {
   const [form, setForm] = useState<WardFormState>({
@@ -114,15 +116,15 @@ export function useWardFormLogic({
               isActive: ward.isActive ?? true,
             });
           } else {
-            toast.info(t("wardForm.loadError"));
+            toast.info(t("wardForm.loadError", { ward: wardAlias }));
             onClose();
           }
         } else {
-          toast.info(res.error || t("wardForm.loadError"));
+          toast.info(res.error || t("wardForm.loadError", { ward: wardAlias }));
           onClose();
         }
       } catch (error) {
-        toast.info(error instanceof Error ? error.message : t("wardForm.loadError"));
+        toast.info(error instanceof Error ? error.message : t("wardForm.loadError", { ward: wardAlias }));
         onClose();
       } finally {
         setFetching(false);
@@ -133,14 +135,14 @@ export function useWardFormLogic({
       await fetchWard();
     };
     runFetch();
-  }, [open, wardId, initialData, wards, onClose, t]);
+  }, [open, wardId, initialData, wards, onClose, wardAlias, t]);
 
   const validate = (data: WardFormState) => {
     const newErrors: WardFormErrors = {};
-    if (!data.wardNo?.trim()) newErrors.wardNo = t("validation.wardNoRequired");
-    else if (data.wardNo.length > ZONE_WARD_NO_MAX_LENGTH) newErrors.wardNo = t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH });
-    if (!data.description?.trim()) newErrors.description = t("validation.wardNameRequired");
-    else if (data.description.length > ZONE_WARD_NAME_MAX_LENGTH) newErrors.description = t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH });
+    if (!data.wardNo?.trim()) newErrors.wardNo = t("validation.wardNoRequired", { ward: wardAlias });
+    else if (data.wardNo.length > ZONE_WARD_NO_MAX_LENGTH) newErrors.wardNo = t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH, ward: wardAlias });
+    if (!data.description?.trim()) newErrors.description = t("validation.wardNameRequired", { ward: wardAlias });
+    else if (data.description.length > ZONE_WARD_NAME_MAX_LENGTH) newErrors.description = t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH, ward: wardAlias });
     
     if (!data.sequenceNo) {
       newErrors.sequenceNo = t("validation.sequenceNoRequired");
@@ -166,7 +168,7 @@ export function useWardFormLogic({
 
     if (duplicateByNo) {
       toast.error(
-        t("messages.duplicateWardNo", { wardNo: duplicateByNo.wardNo })
+        t("messages.duplicateWardNo", { wardNo: duplicateByNo.wardNo, ward: wardAlias })
       );
       return true;
     }
@@ -178,7 +180,7 @@ export function useWardFormLogic({
 
       if (duplicateBySeq) {
         toast.error(
-          t("messages.duplicateSequenceNo", { seqNo: seqValue, wardNo: duplicateBySeq.wardNo })
+          t("messages.duplicateSequenceNo", { seqNo: seqValue, wardNo: duplicateBySeq.wardNo, ward: wardAlias })
         );
         return true;
       }
@@ -205,7 +207,7 @@ export function useWardFormLogic({
       });
 
       if (result.success) {
-        toast.success(t("wardForm.updateSuccess", { wardNo: form.wardNo }));
+        toast.success(t("wardForm.updateSuccess", { wardNo: form.wardNo, ward: wardAlias }));
         onClose();
         refreshRouter();
         if (onSuccess) onSuccess();
@@ -221,13 +223,13 @@ export function useWardFormLogic({
               
               if (parsed.errors.Description) {
                 const descErr = parsed.errors.Description[0];
-                serverErrors.description = descErr.includes("MaxLen") ? t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH }) : descErr;
+                serverErrors.description = descErr.includes("MaxLen") ? t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH, ward: wardAlias }) : descErr;
                 handled = true;
               }
               
               if (parsed.errors.WardNo) {
                 const noErr = parsed.errors.WardNo[0];
-                serverErrors.wardNo = noErr.includes("MaxLen") ? t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH }) : noErr;
+                serverErrors.wardNo = noErr.includes("MaxLen") ? t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH, ward: wardAlias }) : noErr;
                 handled = true;
               }
               
@@ -238,7 +240,7 @@ export function useWardFormLogic({
               
               if (handled) {
                 setErrors(serverErrors);
-                toast.error(parsed.title || t("wardForm.updateError"));
+                toast.error(parsed.title || t("wardForm.updateError", { ward: wardAlias }));
               }
             }
           } catch (_e) {
@@ -249,12 +251,12 @@ export function useWardFormLogic({
         if (!handled) {
           const lowerMsg = errorMsg.toLowerCase();
           if (lowerMsg.includes("name") || lowerMsg.includes("description") || lowerMsg.includes("maxlen")) {
-            setErrors({ description: lowerMsg.includes("maxlen") ? t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH }) : t("messages.duplicateWardName", { name: form.description }) });
+            setErrors({ description: lowerMsg.includes("maxlen") ? t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH, ward: wardAlias }) : t("messages.duplicateWardName", { name: form.description, ward: wardAlias }) });
           } else if (lowerMsg.includes("ward") || lowerMsg.includes("already exists") || lowerMsg.includes("duplicate")) {
-            setErrors({ wardNo: t("messages.duplicateWardNo", { wardNo: form.wardNo }) });
+            setErrors({ wardNo: t("messages.duplicateWardNo", { wardNo: form.wardNo, ward: wardAlias }) });
           } else {
-            toast.error(errorMsg || t("wardForm.updateError"));
-            setErrors({ wardNo: errorMsg || t("wardForm.updateError") });
+            toast.error(errorMsg || t("wardForm.updateError", { ward: wardAlias }));
+            setErrors({ wardNo: errorMsg || t("wardForm.updateError", { ward: wardAlias }) });
           }
         }
       }

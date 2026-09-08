@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import type { ISelectOption, IZoneDescription, RateCategory } from "@/types/RVRateMaster";
 import { copyRatesFromUseGroup, copyRatesFromRateSection } from "./helpers/rateCopyHandlers";
 import { handleTemplateDownload, handleFileUpload } from "./helpers/rateImportExportHandlers";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 type MatrixRow = {
   id: number;
@@ -62,6 +63,17 @@ export function useRateMasterImportExport({
   multipliers,
   rateUnit,
 }: UseRateMasterImportExportProps) {
+  const rateSectionLabel = useAliasLabel("Rate_Section", t("aliasFallback.rateSection"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.assessment"));
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+
+  const aliasLabels = useMemo(() => ({
+    rateSection: rateSectionLabel,
+    typeOfUse: typeOfUseLabel,
+    assessment: assessmentLabel,
+    use: useLabel,
+  }), [rateSectionLabel, typeOfUseLabel, assessmentLabel, useLabel]);
   const [sourceUseGroup, setSourceUseGroup] = useState("");
   const [sourceRateSection, setSourceRateSection] = useState("");
   const sourceRateSectionOptions = zoneOptions.filter(
@@ -126,6 +138,7 @@ export function useRateMasterImportExport({
       useGroupOptions,
       zoneOptions,
       t,
+      aliasLabels,
     });
   };
 
@@ -147,6 +160,7 @@ export function useRateMasterImportExport({
       useGroupOptions,
       zoneOptions,
       t,
+      aliasLabels,
     });
   };
 
@@ -159,6 +173,7 @@ export function useRateMasterImportExport({
       rateCategories,
       rateUnit,
       t,
+      aliasLabels,
     });
   };
 

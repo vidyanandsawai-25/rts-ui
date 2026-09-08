@@ -4,6 +4,7 @@ import { createBulkBuildingPropertiesAction } from "@/app/[locale]/property-tax/
 import { BuildingStructureItem } from "@/types/zone-master/properties/building-structure.types";
 import { BulkPropertyItem } from "@/types/zone-master/properties/property-bulk.types";
 import { parseBulkPropertyErrors } from "@/lib/utils/bulk-property-errors";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface UseBuildingGenerationProps {
   buildingData: BuildingStructureItem[];
@@ -29,6 +30,7 @@ export function useBuildingGeneration({
   t,
 }: UseBuildingGenerationProps) {
   const [generating, setGenerating] = useState(false);
+  const categoryAlias = useAliasLabel("Category", "Category");
 
   const handleGenerate = async () => {
     // Validate required configuration
@@ -43,7 +45,7 @@ export function useBuildingGeneration({
       return;
     }
     if (!categoryId) {
-      toast.error(t("partitionForm.wing.generate.categoryRequired"));
+      toast.error(t("partitionForm.wing.generate.categoryRequired", { category: categoryAlias }));
       return;
     }
 

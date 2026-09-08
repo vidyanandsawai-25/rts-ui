@@ -8,6 +8,7 @@ import WardList from "../wards/WardList";
 import PropertyList from "./PropertyList";
 import { ZoneItem } from "@/types/zoneMaster.types";
 import { WardItem } from "@/types/wardMaster.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 
@@ -80,6 +81,7 @@ export default function WardPropertyTabs({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations("zoneMaster");
+  const wardsAlias = useAliasLabel("Wards", t("defaults.wards"));
 
   const handleTabChange = (value: string | number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -99,7 +101,7 @@ export default function WardPropertyTabs({
   const tabItems: TabItem[] = [
     {
       value: "wards",
-      label: t("tabs.wards"),
+      label: t("tabs.wards", { wards: wardsAlias }),
       icon: Map,
       content: (
         <WardList

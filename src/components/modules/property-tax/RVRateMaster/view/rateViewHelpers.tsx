@@ -56,7 +56,8 @@ export function buildRateColumns(
   singleColorClassHeader: string,
   tCommon: ReturnType<typeof import("next-intl").useTranslations>,
   t: ReturnType<typeof import("next-intl").useTranslations>,
-  rateUnit: "SqMeter" | "SqFeet" = "SqMeter"
+  rateUnit: "SqMeter" | "SqFeet" = "SqMeter",
+  aliasLabels?: Record<string, string>
 ): MatrixColumn[] {
   const seenCodes = new Set<string>();
   const rateUnitLabel = rateUnit === "SqMeter" ? tCommon('rateUnitSqMeter') : tCommon('rateUnitSqFeet');
@@ -75,7 +76,7 @@ export function buildRateColumns(
       const tooltipContent = hasMultiple ? (
         <div className="text-left whitespace-normal font-sans leading-relaxed min-w-[180px]">
           <div className="font-bold border-b border-blue-200/50 pb-1 mb-1 text-white">
-            {t('tooltips.associatedTypesOfUse')}
+            {t('tooltips.associatedTypesOfUse', aliasLabels)}
           </div>
           <div className="space-y-1 mt-1">
             {associated.map((u, i) => (

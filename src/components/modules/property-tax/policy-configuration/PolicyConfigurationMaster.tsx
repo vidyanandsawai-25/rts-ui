@@ -10,6 +10,7 @@ import { getPolicyConfigurationColumns } from "./PolicyConfigurationColumn";
 import { PageContainer, SearchInput } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
 import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 export default function PolicyConfigurationMaster({
   data,
@@ -24,6 +25,8 @@ export default function PolicyConfigurationMaster({
   const t = useTranslations("policyConfiguration");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+
+  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
 
   const base = `/${locale}/property-tax/policy-configuration`;
 
@@ -75,7 +78,7 @@ export default function PolicyConfigurationMaster({
     
     return list;
   }, [data, search]);
-  const columns = useMemo(() => getPolicyConfigurationColumns(t), [t]);
+  const columns = useMemo(() => getPolicyConfigurationColumns(t, categoryLabel), [t, categoryLabel]);
 
   /**
    * ✅ BACKEND PAGINATION
@@ -108,7 +111,7 @@ export default function PolicyConfigurationMaster({
               <SearchInput
                 value={searchTermState}
                 onChange={(value) => setSearchTermState(value.replace(TEXT_SANITIZE, ""))}
-                placeholder={t("list.filters.search") || "Search Policy Configuration..."}
+                placeholder={t("list.filters.search", { category: categoryLabel }) || "Search Policy Configuration..."}
                 className="mb-0 w-full text-gray-900"
               />
             </div>

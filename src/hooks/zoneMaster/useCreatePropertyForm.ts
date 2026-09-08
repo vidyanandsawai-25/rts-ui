@@ -5,6 +5,7 @@ import { PropertyType } from "@/types/property-type.types";
 import { PropertyCategory } from "@/types/property-category.types";
 import { TaxZone } from "@/types/taxzoning.types";
 import { Option } from "@/components/common";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface UseCreatePropertyFormProps {
   isOpen: boolean;
@@ -23,6 +24,15 @@ export function useCreatePropertyForm({
 }: UseCreatePropertyFormProps) {
   const t = useTranslations("zoneMaster");
   const tCommon = useTranslations("common");
+  const categoryAlias = useAliasLabel("Category", t("defaults.category"));
+  const taxZoneAlias = useAliasLabel(
+    "Tax_Zone",
+    useAliasLabel("Tax Zone", t("defaults.taxZone"))
+  );
+  const propertyNoAlias = useAliasLabel(
+    "Property_No",
+    useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo")))
+  );
   const [isPending, startTransition] = useTransition();
 
   const [formData, setFormData] = useState<CreatePropertyFormData>({
@@ -125,11 +135,11 @@ export function useCreatePropertyForm({
     }
 
     if (!formData.categoryId) {
-      newErrors.categoryId = t("createProperty.errors.categoryRequired");
+      newErrors.categoryId = t("createProperty.errors.categoryRequired", { category: categoryAlias });
     }
 
     if (!formData.taxZoneId) {
-      newErrors.taxZoneId = t("createProperty.errors.taxZoneRequired");
+      newErrors.taxZoneId = t("createProperty.errors.taxZoneRequired", { taxZone: taxZoneAlias });
     }
 
     if (!formData.ownerName || !formData.ownerName.trim()) {
@@ -142,28 +152,28 @@ export function useCreatePropertyForm({
 
     if (formData.isBulkCreate) {
       if (!formData.fromPropertyNo) {
-        newErrors.fromPropertyNo = t("createProperty.errors.fromPropertyNoRequired");
+        newErrors.fromPropertyNo = t("createProperty.errors.fromPropertyNoRequired", { propertyNo: propertyNoAlias });
       }
       if (!formData.toPropertyNo) {
-        newErrors.toPropertyNo = t("createProperty.errors.toPropertyNoRequired");
+        newErrors.toPropertyNo = t("createProperty.errors.toPropertyNoRequired", { propertyNo: propertyNoAlias });
       }
       // Validate range
       if (formData.fromPropertyNo && formData.toPropertyNo) {
         const from = parseInt(formData.fromPropertyNo, 10);
         const to = parseInt(formData.toPropertyNo, 10);
         if (!isNaN(from) && !isNaN(to) && from >= to) {
-          newErrors.toPropertyNo = t("createProperty.errors.invalidRange");
+          newErrors.toPropertyNo = t("createProperty.errors.invalidRange", { propertyNo: propertyNoAlias });
         }
       }
     } else {
       if (!formData.propertyNo) {
-        newErrors.propertyNo = t("createProperty.errors.propertyNoRequired");
+        newErrors.propertyNo = t("createProperty.errors.propertyNoRequired", { propertyNo: propertyNoAlias });
       }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData, t]);
+  }, [formData, t, categoryAlias, taxZoneAlias, propertyNoAlias]);
 
   const resetForm = useCallback(() => {
     setFormData({

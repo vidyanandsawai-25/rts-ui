@@ -25,6 +25,7 @@ import {
   SearchSequenceInput,
   DescriptionInput,
 } from './TypeFormFields';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 type FieldErrors = {
   code?: string;
@@ -40,6 +41,8 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEdit = Boolean(id);
+
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
 
   const queryGroupId = Number(searchParams.get("groupId") || 0);
 
@@ -171,7 +174,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t('type.edit') : t('type.add')}
+              {isEdit ? t('type.edit', { typeOfUse: typeOfUseLabel }) : t('type.add', { typeOfUse: typeOfUseLabel })}
             </div>
             <div className="text-sm text-slate-500">
               {selectedGroup
@@ -215,6 +218,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
                   <div className="text-base font-semibold text-slate-900">{t('type.fields.status')}</div>
                   <div className="text-sm text-slate-500">
                     {t('type.statusMessage', {
+                      typeOfUse: typeOfUseLabel,
                       status: isActive ? t('status.active') : t('status.inactive')
                     })}
                   </div>

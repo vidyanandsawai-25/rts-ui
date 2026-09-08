@@ -10,6 +10,7 @@ import type { TypeOfUseCategory } from '@/types/typeOfUse.types';
 import type { Validator } from '@/lib/utils/validation-helpers';
 import { CODE_REGEX, TEXT_ALLOWED, isAllZeros } from '@/lib/utils/validation-rules';
 import { normalize } from '@/lib/utils/sanitization';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
 
@@ -26,6 +27,7 @@ export function useCategoryFormValidation({
   isEdit,
   t,
 }: UseCategoryFormValidationProps) {
+  const categoryLabel = useAliasLabel('Category', t('aliasFallback.category'));
   
   // Duplicate check for category code
   const isDuplicateCode = (code: string): boolean => {
@@ -53,11 +55,11 @@ export function useCategoryFormValidation({
       code: (value: unknown) => {
         const code = String(value ?? '').trim();
         
-        if (!code) return t('category.fields.categoryCode') + ' ' + t('messages.createError');
-        if (isAllZeros(code)) return t('category.fields.categoryCode') + ' ' + t('messages.cannotBeAllZeros');
-        if (code.length > 20) return t('category.fields.categoryCode') + ' ' + t('messages.maxLength', { count: 20 });
-        if (!CODE_REGEX.test(code)) return t('category.fields.categoryCode') + ' ' + t('messages.onlyAlphanumeric');
-        if (isDuplicateCode(code)) return t('category.messages.duplicateCode');
+        if (!code) return t('category.fields.categoryCode', { category: categoryLabel }) + ' ' + t('messages.createError');
+        if (isAllZeros(code)) return t('category.fields.categoryCode', { category: categoryLabel }) + ' ' + t('messages.cannotBeAllZeros');
+        if (code.length > 20) return t('category.fields.categoryCode', { category: categoryLabel }) + ' ' + t('messages.maxLength', { count: 20 });
+        if (!CODE_REGEX.test(code)) return t('category.fields.categoryCode', { category: categoryLabel }) + ' ' + t('messages.onlyAlphanumeric');
+        if (isDuplicateCode(code)) return t('category.messages.duplicateCode', { category: categoryLabel });
         
         return undefined;
       },
@@ -65,17 +67,17 @@ export function useCategoryFormValidation({
       name: (value: unknown) => {
         const name = String(value ?? '').trim();
         
-        if (!name) return t('category.fields.categoryName') + ' ' + t('messages.createError');
-        if (isAllZeros(name)) return t('category.fields.categoryName') + ' ' + t('messages.cannotBeAllZeros');
-        if (name.length > 50) return t('category.fields.categoryName') + ' ' + t('messages.maxLength', { count: 50 });
-        if (!TEXT_ALLOWED.test(name)) return t('category.fields.categoryName') + ' ' + t('messages.allowedChars');
-        if (isDuplicateCategoryName(name)) return t('category.messages.duplicateName');
+        if (!name) return t('category.fields.categoryName', { category: categoryLabel }) + ' ' + t('messages.createError');
+        if (isAllZeros(name)) return t('category.fields.categoryName', { category: categoryLabel }) + ' ' + t('messages.cannotBeAllZeros');
+        if (name.length > 50) return t('category.fields.categoryName', { category: categoryLabel }) + ' ' + t('messages.maxLength', { count: 50 });
+        if (!TEXT_ALLOWED.test(name)) return t('category.fields.categoryName', { category: categoryLabel }) + ' ' + t('messages.allowedChars');
+        if (isDuplicateCategoryName(name)) return t('category.messages.duplicateName', { category: categoryLabel });
         
         return undefined;
       }
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [t, allCategories, categoryId, isEdit]
+    [t, allCategories, categoryId, isEdit, categoryLabel]
   );
 
   return {

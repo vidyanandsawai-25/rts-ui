@@ -1,5 +1,9 @@
 {
   "policyConfiguration": {
+    "aliasFallback": {
+      "category": "वर्ग",
+      "entity": "पॉलिसी कॉन्फिगरेशन"
+    },
     "list": {
       "title": "पॉलिसी कॉन्फिगरेशन मास्टर",
       "subtitle": "सिस्टीम कॉन्फिगरेशन आणि पॉलिसी मूल्ये व्यवस्थापित करा",
@@ -9,13 +13,13 @@
       },
       "filters": {
         "show": "दाखवा",
-        "search": "कोड, वर्ग, प्रदर्शन नाव द्वारे शोधा...",
+        "search": "कोड, {category}, प्रदर्शन नाव द्वारे शोधा...",
         "searching": "शोधत आहे...",
         "recordsFound": "{count} रेकॉर्ड सापडले"
       },
       "table": {
         "policyCode": "पॉलिसी कोड",
-        "category": "वर्ग",
+        "category": "{category}",
         "displayName": "प्रदर्शन नाव",
         "description": "वर्णन",
         "dataType": "डेटा प्रकार",
@@ -37,7 +41,7 @@
           "placeholder": "उदा. PT_TAX_RATE"
         },
         "category": {
-          "label": "वर्ग",
+          "label": "{category}",
           "placeholder": "उदा. TAX"
         },
         "displayName": {
@@ -73,7 +77,7 @@
       },
       "validation": {
         "policyCodeRequired": "पॉलिसी कोड आवश्यक आहे",
-        "categoryRequired": "वर्ग आवश्यक आहे",
+        "categoryRequired": "{category} आवश्यक आहे",
         "displayNameRequired": "प्रदर्शन नाव आवश्यक आहे",
         "descriptionRequired": "वर्णन आवश्यक आहे",
         "dataTypeRequired": "डेटा प्रकार आवश्यक आहे",

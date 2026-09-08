@@ -2,9 +2,10 @@
 "use client";
 
 import { SearchSelectPaginated } from "@/components/common";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface PropertyRangeFieldsProps {
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
   activeScopeDetails: any;
   filterValues: any;
   propertyOptions?: any[];
@@ -67,6 +68,7 @@ export const PropertyRangeFields = ({
   loadingToPropertyOptions,
   fieldClassName,
 }: PropertyRangeFieldsProps) => {
+  const propertyNoLabel = useAliasLabel("Property_No", t("aliasFallback.propertyNo"));
   const colClass = fieldClassName || "col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 relative z-[60] flex flex-col [&_ul]:!max-h-[240px] [&_[role=listbox]]:!max-h-[240px]";
 
   return (
@@ -75,13 +77,13 @@ export const PropertyRangeFields = ({
         <div className={colClass}>
           <SearchSelectPaginated
             id="property-no-select"
-            label={t("filter.propertyNo")}
+            label={t("filter.propertyNo", { propertyNo: propertyNoLabel })}
             key={`prop-no-${filterValues.wardId}`}
             options={propertyOptions || fromPropertyOptions}
             value={filterValues.fromPropertyNo}
             onChange={(_, val) => handleFromPropertyChange(val)}
             onInputFocus={handlePropertyDropdownFocus}
-            placeholder={loadingPropertyOptions ? t("loading.message") : t("filter.selectPropertyNo")}
+            placeholder={loadingPropertyOptions ? t("loading.message") : t("filter.selectPropertyNo", { propertyNo: propertyNoLabel })}
             required
             disabled={isPropertyDropdownDisabled}
             isLoading={loadingPropertyOptions}
@@ -98,13 +100,13 @@ export const PropertyRangeFields = ({
         <div className={colClass}>
           <SearchSelectPaginated
             id="from-property-select"
-            label={t("filter.fromPropertyNo")}
+            label={t("filter.fromPropertyNo", { propertyNo: propertyNoLabel })}
             key={`from-prop-${filterValues.wardId}`}
             options={fromPropertyOptions}
             value={filterValues.fromPropertyNo}
             onChange={(_, val) => handleFromPropertyChange(val)}
             onInputFocus={handlePropertyDropdownFocus}
-            placeholder={loadingFromPropertyOptions ? t("loading.message") : t("filter.selectFromPropertyNo")}
+            placeholder={loadingFromPropertyOptions ? t("loading.message") : t("filter.selectFromPropertyNo", { propertyNo: propertyNoLabel })}
             required
             disabled={isPropertyDropdownDisabled}
             isLoading={loadingFromPropertyOptions ?? loadingPropertyOptions}
@@ -121,13 +123,13 @@ export const PropertyRangeFields = ({
         <div className={colClass}>
           <SearchSelectPaginated
             id="to-property-select"
-            label={t("filter.toPropertyNo")}
+            label={t("filter.toPropertyNo", { propertyNo: propertyNoLabel })}
             key={`to-prop-${filterValues.fromPropertyNo}`}
             options={toPropertyOptions}
             value={filterValues.toPropertyNo}
             onChange={(_, val) => handleToPropertyChange(val)}
             onInputFocus={handlePropertyDropdownFocus}
-            placeholder={loadingToPropertyOptions ? t("loading.message") : t("filter.selectToPropertyNo")}
+            placeholder={loadingToPropertyOptions ? t("loading.message") : t("filter.selectToPropertyNo", { propertyNo: propertyNoLabel })}
             required
             disabled={isPropertyDropdownDisabled || !filterValues.fromPropertyNo}
             isLoading={loadingToPropertyOptions}

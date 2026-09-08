@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import type { RateMasterClientProps } from "@/types/RVRateMaster";
 import { useRateMasterFilters } from "@/hooks/RVRateMaster/useRateMasterFilters";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { RateViewFilters, RateViewActions, RateViewGrid } from "./view";
 import { downloadDetailedRates } from "./view/rateDownloadHelpers";
 import { filterTableData, countConfiguredRates, buildCategoryColorMap, buildRateColumns } from "./view/rateViewHelpers";
@@ -35,6 +36,20 @@ export default function RateMasterView({
   const locale = useLocale();
   const t = useTranslations("ptis_RVRateMaster");
   const tCommon = useTranslations("common");
+
+  const rateSectionLabel = useAliasLabel("Rate_Section", t("aliasFallback.rateSection"));
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.assessment"));
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+  const taxZoneLabel = useAliasLabel("Tax Zone", t("aliasFallback.taxZone"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+
+  const aliasLabels = useMemo(() => ({
+    rateSection: rateSectionLabel,
+    assessment: assessmentLabel,
+    use: useLabel,
+    taxZone: taxZoneLabel,
+    typeOfUse: typeOfUseLabel,
+  }), [rateSectionLabel, assessmentLabel, useLabel, taxZoneLabel, typeOfUseLabel]);
   const pageNumber = Number(searchParams?.get("page")) || 1;
   const rawPageSize = Number(searchParams?.get("pageSize"));
   const pageSize = [50, 100, 150, 200, 250].includes(rawPageSize) ? rawPageSize : 50;
@@ -101,7 +116,7 @@ export default function RateMasterView({
   };
 
   const handleDownloadRates = async () => {
-    await downloadDetailedRates(selectedZone, zones, rateUnitPolicy?.value ?? "SqMeter", t, rateCategories, useGroups, isOpenPlot);
+    await downloadDetailedRates(selectedZone, zones, rateUnitPolicy?.value ?? "SqMeter", t, rateCategories, useGroups, isOpenPlot, aliasLabels);
   };
   const filteredData = useMemo(() =>
     filterTableData(rateMasterData, selectedZone, selectedYear, selectedUseGroup, isPaginationEnabled, isOpenPlot),
@@ -117,8 +132,8 @@ export default function RateMasterView({
   );
 
   const columns = useMemo(() =>
-    buildRateColumns(rateCategories, singleColorClassHeader, tCommon, t, rateUnitPolicy?.value ?? "SqMeter"),
-    [rateCategories, tCommon, t, rateUnitPolicy]
+    buildRateColumns(rateCategories, singleColorClassHeader, tCommon, t, rateUnitPolicy?.value ?? "SqMeter", aliasLabels),
+    [rateCategories, tCommon, t, rateUnitPolicy, aliasLabels]
   );
 
   const isDownloadDisabled = !selectedZone || selectedZone === 'ALL' ||

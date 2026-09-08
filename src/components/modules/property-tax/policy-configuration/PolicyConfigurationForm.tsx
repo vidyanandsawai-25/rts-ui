@@ -14,6 +14,7 @@ import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
 import { FormFieldsSection } from "./components/FormFieldsSection";
 import { StatusToggleSection } from "./components/StatusToggleSection";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import {
   validateValueByDataType,
   sanitizeValueByDataType,
@@ -46,6 +47,8 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
   const tCommon = useTranslations("common");
   const locale = useLocale();
 
+  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
+
   const [formData, setFormData] = useState<PolicyConfigurationFormModel>(
     () => prepareInitialData(initialData)
   );
@@ -63,7 +66,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       const e: Record<string, string> = {};
 
       if (!data.policyCode.trim()) e.policyCode = t("form.validation.policyCodeRequired");
-      if (!data.category.trim()) e.category = t("form.validation.categoryRequired");
+      if (!data.category.trim()) e.category = t("form.validation.categoryRequired", { category: categoryLabel });
       if (!data.displayName.trim()) e.displayName = t("form.validation.displayNameRequired");
       if (!data.description.trim()) e.description = t("form.validation.descriptionRequired");
       if (!data.policyValue.trim()) e.policyValue = t("form.validation.policyValueRequired");
@@ -82,7 +85,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
 
       return e;
     },
-    [t]
+    [t, categoryLabel]
   );
 
   const showError = (field: keyof PolicyConfigurationFormModel) =>
@@ -284,6 +287,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
           onBlur={handleBlur}
           onSelectBlur={handleSelectBlur}
           t={t}
+          categoryLabel={categoryLabel}
           isEdit={isEdit}
         />
 

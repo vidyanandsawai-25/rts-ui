@@ -7,10 +7,12 @@ import { deleteZoneAction, fetchWardsPagedAction } from "@/app/[locale]/property
 
 interface UseZoneListHandlersProps {
   zones: ZoneItem[];
+  zoneAlias?: string;
+  wardsAlias?: string;
   t: (key: string, values?: Record<string, unknown>) => string;
 }
 
-export function useZoneListHandlers({ zones, t }: UseZoneListHandlersProps) {
+export function useZoneListHandlers({ zones, zoneAlias, wardsAlias, t }: UseZoneListHandlersProps) {
   const { confirm } = useConfirm();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -23,9 +25,10 @@ export function useZoneListHandlers({ zones, t }: UseZoneListHandlersProps) {
   ) => {
     confirm({
       variant: "delete",
-      title: t("zoneList.deleteTitle"),
+      title: t("zoneList.deleteTitle", { zone: zoneAlias }),
       description: t("dialogs.deleteDescription", {
         name: description || zoneNo,
+        zone: zoneAlias,
       }),
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
@@ -41,7 +44,7 @@ export function useZoneListHandlers({ zones, t }: UseZoneListHandlersProps) {
           const result = await deleteZoneAction(zoneId);
 
           if (result.success) {
-            toast.success(t("messages.deleteSuccess", { name: formattedName }));
+            toast.success(t("messages.deleteSuccess", { name: formattedName, zone: zoneAlias }));
             router.refresh();
             return;
           }
@@ -52,23 +55,25 @@ export function useZoneListHandlers({ zones, t }: UseZoneListHandlersProps) {
             toast.error(t("messages.zoneHasWardsBriefError", {
               zoneNo: zoneNoFinal,
               description: descriptionFinal,
+              zone: zoneAlias,
+              wards: wardsAlias,
             }));
             return;
           }
 
           const errorMsg = result.error?.toLowerCase() || "";
           if (errorMsg.includes("rate") || errorMsg.includes("section") || errorMsg.includes("foreign key") || errorMsg.includes("in use")) {
-            toast.error(t("messages.zoneInUseError"));
+            toast.error(t("messages.zoneInUseError", { zone: zoneAlias }));
             return;
           }
 
-          toast.error(t("messages.zoneDeleteGenericError"));
+          toast.error(t("messages.zoneDeleteGenericError", { zone: zoneAlias }));
         } catch {
-          toast.error(t("messages.zoneDeleteGenericError"));
+          toast.error(t("messages.zoneDeleteGenericError", { zone: zoneAlias }));
         }
       },
     });
-  }, [confirm, zones, router, t]);
+  }, [confirm, zones, router, t, zoneAlias, wardsAlias]);
 
   const handlePageChange = useCallback(
     (page: number) => {

@@ -26,6 +26,7 @@ interface CopyRatesParams {
   getOptionLabel: (options: ISelectOption[], value: string) => string;
   getYearLabel: (value: string) => string;
   t: ReturnType<typeof import("next-intl").useTranslations>;
+  aliasLabels?: Record<string, string>;
 }
 
 export async function copyRatesFromUseGroup(params: CopyRatesParams & {
@@ -49,22 +50,23 @@ export async function copyRatesFromUseGroup(params: CopyRatesParams & {
     useGroupOptions,
     zoneOptions,
     t,
+    aliasLabels,
   } = params;
 
   if (!sourceValue) {
-    toast.error(t('messages.selectUseGroupCopy'));
+    toast.error(t('messages.selectUseGroupCopy', aliasLabels));
     return;
   }
   if (!selectedZone) {
-    toast.error(t('messages.selectRateSection'));
+    toast.error(t('messages.selectRateSection', aliasLabels));
     return;
   }
   if (!selectedUseGroup) {
-    toast.error(t('messages.selectUseGroup'));
+    toast.error(t('messages.selectUseGroup', aliasLabels));
     return;
   }
   if (!assessmentYear) {
-    toast.error(t('messages.selectAssessmentYearRangeFull'));
+    toast.error(t('messages.selectAssessmentYearRangeFull', aliasLabels));
     return;
   }
 
@@ -129,22 +131,23 @@ export async function copyRatesFromRateSection(params: CopyRatesParams & {
     useGroupOptions,
     zoneOptions,
     t,
+    aliasLabels,
   } = params;
 
   if (!selectedZone) {
-    toast.error(t('messages.selectRateSection'));
+    toast.error(t('messages.selectRateSection', aliasLabels));
     return;
   }
   if (!sourceValue) {
-    toast.error(t('messages.validationSelectRateSectionToCopy'));
+    toast.error(t('messages.validationSelectRateSectionToCopy', aliasLabels));
     return;
   }
   if (!selectedUseGroup) {
-    toast.error(t('messages.selectUseGroup'));
+    toast.error(t('messages.selectUseGroup', aliasLabels));
     return;
   }
   if (!assessmentYear) {
-    toast.error(t('messages.validationSelectAssessmentYear'));
+    toast.error(t('messages.validationSelectAssessmentYear', aliasLabels));
     return;
   }
   

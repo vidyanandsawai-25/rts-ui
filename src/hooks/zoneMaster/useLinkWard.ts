@@ -13,6 +13,9 @@ interface UseLinkWardProps {
   ssrAllZones: ZoneItem[];
   onWardsChanged?: () => void;
   onClose: () => void;
+  zoneAlias?: string;
+  wardAlias?: string;
+  wardsAlias?: string;
   t: (key: string, values?: Record<string, unknown>) => string;
 }
 
@@ -24,6 +27,9 @@ export function useLinkWard({
   ssrAllZones,
   onWardsChanged,
   onClose,
+  zoneAlias,
+  wardAlias,
+  wardsAlias,
   t,
 }: UseLinkWardProps) {
   const router = useRouter();
@@ -147,6 +153,7 @@ export function useLinkWard({
       toast.warning(
         t("wardMessages.wardAlreadyInCurrentZone", {
           wardNo,
+          ward: wardAlias,
           zoneLabel: zoneLabel || ""
         })
       );
@@ -162,7 +169,7 @@ export function useLinkWard({
       }
       return newChecked;
     });
-  }, [ssrSelectedWards, selectedZoneId, getZoneDisplayLabel, t]);
+  }, [ssrSelectedWards, selectedZoneId, getZoneDisplayLabel, wardAlias, t]);
 
   const handleSelectAllViewWards = useCallback((isChecked: boolean) => {
     setIsSelectAllActive(isChecked);
@@ -180,7 +187,7 @@ export function useLinkWard({
       try {
         const result = await getAllWardsForLinkAction(viewAllSearchTerm || undefined);
         if (!result.success || !result.data) {
-          toast.error(result.error || t("wardMessages.fetchError"));
+          toast.error(result.error || t("wardMessages.fetchError", { wards: wardsAlias }));
           return;
         }
         
@@ -192,6 +199,8 @@ export function useLinkWard({
           const zoneLabel = getZoneDisplayLabel(selectedZoneId);
           toast.info(
             t("wardMessages.allWardsAlreadyInZone", {
+              wards: wardsAlias,
+              zone: zoneAlias,
               zoneLabel: zoneLabel || ""
             })
           );
@@ -204,12 +213,13 @@ export function useLinkWard({
           if (linkResult.data?.failedCount && linkResult.data.failedCount > 0) {
             toast.warning(
               t("wardMessages.partialSuccess", {
+                ward: wardAlias,
                 success: linkResult.data.successCount,
                 failed: linkResult.data.failedCount,
               })
             );
           } else {
-            toast.success(t("wardMessages.updateSuccess"));
+            toast.success(t("wardMessages.updateSuccess", { wards: wardsAlias }));
           }
           if (onWardsChanged) onWardsChanged();
           startTransition(() => {
@@ -218,10 +228,10 @@ export function useLinkWard({
           setIsSelectAllActive(false);
           setCheckedAvailable(new Set());
         } else {
-          toast.error(linkResult.error || t("wardMessages.updateError"));
+          toast.error(linkResult.error || t("wardMessages.updateError", { wards: wardsAlias }));
         }
       } catch {
-        toast.error(t("wardMessages.updateError"));
+        toast.error(t("wardMessages.updateError", { wards: wardsAlias }));
       } finally {
         setLoading(false);
         setSelectAllLoading(false);
@@ -240,12 +250,13 @@ export function useLinkWard({
         if (result.data?.failedCount && result.data.failedCount > 0) {
           toast.warning(
             t("wardMessages.partialSuccess", {
+              ward: wardAlias,
               success: result.data.successCount,
               failed: result.data.failedCount,
             })
           );
         } else {
-          toast.success(t("wardMessages.updateSuccess"));
+          toast.success(t("wardMessages.updateSuccess", { wards: wardsAlias }));
         }
         if (onWardsChanged) onWardsChanged();
         startTransition(() => {
@@ -253,10 +264,10 @@ export function useLinkWard({
         });
         setCheckedAvailable(new Set());
       } else {
-        toast.error(result.error || t("wardMessages.updateError"));
+        toast.error(result.error || t("wardMessages.updateError", { wards: wardsAlias }));
       }
     } catch {
-      toast.error(t("wardMessages.updateError"));
+      toast.error(t("wardMessages.updateError", { wards: wardsAlias }));
     } finally {
       setLoading(false);
     }

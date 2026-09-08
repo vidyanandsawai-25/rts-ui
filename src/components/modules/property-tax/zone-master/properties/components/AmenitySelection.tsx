@@ -4,6 +4,7 @@ import { useMemo, useEffect } from "react";
 import { Input, Select, ValidationMessage } from "@/components/common";
 import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface AmenitySelectionProps {
   form: PartitionFormState;
@@ -12,7 +13,7 @@ interface AmenitySelectionProps {
   setErrors: React.Dispatch<React.SetStateAction<PartitionFormErrors>>;
   wingDetails: SocietyWingDetailItem[];
   calculateMaxAmenity: (wingName?: string | null) => number;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
 }
 
 export function AmenitySelection({
@@ -24,6 +25,8 @@ export function AmenitySelection({
   calculateMaxAmenity,
   t,
 }: AmenitySelectionProps) {
+  const wingAlias = useAliasLabel("Wing", t("defaults.wing"));
+
   // Wing options from society wing details
   const wingOptions = useMemo(() => {
     const options: { value: string; label: string }[] = [];
@@ -73,21 +76,21 @@ export function AmenitySelection({
     <div className="space-y-4">
       <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-800">
-          {t("partitionForm.amenity.description")}
+          {t("partitionForm.amenity.description", { wing: wingAlias })}
         </p>
       </div>
 
       {/* Wing Selection */}
       <div>
         <Select
-          label={t("partitionForm.amenity.selectWing")}
+          label={t("partitionForm.amenity.selectWing", { wing: wingAlias })}
           value={form.selectedWingForAmenity}
           onChange={(_, value) => {
             setForm({ ...form, selectedWingForAmenity: value, toAmenity: "" });
             setErrors({ ...errors, selectedWingForAmenity: undefined, toAmenity: undefined });
           }}
           options={wingOptions}
-          placeholder={t("partitionForm.amenity.placeholders.selectWing")}
+          placeholder={t("partitionForm.amenity.placeholders.selectWing", { wing: wingAlias })}
         />
         <ValidationMessage
           message={errors.selectedWingForAmenity}

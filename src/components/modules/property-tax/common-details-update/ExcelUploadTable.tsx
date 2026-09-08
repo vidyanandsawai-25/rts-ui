@@ -2,13 +2,15 @@ import { MasterTable, TruncatedText } from "@/components/common";
 import { DashboardCard } from "@/components/common/DashboardCard";
 import { ExcelValidationResponse } from "@/types/common-details-update/common-details-update.types";
 import { normalizeValidationPayload } from "@/hooks/commonDetailsUpdate/useExcelUpload";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface ExcelUploadTableProps {
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
   validationData?: ExcelValidationResponse["items"] | null;
 }
 
 export const ExcelUploadTable = ({ t, validationData: rawData }: ExcelUploadTableProps) => {
+  const propertyNoLabel = useAliasLabel("Property_No", t("aliasFallback.propertyNo"));
   // Normalize validationData input using shared helper
   const validationData = normalizeValidationPayload(rawData);
 
@@ -56,7 +58,7 @@ export const ExcelUploadTable = ({ t, validationData: rawData }: ExcelUploadTabl
 
     // 1. Combined Property No Column
     columns.push({
-      label: t("excelUpload.table.propertyNo") || "PropertyNo",
+      label: t("excelUpload.table.propertyNo", { propertyNo: propertyNoLabel }) || propertyNoLabel,
       key: "combinedPropertyNo",
       render: (_value: unknown, row?: Record<string, unknown>) => {
         const pNo = row?.PropertyNo ?? row?.propertyNo ?? row?.PropertyNumber ?? row?.propertyNumber;

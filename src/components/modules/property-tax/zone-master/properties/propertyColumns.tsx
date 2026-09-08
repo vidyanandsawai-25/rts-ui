@@ -13,12 +13,14 @@ interface PropertyTypeMap {
 }
 
 interface GetPropertyColumnsParams {
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number | Date>) => string;
   pageNumber: number;
   pageSize: number;
   wards: WardItem[];
   categoryMap: PropertyCategoryMap;
   propertyTypeMap: PropertyTypeMap;
+  propertyNoAlias?: string;
+  categoryAlias?: string;
 }
 
 export function getPropertyColumns({
@@ -28,6 +30,8 @@ export function getPropertyColumns({
   wards,
   categoryMap,
   propertyTypeMap,
+  propertyNoAlias,
+  categoryAlias,
 }: GetPropertyColumnsParams): Column<Record<string, unknown>>[] {
   return [
     {
@@ -39,7 +43,9 @@ export function getPropertyColumns({
     },
     {
       key: "propertyNo",
-      label: t("propertyList.columns.propertyNo"),
+      label: t("propertyList.columns.propertyNo", {
+        propertyNo: propertyNoAlias ?? "Property No",
+      }),
       width: "200px",
       render: (_: unknown, row: Record<string, unknown>) => {
         const ward = wards.find((w) => w.id === row.wardId);
@@ -53,7 +59,7 @@ export function getPropertyColumns({
     },
     {
       key: "categoryId",
-      label: t("propertyList.columns.category"),
+      label: t("propertyList.columns.category", { category: categoryAlias ?? "Category" }),
       width: "180px",
       render: (value: unknown) => {
         const categoryId = value as number | null;

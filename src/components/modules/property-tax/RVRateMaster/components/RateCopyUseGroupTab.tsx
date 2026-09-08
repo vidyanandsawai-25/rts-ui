@@ -4,6 +4,7 @@ import { Users, CheckCircle } from "lucide-react";
 import { SearchSelect } from "@/components/common/SearchSelect";
 import { Button } from "@/components/common/ActionButton";
 import { Label } from "@/components/common/label";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import type { ISelectOption } from "@/types/RVRateMaster";
 
 interface RateCopyUseGroupTabProps {
@@ -23,6 +24,9 @@ export function RateCopyUseGroupTab({
   onCopyRates,
   t,
 }: RateCopyUseGroupTabProps) {
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-2">
@@ -30,14 +34,14 @@ export function RateCopyUseGroupTab({
           <Users size={16} />
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-gray-800">{t('sections.copyRatesUseGroupTitle')}</h4>
+          <h4 className="text-sm font-semibold text-gray-800">{t('sections.copyRatesUseGroupTitle', { use: useLabel })}</h4>
         </div>
       </div>
 
       <div className="flex items-end gap-2">
         <div className="flex-auto">
           <Label htmlFor="source-use-group-select" className="text-xs font-medium text-gray-700 mb-1 block">
-            {t('sections.selectSourceUseGroup')}
+            {t('sections.selectSourceUseGroup', { use: useLabel })}
           </Label>
           <SearchSelect
             id="source-use-group-select"
@@ -46,7 +50,7 @@ export function RateCopyUseGroupTab({
             options={useGroupOptions.filter(
               (opt) => !selectedUseGroup || opt.value !== selectedUseGroup
             )}
-            placeholder={t('placeholders.selectUseGroup')}
+            placeholder={t('placeholders.selectUseGroup', { use: useLabel, typeOfUse: typeOfUseLabel })}
             value={sourceUseGroup}
             onChange={(_name, value) => setSourceUseGroup(value)}
             className="text-black"

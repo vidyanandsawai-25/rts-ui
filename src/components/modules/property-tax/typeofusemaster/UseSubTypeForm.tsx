@@ -15,6 +15,7 @@ import { DescriptionInput, SearchSequenceInput, CategorySelector } from './TypeF
 import { SubTypeStatusSection } from './SubTypeStatusSection';
 import { SubTypeFormHeader } from './SubTypeFormHeader';
 import { SubTypeFormFooter } from './SubTypeFormFooter';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 type FieldErrors = {
   typeId?: string;
@@ -28,6 +29,8 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEdit = Boolean(id);
+
+  const subTypeOfUseLabel = useAliasLabel("Sub_Type_Of_Use", t("aliasFallback.subTypeOfUse"));
 
   const queryTypeId = Number(searchParams.get("typeId") || 0);
 
@@ -178,8 +181,8 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
             showError={showError("description")}
             t={(key, values) => {
               // Map to appropriate translation keys for subtype
-              if (key === 'type.fields.description') return t('messages.subTypeNameLabel');
-              if (key === 'type.placeholders.description') return t('messages.subTypeNameLabel');
+              if (key === 'type.fields.description') return t('messages.subTypeNameLabel', { subTypeOfUse: subTypeOfUseLabel });
+              if (key === 'type.placeholders.description') return t('messages.subTypeNameLabel', { subTypeOfUse: subTypeOfUseLabel });
               return t(key, values);
             }}
           />

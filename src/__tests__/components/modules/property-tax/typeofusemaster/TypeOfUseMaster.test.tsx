@@ -58,8 +58,26 @@ vi.mock("@/app/[locale]/property-tax/typeofusemaster/actions", () => ({
 
 const mockMessages = {
   typeofusemaster: {
+    aliasFallback: {
+      entity: "Type of Use",
+      typeOfUse: "Type of Use",
+      subTypeOfUse: "Sub-Type of Use",
+      use: "Use",
+      category: "Category",
+    },
     title: "Type of Use Master",
     subtitle: "Use Group → Type → Sub-Type",
+    category: {
+      title: "TypeOfUse Category",
+      add: "Add Category",
+      addNew: "Add New Category",
+      edit: "Edit Category",
+      fields: {
+        categoryCode: "Category Code",
+        categoryName: "Category Name",
+        status: "Status",
+      },
+    },
     group: {
       allGroups: "All Groups",
       title: "Use Groups",

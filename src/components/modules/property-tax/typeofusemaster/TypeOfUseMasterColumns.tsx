@@ -13,7 +13,8 @@ export type SubTypeTableRow = UseSubType & { srNo: number } & Record<string, unk
  * @returns Array of column definitions for SubType table
  */
 export function getSubTypeColumns(
-  t: (key: string) => string
+  t: (key: string, values?: Record<string, string | number>) => string,
+  subTypeOfUseLabel: string = "Sub-Type"
 ): Column<SubTypeTableRow>[] {
   return [
     {
@@ -23,7 +24,7 @@ export function getSubTypeColumns(
     },
     {
       key: "description" as const,
-      label: t("table.columns.subTypeName"),
+      label: t("table.columns.subTypeName", { subTypeOfUse: subTypeOfUseLabel }),
       width: "25%",
       render: (v) => (v as string) || "—",
     },

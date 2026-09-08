@@ -14,7 +14,8 @@ interface FormFieldsSectionProps {
   onSelectChange: (e: React.ChangeEvent<HTMLSelectElement>, value: string) => void;
   onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSelectBlur: (e: React.FocusEvent<HTMLSelectElement>) => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
+  categoryLabel?: string;
   isEdit?: boolean;
 }
 
@@ -30,8 +31,10 @@ export function FormFieldsSection({
   onBlur,
   onSelectBlur,
   t,
+  categoryLabel,
   isEdit,
 }: FormFieldsSectionProps) {
+  const category = categoryLabel || t("aliasFallback.category");
   const readonlyInputClass = isEdit ? READONLY_INPUT_CLASS : undefined;
 
   const valuePlaceholder = formData.dataType
@@ -86,7 +89,7 @@ export function FormFieldsSection({
         <div>
           <Input
             name="category"
-            label={t("form.fields.category.label")}
+            label={t("form.fields.category.label", { category })}
             required
             value={formData.category}
             onChange={onChange}

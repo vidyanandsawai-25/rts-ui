@@ -8,6 +8,7 @@ import { CancelButton, SaveButton, ToggleSwitch, Input, ValidationMessage } from
 import { ZoneItem } from "@/types/zoneMaster.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { useCreateWard } from "@/hooks/zoneMaster/useCreateWard";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface Props {
   open: boolean;
@@ -19,6 +20,9 @@ interface Props {
 
 export default function CreateNewWard({ open, onClose, onSuccess, currentZone, existingWards = [] }: Props) {
   const t = useTranslations("zoneMaster");
+  const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+  const wardsAlias = useAliasLabel("Wards", t("defaults.wards"));
 
   const {
     bulkMode,
@@ -43,6 +47,9 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
     existingWards,
     onClose,
     onSuccess,
+    zoneAlias,
+    wardAlias,
+    wardsAlias,
     t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
   });
 
@@ -57,10 +64,10 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
           </div>
           <div>
             <div className="text-lg font-bold text-slate-800">
-              {t("wardList.createWard")}
+              {t("wardList.createWard", { ward: wardAlias })}
             </div>
             <div className="text-xs text-slate-500 font-medium">
-              {t("wardList.createWardSubtitle")}
+              {t("wardList.createWardSubtitle", { ward: wardAlias })}
             </div>
           </div>
         </div>
@@ -84,7 +91,7 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
               {t("wardBulk.title")}
             </div>
             <div className="text-xs text-slate-500">
-              {t("wardBulk.subtitle")}
+              {t("wardBulk.subtitle", { wards: wardsAlias })}
             </div>
           </div>
           <ToggleSwitch
@@ -122,7 +129,7 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="text-sm font-medium text-slate-700 mb-1">
-                  {t("wardBulk.rangeFrom")}
+                  {t("wardBulk.rangeFrom", { ward: wardAlias })}
                 </div>
                 <Input
                   placeholder={t("wardBulk.placeholders.rangeFrom")}
@@ -139,7 +146,7 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
               </div>
               <div>
                 <div className="text-sm font-medium text-slate-700 mb-1">
-                  {t("wardBulk.rangeTo")}
+                  {t("wardBulk.rangeTo", { ward: wardAlias })}
                 </div>
                 <Input
                   placeholder={t("wardBulk.placeholders.rangeTo")}
@@ -158,6 +165,7 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
 
             <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-700">
               {t("wardBulk.helperRangeInfo", {
+                wards: wardsAlias,
                 example: `${bulkPrefix || "prefix"}${bulkFrom || "40"} to ${bulkPrefix || "prefix"}${bulkTo || "44"}`
               })}
             </div>

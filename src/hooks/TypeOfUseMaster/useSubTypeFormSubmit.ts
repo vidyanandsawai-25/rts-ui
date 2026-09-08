@@ -2,6 +2,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { UseSubType } from '@/types/typeOfUse.types';
 import { createSubType, updateSubType } from '@/app/[locale]/property-tax/typeofusemaster/actions';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
 
@@ -28,6 +29,8 @@ export function useSubTypeFormSubmit({
 }: UseSubTypeFormSubmitProps) {
   const router = useRouter();
 
+  const subTypeOfUseLabel = useAliasLabel("Sub_Type_Of_Use", t("aliasFallback.subTypeOfUse"));
+
   const handleSubmit = async () => {
     if (isEdit) {
       const result = await updateSubType({
@@ -49,16 +52,16 @@ export function useSubTypeFormSubmit({
         ) {
           setErrors((prev) => ({
             ...prev,
-            description: t('messages.duplicateSubTypeName'),
+            description: t('messages.duplicateSubTypeName', { subTypeOfUse: subTypeOfUseLabel }),
           }));
           setTouched((prev) => ({ ...prev, description: true }));
         } else {
-          toast.error(errorMsg || t('messages.updateSubTypeFailed'));
+          toast.error(errorMsg || t('messages.updateSubTypeFailed', { subTypeOfUse: subTypeOfUseLabel }));
         }
         return;
       }
 
-      toast.success(t('messages.subTypeUpdated'));
+      toast.success(t('messages.subTypeUpdated', { subTypeOfUse: subTypeOfUseLabel }));
     } else {
       const result = await createSubType({
         typeId: Number(formData.typeOfUseId),
@@ -78,16 +81,16 @@ export function useSubTypeFormSubmit({
         ) {
           setErrors((prev) => ({
             ...prev,
-            description: t('messages.duplicateSubTypeName'),
+            description: t('messages.duplicateSubTypeName', { subTypeOfUse: subTypeOfUseLabel }),
           }));
           setTouched((prev) => ({ ...prev, description: true }));
         } else {
-          toast.error(errorMsg || t('messages.createSubTypeFailed'));
+          toast.error(errorMsg || t('messages.createSubTypeFailed', { subTypeOfUse: subTypeOfUseLabel }));
         }
         return;
       }
 
-      toast.success(t('messages.subTypeCreated'));
+      toast.success(t('messages.subTypeCreated', { subTypeOfUse: subTypeOfUseLabel }));
     }
 
     router.back();
