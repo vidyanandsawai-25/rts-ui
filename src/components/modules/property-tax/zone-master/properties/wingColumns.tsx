@@ -17,19 +17,22 @@ export interface WingSummary {
 }
 
 interface GetWingColumnsParams {
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   onEditWing: (row: WingSummary) => void;
   onUpdateStructure: (row: WingSummary) => void;
+  wingAlias?: string;
 }
 
 export function getWingColumns({
   t,
   onEditWing,
   onUpdateStructure,
+  wingAlias,
 }: GetWingColumnsParams): Column<WingSummary & Record<string, unknown>>[] {
+  const wing = wingAlias ?? "Wing";
   return [
     {
-      label: t("partitionForm.wing.table.wingName"),
+      label: t("partitionForm.wing.table.wingName", { wing }),
       key: "wingName",
       render: (_value, row) => (
         <div className="flex items-center gap-2">
@@ -79,7 +82,7 @@ export function getWingColumns({
             <IconOnlyActionButton
               icon={PenLine}
               onClick={() => onEditWing(row)}
-              aria-label={t("partitionForm.wing.table.editWingName")}
+              aria-label={t("partitionForm.wing.table.editWingName", { wing })}
               variant="ghost"
               size="sm"
               disabled={isWingIdMissing}
@@ -93,7 +96,7 @@ export function getWingColumns({
             <IconOnlyActionButton
               icon={Building2}
               onClick={() => onUpdateStructure(row)}
-              aria-label={t("partitionForm.wing.table.updateWing")}
+              aria-label={t("partitionForm.wing.table.updateWing", { wing })}
               variant="ghost"
               size="sm"
               disabled={isWingIdMissing}

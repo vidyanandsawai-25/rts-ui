@@ -8,6 +8,7 @@ import { CancelButton, SaveButton } from "@/components/common";
 import { WardItem } from "@/types/wardMaster.types";
 import { WardFormFields } from "./WardFormFields";
 import { useWardFormLogic } from "@/hooks/zoneMaster/useWardFormLogic";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 // ============================================
 // WardForm - Edit Mode Drawer
@@ -26,6 +27,7 @@ interface EditModeProps {
 export default function WardForm({ open, onClose, onSuccess, wardId, wards = [], initialData }: EditModeProps) {
   const router = useRouter();
   const t = useTranslations("zoneMaster");
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
 
   const {
     form,
@@ -41,6 +43,7 @@ export default function WardForm({ open, onClose, onSuccess, wardId, wards = [],
     initialData,
     onClose,
     onSuccess,
+    wardAlias,
     t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
   });
 
@@ -64,9 +67,9 @@ export default function WardForm({ open, onClose, onSuccess, wardId, wards = [],
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {form.wardNo ? t("wardForm.editTitleWithWardNo", { wardNo: form.wardNo }) : t("wardForm.editTitle")}
+              {form.wardNo ? t("wardForm.editTitleWithWardNo", { wardNo: form.wardNo, ward: wardAlias }) : t("wardForm.editTitle", { ward: wardAlias })}
             </div>
-            <div className="text-sm text-slate-500">{t("wardForm.editDescription")}</div>
+            <div className="text-sm text-slate-500">{t("wardForm.editDescription", { ward: wardAlias })}</div>
           </div>
         </div>
       }

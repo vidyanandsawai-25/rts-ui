@@ -7,6 +7,7 @@ import { Modal } from "@/components/common/Modal";
 import { BuildingStructureItem } from "@/types/zone-master/properties/building-structure.types";
 import { Button } from "@/components/common";
 import { useBuildingGeneration } from "@/hooks/zoneMaster/useBuildingGeneration";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface BuildingPreviewProps {
   open: boolean;
@@ -42,6 +43,18 @@ export function BuildingPreviewModal({
   onGenerateSuccess,
 }: BuildingPreviewProps) {
   const t = useTranslations("zoneMaster");
+  const propertyNoAlias = useAliasLabel(
+    "Property_No",
+    useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo")))
+  );
+  const partitionAlias = useAliasLabel("Partition", t("defaults.partition"));
+  const wingAlias = useAliasLabel("Wing", t("defaults.wing"));
+  const floorAlias = useAliasLabel("Floor", t("defaults.floor"));
+  const floorsAlias = useAliasLabel("Floors", t("defaults.floors"));
+  const flatNoShopNoAlias = useAliasLabel(
+    "Flat_No_Shop_No",
+    useAliasLabel("Flat No/Shop No", t("defaults.flatNoShopNo"))
+  );
 
   const { generating, handleGenerate, canGenerate } = useBuildingGeneration({
     buildingData,
@@ -162,8 +175,8 @@ export function BuildingPreviewModal({
     <Modal
       open={open}
       onClose={handleClose}
-      title={t("partitionForm.wing.preview.title")}
-      subtitle={t("partitionForm.wing.preview.subtitle")}
+      title={t("partitionForm.wing.preview.title", { wing: wingAlias, wingLetter })}
+      subtitle={t("partitionForm.wing.preview.subtitle", { partition: partitionAlias })}
       count={organizedData.totalUnits}
       maxWidth="2xl"
       footer={
@@ -221,7 +234,7 @@ export function BuildingPreviewModal({
               <Building2 className="w-[18px] h-[18px] text-blue-600 shrink-0" />
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-none">
-                  {t("partitionForm.wing.preview.wing")}
+                  {t("partitionForm.wing.preview.wing", { wing: wingAlias })}
                 </p>
                 <p className="text-[15px] font-bold text-slate-900 leading-tight mt-0.5">{wingLetter}</p>
               </div>
@@ -231,7 +244,7 @@ export function BuildingPreviewModal({
               <Layers className="w-[18px] h-[18px] text-emerald-600 shrink-0" />
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-none">
-                  {t("partitionForm.wing.preview.floors")}
+                  {t("partitionForm.wing.preview.floors", { floors: floorsAlias })}
                 </p>
                 <p className="text-[15px] font-bold text-slate-900 leading-tight mt-0.5">
                   {totalFloors}
@@ -246,7 +259,7 @@ export function BuildingPreviewModal({
               <Home className="w-[18px] h-[18px] text-violet-600 shrink-0" />
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-none">
-                  {t("partitionForm.wing.preview.flatsPerFloor")}
+                  {t("partitionForm.wing.preview.flatsPerFloor", { flatNoShopNo: flatNoShopNoAlias, floor: floorAlias })}
                 </p>
                 <p className="text-[15px] font-bold text-slate-900 leading-tight mt-0.5">
                   {organizedData.flatsPerFloor}
@@ -269,7 +282,7 @@ export function BuildingPreviewModal({
             {propertyNo && (
               <div className="flex items-center gap-2 text-[11px] text-slate-600 bg-slate-50 border border-slate-200 rounded-md py-1.5 px-3">
                 <span className="text-slate-500 font-semibold">
-                  {t("partitionForm.wing.preview.propertyNo")}:
+                  {propertyNoAlias}:
                 </span>
                 <span className="font-semibold text-slate-800">{propertyNo}</span>
               </div>
@@ -288,7 +301,7 @@ export function BuildingPreviewModal({
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 rounded-sm bg-amber-50 border border-amber-200" />
-                  <span>{t("partitionForm.wing.preview.topFloor")}</span>
+                  <span>{t("partitionForm.wing.preview.topFloor", { floor: floorAlias })}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 rounded-sm bg-emerald-50 border border-emerald-200" />
@@ -298,7 +311,7 @@ export function BuildingPreviewModal({
                   <span className="px-1 py-px rounded bg-amber-100 border border-amber-200 text-[10px] text-slate-700 font-medium">
                     {wingLetter}1
                   </span>
-                  <span>{t("partitionForm.wing.preview.partitionId")}</span>
+                  <span>{t("partitionForm.wing.preview.partitionId", { partition: partitionAlias })}</span>
                 </div>
               </div>
             </div>
@@ -335,7 +348,7 @@ export function BuildingPreviewModal({
                   <div className="bg-slate-700 flex items-center justify-center py-1">
                     <Building2 className="w-3 h-3 text-blue-300 mr-1" />
                     <span className="text-white text-[10px] font-bold tracking-widest uppercase">
-                      {t("partitionForm.wing.preview.wingLabel")} {wingLetter}
+                      {t("partitionForm.wing.preview.wingLabel", { wing: wingAlias })} {wingLetter}
                     </span>
                   </div>
                 </div>
@@ -363,7 +376,7 @@ export function BuildingPreviewModal({
                                 }`}
                             >
                               <span>
-                                {isGround ? `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}` : `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}`}
+                                {isGround ? `${t("partitionForm.wing.preview.floorLabel", { floor: floorAlias })}${floor.floorNo}` : `${t("partitionForm.wing.preview.floorLabel", { floor: floorAlias })}${floor.floorNo}`}
                               </span>
                               {isTop && (
                                 <span className="text-[8px] bg-amber-200 text-amber-800 rounded px-1 py-px">
@@ -459,7 +472,7 @@ export function BuildingPreviewModal({
                   <Grid3x3 className="w-4 h-4 text-blue-600 shrink-0" />
                   <div>
                     <span className="block text-[10px] font-semibold text-slate-500 leading-none">
-                      {t("partitionForm.wing.preview.flatRange")}
+                      {t("partitionForm.wing.preview.flatRange", { flatNoShopNo: flatNoShopNoAlias })}
                     </span>
                     <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
                       {organizedData.flatStart} – {organizedData.flatEnd}

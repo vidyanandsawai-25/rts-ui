@@ -194,7 +194,7 @@ describe("WardList", () => {
       />
     );
 
-    expect(screen.getByText("wardList.selectZonePrompt")).toBeInTheDocument();
+    expect(screen.getByText(/wardList\.selectZonePrompt/)).toBeInTheDocument();
   });
 
   it("renders link ward button", () => {

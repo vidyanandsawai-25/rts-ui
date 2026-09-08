@@ -51,6 +51,39 @@ describe("propertyColumns", () => {
     expect(columns).toHaveLength(4);
   });
 
+  it("should bind propertyNo alias to column label when provided", () => {
+    const tWithParams = vi.fn((key: string, values?: Record<string, unknown>) => {
+      if (key === "propertyList.columns.propertyNo" && values?.propertyNo) {
+        return `Custom (${values.propertyNo})`;
+      }
+      return key;
+    });
+
+    const columns = getPropertyColumns({
+      ...params,
+      t: tWithParams,
+      propertyNoAlias: "Holding No",
+    });
+    const propertyNoColumn = columns.find((c) => c.key === "propertyNo");
+    expect(propertyNoColumn?.label).toBe("Custom (Holding No)");
+  });
+
+  it("should fall back to default Property No label when alias is not provided", () => {
+    const tWithParams = vi.fn((key: string, values?: Record<string, unknown>) => {
+      if (key === "propertyList.columns.propertyNo") {
+        return values?.propertyNo as string;
+      }
+      return key;
+    });
+
+    const columns = getPropertyColumns({
+      ...params,
+      t: tWithParams,
+    });
+    const propertyNoColumn = columns.find((c) => c.key === "propertyNo");
+    expect(propertyNoColumn?.label).toBe("Property No");
+  });
+
   it("should correctly render serial number", () => {
     const columns = getPropertyColumns(params);
     const srNoColumn = columns.find((c) => c.key === "srNo");

@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { Floor } from "@/types/floor.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface UsePartitionFormValidationProps {
   selectedProperty: ZonePropertyItem | null;
@@ -16,6 +17,12 @@ export function usePartitionFormValidation({
   floors,
 }: UsePartitionFormValidationProps) {
   const t = useTranslations("zoneMaster");
+  const wingAlias = useAliasLabel("Wing", t("defaults.wing"));
+  const floorAlias = useAliasLabel("Floor", t("defaults.floor"));
+  const flatNoShopNoAlias = useAliasLabel(
+    "Flat_No_Shop_No",
+    useAliasLabel("Flat No/Shop No", t("defaults.flatNoShopNo"))
+  );
 
   // Calculate max partition number for the selected property
   const calculateMaxPartition = useCallback((): number => {
@@ -73,19 +80,19 @@ export function usePartitionFormValidation({
     if (data.partitionType === "wing") {
       // Validate wing-specific fields
       if (!data.wingLetter?.trim()) {
-        newErrors.wingLetter = t("partitionForm.validation.wingLetterRequired");
+        newErrors.wingLetter = t("partitionForm.validation.wingLetterRequired", { wing: wingAlias });
       }
       if (!data.fromFloor?.trim()) {
-        newErrors.fromFloor = t("partitionForm.validation.fromFloorRequired");
+        newErrors.fromFloor = t("partitionForm.validation.fromFloorRequired", { floor: floorAlias });
       }
       if (!data.toFloor?.trim()) {
-        newErrors.toFloor = t("partitionForm.validation.toFloorRequired");
+        newErrors.toFloor = t("partitionForm.validation.toFloorRequired", { floor: floorAlias });
       }
       if (!data.noOfFlatOnOneFloor?.trim()) {
-        newErrors.noOfFlatOnOneFloor = t("partitionForm.validation.noOfFlatOnOneFloorRequired");
+        newErrors.noOfFlatOnOneFloor = t("partitionForm.validation.noOfFlatOnOneFloorRequired", { flatNoShopNo: flatNoShopNoAlias, floor: floorAlias });
       }
       if (!data.flatStart?.trim()) {
-        newErrors.flatStart = t("partitionForm.validation.flatStartRequired");
+        newErrors.flatStart = t("partitionForm.validation.flatStartRequired", { flatNoShopNo: flatNoShopNoAlias });
       }
       if (!data.incrementedBy?.trim()) {
         newErrors.incrementedBy = t("partitionForm.validation.incrementedByRequired");
@@ -102,7 +109,7 @@ export function usePartitionFormValidation({
         const toFloorIndex = floors.findIndex(f => f.id === toFloorId);
         
         if (fromFloorIndex !== -1 && toFloorIndex !== -1 && toFloorIndex < fromFloorIndex) {
-          newErrors.toFloor = t("partitionForm.validation.toFloorMustBeGreaterOrEqual");
+          newErrors.toFloor = t("partitionForm.validation.toFloorMustBeGreaterOrEqual", { floor: floorAlias });
         }
       }
       
@@ -230,7 +237,7 @@ export function usePartitionFormValidation({
       valid: Object.keys(newErrors).length === 0,
       errors: newErrors,
     };
-  }, [selectedProperty, allProperties, floors, t]);
+  }, [selectedProperty, allProperties, floors, t, wingAlias, floorAlias, flatNoShopNoAlias]);
 
   return {
     calculateMaxPartition,

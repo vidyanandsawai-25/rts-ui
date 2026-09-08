@@ -6,6 +6,7 @@ import type { Column } from "@/components/common";
 import { IconOnlyActionButton } from "@/components/common/ActionButtons";
 import { Checkbox } from "@/components/common/checkbox";
 import type { SocietyAmenityDetailItem } from "@/types/zone-master/properties/society-amenity-details.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 type TableRow = SocietyAmenityDetailItem & Record<string, unknown>;
 
@@ -19,7 +20,7 @@ interface PropertyAmenityTableProps {
   toggleSelectAll: () => void;
   toggleRow: (id: number) => void;
   onSingleDelete: (item: SocietyAmenityDetailItem) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number | Date>) => string;
 }
 
 export function PropertyAmenityTable({
@@ -34,6 +35,11 @@ export function PropertyAmenityTable({
   onSingleDelete,
   t,
 }: PropertyAmenityTableProps) {
+  const propertyNoAlias = useAliasLabel(
+    "Property_No",
+    useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo")))
+  );
+
   const columns: Column<TableRow>[] = [
     {
       key: "propertyId",
@@ -58,7 +64,7 @@ export function PropertyAmenityTable({
     },
     {
       key: "propertyIdentifier",
-      label: t("createProperty.propertyNoLabel"),
+      label: t("createProperty.propertyNoLabel", { propertyNo: propertyNoAlias }),
       render: (_value, row) => {
         const item = row as SocietyAmenityDetailItem;
         return (

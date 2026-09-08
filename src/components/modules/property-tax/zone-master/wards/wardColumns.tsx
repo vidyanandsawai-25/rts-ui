@@ -5,15 +5,17 @@ import { WardItem } from "@/types/wardMaster.types";
 import { StatusBadge } from "@/components/common";
 
 interface GetWardColumnsParams {
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, unknown>) => string;
   pageNumber: number;
   pageSize: number;
+  wardAlias?: string;
 }
 
 export function getWardColumns({
   t,
   pageNumber,
   pageSize,
+  wardAlias,
 }: GetWardColumnsParams): Column<Record<string, unknown>>[] {
   return [
     {
@@ -23,7 +25,7 @@ export function getWardColumns({
     },
     {
       key: "wardNo",
-      label: t("wardList.columns.wardNo"),
+      label: t("wardList.columns.wardNo", { ward: wardAlias }),
       render: (_, row) => (row as unknown as WardItem).wardNo,
     },
     {

@@ -22,6 +22,8 @@ interface BuildDirectPropertyDeleteColumnsArgs {
   ) => () => void;
   tableData: DirectPropertyDeleteRow[];
   t: (key: string, params?: Record<string, string | number | Date>) => string;
+  propertyNoAlias?: string;
+  categoryAlias?: string;
 }
 
 export function buildDirectPropertyDeleteColumns({
@@ -37,6 +39,8 @@ export function buildDirectPropertyDeleteColumns({
   createDeleteHandler,
   tableData,
   t,
+  propertyNoAlias,
+  categoryAlias,
 }: BuildDirectPropertyDeleteColumnsArgs): Column<
   DirectPropertyDeleteRow & Record<string, unknown>
 >[] {
@@ -65,7 +69,9 @@ export function buildDirectPropertyDeleteColumns({
     },
     {
       key: "propertyIdentifier",
-      label: t("createProperty.propertyNoLabel"),
+      label: t("createProperty.propertyNoLabel", {
+        propertyNo: propertyNoAlias ?? "Property No",
+      }),
       render: (_value, currentRow) => {
         const item = currentRow as DirectPropertyDeleteRow;
         return (
@@ -79,7 +85,7 @@ export function buildDirectPropertyDeleteColumns({
     },
     {
       key: "categoryName",
-      label: t("createProperty.category"),
+      label: t("createProperty.category", { category: categoryAlias ?? "Category" }),
       render: (value) =>
         value && value !== "-" ? (
           <StatusBadge label={value as string} variant="info" />

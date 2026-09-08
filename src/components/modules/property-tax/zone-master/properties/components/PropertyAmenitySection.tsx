@@ -10,6 +10,7 @@ import {
 } from "@/components/common";
 import { Button } from "@/components/common/ActionButton";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 import {
   usePropertyAmenityData,
@@ -32,6 +33,8 @@ function PropertyAmenitySectionInner({
   directDeleteFallback,
 }: PropertyAmenitySectionProps) {
   const t = useTranslations("zoneMaster");
+  const wingAlias = useAliasLabel("Wing", t("defaults.wing"));
+  const wingsAlias = useAliasLabel("Wings", t("defaults.wings"));
 
   // Data fetching hook
   const {
@@ -77,14 +80,14 @@ function PropertyAmenitySectionInner({
       {/* Wings section header */}
       <div className="flex items-center gap-2">
         <Building2 className="w-4 h-4 text-blue-600" />
-        <h4 className="text-sm font-semibold text-gray-700">{t("createProperty.wings")}</h4>
+        <h4 className="text-sm font-semibold text-gray-700">{t("createProperty.wings", { wings: wingsAlias })}</h4>
       </div>
 
       <div className="p-3 rounded-lg border border-blue-100 space-y-4">
         <div className="flex items-center gap-2">
           <Info className="w-4 h-4 text-blue-600" />
           <span className="text-sm font-semibold text-gray-700">
-            {t("createProperty.wingsAssociated")}
+            {t("createProperty.wingsAssociated", { wings: wingsAlias })}
           </span>
         </div>
 
@@ -97,13 +100,13 @@ function PropertyAmenitySectionInner({
             name="wingSelect"
             options={wingOptions}
             value={selectedWingId}
-            placeholder={t("createProperty.selectAWing")}
+            placeholder={t("createProperty.selectAWing", { wing: wingAlias })}
             onChange={(_, value) => {
               setSelectedWingId(value);
               setIsAmenity(false);
             }}
             isLoading={wingsLoading}
-            noOptionsPlaceholder={t("createProperty.noWingsAvailable")}
+            noOptionsPlaceholder={t("createProperty.noWingsAvailable", { wings: wingsAlias })}
           />
         )}
 

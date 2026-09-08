@@ -179,7 +179,7 @@ describe("useZoneListHandlers", () => {
     });
 
     // Verify confirm was called (through the mock)
-    expect(mockT).toHaveBeenCalledWith("zoneList.deleteTitle");
+    expect(mockT).toHaveBeenCalledWith("zoneList.deleteTitle", expect.anything());
   });
 
   it("should preserve existing search params during navigation", () => {

@@ -6,6 +6,7 @@ import type { Column } from "@/components/common";
 import type { DirectPropertyDeleteRow } from "@/types/zoneMaster.types";
 import { useDirectPropertyDelete } from "./hooks/useDirectPropertyDelete";
 import { buildDirectPropertyDeleteColumns } from "./directPropertyDeleteColumns";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface DirectPropertyDeleteSectionProps {
   propertyId: string;
@@ -30,6 +31,12 @@ function DirectPropertyDeleteSectionInner({
   onDeleted,
   t,
 }: DirectPropertyDeleteSectionProps) {
+  const propertyNoAlias = useAliasLabel(
+    "Property_No",
+    useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo")))
+  );
+  const categoryAlias = useAliasLabel("Category", t("defaults.category"));
+
   const hasSubRows = !!subRows && subRows.length > 0;
 
   const mainRow: DirectPropertyDeleteRow = {
@@ -66,6 +73,8 @@ function DirectPropertyDeleteSectionInner({
     createDeleteHandler,
     tableData,
     t,
+    propertyNoAlias,
+    categoryAlias,
   });
 
   return (

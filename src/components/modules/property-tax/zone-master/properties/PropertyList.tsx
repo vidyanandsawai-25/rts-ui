@@ -11,6 +11,7 @@ import { WardItem } from "@/types/wardMaster.types";
 import { usePropertyListHandlers } from "@/hooks/zoneMaster/usePropertyListHandlers";
 import { getPropertyColumns } from "./propertyColumns";
 import { DeleteLabelButton } from "@/components/common/ActionButtons";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface PropertyCategoryMap {
     [key: number]: string;
@@ -53,6 +54,15 @@ export default function PropertyList({
     const searchParams = useSearchParams();
     const t = useTranslations("zoneMaster");
     const tCommon = useTranslations("common");
+
+    const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
+    const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+    const propertyNoAlias = useAliasLabel(
+        "Property_No",
+        useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo")))
+    );
+    const partitionAlias = useAliasLabel("Partition", t("defaults.partition"));
+    const categoryAlias = useAliasLabel("Category", t("defaults.category"));
 
     const [pendingAction, setPendingAction] = useState<
         "createProperty" | "createPartition" | "deleteProperty" | null
@@ -99,8 +109,10 @@ export default function PropertyList({
                 wards,
                 categoryMap,
                 propertyTypeMap,
+                propertyNoAlias,
+                categoryAlias,
             }),
-        [t, pageNumber, pageSize, wards, categoryMap, propertyTypeMap]
+        [t, pageNumber, pageSize, wards, categoryMap, propertyTypeMap, propertyNoAlias, categoryAlias]
     );
 
     const handleCreateProperty = useCallback(() => {
@@ -142,13 +154,17 @@ export default function PropertyList({
                                 {t("propertyList.dependencyFlow")}
                             </span>
                             <p className="text-xs text-blue-600 mt-0.5">
-                                {t("propertyList.dependencyPath")}
+                                {t("propertyList.dependencyPath", {
+                                    zone: zoneAlias,
+                                    ward: wardAlias,
+                                    partition: partitionAlias,
+                                })}
                             </p>
                         </div>
                     </div>
                     {selectedWardId && (
                         <StatusBadge
-                            label={wardOptions.find(w => w.value === String(selectedWardId))?.label || `${t("propertyList.ward")} ${selectedWardId}`}
+                            label={wardOptions.find(w => w.value === String(selectedWardId))?.label || `${wardAlias} ${selectedWardId}`}
                             variant="pending"
                         />
                     )}
@@ -158,11 +174,11 @@ export default function PropertyList({
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <SearchSelect
-                            label={t("propertyList.selectWard")}
+                            label={t("propertyList.selectWard", { ward: wardAlias })}
                             options={wardOptions}
                             value={selectedWardId ? String(selectedWardId) : ""}
                             onChange={(_name, value) => handleWardChange(value)}
-                            placeholder={t("propertyList.selectWardPlaceholder")}
+                            placeholder={t("propertyList.selectWardPlaceholder", { ward: wardAlias })}
                             disabled={wards.length === 0}
                         />
                     </div>
@@ -172,7 +188,10 @@ export default function PropertyList({
                         </Label>
                         <SearchInput
                             className="w-full"
-                            placeholder={t("propertyList.searchPlaceholder")}
+                            placeholder={t("propertyList.searchPlaceholder", {
+                                propertyNo: propertyNoAlias,
+                                partition: partitionAlias,
+                            })}
                             value={localSearch}
                             onChange={handleSearchChange}
                         />
@@ -188,7 +207,9 @@ export default function PropertyList({
                                 {t("propertyList.title")}
                             </h3>
                             <p className="text-xs text-gray-500">
-                                {t("propertyList.selectWardHint")}
+                                {t("propertyList.selectWardHint", {
+                                    ward: wardAlias,
+                                })}
                             </p>
                         </div>
                     </div>
@@ -203,7 +224,7 @@ export default function PropertyList({
                         />
                         <AddButton
                             size="sm"
-                            label={t("propertyList.createPartition")}
+                            label={t("propertyList.createPartition", { partition: partitionAlias })}
                             onClick={handleCreatePartition}
                             disabled={selectedWardId === null || pendingAction !== null}
                             isLoading={pendingAction === "createPartition"}
@@ -223,7 +244,9 @@ export default function PropertyList({
             <div className="flex-1 px-4 pb-4">
                 {selectedWardId === null ? (
                     <div className="flex items-center justify-center h-full text-gray-500">
-                        {t("propertyList.selectWardPrompt")}
+                        {t("propertyList.selectWardPrompt", {
+                            ward: wardAlias,
+                        })}
                     </div>
                 ) : (
                     <MasterTable

@@ -2,6 +2,7 @@
 
 import { Select, ValidationMessage } from "@/components/common";
 import { Option } from "@/components/common";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 export interface SelectedPropertyHeaderInfo {
   id?: number;
@@ -20,7 +21,7 @@ interface PropertySelectionSectionProps {
 
   error?: string;
 
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
 
   isApartmentCategory: boolean;
 
@@ -44,18 +45,24 @@ export function PropertySelectionSection({
   value,
   hidePropertyInfo = false,
 }: PropertySelectionSectionProps) {
+  const categoryAlias = useAliasLabel("Category", t("defaults.category"));
+  const propertyNoAlias = useAliasLabel(
+    "Property_No",
+    useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo")))
+  );
+
   // Use explicit value prop if provided, otherwise try to get from selectedProperty
   const selectValue = value ?? (selectedProperty ? String(selectedProperty.id ?? selectedProperty.propertyId ?? "") : "");
 
   return (
     <div className="space-y-2">
       <Select
-        label={label || t("partitionForm.property")}
+        label={label || t("defaults.property")}
         options={propertyOptions}
         value={selectValue}
         onChange={onPropertyChange}
         placeholder={
-          placeholder || t("partitionForm.selectProperty")
+          placeholder || t("partitionForm.placeholders.selectMainProperty")
         }
         selectSize="md"
         disabled={disabled}
@@ -73,7 +80,7 @@ export function PropertySelectionSection({
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-gray-600">
-                {t("partitionForm.propertyNumber")}:
+                {propertyNoAlias}:
               </span>
 
               <span className="ml-2 font-semibold text-blue-900">
@@ -83,13 +90,13 @@ export function PropertySelectionSection({
 
             <div>
               <span className="text-gray-600">
-                {t("partitionForm.category")}:
+                {t("createProperty.category", { category: categoryAlias })}:
               </span>
 
               <span className="ml-2 font-semibold text-blue-900">
                 {isApartmentCategory
                   ? t("partitionForm.apartment")
-                  : t("partitionForm.nonApartment")}
+                  : t("partitionForm.nonApartment.label")}
               </span>
             </div>
           </div>

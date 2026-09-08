@@ -9,6 +9,7 @@ import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton, SearchSelect, Tabs, ValidationMessage } from "@/components/common";
 import { Column } from "@/components/common/MasterTable";
 import { PropertyPartitionFormProps } from "@/types/zone-master/properties/partition-form.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { BuildingPreviewModal } from "./BuildingPreviewModal";
 import { getWingColumns, WingSummary } from "./wingColumns";
 import {
@@ -49,6 +50,14 @@ export default function PropertyPartitionForm({
   const searchParams = useSearchParams();
   const t = useTranslations("zoneMaster");
   const tCommon = useTranslations("common");
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+  const partitionAlias = useAliasLabel("Partition", t("defaults.partition"));
+  const wingAlias = useAliasLabel("Wing", t("defaults.wing"));
+  const wingsAlias = useAliasLabel("Wings", t("defaults.wings"));
+  const propertyNoAlias = useAliasLabel(
+    "Property_No",
+    useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo")))
+  );
 
   // Normalize selectedWard to prevent undefined
   const ward = selectedWard ?? null;
@@ -242,6 +251,7 @@ export default function PropertyPartitionForm({
   // Define columns for the wing summary table
   const wingColumns = useMemo(() => getWingColumns({
     t,
+    wingAlias,
     onEditWing: (row) => {
       setEditingSocietyDetailId(row.societyDetailId);
       setNewWingId(row.wingId);
@@ -255,9 +265,9 @@ export default function PropertyPartitionForm({
         wingLetter: row.wingNo || row.wingName
       }));
       setShowWingConfig(true);
-      toast.info(`Selected Wing ${row.wingName} (${row.wingNo}) for updates`);
+      toast.info(`Selected ${wingAlias} ${row.wingName} (${row.wingNo}) for updates`);
     }
-  }), [t, setEditingSocietyDetailId, setNewWingId, setNewWingNo, getWingNoById, setNewWingName, setShowAddWingForm, setForm, setShowWingConfig]);
+  }), [t, wingAlias, setEditingSocietyDetailId, setNewWingId, setNewWingNo, getWingNoById, setNewWingName, setShowAddWingForm, setForm, setShowWingConfig]);
 
   // Helper to reset wing configuration fields
   const resetWingConfigFields = () => {
@@ -312,10 +322,10 @@ export default function PropertyPartitionForm({
           </div>
           <div>
             <h2 className="text-lg font-semibold text-gray-800">
-              {t("partitionForm.title")}
+              {t("partitionForm.title", { partition: partitionAlias, wing: wingAlias })}
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              {t("partitionForm.subtitle")}
+              {t("partitionForm.subtitle", { partition: partitionAlias, wings: wingsAlias })}
             </p>
           </div>
         </div>
@@ -335,11 +345,11 @@ export default function PropertyPartitionForm({
             }
             label={
               showAddWingForm
-                ? (editingSocietyDetailId ? t("partitionForm.wing.editWing") : t("partitionForm.wing.addWing"))
+                ? (editingSocietyDetailId ? t("partitionForm.wing.editWing", { wing: wingAlias }) : t("partitionForm.wing.addWing", { wing: wingAlias }))
                 : form.partitionType === "amenity" 
                 ? t("partitionForm.amenity.createAmenity") 
                 : form.partitionType === "partition"
-                ? t("partitionForm.createPartition")
+                ? t("partitionForm.createPartition", { partition: partitionAlias })
                 : undefined
             }
           />
@@ -356,8 +366,8 @@ export default function PropertyPartitionForm({
               </svg>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-red-800">{t("partitionForm.noWardSelected")}</p>
-              <p className="text-xs text-red-700 mt-1">{t("partitionForm.selectWardFirst")}</p>
+              <p className="text-sm font-medium text-red-800">{t("partitionForm.noWardSelected", { ward: wardAlias })}</p>
+              <p className="text-xs text-red-700 mt-1">{t("partitionForm.selectWardFirst", { ward: wardAlias })}</p>
             </div>
           </div>
         )}
@@ -374,7 +384,7 @@ export default function PropertyPartitionForm({
         {/* Main Property Selection */}
         <div>
           <SearchSelect
-            label={t("partitionForm.mainPropertyNo")}
+            label={t("partitionForm.mainPropertyNo", { propertyNo: propertyNoAlias })}
             value={form.mainPropertyId ? String(form.mainPropertyId) : ""}
             onChange={(_name, value) => {
               // Call handlePropertySelect with dummy event as first argument
@@ -399,7 +409,7 @@ export default function PropertyPartitionForm({
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-blue-800">{t("partitionForm.helpText.noMainPropertiesFound")}</p>
+                <p className="text-sm font-medium text-blue-800">{t("partitionForm.helpText.noMainPropertiesFound", { partitions: partitionAlias })}</p>
               </div>
             </div>
           )}
@@ -430,7 +440,7 @@ export default function PropertyPartitionForm({
           >
             <Tabs.TabList className="justify-center gap-4 w-max">
               <Tabs.Tab value="wing" icon={Building2}>
-                {t("partitionForm.tabs.wing")}
+                {t("partitionForm.tabs.wing", { wing: wingAlias })}
               </Tabs.Tab>
               <Tabs.Tab value="amenity" icon={Building2}>
                 {t("partitionForm.tabs.amenity")}

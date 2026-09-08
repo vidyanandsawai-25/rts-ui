@@ -106,7 +106,7 @@ export function useDirectPropertyDelete({
                 callback();
                 router.refresh();
               } else {
-                toast.error(result.error || t("createProperty.failedToDeleteProperty"));
+                toast.error(result.error ?? t("createProperty.failedToDeleteProperty"));
               }
             } catch {
               toast.error(t("createProperty.failedToDeleteProperty"));

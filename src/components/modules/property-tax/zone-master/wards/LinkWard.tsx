@@ -9,6 +9,7 @@ import { NextPageButton, SearchSelect, StatusBadge } from "@/components/common";
 import { ViewWards } from "./ViewWards";
 import { ZoneWards } from "./ZoneWards";
 import { useLinkWard } from "@/hooks/zoneMaster/useLinkWard";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 const PAGE_SIZE_OPTIONS = [
 	{ label: "10", value: "10" },
@@ -47,6 +48,9 @@ export default function LinkWard(props: Props) {
 	} = props;
 
 	const t = useTranslations("zoneMaster");
+	const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
+	const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+	const wardsAlias = useAliasLabel("Wards", t("defaults.wards"));
 
 	const {
 		checkedAvailable,
@@ -84,6 +88,9 @@ export default function LinkWard(props: Props) {
 		ssrAllZones,
 		onWardsChanged,
 		onClose,
+		zoneAlias,
+		wardAlias,
+		wardsAlias,
 		t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
 	});
 
@@ -98,7 +105,7 @@ export default function LinkWard(props: Props) {
 					</div>
 					<div>
 						<div className="text-lg font-bold text-blue-900">
-							{t("wardList.linkTitle")}
+							{t("wardList.linkTitle", { ward: wardAlias, zone: zoneAlias })}
 						</div>
 					</div>
 				</div>
@@ -110,7 +117,7 @@ export default function LinkWard(props: Props) {
 				<div className="flex-1 flex flex-col rounded-xl bg-gradient-to-br from-blue-50/80 to-indigo-50/80 backdrop-blur-md border-2 border-blue-200/50 shadow-lg" data-testid="available-wards-list">
 					<div className="bg-gradient-to-r from-[#1A86E8] via-[#1A86E8] to-[#1A86E8] px-4 py-3 font-semibold text-sm text-[#fff] shadow-md">
 						<span className="flex items-center gap-2">
-							{t("wardList.viewWards")}
+							{t("wardList.viewWards", { wards: wardsAlias })}
 							<span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/30 border border-white/40">
 								{ssrViewAllWardsTotalCount}
 							</span>
@@ -153,7 +160,7 @@ export default function LinkWard(props: Props) {
 					<div className="bg-gradient-to-r from-[#1A86E8] via-[#1A86E8] to-[#1A86E8] px-4 py-3 font-semibold text-sm text-[#fff] shadow-md">
 						<div className="flex items-center justify-between gap-3">
 							<span className="flex items-center gap-2">
-								{t("wardList.wardsInZone")}
+								{t("wardList.wardsInZone", { wards: wardsAlias, zone: zoneAlias })}
 								<StatusBadge
 									label={String(ssrSelectedWards.length)}
 									variant="info"
@@ -164,7 +171,7 @@ export default function LinkWard(props: Props) {
 									options={zoneOptions}
 									value={String(selectedZoneId || '')}
 									onChange={handleZoneChange}
-									placeholder={t("wardList.selectZone")}
+									placeholder={t("wardList.selectZone", { zone: zoneAlias })}
 									disabled={isPending}
 									isLoading={isPending}
 									disableSearch={false}

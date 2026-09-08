@@ -6,6 +6,7 @@ import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { WingSummary } from "@/components/modules/property-tax/zone-master/properties/wingColumns";
 import { createSocietyDetailAction, updateSocietyDetailAction } from "@/app/[locale]/property-tax/zone-master/actions";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface UseWingManagementProps {
   societyDetails: SocietyDetailItem[];
@@ -24,6 +25,7 @@ export function useWingManagement({
   onWingSaveSuccess,
 }: UseWingManagementProps) {
   const t = useTranslations("zoneMaster");
+  const wingAlias = useAliasLabel("Wing", t("defaults.wing"));
 
   const [showWingConfig, setShowWingConfig] = useState(false);
   const [showAddWingForm, setShowAddWingForm] = useState(false);
@@ -78,7 +80,7 @@ export function useWingManagement({
     
     // Validate wing name
     if (!newWingName?.trim()) {
-      setErrors({ ...errors, wingName: t("partitionForm.wing.validation.wingNameRequired") });
+      setErrors({ ...errors, wingName: t("partitionForm.wing.validation.wingNameRequired", { wing: wingAlias }) });
       return;
     }
 
@@ -126,7 +128,7 @@ export function useWingManagement({
           setSocietyDetails(prev => prev.map(item => 
             item.id === editingSocietyDetailId ? result.data! : item
           ));
-          toast.success(t("partitionForm.wing.messages.updateWingSuccess"));
+          toast.success(t("partitionForm.wing.messages.updateWingSuccess", { wing: wingAlias }));
         } else {
           throw new Error(result.error || "Failed to update wing");
         }
@@ -142,7 +144,7 @@ export function useWingManagement({
         
         if (result.success && result.data) {
           setSocietyDetails(prev => [...prev, result.data!]);
-          toast.success(t("partitionForm.wing.messages.createWingSuccess"));
+          toast.success(t("partitionForm.wing.messages.createWingSuccess", { wing: wingAlias }));
         } else {
           throw new Error(result.error || "Failed to create wing");
         }
@@ -160,7 +162,7 @@ export function useWingManagement({
         await onWingSaveSuccess();
       }
     } catch (_error) {
-      toast.error(t("partitionForm.wing.messages.saveWingError"));
+      toast.error(t("partitionForm.wing.messages.saveWingError", { wing: wingAlias }));
     } finally {
       setAddingWing(false);
     }

@@ -8,6 +8,7 @@ import { CancelButton, SaveButton } from "@/components/common";
 import { ZoneItem } from "@/types/zoneMaster.types";
 import { ZoneFormFields } from "./ZoneFormFields";
 import { useZoneForm } from "@/hooks/zoneMaster/useZoneForm";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface AddModeProps {
   mode: "add";
@@ -34,6 +35,7 @@ export default function ZoneForm(props: Props) {
   const { mode, open, onClose } = props;
   const router = useRouter();
   const t = useTranslations("zoneMaster");
+  const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
 
   const editInitialData = mode === "edit" ? (props as EditModeProps).initialData : undefined;
   const editZoneId = mode === "edit" ? (props as EditModeProps).zoneId : undefined;
@@ -56,6 +58,7 @@ export default function ZoneForm(props: Props) {
     initialData: editInitialData,
     zones: editZones,
     existingZones: props.existingZones,
+    zoneAlias,
     t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
   });
 
@@ -87,10 +90,10 @@ export default function ZoneForm(props: Props) {
       </div>
       <div>
         <div className="text-lg font-bold text-blue-900">
-          {mode === "add" ? t("dialogs.addTitle") : t("dialogs.editTitle")}
+          {mode === "add" ? t("dialogs.addTitle", { zone: zoneAlias }) : t("dialogs.editTitle", { zone: zoneAlias })}
         </div>
         <div className="text-sm text-slate-500">
-          {mode === "add" ? t("dialogs.addDescription") : t("dialogs.editDescription")}
+          {mode === "add" ? t("dialogs.addDescription", { zone: zoneAlias }) : t("dialogs.editDescription", { zone: zoneAlias })}
         </div>
       </div>
     </div>

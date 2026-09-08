@@ -4,6 +4,7 @@ import { Input, ValidationMessage, ToggleSwitch } from "@/components/common";
 import { AlertCircle } from "lucide-react";
 import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/zone-master/properties/create-property-drawer.types";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { sanitizeName } from "@/lib/utils/input-sanitization";
 import { KYC_VALIDATION_RULES } from "@/lib/utils/kyc-validation/kyc-validation.constants";
 
@@ -24,6 +25,11 @@ export function BulkCreateSection({
   handleBulkToggle,
   t,
 }: BulkCreateSectionProps) {
+  const propertyNoAlias = useAliasLabel(
+    "Property_No",
+    useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo")))
+  );
+
   return (
     <>
       {/* Bulk Create Mode Toggle */}
@@ -50,7 +56,7 @@ export function BulkCreateSection({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Input
-              label={t("createProperty.propertyNo")}
+              label={t("createProperty.propertyNo", { propertyNo: propertyNoAlias })}
               value={formData.propertyNo}
               onChange={(e) => handleFieldChange("propertyNo", e.target.value)}
               placeholder={t("createProperty.propertyNoPlaceholder")}
@@ -94,7 +100,7 @@ export function BulkCreateSection({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Input
-                label={t("createProperty.fromPropertyNo")}
+                label={t("createProperty.fromPropertyNo", { propertyNo: propertyNoAlias })}
                 value={formData.fromPropertyNo}
                 onChange={(e) => handleFieldChange("fromPropertyNo", e.target.value)}
                 placeholder={t("createProperty.fromPropertyNoPlaceholder")}
@@ -111,7 +117,7 @@ export function BulkCreateSection({
 
             <div>
               <Input
-                label={t("createProperty.toPropertyNo")}
+                label={t("createProperty.toPropertyNo", { propertyNo: propertyNoAlias })}
                 value={formData.toPropertyNo}
                 onChange={(e) => handleFieldChange("toPropertyNo", e.target.value)}
                 placeholder={t("createProperty.toPropertyNoPlaceholder")}

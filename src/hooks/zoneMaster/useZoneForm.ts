@@ -20,6 +20,7 @@ interface UseZoneFormProps {
   initialData?: ZoneItem | null;
   zones?: ZoneItem[];
   existingZones: ZoneItem[];
+  zoneAlias?: string;
   t: (key: string, values?: Record<string, unknown>) => string;
 }
 
@@ -30,6 +31,7 @@ export function useZoneForm({
   initialData,
   zones,
   existingZones,
+  zoneAlias,
   t,
 }: UseZoneFormProps) {
   // Initialize form state
@@ -89,7 +91,7 @@ export function useZoneForm({
               isActive: zone.isActive,
             });
           } else {
-            toast.error(t("messages.loadError"));
+            toast.error(t("messages.loadError", { zone: zoneAlias }));
           }
         } else {
           // Fallback to zones prop if fetch fails
@@ -102,20 +104,20 @@ export function useZoneForm({
               isActive: zone.isActive,
             });
           } else {
-            toast.error(res.error || t("messages.loadError"));
+            toast.error(res.error || t("messages.loadError", { zone: zoneAlias }));
           }
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         console.error("[useZoneForm] Failed to fetch zone details:", { zoneId, error: errorMessage });
-        toast.error(t("messages.loadError"));
+        toast.error(t("messages.loadError", { zone: zoneAlias }));
       } finally {
         setFetching(false);
       }
     };
 
     fetchZoneDetails();
-  }, [mode, open, initialData, zoneId, zones, t]);
+  }, [mode, open, initialData, zoneId, zones, zoneAlias, t]);
   
   // Reset the fetch ref when drawer closes
   useEffect(() => {
@@ -127,12 +129,12 @@ export function useZoneForm({
   // Validation logic
   const validate = (data: ZoneFormState) => {
     const newErrors: ZoneFormErrors = {};
-    if (!data.zoneNo?.trim()) newErrors.zoneNo = t("validation.zoneNoRequired");
-    else if (isAllZeros(data.zoneNo)) newErrors.zoneNo = t("validation.zoneNoAllZeros");
-    else if (data.zoneNo.length > ZONE_WARD_NO_MAX_LENGTH) newErrors.zoneNo = t("validation.zoneNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH });
-    if (!data.description?.trim()) newErrors.description = t("validation.nameRegRequired");
-    else if (isAllZeros(data.description)) newErrors.description = t("validation.zoneNameAllZeros");
-    else if (data.description.length > ZONE_WARD_NAME_MAX_LENGTH) newErrors.description = t("validation.zoneNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH });
+    if (!data.zoneNo?.trim()) newErrors.zoneNo = t("validation.zoneNoRequired", { zone: zoneAlias });
+    else if (isAllZeros(data.zoneNo)) newErrors.zoneNo = t("validation.zoneNoAllZeros", { zone: zoneAlias });
+    else if (data.zoneNo.length > ZONE_WARD_NO_MAX_LENGTH) newErrors.zoneNo = t("validation.zoneNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH, zone: zoneAlias });
+    if (!data.description?.trim()) newErrors.description = t("validation.nameRegRequired", { zone: zoneAlias });
+    else if (isAllZeros(data.description)) newErrors.description = t("validation.zoneNameAllZeros", { zone: zoneAlias });
+    else if (data.description.length > ZONE_WARD_NAME_MAX_LENGTH) newErrors.description = t("validation.zoneNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH, zone: zoneAlias });
     return newErrors;
   };
 
@@ -148,7 +150,7 @@ export function useZoneForm({
 
     if (duplicateByNo) {
       toast.error(
-        t("messages.duplicateZone", { name: duplicateByNo.description || duplicateByNo.zoneNo })
+        t("messages.duplicateZone", { name: duplicateByNo.description || duplicateByNo.zoneNo, zone: zoneAlias })
       );
       return true;
     }
@@ -161,7 +163,7 @@ export function useZoneForm({
 
     if (duplicateByName) {
       toast.error(
-        t("messages.duplicateZoneName", { name: duplicateByName.description || duplicateByName.zoneNo })
+        t("messages.duplicateZoneName", { name: duplicateByName.description || duplicateByName.zoneNo, zone: zoneAlias })
       );
       return true;
     }
@@ -209,7 +211,7 @@ export function useZoneForm({
       if (mode === "add") {
         const result = await createZoneAction(form);
         if (result.success) {
-          toast.success(t("messages.createSuccess", { name: form.zoneNo }));
+          toast.success(t("messages.createSuccess", { name: form.zoneNo, zone: zoneAlias }));
           const newZoneNo = form.zoneNo;
           resetForm();
           if (onSuccess) onSuccess(newZoneNo);
@@ -218,16 +220,16 @@ export function useZoneForm({
         } else {
           const errorMsg = result.error || "";
           if (errorMsg.includes("already exists") || errorMsg.includes("duplicate")) {
-            setErrors({ zoneNo: t("messages.duplicateZoneNo", { zoneNo: form.zoneNo }) });
+            setErrors({ zoneNo: t("messages.duplicateZoneNo", { zoneNo: form.zoneNo, zone: zoneAlias }) });
           } else {
-            toast.error(errorMsg || t("messages.createError"));
+            toast.error(errorMsg || t("messages.createError", { zone: zoneAlias }));
           }
         }
       } else {
         const result = await updateZoneAction(Number(zoneId), form);
         if (result.success) {
           const zoneName = form.description || form.zoneNo || "";
-          toast.success(t("messages.updateSuccess", { name: zoneName }));
+          toast.success(t("messages.updateSuccess", { name: zoneName, zone: zoneAlias }));
 
           const updatedZone: Partial<ZoneItem> & { id: number } = {
             id: Number(zoneId),
@@ -237,7 +239,7 @@ export function useZoneForm({
           onUpdate?.(updatedZone as ZoneItem);
           handleClose();
         } else {
-          toast.error(result.error || t("messages.updateError"));
+          toast.error(result.error || t("messages.updateError", { zone: zoneAlias }));
         }
       }
     } catch (error) {
