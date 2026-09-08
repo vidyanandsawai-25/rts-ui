@@ -37,7 +37,7 @@ type RtsCitizenViewDetailsDrawerProps = {
   onOpenReceipt?: (receiptNo: string, applicationNo: string) => void;
 };
 
-type NormalizedStatus = "approved" | "rejected" | "pending";
+type NormalizedStatus = "approved" | "rejected" | "pending" | "reverted";
 
 function normalizeStatus(status: string): NormalizedStatus {
   const normalized = status.toLowerCase();
@@ -45,6 +45,7 @@ function normalizeStatus(status: string): NormalizedStatus {
   if (normalized.includes("rejected") || normalized.includes("failed") || normalized.includes("discarded")) {
     return "rejected";
   }
+  if (normalized.includes("reverted")) return "reverted";
   return "pending";
 }
 
@@ -186,7 +187,13 @@ export default function RtsCitizenViewDetailsDrawer({
   const isLoadingDetails = detailData ? false : loading;
   const normalizedStatus = normalizeStatus(application.status);
   const isRevertedToCitizen = resolvedDetail?.isRevertedToCitizen === true;
-  const revertedRemark = resolvedDetail?.remark || application.remark;
+  const currentApprovalStage = resolvedDetail?.approvalStages?.find(
+    (stage) => stage.isCurrentStage
+  );
+  const revertedRemark =
+    currentApprovalStage?.remark?.trim() ||
+    resolvedDetail?.remark?.trim() ||
+    application.remark?.trim();
   const handleOpenResubmit = async () => {
     if (isOpeningResubmit) return;
 
@@ -212,7 +219,11 @@ export default function RtsCitizenViewDetailsDrawer({
   const documents = [
     ...(resolvedDetail?.documents ?? []).map((document, index) => ({
       id: document.documentId || index + 1,
-      label: document.documentName || t("documentAttachment"),
+      label:
+        (locale === "mr" || locale === "hi") && document.documentNameLocal?.trim()
+          ? document.documentNameLocal.trim()
+          : document.documentName || document.local || t("documentAttachment"),
+      fileName: `${(document.documentName || "Document").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
       guid: document.documentGuid || "",
       size: document.fileSizeBytes ? `${(document.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : t("attachment"),
     })),
@@ -222,6 +233,7 @@ export default function RtsCitizenViewDetailsDrawer({
       .map((answer, index) => ({
         id: answer.fieldDefinitionId || index + 1,
         label: answer.label || t("documentAttachment"),
+        fileName: `${(answer.label || "Document").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
         guid: answer.documentGuid || "",
         size: t("attachment"),
       })),
@@ -281,6 +293,8 @@ export default function RtsCitizenViewDetailsDrawer({
                     <StatusBadge value activeLabel={t("approved")} />
                   ) : normalizedStatus === "rejected" ? (
                     <StatusBadge value={false} inactiveLabel={t("rejected")} />
+                  ) : normalizedStatus === "reverted" ? (
+                    <StatusBadge variant="warning" label={t("reverted")} />
                   ) : (
                     <StatusBadge variant="pending" label={t("pending")} />
                   )}
@@ -290,25 +304,37 @@ export default function RtsCitizenViewDetailsDrawer({
 
             {/* Reverted / Action Required Alert Card */}
             {isRevertedToCitizen && (
-              <section className="rounded-xl border border-orange-200 bg-gradient-to-r from-orange-50 via-white to-orange-50/50 p-4 shadow-sm space-y-3">
+              <section className="space-y-3 rounded-xl border border-orange-200 bg-gradient-to-r from-orange-50 via-white to-orange-50/50 p-4 shadow-sm">
                 <div className="flex items-start gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center shrink-0 shadow-xs mt-0.5">
                     <AlertTriangle className="w-4 h-4" />
                   </div>
-                  <div className="space-y-1 min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 space-y-1">
                     <p className="text-xs font-black text-orange-950">
                       {t("applicationRevertedTitle")}
                     </p>
                     <p className="text-[11px] font-medium text-orange-800">
                       {t("applicationRevertedDescription")}
                     </p>
-                    {revertedRemark && (
-                      <div className="p-2.5 rounded-lg bg-white/90 border border-orange-200 text-xs text-orange-950 font-medium">
-                        <strong>{t("officerRemark")}:</strong> {revertedRemark}
-                      </div>
-                    )}
                   </div>
                 </div>
+                {revertedRemark && (
+                  <div className="rounded-lg border border-orange-200/90 bg-white/95 px-3 py-2.5 shadow-xs">
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wide text-orange-700">
+                        {t("officerRemark")}
+                      </span>
+                      {currentApprovalStage?.stageName && (
+                        <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[9px] font-bold text-orange-800">
+                          {currentApprovalStage.stageName}
+                        </span>
+                      )}
+                    </div>
+                    <p className="whitespace-pre-wrap break-words text-xs font-medium leading-5 text-slate-700">
+                      {revertedRemark}
+                    </p>
+                  </div>
+                )}
                 <div className="pt-1 flex justify-end">
                   <Button
                     type="button"
@@ -484,7 +510,7 @@ export default function RtsCitizenViewDetailsDrawer({
                             onClick={() => setViewingDoc({
                               fileUrl: getCitizenRtsDocumentViewUrl(document.guid),
                               downloadUrl: getCitizenRtsDocumentDownloadUrl(document.guid),
-                              fileName: `${document.label.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
+                              fileName: document.fileName,
                               label: document.label,
                             })}
                           >

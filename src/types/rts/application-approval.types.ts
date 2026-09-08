@@ -120,6 +120,8 @@ export interface RtsApplicationDocumentItem {
   fieldDefinitionId?: number;
   documentId?: number;
   documentName?: string;
+  documentNameLocal?: string | null;
+  local?: string | null;
   documentGuid?: string;
   documentUrl?: string | null;
   storagePath?: string | null;
@@ -129,6 +131,14 @@ export interface RtsApplicationDocumentItem {
 }
 
 export interface RtsApplicationViewDetailsItem {
+  applicationId?: number;
+  applicationNo?: string;
+  serviceId?: number;
+  serviceName?: string;
+  departmentId?: number;
+  departmentName?: string;
+  applicationStatus?: string;
+  remark?: string | null;
   documents: RtsApplicationDocumentItem[];
   applicationDetails: RtsApplicationViewDetailField[];
 }
@@ -186,6 +196,9 @@ export interface RtsApplicationVerificationItem {
   canPay: boolean;
   canEdit: boolean;
   canViewNoteSheet: boolean;
+  canIssueCertificate: boolean;
+  canEditCertificate: boolean;
+  isManualCertificate: boolean;
   serviceId?: number | null;
   serviceName?: string | null;
   serviceFees?: number | null;
@@ -214,10 +227,11 @@ export interface RtsApplicationApprovalActionPayload {
   updatedBy: number;
   remark: string;
   status: string;
+  /** Certificate document GUID supplied when processing an issued certificate. */
+  issuedCertificateGuid?: string | null;
 }
 
-export interface RtsApplicationApprovalFieldUpdatePayload
-  extends RtsApplicationApprovalActionPayload {
+export interface RtsApplicationApprovalFieldUpdatePayload extends RtsApplicationApprovalActionPayload {
   fieldValue: RtsApplicationApprovalFieldValuePayload[];
 }
 

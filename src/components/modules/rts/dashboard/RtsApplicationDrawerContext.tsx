@@ -73,7 +73,11 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
   const rawDocs = [
     ...(detail?.documents ?? []).filter((document) => document.isUploaded && document.documentGuid).map((d, idx) => ({
       id: d.documentId || idx + 1,
-      label: d.documentName || 'Document',
+      label:
+        (locale === 'mr' || locale === 'hi') && d.documentNameLocal?.trim()
+          ? d.documentNameLocal.trim()
+          : d.documentName || d.local || 'Document',
+      fileName: `${(d.documentName || 'Document').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
       guid: d.documentGuid || '',
       size: d.fileSizeBytes ? `${(d.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : 'Attachment',
     })),
@@ -88,7 +92,7 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
         id: doc.id,
         label: doc.label,
         guid: doc.guid,
-        fileName: `${doc.label.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+        fileName: doc.fileName,
         fileSize: doc.size,
         downloadUrl: getAdminRtsDocumentDownloadUrl(doc.guid),
       });

@@ -39,8 +39,18 @@ interface PendingVariantProps extends CommonStatusBadgeProps {
   activeLabel?: never;
   inactiveLabel?: never;
 }
+
+/* ----- WARNING VARIANT ----- */
+interface WarningVariantProps extends CommonStatusBadgeProps {
+  variant: "warning";
+  label?: string;
+  icon?: React.ReactNode;
+  value?: never;
+  activeLabel?: never;
+  inactiveLabel?: never;
+}
  
-export type StatusBadgeProps = StatusVariantProps | InfoVariantProps | PendingVariantProps;
+export type StatusBadgeProps = StatusVariantProps | InfoVariantProps | PendingVariantProps | WarningVariantProps;
  
 /* =======================
    COMPONENT
@@ -87,6 +97,23 @@ export function StatusBadge(props: StatusBadgeProps) {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
           </span>
         )}
+        <span>{label}</span>
+      </span>
+    );
+  }
+
+  /* ================= WARNING VARIANT ================= */
+  if (props.variant === "warning") {
+    const { icon, label = "Action required" } = props;
+
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-md border border-orange-300 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 whitespace-nowrap",
+          className
+        )}
+      >
+        {icon ? <span className="h-3 w-3 shrink-0">{icon}</span> : <AlertCircle className="h-3 w-3" />}
         <span>{label}</span>
       </span>
     );

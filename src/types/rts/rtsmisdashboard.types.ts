@@ -6,6 +6,7 @@ export interface RtsMisDashboardServiceItem {
   pending: number | null;
   approved: number | null;
   rejected: number | null;
+  reverted?: number | null;
   overdueCount: number | null;
   sla: number | null;
   // Older deployments can include source counts; the updated API may omit them.
@@ -40,6 +41,8 @@ export interface RtsMisDashboardUserApplicationItem {
   serviceName: string;
   serviceNameLocal?: string | null;
   applicationNo: string;
+  propertyNo: string | null;
+  upicId: string | null;
   sla: number;
   submittedDate: string;
   status: string;
@@ -87,6 +90,11 @@ export interface RtsMisDashboardResponse {
   data: RtsMisDashboardData;
 }
 
+export interface CitizenLandingApplicationCounts {
+  received: number;
+  delivered: number;
+}
+
 export type RtsMisDashboardFlag = 'admin' | 'user' | 'RTSApplicationDashboard';
 
 export type RtsMisDashboardInputFlag = RtsMisDashboardFlag | 'Admin' | 'User';
@@ -98,15 +106,15 @@ export interface RtsMisDashboardRequest {
   Flag: RtsMisDashboardFlag;
   UpicId: string | null;
   ApplicationNo: string | null;
-  // The backend contract uses this spelling, so preserve it in the request type.
+  // The backend contract intentionally uses the misspelled "Deparment" keys.
   DeparmentId: number | null;
   DeparmentName: string | null;
   ServiceId?: number | null;
   ModuleName: RtsMisDashboardModuleName | null;
   FromDate: string | null;
   ToDate: string | null;
-  pageNumber?: number;
-  pageSize?: number;
+  pageNumber?: number | null;
+  pageSize?: number | null;
   ApplicationStatus?: string | null;
 }
 

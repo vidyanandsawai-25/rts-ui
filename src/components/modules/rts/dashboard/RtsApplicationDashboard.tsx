@@ -20,6 +20,7 @@ import {
 
 import {
   Badge,
+  Button,
   Card,
   Label,
   MasterTable,
@@ -78,7 +79,7 @@ interface RtsApplicationDashboardProps {
 }
 
 type GridRow = AdminApplicationGridRow & Record<string, unknown> & { id: string };
-type ApplicationSortKey = 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate';
+type ApplicationSortKey = 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays';
 type SortDirection = 'asc' | 'desc';
 
 const PAGE_SIZE_OPTIONS = [10];
@@ -118,6 +119,12 @@ function isApplicationApproved(row: GridRow): boolean {
   return row.currentStatus.trim().toLowerCase() === 'approved';
 }
 
+function getDisplayLocale(locale: string): string {
+  if (locale === 'mr') return 'mr-IN-u-nu-deva';
+  if (locale === 'hi') return 'hi-IN-u-nu-deva';
+  return 'en-IN';
+}
+
 export default function RtsApplicationDashboard({
   kpis,
   rows,
@@ -132,18 +139,19 @@ export default function RtsApplicationDashboard({
   const tCommon = useTranslations('common');
   const router = useRouter();
   const pathname = usePathname();
+  const displayLocale = getDisplayLocale(locale);
 
   const [searchTerm, setSearchTerm] = useState(filters.search);
 
   const numberFormatter = useMemo(
-    () => new Intl.NumberFormat(locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN'),
-    [locale]
+    () => new Intl.NumberFormat(displayLocale),
+    [displayLocale]
   );
   const percentageFormatter = useMemo(
-    () => new Intl.NumberFormat(locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN', {
+    () => new Intl.NumberFormat(displayLocale, {
       maximumFractionDigits: 2,
     }),
-    [locale]
+    [displayLocale]
   );
 
   const gridRows = useMemo<GridRow[]>(
@@ -311,16 +319,22 @@ export default function RtsApplicationDashboard({
     (value: string) => {
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return t('applicationDashboard.table.na');
-      return date.toLocaleDateString(locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN');
+      return new Intl.DateTimeFormat(displayLocale, {
+        day: 'numeric',
+        month: "long",
+        year: 'numeric',
+      }).format(date);
     },
-    [locale, t]
+    [displayLocale, t]
   );
 
   const formatDays = useCallback(
-    (value: number | null) =>
-      value === null
-        ? t('applicationDashboard.table.na')
-        : t('applicationDashboard.units.dayShort', { value: numberFormatter.format(Math.abs(value)) }),
+    (value: number | null) => {
+      if (value === null) return t('applicationDashboard.table.na');
+
+      const key = value < 0 ? 'applicationDashboard.units.daysOverdue' : 'applicationDashboard.units.daysRemaining';
+      return t(key, { value: numberFormatter.format(Math.abs(value)) });
+    },
     [numberFormatter, t]
   );
 
@@ -520,7 +534,7 @@ export default function RtsApplicationDashboard({
       },
       {
         key: 'remainingDays',
-        label: t('applicationDashboard.table.remainingDays'),
+        label: sortableHeader('RemainingDays', t('applicationDashboard.table.daysRemainingOverdue')),
         align: 'center',
         render: (_value, row) => (
           <span
@@ -577,6 +591,8 @@ export default function RtsApplicationDashboard({
 
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8">
         {kpiCards.map((metric) => {
+          const clearsFilters = metric.key === 'total';
+
           return (
             <Card
               key={metric.key}
@@ -585,8 +601,17 @@ export default function RtsApplicationDashboard({
             >
               <button
                 type="button"
-                disabled={!metric.statusValue}
-                onClick={() => metric.statusValue && updateUrl({ status: metric.statusValue, pageNumber: '1' })}
+                disabled={!clearsFilters && !metric.statusValue}
+                onClick={() => {
+                  if (clearsFilters) {
+                    clearTableFilters();
+                    return;
+                  }
+
+                  if (metric.statusValue) {
+                    updateUrl({ status: metric.statusValue, pageNumber: '1' });
+                  }
+                }}
                 className="flex w-full items-center justify-between px-3.5 py-4 text-left disabled:cursor-default"
               >
                 <div className="flex flex-col min-w-0">
@@ -695,13 +720,14 @@ export default function RtsApplicationDashboard({
             </div>
 
             {hasActiveTableFilters && (
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={clearTableFilters}
-                className="mt-5 inline-flex h-8 items-center rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="mt-4.5"
               >
                 {t('applicationDashboard.filters.clearFilters')}
-              </button>
+              </Button>
             )}
 
           </div>

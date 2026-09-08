@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   ArrowRight,
   BadgeCheck,
@@ -18,6 +18,7 @@ import {
   UploadCloud,
   type LucideIcon,
 } from 'lucide-react';
+import type { CitizenLandingApplicationCounts } from '@/types/rts/rtsmisdashboard.types';
 
 type JourneyStepKey = 'choose' | 'apply' | 'track' | 'certificate';
 
@@ -29,6 +30,7 @@ type JourneyStep = {
 
 interface CitizenJourneyHeroProps {
   serviceCount: number;
+  applicationCounts: CitizenLandingApplicationCounts | null;
   searchQuery: string;
   onSearchChange: (value: string) => void;
   onApply: () => void;
@@ -59,10 +61,12 @@ const JOURNEY_STEPS: JourneyStep[] = [
 
 export function CitizenJourneyHero({
   serviceCount,
+  applicationCounts,
   searchQuery,
   onSearchChange,
   onApply,
 }: CitizenJourneyHeroProps) {
+  const locale = useLocale();
   const t = useTranslations('rts.landing');
   const reduceMotion = useReducedMotion();
   const [activeJourneyIndex, setActiveJourneyIndex] = useState(0);
@@ -100,13 +104,13 @@ export function CitizenJourneyHero({
         badge: t('heroStats.services.badge'),
       },
       {
-        value: '52,480+',
+        value: applicationCounts === null ? '—' : new Intl.NumberFormat(locale).format(applicationCounts.received),
         label: t('heroStats.received.label'),
         detail: t('heroStats.received.detail'),
         badge: t('heroStats.received.badge'),
       },
       {
-        value: '51,120+',
+        value: applicationCounts === null ? '—' : new Intl.NumberFormat(locale).format(applicationCounts.delivered),
         label: t('heroStats.delivered.label'),
         detail: t('heroStats.delivered.detail'),
         badge: t('heroStats.delivered.badge'),
@@ -118,7 +122,7 @@ export function CitizenJourneyHero({
         badge: t('heroStats.sla.badge'),
       },
     ],
-    [serviceCount, t]
+    [applicationCounts, locale, serviceCount, t]
   );
 
   useEffect(() => {

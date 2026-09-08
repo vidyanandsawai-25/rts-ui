@@ -32,6 +32,8 @@ export interface ModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   maxWidth?: ModalWidth;
+  contentClassName?: string;
+  bodyClassName?: string;
 }
 
 /* =========================
@@ -50,6 +52,8 @@ export function Modal({
   children,
   footer,
   maxWidth = "lg",
+  contentClassName,
+  bodyClassName,
 }: ModalProps): React.ReactElement | null {
   const t = useTranslations("common");
   const modalRef = useRef<HTMLDivElement>(null);
@@ -136,7 +140,7 @@ export function Modal({
           relative flex flex-col w-full bg-white rounded-xl shadow-2xl
           border border-gray-200 overflow-hidden ${widthClass}
           max-h-[90vh] sm:max-h-[85vh]
-          animate-in fade-in zoom-in-95 duration-200
+          animate-in fade-in zoom-in-95 duration-200 ${contentClassName || ""}
         `}
       >
         {/* ---------- HEADER ---------- */}
@@ -172,7 +176,7 @@ export function Modal({
         </div>
 
         {/* ---------- BODY ---------- */}
-        <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
+        <div className={`flex-1 overflow-y-auto p-6 bg-gray-50/50 ${bodyClassName || ""}`}>
           {children}
         </div>
 
