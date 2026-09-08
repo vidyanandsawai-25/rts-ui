@@ -69,6 +69,8 @@ import {
   type FileLatLogCaptureMetadata,
 } from '@/lib/utils/rts/file-lat-log-value';
 import {
+  buildGoogleMapsLocationUrl,
+  getMapLocationUrl,
   parseMapLocationValue,
   type MapLocationValue,
 } from '@/lib/utils/rts/map-location-value';
@@ -135,10 +137,6 @@ function isMapField(fieldType: string | null | undefined): boolean {
 function getGoogleMapsEmbedUrl(location: MapLocationValue): string {
   const query = encodeURIComponent(`${location.latitude},${location.longitude}`);
   return `https://www.google.com/maps?q=${query}&z=16&output=embed`;
-}
-
-function getGoogleMapsUrl(location: MapLocationValue): string {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${location.latitude},${location.longitude}`)}`;
 }
 
 function getInitialFieldValues(data: RtsApplicationProcessData | null): Record<string, string> {
@@ -400,9 +398,7 @@ export default function RtsApplicationProcessDrawer({
   const headerApplicationNo = verification?.applicationNo || record?.appId || '';
   const activeDocument =
     documents[Math.min(activeDocumentIndex, Math.max(documents.length - 1, 0))] ?? null;
-  const activeDocumentGoogleMapsUrl = activeDocument?.locationMetadata
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${activeDocument.locationMetadata.latitude},${activeDocument.locationMetadata.longitude}`)}`
-    : null;
+  const activeDocumentGoogleMapsUrl = activeDocument?.locationMetadata?.googleMapsUrl ?? null;
   const isFieldDataChanged = Object.keys(editedFieldValues).some(
     (fieldId) => editedFieldValues[fieldId] !== initialFieldValues[fieldId]
   );
@@ -1019,45 +1015,53 @@ export default function RtsApplicationProcessDrawer({
                               locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
                               { maximumFractionDigits: 6 }
                             );
-                            const capturedAt = new Intl.DateTimeFormat(
-                              locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
-                              { dateStyle: 'medium', timeStyle: 'short' }
-                            ).format(new Date(metadata.capturedAt));
+                            const isCameraCapture = metadata.source === 'camera';
+                            const capturedAt = isCameraCapture
+                              ? new Intl.DateTimeFormat(
+                                  locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
+                                  { dateStyle: 'medium', timeStyle: 'short' }
+                                ).format(new Date(metadata.capturedAt))
+                              : null;
 
                             return (
                               <div className="grid grid-cols-1 gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50/60 px-2.5 py-2 text-[11px] text-emerald-950 sm:grid-cols-2">
                                 <div className="flex items-center gap-1.5 font-bold text-emerald-800 sm:col-span-2">
                                   <MapPin className="h-3.5 w-3.5" />
-                                  {t('capturedLocation')}
+                                  {t(isCameraCapture ? 'capturedLocation' : 'uploadedLocation')}
                                 </div>
-                                <div>
-                                  <span className="font-semibold text-emerald-700">
-                                    {t('latitude')}:
-                                  </span>{' '}
-                                  {coordinateFormatter.format(metadata.latitude)}
-                                </div>
-                                <div>
-                                  <span className="font-semibold text-emerald-700">
-                                    {t('longitude')}:
-                                  </span>{' '}
-                                  {coordinateFormatter.format(metadata.longitude)}
-                                </div>
-                                <div>
-                                  <span className="font-semibold text-emerald-700">
-                                    {t('accuracy')}:
-                                  </span>{' '}
-                                  {metadata.accuracy == null
-                                    ? '—'
-                                    : t('meters', {
-                                        count: numberFormatter.format(Math.round(metadata.accuracy)),
-                                      })}
-                                </div>
-                                <div>
-                                  <span className="font-semibold text-emerald-700">
-                                    {t('capturedAt')}:
-                                  </span>{' '}
-                                  {capturedAt}
-                                </div>
+                                {isCameraCapture && <>
+                                  <div>
+                                    <span className="font-semibold text-emerald-700">
+                                      {t('latitude')}:
+                                    </span>{' '}
+                                    {coordinateFormatter.format(metadata.latitude)}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold text-emerald-700">
+                                      {t('longitude')}:
+                                    </span>{' '}
+                                    {coordinateFormatter.format(metadata.longitude)}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold text-emerald-700">
+                                      {t('accuracy')}:
+                                    </span>{' '}
+                                    {metadata.accuracy == null
+                                      ? '—'
+                                      : t('meters', {
+                                          count: numberFormatter.format(Math.round(metadata.accuracy)),
+                                        })}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold text-emerald-700">
+                                      {t('capturedAt')}:
+                                    </span>{' '}
+                                    {capturedAt}
+                                  </div>
+                                </>}
+                                <a href={metadata.googleMapsUrl} target="_blank" rel="noreferrer" className="inline-flex w-fit items-center gap-1.5 font-semibold text-blue-700 underline-offset-2 hover:underline sm:col-span-2">
+                                  <ExternalLink className="h-3.5 w-3.5" />{t('openInGoogleMaps')}
+                                </a>
                               </div>
                             );
                           })()}
@@ -1357,6 +1361,9 @@ export default function RtsApplicationProcessDrawer({
                                       const mapLocation = isMapField(field.fieldType)
                                         ? parseMapLocationValue(field.value)
                                         : null;
+                                      const mapUrl = isMapField(field.fieldType)
+                                        ? getMapLocationUrl(field.value)
+                                        : null;
                                       const isMapDetailsOpen =
                                         openMapFields[field.fieldDefinitionId] ?? false;
                                       const displayLabel = getApplicationFieldDisplayLabel(
@@ -1392,6 +1399,10 @@ export default function RtsApplicationProcessDrawer({
                                                         })}
                                                       </p>
                                                     </>
+                                                  ) : mapUrl ? (
+                                                    <p className="mt-0.5 text-xs font-medium text-slate-600">
+                                                      {t('mapLinkSaved')}
+                                                    </p>
                                                   ) : (
                                                     <p className="mt-0.5 text-xs font-medium text-slate-500">
                                                       {t('mapLocationUnavailable')}
@@ -1399,7 +1410,7 @@ export default function RtsApplicationProcessDrawer({
                                                   )}
                                                 </div>
                                               </div>
-                                              {mapLocation && (
+                                              {mapUrl && (
                                                 <button
                                                   type="button"
                                                   aria-expanded={isMapDetailsOpen}
@@ -1420,32 +1431,43 @@ export default function RtsApplicationProcessDrawer({
                                                 </button>
                                               )}
                                             </div>
-                                            {mapLocation && isMapDetailsOpen && (
+                                            {mapUrl && isMapDetailsOpen && (
                                               <div className="mt-3 overflow-hidden rounded-md border border-sky-200 bg-white">
-                                                <div className="grid gap-px border-b border-sky-100 bg-sky-100 sm:grid-cols-2">
-                                                  <p className="bg-white px-3 py-2 text-[11px] text-slate-700">
-                                                    <span className="font-bold text-sky-800">
-                                                      {t('latitude')}:
-                                                    </span>{' '}
-                                                    {numberFormatter.format(mapLocation.latitude)}
-                                                  </p>
-                                                  <p className="bg-white px-3 py-2 text-[11px] text-slate-700">
-                                                    <span className="font-bold text-sky-800">
-                                                      {t('longitude')}:
-                                                    </span>{' '}
-                                                    {numberFormatter.format(mapLocation.longitude)}
-                                                  </p>
-                                                </div>
-                                                <iframe
-                                                  title={t('mapPreviewTitle', { field: displayLabel })}
-                                                  src={getGoogleMapsEmbedUrl(mapLocation)}
-                                                  className="h-64 w-full border-0"
-                                                  loading="lazy"
-                                                  referrerPolicy="no-referrer-when-downgrade"
-                                                />
+                                                {mapLocation && (
+                                                  <>
+                                                    <div className="grid gap-px border-b border-sky-100 bg-sky-100 sm:grid-cols-2">
+                                                      <p className="bg-white px-3 py-2 text-[11px] text-slate-700">
+                                                        <span className="font-bold text-sky-800">
+                                                          {t('latitude')}:
+                                                        </span>{' '}
+                                                        {numberFormatter.format(mapLocation.latitude)}
+                                                      </p>
+                                                      <p className="bg-white px-3 py-2 text-[11px] text-slate-700">
+                                                        <span className="font-bold text-sky-800">
+                                                          {t('longitude')}:
+                                                        </span>{' '}
+                                                        {numberFormatter.format(mapLocation.longitude)}
+                                                      </p>
+                                                    </div>
+                                                    <iframe
+                                                      title={t('mapPreviewTitle', { field: displayLabel })}
+                                                      src={getGoogleMapsEmbedUrl(mapLocation)}
+                                                      className="h-64 w-full border-0"
+                                                      loading="lazy"
+                                                      referrerPolicy="no-referrer-when-downgrade"
+                                                    />
+                                                  </>
+                                                )}
                                                 <div className="flex justify-end border-t border-sky-100 bg-slate-50 px-2 py-2">
                                                   <a
-                                                    href={getGoogleMapsUrl(mapLocation)}
+                                                    href={
+                                                      mapLocation
+                                                        ? buildGoogleMapsLocationUrl(
+                                                            mapLocation.latitude,
+                                                            mapLocation.longitude
+                                                          ) ?? mapUrl
+                                                        : mapUrl
+                                                    }
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-bold text-sky-800 transition hover:bg-sky-100"

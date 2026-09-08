@@ -110,15 +110,10 @@ export type ActionField = BaseField & {
   };
 };
 
-export type PickedLocation = {
-  latitude: number;
-  longitude: number;
-  address: string;
-} | null;
-
-export type LocationPickerField = BaseField & {
-  type: "map" | "locationPicker";
-  persistKey?: string;
+export type MapLinkField = BaseField & {
+  type: "map";
+  required?: boolean;
+  validation?: FieldValidation;
   placeholder?: string | LangLabel;
 };
 
@@ -136,7 +131,7 @@ export type FieldConfig =
   | TextField
   | SelectField
   | RadioField
-  | LocationPickerField
+  | MapLinkField
   | CheckboxField
   | ActionField
   | CheckboxDropdownField;

@@ -237,11 +237,13 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
                       locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
                       { maximumFractionDigits: 6 }
                     );
-                    const capturedAt = new Intl.DateTimeFormat(
-                      locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
-                      { dateStyle: 'medium', timeStyle: 'short' }
-                    ).format(new Date(metadata.capturedAt));
-                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${metadata.latitude},${metadata.longitude}`)}`;
+                    const isCameraCapture = metadata.source === 'camera';
+                    const capturedAt = isCameraCapture
+                      ? new Intl.DateTimeFormat(
+                          locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
+                          { dateStyle: 'medium', timeStyle: 'short' }
+                        ).format(new Date(metadata.capturedAt))
+                      : null;
 
                     return (
                       <div className="w-full border-t border-emerald-100 pt-2.5">
@@ -256,16 +258,18 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
                           className="flex w-full items-center justify-between gap-2 rounded-lg bg-emerald-50 px-2.5 py-2 text-left text-[11px] font-semibold text-emerald-800 transition hover:bg-emerald-100"
                           aria-expanded={isExpanded}
                         >
-                          <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{tProcess('capturedLocation')}</span>
+                          <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{tProcess(isCameraCapture ? 'capturedLocation' : 'uploadedLocation')}</span>
                           <span className="flex items-center gap-1">{isExpanded ? tProcess('hideLocationDetails') : tProcess('showLocationDetails')}<ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} /></span>
                         </button>
                         {isExpanded && (
                           <div className="mt-2 grid grid-cols-1 gap-2 rounded-lg border border-emerald-100 bg-emerald-50/40 px-3 py-2.5 text-[11px] text-emerald-950 sm:grid-cols-2">
-                            <div><span className="font-semibold text-emerald-700">{tProcess('latitude')}:</span> {coordinateFormatter.format(metadata.latitude)}</div>
-                            <div><span className="font-semibold text-emerald-700">{tProcess('longitude')}:</span> {coordinateFormatter.format(metadata.longitude)}</div>
-                            <div><span className="font-semibold text-emerald-700">{tProcess('accuracy')}:</span> {metadata.accuracy == null ? '—' : tProcess('meters', { count: numberFormatter.format(Math.round(metadata.accuracy)) })}</div>
-                            <div><span className="font-semibold text-emerald-700">{tProcess('capturedAt')}:</span> {capturedAt}</div>
-                            <a href={googleMapsUrl} target="_blank" rel="noreferrer" className="inline-flex w-fit items-center gap-1.5 font-semibold text-blue-700 underline-offset-2 hover:underline sm:col-span-2">
+                            {isCameraCapture && <>
+                              <div><span className="font-semibold text-emerald-700">{tProcess('latitude')}:</span> {coordinateFormatter.format(metadata.latitude)}</div>
+                              <div><span className="font-semibold text-emerald-700">{tProcess('longitude')}:</span> {coordinateFormatter.format(metadata.longitude)}</div>
+                              <div><span className="font-semibold text-emerald-700">{tProcess('accuracy')}:</span> {metadata.accuracy == null ? '—' : tProcess('meters', { count: numberFormatter.format(Math.round(metadata.accuracy)) })}</div>
+                              <div><span className="font-semibold text-emerald-700">{tProcess('capturedAt')}:</span> {capturedAt}</div>
+                            </>}
+                            <a href={metadata.googleMapsUrl} target="_blank" rel="noreferrer" className="inline-flex w-fit items-center gap-1.5 font-semibold text-blue-700 underline-offset-2 hover:underline sm:col-span-2">
                               <ExternalLink className="h-3.5 w-3.5" />{tProcess('openInGoogleMaps')}
                             </a>
                           </div>

@@ -8,6 +8,7 @@ import { isValidMapLocationValue } from "@/lib/utils/rts/map-location-value";
 import {
   getFileLatLogDocumentGuid,
   getFileLatLogFile,
+  getFileLatLogMetadata,
   isFileLatLogFieldValue,
   serializeFileLatLogCaptureMetadata,
 } from "@/lib/utils/rts/file-lat-log-value";
@@ -528,10 +529,23 @@ export default function DynamicServiceFormClient({
     return formats.some((format) => format.toLowerCase() === extension);
   };
 
-  const matchesFileLatLogTypes = (file: File, field: FormField | any) => {
+  const matchesFileLatLogTypes = (file: File, field: FormField | any, source: "camera" | "upload") => {
     const formats = field?.validation?.acceptedFormats;
     if (Array.isArray(formats) && formats.length) return matchesAllowedFileTypes(file, formats);
-    return file.type.startsWith("image/");
+    const accept = field?.validation?.accept;
+    if (typeof accept === "string" && accept.trim()) {
+      const extension = file.name.includes(".") ? `.${file.name.split(".").pop()?.toLowerCase() ?? ""}` : "";
+      const acceptsFile = accept.split(",").map((entry: string) => entry.trim().toLowerCase()).some((entry: string) => {
+        if (!entry) return false;
+        if (entry.startsWith(".")) return entry === extension;
+        if (entry.endsWith("/*")) return file.type.toLowerCase().startsWith(entry.slice(0, -1));
+        return entry === file.type.toLowerCase();
+      });
+      return source === "camera" ? acceptsFile && file.type.startsWith("image/") : acceptsFile;
+    }
+    return source === "camera"
+      ? file.type.startsWith("image/")
+      : file.type.startsWith("image/") || file.type === "application/pdf";
   };
 
   const getInvalidRuleMessage = (
@@ -626,8 +640,8 @@ export default function DynamicServiceFormClient({
     if (fieldType === "datetime-local") return "Please enter a date and time";
     if (fieldType === "file" || fieldType === "filelatlog") {
       const formats = field?.validation?.acceptedFormats;
-      return fieldType === "filelatlog" && !formats?.length
-        ? t("fileLatLog.imageOnly")
+      return fieldType === "filelatlog" && !formats?.length && !field?.validation?.accept
+        ? t("fileLatLog.uploadFileHint")
         : `Please upload your ${formatAcceptedFileTypes(formats)}`;
     }
 
@@ -701,23 +715,30 @@ export default function DynamicServiceFormClient({
       if (!isValidMapLocationValue(value)) {
         return t("map.validation");
       }
-      return null;
     }
 
     if (fieldType.toLowerCase() === "filelatlog") {
       const selectedFile = getFileLatLogFile(value);
       const documentGuid = getFileLatLogDocumentGuid(value);
+      const metadata = getFileLatLogMetadata(value);
+      const rawMetadata = isFileLatLogFieldValue(value) ? value.metadata : null;
 
       if (field?.required && !selectedFile && !documentGuid) {
         return getEmptyRequiredMessage(field);
       }
       if (!selectedFile && !documentGuid) return null;
 
+      if (!metadata) {
+        return rawMetadata && typeof rawMetadata === "object" && (rawMetadata as { source?: unknown }).source === "upload"
+          ? t("fileLatLog.mapLinkInvalid")
+          : t("fileLatLog.mapLinkRequired");
+      }
+
       if (selectedFile) {
-        if (!matchesFileLatLogTypes(selectedFile, field)) {
-          return Array.isArray(field?.validation?.acceptedFormats) && field.validation.acceptedFormats.length
+        if (!matchesFileLatLogTypes(selectedFile, field, metadata.source)) {
+          return (Array.isArray(field?.validation?.acceptedFormats) && field.validation.acceptedFormats.length) || field?.validation?.accept
             ? getInvalidRuleMessage(field, "fileType")
-            : t("fileLatLog.imageOnly");
+            : metadata.source === "camera" ? t("fileLatLog.imageOnly") : t("fileLatLog.uploadFileHint");
         }
 
         const maxFileSizeMb = field?.validation?.maxFileSizeMb;

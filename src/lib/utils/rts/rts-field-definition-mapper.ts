@@ -377,7 +377,9 @@ function mapRtsFieldType(fieldType: string): DynamicRenderFieldType {
 }
 
 function getFieldColSpan(type: DynamicRenderFieldType): 1 | 2 | 4 {
-  if (type === "textarea" || type === "file" || type === "fileLatLog" || type === "checkbox" || type === "label" || type === "map") {
+  if (type === "map") return 1;
+
+  if (type === "textarea" || type === "file" || type === "fileLatLog" || type === "checkbox" || type === "label") {
     return 4;
   }
 
@@ -663,6 +665,8 @@ function mapApiFieldTypeToOldType(apiType: string) {
 }
 
 function getApiFieldColSpan(oldType: string, optionsCount = 0) {
+  if (oldType === "map") return 4;
+
   if (oldType === "checkbox") {
     if (optionsCount === 0) return 12;
     if (optionsCount <= 2) return 4;
@@ -680,8 +684,7 @@ function getApiFieldColSpan(oldType: string, optionsCount = 0) {
     oldType === "checkboxDropdown" ||
     oldType === "file" ||
     oldType === "fileLatLog" ||
-    oldType === "label" ||
-    oldType === "map"
+    oldType === "label"
   ) {
     return 12;
   }
