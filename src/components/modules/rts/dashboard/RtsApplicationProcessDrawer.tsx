@@ -10,11 +10,13 @@ import {
   ChevronRight,
   ChevronUp,
   Download,
+  ExternalLink,
   FileCheck2,
   FileText,
   GitCommit,
   IndianRupee,
   LoaderCircle,
+  MapPin,
   Paperclip,
   Pencil,
   Printer,
@@ -62,6 +64,14 @@ import {
 import { hasApprovalOfficerAccess } from '@/lib/utils/rts/approval-officer-access';
 import { getRtsApplicationStatusBadgeProps } from '@/lib/utils/rts/application-status-badge';
 import { getApplicationFieldDisplayLabel } from '@/lib/utils/rts/application-field-label';
+import {
+  parseFileLatLogCaptureMetadata,
+  type FileLatLogCaptureMetadata,
+} from '@/lib/utils/rts/file-lat-log-value';
+import {
+  parseMapLocationValue,
+  type MapLocationValue,
+} from '@/lib/utils/rts/map-location-value';
 import type {
   RtsApplicationApprovalFieldValuePayload,
   RtsApplicationViewDetailField,
@@ -94,6 +104,7 @@ interface DisplayDocument {
   guid: string;
   isRequired: boolean;
   isUploaded: boolean;
+  locationMetadata: FileLatLogCaptureMetadata | null;
 }
 
 type DecisionActionKey = 'canVerifyDocument' | 'canApprove' | 'canReject' | 'canReturn';
@@ -113,6 +124,21 @@ const DECISION_CONFIRMATION_TITLE_KEYS: Record<
 
 function isDeclarationGroup(title: string): boolean {
   return title.trim().toLowerCase().includes('declaration');
+}
+
+function isMapField(fieldType: string | null | undefined): boolean {
+  return ['map', 'locationpicker', 'location_picker', 'location'].includes(
+    String(fieldType ?? '').trim().toLowerCase()
+  );
+}
+
+function getGoogleMapsEmbedUrl(location: MapLocationValue): string {
+  const query = encodeURIComponent(`${location.latitude},${location.longitude}`);
+  return `https://www.google.com/maps?q=${query}&z=16&output=embed`;
+}
+
+function getGoogleMapsUrl(location: MapLocationValue): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${location.latitude},${location.longitude}`)}`;
 }
 
 function getInitialFieldValues(data: RtsApplicationProcessData | null): Record<string, string> {
@@ -213,6 +239,7 @@ export default function RtsApplicationProcessDrawer({
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     getInitialOpenGroups(data, t('generalDetails'))
   );
+  const [openMapFields, setOpenMapFields] = useState<Record<number, boolean>>({});
   const [activeDocumentIndex, setActiveDocumentIndex] = useState(0);
   const [officerRemark, setOfficerRemark] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -256,15 +283,25 @@ export default function RtsApplicationProcessDrawer({
   }, [data?.details?.applicationDetails, t]);
 
   const documents = useMemo<DisplayDocument[]>(
-    () =>
-      (data?.details?.documents ?? []).map((document, index) => ({
+    () => {
+      const locationMetadataByFieldDefinitionId = new Map(
+        (data?.details?.applicationDetails ?? [])
+          .filter((field) => String(field.fieldType ?? '').trim().toLowerCase() === 'filelatlog')
+          .map((field) => [field.fieldDefinitionId, parseFileLatLogCaptureMetadata(field.value)])
+      );
+
+      return (data?.details?.documents ?? []).map((document, index) => ({
         id: document.fieldDefinitionId ?? document.documentId ?? index + 1,
         name: document.documentName || t('documentFallback'),
         guid: document.documentGuid || '',
         isRequired: Boolean(document.isRequired),
         isUploaded: Boolean(document.isUploaded && document.documentGuid),
-      })),
-    [data?.details?.documents, t]
+        locationMetadata: document.fieldDefinitionId
+          ? locationMetadataByFieldDefinitionId.get(document.fieldDefinitionId) ?? null
+          : null,
+      }));
+    },
+    [data?.details?.applicationDetails, data?.details?.documents, t]
   );
 
   const stages = data?.stages ?? null;
@@ -363,6 +400,9 @@ export default function RtsApplicationProcessDrawer({
   const headerApplicationNo = verification?.applicationNo || record?.appId || '';
   const activeDocument =
     documents[Math.min(activeDocumentIndex, Math.max(documents.length - 1, 0))] ?? null;
+  const activeDocumentGoogleMapsUrl = activeDocument?.locationMetadata
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${activeDocument.locationMetadata.latitude},${activeDocument.locationMetadata.longitude}`)}`
+    : null;
   const isFieldDataChanged = Object.keys(editedFieldValues).some(
     (fieldId) => editedFieldValues[fieldId] !== initialFieldValues[fieldId]
   );
@@ -420,6 +460,7 @@ export default function RtsApplicationProcessDrawer({
 
   const closeDrawer = () => {
     setOpenGroups({});
+    setOpenMapFields({});
     setActiveDocumentIndex(0);
     setOfficerRemark('');
     setIsEditing(false);
@@ -866,6 +907,18 @@ export default function RtsApplicationProcessDrawer({
                             >
                               {t('download')}
                             </Button>
+                            {activeDocumentGoogleMapsUrl && (
+                              <a
+                                href={activeDocumentGoogleMapsUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                              >
+                                <MapPin className="h-3.5 w-3.5" />
+                                {t('locationLink')}
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
                           </div>
                         )}
                       </div>
@@ -960,6 +1013,54 @@ export default function RtsApplicationProcessDrawer({
                                   : t('optionalMissing')}
                             </p>
                           </div>
+                          {activeDocument.locationMetadata && (() => {
+                            const metadata = activeDocument.locationMetadata;
+                            const coordinateFormatter = new Intl.NumberFormat(
+                              locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
+                              { maximumFractionDigits: 6 }
+                            );
+                            const capturedAt = new Intl.DateTimeFormat(
+                              locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
+                              { dateStyle: 'medium', timeStyle: 'short' }
+                            ).format(new Date(metadata.capturedAt));
+
+                            return (
+                              <div className="grid grid-cols-1 gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50/60 px-2.5 py-2 text-[11px] text-emerald-950 sm:grid-cols-2">
+                                <div className="flex items-center gap-1.5 font-bold text-emerald-800 sm:col-span-2">
+                                  <MapPin className="h-3.5 w-3.5" />
+                                  {t('capturedLocation')}
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-emerald-700">
+                                    {t('latitude')}:
+                                  </span>{' '}
+                                  {coordinateFormatter.format(metadata.latitude)}
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-emerald-700">
+                                    {t('longitude')}:
+                                  </span>{' '}
+                                  {coordinateFormatter.format(metadata.longitude)}
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-emerald-700">
+                                    {t('accuracy')}:
+                                  </span>{' '}
+                                  {metadata.accuracy == null
+                                    ? '—'
+                                    : t('meters', {
+                                        count: numberFormatter.format(Math.round(metadata.accuracy)),
+                                      })}
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-emerald-700">
+                                    {t('capturedAt')}:
+                                  </span>{' '}
+                                  {capturedAt}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       ) : null}
                     </section>
@@ -1252,37 +1353,141 @@ export default function RtsApplicationProcessDrawer({
                                   </div>
                                 ) : (
                                   <div className="grid grid-cols-1 gap-x-5 gap-y-4 p-4 sm:grid-cols-2 xl:grid-cols-3">
-                                    {group.fields.map((field) => (
-                                      <div key={field.fieldDefinitionId} className="min-w-0">
-                                        <Label
-                                          htmlFor={`field-${field.fieldDefinitionId}`}
-                                          className="mb-1 block text-[9px] font-bold uppercase tracking-wide text-slate-600"
-                                        >
-                                          {getApplicationFieldDisplayLabel(
-                                            field,
-                                            locale,
-                                            t('documentFallback')
-                                          )}
-                                        </Label>
-                                        <Input
-                                          fullWidth
-                                          // label={field.fieldLabel}
-                                          value={
-                                            editedFieldValues[field.fieldDefinitionId.toString()] ??
-                                            ''
-                                          }
-                                          disabled={!isEditing || !hasOfficerAccess}
-                                          onChange={(event) =>
-                                            setEditedFieldValues((values) => ({
-                                              ...values,
-                                              [field.fieldDefinitionId.toString()]:
-                                                event.target.value,
-                                            }))
-                                          }
-                                          className="h-9 text-sm font-medium disabled:bg-slate-50 disabled:text-slate-700 disabled:opacity-100"
-                                        />
-                                      </div>
-                                    ))}
+                                    {group.fields.map((field) => {
+                                      const mapLocation = isMapField(field.fieldType)
+                                        ? parseMapLocationValue(field.value)
+                                        : null;
+                                      const isMapDetailsOpen =
+                                        openMapFields[field.fieldDefinitionId] ?? false;
+                                      const displayLabel = getApplicationFieldDisplayLabel(
+                                        field,
+                                        locale,
+                                        t('documentFallback')
+                                      );
+
+                                      if (isMapField(field.fieldType)) {
+                                        return (
+                                          <section
+                                            key={field.fieldDefinitionId}
+                                            className="min-w-0 rounded-lg border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-blue-50/50 p-3 shadow-sm sm:col-span-2 xl:col-span-3"
+                                          >
+                                            <div className="flex flex-wrap items-start justify-between gap-3">
+                                              <div className="flex min-w-0 items-start gap-2.5">
+                                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-sky-200 bg-white text-sky-700 shadow-sm">
+                                                  <MapPin className="h-4 w-4" />
+                                                </span>
+                                                <div className="min-w-0">
+                                                  <p className="text-[10px] font-extrabold uppercase tracking-wide text-sky-800">
+                                                    {displayLabel}
+                                                  </p>
+                                                  {mapLocation ? (
+                                                    <>
+                                                      <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">
+                                                        {mapLocation.address}
+                                                      </p>
+                                                      <p className="mt-0.5 text-[11px] font-medium text-slate-600">
+                                                        {t('mapCoordinates', {
+                                                          latitude: numberFormatter.format(mapLocation.latitude),
+                                                          longitude: numberFormatter.format(mapLocation.longitude),
+                                                        })}
+                                                      </p>
+                                                    </>
+                                                  ) : (
+                                                    <p className="mt-0.5 text-xs font-medium text-slate-500">
+                                                      {t('mapLocationUnavailable')}
+                                                    </p>
+                                                  )}
+                                                </div>
+                                              </div>
+                                              {mapLocation && (
+                                                <button
+                                                  type="button"
+                                                  aria-expanded={isMapDetailsOpen}
+                                                  onClick={() =>
+                                                    setOpenMapFields((current) => ({
+                                                      ...current,
+                                                      [field.fieldDefinitionId]: !isMapDetailsOpen,
+                                                    }))
+                                                  }
+                                                  className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-sky-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-sky-800 shadow-sm transition hover:bg-sky-50"
+                                                >
+                                                  {t('mapDetails')}
+                                                  {isMapDetailsOpen ? (
+                                                    <ChevronUp className="h-3.5 w-3.5" />
+                                                  ) : (
+                                                    <ChevronDown className="h-3.5 w-3.5" />
+                                                  )}
+                                                </button>
+                                              )}
+                                            </div>
+                                            {mapLocation && isMapDetailsOpen && (
+                                              <div className="mt-3 overflow-hidden rounded-md border border-sky-200 bg-white">
+                                                <div className="grid gap-px border-b border-sky-100 bg-sky-100 sm:grid-cols-2">
+                                                  <p className="bg-white px-3 py-2 text-[11px] text-slate-700">
+                                                    <span className="font-bold text-sky-800">
+                                                      {t('latitude')}:
+                                                    </span>{' '}
+                                                    {numberFormatter.format(mapLocation.latitude)}
+                                                  </p>
+                                                  <p className="bg-white px-3 py-2 text-[11px] text-slate-700">
+                                                    <span className="font-bold text-sky-800">
+                                                      {t('longitude')}:
+                                                    </span>{' '}
+                                                    {numberFormatter.format(mapLocation.longitude)}
+                                                  </p>
+                                                </div>
+                                                <iframe
+                                                  title={t('mapPreviewTitle', { field: displayLabel })}
+                                                  src={getGoogleMapsEmbedUrl(mapLocation)}
+                                                  className="h-64 w-full border-0"
+                                                  loading="lazy"
+                                                  referrerPolicy="no-referrer-when-downgrade"
+                                                />
+                                                <div className="flex justify-end border-t border-sky-100 bg-slate-50 px-2 py-2">
+                                                  <a
+                                                    href={getGoogleMapsUrl(mapLocation)}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-bold text-sky-800 transition hover:bg-sky-100"
+                                                  >
+                                                    <MapPin className="h-3.5 w-3.5" />
+                                                    {t('openInGoogleMaps')}
+                                                    <ExternalLink className="h-3 w-3" />
+                                                  </a>
+                                                </div>
+                                              </div>
+                                            )}
+                                          </section>
+                                        );
+                                      }
+
+                                      return (
+                                        <div key={field.fieldDefinitionId} className="min-w-0">
+                                          <Label
+                                            htmlFor={`field-${field.fieldDefinitionId}`}
+                                            className="mb-1 block text-[9px] font-bold uppercase tracking-wide text-slate-600"
+                                          >
+                                            {displayLabel}
+                                          </Label>
+                                          <Input
+                                            fullWidth
+                                            value={
+                                              editedFieldValues[field.fieldDefinitionId.toString()] ??
+                                              ''
+                                            }
+                                            disabled={!isEditing || !hasOfficerAccess}
+                                            onChange={(event) =>
+                                              setEditedFieldValues((values) => ({
+                                                ...values,
+                                                [field.fieldDefinitionId.toString()]:
+                                                  event.target.value,
+                                              }))
+                                            }
+                                            className="h-9 text-sm font-medium disabled:bg-slate-50 disabled:text-slate-700 disabled:opacity-100"
+                                          />
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 ))}
                             </article>

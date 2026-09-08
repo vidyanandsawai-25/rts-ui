@@ -17,6 +17,7 @@ interface SubmitRtsFileFieldMeta {
   fieldDefinitionId: number;
   fieldName: string;
   fieldLabel: string;
+  textValue?: string | null;
 }
 
 interface SubmitRtsApplicationActionInput {
@@ -57,6 +58,7 @@ export async function submitRtsApplicationAction(
   const input = JSON.parse(serializedInput) as SubmitRtsApplicationActionInput;
   const fileFields = Array.isArray(input.fileFields) ? input.fileFields : [];
   const documentGuidByFieldDefinitionId: Record<string, string> = {};
+  const textValueByFieldDefinitionId: Record<string, string> = {};
   const ownerId = readCitizenOwnerIdFromCookieValue(
     cookieStore.get("rts_citizen_profile")?.value
   );
@@ -92,6 +94,9 @@ export async function submitRtsApplicationAction(
     });
 
     documentGuidByFieldDefinitionId[String(fileField.fieldDefinitionId)] = uploadResult.documentGuid;
+    if (typeof fileField.textValue === "string" && fileField.textValue.trim()) {
+      textValueByFieldDefinitionId[String(fileField.fieldDefinitionId)] = fileField.textValue;
+    }
   }
 
   const payload: CreateRtsApplicationPayload = buildRtsApplicationPayload({
@@ -105,6 +110,7 @@ export async function submitRtsApplicationAction(
     createdBy: input.createdBy,
     applicationStatus: input.applicationStatus,
     documentGuidByFieldDefinitionId,
+    textValueByFieldDefinitionId,
   });
 
   return createRtsApplication(payload);

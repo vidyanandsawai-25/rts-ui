@@ -11,6 +11,7 @@ export interface BuildRtsApplicationPayloadParams {
   createdBy?: number;
   applicationStatus?: string;
   documentGuidByFieldDefinitionId?: Record<string, string>;
+  textValueByFieldDefinitionId?: Record<string, string>;
 }
 
 export type ApplicantContactResolution = {
@@ -167,6 +168,7 @@ export function buildRtsApplicationPayload({
   createdBy = 0,
   applicationStatus = "pending",
   documentGuidByFieldDefinitionId = {},
+  textValueByFieldDefinitionId = {},
 }: BuildRtsApplicationPayloadParams): CreateRtsApplicationPayload {
   const applicantContact = resolveApplicantContact(formData, steps);
   if (applicantContact.missing.length) {
@@ -207,6 +209,9 @@ export function buildRtsApplicationPayload({
         }
       } else if (fieldType === "file") {
         fieldValue.documentGuid = documentGuidByFieldDefinitionId[String(fieldDefinitionId)] ?? null;
+      } else if (fieldType === "filelatlog") {
+        fieldValue.documentGuid = documentGuidByFieldDefinitionId[String(fieldDefinitionId)] ?? null;
+        fieldValue.textValue = textValueByFieldDefinitionId[String(fieldDefinitionId)] ?? null;
       } else if (fieldType === "number" || fieldType === "decimal" || fieldType === "year") {
         const numeric = toNumberValue(value);
         fieldValue.numberValue = numeric;
