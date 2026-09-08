@@ -151,7 +151,7 @@ export default function RtsApplicationFullDetailView({
         isRequired: Boolean(document.isRequired),
         isUploaded: Boolean(document.isUploaded && document.documentGuid),
         locationMetadata: document.fieldDefinitionId
-          ? locationMetadataByFieldDefinitionId.get(document.fieldDefinitionId) ?? null
+          ? parseFileLatLogCaptureMetadata(document.value) ?? locationMetadataByFieldDefinitionId.get(document.fieldDefinitionId) ?? null
           : null,
       }));
     },
@@ -333,7 +333,7 @@ export default function RtsApplicationFullDetailView({
                             <ViewButton size="xs" onClick={() => onOpenDocument(activeDocument.guid)} className="rounded-lg px-2 text-[11px]">{t('view')}</ViewButton>
                             <Button type="button" size="xs" variant="secondary" icon={Download} onClick={() => window.open(getAdminRtsDocumentDownloadUrl(activeDocument.guid), '_blank')} className="rounded-lg px-2 text-[11px]">{t('download')}</Button>
                             {activeDocumentGoogleMapsUrl && (
-                              <a href={activeDocumentGoogleMapsUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100">
+                              <a href={activeDocumentGoogleMapsUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-transparent px-3 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-50">
                                 <MapPin className="h-3.5 w-3.5" />
                                 {t('locationLink')}
                                 <ExternalLink className="h-3 w-3" />
@@ -394,6 +394,7 @@ export default function RtsApplicationFullDetailView({
                                   <MapPin className="h-3.5 w-3.5" />
                                   {t(isCameraCapture ? 'capturedLocation' : 'uploadedLocation')}
                                 </div>
+                                <div><span className="font-semibold text-emerald-700">{t('source')}:</span> {t(isCameraCapture ? 'sourceCamera' : 'sourceUpload')}</div>
                                 {isCameraCapture && <>
                                   <div><span className="font-semibold text-emerald-700">{t('latitude')}:</span> {coordinateFormatter.format(metadata.latitude)}</div>
                                   <div><span className="font-semibold text-emerald-700">{t('longitude')}:</span> {coordinateFormatter.format(metadata.longitude)}</div>

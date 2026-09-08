@@ -98,7 +98,7 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
       guid: d.documentGuid || '',
       size: d.fileSizeBytes ? `${(d.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : 'Attachment',
       locationMetadata: d.fieldDefinitionId
-        ? fileLatLogMetadataByFieldDefinitionId.get(d.fieldDefinitionId) ?? null
+        ? parseFileLatLogCaptureMetadata(d.value) ?? fileLatLogMetadataByFieldDefinitionId.get(d.fieldDefinitionId) ?? null
         : null,
     })),
   ];
@@ -183,30 +183,34 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
             </div>
           ) : documents.length > 0 ? (
             <div className="grid grid-cols-1 gap-2.5">
-              {documents.map((doc) => (
+              {documents.map((doc) => {
+                const isLocationExpanded = expandedLocationDocuments.has(doc.id);
+
+                return (
                 <div
                   key={doc.id}
-                  className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3.5 transition hover:border-blue-200"
+                  className="flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-white p-3.5 transition hover:border-blue-200"
                 >
-                  <div className="flex items-center gap-3 min-w-0 flex-1 w-full sm:w-auto">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-600">
-                      <FileText className="h-5 w-5" />
+                  <div className="flex min-w-0 items-center justify-between gap-3">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-600">
+                        <FileText className="h-5 w-5" />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className="truncate text-[13px] font-bold text-slate-800"
+                          title={doc.label}
+                        >
+                          {doc.label}
+                        </div>
+                        <div className="truncate text-[11px] font-medium text-slate-400">
+                          {doc.fileName} • {doc.fileSize}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className="text-[13px] font-bold text-slate-800 truncate block"
-                        title={doc.label}
-                      >
-                        {doc.label}
-                      </div>
-                      <div className="text-[11px] font-medium text-slate-400 truncate">
-                        {doc.fileName} • {doc.fileSize}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                  <div className="flex shrink-0 items-center gap-2">
                     <ViewButton
                       size="xs"
                       onClick={() => onOpenDocument(doc.guid)}
@@ -230,8 +234,24 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
                       {tProcess('download')}
                     </Button>
                   </div>
+                  </div>
+                  {doc.locationMetadata && (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedLocationDocuments((previous) => {
+                        const next = new Set(previous);
+                        if (next.has(doc.id)) next.delete(doc.id);
+                        else next.add(doc.id);
+                        return next;
+                      })}
+                      className="flex h-8 w-full items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 text-left text-[11px] font-semibold text-emerald-800 transition hover:bg-emerald-100"
+                      aria-expanded={isLocationExpanded}
+                    >
+                      <span className="flex min-w-0 items-center gap-1.5"><MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-600" />{tProcess(doc.locationMetadata.source === 'camera' ? 'capturedLocation' : 'uploadedLocation')}</span>
+                      <span className="flex shrink-0 items-center gap-1 text-emerald-700/80">{isLocationExpanded ? tProcess('hideLocationDetails') : tProcess('showLocationDetails')}<ChevronDown className={`h-3.5 w-3.5 transition-transform ${isLocationExpanded ? 'rotate-180' : ''}`} /></span>
+                    </button>
+                  )}
                   {doc.locationMetadata && (() => {
-                    const isExpanded = expandedLocationDocuments.has(doc.id);
                     const metadata = doc.locationMetadata;
                     const coordinateFormatter = new Intl.NumberFormat(
                       locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
@@ -245,40 +265,27 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
                         ).format(new Date(metadata.capturedAt))
                       : null;
 
-                    return (
-                      <div className="w-full border-t border-emerald-100 pt-2.5">
-                        <button
-                          type="button"
-                          onClick={() => setExpandedLocationDocuments((previous) => {
-                            const next = new Set(previous);
-                            if (next.has(doc.id)) next.delete(doc.id);
-                            else next.add(doc.id);
-                            return next;
-                          })}
-                          className="flex w-full items-center justify-between gap-2 rounded-lg bg-emerald-50 px-2.5 py-2 text-left text-[11px] font-semibold text-emerald-800 transition hover:bg-emerald-100"
-                          aria-expanded={isExpanded}
-                        >
-                          <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{tProcess(isCameraCapture ? 'capturedLocation' : 'uploadedLocation')}</span>
-                          <span className="flex items-center gap-1">{isExpanded ? tProcess('hideLocationDetails') : tProcess('showLocationDetails')}<ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} /></span>
-                        </button>
-                        {isExpanded && (
-                          <div className="mt-2 grid grid-cols-1 gap-2 rounded-lg border border-emerald-100 bg-emerald-50/40 px-3 py-2.5 text-[11px] text-emerald-950 sm:grid-cols-2">
+                    return isLocationExpanded ? (
+                      <div className="w-full border-t border-slate-100 pt-2.5">
+                        <div className="grid grid-cols-1 gap-2 rounded-lg border border-emerald-100 bg-emerald-50/40 px-3 py-2.5 text-[11px] text-emerald-950 sm:grid-cols-2">
+                            <div><span className="font-semibold text-emerald-700">{tProcess('source')}:</span> {tProcess(isCameraCapture ? 'sourceCamera' : 'sourceUpload')}</div>
                             {isCameraCapture && <>
                               <div><span className="font-semibold text-emerald-700">{tProcess('latitude')}:</span> {coordinateFormatter.format(metadata.latitude)}</div>
                               <div><span className="font-semibold text-emerald-700">{tProcess('longitude')}:</span> {coordinateFormatter.format(metadata.longitude)}</div>
                               <div><span className="font-semibold text-emerald-700">{tProcess('accuracy')}:</span> {metadata.accuracy == null ? '—' : tProcess('meters', { count: numberFormatter.format(Math.round(metadata.accuracy)) })}</div>
                               <div><span className="font-semibold text-emerald-700">{tProcess('capturedAt')}:</span> {capturedAt}</div>
                             </>}
-                            <a href={metadata.googleMapsUrl} target="_blank" rel="noreferrer" className="inline-flex w-fit items-center gap-1.5 font-semibold text-blue-700 underline-offset-2 hover:underline sm:col-span-2">
-                              <ExternalLink className="h-3.5 w-3.5" />{tProcess('openInGoogleMaps')}
+                            <a href={metadata.googleMapsUrl} target="_blank" rel="noreferrer" className="inline-flex w-fit items-center gap-1.5 rounded-full border border-blue-200 bg-transparent px-3 py-1.5 font-semibold text-blue-700 transition hover:bg-blue-50 sm:col-span-2">
+                              <MapPin className="h-3.5 w-3.5" />{tProcess('locationLink')}
+                              <ExternalLink className="h-3 w-3" />
                             </a>
-                          </div>
-                        )}
+                        </div>
                       </div>
-                    );
+                    ) : null;
                   })()}
                 </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="py-6 text-center text-xs font-medium text-slate-400">

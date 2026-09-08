@@ -123,6 +123,8 @@ export interface RtsApplicationDocumentItem {
   documentNameLocal?: string | null;
   local?: string | null;
   documentGuid?: string;
+  /** Serialized field metadata, including fileLatLog location details when available. */
+  value?: string | null;
   documentUrl?: string | null;
   storagePath?: string | null;
   fileSizeBytes?: number;

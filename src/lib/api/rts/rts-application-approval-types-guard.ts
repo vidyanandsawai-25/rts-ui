@@ -172,6 +172,7 @@ export function normalizeRtsApplicationViewDetailsItem(
       documentNameLocal: parseNullableString(d.documentNameLocal),
       local: parseNullableString(d.local) ?? parseNullableString(d.documentNameLocal),
       documentGuid: parseString(d.documentGuid),
+      value: parseNullableString(d.value),
       documentUrl: parseNullableString(d.documentUrl),
       storagePath: parseNullableString(d.storagePath),
       fileSizeBytes: parseNullableNumber(d.fileSizeBytes) ?? 0,

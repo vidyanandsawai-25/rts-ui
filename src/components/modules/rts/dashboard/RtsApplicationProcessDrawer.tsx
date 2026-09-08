@@ -295,7 +295,7 @@ export default function RtsApplicationProcessDrawer({
         isRequired: Boolean(document.isRequired),
         isUploaded: Boolean(document.isUploaded && document.documentGuid),
         locationMetadata: document.fieldDefinitionId
-          ? locationMetadataByFieldDefinitionId.get(document.fieldDefinitionId) ?? null
+          ? parseFileLatLogCaptureMetadata(document.value) ?? locationMetadataByFieldDefinitionId.get(document.fieldDefinitionId) ?? null
           : null,
       }));
     },
@@ -908,7 +908,7 @@ export default function RtsApplicationProcessDrawer({
                                 href={activeDocumentGoogleMapsUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                                className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-transparent px-3 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-50"
                               >
                                 <MapPin className="h-3.5 w-3.5" />
                                 {t('locationLink')}
@@ -1029,6 +1029,7 @@ export default function RtsApplicationProcessDrawer({
                                   <MapPin className="h-3.5 w-3.5" />
                                   {t(isCameraCapture ? 'capturedLocation' : 'uploadedLocation')}
                                 </div>
+                                <div><span className="font-semibold text-emerald-700">{t('source')}:</span> {t(isCameraCapture ? 'sourceCamera' : 'sourceUpload')}</div>
                                 {isCameraCapture && <>
                                   <div>
                                     <span className="font-semibold text-emerald-700">
