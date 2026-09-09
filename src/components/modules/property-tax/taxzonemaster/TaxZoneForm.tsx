@@ -10,7 +10,7 @@ import type { TaxZoneFormModel } from "@/types/taxzone.types";
 import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone-master/taxzone/action";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
-import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE, isAllZeros } from "@/lib/utils/validation-rules";
+import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, isAllZeros, sanitizeMultilingualText } from "@/lib/utils/validation-rules";
 import { getUserIdFromCookie } from "@/lib/utils/cookie";
 import { StatusToggleCard } from "./StatusToggleCard";
 import { FormFieldsSection } from "./FormFieldsSection";
@@ -76,7 +76,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
     } else if (!DESCRIPTION_REGEX.test(data.taxZoneType)) {
       e.taxZoneType = t("form.validation.zoneTypeFormat");
     }
-    else if (data.taxZoneType.length > 50) {
+    else if (data.taxZoneType.length > 15) {
       e.taxZoneType = t("form.validation.zoneTypeMax");
     }
 
@@ -88,7 +88,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
     } else if (!DESCRIPTION_REGEX.test(data.remark)) {
       e.remark = t("form.validation.remarkFormat");
     }
-    else if (data.remark.length > 50) {
+    else if (data.remark.length > 15) {
       e.remark = t("form.validation.remarkMax");
     }
 
@@ -109,14 +109,29 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
       newValue = newValue.replace(CODE_SANITIZE, ""); // Sanitize Zone No (alphanumeric and underscore)
     }
 
+    let isMaxLengthReached = false;
     if (name === "taxZoneType" || name === "remark") {
-      newValue = newValue.replace(DESCRIPTION_SANITIZE, ""); // Sanitize (multilingual with punctuation)    
+      // Remove numbers, then use the existing multilingual text sanitizer
+      const noNumbers = newValue.replace(/[\p{N}]/gu, "");
+      newValue = sanitizeMultilingualText(noNumbers, 15);
+      
+      if (newValue.length === 15) {
+        isMaxLengthReached = true;
+      }
     }
 
     setFormData((p) => ({ ...p, [name]: newValue }));
 
-    // ✅ Clear existing error while typing
-    setErrors((p) => ({ ...p, [name]: "" }));
+    if (isMaxLengthReached) {
+      setErrors((p) => ({
+        ...p,
+        [name]: name === "taxZoneType" ? t("form.validation.zoneTypeMax") : t("form.validation.remarkMax")
+      }));
+      setTouched((p) => ({ ...p, [name]: true }));
+    } else {
+      // ✅ Clear existing error while typing
+      setErrors((p) => ({ ...p, [name]: "" }));
+    }
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {

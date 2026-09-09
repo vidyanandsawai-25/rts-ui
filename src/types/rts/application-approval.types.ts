@@ -143,6 +143,8 @@ export interface RtsApplicationViewDetailsItem {
   departmentName?: string;
   applicationStatus?: string;
   remark?: string | null;
+  isCertificateRequired?: boolean;
+  certificateType?: number;
   documents: RtsApplicationDocumentItem[];
   applicationDetails: RtsApplicationViewDetailField[];
 }

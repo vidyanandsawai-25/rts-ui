@@ -125,6 +125,9 @@ describe("MoujaForm", () => {
   const mockMessages = {
     mouja: {
       moujaMaster: {
+        aliasFallback: {
+          entity: "Mouja",
+        },
         form: {
           addTitle: "Add Mouja",
           editTitle: "Edit Mouja",
@@ -165,6 +168,7 @@ describe("MoujaForm", () => {
       t: mockT,
       tCommon: mockTCommon,
       isEdit: false,
+      moujaLabel: "Mouja",
     });
   });
 
@@ -177,7 +181,7 @@ describe("MoujaForm", () => {
       );
 
       expect(screen.getByTestId("drawer")).toBeInTheDocument();
-      expect(mockT).toHaveBeenCalledWith("form.addTitle");
+      expect(mockT).toHaveBeenCalledWith("form.addTitle", { mouja: "Mouja", entity: "Mouja" });
     });
 
     it("should display add subtitle", () => {
@@ -187,7 +191,7 @@ describe("MoujaForm", () => {
         </NextIntlClientProvider>
       );
 
-      expect(mockT).toHaveBeenCalledWith("form.subtitle");
+      expect(mockT).toHaveBeenCalledWith("form.subtitle", { mouja: "Mouja", entity: "Mouja" });
     });
 
     it("should show save button in add mode", () => {
@@ -199,7 +203,7 @@ describe("MoujaForm", () => {
 
       const saveButton = screen.getByTestId("save-button");
       expect(saveButton).toBeInTheDocument();
-      expect(mockT).toHaveBeenCalledWith("form.actions.save");
+      expect(mockT).toHaveBeenCalledWith("form.actions.save", { mouja: "Mouja", entity: "Mouja" });
     });
   });
 
@@ -234,6 +238,7 @@ describe("MoujaForm", () => {
         t: mockT,
         tCommon: mockTCommon,
         isEdit: true,
+        moujaLabel: "Mouja",
       });
     });
 
@@ -245,7 +250,7 @@ describe("MoujaForm", () => {
       );
 
       expect(screen.getByTestId("drawer")).toBeInTheDocument();
-      expect(mockT).toHaveBeenCalledWith("form.editTitle");
+      expect(mockT).toHaveBeenCalledWith("form.editTitle", { mouja: "Mouja", entity: "Mouja" });
     });
 
     it("should display edit subtitle", () => {
@@ -255,7 +260,7 @@ describe("MoujaForm", () => {
         </NextIntlClientProvider>
       );
 
-      expect(mockT).toHaveBeenCalledWith("form.editSubtitle");
+      expect(mockT).toHaveBeenCalledWith("form.editSubtitle", { mouja: "Mouja", entity: "Mouja" });
     });
 
     it("should show update button in edit mode", () => {
@@ -267,7 +272,7 @@ describe("MoujaForm", () => {
 
       const saveButton = screen.getByTestId("save-button");
       expect(saveButton).toBeInTheDocument();
-      expect(mockT).toHaveBeenCalledWith("form.actions.update");
+      expect(mockT).toHaveBeenCalledWith("form.actions.update", { mouja: "Mouja", entity: "Mouja" });
     });
   });
 

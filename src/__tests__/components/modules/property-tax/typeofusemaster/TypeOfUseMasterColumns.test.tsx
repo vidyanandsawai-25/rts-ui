@@ -114,7 +114,7 @@ describe("TypeOfUseMasterColumns", () => {
       getSubTypeColumns(mockT);
 
       expect(mockT).toHaveBeenCalledWith("table.columns.serial");
-      expect(mockT).toHaveBeenCalledWith("table.columns.subTypeName");
+      expect(mockT).toHaveBeenCalledWith("table.columns.subTypeName", { subTypeOfUse: "Sub-Type" });
       expect(mockT).toHaveBeenCalledWith("table.columns.searchSequence");
       expect(mockT).toHaveBeenCalledWith("subtype.fields.status");
     });

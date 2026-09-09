@@ -7,13 +7,15 @@ import {
   getTaxApplicability,
   updateTaxApplicability,
   getTaxApplicabilityByPropertyId,
+  getTaxCalculation,
 } from '@/lib/api/ptis/applicable-taxes/applicable-taxes.service';
 import type {
   AssessmentYearRangeItem,
   TypeOfUseItem,
   PagedResponse,
   TaxApplicabilityData,
-  TaxApplicabilityPropertyData
+  TaxApplicabilityPropertyData,
+  TaxCalculationResponse
 } from '@/types/applicable-taxes.types';
 import type { ActionResult } from '@/types/common.types';
 import { revalidatePath } from 'next/cache';
@@ -139,7 +141,7 @@ export async function getTaxApplicabilityByPropertyIdAction(
   propertyId: number
 ): Promise<ActionResult<TaxApplicabilityPropertyData[]>> {
   const t = await getTranslations("applicableTaxes");
-  try {
+  try {      
     const response = await getTaxApplicabilityByPropertyId(propertyId);
     if (!response.success) {
       return {
@@ -153,4 +155,20 @@ export async function getTaxApplicabilityByPropertyIdAction(
   } catch (error) {
     return { success: false, error: await getActionErrorMessage(error) };
   }
-}
+}
+
+export async function getTaxCalculationAction(
+  propertyId: number,
+  assessmentYearRangeId: number
+): Promise<ActionResult<TaxCalculationResponse | null>> {
+  try {
+    const data = await getTaxCalculation(propertyId, assessmentYearRangeId);
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof ApiError) {
+        return { success: false, error: error.message, statusCode: error.statusCode };
+    }
+    const t = await getTranslations("applicableTaxes");
+    return { success: false, error: t("errors.fetchTaxCalculation") || "Failed to fetch tax calculation data", statusCode: 500 };
+  }
+}

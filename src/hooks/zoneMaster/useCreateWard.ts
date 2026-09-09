@@ -28,6 +28,9 @@ interface UseCreateWardProps {
   existingWards?: WardItem[];
   onClose: () => void;
   onSuccess?: (newWardNo: string) => void;
+  zoneAlias?: string;
+  wardAlias?: string;
+  wardsAlias?: string;
   t: (key: string, values?: Record<string, unknown>) => string;
 }
 
@@ -36,6 +39,9 @@ export function useCreateWard({
   existingWards = [],
   onClose,
   onSuccess,
+  zoneAlias,
+  wardAlias,
+  wardsAlias,
   t,
 }: UseCreateWardProps) {
   const router = useRouter();
@@ -64,12 +70,12 @@ export function useCreateWard({
 
   const validate = (data: typeof INITIAL) => {
     const newErrors: Partial<Record<keyof typeof INITIAL, string>> = {};
-    if (!data.wardNo?.trim()) newErrors.wardNo = t("validation.wardNoRequired");
-    else if (data.wardNo.length > ZONE_WARD_NO_MAX_LENGTH) newErrors.wardNo = t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH });
-    else if (isAllZeros(data.wardNo)) newErrors.wardNo = t("validation.wardNoAllZeros");
-    if (!data.description?.trim()) newErrors.description = t("validation.wardNameRequired");
-    else if (data.description.length > ZONE_WARD_NAME_MAX_LENGTH) newErrors.description = t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH });
-    else if (isAllZeros(data.description)) newErrors.description = t("validation.wardNameAllZeros");
+    if (!data.wardNo?.trim()) newErrors.wardNo = t("validation.wardNoRequired", { ward: wardAlias });
+    else if (data.wardNo.length > ZONE_WARD_NO_MAX_LENGTH) newErrors.wardNo = t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH, ward: wardAlias });
+    else if (isAllZeros(data.wardNo)) newErrors.wardNo = t("validation.wardNoAllZeros", { ward: wardAlias });
+    if (!data.description?.trim()) newErrors.description = t("validation.wardNameRequired", { ward: wardAlias });
+    else if (data.description.length > ZONE_WARD_NAME_MAX_LENGTH) newErrors.description = t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH, ward: wardAlias });
+    else if (isAllZeros(data.description)) newErrors.description = t("validation.wardNameAllZeros", { ward: wardAlias });
     
     if (data.sequenceNo) {
       if (!POSITIVE_INTEGER_REGEX.test(data.sequenceNo)) {
@@ -95,22 +101,22 @@ export function useCreateWard({
     }
     
     if (!rangeFrom?.trim()) {
-      newErrors.rangeFrom = t("wardBulk.errorRangeFromRequired");
+      newErrors.rangeFrom = t("wardBulk.errorRangeFromRequired", { ward: wardAlias });
     } else if (rangeFrom.length > BULK_RANGE_MAX_LENGTH) {
-      newErrors.rangeFrom = t("wardBulk.errorRangeFromMaxLength", { count: BULK_RANGE_MAX_LENGTH });
+      newErrors.rangeFrom = t("wardBulk.errorRangeFromMaxLength", { count: BULK_RANGE_MAX_LENGTH, ward: wardAlias });
     }
     
     if (!rangeTo?.trim()) {
-      newErrors.rangeTo = t("wardBulk.errorRangeToRequired");
+      newErrors.rangeTo = t("wardBulk.errorRangeToRequired", { ward: wardAlias });
     } else if (rangeTo.length > BULK_RANGE_MAX_LENGTH) {
-      newErrors.rangeTo = t("wardBulk.errorRangeToMaxLength", { count: BULK_RANGE_MAX_LENGTH });
+      newErrors.rangeTo = t("wardBulk.errorRangeToMaxLength", { count: BULK_RANGE_MAX_LENGTH, ward: wardAlias });
     }
     
     if (rangeFrom?.trim() && rangeTo?.trim() && !newErrors.rangeFrom && !newErrors.rangeTo) {
       const fromNum = parseInt(rangeFrom, 10);
       const toNum = parseInt(rangeTo, 10);
       if (!isNaN(fromNum) && !isNaN(toNum) && fromNum > toNum) {
-        newErrors.rangeTo = t("wardBulk.errorOrder");
+        newErrors.rangeTo = t("wardBulk.errorOrder", { ward: wardAlias });
       }
     }
     
@@ -146,7 +152,7 @@ export function useCreateWard({
     });
 
     if (duplicateNo) {
-      setErrors((prev) => ({ ...prev, wardNo: t("messages.duplicateWardNo", { wardNo: duplicateNo.wardNo }) }));
+      setErrors((prev) => ({ ...prev, wardNo: t("messages.duplicateWardNo", { wardNo: duplicateNo.wardNo, ward: wardAlias }) }));
       return true;
     }
 
@@ -155,7 +161,7 @@ export function useCreateWard({
     });
 
     if (duplicateName) {
-      setErrors((prev) => ({ ...prev, description: t("messages.duplicateWardName", { name: duplicateName.description || description }) }));
+      setErrors((prev) => ({ ...prev, description: t("messages.duplicateWardName", { name: duplicateName.description || description, ward: wardAlias }) }));
       return true;
     }
 
@@ -174,7 +180,7 @@ export function useCreateWard({
 
   const handleSave = async () => {
     if (!currentZone || !currentZone.id) {
-      toast.warning(t("createWardMessages.selectZoneBeforeCreate"));
+      toast.warning(t("createWardMessages.selectZoneBeforeCreate", { zone: zoneAlias, ward: wardAlias }));
       return;
     }
 
@@ -191,7 +197,7 @@ export function useCreateWard({
 
       const duplicateWardNo = checkBulkDuplicates(prefix, from, to);
       if (duplicateWardNo) {
-        toast.error(t("createWardMessages.duplicateWard", { wardNo: duplicateWardNo }));
+        toast.error(t("createWardMessages.duplicateWard", { wardNo: duplicateWardNo, ward: wardAlias, zone: zoneAlias }));
         return;
       }
 
@@ -208,10 +214,10 @@ export function useCreateWard({
         );
 
         if (!result.success) {
-          const errorMsg = result.error || t("createWardMessages.bulkCreateError");
+          const errorMsg = result.error || t("createWardMessages.bulkCreateError", { wards: wardsAlias });
           const wardNoMatch = errorMsg.match(/([A-Z0-9]+)\s+(already|exist|duplicate)/i);
           if (wardNoMatch && wardNoMatch[1]) {
-            toast.error(t("createWardMessages.duplicateWard", { wardNo: wardNoMatch[1] }));
+            toast.error(t("createWardMessages.duplicateWard", { wardNo: wardNoMatch[1], ward: wardAlias, zone: zoneAlias }));
           } else {
             toast.error(errorMsg);
           }
@@ -221,6 +227,7 @@ export function useCreateWard({
               count: result.count || 0,
               from: prefix + from,
               to: prefix + to,
+              ward: wardAlias,
             })
           );
           handleClose();
@@ -257,7 +264,7 @@ export function useCreateWard({
       });
 
       if (result.success) {
-        toast.success(t("createWardMessages.singleCreateSuccess", { name: form.wardNo }));
+        toast.success(t("createWardMessages.singleCreateSuccess", { name: form.wardNo, ward: wardAlias }));
         handleClose();
         if (onSuccess) onSuccess(form.wardNo);
       } else {
@@ -272,13 +279,13 @@ export function useCreateWard({
               
               if (parsed.errors.Description) {
                 const descErr = parsed.errors.Description[0];
-                serverErrors.description = descErr.includes("MaxLen") ? t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH }) : descErr;
+                serverErrors.description = descErr.includes("MaxLen") ? t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH, ward: wardAlias }) : descErr;
                 handled = true;
               }
               
               if (parsed.errors.WardNo) {
                 const noErr = parsed.errors.WardNo[0];
-                serverErrors.wardNo = noErr.includes("MaxLen") ? t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH }) : noErr;
+                serverErrors.wardNo = noErr.includes("MaxLen") ? t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH, ward: wardAlias }) : noErr;
                 handled = true;
               }
               
@@ -289,7 +296,7 @@ export function useCreateWard({
               
               if (handled) {
                 setErrors(serverErrors);
-                toast.error(parsed.title || t("createWardMessages.createError"));
+                toast.error(parsed.title || t("createWardMessages.createError", { ward: wardAlias }));
               }
             }
           } catch (_e) {
@@ -300,11 +307,11 @@ export function useCreateWard({
         if (!handled) {
           const lowerMsg = errorMsg.toLowerCase();
           if (lowerMsg.includes("name") || lowerMsg.includes("description") || lowerMsg.includes("maxlen")) {
-            setErrors({ description: lowerMsg.includes("maxlen") ? t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH }) : t("messages.duplicateWardName", { name: form.description }) });
+            setErrors({ description: lowerMsg.includes("maxlen") ? t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH, ward: wardAlias }) : t("messages.duplicateWardName", { name: form.description, ward: wardAlias }) });
           } else if (lowerMsg.includes("ward") || lowerMsg.includes("already exists") || lowerMsg.includes("duplicate")) {
-            setErrors({ wardNo: t("messages.duplicateWardNo", { wardNo: form.wardNo }) });
+            setErrors({ wardNo: t("messages.duplicateWardNo", { wardNo: form.wardNo, ward: wardAlias }) });
           } else {
-            toast.error(errorMsg || t("createWardMessages.createError"));
+            toast.error(errorMsg || t("createWardMessages.createError", { ward: wardAlias }));
           }
         }
       }

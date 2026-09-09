@@ -10,6 +10,7 @@ import {
 } from "@/app/[locale]/property-tax/typeofusemaster/actions";
 import type { UseGroup, UseType, UseSubType } from "@/types/typeOfUse.types";
 import { ApiError } from "@/lib/utils/api";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
 
@@ -32,6 +33,10 @@ interface DeleteConfig {
 export function useTypeOfUseMasterActions(t: TranslatorFunction) {
   const router = useRouter();
   const { confirm } = useConfirm();
+
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+  const subTypeOfUseLabel = useAliasLabel("Sub_Type_Of_Use", t("aliasFallback.subTypeOfUse"));
 
   /**
    * Generic delete handler that encapsulates the common delete flow
@@ -110,9 +115,9 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
       title: t("messages.deleteConfirmation"),
       meta: { name: g.groupName },
       deleteAction: () => deleteUseGroup(groupId),
-      successMessage: t('messages.groupDeletedSuccess', { name: g.groupName }),
-      errorMessage: t('messages.groupDeleteFailed'),
-      referencedMessage: t('messages.deleteGroupReferenced'),
+      successMessage: t('messages.groupDeletedSuccess', { name: g.groupName, use: useLabel }),
+      errorMessage: t('messages.groupDeleteFailed', { use: useLabel }),
+      referencedMessage: t('messages.deleteGroupReferenced', { use: useLabel, typeOfUse: typeOfUseLabel }),
     });
   };
 
@@ -129,7 +134,7 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
       const { hasSubTypes } = await checkTypeHasSubTypes(typeId);
       
       if (hasSubTypes) {
-        toast.error(t('messages.typeHasSubTypes'));
+        toast.error(t('messages.typeHasSubTypes', { subTypeOfUse: subTypeOfUseLabel }));
         return;
       }
     } catch (error) {
@@ -149,9 +154,9 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
       title: t("messages.deleteConfirmation"),
       meta: { name: useType.description },
       deleteAction: () => deleteUseType(typeId),
-      successMessage: t('messages.typeDeletedSuccess', { name: useType.description }),
-      errorMessage: t('messages.typeDeleteFailed'),
-      referencedMessage: t('messages.deleteTypeReferenced'),
+      successMessage: t('messages.typeDeletedSuccess', { name: useType.description, typeOfUse: typeOfUseLabel }),
+      errorMessage: t('messages.typeDeleteFailed', { typeOfUse: typeOfUseLabel }),
+      referencedMessage: t('messages.deleteTypeReferenced', { typeOfUse: typeOfUseLabel, subTypeOfUse: subTypeOfUseLabel }),
     });
   };
 
@@ -161,9 +166,9 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
       title: t("messages.deleteConfirmation"),
       meta: { name: s.description },
       deleteAction: () => deleteSubType(String(s.subTypeOfUseId)),
-      successMessage: t('messages.subTypeDeletedSuccess', { name: s.description }),
-      errorMessage: t('messages.subTypeDeleteFailed'),
-      referencedMessage: t('messages.deleteSubTypeReferenced'),
+      successMessage: t('messages.subTypeDeletedSuccess', { name: s.description, subTypeOfUse: subTypeOfUseLabel }),
+      errorMessage: t('messages.subTypeDeleteFailed', { subTypeOfUse: subTypeOfUseLabel }),
+      referencedMessage: t('messages.deleteSubTypeReferenced', { subTypeOfUse: subTypeOfUseLabel }),
       ignoreNextRedirect: true,
     });
   };

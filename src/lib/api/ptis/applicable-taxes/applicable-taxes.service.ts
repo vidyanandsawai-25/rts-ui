@@ -4,7 +4,8 @@ import type {
   TypeOfUseItem,
   PagedResponse,
   TaxApplicabilityData,
-  TaxApplicabilityPropertyData
+  TaxApplicabilityPropertyData,
+  TaxCalculationResponse
 } from '@/types/applicable-taxes.types';
 import { handleApiResponse } from '@/lib/utils/api';
 import { getTranslations } from 'next-intl/server';
@@ -84,4 +85,15 @@ export async function getTaxApplicabilityByPropertyId(
     return { success: true, data: res.data };
   }
   return { success: false, error: res.error || 'Failed to fetch Tax Applicability by Property Id' };
+}
+
+export async function getTaxCalculation(
+  propertyId: number,
+  assessmentYearRangeId: number
+): Promise<TaxCalculationResponse | null> {
+  const url = `/TaxApplicability/calculation/${propertyId}?assessmentYearRangeId=${assessmentYearRangeId}`;
+  const response = await apiClient.get<TaxCalculationResponse>(url);
+  const t = await getTranslations("applicableTaxes");
+  
+  return handleApiResponse(response, t("errors.fetchTaxCalculation") || "Failed to fetch tax calculation data");
 }

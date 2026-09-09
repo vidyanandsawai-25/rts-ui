@@ -9,14 +9,20 @@ export async function handleWardDelete({
   confirm,
   setDeletedIds,
   onWardsChanged,
-  t
+  t,
+  wardAlias,
+  rateSectionAlias,
+  wardsAlias
 }: HandleWardDeleteParams) {
   const id = row.id;
   const wardNo = row.wardNo;
   const description = row.description;
+  const ward = wardAlias || t('defaults.ward');
+  const wards = wardsAlias || t('defaults.wards');
+  const rateSection = rateSectionAlias || t('defaults.rateSection');
 
   if (id == null || typeof id !== 'number') {
-    toast.error(t('wards.invalidRecord'));
+    toast.error(t('wards.invalidRecord', { ward }));
     return;
   }
 
@@ -26,14 +32,14 @@ export async function handleWardDelete({
 
   confirm({
     variant: "delete",
-    title: t('wards.deleteTitle'),
-    description: t('wards.deleteConfirm', { wardNo: safeWardNo, displayZone: displayRateSection }),
+    title: t('wards.deleteTitle', { ward }),
+    description: t('wards.deleteConfirm', { wardNo: safeWardNo, displayZone: displayRateSection, ward, rateSection }),
     onConfirm: async () => {
       try {
         const result = await deleteRateSectionDetailAction(id);
         if (result.success) {
           setDeletedIds(prev => new Set([...prev, id]));
-          toast.success(t('wards.deleteSuccess', { count: 1 }));
+          toast.success(t('wards.deleteSuccess', { count: 1, ward, wards }));
           if (onWardsChanged) onWardsChanged();
         } else {
           const errorMsg = result.message?.toLowerCase() || result.error?.toLowerCase() || "";
@@ -47,9 +53,9 @@ export async function handleWardDelete({
             errorMsg.includes("in use")
           ) {
             // Show custom localized error message
-            toast.error(t('wards.inUseError', { wardName: formattedWardName }));
+            toast.error(t('wards.inUseError', { wardName: formattedWardName, ward }));
           } else {
-            toast.error(result.message || result.error || t('wards.deleteError'));
+            toast.error(result.message || result.error || t('wards.deleteError', { ward }));
           }
         }
       } catch (error: unknown) {
@@ -64,9 +70,9 @@ export async function handleWardDelete({
           errorLower.includes("in use")
         ) {
           // Show custom localized error message
-          toast.error(t('wards.inUseError', { wardName: formattedWardName }));
+          toast.error(t('wards.inUseError', { wardName: formattedWardName, ward }));
         } else {
-          toast.error(t('wards.deleteError'));
+          toast.error(t('wards.deleteError', { ward }));
         }
       }
     },

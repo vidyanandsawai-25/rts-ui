@@ -4,15 +4,16 @@ import { PropertyPreviewRow, BulkUpdateFieldConfig, SelectOption } from "@/types
 import { TruncatedText } from "@/components/common/TruncatedText";
 
 export const getPreviewColumns = (
-  t: (key: string) => string,
+  t: (key: string, values?: Record<string, string | number>) => string,
   fieldConfigs?: BulkUpdateFieldConfig[],
   optionsMap?: Record<string, SelectOption[]>,
-  lookupMap?: Record<string, Record<string, string>>
+  lookupMap?: Record<string, Record<string, string>>,
+  propertyNoLabel?: string
 ): Column<PropertyPreviewRow>[] => {
   const base: Column<PropertyPreviewRow>[] = [
     {
       key: "propertyNo" as keyof PropertyPreviewRow,
-      label: t("columns.propertyNo") || "Property No.",
+      label: propertyNoLabel ? t("columns.propertyNo", { propertyNo: propertyNoLabel }) : (t("columns.propertyNo", { propertyNo: "Property No." }) || "Property No."),
       headerClassName: "p-2 text-[12px] whitespace-nowrap text-center",
       cellClassName: "whitespace-nowrap text-center",
       render: (_: unknown, row: PropertyPreviewRow) => {

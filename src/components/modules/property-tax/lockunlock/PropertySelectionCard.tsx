@@ -12,6 +12,7 @@ import {
 } from "@/components/common";
 import { useTranslations } from "next-intl";
 import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface PropertySelectionCardProps {
   formData: {
@@ -46,6 +47,9 @@ export function PropertySelectionCard({
   isLoadingProperties = false,
 }: PropertySelectionCardProps) {
   const t = useTranslations("lockUnlock");
+  const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+  const propertyNoAlias = useAliasLabel("Property_No", useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo"))));
 
   return (
     <div className="flex flex-col gap-1">
@@ -59,13 +63,13 @@ export function PropertySelectionCard({
             <div className="flex-1 min-w-[150px]">
               <SearchSelect
                 name="zoneId"
-                label={t("selectPropertyCard.zone")}
+                label={t("selectPropertyCard.zone", { zone: zoneAlias })}
                 required
                 value={formData.zoneId}
                 tabIndex={0}
                 onChange={handleSelectChange}
                 options={zoneOptions}
-                placeholder={t("selectPropertyCard.selectZone")}
+                placeholder={t("selectPropertyCard.selectZone", { zone: zoneAlias })}
               />
             </div>
           )}
@@ -74,14 +78,14 @@ export function PropertySelectionCard({
             <div className="flex-1 min-w-[150px]">
               <SearchSelect
                 name="wardId"
-                label={t("selectPropertyCard.wardNo")}
+                label={t("selectPropertyCard.wardNo", { ward: wardAlias })}
                 required
                 value={formData.wardId}
                 tabIndex={0}
                 onChange={handleSelectChange}
                 onEnter={() => document.getElementById("fromProperty")?.focus()}
                 options={wardOptions}
-                placeholder={t("selectPropertyCard.selectWard")}
+                placeholder={t("selectPropertyCard.selectWard", { ward: wardAlias })}
               />
             </div>
           )}
@@ -90,7 +94,7 @@ export function PropertySelectionCard({
             <div className="flex-1 min-w-[150px]">
               <SearchSelect
                 name="propertyNos"
-                label={t("selectPropertyCard.propertyNo")}
+                label={t("selectPropertyCard.propertyNo", { propertyNo: propertyNoAlias })}
                 required
                 value={formData.propertyNos.length > 0 ? formData.propertyNos[0] : ""}
                 onChange={(name, value) => handleSelectChange(name, value ? [value as string] : [])}

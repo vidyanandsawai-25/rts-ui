@@ -8,6 +8,7 @@ import { Drawer } from "@/components/common/Drawer";
 import RateMasterForm from "./RateMasterForm";
 import { AddRateDrawerProps } from "@/types/RVRateMaster";
 import { useConfirm } from "@/components/common/ConfirmProvider";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 export default function AddRateDrawer({
   zones,
@@ -28,6 +29,8 @@ export default function AddRateDrawer({
   const searchParams = useSearchParams();
   const locale = useLocale();
   const t = useTranslations("ptis_RVRateMaster");
+  const zoneLabel = useAliasLabel("Zone", t("aliasFallback.zone"));
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
   const { confirm } = useConfirm();
   const [isFormDirty, setIsFormDirty] = useState(false);
 
@@ -77,12 +80,12 @@ export default function AddRateDrawer({
               {t("messages.generateNewRateDetails")}
             </h1>
             <p className="text-xs text-slate-500">
-              {t("messages.fillRateDetails")}
+              {t("messages.fillRateDetails", { zone: zoneLabel, use: useLabel })}
             </p>
           </div>
         </div>
       }
-      description={t("messages.fillRateDetails")}
+      description={t("messages.fillRateDetails", { zone: zoneLabel, use: useLabel })}
       width="xl"
     >
       <RateMasterForm

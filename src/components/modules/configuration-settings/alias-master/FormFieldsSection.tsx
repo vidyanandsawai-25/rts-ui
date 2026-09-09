@@ -54,6 +54,7 @@ export const FormFieldsSection = React.forwardRef<FormFieldsSectionRef, FormFiel
           name="labelName"
           label={t("form.fields.labelName.label")}
           required
+          disabled={isEdit}
           value={formData.labelName}
           onChange={onChange}
           onBlur={onBlur}

@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { Drawer, SaveButton, CancelButton, Input, ValidationMessage } from "@/components/common";
 import { RateSectionFormProps, RateSectionFormState, RateSectionFormErrors } from "@/types/rateSectionMaster.types";
 import { Layers, AlertCircle } from "lucide-react";
@@ -28,20 +29,23 @@ export const INITIAL_FORM_STATE: RateSectionFormState = {
  */
 export function validateRateSectionForm(
   data: RateSectionFormState,
-  t: (key: string, values?: Record<string, string | number>) => string
+  t: (key: string, values?: Record<string, string | number>) => string,
+  rateSectionAlias?: string
 ): RateSectionFormErrors {
   const errors: RateSectionFormErrors = {};
   const zoneRegional = data.zoneRegional.trim();
+  const rateSection = rateSectionAlias || t('defaults.rateSection');
+  const fieldLabel = t('form.rateSectionName', { rateSection });
 
   // Validate zoneRegional (Rate Section Name/Description)
   if (!zoneRegional) {
-    errors.zoneRegional = t('validation.required', { label: t('form.rateSectionName') });
+    errors.zoneRegional = t('validation.required', { label: fieldLabel });
   } else if (isAllZeros(zoneRegional)) {
-    errors.zoneRegional = t('validation.allZeros', { label: t('form.rateSectionName') });
+    errors.zoneRegional = t('validation.allZeros', { label: fieldLabel });
   } else if (zoneRegional.length > RATE_SECTION_NAME_MAX_LENGTH) {
-    errors.zoneRegional = t('validation.maxChars', { label: t('form.rateSectionName'), count: RATE_SECTION_NAME_MAX_LENGTH });
+    errors.zoneRegional = t('validation.maxChars', { label: fieldLabel, count: RATE_SECTION_NAME_MAX_LENGTH });
   } else if (!DESCRIPTION_REGEX.test(zoneRegional)) {
-    errors.zoneRegional = t('validation.descriptionFormat', { label: t('form.rateSectionName') });
+    errors.zoneRegional = t('validation.descriptionFormat', { label: fieldLabel });
   }
 
   return errors;
@@ -106,6 +110,10 @@ export function useRateSectionFieldHandlers(
 
 export default function RateSectionForm(props: RateSectionFormProps) {
   const t = useTranslations("rateSectionMaster");
+  const rateSection = useAliasLabel(
+    "Rate_Section",
+    useAliasLabel("Rate_Section_Name", useAliasLabel("Rate Section", t("defaults.rateSection")))
+  );
   const { mode, open = true } = props;
   const isEdit = mode === "edit";
 
@@ -127,7 +135,7 @@ export default function RateSectionForm(props: RateSectionFormProps) {
   const { form, loading, handleClose, handleSave } = isEdit ? editHook : addHook;
 
   // Check if current form values are invalid or required fields are empty
-  const validationErrors = validateRateSectionForm(form, t);
+  const validationErrors = validateRateSectionForm(form, t, rateSection);
   const hasErrors = Object.keys(validationErrors).length > 0;
   const hasEmptyRequiredFields = !form.zoneRegional?.trim();
   const isFormInvalid = hasErrors || hasEmptyRequiredFields;
@@ -141,10 +149,10 @@ export default function RateSectionForm(props: RateSectionFormProps) {
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t('dialogs.editTitle') : t('dialogs.addTitle')}
+              {isEdit ? t('dialogs.editTitle', { rateSection }) : t('dialogs.addTitle', { rateSection })}
             </div>
             {isEdit ? (
-              <div className="text-sm text-slate-500">{t('dialogs.editDescription')}</div>
+              <div className="text-sm text-slate-500">{t('dialogs.editDescription', { rateSection })}</div>
             ) : (
               <div className="mt-2">
                 <StatusBadge variant="info" label={form.zoneRegional || t('form.rateSectionNamePlaceholder')} />
@@ -162,10 +170,11 @@ export default function RateSectionForm(props: RateSectionFormProps) {
         <div className="space-y-5">
           {isEdit && <EditRateSectionContent {...editHook} />}
           <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
-            <Input name="zoneRegional" label={t('form.rateSectionName')} required placeholder={t('form.rateSectionNamePlaceholder')}
+            <Input name="zoneRegional" label={t('form.rateSectionName', { rateSection })} required placeholder={t('form.rateSectionNamePlaceholder')}
               disabled={loading} value={form.zoneRegional} maxLength={RATE_SECTION_NAME_MAX_LENGTH}
               onChange={(e) => (isEdit ? editHook : addHook).handleChange("zoneRegional", e.target.value)}
-              onBlur={() => (isEdit ? editHook : addHook).handleBlur("zoneRegional")} fullWidth className="text-gray-700" />
+              onBlur={() => (isEdit ? editHook : addHook).handleBlur("zoneRegional")} fullWidth className="text-gray-700"
+              data-testid="input-form.ratesectionname" />
             <ValidationMessage message={(isEdit ? editHook : addHook).errors.zoneRegional} visible={(isEdit ? editHook : addHook).showError("zoneRegional")} />
           </div>
           <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">

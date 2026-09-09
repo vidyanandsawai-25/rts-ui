@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useTransition, useMemo } from "react"
 import { Layers, Map } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import TableHeader from "@/components/common/TableHeader";
 import { RateSectionContentProps } from "@/types/rateSectionMaster.types";
 import RateSectionList from "./ratesection/RateSectionList";
@@ -67,6 +68,13 @@ export default function RateSectionContent({
   ssrViewAllWardsTotalPages = 0
 }: RateSectionContentProps) {
   const t = useTranslations("rateSectionMaster");
+  const rateSectionAlias = useAliasLabel(
+    "Rate_Section",
+    useAliasLabel("Rate_Section_Name", useAliasLabel("Rate Section", t("defaults.rateSection")))
+  );
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+  const wardsAlias = useAliasLabel("Wards", t("defaults.wards"));
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -159,19 +167,19 @@ export default function RateSectionContent({
     <PageContainer>
       <div className="space-y-2 mb-0">
         <TableHeader
-          title={t('title')}
-          subtitle={t('subtitle')}
+          title={t('title', { rateSection: rateSectionAlias })}
+          subtitle={t('subtitle', { rateSection: rateSectionAlias, ward: wardAlias, wards: wardsAlias })}
           icon={Layers}
           rightContent={
             <div className="flex items-center gap-3">
               <DashboardCard
-                label={t('dashboard.totalRateSections')}
+                label={t('dashboard.totalRateSections', { rateSection: rateSectionAlias })}
                 value={totalRateSectionCount}
                 icon={<Layers className="w-5 h-5 text-[#1A86E8]" />}
                 className="min-w-[140px]"
               />
               <DashboardCard
-                label={t('dashboard.totalWards')}
+                label={t('dashboard.totalWards', { wards: wardsAlias, ward: wardAlias })}
                 value={initialTotalWards}
                 icon={<Map className="w-5 h-5 text-[#1A86E8]" />}
                 className="min-w-[140px]"
@@ -192,6 +200,9 @@ export default function RateSectionContent({
             initialWardCounts={initialWardCounts}
             totalCount={filteredRateSectionCount ?? totalRateSectionCount}
             onDeleteSuccess={() => router.refresh()}
+            rateSectionAlias={rateSectionAlias}
+            wardAlias={wardAlias}
+            wardsAlias={wardsAlias}
           />
         </div>
 
@@ -205,6 +216,9 @@ export default function RateSectionContent({
             selectedRateSection={selectedRateSection}
             selectedRateSectionLabel={initialSelectedRateSectionLabel}
             onWardsChanged={handleWardsChanged}
+            rateSectionAlias={rateSectionAlias}
+            wardAlias={wardAlias}
+            wardsAlias={wardsAlias}
           />
         </div>
       </div>
@@ -234,6 +248,9 @@ export default function RateSectionContent({
         ssrViewAllWards={ssrViewAllWards}
         ssrViewAllWardsTotalCount={ssrViewAllWardsTotalCount}
         ssrViewAllWardsTotalPages={ssrViewAllWardsTotalPages}
+        rateSectionAlias={rateSectionAlias}
+        wardAlias={wardAlias}
+        wardsAlias={wardsAlias}
       />
 
       {/* Edit Ward Drawer */}
@@ -245,6 +262,9 @@ export default function RateSectionContent({
         rates={rates}
         sections={wards}
         initialWardData={initialEditWardData}
+        rateSectionAlias={rateSectionAlias}
+        wardAlias={wardAlias}
+        wardsAlias={wardsAlias}
       />
     </PageContainer>
   );

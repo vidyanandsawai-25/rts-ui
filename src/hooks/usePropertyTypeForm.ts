@@ -5,6 +5,7 @@ import { PropertyType } from "@/types/property-type.types";
 import { usePropertyTypeFormState } from "./usePropertyTypeFormState";
 import { usePropertyTypeFormValidation } from "./usePropertyTypeFormValidation";
 import { usePropertyTypeFormHandlers } from "./usePropertyTypeFormHandlers";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface UsePropertyTypeFormProps {
   id: number | null;
@@ -34,6 +35,10 @@ export function usePropertyTypeForm({
   const t = useTranslations("propertyType.propertyType");
   const tCommon = useTranslations("common");
 
+  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+  const wardLabel = useAliasLabel("Ward", t("aliasFallback.ward"));
+
   // State management
   const {
     formData,
@@ -62,6 +67,7 @@ export function usePropertyTypeForm({
     touched,
     errors,
     t,
+    categoryLabel,
   });
 
   // Handlers
@@ -89,6 +95,7 @@ export function usePropertyTypeForm({
     locale,
     t,
     tCommon,
+    wardLabel,
     onSuccess,
     onCancel,
   });
@@ -113,5 +120,8 @@ export function usePropertyTypeForm({
     t,
     tCommon,
     isEdit,
+    categoryLabel,
+    typeOfUseLabel,
+    wardLabel,
   };
 }

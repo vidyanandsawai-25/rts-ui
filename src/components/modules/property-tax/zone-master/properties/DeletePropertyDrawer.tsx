@@ -10,6 +10,7 @@ import { PropertyAmenitySection } from "./components/PropertyAmenitySection";
 import { DirectPropertyDeleteSection } from "./components/DirectPropertyDeleteSection";
 import { WardItem } from "@/types/wardMaster.types";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 import { SelectedPropertyHeaderInfo } from "./components/PropertySelectionSection";
 import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
@@ -37,6 +38,12 @@ export default function DeletePropertyDrawer({
 }: DeletePropertyDrawerProps) {
   const t = useTranslations("zoneMaster.deleteProperty");
   const tZone = useTranslations("zoneMaster");
+  const wardAlias = useAliasLabel("Ward", tZone("defaults.ward"));
+  const partitionAlias = useAliasLabel("Partition", tZone("defaults.partition"));
+  const propertyNoAlias = useAliasLabel(
+    "Property_No",
+    useAliasLabel("Property No.", useAliasLabel("Property No", tZone("defaults.propertyNo")))
+  );
 
   const [selectedPropertyId, setSelectedPropertyId] = useState("");
   const [prevWardId, setPrevWardId] = useState<number | null>(null);
@@ -158,7 +165,7 @@ export default function DeletePropertyDrawer({
           </div>
           <div>
             <h1 className="text-lg font-bold text-red-900">{t("pageTitle")}</h1>
-            <p className="text-xs text-slate-500">{t("pageSubtitle")}</p>
+            <p className="text-xs text-slate-500">{t("pageSubtitle", { ward: wardAlias })}</p>
           </div>
         </div>
       }
@@ -181,12 +188,12 @@ export default function DeletePropertyDrawer({
           onPropertyChange={(_e, value) => setSelectedPropertyId(value)}
           t={tZone}
           isApartmentCategory={false}
-          label={tZone("partitionForm.mainPropertyNo")}
+          label={tZone("partitionForm.mainPropertyNo", { propertyNo: propertyNoAlias })}
           placeholder={
             loadingBuildingList && propertyOptions.length === 0
               ? tZone("propertyList.loading")
               : propertyOptions.length === 0 && ward?.id
-              ? tZone("partitionForm.helpText.noMainPropertiesFound")
+              ? tZone("partitionForm.helpText.noMainPropertiesFound", { partitions: partitionAlias })
               : tZone("partitionForm.placeholders.selectMainProperty")
           }
           disabled={loadingBuildingList && propertyOptions.length === 0}

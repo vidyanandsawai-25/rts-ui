@@ -1,5 +1,15 @@
 {
   "commonDetailsUpdate": {
+    "aliasFallback": {
+      "entity": "मालमत्ता क्र.",
+      "zone": "झोन / नोड",
+      "ward": "प्रभाग / क्षेत्र",
+      "propertyNo": "मालमत्ता क्र.",
+      "partition": "विभाजन",
+      "wing": "विंग",
+      "assessment": "आकारणी",
+      "constructionYear": "बांधकाम वर्ष"
+    },
     "title": "सामान्य तपशील अपडेट करा",
     "subtitle": "हजारो मालमत्ता एकाच वेळी सुरक्षितपणे अपडेट करा",
     "screenObjective": {
@@ -20,12 +30,12 @@
       "selectionCriteria": "मालमत्ता निवड निकष",
       "matchedProperties": "जुळलेल्या मालमत्ता",
       "inputParameters": "इनपुट पॅरामीटर्स",
-      "allPropertiesNote": "निवडलेल्या झोन / नोड अंतर्गत सर्व मालमत्तांचा विचार केला जाईल.",
+      "allPropertiesNote": "निवडलेल्या {zone} अंतर्गत सर्व मालमत्तांचा विचार केला जाईल.",
       "generalUserAllowed": "सामान्य वापरकर्त्यास अनुमती आहे",
-      "wardPropertyRange": "प्रभाग / मालमत्ता श्रेणी",
+      "wardPropertyRange": "{ward} / मालमत्ता श्रेणी",
       "selectCriteria": "निकष निवडा",
       "scopes": {
-        "WardSector": "प्रभाग / क्षेत्र",
+        "WardSector": "{ward}",
         "BuildingWise": "इमारत नुसार",
         "PropertyRange": "मालमत्ता श्रेणी"
       }
@@ -46,25 +56,25 @@
     },
     "filter": {
       "title": "मालमत्ता फिल्टर",
-      "zoneNumber": "झोन नंबर",
-      "selectZone": "झोन निवडा",
-      "wardNumber": "प्रभाग क्रमांक",
-      "selectWard": "प्रभाग निवडा",
+      "zoneNumber": "{zone} नंबर",
+      "selectZone": "{zone} निवडा",
+      "wardNumber": "{ward} क्रमांक",
+      "selectWard": "{ward} निवडा",
       "propertyType": "मालमत्ता प्रकार",
       "selectPropertyType": "मालमत्ता प्रकार निवडा",
-      "propertyNo": "मालमत्ता क्र.",
-      "selectPropertyNo": "मालमत्ता क्र. निवडा",
-      "fromPropertyNo": "येथून मालमत्ता क्र",
-      "selectFromPropertyNo": "येथून मालमत्ता क्र निवडा",
-      "toPropertyNo": "येथपर्यंत मालमत्ता क्र",
-      "selectToPropertyNo": "येथपर्यंत मालमत्ता क्र निवडा",
-      "wing": "विंग",
-      "selectWing": "विंग निवडा",
+      "propertyNo": "{propertyNo}",
+      "selectPropertyNo": "{propertyNo} निवडा",
+      "fromPropertyNo": "येथून {propertyNo}",
+      "selectFromPropertyNo": "येथून {propertyNo} निवडा",
+      "toPropertyNo": "येथपर्यंत {propertyNo}",
+      "selectToPropertyNo": "येथपर्यंत {propertyNo} निवडा",
+      "wing": "{wing}",
+      "selectWing": "{wing} निवडा",
       "show": "दाखवा",
       "back": "मागे",
       "clear": "साफ करा",
-      "zoneNode": "झोन / नोड",
-      "selectZoneNode": "झोन / नोड निवडा"
+      "zoneNode": "{zone}",
+      "selectZoneNode": "{zone} निवडा"
     },
     "fieldList": {
       "title": "अपडेट करण्यासाठी ग्रुप निवडा",
@@ -91,13 +101,13 @@
       "showing": "दाखवत आहे",
       "of": "च्या",
       "entries": "नोंदी",
-      "searchPlaceholder": "मालमत्ता क्र. किंवा विभाजन क्र. ने शोधा...",
+      "searchPlaceholder": "{propertyNo} किंवा {partition} क्र. ने शोधा...",
       "fetchingAllPropertiesForUpdate": "अद्यतनासाठी सर्व मालमत्ता प्राप्त करत आहे..."
     },
     "columns": {
-      "wardNo": "वॉर्ड क्र.",
-      "propertyNo": "मालमत्ता क्र.",
-      "partitionNo": "विभाजन क्र.",
+      "wardNo": "{ward} क्र.",
+      "propertyNo": "{propertyNo}",
+      "partitionNo": "{partition} क्र.",
       "currentValueEn": "सध्याचे मूल्य (इंग्रजी)",
       "currentValueMr": "सध्याचे मूल्य (मराठी)",
       "currentValuePrefix": "सध्याचे"
@@ -228,13 +238,13 @@
       "fetchPropertiesFailed": "मालमत्ता लोड करण्यात अयशस्वी",
       "fetchWardsFailed": "वॉर्ड लोड करण्यात अयशस्वी",
       "fetchWingsFailed": "विंग लोड करण्यात अयशस्वी",
-      "zoneRequired": "झोन आवश्यक आहे",
+      "zoneRequired": "{zone} आवश्यक आहे",
       "propertyTypeRequired": "मालमत्ता प्रकार आवश्यक आहे",
-      "propertyNoRequired": "मालमत्ता क्र. आवश्यक आहे",
-      "wardRequired": "प्रभाग आवश्यक आहे",
-      "fromPropertyRequired": "येथून मालमत्ता क्र. आवश्यक आहे",
-      "toPropertyRequired": "येथपर्यंत मालमत्ता क्र. आवश्यक आहे",
-      "wingRequired": "विंग आवश्यक आहे",
+      "propertyNoRequired": "{propertyNo} आवश्यक आहे",
+      "wardRequired": "{ward} आवश्यक आहे",
+      "fromPropertyRequired": "येथून {propertyNo} आवश्यक आहे",
+      "toPropertyRequired": "येथपर्यंत {propertyNo} आवश्यक आहे",
+      "wingRequired": "{wing} आवश्यक आहे",
       "updateCodeRequired": "अपडेट प्रकार आवश्यक आहे",
       "remarksRequired": "शेरा आवश्यक आहे",
       "propertiesRequired": "कृपया किमान एक मालमत्ता निवडा",
@@ -245,7 +255,7 @@
       "noDataToUpdate": "अपडेट करण्यासाठी कृपया माहिती भरा.",
       "selectUpdateType": "कृपया अपडेट प्रकार निवडा",
       "fillRequired": "कृपया सर्व आवश्यक फील्ड भरा",
-      "invalidRange": "मालमत्ता क्र. पासून, मालमत्ता क्र. पर्यंत पेक्षा कमी किंवा समान असणे आवश्यक आहे",
+      "invalidRange": "{propertyNo} पासून, {propertyNo} पर्यंत पेक्षा कमी किंवा समान असणे आवश्यक आहे",
       "noPropertiesToExport": "निर्यात करण्यासाठी कोणतीही मालमत्ता नाही",
       "exportSuccess": "यशस्वीरित्या निर्यात केले",
       "exportFailed": "निर्यात अयशस्वी झाले",
@@ -256,13 +266,13 @@
       "noPropertiesFound": "निवडलेल्या फिल्टरसाठी कोणतीही मालमत्ता आढळली नाही",
       "cannotDeselectIndividual": "'सर्व निवडा' सक्रिय असताना व्यक्तिगत रेकॉर्ड्स अनिवडण्याची अनुमती नाही. कृपया प्रथम निवड पुसून टाका.",
       "invalidFormat": "काही फील्डमध्ये चुकीची माहिती आहे. कृपया ती दुरुस्त करून पुन्हा प्रयत्न करा.",
-      "assessmentYearLessThanConstruction": "आकारणी वर्ष हे बांधकाम वर्षापेक्षा मोठे असले पाहिजे.",
-      "makeSureAssessmentYearGreater": "आकारणी वर्ष हे बांधकाम वर्षापेक्षा मोठे असल्याची खात्री करा.",
-      "makeSureConstructionYearLessThan": "बांधकाम वर्ष, मूल्यांकन वर्षापेक्षा कमी असल्याची खात्री करा.",
+      "assessmentYearLessThanConstruction": "{assessment} वर्ष हे {constructionYear} पेक्षा मोठे असले पाहिजे.",
+      "makeSureAssessmentYearGreater": "{assessment} वर्ष हे {constructionYear} पेक्षा मोठे असल्याची खात्री करा.",
+      "makeSureConstructionYearLessThan": "{constructionYear}, {assessment} वर्षापेक्षा कमी असल्याची खात्री करा.",
       "invalidYearFormat": "वर्ष 4 अंकांचा वैध क्रमांक असणे आवश्यक आहे.",
       "yearExceedsCurrentYear": "वर्ष हे चालू वर्षापेक्षा ({year}) मोठे असू शकत नाही.",
       "fetchingAllProperties": "अपडेटसाठी सर्व मालमत्ता प्राप्त करत आहे...",
-      "missingWardOrField": "वॉर्ड आयडी किंवा सक्षम फील्ड निवड गहाळ आहे",
+      "missingWardOrField": "{ward} आयडी किंवा सक्षम फील्ड निवड गहाळ आहे",
       "downloadingExcel": "एक्सेल फाईल डाउनलोड होत आहे...",
       "excelDownloadSuccess": "एक्सेल फाईल यशस्वीरित्या डाउनलोड झाली!",
       "excelExportFailed": "एक्सेल निर्यात अयशस्वी झाले",
@@ -333,7 +343,7 @@
       "filters": {
         "user": "वापरकर्ता",
         "allUsers": "सर्व वापरकर्ते",
-        "searchPlaceholder": "मालमत्ता क्रमांक, फील्ड, वापरकर्ता, टिप्पण्या शोधा"
+        "searchPlaceholder": "{propertyNo}, फील्ड, वापरकर्ता, टिप्पण्या शोधा"
       },
       "messages": {
         "activityFailedCannotView": "हा उपक्रम अयशस्वी झाला आहे आणि पाहण्यासाठी कोणताही तपशील नाही."
@@ -379,7 +389,7 @@
         "oldValue": "जुने मूल्य",
         "newValue": "नवीन मूल्य",
         "updateDetailsPrefix": "अद्यतन तपशील",
-        "searchPlaceholder": "मालमत्ता, फील्ड, जुने/नवीन मूल्य शोधा...",
+        "searchPlaceholder": "{propertyNo}, फील्ड, जुने/नवीन मूल्य शोधा...",
         "exportExcel": "एक्सेल डाउनलोड करा"
       }
     },
@@ -447,7 +457,7 @@
         "confirmBtn": "पुष्टी करा"
       },
       "table": {
-        "propertyNo": "मालमत्ता क्रमांक",
+        "propertyNo": "{propertyNo}",
         "validationRemark": "प्रमाणीकरण शेरा"
       }
     }

@@ -313,7 +313,6 @@ export default function DepartmentCarsoulClient({
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
-          
 
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-600 rounded-l-xl" />
@@ -512,6 +511,7 @@ export default function DepartmentCarsoulClient({
             application={routeState.detailApplication}
             language={lang}
             detailData={routeState.detail}
+            departments={departments}
             paymentStatusData={routeState.paymentStatus}
             onClose={closeDetails}
             onOpenPayment={(applicationNo) => openPayment(applicationNo, true)}

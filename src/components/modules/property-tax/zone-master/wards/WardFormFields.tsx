@@ -7,6 +7,7 @@ import { Label } from "@/components/common/label";
 import { cn } from "@/lib/utils/cn";
 import { ZONE_WARD_NO_MAX_LENGTH, ZONE_WARD_NAME_MAX_LENGTH } from "../constants";
 import { CODE_SANITIZE, DESCRIPTION_SANITIZE, POSITIVE_INTEGER_REGEX } from "@/lib/utils/validation-rules";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 export interface WardFormState {
   wardNo: string;
@@ -46,6 +47,7 @@ export function WardFormFields({
   showActiveStatus = true,
 }: WardFormFieldsProps) {
   const t = useTranslations("zoneMaster");
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
 
   const sanitizeCode = (value: string) => {
     return value.replace(CODE_SANITIZE, '');
@@ -88,7 +90,7 @@ export function WardFormFields({
                       {t("wardForm.activeStatus")}
                     </div>
                     <div className={cn("text-sm", isActive ? "text-gray-500" : "text-gray-400")}>
-                      {isActive ? t("wardForm.statusActive") : t("wardForm.statusInactive")}
+                      {isActive ? t("wardForm.statusActive", { ward: wardAlias }) : t("wardForm.statusInactive", { ward: wardAlias })}
                     </div>
                   </div>
                 </div>
@@ -98,7 +100,7 @@ export function WardFormFields({
             </div>
           )}
           <div className="bg-white rounded-lg shadow-md border-2 border-[#6F8EC0]/40 p-3">
-            <Label required>{t("wardForm.wardNo")}</Label>
+            <Label required>{t("wardForm.wardNo", { ward: wardAlias })}</Label>
             <Input
               placeholder={t("wardForm.placeholders.wardNo")}
               disabled={disabled}
@@ -118,7 +120,7 @@ export function WardFormFields({
           </div>
 
           <div className="bg-white rounded-lg shadow-md border-2 border-[#6F8EC0]/40 p-3">
-            <Label required>{t("wardForm.wardName")}</Label>
+            <Label required>{t("wardForm.wardName", { ward: wardAlias })}</Label>
             <Input
               placeholder={t("wardForm.placeholders.wardName")}
               disabled={disabled}

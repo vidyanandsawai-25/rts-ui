@@ -5,6 +5,7 @@ import { Badge, EditButton, ToggleSwitch, Tooltip } from "@/components/common";
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { cn } from "@/lib/utils/cn";
 import { Checkbox } from "@/components/common/checkbox";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface UseLockUnlockColumnsParams {
   screens: LockedScreen[];
@@ -34,6 +35,7 @@ export function useLockUnlockColumns({
   onManageLocks,
 }: UseLockUnlockColumnsParams): Column<LockUnlockPropertyItem>[] {
   const t = useTranslations("lockUnlock");
+  const propertyNoAlias = useAliasLabel("Property_No", useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo"))));
 
   const isRowChecked = (propertyId: number): boolean => {
     if (isAllPropertiesSelected) {
@@ -93,7 +95,7 @@ export function useLockUnlockColumns({
     },
     {
       key: "propertyDetail",
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.propertyDetail")}</span>,
+      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.propertyDetail", { propertyNo: propertyNoAlias })}</span>,
       width: "10%",
       align: "center",
       render: (_: unknown, row: LockUnlockPropertyItem) => (

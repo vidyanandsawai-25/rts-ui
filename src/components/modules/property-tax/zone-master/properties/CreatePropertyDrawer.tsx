@@ -9,6 +9,8 @@ import { useCreatePropertySubmit } from "@/hooks/zoneMaster/useCreatePropertySub
 import { PropertyFormFields } from "./components/PropertyFormFields";
 import { BulkCreateSection } from "./components/BulkCreateSection";
 
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
+
 export default function CreatePropertyDrawer({
   isOpen,
   selectedWard,
@@ -43,6 +45,8 @@ export default function CreatePropertyDrawer({
     taxZones,
   });
 
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+
   const { handleSubmit, handleClose } = useCreatePropertySubmit({
     formData,
     selectedWard,
@@ -71,7 +75,7 @@ export default function CreatePropertyDrawer({
               {t("createProperty.title")}
             </h1>
             <p className="text-xs text-slate-500">
-              {t("createProperty.subtitle")}
+              {t("createProperty.subtitle", { ward: wardAlias })}
             </p>
           </div>
         </div>
@@ -93,6 +97,7 @@ export default function CreatePropertyDrawer({
           taxZoneOptions={taxZoneOptions}
           handleFieldChange={handleFieldChange}
           t={t}
+          wardAlias={wardAlias}
         />
 
         <BulkCreateSection

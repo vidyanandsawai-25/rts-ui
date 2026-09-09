@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import {
   createMoujaAction,
   updateMoujaAction,
@@ -36,6 +37,12 @@ export function useMoujaForm({
   const tCommon = useTranslations("common");
   const isEdit = Boolean(id);
 
+  const moujaLabel = useAliasLabel("Mouja", t("aliasFallback.entity"));
+  const values = useMemo(
+    () => ({ mouja: moujaLabel, entity: moujaLabel }),
+    [moujaLabel]
+  );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
@@ -51,22 +58,23 @@ export function useMoujaForm({
 
   const validate = useCallback(
     (data: MoujaFormModel): Partial<Record<keyof MoujaFormModel, string>> => {
+      const tWithValues = (key: string, v?: Record<string, string | number | Date>) => t(key, { ...values, ...v });
       const schema = {
-        moujaNo: commonValidations.masterCodeWithDecimal(t, MOUJA_NO_MAX, {
+        moujaNo: commonValidations.masterCodeWithDecimal(tWithValues, MOUJA_NO_MAX, {
           required: 'form.validation.moujaNoRequired',
           format: 'form.validation.moujaNoFormat',
           maxLength: 'form.validation.moujaNoMaxLength',
         }),
-        moujaName: commonValidations.masterDescription(t, MOUJA_NAME_MAX, {
+        moujaName: commonValidations.masterDescription(tWithValues, MOUJA_NAME_MAX, {
           required: 'form.validation.moujaNameRequired',
           format: 'form.validation.moujaNameFormat',
           maxLength: 'form.validation.moujaNameMaxLength',
         }),
-        isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
+        isActive: commonValidations.masterActiveStatus(tWithValues, isEdit, 'form.validation.mustBeActive'),
       };
       return validateForm(data, schema);
     },
-    [t, isEdit]
+    [t, isEdit, values]
   );
 
   const showError = useCallback((field: keyof MoujaFormModel): boolean =>
@@ -124,8 +132,8 @@ export function useMoujaForm({
 
   const mapApiError = useCallback((result: { statusCode?: number; message?: string }) => {
     const errorMap: Record<number, string> = {
-      409: t("apiErrors.duplicateRecord"),
-      404: t("apiErrors.notFound"),
+      409: t("apiErrors.duplicateRecord", values),
+      404: t("apiErrors.notFound", values),
       401: tCommon("errors.unauthorized"),
       403: tCommon("errors.unauthorized"),
     };
@@ -136,14 +144,14 @@ export function useMoujaForm({
     if (code === 400) {
       const msg = result.message?.toLowerCase() || "";
       if (msg.includes("duplicate") || msg.includes("already exists")) {
-        return t("apiErrors.duplicateRecord");
+        return t("apiErrors.duplicateRecord", values);
       }
-      return result.message || t("apiErrors.invalidData");
+      return result.message || t("apiErrors.invalidData", values);
     }
     
     if (code >= 500) return tCommon("errors.serverError");
-    return result.message || t("apiErrors.operationFailed");
-  }, [t, tCommon]);
+    return result.message || t("apiErrors.operationFailed", values);
+  }, [t, tCommon, values]);
 
   const [open, setOpen] = useState(true);
   const [, startTransition] = React.useTransition();
@@ -183,8 +191,8 @@ export function useMoujaForm({
       }
 
       toast.success(isEdit
-        ? t("success.updated", { code: formData.moujaNo })
-        : t("success.created", { code: formData.moujaNo })
+        ? t("success.updated", { code: formData.moujaNo, ...values })
+        : t("success.created", { code: formData.moujaNo, ...values })
       );
       
       onSuccess();
@@ -221,5 +229,6 @@ export function useMoujaForm({
     t,
     tCommon,
     isEdit,
+    moujaLabel,
   };
 }

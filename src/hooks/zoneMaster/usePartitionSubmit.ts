@@ -10,6 +10,7 @@ import { BulkPropertyItem } from "@/types/zone-master/properties/property-bulk.t
 import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
 import { generateBuildingStructureAction, createBulkBuildingPropertiesAction } from "@/app/[locale]/property-tax/zone-master/actions";
 import { parseBulkPropertyErrors } from "@/lib/utils/bulk-property-errors";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface UsePartitionSubmitProps {
   form: PartitionFormState;
@@ -51,12 +52,13 @@ export function usePartitionSubmit({
   setAllProperties,
 }: UsePartitionSubmitProps) {
   const t = useTranslations("zoneMaster");
+  const wingAlias = useAliasLabel("Wing", t("defaults.wing"));
 
   const handleSubmit = useCallback(async (errors: PartitionFormErrors, setErrors: React.Dispatch<React.SetStateAction<PartitionFormErrors>>) => {
     // If Add Wing form is open, use that logic instead
     if (showAddWingForm) {
       if (!newWingId || !newWingName) {
-        toast.warning(t("partitionForm.wing.placeholders.wingLetter"));
+        toast.warning(t("partitionForm.wing.placeholders.wingLetter", { wing: wingAlias }));
         return;
       }
       await handleSaveWing(errors, setErrors);
@@ -356,7 +358,7 @@ export function usePartitionSubmit({
     } finally {
       setLoading(false);
     }
-  }, [form, setForm, selectedWard, selectedProperty, wings, wingDetails, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, refetchWingDetails, setAllProperties, t]);
+  }, [form, setForm, selectedWard, selectedProperty, wings, wingDetails, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, refetchWingDetails, setAllProperties, t, wingAlias]);
 
   return {
     handleSubmit,

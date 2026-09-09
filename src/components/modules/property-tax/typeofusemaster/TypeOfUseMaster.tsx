@@ -19,6 +19,8 @@ import { GroupSection } from "./GroupSection";
 import { TypeSection } from "./TypeSection";
 import { SubTypeSection } from "./SubTypeSection";
 
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
+
 export default function TypeOfUseMaster({
   initialData,
   typesPagination,
@@ -26,6 +28,10 @@ export default function TypeOfUseMaster({
   selectedTypeId: serverSelectedTypeId,
 }: TypeOfUseMasterPageProps) {
   const t = useTranslations('typeofusemaster');
+
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+  const subTypeOfUseLabel = useAliasLabel("Sub_Type_Of_Use", t("aliasFallback.subTypeOfUse"));
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
 
   // Destructure pagination props for cleaner usage
   const {
@@ -93,8 +99,8 @@ export default function TypeOfUseMaster({
 
   // Get column definitions from separate file
   const subTypeColumns = useMemo<Column<SubTypeTableRow>[]>(
-    () => getSubTypeColumns(t),
-    [t]
+    () => getSubTypeColumns(t, subTypeOfUseLabel),
+    [t, subTypeOfUseLabel]
   );
 
   // Use delete actions hook
@@ -138,7 +144,7 @@ export default function TypeOfUseMaster({
   if (!initialData.groups?.length) {
     return (
       <PageContainer>
-        <div className="p-6 text-sm text-slate-600">{t('messages.noGroups')}</div>
+        <div className="p-6 text-sm text-slate-600">{t('messages.noGroups', { use: useLabel })}</div>
       </PageContainer>
     );
   }
@@ -147,8 +153,8 @@ export default function TypeOfUseMaster({
     <PageContainer>
       <div className="space-y-4 p-0">
         <TableHeader
-          title={t('title')}
-          subtitle={t('subtitle')}
+          title={t('title', { typeOfUse: typeOfUseLabel })}
+          subtitle={t('subtitle', { use: useLabel, subTypeOfUse: subTypeOfUseLabel })}
           icon={Layers3}
         />
 

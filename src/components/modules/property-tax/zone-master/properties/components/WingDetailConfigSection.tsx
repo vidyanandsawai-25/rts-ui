@@ -6,6 +6,7 @@ import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/pro
 import { Option } from "@/components/common";
 import { PreviewButton } from "@/components/common/ActionButtons";
 import { CODE_SANITIZE } from "@/lib/utils/validation-rules";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 const NO_OF_FLATS_PER_FLOOR_MAX_LENGTH = 2;
 const FLAT_START_MAX_LENGTH = 5;
@@ -25,7 +26,7 @@ interface WingDetailConfigSectionProps {
   handlePreviewBuilding: () => Promise<void>;
   loading: boolean;
   onCancel: () => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   tCommon: (key: string) => string;
 }
 
@@ -46,12 +47,19 @@ export function WingDetailConfigSection({
   t,
   tCommon,
 }: WingDetailConfigSectionProps) {
+  const wingAlias = useAliasLabel("Wing", t("defaults.wing"));
+  const floorAlias = useAliasLabel("Floor", t("defaults.floor"));
+  const flatNoShopNoAlias = useAliasLabel(
+    "Flat_No_Shop_No",
+    useAliasLabel("Flat No/Shop No", t("defaults.flatNoShopNo"))
+  );
+
   return (
     <div className="p-4 border border-gray-300 rounded-lg space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
           <Info className="w-4 h-4 text-blue-600" />
-          {t("partitionForm.wing.newWingDetails")}
+          {t("partitionForm.wing.newWingDetails", { wing: wingAlias })}
         </h4>
         <CancelButton
           size="xs"
@@ -65,14 +73,14 @@ export function WingDetailConfigSection({
         <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
         <div className="text-xs text-blue-800">
           <p className="font-semibold mb-1">{t("partitionForm.wing.requiredFieldsTitle")}</p>
-          <p>{t("partitionForm.wing.requiredFieldsDesc")}</p>
+          <p>{t("partitionForm.wing.requiredFieldsDesc", { wing: wingAlias })}</p>
         </div>
       </div>
 
       {/* Wing Letter */}
       <div>
         <Select
-          label={t("partitionForm.wing.wingLetter")}
+          label={t("partitionForm.wing.wingLetter", { wing: wingAlias })}
           required
           value={form.wingLetter}
           disabled
@@ -81,7 +89,7 @@ export function WingDetailConfigSection({
             setErrors({ ...errors, wingLetter: undefined });
           }}
           options={wingOptions}
-          placeholder={t("partitionForm.wing.placeholders.wingLetter")}
+          placeholder={t("partitionForm.wing.placeholders.wingLetter", { wing: wingAlias })}
           selectSize="md"
         />
         <ValidationMessage
@@ -96,14 +104,14 @@ export function WingDetailConfigSection({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <SearchSelect
-              label={t("partitionForm.wing.fromFloor")}
+              label={t("partitionForm.wing.fromFloor", { floor: floorAlias })}
               required
               value={form.fromFloor}
               onChange={(_name, value) => {
                 handleFromFloorChange({} as React.ChangeEvent<HTMLSelectElement>, value);
               }}
               options={fromFloorOptions}
-              placeholder={t("partitionForm.wing.placeholders.fromFloor")}
+              placeholder={t("partitionForm.wing.placeholders.fromFloor", { floor: floorAlias })}
             />
             <ValidationMessage
               message={errors.fromFloor}
@@ -113,14 +121,14 @@ export function WingDetailConfigSection({
           </div>
           <div>
             <SearchSelect
-              label={t("partitionForm.wing.toFloor")}
+              label={t("partitionForm.wing.toFloor", { floor: floorAlias })}
               required
               value={form.toFloor}
               onChange={(_name, value) => {
                 handleToFloorChange({} as React.ChangeEvent<HTMLSelectElement>, value);
               }}
               options={toFloorOptions}
-              placeholder={t("partitionForm.wing.placeholders.toFloor")}
+              placeholder={t("partitionForm.wing.placeholders.toFloor", { floor: floorAlias })}
             />
             <ValidationMessage
               message={errors.toFloor}
@@ -134,7 +142,7 @@ export function WingDetailConfigSection({
       {/* No Of Flat On One Floor */}
       <div>
         <Input
-          label={t("partitionForm.wing.noOfFlatOnOneFloor")}
+          label={t("partitionForm.wing.noOfFlatOnOneFloor", { flatNoShopNo: flatNoShopNoAlias, floor: floorAlias })}
           required
           type="number"
           value={form.noOfFlatOnOneFloor}
@@ -143,7 +151,7 @@ export function WingDetailConfigSection({
             setForm({ ...form, noOfFlatOnOneFloor: value });
             setErrors({ ...errors, noOfFlatOnOneFloor: undefined });
           }}
-          placeholder={t("partitionForm.wing.placeholders.noOfFlatOnOneFloor")}
+          placeholder={t("partitionForm.wing.placeholders.noOfFlatOnOneFloor", { flatNoShopNo: flatNoShopNoAlias })}
           disabled={loading || form.generationType === "VC"}
           min="1"
           maxLength={NO_OF_FLATS_PER_FLOOR_MAX_LENGTH}
@@ -159,7 +167,7 @@ export function WingDetailConfigSection({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input
-            label={t("partitionForm.wing.flatStart")}
+            label={t("partitionForm.wing.flatStart", { flatNoShopNo: flatNoShopNoAlias })}
             required
             type="number"
             value={form.flatStart}
@@ -208,7 +216,7 @@ export function WingDetailConfigSection({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input
-            label={t("partitionForm.wing.prefix")}
+            label={t("partitionForm.wing.prefix", { flatNoShopNo: flatNoShopNoAlias })}
             value={form.prefix}
             onChange={(e) => {
               const sanitized = e.target.value
@@ -260,7 +268,7 @@ export function WingDetailConfigSection({
       <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-300 rounded-lg">
         <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-red-800">
-          {t("partitionForm.wing.wingBuildingsDuplicate")}
+          {t("partitionForm.wing.wingBuildingsDuplicate", { wing: wingAlias })}
         </p>
       </div>
 

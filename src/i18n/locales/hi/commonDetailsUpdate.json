@@ -1,5 +1,15 @@
 {
   "commonDetailsUpdate": {
+    "aliasFallback": {
+      "entity": "प्रॉपर्टी नंबर",
+      "zone": "जोन / नोड",
+      "ward": "वार्ड / सेक्टर",
+      "propertyNo": "प्रॉपर्टी नंबर",
+      "partition": "विभाजन",
+      "wing": "विंग",
+      "assessment": "मूल्यांकन",
+      "constructionYear": "निर्माण वर्ष"
+    },
     "title": "सामान्य विवरण अपडेट करें",
     "subtitle": "एक साथ हजारों संपत्तियों को सुरक्षित रूप से अपडेट करें",
     "screenObjective": {
@@ -20,12 +30,12 @@
       "selectionCriteria": "प्रॉपर्टी चयन मानदंड",
       "matchedProperties": "मेल खाने वाली संपत्तियां",
       "inputParameters": "इनपुट पैरामीटर",
-      "allPropertiesNote": "चयनित जोन / नोड के अंतर्गत सभी संपत्तियों पर विचार किया जाएगा।",
+      "allPropertiesNote": "चयनित {zone} के अंतर्गत सभी संपत्तियों पर विचार किया जाएगा।",
       "generalUserAllowed": "सामान्य उपयोगकर्ता की अनुमति है",
-      "wardPropertyRange": "वार्ड / प्रॉपर्टी रेंज",
+      "wardPropertyRange": "{ward} / प्रॉपर्टी रेंज",
       "selectCriteria": "मानदंड चुनें",
       "scopes": {
-        "WardSector": "वार्ड / सेक्टर",
+        "WardSector": "{ward}",
         "BuildingWise": "इमारत वार",
         "PropertyRange": "संपत्ति सीमा"
       }
@@ -46,25 +56,25 @@
     },
     "filter": {
       "title": "प्रॉपर्टी फ़िल्टर",
-      "zoneNumber": "ज़ोन नंबर",
-      "selectZone": "ज़ोन चुनें",
-      "wardNumber": "वार्ड नंबर",
-      "selectWard": "वार्ड चुनें",
+      "zoneNumber": "{zone} नंबर",
+      "selectZone": "{zone} चुनें",
+      "wardNumber": "{ward} नंबर",
+      "selectWard": "{ward} चुनें",
       "propertyType": "प्रॉपर्टी का प्रकार",
       "selectPropertyType": "प्रॉपर्टी का प्रकार चुनें",
-      "propertyNo": "प्रॉपर्टी नंबर",
-      "selectPropertyNo": "प्रॉपर्टी नंबर चुनें",
-      "fromPropertyNo": "से प्रॉपर्टी नंबर",
-      "selectFromPropertyNo": "से प्रॉपर्टी नंबर चुनें",
-      "toPropertyNo": "तक प्रॉपर्टी नंबर",
-      "selectToPropertyNo": "तक प्रॉपर्टी नंबर चुनें",
-      "wing": "विंग",
-      "selectWing": "विंग चुनें",
+      "propertyNo": "{propertyNo}",
+      "selectPropertyNo": "{propertyNo} चुनें",
+      "fromPropertyNo": "से {propertyNo}",
+      "selectFromPropertyNo": "से {propertyNo} चुनें",
+      "toPropertyNo": "तक {propertyNo}",
+      "selectToPropertyNo": "तक {propertyNo} चुनें",
+      "wing": "{wing}",
+      "selectWing": "{wing} चुनें",
       "show": "दिखाएं",
       "back": "पीछे",
       "clear": "साफ़ करें",
-      "zoneNode": "झोन / नोड",
-      "selectZoneNode": "झोन / नोड चुनें"
+      "zoneNode": "{zone}",
+      "selectZoneNode": "{zone} चुनें"
     },
     "fieldList": {
       "title": "अपडेट करने के लिए ग्रुप चुनें",
@@ -91,13 +101,13 @@
       "showing": "दिखा रहे हैं",
       "of": "में से",
       "entries": "प्रविष्टियां",
-      "searchPlaceholder": "संपत्ति क्र. या विभाजन क्र. द्वारा खोजें...",
+      "searchPlaceholder": "{propertyNo} या {partition} नं. द्वारा खोजें...",
       "fetchingAllPropertiesForUpdate": "अपडेट के लिए सभी संपत्तियां प्राप्त की जा रही हैं..."
     },
     "columns": {
-      "wardNo": "वार्ड क्र.",
-      "propertyNo": "संपत्ति क्र.",
-      "partitionNo": "विभाजन क्र.",
+      "wardNo": "{ward} क्र.",
+      "propertyNo": "{propertyNo}",
+      "partitionNo": "{partition} क्र.",
       "currentValueEn": "वर्तमान मूल्य (अंग्रेज़ी)",
       "currentValueMr": "वर्तमान मूल्य (मराठी)",
       "currentValuePrefix": "वर्तमान"
@@ -228,13 +238,13 @@
       "fetchPropertiesFailed": "संपत्तियां लोड करने में विफल",
       "fetchWardsFailed": "वार्ड लोड करने में विफल",
       "fetchWingsFailed": "विंग लोड करने में विफल",
-      "zoneRequired": "जोन आवश्यक है",
+      "zoneRequired": "{zone} आवश्यक है",
       "propertyTypeRequired": "संपत्ति प्रकार आवश्यक है",
-      "propertyNoRequired": "संपत्ति नंबर आवश्यक है",
-      "wardRequired": "वार्ड आवश्यक है",
-      "fromPropertyRequired": "से प्रॉपर्टी नंबर आवश्यक है",
-      "toPropertyRequired": "तक प्रॉपर्टी नंबर आवश्यक है",
-      "wingRequired": "विंग आवश्यक है",
+      "propertyNoRequired": "{propertyNo} आवश्यक है",
+      "wardRequired": "{ward} आवश्यक है",
+      "fromPropertyRequired": "से {propertyNo} आवश्यक है",
+      "toPropertyRequired": "तक {propertyNo} आवश्यक है",
+      "wingRequired": "{wing} आवश्यक है",
       "updateCodeRequired": "अद्यतन प्रकार आवश्यक है",
       "remarksRequired": "टिप्पणी आवश्यक है",
       "propertiesRequired": "कृपया कम से कम एक संपत्ति का चयन करें",
@@ -245,7 +255,7 @@
       "noDataToUpdate": "अपडेट करने के लिए कृपया जानकारी भरें।",
       "selectUpdateType": "कृपया अपडेट प्रकार चुनें",
       "fillRequired": "कृपया सभी आवश्यक फ़ील्ड भरें",
-      "invalidRange": "संपत्ति क्र. से, संपत्ति क्र. तक से कम या बराबर होना चाहिए",
+      "invalidRange": "से {propertyNo}, तक {propertyNo} से कम या बराबर होना चाहिए",
       "noPropertiesToExport": "निर्यात करने के लिए कोई संपत्ति नहीं",
       "exportSuccess": "सफलतापूर्वक निर्यात किया गया",
       "exportFailed": "निर्यात विफल रहा",
@@ -256,13 +266,13 @@
       "noPropertiesFound": "चुने गए फ़िल्टर के लिए कोई संपत्ति नहीं मिली",
       "cannotDeselectIndividual": "'सभी चुनें' सक्रिय होने पर व्यक्तिगत रिकॉर्ड को अनचुना करने की अनुमति नहीं है। कृपया पहले चयन को साफ़ करें।",
       "invalidFormat": "कुछ फ़ील्ड में दर्ज जानकारी सही नहीं है। कृपया उन्हें सही करें और फिर से प्रयास करें।",
-      "assessmentYearLessThanConstruction": "मूल्यांकन वर्ष, निर्माण वर्ष से बड़ा होना चाहिए।",
-      "makeSureAssessmentYearGreater": "सुनिश्चित करें कि मूल्यांकन वर्ष, निर्माण वर्ष से बड़ा हो।",
-      "makeSureConstructionYearLessThan": "सुनिश्चित करें कि निर्माण वर्ष, आकलन वर्ष से कम हो।",
+      "assessmentYearLessThanConstruction": "{assessment} वर्ष, {constructionYear} से बड़ा होना चाहिए।",
+      "makeSureAssessmentYearGreater": "सुनिश्चित करें कि {assessment} वर्ष {constructionYear} से बड़ा है।",
+      "makeSureConstructionYearLessThan": "सुनिश्चित करें कि {constructionYear}, {assessment} वर्ष से कम है।",
       "invalidYearFormat": "वर्ष 4 अंकों की एक मान्य संख्या होना चाहिए।",
       "yearExceedsCurrentYear": "वर्ष वर्तमान वर्ष ({year}) से बड़ा नहीं हो सकता।",
       "fetchingAllProperties": "अपडेट के लिए सभी संपत्तियां प्राप्त की जा रही हैं...",
-      "missingWardOrField": "वार्ड आईडी या सक्षम फ़ील्ड चयन गायब है",
+      "missingWardOrField": "{ward} आईडी या सक्षम फ़ील्ड चयन गायब है",
       "downloadingExcel": "एक्सेल फ़ाइल डाउनलोड हो रही है...",
       "excelDownloadSuccess": "एक्सेल फ़ाइल सफलतापूर्वक डाउनलोड हुई!",
       "excelExportFailed": "एक्सेल निर्यात विफल रहा",
@@ -333,7 +343,7 @@
       "filters": {
         "user": "उपयोगकर्ता",
         "allUsers": "सभी उपयोगकर्ता",
-        "searchPlaceholder": "संपत्ति क्र., फ़ील्ड, उपयोगकर्ता, टिप्पणी द्वारा खोजें"
+        "searchPlaceholder": "{propertyNo}, फ़ील्ड, उपयोगकर्ता, टिप्पणी द्वारा खोजें"
       },
       "messages": {
         "activityFailedCannotView": "यह गतिविधि विफल हो गई है और इसमें देखने के लिए कोई विवरण नहीं है।"
@@ -379,7 +389,7 @@
         "oldValue": "पुराना मान",
         "newValue": "नया मान",
         "updateDetailsPrefix": "अपडेट विवरण",
-        "searchPlaceholder": "संपत्ति, फ़ील्ड, पुराना/नया मान खोजें...",
+        "searchPlaceholder": "{propertyNo}, फ़ील्ड, पुराना/नया मान खोजें...",
         "exportExcel": "एक्सेल डाउनलोड करें"
       }
     },
@@ -447,7 +457,7 @@
         "confirmBtn": "पुष्टि करें"
       },
       "table": {
-        "propertyNo": "संपत्ति क्रमांक",
+        "propertyNo": "{propertyNo}",
         "validationRemark": "सत्यापन टिप्पणी"
       }
     }

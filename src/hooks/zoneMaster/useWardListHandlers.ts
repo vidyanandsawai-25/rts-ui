@@ -12,6 +12,7 @@ interface UseWardListHandlersProps {
   onWardsChanged?: () => void;
   pageNumber: number;
   pageSize: number;
+  wardAlias?: string;
   t: (key: string, values?: Record<string, unknown>) => string;
 }
 
@@ -21,6 +22,7 @@ export function useWardListHandlers({
   onWardsChanged,
   pageNumber,
   pageSize,
+  wardAlias,
   t,
 }: UseWardListHandlersProps) {
   const router = useRouter();
@@ -75,15 +77,16 @@ export function useWardListHandlers({
     const wardNo = row.wardNo;
 
     if (!wardId) {
-      toast.error(t("messages.invalidWard"));
+      toast.error(t("messages.invalidWard", { ward: wardAlias }));
       return;
     }
 
     confirm({
       variant: "delete",
-      title: t("wardList.deleteTitle"),
+      title: t("wardList.deleteTitle", { ward: wardAlias }),
       description: t("dialogs.deleteDescription", {
         name: wardNo,
+        zone: wardAlias,
       }),
       confirmText: t("actions.delete"),
       cancelText: t("actions.cancel"),
@@ -92,7 +95,7 @@ export function useWardListHandlers({
           const result = await deleteWardAction(wardId);
 
           if (result.success) {
-            toast.success(t("messages.wardDeleteSuccess"));
+            toast.success(t("messages.wardDeleteSuccess", { ward: wardAlias }));
             refreshData();
           } else {
             const errorMsg = result.error?.toLowerCase() || "";
@@ -107,17 +110,17 @@ export function useWardListHandlers({
               errorMsg.includes("dependent") ||
               errorMsg.includes("409")
             ) {
-              toast.error(t("wardMessages.wardCannotBeDeleted", { wardNo }));
+              toast.error(t("wardMessages.wardCannotBeDeleted", { wardNo, ward: wardAlias }));
             } else {
-              toast.error(t("messages.wardDeleteError"));
+              toast.error(t("messages.wardDeleteError", { ward: wardAlias }));
             }
           }
         } catch {
-          toast.error(t("messages.wardDeleteException"));
+          toast.error(t("messages.wardDeleteException", { ward: wardAlias }));
         }
       },
     });
-  }, [t, confirm, refreshData]);
+  }, [t, confirm, refreshData, wardAlias]);
 
   const handleEdit = useCallback(
     (row: WardItem) => {
@@ -161,8 +164,9 @@ export function useWardListHandlers({
         t,
         pageNumber,
         pageSize,
+        wardAlias,
       }),
-    [t, pageNumber, pageSize]
+    [t, pageNumber, pageSize, wardAlias]
   );
 
   return {

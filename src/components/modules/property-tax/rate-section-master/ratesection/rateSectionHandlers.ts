@@ -12,16 +12,20 @@ export async function handleRateSectionDelete({
   router,
   onDeleteSuccess,
   t,
-  setDeletingId
+  setDeletingId,
+  rateSectionAlias,
+  wardsAlias
 }: HandleRateSectionDeleteParams) {
   setDeletingId(rateId);
   const formattedName = rateName;
   const hasWards = rateId ? (wardCounts[rateId] || 0) > 0 : false;
+  const rateSection = rateSectionAlias || t('defaults.rateSection');
+  const wards = wardsAlias || t('defaults.wards');
 
   try {
     const result = await deleteRateSectionAction(Number(rateId));
     if (result.success) {
-      toast.success(t('messages.deleteSuccess', { name: formattedName }));
+      toast.success(t('messages.deleteSuccess', { name: formattedName, rateSection }));
 
       const params = new URLSearchParams(searchParams.toString());
       const deletedZone = rateId;
@@ -47,14 +51,14 @@ export async function handleRateSectionDelete({
       if (onDeleteSuccess) onDeleteSuccess();
     } else {
       const errorMsg = result.error?.toLowerCase() || result.message?.toLowerCase() || "";
-      const rawError = result.error || result.message || t('messages.deleteError');
+      const rawError = result.error || result.message || t('messages.deleteError', { rateSection });
       
       // Check for specifically referenced by RateSectionDetails (Wards)
       if (errorMsg.includes("ratesectiondetails")) {
         // Show custom localized error message
-        toast.error(t('messages.inUseError', { name: formattedName }));
+        toast.error(t('messages.inUseError', { name: formattedName, rateSection, wards }));
       } else if (hasWards) {
-        toast.warning(t('dialogs.deleteErrorWards', { name: formattedName }));
+        toast.warning(t('dialogs.deleteErrorWards', { name: formattedName, rateSection, wards }));
       } else {
         // Fall back to showing the actual API error message for other reference errors
         toast.error(rawError);
@@ -66,11 +70,11 @@ export async function handleRateSectionDelete({
     
     if (errorLower.includes("ratesectiondetails")) {
       // Show custom localized error message
-      toast.error(t('messages.inUseError', { name: formattedName }));
+      toast.error(t('messages.inUseError', { name: formattedName, rateSection, wards }));
     } else if (hasWards) {
-      toast.warning(t('dialogs.deleteErrorWards', { name: formattedName }));
+      toast.warning(t('dialogs.deleteErrorWards', { name: formattedName, rateSection, wards }));
     } else {
-      toast.error(msg || t('messages.deleteError'));
+      toast.error(msg || t('messages.deleteError', { rateSection }));
     }
   } finally {
     setDeletingId(null);

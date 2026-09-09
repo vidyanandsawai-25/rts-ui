@@ -146,7 +146,7 @@ describe("RateSectionList", () => {
 
   it("renders list title", () => {
     render(<RateSectionList {...defaultProps} />);
-    expect(screen.getByText("list.title")).toBeInTheDocument();
+    expect(screen.getByText(/list\.title/)).toBeInTheDocument();
   });
 
   it("renders add button", () => {

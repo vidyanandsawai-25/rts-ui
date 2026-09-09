@@ -59,6 +59,8 @@ export async function getDashboardDepartments(): Promise<DepartmentDTO[]> {
           sla: service.sla,
           fees: service.fees,
           feesRequired: service.feesRequired ?? service.isFeesRequired,
+          certificateType: service.certificateType ?? (service.isCertificateRequired === false ? 0 : 1),
+          isCertificateRequired: service.isCertificateRequired ?? (service.certificateType !== 0),
         }))
         .sort((a, b) => a.displayOrder - b.displayOrder);
 

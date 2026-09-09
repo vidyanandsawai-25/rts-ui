@@ -29,9 +29,11 @@ export default function AvailableWards({
   onPageSizeChange,
   onSelectAll,
   isSelectAllActive = false,
-  selectAllLoading = false
+  selectAllLoading = false,
+  wardsAlias
 }: AvailableWardsProps) {
   const t = useTranslations("rateSectionMaster");
+  const wards = wardsAlias || t("defaults.wards");
 
   const unassignedWards = useMemo(() => {
     let filtered = allAvailableWards.filter(ward =>
@@ -70,7 +72,7 @@ export default function AvailableWards({
           className="w-full rounded-sm border-gray-300 mb-0"
           value={availableSearch}
           onChange={onSearch}
-          placeholder={t("wards.searchAvailable")}
+          placeholder={t("wards.searchAvailable", { wards })}
         />
       </div>
 
@@ -121,7 +123,7 @@ export default function AvailableWards({
         })}
         {paginatedUnassignedWards.length === 0 && (
           <div className="text-center text-gray-500 py-4">
-            {t("wards.noAvailableWards")}
+            {t("wards.noAvailableWards", { wards })}
           </div>
         )}
       </div>

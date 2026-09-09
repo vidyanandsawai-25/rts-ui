@@ -28,9 +28,13 @@ export default function ViewWards({
   onPageSizeChange,
   onSelectAll,
   isSelectAllActive = false,
-  selectAllLoading = false
+  selectAllLoading = false,
+  wardAlias,
+  wardsAlias
 }: ViewWardsProps) {
   const t = useTranslations("rateSectionMaster");
+  const ward = wardAlias || t("defaults.ward");
+  const wards = wardsAlias || t("defaults.wards");
 
   const handleSelectAllChange = () => {
     if (!onSelectAll) return;
@@ -44,7 +48,7 @@ export default function ViewWards({
           className="w-full rounded-sm border-gray-300 mb-0"
           value={viewAllSearch}
           onChange={onSearch}
-          placeholder={t("wards.searchAvailable")}
+          placeholder={t("wards.searchWardNo", { ward })}
         />
       </div>
 
@@ -107,7 +111,7 @@ export default function ViewWards({
         })}
         {viewAllWards.length === 0 && (
           <div className="text-center text-gray-500 py-4">
-            {t("wards.noWardsFound")}
+            {t("wards.noWardsFound", { wards })}
           </div>
         )}
       </div>

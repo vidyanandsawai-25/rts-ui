@@ -52,6 +52,30 @@ describe("getMoujaColumns", () => {
       expect(moujaNameColumn).toBeDefined();
       expect(statusColumn?.label).toBe("list.table.status");
     });
+
+    it("should pass alias values when moujaLabel is provided", () => {
+      const mockTWithValues = vi.fn((key: string, values?: Record<string, string | number>) => {
+        if (key === "list.table.moujaNo") return `${values?.mouja} Number`;
+        if (key === "list.table.moujaName") return `${values?.mouja} Name`;
+        return key;
+      });
+
+      const columns = getMoujaColumns(
+        mockTWithValues,
+        mockTCommon,
+        undefined,
+        undefined,
+        undefined,
+        "Custom Mouja"
+      );
+
+      expect(columns[0].label).toBe("Custom Mouja Number");
+      expect(columns[1].label).toBe("Custom Mouja Name");
+      expect(mockTWithValues).toHaveBeenCalledWith("list.table.moujaNo", {
+        mouja: "Custom Mouja",
+        entity: "Custom Mouja",
+      });
+    });
   });
 
   describe("Column Rendering", () => {

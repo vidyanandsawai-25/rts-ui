@@ -5,9 +5,10 @@ import { CloseIconButton, TabButton } from "@/components/common/ActionButtons";
 import { MatrixCellInput } from "@/components/common/MatrixCellInput";
 import { Button } from "@/components/common/ActionButton";
 import { Label } from "@/components/common/label";
-import type { ISelectOption } from "@/types/RVRateMaster";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { RateCopyUseGroupTab } from "./RateCopyUseGroupTab";
 import { RateCopyRateSectionTab } from "./RateCopyRateSectionTab";
+import type { ISelectOption } from "@/types/RVRateMaster";
 
 interface RateCopySectionProps {
   // Copy Rates state
@@ -58,6 +59,9 @@ export function RateCopySection({
   onClose,
   t,
 }: RateCopySectionProps) {
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+  const rateSectionLabel = useAliasLabel("Rate_Section", t("aliasFallback.rateSection"));
+
   return (
     <div className="flex-1 max-w-2xl">
       <div className="rounded-xl border border-blue-200 bg-white shadow-md relative h-50px flex flex-col">
@@ -70,13 +74,13 @@ export function RateCopySection({
           <div className="w-32 border-r border-gray-200 bg-gray-50 p-1.5 space-y-1">
             <TabButton
               icon={Users}
-              label={t('sections.useGroupTab')}
+              label={t('sections.useGroupTab', { use: useLabel })}
               active={copyRatesActiveTab === "useGroup"}
               onClick={() => setCopyRatesActiveTab("useGroup")}
             />
             <TabButton
               icon={MapPin}
-              label={t('sections.rateSectionTab')}
+              label={t('sections.rateSectionTab', { rateSection: rateSectionLabel })}
               active={copyRatesActiveTab === "rateSection"}
               onClick={() => setCopyRatesActiveTab("rateSection")}
             />
@@ -119,6 +123,8 @@ export function RateMultipliersSection({
   onClose,
   t,
 }: RateMultipliersSectionProps) {
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+
   return (
     <div className="flex-1 max-w-2xl">
       <div className="rounded-xl border border-blue-200 bg-white shadow-md h-full max-h-full flex flex-col overflow-hidden relative">
@@ -129,7 +135,7 @@ export function RateMultipliersSection({
               <TrendingUp size={16} />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-semibold text-gray-800">{t('sections.multipliersTitle')}</h4>
+              <h4 className="text-sm font-semibold text-gray-800">{t('sections.multipliersTitle', { use: useLabel })}</h4>
             </div>
             <CloseIconButton onClick={onClose} className="bg-white" size={16} />
           </div>

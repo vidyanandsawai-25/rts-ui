@@ -20,6 +20,12 @@ describe("TypeOfUseModal", () => {
   const mockMessages = {
     propertyType: {
       propertyType: {
+        aliasFallback: {
+          category: "Category",
+          typeOfUse: "Type of Use",
+          ward: "Ward",
+          entity: "Property Type",
+        },
         modal: {
           title: "Type of Use",
           subtitle: "Assigned types",

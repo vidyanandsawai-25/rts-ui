@@ -7,6 +7,7 @@ import { Button } from "@/components/common/ActionButton";
 import { IconButton } from "@/components/common/ActionButtons";
 import { Tooltip } from "@/components/common/Tooltip";
 import { Label } from "@/components/common/label";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import type { ISelectOption } from "@/types/RVRateMaster";
 
 interface RateFiltersSectionProps {
@@ -82,20 +83,25 @@ export function RateFiltersSection({
   hasConfiguredRates = false,
   onConfigureRates,
 }: RateFiltersSectionProps) {
+  const rateSectionLabel = useAliasLabel("Rate_Section", t("aliasFallback.rateSection"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.assessment"));
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+
   return (
     <div className="flex flex-col md:flex-row md:flex-wrap gap-2 md:gap-2 items-stretch md:items-end mb-2">
       {/* Rate Section */}
       <div className="w-full md:w-[200px]">
         <Label className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
           <MapPin size={18} className="text-black" />
-          {t('filters.rateSection')}
+          {t('filters.rateSection', { rateSection: rateSectionLabel })}
         </Label>
         <SearchSelect
           id="zone-select"
           name="zone"
           label=""
           options={zoneOptions}
-          placeholder={t('placeholders.selectRateSection')}
+          placeholder={t('placeholders.selectRateSection', { rateSection: rateSectionLabel })}
           value={selectedZone}
           onChange={(_name, value) => {
             const selectedOption = zoneOptions.find(opt => opt.value === value);
@@ -113,14 +119,14 @@ export function RateFiltersSection({
         <div className="w-full md:w-[200px]">
           <Label className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
             <Users size={18} className="text-black" />
-            {t('filters.typeOfUseGroup')}
+            {t('filters.typeOfUseGroup', { typeOfUse: typeOfUseLabel })}
           </Label>
           <SearchSelect
             id="useGroup-select"
             name="useGroup"
             label=""
             options={useGroupOptions}
-            placeholder={t('placeholders.selectUseGroup')}
+            placeholder={t('placeholders.selectUseGroup', { use: useLabel, typeOfUse: typeOfUseLabel })}
             value={selectedUseGroup}
             onChange={(_name, value) => {
               const selectedOption = useGroupOptions.find(opt => opt.value === value);
@@ -138,7 +144,7 @@ export function RateFiltersSection({
       <div className="w-full md:w-[200px]">
         <Label className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
           <Calendar size={18} className="text-black" />
-          {t('filters.assessmentYearRange')}
+          {t('filters.assessmentYearRange', { assessment: assessmentLabel })}
         </Label>
         <SearchSelect
           id="assessment-year-select"
@@ -168,7 +174,7 @@ export function RateFiltersSection({
             onClick={onConfigureRates}
             className="cursor-pointer"
           >
-            {t("buttons.configureUseTypes")}
+            {t("buttons.configureUseTypes", { use: useLabel })}
           </Button>
         </div>
       )}
@@ -182,11 +188,11 @@ export function RateFiltersSection({
           <>
             {/* Multiplier Button */}
             {!isOpenPlot && (
-              <Tooltip placement="top" content={existingRateFound ? t('messages.validationRatesAlreadyExist') : t('sections.multipliersTitle')}>
+              <Tooltip placement="top" content={existingRateFound ? t('messages.validationRatesAlreadyExist') : t('sections.multipliersTitle', { use: useLabel })}>
                 <IconButton
                   icon={TrendingUp}
                   variant="primary"
-                  aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : t('sections.multipliersTitle')}
+                  aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : t('sections.multipliersTitle', { use: useLabel })}
                   disabled={isActionsDisabled}
                   onClick={onToggleMultipliers}
                 />

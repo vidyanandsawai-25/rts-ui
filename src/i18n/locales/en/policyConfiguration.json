@@ -1,5 +1,9 @@
 {
   "policyConfiguration": {
+    "aliasFallback": {
+      "category": "Category",
+      "entity": "Policy Configuration"
+    },
     "list": {
       "title": "Policy Configuration Master",
       "subtitle": "Manage system configurations and policy values",
@@ -9,13 +13,13 @@
       },
       "filters": {
         "show": "Show",
-        "search": "Search by Code, Category",
+        "search": "Search by Code, {category}",
         "searching": "Searching...",
         "recordsFound": "Found {count} records"
       },
       "table": {
         "policyCode": "Policy Code",
-        "category": "Category",
+        "category": "{category}",
         "displayName": "Display Name",
         "description": "Description",
         "dataType": "Data Type",
@@ -37,7 +41,7 @@
           "placeholder": "e.g. PT_TAX_RATE"
         },
         "category": {
-          "label": "Category",
+          "label": "{category}",
           "placeholder": "e.g. TAX"
         },
         "displayName": {
@@ -73,7 +77,7 @@
       },
       "validation": {
         "policyCodeRequired": "Policy Code is required",
-        "categoryRequired": "Category is required",
+        "categoryRequired": "{category} is required",
         "displayNameRequired": "Display Name is required",
         "descriptionRequired": "Description is required",
         "dataTypeRequired": "Data Type is required",
@@ -105,7 +109,7 @@
       "messages": {
         "createSuccess": "Policy Configuration created successfully",
         "updateSuccess": "Policy Configuration updated successfully",
-         "error": "Unable to save policy configuration. Please try again.",
+        "error": "Unable to save policy configuration. Please try again.",
         "invalidIdError": "Invalid ID format. ID must be a positive number."
       }
     },

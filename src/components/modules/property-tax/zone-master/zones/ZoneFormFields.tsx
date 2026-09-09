@@ -7,6 +7,7 @@ import { Label } from "@/components/common/label";
 import { cn } from "@/lib/utils/cn";
 import { ZONE_WARD_NO_MAX_LENGTH, ZONE_WARD_NAME_MAX_LENGTH } from "../constants";
 import { CODE_SANITIZE, DESCRIPTION_SANITIZE } from "@/lib/utils/validation-rules";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 export interface ZoneFormState {
   zoneNo: string;
@@ -39,6 +40,7 @@ export function ZoneFormFields({
   showActiveStatus = false,
 }: ZoneFormFieldsProps) {
   const t = useTranslations("zoneMaster");
+  const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
 
   const sanitizeCode = (value: string) => {
     return value.replace(CODE_SANITIZE, '');
@@ -75,7 +77,7 @@ export function ZoneFormFields({
                   {t("zoneForm.activeStatus")}
                 </div>
                 <div className={cn("text-sm", isActive ? "text-gray-500" : "text-gray-400")}>
-                  {isActive ? t("zoneForm.statusActive") : t("zoneForm.statusInactive")}
+                  {isActive ? t("zoneForm.statusActive", { zone: zoneAlias }) : t("zoneForm.statusInactive", { zone: zoneAlias })}
                 </div>
               </div>
             </div>
@@ -86,7 +88,7 @@ export function ZoneFormFields({
       )}
 
       <div className="bg-white rounded-lg shadow-md border-2 border-[#6F8EC0]/40 p-3">
-        <Label required>{t("zoneForm.zoneNo")}</Label>
+        <Label required>{t("zoneForm.zoneNo", { zone: zoneAlias })}</Label>
         <Input
           placeholder={t("zoneForm.placeholders.zoneNo")}
           disabled={disabled}
@@ -103,7 +105,7 @@ export function ZoneFormFields({
       </div>
 
       <div className="bg-white rounded-lg shadow-md border-2 border-[#6F8EC0]/40 p-3">
-        <Label required>{t("zoneForm.zoneDescription")}</Label>
+        <Label required>{t("zoneForm.zoneDescription", { zone: zoneAlias })}</Label>
         <Input
           placeholder={t("zoneForm.placeholders.zoneDescription")}
           disabled={disabled}

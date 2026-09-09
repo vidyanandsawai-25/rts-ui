@@ -6,6 +6,7 @@ import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/zone-m
 import { WardItem } from "@/types/wardMaster.types";
 import { Option } from "@/components/common";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface PropertyFormFieldsProps {
   selectedWard: WardItem | null;
@@ -16,6 +17,7 @@ interface PropertyFormFieldsProps {
   taxZoneOptions: Option[];
   handleFieldChange: (field: keyof CreatePropertyFormData, value: string | boolean) => void;
   t: ReturnType<typeof useTranslations<"zoneMaster">>;
+  wardAlias?: string;
 }
 
 export function PropertyFormFields({
@@ -27,13 +29,21 @@ export function PropertyFormFields({
   taxZoneOptions,
   handleFieldChange,
   t,
+  wardAlias,
 }: PropertyFormFieldsProps) {
+  const resolvedWardAlias = useAliasLabel("Ward", wardAlias ?? t("defaults.ward"));
+  const categoryAlias = useAliasLabel("Category", t("defaults.category"));
+  const taxZoneAlias = useAliasLabel(
+    "Tax_Zone",
+    useAliasLabel("Tax Zone", t("defaults.taxZone"))
+  );
+
   return (
     <>
       {/* Ward (Read-only) */}
       <div>
         <Input
-          label={t("createProperty.ward")}
+          label={t("createProperty.ward", { ward: resolvedWardAlias })}
           value={selectedWard ? `${selectedWard.wardNo}${selectedWard.description ? ` - ${selectedWard.description}` : ""}` : ""}
           disabled
           className="bg-gray-50"
@@ -60,11 +70,11 @@ export function PropertyFormFields({
 
         <div>
           <SearchSelect
-            label={t("createProperty.category")}
+            label={t("createProperty.category", { category: categoryAlias })}
             options={categoryOptions}
             value={formData.categoryId}
             onChange={(_, value) => handleFieldChange("categoryId", value)}
-            placeholder={t("createProperty.selectCategory")}
+            placeholder={t("createProperty.selectCategory", { category: categoryAlias })}
             required
           />
           <ValidationMessage
@@ -78,11 +88,11 @@ export function PropertyFormFields({
       {/* Tax Zone ID */}
       <div>
         <SearchSelect
-          label={t("createProperty.taxZoneId")}
+          label={t("createProperty.taxZoneId", { taxZone: taxZoneAlias })}
           options={taxZoneOptions}
           value={formData.taxZoneId}
           onChange={(_, value) => handleFieldChange("taxZoneId", value)}
-          placeholder={t("createProperty.selectTaxZone")}
+          placeholder={t("createProperty.selectTaxZone", { taxZone: taxZoneAlias })}
           required
         />
         <ValidationMessage

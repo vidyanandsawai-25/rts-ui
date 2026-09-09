@@ -4,6 +4,7 @@ import { MapPin, CheckCircle } from "lucide-react";
 import { SearchSelect } from "@/components/common/SearchSelect";
 import { Button } from "@/components/common/ActionButton";
 import { Label } from "@/components/common/label";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import type { ISelectOption } from "@/types/RVRateMaster";
 
 interface RateCopyRateSectionTabProps {
@@ -21,6 +22,8 @@ export function RateCopyRateSectionTab({
   onCopyRatesFromRateSection,
   t,
 }: RateCopyRateSectionTabProps) {
+  const rateSectionLabel = useAliasLabel("Rate_Section", t("aliasFallback.rateSection"));
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-2">
@@ -28,22 +31,22 @@ export function RateCopyRateSectionTab({
           <MapPin size={16} />
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-gray-800">{t('sections.copyRatesRateSectionTitle')}</h4>
-          <p className="text-xs text-gray-500">{t('sections.copyRatesRateSectionSubtitle')}</p>
+          <h4 className="text-sm font-semibold text-gray-800">{t('sections.copyRatesRateSectionTitle', { rateSection: rateSectionLabel })}</h4>
+          <p className="text-xs text-gray-500">{t('sections.copyRatesRateSectionSubtitle', { rateSection: rateSectionLabel })}</p>
         </div>
       </div>
 
       <div className="flex items-end gap-2">
         <div className="flex-auto">
           <Label htmlFor="source-rate-section-select" className="text-xs font-medium text-gray-700 mb-1 block">
-            {t('sections.selectSourceRateSection')}
+            {t('sections.selectSourceRateSection', { rateSection: rateSectionLabel })}
           </Label>
           <SearchSelect
             id="source-rate-section-select"
             name="sourceRateSection"
             label=""
             options={sourceRateSectionOptions}
-            placeholder={t('placeholders.selectRateSection')}
+            placeholder={t('placeholders.selectRateSection', { rateSection: rateSectionLabel })}
             value={sourceRateSection}
             onChange={(_name, value) => setSourceRateSection(value)}
             className="text-black"

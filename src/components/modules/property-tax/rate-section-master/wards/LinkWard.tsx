@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { Map } from "lucide-react";
 import { PrevPageButton, NextPageButton } from "@/components/common/ActionButtons";
 import { LinkWardProps } from "@/types/rateSectionMaster.types";
@@ -29,9 +30,22 @@ export default function AddWard({
   ssrSelectedWardsTotalCount = 0,
   ssrViewAllWards = [],
   ssrViewAllWardsTotalCount = 0,
-  ssrViewAllWardsTotalPages = 0
+  ssrViewAllWardsTotalPages = 0,
+  rateSectionAlias: propRateSectionAlias,
+  wardAlias: propWardAlias,
+  wardsAlias: propWardsAlias
 }: LinkWardProps) {
   const t = useTranslations("rateSectionMaster");
+  const defaultRateSection = useAliasLabel(
+    "Rate_Section",
+    useAliasLabel("Rate_Section_Name", useAliasLabel("Rate Section", t("defaults.rateSection")))
+  );
+  const defaultWard = useAliasLabel("Ward", t("defaults.ward"));
+  const defaultWards = useAliasLabel("Wards", t("defaults.wards"));
+  const rateSection = propRateSectionAlias || defaultRateSection;
+  const ward = propWardAlias || defaultWard;
+  const wards = propWardsAlias || defaultWards;
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -86,7 +100,10 @@ export default function AddWard({
     setIsAvailableSelectAllActive,
     setIsRateSectionSelectAllActive,
     viewAllSearch: state.viewAllSearch,
-    availableSearch: state.availableSearch
+    availableSearch: state.availableSearch,
+    rateSectionAlias: rateSection,
+    wardAlias: ward,
+    wardsAlias: wards
   });
 
   const selectedZoneName = useMemo(
@@ -95,8 +112,8 @@ export default function AddWard({
   );
 
   const totalUnassignedForHeader = useMemo(() => {
-    return allAvailableWards.filter(ward => 
-      !wardAssignments[ward.wardNo] && !state.selectedWards.includes(ward.wardNo)
+    return allAvailableWards.filter(w => 
+      !wardAssignments[w.wardNo] && !state.selectedWards.includes(w.wardNo)
     ).length;
   }, [allAvailableWards, wardAssignments, state.selectedWards]);
 
@@ -173,7 +190,7 @@ export default function AddWard({
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {t("wards.linkTitle")}
+              {t("wards.linkTitle", { ward, rateSection })}
             </div>
           </div>
         </div>
@@ -212,6 +229,9 @@ export default function AddWard({
           onAvailableSelectAll={handleAvailableSelectAll}
           onViewAllSelectAll={handleViewAllSelectAll}
           t={t}
+          rateSectionAlias={rateSection}
+          wardAlias={ward}
+          wardsAlias={wards}
         />
 
         <div className="flex flex-col gap-2 justify-center">
@@ -243,6 +263,9 @@ export default function AddWard({
           onSelectAll={handleRateSectionSelectAll}
           isSelectAllActive={isRateSectionSelectAllActive}
           selectAllLoading={rateSectionSelectAllLoading}
+          rateSectionAlias={rateSection}
+          wardAlias={ward}
+          wardsAlias={wards}
         />
       </div>
     </Drawer>

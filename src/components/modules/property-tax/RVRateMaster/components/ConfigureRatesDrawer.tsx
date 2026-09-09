@@ -10,6 +10,7 @@ import { SaveButton, CancelButton } from "@/components/common/ActionButtons";
 import { SearchInput } from "@/components/common/SearchInput";
 import { CardPagination } from "@/components/common/CardList";
 import { Tooltip } from "@/components/common/Tooltip";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { useConfigureRates } from "@/hooks/RVRateMaster/useConfigureRates";
 import { GroupConfigurationCard } from "./GroupConfigurationCard";
 import type { RateCategory } from "@/types/RVRateMaster";
@@ -33,6 +34,13 @@ export function ConfigureRatesDrawer({
   isOpenPlot = false,
 }: ConfigureRatesDrawerProps) {
   const t = useTranslations("ptis_RVRateMaster");
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+
+  const aliasLabels = {
+    use: useLabel,
+    typeOfUse: typeOfUseLabel,
+  };
 
   const {
     allUseTypes,
@@ -91,10 +99,10 @@ export function ConfigureRatesDrawer({
             </div>
             <div>
               <div className="text-lg font-bold text-blue-900">
-                {t('configureRates.title')}
+                {t('configureRates.title', aliasLabels)}
               </div>
               <div className="text-xs text-slate-500">
-                {t('configureRates.description')}
+                {t('configureRates.description', aliasLabels)}
               </div>
             </div>
           </div>
@@ -120,7 +128,7 @@ export function ConfigureRatesDrawer({
         {isLoading ? (
           <div className="p-10 text-center text-slate-500">
             <div className="animate-spin inline-block w-8 h-8 border-[3px] border-current border-t-transparent text-blue-600 rounded-full mb-3" />
-            <p className="text-sm">{t('configureRates.loadingTypes')}</p>
+            <p className="text-sm">{t('configureRates.loadingTypes', aliasLabels)}</p>
           </div>
         ) : (
           <div className="flex flex-col md:flex-row h-[calc(100vh-140px)] divide-x divide-slate-200">
@@ -129,7 +137,7 @@ export function ConfigureRatesDrawer({
               <div className="flex items-center justify-between border-b pb-3 mb-3 flex-shrink-0">
                 <h2 className="text-sm font-bold text-slate-800 flex items-center gap-1.5 font-sans">
                   <Info size={16} className="text-blue-500 animate-pulse" />
-                  {t('configureRates.selectTypesOfUse')}
+                  {t('configureRates.selectTypesOfUse', aliasLabels)}
                 </h2>
                 <SearchInput
                   className="mb-0 w-44 shadow-xs"
@@ -145,7 +153,7 @@ export function ConfigureRatesDrawer({
               <div className={cn("flex-1 overflow-y-auto pr-1 space-y-2.5 mb-3 transition-opacity duration-200", isListLoading && "opacity-50")}>
                 {paginatedUseTypes.length === 0 ? (
                   <div className="text-center py-10 text-slate-400 text-sm font-sans">
-                    {t('configureRates.noTypesFound')}
+                    {t('configureRates.noTypesFound', aliasLabels)}
                   </div>
                 ) : (
                   paginatedUseTypes.map((tu) => {
@@ -188,13 +196,13 @@ export function ConfigureRatesDrawer({
                               <Tooltip content={tu.groupName} placement="top">
                                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-100/70 shadow-xs font-sans cursor-help">
                                   <FolderKanban size={12} className="text-blue-500" />
-                                  {t('configureRates.groupLabel', { groupCode: tu.typeOfUseGroupCode })}
+                                  {t('configureRates.groupLabel', { groupCode: tu.typeOfUseGroupCode, ...aliasLabels })}
                                 </span>
                               </Tooltip>
                             ) : (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-100/70 shadow-xs font-sans">
                                 <FolderKanban size={12} className="text-blue-500" />
-                                {t('configureRates.groupLabel', { groupCode: tu.typeOfUseGroupCode })}
+                                {t('configureRates.groupLabel', { groupCode: tu.typeOfUseGroupCode, ...aliasLabels })}
                               </span>
                             )}
                             {tu.groupName && (
@@ -231,14 +239,15 @@ export function ConfigureRatesDrawer({
               <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 border-b pb-3 mb-3 flex-shrink-0">
                 <h2 className="text-sm font-bold text-slate-800 flex items-center gap-1.5 font-sans flex-shrink-0">
                   <Settings size={16} className="text-blue-500 animate-spin-slow" />
-                  {t('configureRates.configureUseGroups')}
+                  {t('configureRates.configureUseGroups', aliasLabels)}
                 </h2>
                 <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-blue-700 bg-blue-50/70 border border-blue-100/60 rounded-lg px-2.5 py-1 font-medium font-sans xl:max-w-2xl">
                   <Info size={14} className="text-blue-500 flex-shrink-0" />
                   <span className="leading-tight">
                     {t.rich('configureRates.infoTip', {
                       btn1: (chunks) => <strong>{chunks}</strong>,
-                      btn2: (chunks) => <strong>{chunks}</strong>
+                      btn2: (chunks) => <strong>{chunks}</strong>,
+                      ...aliasLabels,
                     })}
                   </span>
                 </div>
@@ -249,7 +258,7 @@ export function ConfigureRatesDrawer({
                   <div className="flex h-16 w-16 items-center justify-center bg-blue-50/50 rounded-full mb-3 border border-blue-100/50 shadow-xs">
                     <Settings size={32} className="stroke-[1.5] text-blue-400/80 animate-[spin_8s_linear_infinite]" />
                   </div>
-                  <p className="text-sm font-medium font-sans text-slate-500">{t('configureRates.noTypeSelected')}</p>
+                  <p className="text-sm font-medium font-sans text-slate-500">{t('configureRates.noTypeSelected', aliasLabels)}</p>
                 </div>
               ) : (
                 <div className="space-y-5">

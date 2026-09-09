@@ -15,6 +15,7 @@ import {
 } from "@/components/common";
 import { CardList } from "@/components/common/CardList";
 import { useZoneListHandlers } from "@/hooks/zoneMaster/useZoneListHandlers";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 
 interface Props {
@@ -41,6 +42,10 @@ export default function ZoneList({
   newlyCreatedZoneNo,
 }: Props) {
   const t = useTranslations("zoneMaster");
+  const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
+  const zonesAlias = useAliasLabel("Zones", t("defaults.zones"));
+  const wardsAlias = useAliasLabel("Wards", t("defaults.wards"));
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -55,6 +60,8 @@ export default function ZoneList({
     handleSearchChange,
   } = useZoneListHandlers({
     zones,
+    zoneAlias,
+    wardsAlias,
     t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
   });
 
@@ -80,13 +87,13 @@ export default function ZoneList({
       <div className="flex items-center gap-2 mb-3">
         <Layers className="w-5 h-5 text-[#1A86E8]" />
         <h3 className="text-lg font-semibold text-[#1A86E8]">
-          {t("zoneList.title")}
+          {t("zoneList.title", { zones: zonesAlias })}
         </h3>
 
         <div className="ml-auto flex items-center gap-3">
           <SearchInput
             className="w-64 mb-0"
-            placeholder={t("zoneList.searchPlaceholder")}
+            placeholder={t("zoneList.searchPlaceholder", { zone: zoneAlias })}
             value={localSearch}
             onChange={(value) => {
               const sanitized = value.replace(TEXT_SANITIZE, '');
@@ -96,7 +103,7 @@ export default function ZoneList({
 
           <AddButton
             size="sm"
-            label={t("zoneList.addZone")}
+            label={t("zoneList.addZone", { zone: zoneAlias })}
             onClick={() => {
               const params = new URLSearchParams(
                 searchParams.toString()
@@ -121,8 +128,8 @@ export default function ZoneList({
         onPageSizeChange={handlePageSizeChange}
         emptyText={
           searchTerm
-            ? t("zoneList.notFound")
-            : t("zoneList.notAvailable")
+            ? t("zoneList.notFound", { zones: zonesAlias })
+            : t("zoneList.notAvailable", { zones: zonesAlias })
         }
         emptyIcon={
           <Layers className="w-12 h-12 mx-auto mb-2 text-gray-300" />
@@ -193,7 +200,7 @@ export default function ZoneList({
                           }`}
                       >
                         {description ||
-                          t("zoneList.zoneName")}
+                          t("zoneList.zoneName", { zone: zoneAlias })}
                       </h4>
 
                       <div className="flex gap-1 items-center">

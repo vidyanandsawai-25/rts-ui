@@ -24,21 +24,22 @@ interface TemplateDownloadParams {
   rateCategories: RateCategory[];
   rateUnit: "SqMeter" | "SqFeet";
   t: ReturnType<typeof import("next-intl").useTranslations>;
+  aliasLabels?: Record<string, string>;
 }
 
 export function handleTemplateDownload(params: TemplateDownloadParams) {
-  const { selectedZone, selectedUseGroup, assessmentYear, allZones, rateCategories, rateUnit, t } = params;
+  const { selectedZone, selectedUseGroup, assessmentYear, allZones, rateCategories, rateUnit, t, aliasLabels } = params;
 
   if (!assessmentYear) {
-    toast.error(t('messages.selectAssessmentYearRange'));
+    toast.error(t('messages.selectAssessmentYearRange', aliasLabels));
     return;
   }
   if (!selectedZone) {
-    toast.error(t('messages.selectRateSection'));
+    toast.error(t('messages.selectRateSection', aliasLabels));
     return;
   }
   if (!selectedUseGroup) {
-    toast.error(t('messages.selectUseGroup'));
+    toast.error(t('messages.selectUseGroup', aliasLabels));
     return;
   }
   if (!allZones || !Array.isArray(allZones)) {

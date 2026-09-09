@@ -4,17 +4,23 @@
   "common": {
     "loading": "Loading..."
   },
+  "defaults": {
+    "zone": "Zone / Node",
+    "ward": "Ward / Sector",
+    "propertyNo": "Property No.",
+    "partition": "Partition"
+  },
   "scopeSelectionCard": {
     "title": "1. Scope Selection",
     "subtitle": "Choose scope. Only relevant fields appear below.",
     "options": {
       "zone": {
-        "label": "Zone / Node",
-        "sublabel": "Zone-wise selection"
+        "label": "{zone}",
+        "sublabel": "{zone}-wise selection"
       },
       "ward": {
-        "label": "Ward / Sector",
-        "sublabel": "Multi ward selection"
+        "label": "{ward}",
+        "sublabel": "Multi {ward} selection"
       },
       "building": {
         "label": "Building Wise",
@@ -27,16 +33,16 @@
     }
   },
   "selectPropertyCard": {
-    "title": "Select properties",
-    "zone": "Zone / Node",
-    "selectZone": "Select Zone",
-    "propertyNo": "Property No",
+    "title": "Select Properties",
+    "zone": "{zone}",
+    "selectZone": "Select {zone}",
+    "propertyNo": "{propertyNo}",
     "selectProperties": "Select Properties",
-    "wardNo": "Ward no",
-    "selectWard": "Select Ward",
-    "fromProperty": "From property",
+    "wardNo": "{ward} no",
+    "selectWard": "Select {ward}",
+    "fromProperty": "From Property",
     "selectStartRange": "Select Start Range",
-    "toProperty": "To property",
+    "toProperty": "To Property",
     "selectEndRange": "Select End Range",
     "showButton": "Show",
     "clearButton": "Clear all",
@@ -58,12 +64,12 @@
     "propertyMasterTitle": "",
     "lockButton": "Lock Selected Screens",
     "unlockButton": "Unlock Selected Screens",
-    "searchPropertyPlaceholder": "Search by Property No. or Partition No...",
+    "searchPropertyPlaceholder": "Search by {propertyNo} or {partition} No...",
     "searchButton": "Search",
-    "placeholderText": "Please select a ward and property range, then click \"Show\" to view properties.",
+    "placeholderText": "Please select a {ward} and Property range, then click \"Show\" to view properties.",
     "noResultsFound": "No properties found.",
     "columns": {
-      "propertyDetail": "Property No.",
+      "propertyDetail": "{propertyNo}",
       "screenNames": "Screen Names",
       "status": "Status",
       "lockUnlock": "Lock/Unlock",
@@ -88,8 +94,8 @@
     "screenRequired": "Please select at least one screen from the Screen selection card to {action}.",
     "lockConfirmTitle": "Lock Property",
     "unlockConfirmTitle": "Unlock Property",
-    "lockConfirmDescription": "Are you sure you want to lock the selected screens for property {propertyNo}?",
-    "unlockConfirmDescription": "Are you sure you want to unlock the selected screen(s) for property {propertyNo}?",
+    "lockConfirmDescription": "Are you sure you want to lock the selected screens for Property {propertyNo}?",
+    "unlockConfirmDescription": "Are you sure you want to unlock the selected screen(s) for Property {propertyNo}?",
     "lockButtonText": "Lock",
     "unlockButtonText": "Unlock",
     "lockText": "Lock",
@@ -102,15 +108,15 @@
     "saveFailed": "Failed to update locks.",
     "selectPropertyRequired": "Please select at least one property from the table.",
     "selectScreenRequired": "Please Select the at least one screen",
-    "selectZoneRequired": "Please select a Zone",
-    "selectWardRequired": "Please select a Ward",
-    "selectWardAndPropertyRequired": "Please select a Ward and at least one Property",
+    "selectZoneRequired": "Please select a {zone}",
+    "selectWardRequired": "Please select a {ward}",
+    "selectWardAndPropertyRequired": "Please select a {ward} and at least one Property",
     "selectPropertyDropdownRequired": "Please select at least one Property",
     "selectFromToPropertyRequired": "Please select From Property and To Property",
     "bulkLockTitle": "Bulk Lock Properties",
     "bulkUnlockTitle": "Bulk Unlock Properties",
     "bulkConfirmDescription": "Are you sure you want to {action} the selected screen for the {propertyCount, plural, =1 {1 checked property} other {# checked properties}}?",
-    "bulkConfirmDescriptionRange": "Are you sure you want to {action} the selected screen for {propertyCount} properties from property {fromProperty} to {toProperty}?",
+    "bulkConfirmDescriptionRange": "Are you sure you want to {action} the selected screen for {propertyCount} properties from Property {fromProperty} to {toProperty}?",
     "alreadyLockedIgnored": "(Properties that are already locked will be ignored)",
     "alreadyUnlockedIgnored": "(Properties that are already unlocked will be ignored)",
     "exactLockedIgnored": "({ignoredCount} already locked {ignoredCount, plural, =1 {property} other {properties}} will be ignored)",
@@ -130,11 +136,11 @@
     "processingTitle": "Processing Request",
     "processingMessage": "Please wait while the properties are being updated. This may take a few moments...",
     "clearedFilters": "Cleared all filters.",
-    "validationError": "Please fill in all required fields (Ward no, From property, and To property).",
+    "validationError": "Please fill in all required fields ({ward} no, From Property, and To Property).",
     "fetchSuccess": "Properties fetched successfully.",
     "fetchNoResults": "No properties found.",
     "fetchFailed": "Failed to load properties.",
-    "fetchWardsError": "Error fetching wards:",
+    "fetchWardsError": "Error fetching {wards}:",
     "searchValidationError": "Please enter a value to search.",
     "validationGreaterProperty": "The 'To Property' must be greater than the 'From Property'."
   },

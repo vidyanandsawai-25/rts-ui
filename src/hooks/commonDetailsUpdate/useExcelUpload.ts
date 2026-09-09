@@ -426,6 +426,12 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
         const flaggedCount = currentValData?.flaggedRowCount || 0;
 
         if (flaggedCount > 0) {
+          // Trigger import so backend records the failed activity in the audit trail
+          try {
+            await importExcelFn(formData);
+          } catch (_e) {
+            // Ignored - backend activity has already been logged as failed
+          }
           toast.error(t("excelUpload.validations.dataRejectedMsg"));
           return;
         }
@@ -473,6 +479,12 @@ export const useExcelUpload = (options: UseExcelUploadOptions = {}) => {
           toast.error(("error" in impRes ? impRes.error : "") || t("excelUpload.validations.bulkUploadFailedMsg"));
         }
       } else {
+        // Trigger import so backend records the failed activity for schema/file-level failure
+        try {
+          await importExcelFn(formData);
+        } catch (_e) {
+          // Ignored - backend activity has already been logged as failed
+        }
         const rawErr = ("error" in valRes ? valRes.error : "") || "";
         const lower = rawErr.toLowerCase();
         let errMsg = rawErr || t("messages.wrongUpdateGroup");

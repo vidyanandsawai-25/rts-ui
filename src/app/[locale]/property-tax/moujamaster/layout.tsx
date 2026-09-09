@@ -5,18 +5,21 @@ import TableHeader from "@/components/common/TableHeader";
 import { MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MoujaMasterHeaderExtra } from "@/components/modules/property-tax/mouja-master/MoujaMasterHeader";
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 export default function MoujaMasterLayout({ children }: { children: React.ReactNode }) {
-  const t = useTranslations("ptis_RVRateMaster");
+  const t = useTranslations("mouja.moujaMaster");
+  const moujaLabel = useAliasLabel("Mouja", t("aliasFallback.entity"));
+  const values = useMemo(() => ({ mouja: moujaLabel, entity: moujaLabel }), [moujaLabel]);
 
   return (
     <PageContainer>
       <div className="mb-2">
         <TableHeader
-          title={t("header.moujaTitle")}
+          title={t("list.title", values)}
           icon={MapPin}
-          subtitle={t("header.moujaDescription")}
+          subtitle={t("list.subtitle", values)}
           rightContent={
             <Suspense fallback={null}>
               <MoujaMasterHeaderExtra />

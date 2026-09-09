@@ -29,6 +29,7 @@ type RtsCitizenViewDetailsDrawerProps = {
   application: RtsMisDashboardUserApplicationItem | null;
   language: Language;
   onClose: () => void;
+  departments?: any[];
   /** SSR-loaded for the dashboard route; the local fetch remains a fallback for other consumers. */
   detailData?: RtsApplicationDetailData | null;
   /** SSR-loaded payment state; fetched via action only for non-dashboard consumers. */
@@ -63,6 +64,7 @@ export default function RtsCitizenViewDetailsDrawer({
   application,
   language,
   onClose,
+  departments,
   detailData,
   paymentStatusData,
   onOpenPayment,
@@ -186,6 +188,33 @@ export default function RtsCitizenViewDetailsDrawer({
       : null;
   const isLoadingDetails = detailData ? false : loading;
   const normalizedStatus = normalizeStatus(application.status);
+  const appServiceName = (application?.serviceName || "").trim().toLowerCase();
+  const appServiceNameLocal = (application?.serviceNameLocal || "").trim().toLowerCase();
+  const matchedService = departments
+    ?.flatMap((d: any) => d.services || [])
+    .find((s: any) => {
+      if (resolvedDetail?.serviceId && String(s.id) === String(resolvedDetail.serviceId)) return true;
+      const sEn = (typeof s.name === "object" ? s.name?.en : typeof s.name === "string" ? s.name : "").trim().toLowerCase();
+      const sMr = (typeof s.name === "object" ? s.name?.mr : "").trim().toLowerCase();
+      const sLocal = (typeof (s as any).serviceNameLocal === "string" ? (s as any).serviceNameLocal : "").trim().toLowerCase();
+      if (sEn && (sEn === appServiceName || appServiceName.includes(sEn) || sEn.includes(appServiceName))) return true;
+      if (sMr && (sMr === appServiceName || sMr === appServiceNameLocal || appServiceNameLocal.includes(sMr) || sMr.includes(appServiceNameLocal))) return true;
+      if (sLocal && (sLocal === appServiceName || sLocal === appServiceNameLocal)) return true;
+      return false;
+    });
+
+  // Dynamic Certificate Resolution purely from DB ServiceMaster configuration:
+  // IsCertificateRequired = false OR CertificateType = 0 (None) -> No Certificate
+  // IsCertificateRequired = true AND CertificateType = 2 (Manual) -> Departmental physical certificate notice
+  // IsCertificateRequired = true AND CertificateType = 1 (Digital) -> Dynamic DSC system certificate
+  const isCertRequired = matchedService
+    ? (matchedService.isCertificateRequired === true && matchedService.certificateType !== 0)
+    : (resolvedDetail?.isCertificateRequired === true && resolvedDetail?.certificateType !== 0);
+
+  const certType = isCertRequired
+    ? (matchedService?.certificateType ?? resolvedDetail?.certificateType ?? 1)
+    : 0;
+
   const isRevertedToCitizen = resolvedDetail?.isRevertedToCitizen === true;
   const currentApprovalStage = resolvedDetail?.approvalStages?.find(
     (stage) => stage.isCurrentStage
@@ -442,7 +471,29 @@ export default function RtsCitizenViewDetailsDrawer({
               );
             })()}
 
-            {normalizedStatus === "approved" && (
+            {normalizedStatus === "approved" && (!isCertRequired || certType === 0) && (
+              <section className="rounded-xl border border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-extrabold text-emerald-900">
+                      {language === "mr"
+                        ? "आपला अर्ज यशस्वीरीत्या मंजूर करण्यात आला आहे!"
+                        : "Your application has been approved successfully!"}
+                    </p>
+                    <p className="text-[11px] font-medium text-emerald-700">
+                      {language === "mr"
+                        ? "सदर सेवेसाठी स्वतंत्र प्रमाणपत्र आवश्यक नाही."
+                        : "No separate certificate is required for this service."}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {normalizedStatus === "approved" && isCertRequired && certType === 1 && (
               <section className="rounded-xl border border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
@@ -472,6 +523,28 @@ export default function RtsCitizenViewDetailsDrawer({
                   >
                     {language === "mr" ? "प्रमाणपत्र पहा व प्रिंट करा" : "View & Print Certificate"}
                   </Button>
+                </div>
+              </section>
+            )}
+
+            {normalizedStatus === "approved" && isCertRequired && certType === 2 && (
+              <section className="rounded-xl border border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm space-y-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-extrabold text-emerald-900">
+                      {language === "mr"
+                        ? "आपला अर्ज मंजूर करण्यात आला आहे!"
+                        : "Your application has been approved!"}
+                    </p>
+                    <p className="text-[11px] font-medium text-emerald-700">
+                      {language === "mr"
+                        ? "सदर सेवेसाठी विभागीय मूळ अधिकृत प्रमाणपत्र दिले जाईल."
+                        : "Departmental physical certificate is applicable for this service."}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="pt-2 border-t border-emerald-200/70 flex items-start gap-1.5 text-[11px] font-bold text-amber-900 bg-amber-50/90 rounded-lg p-2">

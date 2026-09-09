@@ -1,6 +1,7 @@
 import { ListTree } from 'lucide-react';
 import type { TranslatorFunction } from '@/types/typeOfUse.types';
 import { Tooltip } from '@/components/common/Tooltip';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 const TRUNCATION_LIMIT = 50;
 const TRUNCATED_LENGTH = TRUNCATION_LIMIT - 4;
@@ -12,6 +13,8 @@ interface SubTypeFormHeaderProps {
 }
 
 export function SubTypeFormHeader({ isEdit, typeLabel, t }: SubTypeFormHeaderProps) {
+  const subTypeOfUseLabel = useAliasLabel("Sub_Type_Of_Use", t("aliasFallback.subTypeOfUse"));
+
   const name = typeLabel ? typeLabel.trim() : "";
   const isTruncated = name.length > TRUNCATION_LIMIT;
   const displayLabel = isTruncated
@@ -20,7 +23,7 @@ export function SubTypeFormHeader({ isEdit, typeLabel, t }: SubTypeFormHeaderPro
 
   const headerText = name
     ? t('subtype.forType', { type: displayLabel })
-    : t('subtype.addSubtitle');
+    : t('subtype.addSubtitle', { subTypeOfUse: subTypeOfUseLabel });
 
   return (
     <div className="flex items-center gap-3">
@@ -29,7 +32,7 @@ export function SubTypeFormHeader({ isEdit, typeLabel, t }: SubTypeFormHeaderPro
       </div>
       <div>
         <div className="text-lg font-bold text-blue-900">
-          {isEdit ? t('subtype.edit') : t('subtype.add')}
+          {isEdit ? t('subtype.edit', { subTypeOfUse: subTypeOfUseLabel }) : t('subtype.add', { subTypeOfUse: subTypeOfUseLabel })}
         </div>
         <div className="text-sm text-slate-500">
           {isTruncated ? (

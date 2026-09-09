@@ -11,6 +11,7 @@ import { Input } from '@/components/common/Input';
 import { SearchSelect } from '@/components/common/SearchSelect';
 import { ValidationMessage } from '@/components/common';
 import { Label } from '@/components/common/label';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface TypeSelectorProps {
   value: string;
@@ -73,6 +74,9 @@ export function GroupSelector({
   showError,
   t,
 }: GroupSelectorProps) {
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+
   const filteredGroups = useMemo(() => {
     return allGroups.filter((g) => {
       const isTotalGroup =
@@ -90,7 +94,7 @@ export function GroupSelector({
   return (
     <div className="flex flex-col">
       <Label htmlFor="use-type-group-select" required>
-        {t('type.fields.useTypeGroup')}
+        {t('type.fields.useTypeGroup', { use: useLabel })}
       </Label>
 
       <SearchSelect
@@ -100,7 +104,7 @@ export function GroupSelector({
           onChange(Number(val) || 0);
           onClearError?.();
         }}
-        placeholder={t('type.selectUseTypeGroup')}
+        placeholder={t('type.selectUseTypeGroup', { use: useLabel, typeOfUse: typeOfUseLabel })}
         options={filteredGroups.map((g) => ({
           value: String(g.typeOfUseGroupId),
           label: g.groupName || '',
@@ -127,14 +131,16 @@ export function TypeCodeInput({
   showError,
   t,
 }: TypeCodeInputProps) {
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+
   return (
     <div className="flex flex-col">
       <Input
-        label={t('type.fields.typeId')}
+        label={t('type.fields.typeId', { typeOfUse: typeOfUseLabel })}
         name="typeOfUseCode"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={t('type.placeholders.typeId')}
+        placeholder={t('type.placeholders.typeId', { typeOfUse: typeOfUseLabel })}
         fullWidth
         required={true}
         className="rounded-xl px-4 py-2"
@@ -265,10 +271,12 @@ export function CategorySelector({
   showError,
   t,
 }: CategorySelectorProps) {
+  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
+
   return (
     <div className="flex flex-col">
       <Label htmlFor="category-select" required>
-        {t('category.fields.categoryName')}
+        {t('category.fields.categoryName', { category: categoryLabel })}
       </Label>
       <SearchSelect
         name="category-select"
@@ -276,7 +284,7 @@ export function CategorySelector({
         onChange={(_, val) => {
           onChange(val ? Number(val) : null);
         }}
-        placeholder={t('type.selectCategory')}
+        placeholder={t('type.selectCategory', { category: categoryLabel })}
         options={allCategories.filter((c) => c.isActive === true).map((c) => ({
           value: String(c.id),
           label: `${c.typeOfUseCategoryCode} - ${c.typeOfUseCategoryName}`,

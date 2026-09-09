@@ -15,7 +15,8 @@
         "unexpectedError": "एक अप्रत्याशित त्रुटि हुई",
         "fetchAssessmentYears": "निर्धारण वर्ष लोड करने में विफल",
         "fetchUseGroups": "उपयोग समूहों को लोड करने में विफल",
-        "fetchTaxApplicability": "कर प्रयोज्यता विवरण लोड करने में विफल"
+        "fetchTaxApplicability": "कर प्रयोज्यता विवरण लोड करने में विफल",
+        "fetchTaxCalculation": "कर गणना डेटा प्राप्त करने में विफल"
     },
     "success": {
         "updateTaxApplicability": "{name} के लिए कर प्रयोज्यता स्थिति सफलतापूर्वक अद्यतन की गई"
@@ -47,5 +48,27 @@
     "selectAsseYear": "निर्धारण चुनें",
     "selectFloorUse": "उपयोग चुनें",
     "confirmActive": "क्या आप निश्चित रूप से स्थिति को लागू में बदलना चाहते हैं?",
-    "confirmInactive": "क्या आप निश्चित रूप से स्थिति को छूट प्राप्त में बदलना चाहते हैं?"
+    "confirmInactive": "क्या आप निश्चित रूप से स्थिति को छूट प्राप्त में बदलना चाहते हैं?",
+    "appliedTaxes": "लागू कर",
+    "mixedUsePropertyTaxDetails": "मिश्रित-उपयोग संपत्ति कर विवरण",
+    "mixedConstruction": "मिश्रित निर्माण",
+    "ruleSet": "नियम सेट:",
+    "totalTax": "कुल कर",
+    "totalTaxLabel": "कुल कर:",
+    "residentialRV": "आवासीय RV",
+    "commercialRV": "वाणिज्यिक RV",
+    "area": "क्षेत्र",
+    "toilets": "शौचालय",
+    "showInactive": "निष्क्रिय दिखाएं",
+    "print": "प्रिंट",
+    "done": "पूर्ण",
+    "applicableTo": "पर लागू",
+    "residentialAndShop": "आवासीय + दुकान",
+    "residential": "आवासीय",
+    "commercialOnly": "केवल वाणिज्यिक",
+    "wholeProperty": "पूरी संपत्ति",
+    "ruleRate": "नियम / दर",
+    "statusOnOff": "स्थिति चालू / बंद",
+    "amount": "राशि",
+    "currencySymbol": "₹"
 }

@@ -3,9 +3,10 @@
 
 import { SearchSelect, SaveButton, CancelButton } from "@/components/common";
 import { PropertyRangeFields } from "./PropertyRangeFields";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface PropertySelectionCriteriaProps {
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
   selectedScopeId: number | null;
   handleScopeChange: (val: number) => void;
   scopeOptions: any[];
@@ -105,6 +106,8 @@ export const PropertySelectionCriteria = ({
   renderChildrenInline = false,
   children,
 }: PropertySelectionCriteriaProps) => {
+  const zoneLabel = useAliasLabel("Zone", t("aliasFallback.zone"));
+  const wardLabel = useAliasLabel("Ward", t("aliasFallback.ward"));
   const colClass = fieldClassName || "col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 relative z-[60] flex flex-col [&_ul]:!max-h-[240px] [&_[role=listbox]]:!max-h-[240px]";
 
   return (
@@ -116,7 +119,7 @@ export const PropertySelectionCriteria = ({
           value={selectedScopeId ? String(selectedScopeId) : ""}
           onChange={(_, val) => handleScopeChange(Number(val))}
           options={scopeOptions.map(opt => ({
-            label: t(`propertyCriteria.scopes.${opt.name}`) || opt.displayName,
+            label: (opt.name === "WardSector" ? t("propertyCriteria.scopes.WardSector", { ward: wardLabel }) : t(`propertyCriteria.scopes.${opt.name}`)) || opt.displayName,
             value: String(opt.id)
           }))}
           disabled={loadingScopeOptions}
@@ -129,11 +132,11 @@ export const PropertySelectionCriteria = ({
         <div className={colClass}>
           <SearchSelect
             id="zone-select"
-            label={t("filter.zoneNumber")}
+            label={t("filter.zoneNumber", { zone: zoneLabel })}
             value={filterValues.zoneId}
             onChange={(_, val) => handleZoneChange(val)}
             options={zoneOptions}
-            placeholder={t("filter.selectZone")}
+            placeholder={t("filter.selectZone", { zone: zoneLabel })}
             required
           />
         </div>
@@ -143,11 +146,11 @@ export const PropertySelectionCriteria = ({
         <div className={colClass}>
           <SearchSelect
             id="ward-select"
-            label={t("filter.wardNumber")}
+            label={t("filter.wardNumber", { ward: wardLabel })}
             value={filterValues.wardId}
             onChange={(_, val) => handleWardChange(val)}
             options={wardOptions}
-            placeholder={t("filter.selectWard")}
+            placeholder={t("filter.selectWard", { ward: wardLabel })}
             required
             disabled={activeScopeDetails?.options.includes("Zone") && !filterValues.zoneId}
           />

@@ -601,39 +601,72 @@ export default function ApplicationAndTrackingDrawer({
 
                 {/* Issued Official Certificate Banner if Approved */}
                 {((selectedApplication.status && selectedApplication.status.toLowerCase() === 'approved') || (detail?.applicationStatus && detail.applicationStatus.toLowerCase() === 'approved')) && (
-                  <div className="mt-3.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm p-3.5 space-y-2.5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  detail?.isCertificateRequired !== true || detail?.certificateType === 0 ? (
+                    <div className="mt-3.5 rounded-xl bg-emerald-50 border border-emerald-200 shadow-sm p-3.5 flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 shrink-0">
+                        <CheckCircle2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-emerald-900">
+                          {locale === "mr" ? "आपला अर्ज यशस्वीरीत्या मंजूर झाला आहे!" : "Application Approved Successfully"}
+                        </div>
+                        <div className="text-[11px] text-emerald-700 font-medium">
+                          {locale === "mr" ? "सदर सेवेसाठी स्वतंत्र प्रमाणपत्र आवश्यक नाही." : "No separate certificate is required for this service."}
+                        </div>
+                      </div>
+                    </div>
+                  ) : detail?.certificateType === 2 ? (
+                    <div className="mt-3.5 rounded-xl bg-emerald-50 border border-emerald-200 shadow-sm p-3.5 space-y-2">
                       <div className="flex items-center gap-2.5">
-                        <div className="p-2 rounded-lg bg-blue-100 text-blue-700">
-                          <FileCheck2 className="w-5 h-5" />
+                        <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 shrink-0">
+                          <CheckCircle2 className="w-5 h-5" />
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-blue-900">
-                            अधिकृत प्रमाणपत्र जारी झाले आहे (Certificate Issued)
+                          <div className="text-xs font-bold text-emerald-900">
+                            {locale === "mr" ? "अर्ज मंजूर झाला आहे (Application Approved)" : "Application Approved"}
                           </div>
-                          <div className="text-[11px] text-blue-700 font-medium">
-                            अधिकृत प्रमाणपत्र पाहण्यासाठी किंवा डाउनलोड करण्यासाठी खालील बटण वापरा
+                          <div className="text-[11px] text-emerald-700 font-medium">
+                            {locale === "mr" ? "सदर सेवेसाठी विभागीय मूळ अधिकृत प्रमाणपत्र दिले जाईल." : "Departmental physical certificate is applicable for this service."}
                           </div>
                         </div>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowCertificateModal(true)}
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg shadow-md shadow-blue-600/20 transition-all cursor-pointer shrink-0"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        प्रमाणपत्र पहा / डाऊनलोड
-                      </button>
+                      <div className="pt-2 border-t border-emerald-200/80 flex items-start gap-1.5 text-[11px] font-bold text-amber-900 bg-amber-50/90 rounded-lg p-2">
+                        <span className="text-amber-600">⚠️</span>
+                        <span>
+                          {locale === "mr"
+                            ? "महत्त्वाची सूचना: सदर मूळ अधिकृत प्रमाणपत्र अर्जदाराने संबंधित विभागामधून जमा (collect) करून घ्यावे."
+                            : "Important Notice: Please collect the original official physical certificate from the respective department."}
+                        </span>
+                      </div>
                     </div>
+                  ) : (
+                    <div className="mt-3.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm p-3.5 space-y-2.5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-2 rounded-lg bg-blue-100 text-blue-700">
+                            <FileCheck2 className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-blue-900">
+                              {locale === "mr" ? "अधिकृत प्रमाणपत्र जारी झाले आहे (Certificate Issued)" : "Certificate Issued"}
+                            </div>
+                            <div className="text-[11px] text-blue-700 font-medium">
+                              {locale === "mr" ? "अधिकृत प्रमाणपत्र पाहण्यासाठी किंवा डाउनलोड करण्यासाठी खालील बटण वापरा" : "Click below to view or download the official certificate"}
+                            </div>
+                          </div>
+                        </div>
 
-                    <div className="pt-2 border-t border-blue-200/80 flex items-start gap-1.5 text-[11px] font-bold text-amber-900 bg-amber-50/90 rounded-lg p-2">
-                      <span className="text-amber-600">⚠️</span>
-                      <span>
-                        महत्त्वाची सूचना: सदर मूळ अधिकृत प्रमाणपत्र अर्जदाराने संबंधित विभागामधून जमा (collect) करून घ्यावे.
-                      </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowCertificateModal(true)}
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg shadow-md shadow-blue-600/20 transition-all cursor-pointer shrink-0"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          {locale === "mr" ? "प्रमाणपत्र पहा / डाऊनलोड" : "View & Download"}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )
                 )}
                 {/* Reverted / Correction Required Alert Banner */}
                 {((selectedApplication.status && (selectedApplication.status.toLowerCase().includes('revert') || selectedApplication.status.toLowerCase().includes('return'))) || (detail?.applicationStatus && (detail.applicationStatus.toLowerCase().includes('revert') || detail.applicationStatus.toLowerCase().includes('return')))) && (

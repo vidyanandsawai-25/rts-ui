@@ -15,7 +15,8 @@
         "unexpectedError": "An unexpected error occurred",
         "fetchAssessmentYears": "Failed to load assessment years",
         "fetchUseGroups": "Failed to load use groups",
-        "fetchTaxApplicability": "Failed to load tax applicability details"
+        "fetchTaxApplicability": "Failed to load tax applicability details",
+        "fetchTaxCalculation": "Failed to fetch tax calculation data"
     },
     "success": {
         "updateTaxApplicability": "Tax applicability status updated successfully for {name}"
@@ -47,5 +48,27 @@
     "selectAsseYear": "Select Year",
     "selectFloorUse": "Select Type",
     "confirmActive": "Are you sure you want to change status to Applicable?",
-    "confirmInactive": "Are you sure you want to change status to Exempted?"
+    "confirmInactive": "Are you sure you want to change status to Exempted?",
+    "appliedTaxes": "Applied Taxes",
+    "mixedUsePropertyTaxDetails": "Mixed-use property tax details",
+    "mixedConstruction": "Mixed Construction",
+    "ruleSet": "Rule Set:",
+    "totalTax": "TOTAL TAX",
+    "totalTaxLabel": "Total Tax:",
+    "residentialRV": "RESIDENTIAL RV",
+    "commercialRV": "COMMERCIAL RV",
+    "area": "AREA",
+    "toilets": "TOILETS",
+    "showInactive": "Show inactive",
+    "print": "Print",
+    "done": "Done",
+    "applicableTo": "APPLICABLE TO",
+    "residentialAndShop": "Residential + Shop",
+    "residential": "Residential",
+    "commercialOnly": "Commercial only",
+    "wholeProperty": "Whole Property",
+    "ruleRate": "RULE / RATE",
+    "statusOnOff": "STATUS ON / OFF",
+    "amount": "AMOUNT",
+    "currencySymbol": "₹"
 }

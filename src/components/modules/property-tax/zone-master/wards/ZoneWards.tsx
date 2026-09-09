@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { SearchInput, Select, PrevPageButton, NextPageButton } from '@/components/common';
 import { WardItem } from '@/types/wardMaster.types';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface ZoneWardsProps {
   wards: WardItem[];
@@ -27,6 +28,8 @@ export function ZoneWards({
   pageSizeOptions,
 }: ZoneWardsProps) {
   const t = useTranslations('zoneMaster');
+  const wardAlias = useAliasLabel('Ward', t('defaults.ward'));
+  const wardsAlias = useAliasLabel('Wards', t('defaults.wards'));
 
   return (
     <>
@@ -35,7 +38,7 @@ export function ZoneWards({
           className="w-full rounded-sm border-gray-300 mb-0"
           value={searchTerm}
           onChange={onSearchChange}
-          placeholder={t('wardList.searchPlaceholder')}
+          placeholder={t('wardList.searchPlaceholder', { ward: wardAlias })}
         />
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -51,7 +54,7 @@ export function ZoneWards({
         ))}
         {wards.length === 0 && (
           <div className="text-center text-gray-500 py-4">
-            {t('wardList.noWardsFound')}
+            {t('wardList.noWardsFound', { wards: wardsAlias })}
           </div>
         )}
       </div>

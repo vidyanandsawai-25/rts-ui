@@ -10,7 +10,8 @@ interface FormFieldsSectionProps {
   handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
   errors: Partial<Record<keyof MoujaFormModel, string>>;
   showError: (field: keyof MoujaFormModel) => boolean;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+  moujaLabel?: string;
 }
 
 export const FormFieldsSection = ({
@@ -20,14 +21,17 @@ export const FormFieldsSection = ({
   errors,
   showError,
   t,
+  moujaLabel,
 }: FormFieldsSectionProps) => {
+  const values = moujaLabel ? { mouja: moujaLabel, entity: moujaLabel } : undefined;
+
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       <Input
         name="moujaNo"
-        label={t("form.fields.moujaNo.label")}
+        label={t("form.fields.moujaNo.label", values)}
         required
-        placeholder={t("form.fields.moujaNo.placeholder")}
+        placeholder={t("form.fields.moujaNo.placeholder", values)}
         value={formData.moujaNo}
         onChange={handleChange}
         onBlur={handleBlur}
@@ -41,9 +45,9 @@ export const FormFieldsSection = ({
 
       <Input
         name="moujaName"
-        label={t("form.fields.moujaName.label")}
+        label={t("form.fields.moujaName.label", values)}
         required={true}
-        placeholder={t("form.fields.moujaName.placeholder")}
+        placeholder={t("form.fields.moujaName.placeholder", values)}
         value={formData.moujaName}
         onChange={handleChange}
         onBlur={handleBlur}

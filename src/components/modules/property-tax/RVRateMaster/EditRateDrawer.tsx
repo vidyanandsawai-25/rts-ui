@@ -6,6 +6,7 @@ import { Building2 } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import RateMasterForm from "./RateMasterForm";
 import { EditRateDrawerProps } from "@/types/RVRateMaster";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 export default function EditRateDrawer({
   id,
@@ -29,6 +30,8 @@ export default function EditRateDrawer({
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("ptis_RVRateMaster");
+  const zoneLabel = useAliasLabel("Zone", t("aliasFallback.zone"));
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
 
   const handleClose = () => {
     const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
@@ -37,8 +40,8 @@ export default function EditRateDrawer({
 
   const title = mode === "delete" ? t("messages.deleteRateConfiguration") : t("messages.editRateDetails");
   const description = mode === "delete" 
-    ? t("messages.deleteRateDetails")
-    : t("messages.updateRateDetails");
+    ? t("messages.deleteRateDetails", { zone: zoneLabel, use: useLabel })
+    : t("messages.updateRateDetails", { zone: zoneLabel, use: useLabel });
 
   // Create a unique key based on filter values and backend data to force re-mount when filters change
   // This ensures the form state is reset and new data is properly loaded

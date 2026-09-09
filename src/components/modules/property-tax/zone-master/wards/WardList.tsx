@@ -9,6 +9,7 @@ import { WardItem } from "@/types/wardMaster.types";
 import { AddButton, SearchInput, StatusBadge, EditButton, DeleteButton } from "@/components/common";
 import { useWardListHandlers } from "@/hooks/zoneMaster/useWardListHandlers";
 import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface Props {
   wards: WardItem[];
@@ -42,6 +43,10 @@ export default function WardList({
   const t = useTranslations("zoneMaster");
   const tCommon = useTranslations("common");
 
+  const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
+  const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
+  const wardsAlias = useAliasLabel("Wards", t("defaults.wards"));
+
   const {
     localSearch,
     handleSearchChange,
@@ -56,6 +61,7 @@ export default function WardList({
     onWardsChanged,
     pageNumber,
     pageSize,
+    wardAlias,
     t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
   });
 
@@ -66,13 +72,13 @@ export default function WardList({
         <div className="flex items-center gap-2 mb-3">
           <MapIcon className="w-5 h-5 text-[#1A86E8]" />
           <h3 className="text-lg font-semibold text-[#1A86E8]">
-            {t("wardList.title")}
+            {t("wardList.title", { wards: wardsAlias })}
           </h3>
 
           <StatusBadge
             label={currentZone && currentZone.description
               ? `${currentZone.description} (${currentZone.zoneNo})`
-              : t("wardList.selectZonePlaceholder")}
+              : t("wardList.selectZonePlaceholder", { zone: zoneAlias })}
             variant="info"
           />
 
@@ -81,6 +87,7 @@ export default function WardList({
               <span className="inline-flex items-center px-1.5 py-0.5 xl:px-2 xl:py-1 rounded-md text-[10px] lg:text-xs font-medium bg-green-50 text-green-700 border border-green-300">
                 {t("zoneList.totalWards", {
                   count: wardCountForZone ?? currentZone.wardCount ?? totalCount,
+                  wards: wardsAlias,
                 })}
               </span>
             </div>
@@ -90,7 +97,7 @@ export default function WardList({
             {selectedZoneId !== null && (
               <SearchInput
                 className="w-64 mb-0"
-                placeholder={t("wardList.searchPlaceholder")}
+                placeholder={t("wardList.searchPlaceholder", { ward: wardAlias })}
                 value={localSearch}
                 onChange={(value) => {
                   const sanitized = value.replace(TEXT_SANITIZE, '');
@@ -102,7 +109,7 @@ export default function WardList({
             {/* ADD WARD BUTTON — UNCHANGED */}
             <AddButton
               size="sm"
-              label={t("wardList.linkWard")}
+              label={t("wardList.linkWard", { ward: wardAlias })}
               onClick={() => {
                 const params = new URLSearchParams(searchParams.toString());
                 if (selectedZoneId !== null)
@@ -116,7 +123,7 @@ export default function WardList({
             {/* CREATE NEW WARD BUTTON — UNCHANGED */}
             <AddButton
               size="sm"
-              label={t("wardList.createWard")}
+              label={t("wardList.createWard", { ward: wardAlias })}
               onClick={() => {
                 const params = new URLSearchParams(searchParams.toString());
                 if (selectedZoneId !== null)
@@ -134,13 +141,13 @@ export default function WardList({
       <div className="flex-1 px-4 pb-4">
         {selectedZoneId === null ? (
           <div className="flex items-center justify-center h-full text-gray-500">
-            {t("wardList.selectZonePrompt")}
+            {t("wardList.selectZonePrompt", { zone: zoneAlias, wards: wardsAlias })}
           </div>
         ) : (
           <MasterTable
             columns={columns}
             data={wards as unknown as Record<string, unknown>[]}
-            emptyText={t("wardList.noWardsFound")}
+            emptyText={t("wardList.noWardsFound", { wards: wardsAlias })}
             height="md"
             paginationConfig={{ enabled: true, showPageSizeSelector: false }}
 

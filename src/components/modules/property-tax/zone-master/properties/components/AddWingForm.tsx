@@ -3,6 +3,7 @@
 import { Input, ValidationMessage, CancelButton } from "@/components/common";
 import { PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { sanitizeWingName } from "@/lib/utils/input-sanitization";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 const WING_NAME_MAX_LENGTH = 30;
 
@@ -15,7 +16,7 @@ interface AddWingFormProps {
   addingWing: boolean;
   editingSocietyDetailId: number | null;
   onCancel: () => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   tCommon: (key: string) => string;
 }
 
@@ -31,11 +32,13 @@ export function AddWingForm({
   t,
   tCommon,
 }: AddWingFormProps) {
+  const wingAlias = useAliasLabel("Wing", t("defaults.wing"));
+
   return (
     <div className="p-3 border border-green-200 rounded-lg bg-green-50/50 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
       <div className="flex items-center justify-between mb-1">
         <h4 className="text-[10px] font-bold text-green-700 uppercase tracking-wider">
-          {editingSocietyDetailId ? t("partitionForm.wing.editWing") : t("partitionForm.wing.addWing")}
+          {editingSocietyDetailId ? t("partitionForm.wing.editWing", { wing: wingAlias }) : t("partitionForm.wing.addWing", { wing: wingAlias })}
         </h4>
         <CancelButton
           size="xs"
@@ -46,7 +49,7 @@ export function AddWingForm({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Input
-            label={t("partitionForm.wing.wingNo")}
+            label={t("partitionForm.wing.wingNo", { wing: wingAlias })}
             value={newWingNo}
             disabled
             className="bg-gray-100 text-gray-600"
@@ -54,7 +57,7 @@ export function AddWingForm({
         </div>
         <div>
           <Input
-            label={t("partitionForm.wing.wingName")}
+            label={t("partitionForm.wing.wingName", { wing: wingAlias })}
             value={newWingName}
             onChange={(e) => {
               const sanitized = sanitizeWingName(e.target.value);
@@ -63,7 +66,7 @@ export function AddWingForm({
                 setErrors({ ...errors, wingName: undefined });
               }
             }}
-            placeholder={t("partitionForm.wing.placeholders.wingLetter")}
+            placeholder={t("partitionForm.wing.placeholders.wingLetter", { wing: wingAlias })}
             maxLength={WING_NAME_MAX_LENGTH}
             className="bg-white"
             disabled={addingWing}
