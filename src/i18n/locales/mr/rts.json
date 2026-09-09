@@ -522,6 +522,8 @@
     "table": {
       "remark": "Remark",
       "applicationNo": "अर्ज क्रमांक",
+      "propertyNo": "मालमत्ता क्रमांक",
+      "upicId": "यूपीआयसी आयडी",
       "applicationDate": "अर्जाची तारीख",
       "applicantName": "अर्जदाराचे नाव",
       "citizenFallback": "नागरिक",
@@ -937,7 +939,7 @@
     "applicationDetails": "अर्जाचा तपशील",
     "applicationSummary": "अर्जाचा सारांश",
     "application": "अर्ज",
-    "applicationNumber": "अर्ज क्रमांक",
+    "applicationNumber": "अर्ज क्र.",
     "propertyNumber": "मालमत्ता क्रमांक",
     "upicNumber": "यूपीआयसी क्रमांक",
     "submittedDate": "सादर तारीख",

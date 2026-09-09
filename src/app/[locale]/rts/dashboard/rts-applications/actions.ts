@@ -624,6 +624,8 @@ export interface AdminApplicationGridRow {
   source: 'approval' | 'mis';
   applicationId: number;
   applicationNo: string;
+  propertyNo: string | null;
+  upicId: string | null;
   applicationDate: string;
   applicantName: string;
   serviceName: string;
@@ -941,6 +943,8 @@ export async function getRtsApplicationsDashboardAction(
         source: 'approval',
         applicationId: app.id,
         applicationNo: app.applicationNo,
+        propertyNo: app.propertyNo?.trim() || null,
+        upicId: app.upicId?.trim() || null,
         applicationDate: app.createdDate,
         applicantName: app.applicantName?.trim() || '—',
         serviceName: app.serviceName || 'Unknown Service',
@@ -965,6 +969,8 @@ export async function getRtsApplicationsDashboardAction(
       source: 'mis',
       applicationId: 0,
       applicationNo: app.applicationNo,
+      propertyNo: app.propertyNo?.trim() || null,
+      upicId: app.upicId?.trim() || null,
       applicationDate: app.createdDate,
       applicantName: app.applicantName?.trim() || '—',
       serviceName: app.serviceName || 'Unknown Service',

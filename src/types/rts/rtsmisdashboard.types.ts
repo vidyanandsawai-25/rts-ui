@@ -57,6 +57,8 @@ export interface RtsMisDashboardApplicationItem {
   applicationStatus: string;
   applicantName: string | null;
   applicantMobileNo: string | null;
+  propertyNo: string | null;
+  upicId: string | null;
   remark: string | null;
   createdDate: string;
   updatedDate: string | null;

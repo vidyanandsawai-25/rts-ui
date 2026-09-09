@@ -408,30 +408,33 @@ export default function DepartmentCarsoulClient({
 
                     return (
                       <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="py-2.5 px-3">
-                          <div className="mb-1 space-y-0.5 text-[9px] leading-tight text-slate-500">
-                            <div>
-                              <span className="font-semibold">{t('applicationNumber')}:</span>{' '}
-                              <span className="font-mono font-bold text-slate-700">{app.applicationNo}</span>
+                        <td className="px-3 py-3">
+                          <div className="min-w-[230px] space-y-1">
+                            <div className="text-xs font-semibold text-slate-600">
+                              {t('applicationNumber')}:{' '}
+                              <span className="font-mono text-sm font-bold text-[#173B73]">{app.applicationNo}</span>
                             </div>
-                            <div>
-                              <span className="font-semibold">{t('propertyNumber')}:</span>{' '}
-                              <span className="font-mono font-bold text-slate-700">{propertyNo}</span>
-                            </div>
-                            <div>
-                              <span className="font-semibold">{t('upicNumber')}:</span>{' '}
-                              <span className="font-mono font-bold text-slate-700">{applicationUpicId}</span>
+                            <span className="block text-sm font-bold leading-snug text-slate-900">{serviceName}</span>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] leading-tight text-slate-500">
+                              <span>
+                                <span className="font-semibold">{t('propertyNumber')}:</span>{' '}
+                                <span className="font-mono font-bold text-slate-700">{propertyNo}</span>
+                              </span>
+                              <span aria-hidden="true" className="text-slate-300">&bull;</span>
+                              <span>
+                                <span className="font-semibold">{t('upicNumber')}:</span>{' '}
+                                <span className="font-mono font-bold text-slate-700">{applicationUpicId}</span>
+                              </span>
                             </div>
                           </div>
-                          <span className="font-bold text-slate-900">{serviceName}</span>
                         </td>
-                        <td className="py-2.5 px-3 text-slate-600">{formatSubmittedDate(app.submittedDate, lang)}</td>
-                        <td className="py-2.5 px-3">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50/70 text-blue-700 border border-blue-100">
+                        <td className="px-3 py-3 text-[14px] font-medium text-slate-600 whitespace-nowrap">{formatSubmittedDate(app.submittedDate, lang)}</td>
+                        <td className="px-3 py-3">
+                          <span className="inline-flex rounded-md border border-blue-100 bg-blue-50/70 px-2.5 py-1 text-xs font-bold text-blue-700 whitespace-nowrap">
                             {app.sla} {t('days')}
                           </span>
                         </td>
-                        <td className="py-2.5 px-3">
+                        <td className="px-3 py-3">
                           <div className="flex items-center gap-2">
                             {isAppApproved ? (
                               <StatusBadge value={true} activeLabel={t('approved')} />
@@ -444,54 +447,54 @@ export default function DepartmentCarsoulClient({
                             )}
                           </div>
                         </td>
-                        <td className="py-2.5 px-3">
+                        <td className="px-3 py-3">
                           {isExternalPortalApp ? (
                             <span className="text-slate-400 font-bold text-sm tracking-widest pl-2">—</span>
                           ) : !isFeesRequired || dynamicServiceFee === 0 ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                            <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
                               {lang === "mr" ? "विनामूल्य" : lang === "hi" ? "निःशुल्क" : "Free"}
                             </span>
                           ) : isPaidExplicitly ? (
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800">
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                                 {lang === "mr" ? "प्राप्त" : lang === "hi" ? "प्राप्त" : "Paid"}
                               </span>
                               <button
                                 type="button"
                                 disabled={isReceiptLoading}
                                 onClick={() => handleViewReceipt(app.applicationNo)}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer transition-all"
+                                className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-slate-300 bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 transition-all hover:bg-slate-200"
                                 title="पावती पहा"
                               >
-                                <Printer className="w-3 h-3 text-slate-600" />
+                                <Printer className="h-3.5 w-3.5 text-slate-600" />
                                 {lang === "mr" ? "पावती" : lang === "hi" ? "रसीद" : "Receipt"}
                               </button>
                             </div>
                           ) : (
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                                <Clock className="w-3 h-3 text-amber-600" />
+                              <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
+                                <Clock className="h-3.5 w-3.5 text-amber-600" />
                                 {lang === "mr" ? "बाकी" : lang === "hi" ? "लंबित" : "Pending"}
                               </span>
                               <button
                                 type="button"
                                 onClick={() => openPayment(app.applicationNo)}
-                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer transition-all"
+                                className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-xs transition-all hover:bg-emerald-700"
                               >
-                                <CreditCard className="w-3 h-3" />
+                                <CreditCard className="h-3.5 w-3.5" />
                                 {lang === "mr" ? `शुल्क भरा (₹${dynamicServiceFee})` : lang === "hi" ? `शुल्क भरें (₹${dynamicServiceFee})` : `Pay Fee (₹${dynamicServiceFee})`}
                               </button>
                             </div>
                           )}
                         </td>
-                        <td className="py-2.5 px-3 text-right">
+                        <td className="px-3 py-3 text-right">
                           <button
                             onClick={() => openDetails(app.applicationNo)}
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-all bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg cursor-pointer"
+                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-blue-50 px-3.5 py-1.5 text-xs font-bold text-blue-600 transition-all hover:bg-blue-100 hover:text-blue-700"
                             title={t('viewDetails')}
                           >
-                            <Eye size={12} />
+                            <Eye size={14} />
                             <span>{t('viewDetails')}</span>
                           </button>
                         </td>

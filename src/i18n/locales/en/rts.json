@@ -519,6 +519,8 @@
     "table": {
       "remark": "Remark",
       "applicationNo": "Application No.",
+      "propertyNo": "Property No.",
+      "upicId": "UPIC ID",
       "applicationDate": "Application Date",
       "applicantName": "Applicant Name",
       "citizenFallback": "Citizen",
@@ -928,7 +930,7 @@
     "applicationDetails": "Application Details",
     "applicationSummary": "Application Summary",
     "application": "Application",
-    "applicationNumber": "Application Number",
+    "applicationNumber": "Application No.",
     "propertyNumber": "Property No.",
     "upicNumber": "UPIC No.",
     "submittedDate": "Submitted Date",

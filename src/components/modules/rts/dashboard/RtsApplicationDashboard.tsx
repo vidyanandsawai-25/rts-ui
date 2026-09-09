@@ -446,9 +446,18 @@ export default function RtsApplicationDashboard({
         key: 'applicationNo',
         label: sortableHeader('applicationNo', t('applicationDashboard.table.applicationNo')),
         align: 'center',
-        render: (_value, row) => (
-          <span className="font-semibold text-[#173B73]">{row.applicationNo}</span>
-        ),
+        render: (_value, row) => {
+          const propertyNo = row.propertyNo?.trim() || '—';
+          const upicId = row.upicId?.trim() || '—';
+
+          return (
+            <div className="space-y-0.5 text-left w-[135px]">
+              <span className="block font-semibold text-[#173B73]">{row.applicationNo}</span>
+              <span className="block text-[10px] font-medium text-slate-500">{t('applicationDashboard.table.propertyNo')}: {propertyNo}</span>
+              <span className="block text-[10px] font-medium text-slate-500">{t('applicationDashboard.table.upicId')}: {upicId}</span>
+            </div>
+          );
+        },
       },
       {
         key: 'applicationDate',

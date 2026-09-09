@@ -519,6 +519,8 @@
     "table": {
       "remark": "Remark",
       "applicationNo": "आवेदन क्रमांक",
+      "propertyNo": "संपत्ति क्रमांक",
+      "upicId": "यूपीआईसी आईडी",
       "applicationDate": "आवेदन तिथि",
       "applicantName": "आवेदक का नाम",
       "citizenFallback": "नागरिक",
@@ -934,7 +936,7 @@
     "applicationDetails": "आवेदन का विवरण",
     "applicationSummary": "आवेदन सारांश",
     "application": "आवेदन",
-    "applicationNumber": "आवेदन क्रमांक",
+    "applicationNumber": "आवेदन क्र.",
     "propertyNumber": "संपत्ति क्रमांक",
     "upicNumber": "यूपीआईसी क्रमांक",
     "submittedDate": "जमा तिथि",
