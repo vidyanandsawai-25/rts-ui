@@ -15,6 +15,7 @@ export interface UseCombinePropertyParams {
   selectedPropertyNo?: string;
   initialReviewData?: PropertyCombineDetails[];
   t: (key: string, values?: Record<string, string | number>) => string;
+  propertyNoLabel?: string;
 }
 
 export function useCombinePropertyForm({
@@ -25,11 +26,12 @@ export function useCombinePropertyForm({
   selectedPropertyNo,
   initialReviewData = [],
   t,
+  propertyNoLabel,
 }: UseCombinePropertyParams) {
   const { confirm } = useConfirm();
 
   // 1. State Hook
-  const state = useCombinePropertyState({ selectedBasePropertyId, initialReviewData, t });
+  const state = useCombinePropertyState({ selectedBasePropertyId, initialReviewData, t, propertyNoLabel });
 
   // 2. Filters Hook
   const filters = useCombinePropertyFilters(
@@ -57,6 +59,7 @@ export function useCombinePropertyForm({
     selectedPropertyType: state.selectedPropertyType,
     remark: state.remark,
     t,
+    propertyNoLabel,
     setReviewData: state.setReviewData,
     setCheckedPropertyIds: state.setCheckedPropertyIds,
     setIsReviewing: state.setIsReviewing,

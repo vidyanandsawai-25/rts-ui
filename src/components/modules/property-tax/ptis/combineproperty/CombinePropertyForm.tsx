@@ -18,6 +18,7 @@ import { CombinePropertyHistoryDetails } from './CombinePropertyHistoryDetails';
 import { CombinePropertyFilterBar } from './CombinePropertyFilterBar';
 import { CombinePropertyReviewSection } from './CombinePropertyReviewSection';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -78,6 +79,8 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const t = useTranslations('combineProperty');
+  const wardLabel = useAliasLabel('Ward', t('aliasFallback.ward'));
+  const propertyNoLabel = useAliasLabel('Property_No', t('aliasFallback.propertyNo'));
 
   const {
     reviewData,
@@ -118,12 +121,21 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     selectedPropertyNo,
     initialReviewData,
     t,
+    propertyNoLabel,
   });
 
   /* ---- Table Columns (Memoized) ---- */
   const columns = useMemo(
-    () => getCombinePropertyColumns(t, reviewData, checkedPropertyIds, togglePropertyCheck, toggleAllProperties, selectedBasePropertyId),
-    [reviewData, t, checkedPropertyIds, togglePropertyCheck, toggleAllProperties, selectedBasePropertyId]
+    () => getCombinePropertyColumns(
+      t,
+      reviewData,
+      checkedPropertyIds,
+      togglePropertyCheck,
+      toggleAllProperties,
+      selectedBasePropertyId,
+      { propertyNo: propertyNoLabel }
+    ),
+    [reviewData, t, checkedPropertyIds, togglePropertyCheck, toggleAllProperties, selectedBasePropertyId, propertyNoLabel]
   );
 
   const handleShowHistory = () => {
@@ -137,15 +149,16 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   };
 
   const historyColumns = useMemo(() => getCombinePropertyHistoryColumns(
-    t as unknown as (key: string) => string, 
+    t as unknown as (key: string) => string,
     (row) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set('detailsPropertyId', String(row.propertyId));
       params.set('detailsPage', '1');
       params.set('detailsSize', '10');
       router.push(`${pathname}?${params.toString()}`);
-    }
-  ), [t, router, pathname, searchParams]);
+    },
+    { propertyNo: propertyNoLabel }
+  ), [t, router, pathname, searchParams, propertyNoLabel]);
 
   const handleHistoryTableChange = (page: number, pageSize: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -190,10 +203,10 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
             {t('title')}
           </h2>
           {selectedWardNo && (
-            <StatusBadge variant="info" label={`Ward: ${selectedWardNo}`} className="px-2 py-0.5 text-[10px] rounded-full shadow-none" />
+            <StatusBadge variant="info" label={`${wardLabel}: ${selectedWardNo}`} className="px-2 py-0.5 text-[10px] rounded-full shadow-none" />
           )}
           {selectedPropertyNo && (
-            <StatusBadge variant="info" label={`Property: ${selectedPropertyNo}`} className="px-2 py-0.5 text-[10px] rounded-full shadow-none" />
+            <StatusBadge variant="info" label={`${propertyNoLabel}: ${selectedPropertyNo}`} className="px-2 py-0.5 text-[10px] rounded-full shadow-none" />
           )}
         </div>
         <p className="text-[11px] text-gray-500 leading-tight">

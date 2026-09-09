@@ -16,6 +16,7 @@ interface SubmitHookParams {
   selectedPropertyType: string;
   remark: string;
   t: (key: string, values?: Record<string, string | number>) => string;
+  propertyNoLabel?: string;
   setReviewData: (data: PropertyCombineDetails[]) => void;
   setCheckedPropertyIds: (ids: Set<number>) => void;
   setIsReviewing: (val: boolean) => void;
@@ -37,6 +38,7 @@ export function useCombinePropertySubmit({
   selectedPropertyType,
   remark,
   t,
+  propertyNoLabel,
   setReviewData,
   setCheckedPropertyIds,
   setIsReviewing,
@@ -48,15 +50,16 @@ export function useCombinePropertySubmit({
 }: SubmitHookParams) {
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const propLabel = propertyNoLabel || t('aliasFallback.propertyNo');
 
   const handleProceed = () => {
     if (isPending || isSubmitting) return;
     if (!selectedWardId || !selectedPropertyNo) {
-      toast.error(t('basePropertyIncomplete'));
+      toast.error(t('basePropertyIncomplete', { property: propLabel }));
       return;
     }
     if (!partitionNo && !submitPropertyNos) {
-      toast.error(t('selectAtLeastOne'));
+      toast.error(t('selectAtLeastOne', { property: propLabel }));
       return;
     }
 
@@ -106,13 +109,13 @@ export function useCombinePropertySubmit({
     if (!selectedBasePropertyId) return;
 
     if (checkedProperties.length === 0) {
-      toast.error(t('selectAtLeastOneToMerge'));
+      toast.error(t('selectAtLeastOneToMerge', { property: propLabel }));
       return;
     }
 
     const missingOwnerProps = checkedProperties.filter(r => !r.ownerName || r.ownerName.trim() === '');
     if (missingOwnerProps.length > 0) {
-      toast.warning(t('missingOwnerError'));
+      toast.warning(t('missingOwnerError', { property: propLabel }));
       return;
     }
 
@@ -150,7 +153,7 @@ export function useCombinePropertySubmit({
       .join(',');
 
     if (!combinePropertyIds) {
-      toast.warning(t('selectAtLeastOneToMerge') || 'Please select at least one additional property to merge.');
+      toast.warning(t('selectAtLeastOneToMerge', { property: propLabel }) || 'Please select at least one additional property to merge.');
       return;
     }
 

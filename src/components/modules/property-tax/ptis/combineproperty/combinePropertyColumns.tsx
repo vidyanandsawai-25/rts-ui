@@ -42,13 +42,18 @@ function ExpandableText({ text }: { text: string }) {
   );
 }
 
+export interface CombinePropertyColumnAliasLabels {
+  propertyNo?: string;
+}
+
 export const getCombinePropertyColumns = (
   t: (key: string) => string,
   reviewData: PropertyCombineDetails[],
   checkedPropertyIds?: Set<number>,
   onToggleCheck?: (propertyId: number) => void,
   onToggleAll?: () => void,
-  selectedBasePropertyId?: string
+  selectedBasePropertyId?: string,
+  aliasLabels?: CombinePropertyColumnAliasLabels
 ): Column<PropertyRow>[] => [
   // Checkbox column — uses '_checkbox' key to avoid duplicate with 'propertyId' SR.NO. column
   {
@@ -87,7 +92,7 @@ export const getCombinePropertyColumns = (
   },
   {
     key: 'propertyNo',
-    label: t('propertyNo'),
+    label: aliasLabels?.propertyNo || t('propertyNo'),
     align: 'center',
     width: '180px',
     render: (_val, row) => {
@@ -112,7 +117,7 @@ export const getCombinePropertyColumns = (
   },
   {
     key: 'oldPropertyNo',
-    label: t('oldPropertyNo'),
+    label: `Old ${aliasLabels?.propertyNo || t('propertyNo')}`,
     align: 'center',
     width: '110px',
   },
@@ -173,12 +178,13 @@ export const getCombinePropertyColumns = (
 
 export const getCombinePropertyHistoryColumns = (
   t: (key: string) => string,
-  onPreviewClick?: (row: PropertyRow) => void
+  onPreviewClick?: (row: PropertyRow) => void,
+  aliasLabels?: CombinePropertyColumnAliasLabels
 ): Column<PropertyRow>[] => {
   const columns: Column<PropertyRow>[] = [
     {
       key: 'propertyNo',
-      label: t('propertyNo'),
+      label: aliasLabels?.propertyNo || t('propertyNo'),
       align: 'center',
       width: '180px',
       render: (_val, row) => {
@@ -193,7 +199,7 @@ export const getCombinePropertyHistoryColumns = (
         );
       },
     },
-    { key: 'oldPropertyNo', label: t('oldPropertyNo'), align: 'center', width: '100px' },
+    { key: 'oldPropertyNo', label: `Old ${aliasLabels?.propertyNo || t('propertyNo')}`, align: 'center', width: '100px' },
     { key: 'propertyDescription', label: t('propertyType'), align: 'left' },
     { key: 'ownerName', label: t('ownerName'), align: 'left' },
     { key: 'occupierName', label: t('occupierName'), align: 'left' },
