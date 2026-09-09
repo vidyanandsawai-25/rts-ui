@@ -841,7 +841,7 @@ export default function RtsFieldsConfig({
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label required className="text-[10px] font-bold text-slate-450 uppercase">{t("fields.fieldType")}</Label>
-                  <Select required value={editForm.fieldType} options={[{ value: "text", label: t("fields.fieldTypeText") }, { value: "number", label: t("fields.fieldTypeNumber") }, { value: "select", label: t("fields.fieldTypeSelect") }, { value: "textarea", label: t("fields.fieldTypeTextarea") }, { value: "checkbox", label: t("fields.fieldTypeCheckbox") }, { value: "date", label: t("fields.fieldTypeDate") }, { value: "file", label: t("fields.fieldTypeFile") }]} onChange={(_, value) => setEditForm(previous => ({ ...previous, fieldType: value }))} selectSize="sm" />
+                  <Select required value={editForm.fieldType} options={[{ value: "text", label: t("fields.fieldTypeText") }, { value: "number", label: t("fields.fieldTypeNumber") }, { value: "select", label: t("fields.fieldTypeSelect") }, { value: "textarea", label: t("fields.fieldTypeTextarea") }, { value: "checkbox", label: t("fields.fieldTypeCheckbox") }, { value: "date", label: t("fields.fieldTypeDate") }, { value: "map", label: t("fields.fieldTypeMap") }, { value: "file", label: t("fields.fieldTypeFile") }, { value: "fileLatLog", label: t("fields.fieldTypeFileLatLog") }]} onChange={(_, value) => setEditForm(previous => ({ ...previous, fieldType: value }))} selectSize="sm" />
                 </div>
 
                 <div className="space-y-1">
@@ -1004,7 +1004,7 @@ export default function RtsFieldsConfig({
                         <div className="grid gap-4 lg:grid-cols-2">
                           <div className="space-y-1">
                             <Label required className="text-[11px] font-bold text-slate-700">{t("fields.fieldType")}</Label>
-                            <Select value={field.fieldType} options={[{ value: "text", label: t("fields.fieldTypeText") }, { value: "number", label: t("fields.fieldTypeNumber") }, { value: "select", label: t("fields.fieldTypeSelect") }, { value: "textarea", label: t("fields.fieldTypeTextarea") }, { value: "checkbox", label: t("fields.fieldTypeCheckbox") }, { value: "date", label: t("fields.fieldTypeDate") }, { value: "file", label: t("fields.fieldTypeFile") }]} onChange={(_, value) => updateDraftField(index, { fieldType: value })} selectSize="sm" />
+                            <Select value={field.fieldType} options={[{ value: "text", label: t("fields.fieldTypeText") }, { value: "number", label: t("fields.fieldTypeNumber") }, { value: "select", label: t("fields.fieldTypeSelect") }, { value: "textarea", label: t("fields.fieldTypeTextarea") }, { value: "checkbox", label: t("fields.fieldTypeCheckbox") }, { value: "date", label: t("fields.fieldTypeDate") }, { value: "map", label: t("fields.fieldTypeMap") }, { value: "file", label: t("fields.fieldTypeFile") }, { value: "fileLatLog", label: t("fields.fieldTypeFileLatLog") }]} onChange={(_, value) => updateDraftField(index, { fieldType: value })} selectSize="sm" />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[11px] font-bold text-slate-700">{t("fields.fieldGroup")}</Label>

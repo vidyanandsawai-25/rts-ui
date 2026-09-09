@@ -4,6 +4,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { isValidMapLocationValue } from "@/lib/utils/rts/map-location-value";
+import {
+  getFileLatLogDocumentGuid,
+  getFileLatLogFile,
+  getFileLatLogMetadata,
+  isFileLatLogFieldValue,
+  serializeFileLatLogCaptureMetadata,
+} from "@/lib/utils/rts/file-lat-log-value";
 import {
   ArrowLeft,
   Check,
@@ -521,6 +529,25 @@ export default function DynamicServiceFormClient({
     return formats.some((format) => format.toLowerCase() === extension);
   };
 
+  const matchesFileLatLogTypes = (file: File, field: FormField | any, source: "camera" | "upload") => {
+    const formats = field?.validation?.acceptedFormats;
+    if (Array.isArray(formats) && formats.length) return matchesAllowedFileTypes(file, formats);
+    const accept = field?.validation?.accept;
+    if (typeof accept === "string" && accept.trim()) {
+      const extension = file.name.includes(".") ? `.${file.name.split(".").pop()?.toLowerCase() ?? ""}` : "";
+      const acceptsFile = accept.split(",").map((entry: string) => entry.trim().toLowerCase()).some((entry: string) => {
+        if (!entry) return false;
+        if (entry.startsWith(".")) return entry === extension;
+        if (entry.endsWith("/*")) return file.type.toLowerCase().startsWith(entry.slice(0, -1));
+        return entry === file.type.toLowerCase();
+      });
+      return source === "camera" ? acceptsFile && file.type.startsWith("image/") : acceptsFile;
+    }
+    return source === "camera"
+      ? file.type.startsWith("image/")
+      : file.type.startsWith("image/") || file.type === "application/pdf";
+  };
+
   const getInvalidRuleMessage = (
     field: FormField | any,
     rule:
@@ -611,9 +638,11 @@ export default function DynamicServiceFormClient({
     if (fieldType === "time") return "Please enter a time";
     if (fieldType === "date") return "Please enter a Date";
     if (fieldType === "datetime-local") return "Please enter a date and time";
-    if (fieldType === "file") {
+    if (fieldType === "file" || fieldType === "filelatlog") {
       const formats = field?.validation?.acceptedFormats;
-      return `Please upload your ${formatAcceptedFileTypes(formats)}`;
+      return fieldType === "filelatlog" && !formats?.length && !field?.validation?.accept
+        ? t("fileLatLog.uploadFileHint")
+        : `Please upload your ${formatAcceptedFileTypes(formats)}`;
     }
 
     return `Please enter ${labelText}`;
@@ -676,6 +705,46 @@ export default function DynamicServiceFormClient({
         value !== options[0]?.value
       ) {
         return getEmptyRequiredMessage(field);
+      }
+      return null;
+    }
+
+    if (fieldType === "map" || fieldType === "locationPicker") {
+      if (field?.required && isFieldEmpty(value)) return getEmptyRequiredMessage(field);
+      if (isFieldEmpty(value)) return null;
+      if (!isValidMapLocationValue(value)) {
+        return t("map.validation");
+      }
+    }
+
+    if (fieldType.toLowerCase() === "filelatlog") {
+      const selectedFile = getFileLatLogFile(value);
+      const documentGuid = getFileLatLogDocumentGuid(value);
+      const metadata = getFileLatLogMetadata(value);
+      const rawMetadata = isFileLatLogFieldValue(value) ? value.metadata : null;
+
+      if (field?.required && !selectedFile && !documentGuid) {
+        return getEmptyRequiredMessage(field);
+      }
+      if (!selectedFile && !documentGuid) return null;
+
+      if (!metadata) {
+        return rawMetadata && typeof rawMetadata === "object" && (rawMetadata as { source?: unknown }).source === "upload"
+          ? t("fileLatLog.mapLinkInvalid")
+          : t("fileLatLog.mapLinkRequired");
+      }
+
+      if (selectedFile) {
+        if (!matchesFileLatLogTypes(selectedFile, field, metadata.source)) {
+          return (Array.isArray(field?.validation?.acceptedFormats) && field.validation.acceptedFormats.length) || field?.validation?.accept
+            ? getInvalidRuleMessage(field, "fileType")
+            : metadata.source === "camera" ? t("fileLatLog.imageOnly") : t("fileLatLog.uploadFileHint");
+        }
+
+        const maxFileSizeMb = field?.validation?.maxFileSizeMb;
+        if (typeof maxFileSizeMb === "number" && selectedFile.size > maxFileSizeMb * 1024 * 1024) {
+          return getInvalidRuleMessage(field, "fileSize");
+        }
       }
       return null;
     }
@@ -1006,15 +1075,18 @@ export default function DynamicServiceFormClient({
       fieldDefinitionId: number;
       fieldName: string;
       fieldLabel: string;
+      textValue?: string | null;
     }> = [];
 
     for (const step of steps || []) {
       for (const field of step.fields || []) {
         if (!shouldRenderField(field)) continue;
-        if (String(field?.type || "").toLowerCase() !== "file") continue;
+        const fieldType = String(field?.type || "").toLowerCase();
+        if (fieldType !== "file" && fieldType !== "filelatlog") continue;
 
         const fieldId = String(field?.id ?? "");
-        const fileValue = formData[fieldId];
+        const rawValue = formData[fieldId];
+        const fileValue = fieldType === "filelatlog" ? getFileLatLogFile(rawValue) : rawValue;
 
         if (!(fileValue instanceof File) || fileValue.size <= 0) {
           continue;
@@ -1034,6 +1106,9 @@ export default function DynamicServiceFormClient({
               ""
           ),
           fieldLabel: getLocalizedLabelText(field?.label, language),
+          textValue: fieldType === "filelatlog" && isFileLatLogFieldValue(rawValue)
+            ? serializeFileLatLogCaptureMetadata(rawValue.metadata)
+            : null,
         });
       }
     }
@@ -1172,10 +1247,15 @@ export default function DynamicServiceFormClient({
 
             const val = formData[String(field.id)];
             let docGuid: string | null = null;
+            const fieldType = String(field.type ?? "").toLowerCase();
+            const fileLatLogValue = fieldType === "filelatlog" && isFileLatLogFieldValue(val)
+              ? val
+              : null;
+            const selectedFile = fileLatLogValue ? getFileLatLogFile(fileLatLogValue) : val instanceof File ? val : null;
 
-            if (val instanceof File) {
+            if (selectedFile) {
               const fd = new FormData();
-              fd.append("file", val);
+              fd.append("file", selectedFile);
               const upRes = await uploadCitizenDocumentAction(fd);
               if (upRes.success && upRes.documentGuid) {
                 docGuid = upRes.documentGuid;
@@ -1187,6 +1267,8 @@ export default function DynamicServiceFormClient({
                       : "नवीन कागदपत्र अपलोड करता आले नाही.")
                 );
               }
+            } else if (fileLatLogValue && getFileLatLogDocumentGuid(fileLatLogValue)) {
+              docGuid = getFileLatLogDocumentGuid(fileLatLogValue);
             } else if (typeof val === "string" && val.startsWith("guid:")) {
               docGuid = val.replace("guid:", "");
             } else {
@@ -1198,7 +1280,9 @@ export default function DynamicServiceFormClient({
 
             fieldValuesPayload.push({
               fieldDefinitionId: fieldDefId,
-              textValue: field.type !== "file" && typeof val === "string" ? val : null,
+              textValue: fieldType === "filelatlog"
+                ? serializeFileLatLogCaptureMetadata(fileLatLogValue?.metadata)
+                : fieldType !== "file" && typeof val === "string" ? val : null,
               numberValue: typeof val === "number" ? val : null,
               dateValue: field.type === "date" && typeof val === "string" ? val : null,
               booleanValue: typeof val === "boolean" ? val : null,

@@ -1,31 +1,38 @@
 "use client";
 
 import React from "react";
-import dynamic from "next/dynamic";
-import { Check, ChevronDown, Eye, FileText, Search, Upload, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Camera, Check, ChevronDown, Eye, FileText, Loader2, MapPin, Search, Upload, X } from "lucide-react";
 import DocumentFormPreview from "@/components/modules/rts/forms/DocumentFormPreview";
 import RtsApplicationDocumentView from "@/components/modules/rts/dashboard/RtsApplicationDocumentView";
 import {
   getCitizenRtsDocumentDownloadUrl,
   getCitizenRtsDocumentViewUrl,
 } from "@/lib/api/rts/rtsdocument.client";
+import {
+  getFileLatLogDocumentGuid,
+  getFileLatLogFile,
+  isFileLatLogFieldValue,
+  type FileLatLogCaptureMetadata,
+  type FileLatLogFieldValue,
+} from "@/lib/utils/rts/file-lat-log-value";
+import {
+  buildGoogleMapsLocationUrl,
+  getMapLocationUrl,
+  parseMapLocationValue,
+} from "@/lib/utils/rts/map-location-value";
 import type {
   CheckboxField,
   FieldConfig,
   LangLabel,
-  LocationPickerField,
+  MapLinkField,
   NormalizeRule,
-  PickedLocation,
   SelectField,
   TextField,
 } from "@/types/rts/form.types";
 
 // Re-import corrected path for VALIDATION_RULES if needed (it was @/lib/utils/validationRegistry)
 import { VALIDATION_RULES as REGISTRY_RULES } from "@/lib/utils/validationRegistry";
-
-const LocationPicker = dynamic(() => import("@/components/common/LocationPicker"), {
-  ssr: false,
-});
 
 const DEFAULT_INDIAN_MOBILE_PATTERN = "^[7-9][0-9]{9}$";
 const DEFAULT_GMAIL_EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@gmail\\.com$";
@@ -410,6 +417,212 @@ function DynamicFileField({
   );
 }
 
+function getFileLatLogUploadAccept(field: any) {
+  const validation = field?.validation ?? {};
+  if (typeof validation.accept === "string" && validation.accept.trim()) return validation.accept;
+
+  if (Array.isArray(validation.acceptedFormats) && validation.acceptedFormats.length) {
+    return validation.acceptedFormats
+      .filter((format: unknown): format is string => typeof format === "string" && Boolean(format.trim()))
+      .map((format: string) => format.startsWith(".") ? format : `.${format}`)
+      .join(",");
+  }
+
+  return "image/*,.pdf";
+}
+
+function DynamicFileLatLogField({
+  field,
+  lang,
+  value,
+  error,
+  showError,
+  onChange,
+  existingDocument,
+}: {
+  field: any;
+  lang: "en" | "hi" | "mr";
+  value: unknown;
+  error?: string;
+  showError?: boolean;
+  onChange: (value: FileLatLogFieldValue | null) => void;
+  existingDocument?: {
+    documentGuid?: string | null;
+    documentName?: string | null;
+  };
+}) {
+  const fileText = useTranslations("rts.serviceForm.fileLatLog");
+  const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
+  const [isExistingPreviewOpen, setIsExistingPreviewOpen] = React.useState(false);
+  const [isGettingLocation, setIsGettingLocation] = React.useState(false);
+  const [captureError, setCaptureError] = React.useState("");
+  const previousValueRef = React.useRef<FileLatLogFieldValue | null>(null);
+  const uploadInputRef = React.useRef<HTMLInputElement>(null);
+  const captureInputRef = React.useRef<HTMLInputElement>(null);
+  const hasError = Boolean(showError && error) || Boolean(captureError);
+  const selectedFile = getFileLatLogFile(value);
+  const savedValue = isFileLatLogFieldValue(value) ? value : null;
+  const existingDocumentGuid = getFileLatLogDocumentGuid(value) || existingDocument?.documentGuid?.trim() || null;
+  const metadata = savedValue?.metadata ?? null;
+  const fieldLabel = t(field.label, lang);
+  const uploadAccept = getFileLatLogUploadAccept(field);
+  const isUploaded = Boolean(selectedFile || existingDocumentGuid);
+  const fileName = selectedFile?.name || savedValue?.documentName || existingDocument?.documentName || "";
+  const requiredIndicator = field.required ? <span className="text-[13px] text-red-500">*</span> : null;
+
+  const setFileValue = (file: File, nextMetadata: FileLatLogCaptureMetadata | null) => {
+    previousValueRef.current = savedValue;
+    onChange({
+      file,
+      documentGuid: existingDocumentGuid,
+      documentName: file.name,
+      metadata: nextMetadata,
+    });
+  };
+
+  const validateCaptureImage = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setCaptureError(fileText("imageOnly"));
+      return false;
+    }
+    return true;
+  };
+
+  const handleCapture = (file: File | null) => {
+    if (!file || !validateCaptureImage(file)) return;
+    if (!navigator.geolocation) {
+      setCaptureError(fileText("cameraRequired"));
+      return;
+    }
+
+    setCaptureError("");
+    setIsGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+          setCaptureError(fileText("locationUnavailable"));
+          setIsGettingLocation(false);
+          return;
+        }
+
+        const googleMapsUrl = buildGoogleMapsLocationUrl(latitude, longitude);
+        if (!googleMapsUrl) {
+          setCaptureError(fileText("locationUnavailable"));
+          setIsGettingLocation(false);
+          return;
+        }
+
+        setFileValue(file, {
+          latitude,
+          longitude,
+          accuracy: Number.isFinite(accuracy) ? accuracy : null,
+          capturedAt: new Date().toISOString(),
+          source: "camera",
+          googleMapsUrl,
+        });
+        setIsGettingLocation(false);
+      },
+      () => {
+        setCaptureError(fileText("cameraRequired"));
+        setIsGettingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 15_000, maximumAge: 0 }
+    );
+  };
+
+  const formattedCaptureDate = metadata?.source === "camera"
+    ? new Intl.DateTimeFormat(lang === "mr" ? "mr-IN" : lang === "hi" ? "hi-IN" : "en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(metadata.capturedAt))
+    : null;
+
+  return (
+    <div className="h-full">
+      <div className={`rounded-[8px] border bg-[#f9fafb] px-3 py-3 transition-colors ${hasError ? "border-red-400 bg-red-50/40" : isUploaded ? "border-[#27d3cf] bg-[#f8fffe]" : "border-[#d8e1ec] hover:border-[#27d3cf]"}`}>
+        <div className="flex min-w-0 items-start gap-3">
+          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] border ${hasError ? "border-red-200 bg-white text-red-500" : isUploaded ? "border-[#b9f0ec] bg-[#efffff] text-[#10b981]" : "border-[#dfe6ef] bg-[#f8fbff] text-[#98a7ba]"}`}>
+            <FileText className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className={`flex items-start gap-1 text-[12px] font-semibold ${hasError ? "text-red-500" : "text-[#1d3557]"}`}>
+              <span className="min-w-0 break-words leading-4">{fieldLabel}</span>
+              {requiredIndicator}
+            </div>
+            <p className="mt-0.5 break-words text-[11px] leading-4 text-[#93a4b8]">{fileName || getFileValidationHint(field, lang) || "IMAGE"}</p>
+          </div>
+        </div>
+
+        {metadata?.source === "camera" && (
+          <div className="mt-3 grid gap-1 rounded-md border border-emerald-100 bg-emerald-50/60 px-2.5 py-2 text-[11px] text-emerald-900 sm:grid-cols-2">
+            <div className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-600" />{fileText("coordinates", { latitude: metadata.latitude.toFixed(6), longitude: metadata.longitude.toFixed(6) })}</div>
+            <div>{fileText("accuracy", { accuracy: Math.round(metadata.accuracy ?? 0) })}</div>
+            {formattedCaptureDate && <div className="sm:col-span-2">{fileText("capturedAt", { date: formattedCaptureDate })}</div>}
+          </div>
+        )}
+
+        {metadata?.source === "upload" && (
+          <div className="mt-3 space-y-1.5 rounded-md border border-blue-100 bg-blue-50/60 px-2.5 py-2 text-[11px] text-blue-950">
+            <label className="block font-semibold text-blue-800" htmlFor={`file-lat-log-map-${field.id}`}>
+              {fileText("mapLink")}<span className="text-[13px] text-red-500">*</span>
+            </label>
+            <input
+              id={`file-lat-log-map-${field.id}`}
+              type="url"
+              inputMode="url"
+              value={metadata.googleMapsUrl}
+              onChange={(event) => {
+                onChange({
+                  file: selectedFile,
+                  documentGuid: existingDocumentGuid,
+                  documentName: fileName || null,
+                  metadata: { source: "upload", googleMapsUrl: event.target.value },
+                });
+              }}
+              placeholder={fileText("mapLinkPlaceholder")}
+              className="h-8 w-full rounded-md border border-blue-200 bg-white px-2 text-[11px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+            <p className="text-[10px] text-blue-700">{fileText("manualLocationHint")}</p>
+          </div>
+        )}
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {isUploaded && (
+            <button type="button" onClick={() => selectedFile ? setIsPreviewOpen(true) : setIsExistingPreviewOpen(true)} className="inline-flex h-[30px] items-center justify-center gap-1 rounded-[6px] border border-blue-200 bg-blue-50 px-2 text-[11px] font-semibold text-blue-600 transition-colors hover:bg-blue-100">
+              <Eye className="h-3.5 w-3.5" />{fileText("view")}
+            </button>
+          )}
+          <button type="button" onClick={() => uploadInputRef.current?.click()} className="inline-flex h-[30px] items-center justify-center gap-1 rounded-[6px] border border-cyan-200 bg-cyan-50 px-2 text-[11px] font-semibold text-cyan-700 transition-colors hover:bg-cyan-100">
+            <Upload className="h-3.5 w-3.5" />{fileText("upload")}
+          </button>
+          <button type="button" onClick={() => captureInputRef.current?.click()} disabled={isGettingLocation} className="inline-flex h-[30px] items-center justify-center gap-1 rounded-[6px] border border-orange-200 bg-orange-50 px-2 text-[11px] font-semibold text-orange-700 transition-colors hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-60">
+            {isGettingLocation ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}{isGettingLocation ? fileText("capturingLocation") : fileText("capture")}
+          </button>
+          {selectedFile && (
+            <button type="button" onClick={() => onChange(previousValueRef.current)} className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[6px] border border-[#fecaca] bg-[#fff1f2] text-[#ef4444] transition-colors hover:bg-[#ffe4e6]" aria-label={fileText("remove")} title={fileText("remove")}>
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+        <input ref={uploadInputRef} type="file" accept={uploadAccept} className="sr-only" onChange={(event) => {
+          const file = event.target.files?.[0] ?? null;
+          if (file) {
+            setCaptureError("");
+            setFileValue(file, { source: "upload", googleMapsUrl: metadata?.source === "upload" ? metadata.googleMapsUrl : "" });
+          }
+          event.currentTarget.value = "";
+        }} />
+        <input ref={captureInputRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={(event) => { handleCapture(event.target.files?.[0] ?? null); event.currentTarget.value = ""; }} />
+      </div>
+      {captureError ? <div className={FIELD_ERROR_CLASS}>{captureError}</div> : null}
+      {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+      <DocumentFormPreview key={selectedFile ? `${selectedFile.name}:${selectedFile.lastModified}:${selectedFile.size}` : "empty"} file={selectedFile} open={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} />
+      {isExistingPreviewOpen && existingDocumentGuid && <RtsApplicationDocumentView open onClose={() => setIsExistingPreviewOpen(false)} fileUrl={getCitizenRtsDocumentViewUrl(existingDocumentGuid)} downloadUrl={getCitizenRtsDocumentDownloadUrl(existingDocumentGuid)} fileName={savedValue?.documentName || existingDocument?.documentName || `${fieldLabel}.jpg`} label={fieldLabel} />}
+    </div>
+  );
+}
+
 function DynamicSearchableSelectField({
   field,
   lang,
@@ -563,6 +776,102 @@ function DynamicSearchableSelectField({
   );
 }
 
+function DynamicMapLinkField({
+  field,
+  lang,
+  value,
+  error,
+  showError,
+  onChange,
+}: {
+  field: MapLinkField;
+  lang: "en" | "hi" | "mr";
+  value: unknown;
+  error?: string;
+  showError?: boolean;
+  onChange: (value: string) => void;
+}) {
+  const mapText = useTranslations("rts.serviceForm.map");
+  const [isGettingLocation, setIsGettingLocation] = React.useState(false);
+  const [locationError, setLocationError] = React.useState("");
+  const legacyLocation = parseMapLocationValue(value);
+  const resolvedUrl = getMapLocationUrl(value);
+  const inputValue = legacyLocation ? resolvedUrl ?? "" : typeof value === "string" ? value : "";
+  const hasError = Boolean(showError && error) || Boolean(locationError);
+  const { maxLength, pattern } = getFieldRules(field);
+
+  const handleUseDeviceLocation = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setLocationError(mapText("errors.geolocationUnavailable"));
+      return;
+    }
+
+    setLocationError("");
+    setIsGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const googleMapsUrl = buildGoogleMapsLocationUrl(latitude, longitude);
+
+        if (!googleMapsUrl) {
+          setLocationError(mapText("errors.invalidCoordinates"));
+          setIsGettingLocation(false);
+          return;
+        }
+
+        onChange(googleMapsUrl);
+        setIsGettingLocation(false);
+      },
+      () => {
+        setLocationError(mapText("errors.geolocationDenied"));
+        setIsGettingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 15_000, maximumAge: 0 }
+    );
+  };
+
+  return (
+    <div>
+      <label
+        htmlFor={`field-${field.id}`}
+        className={`mb-1 flex min-w-0 items-start gap-1 text-[12px] font-medium ${getLabelColorClass(hasError)}`}
+      >
+        <span className="min-w-0 whitespace-normal break-words">{t(field.label, lang)}</span>
+        {field.required ? <span className="text-[13px] text-red-500">*</span> : null}
+      </label>
+      <div className="relative">
+        <input
+          id={`field-${field.id}`}
+          type="url"
+          value={inputValue}
+          inputMode="url"
+          maxLength={typeof maxLength === "number" ? maxLength : undefined}
+          pattern={pattern}
+          placeholder={mapText("placeholder")}
+          className={getControlClass(hasError, "h-[40px] py-2 pr-11")}
+          onChange={(event) => {
+            setLocationError("");
+            onChange(sanitizeValue(event.target.value, field));
+          }}
+        />
+        <button
+          type="button"
+          aria-label={mapText("useDeviceLocation")}
+          title={mapText("useDeviceLocation")}
+          disabled={isGettingLocation}
+          onClick={handleUseDeviceLocation}
+          className="absolute inset-y-1 right-1 inline-flex w-8 items-center justify-center rounded-[3px] text-teal-700 transition hover:bg-teal-50 disabled:cursor-wait disabled:opacity-60"
+        >
+          {isGettingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+        </button>
+      </div>
+      <p className="mt-1 text-[10px] text-slate-500">{mapText("helper")}</p>
+      {locationError ? <div className={FIELD_ERROR_CLASS}>{locationError}</div> : null}
+      {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
+    </div>
+  );
+}
+
 export default function DynamicFieldRenderer(props: {
   field: any;
   lang: "en" | "hi" | "mr";
@@ -596,6 +905,8 @@ export default function DynamicFieldRenderer(props: {
     field.type === "select" ||
     field.type === "textarea" ||
     field.type === "file" ||
+    field.type === "fileLatLog" ||
+    field.type === "map" ||
     field.type === "date" ||
     rawFieldType === "time" ||
     rawFieldType === "datetime-local" ||
@@ -621,28 +932,19 @@ export default function DynamicFieldRenderer(props: {
   ) : null;
 
   // ---------------------------
-  // ✅ Location Picker
+  // Map link with device-location support
   // ---------------------------
-  if (field.type === "locationPicker") {
-    const f = field as LocationPickerField;
+  if (field.type === "map" || field.type === "locationPicker") {
     return (
       <div className={wrapClass}>
-        <div className={`mb-2 flex min-w-0 items-start gap-1 text-[12px] font-medium ${getLabelColorClass(hasError)}`}>
-          <span className="min-w-0 whitespace-normal break-words">{t(f.label, lang)}</span>
-          {requiredIndicator}
-        </div>
-        <LocationPicker
-          value={(values[f.id] as PickedLocation) ?? null}
-          onChange={(v: PickedLocation | null) => updateValue(f.id, v, f)}
-          persistKey={f.persistKey}
-          placeholder={(() => {
-            if (!f.placeholder) return undefined;
-            if (typeof (f as any).placeholder === "string") return (f as any).placeholder;
-            return t(f.placeholder as any, lang);
-          })()}
+        <DynamicMapLinkField
+          field={field as MapLinkField}
           lang={lang}
+          value={values[field.id]}
+          error={error}
+          showError={showError}
+          onChange={(url) => updateValue(field.id, url, field)}
         />
-        {showError && error ? <div className={FIELD_ERROR_CLASS}>{error}</div> : null}
       </div>
     );
   }
@@ -960,6 +1262,23 @@ export default function DynamicFieldRenderer(props: {
     return (
       <div className={`${wrapClass} h-full`}>
         <DynamicFileField
+          field={f}
+          lang={lang}
+          value={values[f.id]}
+          error={error}
+          showError={showError}
+          onChange={(value) => updateValue(f.id, value, f)}
+          existingDocument={existingDocument}
+        />
+      </div>
+    );
+  }
+
+  if (field.type === "fileLatLog") {
+    const f = field as any;
+    return (
+      <div className={`${wrapClass} h-full`}>
+        <DynamicFileLatLogField
           field={f}
           lang={lang}
           value={values[f.id]}

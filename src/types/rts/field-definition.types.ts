@@ -53,7 +53,9 @@ export type DynamicRenderFieldType =
   | "select"
   | "radio"
   | "checkbox"
+  | "map"
   | "file"
+  | "fileLatLog"
   | "hidden"
   | "label";
 

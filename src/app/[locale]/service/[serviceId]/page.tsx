@@ -9,6 +9,7 @@ import DynamicServiceFormClient from "@/components/modules/rts/forms/DynamicServ
 import { getRtsFieldDefinitionsByServiceId } from "@/lib/api/rts/rtsfielddefinition.service";
 import { getAllRtsDepartments } from "@/lib/api/rts/rtsdepartment.service";
 import { isServiceUrlStruck } from "@/lib/utils/rts/service-navigation";
+import { parseFileLatLogCaptureMetadata } from "@/lib/utils/rts/file-lat-log-value";
 import { getRtsServiceByIdSSR, submitRtsApplicationAction } from "./actions";
 
 interface ServicePageProps {
@@ -150,6 +151,12 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
   let existingDocuments: any[] = [];
   let officerRemark: string | null = null;
   let resubmitAppId: number = 0;
+  const fileLatLogFieldsByDefinitionId = new Map(
+    (fieldDefinitions ?? [])
+      .filter((field) => String(field.fieldType ?? "").trim().toLowerCase() === "filelatlog")
+      .map((field) => [Number(field.id), field])
+  );
+  const fileLatLogMetadataByDefinitionId = new Map<number, ReturnType<typeof parseFileLatLogCaptureMetadata>>();
 
   if (isResubmitMode && resolvedSearchParams?.applicationNo) {
     try {
@@ -169,12 +176,30 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
             const val = ans.displayValue === "—" ? "" : ans.displayValue;
             if (ans.fieldCode) prefilledValues[ans.fieldCode] = val;
             if (ans.fieldDefinitionId) prefilledValues[String(ans.fieldDefinitionId)] = val;
+            if (fileLatLogFieldsByDefinitionId.has(ans.fieldDefinitionId)) {
+              fileLatLogMetadataByDefinitionId.set(
+                ans.fieldDefinitionId,
+                parseFileLatLogCaptureMetadata(val)
+              );
+            }
           }
         }
 
         for (const document of existingDocuments) {
           if (document.fieldDefinitionId && document.documentGuid) {
-            prefilledValues[String(document.fieldDefinitionId)] = `guid:${document.documentGuid}`;
+            const fieldDefinitionId = Number(document.fieldDefinitionId);
+            const fileLatLogField = fileLatLogFieldsByDefinitionId.get(fieldDefinitionId);
+            if (fileLatLogField) {
+              const restoredValue = {
+                documentGuid: document.documentGuid,
+                documentName: document.documentName ?? null,
+                metadata: fileLatLogMetadataByDefinitionId.get(fieldDefinitionId) ?? null,
+              };
+              prefilledValues[String(fieldDefinitionId)] = restoredValue;
+              prefilledValues[fileLatLogField.fieldCode] = restoredValue;
+            } else {
+              prefilledValues[String(fieldDefinitionId)] = `guid:${document.documentGuid}`;
+            }
           }
         }
       }

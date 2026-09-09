@@ -82,6 +82,7 @@ export type TextField = BaseField & {
     | 'password'
     | 'textarea'
     | 'file'
+    | 'fileLatLog'
     | 'hidden'
     | 'label';
   validation?: FieldValidation;
@@ -109,11 +110,10 @@ export type ActionField = BaseField & {
   };
 };
 
-export type PickedLocation = { lat: number; lng: number; label?: string } | null;
-
-export type LocationPickerField = BaseField & {
-  type: "locationPicker";
-  persistKey?: string;
+export type MapLinkField = BaseField & {
+  type: "map";
+  required?: boolean;
+  validation?: FieldValidation;
   placeholder?: string | LangLabel;
 };
 
@@ -131,7 +131,7 @@ export type FieldConfig =
   | TextField
   | SelectField
   | RadioField
-  | LocationPickerField
+  | MapLinkField
   | CheckboxField
   | ActionField
   | CheckboxDropdownField;

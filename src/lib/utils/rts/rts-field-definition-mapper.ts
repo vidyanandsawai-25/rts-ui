@@ -356,9 +356,17 @@ function mapRtsFieldType(fieldType: string): DynamicRenderFieldType {
       return "radio";
     case "checkbox":
       return "checkbox";
+    case "map":
+    case "location":
+    case "locationpicker":
+    case "location_picker":
+      return "map";
     case "file":
     case "upload":
       return "file";
+    case "filelatlog":
+    case "file_lat_log":
+      return "fileLatLog";
     case "hidden":
       return "hidden";
     case "label":
@@ -369,7 +377,9 @@ function mapRtsFieldType(fieldType: string): DynamicRenderFieldType {
 }
 
 function getFieldColSpan(type: DynamicRenderFieldType): 1 | 2 | 4 {
-  if (type === "textarea" || type === "file" || type === "checkbox" || type === "label") {
+  if (type === "map") return 1;
+
+  if (type === "textarea" || type === "file" || type === "fileLatLog" || type === "checkbox" || type === "label") {
     return 4;
   }
 
@@ -634,9 +644,17 @@ function mapApiFieldTypeToOldType(apiType: string) {
       return "radio";
     case "checkbox":
       return "checkbox";
+    case "map":
+    case "location":
+    case "locationpicker":
+    case "location_picker":
+      return "map";
     case "file":
     case "upload":
       return "file";
+    case "filelatlog":
+    case "file_lat_log":
+      return "fileLatLog";
     case "hidden":
       return "hidden";
     case "label":
@@ -647,6 +665,8 @@ function mapApiFieldTypeToOldType(apiType: string) {
 }
 
 function getApiFieldColSpan(oldType: string, optionsCount = 0) {
+  if (oldType === "map") return 4;
+
   if (oldType === "checkbox") {
     if (optionsCount === 0) return 12;
     if (optionsCount <= 2) return 4;
@@ -659,7 +679,13 @@ function getApiFieldColSpan(oldType: string, optionsCount = 0) {
     return optionsCount > 4 ? 6 : 4;
   }
 
-  if (oldType === "textarea" || oldType === "checkboxDropdown" || oldType === "file" || oldType === "label") {
+  if (
+    oldType === "textarea" ||
+    oldType === "checkboxDropdown" ||
+    oldType === "file" ||
+    oldType === "fileLatLog" ||
+    oldType === "label"
+  ) {
     return 12;
   }
 
@@ -773,9 +799,11 @@ function mapApiItemToOldField(item: RtsFieldDefinitionApiItem) {
     required: Boolean(item?.isRequired) || hasRule(item?.validationRules, "required"),
     colSpan: getApiFieldColSpan(oldType, options.length),
     placeholder:
-      oldType === "select"
+      oldType === "map"
+        ? undefined
+        : oldType === "select"
         ? langLabel("Select")
-        : oldType === "file"
+        : oldType === "file" || oldType === "fileLatLog"
           ? langLabel("Upload file")
           : langLabel(`Enter ${item?.fieldLabel || item?.fieldCode || ""}`),
     helperText: undefined,
