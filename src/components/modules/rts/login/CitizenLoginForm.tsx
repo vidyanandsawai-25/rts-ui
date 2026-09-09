@@ -533,7 +533,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                   )}
 
                   <Button type="submit" className="w-full h-11 sm:h-12 bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg text-base rounded-md transition-colors font-semibold cursor-pointer" isLoading={isPending}>
-                    {locale === 'mr' ? 'मालमत्ता शोधा व OTP मिळवा' : locale === 'hi' ? 'संपत्ति खोजें और OTP प्राप्त करें' : 'Find Properties & Send OTP'}
+                    {t('phone.sendOtp')}
                   </Button>
                 </form>
 
@@ -585,7 +585,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                 </div>
                 <div className="space-y-2 pt-2">
                   <Button type="button" onClick={handleProceedWithSelectedProperty} className="w-full h-11 sm:h-12 bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg text-base rounded-md transition-colors font-semibold cursor-pointer" isLoading={isPending}>
-                    {locale === 'mr' ? 'या मालमत्तेसाठी OTP पाठवा' : locale === 'hi' ? 'इस संपत्ति के लिए OTP भेजें' : 'Send OTP for Selected Property'}
+                    {t('phone.sendOtp')}
                   </Button>
                   <button type="button" onClick={() => setStep('phone')} disabled={isPending} className="w-full text-center text-xs sm:text-sm font-semibold text-gray-600 hover:text-cyan-700 hover:underline pt-1 cursor-pointer">
                     ← {locale === 'mr' ? 'मोबाईल / तपशील बदला' : 'Change Number / Details'}
