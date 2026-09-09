@@ -508,6 +508,7 @@ export default function DepartmentCarsoulClient({
             application={routeState.detailApplication}
             language={lang}
             detailData={routeState.detail}
+            departments={departments}
             paymentStatusData={routeState.paymentStatus}
             onClose={closeDetails}
             onOpenPayment={(applicationNo) => openPayment(applicationNo, true)}

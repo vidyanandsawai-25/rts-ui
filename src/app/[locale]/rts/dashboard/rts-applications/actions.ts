@@ -145,6 +145,8 @@ export interface RtsApplicationDetailData {
   serviceId: number;
   serviceName: string | null;
   applicationStatus: string;
+  isCertificateRequired?: boolean;
+  certificateType?: number;
   answerGroups: ApplicationAnswerGroup[];
   workflow: ApplicationWorkflowState | null;
   approvalFlowStages?: RtsApprovalFlowStageApiItem[];
@@ -528,16 +530,35 @@ export async function getApplicationDetailAction(
           applicationHeader = null;
         }
 
+        const sId = (viewDetails as any)?.serviceId || applicationHeader?.serviceId || 0;
+        const sName = (viewDetails as any)?.serviceName || (applicationHeader as any)?.serviceName || null;
+        let isCertRequired = (viewDetails as any)?.isCertificateRequired;
+        let certType = (viewDetails as any)?.certificateType;
+
+        if (isCertRequired === undefined || certType === undefined) {
+          const services = await getAllRtsServices().catch(() => []);
+          const matched = services.find((s) =>
+            (sId > 0 && s.id === sId) ||
+            (sName && s.serviceName && s.serviceName.trim().toLowerCase() === sName.trim().toLowerCase())
+          );
+          if (matched) {
+            isCertRequired = matched.isCertificateRequired !== false && matched.certificateType !== 0;
+            certType = matched.certificateType ?? (isCertRequired ? 1 : 0);
+          }
+        }
+
         return {
           applicationNo,
           departmentId: (viewDetails as any)?.departmentId || applicationHeader?.departmentId || 0,
           departmentName: (viewDetails as any)?.departmentName || null,
-          serviceId: (viewDetails as any)?.serviceId || applicationHeader?.serviceId || 0,
-          serviceName: (viewDetails as any)?.serviceName || null,
+          serviceId: sId,
+          serviceName: sName,
           applicationStatus:
             (viewDetails as any)?.applicationStatus ||
             applicationHeader?.applicationStatus ||
             'pending',
+          isCertificateRequired: isCertRequired ?? true,
+          certificateType: certType ?? 1,
           answerGroups,
           workflow: null,
           approvalFlowStages,
@@ -552,13 +573,32 @@ export async function getApplicationDetailAction(
       }
 
       // If viewDetails was null (e.g. ID not found in ViewApplicationDetails API), return live stages if present without mock fallback
+      let appHeader = null;
+      try {
+        appHeader = await getRtsApplicationByNo(applicationNo);
+      } catch {
+        appHeader = null;
+      }
+      let fallbackCertRequired = true;
+      let fallbackCertType = 1;
+      if (appHeader?.serviceId) {
+        const services = await getAllRtsServices().catch(() => []);
+        const matched = services.find((s) => s.id === appHeader.serviceId);
+        if (matched) {
+          fallbackCertRequired = matched.isCertificateRequired !== false && matched.certificateType !== 0;
+          fallbackCertType = matched.certificateType ?? (fallbackCertRequired ? 1 : 0);
+        }
+      }
+
       return {
         applicationNo,
-        departmentId: 0,
+        departmentId: appHeader?.departmentId || 0,
         departmentName: null,
-        serviceId: 0,
-        serviceName: null,
-        applicationStatus: 'pending',
+        serviceId: appHeader?.serviceId || 0,
+        serviceName: (appHeader as any)?.serviceName || null,
+        applicationStatus: appHeader?.applicationStatus || 'pending',
+        isCertificateRequired: fallbackCertRequired,
+        certificateType: fallbackCertType,
         answerGroups: [],
         workflow: null,
         approvalFlowStages: [],
