@@ -13,6 +13,7 @@ interface NatureFactorCVWeightageMasterDeleteHandlerProps {
     tCommon: TranslationFunction;
     confirm: ConfirmContextType['confirm'];
     startTransition: React.TransitionStartFunction;
+    aliases?: Record<string, string>;
 }
 
 /**
@@ -29,6 +30,7 @@ export function useNatureFactorCVWeightageMasterDeleteHandler({
     tCommon,
     confirm,
     startTransition,
+    aliases,
 }: NatureFactorCVWeightageMasterDeleteHandlerProps){
     const router = useRouter();
 
@@ -36,8 +38,8 @@ export function useNatureFactorCVWeightageMasterDeleteHandler({
         (row: NatureFactorCVMaster) => {
             confirm({
                 variant: "delete",
-                title: `${t("deleteConfirmation.title")}: ${row.constructionDescription}` || `Type Of Nature`,
-                description: `${t("deleteConfirmation.description")}` || `Are you sure you want to delete this record?`,
+                title: `${t("deleteConfirmation.title", aliases)}: ${row.constructionDescription}` || `Type Of Nature`,
+                description: `${t("deleteConfirmation.description", aliases)}` || `Are you sure you want to delete this record?`,
                 meta: {
                     name: String(row.constructionDescription),
                 },
@@ -56,12 +58,12 @@ export function useNatureFactorCVWeightageMasterDeleteHandler({
 
                         if (result.statusCode === 409) {
                             // Record linked with another record or in use
-                            errorMessage = t("apiErrors.referredInAutoWardEntry");
+                            errorMessage = t("apiErrors.referredInAutoWardEntry", aliases);
                         } else if (result.statusCode === 400) {
                             // Bad request / validation error
-                            errorMessage = t("apiErrors.validationError");
+                            errorMessage = t("apiErrors.validationError", aliases);
                         } else if (result.statusCode === 404) {
-                            errorMessage = t("apiErrors.notFound");
+                            errorMessage = t("apiErrors.notFound", aliases);
                         } else if (result.message) {
                             errorMessage = result.message;
                         }
@@ -70,7 +72,7 @@ export function useNatureFactorCVWeightageMasterDeleteHandler({
                 },
             });
         },
-        [confirm, router, t, tCommon, startTransition]
+        [confirm, router, t, tCommon, startTransition, aliases]
     );
 
     return {

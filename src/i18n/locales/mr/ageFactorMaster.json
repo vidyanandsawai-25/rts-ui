@@ -1,19 +1,23 @@
 {
   "ageFactorMaster": {
+    "defaults": {
+      "assessment": "मूल्यांकन",
+      "constructionType": "बांधकाम प्रकार"
+    },
     "title": "वय घटक मास्टर",
     "columns": {
-      "constructionType": "बांधकाम प्रकार",
+      "constructionType": "{constructionType}",
       "description": "वर्णन",
       "ageFrom": "वय पासून",
       "ageTo": "वय पर्यंत",
       "factor": "घटक",
-      "assessmentYear": "मूल्यांकन वर्ष",
+      "assessmentYear": "{assessment} वर्ष",
       "status": "स्थिती",
       "action": "कृती"
     },
     "filters": {
-      "assessmentYear": "मूल्यांकन वर्ष",
-      "constructionType": "बांधकाम प्रकार",
+      "assessmentYear": "{assessment} वर्ष",
+      "constructionType": "{constructionType}",
       "ageRange": "वय मर्यादा",
       "factor": "घटक"
     },
@@ -33,7 +37,7 @@
       "close": "बंद करा"
     },
     "messages": {
-      "selectYearAndRange": "कृपया नोंद तयार करण्यापूर्वी मूल्यांकन वर्ष आणि वय मर्यादा निवडा",
+      "selectYearAndRange": "कृपया नोंद तयार करण्यापूर्वी {assessment} वर्ष आणि वय मर्यादा निवडा",
       "recordSavedSuccess": "नोंद यशस्वीरित्या जतन केली",
       "actionFailed": "कृती अयशस्वी",
       "failedToSaveRow": "ओळ जतन करण्यात अयशस्वी",
@@ -47,8 +51,8 @@
       "noRecordsMatch": "सारणीतील वर्तमान निवडीशी कोणतीही नोंद जुळत नाही",
       "bulkOperationSuccess": "मोठ्या प्रमाणात ऑपरेशन यशस्वी",
       "bulkOperationFailed": "मोठ्या प्रमाणात ऑपरेशन अयशस्वी",
-      "noConstructionTypes": "कोणतेही बांधकाम प्रकार उपलब्ध नाहीत",
-      "assessmentYearMissing": "मूल्यांकन वर्ष पर्याय गहाळ आहेत",
+      "noConstructionTypes": "कोणतेही {constructionType} उपलब्ध नाहीत",
+      "assessmentYearMissing": "{assessment} वर्ष पर्याय गहाळ आहेत",
       "noAgeRangesAvailable": "कोणतीही वय श्रेणी उपलब्ध नाही. कृपया प्रथम वय श्रेणी जोडा.",
       "factorRequiredForGeneration": "कृपया नोंदी तयार करण्यापूर्वी 0 पेक्षा जास्त फॅक्टर मूल्य प्रविष्ट करा किंवा लागू करा.",
       "allRecordsExist": "वर्तमान निवडीसाठी सर्व नोंदी आधीच अस्तित्वात आहेत",
@@ -69,8 +73,8 @@
     },
     "errors": {
       "validIdRequired": "वैध वय घटक सीव्ही आयडी आवश्यक आहे",
-      "constructionTypeRequired": "बांधकाम प्रकार आयडी आवश्यक आहे",
-      "yearRangeRequired": "वर्ष श्रेणी आयडी आवश्यक आहे",
+      "constructionTypeRequired": "{constructionType} आयडी आवश्यक आहे",
+      "yearRangeRequired": "{assessment} वर्ष श्रेणी आयडी आवश्यक आहे",
       "updateFailed": "वय घटक सीव्ही मास्टर अद्यतनित करण्यात अयशस्वी",
       "createFailed": "वय घटक सीव्ही मास्टर तयार करण्यात अयशस्वी",
       "bulkCreateRequired": "घाऊक निर्मितीसाठी वय घटकांसह वैध पेलोड आवश्यक आहे",
@@ -95,7 +99,7 @@
       "referredInAutoWardEntry": "हे वय वेटेज हटवता येणार नाही कारण ते आधीच कॅपिटल व्हॅल्यू कर गणनेत वापरले जात आहे. कृपया प्रथम संबंधित नोंदी हटवा."
     },
     "deleteConfirmation": {
-      "title": "बांधकामाचा प्रकार",
+      "title": "{constructionType}",
       "description": "तुम्हाला खात्री आहे की तुम्ही ही नोंद हटवू इच्छिता?",
       "confirmButton": "हटवा",
       "cancelButton": "रद्द करा",

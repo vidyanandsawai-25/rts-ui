@@ -12,6 +12,7 @@ import { useUseCategoryFactorEdit } from "@/hooks/weightageMaster/useCategoryCv/
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Building2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface UseCategoryFactorEditFormProps {
     initialData: UseFactorCVMaster;
@@ -24,6 +25,17 @@ export function UseCategoryFactorEditForm({ initialData, locale, assessmentYearO
     const tF = useTranslations("useCategoryFactorMaster");
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(true);
+
+    const aliasSubTypeOfUse = useAliasLabel("Sub_Type_Of_Use", tF("defaults.subTypeOfUse") || "Sub Type Of Use");
+    const aliasAssessment = useAliasLabel("Assessment", tF("defaults.assessment") || "Assessment");
+    const aliasUse = useAliasLabel("Use", tF("defaults.use") || "Use");
+    const aliasCategory = useAliasLabel("Category", tF("defaults.category") || "Category");
+    const aliases = {
+        subTypeOfUse: aliasSubTypeOfUse,
+        assessment: aliasAssessment,
+        use: aliasUse,
+        category: aliasCategory
+    };
 
     const {
         formData,
@@ -57,10 +69,10 @@ export function UseCategoryFactorEditForm({ initialData, locale, assessmentYearO
                     </div>
                     <div>
                         <div className="text-lg font-bold text-slate-800 tracking-tight">
-                            {tF("titles.editTitle") || "Edit Sub Type Weightage"}
+                            {tF("titles.editTitle", aliases) || "Edit Sub Type Weightage"}
                         </div>
                         <div className="text-sm font-medium text-slate-500">
-                            {tF("descriptions.updateSubTypeDetails") || "Update sub type weightage details"}
+                            {tF("descriptions.updateSubTypeDetails", aliases) || "Update sub type weightage details"}
                         </div>
                     </div>
                 </div>
@@ -93,6 +105,7 @@ export function UseCategoryFactorEditForm({ initialData, locale, assessmentYearO
                             </div>
                             <div className="text-[13px] font-medium text-slate-500 mt-0.5">
                                 {tF("edit.subTypeStatus", {
+                                    ...aliases,
                                     status: formData.isActive
                                         ? tF("edit.active")
                                         : tF("edit.inactive"),
@@ -110,7 +123,7 @@ export function UseCategoryFactorEditForm({ initialData, locale, assessmentYearO
                 <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm space-y-5">
                     <div>
                         <Label required className="mb-1.5 font-semibold text-slate-700">
-                            {tW("common.labels.assessmentYear") || "Assessment Year"}
+                            {tW("common.labels.assessmentYear", aliases) || "Assessment Year"}
                         </Label>
                         <SearchSelect
                             options={assessmentYearOptions}

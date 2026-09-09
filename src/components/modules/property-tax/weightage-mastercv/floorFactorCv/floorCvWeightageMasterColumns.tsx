@@ -80,6 +80,7 @@ export const getFloorCvWeightageMasterColumns = ({
   sortBy,
   sortOrder,
   onSort,
+  aliases,
 }: ColumnConfig): Column<FloorFactorCVMasterWithIndex>[] => {
   // Sortable columns — API requires PascalCase field names
   const sortableColumns: Record<string, string> = {
@@ -108,7 +109,7 @@ export const getFloorCvWeightageMasterColumns = ({
   return [
     {
       key: 'floorCode',
-      label: createSortableLabel(t('columns.floorCode'), 'floorCode'),
+      label: createSortableLabel(t('columns.floorCode', aliases), 'floorCode'),
       width: '10%',
       render: (value: unknown) => String(value || '-'),
     },
@@ -165,7 +166,7 @@ export const getFloorCvWeightageMasterColumns = ({
     {
       // Assessment year column: display as fromYear-toYear, sortable by FromYear
       key: 'fromYear',
-      label: createSortableLabel(t('columns.assessmentYear'), 'fromYear'),
+      label: createSortableLabel(t('columns.assessmentYear', aliases), 'fromYear'),
       width: '14%',
       render: (_value: unknown, row: FloorFactorCVMaster) =>
         row.fromYear != null && row.toYear != null

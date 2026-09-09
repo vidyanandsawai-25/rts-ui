@@ -115,4 +115,5 @@ export interface NatureFactorCvHeaderExtraProps {
   isUpdating: boolean;
   isApplyDisabled: boolean;
   isBulkUpdateDisabled: boolean;
+  aliases?: Record<string, string>;
 }

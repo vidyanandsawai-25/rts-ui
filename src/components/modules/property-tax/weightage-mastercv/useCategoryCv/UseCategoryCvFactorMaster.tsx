@@ -14,6 +14,7 @@ import { getTypeOfUseColumns, getUseFactorColumns } from "./useCategoryCvColumns
 import { UseCategoryCvHeaderExtra } from "./UseCategoryCvHeaderExtra";
 import { useWeightageMasterDeleteHandlerer } from "@/hooks/weightageMaster/useCategoryCv/useCategoryCVDeleteHandler";
 import { useConfirm } from "@/components/common/ConfirmProvider";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface UseCategoryCvFactorMasterProps {
     data: UseFactorCVMaster[];
@@ -93,6 +94,20 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
         leftSortOrder,
     });
 
+    const aliasAssessment = useAliasLabel("Assessment", t("defaults.assessment") || "Assessment");
+    const aliasTypeOfUse = useAliasLabel("Type_Of_Use", t("defaults.typeOfUse") || "Type Of Use");
+    const aliasSubTypeOfUse = useAliasLabel("Sub_Type_Of_Use", t("defaults.subTypeOfUse") || "Sub Type Of Use");
+    const aliasUse = useAliasLabel("Use", t("defaults.use") || "Use");
+    const aliasCategory = useAliasLabel("Category", t("defaults.category") || "Category");
+
+    const aliases = {
+        assessment: aliasAssessment,
+        typeOfUse: aliasTypeOfUse,
+        subTypeOfUse: aliasSubTypeOfUse,
+        use: aliasUse,
+        category: aliasCategory
+    };
+
     const typeOfUseColumns = getTypeOfUseColumns(
         t,
         tW,
@@ -100,7 +115,8 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
         tCommon,
         activeLeftSortBy,
         activeLeftSortOrder,
-        handleLeftSort
+        handleLeftSort,
+        aliases
     );
     const columns = getUseFactorColumns(
         t,
@@ -111,7 +127,8 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
         tCommon,
         activeSortBy,
         activeSortOrder,
-        handleSort
+        handleSort,
+        aliases
     );
 
     const { handleDelete } = useWeightageMasterDeleteHandlerer({
@@ -119,7 +136,7 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
         tCommon,
         confirm,
         startTransition,
-
+        aliases
     })
 
     const renderActions = (row: UseFactorCVMaster) => {
@@ -203,6 +220,7 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
                 isGeneratingAll={isGeneratingAll}
                 isBulkUpdating={isBulkUpdating}
                 isUpdating={isUpdating}
+                aliases={aliases}
             />
 
             <div className="grid grid-cols-1 xl:grid-cols-[40%_59%] gap-4 items-start">
@@ -220,7 +238,7 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
                     rowClassName={(row) => row.id === selectedTypeId ? "bg-[#F0F7FF] shadow-inner border-l-4 border-blue-500" : ""}
                     paginationConfig={{ enabled: true, showPageSizeSelector: true }}
                     pageSizeOptions={[5, 10, 20, 50]}
-                    emptyText={t('messages.noTypeOfUseRecordsFound')}
+                    emptyText={t('messages.noTypeOfUseRecordsFound', aliases)}
                     loading={false}
                 />
 
@@ -239,7 +257,7 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
                     getRowKey={(row) => getRowUid(row)}
                     paginationConfig={{ enabled: true, showPageSizeSelector: true }}
                     pageSizeOptions={[5, 10, 20, 50, 100]}
-                    emptyText={selectedTypeId ? t('messages.noSubtypeRecordsFound') : t('messages.selectTypeOfUsePrompt')}
+                    emptyText={selectedTypeId ? t('messages.noSubtypeRecordsFound') : t('messages.selectTypeOfUsePrompt', aliases)}
                     loading={isUpdating || isBulkUpdating}
                 />
             </div>

@@ -33,6 +33,7 @@ interface UseCategoryCvHeaderExtraProps {
     isGeneratingAll: boolean;
     isBulkUpdating: boolean;
     isUpdating: boolean;
+    aliases?: Record<string, string>;
 }
 
 export function UseCategoryCvHeaderExtra({
@@ -57,6 +58,7 @@ export function UseCategoryCvHeaderExtra({
     isGeneratingAll,
     isBulkUpdating,
     isUpdating,
+    aliases,
 }: UseCategoryCvHeaderExtraProps) {
     const { containerRef: optionTooltipsRef, tooltip } = useOptionTooltips<HTMLDivElement>();
     return (
@@ -68,8 +70,8 @@ export function UseCategoryCvHeaderExtra({
                     options={assessmentYearOptions}
                     value={selectedYear}
                     onChange={(_, value) => handleAssessmentYearChange(value)}
-                    label={t('filters.assessmentYear')}
-                    placeholder={t('placeholders.selectAssessmentYear')}
+                    label={t('filters.assessmentYear', aliases)}
+                    placeholder={t('placeholders.selectAssessmentYear', aliases)}
                 />
             </div>
             <div className="min-w-[200px] z-30">
@@ -78,8 +80,8 @@ export function UseCategoryCvHeaderExtra({
                     options={typeOfUseOptions}
                     value={typeOfUseId}
                     onChange={(_, value) => handleTypeOfUseChange(value)}
-                    label={t('filters.typeOfUse')}
-                    placeholder={t('placeholders.selectTypeOfUse')}
+                    label={t('filters.typeOfUse', aliases)}
+                    placeholder={t('placeholders.selectTypeOfUse', aliases)}
                 />
             </div>
             <div className="min-w-[100px]">

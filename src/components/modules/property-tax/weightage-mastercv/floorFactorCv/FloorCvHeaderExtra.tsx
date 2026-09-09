@@ -38,6 +38,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
     handleBulkUpdate,
     handleGenerateAll,
     addToast,
+    aliases,
 }) => {
     const { containerRef: optionTooltipsRef, tooltip } = useOptionTooltips<HTMLDivElement>();
     return (
@@ -50,8 +51,8 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                         options={assessmentYearOptions}
                         value={selectedYear}
                         onChange={(_, val) => handleAssessmentYearChange(val)}
-                        label={t("filters.assessmentYear")}
-                        placeholder={t("filters.assessmentYear")}
+                        label={t("filters.assessmentYear", aliases)}
+                        placeholder={t("filters.assessmentYear", aliases)}
                     />
                 </div>
 
@@ -60,8 +61,8 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                         options={floorOptions}
                         value={fromFloor}
                         onChange={(_, val) => setFromFloor(val)}
-                        label={t("filters.fromFloor")}
-                        placeholder={t("filters.fromFloor")}
+                        label={t("filters.fromFloor", aliases)}
+                        placeholder={t("filters.fromFloor", aliases)}
                     />
                 </div>
 
@@ -70,8 +71,8 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                         options={floorOptions}
                         value={toFloor}
                         onChange={(_, val) => setToFloor(val)}
-                        label={t("filters.toFloor")}
-                        placeholder={t("filters.toFloor")}
+                        label={t("filters.toFloor", aliases)}
+                        placeholder={t("filters.toFloor", aliases)}
                     />
                 </div>
 

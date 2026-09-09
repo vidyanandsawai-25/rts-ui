@@ -12,6 +12,7 @@ import { FloorCvHeaderExtra } from "./FloorCvHeaderExtra";
 import { useFloorCvWeightage } from "@/hooks/weightageMaster/floorFactorCv/useFloorCvWeightage";
 import { useFloorFactorCVWeightageMasterDeleteHandler } from "@/hooks/weightageMaster/floorFactorCv/useFloorFactorDeleteHandler";
 import { useConfirm } from "@/components/common/ConfirmProvider";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 
@@ -76,6 +77,15 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
         sortOrder: activeSortOrder,
     } = useFloorCvWeightage({ data, pageNumber, pageSize, totalCount, floorOptions, sortBy, sortOrder });
 
+    const aliasFloor = useAliasLabel("Floor", t("defaults.floor"));
+    const aliasAssessment = useAliasLabel("Assessment", t("defaults.assessment"));
+    const aliasFloors = useAliasLabel("Floors", t("defaults.floors"));
+    const aliases = { 
+        floor: aliasFloor || t("defaults.floor") || "Floor", 
+        assessment: aliasAssessment || t("defaults.assessment") || "Assessment", 
+        floors: aliasFloors || t("defaults.floors") || "Floors" 
+    };
+
     const columns: Column<FloorFactorCVMasterWithIndex>[] = getFloorCvWeightageMasterColumns({
         t,
         tW,
@@ -86,6 +96,7 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
         sortBy: activeSortBy,
         sortOrder: activeSortOrder,
         onSort: handleSort,
+        aliases,
     });
 
     const { handleDelete } = useFloorFactorCVWeightageMasterDeleteHandler({
@@ -93,6 +104,7 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
         tCommon,
         confirm,
         startTransition,
+        aliases,
     });
 
     const renderActions = (row: FloorFactorCVMaster) => {
@@ -200,6 +212,7 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
                         handleBulkUpdate={handleBulkUpdate}
                         handleGenerateAll={handleGenerateAll}
                         addToast={addToast}
+                        aliases={aliases}
                     />
                 }
             />

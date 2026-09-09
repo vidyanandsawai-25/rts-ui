@@ -1,9 +1,13 @@
 {
   "weightageMaster": {
+    "defaults": {
+      "floor": "मजला",
+      "assessment": "मूल्यांकन"
+    },
     "title": "भारांकन मास्टर",
     "subtitle": "CV गणना भारांकन घटक कॉन्फिगर करा",
     "tabs": {
-      "floor": "मजला भारांकन",
+      "floor": "{floor} भारांकन",
       "nature": "इमारतीचा प्रकार आणि स्वरूप",
       "subType": "वापर श्रेणी",
       "age": "इमारतीचे वय"
@@ -23,8 +27,9 @@
       "labels": {
         "active": "सक्रिय",
         "inactive": "निष्क्रिय",
-        "assessmentYear": "मूल्यांकन वर्ष",
+        "assessmentYear": "{assessment} वर्ष",
         "status": "स्थिती",
+        "statusCurrently": "{name} सध्या {status} आहे",
         "pendingRecordCreates": "{count} प्रलंबित नोंदी तयार करणे"
       },
       "placeholders": {

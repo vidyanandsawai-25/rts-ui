@@ -62,15 +62,16 @@ function SortableHeader({
 }
 
 interface GetNatureFactorCvColumnsProps {
-  t: (key: string) => string;
-  tW: (key: string) => string;
-  tCommon: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
+  tW: (key: string, values?: Record<string, string | number | Date>) => string;
+  tCommon: (key: string, values?: Record<string, string | number | Date>) => string;
   editableRows: Record<string, NatureFactorCVMasterType>;
   getRowUid: (row: NatureFactorCVMasterType) => string;
   handleCellChange: (rowId: string, columnId: string, value: number) => void;
   sortBy?: string;
   sortOrder?: string;
   onSort?: (key: string) => void;
+  aliases?: Record<string, string>;
 }
 
 export const getNatureFactorCvColumns = ({
@@ -83,6 +84,7 @@ export const getNatureFactorCvColumns = ({
   sortBy,
   sortOrder,
   onSort,
+  aliases,
 }: GetNatureFactorCvColumnsProps): Column<NatureFactorCVMasterType>[] => {
   // Sortable columns — API requires PascalCase field names
   const sortableColumns: Record<string, string> = {
@@ -111,7 +113,7 @@ export const getNatureFactorCvColumns = ({
   return [
     {
       key: "constructionCode",
-      label: createSortableLabel(t("columns.constructionCode"), "constructionCode"),
+      label: createSortableLabel(t("columns.constructionCode", aliases), "constructionCode"),
       width: "15%",
       render: (value) => (value as string) || "-",
     },
@@ -144,7 +146,7 @@ export const getNatureFactorCvColumns = ({
     },
     {
       key: "fromYear",
-      label: createSortableLabel(t("columns.assessmentYear"), "fromYear"),
+      label: createSortableLabel(t("columns.assessmentYear", aliases), "fromYear"),
       width: "15%",
       render: (_value, row) =>
         row.fromYear != null && row.toYear != null

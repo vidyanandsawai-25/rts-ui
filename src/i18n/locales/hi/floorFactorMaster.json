@@ -1,19 +1,24 @@
 {
   "floorFactorMaster": {
-    "title": "मंजिल कारक मास्टर",
+    "defaults": {
+      "floor": "मंजिल",
+      "floors": "मंजिलें",
+      "assessment": "मूल्यांकन"
+    },
+    "title": "{floor} कारक मास्टर",
     "columns": {
-      "floorCode": "मंजिल कोड",
+      "floorCode": "{floor} कोड",
       "description": "विवरण",
       "factorWithLift": "कारक (लिफ्ट सहित)",
       "factorWithoutLift": "कारक (लिफ्ट रहित)",
-      "assessmentYear": "मूल्यांकन वर्ष",
+      "assessmentYear": "{assessment} वर्ष",
       "status": "स्थिति",
       "action": "कार्य"
     },
     "filters": {
-      "assessmentYear": "मूल्यांकन वर्ष",
-      "fromFloor": "मंजिल से",
-      "toFloor": "मंजिल तक",
+      "assessmentYear": "{assessment} वर्ष",
+      "fromFloor": "{floor} से",
+      "toFloor": "{floor} तक",
       "liftStatus": "लिफ्ट स्थिति",
       "factor": "कारक"
     },
@@ -26,17 +31,17 @@
       "select": "चुनें..."
     },
     "messages": {
-      "fromFloorGreaterError": "मंजिल से, मंजिल तक से अधिक नहीं हो सकती",
+      "fromFloorGreaterError": "{floor} से, {floor} तक से अधिक नहीं हो सकती",
       "noRecordsFound": "कोई रिकॉर्ड नहीं मिला",
       "mandatoryFields": "* से चिह्नित फ़ील्ड अनिवार्य हैं"
     },
     "apiErrors": {
       "notFound": "फ्लोर वेटेज रिकॉर्ड नहीं मिला।",
       "validationError": "अमान्य अनुरोध। कृपया दर्ज किए गए मान जांचें और पुनः प्रयास करें।",
-      "referredInAutoWardEntry": "इस फ्लोर वेटेज को हटाया नहीं जा सकता क्योंकि यह पहले से ही कैपिटल वैल्यू कर गणना में उपयोग किया जा रहा है। कृपया पहले संबंधित रिकॉर्ड हटाएं।"
+      "referredInAutoWardEntry": "इस {floor} वेटेज को हटाया नहीं जा सकता क्योंकि यह पहले से ही कैपिटल वैल्यू कर गणना में उपयोग किया जा रहा है। कृपया पहले संबंधित रिकॉर्ड हटाएं।"
     },
     "deleteConfirmation": {
-      "title": "मंजिल का प्रकार",
+      "title": "{floor} का प्रकार",
       "description": "क्या आप वाकई इस रिकॉर्ड को हटाना चाहते हैं?",
       "confirmButton": "हटाएं",
       "cancelButton": "रद्द करें",
