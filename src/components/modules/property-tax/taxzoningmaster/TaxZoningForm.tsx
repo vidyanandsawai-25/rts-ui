@@ -29,6 +29,8 @@ export const TaxZoningForm = ({
   isFormValid,
   handleSubmit,
   onClear,
+  wardLabel,
+  taxZoneLabel,
 }: TaxZoningFormProps) => {
   return (
     <form onSubmit={handleSubmit}>
@@ -48,36 +50,36 @@ export const TaxZoningForm = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label required>
-                {t('form.taxZone')}
+                {t('form.taxZone', { taxZone: taxZoneLabel ?? '' })}
               </Label>
               <Select
                 value={zone}
                 onChange={(_, val) => setZone(val)}
                 options={zoneOptions}
-                placeholder={t('form.selectTaxZone')}
+                placeholder={t('form.selectTaxZone', { taxZone: taxZoneLabel ?? '' })}
               />
               <ValidationMessage
                 visible={submitted && !isTaxZoneValid}
-                message={t('messages.taxZoneRequired')}
+                message={t('messages.taxZoneRequired', { taxZone: taxZoneLabel ?? '' })}
               />
             </div>
 
             <div>
               <Label required>
-                {t('form.ward')}
+                {t('form.ward', { ward: wardLabel ?? '' })}
               </Label>
               <div className={cn(!zone && "opacity-60 cursor-not-allowed pointer-events-none")}>
                 <MultiSelectDropdown
                   options={wardOptions}
                   value={ward}
                   onChange={setWard}
-                  placeholder={zone ? t('form.selectWard') : t('form.selectTaxZone')}
+                  placeholder={zone ? t('form.selectWard', { ward: wardLabel ?? '' }) : t('form.selectTaxZone', { taxZone: taxZoneLabel ?? '' })}
                   className="text-gray-700"
                 />
               </div>
               <ValidationMessage
                 visible={submitted && !isWardValid}
-                message={t('messages.wardRequired')}
+                message={t('messages.wardRequired', { ward: wardLabel ?? '' })}
               />
             </div>
           </div>

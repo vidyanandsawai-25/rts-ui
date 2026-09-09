@@ -2,11 +2,15 @@
   "taxZoning": {
     "title": "Tax Zoning",
     "subtitle": "Configure ward-wise zoning with property range mapping and intelligent auto-increment",
-    "form": {
-      "taxZone": "Tax Zone",
-      "selectTaxZone": "Select Tax Zone",
+    "aliasFallback": {
       "ward": "Ward",
-      "selectWard": "Select Ward",
+      "taxZone": "Tax Zone"
+    },
+    "form": {
+      "taxZone": "{taxZone}",
+      "selectTaxZone": "Select {taxZone}",
+      "ward": "{ward}",
+      "selectWard": "Select {ward}",
       "fromProperty": "From Property",
       "toProperty": "To Property",
       "selectFromProperty": "Select From Property",
@@ -19,12 +23,12 @@
       "clearImported": "Clear"
     },
     "columns": {
-      "wardNo": "Ward No",
+      "wardNo": "{ward} No",
       "fromProperty": "From Property",
       "toProperty": "To Property",
-      "taxZoneNo": "Tax Zone No",
-      "oldTaxZoneNo": "Old Tax Zone",
-      "newTaxZoneNo": "New TaxZoneNo",
+      "taxZoneNo": "{taxZone} No",
+      "oldTaxZoneNo": "Old {taxZone}",
+      "newTaxZoneNo": "New {taxZone} No",
       "propertyNo": "Property No",
       "status": "Status"
     },
@@ -36,9 +40,9 @@
       "previous": "Previous",
       "next": "Next",
       "noPropertiesToPreview": "No properties to preview",
-      "selectZoneWardProperty": "Select zone, ward, and property range",
-      "multipleWardsSelected": "Multiple Wards Selected",
-      "multipleWardsMessage": "Property range fields are disabled when multiple wards are selected. Select a single ward to configure property ranges.",
+      "selectZoneWardProperty": "Select {taxZone}, {ward}, and property range",
+      "multipleWardsSelected": "Multiple {ward}s Selected",
+      "multipleWardsMessage": "Property range fields are disabled when multiple {ward}s are selected. Select a single {ward} to configure property ranges.",
       "notSpecified": "Not specified"
     },
     "buttons": {
@@ -47,8 +51,8 @@
     },
     "messages": {
       "fillAllFields": "Please fill all required fields",
-      "taxZoneRequired": "Tax Zone is required",
-      "wardRequired": "At least one ward is required",
+      "taxZoneRequired": "{taxZone} is required",
+      "wardRequired": "At least one {ward} is required",
       "propertyRequired": "Property range is required for single ward selection",
       "fromPropertyMustBeSmallerThanToProperty": "From Property must be smaller than To Property",
       "updateSuccess": "Tax zoning updated successfully",
@@ -69,7 +73,7 @@
       "fetchPropertyNoFailed": "Failed to fetch tax zoning property number data",
       "fetchByWardFailed": "Failed to fetch tax zoning by ward",
       "fetchAllFailed": "Failed to fetch all tax zoning data",
-      "invalidFileFormat": "Invalid file format. Required column order: Ward No, From Property, To Property, Tax Zone No",
+      "invalidFileFormat": "Invalid file format. Required column order: {ward} No, From Property, To Property, {taxZone} No",
       "noNewOrChangedRecords": "No new or changed records found",
       "newRecordsReadyToImport": "new record(s) ready to import",
       "updatesReadyToImport": "update(s) ready to import",
@@ -96,8 +100,8 @@
       "ward": "Ward",
       "zone": "Zone",
       "exceptionProcessing": "Exception processing",
-      "wardsUpdatedSuccessfully": "ward(s) updated successfully",
-      "wardsFailed": "ward(s) failed to update",
+      "wardsUpdatedSuccessfully": "{ward}(s) updated successfully",
+      "wardsFailed": "{ward}(s) failed to update",
       "wardNotFound": "Ward not found in zoning records",
       "wardsNotFound": "Following wards not found in zoning records",
       "wardNotFoundDetail": "Please create this ward in property records first before updating"

@@ -59,11 +59,13 @@ function SortableHeader({
 }
 
 export const floorColumns = (
-  t: (key: string) => string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: (key: string, values?: Record<string, any>) => string,
   tCommon: (key: string) => string,
   sortBy?: string,
   sortOrder?: string,
-  onSort?: (key: string) => void
+  onSort?: (key: string) => void,
+  floorLabel?: string
 ): Column<Floor>[] => {
   // Sortable columns (all columns sortable in UI)
   const sortableColumns = ["floorCode", "description", "sequenceNo", "isActive"];
@@ -87,7 +89,7 @@ export const floorColumns = (
   return [
     {
       key: "floorCode",
-      label: createSortableLabel(t("table.columns.floorCode"), "floorCode"),
+      label: createSortableLabel(t("table.columns.floorCode", { floor: floorLabel ?? "" }), "floorCode"),
       width: "15%",
       headerClassName: "text-center",
       cellClassName: "text-center",

@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { AddButton, Tabs } from '@/components/common';
 import { SearchInput } from '@/components/common/SearchInput';
 import { TEXT_SANITIZE } from '@/lib/utils/validation';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 type TabKey = 'floor' | 'subfloor';
 
@@ -18,12 +19,14 @@ export function FloorMasterToolbar() {
 
   const tFloor = useTranslations('floor.floor');
   const tSubFloor = useTranslations('floor.subfloor');
+  const floorLabel = useAliasLabel('Floor', tFloor('aliasFallback.floor'));
 
   const base = `/${locale}/property-tax/floormaster`;
 
   // Detect active tab from pathname
   const activeTab: TabKey = pathname.includes('/subfloor') ? 'subfloor' : 'floor';
   const t = activeTab === 'floor' ? tFloor : tSubFloor;
+  const values = { floor: floorLabel };
 
   // Search functionality
   const currentSearchTerm = searchParams.get('q') ?? '';
@@ -72,7 +75,7 @@ export function FloorMasterToolbar() {
             const sanitized = value.replace(TEXT_SANITIZE, '');
             setSearch(sanitized);
           }}
-          placeholder={t('form.searchPlaceholder')}
+          placeholder={t('form.searchPlaceholder', values)}
           className="mb-0 w-80 text-gray-900"
         />
       </div>
@@ -82,15 +85,15 @@ export function FloorMasterToolbar() {
         value={activeTab}
         variant="pills"
         items={[
-          { value: 'floor', label: tFloor('tabs.floor'), content: null },
-          { value: 'subfloor', label: tFloor('tabs.subfloor'), content: null },
+          { value: 'floor', label: floorLabel, content: null },
+          { value: 'subfloor', label: tFloor('tabs.subfloor', values), content: null },
         ]}
         onChange={(v) => router.push(`${base}/${v}`)}
       />
 
       <AddButton
         className="w-full"
-        label={t('form.addTitle')}
+        label={t('form.addTitle', values)}
         onClick={() => router.push(`${base}/${activeTab}/add`)}
       />
     </div>

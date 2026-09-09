@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Check } from "lucide-react";
 import { Card } from "@/components/common/Card";
 import { TaxZoningCoverage } from "@/types/taxZoningRange.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface CoverageDashboardProps {
   coverage: TaxZoningCoverage;
@@ -20,6 +21,8 @@ const ZONE_COLOR_CLASSES = [
 
 export default function CoverageDashboard({ coverage }: CoverageDashboardProps) {
   const t = useTranslations("taxZoningRange.ui.coverage");
+  const tRoot = useTranslations("taxZoningRange");
+  const taxZoneLabel = useAliasLabel("Tax Zone", tRoot("aliasFallback.taxZone"));
   const locale = useLocale();
   const dateLocale = locale === "hi" ? "hi-IN" : locale === "mr" ? "mr-IN" : "en-IN";
   const { totalProperties, coveredProperties, pendingProperties, zoneWiseCounts } = coverage;
@@ -80,7 +83,7 @@ export default function CoverageDashboard({ coverage }: CoverageDashboardProps) 
           <span className="w-5 h-5 rounded-md flex items-center justify-center bg-[#e4f1fd] text-[#17508e] text-[8px] font-black">
             Z
           </span>
-          {t("zoneWiseCount")}
+          {t("zoneWiseCount", { taxZone: taxZoneLabel })}
         </div>
         <div className="flex flex-row flex-nowrap gap-2 mt-1 relative z-10 w-full overflow-x-auto pb-0.5">
           {zoneWiseCounts.length === 0 ? (
@@ -91,7 +94,7 @@ export default function CoverageDashboard({ coverage }: CoverageDashboardProps) 
               return (
                 <div key={z.taxZoneId} className={`py-1 px-2 border ${c.border} rounded-lg ${c.bg} text-center flex-shrink-0 min-w-[72px]`}>
                   <span className="block text-[#5f6f87] text-[9px] font-extrabold whitespace-nowrap">
-                    {t("zonePrefix")} {z.taxZoneNo}
+                    {t("zonePrefix", { taxZone: taxZoneLabel })} {z.taxZoneNo}
                   </span>
                   <strong className={`block ${c.text} text-[13px] leading-none`}>{z.count}</strong>
                 </div>

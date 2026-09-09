@@ -10,6 +10,7 @@ import WardAbstractDrawer from "./WardAbstractDrawer";
 import { WardZoningAbstractRow } from "@/types/taxZoningRange.types";
 import { downloadTaxZoningExport } from "@/lib/api/taxZoningRange/taxZoningRange-export.client";
 import { ALPHANUMERIC_WITH_SPACES_SANITIZE } from "@/lib/utils/validation-rules";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface WrapperProps {
   data: WardZoningAbstractRow[];
@@ -46,6 +47,9 @@ export default function WardAbstractDrawerWrapper({
   const locale = String(params?.locale || "en");
   const basePath = `/${locale}/property-tax/taxzoningmaster`;
   const tUi = useTranslations("taxZoningRange.ui.wardAbstract");
+  const tRoot = useTranslations("taxZoningRange");
+  const wardLabel = useAliasLabel("Ward", tRoot("aliasFallback.ward"));
+  const taxZoneLabel = useAliasLabel("Tax Zone", tRoot("aliasFallback.taxZone"));
   const [localSearch, setLocalSearch] = useState(searchTerm);
 
   const buildUrl = useCallback(
@@ -76,7 +80,7 @@ export default function WardAbstractDrawerWrapper({
     <Drawer
       open={true}
       onClose={() => router.push(basePath)}
-      title={<span className="text-[17px] font-bold text-[#0b2f5b]">{tUi("title")}</span>}
+      title={<span className="text-[17px] font-bold text-[#0b2f5b]">{tUi("title", { ward: wardLabel, taxZone: taxZoneLabel })}</span>}
       headerActions={
         <div className="flex items-center gap-2">
           <ExportButton

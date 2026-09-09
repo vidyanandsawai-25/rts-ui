@@ -110,6 +110,8 @@ export interface TaxZoningFormProps {
   isFormValid: boolean;
   handleSubmit: (e: React.FormEvent) => void;
   onClear: () => void;
+  wardLabel?: string;
+  taxZoneLabel?: string;
 }
 
 

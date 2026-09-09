@@ -15,6 +15,7 @@ import { ALPHANUMERIC_WITH_SPACES_SANITIZE } from "@/lib/utils/validation-rules"
 import { fetchPropertiesByWardAction } from "@/app/[locale]/property-tax/taxzoningmaster/actions";
 import { SearchSelect, SearchSelectOption } from "@/components/common/SearchSelect";
 import { SearchInput } from "@/components/common/SearchInput";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface TaxZoningViewTableProps {
   data: TaxZoningRange[];
@@ -50,6 +51,8 @@ export default function TaxZoningViewTable({
   const t = useTranslations("taxZoningRange");
   const tUi = useTranslations("taxZoningRange.ui.viewTable");
   const dateLocale = locale === "hi" ? "hi-IN" : locale === "mr" ? "mr-IN" : "en-IN";
+  const wardLabel = useAliasLabel("Ward", t("aliasFallback.ward"));
+  const taxZoneLabel = useAliasLabel("Tax Zone", t("aliasFallback.taxZone"));
 
   const {
     filterWard,
@@ -97,7 +100,7 @@ export default function TaxZoningViewTable({
     router.push(`${basePath}/addtaxzoning/${id}`);
   };
 
-  const columns = getColumns(handleEdit, tUi, dateLocale);
+  const columns = getColumns(handleEdit, tUi, dateLocale, wardLabel, taxZoneLabel);
 
   const isFiltered = Boolean(filters.wardId || filters.fromPropertyNo || filters.toPropertyNo || filters.taxZoneId || filters.search);
 
@@ -147,7 +150,7 @@ export default function TaxZoningViewTable({
             onClick={() => router.push(`${basePath}/wardwisezoninglist`)}
             className="h-[34px] text-[11px] font-extrabold"
           >
-            {tUi("wardAbstractBtn")}
+            {tUi("wardAbstractBtn", { ward: wardLabel })}
           </Button>
           <Button
             variant="secondary"
@@ -167,13 +170,13 @@ export default function TaxZoningViewTable({
       {/* Toolbar */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-[minmax(105px,.55fr)_minmax(105px,.52fr)_minmax(105px,.52fr)_minmax(115px,.58fr)_minmax(220px,1.3fr)_auto] gap-1.5 p-2 bg-[#fbfdff] border-b border-[#d8e2ef] items-end">
         <div className="flex flex-col">
-          <label className="text-[10px] font-extrabold text-[#42526b] mb-1">{tUi("wardNo")}</label>
+          <label className="text-[10px] font-extrabold text-[#42526b] mb-1">{tUi("wardNo", { ward: wardLabel })}</label>
           <SearchSelect
             name="filterWard"
-            options={[{ label: tUi("allWards"), value: "" }, ...wardsData.map((w): SearchSelectOption => ({ label: w.wardNo, value: String(w.id) }))]}
+            options={[{ label: tUi("allWards", { ward: wardLabel }), value: "" }, ...wardsData.map((w): SearchSelectOption => ({ label: w.wardNo, value: String(w.id) }))]}
             value={filterWard}
             onChange={(_, v) => setFilterWard(v)}
-            placeholder={tUi("allWards")}
+            placeholder={tUi("allWards", { ward: wardLabel })}
           />
         </div>
         <div className="flex flex-col">
@@ -183,7 +186,7 @@ export default function TaxZoningViewTable({
             options={[{ label: tUi("allOption"), value: "" }, ...wardPropertyNos.map((no): SearchSelectOption => ({ label: no, value: no }))]}
             value={filterFrom}
             onChange={(_, v) => setFilterFrom(v)}
-            placeholder={wardPropertyNos.length === 0 ? tUi("selectWardFirst") : tUi("allOption")}
+            placeholder={wardPropertyNos.length === 0 ? tUi("selectWardFirst", { ward: wardLabel }) : tUi("allOption")}
             disabled={wardPropertyNos.length === 0}
           />
         </div>
@@ -199,22 +202,22 @@ export default function TaxZoningViewTable({
             ]}
             value={filterTo}
             onChange={(_, v) => setFilterTo(v)}
-            placeholder={wardPropertyNos.length === 0 ? tUi("selectWardFirst") : tUi("allOption")}
+            placeholder={wardPropertyNos.length === 0 ? tUi("selectWardFirst", { ward: wardLabel }) : tUi("allOption")}
             disabled={wardPropertyNos.length === 0}
           />
         </div>
         <div className="flex flex-col">
-          <label className="text-[10px] font-extrabold text-[#42526b] mb-1">{tUi("taxZone")}</label>
+          <label className="text-[10px] font-extrabold text-[#42526b] mb-1">{tUi("taxZone", { taxZone: taxZoneLabel })}</label>
           <SearchSelect
             name="filterZone"
-            options={[{ label: tUi("allZones"), value: "" }, ...taxZones.map((z): SearchSelectOption => ({ label: z.taxZoneNo, value: String(z.id) }))]}
+            options={[{ label: tUi("allZones", { taxZone: taxZoneLabel }), value: "" }, ...taxZones.map((z): SearchSelectOption => ({ label: z.taxZoneNo, value: String(z.id) }))]}
             value={filterZone}
             onChange={(_, v) => setFilterZone(v)}
-            placeholder={tUi("allZones")}
+            placeholder={tUi("allZones", { taxZone: taxZoneLabel })}
           />
         </div>
         <div className="flex flex-col">
-          <label className="text-[10px] font-extrabold text-[#42526b] mb-1">{tUi("zoneDescription")}</label>
+          <label className="text-[10px] font-extrabold text-[#42526b] mb-1">{tUi("zoneDescription", { taxZone: taxZoneLabel })}</label>
           <SearchInput
             value={search}
             onChange={(val) => setSearch(val.replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, ""))}

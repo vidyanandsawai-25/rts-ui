@@ -8,6 +8,7 @@ import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { Select } from "@/components/common";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 import type { Floor, FloorMasterProps } from "@/types/floor.types";
 
@@ -26,6 +27,7 @@ export default function FloorMaster({
 
   const t = useTranslations("floor.floor");
   const tCommon = useTranslations("common");
+  const floorLabel = useAliasLabel("Floor", t("aliasFallback.floor"));
 
   const { confirm } = useConfirm();
   const [isPending, startTransition] = useTransition();
@@ -72,7 +74,7 @@ export default function FloorMaster({
     [sortBy, sortOrder, router, buildUrl, pageNumber, pageSize, currentSearchTerm]
   );
 
-  const columns = floorColumns(t, tCommon, sortBy, sortOrder, handleSort);
+  const columns = floorColumns(t, tCommon, sortBy, sortOrder, handleSort, floorLabel);
 
   /* ================= PAGINATION ================= */
   const changePage = (
@@ -98,15 +100,15 @@ export default function FloorMaster({
     (row: Floor) => {
       confirm({
         variant: "delete",
-        title: `${t("table.columns.floorCode")}: ${row.floorCode}`,
-        description: t("delete.confirmDescription"),
+        title: `${t("table.columns.floorCode", { floor: floorLabel })}: ${row.floorCode}`,
+        description: t("delete.confirmDescription", { floor: floorLabel }),
         meta: { name: row.description },
 
         onConfirm: async () => {
           const result = await deleteFloorAction(row.id);
 
           if (result.success) {
-            toast.success(t("messages.deleteSuccess"));
+            toast.success(t("messages.deleteSuccess", { floor: floorLabel }));
             router.refresh();
           } else {
             let msg = tCommon("errors.deleteError");
@@ -124,7 +126,7 @@ export default function FloorMaster({
                   result.message.toLowerCase().includes("reference constraint") ||
                   result.message.toLowerCase().includes("foreign key")))
             ) {
-              msg = t("apiErrors.inUse");
+              msg = t("apiErrors.inUse", { floor: floorLabel });
             } else if (result.statusCode === 404) {
               msg = tCommon("errors.notFound");
             } else if (result.messageKey) {
@@ -139,7 +141,7 @@ export default function FloorMaster({
         },
       });
     },
-    [confirm, router, t, tCommon]
+    [confirm, router, t, tCommon, floorLabel]
   );
 
   /* ================= FOOTER ================= */

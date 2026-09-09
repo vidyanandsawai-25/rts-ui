@@ -8,6 +8,7 @@ import { TaxZoning, ZoningRecord, SelectOption, TaxZoningPageProps } from "@/typ
 import { getPreviewColumns, getTaxZoningColumns } from "@/components/modules/property-tax/taxzoningmaster/TaxZoningColumns";
 import { useTaxZoningActions } from "@/hooks/taxZoning/useTaxZoningActions";
 import { useTaxZoningFile } from "@/hooks/taxZoning/useTaxZoningFile";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 export const useTaxZoning = (props: TaxZoningPageProps) => {
   const { data, pageNumber, pageSize, taxZones, wardsData, allProperties, sortBy, sortOrder } = props;
@@ -16,11 +17,13 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const wardLabel = useAliasLabel('Ward', t('aliasFallback.ward'));
+  const taxZoneLabel = useAliasLabel('Tax Zone', t('aliasFallback.taxZone'));
 
   const REQUIRED_HEADERS = useMemo(() => [
-    t('columns.wardNo').toLowerCase(), t('columns.fromProperty').toLowerCase(),
-    t('columns.toProperty').toLowerCase(), t('columns.taxZoneNo').toLowerCase(),
-  ], [t]);
+    t('columns.wardNo', { ward: wardLabel }).toLowerCase(), t('columns.fromProperty').toLowerCase(),
+    t('columns.toProperty').toLowerCase(), t('columns.taxZoneNo', { taxZone: taxZoneLabel }).toLowerCase(),
+  ], [t, wardLabel, taxZoneLabel]);
 
   const [zone, setZoneState] = useState(searchParams.get("taxZoneId") || "");
   const [ward, setWardState] = useState<string[]>(searchParams.get("wardId") ? [searchParams.get("wardId")!] : []);
@@ -68,8 +71,8 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     });
   }, [data, taxZones]);
 
-  const { importedChanges, hasImportedData, handleExportCSV, handleImportFile, handleClearImported, setImportedChanges, setHasImportedData } = useTaxZoningFile(t, REQUIRED_HEADERS, records, wardsData, taxZones);
-  const { saving, handleUpdate, handleBulkUpdate: bulkUpdateAction } = useTaxZoningActions(t);
+  const { importedChanges, hasImportedData, handleExportCSV, handleImportFile, handleClearImported, setImportedChanges, setHasImportedData } = useTaxZoningFile(t, REQUIRED_HEADERS, records, wardsData, taxZones, wardLabel, taxZoneLabel);
+  const { saving, handleUpdate, handleBulkUpdate: bulkUpdateAction } = useTaxZoningActions(t, wardLabel);
 
   const tableRecords = useMemo(() => {
     const combined = [...records];
@@ -189,9 +192,10 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     zoneOptions, wardOptions, propertyOptionsByWard, loading: false, pageSizeOptions: [5, 10, 20, 50, 100],
     pageSizes, currentPage, submitted, saving, previewPage, setPreviewPage, PREVIEW_PAGE_SIZE,
     importedChanges, hasImportedData, tableRecords, previewData,
+    wardLabel, taxZoneLabel,
     pagedPreviewData: useMemo(() => previewData.slice((previewPage - 1) * PREVIEW_PAGE_SIZE, previewPage * PREVIEW_PAGE_SIZE), [previewData, previewPage]),
-    columns: useMemo(() => getTaxZoningColumns(t, tCommon, sortBy, sortOrder, handleSort), [t, tCommon, sortBy, sortOrder, handleSort]),
-    previewColumns: useMemo(() => getPreviewColumns(t), [t]),
+    columns: useMemo(() => getTaxZoningColumns(t, tCommon, sortBy, sortOrder, handleSort, wardLabel, taxZoneLabel), [t, tCommon, sortBy, sortOrder, handleSort, wardLabel, taxZoneLabel]),
+    previewColumns: useMemo(() => getPreviewColumns(t, wardLabel, taxZoneLabel), [t, wardLabel, taxZoneLabel]),
     handleExportCSV: () => handleExportCSV(tableRecords),
     handleImportFile, handleClearImported, isTaxZoneValid, isWardValid, isPropertyValid, isPropertyRangeValid, onFormClear,
     isFormValid: isTaxZoneValid && isWardValid && isPropertyValid && isPropertyRangeValid,

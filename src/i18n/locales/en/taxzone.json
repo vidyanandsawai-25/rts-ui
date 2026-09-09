@@ -1,8 +1,13 @@
 {
   "taxZone": {
+    "aliasFallback": {
+      "taxZone": "Tax Zone",
+      "taxZones": "Tax Zones",
+      "ward": "Ward"
+    },
     "list": {
-      "title": "Tax Zone Master",
-      "subtitle": "Manage tax zones and their ward-wise configuration",
+      "title": "{zone} Master",
+      "subtitle": "Manage {tax_zones} and their {ward_no}-wise configuration",
       "tabs": {
         "taxZone": "Tax Zone",
         "taxZoning": "Tax Zoning"
@@ -14,13 +19,13 @@
       },
       "filters": {
         "show": "Show",
-        "search": "Search by Zone No, Zone Type, Remark...",
+        "search": "Search by {zone} No, {zone} Type, Remark...",
         "searching": "Searching...",
         "recordsFound": "Found {count} records"
       },
       "table": {
-        "zoneNo": "Zone No",
-        "zoneType": "Zone Type",
+        "zoneNo": "{zone} No",
+        "zoneType": "{zone} Type",
         "remark": "Zone Description",
         "status": "Status",
         "actions": "Actions"
@@ -33,11 +38,11 @@
       "editSubtitle": "Update zone details",
       "fields": {
         "zoneNo": {
-          "label": "Zone No",
+          "label": "{zone} No",
           "placeholder": "e.g. 1 or Z"
         },
         "zoneType": {
-          "label": "Zone Type",
+          "label": "{zone} Type",
           "placeholder": "e.g. Residential"
         },
         "remark": {
@@ -46,8 +51,8 @@
         }
       },
       "validation": {
-        "zoneNoRequired": "Zone No is required",
-        "zoneNoAllZeros": "Zone No cannot contain only zeros",
+        "zoneNoRequired": "{zone} No is required",
+        "zoneNoAllZeros": "{zone} No cannot contain only zeros",
         "zoneNoMax": "Maximum length is 10 characters",
         "zoneNoFormat": "Only letters, numbers and underscore allowed (underscore only in between)",
         "zoneNoExists": "Duplicate zone number is not allowed",
@@ -59,7 +64,7 @@
         "remarkAllZeros": "Remark cannot contain only zeros",
         "remarkFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         "fixErrors": "Please fix validation errors",
-        "duplicateError": "Please check Zone No and Zone Type - duplicates not allowed.",
+        "duplicateError": "Please check {zone} No and {zone} Type - duplicates not allowed.",
         "remarkMax": "Maximum length is 15 characters",
         "zoneTypeMax": "Maximum length is 15 characters"
       },
