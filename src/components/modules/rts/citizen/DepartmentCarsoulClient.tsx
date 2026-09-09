@@ -395,7 +395,6 @@ export default function DepartmentCarsoulClient({
                     const hasExternalServiceUrl = !!(matchedService as any)?.serviceUrl;
                     const isFeesRequired = (matchedService as any)?.feesRequired === true;
                     const dynamicServiceFee = Number((matchedService as any)?.fees) || 0;
-
                     const isExternalPortalApp = hasExternalServiceUrl || !matchedService;
                     const isPaidExplicitly =
                       paidAppMap[app.applicationNo] === true ||
@@ -405,26 +404,45 @@ export default function DepartmentCarsoulClient({
                       app.status?.toLowerCase().includes("paid") ||
                       app.status?.toLowerCase().includes("शुल्क प्राप्त");
 
+                    const propLabel = t('propertyNumber').replace(/[:\.]\s*$/, '');
+                    const upicLabel = t('upicNumber').replace(/[:\.]\s*$/, '');
+
                     return (
                       <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-3 py-3">
-                          <div className="min-w-[230px] space-y-1">
-                            <div className="text-xs font-semibold text-slate-600">
-                              {t('applicationNumber')}:{' '}
-                              <span className="font-mono text-sm font-bold text-[#173B73]">{app.applicationNo}</span>
+                        <td className="py-3 px-3">
+                          <div className="min-w-[240px] flex flex-col gap-1.5">
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => openDetails(app.applicationNo)}
+                                className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50/90 hover:bg-blue-100 text-[#173B73] font-mono text-xs font-extrabold border border-blue-200/80 shadow-2xs hover:shadow-xs transition-all cursor-pointer text-left"
+                                title={t('viewDetails')}
+                              >
+                                <FileText className="w-3.5 h-3.5 text-blue-600 group-hover:scale-110 transition-transform shrink-0" />
+                                <span>{app.applicationNo}</span>
+                              </button>
                             </div>
-                            <span className="block text-sm font-bold leading-snug text-slate-900">{serviceName}</span>
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] leading-tight text-slate-500">
-                              <span>
-                                <span className="font-semibold">{t('propertyNumber')}:</span>{' '}
-                                <span className="font-mono font-bold text-slate-700">{propertyNo}</span>
-                              </span>
-                              <span aria-hidden="true" className="text-slate-300">&bull;</span>
-                              <span>
-                                <span className="font-semibold">{t('upicNumber')}:</span>{' '}
-                                <span className="font-mono font-bold text-slate-700">{applicationUpicId}</span>
-                              </span>
-                            </div>
+
+                            <span className="font-bold text-sm text-slate-900 leading-snug">
+                              {serviceName}
+                            </span>
+
+                            {(propertyNo !== "—" || applicationUpicId !== "—") && (
+                              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                                {propertyNo !== "—" && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/90 text-[11px] font-medium leading-none">
+                                    <span className="text-slate-400 font-normal">{propLabel}:</span>
+                                    <span className="font-semibold text-slate-700 font-mono">{propertyNo}</span>
+                                  </span>
+                                )}
+                                {applicationUpicId !== "—" && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/90 text-[11px] font-medium leading-none">
+                                    <span className="text-slate-400 font-normal">{upicLabel}:</span>
+                                    <span className="font-semibold text-slate-700 font-mono">{applicationUpicId}</span>
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </td>
                         <td className="px-3 py-3 text-[14px] font-medium text-slate-600 whitespace-nowrap">{formatSubmittedDate(app.submittedDate, lang)}</td>
