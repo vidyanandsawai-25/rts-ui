@@ -188,27 +188,32 @@ export default function RtsCitizenViewDetailsDrawer({
       : null;
   const isLoadingDetails = detailData ? false : loading;
   const normalizedStatus = normalizeStatus(application.status);
+  const appServiceName = (application?.serviceName || "").trim().toLowerCase();
+  const appServiceNameLocal = (application?.serviceNameLocal || "").trim().toLowerCase();
   const matchedService = departments
     ?.flatMap((d: any) => d.services || [])
     .find((s: any) => {
       if (resolvedDetail?.serviceId && String(s.id) === String(resolvedDetail.serviceId)) return true;
-      const sEn = typeof s.name === "object" ? s.name?.en : typeof s.name === "string" ? s.name : "";
-      const sMr = typeof s.name === "object" ? s.name?.mr : "";
-      const appServiceName = application?.serviceName || "";
-      if (sEn && appServiceName && sEn.trim().toLowerCase() === appServiceName.trim().toLowerCase()) return true;
-      if (sMr && appServiceName && sMr.trim().toLowerCase() === appServiceName.trim().toLowerCase()) return true;
+      const sEn = (typeof s.name === "object" ? s.name?.en : typeof s.name === "string" ? s.name : "").trim().toLowerCase();
+      const sMr = (typeof s.name === "object" ? s.name?.mr : "").trim().toLowerCase();
+      const sLocal = (typeof (s as any).serviceNameLocal === "string" ? (s as any).serviceNameLocal : "").trim().toLowerCase();
+      if (sEn && (sEn === appServiceName || appServiceName.includes(sEn) || sEn.includes(appServiceName))) return true;
+      if (sMr && (sMr === appServiceName || sMr === appServiceNameLocal || appServiceNameLocal.includes(sMr) || sMr.includes(appServiceNameLocal))) return true;
+      if (sLocal && (sLocal === appServiceName || sLocal === appServiceNameLocal)) return true;
       return false;
     });
 
-  const isCertRequired =
-    resolvedDetail?.isCertificateRequired ??
-    matchedService?.isCertificateRequired ??
-    (matchedService?.certificateType !== undefined ? matchedService.certificateType !== 0 : true);
+  // Dynamic Certificate Resolution purely from DB ServiceMaster configuration:
+  // IsCertificateRequired = false OR CertificateType = 0 (None) -> No Certificate
+  // IsCertificateRequired = true AND CertificateType = 2 (Manual) -> Departmental physical certificate notice
+  // IsCertificateRequired = true AND CertificateType = 1 (Digital) -> Dynamic DSC system certificate
+  const isCertRequired = matchedService
+    ? (matchedService.isCertificateRequired === true && matchedService.certificateType !== 0)
+    : (resolvedDetail?.isCertificateRequired === true && resolvedDetail?.certificateType !== 0);
 
-  const certType =
-    resolvedDetail?.certificateType ??
-    matchedService?.certificateType ??
-    (isCertRequired ? 1 : 0);
+  const certType = isCertRequired
+    ? (matchedService?.certificateType ?? resolvedDetail?.certificateType ?? 1)
+    : 0;
 
   const isRevertedToCitizen = resolvedDetail?.isRevertedToCitizen === true;
   const currentApprovalStage = resolvedDetail?.approvalStages?.find(

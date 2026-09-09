@@ -836,7 +836,9 @@ export default function RtsApplicationProcessDrawer({
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              {headerStatus?.toLowerCase().includes('approv') && (
+              {headerStatus?.toLowerCase().includes('approv') &&
+                data?.details?.isCertificateRequired === true &&
+                data?.details?.certificateType === 1 && (
                 <>
                   <button
                     type="button"

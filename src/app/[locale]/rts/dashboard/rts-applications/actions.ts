@@ -539,11 +539,12 @@ export async function getApplicationDetailAction(
           const services = await getAllRtsServices().catch(() => []);
           const matched = services.find((s) =>
             (sId > 0 && s.id === sId) ||
-            (sName && s.serviceName && s.serviceName.trim().toLowerCase() === sName.trim().toLowerCase())
+            (sName && s.serviceName && s.serviceName.trim().toLowerCase() === sName.trim().toLowerCase()) ||
+            (sName && s.serviceNameLocal && s.serviceNameLocal.trim().toLowerCase() === sName.trim().toLowerCase())
           );
           if (matched) {
-            isCertRequired = matched.isCertificateRequired !== false && matched.certificateType !== 0;
-            certType = matched.certificateType ?? (isCertRequired ? 1 : 0);
+            isCertRequired = matched.isCertificateRequired === true && matched.certificateType !== 0;
+            certType = isCertRequired ? (matched.certificateType ?? 1) : 0;
           }
         }
 
@@ -557,8 +558,8 @@ export async function getApplicationDetailAction(
             (viewDetails as any)?.applicationStatus ||
             applicationHeader?.applicationStatus ||
             'pending',
-          isCertificateRequired: isCertRequired ?? true,
-          certificateType: certType ?? 1,
+          isCertificateRequired: isCertRequired ?? false,
+          certificateType: certType ?? 0,
           answerGroups,
           workflow: null,
           approvalFlowStages,
@@ -579,23 +580,32 @@ export async function getApplicationDetailAction(
       } catch {
         appHeader = null;
       }
-      let fallbackCertRequired = true;
-      let fallbackCertType = 1;
-      if (appHeader?.serviceId) {
-        const services = await getAllRtsServices().catch(() => []);
-        const matched = services.find((s) => s.id === appHeader.serviceId);
-        if (matched) {
-          fallbackCertRequired = matched.isCertificateRequired !== false && matched.certificateType !== 0;
-          fallbackCertType = matched.certificateType ?? (fallbackCertRequired ? 1 : 0);
-        }
+      let fallbackCertRequired = false;
+      let fallbackCertType = 0;
+      let sId = appHeader?.serviceId || 0;
+      let sName = (appHeader as any)?.serviceName || null;
+      let dId = appHeader?.departmentId || 0;
+
+      const services = await getAllRtsServices().catch(() => []);
+      const matched = services.find((s) =>
+        (sId > 0 && s.id === sId) ||
+        (sName && s.serviceName && s.serviceName.trim().toLowerCase() === sName.trim().toLowerCase()) ||
+        (sName && s.serviceNameLocal && s.serviceNameLocal.trim().toLowerCase() === sName.trim().toLowerCase())
+      );
+      if (matched) {
+        fallbackCertRequired = matched.isCertificateRequired === true && matched.certificateType !== 0;
+        fallbackCertType = fallbackCertRequired ? (matched.certificateType ?? 1) : 0;
+        sId = matched.id;
+        sName = matched.serviceName;
+        dId = matched.departmentId;
       }
 
       return {
         applicationNo,
-        departmentId: appHeader?.departmentId || 0,
+        departmentId: dId,
         departmentName: null,
-        serviceId: appHeader?.serviceId || 0,
-        serviceName: (appHeader as any)?.serviceName || null,
+        serviceId: sId,
+        serviceName: sName,
         applicationStatus: appHeader?.applicationStatus || 'pending',
         isCertificateRequired: fallbackCertRequired,
         certificateType: fallbackCertType,

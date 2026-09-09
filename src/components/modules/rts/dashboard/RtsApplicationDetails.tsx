@@ -323,29 +323,35 @@ export default function RtsApplicationDetails({
                         {t("applicationDetails.applicationClosed")}
                       </p>
                       <p className="text-[11px] text-emerald-700 font-semibold">
-                        अर्ज मंजूर झालेला असून अधिकृत प्रमाणपत्र जारी करण्यात आले आहे.
+                        {data.isCertificateRequired && data.certificateType !== 0
+                          ? (data.certificateType === 2
+                              ? "अर्ज मंजूर झालेला असून विभागीय मूळ प्रमाणपत्र लागू आहे."
+                              : "अर्ज मंजूर झालेला असून अधिकृत प्रमाणपत्र जारी करण्यात आले आहे.")
+                          : "अर्ज मंजूर झालेला असून सदर सेवेसाठी स्वतंत्र प्रमाणपत्र आवश्यक नाही."}
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-2 pt-2 border-t border-slate-200">
-                      <button
-                        type="button"
-                        onClick={() => setIsPrintCertModalOpen(true)}
-                        className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#4b70a6] hover:bg-[#3d5a8a] text-white rounded-xl text-xs font-bold shadow-xs transition"
-                      >
-                        <FileCheck2 className="h-4 w-4" />
-                        अधिकृत प्रमाणपत्र पहा व प्रिंट करा
-                      </button>
+                    {data.isCertificateRequired && data.certificateType === 1 && (
+                      <div className="flex flex-col gap-2 pt-2 border-t border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setIsPrintCertModalOpen(true)}
+                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#4b70a6] hover:bg-[#3d5a8a] text-white rounded-xl text-xs font-bold shadow-xs transition"
+                        >
+                          <FileCheck2 className="h-4 w-4" />
+                          अधिकृत प्रमाणपत्र पहा व प्रिंट करा
+                        </button>
 
-                      <button
-                        type="button"
-                        onClick={() => setIsCertModalOpen(true)}
-                        className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-[11px] font-semibold transition"
-                      >
-                        <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
-                        प्रमाणपत्र संपादित / पुन्हा जारी करा
-                      </button>
-                    </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsCertModalOpen(true)}
+                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-[11px] font-semibold transition"
+                        >
+                          <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+                          प्रमाणपत्र संपादित / पुन्हा जारी करा
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 {normalizedStatus === "rejected" && (

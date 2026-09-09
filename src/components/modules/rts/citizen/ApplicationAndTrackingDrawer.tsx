@@ -601,7 +601,7 @@ export default function ApplicationAndTrackingDrawer({
 
                 {/* Issued Official Certificate Banner if Approved */}
                 {((selectedApplication.status && selectedApplication.status.toLowerCase() === 'approved') || (detail?.applicationStatus && detail.applicationStatus.toLowerCase() === 'approved')) && (
-                  detail?.isCertificateRequired === false || detail?.certificateType === 0 ? (
+                  detail?.isCertificateRequired !== true || detail?.certificateType === 0 ? (
                     <div className="mt-3.5 rounded-xl bg-emerald-50 border border-emerald-200 shadow-sm p-3.5 flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 shrink-0">
                         <CheckCircle2 className="w-5 h-5" />
