@@ -14,7 +14,10 @@
     "title": "Common Remark Master",
     "subtitle": "Add, edit, and manage common remarks",
     "buttons": {
-      "add": "Add Remark"
+      "add": "Add Remark",
+      "update": "Update",
+      "save": "Save",
+      "cancel": "Cancel"
     },
     "table": {
       "columns": {
