@@ -398,7 +398,6 @@ export default function RtsApplicationProcessDrawer({
   const headerApplicationNo = verification?.applicationNo || record?.appId || '';
   const activeDocument =
     documents[Math.min(activeDocumentIndex, Math.max(documents.length - 1, 0))] ?? null;
-  const activeDocumentGoogleMapsUrl = activeDocument?.locationMetadata?.googleMapsUrl ?? null;
   const isFieldDataChanged = Object.keys(editedFieldValues).some(
     (fieldId) => editedFieldValues[fieldId] !== initialFieldValues[fieldId]
   );
@@ -905,18 +904,6 @@ export default function RtsApplicationProcessDrawer({
                             >
                               {t('download')}
                             </Button>
-                            {activeDocumentGoogleMapsUrl && (
-                              <a
-                                href={activeDocumentGoogleMapsUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-transparent px-3 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-50"
-                              >
-                                <MapPin className="h-3.5 w-3.5" />
-                                {t('locationLink')}
-                                <ExternalLink className="h-3 w-3" />
-                              </a>
-                            )}
                           </div>
                         )}
                       </div>

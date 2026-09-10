@@ -447,14 +447,28 @@ export default function RtsApplicationDashboard({
         label: sortableHeader('applicationNo', t('applicationDashboard.table.applicationNo')),
         align: 'center',
         render: (_value, row) => {
-          const propertyNo = row.propertyNo?.trim() || '—';
-          const upicId = row.upicId?.trim() || '—';
+          const propertyNo = row.propertyNo?.trim() || null;
+          const upicId = row.upicId?.trim() || null;
 
           return (
-            <div className="space-y-0.5 text-left w-[135px]">
-              <span className="block font-semibold text-[#173B73]">{row.applicationNo}</span>
-              <span className="block text-[10px] font-medium text-slate-500">{t('applicationDashboard.table.propertyNo')}: {propertyNo}</span>
-              <span className="block text-[10px] font-medium text-slate-500">{t('applicationDashboard.table.upicId')}: {upicId}</span>
+            <div className="w-[180px] space-y-1.5 text-left">
+              <span className="block font-mono text-[16px] font-bold text-[#173B73]">
+                {row.applicationNo}
+              </span>
+              {(propertyNo || upicId) && (
+                <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-medium text-slate-500">
+                  {propertyNo && (
+                    <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
+                      {t('applicationDashboard.table.propertyNo')}: <span className="ml-1 font-mono font-bold text-slate-700">{propertyNo}</span>
+                    </span>
+                  )}
+                  {upicId && (
+                    <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
+                      {t('applicationDashboard.table.upicId')}: <span className="ml-1 font-mono font-bold text-slate-700">{upicId}</span>
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           );
         },
