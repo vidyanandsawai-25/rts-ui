@@ -12,7 +12,9 @@ export const useTaxZoningFile = (
   REQUIRED_HEADERS: string[],
   _records: ZoningRecord[],
   wardsData: PagedResponse<Ward>,
-  taxZones: PagedResponse<TaxZone>
+  taxZones: PagedResponse<TaxZone>,
+  wardLabel?: string,
+  taxZoneLabel?: string
 ) => {
   const [importedChanges, setImportedChanges] = useState<ZoningRecord[]>([]);
   const [hasImportedData, setHasImportedData] = useState(false);
@@ -23,7 +25,7 @@ export const useTaxZoningFile = (
       return;
     }
 
-    const headers = [t('columns.wardNo'), t('columns.fromProperty'), t('columns.toProperty'), t('columns.taxZoneNo')];
+    const headers = [t('columns.wardNo', { ward: wardLabel ?? '' }), t('columns.fromProperty'), t('columns.toProperty'), t('columns.taxZoneNo', { taxZone: taxZoneLabel ?? '' })];
     const rows = tableRecords.map(r => [r.wardNo, r.fromProperty, r.toProperty, r.taxZoneNo]);
     const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -72,7 +74,7 @@ export const useTaxZoningFile = (
           headers.every((h: string | undefined, i: number) => h === STABLE_HEADERS[i] || h === REQUIRED_HEADERS[i]);
 
         if (!isValidHeader) {
-          toast.error(t('messages.invalidFileFormat'));
+          toast.error(t('messages.invalidFileFormat', { ward: wardLabel ?? '', taxZone: taxZoneLabel ?? '' }));
           return;
         }
 

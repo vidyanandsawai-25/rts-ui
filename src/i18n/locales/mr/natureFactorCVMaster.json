@@ -1,22 +1,26 @@
 {
   "natureFactorCVMaster": {
+    "defaults": {
+      "constructionType": "बांधकाम प्रकार",
+      "assessment": "मूल्यांकन"
+    },
     "title": "निसर्ग घटक CV मास्टर",
     "columns": {
       "constructionCode": "बांधकाम कोड",
       "description": "वर्णन",
       "factor": "घटक",
-      "assessmentYear": "मूल्यांकन वर्ष",
+      "assessmentYear": "{assessment} वर्ष",
       "status": "स्थिती",
       "action": "कृती"
     },
     "filters": {
-      "assessmentYear": "मूल्यांकन वर्ष",
-      "constructionType": "बांधकाम प्रकार",
+      "assessmentYear": "{assessment} वर्ष",
+      "constructionType": "{constructionType}",
       "factor": "घटक"
     },
     "placeholders": {
-      "selectAssessmentYear": "मूल्यांकन वर्ष निवडा",
-      "selectConstructionType": "बांधकाम प्रकार निवडा",
+      "selectAssessmentYear": "{assessment} वर्ष निवडा",
+      "selectConstructionType": "{constructionType} निवडा",
       "factor": "0.00"
     },
     "messages": {
@@ -49,12 +53,12 @@
       "bulkCreateFailed": "निसर्ग घटक वेटेज रेकॉर्ड बल्क तयार करण्यात अयशस्वी"
     },
     "apiErrors": {
-      "notFound": "बांधकाम प्रकार वेटेज नोंद सापडली नाही.",
+      "notFound": "{constructionType} वेटेज नोंद सापडली नाही.",
       "validationError": "अवैध विनंती. कृपया प्रविष्ट केलेली मूल्ये तपासा आणि पुन्हा प्रयत्न करा.",
-      "referredInAutoWardEntry": "हे बांधकाम प्रकार वेटेज हटवता येणार नाही कारण ते आधीच कॅपिटल व्हॅल्यू कर गणनेत वापरले जात आहे. कृपया प्रथम संबंधित नोंदी हटवा."
+      "referredInAutoWardEntry": "हे {constructionType} वेटेज हटवता येणार नाही कारण ते आधीच कॅपिटल व्हॅल्यू कर गणनेत वापरले जात आहे. कृपया प्रथम संबंधित नोंदी हटवा."
     },
     "deleteConfirmation": {
-      "title": "निसर्ग प्रकार",
+      "title": "{constructionType}",
       "description": "तुम्हाला खात्री आहे की तुम्ही ही नोंद हटवू इच्छिता?",
       "confirmButton": "हटवा",
       "cancelButton": "रद्द करा",

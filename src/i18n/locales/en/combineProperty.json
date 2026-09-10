@@ -35,16 +35,16 @@
   "currentTax": "CURRENT TAX",
   "pendingTax": "PENDING TAX",
   "emptyTableText": "No property details found.",
-  "basePropertyIncomplete": "Base property selection incomplete",
-  "selectAtLeastOne": "Please select at least one property to combine",
+  "basePropertyIncomplete": "Base {property} selection incomplete",
+  "selectAtLeastOne": "Please select at least one {property} to combine",
   "rangeInvalidError": "'To' property should be greater than 'From' property. Please select a valid range.",
-  "selectAtLeastOneToMerge": "Please select at least one property to combine using the checkboxes.",
+  "selectAtLeastOneToMerge": "Please select at least one {property} to combine using the checkboxes.",
   "differentOwnersError": "Cannot combine properties with different owner names",
   "combineSuccess": "Properties combined successfully!",
   "combineFailed": "Combination failed",
   "unexpectedError": "An unexpected error occurred",
   "defaultRemark": "Combined from UI",
-  "missingOwnerError": "Owner name is not present, only occupier name is available. Cannot combine property.",
+  "missingOwnerError": "Owner name is not present, only occupier name is available. Cannot combine {property}.",
   "confirmCombineTitle": "Confirm Combine",
   "confirmCombineDesc": "Are you sure you want to combine the selected properties?",
   "confirmCombineDiffOwnerTitle": "Owner Names are Different",
@@ -53,7 +53,7 @@
   "remarkLabel": "Combine Remark",
   "remarkPlaceholder": "Enter remark for combining properties",
   "remarkRequiredError": "Please enter a remark",
-  "cannotUncheckBaseProperty": "Cannot uncheck the primary property",
+  "cannotUncheckBaseProperty": "Cannot uncheck the primary {property}",
   "error": {
     "title": "Failed to connect server. Please try again later.",
     "description": "An error occurred while loading the combine property page. Please try again.",
@@ -73,5 +73,9 @@
   "hideHistory": "Hide History",
   "basePropertyTooltip": "This is the base property",
   "combinePropertyTooltip": "This property we are combining in base property",
-  "noCombinePropertyHistoryFound": "No combine property history found"
+  "noCombinePropertyHistoryFound": "No combine property history found",
+  "aliasFallback": {
+    "ward": "Ward",
+    "propertyNo": "Property No"
+  }
 }

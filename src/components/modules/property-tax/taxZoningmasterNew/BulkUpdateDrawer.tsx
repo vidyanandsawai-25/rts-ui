@@ -8,6 +8,7 @@ import { Input } from "@/components/common/Input";
 import { DownloadButton, ImportButton, ApplyButton, CancelButton, IconOnlyActionButton } from "@/components/common/ActionButtons";
 import { MasterTable, Column } from "@/components/common/MasterTable";
 import { BulkTaxZoningRangeRow } from "@/types/taxZoningRange.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 type BulkRow = BulkTaxZoningRangeRow & Record<string, unknown>;
 
@@ -37,6 +38,9 @@ export default function BulkUpdateDrawer({
   onApply,
 }: BulkUpdateDrawerProps) {
   const tUi = useTranslations("taxZoningRange.ui.bulk");
+  const tRoot = useTranslations("taxZoningRange");
+  const wardLabel = useAliasLabel("Ward", tRoot("aliasFallback.ward"));
+  const taxZoneLabel = useAliasLabel("Tax Zone", tRoot("aliasFallback.taxZone"));
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollBodyRef = useRef<HTMLDivElement>(null);
   const step3Ref = useRef<HTMLDivElement>(null);
@@ -65,10 +69,10 @@ export default function BulkUpdateDrawer({
   ];
 
   const columns: Column<BulkRow>[] = [
-    { key: "wardNo", label: tUi("colWard") },
+    { key: "wardNo", label: tUi("colWard", { ward: wardLabel }) },
     { key: "fromPropertyNo", label: tUi("colFrom") },
     { key: "toPropertyNo", label: tUi("colTo") },
-    { key: "taxZoneNo", label: tUi("colZone") },
+    { key: "taxZoneNo", label: tUi("colZone", { taxZone: taxZoneLabel }) },
     {
       key: "status",
       label: tUi("colStatus"),
@@ -93,7 +97,7 @@ export default function BulkUpdateDrawer({
       {/* Header */}
       <div className="bg-[#1f67b2] text-white px-6 py-4 flex justify-between items-start shrink-0">
         <div>
-          <h2 className="text-[19px] font-bold">{tUi("title")}</h2>
+          <h2 className="text-[19px] font-bold">{tUi("title", { taxZone: taxZoneLabel })}</h2>
           <p className="text-[13px] text-blue-100 mt-1">
             {tUi("subtitle")}
           </p>

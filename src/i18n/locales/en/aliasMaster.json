@@ -16,9 +16,9 @@
   "inactive": "Inactive",
   "deleteConfirm": "Are you sure you want to delete this alias record?",
   "stats": {
-    "total": "Total Fields",
-    "active": "Active Fields",
-    "inactive": "Inactive Fields"
+    "total": "Total Keys",
+    "active": "Active Keys",
+    "inactive": "Inactive Keys"
   },
   "form": {
     "addTitle": "Add New Alias",

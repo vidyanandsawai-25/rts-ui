@@ -15,6 +15,7 @@ import {
 } from '@/app/[locale]/property-tax/floormaster/actions';
 
 import { SubFloorFormModel, SubFloor } from '@/types/floor.types';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import { SubFloorFormFields } from './SubFloorFormFields';
 import { StatusToggleField } from '../StatusToggleField';
 import { MandatoryFieldsNotice } from '../MandatoryFieldsNotice';
@@ -38,6 +39,7 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
   const router = useRouter();
   const t = useTranslations('floor.subfloor');
   const tCommon = useTranslations('common');
+  const floorLabel = useAliasLabel('Floor', t('aliasFallback.floor'));
   const isEdit = Boolean(id);
 
   const [open, setOpen] = useState(true);
@@ -154,8 +156,8 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
 
       toast.success(
         isEdit
-          ? t('messages.updateSuccess', { code: formData.subFloorCode })
-          : t('messages.createSuccess', { code: formData.subFloorCode })
+          ? t('messages.updateSuccess', { code: formData.subFloorCode, floor: floorLabel })
+          : t('messages.createSuccess', { code: formData.subFloorCode, floor: floorLabel })
       );
 
       handleClose();
@@ -184,10 +186,10 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t('form.editTitle') : t('form.addTitle')}
+              {isEdit ? t('form.editTitle', { floor: floorLabel }) : t('form.addTitle', { floor: floorLabel })}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit ? t('form.editSubtitle') : t('form.addSubtitle')}
+              {isEdit ? t('form.editSubtitle', { floor: floorLabel }) : t('form.addSubtitle', { floor: floorLabel })}
             </div>
           </div>
         </div>
@@ -229,7 +231,7 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
           onBlur={handleBlur}
           isEdit={isEdit}
           labels={{
-            code: t('form.code'),
+            code: t('form.code', { floor: floorLabel }),
             codePlaceholder: t('form.codePlaceholder'),
             description: t('form.description'),
             descriptionPlaceholder: t('form.descriptionPlaceholder'),

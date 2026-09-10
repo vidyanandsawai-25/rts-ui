@@ -22,6 +22,7 @@ import type {
 } from "@/types/floor.types";
 
 import { deleteSubFloorAction } from "@/app/[locale]/property-tax/floormaster/actions";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { subFloorColumns } from "./subFloorColumns";
 
 /* ============================================================
@@ -37,6 +38,7 @@ export default function SubFloorMaster({
 
   const t = useTranslations("floor.subfloor");
   const tCommon = useTranslations("common");
+  const floorLabel = useAliasLabel("Floor", t("aliasFallback.floor"));
 
   const { confirm } = useConfirm();
 
@@ -90,27 +92,27 @@ export default function SubFloorMaster({
     (row: SubFloor) => {
       confirm({
         variant: "delete",
-        title: t("delete.confirmTitle", { id: row.id }),
-        description: t("delete.confirmDescription"),
+        title: t("delete.confirmTitle", { id: row.id, floor: floorLabel }),
+        description: t("delete.confirmDescription", { floor: floorLabel }),
         meta: { id: row.id, name: row.description },
         onConfirm: async () => {
           const result = await deleteSubFloorAction(row.id);
           if (result.success) {
-            toast.success(t("messages.deleteSuccess"));
+            toast.success(t("messages.deleteSuccess", { floor: floorLabel }));
             router.refresh();
           } else {
-            let msg = t("messages.deleteFailed");
+            let msg = t("messages.deleteFailed", { floor: floorLabel });
             if (result.message) {
               const match = result.message.match(/(?:referenced in:\s*([^.\n]+)|referenced by other entities \((.*?)\))/i);
               if (match) {
                 const rawTables = (match[1] || match[2] || "").trim();
                 const tables = rawTables.replace(/([a-z])([A-Z])/g, "$1 $2");
-                msg = t("apiErrors.referencedIn", { tables });
+                msg = t("apiErrors.referencedIn", { tables, floor: floorLabel });
               } else {
                 msg = result.message;
               }
             } else if (result.statusCode === 409) {
-              msg = t("messages.deleteInUse");
+              msg = t("messages.deleteInUse", { floor: floorLabel });
             } else if (result.messageKey) {
               msg = t(result.messageKey);
             }
@@ -119,14 +121,14 @@ export default function SubFloorMaster({
         },
       });
     },
-    [t, confirm, router]
+    [t, confirm, router, floorLabel]
   );
 
   /* ============================================================
      TABLE COLUMNS
   ============================================================ */
 
-  const columns = subFloorColumns(t);
+  const columns = subFloorColumns(t, floorLabel);
 
   /* ============================================================
      UI

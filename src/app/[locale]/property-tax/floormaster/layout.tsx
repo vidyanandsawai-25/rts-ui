@@ -1,34 +1,22 @@
 import { Suspense } from "react";
-import { getTranslations } from "next-intl/server";
 
 import { PageContainer } from "@/components/common/PageContainer";
-import TableHeader from "@/components/common/TableHeader";
-import { FloorMasterToolbar } from "@/components/modules/property-tax/Floormaster/FloorMasterToolbar";
+import { FloorMasterHeader } from "@/components/modules/property-tax/Floormaster/FloorMasterHeader";
 
 interface FloorMasterLayoutProps {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }
 
-async function FloorMasterLayoutContent({
+function FloorMasterLayoutContent({
   children,
-  locale,
 }: Readonly<{
   children: React.ReactNode;
-  locale: string;
 }>) {
-  // Use floor translations with explicit locale for server-side rendering
-  const t = await getTranslations({ locale, namespace: "floor" });
-
   return (
     <PageContainer>
       <div className="">
-        <TableHeader
-          title={t("floor.title")}
-          subtitle={t("floor.subtitle")}
-          icon="layers"
-          rightContent={<FloorMasterToolbar />}
-        />
+        <FloorMasterHeader />
 
         <div className="mt-2">
           {children}
@@ -42,8 +30,8 @@ export default async function FloorMasterLayout({
   children,
   params,
 }: Readonly<FloorMasterLayoutProps>) {
-  const { locale } = await params;
-  
+  await params;
+
   return (
     <Suspense
       fallback={
@@ -56,7 +44,7 @@ export default async function FloorMasterLayout({
         </div>
       }
     >
-      <FloorMasterLayoutContent locale={locale}>
+      <FloorMasterLayoutContent>
         {children}
       </FloorMasterLayoutContent>
     </Suspense>

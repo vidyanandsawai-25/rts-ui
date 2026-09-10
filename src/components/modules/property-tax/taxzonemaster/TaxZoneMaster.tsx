@@ -11,6 +11,7 @@ import { deleteTaxZoneAction } from "@/app/[locale]/property-tax/taxzone-master/
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useTranslations, useLocale } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { getTaxZoneColumns } from "./TaxZoneColumn";
 import { TaxZoneMasterToolbar } from "./TaxZoneMasterToolbar";
 
@@ -29,6 +30,10 @@ export default function TaxZoneMaster({
   const tCommon = useTranslations("common");
   const locale = useLocale();
 
+  const zoneLabel = useAliasLabel("Tax Zone", t("aliasFallback.taxZone"));
+  const taxZonesLabel = useAliasLabel("Tax_Zones", t("aliasFallback.taxZones"));
+  const wardNoLabel = useAliasLabel("Ward", t("aliasFallback.ward"));
+
   const base = `/${locale}/property-tax/taxzone-master/taxzone`;
 
   const normalizedData = useMemo(
@@ -36,7 +41,7 @@ export default function TaxZoneMaster({
     [data]
   );
 
-  const columns = useMemo(() => getTaxZoneColumns(t), [t]);
+  const columns = useMemo(() => getTaxZoneColumns(t, zoneLabel), [t, zoneLabel]);
 
   /**
    * ✅ BACKEND PAGINATION
@@ -86,8 +91,8 @@ export default function TaxZoneMaster({
     <PageContainer className="p-4 sm:p-6">
       <div className="space-y-6">
         <TableHeader
-          title={t("list.title")}
-          subtitle={t("list.subtitle")}
+          title={t("list.title", { zone: zoneLabel })}
+          subtitle={t("list.subtitle", { tax_zones: taxZonesLabel, ward_no: wardNoLabel })}
           icon="mapPin"
           rightContent={<TaxZoneMasterToolbar />}
         />

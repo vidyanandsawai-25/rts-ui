@@ -12,6 +12,7 @@ import { useAgeFactorEdit } from "@/hooks/weightageMaster/ageFactorCv/useAgeFact
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Building2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface AgeFactorEditFormProps {
     initialData: AgeFactorCVMaster
@@ -25,6 +26,13 @@ export function AgeFactorEditForm({ initialData, locale, assessmentYearOptions, 
     const tF = useTranslations("ageFactorMaster");
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(true);
+
+    const aliasAssessment = useAliasLabel("Assessment", tF("defaults.assessment") || "Assessment");
+    const aliasConstructionType = useAliasLabel("Construction_Type", tF("defaults.constructionType") || "Construction Type");
+    const aliases = {
+        assessment: aliasAssessment,
+        constructionType: aliasConstructionType
+    };
 
     const {
         formData,
@@ -153,7 +161,7 @@ export function AgeFactorEditForm({ initialData, locale, assessmentYearOptions, 
                     />
                     <div>
                         <Label required className="mb-1.5 font-semibold text-slate-700">
-                            {tW("common.labels.assessmentYear")}
+                            {tF("columns.assessmentYear", aliases)}
                         </Label>
                         <SearchSelect
                             options={assessmentYearOptions}

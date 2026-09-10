@@ -98,8 +98,8 @@ export interface Floor {
 }
 export interface FloorCvHeaderExtraProps {
     // Translations
-    t: ReturnType<typeof import("next-intl").useTranslations>;
-    tW: ReturnType<typeof import("next-intl").useTranslations>;
+    t: (key: string, values?: Record<string, string | number | Date>) => string;
+    tW: (key: string, values?: Record<string, string | number | Date>) => string;
     // Options
     assessmentYearOptions: Option[];
     floorOptions: Option[];
@@ -129,6 +129,7 @@ export interface FloorCvHeaderExtraProps {
     handleBulkUpdate: () => void;
     handleGenerateAll: () => void;
     addToast: (type: "success" | "error" | "info" | "warning", message: string) => void;
+    aliases?: { floor: string; assessment: string; floors: string };
 }
 export interface FloorCvWeightageMasterProps {
     data: FloorFactorCVMaster[];
@@ -142,15 +143,16 @@ export interface FloorCvWeightageMasterProps {
     sortOrder?: string;
 }
 export interface ColumnConfig {
-  t: (key: string) => string;
-  tW: (key: string) => string;
-  tCommon: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
+  tW: (key: string, values?: Record<string, string | number | Date>) => string;
+  tCommon: (key: string, values?: Record<string, string | number | Date>) => string;
   editableRows: Record<string, FloorFactorCVMaster>;
   handleCellChange: (rowId: string, columnId: string, value: string | number) => void;
   getRowUid: (row: FloorFactorCVMaster) => string;
   sortBy?: string;
   sortOrder?: string;
   onSort?: (columnKey: string) => void;
+  aliases?: { floor: string; assessment: string; floors: string };
 }
 export interface WeightageMasterHeaderProps {
   locale: string;

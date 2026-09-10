@@ -11,7 +11,10 @@ import {
 import { ZoningRecord, PreviewRow, Ward } from "@/types/taxzoning.types";
 import { PagedResponse } from "@/types/common.types";
 
-export const useTaxZoningActions = (t: (key: string, values?: Record<string, string | number>) => string) => {
+export const useTaxZoningActions = (
+  t: (key: string, values?: Record<string, string | number>) => string,
+  wardLabel?: string
+) => {
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 
@@ -68,9 +71,9 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
         }
 
         if (successCount > 0 && errorCount === 0) {
-          toast.success(`${t('messages.dbOperationCompleted')} ${successCount} ${t('messages.wardsUpdatedSuccessfully')}`);
+          toast.success(`${t('messages.dbOperationCompleted')} ${successCount} ${t('messages.wardsUpdatedSuccessfully', { ward: wardLabel ?? '' })}`);
         } else if (successCount > 0 && errorCount > 0) {
-          toast.warning(`${successCount} ${t('messages.wardsUpdatedSuccessfully')}, ${errorCount} ${t('messages.wardsFailed')}`);
+          toast.warning(`${successCount} ${t('messages.wardsUpdatedSuccessfully', { ward: wardLabel ?? '' })}, ${errorCount} ${t('messages.wardsFailed', { ward: wardLabel ?? '' })}`);
         } else {
           toast.error(t('messages.updateFailed'));
           return;

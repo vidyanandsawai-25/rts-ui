@@ -14,6 +14,7 @@ import { getNatureFactorCvColumns } from "./natureFactorCvColumns";
 import { NatureFactorCvHeaderExtra } from "./NatureFactorCvHeaderExtra";
 import { useNatureFactorCVWeightageMasterDeleteHandler } from "@/hooks/weightageMaster/natureFactorCv/useNatureFactorDeleteHandler";
 import { useConfirm } from "@/components/common/ConfirmProvider";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider"; 
 
 
 
@@ -60,9 +61,16 @@ const NatureFactorCVMaster: React.FC<NatureFactorCVMasterProps> = ({
         sortBy: activeSortBy, sortOrder: activeSortOrder
     } = useNatureFactorCv({ data, pageSize, sortBy, sortOrder });
 
+    const aliasAssessment = useAliasLabel("Assessment", t("defaults.assessment") || "Assessment");
+    const aliasConstructionType = useAliasLabel("Construction_Type", t("defaults.constructionType") || "Construction Type");
+    const aliases = {
+        assessment: aliasAssessment,
+        constructionType: aliasConstructionType
+    };
+
     const columns = getNatureFactorCvColumns({
         t, tW, tCommon, editableRows, getRowUid, handleCellChange,
-        sortBy: activeSortBy, sortOrder: activeSortOrder, onSort: handleSort
+        sortBy: activeSortBy, sortOrder: activeSortOrder, onSort: handleSort, aliases
     });
 
     const { handleDelete } = useNatureFactorCVWeightageMasterDeleteHandler({
@@ -70,6 +78,7 @@ const NatureFactorCVMaster: React.FC<NatureFactorCVMasterProps> = ({
         tCommon,
         confirm,
         startTransition,
+        aliases,
     });
 
     const renderActions = (row: NatureFactorCVMasterType) => {
@@ -171,6 +180,7 @@ const NatureFactorCVMaster: React.FC<NatureFactorCVMasterProps> = ({
                         isUpdating={isUpdating}
                         isApplyDisabled={isApplyDisabled}
                         isBulkUpdateDisabled={isBulkUpdateDisabled}
+                        aliases={aliases}
                     />
                 }
             />

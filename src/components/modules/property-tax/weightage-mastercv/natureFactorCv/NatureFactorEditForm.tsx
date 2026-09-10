@@ -12,6 +12,7 @@ import { Input } from "@/components/common/Input";
 import { Label } from "@/components/common/label";
 import { CancelButton, UpdateButton } from "@/components/common/ActionButtons";
 import { Building2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface NatureFactorEditFormProps {
     initialData: NatureFactorCVMaster;
@@ -25,6 +26,13 @@ export function NatureFactorEditForm({ initialData, locale, assessmentYearOption
     const router = useRouter();
 
     const [isOpen, setIsOpen] = useState(true);
+
+    const aliasAssessment = useAliasLabel("Assessment", tW("defaults.assessment") || "Assessment");
+    const aliasConstructionType = useAliasLabel("Construction_Type", tF("defaults.constructionType") || "Construction Type");
+    const aliases = { 
+        assessment: aliasAssessment || tW("defaults.assessment") || "Assessment",
+        constructionType: aliasConstructionType || tF("defaults.constructionType") || "Construction Type"
+    };
 
     const {
         formData,
@@ -94,7 +102,10 @@ export function NatureFactorEditForm({ initialData, locale, assessmentYearOption
                                 {tW("common.labels.status")}
                             </div>
                             <div className="text-[13px] font-medium text-slate-500 mt-0.5">
-                                {`${tW("tabs.nature")} is currently ${formData.isActive ? tW("common.labels.active") : tW("common.labels.inactive")}`}
+                                {tW("common.labels.statusCurrently", { 
+                                    name: tW("tabs.nature"), 
+                                    status: formData.isActive ? tW("common.labels.active") : tW("common.labels.inactive") 
+                                })}
                             </div>
                         </div>
                     </div>
@@ -108,7 +119,7 @@ export function NatureFactorEditForm({ initialData, locale, assessmentYearOption
                 <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm space-y-5">
                     <div>
                         <Label required className="mb-1.5 font-semibold text-slate-700">
-                            {tW("common.labels.assessmentYear")}
+                            {tW("common.labels.assessmentYear", aliases)}
                         </Label>
                         <SearchSelect
                             options={assessmentYearOptions}

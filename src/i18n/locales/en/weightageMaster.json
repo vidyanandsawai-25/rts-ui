@@ -1,9 +1,13 @@
  {
   "weightageMaster": {
+    "defaults": {
+      "floor": "Floor",
+      "assessment": "Assessment"
+    },
     "title": "Weightage Master",
     "subtitle": "Configure CV calculation weightage factors",
     "tabs": {
-      "floor": "Floor Weightage",
+      "floor": "{floor} Weightage",
       "nature": "Nature & Type of Building",
       "subType": "Use Category",
       "age": "Age Of Building"
@@ -23,8 +27,9 @@
       "labels": {
         "active": "Active",
         "inactive": "Inactive",
-        "assessmentYear": "Assessment Year",
+        "assessmentYear": "{assessment} Year",
         "status": "Status",
+        "statusCurrently": "{name} is currently {status}",
         "pendingRecordCreates": "{count, plural, =1 {# Pending Record Create} other {# Pending Record Creates}}"
       },
       "placeholders": {

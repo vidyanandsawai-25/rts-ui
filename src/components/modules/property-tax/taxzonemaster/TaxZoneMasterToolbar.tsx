@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { AddButton, SearchInput } from '@/components/common';
 import { TEXT_SANITIZE } from '@/lib/utils/validation-rules';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export function TaxZoneMasterToolbar() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export function TaxZoneMasterToolbar() {
   const locale = useLocale();
 
   const tZone = useTranslations('taxZone');
+  const zoneLabel = useAliasLabel('Tax Zone', tZone('aliasFallback.taxZone'));
 
   const base = `/${locale}/property-tax/taxzone-master`;
 
@@ -62,7 +64,7 @@ export function TaxZoneMasterToolbar() {
         <SearchInput
           value={search}
           onChange={(value) => setSearch(value.replace(TEXT_SANITIZE, ''))}
-          placeholder={tZone('list.filters.search')}
+          placeholder={tZone('list.filters.search', { zone: zoneLabel })}
           className="mb-0 w-64 lg:w-80 text-gray-900"
         />
       </div>

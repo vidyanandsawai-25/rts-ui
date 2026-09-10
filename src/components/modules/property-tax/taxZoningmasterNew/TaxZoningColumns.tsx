@@ -6,8 +6,11 @@ import { TaxZoningRange } from "@/types/taxZoningRange.types";
 
 export const getColumns = (
   onEdit: (id: number) => void,
-  t: (key: string) => string,
-  dateLocale: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: (key: string, values?: Record<string, any>) => string,
+  dateLocale: string,
+  wardLabel?: string,
+  taxZoneLabel?: string
 ): Column<TaxZoningRange & Record<string, unknown>>[] => {
   return [
     {
@@ -18,7 +21,7 @@ export const getColumns = (
       render: (_val, _row, idx) => idx + 1,
     },
     {
-      label: t("wardNo"),
+      label: t("wardNo", { ward: wardLabel ?? "" }),
       key: "wardNo",
       width: "95px",
       render: (val) => <span className="font-black text-[#123d70]">{String(val)}</span>,
@@ -55,14 +58,14 @@ export const getColumns = (
       ),
     },
     {
-      label: t("zoneDescription"),
+      label: t("zoneDescription", { taxZone: taxZoneLabel ?? "" }),
       key: "zoneDescription",
       render: (val) => (
         <div className="text-[#42526b] max-w-[640px] leading-tight break-words">{String(val ?? "")}</div>
       ),
     },
     {
-      label: t("taxZone"),
+      label: t("taxZone", { taxZone: taxZoneLabel ?? "" }),
       key: "taxZoneNo",
       width: "100px",
       align: "center",

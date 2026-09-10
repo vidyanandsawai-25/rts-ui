@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useAgeFactorCVWeightageMasterDeleteHandler} from "@/hooks/weightageMaster/ageFactorCv/useAgeFactorDeleteHandler";
 import { useConfirm } from "@/components/common/ConfirmProvider";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 
 interface AgeFactorCvWeightageMasterProps {
@@ -105,6 +106,13 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
         sortOrder,
     });
 
+    const aliasAssessment = useAliasLabel("Assessment", t("defaults.assessment") || "Assessment");
+    const aliasConstructionType = useAliasLabel("Construction_Type", t("defaults.constructionType") || "Construction Type");
+    const aliases = {
+        assessment: aliasAssessment,
+        constructionType: aliasConstructionType
+    };
+
     const columns = getAgeFactorCvWeightageMasterColumns({
         t,
         tW,
@@ -115,6 +123,7 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
         sortBy: activeSortBy,
         sortOrder: activeSortOrder,
         onSort: handleSort,
+        aliases,
     });
 
     const { handleDelete } = useAgeFactorCVWeightageMasterDeleteHandler({
@@ -122,7 +131,7 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
         tCommon,
         confirm,
         startTransition,
-
+        aliases,
     })
 
     const renderActions = (row: AgeFactorCVMaster) => {
@@ -234,6 +243,7 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
                         handleBulkUpdate={handleBulkUpdate}
                         handleGenerateAll={handleGenerateAll}
                         editableRowsCount={Object.keys(editableRows).length}
+                        aliases={aliases}
                     />
                 }
             />

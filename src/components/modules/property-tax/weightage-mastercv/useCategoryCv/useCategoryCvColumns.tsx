@@ -72,7 +72,8 @@ export const getTypeOfUseColumns = (
     tCommon: (key: string) => string,
     leftSortBy?: string,
     leftSortOrder?: string,
-    onLeftSort?: (key: string) => void
+    onLeftSort?: (key: string) => void,
+    aliases?: Record<string, string>
 ): Column<UseType>[] => {
     const sortableColumns: Record<string, string> = {
         typeOfUseCode: "TypeOfUseCode",
@@ -99,7 +100,7 @@ export const getTypeOfUseColumns = (
     return [
         {
             key: "typeOfUseCode",
-            label: createSortableLabel(t('leftTable.typeOfUseCode'), "typeOfUseCode"),
+            label: createSortableLabel(t('leftTable.typeOfUseCode', aliases), "typeOfUseCode"),
             width: "30%",
             render: (value, row) => (
                 <button
@@ -116,7 +117,7 @@ export const getTypeOfUseColumns = (
         },
         {
             key: "description",
-            label: createSortableLabel(t('leftTable.typeOfUse'), "description"),
+            label: createSortableLabel(t('leftTable.typeOfUse', aliases), "description"),
             width: "50%",
             render: (value, row) => (
                 <button
@@ -156,7 +157,8 @@ export const getUseFactorColumns = (
     tCommon: (key: string) => string,
     sortBy?: string,
     sortOrder?: string,
-    onSort?: (key: string) => void
+    onSort?: (key: string) => void,
+    aliases?: Record<string, string>
 ): Column<UseFactorCVMaster>[] => {
     const sortableColumns: Record<string, string> = {
         typeOfUseCode: "TypeOfUseCode",
@@ -185,19 +187,19 @@ export const getUseFactorColumns = (
     return [
         {
             key: "typeOfUseCode",
-            label: createSortableLabel(t('columns.typeOfUseCode'), "typeOfUseCode"),
+            label: createSortableLabel(t('columns.typeOfUseCode', aliases), "typeOfUseCode"),
             width: "20%",
             render: (value) => value || '',
         },
         {
             key: "typeOfUseDescription",
-            label: createSortableLabel(t('columns.typeOfUse'), "typeOfUseDescription"),
+            label: createSortableLabel(t('columns.typeOfUse', aliases), "typeOfUseDescription"),
             width: "20%",
             render: (value) => value || '',
         },
         {
             key: "subTypeOfUseDescription",
-            label: createSortableLabel(t('columns.subType'), "subTypeOfUseDescription"),
+            label: createSortableLabel(t('columns.subType', aliases), "subTypeOfUseDescription"),
             width: "20%",
             render: (value) => value || "-",
         },
@@ -225,7 +227,7 @@ export const getUseFactorColumns = (
         },
         {
             key: "fromYear",
-            label: createSortableLabel(t('columns.assessmentYear'), "fromYear"),
+            label: createSortableLabel(t('columns.assessmentYear', aliases), "fromYear"),
             width: "15%",
             render: (_value, row) => `${row.fromYear}-${row.toYear}`,
         },

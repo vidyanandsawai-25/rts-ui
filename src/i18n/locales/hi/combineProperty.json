@@ -35,16 +35,16 @@
   "currentTax": "वर्तमान कर",
   "pendingTax": "लंबित कर",
   "emptyTableText": "कोई संपत्ति विवरण नहीं मिला।",
-  "basePropertyIncomplete": "आधार संपत्ति चयन अपूर्ण है",
-  "selectAtLeastOne": "कृपया मिलाने के लिए कम से कम एक संपत्ति का चयन करें",
+  "basePropertyIncomplete": "आधार {property} चयन अपूर्ण है",
+  "selectAtLeastOne": "कृपया मिलाने के लिए कम से कम एक {property} का चयन करें",
   "rangeInvalidError": "'To' संपत्ति, 'From' संपत्ति से अधिक होनी चाहिए। कृपया मान्य श्रेणी चुनें।",
-  "selectAtLeastOneToMerge": "कृपया चेकबॉक्स का उपयोग करके मिलाने के लिए कम से कम एक संपत्ति का चयन करें।",
+  "selectAtLeastOneToMerge": "कृपया चेकबॉक्स का उपयोग करके मिलाने के लिए कम से कम एक {property} का चयन करें।",
   "differentOwnersError": "विभिन्न मालिकों के नाम वाली संपत्तियों को नहीं मिलाया जा सकता",
   "combineSuccess": "संपत्तियां सफलतापूर्वक मिला दी गईं!",
   "combineFailed": "संयोजन विफल रहा",
   "unexpectedError": "एक अप्रत्याशित त्रुटि हुई",
   "defaultRemark": "UI से संयुक्त",
-  "missingOwnerError": "मालिक का नाम मौजूद नहीं है, केवल कब्जेदार का नाम उपलब्ध है। संपत्ति को मिलाया नहीं जा सकता।",
+  "missingOwnerError": "मालिक का नाम मौजूद नहीं है, केवल कब्जेदार का नाम उपलब्ध है। {property} को मिलाया नहीं जा सकता।",
   "confirmCombineTitle": "मिलाने की पुष्टि करें",
   "confirmCombineDesc": "क्या आप वाकई चयनित संपत्तियों को मिलाना चाहते हैं?",
   "confirmCombineDiffOwnerTitle": "मालिक के नाम अलग-अलग हैं",
@@ -53,7 +53,7 @@
   "remarkLabel": "संयुक्त टिप्पणी",
   "remarkPlaceholder": "संपत्तियों को मिलाने के लिए टिप्पणी दर्ज करें",
   "remarkRequiredError": "कृपया टिप्पणी दर्ज करें",
-  "cannotUncheckBaseProperty": "प्राथमिक संपत्ति का चयन नहीं हटाया जा सकता",
+  "cannotUncheckBaseProperty": "प्राथमिक {property} का चयन नहीं हटाया जा सकता",
   "error": {
     "title": "सर्वर से कनेक्ट करने में विफल। कृपया बाद में पुनः प्रयास करें।",
     "description": "संपत्ति संयोजन पृष्ठ लोड करते समय एक त्रुटि हुई। कृपया पुन: प्रयास करें।",
@@ -73,5 +73,9 @@
   "hideHistory": "इतिहास छुपाएं",
   "basePropertyTooltip": "यह आधार संपत्ति है",
   "combinePropertyTooltip": "इस संपत्ति को हम आधार संपत्ति में मिला रहे हैं",
-  "noCombinePropertyHistoryFound": "कोई संपत्ति संयोजन इतिहास नहीं मिला"
+  "noCombinePropertyHistoryFound": "कोई संपत्ति संयोजन इतिहास नहीं मिला",
+  "aliasFallback": {
+    "ward": "वार्ड",
+    "propertyNo": "संपत्ति क्र."
+  }
 }

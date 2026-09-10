@@ -62,15 +62,16 @@ function SortableHeader({
 }
 
 interface GetAgeFactorCvColumnsProps {
-  t: (key: string) => string;
-  tW: (key: string) => string;
-  tCommon: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
+  tW: (key: string, values?: Record<string, string | number | Date>) => string;
+  tCommon: (key: string, values?: Record<string, string | number | Date>) => string;
   editableRows: Record<string, AgeFactorCVMaster>;
   handleCellChange: (rowId: string, columnId: string, value: number) => void;
   getRowUid: (row: AgeFactorCVMaster) => string;
   sortBy?: string;
   sortOrder?: string;
   onSort?: (key: string) => void;
+  aliases?: Record<string, string>;
 }
 
 export const getAgeFactorCvWeightageMasterColumns = ({
@@ -83,6 +84,7 @@ export const getAgeFactorCvWeightageMasterColumns = ({
   sortBy,
   sortOrder,
   onSort,
+  aliases,
 }: GetAgeFactorCvColumnsProps): Column<AgeFactorCVMaster>[] => {
   const sortableColumns: Record<string, string> = {
     constructionCode: "ConstructionCode",
@@ -112,7 +114,7 @@ export const getAgeFactorCvWeightageMasterColumns = ({
   return [
     {
       key: "constructionCode",
-      label: createSortableLabel(t('columns.constructionType'), "constructionCode"),
+      label: createSortableLabel(t('columns.constructionType', aliases), "constructionCode"),
       width: "12%",
       render: (value) => (value as string) || "-",
     },
@@ -157,7 +159,7 @@ export const getAgeFactorCvWeightageMasterColumns = ({
     },
     {
       key: "fromYear",
-      label: createSortableLabel(t('columns.assessmentYear'), "fromYear"),
+      label: createSortableLabel(t('columns.assessmentYear', aliases), "fromYear"),
       width: "16%",
       render: (_value, row) =>
         row.fromYear != null && row.toYear != null

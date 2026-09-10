@@ -2,11 +2,15 @@
   "taxZoning": {
     "title": "कर क्षेत्र",
     "subtitle": "मालमत्ता श्रेणी मॅपिंग आणि स्वयंचलित वाढीसह प्रभाग-निहाय क्षेत्र कॉन्फिगर करा",
-    "form": {
-      "taxZone": "कर क्षेत्र",
-      "selectTaxZone": "कर क्षेत्र निवडा",
+    "aliasFallback": {
       "ward": "प्रभाग",
-      "selectWard": "प्रभाग निवडा",
+      "taxZone": "कर क्षेत्र"
+    },
+    "form": {
+      "taxZone": "{taxZone}",
+      "selectTaxZone": "{taxZone} निवडा",
+      "ward": "{ward}",
+      "selectWard": "{ward} निवडा",
       "fromProperty": "मालमत्ता पासून",
       "toProperty": "मालमत्ता पर्यंत",
       "selectFromProperty": "मालमत्ता पासून निवडा",
@@ -19,12 +23,12 @@
       "clearImported": "साफ करा"
     },
     "columns": {
-      "wardNo": "प्रभाग क्रमांक",
+      "wardNo": "{ward} क्रमांक",
       "fromProperty": "मालमत्ता पासून",
       "toProperty": "मालमत्ता पर्यंत",
-      "taxZoneNo": "कर क्षेत्र क्रमांक",
-      "oldTaxZoneNo": "जुने कर क्षेत्र",
-      "newTaxZoneNo": "नवीन कर क्षेत्र क्रमांक",
+      "taxZoneNo": "{taxZone} क्रमांक",
+      "oldTaxZoneNo": "जुने {taxZone}",
+      "newTaxZoneNo": "नवीन {taxZone} क्रमांक",
       "propertyNo": "मालमत्ता क्रमांक",
       "status": "स्थिती"
     },
@@ -36,9 +40,9 @@
       "previous": "मागील",
       "next": "पुढील",
       "noPropertiesToPreview": "पूर्वावलोकनासाठी कोणतीही मालमत्ता नाही",
-      "selectZoneWardProperty": "क्षेत्र, प्रभाग आणि मालमत्ता श्रेणी निवडा",
-      "multipleWardsSelected": "एकाधिक प्रभाग निवडले",
-      "multipleWardsMessage": "एकाधिक प्रभाग निवडल्यास मालमत्ता श्रेणी फील्ड अक्षम आहेत. मालमत्ता श्रेणी कॉन्फिगर करण्यासाठी एक प्रभाग निवडा.",
+      "selectZoneWardProperty": "{taxZone}, {ward} आणि मालमत्ता श्रेणी निवडा",
+      "multipleWardsSelected": "एकाधिक {ward} निवडले",
+      "multipleWardsMessage": "एकाधिक {ward} निवडल्यास मालमत्ता श्रेणी फील्ड अक्षम आहेत. मालमत्ता श्रेणी कॉन्फिगर करण्यासाठी एक {ward} निवडा.",
       "notSpecified": "निर्दिष्ट नाही"
     },
     "buttons": {
@@ -47,8 +51,8 @@
     },
     "messages": {
       "fillAllFields": "कृपया सर्व आवश्यक फील्ड भरा",
-      "taxZoneRequired": "कर क्षेत्र आवश्यक आहे",
-      "wardRequired": "किमान एक प्रभाग आवश्यक आहे",
+      "taxZoneRequired": "{taxZone} आवश्यक आहे",
+      "wardRequired": "किमान एक {ward} आवश्यक आहे",
       "propertyRequired": "एकल प्रभाग निवडीसाठी मालमत्ता श्रेणी आवश्यक आहे",
       "fromPropertyMustBeSmallerThanToProperty": "मालमत्ता पासून मालमत्ता पर्यंत पेक्षा लहान असावी",
       "updateSuccess": "कर क्षेत्र यशस्वीरित्या अद्यतनित केले",
@@ -69,7 +73,7 @@
       "fetchPropertyNoFailed": "कर झोनिंग मालमत्ता क्रमांक डेटा आणण्यात अयशस्वी",
       "fetchByWardFailed": "प्रभागानुसार कर झोनिंग आणण्यात अयशस्वी",
       "fetchAllFailed": "सर्व कर झोनिंग डेटा आणण्यात अयशस्वी",
-      "invalidFileFormat": "अवैध फाइल स्वरूप. आवश्यक स्तंभ क्रम: प्रभाग क्रमांक, मालमत्ता पासून, मालमत्ता पर्यंत, कर क्षेत्र क्रमांक",
+      "invalidFileFormat": "अवैध फाइल स्वरूप. आवश्यक स्तंभ क्रम: {ward} क्रमांक, मालमत्ता पासून, मालमत्ता पर्यंत, {taxZone} क्रमांक",
       "noNewOrChangedRecords": "कोणत्याही नवीन किंवा बदललेल्या नोंदी आढळल्या नाहीत",
       "newRecordsReadyToImport": "नवीन नोंदी आयात करण्यासाठी तयार",
       "updatesReadyToImport": "अद्यतने आयात करण्यासाठी तयार",
@@ -96,8 +100,8 @@
       "ward": "प्रभाग",
       "zone": "क्षेत्र",
       "exceptionProcessing": "प्रक्रिया अपवाद",
-      "wardsUpdatedSuccessfully": "प्रभाग यशस्वीरित्या अद्यतनित केले",
-      "wardsFailed": "प्रभाग अद्यतनित करण्यात अयशस्वी",
+      "wardsUpdatedSuccessfully": "{ward} यशस्वीरित्या अद्यतनित केले",
+      "wardsFailed": "{ward} अद्यतनित करण्यात अयशस्वी",
       "wardNotFound": "प्रभाग झोनिंग रेकॉर्डमध्ये सापडला नाही",
       "wardsNotFound": "खालील प्रभाग झोनिंग रेकॉर्डमध्ये सापडले नाहीत",
       "wardNotFoundDetail": "कृपया अद्यतनित करण्यापूर्वी हा प्रभाग मालमत्ता रेकॉर्डमध्ये तयार करा"

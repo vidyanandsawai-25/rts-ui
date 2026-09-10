@@ -1,22 +1,26 @@
 {
   "natureFactorCVMaster": {
+    "defaults": {
+      "constructionType": "निर्माण प्रकार",
+      "assessment": "मूल्यांकन"
+    },
     "title": "प्रकृति कारक CV मास्टर",
     "columns": {
       "constructionCode": "निर्माण कोड",
       "description": "विवरण",
       "factor": "कारक",
-      "assessmentYear": "मूल्यांकन वर्ष",
+      "assessmentYear": "{assessment} वर्ष",
       "status": "स्थिति",
-      "action": "कार्य"
+      "action": "कार्रवाई"
     },
     "filters": {
-      "assessmentYear": "मूल्यांकन वर्ष",
-      "constructionType": "निर्माण प्रकार",
+      "assessmentYear": "{assessment} वर्ष",
+      "constructionType": "{constructionType}",
       "factor": "कारक"
     },
     "placeholders": {
-      "selectAssessmentYear": "मूल्यांकन वर्ष चुनें",
-      "selectConstructionType": "निर्माण प्रकार चुनें",
+      "selectAssessmentYear": "{assessment} वर्ष चुनें",
+      "selectConstructionType": "{constructionType} चुनें",
       "factor": "0.00"
     },
     "messages": {
@@ -49,12 +53,12 @@
       "bulkCreateFailed": "प्रकृति कारक भार रिकॉर्ड्स को बल्क बनाने में विफल"
     },
     "apiErrors": {
-      "notFound": "निर्माण प्रकार वेटेज रिकॉर्ड नहीं मिला।",
+      "notFound": "{constructionType} वेटेज रिकॉर्ड नहीं मिला।",
       "validationError": "अमान्य अनुरोध। कृपया दर्ज किए गए मान जांचें और पुनः प्रयास करें।",
-      "referredInAutoWardEntry": "इस निर्माण प्रकार वेटेज को हटाया नहीं जा सकता क्योंकि यह पहले से ही कैपिटल वैल्यू कर गणना में उपयोग किया जा रहा है। कृपया पहले संबंधित रिकॉर्ड हटाएं।"
+      "referredInAutoWardEntry": "इस {constructionType} वेटेज को हटाया नहीं जा सकता क्योंकि यह पहले से ही कैपिटल वैल्यू कर गणना में उपयोग किया जा रहा है। कृपया पहले संबंधित रिकॉर्ड हटाएं।"
     },
       "deleteConfirmation": {
-      "title": "प्रकृति का प्रकार",
+      "title": "{constructionType}",
       "description": "क्या आप वाकई इस रिकॉर्ड को हटाना चाहते हैं?",
       "confirmButton": "हटाएं",
       "cancelButton": "रद्द करें",

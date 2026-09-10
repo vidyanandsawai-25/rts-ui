@@ -12,6 +12,7 @@ import { Input } from "@/components/common/Input";
 import { Label } from "@/components/common/label";
 import { CancelButton, UpdateButton } from "@/components/common/ActionButtons";
 import { Building2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface FloorFactorEditFormProps {
     initialData: FloorFactorCVMaster;
@@ -31,6 +32,10 @@ export function FloorFactorEditForm({ initialData, locale, assessmentYearOptions
         isSubmitting,
         handleSubmit
     } = useFloorFactorEdit(initialData);
+
+    const aliasFloor = useAliasLabel("Floor", tW("defaults.floor"));
+    const aliasAssessment = useAliasLabel("Assessment", tW("defaults.assessment"));
+    const aliases = { floor: aliasFloor, assessment: aliasAssessment };
 
     const [open, setOpen] = useState(true);
 
@@ -52,7 +57,7 @@ export function FloorFactorEditForm({ initialData, locale, assessmentYearOptions
                 <Building2 className="h-5 w-5" />
             </div>
             <div>
-                <h2 className="text-base font-bold text-blue-700">{`${tCommon("buttons.edit")} ${tW("tabs.floor")}`}</h2>
+                <h2 className="text-base font-bold text-blue-700">{`${tCommon("buttons.edit")} ${tW("tabs.floor", aliases)}`}</h2>
                 <p className="text-xs font-medium text-slate-500">{tW("subtitle") || "Update floor weightage details"}</p>
             </div>
         </div>
@@ -63,12 +68,12 @@ export function FloorFactorEditForm({ initialData, locale, assessmentYearOptions
             <CancelButton
                 onClick={handleClose}
                 disabled={isSubmitting}
-                label={tCommon("buttons.cancel") || "Cancel"}
+                label={tW("common.buttons.cancel") || "Cancel"}
             />
             <UpdateButton
                 onClick={onSubmit}
                 disabled={isSubmitting}
-                label={isSubmitting ? tW("common.buttons.updating") || "Updating..." : tCommon("buttons.update") || "Update"}
+                label={isSubmitting ? tW("common.buttons.updating") || "Updating..." : tW("common.buttons.update") || "Update"}
             />
         </div>
     );
@@ -93,7 +98,10 @@ export function FloorFactorEditForm({ initialData, locale, assessmentYearOptions
                                 {tW("common.labels.status")}
                             </div>
                             <div className="text-[13px] font-medium text-slate-500 mt-0.5">
-                                {`${tW("tabs.floor")} is currently ${formData.isActive ? tW("common.labels.active") : tW("common.labels.inactive")}`}
+                                {tW("common.labels.statusCurrently", { 
+                                    name: tW("tabs.floor", aliases), 
+                                    status: formData.isActive ? tW("common.labels.active") : tW("common.labels.inactive") 
+                                })}
                             </div>
                         </div>
                     </div>
@@ -107,7 +115,7 @@ export function FloorFactorEditForm({ initialData, locale, assessmentYearOptions
                 <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm space-y-5">
                     <div>
                         <Label required className="mb-1.5 font-semibold text-slate-700">
-                            {tW("common.labels.assessmentYear")}
+                            {tW("common.labels.assessmentYear", aliases)}
                         </Label>
                         <SearchSelect
                             options={assessmentYearOptions}

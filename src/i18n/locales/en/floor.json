@@ -12,36 +12,40 @@
       "tryAgain": "Try Again"
     },
     "floor": "Floor",
-    "title": "Floor Master Management",
+    "aliasFallback": {
+      "floor": "Floor",
+      "floors": "Floors"
+    },
+    "title": "{floor} Master Management",
     "delete": {
       "confirmTitle": "Delete Floor",
-      "confirmDescription": "Are you sure you want to delete this floor? This action cannot be undone."
+      "confirmDescription": "Are you sure you want to delete this {floor}? This action cannot be undone."
     },
-    "subtitle": "Add, edit, and manage floor information",
+    "subtitle": "Add, edit, and manage {floor} information",
     "tableTitle": "Floor List",
     "search": {
-      "placeholder": "Search by  code or description..."
+      "placeholder": "Search by {floor} code or description..."
     },
     "buttons": {
-      "add": "Add Floor"
+      "add": "Add {floor}"
     },
     "tabs": {
       "floor": "Floor",
-      "subfloor": "Sub-Floor"
+      "subfloor": "Sub-{floor}"
     },
     "form": {
       "title": "Floor Details",
-      "addTitle": "Add Floor",
-      "addSubtitle": "Create new floor with custom details",
-      "editTitle": "Edit Floor",
-      "editSubtitle": "Update floor information",
-      "entryMode": "Select Floor Creation Mode",
-      "singleFloor": "Single Floor",
+      "addTitle": "Add {floor}",
+      "addSubtitle": "Create new {floor} with custom details",
+      "editTitle": "Edit {floor}",
+      "editSubtitle": "Update {floor} information",
+      "entryMode": "Select {floor} Creation Mode",
+      "singleFloor": "Single {floor}",
       "singleFloorDesc": "Add one floor with custom details",
-      "floorRange": "Floor Range",
+      "floorRange": "{floor} Range",
       "floorRangeDesc": "Add multiple floors at once",
       "floorId": "Floor ID",
-      "floorCode": "Floor Code",
+      "floorCode": "{floor} Code",
       "floorCodePlaceholder": "e.g., GF, 1F, 2F",
       "floorIdPlaceholder": "e.g., GF, 1F, 2F",
       "floorName": "Floor Name",
@@ -56,10 +60,10 @@
       "sequenceNoPlaceholder": "Enter sequence number",
       "description": "Description",
       "descriptionPlaceholder": "Enter floor description or additional details",
-      "searchPlaceholder": "Search by code or description...",
+      "searchPlaceholder": "Search by {floor} code or description...",
       "status": "Status",
       "isActive": "Active",
-      "activeStatusTitle": "Floor Status",
+      "activeStatusTitle": "{floor} Status",
       "activeStatusOn": "Active",
       "activeStatusOff": "Inactive",
       "range": {
@@ -102,7 +106,7 @@
         "srNo": "Sr. No.",
         "floorID": "Floor",
         "floorName": "Floor Name",
-        "floorCode": "Floor Code",
+        "floorCode": "{floor} Code",
         "descriptionEnglish": "Floor Name (English)",
         "descriptionRegional": "Description",
         "floorNumber": "Floor Number",
@@ -118,10 +122,10 @@
     },
     "messages": {
       "addSuccess": "Floor added successfully",
-      "createSuccess": "Floor created successfully",
-      "createRangeSuccess": "{count} floors created successfully",
-      "updateSuccess": "Floor updated successfully",
-      "deleteSuccess": "Floor deleted successfully",
+      "createSuccess": "{floor} created successfully",
+      "createRangeSuccess": "{count} {floors} created successfully",
+      "updateSuccess": "{floor} updated successfully",
+      "deleteSuccess": "{floor} deleted successfully",
       "deleteFailed": "Failed to delete floor. Please try again.",
        "deleteInUse": "Cannot deactivate/delete this Floor because it is referenced in:\nWeightage Master, Property Details.\n\nPlease remove the dependent records first.",
       "deleteConfirm": "Are you sure you want to delete this floor?",
@@ -144,7 +148,7 @@
       "invalidData": "Invalid data provided",
       "notFound": "Record not found",
       "operationFailed": "Operation failed",
-      "inUse": "Cannot deactivate/delete this Floor because it is referenced in:\nWeightage Master, Property Details."
+      "inUse": "Cannot deactivate/delete this {floor} because it is referenced in:\nWeightage Master, Property Details."
     },
     "note": {
       "mandatory": "Fields marked with * are mandatory"
@@ -162,9 +166,12 @@
       "goHome": "Go Home",
       "tryAgain": "Try Again"
     },
+    "aliasFallback": {
+      "floor": "Floor"
+    },
     "delete": {
-      "confirmTitle": "Delete Sub-Floor",
-      "confirmDescription": "Are you sure you want to delete this sub-floor? This action cannot be undone."
+      "confirmTitle": "Delete Sub-{floor}",
+      "confirmDescription": "Are you sure you want to delete this sub-{floor}? This action cannot be undone."
     },
     "title": "Sub-Floor Master Management",
     "subtitle": "Add, edit, and manage sub-floor categories",
@@ -173,18 +180,18 @@
       "placeholder": "Search by code or description..."
     },
     "buttons": {
-      "add": "Add Sub-Floor"
+      "add": "Add Sub-{floor}"
     },
     "tabs": {
       "floor": "Floor",
-      "subfloor": "Sub-Floor"
+      "subfloor": "Sub-{floor}"
     },
     "form": {
       "title": "Sub-Floor Details",
-      "addTitle": "Add Sub-Floor",
-      "addSubtitle": "Create new sub-floor with custom details",
-      "editTitle": "Edit Sub-Floor",
-      "editSubtitle": "Update sub-floor details",
+      "addTitle": "Add Sub-{floor}",
+      "addSubtitle": "Create new sub-{floor} with custom details",
+      "editTitle": "Edit Sub-{floor}",
+      "editSubtitle": "Update sub-{floor} details",
       "subFloorId": "Sub-Floor ID",
       "subFloorIdPlaceholder": "e.g., SF01, SF02",
       "descriptionEnglish": "Description (English)",
@@ -195,7 +202,7 @@
       "activeStatusTitle": "Active Status",
       "activeStatusOn": "Currently enabled",
       "activeStatusOff": "Currently disabled",
-      "code": "Sub-Floor Code",
+      "code": "Sub-{floor} Code",
       "codePlaceholder": "e.g., SF01, SF02",
       "description": "Description",
       "descriptionPlaceholder": "Enter sub-floor description or additional details",
@@ -215,12 +222,12 @@
     "table": {
       "columns": {
         "srNo": "Sr. No.",
-        "subFloorId": "Sub-Floor Code",
+        "subFloorId": "Sub-{floor} Code",
         "descriptionEnglish": "Description (English)",
         "descriptionRegional": "Description",
         "status": "Status",
         "actions": "Actions",
-        "subFloorCode": "Sub-Floor Code",
+        "subFloorCode": "Sub-{floor} Code",
         "subFloorDescription": "Description",
         "sequenceNo": "Sequence No"
       },
@@ -231,11 +238,11 @@
     },
     "messages": {
       "addSuccess": "Sub-Floor added successfully",
-      "createSuccess": "Sub-Floor created successfully",
-      "updateSuccess": "Sub-Floor updated successfully",
-      "deleteSuccess": "Sub-Floor deleted successfully",
-      "deleteFailed": "Failed to delete sub-floor. Please try again.",
-      "deleteInUse": "You can't delete this sub-floor because it is in use.",
+      "createSuccess": "Sub-{floor} created successfully",
+      "updateSuccess": "Sub-{floor} updated successfully",
+      "deleteSuccess": "Sub-{floor} deleted successfully",
+      "deleteFailed": "Failed to delete sub-{floor}. Please try again.",
+      "deleteInUse": "You can't delete this sub-{floor} because it is in use.",
       "deleteConfirm": "Are you sure you want to delete this sub-floor?",
       "noSubFloors": "No sub-floors available. Add a new sub-floor to get started.",
       "validSubFloorIdRequired": "Valid SubFloor ID is required"
@@ -250,7 +257,7 @@
       "invalidData": "Invalid data provided",
       "notFound": "Record not found",
       "operationFailed": "Operation failed",
-      "referencedIn": "Cannot deactivate or delete this Sub-Floor because it is referenced in: {tables}."
+      "referencedIn": "Cannot deactivate or delete this Sub-{floor} because it is referenced in: {tables}."
     },
     "note": {
       "mandatory": "Fields marked with * are mandatory"

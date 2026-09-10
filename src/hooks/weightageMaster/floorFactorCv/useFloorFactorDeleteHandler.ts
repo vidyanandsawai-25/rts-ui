@@ -13,6 +13,7 @@ interface FloorFactorCVWeightageMasterDeleteHandlerProps {
     tCommon: TranslationFunction;
     confirm: ConfirmContextType['confirm'];
     startTransition: React.TransitionStartFunction;
+    aliases?: Record<string, string>;
 }
 
 /**
@@ -29,6 +30,7 @@ export function useFloorFactorCVWeightageMasterDeleteHandler({
     tCommon,
     confirm,
     startTransition,
+    aliases,
 }: FloorFactorCVWeightageMasterDeleteHandlerProps){
     const router = useRouter();
 
@@ -36,8 +38,8 @@ export function useFloorFactorCVWeightageMasterDeleteHandler({
         (row: FloorFactorCVMaster) => {
             confirm({
                 variant: "delete",
-                title: `${t("deleteConfirmation.title")}: ${row.floorDescription}` || `Type Of Floor`,
-                description: `${t("deleteConfirmation.description")}` || `Are you sure you want to delete this record?`,
+                title: `${t("deleteConfirmation.title", aliases)}: ${row.floorDescription}` || `Type Of Floor`,
+                description: `${t("deleteConfirmation.description", aliases)}` || `Are you sure you want to delete this record?`,
                 meta: {
                     name: String(row.floorDescription),
                 },
@@ -70,7 +72,7 @@ export function useFloorFactorCVWeightageMasterDeleteHandler({
                 },
             });
         },
-        [confirm, router, t, tCommon, startTransition]
+        [confirm, router, t, tCommon, startTransition, aliases]
     );
 
     return {

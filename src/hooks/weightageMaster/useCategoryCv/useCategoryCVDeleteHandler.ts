@@ -14,6 +14,7 @@ interface UseWeightageMasterDeleteHandlerProps {
   tCommon: TranslationFunction;
   confirm: ConfirmContextType['confirm'];
   startTransition: React.TransitionStartFunction;
+  aliases?: Record<string, string>;
 }
 
 /**
@@ -30,6 +31,7 @@ export function useWeightageMasterDeleteHandlerer({
   tCommon,
   confirm,
   startTransition,
+  aliases,
 }: UseWeightageMasterDeleteHandlerProps) {
   const router = useRouter();
 
@@ -37,7 +39,7 @@ export function useWeightageMasterDeleteHandlerer({
     (row: UseFactorCVMaster) => {
       confirm({
         variant: "delete",
-        title: `${t("deleteConfirmation.title")}: ${row.typeOfUseDescription} ${row.subTypeOfUseDescription}` || `Type Of Use: ${row.typeOfUseDescription} ${row.typeOfUseCode}`,
+        title: `${t("deleteConfirmation.title", aliases)}: ${row.typeOfUseDescription} ${row.subTypeOfUseDescription}` || `Type Of Use: ${row.typeOfUseDescription} ${row.typeOfUseCode}`,
         description: `${t("deleteConfirmation.description")}`|| `Are you sure you want to delete this record?`,
         meta: {
           name: `${row.typeOfUseDescription} ${row.subTypeOfUseDescription}`,
@@ -57,12 +59,12 @@ export function useWeightageMasterDeleteHandlerer({
 
             if (result.statusCode === 409) {
               // Record linked with another record or in use
-              errorMessage = t("apiErrors.referredInAutoWardEntry");
+              errorMessage = t("apiErrors.referredInAutoWardEntry", aliases);
             } else if (result.statusCode === 400) {
               // Bad request / validation error
               errorMessage = t("apiErrors.validationError");
             } else if (result.statusCode === 404) {
-              errorMessage = t("apiErrors.notFound");
+              errorMessage = t("apiErrors.notFound", aliases);
             } else if (result.message) {
               errorMessage = result.message;
             }
@@ -71,7 +73,7 @@ export function useWeightageMasterDeleteHandlerer({
         },
       });
     },
-    [confirm, router, t, tCommon, startTransition]
+    [confirm, router, t, tCommon, startTransition, aliases]
   );
 
   return {

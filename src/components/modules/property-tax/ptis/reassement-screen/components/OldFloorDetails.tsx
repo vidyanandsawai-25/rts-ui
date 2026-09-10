@@ -8,6 +8,7 @@ import {
 } from '@/components/common/FloorDetailsReassessmentTable';
 import type { MappedFloorDetail } from '@/types/reassessment.types';
 import type { SharedAutoScrollController } from '@/hooks/ptis/reassessment/useSharedAutoScroll';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface OldFloorDetailsProps {
   data: MappedFloorDetail[];
@@ -18,13 +19,21 @@ interface OldFloorDetailsProps {
 export function OldFloorDetails({ data, scrollContainerRef,  autoScrollController, }: OldFloorDetailsProps) {
   const t = useTranslations('reassessment');
 
+  const floorLabel = useAliasLabel('Floor', t('floorDetails.columns.floor'));
+  const conYearLabel = useAliasLabel('Construction_Year', t('floorDetails.columns.conYear'));
+  const asstYearLabel = useAliasLabel('Assessment', t('floorDetails.columns.asstYear'));
+  const constTypeLabel = useAliasLabel('Construction_Type', t('floorDetails.columns.constType'));
+  const useLabel = useAliasLabel('Use', t('floorDetails.columns.use'));
+  const carpetAreaLabel = useAliasLabel('Carpet_Area', t('floorDetails.columns.carpetAreaSqFtM'));
+  const builtUpAreaLabel = useAliasLabel('Builtup_Area', t('floorDetails.columns.builtUpAreaSqFtM'));
+
   const formatNumberish = (val: unknown): string =>
     typeof val === 'number' ? val.toLocaleString() : '-';
 
   const oldColumns: FloorDetailsReassessmentTableColumn[] = [
     {
       key: 'floor',
-      label: t('floorDetails.columns.floor'),
+      label: floorLabel,
       width: '64px',
       align: 'center',
       cellClassName: 'font-bold',
@@ -41,7 +50,7 @@ export function OldFloorDetails({ data, scrollContainerRef,  autoScrollControlle
     // },
     {
       key: 'conYear',
-      label: t('floorDetails.columns.conYear'),
+      label: conYearLabel,
       width: '96px',
       align: 'center',
       render: (_val, row) => (
@@ -50,7 +59,7 @@ export function OldFloorDetails({ data, scrollContainerRef,  autoScrollControlle
     },
     {
       key: 'asstYear',
-      label: t('floorDetails.columns.asstYear'),
+      label: asstYearLabel,
       width: '96px',
       align: 'center',
       render: (_val, row) => (
@@ -59,7 +68,7 @@ export function OldFloorDetails({ data, scrollContainerRef,  autoScrollControlle
     },
     {
       key: 'constType',
-      label: t('floorDetails.columns.constType'),
+      label: constTypeLabel,
       width: '96px',
       align: 'center',
       cellClassName: 'font-bold text-sky-800',
@@ -69,7 +78,7 @@ export function OldFloorDetails({ data, scrollContainerRef,  autoScrollControlle
     },
     {
       key: 'use',
-      label: t('floorDetails.columns.use'),
+      label: useLabel,
       width: '128px',
       align: 'center',
       cellClassName: 'text-emerald-700',
@@ -79,7 +88,7 @@ export function OldFloorDetails({ data, scrollContainerRef,  autoScrollControlle
     },
     {
       key: 'carpetAreaSqFt',
-      label: t('floorDetails.columns.carpetAreaSqFtM'),
+      label: carpetAreaLabel,
       width: '144px',
       align: 'center',
       cellClassName: 'text-emerald-700 font-mono',
@@ -87,7 +96,7 @@ export function OldFloorDetails({ data, scrollContainerRef,  autoScrollControlle
     },
     {
       key: 'builtUpAreaSqFt',
-      label: t('floorDetails.columns.builtUpAreaSqFtM'),
+      label: builtUpAreaLabel,
       width: '144px',
       align: 'center',
       cellClassName: 'text-emerald-700 font-mono',

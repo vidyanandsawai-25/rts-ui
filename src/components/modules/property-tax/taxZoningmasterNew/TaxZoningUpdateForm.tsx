@@ -10,6 +10,7 @@ import { TextArea } from "@/components/common/Textarea";
 import { TaxZone, Ward } from "@/types/taxZoningRange.types";
 import { comparePropertyNo } from "@/hooks/taxZoningRange/useTaxZoningRange";
 import { DESCRIPTION_SANITIZE } from "@/lib/utils/validation-rules";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface TaxZoningUpdateFormProps {
   wardsData: Ward[];
@@ -59,6 +60,9 @@ export default function TaxZoningUpdateForm({
   onSubmit,
 }: TaxZoningUpdateFormProps) {
   const tUi = useTranslations("taxZoningRange.ui.form");
+  const tRoot = useTranslations("taxZoningRange");
+  const wardLabel = useAliasLabel("Ward", tRoot("aliasFallback.ward"));
+  const taxZoneLabel = useAliasLabel("Tax Zone", tRoot("aliasFallback.taxZone"));
   const zoneOptions = taxZones.map((z) => ({ label: z.taxZoneNo, value: z.id.toString() }));
   const wardOptions = wardsData.map((w) => ({ label: w.wardNo, value: w.id.toString() }));
 
@@ -80,7 +84,7 @@ export default function TaxZoningUpdateForm({
         <div className="flex flex-col">
           <div className="flex justify-between items-center mb-2">
             <Label required className="text-[12px] font-extrabold text-[#0b2f5b]">
-              {tUi("selectWards")}
+              {tUi("selectWards", { ward: wardLabel })}
             </Label>
             <span className="text-[#17508e] text-[10px] bg-[#eef5fd] px-2 py-0.5 rounded-full">
               {selectedWards.length} {tUi("selected")}
@@ -91,7 +95,7 @@ export default function TaxZoningUpdateForm({
               options={wardOptions}
               value={selectedWards.map(String)}
               onChange={(vals) => setSelectedWards(vals.map(Number))}
-              placeholder={tUi("selectWardsPlaceholder")}
+              placeholder={tUi("selectWardsPlaceholder", { ward: wardLabel })}
               styles={{
                 trigger: "border-[#c9d7e7] text-[12px] font-bold text-[#42526b] focus:ring-[#2e7cc9]",
                 searchInput: "text-[12px]",
@@ -101,10 +105,10 @@ export default function TaxZoningUpdateForm({
           {isMultiWard && (
             <div className="mt-2 text-[10px] font-bold text-[#9a6200] bg-[#fff9ed] p-2 rounded border border-[#ead6ad] flex items-start gap-1.5">
               <span>!</span>
-              <span>{tUi("multiWardNote")}</span>
+              <span>{tUi("multiWardNote", { ward: wardLabel })}</span>
             </div>
           )}
-          {submitted && !isWardValid && <ValidationMessage message={tUi("wardRequired")} />}
+          {submitted && !isWardValid && <ValidationMessage message={tUi("wardRequired", { ward: wardLabel })} />}
         </div>
 
         {/* Property Range (hidden if multiple wards) */}
@@ -118,7 +122,7 @@ export default function TaxZoningUpdateForm({
                 options={propertyOptions}
                 value={propertyFrom}
                 onChange={(_, val) => setPropertyFrom(val)}
-                placeholder={noWardSelected ? tUi("selectWardFirst") : tUi("propertyFromPlaceholder")}
+                placeholder={noWardSelected ? tUi("selectWardFirst", { ward: wardLabel }) : tUi("propertyFromPlaceholder")}
                 disabled={noWardSelected || propertyOptions.length === 0}
                 disableSearch={false}
               />
@@ -131,7 +135,7 @@ export default function TaxZoningUpdateForm({
                 options={toPropertyOptions}
                 value={propertyTo}
                 onChange={(_, val) => setPropertyTo(val)}
-                placeholder={noWardSelected ? tUi("selectWardFirst") : tUi("propertyToPlaceholder")}
+                placeholder={noWardSelected ? tUi("selectWardFirst", { ward: wardLabel }) : tUi("propertyToPlaceholder")}
                 disabled={noWardSelected || propertyOptions.length === 0}
                 disableSearch={false}
               />
@@ -147,22 +151,22 @@ export default function TaxZoningUpdateForm({
         {/* Tax Zone */}
         <div className="flex flex-col">
           <Label required className="text-[11px] font-extrabold text-[#42526b] mb-1">
-            {tUi("taxZoneNo")}
+            {tUi("taxZoneNo", { taxZone: taxZoneLabel })}
           </Label>
           <SearchSelect
             name="taxZone"
             options={zoneOptions}
             value={selectedZone}
             onChange={(_, val) => setSelectedZone(val)}
-            placeholder={tUi("selectZone")}
+            placeholder={tUi("selectZone", { taxZone: taxZoneLabel })}
           />
-          {submitted && !isZoneValid && <ValidationMessage message={tUi("zoneRequired")} />}
+          {submitted && !isZoneValid && <ValidationMessage message={tUi("zoneRequired", { taxZone: taxZoneLabel })} />}
         </div>
 
         {/* Zone Description */}
         <div className="flex flex-col">
           <TextArea
-            label={tUi("zoneDescription")}
+            label={tUi("zoneDescription", { taxZone: taxZoneLabel })}
             required
             value={description}
             onChange={(e) => setDescription(sanitizeDescription(e.target.value))}

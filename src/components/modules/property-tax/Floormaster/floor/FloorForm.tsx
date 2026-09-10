@@ -15,6 +15,7 @@ import {
 } from '@/app/[locale]/property-tax/floormaster/actions';
 
 import { FloorFormModel, FloorRangeFormModel, FloorRangePayload, Floor } from '@/types/floor.types';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import { FloorFormFields } from './FloorFormFields';
 import { FloorRangeFields } from './FloorRangeFields';
 import type React from 'react';
@@ -49,6 +50,8 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
   const router = useRouter();
   const t = useTranslations('floor.floor');
   const tCommon = useTranslations('common');
+  const floorLabel = useAliasLabel('Floor', t('aliasFallback.floor'));
+  const floorsLabel = useAliasLabel('Floors', t('aliasFallback.floors'));
   const isEdit = Boolean(id);
 
   const [open, setOpen] = useState(true);
@@ -249,7 +252,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
         }
 
         const floorsCreated = rangeData.rangeTo - rangeData.rangeFrom + 1;
-        toast.success(t('messages.createRangeSuccess', { count: floorsCreated }));
+        toast.success(t('messages.createRangeSuccess', { count: floorsCreated, floors: floorsLabel }));
         handleClose();
         router.refresh();
       } catch (error) {
@@ -294,8 +297,8 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
         }
 
         const successMessage = isEdit
-          ? t('messages.updateSuccess', { code: formData.floorCode })
-          : t('messages.createSuccess', { code: formData.floorCode });
+          ? t('messages.updateSuccess', { code: formData.floorCode, floor: floorLabel })
+          : t('messages.createSuccess', { code: formData.floorCode, floor: floorLabel });
 
         toast.success(successMessage);
         handleClose();
@@ -328,10 +331,10 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t('form.editTitle') : t('form.addTitle')}
+              {isEdit ? t('form.editTitle', { floor: floorLabel }) : t('form.addTitle', { floor: floorLabel })}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit ? t('form.editSubtitle') : t('form.addSubtitle')}
+              {isEdit ? t('form.editSubtitle', { floor: floorLabel }) : t('form.addSubtitle', { floor: floorLabel })}
             </div>
           </div>
         </div>
@@ -357,7 +360,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
         {!isEdit && (
           <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-4">
             <div className="text-sm font-medium text-gray-700 mb-3">
-              {t('form.entryMode')}
+              {t('form.entryMode', { floor: floorLabel })}
             </div>
             <Tabs
               value={mode}
@@ -373,7 +376,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
                   className="flex-1 py-2 px-3 rounded-lg justify-center"
                 >
                   <span className="font-medium text-sm">
-                    {t('form.singleFloor')}
+                    {t('form.singleFloor', { floor: floorLabel })}
                   </span>
                 </Tabs.Tab>
 
@@ -383,7 +386,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
                   className="flex-1 !py-2 !px-3 rounded-lg justify-center"
                 >
                   <span className="font-medium text-sm">
-                    {t('form.floorRange')}
+                    {t('form.floorRange', { floor: floorLabel })}
                   </span>
                 </Tabs.Tab>
 
@@ -399,7 +402,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
             onChange={handleToggleStatus}
             error={errors.isActive}
             labels={{
-              title: t('form.activeStatusTitle'),
+              title: t('form.activeStatusTitle', { floor: floorLabel }),
               activeText: t('form.activeStatusOn'),
               inactiveText: t('form.activeStatusOff'),
             }}
@@ -424,7 +427,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
             onBlur={handleBlur}
             isEdit={isEdit}
             labels={{
-              floorCode: t('form.floorCode'),
+              floorCode: t('form.floorCode', { floor: floorLabel }),
               floorCodePlaceholder: t('form.floorCodePlaceholder'),
               description: t('form.description'),
               descriptionPlaceholder: t('form.descriptionPlaceholder'),

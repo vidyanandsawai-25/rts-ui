@@ -48,7 +48,9 @@ export default function TaxZoningPage(props: TaxZoningPageProps) {
     isPropertyValid,
     isPropertyRangeValid,
     isFormValid,
-    onFormClear
+    onFormClear,
+    wardLabel,
+    taxZoneLabel
   } = useTaxZoning(props);
 
   return (
@@ -76,6 +78,8 @@ export default function TaxZoningPage(props: TaxZoningPageProps) {
           isFormValid={isFormValid}
           handleSubmit={handleSubmit}
           onClear={onFormClear}
+          wardLabel={wardLabel}
+          taxZoneLabel={taxZoneLabel}
         />
 
         <TaxZoningPreview
@@ -92,6 +96,8 @@ export default function TaxZoningPage(props: TaxZoningPageProps) {
           toProps={toProps}
           taxZones={props.taxZones}
           wardsData={props.wardsData}
+          wardLabel={wardLabel}
+          taxZoneLabel={taxZoneLabel}
         />
       </div>
 

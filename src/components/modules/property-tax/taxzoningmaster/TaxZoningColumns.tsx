@@ -44,11 +44,14 @@ function SortableHeader({
  * Get column definitions for the tax zoning records table
  */
 export const getTaxZoningColumns = (
-  t: (key: string) => string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: (key: string, values?: Record<string, any>) => string,
   tCommon: (key: string) => string,
   sortBy?: string,
   sortOrder?: string,
-  onSort?: (key: string) => void
+  onSort?: (key: string) => void,
+  wardLabel?: string,
+  taxZoneLabel?: string
 ): Column<ZoningRecord>[] => {
   const sortableColumns = ["wardNo", "fromProperty", "toProperty", "taxZoneNo"];
 
@@ -69,10 +72,10 @@ export const getTaxZoningColumns = (
   };
 
   return [
-    { key: "wardNo", label: createSortableLabel(t('columns.wardNo'), "wardNo") },
+    { key: "wardNo", label: createSortableLabel(t('columns.wardNo', { ward: wardLabel ?? "" }), "wardNo") },
     { key: "fromProperty", label: createSortableLabel(t('columns.fromProperty'), "fromProperty") },
     { key: "toProperty", label: createSortableLabel(t('columns.toProperty'), "toProperty") },
-    { key: "taxZoneNo", label: createSortableLabel(t('columns.taxZoneNo'), "taxZoneNo") },
+    { key: "taxZoneNo", label: createSortableLabel(t('columns.taxZoneNo', { taxZone: taxZoneLabel ?? "" }), "taxZoneNo") },
   ];
 };
 
@@ -80,10 +83,13 @@ export const getTaxZoningColumns = (
  * Get column definitions for the preview table
  */
 export const getPreviewColumns = (
-  t: (key: string) => string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: (key: string, values?: Record<string, any>) => string,
+  wardLabel?: string,
+  taxZoneLabel?: string
 ): Column<PreviewRow>[] => [
-  { key: "oldTaxZoneNo", label: t('columns.oldTaxZoneNo') || 'Old Tax Zone', headerClassName: "p-2 text-[12px]" },
-  { key: "taxZoneNo", label: t('columns.newTaxZoneNo') || 'New TaxZoneNo', headerClassName: "p-2 text-[12px]" },
-  { key: "wardNo", label: t('columns.wardNo'), headerClassName: "p-2 text-[12px]" },
+  { key: "oldTaxZoneNo", label: t('columns.oldTaxZoneNo', { taxZone: taxZoneLabel ?? "" }) || 'Old Tax Zone', headerClassName: "p-2 text-[12px]" },
+  { key: "taxZoneNo", label: t('columns.newTaxZoneNo', { taxZone: taxZoneLabel ?? "" }) || 'New TaxZoneNo', headerClassName: "p-2 text-[12px]" },
+  { key: "wardNo", label: t('columns.wardNo', { ward: wardLabel ?? "" }), headerClassName: "p-2 text-[12px]" },
   { key: "propertyNo", label: t('columns.propertyNo'), headerClassName: "p-2 text-[12px]" },
 ];

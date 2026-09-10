@@ -48,6 +48,7 @@ interface AgeFactorCvHeaderExtraProps {
     handleBulkUpdate: () => void;
     handleGenerateAll: () => void;
     editableRowsCount: number;
+    aliases?: Record<string, string>;
 }
 
 export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
@@ -82,6 +83,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
     handleBulkUpdate,
     handleGenerateAll,
     editableRowsCount,
+    aliases,
 }) => {
     const { containerRef: optionTooltipsRef, tooltip } = useOptionTooltips<HTMLDivElement>();
     return (
@@ -89,7 +91,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
             {tooltip}
             {/* Assessment Year */}
             <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-medium text-gray-600 ml-0.5">{t('filters.assessmentYear')}</span>
+                <span className="text-[12px] font-medium text-gray-600 ml-0.5">{t('filters.assessmentYear', aliases)}</span>
                 <div className="w-[140px] z-30">
                     <SearchSelect
                         name="assessmentYear"
@@ -103,7 +105,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
 
             {/* Construction Type */}
             <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-medium text-gray-600 ml-0.5">{t('filters.constructionType')}</span>
+                <span className="text-[12px] font-medium text-gray-600 ml-0.5">{t('filters.constructionType', aliases)}</span>
                 <div className="w-[280px] z-30">
                     <MultiSelect
                         name="constructionType"

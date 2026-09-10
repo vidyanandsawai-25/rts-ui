@@ -1,19 +1,23 @@
 {
   "ageFactorMaster": {
+    "defaults": {
+      "assessment": "मूल्यांकन",
+      "constructionType": "निर्माण प्रकार"
+    },
     "title": "आयु कारक मास्टर",
     "columns": {
-      "constructionType": "निर्माण प्रकार",
+      "constructionType": "{constructionType}",
       "description": "विवरण",
       "ageFrom": "आयु से",
       "ageTo": "आयु तक",
       "factor": "कारक",
-      "assessmentYear": "मूल्यांकन वर्ष",
+      "assessmentYear": "{assessment} वर्ष",
       "status": "स्थिति",
       "action": "कार्य"
     },
     "filters": {
-      "assessmentYear": "मूल्यांकन वर्ष",
-      "constructionType": "निर्माण प्रकार",
+      "assessmentYear": "{assessment} वर्ष",
+      "constructionType": "{constructionType}",
       "ageRange": "आयु सीमा",
       "factor": "कारक"
     },
@@ -33,7 +37,7 @@
       "close": "बंद करें"
     },
     "messages": {
-      "selectYearAndRange": "कृपया रिकॉर्ड बनाने से पहले मूल्यांकन वर्ष और आयु सीमा चुनें",
+      "selectYearAndRange": "कृपया रिकॉर्ड बनाने से पहले {assessment} वर्ष और आयु सीमा चुनें",
       "recordSavedSuccess": "रिकॉर्ड सफलतापूर्वक सहेजा गया",
       "actionFailed": "कार्य विफल",
       "failedToSaveRow": "पंक्ति सहेजने में विफल",
@@ -47,8 +51,8 @@
       "noRecordsMatch": "तालिका में वर्तमान चयनों से कोई रिकॉर्ड मेल नहीं खाता",
       "bulkOperationSuccess": "थोक संचालन सफल",
       "bulkOperationFailed": "थोक संचालन विफल",
-      "noConstructionTypes": "कोई निर्माण प्रकार उपलब्ध नहीं",
-      "assessmentYearMissing": "मूल्यांकन वर्ष विकल्प गायब हैं",
+      "noConstructionTypes": "कोई {constructionType} उपलब्ध नहीं",
+      "assessmentYearMissing": "{assessment} वर्ष विकल्प गायब हैं",
       "noAgeRangesAvailable": "कोई आयु सीमा उपलब्ध नहीं है। कृपया पहले आयु सीमा जोड़ें।",
       "factorRequiredForGeneration": "कृपया रिकॉर्ड जेनरेट करने से पहले 0 से अधिक फैक्टर मान दर्ज करें या लागू करें।",
       "allRecordsExist": "वर्तमान चयन के लिए सभी रिकॉर्ड पहले से मौजूद हैं",
@@ -69,8 +73,8 @@
     },
     "errors": {
       "validIdRequired": "मान्य आयु कारक सीवी आईडी आवश्यक है",
-      "constructionTypeRequired": "निर्माण प्रकार आईडी आवश्यक है",
-      "yearRangeRequired": "वर्ष सीमा आईडी आवश्यक है",
+      "constructionTypeRequired": "{constructionType} आईडी आवश्यक है",
+      "yearRangeRequired": "{assessment} वर्ष सीमा आईडी आवश्यक है",
       "updateFailed": "आयु कारक सीवी मास्टर को अपडेट करने में विफल",
       "createFailed": "आयु कारक सीवी मास्टर बनाने में विफल",
       "bulkCreateRequired": "थोक निर्माण के लिए आयु कारकों के साथ मान्य पेलोड आवश्यक है",
@@ -95,7 +99,7 @@
       "referredInAutoWardEntry": "इस आयु वेटेज को हटाया नहीं जा सकता क्योंकि यह पहले से ही कैपिटल वैल्यू कर गणना में उपयोग किया जा रहा है। कृपया पहले संबंधित रिकॉर्ड हटाएं।"
     },
     "deleteConfirmation": {
-      "title": "निर्माण प्रकार",
+      "title": "{constructionType}",
       "description": "क्या आप वाकई इस रिकॉर्ड को हटाना चाहते हैं?",
       "confirmButton": "हटाएं",
       "cancelButton": "रद्द करें",

@@ -147,7 +147,7 @@ describe('TaxZoningViewTable', () => {
 
   it('navigates to ward-wise zoning abstract page when button clicked', () => {
     render(<TaxZoningViewTable {...makeProps()} />);
-    fireEvent.click(screen.getByText('wardAbstractBtn'));
+    fireEvent.click(screen.getByText(/^wardAbstractBtn/));
     expect(pushMock).toHaveBeenCalledWith('/en/property-tax/taxzoningmaster/wardwisezoninglist');
   });
 

@@ -10,6 +10,7 @@ import type { TaxZoneFormModel } from "@/types/taxzone.types";
 import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone-master/taxzone/action";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, isAllZeros, sanitizeMultilingualText } from "@/lib/utils/validation-rules";
 import { getUserIdFromCookie } from "@/lib/utils/cookie";
 import { StatusToggleCard } from "./StatusToggleCard";
@@ -34,6 +35,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
   const t = useTranslations("taxZone");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const zoneLabel = useAliasLabel("Tax Zone", t("aliasFallback.taxZone"));
 
   // ✅ Initialize form data from server-side props
   const [formData, setFormData] = useState<TaxZoneFormModel>(
@@ -59,9 +61,9 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
 
     // Zone No: Use CODE_REGEX (alphanumeric, underscore only in between)
     if (!data.taxZoneNo.trim()) {
-      e.taxZoneNo = t("form.validation.zoneNoRequired")
+      e.taxZoneNo = t("form.validation.zoneNoRequired", { zone: zoneLabel })
     } else if (isAllZeros(data.taxZoneNo)) {
-      e.taxZoneNo = t("form.validation.zoneNoAllZeros");
+      e.taxZoneNo = t("form.validation.zoneNoAllZeros", { zone: zoneLabel });
     } else if (data.taxZoneNo.length > ZONE_NO_MAX) {
       e.taxZoneNo = t("form.validation.zoneNoMax");
     } else if (!CODE_REGEX.test(data.taxZoneNo)) {
@@ -93,7 +95,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
     }
 
     return e;
-  }, [t]);
+  }, [t, zoneLabel]);
 
   const showError = (field: keyof TaxZoneFormModel) =>
     touched[field] && !!errors[field];
@@ -201,7 +203,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
       if (res && !res.ok) {
         if (res.error === "duplicate") {
           toast.error(
-            t("form.validation.duplicateError")
+            t("form.validation.duplicateError", { zone: zoneLabel })
           );
         } else if (res.error === "invalid_id") {
           toast.error(t("form.messages.invalidIdError"));

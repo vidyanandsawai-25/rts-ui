@@ -32,7 +32,8 @@ export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps>
     isBulkUpdating,
     isUpdating,
     isApplyDisabled,
-    isBulkUpdateDisabled
+    isBulkUpdateDisabled,
+    aliases
 }) => {
     const { containerRef: optionTooltipsRef, tooltip } = useOptionTooltips<HTMLDivElement>();
     return (
@@ -44,8 +45,8 @@ export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps>
                         options={assessmentYearOptions}
                         value={selectedYear}
                         onChange={(_, val) => handleAssessmentYearChange(val)}
-                        label={t('filters.assessmentYear')}
-                        placeholder={t('filters.assessmentYear')}
+                        label={t('filters.assessmentYear', aliases)}
+                        placeholder={t('placeholders.selectAssessmentYear', aliases)}
                     />
                 </div>
                 <div className="min-w-[200px]">
@@ -53,8 +54,8 @@ export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps>
                         options={constructionTypeOptions}
                         value={constructionType}
                         onChange={(_, val) => handleConstructionTypeChange(val)}
-                        label={t('filters.constructionType')}
-                        placeholder={t('filters.constructionType')}
+                        label={t('filters.constructionType', aliases)}
+                        placeholder={t('placeholders.selectConstructionType', aliases)}
                     />
                 </div>
                 <div className="min-w-[100px]">

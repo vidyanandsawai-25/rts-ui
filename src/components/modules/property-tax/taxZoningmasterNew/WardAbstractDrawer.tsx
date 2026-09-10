@@ -7,6 +7,7 @@ import { MasterTable, Column } from "@/components/common/MasterTable";
 import { Card } from "@/components/common/Card";
 import { useWardAbstract } from "@/hooks/taxZoningRange/useWardAbstract";
 import { WardZoningAbstractRow } from "@/types/taxZoningRange.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface WardAbstractDrawerProps {
   data: WardZoningAbstractRow[];
@@ -51,6 +52,9 @@ export default function WardAbstractDrawer({
   searchInput,
 }: WardAbstractDrawerProps) {
   const tUi = useTranslations("taxZoningRange.ui.wardAbstract");
+  const tRoot = useTranslations("taxZoningRange");
+  const wardLabel = useAliasLabel("Ward", tRoot("aliasFallback.ward"));
+  const taxZoneLabel = useAliasLabel("Tax Zone", tRoot("aliasFallback.taxZone"));
   const locale = useLocale();
   const dateLocale = locale === "hi" ? "hi-IN" : locale === "mr" ? "mr-IN" : "en-IN";
   const { filteredData } = useWardAbstract(data);
@@ -90,7 +94,7 @@ export default function WardAbstractDrawer({
   const columns: Column<AbstractTableRow & Record<string, unknown>>[] = [
     {
       key: "wardNo",
-      label: tUi("columns.wardNo"),
+      label: tUi("columns.wardNo", { ward: wardLabel }),
       align: "center",
       render: (val, row) => (
         row.isTotalRow
@@ -104,7 +108,7 @@ export default function WardAbstractDrawer({
     { key: "coverage", label: tUi("columns.coveragePercent"), align: "center", render: (val) => `${Number(val).toFixed(2)}%` },
     ...zoneLabels.map((label) => ({
       key: `zone_${label}` as keyof (AbstractTableRow & Record<string, unknown>),
-      label: `${tUi("columns.zonePrefix")} ${label}`,
+      label: `${tUi("columns.zonePrefix", { taxZone: taxZoneLabel })} ${label}`,
       align: "center" as const,
       render: (_: unknown, row: AbstractTableRow) => (row.zoneCounts[label] ?? 0).toLocaleString(dateLocale),
     })),

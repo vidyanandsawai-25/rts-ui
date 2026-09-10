@@ -19,6 +19,8 @@ interface TaxZoningPreviewProps {
   toProps: string;
   taxZones: TaxZoningPageProps['taxZones'];
   wardsData: TaxZoningPageProps['wardsData'];
+  wardLabel?: string;
+  taxZoneLabel?: string;
 }
 
 export const TaxZoningPreview = ({
@@ -35,6 +37,8 @@ export const TaxZoningPreview = ({
   toProps,
   taxZones,
   wardsData,
+  wardLabel,
+  taxZoneLabel,
 }: TaxZoningPreviewProps) => {
   return (
     <Card
@@ -57,25 +61,25 @@ export const TaxZoningPreview = ({
       <div className="grid grid-cols-3 gap-3 px-4 py-3">
         <div className="border border-blue-200 bg-[#F1F7FF] rounded-md px-2 py-1 flex justify-between items-center gap-2">
           <p className="text-[12px] font-semibold text-blue-700">
-            {t('form.taxZone')}
+            {t('form.taxZone', { taxZone: taxZoneLabel ?? '' })}
           </p>
           <p className="text-[12px] text-gray-900">
             {zone
               ? (taxZones.items.find(z => String(z.id) === zone)?.taxZoneNo || zone)
-              : t('form.selectTaxZone')}
+              : t('form.selectTaxZone', { taxZone: taxZoneLabel ?? '' })}
           </p>
         </div>
 
         <div className="border border-blue-200 bg-[#F1F7FF] rounded-md px-2 py-1 flex justify-between items-center gap-2">
           <p className="text-[12px] font-semibold text-blue-700">
-            {t('form.ward')}
+            {t('form.ward', { ward: wardLabel ?? '' })}
           </p>
           <p className="text-[12px] text-gray-900 text-right">
             {Array.isArray(ward) && ward.length > 0
               ? ward.map(wardId =>
                 wardsData.items.find(w => String(w.id) === wardId)?.wardNo || wardId
               ).join(", ")
-              : t('form.selectWard')}
+              : t('form.selectWard', { ward: wardLabel ?? '' })}
           </p>
         </div>
 
@@ -101,7 +105,7 @@ export const TaxZoningPreview = ({
               {t('preview.noPropertiesToPreview')}
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              {t('preview.selectZoneWardProperty')}
+              {t('preview.selectZoneWardProperty', { taxZone: taxZoneLabel ?? '', ward: wardLabel ?? '' })}
             </p>
           </div>
         )}

@@ -4,6 +4,7 @@ import {
   formatReassessmentTaxCurrency,
   sumReassessmentTaxAmounts,
 } from '@/lib/utils/format';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export function useReassessmentSummaryCards({
   oldFloorDetails,
@@ -16,6 +17,8 @@ export function useReassessmentSummaryCards({
   taxRows: ReassessmentTaxRow[];
   t: (key: string) => string;
 }) {
+  const builtUpAreaLabel = useAliasLabel('Builtup_Area', t('summaryCards.carpetAreaLabel'));
+
   const calculateTotalArea = (floors: MappedFloorDetail[]) =>
     floors.reduce((sum, f) => sum + ((f.builtUpAreaSqM ?? f.carpetAreaSqM) || 0), 0);
 
@@ -40,7 +43,7 @@ export function useReassessmentSummaryCards({
 
   const summaryCardsData = [
     {
-      label: t('summaryCards.carpetAreaLabel'),
+      label: builtUpAreaLabel,
       oldValue: `${oldTotalArea.toFixed(2)}`,
       newValue: `${newTotalArea.toFixed(2)}`,
       difference: `${areaDiff >= 0 ? '+' : ''}${areaDiff.toFixed(2)}`,

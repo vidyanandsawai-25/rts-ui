@@ -12,6 +12,8 @@ export interface LoadingPageProps {
   messageKey?: string;
   /** Custom description key. Defaults to 'description' */
   descriptionKey?: string;
+  /** Translation aliases for dynamically formatted messages */
+  aliases?: Record<string, string>;
 }
 
 /**
@@ -37,6 +39,7 @@ export function LoadingPage({
   translationNamespace = 'common.loading',
   messageKey = 'message',
   descriptionKey = 'description',
+  aliases,
 }: LoadingPageProps) {
   const t = useTranslations(translationNamespace);
 
@@ -51,12 +54,12 @@ export function LoadingPage({
 
               {/* Loading Message */}
               <h2 className="text-xl font-semibold text-gray-900">
-                {t(messageKey)}
+                {t(messageKey, aliases)}
               </h2>
 
               {/* Loading Description */}
               <p className="text-gray-600 text-sm">
-                {t(descriptionKey)}
+                {t(descriptionKey, aliases)}
               </p>
             </div>
           </CardContent>

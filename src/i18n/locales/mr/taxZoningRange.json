@@ -1,6 +1,10 @@
 {
   "taxZoningRange": {
     "title": "कर झोनिंग",
+    "aliasFallback": {
+      "taxZone": "कर क्षेत्र",
+      "ward": "प्रभाग"
+    },
     "messages": {
       "fetchWardsFailed": "प्रभाग लोड करण्यात अक्षम",
       "fetchTaxZonesFailed": "कर क्षेत्र लोड करण्यात अक्षम",
@@ -75,27 +79,27 @@
         "totalProperties": "एकूण मालमत्ता",
         "coveredInZoning": "झोनिंगमध्ये समाविष्ट मालमत्ता",
         "pendingForZoning": "झोनिंगसाठी शिल्लक मालमत्ता",
-        "zoneWiseCount": "कर क्षेत्र-निहाय मालमत्ता संख्या",
+        "zoneWiseCount": "{taxZone}-निहाय मालमत्ता संख्या",
         "noZoneData": "अद्याप कोणताही क्षेत्र डेटा नाही",
-        "zonePrefix": "क्षेत्र"
+        "zonePrefix": "{taxZone}"
       },
       "viewTable": {
         "heading": "कर झोनिंग नोंदी पहा",
-        "wardAbstractBtn": "प्रभाग-निहाय झोनिंग सारांश",
+        "wardAbstractBtn": "{ward}-निहाय झोनिंग सारांश",
         "bulkUpdateBtn": "सामूहिक अद्यतन",
         "pendingListBtn": "शिल्लक यादी",
         "exportExcelBtn": "एक्सेल निर्यात करा",
         "exportingLabel": "निर्यात होत आहे...",
         "addZoningRangeBtn": "झोनिंग रेंज जोडा",
-        "wardNo": "प्रभाग क्रमांक",
-        "allWards": "सर्व प्रभाग",
+        "wardNo": "{ward} क्रमांक",
+        "allWards": "सर्व {ward}",
         "propertyFrom": "मालमत्ता पासून",
         "propertyTo": "मालमत्ता पर्यंत",
         "allOption": "सर्व",
-        "selectWardFirst": "आधी एक प्रभाग निवडा",
-        "taxZone": "कर क्षेत्र",
-        "allZones": "सर्व क्षेत्र",
-        "zoneDescription": "क्षेत्र वर्णन",
+        "selectWardFirst": "आधी एक {ward} निवडा",
+        "taxZone": "{taxZone}",
+        "allZones": "सर्व {taxZone}",
+        "zoneDescription": "{taxZone} वर्णन",
         "searchPlaceholder": "परिसर किंवा झोनिंग वर्णन शोधा",
         "apply": "लागू करा",
         "reset": "रीसेट करा",
@@ -110,33 +114,33 @@
         }
       },
       "form": {
-        "selectWards": "प्रभाग निवडा",
+        "selectWards": "{ward} निवडा",
         "selected": "निवडले",
-        "multiWardNote": "एकाधिक प्रभाग निवडले आहेत. मालमत्ता श्रेणी स्वयंचलितपणे संपूर्ण प्रभागाला लागू होईल.",
+        "multiWardNote": "एकाधिक {ward} निवडले आहेत. मालमत्ता श्रेणी स्वयंचलितपणे संपूर्ण {ward}ला लागू होईल.",
         "propertyFrom": "मालमत्ता पासून",
         "propertyTo": "मालमत्ता पर्यंत",
-        "taxZoneNo": "कर क्षेत्र क्रमांक",
-        "selectZone": "क्षेत्र निवडा",
-        "zoneDescription": "क्षेत्र वर्णन",
+        "taxZoneNo": "{taxZone} क्रमांक",
+        "selectZone": "{taxZone} निवडा",
+        "zoneDescription": "{taxZone} वर्णन",
         "charsSuffix": "अक्षरे",
         "addTitle": "झोनिंग रेंज जोडा",
         "updateTitle": "झोनिंग रेंज अद्यतनित करा",
         "resetFormBtn": "फॉर्म रीसेट करा",
         "saveBtn": "जतन करा",
         "savingBtn": "जतन करत आहे...",
-        "selectWardsPlaceholder": "प्रभाग निवडा...",
-        "selectWardFirst": "आधी एक प्रभाग निवडा",
+        "selectWardsPlaceholder": "{ward} निवडा...",
+        "selectWardFirst": "आधी एक {ward} निवडा",
         "propertyFromPlaceholder": "उदा. 1",
         "propertyToPlaceholder": "उदा. 50",
         "descriptionPlaceholder": "परिसर, रस्ता, खुणा आणि झोनिंग निकषांचे वर्णन करा (किमान 15 अक्षरे)",
         "descriptionHint": "फक्त अक्षरे, संख्या, रिकाम्या जागा आणि मूलभूत विरामचिन्हे (. , - ' / ( )) यांना परवानगी आहे",
-        "wardRequired": "किमान एक प्रभाग आवश्यक आहे",
+        "wardRequired": "किमान एक {ward} आवश्यक आहे",
         "rangeInvalid": "मालमत्ता पर्यंत, मालमत्ता पासून पेक्षा जास्त किंवा समान असावी",
-        "zoneRequired": "कर क्षेत्र आवश्यक आहे",
+        "zoneRequired": "{taxZone} आवश्यक आहे",
         "descriptionInvalid": "वर्णन 15 ते 200 अक्षरांच्या दरम्यान असावे"
       },
       "bulk": {
-        "title": "सामूहिक कर क्षेत्र अद्यतन",
+        "title": "सामूहिक {taxZone} अद्यतन",
         "subtitle": "आवश्यक क्रम: सामूहिक अद्यतन उघडा, टेम्पलेट डाउनलोड करा, फाइल आयात करा, पडताळणी करा, अद्यतनित करा.",
         "step1Title": "पायरी 1 - मान्यताप्राप्त टेम्पलेट डाउनलोड करा",
         "step1Desc": "स्तंभ: प्रभाग क्रमांक, मालमत्ता पासून, मालमत्ता पर्यंत, कर क्षेत्र आणि क्षेत्र वर्णन. क्षेत्र वर्णनामध्ये परिसर, रस्ता किंवा खुणांचे तपशील समाविष्ट करा. किमान लांबी: 15 अक्षरे.",
@@ -159,10 +163,10 @@
         "statusNew": "नवीन",
         "statusInvalid": "अवैध",
         "statusUpdated": "अद्यतनित",
-        "colWard": "प्रभाग",
+        "colWard": "{ward}",
         "colFrom": "पासून",
         "colTo": "पर्यंत",
-        "colZone": "क्षेत्र",
+        "colZone": "{taxZone}",
         "colStatus": "स्थिती",
         "colErrors": "त्रुटी",
         "resolveInvalid": "लागू करण्यापूर्वी अवैध पंक्ती दुरुस्त करा, अन्यथा त्या वगळल्या जातील.",
@@ -170,7 +174,7 @@
         "noFileSelected": "कोणतीही फाइल निवडलेली नाही."
       },
       "wardAbstract": {
-        "title": "प्रभाग-निहाय आणि क्षेत्र-निहाय झोनिंग सारांश",
+        "title": "{ward}-निहाय आणि {taxZone}-निहाय झोनिंग सारांश",
         "totalProperties": "एकूण मालमत्ता",
         "covered": "समाविष्ट मालमत्ता",
         "pending": "शिल्लक मालमत्ता",
@@ -178,12 +182,12 @@
         "searchPlaceholder": "प्रभाग क्रमांक शोधा...",
         "totalRowLabel": "एकूण",
         "columns": {
-          "wardNo": "प्रभाग क्रमांक",
+          "wardNo": "{ward} क्रमांक",
           "total": "एकूण मालमत्ता",
           "covered": "समाविष्ट",
           "pending": "शिल्लक",
           "coveragePercent": "कव्हरेज %",
-          "zonePrefix": "क्षेत्र"
+          "zonePrefix": "{taxZone}"
         }
       }
     }
