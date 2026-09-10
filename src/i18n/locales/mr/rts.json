@@ -982,6 +982,7 @@
     "approvedApplications": "मंजूर अर्ज",
     "pendingApplications": "प्रलंबित अर्ज",
     "rejectedApplications": "नामंजूर अर्ज",
+    "revertedApplications": "परत पाठवलेले अर्ज",
     "applicationsTimeline": "तुमचे अर्ज आणि SLA कालावधी",
     "timelineDescription": "प्रत्येक नगरपालिका सेवा कायदेशीर लोकसेवा हक्क कालमर्यादेने बांधलेली आहे.",
     "searchPlaceholder": "आयडी किंवा सेवा नावाने शोधा...",

@@ -973,6 +973,7 @@
     "approvedApplications": "Approved Applications",
     "pendingApplications": "Pending Applications",
     "rejectedApplications": "Rejected Applications",
+    "revertedApplications": "Reverted Applications",
     "applicationsTimeline": "Your Applications & SLA Timeline",
     "timelineDescription": "Each municipal service is bound by legal Right to Service delivery timelines.",
     "searchPlaceholder": "Search by ID or service name...",
