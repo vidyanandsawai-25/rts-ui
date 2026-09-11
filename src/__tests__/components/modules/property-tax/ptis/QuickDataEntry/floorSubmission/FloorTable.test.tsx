@@ -125,6 +125,7 @@ describe('FloorTable', () => {
     useLookup: [],
     subTypeData: [],
     setEditingFloorForm: vi.fn(),
+    categoryName: 'Individual',
   };
 
   beforeEach(() => {
@@ -222,6 +223,14 @@ describe('FloorTable', () => {
 
   it('hides Data Entry Same As button when category is Apartment and partitionNo is null or empty', () => {
     render(<FloorTable {...mockProps} categoryName="Apartment" partitionNo="" />);
+    expect(screen.queryByTestId('data-entry-button')).toBeNull();
+  });
+
+  it('hides Data Entry Same As button when property has no category (categoryName is undefined or empty)', () => {
+    render(<FloorTable {...mockProps} categoryName="" />);
+    expect(screen.queryByTestId('data-entry-button')).toBeNull();
+
+    render(<FloorTable {...mockProps} categoryName={undefined} />);
     expect(screen.queryByTestId('data-entry-button')).toBeNull();
   });
 });
