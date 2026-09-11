@@ -6,13 +6,14 @@ import { Badge } from '@/components/common';
 
 export function getValueOverviewColumns(
   t: (key: string) => string,
-  taxes: OverviewTax[]
+  taxes: OverviewTax[],
+  aliasLabels?: { typeOfUseLabel?: string; assessmentYearLabel?: string }
 ): Column<ValueOverviewRow>[] {
   const fixed: Column<ValueOverviewRow>[] = [
     {
       // TYPE OF USE + DESCRIPTION merged into one column, e.g. "C - अनिवासी".
       key: 'typeOfUseCode',
-      label: t('overview.columns.typeOfUse'),
+      label: aliasLabels?.typeOfUseLabel || t('overview.columns.typeOfUse'),
       width: '240px',
       render: (_v, row) => {
         const code = row.typeOfUseCode || String(row.typeOfUseId);
@@ -38,7 +39,7 @@ export function getValueOverviewColumns(
     },
     {
       key: 'yearRangeLabel',
-      label: t('overview.columns.assessmentYear'),
+      label: aliasLabels?.assessmentYearLabel || t('overview.columns.assessmentYear'),
       width: '110px',
       align: 'center',
       render: (_v, row) => <span className="text-slate-600">{row.yearRangeLabel || '—'}</span>,

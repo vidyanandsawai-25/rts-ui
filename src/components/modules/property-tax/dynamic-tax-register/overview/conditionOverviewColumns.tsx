@@ -10,12 +10,16 @@ export interface GetConditionOverviewColumnsParams {
   t: (key: string) => string;
   fields: FieldConfig[];
   resolveApiValueLabel?: (fieldId: string, rawValue: string) => string | undefined;
+  assessmentYearLabel?: string;
+  assessmentBasisLabel?: string;
 }
 
 export function getConditionOverviewColumns({
   t,
   fields,
   resolveApiValueLabel,
+  assessmentYearLabel,
+  assessmentBasisLabel,
 }: GetConditionOverviewColumnsParams): Column<ConditionOverviewRow>[] {
   return [
     {
@@ -80,14 +84,14 @@ export function getConditionOverviewColumns({
     },
     {
       key: 'yearRangeLabel',
-      label: t('overview.columns.assessmentYear'),
+      label: assessmentYearLabel || t('overview.columns.assessmentYear'),
       width: '120px',
       align: 'center',
       render: (_v, row) => <span className="text-slate-600">{row.yearRangeLabel || t('overview.allYears')}</span>,
     },
     {
       key: 'assessmentBasis',
-      label: t('condition.assessmentBasis'),
+      label: assessmentBasisLabel || t('condition.assessmentBasis'),
       width: '110px',
       align: 'center',
       render: (_v, row) => (

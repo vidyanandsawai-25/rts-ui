@@ -30,6 +30,7 @@ import {
 } from '@/types/dynamic-tax-register.types';
 import { RefreshButton } from '@/components/common/ActionButtons';
 import { getDynamicTaxRegisterColumns } from './dynamicTaxRegisterColumns';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 /** Calculation-mode stat cards shown above the register table — double as the Calculation
  *  Mode filter (clicking a card applies it; clicking the active one clears back to "All
@@ -128,6 +129,7 @@ export default function DynamicTaxRegister({
   status,
 }: DynamicTaxRegisterProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const assessmentStatusLabel = `${useAliasLabel('Assessment', t('aliasFallback.assessment'))} ${t('aliasFallback.statusSuffix')}`;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -184,7 +186,7 @@ export default function DynamicTaxRegister({
   // Column widths are deliberately tight: they sum to the table's preferred width, and MasterTable
   // renders a w-full table inside an overflow-auto container — so an oversized total is exactly
   // what produces a horizontal scrollbar. Keep the total under ~1450px when adding a column.
-  const columns = getDynamicTaxRegisterColumns({ t, pageNumber, pageSize, MODE_BADGE_CLASS, RULE_CATEGORY_LABEL_KEY, goToConfigure });
+  const columns = getDynamicTaxRegisterColumns({ t, pageNumber, pageSize, MODE_BADGE_CLASS, RULE_CATEGORY_LABEL_KEY, goToConfigure, assessmentStatusLabel });
 
   return (
     <PageContainer className="p-6">
@@ -312,7 +314,7 @@ export default function DynamicTaxRegister({
             tableClassName="text-xs w-max min-w-full border-collapse"
             theadClassName="[&_th]:whitespace-nowrap [&_th]:p-3 [&_th]:border-r [&_th]:border-[#DCEAFF]"
             rowClassName={() => 'hover:bg-slate-50/40 transition-colors [&_td]:p-2.5 [&_td]:border-r [&_td]:border-slate-100'}
-            height="md"
+            height="lg"
             getRowKey={(row) => String((row as DynamicTaxRegisterRow).taxId)}
           />
         </div>

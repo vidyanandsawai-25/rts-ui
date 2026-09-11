@@ -24,6 +24,7 @@ import {
 } from '@/app/[locale]/property-tax/dynamic-tax-register/manageRule/action';
 import { ALPHANUMERIC_PUNCTUATION_REGEX, sanitizeAlphanumericPunctuation } from '@/lib/utils/validation-rules';
 import { getManageRuleColumns } from './manageRuleColumns';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface FormState {
   displayName: string;
@@ -58,6 +59,7 @@ export default function ManageRuleDrawer({
   calculationModes: TaxCalculationModeOption[];
 }) {
   const t = useTranslations('dynamicTaxRegister');
+  const typeOfUseLabel = useAliasLabel('Type_Of_Use', t('aliasFallback.typeOfUse'));
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -112,7 +114,7 @@ export default function ManageRuleDrawer({
     { label: t('manageRule.masterSource.placeholder'), value: '' },
     { label: t('manageRule.masterSource.propertyType'), value: 'PropertyType' },
     { label: t('manageRule.masterSource.ownerType'), value: 'OwnerType' },
-    { label: t('manageRule.masterSource.typeOfUse'), value: 'TypeOfUse' },
+    { label: typeOfUseLabel, value: 'TypeOfUse' },
   ];
 
   const rules = initialRules;

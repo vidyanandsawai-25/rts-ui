@@ -2,7 +2,10 @@ import type { Column } from '@/components/common/MasterTable';
 import type { MasterOverviewRow } from '@/types/dynamic-tax-register.types';
 import { formatConditionEffect } from '@/lib/utils/dynamic-tax-register/dynamicTaxFormatters';
 
-export function getMasterOverviewColumns(t: (key: string) => string): Column<MasterOverviewRow>[] {
+export function getMasterOverviewColumns(
+  t: (key: string) => string,
+  aliasLabels?: { assessmentYearLabel?: string }
+): Column<MasterOverviewRow>[] {
   return [
     {
       key: 'taxName',
@@ -31,7 +34,7 @@ export function getMasterOverviewColumns(t: (key: string) => string): Column<Mas
     },
     {
       key: 'yearRangeLabel',
-      label: t('overview.columns.assessmentYear'),
+      label: aliasLabels?.assessmentYearLabel || t('overview.columns.assessmentYear'),
       width: '120px',
       align: 'center',
       render: (_v, row) => <span className="text-slate-600">{row.yearRangeLabel || '—'}</span>,

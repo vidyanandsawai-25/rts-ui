@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { MasterTable, Select } from '@/components/common';
 import type { MasterOverviewRow } from '@/types/dynamic-tax-register.types';
 import { getMasterOverviewColumns } from './masterOverviewColumns';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 /** Controlled Tax / Master filter bar (server-driven). Present only on the standalone Master
  *  tab; the Hybrid tab's master section renders a plain paginated list without it. */
@@ -46,9 +47,10 @@ export function MasterOverviewTable({
   loadFailed,
 }: MasterOverviewTableProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const assessmentYearLabel = `${useAliasLabel('Assessment', t('aliasFallback.assessment'))} ${t('aliasFallback.yearSuffix')}`;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  const columns = getMasterOverviewColumns(t);
+  const columns = getMasterOverviewColumns(t, { assessmentYearLabel });
 
   return (
     <div className="flex flex-col gap-3">

@@ -11,6 +11,7 @@ import type {
   TypeOfUseGroupOption,
 } from '@/types/dynamic-tax-register.types';
 import { getValueOverviewColumns } from './valueOverviewColumns';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export interface ValueOverviewTabProps {
   /** Pivot column headers (all value-based taxes) — from the server, never client-filtered. */
@@ -66,6 +67,9 @@ export function ValueOverviewTab({
   loadFailed,
 }: ValueOverviewTabProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const typeOfUseLabel = useAliasLabel('Type_Of_Use', t('aliasFallback.typeOfUse'));
+  const assessmentLabel = useAliasLabel('Assessment', t('aliasFallback.assessment'));
+  const assessmentYearLabel = `${assessmentLabel} ${t('aliasFallback.yearSuffix')}`;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const yearOptions = useMemo(
@@ -92,7 +96,10 @@ export function ValueOverviewTab({
     [descriptionOptions, t]
   );
 
-  const columns = useMemo(() => getValueOverviewColumns(t, taxes), [taxes, t]);
+  const columns = useMemo(
+    () => getValueOverviewColumns(t, taxes, { typeOfUseLabel, assessmentYearLabel }),
+    [taxes, t, typeOfUseLabel, assessmentYearLabel]
+  );
 
   // Only the genuine "no value-based taxes" case shows the empty state; during a navigation the
   // taxes list is momentarily empty, so defer to the loading table instead of flashing "empty".
@@ -109,7 +116,7 @@ export function ValueOverviewTab({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
-            {t('overview.filterYear')}
+            {assessmentYearLabel}
           </span>
           <Select options={yearOptions} value={yearValue} onChange={(_, v) => onYearChange(v)} selectSize="sm" className="w-40" />
         </div>

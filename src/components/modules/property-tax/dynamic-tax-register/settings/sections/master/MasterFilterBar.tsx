@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { Select, Input, ApplyButton } from '@/components/common';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import { ResultMode, ResultBase } from '@/types/dynamic-tax-register.types';
 import { clampResultValueInput } from '@/lib/utils/dynamic-tax-register/dynamicTaxFormatters';
 
@@ -46,6 +47,7 @@ export function MasterFilterBar({
   mstBulkMode, setMstBulkMode, mstBulkBase, setMstBulkBase, mstBulk, setMstBulk, mstBusy, handleMstBulkApply,
 }: MasterFilterBarProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const assessmentYearRangeLabel = `${useAliasLabel('Assessment', t('aliasFallback.assessment'))} ${t('aliasFallback.yearRangeSuffix')}`;
   return (
     <div className="grid grid-cols-2 gap-x-5 gap-y-3">
       {showRuleName && (
@@ -60,7 +62,7 @@ export function MasterFilterBar({
         </div>
       )}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('master.assessmentYearRange')}</span>
+        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{assessmentYearRangeLabel}</span>
         <Select value={mstYearId ? String(mstYearId) : ''} onChange={(_, v) => onMstYearChange(v)} options={mstYearSelectOptions} />
       </div>
       <div className="flex flex-col gap-1.5">
