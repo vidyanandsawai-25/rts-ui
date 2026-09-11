@@ -9,6 +9,7 @@ import { formatConditionSummary, formatConditionEffect } from '@/lib/utils/dynam
 import { ConditionItemRow } from './ConditionItemRow';
 import { ConditionEffectInputs } from './ConditionEffectInputs';
 import { PortalMultiSelectDropdown } from './PortalMultiSelectDropdown';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export interface ConditionRuleRowCardProps {
   row: ConditionRuleRow;
@@ -71,6 +72,7 @@ export function ConditionRuleRowCard({
   onPatchEffect,
 }: ConditionRuleRowCardProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const assessmentLabel = useAliasLabel('Assessment', t('aliasFallback.assessment'));
 
   return (
     <div
@@ -156,7 +158,7 @@ export function ConditionRuleRowCard({
           <div className="grid grid-cols-4 gap-3">
             <div className="flex flex-col gap-1">
               <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                {t('condition.assessmentYear')}
+                {`${assessmentLabel} ${t('aliasFallback.yearRangeSuffix')}`}
               </Label>
               {/* Multi-select: pick several year ranges (or "Select all") and each becomes its own
                   saved row. Empty = applies to all years (a single null-year catch-all row).
@@ -173,7 +175,7 @@ export function ConditionRuleRowCard({
             </div>
             <div className="flex flex-col gap-1">
               <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                {t('condition.assessmentBasis')}
+                {`${assessmentLabel} ${t('aliasFallback.basisSuffix')}`}
               </Label>
               <Select
                 value={row.assessmentBasis}

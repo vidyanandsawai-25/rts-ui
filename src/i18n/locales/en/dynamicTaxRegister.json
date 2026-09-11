@@ -1,4 +1,12 @@
 {
+  "aliasFallback": {
+    "typeOfUse": "Type of Use",
+    "assessment": "Assessment",
+    "yearSuffix": "Year",
+    "yearRangeSuffix": "Year Range",
+    "statusSuffix": "Status",
+    "basisSuffix": "Basis"
+  },
   "list": {
     "title": "Tax Percentage Master",
     "subtitle": "Rule-based tax configuration. Click Settings on any row to configure — status and flags are managed there only.",

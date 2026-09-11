@@ -72,9 +72,9 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
 
     // Zone Type: Use DESCRIPTION_REGEX (special chars in between, single space only)
     if (!data.taxZoneType.trim()) {
-      e.taxZoneType = t("form.validation.zoneTypeRequired");
+      e.taxZoneType = t("form.validation.zoneTypeRequired", { zone: zoneLabel });
     } else if (isAllZeros(data.taxZoneType)) {
-      e.taxZoneType = t("form.validation.zoneTypeAllZeros");
+      e.taxZoneType = t("form.validation.zoneTypeAllZeros", { zone: zoneLabel });
     } else if (!DESCRIPTION_REGEX.test(data.taxZoneType)) {
       e.taxZoneType = t("form.validation.zoneTypeFormat");
     }
@@ -84,7 +84,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
 
     // Remark: Use DESCRIPTION_REGEX (special chars in between, single space only)
     if (!data.remark?.trim()) {
-      e.remark = t("form.validation.remarkRequired");
+      e.remark = t("form.validation.remarkRequired", { zone: zoneLabel });
     } else if (isAllZeros(data.remark)) {
       e.remark = t("form.validation.remarkAllZeros");
     } else if (!DESCRIPTION_REGEX.test(data.remark)) {
@@ -190,8 +190,8 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
       if (res?.ok) {
         toast.success(
           res.mode === "update"
-            ? t("form.messages.updateSuccess")
-            : t("form.messages.createSuccess")
+            ? t("form.messages.updateSuccess", { zone: zoneLabel })
+            : t("form.messages.createSuccess", { zone: zoneLabel })
         );
         setOpen(false);
         router.push(`/${locale}/property-tax/taxzone-master/taxzone`);
@@ -208,15 +208,15 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
         } else if (res.error === "invalid_id") {
           toast.error(t("form.messages.invalidIdError"));
         } else {
-          toast.error(t("form.messages.error"));
+          toast.error(t("form.messages.error", { zone: zoneLabel }));
         }
         return;
       }
 
-      toast.error(t("form.messages.error"));
+      toast.error(t("form.messages.error", { zone: zoneLabel }));
     } catch (err: unknown) {
       const error = err as Error;
-      toast.error(error?.message ?? t("form.messages.error"));
+      toast.error(error?.message ?? t("form.messages.error", { zone: zoneLabel }));
     } finally {
       setIsSubmitting(false);
     }
@@ -238,10 +238,10 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t("form.editTitle") : t("form.addTitle")}
+              {isEdit ? t("form.editTitle", { zone: zoneLabel }) : t("form.addTitle", { zone: zoneLabel })}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit ? t("form.editSubtitle") : t("form.subtitle")}
+              {isEdit ? t("form.editSubtitle", { zone: zoneLabel }) : t("form.subtitle", { zone: zoneLabel })}
             </div>
           </div>
         </div>
@@ -266,8 +266,8 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
           <StatusToggleCard
             isActive={formData.isActive}
             onToggle={handleToggleStatus}
-            activeLabel={t("form.status.active")}
-            inactiveLabel={t("form.status.inactive")}
+            activeLabel={t("form.status.active", { zone: zoneLabel })}
+            inactiveLabel={t("form.status.inactive", { zone: zoneLabel })}
             statusLabel={t("form.status.label")}
           />
         )}

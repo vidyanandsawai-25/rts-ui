@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import { MasterTable } from '@/components/common/MasterTable';
 import { TaxMasterMappingRow, YearRangeOption } from '@/types/dynamic-tax-register.types';
 import { getMasterColumns } from './masterColumns';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 const MST_PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
@@ -24,6 +25,7 @@ export function MasterTableSection({
   yearRangeOptions, patchMstRow, onMstPageChange, onMstPageSizeChange,
 }: MasterTableSectionProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const assessmentYearLabel = `${useAliasLabel('Assessment', t('aliasFallback.assessment'))} ${t('aliasFallback.yearSuffix')}`;
   return (
     <MasterTable<TaxMasterMappingRow>
       columns={getMasterColumns({
@@ -34,7 +36,7 @@ export function MasterTableSection({
         labels: {
           sr: t('master.columns.sr'),
           displayValue: t('master.columns.displayValue'),
-          assessmentYear: t('master.columns.assessmentYear'),
+          assessmentYear: assessmentYearLabel,
           resultMode: t('master.columns.resultMode'),
           resultBase: t('master.columns.resultBase'),
           resultValue: t('master.columns.resultValue'),
@@ -47,6 +49,7 @@ export function MasterTableSection({
       totalPages={mstTotalPages}
       totalCount={mstTotalCount}
       pageSize={mstPageSize}
+      height="lg"
       pageSizeOptions={MST_PAGE_SIZE_OPTIONS}
       onPageChange={onMstPageChange}
       onPageSizeChange={onMstPageSizeChange}

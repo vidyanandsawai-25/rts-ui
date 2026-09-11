@@ -22,6 +22,7 @@ import {
 } from "@/app/[locale]/property-tax/taxzoningmaster/actions";
 import { UlbDocument, TaxZoningDocumentKind } from "@/types/taxZoningRange.types";
 import { TAX_ZONING_DOCUMENT_TYPE_CODE } from "@/lib/constants/document.constants";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 const KIND_TO_CODE: Record<TaxZoningDocumentKind, string> = {
   LIST: TAX_ZONING_DOCUMENT_TYPE_CODE.LIST,
@@ -43,6 +44,7 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 export default function DocumentsShowcase() {
   const t = useTranslations("taxZoningRange");
   const tUi = useTranslations("taxZoningRange.ui.certifiedDocs");
+  const zoneLabel = useAliasLabel("Tax Zone", t("aliasFallback.taxZone"));
   const { confirm } = useConfirm();
   const [activeModal, setActiveModal] = useState<TaxZoningDocumentKind | null>(null);
   const [docs, setDocs] = useState<Record<TaxZoningDocumentKind, UlbDocument | null>>({
@@ -225,7 +227,7 @@ export default function DocumentsShowcase() {
         <div className="p-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {renderDoc("LIST", tUi("listTitle"), "PDF", "bg-gradient-to-br from-[#fff1f2] to-[#ffe2e5] border border-[#f2bcc2] text-[#bd2133]", tUi("listSubtitle"))}
-            {renderDoc("MAP", tUi("mapTitle"), "MAP", "bg-gradient-to-br from-[#ecfbf5] to-[#e2f4ff] border border-[#b9ddcf] text-[#344b8e]", tUi("mapSubtitle"))}
+            {renderDoc("MAP", tUi("mapTitle", { zone: zoneLabel }), "MAP", "bg-gradient-to-br from-[#ecfbf5] to-[#e2f4ff] border border-[#b9ddcf] text-[#344b8e]", tUi("mapSubtitle"))}
           </div>
         </div>
       </div>
@@ -233,7 +235,7 @@ export default function DocumentsShowcase() {
       <Modal
         open={activeModal !== null}
         onClose={handleCloseModal}
-        title={<span className="text-[17px] font-bold text-[#0b2f5b]">{activeModal === "LIST" ? tUi("listUploadModalTitle") : tUi("mapUploadModalTitle")}</span>}
+        title={<span className="text-[17px] font-bold text-[#0b2f5b]">{activeModal === "LIST" ? tUi("listUploadModalTitle") : tUi("mapUploadModalTitle", { zone: zoneLabel })}</span>}
         maxWidth="md"
       >
         <form onSubmit={handleSaveDoc} className="p-5 flex flex-col gap-4 text-[#172033]">

@@ -70,7 +70,7 @@ export function TaxZoneMasterToolbar() {
       </div>
 
       <AddButton
-        label={tZone('list.buttons.add')}
+        label={tZone('list.buttons.add', { zone: zoneLabel })}
         onClick={() => {
           router.push(`${base}/taxzone/add`)
         }}

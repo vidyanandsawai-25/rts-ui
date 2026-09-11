@@ -25,6 +25,6 @@ describe('MasterFilterBar', () => {
 
   it('renders master filter bar controls', () => {
     render(<MasterFilterBar {...props} />);
-    expect(screen.getByText('master.assessmentYearRange')).toBeInTheDocument();
+    expect(screen.getByText('aliasFallback.assessment aliasFallback.yearRangeSuffix')).toBeInTheDocument();
   });
 });

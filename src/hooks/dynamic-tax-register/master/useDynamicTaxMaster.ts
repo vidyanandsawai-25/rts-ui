@@ -82,6 +82,7 @@ export function useDynamicTaxMaster({
     mstPage: filters.mstPage,
     mstPageSize: filters.mstPageSize,
     onMstPageChange: filters.onMstPageChange,
+    onMstPageSizeChange: filters.onMstPageSizeChange,
     effectiveMstRuleId: ruleSelection.effectiveMstRuleId,
     effectiveMasterSource: ruleSelection.effectiveMasterSource,
     mstBulkMode: filters.mstBulkMode,

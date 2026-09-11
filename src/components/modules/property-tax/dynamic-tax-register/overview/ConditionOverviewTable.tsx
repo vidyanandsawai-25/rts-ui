@@ -5,6 +5,7 @@ import { MasterTable } from '@/components/common';
 import type { ConditionOverviewRow } from '@/types/dynamic-tax-register.types';
 import type { FieldConfig } from '@/types/rule-engine';
 import { getConditionOverviewColumns } from './conditionOverviewColumns';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export interface ConditionOverviewTableProps {
   rows: ConditionOverviewRow[];
@@ -37,9 +38,12 @@ export function ConditionOverviewTable({
   loadFailed,
 }: ConditionOverviewTableProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const assessmentLabel = useAliasLabel('Assessment', t('aliasFallback.assessment'));
+  const assessmentYearLabel = `${assessmentLabel} ${t('aliasFallback.yearSuffix')}`;
+  const assessmentBasisLabel = `${assessmentLabel} ${t('aliasFallback.basisSuffix')}`;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  const columns = getConditionOverviewColumns({ t, fields, resolveApiValueLabel });
+  const columns = getConditionOverviewColumns({ t, fields, resolveApiValueLabel, assessmentYearLabel, assessmentBasisLabel });
 
   return (
     <MasterTable

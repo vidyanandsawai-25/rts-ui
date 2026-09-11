@@ -71,9 +71,9 @@
         "listTitle": "Certified Zoning List",
         "listSubtitle": "PDF · Max 10 MB",
         "listUploadModalTitle": "Upload Certified Zoning List",
-        "mapTitle": "Certified Zone Map",
+        "mapTitle": "Certified {zone} Map",
         "mapSubtitle": "PDF / JPG / JPEG / PNG · Max 10 MB",
-        "mapUploadModalTitle": "Upload Certified Zone Map"
+        "mapUploadModalTitle": "Upload Certified {zone} Map"
       },
       "coverage": {
         "totalProperties": "Total Properties",

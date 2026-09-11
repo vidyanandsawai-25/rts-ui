@@ -6,6 +6,7 @@ import { DynamicTaxRegisterRow, TaxCategoryOption } from '@/types/dynamic-tax-re
 import { sanitizeAlphanumericPunctuation, sanitizeMultilingualText } from '@/lib/utils/validation-rules';
 import type { DynamicTaxGeneral } from '@/hooks/dynamic-tax-register/general/useDynamicTaxGeneral';
 import { ConfigureButton } from '@/components/common/ActionButtons';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface RuleSelectOption {
   value: string;
@@ -24,6 +25,7 @@ export interface GeneralSectionProps {
 
 export function GeneralSection({ isNew, taxRow, ruleOptions, taxCategoryOptions, general }: GeneralSectionProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const assessmentStatusLabel = `${useAliasLabel('Assessment', t('aliasFallback.assessment'))} ${t('aliasFallback.statusSuffix')}`;
   const {
     status, assessmentStatus, setAssessmentStatus, oldTaxStatus, setOldTaxStatus,
     ruleDefinitionId, taxName, setTaxName, taxNameAlias, setTaxNameAlias, taxCode, setTaxCode, taxCategoryId, setTaxCategoryId,
@@ -132,7 +134,7 @@ export function GeneralSection({ isNew, taxRow, ruleOptions, taxCategoryOptions,
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{t('general.assessmentStatus')}</Label>
+              <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{assessmentStatusLabel}</Label>
               <Select
                 value={assessmentStatus}
                 onChange={(_, v) => setAssessmentStatus(v)}

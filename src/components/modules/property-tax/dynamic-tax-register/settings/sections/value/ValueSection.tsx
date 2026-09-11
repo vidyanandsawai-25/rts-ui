@@ -4,6 +4,7 @@ import { SaveButton } from '@/components/common';
 import { MasterTable } from '@/components/common/MasterTable';
 import type { ValueBasedTaxRow } from '@/types/dynamic-tax-register.types';
 import type { DynamicTaxValue } from '@/hooks/dynamic-tax-register/value/useDynamicTaxValue';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import { ValueHeaderExtra } from './ValueHeaderExtra';
 import { getValueColumns } from './valueColumns';
 
@@ -16,6 +17,8 @@ export interface ValueSectionProps {
 
 export function ValueSection({ value, onRetryLoad }: ValueSectionProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const typeOfUseLabel = useAliasLabel('Type_Of_Use', t('aliasFallback.typeOfUse'));
+  const assessmentLabel = useAliasLabel('Assessment', t('aliasFallback.assessment'));
   const {
     valBaseType, setValBaseType, valYearId, yearSelectOptions, yearLabelById, onValYearChange,
     valUserGroup, valUserGroupOptions, onValGroupChange, valBulk, setValBulk, valBusy, handleValBulkApply,
@@ -75,9 +78,9 @@ export function ValueSection({ value, onRetryLoad }: ValueSectionProps) {
                 valBaseType,
                 setValPercent,
                 labels: {
-                  typeOfUse: t('value.columns.typeOfUse'),
+                  typeOfUse: typeOfUseLabel,
                   description: t('value.columns.description'),
-                  assessmentYear: t('value.columns.assessmentYear'),
+                  assessmentYear: `${assessmentLabel} ${t('aliasFallback.yearSuffix')}`,
                   userGroup: t('value.columns.userGroup'),
                   baseColumnType: t('value.columns.baseColumnType'),
                   taxPercent: t('value.columns.taxPercent'),
@@ -98,7 +101,7 @@ export function ValueSection({ value, onRetryLoad }: ValueSectionProps) {
               tableClassName="text-xs"
               theadClassName="text-[10px] font-extrabold uppercase tracking-widest"
               rowClassName={() => '[&_td]:border-r [&_td]:border-slate-100 [&_td]:py-2.5'}
-              height="md"
+              height="lg"
             />
           </div>
         </>

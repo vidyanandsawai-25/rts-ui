@@ -24,6 +24,7 @@ export interface DynamicTaxMasterRowOpsParams {
   mstPage: number;
   mstPageSize: number;
   onMstPageChange: (page: number) => void;
+  onMstPageSizeChange: (size: number) => void;
   effectiveMstRuleId: string;
   effectiveMasterSource: MasterSource | null;
   mstBulkMode: ResultMode;
@@ -46,6 +47,7 @@ export function useDynamicTaxMasterRowOps({
   mstPage,
   mstPageSize,
   onMstPageChange,
+  onMstPageSizeChange,
   effectiveMstRuleId,
   effectiveMasterSource,
   mstBulkMode,
@@ -67,6 +69,14 @@ export function useDynamicTaxMasterRowOps({
   // set lives entirely in local state (nothing to page through server-side yet) and gets
   // paginated client-side instead. False once real (already-saved) data is loaded.
   const [mstSeededLocally, setMstSeededLocally] = useState(false);
+  // Local pagination for the seeded-locally case — paging through an in-memory array must
+  // NEVER go through router.push: that would (a) trip the shared discard-changes guard on
+  // every page click, since seeded-but-unsaved rows read as "dirty", and (b) actually discard
+  // them for real once confirmed, because the navigation re-runs the server component and
+  // resets mstRows back to the (still-empty) masterRows prop. Reset to page 1 whenever a
+  // fresh seed replaces the working set.
+  const [localPage, setLocalPage] = useState(1);
+  const [localPageSize, setLocalPageSize] = useState(mstPageSize);
   // Explicit "has an edit happened since the last load/save" flag — set by every mutating
   // action below, cleared by a fresh server payload or a successful save. Deliberately NOT
   // derived by diffing mstRows against the masterRows prop: right after a successful save the
@@ -87,24 +97,55 @@ export function useDynamicTaxMasterRowOps({
     setDirty(false);
   }
 
+  const effectiveMstPage = mstSeededLocally ? localPage : mstPage;
+  const effectiveMstPageSize = mstSeededLocally ? localPageSize : mstPageSize;
+
   const mstPagedRows = useMemo(() => {
     if (!mstSeededLocally) return mstRows;
-    const start = (mstPage - 1) * mstPageSize;
-    return mstRows.slice(start, start + mstPageSize);
-  }, [mstRows, mstSeededLocally, mstPage, mstPageSize]);
+    const start = (effectiveMstPage - 1) * effectiveMstPageSize;
+    return mstRows.slice(start, start + effectiveMstPageSize);
+  }, [mstRows, mstSeededLocally, effectiveMstPage, effectiveMstPageSize]);
 
   const mstFilteredLocalCount = useMemo(() => {
     if (!mstSeededLocally) return mstTotalCount;
     return mstRows.length;
   }, [mstRows, mstSeededLocally, mstTotalCount]);
 
-  const mstTotalPages = Math.max(1, Math.ceil(mstFilteredLocalCount / mstPageSize));
+  const mstTotalPages = Math.max(1, Math.ceil(mstFilteredLocalCount / effectiveMstPageSize));
+
+  /** Paging through the seeded-locally in-memory array stays entirely client-side —
+   *  never routed through the shared discard-changes guard. Real server-paged data
+   *  (not seeded locally) still goes through the URL-driven nav, since a genuinely
+   *  different page there requires a fresh server fetch. */
+  const handleMstPageChange = (page: number) => {
+    if (mstSeededLocally) {
+      setLocalPage(page);
+      return;
+    }
+    onMstPageChange(page);
+  };
+
+  const handleMstPageSizeChange = (size: number) => {
+    if (mstSeededLocally) {
+      setLocalPageSize(size);
+      setLocalPage(1);
+      return;
+    }
+    onMstPageSizeChange(size);
+  };
 
   // A save/seed/bulk-apply can move rows to a different year, shrinking this filtered
   // page's total below the currently-viewed page number. Clamp back to the last valid
   // page instead of leaving the grid stuck showing an empty page with no way back.
+  // The seeded-locally case clamps entirely in-render (same "adjust state during render"
+  // pattern as the prevMasterRows reset above) since it's purely local state and the
+  // condition naturally converges once localPage matches mstTotalPages; the server-paged
+  // case still goes through the external onMstPageChange callback from an effect.
+  if (mstSeededLocally && localPage > mstTotalPages) {
+    setLocalPage(mstTotalPages);
+  }
   useEffect(() => {
-    if (mstPage > mstTotalPages) {
+    if (!mstSeededLocally && mstPage > mstTotalPages) {
       onMstPageChange(mstTotalPages);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -159,6 +200,8 @@ export function useDynamicTaxMasterRowOps({
     setMstRows(seeded);
     setMstTotalCount(seeded.length);
     setMstSeededLocally(true);
+    setLocalPage(1);
+    setLocalPageSize(mstPageSize);
     setDirty(true);
     toast.success(t('messages.master.seededRows', { count: seeded.length }));
   };
@@ -280,6 +323,8 @@ export function useDynamicTaxMasterRowOps({
     mstFilteredLocalCount,
     mstSeededLocally,
     mstBusy,
+    mstPage: effectiveMstPage,
+    mstPageSize: effectiveMstPageSize,
     mstTotalPages,
     dirty,
     loadFailed,
@@ -287,6 +332,8 @@ export function useDynamicTaxMasterRowOps({
     handleSeedMaster,
     handleMstBulkApply,
     handleMstSave,
+    onMstPageChange: handleMstPageChange,
+    onMstPageSizeChange: handleMstPageSizeChange,
   };
 }
 

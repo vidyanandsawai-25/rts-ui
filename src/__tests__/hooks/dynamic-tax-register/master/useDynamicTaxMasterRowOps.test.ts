@@ -29,6 +29,7 @@ describe('useDynamicTaxMasterRowOps', () => {
         mstPage: 1,
         mstPageSize: 10,
         onMstPageChange: vi.fn(),
+        onMstPageSizeChange: vi.fn(),
         effectiveMstRuleId: '',
         effectiveMasterSource: null,
         mstBulkMode: 'FIXED',

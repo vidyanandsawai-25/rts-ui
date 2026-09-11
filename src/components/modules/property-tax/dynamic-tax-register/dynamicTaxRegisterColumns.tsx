@@ -29,6 +29,7 @@ export interface GetDynamicTaxRegisterColumnsParams {
   MODE_BADGE_CLASS: Record<CalculationMode, string>;
   RULE_CATEGORY_LABEL_KEY: Record<CalculationMode, string>;
   goToConfigure: (row: DynamicTaxRegisterRow) => void;
+  assessmentStatusLabel?: string;
 }
 
 export function getDynamicTaxRegisterColumns({
@@ -38,6 +39,7 @@ export function getDynamicTaxRegisterColumns({
   MODE_BADGE_CLASS,
   RULE_CATEGORY_LABEL_KEY,
   goToConfigure,
+  assessmentStatusLabel,
 }: GetDynamicTaxRegisterColumnsParams): Column<DynamicTaxRegisterRow>[] {
   return [
     {
@@ -117,7 +119,7 @@ export function getDynamicTaxRegisterColumns({
     },
     {
       key: 'assessmentStatus',
-      label: t('list.columns.assessmentStatus'),
+      label: assessmentStatusLabel || t('list.columns.assessmentStatus'),
       width: '120px',
       align: 'left',
       render: (val: unknown) => {

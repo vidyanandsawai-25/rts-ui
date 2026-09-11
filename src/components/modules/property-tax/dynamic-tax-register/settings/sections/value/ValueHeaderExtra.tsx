@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { Input, Select, ApplyButton, Tabs, TabList, Tab } from '@/components/common';
 import { clampPercentInput } from '@/lib/utils/dynamic-tax-register/dynamicTaxFormatters';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export interface ValueHeaderExtraProps {
   valBaseType: 'RV' | 'ALV';
@@ -23,6 +24,7 @@ export function ValueHeaderExtra({
   valUserGroup, userGroupOptions, onValGroupChange, valBulk, setValBulk, valBusy, handleValBulkApply,
 }: ValueHeaderExtraProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const assessmentYearRangeLabel = `${useAliasLabel('Assessment', t('aliasFallback.assessment'))} ${t('aliasFallback.yearRangeSuffix')}`;
   return (
     <div className="bg-white border-b border-slate-200 px-5 py-3.5">
       <div className="flex flex-wrap items-end gap-5">
@@ -59,7 +61,7 @@ export function ValueHeaderExtra({
         </div>
 
         <div className="flex flex-col gap-1.5 min-w-[150px]">
-          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{t('value.assessmentYearRange')}</span>
+          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{assessmentYearRangeLabel}</span>
           <Select value={String(valYearId)} onChange={(_, v) => onValYearChange(v)} options={yearSelectOptions} />
         </div>
 
