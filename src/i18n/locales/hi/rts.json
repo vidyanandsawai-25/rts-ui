@@ -979,6 +979,7 @@
     "approvedApplications": "स्वीकृत आवेदन",
     "pendingApplications": "लंबित आवेदन",
     "rejectedApplications": "अस्वीकृत आवेदन",
+    "revertedApplications": "वापस किए गए आवेदन",
     "applicationsTimeline": "आपके आवेदन एवं SLA समय सीमा",
     "timelineDescription": "प्रत्येक नगरपालिका सेवा कानूनी लोक सेवा अधिकार समय सीमा से बंधी है।",
     "searchPlaceholder": "आईडी या सेवा नाम से खोजें...",

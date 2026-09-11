@@ -18,6 +18,7 @@ import {
   LayoutDashboard,
   CreditCard,
   Printer,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import TableHeader from "@/components/common/TableHeader";
@@ -262,6 +263,7 @@ export default function DepartmentCarsoulClient({
   const approvedCount = applications.filter((application) => application.normalizedStatus === "approved").length;
   const pendingCount = applications.filter((application) => application.normalizedStatus === "pending").length;
   const rejectedCount = applications.filter((application) => application.normalizedStatus === "rejected").length;
+  const revertedCount = applications.filter((application) => application.normalizedStatus === "reverted").length;
 
   const filteredSubmissions = applications.filter((app) => {
     if (!searchQuery.trim()) return true;
@@ -280,7 +282,7 @@ export default function DepartmentCarsoulClient({
           icon={LayoutDashboard}
         />
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3 lx:grid-cols-5">
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l-xl" />
             <div className="flex-1 min-w-0">
@@ -322,6 +324,17 @@ export default function DepartmentCarsoulClient({
             </div>
             <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-slate-200 bg-rose-50/50 text-rose-600 group-hover:scale-105 transition-transform shrink-0">
               <AlertTriangle className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-violet-600 rounded-l-xl" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('revertedApplications')}</p>
+              <p className="mt-0.5 text-xl font-extrabold text-violet-600">{revertedCount}</p>
+            </div>
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center border border-violet-100 bg-violet-50/60 text-violet-600 group-hover:scale-105 transition-transform shrink-0">
+              <RotateCcw className="w-5 h-5" />
             </div>
           </div>
         </div>
