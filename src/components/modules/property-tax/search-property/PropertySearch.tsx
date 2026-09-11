@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useState, useTransition } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search as SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { PageContainer, TableHeader, Card, CardContent } from "@/components/common";
@@ -45,6 +46,9 @@ export function PropertySearch({
   searchError = null,
 }: PropertySearchProps): React.ReactElement {
   const t = useTranslations("propertySearch");
+  const router = useRouter();
+  const pathname = usePathname();
+  const currentParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<SearchTab>(activeTabProp);
   const [isPending, startTransition] = useTransition();
   const [awaitingResults, setAwaitingResults] = useState(false);
@@ -110,16 +114,17 @@ export function PropertySearch({
       }
       setActiveTab(tab);
 
-      // Update URL client-side only (no Next.js transition/refresh to prevent API calls)
-      const url = new URL(window.location.href);
+      const params = new URLSearchParams(currentParams.toString());
       if (tab === "quick-search") {
-        url.searchParams.delete("tab");
+        params.delete("tab");
       } else {
-        url.searchParams.set("tab", tab);
+        params.set("tab", tab);
       }
-      window.history.replaceState(null, "", url.toString());
+      const qs = params.toString();
+      const nextUrl = qs ? `${pathname}?${qs}` : pathname;
+      router.replace(nextUrl, { scroll: false });
     },
-    [activeTab, displayedStatus]
+    [activeTab, currentParams, displayedStatus, pathname, router]
   );
 
   return (

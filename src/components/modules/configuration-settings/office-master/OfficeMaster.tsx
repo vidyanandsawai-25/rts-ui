@@ -107,14 +107,13 @@ export function OfficeMaster({
           const result = await deleteOfficeAction(formData);
           if (result.success) {
             toast.success(t('success.deleted'));
-            router.refresh();
           } else {
             toast.error(result.message || tCommon('errors.deleteError'));
           }
         },
       });
     },
-    [confirm, router, t, tCommon]
+    [confirm, t, tCommon]
   );
 
   const onSort = useCallback(

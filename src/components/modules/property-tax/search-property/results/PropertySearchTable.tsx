@@ -101,7 +101,7 @@ export function PropertySearchTable({
                 </tr>
               ) : (
                 data.map((row, i) => {
-                  const rowKey = String(row.id);
+                  const rowKey = `${row.propertyId || row.id}-${row.partitionNo || 0}-${i}`;
                   const expandable = viewMode === "properties" && isRowExpandable(row);
 
                   return (

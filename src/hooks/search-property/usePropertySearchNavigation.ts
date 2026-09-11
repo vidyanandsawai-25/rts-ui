@@ -53,8 +53,7 @@ export function usePropertySearchNavigation({
   const navigateTo = useCallback(
     (url: string) => {
       startTransition(() => {
-        router.push(url);
-        router.refresh();
+        router.push(url, { scroll: false });
       });
     },
     [router, startTransition]

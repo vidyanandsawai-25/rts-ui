@@ -44,23 +44,6 @@ import {
   validateAndNormalize,
 } from './actions.utils';
 
-function isLicenseExpiredServer(endDateStr: string): boolean {
-  if (!endDateStr) return false;
-  const dateOnlyStr = endDateStr.split('T')[0];
-  const parts = dateOnlyStr.split('-');
-  if (parts.length !== 3 || parts[0].length !== 4 || parts[1].length !== 2 || parts[2].length !== 2) {
-    return false;
-  }
-
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  const todayStr = `${year}-${month}-${day}`;
-
-  return dateOnlyStr < todayStr;
-}
-
 /**
  * Loads all SSR data required by the ULB configuration screen.
  * Uses partial success so one failed endpoint does not block the whole page.
@@ -92,48 +75,6 @@ export async function getUlbConfigurationPageDataAction(): Promise<
       ulbResult.status === 'rejected' ? ulbResult.reason : undefined,
       'messages.fetchError'
     );
-  }
-
-  // Auto-deactivate expired active department licenses
-  let hasExpiredUpdates = false;
-  const userId = await resolveUserId();
-
-  for (const licence of licences) {
-    const isLicenseActive = !!(licence.isActive ?? licence.isEnabled);
-    if (isLicenseActive && licence.licenceEndDate) {
-      if (isLicenseExpiredServer(licence.licenceEndDate)) {
-        licence.isActive = false;
-        licence.isEnabled = false;
-        licence.status = 'inactive';
-        hasExpiredUpdates = true;
-
-        if (licence.departmentLicenceDetailsId != null) {
-          try {
-            await updateDepartmentLicence(licence.departmentLicenceDetailsId, {
-              ...licence,
-              isActive: false,
-              isEnabled: false,
-              status: 'inactive',
-            });
-          } catch (_err) {
-            // Error intentionally suppressed per user request
-          }
-        }
-
-        const deptId = licence.departmentId ?? licence.departmentMasterId;
-        if (deptId != null && userId != null) {
-          try {
-            await syncMasterDepartmentWithLicense(deptId, false, userId);
-          } catch (_err) {
-            // Error intentionally suppressed per user request
-          }
-        }
-      }
-    }
-  }
-
-  if (hasExpiredUpdates) {
-    revalidateUlbConfiguration();
   }
 
   return {
@@ -352,13 +293,15 @@ export async function saveDepartmentLicencesAction(
       );
     }
 
-    // Sync active state back to DepartmentMaster
-    for (const licence of saved) {
-      const deptId = licence.departmentId ?? licence.departmentMasterId;
-      if (deptId != null) {
-        await syncMasterDepartmentWithLicense(deptId, !!licence.isActive, userId);
-      }
-    }
+    // Sync active state back to DepartmentMaster in parallel
+    await Promise.allSettled(
+      saved.map((licence) => {
+        const deptId = licence.departmentId ?? licence.departmentMasterId;
+        return deptId != null
+          ? syncMasterDepartmentWithLicense(deptId, !!licence.isActive, userId)
+          : Promise.resolve();
+      })
+    );
 
     revalidateUlbConfiguration();
 
@@ -505,10 +448,9 @@ export async function replaceUlbImageAction(
       throw new Error("Failed to upload document to service");
     }
 
-    // Step 2: Get the existing master record to keep the same ImageType
-    const existingImages = await getUlbImages(1, 100);
-    const existing = existingImages.items?.find((img) => img.id === id);
-    const imageType = existing?.imageType || "Gallery";
+    // Step 2: Extract ImageType directly from FormData with fallback
+    const formImageType = formData.get("ImageType");
+    const imageType = typeof formImageType === "string" && formImageType.trim() ? formImageType.trim() : "Gallery";
 
     // Step 3: Update the existing master record to point to the new imageId
     await updateUlbImageType(id, imageType, uploadResult.documentId);

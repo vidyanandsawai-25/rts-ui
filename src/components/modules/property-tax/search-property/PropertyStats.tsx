@@ -49,15 +49,6 @@ export function PropertyStats({
     currentCards = fetchedCardsMap[filterKey];
   } else if (statsCache[filterKey]) {
     currentCards = statsCache[filterKey];
-  } else if (typeof window !== "undefined") {
-    try {
-      const stored = localStorage.getItem(`ntis_card_stats_${filterKey}`);
-      if (stored) {
-        currentCards = JSON.parse(stored);
-      }
-    } catch {
-      // Fallback silently
-    }
   }
 
   useEffect(() => {
@@ -73,16 +64,6 @@ export function PropertyStats({
       return;
     }
 
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem(`ntis_card_stats_${filterKey}`);
-        if (stored) {
-          statsCache[filterKey] = JSON.parse(stored);
-          return;
-        }
-      } catch {}
-    }
-
     let isMounted = true;
     const params = cardFilterParams;
 
@@ -94,13 +75,6 @@ export function PropertyStats({
         if (isMounted) {
           const freshData = { mainCards: mainRes, workflowCards: workflowRes || [] };
           statsCache[filterKey] = freshData;
-          if (typeof window !== "undefined") {
-            try {
-              localStorage.setItem(`ntis_card_stats_${filterKey}`, JSON.stringify(freshData));
-            } catch {
-              // Fallback silently
-            }
-          }
           setFetchedCardsMap(prev => ({ ...prev, [filterKey]: freshData }));
         }
       })
