@@ -48,7 +48,7 @@ export function ULBLogoImagesTab({
   const logoImages = images.filter((img) => img.name.toLowerCase() === 'logo');
   const activeLogoImg = logoImages.find((img) => img.url === logoUrl) || null;
   const unselectedLogos = logoImages.filter((img) => img.url !== logoUrl);
-  const backgroundImg = images.find((img) => img.name === 'Background' || img.isBackgroundImage) || null;
+  const backgroundImg = images.find((img) => img.name.toLowerCase() === 'background' || img.isBackgroundImage) || null;
   const unselectedBackgrounds = images.filter((img) => img.name === 'BackgroundLibrary');
   const galleryImages = images.filter(
     (img) =>
