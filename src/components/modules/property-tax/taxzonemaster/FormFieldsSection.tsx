@@ -50,12 +50,12 @@ export function FormFieldsSection({
 
       <Input
         name="remark"
-        label={t("form.fields.remark.label")}
+        label={t("form.fields.remark.label", { zone: zoneLabel })}
         required={true}
         value={formData.remark}
         onChange={onChange}
         onBlur={onBlur}
-        placeholder={t("form.fields.remark.placeholder")}
+        placeholder={t("form.fields.remark.placeholder", { zone: zoneLabel })}
         fullWidth
         maxLength={15}
       />

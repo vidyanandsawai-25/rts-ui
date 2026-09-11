@@ -33,7 +33,7 @@ export function getTaxZoneColumns(
     },
     {
       key: "remark",
-      label: t("list.table.remark"),
+      label: t("list.table.remark", { zone: zoneLabel ?? "" }),
       width: "20%",
       render: (value) => <span className="text-gray-700">{value ? String(value) : "-"}</span>,
     },

@@ -75,12 +75,12 @@ export default function TaxZoneMaster({
           fd.append("locale", locale);
           await deleteTaxZoneAction(fd);
 
-          toast.success(t("delete.success"));
+          toast.success(t("delete.success", { zone: zoneLabel }));
 
           router.refresh();
         }
         catch (error) {
-          toast.error(t("delete.error"));
+          toast.error(t("delete.error", { zone: zoneLabel }));
           console.error(error);
         }
       },
