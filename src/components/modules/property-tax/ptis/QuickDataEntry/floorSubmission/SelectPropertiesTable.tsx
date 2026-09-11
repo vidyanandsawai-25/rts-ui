@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { Checkbox, MasterTable, type Column } from '@/components/common';
 import { ClearButton } from '@/components/common/ActionButtons';
 import type { SelectableProperty } from '@/types/floor-details.types';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface SelectPropertiesTableProps {
   t: (key: string, values?: Record<string, string | number>) => string;
@@ -104,6 +105,16 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
   leftHeaderContent,
   variant = 'default',
 }) => {
+  const propertyLabel = useAliasLabel('Property_No', t('aliasFallback.propertyNo'));
+  const categoryLabel = useAliasLabel('Category', t('aliasFallback.category'));
+  const typeLabel = useAliasLabel('Type_Of_Use', t('aliasFallback.typeOfUse'));
+  const wingLabel = useAliasLabel('Wing', t('aliasFallback.wing'));
+  const flatNoLabel = useAliasLabel('Flat_No_Shop_No', t('aliasFallback.flatNoShopNo'));
+  const carpetAreaLabel = useAliasLabel('Carpet_Area', t('aliasFallback.carpetArea'));
+  const builtupAreaLabel = useAliasLabel('Builtup_Area', t('aliasFallback.builtupArea'));
+  const parkingCarpetAreaLabel = useAliasLabel('Carpet_Area', t('aliasFallback.carpetArea'));
+  const parkingBuiltupAreaLabel = useAliasLabel('Builtup_Area', t('aliasFallback.builtupArea'));
+
   const selectedCount = selectedIds.size;
   const selectableProperties = React.useMemo(
     () => properties.filter((property) => !disabledIds.has(property.id)),
@@ -182,13 +193,13 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
       },
       {
         key: 'propertyDisplay',
-        label: t('floor.selectProperties.property'),
+        label: propertyLabel,
         width: '150px',
         cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
       },
       {
         key: 'categoryDisplay',
-        label: 'Category',
+        label: categoryLabel,
         width: '110px',
         align: 'center',
         cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
@@ -198,14 +209,14 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         : [
             {
               key: 'typeDisplay',
-              label: t('floor.selectProperties.type'),
+              label: typeLabel,
               width: '70px',
               cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
             },
           ]),
       {
         key: 'wingFlatNo',
-        label: `${t('floor.selectProperties.wing')}/${t('floor.selectProperties.flatNo')}`,
+        label: `${wingLabel}/${flatNoLabel}`,
         width: '100px',
         align: 'center',
         cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
@@ -224,19 +235,13 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         ? [
             {
               key: 'parkingCarpetAreaDisplay',
-              label: ((): string => {
-                const val = t('floor.selectProperties.parkingCarpetArea');
-                return !val || val.includes('selectProperties') ? 'Parking Carpet Area (Sq.Ft / Sq.M)' : val;
-              })(),
+              label: parkingCarpetAreaLabel,
               width: '180px',
               cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
             },
             {
               key: 'parkingBuiltupAreaDisplay',
-              label: ((): string => {
-                const val = t('floor.selectProperties.parkingBuiltupArea');
-                return !val || val.includes('selectProperties') ? 'Parking Builtup Area (Sq.Ft / Sq.M)' : val;
-              })(),
+              label: parkingBuiltupAreaLabel,
               width: '180px',
               cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
             },
@@ -244,19 +249,19 @@ const SelectPropertiesTable: React.FC<SelectPropertiesTableProps> = ({
         : [
             {
               key: 'carpetAreaDisplay',
-              label: t('floor.selectProperties.carpetArea'),
+              label: carpetAreaLabel,
               width: '155px',
               cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
             },
             {
               key: 'builtupAreaDisplay',
-              label: t('floor.selectProperties.builtupArea'),
+              label: builtupAreaLabel,
               width: '155px',
               cellClassName: 'whitespace-nowrap text-sm font-bold text-slate-800',
             },
           ]),
     ],
-    [allSelected, checkboxClassName, handleSelectAll, hideTypeColumn, onToggle, someSelected, t, variant]
+    [allSelected, builtupAreaLabel, carpetAreaLabel, categoryLabel, checkboxClassName, flatNoLabel, handleSelectAll, hideTypeColumn, onToggle, parkingBuiltupAreaLabel, parkingCarpetAreaLabel, propertyLabel, someSelected, t, typeLabel, variant, wingLabel]
   );
 
   const headerExtra =
