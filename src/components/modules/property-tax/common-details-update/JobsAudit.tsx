@@ -41,6 +41,7 @@ export const JobsAudit = ({ initialData, initialAllData, initialUpdateHistoryDet
     handlePageSizeChange,
     userOptions,
     totalCount,
+    summaryTotalCount,
     completedCount,
     failedCount,
     data,
@@ -162,7 +163,7 @@ export const JobsAudit = ({ initialData, initialAllData, initialUpdateHistoryDet
               <div className="flex flex-wrap items-center justify-center gap-2 flex-1 min-w-0">
                 <DashboardCard
                   label={t("jobsAudit.stats.totalActivity")}
-                  value={totalCount}
+                  value={summaryTotalCount}
                   valueColor="text-[#0F5FC2]"
                   className="px-3 py-1 min-w-[120px] flex-1 max-w-[200px]"
                 />

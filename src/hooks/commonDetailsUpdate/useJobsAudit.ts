@@ -29,7 +29,7 @@ interface UseJobsAuditOptions {
 
 export const useJobsAudit = ({
   initialData = null,
-  initialAllData = null,
+  initialAllData: _initialAllData = null,
   initialUpdateHistoryDetail = null,
   actions,
   t,
@@ -61,13 +61,9 @@ export const useJobsAudit = ({
   const [isLoadingTable, setIsLoadingTable] = useState<boolean>(false);
   const [userOptionsState, setUserOptionsState] = useState<{ label: string; value: string }[]>([]);
 
-  const initialAllItems = useMemo(() => {
-    if (!initialAllData) return [];
-    if (Array.isArray(initialAllData)) return initialAllData;
-    return initialAllData.items || [];
-  }, [initialAllData]);
-
-  const [allHistoryItems, setAllHistoryItems] = useState<UpdateHistoryItem[]>(initialAllItems);
+  const [allHistoryItems, setAllHistoryItems] = useState<UpdateHistoryItem[]>([]);
+  const [isLoadingAllHistoryStats, setIsLoadingAllHistoryStats] = useState<boolean>(true);
+  const [statsTotalCount, setStatsTotalCount] = useState<number | null>(null);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const debouncedModalSearchTerm = useDebounce(modalSearchTerm, 1000);
@@ -118,22 +114,26 @@ export const useJobsAudit = ({
   }, [initialData]);
 
   const completedCount = useMemo(() => {
-    const listToCount = allHistoryItems.length > 0 ? allHistoryItems : (initialAllItems.length > 0 ? initialAllItems : itemsList);
-    return listToCount.filter(
-      (item) =>
-        item.activityStatus?.toLowerCase() === "success" ||
-        item.activityStatus?.toLowerCase() === "completed"
-    ).length;
-  }, [allHistoryItems, initialAllItems, itemsList]);
+    if (isLoadingAllHistoryStats) return "...";
+    return allHistoryItems.filter((item) => {
+      const status = item.activityStatus?.trim().toLowerCase();
+      return status === "success" || status === "completed";
+    }).length;
+  }, [allHistoryItems, isLoadingAllHistoryStats]);
 
   const failedCount = useMemo(() => {
-    const listToCount = allHistoryItems.length > 0 ? allHistoryItems : (initialAllItems.length > 0 ? initialAllItems : itemsList);
-    return listToCount.filter(
-      (item) =>
-        item.activityStatus?.toLowerCase() === "failed" ||
-        item.activityStatus?.toLowerCase() === "error"
-    ).length;
-  }, [allHistoryItems, initialAllItems, itemsList]);
+    if (isLoadingAllHistoryStats) return "...";
+    return allHistoryItems.filter((item) => {
+      const status = item.activityStatus?.trim().toLowerCase();
+      return status === "failed" || status === "error";
+    }).length;
+  }, [allHistoryItems, isLoadingAllHistoryStats]);
+
+  const summaryTotalCount = useMemo(() => {
+    if (isLoadingAllHistoryStats) return "...";
+    if (statsTotalCount !== null) return statsTotalCount;
+    return allHistoryItems.length;
+  }, [allHistoryItems.length, isLoadingAllHistoryStats, statsTotalCount]);
 
   const data = useMemo(() => {
     return itemsList.slice(0, auditPageSize);
@@ -167,7 +167,7 @@ export const useJobsAudit = ({
     updateUrlParams({ auditPage: 1, auditUser: user });
   };
 
-  // Fetch full update history (PageSize: 1000) for overall completed/failed stats and user filter list
+  // Fetch full update history (PageSize: -1) for overall completed/failed stats and user filter list
   useEffect(() => {
     let isMounted = true;
     const fetchAllHistory = async () => {
@@ -178,9 +178,11 @@ export const useJobsAudit = ({
         if (u && typeof u === "string") usersSet.add(u.trim());
       });
 
+      setIsLoadingAllHistoryStats(true);
+
       try {
         const response = await getUpdateHistoryFn({
-          PageSize: 1000,
+          PageSize: -1,
           DoneBy: auditUser !== "all" ? auditUser : undefined,
           SearchTerm: debouncedSearchTerm || undefined,
         });
@@ -188,6 +190,11 @@ export const useJobsAudit = ({
         if (response.success && response.data?.items) {
           if (isMounted) {
             setAllHistoryItems(response.data.items);
+            if (response.data.totalCount !== undefined && response.data.totalCount !== null) {
+              setStatsTotalCount(response.data.totalCount);
+            } else {
+              setStatsTotalCount(response.data.items.length);
+            }
           }
           response.data.items.forEach((item: UpdateHistoryItem) => {
             const u = item.doneBy || item.username || item.createdBy || item.user;
@@ -196,6 +203,10 @@ export const useJobsAudit = ({
         }
       } catch {
         // Fallback to local data users
+      } finally {
+        if (isMounted) {
+          setIsLoadingAllHistoryStats(false);
+        }
       }
 
       if (isMounted) {
@@ -564,8 +575,10 @@ export const useJobsAudit = ({
     handleUserChange,
     userOptions,
     totalCount,
+    summaryTotalCount,
     completedCount,
     failedCount,
+    isLoadingAllHistoryStats,
     data,
     itemsList,
     selectedRow,
