@@ -33,7 +33,7 @@
         "pendingRecordCreates": "{count} प्रलंबित नोंदी तयार करणे"
       },
       "placeholders": {
-        "selectAssessmentYear": "मूल्यांकन वर्ष निवडा"
+        "selectAssessmentYear": "{assessment} वर्ष निवडा"
       },
       "messages": {
         "createRecordFirst": "संपादन किंवा हटवण्यापूर्वी कृपया प्रथम नोंद तयार करा.",
@@ -49,8 +49,9 @@
         "updateFailed": "अद्यतनित करणे अयशस्वी",
         "failedToSaveRow": "ओळ अद्यतनित करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
         "changesDiscarded": "या ओळीसाठी बदल रद्द केले",
-        "assessmentYearRequired": "मोठ्या प्रमाणात घटक लागू करण्यापूर्वी कृपया मूल्यांकन वर्ष निवडा",
+        "assessmentYearRequired": "मोठ्या प्रमाणात घटक लागू करण्यापूर्वी कृपया {assessment} वर्ष निवडा",
         "validFactorRequired": "कृपया 0.1 ते 100 दरम्यान वैध घटक मूल्य प्रविष्ट करा",
+        "inactiveRecordNotEditable": "ही नोंद निष्क्रिय आहे. फॅक्टर संपादित करण्यासाठी ते सक्रिय वर सेट करा.",
         "negativeFactorsNotAllowed": "ऋण घटकांना परवानगी नाही",
         "factorApplied": "{count} नोंदी(नोंदींना) घटक {factor} लागू केला",
         "noRecordsMatch": "निवडलेल्या निकषांशी कोणतीही नोंद जुळत नाही",

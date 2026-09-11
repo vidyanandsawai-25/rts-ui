@@ -9,6 +9,8 @@ import { FloorData } from '@/types/room-details.types';
 import { LookupData } from '@/lib/utils/floorSubmission/floor-mappers';
 import type { SelectableProperty } from '@/types/floor-details.types';
 
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
+
 interface PropertyWiseTabProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
   properties: SelectableProperty[];
@@ -77,6 +79,9 @@ export const PropertyWiseTab: React.FC<PropertyWiseTabProps> = ({
   handleSearchProperties,
   ...floorTableProps
 }) => {
+  const wardLabel = useAliasLabel('Ward', t('aliasFallback.ward'));
+  const propertyNoLabel = useAliasLabel('Property_No', t('aliasFallback.propertyNo'));
+
   return (
     <>
       <FloorTable
@@ -90,7 +95,7 @@ export const PropertyWiseTab: React.FC<PropertyWiseTabProps> = ({
         <div className="w-44 relative [&_ul]:top-full [&_ul]:!z-30">
           <SearchSelect
             id="property-wise-search-ward-id"
-            label={t('floor.selectProperties.wardNo')}
+            label={wardLabel}
             options={wardOptions}
             value={searchWardId}
             onChange={handleWardChange}
@@ -104,12 +109,12 @@ export const PropertyWiseTab: React.FC<PropertyWiseTabProps> = ({
         <div className="w-24 flex flex-col justify-end">
           <Input
             id="property-wise-search-property-no"
-            label={t('floor.selectProperties.propertyNo')}
+            label={propertyNoLabel}
             value={searchPropertyNo}
             onChange={(e) => setSearchPropertyNo(sanitizePropertyNo(e.target.value))}
             className="h-8 px-2 w-full text-xs font-semibold text-slate-700 bg-white border rounded shadow-sm text-center placeholder:text-slate-400 transition-colors border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed disabled:border-slate-200"
             disabled={!searchWardId}
-            placeholder={t('floor.selectProperties.propertyNo')}
+            placeholder={propertyNoLabel}
           />
         </div>
         <SearchButton

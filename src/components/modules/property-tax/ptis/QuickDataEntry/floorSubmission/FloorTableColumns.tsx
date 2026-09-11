@@ -12,6 +12,7 @@ import {
 } from '@/lib/utils/floorSubmission/floor-mappers';
 
 import { FloorCompleteSequenceValidationResult, FloorSequenceValidationResult } from '@/lib/validations/validateFloorSequence';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface UseFloorTableColumnsProps {
   t: (key: string, values?: Record<string, string | number | Date>) => string;
@@ -34,6 +35,17 @@ export const useFloorTableColumns = ({
   sequenceValidationResult,
   completeSequenceValidationResult,
 }: UseFloorTableColumnsProps) => {
+  const floorLabel = useAliasLabel('Floor', t('aliasFallback.floor'));
+  const conYrLabel = useAliasLabel('Construction_Year', t('aliasFallback.constructionYear'));
+  const asstYrLabel = useAliasLabel('Assessment', t('aliasFallback.assessment'));
+  const conTypLabel = useAliasLabel('Construction_Type', t('aliasFallback.constructionType'));
+  const useLabel = useAliasLabel('Use', t('aliasFallback.use'));
+  const ocDateLabel = useAliasLabel('OC', t('aliasFallback.oc'));
+  const subTypLabel = useAliasLabel('Sub_Type_Of_Use', t('aliasFallback.subTypeOfUse'));
+  const roomsLabel = useAliasLabel('Rooms', t('aliasFallback.rooms'));
+  const carpetAreaLabel = useAliasLabel('Carpet_Area', t('aliasFallback.carpetArea'));
+  const builtupAreaLabel = useAliasLabel('Builtup_Area', t('aliasFallback.builtupArea'));
+
   return React.useMemo(() => {
     const formatArea = (val: unknown) => {
       if (val === undefined || val === null || val === '') return '0.00';
@@ -84,8 +96,8 @@ export const useFloorTableColumns = ({
       },
       {
         key: 'floor',
-        label: t('floor.floorLabel'),
-        tooltip: t('floor.floorLabel'),
+        label: floorLabel,
+        tooltip: floorLabel,
         cellClassName: 'max-w-[100px]',
         headerClassName: 'whitespace-nowrap',
         render: (val: unknown, row: FloorData) => {
@@ -133,8 +145,8 @@ export const useFloorTableColumns = ({
       },
       {
         key: 'conYr',
-        label: t('floor.conYr'),
-        tooltip: t('floor.constructionYear'),
+        label: conYrLabel,
+        tooltip: conYrLabel,
         cellClassName: 'whitespace-nowrap',
         headerClassName: 'whitespace-nowrap',
         render: (val: unknown, row: FloorData) => {
@@ -159,8 +171,8 @@ export const useFloorTableColumns = ({
       },
       {
         key: 'asstYr',
-        label: t('floor.asstYr'),
-        tooltip: t('floor.assessmentYear'),
+        label: asstYrLabel,
+        tooltip: asstYrLabel,
         cellClassName: 'whitespace-nowrap',
         headerClassName: 'whitespace-nowrap',
         render: (val: unknown, row: FloorData) => {
@@ -171,8 +183,8 @@ export const useFloorTableColumns = ({
       },
       {
         key: 'conTyp',
-        label: t('floor.conTyp'),
-        tooltip: t('floor.constructionType'),
+        label: conTypLabel,
+        tooltip: conTypLabel,
         cellClassName: 'max-w-[150px]',
         headerClassName: 'whitespace-nowrap',
         render: (val: unknown, row: FloorData) => {
@@ -188,8 +200,8 @@ export const useFloorTableColumns = ({
       },
       {
         key: 'use',
-        label: t('floor.use'),
-        tooltip: t('property.use'),
+        label: useLabel,
+        tooltip: useLabel,
         cellClassName: 'max-w-[100px]',
         headerClassName: 'whitespace-nowrap',
         render: (val: unknown, row: FloorData) => {
@@ -216,8 +228,8 @@ export const useFloorTableColumns = ({
       },
       {
         key: 'ocDate',
-        label: (() => { try { return t('building.ocDate') || 'OC Date'; } catch (_e) { return 'OC Date'; } })(),
-        tooltip: (() => { try { return t('building.ocDate') || 'OC Date'; } catch (_e) { return 'OC Date'; } })(),
+        label: ocDateLabel,
+        tooltip: ocDateLabel,
         cellClassName: 'whitespace-nowrap',
         headerClassName: 'whitespace-nowrap',
         render: (val: unknown, row: FloorData) => {
@@ -227,8 +239,8 @@ export const useFloorTableColumns = ({
       },
       {
         key: 'subTyp',
-        label: t('floor.subTyp'),
-        tooltip: t('floor.subType'),
+        label: subTypLabel,
+        tooltip: subTypLabel,
         cellClassName: 'max-w-[100px]',
         headerClassName: 'whitespace-nowrap',
         render: (val: unknown) => {
@@ -256,15 +268,15 @@ export const useFloorTableColumns = ({
       },
       {
         key: 'rooms',
-        label: t('floor.rooms'),
-        tooltip: t('floor.rooms'),
+        label: roomsLabel,
+        tooltip: roomsLabel,
         cellClassName: 'whitespace-nowrap',
         headerClassName: 'whitespace-nowrap',
       },
       {
         key: 'areaSqFt',
-        label: `${t('floor.carpetArea')} ${t('floor.sqFtSqM')}`,
-        tooltip: `${t('floor.carpetArea')} ${t('floor.sqFtSqM')}`,
+        label: `${carpetAreaLabel} ${t('floor.sqFtSqM')}`,
+        tooltip: `${carpetAreaLabel} ${t('floor.sqFtSqM')}`,
         cellClassName: 'whitespace-nowrap font-medium',
         headerClassName: 'whitespace-normal min-w-[120px] max-w-[150px] leading-tight',
         render: (_value: unknown, row: FloorData) => {
@@ -280,8 +292,8 @@ export const useFloorTableColumns = ({
       },
       {
         key: 'builtupAreaSqFt',
-        label: `${t('floor.builtupArea')} ${t('floor.sqFtSqM')}`,
-        tooltip: `${t('floor.builtupArea')} ${t('floor.sqFtSqM')}`,
+        label: `${builtupAreaLabel} ${t('floor.sqFtSqM')}`,
+        tooltip: `${builtupAreaLabel} ${t('floor.sqFtSqM')}`,
         cellClassName: 'whitespace-nowrap font-medium',
         headerClassName: 'whitespace-normal min-w-[120px] max-w-[150px] leading-tight',
         render: (_value: unknown, row: FloorData) => {
@@ -296,7 +308,7 @@ export const useFloorTableColumns = ({
         },
       },
     ];
-  }, [t, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, sequenceValidationResult, completeSequenceValidationResult]);
+  }, [asstYrLabel, builtupAreaLabel, carpetAreaLabel, completeSequenceValidationResult, conTypLabel, conYrLabel, constructionLookup, floorLookup, floorLabel, ocDateLabel, roomsLabel, sequenceValidationResult, subFloorLookup, subTypLabel, subTypeData, t, useLabel, useLookup]);
 };
 
 export const renderFloorActions = (t: (key: string) => string, handleDeleteFloor: (floor: FloorData) => void) => {

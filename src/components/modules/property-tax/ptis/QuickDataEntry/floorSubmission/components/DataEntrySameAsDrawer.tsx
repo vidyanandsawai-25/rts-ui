@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { MapPin, Hash, Layers, Tag } from 'lucide-react';
 import { Drawer, Tabs } from '@/components/common';
@@ -9,6 +7,8 @@ import { useDataEntrySameAs } from '../hooks/useDataEntrySameAs';
 import { TypeWiseTab } from './TypeWiseTab';
 import { PropertyWiseTab } from './PropertyWiseTab';
 import { ParkingTab } from './ParkingTab';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
+
 
 interface DataEntrySameAsDrawerProps {
   isOpen: boolean;
@@ -94,6 +94,11 @@ function tabClassName(disabled: boolean) {
 export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (props) => {
   const { isOpen, onClose, t, wardId, wardNo, propertyNo, partitionNo, initialPropertyID, categoryName } = props;
 
+  const wardLabel = useAliasLabel('Ward', t('aliasFallback.ward'));
+  const propertyLabel = useAliasLabel('Property_No', t('aliasFallback.propertyNo'));
+  const partitionLabel = useAliasLabel('Partition', t('aliasFallback.partition'));
+  const typeLabel = useAliasLabel('Type_Of_Use', t('aliasFallback.typeOfUse'));
+
   const tabConfig = React.useMemo(() => getTabConfig(categoryName), [categoryName]);
 
   const hook = useDataEntrySameAs({
@@ -143,19 +148,19 @@ export const DataEntrySameAsDrawer: React.FC<DataEntrySameAsDrawerProps> = (prop
               <div className="flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
                   <MapPin className="h-3 w-3 text-white/80" />
-                  <span>{t('roomSubmission.info.ward')}: {wardNo || '—'}</span>
+                  <span>{wardLabel}: {wardNo || '—'}</span>
                 </div>
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
                   <Hash className="h-3 w-3 text-white/80" />
-                  <span>{t('roomSubmission.info.property')}: {propertyNo || '—'}</span>
+                  <span>{propertyLabel}: {propertyNo || '—'}</span>
                 </div>
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
                   <Layers className="h-3 w-3 text-white/80" />
-                  <span>{t('roomSubmission.info.partition')}: {partitionNo || '—'}</span>
+                  <span>{partitionLabel}: {partitionNo || '—'}</span>
                 </div>
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
                   <Tag className="h-3 w-3 text-white/80" />
-                  <span>{t('floor.selectProperties.type')}: {hook.currentPropertyType || '—'}</span>
+                  <span>{typeLabel}: {hook.currentPropertyType || '—'}</span>
                 </div>
               </div>
               <Tabs.TabList className="ml-auto border-0 bg-white/10 p-1 rounded-lg">
