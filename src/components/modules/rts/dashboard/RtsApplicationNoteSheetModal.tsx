@@ -12,6 +12,7 @@ import {
   Check,
   Lock,
   ShieldCheck,
+  Clock,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useLocale } from 'next-intl';
@@ -177,6 +178,15 @@ export default function RtsApplicationNoteSheetModal({
     (doc: RtsApplicationDocumentItem) => doc.isUploaded && Boolean(doc.documentGuid)
   );
 
+  // Determine if final approval is actually completed
+  const normalizedStatus = (status || '').toLowerCase();
+  const finalStage = stages.find((s) => s.isFinalStage) || (stages.length > 0 ? stages[stages.length - 1] : null);
+  const isFinalStageApproved = finalStage ? (finalStage.status || '').toLowerCase().includes('approv') : false;
+  const isApplicationApproved = normalizedStatus === 'approved';
+
+  // Last approval is done ONLY if the overall application status is 'Approved' OR the final stage is 'Approved'
+  const isFinalApprovalDone = isApplicationApproved || isFinalStageApproved;
+
   // Determine the final approving officer for the main bottom DSC badge from track history or stages
   const lastApprovedHistory = trackHistory.slice().reverse().find(
     (h) => h.isDigitallySigned || h.action?.includes('DigitalSign') || h.action?.includes('Approved') || h.status === 'Approved'
@@ -184,7 +194,7 @@ export default function RtsApplicationNoteSheetModal({
 
   const approvedOrLatestStage =
     stages.slice().reverse().find((s: RtsApplicationApprovalStage) => s.status?.toLowerCase().includes('approv') || s.completedDate) ||
-    stages[stages.length - 1] ||
+    finalStage ||
     null;
 
   const finalOfficerName =
@@ -203,8 +213,8 @@ export default function RtsApplicationNoteSheetModal({
     verification?.stageName ||
     'सक्षम प्राधिकारी (Designated Approval Officer)';
 
-  const approvalDate =
-    lastApprovedHistory?.createdDate
+  const approvalDate = isFinalApprovalDone
+    ? lastApprovedHistory?.createdDate
       ? new Date(lastApprovedHistory.createdDate).toLocaleDateString(locale === 'mr' ? 'mr-IN' : 'en-IN', {
           day: '2-digit',
           month: '2-digit',
@@ -212,15 +222,16 @@ export default function RtsApplicationNoteSheetModal({
           hour: '2-digit',
           minute: '2-digit',
         })
-      : approvedOrLatestStage?.completedDate ||
-        approvedOrLatestStage?.createdDate ||
-        new Date().toLocaleDateString(locale === 'mr' ? 'mr-IN' : 'en-IN', {
+      : approvedOrLatestStage?.completedDate || approvedOrLatestStage?.createdDate
+      ? new Date(approvedOrLatestStage.completedDate || approvedOrLatestStage.createdDate!).toLocaleDateString(locale === 'mr' ? 'mr-IN' : 'en-IN', {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric',
           hour: '2-digit',
           minute: '2-digit',
-        });
+        })
+      : '-'
+    : null;
 
   // Pristine Isolated A4 Print Function (Bypasses modal viewport scroll offsets, strictly budgeted to 1-2 pages)
   const handlePrint = () => {
@@ -800,14 +811,24 @@ export default function RtsApplicationNoteSheetModal({
             {/* 4. Final Approving Authority DSC Signature Block & Official Municipal Seal (Single Master Block) */}
             <div className="mt-2.5 pt-2 border-t-2 border-slate-900 break-inside-avoid font-sans">
               <div className="flex items-center gap-1.5 mb-1.5 text-slate-950">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                {isFinalApprovalDone ? (
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                ) : (
+                  <Clock className="w-3.5 h-3.5 text-amber-700" />
+                )}
                 <h3 className="font-bold text-[11px] uppercase tracking-wide">
-                  ४. सक्षम प्राधिकारी अंतिम डिजिटल स्वाक्षरी व अधिकृत शिक्का (Official DSC Approval & Seal)
+                  {isFinalApprovalDone
+                    ? '४. सक्षम प्राधिकारी अंतिम डिजिटल स्वाक्षरी व अधिकृत शिक्का (Official DSC Approval & Seal)'
+                    : '४. सक्षम प्राधिकारी अंतिम स्वाक्षरी व अधिकृत शिक्का (Final Approval & Authority Seal)'}
                 </h3>
               </div>
 
               {/* Master DSC Digital Signature Box & Seal Stamp */}
-              <div className="p-2.5 bg-gradient-to-r from-slate-50 via-emerald-50/50 to-slate-50 border border-slate-400 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-2.5">
+              <div className={`p-2.5 border rounded-lg flex flex-col sm:flex-row items-center justify-between gap-2.5 ${
+                isFinalApprovalDone
+                  ? 'bg-gradient-to-r from-slate-50 via-emerald-50/50 to-slate-50 border-slate-400'
+                  : 'bg-gradient-to-r from-slate-50 via-amber-50/40 to-slate-50 border-amber-300'
+              }`}>
                 {/* Left: Department & Corporation Note */}
                 <div className="text-left text-[9.5px] text-slate-700 space-y-0.5 max-w-xs">
                   <div className="font-bold text-slate-950 text-[10.5px]">
@@ -821,61 +842,98 @@ export default function RtsApplicationNoteSheetModal({
                   </div>
                 </div>
 
-                {/* Center: Official Seal Stamp */}
+                {/* Center: Official Seal Stamp (Only when Final Approval is Done) */}
                 <div className="center-seal text-center shrink-0">
                   <div className="inline-block text-center">
-                    {ulbInfo.sealUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={ulbInfo.sealUrl}
-                        alt="Official Municipal Seal"
-                        className="w-16 h-16 sm:w-20 sm:h-20 object-contain transform -rotate-6 filter drop-shadow-xs inline-block"
-                        onError={() => setLogoError(true)}
-                      />
+                    {isFinalApprovalDone ? (
+                      ulbInfo.sealUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={ulbInfo.sealUrl}
+                          alt="Official Municipal Seal"
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-contain transform -rotate-6 filter drop-shadow-xs inline-block"
+                          onError={() => setLogoError(true)}
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-400 flex items-center justify-center text-[9px] font-bold text-slate-500">
+                          OFFICIAL SEAL
+                        </div>
+                      )
                     ) : (
-                      <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-400 flex items-center justify-center text-[9px] font-bold text-slate-500">
-                        OFFICIAL SEAL
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-dashed border-amber-400 bg-amber-50/40 flex flex-col items-center justify-center p-1 text-center">
+                        <span className="text-[7.5px] font-bold text-amber-800 uppercase leading-tight">अधिकृत शिक्का</span>
+                        <span className="text-[6.5px] text-amber-600 mt-0.5">(अंतिम मान्यतेनंतर)</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Right: Master DSC Digital Signature Box */}
+                {/* Right: Master DSC Digital Signature Box or Pending Box */}
                 <div className="right-digital-sign text-right w-full sm:w-auto">
-                  <div className="digital-signature-card bg-emerald-50/95 border-2 border-emerald-600 p-2 rounded-lg text-left inline-block shadow-xs min-w-[230px] font-sans text-xs">
-                    <div className="flex items-center justify-between text-emerald-900 font-bold text-[10px] pb-1 border-b border-emerald-300 mb-1">
-                      <div className="flex items-center gap-1">
-                        <span className="text-emerald-700 font-black text-xs">✔</span>
-                        <span>Digitally Signed (DSC)</span>
+                  {isFinalApprovalDone ? (
+                    <div className="digital-signature-card bg-emerald-50/95 border-2 border-emerald-600 p-2 rounded-lg text-left inline-block shadow-xs min-w-[230px] font-sans text-xs">
+                      <div className="flex items-center justify-between text-emerald-900 font-bold text-[10px] pb-1 border-b border-emerald-300 mb-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-emerald-700 font-black text-xs">✔</span>
+                          <span>Digitally Signed (DSC)</span>
+                        </div>
+                        <span className="text-[7.5px] bg-emerald-200 text-emerald-950 px-1 py-0.2 rounded font-mono font-bold">
+                          CCA Verified
+                        </span>
                       </div>
-                      <span className="text-[7.5px] bg-emerald-200 text-emerald-950 px-1 py-0.2 rounded font-mono font-bold">
-                        CCA Verified
-                      </span>
-                    </div>
 
-                    <div className="font-extrabold text-slate-950 text-[10.5px] leading-tight">
-                      {dscMetadata?.signerName || ulbInfo.nameEnglish}
-                    </div>
+                      <div className="font-extrabold text-slate-950 text-[10.5px] leading-tight">
+                        {dscMetadata?.signerName || ulbInfo.nameEnglish}
+                      </div>
 
-                    <div className="text-[9.5px] text-slate-700 font-semibold mt-0.5">
-                      सक्षम प्राधिकारी: <span className="text-slate-950 font-bold">{finalOfficerName}</span>
-                    </div>
-                    <div className="text-[9px] text-slate-600 font-medium">
-                      {finalOfficerDesignation}
-                    </div>
+                      <div className="text-[9.5px] text-slate-700 font-semibold mt-0.5">
+                        सक्षम प्राधिकारी: <span className="text-slate-950 font-bold">{finalOfficerName}</span>
+                      </div>
+                      <div className="text-[9px] text-slate-600 font-medium">
+                        {finalOfficerDesignation}
+                      </div>
 
-                    <div className="text-[8px] text-slate-600 font-mono mt-1 border-t border-emerald-200/70 pt-0.5 space-y-0.2">
-                      <div>Date: <span className="font-bold text-slate-800">{approvalDate} IST</span></div>
-                      <div className="text-[7.5px] text-slate-500 truncate" title={`Serial: ${dscMetadata?.serialNumber || '0190D769'}`}>
-                        Cert Serial: {dscMetadata?.serialNumber || '0190D769'} • {dscMetadata?.issuer || 'e-Mudhra Sub CA'}
+                      <div className="text-[8px] text-slate-600 font-mono mt-1 border-t border-emerald-200/70 pt-0.5 space-y-0.2">
+                        <div>Date: <span className="font-bold text-slate-800">{approvalDate} IST</span></div>
+                        <div className="text-[7.5px] text-slate-500 truncate" title={`Serial: ${dscMetadata?.serialNumber || '0190D769'}`}>
+                          Cert Serial: {dscMetadata?.serialNumber || '0190D769'} • {dscMetadata?.issuer || 'e-Mudhra Sub CA'}
+                        </div>
+                      </div>
+
+                      <div className="text-[8px] text-emerald-900 font-bold mt-1 flex items-center gap-1 bg-emerald-100/90 px-1.5 py-0.5 rounded border border-emerald-300">
+                        <Lock className="w-2 h-2 text-emerald-700 shrink-0" />
+                        <span>e-Sign Verified & Authentic (Official RTS)</span>
                       </div>
                     </div>
+                  ) : (
+                    <div className="digital-signature-pending-card bg-amber-50/90 border-2 border-dashed border-amber-400 p-2 rounded-lg text-left inline-block shadow-xs min-w-[230px] font-sans text-xs">
+                      <div className="flex items-center justify-between text-amber-900 font-bold text-[10px] pb-1 border-b border-amber-300 mb-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-amber-700 font-black text-xs">⏳</span>
+                          <span>स्वाक्षरी प्रलंबित (Approval Pending)</span>
+                        </div>
+                        <span className="text-[7.5px] bg-amber-200 text-amber-950 px-1 py-0.2 rounded font-mono font-bold">
+                          प्रक्रियेत
+                        </span>
+                      </div>
 
-                    <div className="text-[8px] text-emerald-900 font-bold mt-1 flex items-center gap-1 bg-emerald-100/90 px-1.5 py-0.5 rounded border border-emerald-300">
-                      <Lock className="w-2 h-2 text-emerald-700 shrink-0" />
-                      <span>e-Sign Verified & Authentic (Official RTS)</span>
+                      <div className="font-extrabold text-slate-800 text-[10.5px] leading-tight">
+                        {ulbInfo.nameEnglish}
+                      </div>
+
+                      <div className="text-[9.5px] text-slate-700 font-semibold mt-0.5">
+                        सक्षम प्राधिकारी: <span className="text-slate-950 font-bold">{finalOfficerName}</span>
+                      </div>
+                      <div className="text-[9px] text-slate-600 font-medium">
+                        {finalOfficerDesignation}
+                      </div>
+
+                      <div className="text-[8px] text-amber-900 font-semibold mt-1 p-1 bg-amber-100/80 rounded border border-amber-300 flex items-center gap-1">
+                        <Lock className="w-2.5 h-2.5 text-amber-700 shrink-0" />
+                        <span>सक्षम प्राधिकाऱ्यांच्या अंतिम मान्यतेनंतर डिजिटल स्वाक्षरी (DSC) अंकित होईल.</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div className="text-[10px] font-bold text-slate-900 mt-0.5">{finalOfficerDesignation}</div>
                   <div className="text-[9px] text-slate-600">{ulbInfo.nameLocal}</div>
                 </div>
@@ -899,7 +957,9 @@ export default function RtsApplicationNoteSheetModal({
                 <div className="text-left leading-tight max-w-md">
                   <p className="font-bold text-slate-700 text-[9.5px]">महाराष्ट्र लोकसेवा हक्क अधिनियम २०१५</p>
                   <p className="text-[8px] text-slate-500">
-                    सदर टिपणी/आदेश पत्रक IT Act 2000 च्या कलम ६ नुसार अधिकृत ई-गव्हर्नन्स सिस्टीमद्वारे डिजिटल स्वाक्षरीने प्रमाणित केलेले असून प्रत्यक्ष सही-शिक्क्याची आवश्यकता नाही.
+                    {isFinalApprovalDone
+                      ? "सदर टिपणी/आदेश पत्रक IT Act 2000 च्या कलम ६ नुसार अधिकृत ई-गव्हर्नन्स सिस्टीमद्वारे डिजिटल स्वाक्षरीने प्रमाणित केलेले असून प्रत्यक्ष सही-शिक्क्याची आवश्यकता नाही."
+                      : "सदर टिपणी पत्रक प्रक्रियेत असून सक्षम प्राधिकाऱ्यांच्या अंतिम मान्यतेनंतर डिजिटल स्वाक्षरी व अधिकृत शिक्का लागू होईल."}
                   </p>
                 </div>
               </div>
