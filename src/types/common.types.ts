@@ -104,4 +104,8 @@ export interface PagedResponse<T> {
   hasPrevious: boolean;
   /** Whether there is a next page available */
   hasNext: boolean;
+  /** Duplicate row count */
+  duplicateCount?: number;
+  /** @deprecated Use duplicateCount instead */
+  dublicateCount?: number;
 }

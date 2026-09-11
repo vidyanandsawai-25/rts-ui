@@ -22,6 +22,16 @@ export interface LockUnlockPropertyItem extends Record<string, unknown> {
   lockedScreens: Array<number | LockedScreen>;
 }
 
+export const SEARCH_CATEGORY = {
+  ZONE: 1,
+  WARD: 2,
+  BUILDING: 3,
+  PROPERTY_RANGE: 4,
+  EXCEL: 5,
+} as const;
+
+export type SearchCategoryType = (typeof SEARCH_CATEGORY)[keyof typeof SEARCH_CATEGORY];
+
 export interface LockUnlockPropertiesResponse {
   items: LockUnlockPropertyItem[];
   totalCount: number;
@@ -30,6 +40,17 @@ export interface LockUnlockPropertiesResponse {
   totalPages: number;
   hasPrevious: boolean;
   hasNext: boolean;
+  duplicateCount?: number;
+  /** @deprecated Use duplicateCount instead */
+  dublicateCount?: number;
+  fileSessionId?: string;
+}
+
+export interface PaginationState {
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
 }
 
 export interface LockUnlockPropertiesQueryParams {
@@ -93,3 +114,20 @@ export interface ModuleMasterResponse {
   hasPrevious: boolean;
   hasNext: boolean;
 }
+
+export interface ExcelUploadRow {
+  zoneNo: string;
+  wardNo: string;
+  propertyNo: string;
+  partitionNo?: string;
+}
+
+export interface ExcelSearchRequest {
+  rows: ExcelUploadRow[];
+  pageNumber: number;
+  pageSize: number;
+  search?: string;
+}
+
+export const MAX_EXCEL_ROWS = 100_000;
+

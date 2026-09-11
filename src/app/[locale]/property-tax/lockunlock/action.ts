@@ -8,6 +8,7 @@ import {
   getLockUnlockScreens,
   getLockUnlockProperties,
   getLockUnlockPropertiesByCategory,
+  getLockUnlockPropertiesByExcel,
   bulkLockUnlockProperties,
   bulkLockUnlockByCategory
 } from "@/lib/api/lockunlock/lockunlock.service";
@@ -256,3 +257,151 @@ export async function bulkLockUnlockByCategoryAction(
     return { success: false, error: t("messages.unexpectedErrorBulk") };
   }
 }
+
+// Server-side in-memory cache for uploaded Excel files to avoid re-uploading file bytes
+interface CachedExcelSession {
+  fileBlob: Blob;
+  fileName: string;
+  createdAt: number;
+}
+
+const excelSessionStore = new Map<string, CachedExcelSession>();
+const EXCEL_SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+function cleanExpiredExcelSessions() {
+  const now = Date.now();
+  for (const [id, session] of excelSessionStore.entries()) {
+    if (now - session.createdAt > EXCEL_SESSION_TTL_MS) {
+      excelSessionStore.delete(id);
+    }
+  }
+}
+
+function generateSessionId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+}
+
+/**
+ * Server Action to fetch properties by Excel upload file or stored fileSessionId.
+ * When File is provided, it stores the file session and returns fileSessionId.
+ * When fileSessionId is provided, it reuses the cached file without re-uploading.
+ */
+export async function fetchLockUnlockPropertiesByExcelAction(
+  formData: FormData
+): Promise<LockUnlockPropertiesResponse> {
+  try {
+    cleanExpiredExcelSessions();
+    const file = formData.get("File") as File | null;
+    const fileSessionIdParam = formData.get("FileSessionId") as string | null;
+
+    let targetFormData = formData;
+    let currentSessionId = fileSessionIdParam || "";
+
+    if (file && file.size > 0) {
+      currentSessionId = generateSessionId();
+      const arrayBuffer = await file.arrayBuffer();
+      excelSessionStore.set(currentSessionId, {
+        fileBlob: new Blob([arrayBuffer], { type: file.type || "application/octet-stream" }),
+        fileName: file.name,
+        createdAt: Date.now(),
+      });
+    } else if (fileSessionIdParam && excelSessionStore.has(fileSessionIdParam)) {
+      const cached = excelSessionStore.get(fileSessionIdParam)!;
+      targetFormData = new FormData();
+      targetFormData.append("File", cached.fileBlob, cached.fileName);
+
+      const pageNumber = formData.get("PageNumber");
+      const pageSize = formData.get("PageSize");
+      const searchTerm = formData.get("SearchTerm");
+
+      if (pageNumber) targetFormData.append("PageNumber", pageNumber.toString());
+      if (pageSize) targetFormData.append("PageSize", pageSize.toString());
+      if (searchTerm) targetFormData.append("SearchTerm", searchTerm.toString());
+    }
+
+    const response = await getLockUnlockPropertiesByExcel(targetFormData);
+    if (currentSessionId) {
+      response.fileSessionId = currentSessionId;
+    }
+    return response;
+  } catch (error: unknown) {
+    throw error;
+  }
+}
+
+/**
+ * Server Action to perform bulk lock/unlock on an uploaded Excel session directly on the server.
+ * Avoids sending all resolved property IDs back and forth over the client network.
+ */
+export async function bulkLockUnlockByExcelSessionAction(payload: {
+  fileSessionId: string;
+  screenIds: number[];
+  action: "lock" | "unlock";
+  searchTerm?: string;
+  excludedPropertyIds?: number[];
+}): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    const t = await getTranslations("lockUnlock");
+    const cached = excelSessionStore.get(payload.fileSessionId);
+
+    if (!cached) {
+      return {
+        success: false,
+        error: t("selectPropertyCard.excelUploadRequired"),
+      };
+    }
+
+    const allFormData = new FormData();
+    allFormData.append("File", cached.fileBlob, cached.fileName);
+    allFormData.append("PageNumber", "1");
+    allFormData.append("PageSize", "-1");
+    if (payload.searchTerm) {
+      allFormData.append("SearchTerm", payload.searchTerm);
+    }
+
+    const allRes = await getLockUnlockPropertiesByExcel(allFormData);
+    const allItems = allRes.items || [];
+    const excludedIds = payload.excludedPropertyIds || [];
+    const targetPropertyIds = allItems
+      .map((p) => p.propertyId)
+      .filter((id) => !excludedIds.includes(id));
+
+    if (targetPropertyIds.length === 0) {
+      return {
+        success: false,
+        error: t("messages.selectPropertyRequired"),
+      };
+    }
+
+    const result = await bulkLockUnlockProperties({
+      propertyIds: targetPropertyIds.map(Number),
+      screenIds: payload.screenIds.map(Number),
+      action: payload.action,
+    });
+
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/lockunlock`, "page");
+    }
+
+    if (result.success === false) {
+      return {
+        success: false,
+        error: result.message || t("messages.bulkFailed"),
+      };
+    }
+
+    return {
+      success: true,
+      message: result.message || t("messages.bulkSuccessmsg"),
+    };
+  } catch (error: unknown) {
+    const t = await getTranslations("lockUnlock");
+    if (error instanceof ApiError) {
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: t("messages.unexpectedErrorBulk") };
+  }
+}

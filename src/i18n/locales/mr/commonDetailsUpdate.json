@@ -85,7 +85,12 @@
       "noApproval": "कोणतीही मंजुरी नाही",
       "selected": "निवडलेले:",
       "refreshFields": "सक्रिय फील्ड रिफ्रेश करा",
-      "selectFieldPlaceholder": "ग्रुप निवडा"
+      "selectFieldPlaceholder": "ग्रुप निवडा",
+      "searchPlaceholder":"ग्रुपच्या नावाने शोधा",
+      "noResultsTitle": "\"{term}\" साठी कोणताही ग्रुप सापडला नाही",
+      "noResultsHint": "दुसरा कीवर्ड वापरून पहा किंवा",
+      "clearSearch": "शोध साफ़ करा",
+      "searching" : "लोड होत आहे..."
     },
     "preview": {
       "title": "पूर्वावलोकन यादी",

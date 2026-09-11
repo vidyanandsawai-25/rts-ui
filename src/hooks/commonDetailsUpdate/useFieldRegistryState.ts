@@ -81,7 +81,7 @@ export const useFieldRegistryState = (
     }
   };
 
-  const refreshFieldsList = useCallback(async (targetPage?: number, targetSize?: number, showLoading: boolean = true) => {
+  const refreshFieldsList = useCallback(async (targetPage?: number, targetSize?: number, showLoading: boolean = true, term?: string) => {
     if (!actions.getFieldRegistriesAction) return;
 
     const pNum = targetPage !== undefined ? targetPage : 1;
@@ -91,7 +91,7 @@ export const useFieldRegistryState = (
       setLoading(true);
     }
     try {
-      const res = await actions.getFieldRegistriesAction(pNum, pSize);
+      const res = await actions.getFieldRegistriesAction(pNum, pSize, undefined, term);
       if (res.success && res.data) {
         const data = res.data;
         if (data && "items" in data) {
@@ -108,6 +108,14 @@ export const useFieldRegistryState = (
       }
     }
   }, [actions.getFieldRegistriesAction]);
+
+  // Trigger server-side search whenever searchTerm, pageNumber, or pageSize changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      refreshFieldsList(pageNumber, pageSize, true, searchTerm);
+    }, 0); // immediate on page/size change; searchTerm is already debounced at the UI layer
+    return () => clearTimeout(timer);
+  }, [searchTerm, pageNumber, pageSize]);
 
   const setPageNumber = useCallback((val: number) => {
     setPageNumberState(val);

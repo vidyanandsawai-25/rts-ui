@@ -84,10 +84,14 @@ vi.mock("@/app/[locale]/property-tax/lockunlock/action", () => ({
 }));
 
 // Mock lockunlock utils
-vi.mock("@/lib/api/lockunlock/lockunlock.utils", () => ({
-  getScreenIds: (list: (number | { id: number })[]) =>
-    (list || []).map((item) => (typeof item === "object" ? item.id : Number(item))).filter((id) => id > 0),
-}));
+vi.mock("@/lib/api/lockunlock/lockunlock.utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/api/lockunlock/lockunlock.utils")>();
+  return {
+    ...actual,
+    getScreenIds: (list: (number | { id: number })[]) =>
+      (list || []).map((item) => (typeof item === "object" ? item.id : Number(item))).filter((id) => id > 0),
+  };
+});
 
 // Mock useLockUnlockColumns
 vi.mock("@/hooks/lockunlock/useLockUnlockColumns", () => ({

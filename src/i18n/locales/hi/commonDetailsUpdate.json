@@ -85,7 +85,12 @@
       "noApproval": "कोई अनुमोदन नहीं",
       "selected": "चयनित:",
       "refreshFields": "सक्षम फ़ील्ड ताज़ा करें",
-      "selectFieldPlaceholder": "समूह चुनें"
+      "selectFieldPlaceholder": "समूह चुनें",
+      "searchPlaceholder": "ग्रुप के नाम से खोजें",
+      "noResultsTitle": "\"{term}\" के लिए कोई ग्रुप नहीं मिला",
+      "noResultsHint": "कोई दूसरा कीवर्ड आज़माएं या",
+      "clearSearch": "खोज साफ़ करें",
+      "searching":"लोड हो रहा है..."
     },
     "preview": {
       "title": "पूर्वावलोकन सूची",
