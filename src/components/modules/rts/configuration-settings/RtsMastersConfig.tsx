@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
-import { useTranslations } from "next-intl";
-import { Plus, Pencil, Trash2, Landmark, Folder } from "lucide-react";
+import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import { Plus, Pencil, Trash2, Landmark, Folder, Building2, Sliders, GitMerge, UserCheck, Award } from "lucide-react";
 import { Badge, Button, Card, Drawer, MasterTable, SearchInput, useConfirm } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ type ServiceRow = Record<string, unknown> & { id: string; srNo: number; name: st
 
 export default function RtsMastersConfig({ masters }: MasterConfigProps) {
   const { confirm } = useConfirm();
+  const locale = useLocale();
   const t = useTranslations("rts");
   const [departments, setDepartments] = useState(masters.departments);
   const [services, setServices] = useState(masters.services);
@@ -335,7 +337,75 @@ export default function RtsMastersConfig({ masters }: MasterConfigProps) {
         </div>
       </Card>
 
-
+      {/* RTS All Masters Quick Navigation Hub */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+        {[
+          {
+            href: `/${locale}/rts/configuration-settings/rts-departments`,
+            label: locale === "mr" ? "विभाग मास्टर्स" : "Departments",
+            icon: Building2,
+            desc: locale === "mr" ? "सर्व मनपा विभाग" : "Department Config",
+            color: "text-blue-600 bg-blue-50/80 border-blue-200 hover:border-blue-400 hover:bg-blue-50",
+          },
+          {
+            href: `/${locale}/rts/configuration-settings/rts-services`,
+            label: locale === "mr" ? "सेवा मास्टर्स" : "Services",
+            icon: Folder,
+            desc: locale === "mr" ? "SLA, शुल्क व प्रकार" : "Services & Fees",
+            color: "text-emerald-600 bg-emerald-50/80 border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50",
+          },
+          {
+            href: `/${locale}/rts/configuration-settings/rts-fields`,
+            label: locale === "mr" ? "अर्ज फील्ड्स" : "Form Fields",
+            icon: Sliders,
+            desc: locale === "mr" ? "डायनॅमिक फॉर्म" : "Dynamic Fields",
+            color: "text-purple-600 bg-purple-50/80 border-purple-200 hover:border-purple-400 hover:bg-purple-50",
+          },
+          {
+            href: `/${locale}/rts/configuration-settings/rts-workflows`,
+            label: locale === "mr" ? "मंजुरी वर्कफ्लो" : "Workflows",
+            icon: GitMerge,
+            desc: locale === "mr" ? "टप्पे व नियम" : "Approval Flow Stages",
+            color: "text-amber-600 bg-amber-50/80 border-amber-200 hover:border-amber-400 hover:bg-amber-50",
+          },
+          {
+            href: `/${locale}/rts/configuration-settings/rts-officers`,
+            label: locale === "mr" ? "अधिकारी वाटप" : "Officer Allocation",
+            icon: UserCheck,
+            desc: locale === "mr" ? "प्रभाग व अधिकारी" : "Service Officers",
+            color: "text-indigo-600 bg-indigo-50/80 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50",
+          },
+          {
+            href: `/${locale}/rts/configuration-settings/rts-certificates`,
+            label: locale === "mr" ? "प्रमाणपत्र डिझाइन" : "Certificates",
+            icon: Award,
+            desc: locale === "mr" ? "टेम्पलेट स्टुडिओ" : "Certificate Studio",
+            color: "text-rose-600 bg-rose-50/80 border-rose-200 hover:border-rose-400 hover:bg-rose-50",
+          },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`p-3 rounded-xl border transition-all duration-200 flex flex-col justify-between hover:shadow-xs group ${item.color}`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <Icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
+                <span className="text-[10px] font-mono opacity-60">→</span>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-800 leading-tight">
+                  {item.label}
+                </div>
+                <div className="text-[9.5px] text-slate-500 mt-0.5 truncate">
+                  {item.desc}
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
 
       {/* Tables layout in a 2-column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

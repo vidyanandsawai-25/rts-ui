@@ -15,6 +15,7 @@ import {
   MasterTable,
   SearchInput,
   StatusBadge,
+  ToggleSwitch,
   useConfirm,
 } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
@@ -32,6 +33,14 @@ interface Department {
   icon: string | null;
   displayOrder: number;
   isActive: boolean;
+}
+
+export interface SaveDepartmentPayload {
+  name: string;
+  localName?: string | null;
+  icon?: string | null;
+  displayOrder?: number;
+  isActive?: boolean;
 }
 
 interface SaveDepartmentResponse {
@@ -52,12 +61,12 @@ interface RtsDepartmentConfigProps {
   departments: Department[];
 
   saveDepartment: (
-    name: string
+    nameOrInput: string | SaveDepartmentPayload
   ) => Promise<SaveDepartmentResponse>;
 
   updateDepartment: (
     id: string,
-    name: string
+    nameOrInput: string | SaveDepartmentPayload
   ) => Promise<UpdateDepartmentResponse>;
 
   deleteDepartment: (
@@ -126,8 +135,11 @@ export default function RtsDepartmentConfig({
   /**
    * Form
    */
-  const [departmentName, setDepartmentName] =
-    useState("");
+  const [departmentName, setDepartmentName] = useState("");
+  const [departmentLocalName, setDepartmentLocalName] = useState("");
+  const [departmentIcon, setDepartmentIcon] = useState("");
+  const [displayOrder, setDisplayOrder] = useState<number>(0);
+  const [isActive, setIsActive] = useState<boolean>(true);
 
   /**
    * Search Handler
@@ -151,6 +163,10 @@ export default function RtsDepartmentConfig({
     setDrawerMode("add");
     setEditingDepartment(null);
     setDepartmentName("");
+    setDepartmentLocalName("");
+    setDepartmentIcon("");
+    setDisplayOrder(departments.length + 1);
+    setIsActive(true);
     setDrawerOpen(true);
   };
 
@@ -163,6 +179,10 @@ export default function RtsDepartmentConfig({
     setDrawerMode("edit");
     setEditingDepartment(department);
     setDepartmentName(department.name);
+    setDepartmentLocalName(department.localName || "");
+    setDepartmentIcon(department.icon || "");
+    setDisplayOrder(department.displayOrder || 0);
+    setIsActive(department.isActive ?? true);
     setDrawerOpen(true);
   };
 
@@ -181,9 +201,16 @@ export default function RtsDepartmentConfig({
 
     startTransition(async () => {
       try {
+        const payload: SaveDepartmentPayload = {
+          name: departmentName.trim(),
+          localName: departmentLocalName.trim() || null,
+          icon: departmentIcon.trim() || null,
+          displayOrder: Number(displayOrder) || 0,
+          isActive,
+        };
+
         if (drawerMode === "add") {
-          const response =
-            await saveDepartment(departmentName);
+          const response = await saveDepartment(payload);
 
           if (
             response.success &&
@@ -208,7 +235,7 @@ export default function RtsDepartmentConfig({
           const response =
             await updateDepartment(
               editingDepartment.id,
-              departmentName
+              payload
             );
 
           if (
@@ -565,7 +592,7 @@ export default function RtsDepartmentConfig({
         >
           <div className="space-y-1">
             <Label className="text-[10px] font-bold uppercase text-slate-500">
-              {tRts("masters.deptName")}
+              {tRts("masters.deptName")} (English) <span className="text-red-500">*</span>
             </Label>
 
             <Input
@@ -579,6 +606,69 @@ export default function RtsDepartmentConfig({
                 setDepartmentName(e.target.value)
               }
               fullWidth
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-slate-500">
+              {tRts("masters.localName")} (स्थानिक / मराठी)
+            </Label>
+
+            <Input
+              type="text"
+              value={departmentLocalName}
+              placeholder="उदा. नगररचना विभाग"
+              onChange={(e) =>
+                setDepartmentLocalName(e.target.value)
+              }
+              fullWidth
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-slate-500">
+              {tRts("masters.icon")} (Icon Name / Class)
+            </Label>
+
+            <Input
+              type="text"
+              value={departmentIcon}
+              placeholder="उदा. Landmark, Building, FileText"
+              onChange={(e) =>
+                setDepartmentIcon(e.target.value)
+              }
+              fullWidth
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase text-slate-500">
+              {tRts("masters.displayOrder")}
+            </Label>
+
+            <Input
+              type="number"
+              value={displayOrder}
+              placeholder="0"
+              onChange={(e) =>
+                setDisplayOrder(parseInt(e.target.value, 10) || 0)
+              }
+              fullWidth
+            />
+          </div>
+
+          <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+            <div>
+              <Label className="text-[11px] font-bold text-slate-700 block">
+                {tRts("masters.status")}
+              </Label>
+              <span className="text-[10px] text-slate-500">
+                {isActive ? tRts("masters.active") : t("status.inactive")}
+              </span>
+            </div>
+            <ToggleSwitch
+              checked={isActive}
+              onChange={setIsActive}
             />
           </div>
 

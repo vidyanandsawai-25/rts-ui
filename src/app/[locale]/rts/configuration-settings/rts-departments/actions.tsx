@@ -53,14 +53,26 @@ export async function getRtsDepartmentConfigData() {
   };
 }
 
-export async function saveRtsDepartmentConfigAction(name: string) {
+export interface SaveDepartmentInput {
+  name: string;
+  localName?: string | null;
+  icon?: string | null;
+  displayOrder?: number;
+  isActive?: boolean;
+}
+
+export async function saveRtsDepartmentConfigAction(input: string | SaveDepartmentInput) {
   try {
+    const payload: SaveDepartmentInput = typeof input === "string" ? { name: input } : input;
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
 
     const department = await createRtsDepartment({
-      departmentName: name,
-      isActive: true,
+      departmentName: payload.name,
+      departmentNameLocal: payload.localName ?? undefined,
+      departmentIcon: payload.icon ?? undefined,
+      displayOrder: payload.displayOrder ?? 0,
+      isActive: payload.isActive ?? true,
       createdBy: userId ?? undefined,
     });
 
@@ -72,20 +84,24 @@ export async function saveRtsDepartmentConfigAction(name: string) {
   }
 }
 
-export async function updateRtsDepartmentConfigAction(id: string, name: string) {
+export async function updateRtsDepartmentConfigAction(id: string, input: string | SaveDepartmentInput) {
   try {
     const departmentId = parseInt(id, 10);
     if (!Number.isFinite(departmentId) || departmentId <= 0) {
       return { success: false };
     }
 
+    const payload: SaveDepartmentInput = typeof input === "string" ? { name: input } : input;
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
 
     const department = await updateRtsDepartment(departmentId, {
       id: departmentId,
-      departmentName: name,
-      isActive: true,
+      departmentName: payload.name,
+      departmentNameLocal: payload.localName ?? undefined,
+      departmentIcon: payload.icon ?? undefined,
+      displayOrder: payload.displayOrder ?? 0,
+      isActive: payload.isActive ?? true,
       updatedBy: userId ?? undefined,
     });
 
