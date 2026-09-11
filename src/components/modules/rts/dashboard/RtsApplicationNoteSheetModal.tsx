@@ -187,31 +187,31 @@ export default function RtsApplicationNoteSheetModal({
   // Last approval is done ONLY if the overall application status is 'Approved' OR the final stage is 'Approved'
   const isFinalApprovalDone = isApplicationApproved || isFinalStageApproved;
 
-  // Determine the final approving officer for the main bottom DSC badge from track history or stages
+  // Track history for approvals
   const lastApprovedHistory = trackHistory.slice().reverse().find(
     (h) => h.isDigitallySigned || h.action?.includes('DigitalSign') || h.action?.includes('Approved') || h.status === 'Approved'
   );
 
-  const approvedOrLatestStage =
-    stages.slice().reverse().find((s: RtsApplicationApprovalStage) => s.status?.toLowerCase().includes('approv') || s.completedDate) ||
-    finalStage ||
-    null;
+  // Dynamic final stage designation: directly from final stage's stageName
+  const finalOfficerDesignation =
+    finalStage?.stageName?.trim() ||
+    (isFinalApprovalDone && lastApprovedHistory?.stageName?.trim()) ||
+    verification?.stageName?.trim() ||
+    'सक्षम प्राधिकारी';
+
+  // Dynamic final officer name
+  const finalStageOfficerName = finalStage
+    ? (finalStage.firstName || finalStage.lastName
+        ? `${finalStage.firstName || ''} ${finalStage.lastName || ''}`.trim()
+        : finalStage.userName || finalStage.assignedToName)
+    : null;
 
   const finalOfficerName =
-    lastApprovedHistory?.actionByOfficerName ||
-    lastApprovedHistory?.actionByUserName ||
-    (approvedOrLatestStage?.firstName || approvedOrLatestStage?.lastName
-      ? `${approvedOrLatestStage.firstName || ''} ${approvedOrLatestStage.lastName || ''}`.trim()
-      : approvedOrLatestStage?.userName ||
-        (verification?.firstName || verification?.lastName
-          ? `${verification.firstName || ''} ${verification.lastName || ''}`.trim()
-          : verification?.officerName || verification?.officerEmail || 'सक्षम प्राधिकारी'));
-
-  const finalOfficerDesignation =
-    lastApprovedHistory?.stageName ||
-    approvedOrLatestStage?.stageName ||
-    verification?.stageName ||
-    'सक्षम प्राधिकारी (Designated Approval Officer)';
+    (isFinalApprovalDone && (lastApprovedHistory?.actionByOfficerName || lastApprovedHistory?.actionByUserName)) ||
+    finalStageOfficerName ||
+    (verification?.firstName || verification?.lastName
+      ? `${verification.firstName || ''} ${verification.lastName || ''}`.trim()
+      : verification?.officerName || verification?.officerEmail || finalOfficerDesignation);
 
   const approvalDate = isFinalApprovalDone
     ? lastApprovedHistory?.createdDate
@@ -222,8 +222,8 @@ export default function RtsApplicationNoteSheetModal({
           hour: '2-digit',
           minute: '2-digit',
         })
-      : approvedOrLatestStage?.completedDate || approvedOrLatestStage?.createdDate
-      ? new Date(approvedOrLatestStage.completedDate || approvedOrLatestStage.createdDate!).toLocaleDateString(locale === 'mr' ? 'mr-IN' : 'en-IN', {
+      : finalStage?.completedDate || finalStage?.createdDate
+      ? new Date(finalStage.completedDate || finalStage.createdDate!).toLocaleDateString(locale === 'mr' ? 'mr-IN' : 'en-IN', {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric',
@@ -818,8 +818,8 @@ export default function RtsApplicationNoteSheetModal({
                 )}
                 <h3 className="font-bold text-[11px] uppercase tracking-wide">
                   {isFinalApprovalDone
-                    ? '४. सक्षम प्राधिकारी अंतिम डिजिटल स्वाक्षरी व अधिकृत शिक्का (Official DSC Approval & Seal)'
-                    : '४. सक्षम प्राधिकारी अंतिम स्वाक्षरी व अधिकृत शिक्का (Final Approval & Authority Seal)'}
+                    ? `४. ${finalOfficerDesignation} अंतिम डिजिटल स्वाक्षरी व अधिकृत शिक्का (Official DSC Approval & Seal)`
+                    : `४. ${finalOfficerDesignation} अंतिम स्वाक्षरी व अधिकृत शिक्का (Final Approval & Authority Seal)`}
                 </h3>
               </div>
 
@@ -887,10 +887,10 @@ export default function RtsApplicationNoteSheetModal({
                       </div>
 
                       <div className="text-[9.5px] text-slate-700 font-semibold mt-0.5">
-                        सक्षम प्राधिकारी: <span className="text-slate-950 font-bold">{finalOfficerName}</span>
+                        {finalOfficerDesignation}: <span className="text-slate-950 font-bold">{finalOfficerName}</span>
                       </div>
                       <div className="text-[9px] text-slate-600 font-medium">
-                        {finalOfficerDesignation}
+                        {ulbInfo.nameLocal}
                       </div>
 
                       <div className="text-[8px] text-slate-600 font-mono mt-1 border-t border-emerald-200/70 pt-0.5 space-y-0.2">
@@ -922,15 +922,15 @@ export default function RtsApplicationNoteSheetModal({
                       </div>
 
                       <div className="text-[9.5px] text-slate-700 font-semibold mt-0.5">
-                        सक्षम प्राधिकारी: <span className="text-slate-950 font-bold">{finalOfficerName}</span>
+                        {finalOfficerDesignation}: <span className="text-slate-950 font-bold">{finalOfficerName}</span>
                       </div>
                       <div className="text-[9px] text-slate-600 font-medium">
-                        {finalOfficerDesignation}
+                        {ulbInfo.nameLocal}
                       </div>
 
                       <div className="text-[8px] text-amber-900 font-semibold mt-1 p-1 bg-amber-100/80 rounded border border-amber-300 flex items-center gap-1">
                         <Lock className="w-2.5 h-2.5 text-amber-700 shrink-0" />
-                        <span>सक्षम प्राधिकाऱ्यांच्या अंतिम मान्यतेनंतर डिजिटल स्वाक्षरी (DSC) अंकित होईल.</span>
+                        <span>{finalOfficerDesignation} यांच्या अंतिम मान्यतेनंतर डिजिटल स्वाक्षरी (DSC) अंकित होईल.</span>
                       </div>
                     </div>
                   )}
@@ -959,7 +959,7 @@ export default function RtsApplicationNoteSheetModal({
                   <p className="text-[8px] text-slate-500">
                     {isFinalApprovalDone
                       ? "सदर टिपणी/आदेश पत्रक IT Act 2000 च्या कलम ६ नुसार अधिकृत ई-गव्हर्नन्स सिस्टीमद्वारे डिजिटल स्वाक्षरीने प्रमाणित केलेले असून प्रत्यक्ष सही-शिक्क्याची आवश्यकता नाही."
-                      : "सदर टिपणी पत्रक प्रक्रियेत असून सक्षम प्राधिकाऱ्यांच्या अंतिम मान्यतेनंतर डिजिटल स्वाक्षरी व अधिकृत शिक्का लागू होईल."}
+                      : `सदर टिपणी पत्रक प्रक्रियेत असून ${finalOfficerDesignation} यांच्या अंतिम मान्यतेनंतर डिजिटल स्वाक्षरी व अधिकृत शिक्का लागू होईल.`}
                   </p>
                 </div>
               </div>
