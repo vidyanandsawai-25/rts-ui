@@ -87,8 +87,8 @@ export function useLinkWardActions({
 
     if (isSelectAllMode) {
       // Fetch all wards server-side
-      const selectedRate = allRateSections.find(r => String(r.id) === selectedZoneNo);
-      if (!selectedRate?.id) {
+      const id = Number(selectedZoneNo);
+      if (!id || isNaN(id)) {
         toast.error(t("wards.rateSectionNotFound", { rateSection }));
         return;
       }
@@ -145,7 +145,7 @@ export function useLinkWardActions({
           onConfirm: async () => {
             setLoading(true);
             try {
-              const linkResult = await linkWardsToRateSectionAction(selectedRate.id as number, wardsToLink);
+              const linkResult = await linkWardsToRateSectionAction(id, wardsToLink);
 
               if (!linkResult.success) {
                 toast.error(linkResult.error || t("wards.saveError", { wards, ward }));
@@ -178,7 +178,7 @@ export function useLinkWardActions({
                 return next;
               });
 
-              const refreshResult = await refreshSelectedWardsAction(selectedRate.id as number);
+              const refreshResult = await refreshSelectedWardsAction(id);
               if (refreshResult.success) {
                 setSelectedWards(refreshResult.wardNos);
                 setSelectedWardsTotalCount(refreshResult.totalCount);
@@ -214,14 +214,12 @@ export function useLinkWardActions({
 
     if (toMove.length === 0) return;
 
-    // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
-    const selectedRate = allRateSections.find(r => String(r.id) === selectedZoneNo);
-    if (!selectedRate?.id) {
+    const id = Number(selectedZoneNo);
+    if (!id || isNaN(id)) {
       toast.error(t("wards.rateSectionNotFound", { rateSection }));
       return;
     }
 
-    const id = selectedRate.id;
     const newLabel = getRateSectionNameOnly(selectedZoneNo || "");
 
     const executeLinkWards = async (wardsToLink: string[]) => {
@@ -342,9 +340,8 @@ export function useLinkWardActions({
   const moveToAvailable = useCallback(async () => {
     // Check if Select All is active for RateSectionWards
     if (isRateSectionSelectAllActive) {
-      // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
-      const selectedRate = allRateSections.find(r => String(r.id) === selectedZoneNo);
-      if (!selectedRate?.id) {
+      const id = Number(selectedZoneNo);
+      if (!id || isNaN(id)) {
         toast.error(t("wards.rateSectionNotFound", { rateSection }));
         return;
       }
@@ -353,7 +350,7 @@ export function useLinkWardActions({
 
       try {
         // Fetch all wards for this rate section
-        const result = await getAllRateSectionDetailsForRateSectionAction(selectedRate.id);
+        const result = await getAllRateSectionDetailsForRateSectionAction(id);
         if (!result.success || !result.wardNos || result.wardNos.length === 0) {
           toast.info(t("wards.noWardsToDelete", { wards, ward }));
           setLoading(false);
@@ -364,7 +361,7 @@ export function useLinkWardActions({
         const allWardNos = result.wardNos;
 
         // Delete all wards
-        const deleteResult = await deleteSelectedWardsAction(selectedRate.id, allWardNos);
+        const deleteResult = await deleteSelectedWardsAction(id, allWardNos);
 
         if (!deleteResult.success) {
           toast.error(deleteResult.error || t("wards.deleteError", { ward, wards }));
@@ -404,14 +401,11 @@ export function useLinkWardActions({
 
     if (toMove.length === 0) return;
 
-    // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
-    const selectedRate = allRateSections.find(r => String(r.id) === selectedZoneNo);
-    if (!selectedRate?.id) {
+    const id = Number(selectedZoneNo);
+    if (!id || isNaN(id)) {
       toast.error(t("wards.rateSectionNotFound", { rateSection }));
       return;
     }
-
-    const id = selectedRate.id;
 
     setLoading(true);
 
@@ -455,7 +449,7 @@ export function useLinkWardActions({
 
     setLoading(false);
   }, [
-    checkedSelected, allRateSections, selectedZoneNo, setLoading, setSelectedWards, selectedWards,
+    checkedSelected, selectedZoneNo, setLoading, setSelectedWards, selectedWards,
     setSelectedWardsTotalCount, setCheckedSelected, setWardAssignments, router, t, rateSection, ward, wards,
     isRateSectionSelectAllActive, setIsRateSectionSelectAllActive
   ]);
