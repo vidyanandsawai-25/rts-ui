@@ -33,9 +33,10 @@
         "pendingRecordCreates": "{count} लंबित रिकॉर्ड बनाना"
       },
       "placeholders": {
-        "selectAssessmentYear": "मूल्यांकन वर्ष चुनें"
+        "selectAssessmentYear": "{assessment} वर्ष चुनें"
       },
       "messages": {
+        "createRecordFirst": "संपादन या हटाने से पहले कृपया पहले रिकॉर्ड बनाएं।",
         "pendingRecordsWarning": "लंबित रिकॉर्ड हैं। कृपया सभी जेनरेट करें बटन पर क्लिक करें।",
         "negativeValuesNotAllowed": "नकारात्मक मानों की अनुमति नहीं है",
         "valueExceedsMax": "मान 999.99 से अधिक नहीं हो सकता",
@@ -47,7 +48,10 @@
         "createFailed": "बनाना विफल",
         "updateFailed": "अपडेट विफल",
         "failedToSaveRow": "पंक्ति अपडेट करने में विफल। कृपया पुनः प्रयास करें।",
-        "changesDiscarded": "इस पंक्ति के लिए परिवर्तन त्याग दिए गए",        "assessmentYearRequired": "बल्क फैक्टर लागू करने से पहले कृपया मूल्यांकन वर्ष चुनें",        "validFactorRequired": "कृपया 0.1 से 100 के बीच एक वैध कारक मान दर्ज करें",
+        "changesDiscarded": "इस पंक्ति के लिए परिवर्तन त्याग दिए गए",
+        "assessmentYearRequired": "बल्क फैक्टर लागू करने से पहले कृपया {assessment} वर्ष चुनें",
+        "validFactorRequired": "कृपया 0.1 से 100 के बीच एक वैध कारक मान दर्ज करें",
+        "inactiveRecordNotEditable": "यह रिकॉर्ड निष्क्रिय है। फ़ैक्टर को संपादित करने के लिए इसे सक्रिय पर सेट करें।",
         "negativeFactorsNotAllowed": "नकारात्मक कारकों की अनुमति नहीं है",
         "factorApplied": "{count} रिकॉर्ड(ों) में कारक {factor} लागू किया गया",
         "noRecordsMatch": "चयनित मानदंडों से कोई रिकॉर्ड मेल नहीं खाता",

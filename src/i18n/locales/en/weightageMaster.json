@@ -33,7 +33,7 @@
         "pendingRecordCreates": "{count, plural, =1 {# Pending Record Create} other {# Pending Record Creates}}"
       },
       "placeholders": {
-        "selectAssessmentYear": "Select Assessment Year"
+        "selectAssessmentYear": "Select {assessment} Year"
       },
       "messages": {
         "createRecordFirst": "Please create the record first before editing or deleting.",
@@ -49,7 +49,7 @@
         "updateFailed": "Update failed",
         "failedToSaveRow": "Failed to update row. Please try again.",
         "changesDiscarded": "Changes discarded for this row",
-        "assessmentYearRequired": "Please select an assessment year before applying bulk factor",
+        "assessmentYearRequired": "Please select an {assessment} year before applying bulk factor",
         "validFactorRequired": "Please enter a valid factor value between 0.1 and 100",
         "inactiveRecordNotEditable": "This record is Inactive. Set it to Active to edit the factor.",
         "negativeFactorsNotAllowed": "Negative factors are not allowed",
