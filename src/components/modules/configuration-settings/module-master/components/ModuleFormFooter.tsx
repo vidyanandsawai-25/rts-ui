@@ -10,6 +10,7 @@ interface ModuleFormFooterProps {
   onCancel: () => void;
   t: (key: string, values?: Record<string, string | number | Date>) => string;
   tCommon: (key: string) => string;
+  moduleLabel?: string;
 }
 
 export function ModuleFormFooter({
@@ -19,6 +20,7 @@ export function ModuleFormFooter({
   onCancel,
   t,
   tCommon,
+  moduleLabel,
 }: ModuleFormFooterProps) {
   return (
     <div className="w-full flex justify-between items-center px-6 py-4 border-t bg-gray-50">
@@ -26,8 +28,13 @@ export function ModuleFormFooter({
         <div className={`w-2 h-2 rounded-full ${isEdit ? 'bg-blue-500' : 'bg-green-500'}`} />
         <span>
           {isEdit
-            ? t('drawer.footer.editing', { moduleName: moduleName ?? '' })
-            : t('drawer.footer.adding')}
+            ? t('drawer.footer.editing', {
+                module: moduleLabel ?? '',
+                moduleName: moduleName ?? '',
+              })
+            : t('drawer.footer.adding', {
+                module: moduleLabel ?? '',
+              })}
         </span>
       </div>
 
@@ -37,7 +44,9 @@ export function ModuleFormFooter({
         </Button>
         <Button type="submit" form="module-form" isLoading={isSubmitting} disabled={isSubmitting}>
           <Save className="w-4 h-4 mr-2" />
-          {isEdit ? t('drawer.buttons.update') : t('drawer.buttons.save')}
+          {isEdit
+            ? t('drawer.buttons.update', { module: moduleLabel ?? '' })
+            : t('drawer.buttons.save', { module: moduleLabel ?? '' })}
         </Button>
       </div>
     </div>

@@ -11,7 +11,7 @@ import type { ModuleMaster as ModuleMasterType } from '@/types/moduleMaster.type
 import { useModulePagination } from '@/hooks/configuration-settings/module-master/useModulePagination';
 import { useModuleSearch } from '@/hooks/configuration-settings/module-master/useModuleSearch';
 import { useModuleDelete } from '@/hooks/configuration-settings/module-master/useModuleDelete';
-
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 import { getModuleColumns, type ModuleMasterTableRow } from './ModuleColumns';
 import { ModuleMasterHeader } from './components/ModuleMasterHeader';
@@ -47,9 +47,14 @@ export function ModuleMaster({
   const locale = useLocale();
   const router = useRouter();
 
-
-
   const [isPending, startTransition] = useTransition();
+
+  const moduleLabel = useAliasLabel('Module', t('aliasFallback.module'));
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
+  const moduleCodeLabel = useAliasLabel('Module_Code', t('aliasFallback.moduleCode'));
+  const moduleNameLabel = useAliasLabel('Module_Name', t('aliasFallback.moduleName'));
+  const localNameLabel = useAliasLabel('Local_Name', t('aliasFallback.localName'));
+  const descriptionLabel = useAliasLabel('Description', t('aliasFallback.description'));
 
   const { search, currentSearchTerm, handleSearchChange } = useModuleSearch({
     locale,
@@ -65,7 +70,25 @@ export function ModuleMaster({
     startTransition,
   });
 
-  const columns = useMemo(() => getModuleColumns(t, tCommon), [t, tCommon]);
+  const columns = useMemo(
+    () =>
+      getModuleColumns(t, tCommon, {
+        moduleCode: moduleCodeLabel,
+        moduleName: moduleNameLabel,
+        department: departmentLabel,
+        localName: localNameLabel,
+        description: descriptionLabel,
+      }),
+    [
+      t,
+      tCommon,
+      moduleCodeLabel,
+      moduleNameLabel,
+      departmentLabel,
+      localNameLabel,
+      descriptionLabel,
+    ]
+  );
 
   const handleAdd = useCallback(() => {
     startTransition(() => {
@@ -76,6 +99,7 @@ export function ModuleMaster({
   const { handleDelete, isDeleting } = useModuleDelete({
     t,
     startTransition,
+    moduleLabel,
   });
 
   const handleRowEdit = useCallback(
@@ -104,8 +128,6 @@ export function ModuleMaster({
     [handleRowEdit, handleRowDelete]
   );
 
-
-
   return (
     <PageContainer>
       <div className="space-y-4">
@@ -114,6 +136,8 @@ export function ModuleMaster({
           onAdd={handleAdd}
           search={search}
           onSearchChange={handleSearchChange}
+          moduleLabel={moduleLabel}
+          departmentLabel={departmentLabel}
         />
 
         {fetchError && (
@@ -133,6 +157,7 @@ export function ModuleMaster({
           activeCount={statsData.activeCount}
           inactiveCount={statsData.inactiveCount}
           t={t}
+          moduleLabel={moduleLabel}
         />
 
         <ModuleMasterTable

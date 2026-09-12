@@ -23,6 +23,7 @@ import { GroupTableSection } from './components/GroupTableSection';
 import { useScreenAccessSearch } from '@/hooks/configuration-settings/screenAccess/useScreenAccessSearch';
 import { useScreenAccessPagination } from '@/hooks/configuration-settings/screenAccess/useScreenAccessPagination';
 import { useQueryTransition } from '@/hooks/useQueryTransition';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface ScreenMasterManagementProps {
   subTab?: string;
@@ -47,6 +48,9 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
   const { confirm } = useConfirm();
   const { searchParams, updateQueries } = useQueryTransition();
   const [isMutationPending, startTransition] = useTransition();
+
+  const screenLabel = useAliasLabel('Screen', t('aliasFallback.screen'));
+  const screenGroupLabel = useAliasLabel('Screen_Group', t('aliasFallback.screenGroup'));
 
   // Search & Pagination for Screens
   const { searchTerm, handleSearch } = useScreenAccessSearch({
@@ -115,12 +119,16 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
         totalGroups={groupsPagination.totalCount}
         activeScreens={stats.active}
         inactiveScreens={stats.inactive}
+        screenLabel={screenLabel}
+        screenGroupLabel={screenGroupLabel}
       />
 
       <Tabs value={subTab} onChange={onTabChange} className="flex-1 flex flex-col min-h-0">
         <TabList className="mb-4">
-          <Tab value="screens">{t('screenManagement.tabs.screens')}</Tab>
-          <Tab value="groups">{t('screenManagement.tabs.screenGroups')}</Tab>
+          <Tab value="screens">{t('screenManagement.tabs.screens', { screen: screenLabel })}</Tab>
+          <Tab value="groups">
+            {t('screenManagement.tabs.screenGroups', { screenGroup: screenGroupLabel })}
+          </Tab>
         </TabList>
 
         <TabPanel value="screens" className="flex-1 min-h-0">
@@ -141,7 +149,11 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
                   try {
                     const res = await deleteScreenAction(id);
                     if (res.success) {
-                      toast.success(t('screenManagement.screens.messages.deleteSuccess'));
+                      toast.success(
+                        t('screenManagement.screens.messages.deleteSuccess', {
+                          screen: screenLabel,
+                        })
+                      );
                       await new Promise<void>((resolve) => {
                         startTransition(() => {
                           router.refresh();
@@ -150,14 +162,15 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
                       });
                     } else {
                       let errorMsg =
-                        res.message || t('screenManagement.screens.messages.deleteError');
+                        res.message ||
+                        t('screenManagement.screens.messages.deleteError', { screen: screenLabel });
                       if (res.message) {
                         if (
                           res.message.startsWith('messages.') ||
                           res.message.startsWith('errors.') ||
                           res.message.startsWith('screenManagement.')
                         ) {
-                          errorMsg = t(res.message);
+                          errorMsg = t(res.message, { screen: screenLabel });
                         } else {
                           errorMsg = getCleanErrorMessage(res.message);
                         }
@@ -168,7 +181,7 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
                     toast.error(
                       getCleanErrorMessage(
                         error,
-                        t('screenManagement.screens.messages.deleteError')
+                        t('screenManagement.screens.messages.deleteError', { screen: screenLabel })
                       )
                     );
                   }
@@ -204,7 +217,11 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
                   try {
                     const res = await deleteScreenGroupAction(id);
                     if (res.success) {
-                      toast.success(t('screenManagement.groups.messages.deleteSuccess'));
+                      toast.success(
+                        t('screenManagement.groups.messages.deleteSuccess', {
+                          screenGroup: screenGroupLabel,
+                        })
+                      );
                       await new Promise<void>((resolve) => {
                         startTransition(() => {
                           router.refresh();
@@ -213,14 +230,17 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
                       });
                     } else {
                       let errorMsg =
-                        res.message || t('screenManagement.groups.messages.deleteError');
+                        res.message ||
+                        t('screenManagement.groups.messages.deleteError', {
+                          screenGroup: screenGroupLabel,
+                        });
                       if (res.message) {
                         if (
                           res.message.startsWith('messages.') ||
                           res.message.startsWith('errors.') ||
                           res.message.startsWith('screenManagement.')
                         ) {
-                          errorMsg = t(res.message);
+                          errorMsg = t(res.message, { screenGroup: screenGroupLabel });
                         } else {
                           errorMsg = getCleanErrorMessage(res.message);
                         }
@@ -229,7 +249,12 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
                     }
                   } catch (error) {
                     toast.error(
-                      getCleanErrorMessage(error, t('screenManagement.groups.messages.deleteError'))
+                      getCleanErrorMessage(
+                        error,
+                        t('screenManagement.groups.messages.deleteError', {
+                          screenGroup: screenGroupLabel,
+                        })
+                      )
                     );
                   }
                 },

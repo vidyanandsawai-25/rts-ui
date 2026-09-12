@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { deleteModuleMasterAction } from '@/app/[locale]/configuration-settings/module-master/actions';
 import type { ModuleMaster } from '@/types/moduleMaster.types';
@@ -10,9 +11,10 @@ import type { ModuleMaster } from '@/types/moduleMaster.types';
 interface UseModuleDeleteProps {
   t: (key: string, values?: Record<string, string | number>) => string;
   startTransition: React.TransitionStartFunction;
+  moduleLabel?: string;
 }
 
-export function useModuleDelete({ t, startTransition }: UseModuleDeleteProps) {
+export function useModuleDelete({ t, startTransition, moduleLabel }: UseModuleDeleteProps) {
   const router = useRouter();
   const { confirm } = useConfirm();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -21,8 +23,11 @@ export function useModuleDelete({ t, startTransition }: UseModuleDeleteProps) {
     (row: ModuleMaster) => {
       confirm({
         variant: 'delete',
-        title: t('confirm.deleteTitle', { moduleName: row.moduleName ?? '' }),
-        description: t('confirm.deleteDescription'),
+        title: t('confirm.deleteTitle', {
+          module: moduleLabel ?? '',
+          moduleName: row.moduleName ?? '',
+        }),
+        description: t('confirm.deleteDescription', { module: moduleLabel ?? '' }),
         onConfirm: async () => {
           setIsDeleting(true);
 
@@ -30,7 +35,7 @@ export function useModuleDelete({ t, startTransition }: UseModuleDeleteProps) {
             const response = await deleteModuleMasterAction(row.moduleId);
 
             if (response.success) {
-              toast.success(t('messages.deleteSuccess'));
+              toast.success(t('messages.deleteSuccess', { module: moduleLabel ?? '' }));
 
               startTransition(() => {
                 router.refresh();
@@ -39,22 +44,28 @@ export function useModuleDelete({ t, startTransition }: UseModuleDeleteProps) {
               return;
             }
 
-            const errorKey = response.error || 'messages.deleteFailed';
-            const isTranslationKey =
-              errorKey.includes('.') &&
-              !errorKey.trim().startsWith('{') &&
-              !errorKey.includes(' ') &&
-              !errorKey.includes('"');
-            toast.error(isTranslationKey ? t(errorKey) : errorKey);
-          } catch {
-            toast.error(t('messages.deleteFailed'));
+            let errorMsg = response.error;
+            if (errorMsg) {
+              if (errorMsg.startsWith('validation.') || errorMsg.startsWith('messages.')) {
+                errorMsg = t(errorMsg, { module: moduleLabel ?? '' });
+              } else {
+                errorMsg = getCleanErrorMessage(errorMsg);
+              }
+            } else {
+              errorMsg = t('messages.deleteFailed', { module: moduleLabel ?? '' });
+            }
+            toast.error(errorMsg);
+          } catch (error) {
+            toast.error(
+              getCleanErrorMessage(error, t('messages.deleteFailed', { module: moduleLabel ?? '' }))
+            );
           } finally {
             setIsDeleting(false);
           }
         },
       });
     },
-    [confirm, router, startTransition, t]
+    [confirm, router, startTransition, t, moduleLabel]
   );
 
   return { handleDelete, isDeleting };

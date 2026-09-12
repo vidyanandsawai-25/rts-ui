@@ -3,6 +3,7 @@
 import { Select } from '@/components/common';
 import { Input } from '@/components/common/Input';
 import { TextArea } from '@/components/common/Textarea';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import { ModuleMasterFormData } from '@/types/moduleMaster.types';
 import { ModuleMasterErrors } from '@/lib/api/configuration-settings/module-master/module-master.validator';
 import * as CONST from '@/lib/api/configuration-settings/module-master/module-master.constants';
@@ -26,6 +27,14 @@ interface ModuleBasicDetailsProps {
 export function ModuleBasicDetails({ config }: ModuleBasicDetailsProps) {
   const { formData, errors, departmentOptions, t, handlers } = config;
   const { handleChange, handleSelectChange, handleBlur } = handlers;
+
+  const moduleLabel = useAliasLabel('Module', t('aliasFallback.module'));
+  const departmentLabel = useAliasLabel('Department', t('form.fields.departmentId'));
+  const moduleCodeLabel = useAliasLabel('Module_Code', t('form.fields.moduleCode'));
+  const moduleNameLabel = useAliasLabel('Module_Name', t('form.fields.moduleName'));
+  const localNameLabel = useAliasLabel('Local_Name', t('form.fields.moduleNameLocal'));
+  const descriptionLabel = useAliasLabel('Description', t('form.fields.moduleDescription'));
+
   const getFieldError = (fieldName: keyof ModuleMasterFormData, errorCode?: string) => {
     if (!errorCode) return undefined;
 
@@ -47,12 +56,14 @@ export function ModuleBasicDetails({ config }: ModuleBasicDetailsProps) {
   return (
     <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-        <h3 className="font-semibold text-gray-800 text-sm">{t('drawer.sections.basicDetails')}</h3>
+        <h3 className="font-semibold text-gray-800 text-sm">
+          {t('drawer.sections.basicDetails', { module: moduleLabel })}
+        </h3>
       </div>
 
       <div className="p-5 space-y-4">
         <Select
-          label={t('form.fields.departmentId')}
+          label={departmentLabel}
           required={true}
           options={departmentOptions}
           value={formData.departmentId ? String(formData.departmentId) : ''}
@@ -65,7 +76,7 @@ export function ModuleBasicDetails({ config }: ModuleBasicDetailsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             name="moduleCode"
-            label={t('form.fields.moduleCode')}
+            label={moduleCodeLabel}
             placeholder={t('form.fields.moduleCodePlaceholder')}
             required={true}
             value={formData.moduleCode}
@@ -77,7 +88,7 @@ export function ModuleBasicDetails({ config }: ModuleBasicDetailsProps) {
 
           <Input
             name="moduleName"
-            label={t('form.fields.moduleName')}
+            label={moduleNameLabel}
             placeholder={t('form.fields.moduleNamePlaceholder')}
             required={true}
             value={formData.moduleName}
@@ -91,7 +102,7 @@ export function ModuleBasicDetails({ config }: ModuleBasicDetailsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             name="moduleNameLocal"
-            label={t('form.fields.moduleNameLocal')}
+            label={localNameLabel}
             placeholder={t('form.fields.moduleNameLocalPlaceholder')}
             value={formData.moduleNameLocal}
             onChange={handleChange}
@@ -104,7 +115,7 @@ export function ModuleBasicDetails({ config }: ModuleBasicDetailsProps) {
         <div className="[&_label]:text-gray-700 [&_label]:dark:text-gray-700 [&_textarea]:text-gray-900 [&_textarea]:placeholder:text-gray-400">
           <TextArea
             name="moduleDescription"
-            label={t('form.fields.moduleDescription')}
+            label={descriptionLabel}
             placeholder={t('form.fields.moduleDescriptionPlaceholder')}
             value={formData.moduleDescription}
             onChange={handleChange}

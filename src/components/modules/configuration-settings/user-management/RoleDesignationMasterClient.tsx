@@ -19,12 +19,17 @@ import { RoleTable } from './components/RoleTable';
 import { DesignationTable } from './components/DesignationTable';
 
 import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export function RoleDesignationMasterClient({
   initialRoles = [],
   initialDesignations = [],
 }: RoleDesignationMasterProps) {
   const t = useTranslations('userManagement');
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
+  const designationLabel = useAliasLabel('Designation', t('aliasFallback.designation'));
+  const userLabel = useAliasLabel('User', t('aliasFallback.user'));
+
   const { confirm } = useConfirm();
   const [deletingRoleId, setDeletingRoleId] = useState<string | number | null>(null);
   const [deletingDesignationId, setDeletingDesignationId] = useState<string | number | null>(null);
@@ -88,12 +93,13 @@ export function RoleDesignationMasterClient({
                 r.id === role.id ? { ...r, isActive: false, status: 'Inactive' } : r
               )
             );
-            toast.success(t('messages.roleDeleteSuccess'));
+            toast.success(t('messages.roleDeleteSuccess', { role: roleLabel }));
           } else {
-            let errorMsg = res.message || t('messages.roleDeleteError');
+            let errorMsg =
+              res.message || t('messages.roleDeleteError', { role: roleLabel });
             if (res.message) {
               if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
-                errorMsg = t(res.message);
+                errorMsg = t(res.message, { role: roleLabel });
               } else {
                 errorMsg = getCleanErrorMessage(res.message);
               }
@@ -101,7 +107,9 @@ export function RoleDesignationMasterClient({
             toast.error(errorMsg);
           }
         } catch (error) {
-          toast.error(getCleanErrorMessage(error, t('messages.roleDeleteError')));
+          toast.error(
+            getCleanErrorMessage(error, t('messages.roleDeleteError', { role: roleLabel }))
+          );
         } finally {
           setDeletingRoleId(null);
         }
@@ -126,12 +134,16 @@ export function RoleDesignationMasterClient({
                 d.id === des.id ? { ...d, isActive: false, status: 'Inactive' } : d
               )
             );
-            toast.success(t('messages.designationDeleteSuccess'));
+            toast.success(
+              t('messages.designationDeleteSuccess', { designation: designationLabel })
+            );
           } else {
-            let errorMsg = res.message || t('messages.designationDeleteError');
+            let errorMsg =
+              res.message ||
+              t('messages.designationDeleteError', { designation: designationLabel });
             if (res.message) {
               if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
-                errorMsg = t(res.message);
+                errorMsg = t(res.message, { designation: designationLabel });
               } else {
                 errorMsg = getCleanErrorMessage(res.message);
               }
@@ -139,7 +151,12 @@ export function RoleDesignationMasterClient({
             toast.error(errorMsg);
           }
         } catch (error) {
-          toast.error(getCleanErrorMessage(error, t('messages.designationDeleteError')));
+          toast.error(
+            getCleanErrorMessage(
+              error,
+              t('messages.designationDeleteError', { designation: designationLabel })
+            )
+          );
         } finally {
           setDeletingDesignationId(null);
         }
@@ -162,10 +179,14 @@ export function RoleDesignationMasterClient({
           </div>
           <div>
             <h1 className="text-xl font-bold text-black">
-              {isRoles ? t('roles.title') : t('roles.designationsTab')}
+              {isRoles
+                ? t('roles.title', { role: roleLabel })
+                : t('roles.designationsTab', { designation: designationLabel })}
             </h1>
             <p className="text-slate-700 mt-0.5 text-sm">
-              {isRoles ? t('roles.subtitle') : t('roles.subtitleDesignation')}
+              {isRoles
+                ? t('roles.subtitle', { role: roleLabel, user: userLabel })
+                : t('roles.subtitleDesignation', { designation: designationLabel })}
             </p>
           </div>
         </div>
@@ -174,12 +195,12 @@ export function RoleDesignationMasterClient({
             {isRoles ? (
               <>
                 <Shield className="w-3 h-3 mr-1" />
-                {roles.length} {t('roles.rolesTab')}
+                {roles.length} {t('roles.rolesTab', { role: roleLabel })}
               </>
             ) : (
               <>
                 <Briefcase className="w-3 h-3 mr-1" />
-                {designations.length} {t('roles.designationsTab')}
+                {designations.length} {t('roles.designationsTab', { designation: designationLabel })}
               </>
             )}
           </Badge>
@@ -195,20 +216,24 @@ export function RoleDesignationMasterClient({
                 className="flex items-center gap-2 px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
                 <Shield className="w-4 h-4" />
-                {t('roles.rolesTab')}
+                {t('roles.rolesTab', { role: roleLabel })}
               </Tab>
               <Tab
                 value="designations"
                 className="flex items-center gap-2 px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
                 <Briefcase className="w-4 h-4" />
-                {t('roles.designationsTab')}
+                {t('roles.designationsTab', { designation: designationLabel })}
               </Tab>
             </TabList>
 
             <div className="flex items-center gap-4">
               <SearchInput
-                placeholder={isRoles ? t('filters.searchRole') : t('filters.searchDesignation')}
+                placeholder={
+                  isRoles
+                    ? t('filters.searchRole', { role: roleLabel })
+                    : t('filters.searchDesignation', { designation: designationLabel })
+                }
                 value={isRoles ? roleSearch : desSearch}
                 onChange={(val) => (isRoles ? setRoleSearch(val) : setDesSearch(val))}
                 className="mb-0 w-64 [&_input]:text-black [&_input]:opacity-100"
@@ -218,12 +243,18 @@ export function RoleDesignationMasterClient({
                   onClick={() =>
                     router.push(`${basePath}/${isRoles ? 'roles' : 'designations'}/add`)
                   }
-                  aria-label={isRoles ? t('roles.addRole') : t('roles.addDesignation')}
+                  aria-label={
+                    isRoles
+                      ? t('roles.addRole', { role: roleLabel })
+                      : t('roles.addDesignation', { designation: designationLabel })
+                  }
                   className="flex items-center gap-2"
                   actionType="add"
                   icon={isRoles ? Shield : Briefcase}
                 >
-                  {isRoles ? t('roles.addRole') : t('roles.addDesignation')}
+                  {isRoles
+                    ? t('roles.addRole', { role: roleLabel })
+                    : t('roles.addDesignation', { designation: designationLabel })}
                 </Button>
               )}
             </div>

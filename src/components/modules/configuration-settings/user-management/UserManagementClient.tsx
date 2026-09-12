@@ -14,6 +14,7 @@ import { useUserTable } from '@/hooks/configuration-settings/user-management/use
 import { UserStats } from './components/UserStats';
 import { UserTable } from './components/UserTable';
 import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 function getStatusFilterFromUrl(value: string | null): UserStatusFilter {
   switch (value) {
@@ -36,6 +37,7 @@ export function UserManagementClient({
   initialTotalCount = 0,
 }: UserManagementProps) {
   const t = useTranslations('userManagement');
+  const userLabel = useAliasLabel('User', t('aliasFallback.user'));
   const { confirm } = useConfirm();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const router = useRouter();
@@ -123,12 +125,12 @@ export function UserManagementClient({
               )
             );
 
-            toast.success(t('messages.deleteSuccess'));
+            toast.success(t('messages.deleteSuccess', { user: userLabel }));
           } else {
-            let errorMsg = res.message || t('messages.deleteError');
+            let errorMsg = res.message || t('messages.deleteError', { user: userLabel });
             if (res.message) {
               if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
-                errorMsg = t(res.message);
+                errorMsg = t(res.message, { user: userLabel });
               } else {
                 errorMsg = getCleanErrorMessage(res.message);
               }
@@ -136,7 +138,7 @@ export function UserManagementClient({
             toast.error(errorMsg);
           }
         } catch (error) {
-          toast.error(getCleanErrorMessage(error, t('messages.deleteError')));
+          toast.error(getCleanErrorMessage(error, t('messages.deleteError', { user: userLabel })));
         } finally {
           setDeletingId(null);
         }
@@ -197,8 +199,8 @@ export function UserManagementClient({
           </div>
 
           <div>
-            <h1 className="text-xl font-bold text-black">{t('title')}</h1>
-            <p className="text-slate-700 mt-0.5 text-sm">{t('subtitle')}</p>
+            <h1 className="text-xl font-bold text-black">{t('title', { user: userLabel })}</h1>
+            <p className="text-slate-700 mt-0.5 text-sm">{t('subtitle', { user: userLabel })}</p>
           </div>
         </div>
 
@@ -207,6 +209,7 @@ export function UserManagementClient({
             <Users className="w-3.5 h-3.5 mr-1.5" />
             {t('stats.usersCount', {
               count: initialTotalCount || totalUsers,
+              user: userLabel,
             })}
           </Badge>
 
@@ -216,7 +219,7 @@ export function UserManagementClient({
           </Badge>
 
           <SearchInput
-            placeholder={t('filters.searchPlaceholder')}
+            placeholder={t('filters.searchPlaceholder', { user: userLabel })}
             value={searchTerm}
             onChange={handleSearchChange}
             className="mb-0 w-64 focus:ring-2 focus:ring-indigo-500/20 h-9 text-sm [&_input]:text-black [&_input]:opacity-100"
@@ -229,7 +232,7 @@ export function UserManagementClient({
               actionType="add"
               icon={Plus}
             >
-              {t('actions.add')}
+              {t('actions.add', { user: userLabel })}
             </Button>
           )}
         </div>

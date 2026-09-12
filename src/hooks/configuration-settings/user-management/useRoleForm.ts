@@ -11,9 +11,13 @@ import { userManagementValidations } from '@/lib/utils/user-management-validatio
 import { toast } from 'sonner';
 import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { useTranslations } from 'next-intl';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export function useRoleForm(onSuccess: (role: Role) => void, initialData?: Role) {
   const t = useTranslations('userManagement');
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
+
   const [editingRole, setEditingRole] = useState<Role | null>(initialData || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -50,7 +54,10 @@ export function useRoleForm(onSuccess: (role: Role) => void, initialData?: Role)
     e.preventDefault();
 
     // Client-side validation
-    const validationErrors = userManagementValidations.validateRole(roleFormData, t);
+    const validationErrors = userManagementValidations.validateRole(roleFormData, t, {
+      role: roleLabel,
+      department: departmentLabel,
+    });
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       toast.error(Object.values(validationErrors)[0]);
@@ -75,7 +82,8 @@ export function useRoleForm(onSuccess: (role: Role) => void, initialData?: Role)
         });
 
         if (isDuplicate) {
-          const duplicateMsg = t('form.errors.duplicateRoleName') || 'Role already exists';
+          const duplicateMsg =
+            t('form.errors.duplicateRoleName', { role: roleLabel }) || `${roleLabel} already exists`;
           setErrors({ name: duplicateMsg });
           toast.error(duplicateMsg);
           setIsSubmitting(false);
@@ -98,14 +106,15 @@ export function useRoleForm(onSuccess: (role: Role) => void, initialData?: Role)
         const res = await updateUserRoleAction(updatedRole);
         if (res.success) {
           onSuccess(updatedRole);
-          toast.success(t('messages.roleUpdateSuccess'));
+          toast.success(t('messages.roleUpdateSuccess', { role: roleLabel }));
           resetRoleForm();
         } else {
           setErrors(res.validationErrors || {});
-          let errorMsg = res.message || t('messages.roleUpdateError');
+          let errorMsg =
+            res.message || t('messages.roleUpdateError', { role: roleLabel });
           if (res.message) {
             if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
-              errorMsg = t(res.message);
+              errorMsg = t(res.message, { role: roleLabel });
             } else {
               errorMsg = getCleanErrorMessage(res.message);
             }
@@ -116,14 +125,15 @@ export function useRoleForm(onSuccess: (role: Role) => void, initialData?: Role)
         const res = await createUserRoleAction(rolePayload);
         if (res.success && res.data) {
           onSuccess(res.data);
-          toast.success(t('messages.roleCreateSuccess'));
+          toast.success(t('messages.roleCreateSuccess', { role: roleLabel }));
           resetRoleForm();
         } else {
           setErrors(res.validationErrors || {});
-          let errorMsg = res.message || t('messages.roleCreateError');
+          let errorMsg =
+            res.message || t('messages.roleCreateError', { role: roleLabel });
           if (res.message) {
             if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
-              errorMsg = t(res.message);
+              errorMsg = t(res.message, { role: roleLabel });
             } else {
               errorMsg = getCleanErrorMessage(res.message);
             }

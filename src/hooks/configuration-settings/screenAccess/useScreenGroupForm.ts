@@ -11,6 +11,7 @@ import { getScreenGroupsAction } from '@/app/[locale]/configuration-settings/scr
 import { ScreenGroupMasterData } from '@/types/screen-access.types';
 import { commonValidations } from '@/lib/utils/validation';
 import { GROUP_CODE_MAX, GROUP_NAME_MAX } from '@/lib/constants/screen-access.constants';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface UseScreenGroupFormProps {
   initialData?: Partial<ScreenGroupMasterData>;
@@ -28,6 +29,8 @@ export function useScreenGroupForm({
   const isEdit = isEditProp ?? Boolean(initialData?.screenGroupId);
   const [existingGroups, setExistingGroups] = useState<ScreenGroupMasterData[]>([]);
 
+  const screenGroupLabel = useAliasLabel('Screen_Group', 'Screen Group');
+
   useEffect(() => {
     getScreenGroupsAction(1, 2000).then((res) => {
       if (res.success && res.data?.items) {
@@ -44,6 +47,7 @@ export function useScreenGroupForm({
       successMessageKey: isEdit
         ? 'screenManagement.groups.messages.updateSuccess'
         : 'screenManagement.groups.messages.createSuccess',
+      successMessageParams: { screenGroup: screenGroupLabel },
       redirectPath: '/configuration-settings/screenAccess?tab=screen-management&subTab=groups',
       saveAction: (data) => {
         if (isEdit) {
@@ -60,7 +64,9 @@ export function useScreenGroupForm({
       validationSchema: {
         screenGroupCode: (val, _data, t, tCommon) => {
           if (!val || (typeof val === 'string' && !val.trim())) {
-            return t('screenManagement.groups.form.errors.codeRequired');
+            return t('screenManagement.groups.form.errors.codeRequired', {
+              screenGroup: screenGroupLabel,
+            });
           }
 
           const basicError = commonValidations.masterCode(tCommon, GROUP_CODE_MAX, {
@@ -78,13 +84,17 @@ export function useScreenGroupForm({
               g.screenGroupCode.trim().toLowerCase() === codeVal
           );
           if (isDuplicate) {
-            return t('screenManagement.groups.form.errors.duplicateCode');
+            return t('screenManagement.groups.form.errors.duplicateCode', {
+              screenGroup: screenGroupLabel,
+            });
           }
           return undefined;
         },
         screenGroupName: (val, _data, t, tCommon) => {
           if (!val || (typeof val === 'string' && !val.trim())) {
-            return t('screenManagement.groups.form.errors.nameRequired');
+            return t('screenManagement.groups.form.errors.nameRequired', {
+              screenGroup: screenGroupLabel,
+            });
           }
 
           if (/[&()]/.test(String(val))) {
@@ -106,7 +116,9 @@ export function useScreenGroupForm({
               g.screenGroupName.trim().toLowerCase() === nameVal
           );
           if (isDuplicate) {
-            return t('screenManagement.groups.form.errors.duplicateName');
+            return t('screenManagement.groups.form.errors.duplicateName', {
+              screenGroup: screenGroupLabel,
+            });
           }
           return undefined;
         },

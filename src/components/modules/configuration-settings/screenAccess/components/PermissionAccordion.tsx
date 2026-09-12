@@ -11,6 +11,7 @@ import {
 import { LucideIcon, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 type AccessLevelConfigItem = {
   label: string;
@@ -50,6 +51,10 @@ const ModuleAccordionItem = ({
   const [isExpanded, setIsExpanded] = React.useState(true);
   const accessLevelEntries = Object.entries(accessLevelConfig) as [string, AccessLevelConfigItem][];
   const moduleInactive = domain.isModuleActive === false;
+
+  const screenLabel = useAliasLabel('Screen', t('aliasFallback.screen'));
+  const moduleLabel = useAliasLabel('Module', t('aliasFallback.module'));
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
 
   // Screens List grouped by screenGroupName
   const groupedScreens = React.useMemo(() => {
@@ -98,11 +103,14 @@ const ModuleAccordionItem = ({
           />
           <span className="font-bold text-sm text-gray-800">{domain.name}</span>
           <span className="px-2 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded border border-gray-200">
-            {t('accessControl.labels.screenCount', { count: domain.screens.length })}
+            {t('accessControl.labels.screenCount', {
+              count: domain.screens.length,
+              screen: screenLabel,
+            })}
           </span>
           {moduleInactive && (
             <span className="px-2 py-0.5 text-[11px] font-semibold bg-amber-100 text-amber-800 rounded border border-amber-200">
-              {t('accessControl.labels.moduleInactive')}
+              {t('accessControl.labels.moduleInactive', { module: moduleLabel })}
             </span>
           )}
         </div>
@@ -135,7 +143,11 @@ const ModuleAccordionItem = ({
 
       {moduleInactive && (
         <div className="px-6 sm:px-8 md:px-16 py-2 text-xs text-amber-800 bg-amber-50 border-b border-amber-100">
-          {t('accessControl.labels.moduleInactiveHint')}
+          {t('accessControl.labels.moduleInactiveHint', {
+            module: moduleLabel,
+            department: departmentLabel,
+            screen: screenLabel,
+          })}
         </div>
       )}
 
@@ -147,7 +159,10 @@ const ModuleAccordionItem = ({
             <div className="px-4 py-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-100/50 rounded-md border border-slate-200/40 flex items-center justify-between">
               <span>{group.groupName || t('accessControl.domains.general')}</span>
               <span className="px-1.5 py-0.2 text-[10px] bg-slate-250 text-slate-600 rounded-full font-medium">
-                {t('accessControl.labels.screenCount', { count: group.screens.length })}
+                {t('accessControl.labels.screenCount', {
+                  count: group.screens.length,
+                  screen: screenLabel,
+                })}
               </span>
             </div>
 
@@ -173,6 +188,7 @@ const ModuleAccordionItem = ({
                         <span className="text-[11px] text-amber-700">
                           {t('accessControl.labels.assignedAccessPreserved', {
                             level: accessLevelConfig[currentLevel]?.label ?? currentLevel,
+                            module: moduleLabel,
                           })}
                         </span>
                       )}
@@ -221,6 +237,7 @@ const ModuleAccordionItem = ({
                               moduleInactive && isActive
                                 ? t('accessControl.labels.storedPermissionHint', {
                                     level: levelCfg.label,
+                                    module: moduleLabel,
                                   })
                                 : levelCfg.label
                             }
@@ -229,7 +246,10 @@ const ModuleAccordionItem = ({
                             <levelCfg.icon
                               className={cn(
                                 'w-3.5 h-3.5',
-                                moduleInactive && isEffective && level === 'no-access' && 'opacity-100'
+                                moduleInactive &&
+                                  isEffective &&
+                                  level === 'no-access' &&
+                                  'opacity-100'
                               )}
                             />
                           </button>
@@ -256,6 +276,7 @@ export const PermissionAccordion: React.FC<PermissionAccordionProps> = ({
   onBulkDept,
 }) => {
   const t = useTranslations('screenAccess');
+  const screenLabel = useAliasLabel('Screen', t('aliasFallback.screen'));
 
   const accordionItems: AccordionItemType[] = hierarchy.map((dept) => {
     // Calculate total screens in dept
@@ -281,7 +302,7 @@ export const PermissionAccordion: React.FC<PermissionAccordionProps> = ({
             </div>
             <span className="font-bold text-gray-800">{dept.name}</span>
             <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-md border border-gray-200">
-              {t('accessControl.labels.screenCount', { count: totalScreens })}
+              {t('accessControl.labels.screenCount', { count: totalScreens, screen: screenLabel })}
             </span>
           </div>
 

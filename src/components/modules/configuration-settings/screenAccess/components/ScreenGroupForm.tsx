@@ -6,6 +6,7 @@ import { Input } from '@/components/common/Input';
 import { Save, FolderTree, Layout, Settings } from 'lucide-react';
 import { ScreenGroupMasterData } from '@/types/screen-access.types';
 import { useScreenGroupForm } from '@/hooks/configuration-settings/screenAccess/useScreenGroupForm';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 import { GROUP_CODE_MAX, GROUP_NAME_MAX } from '@/lib/constants/screen-access.constants';
 import { CODE_SANITIZE, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
@@ -31,6 +32,10 @@ export function ScreenGroupForm({ initialData, isEdit: isEditProp }: ScreenGroup
     t,
   } = useScreenGroupForm({ initialData, isEdit: isEditProp });
 
+  const screenGroupLabel = useAliasLabel('Screen_Group', t('aliasFallback.screenGroup'));
+  const groupCodeLabel = useAliasLabel('Group_Code', t('aliasFallback.groupCode'));
+  const groupNameLabel = useAliasLabel('Group_Name', t('aliasFallback.groupName'));
+
   return (
     <Drawer
       open={open}
@@ -44,8 +49,8 @@ export function ScreenGroupForm({ initialData, isEdit: isEditProp }: ScreenGroup
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
               {isEdit
-                ? t('screenManagement.groups.form.editTitle')
-                : t('screenManagement.groups.form.addTitle')}
+                ? t('screenManagement.groups.form.editTitle', { screenGroup: screenGroupLabel })
+                : t('screenManagement.groups.form.addTitle', { screenGroup: screenGroupLabel })}
             </h2>
           </div>
         </div>
@@ -61,7 +66,7 @@ export function ScreenGroupForm({ initialData, isEdit: isEditProp }: ScreenGroup
             className="bg-violet-700 hover:bg-violet-800 text-white"
           >
             <Save className="w-4 h-4 mr-2" />
-            {t('screenManagement.groups.form.saveButton')}
+            {t('screenManagement.groups.form.saveButton', { screenGroup: screenGroupLabel })}
           </Button>
         </div>
       }
@@ -69,17 +74,15 @@ export function ScreenGroupForm({ initialData, isEdit: isEditProp }: ScreenGroup
       <div className="p-6 space-y-6 pb-40">
         {/* Identity & Content */}
         <FormSection
-          title={t('screenManagement.groups.form.sectionIdentity')}
+          title={t('screenManagement.groups.form.sectionIdentity', {
+            screenGroup: screenGroupLabel,
+          })}
           icon={<Layout className="w-4 h-4" />}
           color="violet"
         >
           <div className="space-y-4">
             <div>
-              <FieldLabel
-                htmlFor="screenGroupCode"
-                label={t('screenManagement.groups.form.groupCode')}
-                required
-              />
+              <FieldLabel htmlFor="screenGroupCode" label={groupCodeLabel} required />
               <Input
                 id="screenGroupCode"
                 value={formData.screenGroupCode || ''}
@@ -97,11 +100,7 @@ export function ScreenGroupForm({ initialData, isEdit: isEditProp }: ScreenGroup
               {showError('screenGroupCode') && <ErrorMsg error={errors.screenGroupCode} />}
             </div>
             <div>
-              <FieldLabel
-                htmlFor="screenGroupName"
-                label={t('screenManagement.groups.form.groupName')}
-                required
-              />
+              <FieldLabel htmlFor="screenGroupName" label={groupNameLabel} required />
               <Input
                 id="screenGroupName"
                 value={formData.screenGroupName || ''}
@@ -123,7 +122,9 @@ export function ScreenGroupForm({ initialData, isEdit: isEditProp }: ScreenGroup
         {/* Configuration */}
         {isEdit && (
           <FormSection
-            title={t('screenManagement.groups.form.sectionConfig')}
+            title={t('screenManagement.groups.form.sectionConfig', {
+              screenGroup: screenGroupLabel,
+            })}
             icon={<Settings className="w-4 h-4" />}
             color="amber"
           >

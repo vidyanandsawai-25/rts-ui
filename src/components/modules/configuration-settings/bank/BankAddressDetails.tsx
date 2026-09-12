@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils/cn';
 import { BankMasterFormData } from '@/types/bank-master.types';
 import * as CONST from '@/lib/api/configuration-settings/bank/bank-master.constants';
 import { BankMasterErrors } from '@/lib/api/configuration-settings/bank/bank-master.validator';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface BankAddressDetailsProps {
   formData: BankMasterFormData;
@@ -25,6 +26,11 @@ export function BankAddressDetails({
   handleChange,
   handleBlur,
 }: BankAddressDetailsProps) {
+  const streetAddressLabel = useAliasLabel('Street_Address', t('aliasFallback.streetAddress'));
+  const cityLabel = useAliasLabel('City', t('aliasFallback.city'));
+  const stateLabel = useAliasLabel('State', t('aliasFallback.state'));
+  const pincodeLabel = useAliasLabel('Pincode', t('aliasFallback.pincode'));
+
   return (
     <div className="bg-gradient-to-r from-violet-50 to-purple-50 p-4 rounded-lg border-2 border-violet-200">
       <div className="flex items-center gap-2 mb-3">
@@ -37,7 +43,7 @@ export function BankAddressDetails({
       <div className="grid grid-cols-12 gap-3">
         <div className="col-span-12 space-y-1.5">
           <Label htmlFor="address" className="text-sm font-medium">
-            {t('drawer.labels.streetAddress')} <span className="text-red-500">*</span>
+            {streetAddressLabel} <span className="text-red-500">*</span>
           </Label>
           <Input
             id="address"
@@ -66,7 +72,7 @@ export function BankAddressDetails({
 
         <div className="col-span-5 space-y-1.5">
           <Label htmlFor="city" className="text-sm font-medium">
-            {t('drawer.labels.city')} <span className="text-red-500">*</span>
+            {cityLabel} <span className="text-red-500">*</span>
           </Label>
           <Input
             id="city"
@@ -93,7 +99,7 @@ export function BankAddressDetails({
 
         <div className="col-span-5 space-y-1.5">
           <Label htmlFor="state" className="text-sm font-medium">
-            {t('drawer.labels.state')} <span className="text-red-500">*</span>
+            {stateLabel} <span className="text-red-500">*</span>
           </Label>
           <Input
             id="state"
@@ -120,7 +126,7 @@ export function BankAddressDetails({
 
         <div className="col-span-2 space-y-1.5">
           <Label htmlFor="pincode" className="text-sm font-medium">
-            {t('drawer.labels.pincode')} <span className="text-red-500">*</span>
+            {pincodeLabel} <span className="text-red-500">*</span>
           </Label>
 
           <Input

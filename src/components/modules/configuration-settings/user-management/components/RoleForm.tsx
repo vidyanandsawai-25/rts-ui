@@ -5,6 +5,7 @@ import { Label, Input, Button, Drawer, ToggleSwitch, ValidationMessage, Select }
 import { useTranslations } from 'next-intl';
 import { RoleFormProps, Department } from '@/types/user-management';
 import { getDepartmentsAction } from '@/app/[locale]/configuration-settings/user-management/actions';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export function RoleForm({
   isOpen,
@@ -18,6 +19,9 @@ export function RoleForm({
   errors,
 }: RoleFormProps) {
   const t = useTranslations('userManagement');
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
+  const userLabel = useAliasLabel('User', t('aliasFallback.user'));
   const [fetchedDepts, setFetchedDepts] = useState<Department[]>([]);
 
   useEffect(() => {
@@ -49,9 +53,13 @@ export function RoleForm({
       title={
         <div className="flex flex-col">
           <span className="font-semibold text-xl text-slate-700">
-            {editingRole ? t('roles.editRole') : t('roles.addRole')}
+            {editingRole
+              ? t('roles.editRole', { role: roleLabel })
+              : t('roles.addRole', { role: roleLabel })}
           </span>
-          <span className="text-sm text-slate-700 font-normal">{t('roles.subtitle')}</span>
+          <span className="text-sm text-slate-700 font-normal">
+            {t('roles.subtitle', { role: roleLabel, user: userLabel })}
+          </span>
         </div>
       }
       footer={
@@ -68,15 +76,15 @@ export function RoleForm({
             {isSubmitting
               ? t('actions.saving')
               : editingRole
-                ? t('actions.updateRole')
-                : t('actions.createRole')}
+                ? t('actions.updateRole', { role: roleLabel })
+                : t('actions.createRole', { role: roleLabel })}
           </Button>
         </div>
       }
     >
       <form id="role-form" onSubmit={onSubmit} className="space-y-6 p-6">
         <div className="space-y-2">
-          <Label>{t('form.departments')} *</Label>
+          <Label>{t('form.departments', { department: departmentLabel })} *</Label>
           <Select
             required
             options={departmentOptions}
@@ -91,14 +99,17 @@ export function RoleForm({
                 departmentName: selectedDept?.departmentName || '',
               });
             }}
-            placeholder={t('form.selectDeptPrompt') || 'Select Department'}
+            placeholder={
+              t('form.selectDeptPrompt', { department: departmentLabel }) ||
+              `Select ${departmentLabel}`
+            }
             className="h-10"
           />
           {errors?.departmentId && <ValidationMessage message={errors.departmentId} />}
         </div>
 
         <div className="space-y-2">
-          <Label>{t('table.role')} *</Label>
+          <Label>{roleLabel} *</Label>
           <Input
             required
             maxLength={30}
@@ -107,7 +118,7 @@ export function RoleForm({
               const val = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, '');
               setFormData({ ...formData, name: val });
             }}
-            placeholder={t('table.role')}
+            placeholder={roleLabel}
             className="h-10"
           />
           {errors?.name && <ValidationMessage message={errors.name} />}

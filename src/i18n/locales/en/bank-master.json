@@ -1,11 +1,22 @@
 {
-  "title": "Bank Master",
-  "subtitle": "Manage bank and branch details",
-  "addBank": "Add Bank",
+  "aliasFallback": {
+    "bank": "Bank",
+    "bankCode": "Bank Code",
+    "bankName": "Bank Name",
+    "branchName": "Branch Name",
+    "ifscCode": "IFSC Code",
+    "streetAddress": "Street Address",
+    "city": "City",
+    "state": "State",
+    "pincode": "Pincode"
+  },
+  "title": "{bank} Master",
+  "subtitle": "Manage {bank} and branch details",
+  "addBank": "Add {bank}",
   "stats": {
-    "totalBanks": "Total Banks",
+    "totalBanks": "Total {bank}s",
     "active": "Active",
-    "states": "States"
+    "states": "{state}s"
   },
   "filters": {
     "allStates": "All States",
@@ -24,11 +35,11 @@
     "deleteBank": "Delete {name}"
   },
   "drawer": {
-    "addTitle": "Add New Bank",
-    "editTitle": "Edit Bank Details",
-    "subtitle": "Fill in the required information to configure bank details",
+    "addTitle": "Add New {bank}",
+    "editTitle": "Edit {bank} Details",
+    "subtitle": "Fill in the required information to configure {bank} details",
     "sections": {
-      "basicDetails": "Bank Basic Details",
+      "basicDetails": "{bank} Basic Details",
       "addressDetails": "Branch Address Details"
     },
     "labels": {
@@ -53,22 +64,22 @@
       "pincode": "e.g., 400001"
     },
     "footer": {
-      "adding": "Adding New Bank",
+      "adding": "Adding New {bank}",
       "editing": "Editing: {bankName}"
     },
     "buttons": {
-      "save": "Save Bank",
-      "update": "Update Bank"
+      "save": "Save {bank}",
+      "update": "Update {bank}"
     }
   },
   "messages": {
-    "createSuccess": "Bank created successfully",
-    "createFailed": "Failed to create bank",
-    "updateSuccess": "Bank updated successfully",
-    "updateFailed": "Failed to update bank",
-    "deleteSuccess": "Bank deleted successfully",
-    "deleteFailed": "Failed to delete bank",
-    "fetchFailed": "Failed to fetch bank data",
+    "createSuccess": "{bank} created successfully",
+    "createFailed": "Failed to create {bank}",
+    "updateSuccess": "{bank} updated successfully",
+    "updateFailed": "Failed to update {bank}",
+    "deleteSuccess": "{bank} deleted successfully",
+    "deleteFailed": "Failed to delete {bank}",
+    "fetchFailed": "Failed to fetch {bank} data",
     "errorOccurred": "An unexpected error occurred",
     "networkError": "Network error — please check your connection and try again",
     "searchResult": "Found {count} records matching \"{term}\"",
@@ -76,8 +87,8 @@
     "unauthorizedToken": "Unauthorized: Token expired or invalid"
   },
   "confirm": {
-    "deleteTitle": "Delete Bank ({bankName})?",
-    "deleteDescription": "Are you sure you want to delete this bank record? This action cannot be undone."
+    "deleteTitle": "Delete {bank} ({bankName})?",
+    "deleteDescription": "Are you sure you want to delete this {bank} record? This action cannot be undone."
   },
   "validation": {
     "bankCodeRequired": "Bank Code is required",

@@ -26,6 +26,7 @@ import {
 } from '@/hooks/configuration-settings/screenAccess/usePermissionHierarchy';
 import { usePermissionDeltas } from '@/hooks/configuration-settings/screenAccess/usePermissionDeltas';
 import { useLoading } from '@/hooks/useLoading';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface RolePermissionManagerProps {
   screens: ScreenMasterData[];
@@ -49,6 +50,10 @@ export function RolePermissionManager({
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
   const { isLoading: isSaving, startLoading, stopLoading } = useLoading();
+
+  const screenLabel = useAliasLabel('Screen', t('aliasFallback.screen'));
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
 
   const deptIdFromQuery = searchParams.get('deptId');
   const selectedDept = useMemo(() => {
@@ -189,9 +194,13 @@ export function RolePermissionManager({
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         translations={{
-          selectDept: t('accessControl.filters.selectDept', { defaultValue: 'Select Department' }),
-          selectRole: t('accessControl.filters.selectRole'),
+          selectDept: t('accessControl.filters.selectDept', {
+            department: departmentLabel,
+            defaultValue: 'Select Department',
+          }),
+          selectRole: t('accessControl.filters.selectRole', { role: roleLabel }),
           searchPlaceholder: t('accessControl.filters.searchPlaceholder', {
+            screen: screenLabel,
             defaultValue: 'Search screens...',
           }),
           pendingChanges: t('accessControl.status.pendingChanges', { count: pendingCount }),
@@ -203,11 +212,15 @@ export function RolePermissionManager({
       <div className="flex-1 overflow-y-auto px-1">
         {filteredRoles.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-2">
-            <p className="text-lg font-semibold">{t('accessControl.roles.noRolesFound')}</p>
+            <p className="text-lg font-semibold">
+              {t('accessControl.roles.noRolesFound', { role: roleLabel })}
+            </p>
           </div>
         ) : filteredHierarchy.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-2">
-            <p className="text-lg font-semibold">{t('accessControl.messages.noScreensFound')}</p>
+            <p className="text-lg font-semibold">
+              {t('accessControl.messages.noScreensFound', { screen: screenLabel })}
+            </p>
           </div>
         ) : (
           <PermissionAccordion

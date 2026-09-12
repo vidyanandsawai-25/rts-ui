@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ScreenMasterManagement } from '@/components/modules/configuration-settings/screenAccess/ScreenMasterManagement';
 import { NextIntlClientProvider } from 'next-intl';
 import { ConfirmProvider } from '@/components/common/ConfirmProvider';
+import { AliasLabelsProvider } from '@/lib/providers/AliasLabelsProvider';
 
 // Mock router with dynamic search params
 const mockSearchParams = new Map<string, string | null>();
@@ -52,7 +53,6 @@ vi.mock('@/app/[locale]/configuration-settings/screenAccess/action.mutations', (
   updateScreenGroupAction: (...args: unknown[]) => mockUpdateScreenGroupAction(...args),
   deleteScreenGroupAction: (...args: unknown[]) => mockDeleteScreenGroupAction(...args),
 }));
-
 
 // Mock toast
 vi.mock('sonner', () => ({
@@ -380,5 +380,35 @@ describe('ScreenMasterManagement', () => {
     await waitFor(() => {
       expect(mockDeleteScreenGroupAction).toHaveBeenCalled();
     });
+  });
+
+  it('renders dynamic alias labels when AliasLabelsProvider provides custom labels', () => {
+    const mockAliases = {
+      Screen: 'CustomScreen',
+      Screen_Group: 'CustomGroup',
+      Screen_Code: 'Screen Identifier',
+      Screen_Name: 'Display Title',
+      Route: 'URL Path',
+    };
+
+    render(
+      <AliasLabelsProvider labels={mockAliases}>
+        <NextIntlClientProvider locale="en" messages={{}}>
+          <ConfirmProvider>
+            <ScreenMasterManagement
+              initialScreens={mockScreens}
+              initialGroups={mockGroups}
+              screensPagination={mockPagination}
+              groupsPagination={mockPagination}
+            />
+          </ConfirmProvider>
+        </NextIntlClientProvider>
+      </AliasLabelsProvider>
+    );
+
+    // Check table headers and tab labels with custom aliases
+    expect(screen.getByText('Display Title')).toBeInTheDocument();
+    expect(screen.getByText('Screen Identifier')).toBeInTheDocument();
+    expect(screen.getByText('URL Path')).toBeInTheDocument();
   });
 });

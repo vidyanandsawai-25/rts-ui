@@ -1,5 +1,4 @@
 import { UserConfiguration } from '@/components/modules/configuration-settings/user-management/UserConfiguration';
-import { getTranslations } from 'next-intl/server';
 import {
   getUsersAction,
   getUserRolesAction,
@@ -10,7 +9,6 @@ import { executeConditionalFetches } from '@/lib/utils/fetch-helpers';
 import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 
 interface UserManagementPageProps {
-  params: Promise<{ locale: string }>;
   searchParams: Promise<{
     page?: string;
     pageSize?: string;
@@ -44,13 +42,9 @@ function getStatusFilter(status?: string): boolean | undefined {
 }
 
 export default async function UserManagementPage({
-  params,
   searchParams,
 }: UserManagementPageProps) {
-  const { locale } = await params;
   const sp = await searchParams;
-
-  const t = await getTranslations({ locale, namespace: 'userManagement' });
 
   const activeTab = getActiveTab(sp?.tab);
   const isUsersTab = activeTab === 'users';
@@ -88,7 +82,7 @@ export default async function UserManagementPage({
         hasPrevious: false,
         hasNext: false,
       },
-      errorMessage: t('errors.apiConnection.fetchUsersFailed'),
+      errorMessage: 'errors.apiConnection.fetchUsersFailed',
       onError: handleFetchError,
     },
 
@@ -96,7 +90,7 @@ export default async function UserManagementPage({
       condition: isRolesTab,
       fetcher: () => getUserRolesAction(),
       fallback: [],
-      errorMessage: t('errors.apiConnection.fetchRolesFailed'),
+      errorMessage: 'errors.apiConnection.fetchRolesFailed',
       onError: handleFetchError,
     },
 
@@ -104,7 +98,7 @@ export default async function UserManagementPage({
       condition: isRolesTab,
       fetcher: () => getDepartmentsAction(),
       fallback: [],
-      errorMessage: t('errors.apiConnection.fetchDepartmentsFailed'),
+      errorMessage: 'errors.apiConnection.fetchDepartmentsFailed',
       onError: handleFetchError,
     },
 
@@ -112,19 +106,13 @@ export default async function UserManagementPage({
       condition: isRolesTab,
       fetcher: () => getDesignationsAction(),
       fallback: [],
-      errorMessage: t('errors.apiConnection.fetchDesignationsFailed'),
+      errorMessage: 'errors.apiConnection.fetchDesignationsFailed',
       onError: handleFetchError,
     },
   });
 
   return (
     <UserConfiguration
-      translations={{
-        title: t('config.title'),
-        subtitle: t('config.subtitle'),
-        usersTab: t('config.usersTab'),
-        rolesTab: t('config.rolesTab'),
-      }}
       initialData={{
         users: fetchData.users.items || [],
         totalCount: fetchData.users.totalCount || 0,

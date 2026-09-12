@@ -22,12 +22,13 @@ interface UseBaseFormProps<T> {
     (
       val: unknown,
       data: Partial<T>,
-      t: (key: string) => string,
-      tCommon: (key: string) => string
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      tCommon: (key: string, values?: Record<string, string | number | Date>) => string
     ) => string | undefined
   >;
   saveAction: (data: Partial<T>) => Promise<ActionResponse<unknown>>;
   successMessageKey: string;
+  successMessageParams?: Record<string, string | number>;
   redirectPath: string;
   translationNamespace?: string;
   onSuccess?: () => void;
@@ -41,6 +42,7 @@ export function useBaseForm<T extends { isActive?: boolean }>({
   validationSchema,
   saveAction,
   successMessageKey,
+  successMessageParams,
   redirectPath,
   translationNamespace = 'screenAccess',
   onSuccess,
@@ -197,7 +199,7 @@ export function useBaseForm<T extends { isActive?: boolean }>({
           (formData as Record<string, unknown>).screenName ||
           (formData as Record<string, unknown>).screenGroupName ||
           '';
-        toast.success(t(successMessageKey, { name: String(name) }));
+        toast.success(t(successMessageKey, { name: String(name), ...successMessageParams }));
         onSuccess?.();
         router.refresh();
         forceCancel();

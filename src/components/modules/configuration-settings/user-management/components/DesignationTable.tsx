@@ -2,8 +2,8 @@ import { Briefcase, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { MasterTable, Badge, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { Designation, DesignationTableProps } from '@/types/user-management';
-
 import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export function DesignationTable({
   designations,
@@ -17,6 +17,13 @@ export function DesignationTable({
   deletingId,
 }: DesignationTableProps) {
   const t = useTranslations('userManagement');
+  const designationLabel = useAliasLabel('Designation', t('aliasFallback.designation'));
+  const designationCodeLabel = useAliasLabel(
+    'Designation_Code',
+    t('aliasFallback.designationCode')
+  );
+  const descriptionLabel = useAliasLabel('Description', t('aliasFallback.description'));
+
   const { canEdit, canDelete, haveFullAccess } = useActivePagePermissions();
   const showEdit = canEdit || haveFullAccess;
   const showDelete = canDelete || haveFullAccess;
@@ -25,7 +32,7 @@ export function DesignationTable({
   const columns = [
     {
       key: 'code',
-      label: t('form.code'),
+      label: designationCodeLabel || t('form.code'),
       width: '15%',
       render: (value: unknown) => (
         <Badge className="bg-blue-100 text-blue-700 border-blue-200">{value as string}</Badge>
@@ -33,7 +40,7 @@ export function DesignationTable({
     },
     {
       key: 'name',
-      label: t('roles.designationsTab'),
+      label: t('roles.designationsTab', { designation: designationLabel }),
       width: '25%',
       render: (value: unknown) => (
         <div className="flex items-center gap-2">
@@ -46,7 +53,7 @@ export function DesignationTable({
     },
     {
       key: 'description',
-      label: t('form.description'),
+      label: descriptionLabel || t('form.description'),
       width: '35%',
       render: (value: unknown) => (
         <span className="text-muted-foreground text-xs line-clamp-1">{value as string}</span>
@@ -73,7 +80,7 @@ export function DesignationTable({
   return (
     <MasterTable<Designation>
       data={designations}
-      emptyText={t('messages.noDesignations')}
+      emptyText={t('messages.noDesignations', { designation: designationLabel })}
       columns={columns}
       pageSize={pageSize}
       pageNumber={pageNumber}

@@ -1,11 +1,22 @@
 {
-  "title": "बँक मास्टर",
-  "subtitle": "बँक आणि शाखा तपशील व्यवस्थापित करा",
-  "addBank": "बँक जोडा",
+  "aliasFallback": {
+    "bank": "बँक",
+    "bankCode": "बँक कोड",
+    "bankName": "बँकेचे नाव",
+    "branchName": "शाखेचे नाव",
+    "ifscCode": "IFSC कोड",
+    "streetAddress": "रस्त्याचा पत्ता",
+    "city": "शहर",
+    "state": "राज्य",
+    "pincode": "पिनकोड"
+  },
+  "title": "{bank} मास्टर",
+  "subtitle": "{bank} आणि शाखा तपशील व्यवस्थापित करा",
+  "addBank": "{bank} जोडा",
   "stats": {
-    "totalBanks": "एकूण बँका",
+    "totalBanks": "एकूण {bank}",
     "active": "सक्रिय",
-    "states": "राज्ये"
+    "states": "{state}"
   },
   "filters": {
     "allStates": "सर्व राज्ये",
@@ -24,11 +35,11 @@
     "deleteBank": "{name} हटवा"
   },
   "drawer": {
-    "addTitle": "नवीन बँक जोडा",
-    "editTitle": "बँक तपशील संपादित करा",
-    "subtitle": "बँक तपशील कॉन्फ़िगर करण्यासाठी आवश्यक माहिती भरा",
+    "addTitle": "नवीन {bank} जोडा",
+    "editTitle": "{bank} तपशील संपादित करा",
+    "subtitle": "{bank} तपशील कॉन्फ़िगर करण्यासाठी आवश्यक माहिती भरा",
     "sections": {
-      "basicDetails": "बँक मूलभूत तपशील",
+      "basicDetails": "{bank} मूलभूत तपशील",
       "addressDetails": "शाखा पत्ता तपशील"
     },
     "labels": {
@@ -53,22 +64,22 @@
       "pincode": "उदा., 400001"
     },
     "footer": {
-      "adding": "नवीन बँक जोडत आहे",
+      "adding": "नवीन {bank} जोडत आहे",
       "editing": "संपादन: {bankName}"
     },
     "buttons": {
-      "save": "बँक जतन करा",
-      "update": "बँक अपडेट करा"
+      "save": "{bank} जतन करा",
+      "update": "{bank} अपडेट करा"
     }
   },
   "messages": {
-    "createSuccess": "बँक यशस्वीरित्या तयार केली",
-    "createFailed": "बँक तयार करण्यात अयशस्वी",
-    "updateSuccess": "बँक यशस्वीरित्या अपडेट केली",
-    "updateFailed": "बँक अपडेट करण्यात अयशस्वी",
-    "deleteSuccess": "बँक यशस्वीरित्या हटविली",
-    "deleteFailed": "बँक हटविण्यात अयशस्वी",
-    "fetchFailed": "बँक डेटा प्राप्त करण्यात अयशस्वी",
+    "createSuccess": "{bank} यशस्वीरित्या तयार केली",
+    "createFailed": "{bank} तयार करण्यात अयशस्वी",
+    "updateSuccess": "{bank} यशस्वीरित्या अपडेट केली",
+    "updateFailed": "{bank} अपडेट करण्यात अयशस्वी",
+    "deleteSuccess": "{bank} यशस्वीरित्या हटविली",
+    "deleteFailed": "{bank} हटविण्यात अयशस्वी",
+    "fetchFailed": "{bank} डेटा प्राप्त करण्यात अयशस्वी",
     "errorOccurred": "एक अनपेक्षित त्रुटी आली",
     "networkError": "नेटवर्क त्रुटी — कृपया तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा",
     "searchResult": "\"{term}\" साठी {count} रेकॉर्ड सापडले",
@@ -76,8 +87,8 @@
     "unauthorizedToken": "अनधिकृत: टोकन कालबाह्य झाले आहे किंवा अवैध आहे"
   },
   "confirm": {
-    "deleteTitle": "बँक हटवायची ({bankName})?",
-    "deleteDescription": "तुम्हाला खात्री आहे की तुम्ही हा बँक रेकॉर्ड हटवू इच्छिता? ही क्रिया पूर्ववत केली जाऊ शकत नाही."
+    "deleteTitle": "{bank} हटवायची ({bankName})?",
+    "deleteDescription": "तुम्हाला खात्री आहे की तुम्ही हा {bank} रेकॉर्ड हटवू इच्छिता? ही क्रिया पूर्ववत केली जाऊ शकत नाही."
   },
   "validation": {
     "bankCodeRequired": "बँक कोड आवश्यक आहे",

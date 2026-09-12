@@ -6,6 +6,7 @@ import { ModuleMaster } from '@/components/modules/configuration-settings/module
 import type { ModuleMaster as ModuleMasterType } from '@/types/moduleMaster.types';
 import * as moduleActions from '@/app/[locale]/configuration-settings/module-master/actions';
 import { toast } from 'sonner';
+import { AliasLabelsProvider } from '@/lib/providers/AliasLabelsProvider';
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
@@ -29,6 +30,7 @@ const mockPermissions = {
 
 vi.mock('@/hooks/usePermissions', () => ({
   usePermissions: () => mockPermissions,
+  useActivePagePermissions: () => mockPermissions,
 }));
 
 const mockPush = vi.fn();
@@ -75,20 +77,19 @@ const mockModules: ModuleMasterType[] = [
   },
 ];
 
+const defaultProps = {
+  data: mockModules,
+  statsData: { totalCount: 1, activeCount: 1, inactiveCount: 0 },
+  pageNumber: 1,
+  pageSize: 10,
+  totalCount: 1,
+  totalPages: 1,
+};
+
 describe('ModuleMaster', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
-  const renderComponent = () =>
-    render(
-      <ModuleMaster
-        data={mockModules}
-        statsData={{ totalCount: 1, activeCount: 1, inactiveCount: 0 }}
-        pageNumber={1}
-        pageSize={10}
-        totalCount={1}
-        totalPages={1}
-      />
-    );
+  const renderComponent = () => render(<ModuleMaster {...defaultProps} />);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -196,4 +197,25 @@ describe('ModuleMaster', () => {
     expect(screen.getByText('Database connection refused')).toBeInTheDocument();
   });
 
+  it('renders custom aliases when wrapped in AliasLabelsProvider', () => {
+    const customLabels = {
+      Module: 'Sub-System',
+      Department: 'Agency',
+      Module_Code: 'Sub-System Code',
+      Module_Name: 'Sub-System Name',
+      Local_Name: 'Native Name',
+      Description: 'Summary Details',
+    };
+
+    render(
+      <AliasLabelsProvider labels={customLabels}>
+        <ModuleMaster {...defaultProps} />
+      </AliasLabelsProvider>
+    );
+
+    expect(screen.getByText('Sub-System Code')).toBeInTheDocument();
+    expect(screen.getByText('Sub-System Name & Agency')).toBeInTheDocument();
+    expect(screen.getByText('Native Name')).toBeInTheDocument();
+    expect(screen.getByText('Summary Details')).toBeInTheDocument();
+  });
 });

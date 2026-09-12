@@ -5,6 +5,7 @@ import { Landmark } from 'lucide-react';
 import { BankMasterFormData } from '@/types/bank-master.types';
 import * as CONST from '@/lib/api/configuration-settings/bank/bank-master.constants';
 import { BankMasterErrors } from '@/lib/api/configuration-settings/bank/bank-master.validator';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import { BankFormField } from './BankFormField';
 
 interface BankBasicDetailsProps {
@@ -22,20 +23,28 @@ export function BankBasicDetails({
   handleChange,
   handleBlur,
 }: BankBasicDetailsProps) {
+  const bankLabel = useAliasLabel('Bank', t('aliasFallback.bank'));
+  const bankCodeLabel = useAliasLabel('Bank_Code', t('aliasFallback.bankCode'));
+  const bankNameLabel = useAliasLabel('Bank_Name', t('aliasFallback.bankName'));
+  const branchNameLabel = useAliasLabel('Branch_Name', t('aliasFallback.branchName'));
+  const ifscCodeLabel = useAliasLabel('IFSC_Code', t('aliasFallback.ifscCode'));
+
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border-2 border-blue-200">
       <div className="flex items-center gap-2 mb-3">
         <div className="p-1.5 bg-blue-600 text-white rounded-md">
           <Landmark className="w-4 h-4" />
         </div>
-        <h3 className="font-semibold text-blue-900">{t('drawer.sections.basicDetails')}</h3>
+        <h3 className="font-semibold text-blue-900">
+          {t('drawer.sections.basicDetails', { bank: bankLabel })}
+        </h3>
       </div>
 
       <div className="grid grid-cols-12 gap-3">
         <div className="col-span-3">
           <BankFormField
             id="bankCode"
-            label={t('drawer.labels.bankCode')}
+            label={bankCodeLabel}
             value={formData.bankCode}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -53,7 +62,7 @@ export function BankBasicDetails({
         <div className="col-span-5">
           <BankFormField
             id="bankName"
-            label={t('drawer.labels.bankName')}
+            label={bankNameLabel}
             value={formData.bankName}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -71,7 +80,7 @@ export function BankBasicDetails({
         <div className="col-span-4">
           <BankFormField
             id="ifscCode"
-            label={t('drawer.labels.ifscCode')}
+            label={ifscCodeLabel}
             value={formData.ifscCode}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -89,7 +98,7 @@ export function BankBasicDetails({
         <div className="col-span-12">
           <BankFormField
             id="branchName"
-            label={t('drawer.labels.branchName')}
+            label={branchNameLabel}
             value={formData.branchName}
             onChange={handleChange}
             onBlur={handleBlur}

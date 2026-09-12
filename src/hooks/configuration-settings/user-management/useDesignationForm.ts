@@ -10,12 +10,15 @@ import { userManagementValidations } from '@/lib/utils/user-management-validatio
 import { toast } from 'sonner';
 import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { useTranslations } from 'next-intl';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export function useDesignationForm(
   onSuccess: (designation: Designation) => void,
   initialData?: Designation
 ) {
   const t = useTranslations('userManagement');
+  const designationLabel = useAliasLabel('Designation', t('aliasFallback.designation'));
+
   const [editingDesignation, setEditingDesignation] = useState<Designation | null>(
     initialData || null
   );
@@ -60,7 +63,13 @@ export function useDesignationForm(
     e.preventDefault();
 
     // Client-side validation
-    const validationErrors = userManagementValidations.validateDesignation(designationFormData, t);
+    const validationErrors = userManagementValidations.validateDesignation(
+      designationFormData,
+      t,
+      {
+        designation: designationLabel,
+      }
+    );
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       toast.error(Object.values(validationErrors)[0]);
@@ -77,14 +86,18 @@ export function useDesignationForm(
         const res = await updateDesignationAction(updatedDesignation);
         if (res.success) {
           onSuccess(updatedDesignation);
-          toast.success(t('messages.designationUpdateSuccess'));
+          toast.success(
+            t('messages.designationUpdateSuccess', { designation: designationLabel })
+          );
           resetDesignationForm();
         } else {
           setErrors(res.validationErrors || {});
-          let errorMsg = res.message || t('messages.designationUpdateError');
+          let errorMsg =
+            res.message ||
+            t('messages.designationUpdateError', { designation: designationLabel });
           if (res.message) {
             if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
-              errorMsg = t(res.message);
+              errorMsg = t(res.message, { designation: designationLabel });
             } else {
               errorMsg = getCleanErrorMessage(res.message);
             }
@@ -95,14 +108,18 @@ export function useDesignationForm(
         const res = await createDesignationAction(designationFormData);
         if (res.success && res.data) {
           onSuccess(res.data);
-          toast.success(t('messages.designationCreateSuccess'));
+          toast.success(
+            t('messages.designationCreateSuccess', { designation: designationLabel })
+          );
           resetDesignationForm();
         } else {
           setErrors(res.validationErrors || {});
-          let errorMsg = res.message || t('messages.designationCreateError');
+          let errorMsg =
+            res.message ||
+            t('messages.designationCreateError', { designation: designationLabel });
           if (res.message) {
             if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
-              errorMsg = t(res.message);
+              errorMsg = t(res.message, { designation: designationLabel });
             } else {
               errorMsg = getCleanErrorMessage(res.message);
             }

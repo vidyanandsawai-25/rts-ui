@@ -5,6 +5,7 @@ import { BankMaster } from '@/components/modules/configuration-settings/bank/Ban
 import type { BankMasterData } from '@/types/bank-master.types';
 import * as bankActions from '@/app/[locale]/configuration-settings/bank-master/actions';
 import { toast } from 'sonner';
+import { AliasLabelsProvider } from '@/lib/providers/AliasLabelsProvider';
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
@@ -75,20 +76,19 @@ const mockBanks: BankMasterData[] = [
   },
 ];
 
+const defaultProps = {
+  data: mockBanks,
+  statsData: { activeCount: 1, uniqueStates: ['Maharashtra'] },
+  pageNumber: 1,
+  pageSize: 10,
+  totalCount: 1,
+  totalPages: 1,
+};
+
 describe('BankMaster', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
-  const renderComponent = () =>
-    render(
-      <BankMaster
-        data={mockBanks}
-        statsData={{ activeCount: 1, uniqueStates: ['Maharashtra'] }}
-        pageNumber={1}
-        pageSize={10}
-        totalCount={1}
-        totalPages={1}
-      />
-    );
+  const renderComponent = () => render(<BankMaster {...defaultProps} />);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -187,4 +187,24 @@ describe('BankMaster', () => {
     });
   });
 
+  it('renders custom aliases when wrapped in AliasLabelsProvider', () => {
+    const customLabels = {
+      Bank: 'Treasury',
+      Bank_Code: 'Treasury Code',
+      Bank_Name: 'Treasury Name',
+      Branch_Name: 'Sub-Division',
+      IFSC_Code: 'Routing Code',
+      State: 'Province',
+    };
+
+    render(
+      <AliasLabelsProvider labels={customLabels}>
+        <BankMaster {...defaultProps} />
+      </AliasLabelsProvider>
+    );
+
+    expect(screen.getByText('Treasury Code')).toBeInTheDocument();
+    expect(screen.getByText('Treasury Name & Sub-Division')).toBeInTheDocument();
+    expect(screen.getByText('Routing Code')).toBeInTheDocument();
+  });
 });

@@ -11,6 +11,7 @@ import { getAllScreensAction } from '@/app/[locale]/configuration-settings/scree
 import { ScreenMasterData } from '@/types/screen-access.types';
 import { commonValidations } from '@/lib/utils/validation';
 import { SCREEN_CODE_MAX, SCREEN_NAME_MAX } from '@/lib/constants/screen-access.constants';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface UseScreenFormProps {
   initialData?: Partial<ScreenMasterData>;
@@ -27,6 +28,11 @@ export function useScreenForm({
 }: UseScreenFormProps) {
   const isEdit = isEditProp ?? Boolean(initialData?.screenMasterId);
   const [existingScreens, setExistingScreens] = useState<ScreenMasterData[]>([]);
+
+  const screenLabel = useAliasLabel('Screen', 'Screen');
+  const screenGroupLabel = useAliasLabel('Screen_Group', 'Screen Group');
+  const departmentLabel = useAliasLabel('Department', 'Department');
+  const moduleLabel = useAliasLabel('Module', 'Module');
 
   useEffect(() => {
     getAllScreensAction().then((res) => {
@@ -55,6 +61,7 @@ export function useScreenForm({
       successMessageKey: isEdit
         ? 'screenManagement.screens.messages.updateSuccess'
         : 'screenManagement.screens.messages.createSuccess',
+      successMessageParams: { screen: screenLabel },
       redirectPath: '/configuration-settings/screenAccess?tab=screen-management&subTab=screens',
       saveAction: (data) => {
         if (isEdit) {
@@ -71,7 +78,7 @@ export function useScreenForm({
       validationSchema: {
         screenCode: (val, _data, t, tCommon) => {
           if (!val || (typeof val === 'string' && !val.trim())) {
-            return t('screenManagement.screens.form.errors.codeRequired');
+            return t('screenManagement.screens.form.errors.codeRequired', { screen: screenLabel });
           }
 
           const basicError = commonValidations.masterCode(tCommon, SCREEN_CODE_MAX, {
@@ -125,16 +132,16 @@ export function useScreenForm({
             !isEdit &&
             existingScreens.some((s) => s.screenCode.trim().toLowerCase() === codeVal)
           ) {
-            return t('screenManagement.screens.form.errors.duplicateCode');
+            return t('screenManagement.screens.form.errors.duplicateCode', { screen: screenLabel });
           }
           if (isDuplicate) {
-            return t('screenManagement.screens.form.errors.duplicateCode');
+            return t('screenManagement.screens.form.errors.duplicateCode', { screen: screenLabel });
           }
           return undefined;
         },
         screenName: (val, _data, t, tCommon) => {
           if (!val || (typeof val === 'string' && !val.trim())) {
-            return t('screenManagement.screens.form.errors.nameRequired');
+            return t('screenManagement.screens.form.errors.nameRequired', { screen: screenLabel });
           }
 
           if (/[&()\/-]/.test(String(val))) {
@@ -192,19 +199,29 @@ export function useScreenForm({
             !isEdit &&
             existingScreens.some((s) => s.screenName.trim().toLowerCase() === nameVal)
           ) {
-            return t('screenManagement.screens.form.errors.duplicateName');
+            return t('screenManagement.screens.form.errors.duplicateName', { screen: screenLabel });
           }
           if (isDuplicate) {
-            return t('screenManagement.screens.form.errors.duplicateName');
+            return t('screenManagement.screens.form.errors.duplicateName', { screen: screenLabel });
           }
           return undefined;
         },
         screenGroupId: (val, _data, t) =>
-          !val ? t('screenManagement.screens.form.errors.groupRequired') : undefined,
+          !val
+            ? t('screenManagement.screens.form.errors.groupRequired', {
+                screenGroup: screenGroupLabel,
+              })
+            : undefined,
         departmentMasterId: (val, _data, t) =>
-          !val ? t('screenManagement.screens.form.errors.departmentRequired') : undefined,
+          !val
+            ? t('screenManagement.screens.form.errors.departmentRequired', {
+                department: departmentLabel,
+              })
+            : undefined,
         moduleId: (val, _data, t) =>
-          !val ? t('screenManagement.screens.form.errors.moduleRequired') : undefined,
+          !val
+            ? t('screenManagement.screens.form.errors.moduleRequired', { module: moduleLabel })
+            : undefined,
         routePath: (val, _data, t, tCommon) => {
           if (!val || (typeof val === 'string' && !val.trim())) {
             return t('screenManagement.screens.form.errors.routeRequired');
@@ -258,10 +275,14 @@ export function useScreenForm({
             !isEdit &&
             existingScreens.some((s) => s.routePath.trim().toLowerCase() === routeVal)
           ) {
-            return t('screenManagement.screens.form.errors.duplicateRoute');
+            return t('screenManagement.screens.form.errors.duplicateRoute', {
+              screen: screenLabel,
+            });
           }
           if (isDuplicate) {
-            return t('screenManagement.screens.form.errors.duplicateRoute');
+            return t('screenManagement.screens.form.errors.duplicateRoute', {
+              screen: screenLabel,
+            });
           }
           return undefined;
         },

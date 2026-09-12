@@ -7,7 +7,9 @@ interface BankMasterStatsProps {
   totalCount: number;
   activeCount: number;
   statesCount: number;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+  bankLabel?: string;
+  stateLabel?: string;
 }
 
 const STAT_STYLES = {
@@ -31,32 +33,44 @@ const STAT_STYLES = {
   },
 } as const;
 
-export function BankMasterStats({ totalCount, activeCount, statesCount, t }: BankMasterStatsProps) {
+export function BankMasterStats({
+  totalCount,
+  activeCount,
+  statesCount,
+  t,
+  bankLabel,
+  stateLabel,
+}: BankMasterStatsProps) {
+  const values = useMemo(
+    () => ({ bank: bankLabel ?? '', state: stateLabel ?? '' }),
+    [bankLabel, stateLabel]
+  );
+
   const stats = useMemo(
     () => [
       {
         id: 'total-banks',
-        label: t('stats.totalBanks'),
+        label: t('stats.totalBanks', values),
         value: totalCount,
         icon: Landmark,
         ...STAT_STYLES.total,
       },
       {
         id: 'active-banks',
-        label: t('stats.active'),
+        label: t('stats.active', values),
         value: activeCount,
         icon: Activity,
         ...STAT_STYLES.active,
       },
       {
         id: 'states-count',
-        label: t('stats.states'),
+        label: t('stats.states', values),
         value: statesCount,
         icon: MapPin,
         ...STAT_STYLES.states,
       },
     ],
-    [totalCount, activeCount, statesCount, t]
+    [totalCount, activeCount, statesCount, t, values]
   );
 
   return (
