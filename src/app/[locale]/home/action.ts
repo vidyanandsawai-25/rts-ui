@@ -10,6 +10,7 @@ import type { Department } from "@/types/departmentActivation.types";
 import type { UserScreenAccess } from "@/types/user-screen-access.types";
 import { departmentActivationService } from "@/lib/api/configuration-settings/department-activation/departmentActivation.service";
 import { DEPARTMENT_COOKIES, CLIENT_COOKIE_OPTIONS } from '@/components/modules/login/constants';
+import { userScreenAccessService } from "@/lib/api/user-screen-access.service";
 import { logger } from "@/lib/utils/logger";
 
 /**
@@ -161,9 +162,9 @@ export async function listServices(locale: string): Promise<ListServicesResponse
         const activeDeptsMap = new Map<number, Department>();
         let hasGlobalDepartments = false;
 
-        if (departmentsResponse.success && departmentsResponse.data && departmentsResponse.data.length > 0) {
+        if (departmentsResponse.success && departmentsResponse.data && Array.isArray(departmentsResponse.data)) {
             hasGlobalDepartments = true;
-            departmentsResponse.data.forEach(dept => {
+            departmentsResponse.data.forEach((dept: Department) => {
                 if (dept.isActive) {
                     activeDeptsMap.set(dept.departmentId, dept);
                 }
@@ -171,7 +172,7 @@ export async function listServices(locale: string): Promise<ListServicesResponse
         }
 
         // Get active departments only: active user allocation AND globally active department
-        const activeDepartments = profileResponse.data.departments?.filter(d => {
+        const activeDepartments = profileResponse.data.departments?.filter((d: UserDepartment) => {
             const isUserAllocationActive = d.isActive;
             const isGlobalDeptActive = !hasGlobalDepartments || activeDeptsMap.has(d.departmentId);
             return isUserAllocationActive && isGlobalDeptActive;
@@ -182,8 +183,8 @@ export async function listServices(locale: string): Promise<ListServicesResponse
         }
 
         // Remove duplicates based on departmentId
-        const uniqueDepartments = activeDepartments.reduce((acc, current) => {
-            const exists = acc.find(d => d.departmentId === current.departmentId);
+        const uniqueDepartments = activeDepartments.reduce((acc: UserDepartment[], current: UserDepartment) => {
+            const exists = acc.find((d: UserDepartment) => d.departmentId === current.departmentId);
             if (!exists) {
                 acc.push(current);
             }
@@ -192,7 +193,7 @@ export async function listServices(locale: string): Promise<ListServicesResponse
 
         // Build a map: departmentId -> first active module for that department
         const modulesByDept = new Map<number, { moduleId: number; moduleName: string }>();
-        const activeModules = profileResponse.data.moduleAccess?.filter(m => m.isActive) ?? [];
+        const activeModules = profileResponse.data.moduleAccess?.filter((m: any) => m.isActive) ?? [];
         for (const mod of activeModules) {
             if (!modulesByDept.has(mod.departmentId)) {
                 modulesByDept.set(mod.departmentId, {
@@ -201,14 +202,15 @@ export async function listServices(locale: string): Promise<ListServicesResponse
                 });
             }
         }
-        const accessibleScreens =
+
+        const accessibleScreens: UserScreenAccess[] =
             screensResponse.success && Array.isArray(screensResponse.data)
                 ? screensResponse.data
                 : [];
 
         // Map departments to services using dynamic icon resolved from global list
         const services = uniqueDepartments
-            .map(dept => {
+            .map((dept: UserDepartment) => {
                 const globalDept = activeDeptsMap.get(dept.departmentId);
                 const iconName = globalDept?.departmentIcon || '';
                 const moduleInfo = modulesByDept.get(dept.departmentId);
