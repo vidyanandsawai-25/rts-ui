@@ -13,7 +13,7 @@
   },
   "header": {
     "rateableTitle": "करयोग्य मूल्य दर मास्टर",
-    "rateableDescription": "प्रत्येक {zone} और {constructionType} के लिए दरें (₹/वर्ग मीटर) प्रबंधित करें",
+    "rateableDescription": "विभिन्न {zones}, {use} समूहों और {assessment} वर्षों के लिए करयोग्य मूल्य दरों और संबंधित कॉन्फ़िगरेशन को प्रबंधित करें",
     "capitalTitle": "पूंजी मूल्य दर मास्टर",
     "capitalDescription": "रेडी-रेकनर आधारित पूंजी मूल्य दरें।",
     "moujaTitle": "{mouja} मास्टर",

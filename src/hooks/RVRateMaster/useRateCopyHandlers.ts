@@ -50,8 +50,8 @@ export function useRateCopyHandlers(props: RateCopyHandlersProps) {
   } = props;
 
   const { confirm } = useConfirm();
-  const rateSectionLabel = useAliasLabel("Rate_Section", t("aliasFallback.rateSection"));
-  const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
+  const rateSectionLabel = useAliasLabel("Rate_Section", useAliasLabel("Rate Section", t("aliasFallback.rateSection")));
+  const typeOfUseLabel = useAliasLabel("Type_Of_Use", useAliasLabel("Type of Use", t("aliasFallback.typeOfUse")));
   const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.assessment"));
   const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
 
@@ -180,10 +180,10 @@ export function useRateCopyHandlers(props: RateCopyHandlersProps) {
         );
 
         confirm({
-          title: t('dialogs.confirmMultiplierUpdateTitle') || 'Confirm Multiplier Update',
-          description: t('dialogs.confirmMultiplierUpdateDescription', { groups: conflictingLabels.join(', ') }) || `Rates are already present for usegroups in multiplier -(${conflictingLabels.join(', ')}) , do you want to update existing rates ?`,
-          confirmText: t('dialogs.confirmYes') || 'Yes',
-          cancelText: t('dialogs.confirmNo') || 'No',
+          title: t('dialogs.confirmMultiplierUpdateTitle'),
+          description: t('dialogs.confirmMultiplierUpdateDescription', { groups: conflictingLabels.join(', '), use: useLabel }),
+          confirmText: t('dialogs.confirmYes'),
+          cancelText: t('dialogs.confirmNo'),
           onConfirm: () => {
             // Yes: proceed with adding rates as present currently as it is (no change)
             setMultipliers({ ...tempMultipliers });
@@ -211,7 +211,7 @@ export function useRateCopyHandlers(props: RateCopyHandlersProps) {
                 groups: remainingMultipliers.join(', ')
               }) || `Conflicting multipliers for ${conflictingLabels.join(', ')} removed. Added multipliers for ${remainingMultipliers.join(', ')}.`);
             } else {
-              toast.info(t('messages.multipliersCleared') || 'Multipliers cleared. Showing only selected use group.');
+              toast.info(t('messages.multipliersCleared', { use: useLabel }));
             }
             handleCloseMultipliersSection();
           }

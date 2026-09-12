@@ -1,7 +1,7 @@
 import {PageContainer} from "@/components/common/PageContainer";
 import RateMasterView from "@/components/modules/property-tax/RVRateMaster/RateMasterView";
 import AddRateDrawer from "@/components/modules/property-tax/RVRateMaster/AddRateDrawer";
-import {getAssessmentYears, getConstructionTypes, getUseGroupOptions, getZoneDescriptionsPaged, getAllZoneDescriptions, getZoneOptions, getRateMasterByFilters, getRateMasterData, getRateMasterPagedAction, getRateFrequencyPolicy, getRateUnitPolicy } from "../action";
+import {getAssessmentYears, getConstructionTypes, getUseGroupOptions, getAllZoneDescriptions, getZoneOptions, getRateMasterByFilters, getRateFrequencyPolicy, getRateUnitPolicy } from "../action";
 
 // Force dynamic rendering to ensure fresh data on each navigation
 export const dynamic = 'force-dynamic';
@@ -23,53 +23,32 @@ export default async function AddRatePage({ searchParams }: PageProps) {
   const matrixPage = Number(params?.matrixPage) || 1;
   const rawMatrixPageSize = Number(params?.matrixPageSize);
   const matrixPageSize = [100, 150, 200].includes(rawMatrixPageSize) ? rawMatrixPageSize : 100;
-  
-  // Get filter values from URL
-  const selectedZone = params?.zone;
-  const selectedUseGroup = params?.useGroup;
-  const selectedYear = params?.assessmentYear;
 
   const [
     zones,
     useGroups,
-    paginatedZonesResult,
     allZonesResult,
     constructionTypes,
     assessmentYears,
-    allMasterData,
     rateFrequencyPolicy,
     rateUnitPolicy,
   ] = await Promise.all([
     getZoneOptions(),
     getUseGroupOptions(),
-    getZoneDescriptionsPaged(matrixPage, matrixPageSize),
-    getAllZoneDescriptions(), // Fetch all zones for copy rates functionality
+    getAllZoneDescriptions(), // Fetch all zones once for copy rates and in-memory pagination
     getConstructionTypes(),
     getAssessmentYears(),
-    getRateMasterData(1, -1), // Get all zones for mapping (pageSize: -1 gets all items)
     getRateFrequencyPolicy(), // Fetch rate frequency policy configuration
     getRateUnitPolicy(), // Fetch rate unit policy configuration
   ]);
 
-  // Extract zone descriptions for rate mapping
-  const allZoneDescriptions = allMasterData.zoneDescriptions;
-
-  // Get taxZoneIds for the current page of zones (for server-side filtering)
-  const paginatedTaxZoneIds = paginatedZonesResult.items.map(z => z.taxZoneId);
-
-  // Fetch filtered rates using the selected filters from URL (if any)
-  const ratesResult = await getRateMasterPagedAction(
-    1, 
-    -1, // Fetch all matching rates for the filtered zones
-    constructionTypes, 
-    allZoneDescriptions, 
-    selectedZone, 
-    selectedUseGroup, 
-    selectedYear,
-    paginatedTaxZoneIds // Pass only the current page's zone IDs
-  );
-
-  const tableData = ratesResult.items;
+  // Derive paginated zones in-memory from allZonesResult to avoid extra network calls
+  const totalCount = allZonesResult.length;
+  const safePageSize = matrixPageSize > 0 ? matrixPageSize : 100;
+  const safePageNumber = Math.max(1, matrixPage);
+  const totalPages = Math.max(1, Math.ceil(totalCount / safePageSize));
+  const startIdx = (safePageNumber - 1) * safePageSize;
+  const paginatedZoneItems = allZonesResult.slice(startIdx, startIdx + safePageSize);
 
   // Set initial values from searchParams if present, else fallback to first available options
   const initialZone = params?.zone || (zones && zones.length > 0 ? zones[0].value : "ALL");
@@ -93,9 +72,9 @@ export default async function AddRatePage({ searchParams }: PageProps) {
 
   // Prepare paginated zones data for the form
   const paginatedZonesData = {
-    items: paginatedZonesResult.items,
-    totalPages: paginatedZonesResult.totalPages,
-    totalCount: paginatedZonesResult.totalCount,
+    items: paginatedZoneItems,
+    totalPages,
+    totalCount,
     pageNumber: matrixPage,
     pageSize: matrixPageSize,
   };
@@ -111,7 +90,7 @@ export default async function AddRatePage({ searchParams }: PageProps) {
     <>
       <PageContainer className="pt-24">
         <RateMasterView
-          rateMasterData={tableData ?? []}
+          rateMasterData={[]}
           zones={zones ?? []}
           useGroups={useGroups ?? []}
           assessmentYears={assessmentYears ?? []}
@@ -127,7 +106,7 @@ export default async function AddRatePage({ searchParams }: PageProps) {
         useGroups={useGroups}
         assessmentYears={assessmentYears}
         assessmentYearRanges={assessmentYearRanges}
-        zoneDescriptions={paginatedZonesResult.items}
+        zoneDescriptions={paginatedZoneItems}
         allZones={allZonesResult}
         rateCategories={constructionTypes.map((ct: { constructionId: string; constructionCode?: string; description?: string }) => ({ constructionId: ct.constructionId, constructionCode: ct.constructionCode, description: ct.description }))}
         paginatedZonesData={paginatedZonesData}

@@ -152,6 +152,7 @@
     "selectAssessmentYearRange": "Select year range..."
   },
   "columns": {
+    "zoneNo": "{zone} No",
     "taxZoneNo": "{taxZone} No",
     "zoneDescription": "{zone} Description",
     "assessmentYear": "{assessment} Year"

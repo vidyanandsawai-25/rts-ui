@@ -13,7 +13,7 @@
   },
   "header": {
     "rateableTitle": "करयोग्य मूल्य दर मास्टर",
-    "rateableDescription": "प्रत्येक {zone} आणि {constructionType}साठी दर (₹/चौ.मी.) व्यवस्थापित करा",
+    "rateableDescription": "विविध {zones}, {use} गट आणि {assessment} वर्षांसाठी करपात्र मूल्य दर आणि संबंधित कॉन्फिगरेशन व्यवस्थापित करा",
     "capitalTitle": "भांडवली मूल्य दर मास्टर",
     "capitalDescription": "रेडी-रेकनर आधारित भांडवली मूल्य दर.",
     "moujaTitle": "{mouja} मास्टर",

@@ -18,6 +18,7 @@ type PageProps = {
     pageSize?: string;
     zone?: string;
     year?: string;
+    assessmentYear?: string;
   }>;
 };
 
@@ -51,7 +52,7 @@ const OpenPlotRateMasterPageServer = async ({ searchParams }: PageProps) => {
 
   // Determine initial/selected values
   const selectedZone = params?.zone || (zones.length > 0 ? zones[0].value : "ALL");
-  const selectedYear = params?.year || (assessmentYears.length > 0 ? assessmentYears[0].value : "ALL");
+  const selectedYear = params?.year || params?.assessmentYear || (assessmentYears.length > 0 ? assessmentYears[0].value : "ALL");
 
   // Map typeofuse to RateCategory structure for table headers (distinct typeOfUseGroupId)
   const distinctGroupIds = new Set<number>();

@@ -17,6 +17,7 @@ type PageProps = {
     zone?: string;
     useGroup?: string;
     year?: string;
+    assessmentYear?: string;
   }>;
 };
 
@@ -51,7 +52,7 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
   // Get the first valid use group (not "ALL")
   const firstValidUseGroup = useGroups.find((u) => u.value && u.value !== 'ALL');
   const selectedUseGroup = params?.useGroup || (firstValidUseGroup?.value ?? '');
-  const selectedYear = params?.year || (assessmentYears.length > 0 ? assessmentYears[0].value : "ALL");
+  const selectedYear = params?.year || params?.assessmentYear || (assessmentYears.length > 0 ? assessmentYears[0].value : "ALL");
 
   // Fetch ALL rates matching the filters (selectedZone, selectedUseGroup, selectedYear)
   const ratesResult = await getRateMasterPaged(

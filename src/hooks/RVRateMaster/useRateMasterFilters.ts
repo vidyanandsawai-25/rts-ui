@@ -40,6 +40,28 @@ export function useRateMasterFilters({
   const [selectedUseGroupLabel, setSelectedUseGroupLabel] = useState<string>("");
   const [assessmentYear, setAssessmentYear] = useState(filterValues?.year || "");
   const [assessmentYearLabel, setAssessmentYearLabel] = useState<string>("");
+
+  // Sync state when filterValues change (e.g. on URL navigation / SSR re-render)
+  useEffect(() => {
+    if (filterValues?.zone !== undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedZone(filterValues.zone);
+    }
+  }, [filterValues?.zone]);
+
+  useEffect(() => {
+    if (filterValues?.useGroup !== undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedUseGroup(filterValues.useGroup);
+    }
+  }, [filterValues?.useGroup]);
+
+  useEffect(() => {
+    if (filterValues?.year !== undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAssessmentYear(filterValues.year);
+    }
+  }, [filterValues?.year]);
   
   // Data states - backendRates are passed from server component
   const [fetchedBackendRates, setFetchedBackendRates] = useState<IBackendRateMaster[]>(backendRates || []);
@@ -136,27 +158,37 @@ export function useRateMasterFilters({
       if (label) setAssessmentYearLabel(label);
     }
     
-    // Use URL navigation to trigger server re-render (SSR pattern)
-    // Server component will fetch fresh data based on new URL params
+    // Build URL search params preserving all current filter selections
     const params = new URLSearchParams(window.location.search);
     
-    if (field === 'zone') {
-      params.set('zone', value);
-    } else if (field === 'useGroup') {
-      params.set('useGroup', value);
-    } else if (field === 'assessmentYear') {
-      params.set('assessmentYear', value);
-      params.set('year', value);
+    const currentZone = field === 'zone' ? value : (selectedZone || filterValues?.zone || '');
+    const currentUseGroup = field === 'useGroup' ? value : (selectedUseGroup || filterValues?.useGroup || '');
+    const currentYear = field === 'assessmentYear' ? value : (assessmentYear || filterValues?.year || '');
+
+    if (currentZone) {
+      params.set('zone', currentZone);
+    }
+    if (currentUseGroup && currentUseGroup !== 'ALL') {
+      params.set('useGroup', currentUseGroup);
+    }
+    if (currentYear) {
+      params.set('assessmentYear', currentYear);
+      params.set('year', currentYear);
+    }
+
+    // Reset pagination to page 1 on filter change
+    if (params.has('page')) {
+      params.set('page', '1');
     }
     
     const pathname = window.location.pathname;
     const newUrl = `${pathname}?${params.toString()}`;
     
-    // Use router.push followed by router.refresh to force server re-fetch
-    // This ensures the server component re-runs and fetches fresh data
+    // router.push alone triggers server component re-fetch in App Router.
+    // Calling router.refresh() immediately after router.push() caused a race condition
+    // where the in-flight push transition was aborted, resulting in the URL not updating.
     router.push(newUrl);
-    router.refresh();
-  }, [router]);
+  }, [router, selectedZone, selectedUseGroup, assessmentYear, filterValues]);
 
   // Wrapper for setRateFrequency that enforces policy
   const safeSetRateFrequency = useCallback((value: "Monthly" | "Yearly") => {
