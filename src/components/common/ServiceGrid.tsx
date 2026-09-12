@@ -219,6 +219,15 @@ export default function ServiceGrid({
         return;
       }
 
+      // If this service does not require UPIC, open external destination directly without UPIC concatenation
+      if (navigation.ok && !navigation.requiresUpic) {
+        saveDeptServiceContext(service);
+        setIsDetailsOpen(false);
+        setSelectedServiceId(null);
+        window.open(navigation.destination, '_blank');
+        return;
+      }
+
       const externalTab = openExternalServiceTab();
       if (!externalTab) {
         setApplyError(

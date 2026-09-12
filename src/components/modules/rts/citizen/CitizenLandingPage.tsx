@@ -311,6 +311,21 @@ export function CitizenLandingPage({
 
     // 2. Valid URL -> External Redirect Logic (Passes UPIC if citizen is logged in)
     if (isExternalServiceUrl(rawUrl)) {
+      const initialNavigation = prepareExternalServiceNavigation(rawUrl);
+      if (!initialNavigation.ok && initialNavigation.reason === 'invalid-url') {
+        setApplyError('This service has an invalid external URL. Please contact the administrator.');
+        return;
+      }
+
+      // If this service does not require UPIC, open external destination directly without UPIC concatenation
+      if (initialNavigation.ok && !initialNavigation.requiresUpic) {
+        saveDeptServiceContext(department, service);
+        setIsDetailsOpen(false);
+        setSelectedServiceId(null);
+        window.open(initialNavigation.destination, '_blank');
+        return;
+      }
+
       if (isLoggedIn) {
         const externalTab = openExternalServiceTab();
         if (!externalTab) {
@@ -345,18 +360,6 @@ export function CitizenLandingPage({
         });
         return;
       }
-
-      const initialNavigation = prepareExternalServiceNavigation(rawUrl);
-      if (!initialNavigation.ok && initialNavigation.reason === 'invalid-url') {
-        setApplyError('This service has an invalid external URL. Please contact the administrator.');
-        return;
-      }
-
-      saveDeptServiceContext(department, service);
-      setIsDetailsOpen(false);
-      setSelectedServiceId(null);
-      window.open(initialNavigation.ok ? initialNavigation.destination : rawUrl, '_blank');
-      return;
     }
 
     // 3. null / empty -> Show dynamic fields form

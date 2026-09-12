@@ -273,24 +273,33 @@ export async function resolveExternalServiceNavigationAction(
   const sessionId = cookieStore.get("rts_session")?.value;
   const profileCookie = cookieStore.get("rts_citizen_profile")?.value;
 
-  if (!sessionId || !profileCookie) {
-    return {
-      success: false,
-      errorCode: "login-required",
-      error: "Please sign in before opening this service.",
-    };
+  let upicId: string | null = null;
+  if (sessionId && profileCookie) {
+    try {
+      const profile = JSON.parse(profileCookie) as CitizenProfileCookie;
+      upicId = profile.upicId?.trim() || null;
+    } catch {
+      return {
+        success: false,
+        errorCode: "missing-citizen-profile",
+        error: "Your citizen profile is incomplete. Please sign in again.",
+      };
+    }
   }
 
-  try {
-    const profile = JSON.parse(profileCookie) as CitizenProfileCookie;
-    return resolveExternalServiceNavigation(serviceId, profile.upicId);
-  } catch {
-    return {
-      success: false,
-      errorCode: "missing-citizen-profile",
-      error: "Your citizen profile is incomplete. Please sign in again.",
-    };
+  const result = await resolveExternalServiceNavigation(serviceId, upicId);
+  if (!result.success) {
+    if (result.errorCode === 'missing-upic' && (!sessionId || !upicId)) {
+      return {
+        success: false,
+        errorCode: "login-required",
+        error: "Please sign in before opening this service.",
+      };
+    }
+    return result;
   }
+
+  return result;
 }
 
 /** Loads all citizen dashboard data from the active server-side profile session. */

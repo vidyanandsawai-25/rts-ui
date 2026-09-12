@@ -241,9 +241,8 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
               if (cleanUpic) {
                 if (targetUrl.includes('upicNo=')) {
                   targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
-                } else {
-                  const sep = targetUrl.includes('?') ? '&' : '?';
-                  targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
+                } else if (targetUrl.includes('upicid=')) {
+                  targetUrl = targetUrl.replace(/upicid=[^&]*/, `upicid=${encodeURIComponent(cleanUpic)}`);
                 }
               }
             }
@@ -355,9 +354,8 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
             if (cleanUpic) {
               if (targetUrl.includes('upicNo=')) {
                 targetUrl = targetUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
-              } else {
-                const sep = targetUrl.includes('?') ? '&' : '?';
-                targetUrl = `${targetUrl}${sep}upicNo=${encodeURIComponent(cleanUpic)}`;
+              } else if (targetUrl.includes('upicid=')) {
+                targetUrl = targetUrl.replace(/upicid=[^&]*/, `upicid=${encodeURIComponent(cleanUpic)}`);
               }
             }
           }

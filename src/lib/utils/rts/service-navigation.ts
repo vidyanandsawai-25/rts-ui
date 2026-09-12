@@ -20,71 +20,28 @@ export function isServiceUrlStruck(serviceUrl: string | null | undefined): boole
 }
 
 /**
- * Checks whether a service/department dynamically requires citizen login prior to applying.
- * Evaluates the department metadata (Property Tax, Water Supply, Trade License)
- * and whether the service URL requires citizen/property authentication (e.g. upicNo=).
+ * Checks whether a service dynamically requires citizen login prior to applying.
+ * Only requires login if the service URL explicitly requires UPIC or citizen/property identification.
+ * Services in Property Tax, Water Supply, or Trade License that have plain URLs (e.g. new registration / self-assessment)
+ * do NOT require login or UPIC concatenation.
  */
 export function isLoginRequiredForService(
   service?: { name?: unknown; title?: unknown; serviceName?: string; serviceUrl?: string | null; __deptName?: string; __deptId?: string | number; departmentId?: number | string } | null,
-  department?: { name?: unknown; title?: unknown; departmentName?: string; id?: string | number; departmentId?: string | number } | null
+  _department?: { name?: unknown; title?: unknown; departmentName?: string; id?: string | number; departmentId?: string | number } | null
 ): boolean {
-  if (!service && !department) return false;
+  if (!service) return false;
 
-  // 1. Dynamic Check: If service URL requires UPIC or citizen identification parameter
   const rawUrl = service?.serviceUrl?.trim() ?? "";
-  if (
-    rawUrl &&
-    (rawUrl.includes("upicNo=") ||
-      rawUrl.includes("ConsumerNo=") ||
-      rawUrl.includes("LicenceNo=") ||
-      /([?&][^?&=]+)=$/.test(rawUrl))
-  ) {
-    return true;
-  }
+  if (!rawUrl || isServiceUrlStruck(rawUrl)) return false;
 
-  // 2. Dynamic Department metadata check (English, Marathi, Hindi)
-  const deptTexts: string[] = [];
-  const extractText = (val: unknown) => {
-    if (!val) return;
-    if (typeof val === "string") {
-      deptTexts.push(val.toLowerCase());
-    } else if (typeof val === "object") {
-      for (const v of Object.values(val as Record<string, unknown>)) {
-        if (typeof v === "string") deptTexts.push(v.toLowerCase());
-      }
-    }
-  };
-
-  if (department) {
-    extractText(department.name);
-    extractText(department.title);
-    extractText(department.departmentName);
-  }
-  if (service?.__deptName) {
-    extractText(service.__deptName);
-  }
-
-  const combinedDept = deptTexts.join(" ");
-
-  const isPropertyTaxDept =
-    combinedDept.includes("property") ||
-    combinedDept.includes("ptis") ||
-    combinedDept.includes("मालमत्ता") ||
-    combinedDept.includes("घरपट्टी") ||
-    combinedDept.includes("संपत्ति");
-
-  const isWaterDept =
-    combinedDept.includes("water") ||
-    combinedDept.includes("पाणी") ||
-    combinedDept.includes("जल");
-
-  const isTradeDept =
-    combinedDept.includes("trade") ||
-    combinedDept.includes("व्यवसाय") ||
-    combinedDept.includes("ट्रेड") ||
-    combinedDept.includes("व्यापार");
-
-  return isPropertyTaxDept || isWaterDept || isTradeDept;
+  // Only require login if the service URL explicitly requires UPIC or consumer/license identification
+  return (
+    rawUrl.includes("upicNo=") ||
+    rawUrl.includes("upicid=") ||
+    rawUrl.includes("ConsumerNo=") ||
+    rawUrl.includes("LicenceNo=") ||
+    /([?&][^?&=]+)=$/.test(rawUrl)
+  );
 }
 
 /**
@@ -117,19 +74,35 @@ export function prepareExternalServiceNavigation(
     return { ok: false, reason: "invalid-url", requiresUpic: false };
   }
 
-  const requiresUpic = externalUrl.includes("upicNo=") || /([?&][^?&=]+)=$/.test(externalUrl);
+  const requiresUpic =
+    externalUrl.includes("upicNo=") ||
+    externalUrl.includes("upicid=") ||
+    externalUrl.includes("ConsumerNo=") ||
+    externalUrl.includes("LicenceNo=") ||
+    /([?&][^?&=]+)=$/.test(externalUrl);
+
+  // If the service URL does not have UPIC placeholder, navigate directly without appending UPIC
   if (!requiresUpic) {
     return { ok: true, destination: externalUrl, requiresUpic: false };
   }
 
   const cleanUpic = upicId?.trim();
   if (!cleanUpic) {
-    return { ok: true, destination: externalUrl, requiresUpic: false };
+    return { ok: false, reason: "missing-upic", requiresUpic: true };
   }
 
-  const destination = externalUrl.includes("upicNo=")
-    ? externalUrl.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`)
-    : externalUrl.replace(/([?&][^?&=]+)=$/, `$1=${encodeURIComponent(cleanUpic)}`);
+  let destination = externalUrl;
+  if (destination.includes("upicNo=")) {
+    destination = destination.replace(/upicNo=[^&]*/, `upicNo=${encodeURIComponent(cleanUpic)}`);
+  } else if (destination.includes("upicid=")) {
+    destination = destination.replace(/upicid=[^&]*/, `upicid=${encodeURIComponent(cleanUpic)}`);
+  } else if (destination.includes("ConsumerNo=")) {
+    destination = destination.replace(/ConsumerNo=[^&]*/, `ConsumerNo=${encodeURIComponent(cleanUpic)}`);
+  } else if (destination.includes("LicenceNo=")) {
+    destination = destination.replace(/LicenceNo=[^&]*/, `LicenceNo=${encodeURIComponent(cleanUpic)}`);
+  } else {
+    destination = destination.replace(/([?&][^?&=]+)=$/, `$1=${encodeURIComponent(cleanUpic)}`);
+  }
 
   return { ok: true, destination, requiresUpic: true };
 }
