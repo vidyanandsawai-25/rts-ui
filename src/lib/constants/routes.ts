@@ -13,6 +13,7 @@ export const ROUTES = {
   PROPERTY_TAX: {
     SEARCH_PROPERTY: '/property-tax/search-property',
     PTIS: '/property-tax/ptis',
+    APARTMENT: '/property-tax/ptis/apartment',
     REPORTS: '/property-tax/reports',
   },
   PROFILE: '/profile',

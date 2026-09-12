@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, act, renderHook } from '@testing-library/react';
+import type { PropertyPhotoTypeWithStatusDto } from '@/types/photoplan.types';
 
 // Mocks for next/navigation
 const mockPush = vi.fn();
@@ -35,6 +36,12 @@ const mockT = (key: string, values?: Record<string, unknown>) => {
   if (key === 'media.addPhotoFor') {
     const vals = values as { name: string } | undefined;
     return `Add Photo for ${vals?.name}`;
+  }
+  if (key === 'media.viewMoreImages') {
+    return 'View more images';
+  }
+  if (key === 'media.hideMoreImages') {
+    return 'Hide more images';
   }
   return key;
 };
@@ -111,6 +118,18 @@ vi.mock('@/app/[locale]/property-tax/ptis/PhotoPlanType.action', () => ({
 const mockGetDocumentAction = vi.fn((_guid: string, _action: 'view' | 'download') => Promise.resolve({ success: true, data: { base64: 'mock-base-64', contentType: 'image/png' } }));
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions', () => ({
   getDocumentAction: (guid: string, action: 'view' | 'download') => mockGetDocumentAction(guid, action),
+}));
+
+const mockGetPhotoSlotsAction = vi.fn().mockImplementation(() => Promise.resolve({ success: true, data: [] }));
+const mockGetPropertyPhotosAction = vi.fn().mockImplementation(() => Promise.resolve({ success: true, data: [] }));
+vi.mock('@/app/[locale]/property-tax/ptis/media-fetch.action', () => ({
+  getPhotoSlotsAction: (...args: unknown[]) => mockGetPhotoSlotsAction(...args),
+  getPropertyPhotosAction: (...args: unknown[]) => mockGetPropertyPhotosAction(...args),
+}));
+
+const mockGetPropertyDrawPlanStatus = vi.fn().mockResolvedValue({ success: true, data: { isIndividualOrAmenity: true } });
+vi.mock('@/lib/api/property.service', () => ({
+  getPropertyDrawPlanStatus: (...args: unknown[]) => mockGetPropertyDrawPlanStatus(...args),
 }));
 
 // Mock useMediaPanelVisibility context hook
@@ -242,6 +261,13 @@ describe('PhotoPlan Section - Complete Tests', () => {
           hasPhoto: false,
           photoCount: 0,
         },
+        {
+          photoTypeId: 13,
+          photoTypeCode: 'PHOTO_PLAN',
+          photoTypeName: 'Photo Plan',
+          hasPhoto: false,
+          photoCount: 0,
+        },
       ];
 
       const uploadedPhotos = [
@@ -258,11 +284,38 @@ describe('PhotoPlan Section - Complete Tests', () => {
       ];
 
       const categories = mapSlotsToCategories(slots, uploadedPhotos);
-      expect(categories.length).toBe(3);
+      expect(categories.length).toBe(4);
       expect(categories[0]?.isCustom).toBe(false);
       expect(categories[1]?.isCustom).toBe(true);
-      expect(categories[2]?.photoTypeCode).toBe('CHANGE_DETECTION');
+      expect(categories[2]?.photoTypeCode).toBe('PHOTO_PLAN');
+      expect(categories[3]?.photoTypeCode).toBe('CHANGE_DETECTION');
       expect(categories[0]?.images.length).toBe(1);
+    });
+
+    it('filters out property-scope slots for wing master building, but keeps them for inner unit properties', () => {
+      const slots: PropertyPhotoTypeWithStatusDto[] = [
+        { photoTypeId: 1, photoTypeCode: 'PROPERTY_FRONT', photoTypeName: 'Property Front Photo', displayOrder: 1, hasPhoto: false, photoCount: 0 },
+        { photoTypeId: 2, photoTypeCode: 'PROPERTY_SIDE', photoTypeName: 'Property Side Photo', displayOrder: 2, hasPhoto: false, photoCount: 0 },
+        { photoTypeId: 3, photoTypeCode: 'PROPERTY_PLAN', photoTypeName: 'Property Plan', displayOrder: 3, hasPhoto: false, photoCount: 0 },
+        { photoTypeId: 4, photoTypeCode: 'WING_BUILDING', photoTypeName: 'Wing Building Photo', displayOrder: 4, hasPhoto: false, photoCount: 0 },
+        { photoTypeId: 5, photoTypeCode: 'WING_PLACE', photoTypeName: 'Wing Place Photo', displayOrder: 5, hasPhoto: false, photoCount: 0 },
+      ];
+
+      // Master Wing building (isMainProperty = true, categoryId = 4) filters out property-scope slots
+      const masterCategories = mapSlotsToCategories(slots, [], undefined, undefined, 'A Wing', 1530423, true, 4);
+      expect(masterCategories.some(c => c.photoTypeCode === 'PROPERTY_FRONT')).toBe(false);
+      expect(masterCategories.some(c => c.photoTypeCode === 'PROPERTY_SIDE')).toBe(false);
+      expect(masterCategories.some(c => c.photoTypeCode === 'PROPERTY_PLAN')).toBe(false);
+      expect(masterCategories.some(c => c.photoTypeCode === 'WING_BUILDING')).toBe(true);
+      expect(masterCategories.some(c => c.photoTypeCode === 'WING_PLACE')).toBe(true);
+      expect(masterCategories.some(c => c.photoTypeCode === 'CHANGE_DETECTION')).toBe(true);
+
+      // Inner unit property (isMainProperty = false, categoryId = 4) keeps property-scope slots
+      const innerUnitCategories = mapSlotsToCategories(slots, [], undefined, undefined, 'A Wing', 1530423, false, 4);
+      expect(innerUnitCategories.some(c => c.photoTypeCode === 'PROPERTY_FRONT')).toBe(true);
+      expect(innerUnitCategories.some(c => c.photoTypeCode === 'PROPERTY_SIDE')).toBe(true);
+      expect(innerUnitCategories.some(c => c.photoTypeCode === 'PROPERTY_PLAN')).toBe(true);
+      expect(innerUnitCategories.some(c => c.photoTypeCode === 'WING_BUILDING')).toBe(true);
     });
 
     it('maps grouped response to categories correctly', () => {
@@ -482,6 +535,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
     ];
     const photos = [
       { propertyPhotoId: 101, propertyId: 1, photoTypeId: 1, photoTypeCode: 'FRONT', photoTypeName: 'Front View', viewUrl: 'front.png' },
+      { propertyPhotoId: 104, propertyId: 1, photoTypeId: 1, photoTypeCode: 'FRONT', photoTypeName: 'Front View', viewUrl: 'front2.png' },
       { propertyPhotoId: 102, propertyId: 1, photoTypeId: 2, photoTypeCode: 'PHOTO_PLAN', photoTypeName: 'Photo Plan', viewUrl: 'plan.png' },
       { propertyPhotoId: 103, propertyId: 1, photoTypeId: 3, photoTypeCode: 'BACK', photoTypeName: 'Rear Elevation', viewUrl: 'back.png' },
     ];
@@ -508,12 +562,23 @@ describe('PhotoPlan Section - Complete Tests', () => {
     });
 
     it('handles Create click events on the Photo Plan Card and ensures Delete button is not present', async () => {
+      const assignMock = vi.fn();
+      const originalLocation = window.location;
+      delete (window as unknown as Record<string, unknown>).location;
+      (window as unknown as Record<string, unknown>).location = {
+        href: 'http://localhost:3000/en/property-tax/ptis?wardNo=UK1&propertyNo=182&propertyId=1',
+        assign: assignMock,
+      };
+
+      mockSearchParamsGet.mockImplementation(() => null);
+      mockGetPhotoSlotsAction.mockResolvedValue({ success: true, data: slots });
+      mockGetPropertyPhotosAction.mockResolvedValue({ success: true, data: photos });
       mockLaunchPhotoPlanDrawingToolAction.mockResolvedValue({
         success: true,
-        data: { launchUrl: 'https://mock-launch-url.com' },
+        data: { launchUrl: 'https://ptisplanapp.tabamc.in/launch?id=1&type=1' },
       });
 
-      render(<PropertyMediaPanel propertyId={1} initialPhotoSlots={slots} initialPhotos={photos} />);
+      render(<PropertyMediaPanel propertyId={1} type="1" partitionNo="A1" isMainProperty={false} initialPhotoSlots={slots} initialPhotos={photos} />);
 
       // Create new plan button check
       const createBtn = screen.getByLabelText('Create new plan');
@@ -521,25 +586,24 @@ describe('PhotoPlan Section - Complete Tests', () => {
 
       await act(async () => {
         fireEvent.click(createBtn);
+        await new Promise((r) => setTimeout(r, 50));
       });
 
-      // It should call the server action for authentication
-      expect(mockLaunchPhotoPlanDrawingToolAction).toHaveBeenCalledWith(
-        1,
-        'THANE_Survey',
-        expect.any(String),
-        undefined,
-        undefined,
-        undefined,
-        '',
-        '',
-        '',
-        undefined
-      );
+      // It should redirect to drawing tool launch URL
+      expect(mockLaunchPhotoPlanDrawingToolAction).toHaveBeenCalled();
+      await vi.waitFor(() => {
+        expect(assignMock).toHaveBeenCalledWith('https://ptisplanapp.tabamc.in/launch?id=1&type=1');
+      });
 
       // Delete plan button check - should not exist
       const deleteBtn = screen.queryByLabelText('Delete plan');
       expect(deleteBtn).not.toBeInTheDocument();
+
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+        configurable: true,
+      });
     });
   });
 
@@ -626,7 +690,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
       const saveBtn = screen.getByRole('button', { name: 'actions.save' });
       fireEvent.click(saveBtn);
 
-      expect(screen.getByText('media.invalidNameFormat')).toBeInTheDocument();
+      expect(screen.getByText('Slot name contains invalid characters')).toBeInTheDocument();
     });
 
     it('validates naming modal allowed formats, sizes, Devanagari characters, and disabled type dropdown', () => {

@@ -189,7 +189,11 @@ export async function mapPtisFetchResults({
   let shouldRedirect = false;
   let redirectUrl = '';
 
-  const hasMissingParams = Boolean(resolvedPropertyId) && (!searchParams?.propertyNo || !searchParams?.wardNo);
+  const matchedProp = rawPropertyData.find(p => p.propertyId === resolvedPropertyId);
+  const finalSocietyDetailId = matchedProp?.societyDetailId || societyDetails?.societyDetailId || rawPropObj?.societyDetailId || rawDataObj?.societyDetailId || rawPropObj?.societyId || rawDataObj?.societyId;
+  const finalWingDetailId = matchedProp?.wingDetailId || rawPropObj?.wingDetailId || rawDataObj?.wingDetailId || rawPropObj?.wingId || rawDataObj?.wingId;
+
+  const hasMissingParams = Boolean(resolvedPropertyId) && (!searchParams?.propertyNo || !searchParams?.wardNo || (!!finalSocietyDetailId && !searchParams?.societyDetailId && !searchParams?.societyId) || (!!finalWingDetailId && !searchParams?.wingDetailId && !searchParams?.wingId));
   const isIdMismatch = Boolean(resolvedPropertyId) && (!propertyIdParam || propertyIdParam !== resolvedPropertyId);
 
   if (resolvedPropertyId && (isIdMismatch || hasMissingParams)) {
@@ -202,7 +206,11 @@ export async function mapPtisFetchResults({
     const newParams = new URLSearchParams();
     if (searchParams) {
       Object.entries(searchParams).forEach(([k, v]) => {
-        if (typeof v === 'string') newParams.set(k, v);
+        if (typeof v === 'string') {
+          newParams.set(k, v);
+        } else if (Array.isArray(v) && v.length > 0 && typeof v[0] === 'string') {
+          newParams.set(k, v[0]);
+        }
       });
     }
     newParams.set('propertyId', resolvedPropertyId.toString());
@@ -218,6 +226,16 @@ export async function mapPtisFetchResults({
     }
     if (finalWardId && !searchParams?.wardId) {
       newParams.set('wardId', finalWardId.toString());
+    }
+
+    const finalSocietyDetailId = matchedProp?.societyDetailId || societyDetails?.societyDetailId || rawPropObj?.societyDetailId || rawDataObj?.societyDetailId || rawPropObj?.societyId || rawDataObj?.societyId;
+    const finalWingDetailId = matchedProp?.wingDetailId || rawPropObj?.wingDetailId || rawDataObj?.wingDetailId || rawPropObj?.wingId || rawDataObj?.wingId;
+
+    if (finalSocietyDetailId && !newParams.has('societyDetailId') && !newParams.has('societyId')) {
+      newParams.set('societyDetailId', String(finalSocietyDetailId));
+    }
+    if (finalWingDetailId && !newParams.has('wingDetailId') && !newParams.has('wingId')) {
+      newParams.set('wingDetailId', String(finalWingDetailId));
     }
 
     shouldRedirect = true;

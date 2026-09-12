@@ -46,7 +46,7 @@ export const validateDiscountForm = (
             } else {
                 if (/\s/.test(strVal)) {
                     missingFields.push(t("common.validation.numberNoSpaces") || "Spaces are not allowed in numbers.");
-                } else if (!/^\d+$/.test(strVal)) {
+                } else if (!/^-?\d+$/.test(strVal)) {
                     missingFields.push(t("discount.socialValidation.invalidInteger") || "Value must be a valid integer.");
                 } else {
                     const val = Number(strVal);
@@ -90,7 +90,7 @@ export const validateDiscountForm = (
 
                 if (/\s/.test(strVal)) {
                     missingFields.push(t("common.validation.numberNoSpaces") || "Spaces are not allowed in numbers.");
-                } else if (!/^\d+(\.\d+)?$/.test(strVal)) {
+                } else if (!/^-?\d+(\.\d+)?$/.test(strVal)) {
                     missingFields.push(t("discount.socialValidation.invalidDecimal") || "Value must be a valid decimal number.");
                 } else if (hasMoreThanTwoDecimals) {
                     missingFields.push(t("discount.socialValidation.maxTwoDecimals") || "Maximum 2 decimal places allowed.");

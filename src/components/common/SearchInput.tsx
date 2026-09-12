@@ -36,6 +36,7 @@ export function SearchInput({
         type="text"
         value={value}
         placeholder={placeholder}
+        autoComplete="off"
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
@@ -45,7 +46,7 @@ export function SearchInput({
         }}
         tabIndex={tabIndex}
         className="
-          w-full rounded-lg border border-gray-300 text-gray-800
+          w-full rounded-lg border border-gray-300 text-gray-800 placeholder:text-gray-400
           bg-white py-2 pl-10 pr-9 text-sm
           focus:border-blue-500 focus:ring-2 focus:ring-blue-200
           outline-none transition

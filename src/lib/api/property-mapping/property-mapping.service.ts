@@ -6,6 +6,10 @@ import {
   MappedPropertyApiResponse,
   SearchOldPropertiesApiResponse,
   SearchOldPropertiesParams,
+  MappedNewPropertiesApiResponse,
+  MappedNewPropertiesParams,
+  MappedOldPropertiesApiResponse,
+  MappedOldPropertiesParams,
 } from "@/types/property-mapping";
 
 export interface SavePropertyMappingPayload {
@@ -266,5 +270,87 @@ export async function unmergeMultipleProperties(payload: PropertyUnmergeMultiple
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Unmerge multiple properties failed";
     return { success: false, message: msg };
+  }
+}
+
+/**
+ * Service API call to fetch mapped new properties for a given OldPropertyId.
+ * API: GET /api/PropertyMapMaster/mapped-new-properties?...
+ */
+export async function getMappedNewProperties(
+  params: MappedNewPropertiesParams
+): Promise<MappedNewPropertiesApiResponse | null> {
+  try {
+    const queryParts: string[] = [];
+    if (params.oldPropertyId !== undefined && params.oldPropertyId !== null) {
+      queryParts.push(`OldPropertyId=${encodeURIComponent(params.oldPropertyId.toString())}`);
+    }
+    if (params.pageNumber !== undefined && params.pageNumber !== null) {
+      queryParts.push(`PageNumber=${params.pageNumber}`);
+    }
+    if (params.pageSize !== undefined && params.pageSize !== null) {
+      queryParts.push(`PageSize=${params.pageSize}`);
+    }
+    if (params.searchTerm) {
+      queryParts.push(`SearchTerm=${encodeURIComponent(params.searchTerm)}`);
+    }
+    if (params.sortBy) {
+      queryParts.push(`SortBy=${encodeURIComponent(params.sortBy)}`);
+    }
+    if (params.sortOrder) {
+      queryParts.push(`SortOrder=${encodeURIComponent(params.sortOrder)}`);
+    }
+    if (params.filterLogic !== undefined && params.filterLogic !== null) {
+      queryParts.push(`FilterLogic=${params.filterLogic}`);
+    }
+
+    const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
+    const endpoint = `/PropertyMapMaster/mapped-new-properties${queryString}`;
+
+    const response = await apiClient.get<MappedNewPropertiesApiResponse>(endpoint, { cache: "no-store" });
+    return response.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Service API call to fetch mapped old properties for a given PropertyId.
+ * API: GET /api/PropertyMapMaster/mapped-old-properties?...
+ */
+export async function getMappedOldProperties(
+  params: MappedOldPropertiesParams
+): Promise<MappedOldPropertiesApiResponse | null> {
+  try {
+    const queryParts: string[] = [];
+    if (params.propertyId !== undefined && params.propertyId !== null) {
+      queryParts.push(`PropertyId=${encodeURIComponent(params.propertyId.toString())}`);
+    }
+    if (params.pageNumber !== undefined && params.pageNumber !== null) {
+      queryParts.push(`PageNumber=${params.pageNumber}`);
+    }
+    if (params.pageSize !== undefined && params.pageSize !== null) {
+      queryParts.push(`PageSize=${params.pageSize}`);
+    }
+    if (params.searchTerm) {
+      queryParts.push(`SearchTerm=${encodeURIComponent(params.searchTerm)}`);
+    }
+    if (params.sortBy) {
+      queryParts.push(`SortBy=${encodeURIComponent(params.sortBy)}`);
+    }
+    if (params.sortOrder) {
+      queryParts.push(`SortOrder=${encodeURIComponent(params.sortOrder)}`);
+    }
+    if (params.filterLogic !== undefined && params.filterLogic !== null) {
+      queryParts.push(`FilterLogic=${params.filterLogic}`);
+    }
+
+    const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
+    const endpoint = `/PropertyMapMaster/mapped-old-properties${queryString}`;
+
+    const response = await apiClient.get<MappedOldPropertiesApiResponse>(endpoint, { cache: "no-store" });
+    return response.data ?? null;
+  } catch {
+    return null;
   }
 }

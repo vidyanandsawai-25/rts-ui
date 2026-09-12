@@ -244,15 +244,17 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
   const userInitial = displayName.charAt(0).toUpperCase();
   const ipDisplay = clientIp?.trim() || t('userMenu.ipUnavailable');
 
+  const isDarkTheme = pathname.includes('/assets') || pathname.includes('/property-tax/ptis');
+
   return (
     <header className="fixed inset-x-0 top-0 z-[100] overflow-visible">
       <div
-        className={`relative h-20 w-full overflow-visible shadow-2xl border-b border-white/10 ${
-          pathname.includes('/assets') 
-            ? 'bg-gradient-to-r from-[#000428] to-[#004e92]' 
-            : ''
+        className={`relative h-20 w-full overflow-visible shadow-2xl border-b ${
+          isDarkTheme
+            ? 'bg-[#0B132B] border-slate-800'
+            : 'border-white/10'
         }`}
-        style={pathname.includes('/assets') ? undefined : { backgroundColor: HEADER_COLORS.background }}
+        style={isDarkTheme ? undefined : { backgroundColor: HEADER_COLORS.background }}
       >
         <div
           className="pointer-events-none absolute inset-0 hidden sm:block opacity-30"
@@ -298,12 +300,12 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
               <p className="mt-1 flex flex-wrap gap-1 text-[10px] sm:text-xs md:text-sm text-gray-200">
                 <span>{t('app.departmentName')}</span>
                 <span className="hidden sm:inline-block text-yellow-400">|</span>
-                <span className="font-medium text-yellow-300">{activeMenuName || headerDetails}</span>
+                <span className="font-semibold text-yellow-300">{activeMenuName || headerDetails}</span>
               </p>
             </div>
           </div>
 
-          {/* Session Expiration Warning (Pulsing Highlight Pill) */}
+          {/* Session Expiration Warning */}
           {warningActive && secondsLeft > 0 && (
             <div
               className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 text-sm font-bold shadow-lg backdrop-blur-md self-center shrink-0 transition-all duration-300 ${
@@ -366,14 +368,22 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
                 setLangOpen(false);
                 setMenuOpen((open) => !open);
               }}
-              className="!h-auto min-h-0 max-w-[min(100vw-5.5rem,17.5rem)] rounded-xl border border-white/25 px-4 py-2.5 text-white shadow-md !justify-start ring-offset-2 ring-offset-[#4b70a6] hover:brightness-110 md:min-w-[13.5rem] md:max-w-xs [&>span]:flex [&>span]:w-full [&>span]:min-w-0 [&>span]:items-center"
-              style={{
-                background: `linear-gradient(to right, ${HEADER_COLORS.userCardFrom}f0, ${HEADER_COLORS.userCardTo}f0)`,
-              }}
+              className={`!h-auto min-h-0 max-w-[min(100vw-5.5rem,17.5rem)] rounded-xl border px-4 py-2.5 text-white shadow-md !justify-start ring-offset-2 md:min-w-[13.5rem] md:max-w-xs [&>span]:flex [&>span]:w-full [&>span]:min-w-0 [&>span]:items-center ${
+                isDarkTheme
+                  ? 'border-slate-700/80 bg-[#152243] hover:!bg-[#1c2e5a] hover:!text-white ring-offset-[#0B132B]'
+                  : 'border-white/25 hover:!bg-[#243B7C] hover:!text-white ring-offset-[#4b70a6]'
+              }`}
+              style={
+                isDarkTheme
+                  ? undefined
+                  : {
+                      background: `linear-gradient(to right, ${HEADER_COLORS.userCardFrom}f0, ${HEADER_COLORS.userCardTo}f0)`,
+                    }
+              }
             >
               <span className="flex w-full min-w-0 flex-row items-center justify-between gap-3">
                 <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5 self-center leading-tight">
-                  <span className="w-full truncate text-left text-xs font-semibold md:text-sm">
+                  <span className="w-full truncate text-left text-xs font-semibold md:text-sm text-white">
                     {displayName}
                   </span>
                 </span>

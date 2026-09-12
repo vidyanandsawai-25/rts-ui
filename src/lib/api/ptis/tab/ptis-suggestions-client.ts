@@ -5,6 +5,12 @@ interface SuggestionPayloadItem {
   propertyNo: string;
   partitionNo?: string;
   displayLabel?: string;
+  category?: number;
+  categoryLabel?: string;
+  societyDetailId?: number | null;
+  societyName?: string | null;
+  wings?: { societyDetailId?: number; wingDetailId: number; wingName: string }[] | null;
+  wingDetailId?: number | null;
 }
 
 export interface PropertySuggestionPagination {
@@ -54,6 +60,12 @@ async function fetchSuggestions(
         ownerName: '',
         address: '',
         displayProperty: item.displayLabel || item.propertyNo,
+        category: item.category,
+        categoryLabel: item.categoryLabel,
+        societyDetailId: item.societyDetailId,
+        societyName: item.societyName,
+        wings: item.wings,
+        wingDetailId: item.wingDetailId,
       }));
       return { success: true, data: suggestions, pagination: result.pagination };
     }

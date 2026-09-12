@@ -51,9 +51,15 @@ export async function resolveDocumentUrl(src: string, documentGuid?: string): Pr
         documentCache.set(decodedGuid, dataUrl);
         return dataUrl;
       }
+      if (src && !src.startsWith('data:') && (src.startsWith('http') || src.startsWith('/'))) {
+        return src;
+      }
       documentCache.delete(decodedGuid);
       return '';
     } catch (_err) {
+      if (src && !src.startsWith('data:') && (src.startsWith('http') || src.startsWith('/'))) {
+        return src;
+      }
       documentCache.delete(decodedGuid);
       return '';
     }
@@ -102,7 +108,7 @@ export function ImageWithFallback({
         setIsLoading(false);
         setHasError(true);
       }
-    }, 4000);
+    }, 15000);
 
     if (!src && !documentGuid) {
       setHasError(true);

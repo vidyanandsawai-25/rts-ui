@@ -439,5 +439,157 @@ export interface AuditTrailProps {
   historyList: AuditHistory[];
 }
 
+export interface MappedNewPropertyItem {
+  id: number;
+  pdnId?: number | null;
+  taxZoneId?: number | null;
+  zoneNo?: string | null;
+  propertyNo?: string | null;
+  wardId?: number | null;
+  wardNo?: string | null;
+  mobileNo?: string | null;
+  emailId?: string | null;
+  ocNo?: string | null;
+  ocDate?: string | null;
+  flatOrShopNo?: string | null;
+  flatOrShopName?: string | null;
+  flatOrShopNoEnglish?: string | null;
+  flatOrShopNameEnglish?: string | null;
+  ownerName?: string | null;
+  ownerNameEnglish?: string | null;
+  occupierName?: string | null;
+  occupierNameEnglish?: string | null;
+  propertyType?: number | null;
+  propertyTypeName?: string | null;
+  rentYearly?: number | null;
+  rentMonthly?: number | null;
+  renterName?: string | null;
+  renterNameEnglish?: string | null;
+  typeOfUse?: string | null;
+  type?: string | null;
+  apartmentType?: string | null;
+  partType?: string | null;
+  bhk?: string | null;
+  wing?: string | null;
+  wingDetailId?: number | null;
+  noOfRooms?: number | null;
+  floor?: string | null;
+  subFloor?: string | null;
+  subTypeOfUse?: string | null;
+  constructionYear?: string | null;
+  assessmentYear?: string | null;
+  constructionType?: string | null;
+  calculationValue?: number | null;
+  capitalValue?: number | null;
+  rateableValue?: number | null;
+  newTaxTotal?: number | null;
+  newTaxTotalCV?: number | null;
+  newTaxTotalRV?: number | null;
+  retroTaxTotal?: number | null;
+  currentDemand?: number | null;
+  carpetASqMtr?: number | null;
+  carpetASqFt?: number | null;
+  builtupASqMtr?: number | null;
+  builtupASqFt?: number | null;
+  propertyPhotoDocumentGuid?: string | null;
+  planPhotoDocumentGuid?: string | null;
+  photos?: unknown[];
+}
 
+export interface MappedNewPropertiesApiResponse {
+  items: MappedNewPropertyItem[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+
+export interface MappedNewPropertiesParams {
+  oldPropertyId?: number | null;
+  pageNumber?: number | null;
+  pageSize?: number | null;
+  searchTerm?: string | null;
+  sortBy?: string | null;
+  sortOrder?: string | null;
+  filterLogic?: number | null;
+}
+
+export interface MappedOldTaxDetailItem {
+  id: number;
+  propertyMastOldId: number;
+  financeYearId?: number | null;
+  calculationType?: string | null;
+  calculationValue?: number | null;
+  calculationAnnualValue?: number | null;
+  taxId?: number | null;
+  taxName?: string | null;
+  taxAmount?: number | null;
+}
+
+export interface MappedOldPropertyItem {
+  id: number;
+  propertyNo?: string | null;
+  oldPropertyNo?: string | null;
+  wardNo?: string | null;
+  zoneNo?: string | null;
+  mobileNo?: string | null;
+  emailId?: string | null;
+  ocNo?: string | null;
+  ocDate?: string | null;
+  oldPropertyTypeId?: number | null;
+  oldPartitionNo?: string | null;
+  oldEgovNo?: string | null;
+  oldPlotNo?: string | null;
+  oldAssessmentYear?: string | null;
+  oldAssessmentDate?: string | null;
+  oldConstructionTypeOfUseId?: string | null;
+  flatOrShopNo?: string | null;
+  flatOrShopName?: string | null;
+  ownerName?: string | null;
+  ownerNameEnglish?: string | null;
+  occupierName?: string | null;
+  occupierNameEnglish?: string | null;
+  floor?: string | null;
+  wing?: string | null;
+  noOfRooms?: number | null;
+  constructionYear?: string | null;
+  typeOfUse?: string | null;
+  constructionType?: string | null;
+  rateableValue?: number | null;
+  capitalValue?: number | null;
+  totalTax?: number | null;
+  retroTaxTotal?: number | null;
+  csn?: string | null;
+  constructionArea?: number | null;
+  carpetASqMtr?: number | null;
+  carpetASqFt?: number | null;
+  builtupASqMtr?: number | null;
+  builtupASqFt?: number | null;
+  propertyPhotoDocumentGuid?: string | null;
+  planPhotoDocumentGuid?: string | null;
+  photos?: unknown[];
+  oldTaxDetails?: MappedOldTaxDetailItem[];
+}
+
+export interface MappedOldPropertiesApiResponse {
+  items: MappedOldPropertyItem[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+
+export interface MappedOldPropertiesParams {
+  propertyId?: number | null;
+  pageNumber?: number | null;
+  pageSize?: number | null;
+  searchTerm?: string | null;
+  sortBy?: string | null;
+  sortOrder?: string | null;
+  filterLogic?: number | null;
+}
 

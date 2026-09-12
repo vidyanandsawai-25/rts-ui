@@ -20,9 +20,19 @@ import { mapSocialStateToApi } from "@/lib/utils/social-guidelines";
 import { useSocialFormState } from "./useSocialFormState";
 import { useSocialPhotoUpload } from "./useSocialPhotoUpload";
 
+import { SocialAttribute } from "@/types/social-attribute.types";
+
 export const useSocialDetailsForm = (
     initialSocialData: PropertySocialInfoResponseDto | null,
-    propertyId: string
+    propertyId: string,
+    masterAttributes?: SocialAttribute[],
+    options?: {
+        level?: 'Apartment' | 'Wing' | 'Unit';
+        societyDetailId?: string | null;
+        wingDetailId?: string | null;
+        propertyIds?: string;
+        isSociety?: boolean;
+    }
 ) => {
     const t = useTranslations("quickDataEntry");
     const { isLoading: isSaving, startLoading, stopLoading } = useLoading(false);
@@ -34,7 +44,7 @@ export const useSocialDetailsForm = (
     const {
         socialData, validationErrors, setFormState,
         hasChanges, initialFlatData, handleInputChange, handleToggleEnabled
-    } = useSocialFormState(initialSocialData);
+    } = useSocialFormState(initialSocialData, masterAttributes);
 
     const { handlePhotoUpload, handlePhotoDelete } = useSocialPhotoUpload(
         socialData, setFormState,
@@ -106,6 +116,12 @@ export const useSocialDetailsForm = (
                         const formData = new FormData();
                         formData.append("socialAttributes", JSON.stringify(socialAttributes));
                         formData.append("socialAttributeIdsToRemove", JSON.stringify(socialAttributeIdsToRemove));
+                        
+                        if (options?.level) formData.append("level", options.level);
+                        if (options?.societyDetailId) formData.append("societyDetailId", options.societyDetailId);
+                        if (options?.wingDetailId) formData.append("wingDetailId", options.wingDetailId);
+                        if (options?.propertyIds) formData.append("propertyIds", options.propertyIds);
+                        if (options?.isSociety !== undefined) formData.append("isSociety", String(options.isSociety));
 
                         // Append pending files
                         Object.values(socialData).forEach(item => {

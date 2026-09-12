@@ -12,6 +12,7 @@ import {
   fetchMappedPropertiesAction,
   fetchTabHeaderInfoAction,
 } from './ptis-detail-actions';
+import { getPhotoSlotsAction, getPropertyPhotosAction } from './media-fetch.action';
 import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
 import { getRateableValue } from './RateableValue.action';
@@ -47,9 +48,12 @@ export async function fetchPropertyDetailsConcurrently(
 
   const isRateableTab = !valuationTab || valuationTab === 'rateable';
 
-  let rateableValuePromise: Promise<Awaited<ReturnType<typeof getRateableValue>> | null> = Promise.resolve(null);
-  let capitalValuePromise: Promise<Awaited<ReturnType<typeof getCapitalValue>> | null> = Promise.resolve(null);
-  let dualMethodPromise: Promise<Awaited<ReturnType<typeof getDualMethod>> | null> = Promise.resolve(null);
+  let rateableValuePromise: Promise<Awaited<ReturnType<typeof getRateableValue>> | null> =
+    Promise.resolve(null);
+  let capitalValuePromise: Promise<Awaited<ReturnType<typeof getCapitalValue>> | null> =
+    Promise.resolve(null);
+  let dualMethodPromise: Promise<Awaited<ReturnType<typeof getDualMethod>> | null> =
+    Promise.resolve(null);
 
   if (propertyId) {
     switch (valuationTab) {
@@ -69,8 +73,12 @@ export async function fetchPropertyDetailsConcurrently(
         }
         break;
       }
+      case 'apartment': {
+        // Apartment / Redesign screen has its own dedicated top/tax section endpoints
+        break;
+      }
       default: {
-        // Default to rateable for apartment or other tabs
+        // Default to rateable for classic ptis tabs
         rateableValuePromise = getRateableValue(propertyId);
         break;
       }
@@ -103,20 +111,20 @@ export async function fetchPropertyDetailsConcurrently(
   // Chain the rule logs fetching to run only after all calculation actions resolve.
   const ruleLogsPromise = propertyId
     ? Promise.all([
-      rateableValuePromise.catch(() => null),
-      capitalValuePromise.catch(() => null),
-      dualMethodPromise.catch(() => null),
-      taxDetailsPromise.catch(() => null),
-    ])
-      .then(async () => {
-        return propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null);
-      })
-      .catch(() => null)
+        rateableValuePromise.catch(() => null),
+        capitalValuePromise.catch(() => null),
+        dualMethodPromise.catch(() => null),
+        taxDetailsPromise.catch(() => null),
+      ])
+        .then(async () => {
+          return propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null);
+        })
+        .catch(() => null)
     : Promise.resolve(null);
 
   const kycPromise = isKycTab ? fetchKycDetailsOnlyAction(propertyId) : Promise.resolve(null);
 
-  const societyPromise = isSocietyTab
+  const societyPromise = propertyId
     ? fetchSocietyDetailsOnlyAction(propertyId)
     : Promise.resolve(null);
 
@@ -149,28 +157,32 @@ export async function fetchPropertyDetailsConcurrently(
       ? fetchMappedPropertiesAction(propertyId)
       : Promise.resolve(null);
 
+  const photoSlotsPromise = propertyId ? getPhotoSlotsAction(propertyId) : Promise.resolve(null);
+
+  const photosPromise = propertyId ? getPropertyPhotosAction(propertyId) : Promise.resolve(null);
+
   return Promise.all([
     wardId && propertyNo && (isPropertyTab || isSocietyTab)
       ? getApartmentQCDataAction(
-        wardId,
-        propertyNo,
-        appartmentTab,
-        pageNumber,
-        pageSize,
-        searchTerm,
-        propertyId,
-        {
-          wing: filterWing || undefined,
-          flatOrShopNo: filterFlatOrShopNo || undefined,
-          apartmentType: filterApartmentType || undefined,
-          propertyType: filterPropertyType || undefined,
-        },
-        {
-          sortBy: sortBy || undefined,
-          sortOrder: sortOrder || undefined,
-        },
-        partitionNo
-      )
+          wardId,
+          propertyNo,
+          appartmentTab,
+          pageNumber,
+          pageSize,
+          searchTerm,
+          propertyId,
+          {
+            wing: filterWing || undefined,
+            flatOrShopNo: filterFlatOrShopNo || undefined,
+            apartmentType: filterApartmentType || undefined,
+            propertyType: filterPropertyType || undefined,
+          },
+          {
+            sortBy: sortBy || undefined,
+            sortOrder: sortOrder || undefined,
+          },
+          partitionNo
+        )
       : Promise.resolve(null),
     rateableValuePromise,
     capitalValuePromise,
@@ -181,8 +193,8 @@ export async function fetchPropertyDetailsConcurrently(
     oldFloorPromise,
     oldTaxesPromise,
     discountPromise,
-    Promise.resolve(null),
-    Promise.resolve(null),
+    photoSlotsPromise,
+    photosPromise,
     dualMethodPromise,
     taxDetailsPromise,
     ruleLogsPromise,

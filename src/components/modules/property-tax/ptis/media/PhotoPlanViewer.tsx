@@ -133,8 +133,9 @@ export function PhotoPlanViewer({
             </div>
           ) : (
             <MainImageViewer
-              key={currentImage?.src || ''}
+              key={currentImage?.documentGuid || currentImage?.src || ''}
               src={currentImage?.src || ''}
+              documentGuid={currentImage?.documentGuid}
               alt={currentImage?.title || ''}
               rotation={0}
             />

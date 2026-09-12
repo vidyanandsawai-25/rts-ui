@@ -2,52 +2,96 @@ import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media
 import type { AdditionalImage } from '@/components/modules/property-tax/ptis/media/MediaImageCards';
 
 /**
- * Maps system photo type codes to localized translation keys in ptis.json (media.*).
+ * Maps system photo type codes and fallback names to localized translation keys in ptis.json (media.*).
  * Uses the next-intl translation function 't'.
  */
-export function getLocalizedCategoryName(code: string, fallbackName: string, t: (key: string) => string): string {
-  if (!code) return fallbackName;
-  const codeUpper = code.toUpperCase();
+export function getLocalizedCategoryName(
+  code: string,
+  fallbackName: string,
+  t: (key: string) => string
+): string {
+  const codeUpper = (code || '').toUpperCase().trim();
+  const fallbackLower = (fallbackName || '').toLowerCase().trim();
+
   const mapping: Record<string, string> = {
-    'PROPERTY_PHOTO': 'media.propertyPhoto',
-    'PROPERTY': 'media.propertyPhoto',
-    'PHOTO_PLAN': 'media.photoPlan',
+    PROPERTY_PHOTO: 'media.propertyPhoto',
+    PROPERTY: 'media.propertyPhoto',
+    PROPERTY_FRONT_PHOTO: 'media.propertyFrontPhoto',
+    PROPERTY_FRONT: 'media.propertyFrontPhoto',
+    FRONT_PHOTO: 'media.propertyFrontPhoto',
+    FRONT: 'media.buildingPhoto',
+    PROPERTY_SIDE_PHOTO: 'media.propertySidePhoto',
+    PROPERTY_SIDE: 'media.propertySidePhoto',
+    SIDE_PHOTO: 'media.propertySidePhoto',
+    PROPERTY_INSIDE_PHOTO: 'media.propertyInsidePhoto',
+    PROPERTY_INSIDE: 'media.propertyInsidePhoto',
+    INSIDE_PHOTO: 'media.propertyInsidePhoto',
+    PROPERTY_BOARD_PHOTO: 'media.propertyBoardPhoto',
+    PROPERTY_BOARD: 'media.propertyBoardPhoto',
+    BOARD_PHOTO: 'media.propertyBoardPhoto',
+    AMENITY_PHOTO: 'media.amenityPhoto',
+    AMENITY: 'media.amenityPhoto',
+    SOCIETY_PHOTO: 'media.societyPhoto',
+    SOCIETY: 'media.societyPhoto',
+    WING_PHOTO: 'media.wingPhoto',
+    WING: 'media.wingPhoto',
+    PROPERTY_PLAN: 'media.photoPlan',
+    'PROPERTY PLAN': 'media.photoPlan',
+    PROPERTYPLAN: 'media.photoPlan',
+    PHOTO_PLAN: 'media.photoPlan',
     'PHOTO PLAN': 'media.photoPlan',
-    'PHOTOPLAN': 'media.photoPlan',
-    'BUILDING': 'media.buildingPhoto',
-    'BUILDING_PHOTO': 'media.buildingPhoto',
-    'FRONT': 'media.buildingPhoto',
-    'FLOOR': 'media.floorPlan',
-    'GIS': 'media.satelliteView',
-    'BACK': 'media.rearElevation',
-    'LIVING': 'media.livingRoom',
-    'KITCHEN': 'media.kitchen',
-    'BEDROOM': 'media.bedroom',
-    'BATHROOM': 'media.bathroom',
-    'BALCONY': 'media.balcony',
-    'TERRACE': 'media.terraceView',
-    'PARKING': 'media.parkingView',
-    'SIGN_BOARD': 'media.signBoardPhoto',
-    'SIGN_BOARD_PHOTO': 'media.signBoardPhoto',
-    'SIGNBOARD': 'media.signBoardPhoto',
-    'ADVERTISEMENT': 'media.advertisementBoardPhoto',
-    'ADVERTISEMENT_BOARD': 'media.advertisementBoardPhoto',
-    'ADVERTISEMENT_BOARD_PHOTO': 'media.advertisementBoardPhoto',
-    'OWNER_SIGNATURE': 'media.ownerSignaturePhoto',
-    'OWNER_SIGNATURE_PHOTO': 'media.ownerSignaturePhoto',
-    'SIGNATURE': 'media.ownerSignaturePhoto',
-    'OTHER': 'media.otherPhoto',
-    'OTHER_PHOTO': 'media.otherPhoto',
-    'CHANGE_DETECTION': 'media.changeDetection',
+    PHOTOPLAN: 'media.photoPlan',
+    BUILDING: 'media.buildingPhoto',
+    BUILDING_PHOTO: 'media.buildingPhoto',
+    FLOOR: 'media.floorPlan',
+    GIS: 'media.satelliteView',
+    BACK: 'media.rearElevation',
+    LIVING: 'media.livingRoom',
+    KITCHEN: 'media.kitchen',
+    BEDROOM: 'media.bedroom',
+    BATHROOM: 'media.bathroom',
+    BALCONY: 'media.balcony',
+    TERRACE: 'media.terraceView',
+    PARKING: 'media.parkingView',
+    SIGN_BOARD: 'media.signBoardPhoto',
+    SIGN_BOARD_PHOTO: 'media.signBoardPhoto',
+    SIGNBOARD: 'media.signBoardPhoto',
+    ADVERTISEMENT: 'media.advertisementBoardPhoto',
+    ADVERTISEMENT_BOARD: 'media.advertisementBoardPhoto',
+    ADVERTISEMENT_BOARD_PHOTO: 'media.advertisementBoardPhoto',
+    OWNER_SIGNATURE: 'media.ownerSignaturePhoto',
+    OWNER_SIGNATURE_PHOTO: 'media.ownerSignaturePhoto',
+    SIGNATURE: 'media.ownerSignaturePhoto',
+    OTHER: 'media.otherPhoto',
+    OTHER_PHOTO: 'media.otherPhoto',
+    CHANGE_DETECTION: 'media.changeDetection',
   };
 
-  const key = mapping[codeUpper];
-  // Safe translation retrieval: next-intl translation function check
+  const nameMapping: Record<string, string> = {
+    'property front photo': 'media.propertyFrontPhoto',
+    'property side photo': 'media.propertySidePhoto',
+    'property inside photo': 'media.propertyInsidePhoto',
+    'property board photo': 'media.propertyBoardPhoto',
+    'photo plan': 'media.photoPlan',
+    'property plan': 'media.photoPlan',
+    'amenity photo': 'media.amenityPhoto',
+    'society photo': 'media.societyPhoto',
+    'wing photo': 'media.wingPhoto',
+    'property photo': 'media.propertyPhoto',
+    'change detection': 'media.changeDetection',
+    'gis / satellite view': 'media.satelliteView',
+    'satellite view': 'media.satelliteView',
+    'building photo': 'media.buildingPhoto',
+  };
+
+  const key = mapping[codeUpper] || nameMapping[fallbackLower];
+
   if (key) {
     try {
-      const hasKey = typeof (t as unknown as { has?: (k: string) => boolean }).has === 'function'
-        ? !!(t as unknown as { has: (k: string) => boolean }).has(key)
-        : true;
+      const hasKey =
+        typeof (t as unknown as { has?: (k: string) => boolean }).has === 'function'
+          ? !!(t as unknown as { has: (k: string) => boolean }).has(key)
+          : true;
       if (hasKey) {
         const val = t(key);
         if (val && val !== key) {
@@ -69,41 +113,55 @@ export function getEnglishCategoryName(code: string, fallbackName: string): stri
   if (!code) return fallbackName;
   const codeUpper = code.toUpperCase();
   const mapping: Record<string, string> = {
-    'PROPERTY_PHOTO': 'Property Photo',
-    'PROPERTY': 'Property Photo',
-    'PHOTO_PLAN': 'Photo Plan',
+    PROPERTY_PHOTO: 'Property Photo',
+    PROPERTY: 'Property Photo',
+    PROPERTY_FRONT_PHOTO: 'Property Front Photo',
+    PROPERTY_SIDE_PHOTO: 'Property Side Photo',
+    PROPERTY_INSIDE_PHOTO: 'Property Inside Photo',
+    PROPERTY_BOARD_PHOTO: 'Property Board Photo',
+    AMENITY_PHOTO: 'Amenity Photo',
+    SOCIETY_PHOTO: 'Society Photo',
+    WING_PHOTO: 'Wing Photo',
+    PROPERTY_PLAN: 'Property Plan',
+    'PROPERTY PLAN': 'Property Plan',
+    PROPERTYPLAN: 'Property Plan',
+    PHOTO_PLAN: 'Photo Plan',
     'PHOTO PLAN': 'Photo Plan',
-    'PHOTOPLAN': 'Photo Plan',
-    'BUILDING': 'Building Photo',
-    'BUILDING_PHOTO': 'Building Photo',
-    'FRONT': 'Building Photo',
-    'FLOOR': 'Floor Plan',
-    'GIS': 'GIS / Satellite View',
-    'BACK': 'Rear Elevation',
-    'LIVING': 'Living Room',
-    'KITCHEN': 'Kitchen',
-    'BEDROOM': 'Bedroom',
-    'BATHROOM': 'Bathroom',
-    'BALCONY': 'Balcony',
-    'TERRACE': 'Terrace View',
-    'PARKING': 'Parking View',
-    'SIGN_BOARD': 'Sign Board Photo',
-    'SIGN_BOARD_PHOTO': 'Sign Board Photo',
-    'SIGNBOARD': 'Sign Board Photo',
-    'ADVERTISEMENT': 'Advertisement Board Photo',
-    'ADVERTISEMENT_BOARD': 'Advertisement Board Photo',
-    'ADVERTISEMENT_BOARD_PHOTO': 'Advertisement Board Photo',
-    'OWNER_SIGNATURE': 'Owner Signature Photo',
-    'OWNER_SIGNATURE_PHOTO': 'Owner Signature Photo',
-    'SIGNATURE': 'Owner Signature Photo',
-    'OTHER': 'Other Photo',
-    'OTHER_PHOTO': 'Other Photo',
-    'CHANGE_DETECTION': 'Change Detection',
+    PHOTOPLAN: 'Photo Plan',
+    BUILDING: 'Building Photo',
+    BUILDING_PHOTO: 'Building Photo',
+    FRONT: 'Building Photo',
+    FLOOR: 'Floor Plan',
+    GIS: 'GIS / Satellite View',
+    BACK: 'Rear Elevation',
+    LIVING: 'Living Room',
+    KITCHEN: 'Kitchen',
+    BEDROOM: 'Bedroom',
+    BATHROOM: 'Bathroom',
+    BALCONY: 'Balcony',
+    TERRACE: 'Terrace View',
+    PARKING: 'Parking View',
+    SIGN_BOARD: 'Sign Board Photo',
+    SIGN_BOARD_PHOTO: 'Sign Board Photo',
+    SIGNBOARD: 'Sign Board Photo',
+    ADVERTISEMENT: 'Advertisement Board Photo',
+    ADVERTISEMENT_BOARD: 'Advertisement Board Photo',
+    ADVERTISEMENT_BOARD_PHOTO: 'Advertisement Board Photo',
+    OWNER_SIGNATURE: 'Owner Signature Photo',
+    OWNER_SIGNATURE_PHOTO: 'Owner Signature Photo',
+    SIGNATURE: 'Owner Signature Photo',
+    OTHER: 'Other Photo',
+    OTHER_PHOTO: 'Other Photo',
+    CHANGE_DETECTION: 'Change Detection',
   };
   return mapping[codeUpper] || fallbackName;
 }
 
-export function patchCategory(cats: PhotoCategory[], idx: number, images: AdditionalImage[]): PhotoCategory[] {
+export function patchCategory(
+  cats: PhotoCategory[],
+  idx: number,
+  images: AdditionalImage[]
+): PhotoCategory[] {
   return cats.map((c, i) => (i === idx ? { ...c, images, photoCount: images.length } : c));
 }
 
@@ -162,5 +220,3 @@ export function areCategoriesEqual(a: PhotoCategory[], b: PhotoCategory[]): bool
     });
   });
 }
-
-

@@ -3,13 +3,19 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
 import {
   mapSlotsToCategories,
   findCategory,
 } from '@/components/modules/property-tax/ptis/media/mediaData';
-import { propertyMediaCache, areSlotsEqual, arePhotosEqual, evictOldestCacheEntry } from './usePropertyPhotosQuery';
+import {
+  propertyMediaCache,
+  areSlotsEqual,
+  arePhotosEqual,
+  evictOldestCacheEntry,
+} from './usePropertyPhotosQuery';
 import { useImageHoverPreview } from './useImageHoverPreview';
 import { type WaybackRelease, WAYBACK_STATIC_TILE_URL } from '@/lib/api/wayback.service';
 import { latLngToTile } from '@/lib/utils/coordinate-utils';
@@ -23,9 +29,12 @@ export interface UsePropertyMediaProps {
   initialWaybackReleases?: WaybackRelease[];
   onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
   onPhotoSlotsChange?: (slots: PropertyPhotoTypeWithStatusDto[]) => void;
+  wings?: unknown[];
+  isMainProperty?: boolean;
+  categoryId?: number | null;
+  propertyTypeId?: number | null;
+  entityType?: string;
 }
-
-
 
 export function usePropertyMedia({
   initialPhotoSlots = [],
@@ -36,10 +45,16 @@ export function usePropertyMedia({
   initialWaybackReleases = [],
   onPhotosChange,
   onPhotoSlotsChange,
+  wings: _wings,
+  isMainProperty = false,
+  categoryId = null,
+  propertyTypeId = null,
+  entityType,
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
   const [showMoreImages, setShowMoreImages] = useState(false);
-  const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave, resetHoverPreview } = useImageHoverPreview();
+  const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave, resetHoverPreview } =
+    useImageHoverPreview();
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
 
@@ -75,9 +90,25 @@ export function usePropertyMedia({
     }
   }, [initialPhotoSlots, resetHoverPreview]);
 
+  const searchParams = useSearchParams();
+  const selectedWingId = searchParams?.get('wingId');
+  const selectedWingDetailId = searchParams?.get('wingDetailId') ? Number(searchParams.get('wingDetailId')) : null;
+
+  const matchedWing = useMemo(() => {
+    return (_wings as { wingDetailId?: number; wingMasterId?: number; wingName?: string; wingNo?: string }[] | undefined)?.find(
+      (w) =>
+        (selectedWingDetailId && w.wingDetailId === selectedWingDetailId) ||
+        (selectedWingId && String(w.wingMasterId) === selectedWingId)
+    );
+  }, [_wings, selectedWingId, selectedWingDetailId]);
+
+  const selectedWingName = matchedWing
+    ? (matchedWing.wingName || `${matchedWing.wingNo} Wing`)
+    : (searchParams?.get('wingName') || undefined);
+
   const categories = useMemo(
-    () => mapSlotsToCategories(initialPhotoSlots, photos, fullyLoadedIds, t),
-    [initialPhotoSlots, photos, fullyLoadedIds, t]
+    () => mapSlotsToCategories(initialPhotoSlots, photos, fullyLoadedIds, t, selectedWingName, selectedWingDetailId, isMainProperty, categoryId, propertyTypeId, entityType),
+    [initialPhotoSlots, photos, fullyLoadedIds, t, selectedWingName, selectedWingDetailId, isMainProperty, categoryId, propertyTypeId, entityType]
   );
 
   const handleCategoriesChange = useCallback(
@@ -86,16 +117,20 @@ export function usePropertyMedia({
       const updated: PropertyPhotoDto[] = [];
       newCats.forEach((c) =>
         c.images.forEach((img) => {
-          if (img.propertyPhotoId && img.hasPhoto) {
+          if ((img.propertyPhotoId !== undefined || img.documentGuid || img.src) && img.hasPhoto) {
             updated.push({
-              propertyPhotoId: img.propertyPhotoId,
+              propertyPhotoId: img.propertyPhotoId || 0,
               propertyId: propertyId || 0,
-              photoTypeId: img.photoTypeId || 0,
-              photoTypeCode: img.photoTypeCode || '',
+              photoTypeId: img.photoTypeId || c.photoTypeId || 0,
+              photoTypeCode: img.photoTypeCode || c.photoTypeCode || '',
               photoTypeName: c.photoTypeName,
               displayOrder: img.displayOrder,
               remarks: img.remarks ? `${img.title} | ${img.remarks}` : img.title,
               viewUrl: img.src,
+              downloadUrl: img.downloadUrl,
+              documentGuid: img.documentGuid,
+              wingDetailId: img.wingDetailId,
+              wingName: img.wingName,
             });
           }
         })
@@ -134,14 +169,47 @@ export function usePropertyMedia({
     [propertyId, initialPhotoSlots, onPhotosChange, onPhotoSlotsChange, resetHoverPreview]
   );
 
-  const [photoPlanCategory, propertyPhotoCategory] = useMemo(
-    () => [
-      findCategory(categories, ['PHOTO_PLAN'], ['photo plan', 'plan']),
-      findCategory(categories, ['PROPERTY_PHOTO', 'PROPERTY'], ['property']) ||
-        findCategory(categories, ['FRONT', 'BUILDING_PHOTO', 'BUILDING'], ['front', 'building']),
-    ],
+  const isAmenityProperty = useMemo(() => {
+    return categories.some(c => {
+      const code = c.photoTypeCode?.toUpperCase() || '';
+      return code === 'AMENITY_PHOTO' || code === 'AMENITY';
+    });
+  }, [categories]);
+
+  const photoPlanCategory = useMemo(
+    () =>
+      findCategory(
+        categories,
+        ['PROPERTY_PLAN', 'PHOTO_PLAN'],
+        ['property plan', 'photo plan']
+      ),
     [categories]
   );
+
+  // For propertyPhotoCategory, exclude plan categories to avoid matching PROPERTY_PLAN via includes('PROPERTY')
+  const propertyPhotoCategory = useMemo(() => {
+    const planCodes = ['PROPERTY_PLAN', 'PHOTO_PLAN', 'PLAN', 'DRAW_PLAN'];
+    const amenityCodes = ['AMENITY_PHOTO', 'AMENITY'];
+    const excluded = new Set([...planCodes, ...amenityCodes]);
+
+    // Find a property photo category that is NOT a plan or amenity type
+    const match = categories.find(c => {
+      const code = c.photoTypeCode?.toUpperCase() || '';
+      if (excluded.has(code)) return false;
+      return code === 'PROPERTY_PHOTO' || code === 'PROPERTY';
+    });
+
+    if (match) return match;
+
+    // Fallback to front/building
+    return findCategory(categories, ['FRONT', 'BUILDING_PHOTO', 'BUILDING'], ['front', 'building']);
+  }, [categories]);
+
+  const amenityPhotoCategory = useMemo(
+    () => findCategory(categories, ['AMENITY_PHOTO', 'AMENITY'], ['amenity photo', 'amenity']),
+    [categories]
+  );
+  const amenityPhoto = amenityPhotoCategory?.images?.[0];
 
   const gisCategory = useMemo(
     () => findCategory(categories, ['GIS'], ['gis', 'satellite view']),
@@ -178,29 +246,47 @@ export function usePropertyMedia({
   }, [gisCategory, t, hasCoords, initialLatitude, initialLongitude, initialWaybackReleases]);
 
   const signatureCategory = useMemo(
-    () => findCategory(categories, ['SIGNATURE', 'OWNER_SIGNATURE'], ['signature', 'owner signature']),
+    () =>
+      findCategory(categories, ['SIGNATURE', 'OWNER_SIGNATURE'], ['signature', 'owner signature']),
     [categories]
   );
 
   const signaturePhoto = signatureCategory?.images?.[0];
 
-  const photoPlanPhoto = photoPlanCategory?.images && photoPlanCategory.images.length > 0
-    ? photoPlanCategory.images[photoPlanCategory.images.length - 1]
-    : undefined;
+  const photoPlanPhoto =
+    photoPlanCategory?.images && photoPlanCategory.images.length > 0
+      ? photoPlanCategory.images[photoPlanCategory.images.length - 1]
+      : undefined;
   const propertyPhoto = propertyPhotoCategory?.images[0];
 
   const remainingImages = useMemo(() => {
     const all = categories.flatMap((c) => c.images);
     return all.filter((img) => {
       const code = img.photoTypeCode?.toUpperCase() || '';
-      if (code === 'FLOOR' || code === 'GIS' || code === 'CHANGE_DETECTION' || code.includes('SIGNATURE')) return false;
+      if (
+        code === 'FLOOR' ||
+        code === 'GIS' ||
+        code === 'CHANGE_DETECTION' ||
+        code.includes('SIGNATURE')
+      )
+        return false;
       if (propertyPhoto && img.propertyPhotoId === propertyPhoto.propertyPhotoId) return false;
       if (photoPlanPhoto && img.propertyPhotoId === photoPlanPhoto.propertyPhotoId) return false;
       return true;
     });
   }, [categories, propertyPhoto, photoPlanPhoto]);
 
+  const societyPhotoCategory = useMemo(
+    () => findCategory(categories, ['SOCIETY', 'SOCIETY_BUILDING'], ['society', 'society building']),
+    [categories]
+  );
+  const societyPhoto = societyPhotoCategory?.images?.[0];
 
+  const wingPhotoCategory = useMemo(
+    () => findCategory(categories, ['WING_BUILDING', 'WING_PHOTO', 'WING'], ['wing building', 'wing photo', 'wing']),
+    [categories]
+  );
+  const wingPhoto = wingPhotoCategory?.images?.[0];
 
   return {
     showMoreImages,
@@ -214,10 +300,17 @@ export function usePropertyMedia({
     handleCategoriesChange,
     photoPlanCategory,
     propertyPhotoCategory,
+    societyPhotoCategory,
+    wingPhotoCategory,
+    amenityPhotoCategory,
     gisCategory,
     gisPhoto,
     photoPlanPhoto,
     propertyPhoto,
+    societyPhoto,
+    wingPhoto,
+    amenityPhoto,
+    isAmenityProperty,
     remainingImages,
     handleImageHover,
     handleImageLeave,

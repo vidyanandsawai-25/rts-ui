@@ -1,9 +1,14 @@
 import { apiClient } from "@/services/api.service";
 import { ApiResponse } from "@/types/common.types";
+import { handleApiResponse } from "@/lib/utils/api";
+import { getTranslations } from "next-intl/server";
 import {
     PropertySocialInfoApiResponse,
     UpsertPropertySocialInfoDto,
-    UpsertPropertySocialInfoApiResponse
+    UpsertPropertySocialInfoApiResponse,
+    CreatePropertySocialDetailDto,
+    CreateBulkPropertySocialDetailDto,
+    PropertySocialDetailsDto
 } from "@/types/property-social-details.types";
 import { DiscountDocumentUploadResponseDto } from "@/types/discount.types";
 import { uploadDocument, deleteDocument } from "./document.service";
@@ -24,6 +29,47 @@ export async function getPropertySocialInfo(propertyId: string): Promise<ApiResp
 export async function upsertPropertySocialInfo(payload: UpsertPropertySocialInfoDto): Promise<ApiResponse<UpsertPropertySocialInfoApiResponse>> {
     const response = await apiClient.put<UpsertPropertySocialInfoApiResponse>("/PropertySocialDetails/upsert", payload);
     return response;
+}
+
+/**
+ * Create a single social detail directly via POST for document upload across all levels
+ */
+export async function createPropertySocialDetail(payload: CreatePropertySocialDetailDto): Promise<ApiResponse<PropertySocialDetailsDto>> {       
+    const response = await apiClient.post<PropertySocialDetailsDto>("/PropertySocialDetails", payload);           
+    return response;
+}
+
+/**
+ * Create bulk social details via POST
+ */
+export async function createBulkPropertySocialDetail(payload: CreateBulkPropertySocialDetailDto): Promise<ApiResponse<PropertySocialDetailsDto[]>> {       
+    const response = await apiClient.post<PropertySocialDetailsDto[]>("/PropertySocialDetails/Bulk/by-property-ids", payload);     
+    return response;
+}
+
+/**
+ * Get property social details by filters
+ */
+export async function getPropertySocialDetailsByFilters(
+  socialAttributeId?: number,
+  societyDetailId?: number,
+  wingDetailId?: number
+): Promise<PropertySocialDetailsDto[] | null> {
+    const params = new URLSearchParams();
+    if (socialAttributeId) params.append('socialAttributeId', socialAttributeId.toString());
+    if (societyDetailId) params.append('societyDetailId', societyDetailId.toString());
+    if (wingDetailId) params.append('wingDetailId', wingDetailId.toString());
+    
+    const url = `/PropertySocialDetails/by-filters?${params.toString()}`;
+    const response = await apiClient.get<{ items?: PropertySocialDetailsDto[] }>(url);
+    
+    const t = await getTranslations("quickDataEntry");
+    const errorMessage = t.has("discount.socialConfirm.fetchError")
+        ? t("discount.socialConfirm.fetchError")
+        : "Failed to fetch property social details";
+    const responseData = handleApiResponse(response, errorMessage);
+    
+    return responseData.items ?? null;
 }
 
 /**

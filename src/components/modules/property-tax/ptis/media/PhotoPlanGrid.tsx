@@ -115,7 +115,7 @@ export function PhotoPlanGrid({
             const isSelected = selectedImageIndex === index;
             return (
               <Card
-                key={img.propertyPhotoId || index} onClick={() => onSelectImage(index)}
+                key={`grid-img-${img.propertyPhotoId ?? 'id'}-${index}`} onClick={() => onSelectImage(index)}
                 padding="none"
                 className={`relative group bg-white rounded-lg overflow-hidden border transition-all cursor-pointer h-40 flex flex-col ${isSelected ? 'border-blue-500 ring-2 ring-blue-100' : 'border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-md'}`}
               >
@@ -127,11 +127,13 @@ export function PhotoPlanGrid({
                   />
                   {/* Actions overlay */}
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                    <Button
-                      variant="secondary" size="xs" icon={Upload} className="!h-7 !w-7 !p-0 shadow bg-white hover:text-green-600"
-                      onClick={(e) => { e.stopPropagation(); onReplacePhoto(index); }}
-                      title={t('media.replaceImage') || 'Replace Image'} aria-label={t('media.replaceImage') || 'Replace Image'}
-                    />
+                    {!isPhotoPlanCategory && (
+                      <Button
+                        variant="secondary" size="xs" icon={Upload} className="!h-7 !w-7 !p-0 shadow bg-white hover:text-green-600"
+                        onClick={(e) => { e.stopPropagation(); onReplacePhoto(index); }}
+                        title={t('media.replaceImage') || 'Replace Image'} aria-label={t('media.replaceImage') || 'Replace Image'}
+                      />
+                    )}
                     <Button
                       variant="secondary" size="xs" icon={Trash2} className="!h-7 !w-7 !p-0 shadow bg-white hover:text-red-600"
                       onClick={(e) => handleDeleteClick(e, index, img.title)}

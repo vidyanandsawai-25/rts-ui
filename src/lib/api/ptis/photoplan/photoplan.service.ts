@@ -52,15 +52,20 @@ export const photoPlanService = {
     propertyPhotoId: number,
     _displayOrder?: number,
     remarks?: string,
-    photoTypeCode?: string
+    photoTypeCode?: string,
+    wingDetailId?: number,
+    _societyId?: number,
+    wingName?: string
   ): Promise<ApiResponse<PropertyPhotoUploadResponseDto>> {
     try {
-      const isNew = propertyPhotoId <= 0 || propertyPhotoId === 9998 || propertyPhotoId === 9999;
+      const isNew = propertyPhotoId <= 0 || propertyPhotoId === propertyId || (!!wingDetailId && propertyPhotoId === wingDetailId) || propertyPhotoId === 9998 || propertyPhotoId === 9999;
+      const isWingPhoto = Boolean(photoTypeCode?.toUpperCase().includes('WING'));
+      const isSocietyPhoto = Boolean(photoTypeCode?.toUpperCase().includes('SOCIETY'));
 
       const uploadParams: DocumentUploadParams = {
         departmentId: DEPARTMENT_ID.PTIS,
-        moduleId: MODULE_ID.PropertyPhoto,
-        bindingPurpose: remarks || "Photo",
+        moduleId: isSocietyPhoto ? MODULE_ID.SocietyPhoto : (isWingPhoto ? MODULE_ID.WingPhoto : MODULE_ID.PropertyPhoto),
+        bindingPurpose: remarks || (isWingPhoto && wingName ? `Wing Photo | ${wingName}` : (isSocietyPhoto ? "Society Photo" : "Photo")),
         documentType: photoTypeCode || String(photoTypeId),
         isPrimaryDocument: true,
         referenceTableName: REFERENCE_TABLE.PropertyPhoto
@@ -69,6 +74,12 @@ export const photoPlanService = {
       if (!isNew) {
         uploadParams.referenceTableId = propertyPhotoId;
         uploadParams.referencePropertyName = "PropertyPhotoId";
+      } else if (isWingPhoto && wingDetailId && wingDetailId > 0) {
+        uploadParams.referenceTableId = wingDetailId;
+        uploadParams.referencePropertyName = "WingDetailId";
+      } else if (isSocietyPhoto && _societyId && _societyId > 0) {
+        uploadParams.referenceTableId = _societyId;
+        uploadParams.referencePropertyName = "SocietyDetailId";
       } else {
         uploadParams.referenceTableId = propertyId;
         uploadParams.referencePropertyName = "PropertyId";
@@ -76,40 +87,63 @@ export const photoPlanService = {
 
       const uploadResponse = await uploadDocument(file, uploadParams);
 
-      if (!uploadResponse.documentGuid) {
-        throw new Error("Failed to retrieve document GUID from upload.");
-      }
+      const targetDocGuid = (uploadResponse as unknown as Record<string, unknown>)?.documentGuid || (uploadResponse as unknown as Record<string, unknown>)?.DocumentGuid;
+      const targetBindingId = (uploadResponse as unknown as Record<string, unknown>)?.documentBindingId || (uploadResponse as unknown as Record<string, unknown>)?.DocumentBindingId || (uploadResponse as unknown as Record<string, unknown>)?.bindingId;
 
-      // Fetch the updated photos for the property to retrieve the new PropertyPhotoId
-      const photosResponse = await this.getPhotosByProperty(propertyId);
-      if (!photosResponse.success || !photosResponse.data) {
-        throw new Error(photosResponse.error || "Failed to retrieve photos list to identify the new photo ID.");
-      }
+      const docGuidStr = targetDocGuid ? String(targetDocGuid) : '';
 
-      const newPhoto = photosResponse.data.find(
-        (p) => p.documentGuid === uploadResponse.documentGuid || p.documentBindingId === uploadResponse.documentBindingId
-      );
+      // Best-effort lookup of the updated photo DTO
+      let resolvedPhotoId = propertyPhotoId > 0 ? propertyPhotoId : 0;
+      let resolvedDocGuid = docGuidStr;
+      let resolvedBindingId = targetBindingId ? Number(targetBindingId) : 0;
+      let resolvedPhotoTypeId = photoTypeId;
+      let resolvedDisplayOrder: number | undefined = _displayOrder;
+      let resolvedRemarks = remarks || "";
 
-      if (!newPhoto) {
-        throw new Error("Uploaded photo not found in property photo records.");
+      try {
+        const photosResponse = await this.getPhotosByProperty(propertyId);
+        if (photosResponse.success && Array.isArray(photosResponse.data)) {
+          const photosList = photosResponse.data;
+          const newPhoto = photosList.find(
+            (p) =>
+              (p.documentGuid && docGuidStr && p.documentGuid.toLowerCase() === docGuidStr.toLowerCase()) ||
+              (p.documentBindingId && targetBindingId && Number(p.documentBindingId) === Number(targetBindingId)) ||
+              (p.photoTypeCode &&
+                photoTypeCode &&
+                p.photoTypeCode.toUpperCase() === String(photoTypeCode).toUpperCase() &&
+                (wingDetailId == null || Number(p.wingDetailId) === Number(wingDetailId)) &&
+                (_societyId == null || Number(p.societyDetailId) === Number(_societyId)))
+          );
+
+          if (newPhoto) {
+            resolvedPhotoId = newPhoto.propertyPhotoId || resolvedPhotoId;
+            resolvedDocGuid = newPhoto.documentGuid || resolvedDocGuid;
+            resolvedBindingId = newPhoto.documentBindingId || resolvedBindingId;
+            resolvedPhotoTypeId = newPhoto.photoTypeId || resolvedPhotoTypeId;
+            resolvedDisplayOrder = newPhoto.displayOrder ?? resolvedDisplayOrder;
+            resolvedRemarks = newPhoto.remarks || resolvedRemarks;
+          }
+        }
+      } catch {
+        // Non-critical lookup failure — fallback to uploadResponse values directly
       }
 
       return {
         success: true,
         data: {
-          propertyPhotoId: newPhoto.propertyPhotoId,
-          documentGuid: newPhoto.documentGuid || uploadResponse.documentGuid,
-          documentId: uploadResponse.documentId,
-          documentBindingId: newPhoto.documentBindingId || uploadResponse.documentBindingId || 0,
-          propertyId: newPhoto.propertyId,
-          photoTypeId: newPhoto.photoTypeId,
-          displayOrder: newPhoto.displayOrder,
-          remarks: newPhoto.remarks || remarks || "",
+          propertyPhotoId: resolvedPhotoId,
+          documentGuid: resolvedDocGuid,
+          documentId: Number((uploadResponse as unknown as Record<string, unknown>)?.documentId || (uploadResponse as unknown as Record<string, unknown>)?.DocumentId || 0),
+          documentBindingId: resolvedBindingId,
+          propertyId: propertyId,
+          photoTypeId: resolvedPhotoTypeId,
+          displayOrder: resolvedDisplayOrder || 1,
+          remarks: resolvedRemarks,
           fileName: file.name,
           fileSizeBytes: file.size,
-          storagePath: uploadResponse.storagePath ?? "",
-          viewUrl: `/api/documents/${newPhoto.documentGuid || uploadResponse.documentGuid}/view`,
-          downloadUrl: `/api/documents/${newPhoto.documentGuid || uploadResponse.documentGuid}/download`
+          storagePath: String((uploadResponse as unknown as Record<string, unknown>)?.storagePath || (uploadResponse as unknown as Record<string, unknown>)?.StoragePath || ""),
+          viewUrl: `/api/documents/${resolvedDocGuid}/view`,
+          downloadUrl: `/api/documents/${resolvedDocGuid}/download`
         }
       };
     } catch (error: unknown) {
@@ -129,35 +163,59 @@ export const photoPlanService = {
     propertyPhotoId: number,
     _referenceTableIdGuid?: string,
     remarks?: string,
-    photoTypeCode?: string
+    photoTypeCode?: string,
+    wingDetailId?: number,
+    _societyId?: number,
+    wingName?: string
   ): Promise<ApiResponse<PropertyPhotoUploadResponseDto>> {
     try {
       // Determine if this propertyPhotoId looks like a real PropertyPhoto row
       // or if it's actually the propertyId / a placeholder.
       const isLikelyPropertyId = propertyPhotoId === propertyId
+        || (!!wingDetailId && propertyPhotoId === wingDetailId)
         || propertyPhotoId <= 0
         || propertyPhotoId === 9998
         || propertyPhotoId === 9999;
 
+      const isWingPhoto = photoTypeCode?.toUpperCase().includes('WING') || photoTypeCode?.toUpperCase().startsWith('WING_');
+      const isSocietyPhoto = photoTypeCode?.toUpperCase().includes('SOCIETY') || photoTypeCode?.toUpperCase().startsWith('SOCIETY_');
+
       const uploadParams: DocumentUploadParams = {
         departmentId: DEPARTMENT_ID.PTIS,
-        moduleId: MODULE_ID.PropertyPhoto,
+        moduleId: isSocietyPhoto ? MODULE_ID.SocietyPhoto : (isWingPhoto ? MODULE_ID.WingPhoto : MODULE_ID.PropertyPhoto),
         referenceTableName: REFERENCE_TABLE.PropertyPhoto,
-        bindingPurpose: remarks || "Photo",
+        bindingPurpose: remarks || (isWingPhoto && wingName ? `Wing Photo | ${wingName}` : (isSocietyPhoto ? "Society Photo" : "Photo")),
         documentType: photoTypeCode || DOCUMENT_TYPE.Photo,
         isPrimaryDocument: true
       };
 
-      if (isLikelyPropertyId) {
-        // The stored propertyPhotoId is actually a propertyId or placeholder.
-        // Use PropertyId reference so the backend's OnAfterUploadAsync
-        // dynamically creates the PropertyPhoto row.
-        uploadParams.referenceTableId = propertyId;
-        uploadParams.referencePropertyName = "PropertyId";
-      } else {
-        // Looks like a real PropertyPhotoId — try it first.
+      if (isWingPhoto && wingDetailId && wingDetailId > 0) {
+        uploadParams.referenceTableId = wingDetailId;
+        uploadParams.referencePropertyName = "WingDetailId";
+      } else if (isSocietyPhoto && _societyId && _societyId > 0) {
+        uploadParams.referenceTableId = _societyId;
+        uploadParams.referencePropertyName = "SocietyDetailId";
+      } else if (propertyPhotoId && propertyPhotoId > 0 && !isLikelyPropertyId) {
         uploadParams.referenceTableId = propertyPhotoId;
         uploadParams.referencePropertyName = "PropertyPhotoId";
+      } else {
+        uploadParams.referenceTableId = propertyId;
+        uploadParams.referencePropertyName = "PropertyId";
+      }
+
+      if (isLikelyPropertyId) {
+        return this.uploadPhotoViaGlobalApi(
+          file,
+          propertyId,
+          _photoTypeId,
+          propertyPhotoId,
+          undefined,
+          remarks,
+          photoTypeCode,
+          wingDetailId,
+          _societyId,
+          wingName
+        );
       }
 
       let uploadResponse;
@@ -213,7 +271,9 @@ export const photoPlanService = {
           ) || photosResponse.data.find(
             (p) => uploadResponse.documentBindingId && p.documentBindingId === uploadResponse.documentBindingId
           ) || photosResponse.data.find(
-            (p) => p.photoTypeId === _photoTypeId
+            (p) => p.photoTypeId === _photoTypeId &&
+              (wingDetailId == null || Number(p.wingDetailId) === Number(wingDetailId)) &&
+              (_societyId == null || Number(p.societyDetailId) === Number(_societyId))
               && p.propertyPhotoId !== propertyPhotoId
               && p.documentGuid
           );
@@ -316,9 +376,32 @@ export const photoPlanService = {
     propertyNo?: string;
     partitionNo?: string | null;
     ptisBackendUri?: string;
+    type?: string | number | null;
+    isAmenity?: boolean;
+    entityType?: string | null;
+    societyDetailId?: number | null;
+    wingDetailId?: number | null;
+    photoTypeId?: number | null;
   }): Promise<{ success: boolean; launchUrl?: string; error?: string }> {
     try {
-      const { propertyId, councilName: _councilName, returnUrl, ptisUsername, ptisDisplayName, ptisUserId, wardNo, propertyNo, partitionNo, ptisBackendUri } = params;
+      const {
+        propertyId,
+        councilName,
+        returnUrl,
+        ptisUsername,
+        ptisDisplayName,
+        ptisUserId,
+        wardNo,
+        propertyNo,
+        partitionNo,
+        ptisBackendUri,
+        type,
+        isAmenity,
+        entityType,
+        societyDetailId,
+        wingDetailId,
+        photoTypeId,
+      } = params;
 
       let cookieUsername = '';
       let cookieDisplayName = '';
@@ -346,11 +429,18 @@ export const photoPlanService = {
         }
       };
 
-      const finalPtisUsername = safeDecode(ptisUsername || cookieUsername || 'tejas');
-      const finalPtisDisplayName = safeDecode(ptisDisplayName || cookieDisplayName || 'Tejas Kishor');
-      const finalPtisUserId = safeDecode(ptisUserId || cookieUserId || '42');
+      const finalPtisUsername = safeDecode(ptisUsername || cookieUsername);
+      const finalPtisDisplayName = safeDecode(ptisDisplayName || cookieDisplayName || finalPtisUsername);
+      const finalPtisUserId = safeDecode(ptisUserId || cookieUserId);
 
-      const apiCouncilName = 'THANE_Survey';
+      if (!finalPtisUsername || !finalPtisUserId) {
+        return {
+          success: false,
+          error: 'Authenticated user context is required to launch drawing tool.',
+        };
+      }
+
+      const apiCouncilName = councilName || 'THANE_Survey';
 
       // 1. Authenticate user with static credentials
       const authBody = {
@@ -393,21 +483,45 @@ export const photoPlanService = {
         ? (process.env.PHOTO_PLAN_PROD_RETURN_URL || 'https://ptisthane.scipl.info')
         : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
-      let safeReturnUrl = returnUrl;
-      if (!safeReturnUrl) {
-        safeReturnUrl = `${defaultReturnBase}/en/property-tax/ptis`;
-      } else if (safeReturnUrl.startsWith('/')) {
-        safeReturnUrl = `${defaultReturnBase}${safeReturnUrl}`;
-      }
-
       const envBackendUrl = process.env.RUNTIME_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || getAppConfig().api.baseUrl || 'https://ptisthaneapi.scipl.info.in/api';
       const resolvedPtisBackendUri = (ptisBackendUri || envBackendUrl).replace(/\/api\/?$/, '') || 'https://ptisthaneapi.scipl.info.in';
+
+      let safeReturnUrl: string;
+      if (!returnUrl) {
+        safeReturnUrl = `${resolvedPtisBackendUri}/property/${propertyId}`;
+      } else if (returnUrl.startsWith('/') && !returnUrl.startsWith('//')) {
+        safeReturnUrl = `${defaultReturnBase}${returnUrl}`;
+      } else {
+        try {
+          const parsedUrl = new URL(returnUrl);
+          const allowedOrigins = [
+            new URL(defaultReturnBase).origin,
+            new URL(resolvedPtisBackendUri).origin,
+            'https://ptisthane.scipl.info',
+          ];
+          if (allowedOrigins.includes(parsedUrl.origin)) {
+            safeReturnUrl = returnUrl;
+          } else {
+            safeReturnUrl = `${resolvedPtisBackendUri}/property/${propertyId}`;
+          }
+        } catch {
+          safeReturnUrl = `${resolvedPtisBackendUri}/property/${propertyId}`;
+        }
+      }
 
       const cleanPartition = (!partitionNo || partitionNo.trim() === '' || partitionNo.trim() === '-' || partitionNo.trim() === '0' || partitionNo.trim() === 'null')
         ? null
         : partitionNo.trim();
 
-      const launchPayload = {
+      const isAmenityProp = Boolean(isAmenity) || (type !== undefined && type !== null && Number(type) === 140);
+      const resolvedEntityType = entityType || (isAmenityProp ? 'S' : (wingDetailId ? 'W' : societyDetailId ? 'S' : 'P'));
+      const resolvedSocietyDetailId = (societyDetailId !== undefined && societyDetailId !== null && Number(societyDetailId) > 0) ? Number(societyDetailId) : null;
+      const resolvedWingDetailId = (wingDetailId !== undefined && wingDetailId !== null && Number(wingDetailId) > 0) ? Number(wingDetailId) : null;
+      const resolvedPhotoTypeId = (photoTypeId !== undefined && photoTypeId !== null && Number(photoTypeId) > 0)
+        ? Number(photoTypeId)
+        : (type !== undefined && type !== null && Number(type) > 0 ? Number(type) : 1);
+
+      const launchPayload: Record<string, unknown> = {
         councilName: apiCouncilName,
         wardNo: wardNo || '',
         propertyNo: propertyNo || '',
@@ -418,8 +532,19 @@ export const photoPlanService = {
         ptisUsername: finalPtisUsername,
         ptisDisplayName: finalPtisDisplayName,
         ptisUserId: String(finalPtisUserId),
+        entityType: resolvedEntityType,
+        societyDetailId: resolvedSocietyDetailId,
+        wingDetailId: resolvedWingDetailId,
+        photoTypeId: resolvedPhotoTypeId,
         propertyId: propertyId ? String(propertyId) : undefined,
       };
+
+      if (type !== undefined && type !== null && String(type).trim() !== '' && String(type).trim().toLowerCase() !== 'null') {
+        launchPayload.type = String(type);
+      }
+      if (isAmenity !== undefined) {
+        launchPayload.isAmenity = Boolean(isAmenity);
+      }
 
       // Send JSON object payload to the drawing tool launch API
       let launchRes = await fetch('https://apiptisplanapp.tabamc.in/api/plans/ptis/launch', {

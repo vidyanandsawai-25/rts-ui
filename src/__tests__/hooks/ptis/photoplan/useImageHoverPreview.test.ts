@@ -1,11 +1,13 @@
-import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { useImageHoverPreview } from '@/hooks/ptis/photoplan/useImageHoverPreview';
-import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
+  useLocale: () => 'en',
 }));
+
+import { renderHook, act } from '@testing-library/react';
+import { useImageHoverPreview } from '@/hooks/ptis/photoplan/useImageHoverPreview';
+import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
 
 describe('useImageHoverPreview', () => {
   it('sets and resets hover preview state', () => {

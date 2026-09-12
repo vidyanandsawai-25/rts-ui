@@ -34,6 +34,9 @@ vi.mock('next-intl', () => ({
 
 vi.mock('next/navigation', () => ({
     useRouter: vi.fn(),
+    useSearchParams: () => new URLSearchParams(),
+    usePathname: () => '/en/property-tax/ptis/QuickDataEntry/1/Society',
+    useParams: () => ({ propertyId: '1', locale: 'en' }),
 }));
 
 vi.mock('sonner', () => ({

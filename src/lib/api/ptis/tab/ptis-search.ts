@@ -7,7 +7,7 @@ import type {
   PropwiseSuggestionItem,
   PropwiseSuggestionResponse,
 } from '@/types/ptis.types';
-import { fetchWithCertSupport, getErrorFormattedMessage } from './base-api';
+import { fetchWithCertSupport, getErrorFormattedMessage, extractItems } from './base-api';
 
 export const ptisSearchService = {
   async searchProperties(filters: {
@@ -112,8 +112,8 @@ export const ptisSearchService = {
     if (partitionNo) params.append('PartitionNo', partitionNo);
     params.append('MaxResults', maxResults.toString());
 
-    const response = await fetchWithCertSupport<PropwiseSuggestionResponse>(
-      `/Property/propwisesearch/suggestions?${params.toString()}`
+    const response = await fetchWithCertSupport<PropwiseSuggestionResponse | PropwiseSuggestionItem[]>(
+      `/ApartmentQC/search/suggestions?${params.toString()}`
     );
 
     if (!response.success) {
@@ -123,9 +123,11 @@ export const ptisSearchService = {
       };
     }
 
+    const items = extractItems<PropwiseSuggestionItem>(response.data);
+
     return {
       success: true,
-      data: response.data?.items || [],
+      data: items,
     };
   },
 

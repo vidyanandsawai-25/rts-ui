@@ -42,6 +42,8 @@ export interface PropertyDetailsData {
   noOfCommercialToilets?: string;
   ownerName?: string;
   categoryId?: number;
+  wingId?: number;
+  wingDetailId?: number;
   rateSectionDescription?: string;
   latitude?: string | null;
   longitude?: string | null;
@@ -208,6 +210,12 @@ export interface PropertyListItem extends PropertyIdentifiable {
   ownerName: string;
   address: string;
   displayProperty: string;
+  category?: number;
+  categoryLabel?: string;
+  societyDetailId?: number | null;
+  societyName?: string | null;
+  wings?: { societyDetailId?: number; wingDetailId: number; wingName: string }[] | null;
+  wingDetailId?: number | null;
 }
 
 export interface Ward extends WardIdentifiable {
@@ -329,6 +337,7 @@ export interface PropertyBasicDetailsApiResponse {
   plotAreaSqMeter?: number | null;
   wingId: number;
   wingName: string;
+  wingDetailId?: number;
   ownerName?: string;
   ownerNameEnglish?: string;
   rateSectionDescription?: string;

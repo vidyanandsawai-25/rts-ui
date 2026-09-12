@@ -51,7 +51,7 @@ export const DiscountValueInput: React.FC<DiscountValueInputProps> = ({
                         onChange={(e) => {
                             const raw = e.target.value;
                             if (raw.replace(/\D/g, "").length <= digitsLimit) {
-                                onInputChange("intValue", raw);
+                                onInputChange("intValue", raw === "" ? "" : raw); // Wait, Discount expects string value.
                             }
                         }}
                         placeholder={t("discount.amountPlaceholder") || "Enter value"}

@@ -120,6 +120,35 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     />
   ) : null;
 
+  const currentCategoryId = propertyDetailsResult?.propertyDetails?.categoryId ?? undefined;
+  const currentCategoryName = tabHeaderInfo?.category ?? '';
+  const isIndividual = currentCategoryId === 2 || String(currentCategoryName).toLowerCase().includes('individual');
+  const isApartment = currentCategoryId === 1 || currentCategoryId === 0 || String(currentCategoryName).toLowerCase().includes('apartment') || (!isIndividual && Boolean(societyDetails?.societyDetailId));
+  const isMainProp = isApartment && (!partitionNo || partitionNo === '0' || partitionNo.trim() === '' || partitionNo.trim() === '-');
+  const currentPropertyTypeId =
+    (propertyDetailsResult?.propertyDetails as unknown as { propertyTypeId?: number })?.propertyTypeId ?? undefined;
+  const currentType =
+    tabHeaderInfo?.type ??
+    (propertyDetailsResult?.propertyDetails as unknown as { type?: string; Type?: string })?.type ??
+    (propertyDetailsResult?.propertyDetails as unknown as { type?: string; Type?: string })?.Type ??
+    null;
+  const currentSocietyDetailId = societyDetails?.societyDetailId ?? undefined;
+
+  const isApartmentSocietyProperty =
+    isMainProp ||
+    currentCategoryId === 0 ||
+    String(currentCategoryName).toLowerCase() === 'apartment society property';
+
+  if (resolvedPropertyId && isApartmentSocietyProperty) {
+    const redirectParams = new URLSearchParams();
+    if (resolvedSearchParams) {
+      Object.entries(resolvedSearchParams).forEach(([k, v]) => {
+        if (typeof v === 'string') redirectParams.set(k, v);
+      });
+    }
+    redirect(`/${locale}/property-tax/ptis/apartment?${redirectParams.toString()}`);
+  }
+
   return (
     <PtisNavigationProvider properties={rawPropertyData}>
       <div className="flex flex-col gap-6 pb-24">
@@ -140,6 +169,11 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           propertyHolderNameMarathi={kycDetails.propertyHolderNameMarathi || ''}
           isQCApproved={false}
           propertyId={resolvedPropertyId}
+          isMainProperty={isMainProp}
+          categoryId={currentCategoryId}
+          propertyTypeId={currentPropertyTypeId}
+          type={currentType}
+          societyDetailId={currentSocietyDetailId}
           initialPhotoSlots={initialPhotoSlots}
           initialPhotos={initialPhotos}
           initialLatitude={latitude}

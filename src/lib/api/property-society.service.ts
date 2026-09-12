@@ -12,7 +12,9 @@ import { ActionResult } from "@/types/common.types";
 
 //  get Property Society details
 export async function getPropertySocietyDetails(propertyId: number): Promise<PropertySocietyDetailsApiItem | null> {
-    const response = await apiClient.get<PropertySocietyDetailsResponse>(`/Property/${propertyId}/society-details`);
+    const response = await apiClient.get<PropertySocietyDetailsResponse>(`/Property/${propertyId}/society-details`, {
+        cache: 'no-store',
+    });
     return handleApiResponse(response, "Failed to fetch property society details").items;
 }
 

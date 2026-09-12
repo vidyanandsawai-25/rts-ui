@@ -23,7 +23,7 @@ export function usePropertySearch() {
   }, [isPending]);
 
   const updateUrl = useCallback(
-    (params: Record<string, string | null>): boolean | 'no-op' => {
+    (params: Record<string, string | null>, customPath?: string): boolean | 'no-op' => {
       try {
         const newParams = new URLSearchParams(searchParams.toString());
 
@@ -36,14 +36,16 @@ export function usePropertySearch() {
         });
 
         const query = newParams.toString();
-        const currentQuery = searchParams.toString();
+        const targetPathname = customPath || pathname;
+        const currentFull = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        const targetFull = `${targetPathname}${query ? `?${query}` : ''}`;
 
-        if (query === currentQuery) {
+        if (currentFull === targetFull) {
           return 'no-op';
         }
 
         startTransition(() => {
-          router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false });
+          router.replace(targetFull, { scroll: false });
         });
 
         return true;
@@ -61,6 +63,12 @@ export function usePropertySearch() {
       partitionNo: string;
       wardId: number | null;
       propertyId: string | null;
+      category?: number;
+      categoryLabel?: string;
+      societyDetailId?: number | string | null;
+      wingDetailId?: number | string | null;
+      societyId?: number | string | null;
+      wingId?: number | string | null;
     }): Promise<void> => {
       // Validate with Zod
       const validation = propertySearchSchema.safeParse(searchData);
@@ -74,12 +82,45 @@ export function usePropertySearch() {
       setIsSearchingProperty(true);
 
       try {
+        // Extract locale prefix from pathname (e.g. /en/... or /mr/...)
+        const segments = pathname.split('/').filter(Boolean);
+        const locale =
+          segments[0] && segments[0].length <= 5 && !segments[0].includes('property-tax')
+            ? segments[0]
+            : 'en';
+
+        let targetPath: string | undefined = undefined;
+        const isPartitionEmpty =
+          !searchData.partitionNo ||
+          searchData.partitionNo.trim() === '' ||
+          searchData.partitionNo === '-' ||
+          searchData.partitionNo === '0';
+
+        const isApartmentSociety =
+          searchData.category === 0 ||
+          searchData.categoryLabel?.toLowerCase() === 'apartment society property' ||
+          ((searchData.category === 1 || String(searchData.categoryLabel).toLowerCase().includes('apartment')) &&
+            isPartitionEmpty &&
+            searchData.categoryLabel?.toLowerCase() !== 'individual property' &&
+            searchData.category !== 2);
+
+        if (isApartmentSociety) {
+          targetPath = `/${locale}/property-tax/ptis/apartment`;
+        } else if (searchData.category !== undefined || searchData.categoryLabel !== undefined) {
+          targetPath = `/${locale}/property-tax/ptis`;
+        }
+
         const params: Record<string, string | null> = {
           wardNo: searchData.wardNo,
           propertyNo: searchData.propertyNo,
           partitionNo: searchData.partitionNo,
           wardId: searchData.wardId ? searchData.wardId.toString() : null,
           propertyId: searchData.propertyId,
+          societyDetailId: searchData.societyDetailId ? String(searchData.societyDetailId) : null,
+          wingDetailId: searchData.wingDetailId ? String(searchData.wingDetailId) : null,
+          societyId: searchData.societyId ? String(searchData.societyId) : null,
+          wingId: searchData.wingId ? String(searchData.wingId) : null,
+          wingName: null,
           valuationTab: null,
           appartmentTab: null,
           subTab: null,
@@ -92,7 +133,7 @@ export function usePropertySearch() {
           action: null,
         };
 
-        const result = updateUrl(params);
+        const result = updateUrl(params, targetPath);
 
         if (result !== true) {
           setIsSearchingProperty(false);
@@ -105,7 +146,7 @@ export function usePropertySearch() {
         setIsSearchingProperty(false);
       }
     },
-    [updateUrl, t]
+    [updateUrl, t, pathname]
   );
 
   return {

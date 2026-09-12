@@ -111,7 +111,7 @@ vi.mocked(useRouter).mockImplementation(() => ({
   push: mockRouterPush,
   replace: vi.fn(),
   prefetch: vi.fn(),
-}));
+} as unknown as ReturnType<typeof useRouter>));
 
 const mockSavePolicy = vi.spyOn(actions, "savePolicyConfiguration").mockResolvedValue({ ok: true, mode: "update" });
 

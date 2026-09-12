@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Filter, ShieldCheck, AlertCircle, EyeOff } from "lucide-react";
-import { ToggleSwitch, SearchInput, Badge } from "@/components/common";
+import { ToggleSwitch, SearchInput, Badge, Label } from "@/components/common";
 import { CertificateData } from "@/types/building-permission.types";
 import { mapTypeNameToKey } from "@/lib/utils/building-helpers";
 
@@ -98,10 +98,10 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
                     className="flex items-center justify-between px-1.5 py-1 bg-blue-50/40 rounded-lg border border-blue-50 cursor-pointer select-none"
                     onClick={() => onShowActiveChange(!showActiveFirst)}
                 >
-                    <span className="text-xs font-bold text-blue-800 flex items-center gap-1.5">
+                    <Label className="text-xs font-bold text-blue-800 flex items-center gap-1.5 cursor-pointer">
                         <Filter size={12} className="text-blue-600" />
                         {t("building.showActiveFirst") || "Show Active First"}
-                    </span>
+                    </Label>
                     <div onClick={(e) => e.stopPropagation()} className="cursor-pointer">
                         <ToggleSwitch
                             checked={showActiveFirst}
@@ -115,9 +115,9 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
             {/* Scrollable list */}
             <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-blue-100">
                 {certificates.length === 0 ? (
-                    <div className="text-center py-8 text-sm font-semibold text-gray-400">
+                    <Label className="text-center py-8 text-sm font-semibold text-gray-400 block">
                         {t("building.noCertificatesFound") || "No certificates found"}
-                    </div>
+                    </Label>
                 ) : (
                     certificates.map((cert) => {
                         const isSelected = selectedTypeId === cert.certificateTypeId;
@@ -150,7 +150,7 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
                                 )}
 
                                 <div className="flex justify-between items-start gap-2 pl-1.5">
-                                    <span
+                                    <Label
                                         className={`text-sm font-bold transition-colors line-clamp-2 flex-1 cursor-pointer select-none ${
                                             isSelected 
                                                 ? hasError ? "text-red-900" : "text-blue-900" 
@@ -158,7 +158,7 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
                                         }`}
                                     >
                                         {displayName}
-                                    </span>
+                                    </Label>
                                     <div onClick={(e) => e.stopPropagation()} className="cursor-pointer">
                                         <ToggleSwitch
                                             checked={cert.enabled}

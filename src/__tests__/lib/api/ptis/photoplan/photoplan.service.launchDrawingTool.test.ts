@@ -71,6 +71,10 @@ describe('photoPlanService.launchDrawingTool', () => {
       ptisUsername: 'tejas',
       ptisDisplayName: 'Tejas Kishor',
       ptisUserId: '42',
+      entityType: 'P',
+      societyDetailId: null,
+      wingDetailId: null,
+      photoTypeId: 1,
       propertyId: '101',
     });
   });
@@ -95,7 +99,14 @@ describe('photoPlanService.launchDrawingTool', () => {
 
     globalThis.fetch = mockFetch;
 
+    const baseParams = {
+      ptisUsername: 'testuser',
+      ptisDisplayName: 'Test User',
+      ptisUserId: '101',
+    };
+
     const result = await photoPlanService.launchDrawingTool({
+      ...baseParams,
       propertyId: 202,
       councilName: 'THANE_Survey',
       returnUrl: '/en/property-tax/ptis',
@@ -140,6 +151,8 @@ describe('photoPlanService.launchDrawingTool', () => {
     globalThis.fetch = mockFetch;
 
     const result = await photoPlanService.launchDrawingTool({
+      ptisUsername: 'testuser',
+      ptisUserId: '101',
       propertyId: 303,
       councilName: 'THANE_Survey',
       returnUrl: 'https://ptisthane.scipl.info',
@@ -162,6 +175,8 @@ describe('photoPlanService.launchDrawingTool', () => {
     globalThis.fetch = mockFetch;
 
     const result = await photoPlanService.launchDrawingTool({
+      ptisUsername: 'testuser',
+      ptisUserId: '101',
       propertyId: 404,
       councilName: 'THANE_Survey',
       returnUrl: 'https://ptisthane.scipl.info',
@@ -182,6 +197,8 @@ describe('photoPlanService.launchDrawingTool', () => {
     globalThis.fetch = mockFetch;
 
     const result = await photoPlanService.launchDrawingTool({
+      ptisUsername: 'testuser',
+      ptisUserId: '101',
       propertyId: 500,
       councilName: 'THANE_Survey',
       returnUrl: 'https://ptisthane.scipl.info',
@@ -208,6 +225,8 @@ describe('photoPlanService.launchDrawingTool', () => {
     globalThis.fetch = mockFetch;
 
     const result = await photoPlanService.launchDrawingTool({
+      ptisUsername: 'testuser',
+      ptisUserId: '101',
       propertyId: 600,
       councilName: 'THANE_Survey',
       returnUrl: 'https://ptisthane.scipl.info',
@@ -234,6 +253,8 @@ describe('photoPlanService.launchDrawingTool', () => {
     globalThis.fetch = mockFetch;
 
     const result = await photoPlanService.launchDrawingTool({
+      ptisUsername: 'testuser',
+      ptisUserId: '101',
       propertyId: 601,
       councilName: 'THANE_Survey',
       returnUrl: 'https://ptisthane.scipl.info',
@@ -259,6 +280,8 @@ describe('photoPlanService.launchDrawingTool', () => {
     globalThis.fetch = mockFetch;
 
     const result = await photoPlanService.launchDrawingTool({
+      ptisUsername: 'testuser',
+      ptisUserId: '101',
       propertyId: 700,
       councilName: 'THANE_Survey',
       returnUrl: 'https://ptisthane.scipl.info',
@@ -274,6 +297,8 @@ describe('photoPlanService.launchDrawingTool', () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network connection timed out'));
 
     const result = await photoPlanService.launchDrawingTool({
+      ptisUsername: 'testuser',
+      ptisUserId: '101',
       propertyId: 800,
       councilName: 'THANE_Survey',
       returnUrl: 'https://ptisthane.scipl.info',
@@ -299,6 +324,8 @@ describe('photoPlanService.launchDrawingTool', () => {
     globalThis.fetch = mockFetch;
 
     const result = await photoPlanService.launchDrawingTool({
+      ptisUsername: 'testuser',
+      ptisUserId: '101',
       propertyId: 900,
       councilName: '',
       returnUrl: '',
@@ -307,8 +334,8 @@ describe('photoPlanService.launchDrawingTool', () => {
     expect(result.success).toBe(true);
     const launchBody = JSON.parse(mockFetch.mock.calls[1][1].body);
     expect(launchBody.councilName).toBe('THANE_Survey');
-    expect(launchBody.ptisUsername).toBe('tejas');
-    expect(launchBody.ptisDisplayName).toBe('Tejas Kishor');
-    expect(launchBody.ptisUserId).toBe('42');
+    expect(launchBody.ptisUsername).toBe('testuser');
+    expect(launchBody.ptisDisplayName).toBe('testuser');
+    expect(launchBody.ptisUserId).toBe('101');
   });
 });

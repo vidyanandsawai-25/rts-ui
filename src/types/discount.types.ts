@@ -64,7 +64,9 @@ export interface DiscountAttributeItemDto {
 }
 
 export interface UpsertPropertyDiscountInfoDto {
-    propertyId: number;
+    propertyId: number | null;
+    societyDetailId?: number | null;
+    wingDetailId?: number | null;
     updatedBy: number;
     discountAttributes: DiscountAttributeItemDto[];
 }

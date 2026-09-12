@@ -19,6 +19,9 @@ interface PhotoPlanDrawerProps {
   wardNo?: string;
   propertyNo?: string;
   partitionNo?: string;
+  wingName?: string;
+  wingDetailId?: number | null;
+  societyDetailId?: number | null;
   initialCategoryIndex?: number;
   propertyId?: number;
   fullyLoadedIds: Set<number>;
@@ -27,6 +30,8 @@ interface PhotoPlanDrawerProps {
   initialLongitude?: number;
   initialWaybackReleases?: WaybackRelease[];
   onDrawPlan?: (e: React.MouseEvent) => void;
+  onRequestTypeModal?: () => void;
+  isMainProperty?: boolean;
 }
 
 export function PhotoPlanDrawer({
@@ -38,6 +43,9 @@ export function PhotoPlanDrawer({
   wardNo = '',
   propertyNo = '',
   partitionNo = '',
+  wingName = '',
+  wingDetailId,
+  societyDetailId,
   initialCategoryIndex = 0,
   propertyId,
   fullyLoadedIds,
@@ -46,6 +54,8 @@ export function PhotoPlanDrawer({
   initialLongitude,
   initialWaybackReleases,
   onDrawPlan,
+  onRequestTypeModal,
+  isMainProperty = false,
 }: PhotoPlanDrawerProps): React.ReactNode {
   const t = useTranslations('ptis');
 
@@ -66,6 +76,7 @@ export function PhotoPlanDrawer({
     wardNo && `${t('media.wardNo') || 'Ward'}: ${wardNo}`,
     propertyNo && `${t('media.propertyNo') || 'Prop'}: ${propertyNo}`,
     partitionNo && `${t('media.partitionNo') || 'Partition'}: ${partitionNo}`,
+    wingName && `${t('fields.wing') || 'Wing'}: ${wingName}`,
   ]
     .filter(Boolean)
     .join(' | ');
@@ -90,15 +101,20 @@ export function PhotoPlanDrawer({
         onPhotosChange={onPhotosChange}
         initialCategoryIndex={initialCategoryIndex}
         propertyId={propertyId}
+        wingDetailId={wingDetailId}
+        societyDetailId={societyDetailId}
+        wingName={wingName}
         fullyLoadedIds={fullyLoadedIds}
         onFullyLoadedIdsChange={onFullyLoadedIdsChange}
         initialLatitude={initialLatitude}
         initialLongitude={initialLongitude}
         initialWaybackReleases={initialWaybackReleases}
         onDrawPlan={onDrawPlan}
+        onRequestTypeModal={onRequestTypeModal}
         wardNo={wardNo}
         propertyNo={propertyNo}
         partitionNo={partitionNo}
+        isMainProperty={isMainProperty}
       />
     </Drawer>,
     document.body

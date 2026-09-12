@@ -88,10 +88,6 @@ export async function deleteMultiplePropertiesAmenities(
   }
 }
 
-/**
- * Bulk delete multiple main properties in a single API call.
- * API: DELETE /api/Property/Bulk  (body: array of property ID numbers)
- */
 export async function deleteBulkProperties(
   propertyIds: number[]
 ): Promise<ApiResponse<DeletePropertyResponse>> {
@@ -101,4 +97,25 @@ export async function deleteBulkProperties(
       body: JSON.stringify(propertyIds),
     }
   );
+}
+
+export interface PropertyDrawPlanStatusDto {
+  propertyId: number;
+  categoryId?: number | null;
+  categoryName?: string | null;
+  propertyTypeId?: number | null;
+  type?: string | null;
+  hasType?: boolean;
+  currentType?: string | null;
+  isIndividualOrAmenity?: boolean;
+  requiresTypeAssignment?: boolean;
+}
+
+/**
+ * Get draw plan status (categoryId, propertyTypeId, type) to decide whether to launch app or show modal
+ */
+export async function getPropertyDrawPlanStatus(
+  propertyId: number
+): Promise<ApiResponse<PropertyDrawPlanStatusDto>> {
+  return apiClient.get<PropertyDrawPlanStatusDto>(`/Property/${propertyId}/draw-plan-status`);
 }

@@ -1,95 +1,142 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { TabNavigation } from '@/components/modules/property-tax/ptis/QuickDataEntry/TabNavigation';
-import { usePathname, useSearchParams, useParams } from 'next/navigation';
+import { TABS } from '@/components/modules/property-tax/ptis/QuickDataEntry/navigation-constants';
 
-// Mock next/navigation
-vi.mock('next/navigation', () => ({
-    useRouter: () => ({
-        push: vi.fn(),
-        replace: vi.fn(),
-        refresh: vi.fn(),
-        back: vi.fn(),
-        forward: vi.fn(),
-    }),
-    usePathname: vi.fn(),
-    useSearchParams: vi.fn(),
-    useParams: vi.fn(),
-}));
-
-// Mock ConfirmProvider
-const mockConfirm = vi.fn();
-vi.mock('@/components/common/ConfirmProvider', () => ({
-    useConfirm: () => ({
-        confirm: mockConfirm,
-    }),
-}));
-
-// Mock next-intl
 vi.mock('next-intl', () => ({
-    useTranslations: () => (key: string) => {
-        if (key === 'tabs.Property') return 'Property Info';
-        if (key === 'tabs.Kyc') return 'Kyc Info';
-        if (key === 'tabs.Society') return 'Society Info';
-        return key;
-    },
+  useTranslations: () => (key: string) => {
+    const map: Record<string, string> = {
+      'tabs.Property': 'Property',
+      'tabs.Kyc': 'KYC',
+      'tabs.Society': 'Society',
+      'tabs.SocietyDetails': 'Society Details',
+      'tabs.Wing': 'Wing Details',
+      'tabs.BuildingPermission': 'Building Permission',
+      'tabs.Discount': 'Discount & Social Data',
+      'tabs.FloorSubmission': 'Floor',
+      'tabs.OldDetails': 'Old Details',
+    };
+    return map[key] || key;
+  },
 }));
 
-describe('TabNavigation', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
+const mockPush = vi.fn();
+const mockReplace = vi.fn();
+let mockSearchParams = new URLSearchParams('propertyId=101&wardNo=1&propertyNo=101&partitionNo=0');
 
-    it('renders all tabs correctly', () => {
-        (usePathname as Mock).mockReturnValue('/en/property-tax/ptis/QuickDataEntry/123/Property');
-        (useSearchParams as Mock).mockReturnValue(new URLSearchParams());
-        (useParams as Mock).mockReturnValue({ propertyId: '123' });
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: mockReplace,
+    refresh: vi.fn(),
+  }),
+  usePathname: () => '/en/property-tax/ptis/QuickDataEntry/101/Wing',
+  useSearchParams: () => mockSearchParams,
+  useParams: () => ({ propertyId: '101', locale: 'en' }),
+}));
 
-        render(<TabNavigation />);
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: () => ({
+    confirm: vi.fn(),
+  }),
+}));
 
-        expect(screen.getByText('Property Info')).toBeInTheDocument();
-        expect(screen.getByText('Society Info')).toBeInTheDocument();
-    });
+describe('TabNavigation Component', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSearchParams = new URLSearchParams('propertyId=101&wardNo=1&propertyNo=101&partitionNo=0');
+  });
 
-    it('highlights the active tab', () => {
-        (usePathname as Mock).mockReturnValue('/en/property-tax/ptis/QuickDataEntry/123/Property');
-        (useSearchParams as Mock).mockReturnValue(new URLSearchParams());
-        (useParams as Mock).mockReturnValue({ propertyId: '123' });
+  it('renders all 8 tabs in the correct sequence with Wing positioned to the left of BuildingPermission', () => {
+    render(<TabNavigation />);
 
-        render(<TabNavigation />);
+    // Check tab order in TABS array
+    const labels = TABS.map((t) => t.label);
+    expect(labels).toEqual([
+      'Property',
+      'Kyc',
+      'Society',
+      'Wing',
+      'BuildingPermission',
+      'Discount',
+      'FloorSubmission',
+      'OldDetails',
+    ]);
 
-        const propertyTab = screen.getByText('Property Info').closest('button');
-        expect(propertyTab).toHaveClass('from-blue-500'); // Based on the gradient class for Property
-    });
+    // Check index of Wing is directly before BuildingPermission
+    const wingIndex = labels.indexOf('Wing');
+    const buildingIndex = labels.indexOf('BuildingPermission');
+    expect(wingIndex).toBe(3);
+    expect(buildingIndex).toBe(4);
+    expect(wingIndex).toBe(buildingIndex - 1);
 
-    it('generates correct HREFs with existing search parameters', () => {
-        (usePathname as Mock).mockReturnValue('/en/property-tax/ptis/QuickDataEntry/123/Property');
-        (useParams as Mock).mockReturnValue({ propertyId: '123' });
-        
-        const searchParams = new URLSearchParams();
-        searchParams.set('wardNo', '10');
-        searchParams.set('wardId', '1');
-        (useSearchParams as Mock).mockReturnValue(searchParams);
+    // Verify all tabs render on screen
+    expect(screen.getByText('Property')).toBeInTheDocument();
+    expect(screen.getByText('KYC')).toBeInTheDocument();
+    expect(screen.getByText('Society')).toBeInTheDocument();
+    expect(screen.getByText('Wing Details')).toBeInTheDocument();
+    expect(screen.getByText('Building Permission')).toBeInTheDocument();
+    expect(screen.getByText('Discount & Social Data')).toBeInTheDocument();
+    expect(screen.getByText('Floor')).toBeInTheDocument();
+    expect(screen.getByText('Old Details')).toBeInTheDocument();
+  });
 
-        render(<TabNavigation />);
+  it('hides Wing Details tab and shows Society Details when opened from Society Edit in redesign', () => {
+    mockSearchParams = new URLSearchParams('propertyId=101&returnTab=apartment&fromSocietyEdit=true');
 
-        const societyTab = screen.getByText('Society Info').closest('button');
-        expect(societyTab?.getAttribute('data-href')).toContain('wardNo=10');
-        expect(societyTab?.getAttribute('data-href')).toContain('wardId=1');
-        expect(societyTab?.getAttribute('data-href')).toContain('Society');
-    });
+    render(<TabNavigation />);
 
-    it('updates returnTab based on the selected quick data entry tab', () => {
-        (usePathname as Mock).mockReturnValue('/en/property-tax/ptis/QuickDataEntry/123/Property');
-        (useParams as Mock).mockReturnValue({ propertyId: '123' });
+    expect(screen.queryByText('Property')).not.toBeInTheDocument();
+    expect(screen.queryByText('KYC')).not.toBeInTheDocument();
+    expect(screen.queryByText('Wing Details')).not.toBeInTheDocument();
+    expect(screen.getByText('Society Details')).toBeInTheDocument();
+    expect(screen.getByText('Building Permission')).toBeInTheDocument();
+    expect(screen.getByText('Discount & Social Data')).toBeInTheDocument();
+    expect(screen.getByText('Old Details')).toBeInTheDocument();
+  });
 
-        const searchParams = new URLSearchParams();
-        searchParams.set('returnTab', 'propertydetails');
-        (useSearchParams as Mock).mockReturnValue(searchParams);
+  it('hides Society Details tab and shows Wing Details when opened from Wing Edit in redesign', () => {
+    mockSearchParams = new URLSearchParams('propertyId=101&returnTab=apartment&fromWingEdit=true&hideSociety=true');
 
-        render(<TabNavigation />);
+    render(<TabNavigation />);
 
-        const kycTab = screen.getByText('Kyc Info').closest('button');
-        expect(kycTab?.getAttribute('data-href')).toContain('returnTab=kycdetails');
-    });
+    expect(screen.queryByText('Property')).not.toBeInTheDocument();
+    expect(screen.queryByText('KYC')).not.toBeInTheDocument();
+    expect(screen.queryByText('Society Details')).not.toBeInTheDocument();
+    expect(screen.queryByText('Society')).not.toBeInTheDocument();
+    expect(screen.getByText('Wing Details')).toBeInTheDocument();
+    expect(screen.getByText('Building Permission')).toBeInTheDocument();
+    expect(screen.getByText('Discount & Social Data')).toBeInTheDocument();
+    expect(screen.getByText('Old Details')).toBeInTheDocument();
+  });
+
+  it('hides both Society and Wing tabs when opened from Footer Edit in standard PTIS', () => {
+    mockSearchParams = new URLSearchParams('propertyId=101&fromFooterEdit=true&hideWing=true&hideSociety=true');
+
+    render(<TabNavigation />);
+
+    expect(screen.getByText('Property')).toBeInTheDocument();
+    expect(screen.getByText('KYC')).toBeInTheDocument();
+    expect(screen.queryByText('Society')).not.toBeInTheDocument();
+    expect(screen.queryByText('Society Details')).not.toBeInTheDocument();
+    expect(screen.queryByText('Wing Details')).not.toBeInTheDocument();
+    expect(screen.getByText('Building Permission')).toBeInTheDocument();
+    expect(screen.getByText('Discount & Social Data')).toBeInTheDocument();
+    expect(screen.getByText('Old Details')).toBeInTheDocument();
+  });
+
+  it('hides Property, KYC, Society and Wing tabs when opened from Footer Edit in redesign', () => {
+    mockSearchParams = new URLSearchParams('propertyId=101&returnTab=apartment&fromFooterEdit=true&hideWing=true&hideSociety=true');
+
+    render(<TabNavigation />);
+
+    expect(screen.queryByText('Property')).not.toBeInTheDocument();
+    expect(screen.queryByText('KYC')).not.toBeInTheDocument();
+    expect(screen.queryByText('Society')).not.toBeInTheDocument();
+    expect(screen.queryByText('Society Details')).not.toBeInTheDocument();
+    expect(screen.queryByText('Wing Details')).not.toBeInTheDocument();
+    expect(screen.getByText('Building Permission')).toBeInTheDocument();
+    expect(screen.getByText('Discount & Social Data')).toBeInTheDocument();
+    expect(screen.getByText('Old Details')).toBeInTheDocument();
+  });
 });

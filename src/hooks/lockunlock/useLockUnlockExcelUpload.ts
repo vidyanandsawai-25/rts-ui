@@ -87,7 +87,7 @@ export function useLockUnlockExcelUpload({
 
             const dataRowCount = rows.length - 1;
             if (dataRowCount > MAX_EXCEL_ROWS) {
-              toast.error(t("selectPropertyCard.tooManyRows", { max: MAX_EXCEL_ROWS.toLocaleString() }));
+              toast.error(t("selectPropertyCard.tooManyRows", { max: MAX_EXCEL_ROWS.toLocaleString("en-IN") }));
               if (fileInputRef.current) fileInputRef.current.value = "";
               return;
             }

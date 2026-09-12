@@ -211,6 +211,12 @@ export const useBuildingForm = (
     }, [incompleteFloorDetails]);
     const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
 
+    const firstCertTypeId = useMemo(() => {
+        if (!buildingPermission || Object.keys(buildingPermission).length === 0) return null;
+        const sorted = Object.values(buildingPermission).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+        return sorted.length > 0 ? sorted[0].certificateTypeId : null;
+    }, [buildingPermission]);
+
     // Sync floors state when initialFloorCertificates prop changes
     useEffect(() => {
         if (initialFloorCertificates && initialFloorCertificates !== prevInitialFloorCertificatesRef.current) {
@@ -333,6 +339,16 @@ export const useBuildingForm = (
         dryRun?: boolean;
         onlyCertificateTypeId?: number;
         selectedFloorIds?: number[];
+        overrideData?: {
+            date?: string;
+            number?: string;
+            pendingFile?: File;
+            propertyDetailsId?: number | null;
+            propertyDetailsIds?: number[];
+            entityType?: string;
+            societyDetailId?: number | null;
+            wingDetailId?: number | null;
+        };
     }): Promise<{
         success: boolean;
         isValid: boolean;
@@ -347,12 +363,25 @@ export const useBuildingForm = (
             return { success: false, isValid: true };
         }
 
-        const activeCert = buildingPermission[targetTypeId];
-        if (!activeCert) {
+        const baseCert = buildingPermission[targetTypeId];
+        if (!baseCert) {
             toast.error("Selected certificate not found.");
             return { success: false, isValid: true };
         }
 
+        const activeCert = opts?.overrideData
+            ? {
+                ...baseCert,
+                enabled: true,
+                date: opts.overrideData.date !== undefined && opts.overrideData.date !== "" 
+                    ? opts.overrideData.date 
+                    : baseCert.date,
+                number: opts.overrideData.number !== undefined && opts.overrideData.number !== "" 
+                    ? opts.overrideData.number 
+                    : baseCert.number,
+                pendingFile: opts.overrideData.pendingFile || baseCert.pendingFile,
+            }
+            : baseCert;
 
         // Validate the active certificate (only if enabled)
         if (activeCert.enabled) {
@@ -452,15 +481,35 @@ export const useBuildingForm = (
 
                     response = await saveBuildingPermissionsAction(locale, propertyId, formData);
                 } else {
-                    // Single certificate save using saveCertificateAction (POST /api/property-certificates/save-certificate)
+                    const targetPropertyDetailsId = opts?.overrideData?.propertyDetailsId !== undefined 
+                        ? opts.overrideData.propertyDetailsId 
+                        : (activeScope === "Floor" ? activeFloorId : null);
+                    const targetEntityType = opts?.overrideData?.entityType ?? (activeScope === "Floor" ? "F" : "P");
+                    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+                    const urlSocietyDetailId = searchParams?.get('societyDetailId') || searchParams?.get('societyId');
+                    const urlWingDetailId = searchParams?.get('wingDetailId') || searchParams?.get('wingId');
+
+                    const targetSocietyDetailId = (opts?.overrideData?.societyDetailId !== undefined && opts.overrideData.societyDetailId !== null)
+                        ? opts.overrideData.societyDetailId
+                        : (urlSocietyDetailId ? Number(urlSocietyDetailId) : null);
+
+                    const targetWingDetailId = (opts?.overrideData?.wingDetailId !== undefined && opts.overrideData.wingDetailId !== null)
+                        ? opts.overrideData.wingDetailId
+                        : (urlWingDetailId ? Number(urlWingDetailId) : null);
+                    const targetPropertyDetailsIds = opts?.overrideData?.propertyDetailsIds;
+
                     const saveReq = {
                         propertyId: parseInt(propertyId),
-                        propertyDetailsId: activeScope === "Floor" ? activeFloorId : null,
-                        certificateScope: activeScope === "Floor" ? CertificateScope.Floor : CertificateScope.Property,
+                        propertyDetailsId: targetPropertyDetailsId,
+                        propertyDetailsIds: targetPropertyDetailsIds,
+                        certificateScope: targetPropertyDetailsId ? CertificateScope.Floor : CertificateScope.Property,
                         certificateTypeId: targetTypeId,
                         certificateNo: activeCert.number || null,
                         certificateIssueDate: activeCert.date ? `${activeCert.date}T00:00:00` : null,
-                        isPrimaryDocument: true
+                        isPrimaryDocument: true,
+                        entityType: targetEntityType,
+                        societyDetailId: targetSocietyDetailId,
+                        wingDetailId: targetWingDetailId,
                     };
 
                     const result = await saveCertificateAction(locale, propertyId, saveReq);
@@ -653,7 +702,7 @@ export const useBuildingForm = (
         t,
         // Floor scoped state and controls
         floors,
-        selectedTypeId,
+        selectedTypeId: selectedTypeId ?? firstCertTypeId,
         setSelectedTypeId,
         activeScope,
         activeFloorId,

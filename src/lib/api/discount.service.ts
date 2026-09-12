@@ -1,4 +1,6 @@
 import { apiClient } from "@/services/api.service";
+import { handleApiResponse } from "@/lib/utils/api";
+import { getTranslations } from "next-intl/server";
 import { ApiResponse } from "@/types/common.types";
 import { 
     PropertyDiscountInfoResponseDto, 
@@ -8,6 +10,7 @@ import {
 import { uploadDocument, deleteDocument } from "./document.service";
 import { DocumentUploadParams } from "@/types/document.types";
 import { DEPARTMENT_ID, MODULE_ID, REFERENCE_TABLE, BINDING_PURPOSE, DOCUMENT_TYPE } from "../constants/document.constants";
+import { WingOption, UnitSelectionItem } from "@/types/building-permission.types";
 
 interface BackendApiResponseWrapper<T> {
     success: boolean;
@@ -163,4 +166,43 @@ export async function deleteDiscountDoc(documentGuid: string): Promise<ApiRespon
             error: error instanceof Error ? error.message : String(error)
         };
     }
+}
+
+/**
+ * Get wings for a given property
+ */
+export async function getDiscountWings(propertyId: string): Promise<WingOption[]> {
+    const response = await apiClient.get<BackendApiResponseWrapper<WingOption[]>>(`/property-certificates/wings/${propertyId}`);
+    const t = await getTranslations("quickDataEntry");
+    const responseData = handleApiResponse(response, t("building.errors.notFound") || "Failed to fetch wings");
+    return Array.isArray(responseData.items) ? responseData.items : (Array.isArray(responseData) ? responseData as WingOption[] : []);
+}
+
+/**
+ * Get units for a given property and wing
+ */
+export async function getDiscountUnits(
+    propertyId: string,
+    wingDetailId?: number | null,
+    pageNumber: number = 1,
+    pageSize: number = 10
+): Promise<{ items: UnitSelectionItem[]; totalCount?: number }> {
+    const params = new URLSearchParams();
+    params.append("pageNumber", pageNumber.toString());
+    params.append("pageSize", pageSize.toString());
+    if (wingDetailId) {
+        params.append("wingDetailId", wingDetailId.toString());
+    }
+
+    const url = `/property-certificates/units/${propertyId}?${params.toString()}`;
+    const response = await apiClient.get<BackendApiResponseWrapper<UnitSelectionItem[]> & { totalCount?: number }>(url);
+    const t = await getTranslations("quickDataEntry");
+
+    const responseData = handleApiResponse(response, t("building.errors.notFound") || "Failed to fetch units");
+    
+    const rawResponseData = response.data as unknown as Record<string, unknown>;
+    const items = Array.isArray(responseData.items) ? responseData.items : (Array.isArray(responseData) ? responseData as UnitSelectionItem[] : []);
+    const totalCount = typeof rawResponseData?.totalCount === 'number' ? rawResponseData.totalCount : undefined;
+
+    return { items, totalCount };
 }

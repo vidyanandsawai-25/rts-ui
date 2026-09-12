@@ -9,13 +9,15 @@ import { photoPlanNamingSchema, validatePhotoFile } from '@/lib/validation/ptis/
 import { UploadInstructions } from './UploadInstructions';
 import { PhotoPlanImageEditorDrawer } from './PhotoPlanImageEditorDrawer';
 
-const FALLBACKS: Record<string, string> = {
+const _FALLBACKS: Record<string, string> = {
   'media.invalidDisplayOrder': 'Display order must be a positive integer',
   'media.photoTypeIdRequired': 'Valid Photo Type ID is required',
   'media.fileRequired': 'Photo file is required',
   'media.allowedFormats': 'Only JPEG, JPG, and PNG images are allowed',
   'media.maxFileSize': 'File size should not exceed 5 MB',
   'media.invalidImage': 'Please upload a valid image file',
+  'media.nameTooLong': 'Slot name must not exceed 250 characters',
+  'media.invalidNameFormat': 'Slot name contains invalid characters',
 };
 
 interface PhotoPlanNamingModalProps {
@@ -80,7 +82,7 @@ export function PhotoPlanNamingModal({
 
   const getMsg = (key: string) => {
     const msg = t(key as Parameters<typeof t>[0]);
-    return msg === key ? (FALLBACKS[key] || key) : msg;
+    return msg === key ? (_FALLBACKS[key] || key) : msg;
   };
 
   const updateSelectedFileWithValidation = (file: File | null) => {
@@ -216,6 +218,7 @@ export function PhotoPlanNamingModal({
             label={t('media.photoPlanName') || 'Photo Plan Name'}
             placeholder={t('media.photoPlanNamePlaceholder') || 'e.g. Front Elevation, Terrace View'}
             value={name} error={errors.name} disabled={isReplacement || isLoading} required fullWidth autoFocus={!isReplacement && !isEdit}
+            maxLength={250}
             onChange={(e) => {
               setName(e.target.value);
               setErrors((prev) => {

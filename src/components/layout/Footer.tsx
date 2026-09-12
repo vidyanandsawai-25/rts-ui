@@ -26,6 +26,7 @@ export function Footer({ ulbData }: FooterProps) {
     sanitizedCookieName || sanitizedUlbName || t('app.defaultUlbName');
 
   const isAssets = pathname.includes('/assets');
+  const isDarkTheme = isAssets || pathname.includes('/property-tax/ptis');
 
   return (
     <footer className="relative z-30 mt-auto print:hidden transition-all duration-300">
@@ -34,7 +35,9 @@ export function Footer({ ulbData }: FooterProps) {
       <div className={`w-full text-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] transition-colors duration-300 ${
         isAssets
           ? 'bg-gradient-to-r from-[#000428] to-[#004e92]'
-          : 'bg-[#4b70a6]'
+          : isDarkTheme
+            ? 'bg-[#0B132B] border-t border-slate-800'
+            : 'bg-[#4b70a6]'
       }`}>
         <Card
           padding="none"

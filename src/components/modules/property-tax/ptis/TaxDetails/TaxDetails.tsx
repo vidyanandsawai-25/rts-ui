@@ -30,25 +30,29 @@ const TaxDetails = ({ initialTaxDetails, activeTab = 'current' }: TaxDetailsProp
     const namesSet = new Set<string>();
     policies.forEach((policy) => {
       policy.taxAmounts?.forEach((item) => {
-        if (item.taxName) namesSet.add(item.taxName);
+        if (item.taxName) {
+          const lower = item.taxName.trim().toLowerCase();
+          if (lower !== 'totaltax' && lower !== 'taxtotal' && lower !== 'total tax' && lower !== 'total' && lower !== 'tax total') {
+            namesSet.add(item.taxName);
+          }
+        }
       });
       policy.pendingYears?.forEach((pYear) => {
         pYear.taxAmounts?.forEach((item) => {
-          if (item.taxName) namesSet.add(item.taxName);
+          if (item.taxName) {
+            const lower = item.taxName.trim().toLowerCase();
+            if (lower !== 'totaltax' && lower !== 'taxtotal' && lower !== 'total tax' && lower !== 'total' && lower !== 'tax total') {
+              namesSet.add(item.taxName);
+            }
+          }
         });
       });
     });
 
-    if (policies.length > 0) {
-      const hasTotal = Array.from(namesSet).some((name) =>
-        name.trim().toLowerCase().includes('taxtotal')
-      );
-      if (!hasTotal) {
-        namesSet.add('TAXTOTAL');
-      }
-    }
+    const orderedNames = Array.from(namesSet);
+    orderedNames.push('TAXTOTAL');
 
-    return Array.from(namesSet);
+    return orderedNames;
   }, [initialTaxDetails]);
 
   const currentFloorColumns = useMemo(

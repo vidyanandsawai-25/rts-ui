@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import type { PropertyListItem } from '@/types/ptis.types';
 import { ptisSuggestionsClient } from '@/lib/api/ptis/tab/ptis-suggestions-client';
 
+const suggestionsCache = new Map<string, PropertyListItem[]>();
+const MAX_CACHE_SIZE = 100;
+
 export function usePropertySuggestions(
   wardId: number | null | undefined,
   debouncedSearchText: string,
@@ -13,12 +16,12 @@ export function usePropertySuggestions(
   const [isSearchingProperties, setIsSearchingProperties] = useState(false);
 
   useEffect(() => {
-    if (!wardId || !debouncedSearchText) {
+    if (!wardId || (!debouncedSearchText && !debouncedPartitionSearchText)) {
       const timer = setTimeout(() => {
         setPropertiesList((prev) => {
           const selectedPropId = draftPropertyId ? Number(draftPropertyId) : null;
           const currentSelected = prev.find((p) => p.propertyId === selectedPropId);
-          
+
           const merged = [...initialProperties];
           if (currentSelected && !merged.some((p) => p.propertyId === currentSelected.propertyId)) {
             merged.unshift(currentSelected);
@@ -29,11 +32,6 @@ export function usePropertySuggestions(
       return () => clearTimeout(timer);
     }
 
-    let active = true;
-    const timer = setTimeout(() => {
-      setIsSearchingProperties(true);
-    }, 0);
-
     let propNo = debouncedSearchText;
     let partNo = debouncedPartitionSearchText;
     if (debouncedSearchText.includes('-')) {
@@ -42,14 +40,48 @@ export function usePropertySuggestions(
       partNo = parts.slice(1).join('-');
     }
 
-    ptisSuggestionsClient.getSuggestions({
-      wardId,
-      propertyNo: propNo,
-      partitionNo: partNo,
-    })
+    const cacheKey = `${wardId}::${propNo}::${partNo}`;
+    if (suggestionsCache.has(cacheKey)) {
+      const cached = suggestionsCache.get(cacheKey)!;
+      const timer = setTimeout(() => {
+        setPropertiesList((prev) => {
+          const selectedPropId = draftPropertyId ? Number(draftPropertyId) : null;
+          const currentSelected = prev.find((p) => p.propertyId === selectedPropId);
+          const merged = [...initialProperties, ...cached];
+          const unique = merged.filter((item, index, self) =>
+            self.findIndex((p) => p.propertyId === item.propertyId) === index
+          );
+          if (currentSelected && !unique.some((p) => p.propertyId === currentSelected.propertyId)) {
+            unique.unshift(currentSelected);
+          }
+          return unique;
+        });
+        setIsSearchingProperties(false);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    let active = true;
+    const searchTimer = setTimeout(() => {
+      setIsSearchingProperties(true);
+    }, 0);
+
+    ptisSuggestionsClient
+      .getSuggestions({
+        wardId,
+        propertyNo: propNo,
+        partitionNo: partNo,
+      })
       .then((res) => {
         if (!active) return;
         if (res.success && res.data) {
+          // Store in cache
+          if (suggestionsCache.size > MAX_CACHE_SIZE) {
+            const firstKey = suggestionsCache.keys().next().value;
+            if (firstKey) suggestionsCache.delete(firstKey);
+          }
+          suggestionsCache.set(cacheKey, res.data);
+
           setPropertiesList((prev) => {
             const selectedPropId = draftPropertyId ? Number(draftPropertyId) : null;
             const currentSelected = prev.find((p) => p.propertyId === selectedPropId);
@@ -76,7 +108,7 @@ export function usePropertySuggestions(
 
     return () => {
       active = false;
-      clearTimeout(timer);
+      clearTimeout(searchTimer);
     };
   }, [debouncedSearchText, debouncedPartitionSearchText, wardId, draftPropertyId, initialProperties]);
 

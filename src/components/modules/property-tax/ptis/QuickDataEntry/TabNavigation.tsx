@@ -5,7 +5,11 @@ import { useTranslations } from 'next-intl';
 import { TABS, RETURN_TAB_BY_QDE_HREF, TAB_GRADIENT_CLASSES } from './navigation-constants';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 
-export function TabNavigation() {
+interface TabNavigationProps {
+  categoryName?: string;
+}
+
+export function TabNavigation({ categoryName }: TabNavigationProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -27,6 +31,31 @@ export function TabNavigation() {
   const dualExpands = searchParams.getAll('dualExpand');
   const appartmentPartition = searchParams.get('appartmentPartition') || '';
   const parentPropertyId = searchParams.get('parentPropertyId') || '';
+  const societyDetailId = searchParams.get('societyDetailId') || searchParams.get('societyId') || '';
+  const societyId = searchParams.get('societyId') || '';
+  const wingDetailId = searchParams.get('wingDetailId') || '';
+  const wingId = searchParams.get('wingId') || '';
+  const isWingWise = searchParams.get('isWingWise') || '';
+  const isSocietyWise = searchParams.get('isSocietyWise') || '';
+  const fromSocietyEdit = searchParams.get('fromSocietyEdit') === 'true';
+  const fromWingEdit = searchParams.get('fromWingEdit') === 'true';
+  const fromFooterEdit = searchParams.get('fromFooterEdit') === 'true';
+  const hideWing = searchParams.get('hideWing') === 'true' || fromSocietyEdit || fromFooterEdit;
+  const hideSociety = searchParams.get('hideSociety') === 'true' || fromWingEdit || fromFooterEdit;
+
+  // Check if Property Category is main Apartment or Apartment/Individual
+  const rawCat = categoryName || searchParams.get('propertyCategory') || searchParams.get('categoryName') || '';
+  const hasPartition = Boolean(appartmentPartition || partitionNo);
+  const displayCategory = (hasPartition && rawCat.toLowerCase() === 'apartment')
+    ? 'Apartment/Individual'
+    : rawCat;
+
+  const effectiveCategoryName = displayCategory.toLowerCase();
+  const isMainApartmentCategory = !hasPartition && (effectiveCategoryName.includes('apartment') || returnTab === 'apartment');
+  const isIndividualProperty =
+    effectiveCategoryName.includes('apartment/individual') ||
+    effectiveCategoryName.includes('individual') ||
+    effectiveCategoryName === 'individual';
 
   // Check if we have search parameters that can resolve authoritative property ID
   const hasPropertyKeys = wardNo && propertyNo && partitionNo;
@@ -44,6 +73,17 @@ export function TabNavigation() {
   if (showDetails) params.set('showDetails', showDetails);
   if (appartmentPartition) params.set('appartmentPartition', appartmentPartition);
   if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
+  if (societyDetailId) params.set('societyDetailId', societyDetailId);
+  if (societyId) params.set('societyId', societyId);
+  if (wingDetailId) params.set('wingDetailId', wingDetailId);
+  if (wingId) params.set('wingId', wingId);
+  if (isWingWise) params.set('isWingWise', isWingWise);
+  if (isSocietyWise) params.set('isSocietyWise', isSocietyWise);
+  if (fromSocietyEdit) params.set('fromSocietyEdit', 'true');
+  if (fromWingEdit) params.set('fromWingEdit', 'true');
+  if (fromFooterEdit) params.set('fromFooterEdit', 'true');
+  if (hideWing) params.set('hideWing', 'true');
+  if (hideSociety) params.set('hideSociety', 'true');
   rateableExpands.forEach(v => params.append('rateableExpand', v));
   capitalExpands.forEach(v => params.append('capitalExpand', v));
   dualExpands.forEach(v => params.append('dualExpand', v));
@@ -128,10 +168,30 @@ export function TabNavigation() {
     }
   };
 
+  const isApartment = returnTab === 'apartment' || searchParams.get('from') === 'apartment';
+
+  const visibleTabs = isApartment
+    ? TABS.filter((tab) => {
+        if (tab.label === 'Property' || tab.label === 'Kyc') return false;
+        if ((hideWing || isIndividualProperty) && tab.label === 'Wing') return false;
+        if ((hideSociety || isIndividualProperty) && tab.label === 'Society') return false;
+        if (isMainApartmentCategory && tab.label === 'FloorSubmission') return false;
+        return true;
+      })
+    : TABS.filter((tab) => {
+        if ((hideWing || isIndividualProperty) && tab.label === 'Wing') return false;
+        if ((hideSociety || isIndividualProperty) && tab.label === 'Society') return false;
+        if (isMainApartmentCategory && tab.label === 'FloorSubmission') return false;
+        return true;
+      });
+
   return (
     <div className="bg-white border-b-2 border-slate-300 px-3 py-2 shadow-sm overflow-x-auto no-scrollbar">
-      <nav className="flex md:grid w-full grid-cols-7 gap-1.5 h-auto p-1 rounded-lg">
-        {TABS.map((tab) => {
+      <nav
+        className="flex md:grid w-full gap-1.5 h-auto p-1 rounded-lg"
+        style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
+      >
+        {visibleTabs.map((tab) => {
           const currentPath = pathname.split('?')[0];
           const pathSegments = currentPath.split('/').filter(Boolean);
 
@@ -145,7 +205,7 @@ export function TabNavigation() {
 
           const tabPath = `${baseTabPath}/${tab.href}`;
 
-          const tabReturnValue = RETURN_TAB_BY_QDE_HREF[tab.href] || returnTab;
+          const tabReturnValue = isApartment ? 'apartment' : (RETURN_TAB_BY_QDE_HREF[tab.href] || returnTab);
 
           // For FloorSubmission tab: exclude propertyId if we have search params
           // to let the page resolve authoritative ID from backend
@@ -163,6 +223,11 @@ export function TabNavigation() {
             if (showDetails) tabParams.set('showDetails', showDetails);
             if (appartmentPartition) tabParams.set('appartmentPartition', appartmentPartition);
             if (parentPropertyId) tabParams.set('parentPropertyId', parentPropertyId);
+            if (fromSocietyEdit) tabParams.set('fromSocietyEdit', 'true');
+            if (fromWingEdit) tabParams.set('fromWingEdit', 'true');
+            if (fromFooterEdit) tabParams.set('fromFooterEdit', 'true');
+            if (hideWing) tabParams.set('hideWing', 'true');
+            if (hideSociety) tabParams.set('hideSociety', 'true');
             rateableExpands.forEach(v => tabParams.append('rateableExpand', v));
             capitalExpands.forEach(v => tabParams.append('capitalExpand', v));
             dualExpands.forEach(v => tabParams.append('dualExpand', v));
@@ -195,20 +260,24 @@ export function TabNavigation() {
 
           const gradientClass = TAB_GRADIENT_CLASSES.activeClass;
 
+          const tabLabel = isApartment && tab.label === 'Society'
+            ? (t('tabs.SocietyDetails') || 'Society Details')
+            : t(`tabs.${tab.label}`);
+
           return (
             <button
               key={tab.href}
               onClick={() => handleTabClick(tabHref)}
               data-href={tabHref}
               className={[
-                'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md cursor-pointer text-left focus:outline-none whitespace-nowrap',
+                'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md cursor-pointer text-left focus:outline-none whitespace-nowrap justify-center',
                 isActive
                   ? `bg-linear-to-br ${gradientClass} text-white shadow-lg`
-                  : 'bg-white text-gray-600 border-gray-300',
+                  : 'bg-white text-gray-600 border-gray-300 hover:bg-slate-50',
               ].join(' ')}
             >
               <Icon className="w-4 h-4" />
-              <span>{t(`tabs.${tab.label}`)}</span>
+              <span>{tabLabel}</span>
             </button>
           );
         })}

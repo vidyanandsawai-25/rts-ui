@@ -4,6 +4,7 @@ import {
     DiscountAttributeItemDto
 } from "@/types/discount.types";
 import { getLocalizedName } from "@/lib/utils/social-details";
+import { SocialAttribute } from "@/types/social-attribute.types";
 
 /**
  * Maps the API response DTO to the dynamic local form state.
@@ -12,36 +13,67 @@ import { getLocalizedName } from "@/lib/utils/social-details";
  */
 export const mapApiToDiscountState = (
     data: PropertyDiscountInfoResponseDto | null,
+    masterAttributes?: SocialAttribute[]
 ): DiscountState => {
     const state: DiscountState = {} as DiscountState;
 
-    if (!data?.discountAttributes) {
-        return state;
+    if (masterAttributes && masterAttributes.length > 0) {
+        masterAttributes.forEach(attr => {
+            const isBitType = attr.dataType.toUpperCase() === "BIT";
+            state[attr.id] = {
+                id: attr.id,
+                socialAttributeCode: attr.socialAttributeCode,
+                socialAttributeName: attr.socialAttributeName,
+                dataType: attr.dataType,
+                unit: attr.unit,
+                displayOrder: attr.displayOrder,
+                isDiscountApplicable: attr.isDiscountApplicable,
+                isPhotoRequired: attr.isPhotoRequired,
+                isDocumentRequired: attr.isDocumentRequired,
+                isActive: attr.isActive,
+                propertySocialDetailId: null,
+                bitValue: isBitType ? false : null,
+                intValue: null,
+                decimalValue: null,
+                textValue: null,
+                dateValue: null,
+                documentBindingId: null,
+                documentGuid: null,
+                documentUrl: null,
+                remark: null,
+                enabled: false,
+                isUploading: false,
+            };
+        });
     }
 
-    data.discountAttributes.forEach((attr) => {
-        const isBitType = attr.dataType.toUpperCase() === "BIT";
-        const bitValue = attr.bitValue ?? false;
-        state[attr.id] = {
-            ...attr,
-            dataType: attr.dataType,
-            intValue: attr.intValue ?? null,
-            decimalValue: attr.decimalValue ?? null,
-            bitValue: bitValue,
-            enabled: isBitType
-                ? bitValue
-                : (attr.bitValue != null 
-                    ? bitValue 
-                    : (
-                        (attr.intValue !== null && attr.intValue !== 0) || 
-                        (attr.decimalValue !== null && attr.decimalValue !== 0) || 
-                        attr.textValue !== null || 
-                        attr.dateValue !== null
-                      )),
-            dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
-            isUploading: false,
-        };
-    });
+    if (data?.discountAttributes) {
+        data.discountAttributes.forEach((attr) => {
+            const isBitType = attr.dataType.toUpperCase() === "BIT";
+            const bitValue = attr.bitValue ?? false;
+            
+            state[attr.id] = {
+                ...state[attr.id], // preserve master data fields if they exist
+                ...attr,
+                dataType: attr.dataType,
+                intValue: attr.intValue ?? null,
+                decimalValue: attr.decimalValue ?? null,
+                bitValue: bitValue,
+                enabled: isBitType
+                    ? bitValue
+                    : (attr.bitValue != null 
+                        ? bitValue 
+                        : (
+                            (attr.intValue !== null && attr.intValue !== 0) || 
+                            (attr.decimalValue !== null && attr.decimalValue !== 0) || 
+                            attr.textValue !== null || 
+                            attr.dateValue !== null
+                        )),
+                dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
+                isUploading: false,
+            };
+        });
+    }
 
     return state;
 };

@@ -80,9 +80,20 @@ export async function GET(
       if (result.success && result.data && Array.isArray(result.data)) {
         const filtered = result.data.map((item) => ({
           propertyId: item.propertyId,
+          zoneId: item.zoneId,
+          zoneNo: item.zoneNo,
+          wardId: item.wardId,
+          wardNo: item.wardNo,
           propertyNo: item.propertyNo,
           partitionNo: item.partitionNo,
+          upicId: item.upicId,
           displayLabel: item.displayLabel,
+          category: item.category,
+          categoryLabel: item.categoryLabel,
+          societyDetailId: item.societyDetailId,
+          societyName: item.societyName,
+          wings: item.wings,
+          wingDetailId: item.wingDetailId,
         }));
         return NextResponse.json({ success: true, data: filtered });
       }

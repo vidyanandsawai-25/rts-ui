@@ -8,6 +8,7 @@ import { MediaPanelProvider, useMediaPanel } from '@/hooks/ptis/photoplan/useMed
 import { usePropertyPhotosQuery } from '@/hooks/ptis/photoplan/usePropertyPhotosQuery';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import type { WaybackRelease } from '@/lib/api/wayback.service';
+import type { WingWiseWingDetails } from '@/types/property-tax/apartment';
 
 interface PtisLayoutWrapperProps {
   children: React.ReactNode;
@@ -18,12 +19,18 @@ interface PtisLayoutWrapperProps {
   propertyHolderNameMarathi?: string;
   isQCApproved?: boolean;
   propertyId?: number;
+  isMainProperty?: boolean;
+  categoryId?: number | null;
+  propertyTypeId?: number | null;
+  type?: string | number | null;
+  societyDetailId?: number | null;
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
   initialPhotos?: PropertyPhotoDto[];
   initialLatitude?: number;
   initialLongitude?: number;
   initialWaybackReleases?: WaybackRelease[];
   initialVisible?: boolean;
+  wings?: WingWiseWingDetails[];
 }
 
 import { useWaybackReleases } from '@/hooks/ptis/useWaybackReleases';
@@ -37,11 +44,17 @@ function PtisLayoutWrapperContent({
   propertyHolderNameMarathi,
   isQCApproved,
   propertyId,
+  isMainProperty,
+  categoryId,
+  propertyTypeId,
+  type,
+  societyDetailId,
   initialPhotoSlots = [],
   initialPhotos = [],
   initialLatitude,
   initialLongitude,
   initialWaybackReleases = [],
+  wings = [],
 }: PtisLayoutWrapperProps) {
   const { isPanelVisible } = useMediaPanel();
   const searchParams = useSearchParams();
@@ -66,14 +79,14 @@ function PtisLayoutWrapperContent({
 
       {/* Sidebar Container with smooth width & opacity transition */}
       <div
-        className={`transition-all duration-500 ease-in-out z-30 lg:sticky lg:top-[92px] lg:self-start lg:h-[calc(100vh-152px)] lg:shrink-0 ${
+        className={`transition-all duration-500 ease-in-out z-30 lg:sticky lg:top-[80px] lg:self-start lg:h-[calc(100vh-152px)] lg:shrink-0 ${
           isPanelVisible
             ? 'w-full lg:w-[208px] opacity-100 translate-x-0'
             : 'w-0 lg:w-0 opacity-0 lg:translate-x-full pointer-events-none overflow-hidden'
         }`}
       >
         {/* Inner wrapper to lock the width and prevent child content squeezing during transition */}
-        <div className="w-full lg:w-[208px] lg:h-full">
+        <div className="w-full lg:w-[208px] lg:h-full flex flex-col">
           <PropertyMediaPanel
             wardNo={wardNo}
             propertyNo={propertyNo}
@@ -82,6 +95,11 @@ function PtisLayoutWrapperContent({
             propertyHolderNameMarathi={propertyHolderNameMarathi}
             isQCApproved={isQCApproved}
             propertyId={propertyId}
+            isMainProperty={isMainProperty}
+            categoryId={categoryId}
+            propertyTypeId={propertyTypeId}
+            type={type}
+            societyDetailId={societyDetailId}
             initialPhotoSlots={photoSlots}
             initialPhotos={photos}
             loading={loading}
@@ -90,6 +108,7 @@ function PtisLayoutWrapperContent({
             initialWaybackReleases={waybackReleases.length > 0 ? waybackReleases : initialWaybackReleases}
             onPhotosChange={setPhotos}
             onPhotoSlotsChange={setPhotoSlots}
+            wings={wings}
           />
         </div>
       </div>

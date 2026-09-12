@@ -65,20 +65,24 @@ export function PhotoPlanToolbar({
           )}
           {hasImage ? (
             <>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={onReplace ?? onUpload}
-                disabled={isMutating}
-                isLoading={isReplacing}
-                icon={Upload}
-                className="h-full shrink-0"
-                aria-label={t('media.replaceImage')}
-              >
-                <span className="hidden sm:inline">
-                  {isReplacing ? (t('media.replacing') || 'Replacing...') : (t('media.replaceImage') || 'Replace Image')}
-                </span>
-              </Button>
+              {!isPhotoPlanCategory && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    (onReplace ?? onUpload)();
+                  }}
+                  disabled={isMutating}
+                  isLoading={isReplacing}
+                  icon={Upload}
+                  className="h-full shrink-0"
+                  aria-label={t('media.replaceImage')}
+                >
+                  <span className="hidden sm:inline">
+                    {isReplacing ? (t('media.replacing') || 'Replacing...') : (t('media.replaceImage') || 'Replace Image')}
+                  </span>
+                </Button>
+              )}
               {onDelete && (
                 <Button
                   variant="danger"

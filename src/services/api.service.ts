@@ -110,8 +110,17 @@ class ApiClient {
     const text = await response.text();
     if (!text?.trim()) return undefined;
 
-    const isJson = (response.headers.get('Content-Type') ?? '').includes('application/json');
+    const contentType = (response.headers.get('Content-Type') ?? '').toLowerCase();
+    const isJson = contentType.includes('json');
     if (!isJson) {
+      // Check if text looks like JSON despite header
+      if (text.startsWith('{') || text.startsWith('[')) {
+        try {
+          return JSON.parse(text) as T;
+        } catch {
+          // Fall through to non-json error
+        }
+      }
       if (response.ok) return undefined;
       const err = new Error(text.trim() || response.statusText || 'An error occurred') as ApiError;
       err.httpStatus = response.status;
@@ -133,29 +142,41 @@ class ApiClient {
 
   private extractErrorMessage(errBody: unknown, statusText: string): string {
     if (typeof errBody === 'string' && errBody.trim()) {
-      return errBody.trim();
+      const trimmed = errBody.trim();
+      if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (parsed && typeof parsed === 'object') {
+            return this.extractErrorMessage(parsed, statusText);
+          }
+        } catch {
+          // Fall through to plain string
+        }
+      }
+      return trimmed;
     }
 
     const body = errBody as Record<string, unknown> | null | undefined;
 
-    // First check for specific error messages in the errors object (e.g., validation errors)
-    // Ensure errors is a plain object (not an array) before treating it as a key/value map
+    // 1. Check for validation errors object (e.g., ASP.NET ProblemDetails / FluentValidation)
     if (body?.errors && typeof body.errors === 'object' && !Array.isArray(body.errors)) {
       const errors = body.errors as Record<string, unknown>;
-      // Check for General error first, then other error keys
-      const errorKeys = ['General', ...Object.keys(errors).filter((k) => k !== 'General')];
-      for (const key of errorKeys) {
-        const errorValue = errors[key];
-        if (typeof errorValue === 'string' && errorValue.trim()) {
-          return errorValue.trim();
-        }
-        // Handle array of error messages
-        if (Array.isArray(errorValue) && errorValue.length > 0) {
-          const firstError = errorValue[0];
-          if (typeof firstError === 'string' && firstError.trim()) {
-            return firstError.trim();
+      const collected: string[] = [];
+
+      for (const value of Object.values(errors)) {
+        if (typeof value === 'string' && value.trim()) {
+          collected.push(value.trim());
+        } else if (Array.isArray(value) && value.length > 0) {
+          for (const item of value) {
+            if (typeof item === 'string' && item.trim()) {
+              collected.push(item.trim());
+            }
           }
         }
+      }
+
+      if (collected.length > 0) {
+        return collected.join(' ');
       }
     }
 
@@ -168,7 +189,7 @@ class ApiClient {
       }
     }
 
-    // Fall back to standard error message fields
+    // 2. Fall back to standard error message fields
     const candidates = [
       body?.message,
       body?.error,
@@ -183,7 +204,7 @@ class ApiClient {
     for (const c of candidates) {
       if (typeof c === 'string' && c.trim()) return c.trim();
     }
-    return 'An error occurred';
+    return 'An error occurred while processing your request. Please try again.';
   }
 
   private async request<T>(

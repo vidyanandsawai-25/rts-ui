@@ -67,16 +67,16 @@ export const validateDocumentNumber = (
     typeName?: string
 ): ValidationError | null => {
     if (!number || number.trim() === "") {
-        return { key: "validation.numberRequired" };
+        return { key: "common.validation.numberRequired" };
     }
 
     const trimmedNumber = number.trim();
     if (isRepeatedNumber(trimmedNumber)) {
-        return { key: "validation.numberRepeated" };
+        return { key: "common.validation.numberRepeated" };
     }
 
     if (/\s/.test(trimmedNumber)) {
-        return { key: "validation.numberNoSpaces" };
+        return { key: "common.validation.numberNoSpaces" };
     }
 
     const typeKey = mapTypeNameToKey(typeName || "");
@@ -85,22 +85,22 @@ export const validateDocumentNumber = (
     if (isCOP) {
         const copRegex = /^[A-Za-z0-9\/\-]{5,50}$/;
         if (!copRegex.test(trimmedNumber)) {
-            return { key: "validation.numberInvalidCOP" };
+            return { key: "common.validation.numberInvalidCOP" };
         }
     } else if (typeKey === "index2") {
         const index2Regex = /^[A-Za-z0-9]{3,6}-\d{1,7}-\d{4}$/;
         if (!index2Regex.test(trimmedNumber)) {
-            return { key: "validation.numberInvalidIndex2" };
+            return { key: "common.validation.numberInvalidIndex2" };
         }
     } else if (typeKey === "electricBill") {
         const electricRegex = /^\d{9,12}$/;
         if (!electricRegex.test(trimmedNumber)) {
-            return { key: "validation.numberInvalidElectric" };
+            return { key: "common.validation.numberInvalidElectric" };
         }
     } else {
         const rule = getCertificateLengthRule(typeName);
         if (trimmedNumber.length < rule.min || trimmedNumber.length > rule.max) {
-            return { key: "validation.numberLength", params: { min: rule.min, max: rule.max } };
+            return { key: "common.validation.numberLength", params: { min: rule.min, max: rule.max } };
         }
     }
 
@@ -144,21 +144,21 @@ export const validateDocumentDate = (
     date: string | null | undefined
 ): ValidationError | null => {
     if (!date || date.trim() === "") {
-        return { key: "validation.dateRequired" };
+        return { key: "common.validation.dateRequired" };
     }
 
     const dateObj = parseDateString(date);
     if (!dateObj) {
-        return { key: "validation.invalidDate" };
+        return { key: "common.validation.invalidDate" };
     }
 
     const now = new Date();
     const todayTime = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
     if (dateObj.getTime() > todayTime) {
-        return { key: "validation.dateFuture" };
+        return { key: "common.validation.dateFuture" };
     }
     if (dateObj.getTime() < Date.UTC(1900, 0, 1)) {
-        return { key: "validation.dateBefore1900" };
+        return { key: "common.validation.dateBefore1900" };
     }
 
     return null;

@@ -31,15 +31,20 @@ interface PhotoPlanDrawerBodyProps {
   onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
   initialCategoryIndex?: number;
   propertyId?: number;
+  wingDetailId?: number | null;
+  societyDetailId?: number | null;
+  wingName?: string;
   fullyLoadedIds: Set<number>;
   onFullyLoadedIdsChange: (ids: Set<number>) => void;
   initialLatitude?: number;
   initialLongitude?: number;
   initialWaybackReleases?: WaybackRelease[];
   onDrawPlan?: (e: React.MouseEvent) => void;
+  onRequestTypeModal?: () => void;
   wardNo?: string;
   propertyNo?: string;
   partitionNo?: string;
+  isMainProperty?: boolean;
 }
 
 export function PhotoPlanDrawerBody({
@@ -48,15 +53,20 @@ export function PhotoPlanDrawerBody({
   onPhotosChange,
   initialCategoryIndex = 0,
   propertyId,
+  wingDetailId,
+  societyDetailId,
+  wingName,
   fullyLoadedIds,
   onFullyLoadedIdsChange,
   initialLatitude,
   initialLongitude,
   initialWaybackReleases,
   onDrawPlan,
+  onRequestTypeModal,
   wardNo = '',
   propertyNo = '',
   partitionNo = '',
+  isMainProperty = false,
 }: PhotoPlanDrawerBodyProps): React.ReactElement {
   const t = useTranslations('ptis');
 
@@ -72,9 +82,14 @@ export function PhotoPlanDrawerBody({
     onCategoriesChange,
     onPhotosChange,
     propertyId,
+    wingDetailId,
+    societyId: societyDetailId,
+    wingName,
     initialCategoryIndex,
     fullyLoadedIds,
     onFullyLoadedIdsChange,
+    onRequestTypeModal,
+    isMainProperty,
   });
 
   const {
@@ -90,7 +105,9 @@ export function PhotoPlanDrawerBody({
 
   const isPhotoPlanCategory =
     activeCategory?.photoTypeCode?.toUpperCase() === 'PHOTO_PLAN' ||
-    activeCategory?.photoTypeName?.toLowerCase() === 'photo plan';
+    activeCategory?.photoTypeCode?.toUpperCase() === 'PROPERTY_PLAN' ||
+    activeCategory?.photoTypeName?.toLowerCase() === 'photo plan' ||
+    activeCategory?.photoTypeName?.toLowerCase() === 'property plan';
 
   const isSplit = viewMode === 'viewer';
 

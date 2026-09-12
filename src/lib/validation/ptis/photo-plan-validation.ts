@@ -9,7 +9,8 @@ export const photoPlanNamingSchema = z.object({
     .string()
     .trim()
     .min(1, 'media.nameRequired')
-    .regex(/^[a-zA-Z0-9\s_()\u0900-\u097F-]+$/, 'media.invalidNameFormat'),
+    .max(250, 'media.nameTooLong')
+    .regex(/^[a-zA-Z0-9\u0900-\u097F\s._\-/,()]+$/, 'media.invalidNameFormat'),
   displayOrder: z
     .coerce
     .number()

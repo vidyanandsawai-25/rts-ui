@@ -45,6 +45,11 @@ export interface PropertySocialDetailsDto {
     socialAttributeCode?: string | null;
     socialAttributeName?: string | null;
     isActive?: boolean;
+     documentGuid?: string | null;
+    photoGuid?: string | null;
+    photoBindingId?: number | null;
+    isPhotoRequired?: boolean;
+    isDocumentRequired?: boolean;
 }
 
 export interface PropertySocialInfoItemDto {
@@ -58,6 +63,43 @@ export interface PropertySocialInfoItemDto {
     documentBindingId?: number | null;
     remark?: string | null;
     isActive?: boolean;
+    documentGuid?: string | null;
+    photoGuid?: string | null;
+    photoBindingId?: number | null;
+    isPhotoRequired?: boolean;
+    isDocumentRequired?: boolean;
+}
+
+export interface CreatePropertySocialDetailDto {
+    // isActive: boolean;
+    createdBy: number;
+    propertyId: number | null;
+    socialAttributeId: number;
+    wingDetailId: number | null;
+    societyDetailId: number | null;
+    bitValue?: boolean | null;
+    intValue?: number | null;
+    decimalValue?: number | null;
+    textValue?: string | null;
+    dateValue?: string | null;
+    documentBindingId?: number | null;
+    remark?: string | null;
+}
+
+export interface CreateBulkPropertySocialDetailDto {
+    isActive: boolean;
+    createdBy: number;
+    propertyIds: string | null;
+    socialAttributeId: number;
+    wingDetailId: number | null;
+    societyDetailId: number | null;
+    bitValue?: boolean | null;
+    intValue?: number | null;
+    decimalValue?: number | null;
+    textValue?: string | null;
+    dateValue?: string | null;
+    documentBindingId?: number | null;
+    remark?: string | null;
 }
 
 export interface PropertySocialInfoApiResponse {
@@ -73,7 +115,10 @@ export interface UpsertPropertySocialInfoApiResponse {
 }
 
 export interface UpsertPropertySocialInfoDto {
-    propertyId: number;
+    propertyId: number | null;
+    societyDetailId?: number | null;
+    wingDetailId?: number | null;
+    propertyIds?: string | null;
     updatedBy: number;
     socialAttributes: PropertySocialInfoItemDto[];
     socialAttributeIdsToRemove: number[];

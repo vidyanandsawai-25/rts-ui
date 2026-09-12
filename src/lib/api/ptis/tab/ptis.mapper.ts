@@ -54,6 +54,8 @@ export const ptisMapper = {
       noOfCommercialToilets: data.noOfCommercialToilets?.toString() || '',
       ownerName: data.ownerName || data.ownerNameEnglish || '',
       categoryId: data.categoryId,
+      wingId: data.wingId,
+      wingDetailId: data.wingDetailId,
       rateSectionDescription: data.rateSectionDescription || '',
       latitude: data.latitude || null,
       longitude: data.longitude || null,

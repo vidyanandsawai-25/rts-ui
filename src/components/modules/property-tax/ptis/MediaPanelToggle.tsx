@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 import { useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations } from '@/hooks/useSafeTranslations';
 
 /**
  * Floating expandable tab-like half-button protruding from the right edge of the screen.
@@ -13,11 +13,12 @@ import { useTranslations } from 'next-intl';
  */
 export function MediaPanelToggle(): React.ReactElement | null {
   const { isPanelVisible, togglePanel } = useMediaPanel();
-  const t = useTranslations('ptis');
+  const t = useSafeTranslations('ptis');
   const [topY, setTopY] = useState(96);
   const dragInfo = useRef({ isDragging: false, startY: 0, startTopY: 0, hasDragged: false });
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const label = t('media.showPhotoPlan');
+  const translatedLabel = t('media.showPhotoPlan');
+  const label = !translatedLabel || translatedLabel === 'media.showPhotoPlan' ? 'Show Photo Plan' : translatedLabel;
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // Only drag with left click

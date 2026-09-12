@@ -88,6 +88,9 @@ export async function uploadPropertyPhotoAction(
     const propertyPhotoId = Number(formData.get('PropertyPhotoId') || '0');
     const remarks = String(formData.get('Remarks') || '');
     const photoTypeCode = formData.get('PhotoTypeCode') as string | null;
+    const wingDetailId = Number(formData.get('WingDetailId') || '0');
+    const societyId = Number(formData.get('SocietyDetailId') || '0');
+    const wingName = formData.get('WingName') as string | null;
 
     const displayOrder = Number(formData.get('DisplayOrder') || '1');
 
@@ -108,7 +111,10 @@ export async function uploadPropertyPhotoAction(
       propertyPhotoId,
       displayOrder,
       remarks,
-      photoTypeCode || undefined
+      photoTypeCode || undefined,
+      wingDetailId || undefined,
+      societyId || undefined,
+      wingName || undefined
     );
 
     if (result.success && result.data) {
@@ -137,6 +143,9 @@ export async function replacePropertyPhotoAction(
     const referenceTableIdGuid = formData.get('ReferenceTableIdGuid') as string | null;
     const remarks = String(formData.get('Remarks') || '');
     const photoTypeCode = formData.get('PhotoTypeCode') as string | null;
+    const wingDetailId = Number(formData.get('WingDetailId') || '0');
+    const societyId = Number(formData.get('SocietyDetailId') || '0');
+    const wingName = formData.get('WingName') as string | null;
 
     if (!propertyPhotoId || isNaN(propertyPhotoId)) {
       return { success: false, error: t('media.propertyPhotoIdRequired') || 'Valid PropertyPhotoId is required' };
@@ -153,7 +162,10 @@ export async function replacePropertyPhotoAction(
       propertyPhotoId,
       referenceTableIdGuid || undefined,
       remarks,
-      photoTypeCode || undefined
+      photoTypeCode || undefined,
+      wingDetailId || undefined,
+      societyId || undefined,
+      wingName || undefined
     );
 
     if (result.success && result.data) {
@@ -223,7 +235,13 @@ export async function launchPhotoPlanDrawingToolAction(
   wardNo?: string,
   propertyNo?: string,
   partitionNo?: string | null,
-  ptisBackendUri?: string
+  ptisBackendUri?: string,
+  type?: string | number | null,
+  isAmenity?: boolean,
+  entityType?: string | null,
+  societyDetailId?: number | null,
+  wingDetailId?: number | null,
+  photoTypeId?: number | null
 ): Promise<ActionResult<{ launchUrl: string }>> {
   try {
     const result = await photoPlanService.launchDrawingTool({
@@ -237,6 +255,12 @@ export async function launchPhotoPlanDrawingToolAction(
       propertyNo,
       partitionNo,
       ptisBackendUri,
+      type,
+      isAmenity,
+      entityType,
+      societyDetailId,
+      wingDetailId,
+      photoTypeId,
     });
 
     if (result.success && result.launchUrl) {

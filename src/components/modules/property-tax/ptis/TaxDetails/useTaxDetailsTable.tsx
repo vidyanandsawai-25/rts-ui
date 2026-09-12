@@ -78,8 +78,8 @@ export const useTaxDetailsTable = (
     // Omit tax heads where all policies have 0 amount (e.g. State Employment Tax = 0)
     const activeTaxNames = allTaxNamesRaw.filter((taxName) => {
       const lower = taxName.trim().toLowerCase();
-      if (lower === 'totaltax' || lower === 'taxtotal' || lower === 'total tax' || lower === 'total') {
-        return true;
+      if (lower === 'totaltax' || lower === 'taxtotal' || lower === 'total tax' || lower === 'total' || lower === 'tax total') {
+        return false; // Exclude database-level totals from middle columns
       }
       return policies.some((p) => {
         const item = p.taxAmounts.find(
@@ -91,20 +91,13 @@ export const useTaxDetailsTable = (
 
     const finalTaxNames = activeTaxNames.length > 0 ? activeTaxNames : allTaxNamesRaw;
 
-    // Ensure TOTAL TAX is placed at the VERY LAST column
-    const nonTotal: string[] = [];
-    const total: string[] = [];
-
-    finalTaxNames.forEach((name) => {
+    const filteredTaxNames = finalTaxNames.filter((name) => {
       const lower = name.trim().toLowerCase();
-      if (lower === 'totaltax' || lower === 'taxtotal' || lower === 'total tax' || lower === 'total') {
-        total.push(name);
-      } else {
-        nonTotal.push(name);
-      }
+      return lower !== 'totaltax' && lower !== 'taxtotal' && lower !== 'total tax' && lower !== 'total' && lower !== 'tax total';
     });
 
-    const orderedTaxNames = [...nonTotal, ...total];
+    // Append exactly one total column at the very end
+    const orderedTaxNames = [...filteredTaxNames, 'taxTotal'];
 
     return getTaxDetailsFloorColumns(orderedTaxNames, t, getTaxLabelStyle);
   }, [initialTaxDetails, getTaxLabelStyle, t]);

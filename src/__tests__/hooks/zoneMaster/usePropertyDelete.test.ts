@@ -46,7 +46,7 @@ vi.mocked(useRouter).mockImplementation(() => ({
   forward: vi.fn(),
   replace: vi.fn(),
   prefetch: vi.fn(),
-}));
+} as unknown as ReturnType<typeof useRouter>));
 
 const makeProperty = (overrides?: Partial<ZonePropertyItem>): ZonePropertyItem => ({
   id: 1,

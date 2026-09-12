@@ -15,9 +15,14 @@ export interface UsePhotoPlanDrawerStateProps {
   onCategoriesChange: (categories: PhotoCategory[]) => void;
   onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
   propertyId?: number;
+  wingDetailId?: number | null;
+  societyId?: number | null;
+  wingName?: string | null;
   initialCategoryIndex?: number;
   fullyLoadedIds: Set<number>;
   onFullyLoadedIdsChange: (ids: Set<number>) => void;
+  onRequestTypeModal?: () => void;
+  isMainProperty?: boolean;
 }
 
 export function usePhotoPlanDrawerState({
@@ -25,9 +30,14 @@ export function usePhotoPlanDrawerState({
   onCategoriesChange,
   onPhotosChange,
   propertyId,
+  wingDetailId,
+  societyId,
+  wingName,
   initialCategoryIndex = 0,
   fullyLoadedIds,
   onFullyLoadedIdsChange,
+  onRequestTypeModal,
+  isMainProperty = false,
 }: UsePhotoPlanDrawerStateProps) {
   const { openDrawer } = useMediaDrawerState();
   const searchParams = useSearchParams();
@@ -107,12 +117,25 @@ export function usePhotoPlanDrawerState({
     let isSubscribed = true;
 
     if (fullyLoadedIds.size === 0) {
-      if (propertyMediaCache.has(propertyId)) {
+      if (propertyMediaCache.has(propertyId) && isCacheValid(propertyId)) {
         const cached = propertyMediaCache.get(propertyId);
-        if (cached && cached.photos && cached.photos.length > 0 && isCacheValid(propertyId)) {
+        if (cached && cached.photos) {
           onPhotosChange?.(cached.photos);
           const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
           onFullyLoadedIdsChange?.(allCatIds);
+          setIsLoadingPhotos(false);
+          return;
+        }
+      }
+
+      if (categoriesRef.current.length > 0) {
+        const hasLoadedContent = categoriesRef.current.some((c) =>
+          c.photoTypeCode !== 'CHANGE_DETECTION' && c.images && c.images.some((img) => img.hasPhoto && !!img.src)
+        );
+        if (hasLoadedContent) {
+          const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
+          onFullyLoadedIdsChange?.(allCatIds);
+          setIsLoadingPhotos(false);
           return;
         }
       }
@@ -150,6 +173,8 @@ export function usePhotoPlanDrawerState({
             setIsLoadingPhotos(false);
           }
         });
+    } else {
+      setIsLoadingPhotos(false);
     }
 
     return () => {
@@ -237,10 +262,30 @@ export function usePhotoPlanDrawerState({
 
   const activeCategory = cachedCategories[selectedCategoryIndex], activeCategoryId = activeCategory?.photoTypeId;
 
-  const handleUpdate = useCallback((newCats: PhotoCategory[]) => { setCachedCategories(newCats); onCategoriesChange(newCats); }, [onCategoriesChange]);
+  const handleUpdate = useCallback((newCats: PhotoCategory[]) => {
+    setPrevCategories(newCats);
+    setCachedCategories(newCats);
+    onCategoriesChange(newCats);
+  }, [onCategoriesChange]);
+
+  const selectedWingDetailId =
+    wingDetailId ?? (searchParams.get('wingDetailId') ? Number(searchParams.get('wingDetailId')) : null);
+  const selectedSocietyId =
+    societyId ??
+    (searchParams.get('societyId')
+      ? Number(searchParams.get('societyId'))
+      : searchParams.get('societyDetailId')
+      ? Number(searchParams.get('societyDetailId'))
+      : searchParams.get('societydetailid')
+      ? Number(searchParams.get('societydetailid'))
+      : null);
+  const selectedWingName = wingName ?? searchParams.get('wingName') ?? null;
 
   const mutations = usePhotoPlanMutations({
     propertyId,
+    wingDetailId: selectedWingDetailId,
+    societyId: selectedSocietyId,
+    wingName: selectedWingName,
     categories: cachedCategories,
     onCategoriesChange: handleUpdate,
     selectedCategoryIndex,
@@ -249,6 +294,8 @@ export function usePhotoPlanDrawerState({
     viewMode,
     setViewMode,
     setViewerIndexAndMode,
+    onRequestTypeModal,
+    isMainProperty,
   });
 
   const { handleAddPhoto } = mutations;

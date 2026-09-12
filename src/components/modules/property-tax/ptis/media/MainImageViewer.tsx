@@ -39,7 +39,7 @@ export function MainImageViewer({ src, documentGuid, alt, rotation }: MainImageV
         setIsLoading(false);
         setHasError(true);
       }
-    }, 4000);
+    }, 15000);
 
     resolveDocumentUrl(src, documentGuid)
       .then((url) => {
@@ -105,7 +105,7 @@ export function MainImageViewer({ src, documentGuid, alt, rotation }: MainImageV
             quality={75}
             onLoad={handleLoad}
             onError={handleError}
-            unoptimized={effectiveSrc.startsWith('data:') || effectiveSrc.startsWith('blob:') || !effectiveSrc.startsWith('/')}
+            unoptimized
           />
         )}
       </div>

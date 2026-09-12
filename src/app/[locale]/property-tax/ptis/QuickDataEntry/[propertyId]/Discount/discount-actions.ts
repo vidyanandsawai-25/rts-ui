@@ -2,23 +2,32 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { 
-    getDiscountDetails, 
+import {
+    getDiscountDetails,
     updateDiscountDetails,
     uploadDiscountDocViaGlobalApi,
     replaceDiscountDocViaGlobalApi,
-    deleteDiscountDoc
+    deleteDiscountDoc,
+    getDiscountWings,
+    getDiscountUnits
 } from "@/lib/api/discount.service";
-import { deletePropertySocialDetail } from "@/lib/api/property-social-details.service";
+import {
+    createPropertySocialDetail, deletePropertySocialDetail, createBulkPropertySocialDetail,
+    getPropertySocialDetailsByFilters
+} from "@/lib/api/property-social-details.service";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { logger } from "@/lib/utils/logger";
+import { getSocialAttributes } from "@/lib/api/social-attribute-master/social-attribute-crud.service";
+import { SocialAttribute } from "@/types/social-attribute.types";
 import { updateBindingReference } from "@/lib/api/document.service";
-import { 
-    PropertyDiscountInfoResponseDto, 
+import {
+    PropertyDiscountInfoResponseDto,
     DiscountDocumentUploadResponseDto,
     DiscountAttributeItemDto
 } from "@/types/discount.types";
+import { WingOption, UnitSelectionItem } from "@/types/building-permission.types";
 import { ApiResponse } from "@/types/common.types";
+import { CreateBulkPropertySocialDetailDto, PropertySocialDetailsDto } from "@/types/property-social-details.types";
 import {
     cleanCommonApiError,
     handleActionError,
@@ -47,6 +56,18 @@ export async function updateDiscountDetailsAction(
         const attributesStr = formData.get("discountAttributes") as string;
         const discountAttributes = JSON.parse(attributesStr) as DiscountAttributeItemDto[];
 
+        const level = formData.get("level") as string | null;
+        const societyDetailId = formData.get("societyDetailId") ? Number(formData.get("societyDetailId")) : null;
+        const wingDetailId = formData.get("wingDetailId") ? Number(formData.get("wingDetailId")) : null;
+        const propertyIdsStr = formData.get("propertyIds") as string | null;
+        const isSociety = formData.get("isSociety")
+
+        const isApartmentOrWing = level === 'Apartment' || level === 'Wing';
+        const payloadPropertyId = isApartmentOrWing ? 0 : Number(propertyId);
+        const discountpropertyId = Number(propertyId);
+        const payloadSocietyDetailId = societyDetailId;
+        const payloadWingDetailId = (level === 'Wing' || level === 'Unit') ? wingDetailId : null;
+
         const initialResponse = await getDiscountDetails(propertyId);
         const initialAttributes = initialResponse.success && initialResponse.data?.discountAttributes
             ? initialResponse.data.discountAttributes
@@ -67,42 +88,88 @@ export async function updateDiscountDetailsAction(
                     ? await replaceDiscountDocViaGlobalApi(file, oldGuid, propIdNum, attrId, detailId, guidReference)
                     : await uploadDiscountDocViaGlobalApi(file, propIdNum, attrId, detailId, guidReference);
 
-                if (uploadResult.success && uploadResult.data?.documentBindingId) {
-                    attr.documentBindingId = uploadResult.data.documentBindingId;
-                } else {
-                    throw new Error(uploadResult.error || "Failed to upload document");
+                if (isSociety === "true") {
+                    if (uploadResult.success && uploadResult.data?.documentBindingId) {
+                        attr.documentBindingId = uploadResult.data.documentBindingId;
+                        if (level === 'Unit' && propertyIdsStr) {
+                            const bulkPayload: CreateBulkPropertySocialDetailDto = {
+                                isActive: true,
+                                createdBy: userId || 0,
+                                propertyIds: propertyIdsStr,
+                                socialAttributeId: attr.socialAttributeId || 0,
+                                wingDetailId: payloadWingDetailId || 0,
+                                societyDetailId: payloadSocietyDetailId || 0,
+                                bitValue: attr.bitValue ?? false,
+                                intValue: attr.intValue ?? 0,
+                                decimalValue: attr.decimalValue ?? 0,
+                                textValue: attr.textValue || "string",
+                                dateValue: attr.dateValue || new Date().toISOString(),
+                                documentBindingId: attr.documentBindingId || 0,
+                                remark: attr.remark || "string"
+                            };
+                            await createBulkPropertySocialDetail(bulkPayload);
+                        } else {
+                            const payload = {
+                                isActive: true,
+                                createdBy: userId || 0,
+                                propertyId: payloadPropertyId || 0,
+                                socialAttributeId: attr.socialAttributeId || 0,
+                                wingDetailId: payloadWingDetailId || 0,
+                                societyDetailId: payloadSocietyDetailId || 0,
+                                bitValue: attr.bitValue ?? false,
+                                intValue: attr.intValue ?? 0,
+                                decimalValue: attr.decimalValue ?? 0,
+                                textValue: attr.textValue || "string",
+                                dateValue: attr.dateValue || new Date().toISOString(),
+                                documentBindingId: attr.documentBindingId || 0,
+                                remark: attr.remark || "string"
+                            };
+                            await createPropertySocialDetail(payload);
+                        }
+                    } else {
+                        throw new Error(uploadResult.error || "Failed to upload document");
+                    }
                 }
+
             } else if (oldGuid && (!attr.bitValue || !attr.documentBindingId)) {
                 await deleteDiscountDoc(oldGuid);
             }
         }
 
-        const response = await updateDiscountDetails(propertyId, {
-            propertyId: Number(propertyId),
-            updatedBy: userId,
-            discountAttributes
-        });
-        if (response.success) {
-            // Update document bindings for any newly created records
-            const savedItems = response.data?.discountAttributes || [];
-            for (const attr of discountAttributes) {
-                const isNew = !attr.propertySocialDetailId || attr.propertySocialDetailId === 0;
-                if (isNew && attr.documentBindingId) {
-                    const matchedItem = savedItems.find(item => item.id === attr.socialAttributeId);
-                    if (matchedItem && matchedItem.propertySocialDetailId) {
-                        await updateBindingReference(attr.documentBindingId, matchedItem.propertySocialDetailId);
+        if (isSociety !== "true") {
+            const response = await updateDiscountDetails(propertyId, {
+                propertyId: discountpropertyId,
+                societyDetailId: payloadSocietyDetailId,
+                wingDetailId: payloadWingDetailId,
+                updatedBy: userId,
+                discountAttributes
+            });
+
+            if (response.success) {
+                // Update document bindings for any newly created records
+                const savedItems = response.data?.discountAttributes || [];
+                for (const attr of discountAttributes) {
+                    const isNew = !attr.propertySocialDetailId || attr.propertySocialDetailId === 0;
+                    if (isNew && attr.documentBindingId) {
+                        const matchedItem = savedItems.find(item => item.id === attr.socialAttributeId);
+                        if (matchedItem && matchedItem.propertySocialDetailId) {
+                            await updateBindingReference(attr.documentBindingId, matchedItem.propertySocialDetailId);
+                        }
                     }
                 }
-            }
 
-            revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
-            return { success: true, message: response.message };
+                revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
+                return { success: true, message: response.message };
+            }
+            return {
+                success: false,
+                error: await cleanCommonApiError(response.error, locale),
+                statusCode: response.statusCode
+            };
         }
-        return {
-            success: false,
-            error: await cleanCommonApiError(response.error, locale),
-            statusCode: response.statusCode
-        };
+
+        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
+        return { success: true, message: "Documents saved successfully." };
     } catch (error: unknown) {
         logger.error("updateDiscountDetailsAction failed", { propertyId, error: error as Error });
         return handleActionError(error, "discount.socialConfirm.unexpectedError", locale);
@@ -139,7 +206,7 @@ export async function uploadDiscountDocumentAction(
 }
 
 export async function replaceDiscountDocumentAction(
-    propertySocialDetailId: number, 
+    propertySocialDetailId: number,
     oldDocumentGuid: string,
     formData: FormData
 ): Promise<ApiResponse<DiscountDocumentUploadResponseDto>> {
@@ -191,5 +258,69 @@ export async function deletePropertySocialDetailAction(
     } catch (error: unknown) {
         logger.error("deletePropertySocialDetailAction failed", { propertyId, socialAttributeId, error: error as Error });
         return handleActionError(error, "discount.deleteError", locale);
+    }
+}
+
+export async function getSocialAttributeMasterAction(isActive?: boolean): Promise<ApiResponse<SocialAttribute[]>> {
+    try {
+        const attributes = await getSocialAttributes(isActive);
+        // Return all items from the API, bypassing any isActive filter since some test data has isActive: false
+        return { success: true, data: attributes };
+    } catch (error: unknown) {
+        logger.error("getSocialAttributeMasterAction failed", { error: error as Error });
+        return handleActionError(error, "discount.unexpectedError");
+    }
+}
+
+export async function createBulkPropertySocialDetailAction(
+    payload: CreateBulkPropertySocialDetailDto
+): Promise<ApiResponse<PropertySocialDetailsDto[]>> {
+    try {
+        const response = await createBulkPropertySocialDetail(payload);
+        return response;
+    } catch (error: unknown) {
+        logger.error("createBulkPropertySocialDetailAction failed", { payload, error: error as Error });
+        return handleActionError(error, "discount.unexpectedError");
+    }
+}
+
+export async function getDiscountWingsAction(
+    propertyId: string
+): Promise<ApiResponse<WingOption[]>> {
+    try {
+        const wings = await getDiscountWings(propertyId);
+        return { success: true, data: wings };
+    } catch (error: unknown) {
+        logger.error("getDiscountWingsAction failed", { propertyId, error: error as Error });
+        return handleActionError(error, "discount.unexpectedError");
+    }
+}
+
+export async function getDiscountUnitsAction(
+    propertyId: string,
+    wingDetailId?: number | null,
+    pageNumber: number = 1,
+    pageSize: number = 10
+): Promise<ApiResponse<{ items: UnitSelectionItem[]; totalCount?: number }>> {
+    try {
+        const units = await getDiscountUnits(propertyId, wingDetailId, pageNumber, pageSize);
+        return { success: true, data: units };
+    } catch (error: unknown) {
+        logger.error("getDiscountUnitsAction failed", { propertyId, wingDetailId, error: error as Error });
+        return handleActionError(error, "discount.unexpectedError");
+    }
+}
+
+export async function getPropertySocialDetailsByFiltersAction(
+    socialAttributeId?: number,
+    societyDetailId?: number,
+    wingDetailId?: number
+): Promise<ApiResponse<PropertySocialDetailsDto[]>> {
+    try {
+        const items = await getPropertySocialDetailsByFilters(socialAttributeId, societyDetailId, wingDetailId);
+        return { success: true, data: items || [] };
+    } catch (error: unknown) {
+        logger.error("getPropertySocialDetailsByFiltersAction failed", { socialAttributeId, societyDetailId, wingDetailId, error: error as Error });
+        return handleActionError(error, "discount.unexpectedError");
     }
 }

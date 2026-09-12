@@ -14,11 +14,13 @@ import {
 } from './social-attribute-validation';
 
 /** Fetches all social attributes from the API */
-export async function getSocialAttributes(): Promise<SocialAttribute[]> {
+export async function getSocialAttributes(isActive?: boolean): Promise<SocialAttribute[]> {
   try {
-    const response = await apiClient.get<PagedResponse<SocialAttribute>>(
-      '/SocialAttribute?PageNumber=1&PageSize=-1'
-    );
+    let url = '/SocialAttribute?PageNumber=1&PageSize=-1';
+    if (isActive !== undefined) {
+      url += `&IsDiscountApplicable=${isActive}`;
+    }
+    const response = await apiClient.get<PagedResponse<SocialAttribute>>(url);
     if (!response.success) {
       throw new ApiError(
         response.statusCode ?? 500,
