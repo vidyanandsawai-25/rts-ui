@@ -6,31 +6,40 @@ import { handleLocationClick } from '@/lib/utils/automation-dashboard/mapUtils';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 
 export const BORDER_CLASS = '!border-slate-400';
+export const COMMON_HEADER_TEXT_SIZE = 'text-[14px]';
+export const COMMON_HEADER_CLASS = `p-2 ${COMMON_HEADER_TEXT_SIZE} text-center font-bold text-slate-700 ${BORDER_CLASS}`;
+export const COMMON_BODY_TEXT_SIZE = 'text-[13px]';
+export const COMMON_BODY_CELL_CLASS = `${COMMON_BODY_TEXT_SIZE} text-slate-900 font-normal`;
+
+const formatTitleCase = (text: string | null | undefined): string => {
+  if (!text || text === '-') return '-';
+  return text.replace(/\b[a-z]/g, (char) => char.toUpperCase());
+};
 
 export const getBuildingwisePropertyHeaderRows = (t: (key: string) => string): HeaderCell[][] => {
   return [
     [
-      { label: t('approvalByULB.buildingWiseProperty.headers.wardNo').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 min-w-[70px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.newOldPropertyNo').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 whitespace-pre-line min-w-[120px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.description').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 min-w-[90px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.ownerOccupierName').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 whitespace-pre-line min-w-[140px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.address').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 min-w-[180px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.societyBuilderName').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 whitespace-pre-line min-w-[140px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.wingFlatNo').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 whitespace-pre-line min-w-[100px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.propertyDetails').toUpperCase(), colSpan: 2, headerClassName: `p-2 text-center text-sm font-bold text-slate-700 ${BORDER_CLASS} bg-amber-100` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.propertyType').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 min-w-[80px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.totalDemand').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-emerald-100 min-w-[80px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.documentsImage').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-blue-100 whitespace-pre-line min-w-[80px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.actions').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-slate-100 min-w-[80px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.clerkSign').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-indigo-100 whitespace-pre-line min-w-[60px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.taxInsp').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-cyan-100 whitespace-pre-line min-w-[60px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.asstComm').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-purple-100 whitespace-pre-line min-w-[60px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.dyCommTax').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-pink-100 whitespace-pre-line min-w-[60px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.addlComm').toUpperCase(), rowSpan: 2, headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-teal-100 whitespace-pre-line min-w-[60px]` }
+      { label: t('approvalByULB.buildingWiseProperty.headers.wardNo').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-slate-100/80 min-w-[70px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.newOldPropertyNo').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-slate-100/80 whitespace-pre-line min-w-[120px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.description').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-slate-100/80 min-w-[90px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.ownerOccupierName').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-slate-100/80 whitespace-pre-line min-w-[140px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.address').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-slate-100/80 min-w-[180px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.societyBuilderName').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-slate-100/80 whitespace-pre-line min-w-[140px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.wingFlatNo').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-slate-100/80 whitespace-pre-line min-w-[100px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.propertyDetails').toUpperCase(), colSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-amber-100/80` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.propertyType').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-slate-100/80 min-w-[80px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.totalDemand').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-emerald-100/80 min-w-[80px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.documentsImage').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-blue-100/80 whitespace-pre-line min-w-[80px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.actions').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-slate-100/80 min-w-[80px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.clerkSign').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-indigo-100/80 whitespace-pre-line min-w-[60px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.taxInsp').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-cyan-100/80 whitespace-pre-line min-w-[60px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.asstComm').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-purple-100/80 whitespace-pre-line min-w-[60px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.dyCommTax').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-pink-100/80 whitespace-pre-line min-w-[60px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.addlComm').toUpperCase(), rowSpan: 2, headerClassName: `${COMMON_HEADER_CLASS} bg-teal-100/80 whitespace-pre-line min-w-[60px]` }
     ],
     [
-      { label: t('approvalByULB.buildingWiseProperty.headers.oldRecord').toUpperCase(), headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-red-100 min-w-[130px]` },
-      { label: t('approvalByULB.buildingWiseProperty.headers.newRecord').toUpperCase(), headerClassName: `p-2 text-sm text-center text-table-header text-slate-700 ${BORDER_CLASS} bg-emerald-100 min-w-[130px]` }
+      { label: t('approvalByULB.buildingWiseProperty.headers.oldRecord').toUpperCase(), headerClassName: `${COMMON_HEADER_CLASS} bg-red-100/80 min-w-[130px]` },
+      { label: t('approvalByULB.buildingWiseProperty.headers.newRecord').toUpperCase(), headerClassName: `${COMMON_HEADER_CLASS} bg-emerald-100/80 min-w-[130px]` }
     ]
   ];
 };
@@ -72,11 +81,11 @@ export const getBuildingwisePropertyColumns = (
       cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex flex-col text-left text-xs leading-tight break-words gap-1">
-          <div className="text-slate-800 font-medium">
-            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.ownerLabel')}</span> {row.ownerName || 'N/A'}
+          <div className="text-slate-800 font-normal">
+            <span className="text-slate-900 font-bold">{t('approvalByULB.buildingWiseProperty.ownerLabel')}</span> {formatTitleCase(row.ownerName)}
           </div>
-          <div className="text-slate-700 font-medium">
-            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.occupierLabel')}</span> {row.occupierName || 'N/A'}
+          <div className="text-slate-700 font-normal">
+            <span className="text-slate-900 font-bold">{t('approvalByULB.buildingWiseProperty.occupierLabel')}</span> {formatTitleCase(row.occupierName)}
           </div>
         </div>
       )
@@ -84,8 +93,8 @@ export const getBuildingwisePropertyColumns = (
     {
       key: 'address',
       label: t('approvalByULB.buildingWiseProperty.headers.address'),
-      cellClassName: `align-middle uppercase border ${BORDER_CLASS}`,
-      render: (_, row) => <div className="text-left text-slate-700 text-xs font-medium">{row.address || 'N/A'}</div>
+      cellClassName: `align-middle border ${BORDER_CLASS}`,
+      render: (_, row) => <div className="text-left text-slate-700 text-xs font-normal">{formatTitleCase(row.address)}</div>
     },
     {
       key: 'societyName',
@@ -93,11 +102,11 @@ export const getBuildingwisePropertyColumns = (
       cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex flex-col text-left text-xs leading-tight break-words gap-1">
-          <div className="text-slate-800 font-medium">
-            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.societyLabel')}</span> {row.societyName || 'N/A'}
+          <div className="text-slate-800 font-normal">
+            <span className="text-slate-900 font-bold">{t('approvalByULB.buildingWiseProperty.societyLabel')}</span> {formatTitleCase(row.societyName)}
           </div>
-          <div className="text-slate-700 font-medium">
-            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.builderLabel')}</span> {row.builderName || 'N/A'}
+          <div className="text-slate-700 font-normal">
+            <span className="text-slate-900 font-bold">{t('approvalByULB.buildingWiseProperty.builderLabel')}</span> {formatTitleCase(row.builderName)}
           </div>
         </div>
       )
@@ -108,11 +117,11 @@ export const getBuildingwisePropertyColumns = (
       cellClassName: `align-center ${BORDER_CLASS}`,
       render: (_, row) => (
         <div className="flex flex-col text-left text-xs leading-tight break-words gap-1">
-          <div className="text-slate-800 font-medium">
-            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.wingLabel')}</span> {row.wingNo || 'N/A'}
+          <div className="text-slate-800 font-normal">
+            <span className="text-slate-900 font-bold">{t('approvalByULB.buildingWiseProperty.wingLabel')}</span> {row.wingNo || 'N/A'}
           </div>
-          <div className="text-slate-700 font-medium">
-            <span className="text-slate-900 font-extrabold">{t('approvalByULB.buildingWiseProperty.flatLabel')}</span> {row.flatNo || 'N/A'}
+          <div className="text-slate-700 font-normal">
+            <span className="text-slate-900 font-bold">{t('approvalByULB.buildingWiseProperty.flatLabel')}</span> {row.flatNo || 'N/A'}
           </div>
         </div>
       )

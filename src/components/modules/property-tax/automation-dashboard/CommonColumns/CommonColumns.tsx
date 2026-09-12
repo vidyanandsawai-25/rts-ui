@@ -9,8 +9,8 @@ export const getCommonSrColumn = <T extends { sr: string | number, isTotal?: boo
     key: 'sr' as keyof T,
     label: '',
     align: 'center',
-    cellClassName: 'p-3 text-slate-900 font-bold border border-slate-400',
-    render: (val, row) => row.isTotal ? null : (val as ReactNode)
+    cellClassName: 'p-3 text-black border border-slate-400',
+    render: (val, row) => row.isTotal ? null : <span className="font-normal">{val as ReactNode}</span>
 });
 
 export const getCommonDivisionColumn = <T extends { sr: string | number, division: string, isTotal?: boolean }>(
@@ -30,7 +30,7 @@ export const getCommonDivisionColumn = <T extends { sr: string | number, divisio
             const content = (
                 <>
                     <MapPin className="h-4 w-4 text-indigo-600 flex-shrink-0" />
-                    <span className="text-slate-950 font-bold text-[13px] whitespace-nowrap">{val as ReactNode}</span>
+                    <span className="text-black font-medium text-[14px] whitespace-nowrap">{val as ReactNode}</span>
                 </>
             );
 
@@ -77,7 +77,7 @@ export const getCommonWardColumn = <T extends { sr: string | number, wardNo: str
             return (
                 <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-indigo-600 flex-shrink-0" />
-                    <span className="text-slate-950 font-bold text-[14px] whitespace-nowrap">{val as ReactNode}</span>
+                    <span className="text-slate-950 font-normal text-[14px] whitespace-nowrap">{val as ReactNode}</span>
                 </div>
             );
         }

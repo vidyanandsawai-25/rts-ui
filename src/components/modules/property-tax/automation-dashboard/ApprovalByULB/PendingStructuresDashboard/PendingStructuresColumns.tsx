@@ -11,20 +11,28 @@ export type ExtendedBuildingWiseItem = BuildingWiseItem & {
 };
 
 export const BORDER_CLASS = 'border-slate-400';
-export const HEADER_CLASS = 'bg-blue-200';
+export const HEADER_CLASS = 'bg-blue-200 font-bold text-[15px] text-slate-900';
 
-const clickableCellClasses = "flex items-center justify-start w-full h-full p-3 text-gray-700 font-semibold cursor-pointer hover:bg-slate-100 hover:text-indigo-800 transition-colors";
+const clickableCellClasses = "flex items-center justify-start w-full h-full p-3 text-[13px] text-slate-900 font-normal cursor-pointer hover:bg-slate-100 hover:text-indigo-800 transition-colors";
 
-export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignature[] = [], t: (key: string) => string, locale: string = 'en', currentUrl: string = '', router?: { push: (url: string) => void }): Column<ExtendedBuildingWiseItem>[] => {
+export const getPendingStructuresColumns = (
+    uniqueAuthorities: AuthoritySignature[] = [],
+    t: (key: string) => string,
+    locale: string = 'en',
+    currentUrl: string = '',
+    router?: { push: (url: string) => void },
+    pageNumber: number = 1,
+    pageSize: number = 10
+): Column<ExtendedBuildingWiseItem>[] => {
     const baseColumns: Column<ExtendedBuildingWiseItem>[] = [
         {
             key: 'sr',
             label: t('columns.sr'),
             align: 'center',
-            cellClassName: `font-semibold text-slate-700 border ${BORDER_CLASS}`,
+            cellClassName: `font-normal text-[13px] text-slate-900 border ${BORDER_CLASS}`,
             headerClassName: `border ${BORDER_CLASS} ${HEADER_CLASS}`,
             colSpan: (row) => row.isTotal ? 3 : 1,
-            render: (_val, row, index) => row.isTotal ? <span className="font-bold text-center block w-full text-slate-800">{t('total')}</span> : (index + 1)
+            render: (_val, row, index) => row.isTotal ? <span className="font-bold text-center block w-full text-slate-900 text-[14px]">{t('total')}</span> : ((pageNumber - 1) * pageSize + index + 1)
         },
         {
             key: 'buildingNo',
@@ -70,17 +78,17 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             key: 'units',
             label: t('columns.units'),
             align: 'center',
-            cellClassName: `font-semibold text-slate-700 border ${BORDER_CLASS}`,
+            cellClassName: `font-normal text-[13px] text-slate-900 border ${BORDER_CLASS}`,
             headerClassName: `border ${BORDER_CLASS} ${HEADER_CLASS}`
         },
         {
             key: 'demand',
             label: t('columns.demandCr'),
             align: 'center',
-            cellClassName: `font-semibold text-slate-700 border ${BORDER_CLASS}`,
+            cellClassName: `font-normal text-[13px] text-slate-900 border ${BORDER_CLASS}`,
             headerClassName: `border ${BORDER_CLASS} ${HEADER_CLASS}`,
             render: (_val, row) => {
-                if (row.isTotal) return row.demand;
+                if (row.isTotal) return <span className="font-bold">{row.demand}</span>;
                 const demand = row.totalDemand || 0;
                 if (demand >= 10000000) {
                     return `₹${(demand / 10000000).toFixed(2)}Cr`;
@@ -101,7 +109,7 @@ export const getPendingStructuresColumns = (uniqueAuthorities: AuthoritySignatur
             headerClassName: `border ${BORDER_CLASS} ${HEADER_CLASS}`,
             render: (_val, row) => {
                 if (row.isTotal) {
-                    return <span className="font-bold text-slate-800">{(row[`total_auth_${auth.signAuthorityId}`] as React.ReactNode) ?? 0}</span>;
+                    return <span className="font-bold text-slate-900">{(row[`total_auth_${auth.signAuthorityId}`] as React.ReactNode) ?? 0}</span>;
                 }
                 const sig = row.authoritySignatures?.find((s: AuthoritySignature) => s.signAuthorityId === auth.signAuthorityId);
                 if (sig) {

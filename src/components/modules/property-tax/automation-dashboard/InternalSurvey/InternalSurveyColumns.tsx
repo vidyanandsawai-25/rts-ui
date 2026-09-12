@@ -6,6 +6,10 @@ import { getCommonDivisionColumn, getCommonSrColumn } from '../CommonColumns/Com
 import { formatIndianNumber } from '@/lib/utils/numberUtils';
 
 export const commonBorderClass = 'border-slate-400';
+export const COMMON_BODY_TEXT_COLOR = 'text-black';
+export const COMMON_BODY_TEXT_SIZE = 'text-[14px]';
+export const COMMON_BODY_CELL_CLASS = `w-full h-full p-2 text-center flex items-center justify-center transition-colors ${COMMON_BODY_TEXT_SIZE} ${COMMON_BODY_TEXT_COLOR}`;
+export const COMMON_CELL_WRAPPER_CLASS = `!p-0 border ${commonBorderClass}`;
 
 export type InternalSurveyTableRow = {
     sr: number | string;
@@ -46,14 +50,14 @@ export const getInternalSurveyColumns = (
 ): Column<InternalSurveyTableRow>[] => {
 
     const srColumn = getCommonSrColumn<InternalSurveyTableRow>();
-    srColumn.cellClassName = `p-3 text-slate-900 font-bold border ${commonBorderClass}`;
+    srColumn.cellClassName = `${COMMON_BODY_TEXT_COLOR} ${COMMON_BODY_TEXT_SIZE} border ${commonBorderClass}`;
 
     const divisionColumn = getCommonDivisionColumn<InternalSurveyTableRow>(onRowClick, linkHref);
-    divisionColumn.cellClassName = `!p-0 border ${commonBorderClass} border-l-transparent group-hover:border-l-indigo-500`;
+    divisionColumn.cellClassName = `${COMMON_CELL_WRAPPER_CLASS} border-l-transparent group-hover:border-l-indigo-500`;
 
     const renderClickableCell = (value: unknown, row: InternalSurveyTableRow, key: string, textClass: string) => (
         <div
-            className={`w-full h-full p-3 text-center font-bold text-[13px] flex items-center justify-center transition-colors ${row.isTotal ? 'text-slate-900' : textClass}`}
+            className={`${COMMON_BODY_CELL_CLASS} ${row.isTotal ? 'font-bold' : 'font-normal'} ${row.isTotal ? 'text-black' : textClass}`}
             onClick={(e) => {
                 e.stopPropagation();
                 if (row.isTotal) return;
@@ -111,12 +115,12 @@ export const getInternalSurveyHeaderRows = (
     const commonHeaderClass = `border ${commonBorderClass} px-2 py-1 text-center text-table-header text-slate-900 sticky top-0 z-20`;
 
     const bgColors = {
-        geo: 'bg-blue-100',
-        property: 'bg-purple-100',
-        assessed: 'bg-green-100',
-        unassessed: 'bg-orange-100',
-        newlyAssessed: 'bg-emerald-100',
-        photo: 'bg-cyan-100'
+        geo: 'bg-blue-100/80',
+        property: 'bg-purple-100/80',
+        assessed: 'bg-green-100/80',
+        unassessed: 'bg-orange-100/80',
+        newlyAssessed: 'bg-emerald-100/80',
+        photo: 'bg-cyan-100/80'
     };
 
     const topRow: HeaderCell[] = [

@@ -2,15 +2,24 @@ import type React from 'react';
 import { Column, HeaderCell } from '@/components/common/AutomationTable';
 import { AssessmentRow } from '@/types/automation-dashboard/assessment/assessmentgrid.type';
 
+export const commonBorderClass = 'border-slate-400 dark:border-slate-600';
+export const COMMON_BODY_TEXT_COLOR = 'text-black';
+export const COMMON_BODY_TEXT_SIZE = 'text-[14px]';
+export const COMMON_BODY_CELL_CLASS = `w-full h-full p-2 py-3 flex items-center justify-center transition-colors ${COMMON_BODY_TEXT_SIZE} ${COMMON_BODY_TEXT_COLOR}`;
+export const commonHeaderClass = `bg-white border ${commonBorderClass} px-2 text-center text-table-header text-slate-900 sticky top-0 z-20`;
+export const commonClassificationHeaderClass = `bg-purple-100 py-3 border ${commonBorderClass} px-1 text-center text-table-header text-slate-900 sticky top-0 z-20`;
+
+const isTotalRow = (row: AssessmentRow): boolean =>
+    Boolean(row.isTotal) || row.zoneName === 'TOTAL' || row.zoneName === 'GRAND TOTAL' || row.zoneId === undefined || row.zoneId === null;
+
 const renderClickableCell = (value: unknown, row: AssessmentRow, locale: string, workflowStageId: string | null, returnUrl: string, router: { push: (href: string) => void }, extraQuery: string = '') => {
     if (value === undefined || value === null) return value as React.ReactNode;
-    // Don't render links for grand total row if it doesn't have a specific zoneId (but 0 is valid for TOTAL)
-    if (row.zoneId === undefined || row.zoneId === null) return <div className="w-full h-full p-3 flex items-center justify-center cursor-default">{value as React.ReactNode}</div>;
+    if (isTotalRow(row)) return <div className={`${COMMON_BODY_CELL_CLASS} cursor-default font-bold text-black`}>{value as React.ReactNode}</div>;
 
     return (
         <div
             onClick={() => router.push(`/${locale}/property-tax/automation-dashboard/property-details-dashboard/${row.zoneId}?workflowStageId=${workflowStageId || ''}&stage=Assessment${row.zoneNo ? `&zoneNo=${row.zoneNo}` : ''}${extraQuery}&returnUrl=${encodeURIComponent(returnUrl)}`)}
-            className="w-full h-full p-3 flex items-center justify-center cursor-pointer hover:bg-blue-50/50 hover:text-blue-800 transition-colors"
+            className={`${COMMON_BODY_CELL_CLASS} cursor-pointer hover:bg-blue-50/50 hover:text-blue-800 font-normal`}
         >
             <span className="hover:underline">{value as React.ReactNode}</span>
         </div>
@@ -22,10 +31,6 @@ const renderHeader = (title: string, _showSort: boolean = true) => (
         {title}
     </div>
 );
-
-export const commonBorderClass = 'border-slate-400 dark:border-slate-600';
-export const commonHeaderClass = `bg-white border ${commonBorderClass} px-2 py-1 text-center text-table-header text-slate-900 sticky top-0 z-20`;
-export const commonClassificationHeaderClass = `bg-purple-200 py-3 border ${commonBorderClass} px-1 text-center text-table-header text-slate-900 sticky top-0 z-20`;
 
 export const getAssessmentHeaderRows = (tab: string, t: (key: string) => string): HeaderCell[][] => [
     [
@@ -54,7 +59,7 @@ export const getAssessmentHeaderRows = (tab: string, t: (key: string) => string)
             headerClassName: `min-w-[120px] ${commonHeaderClass}`
         },
         {
-            label: <div className="font-bold text-[11px] lg:text-[15px] text-slate-900 uppercase">{t('columns.propertyClassification')}</div>,
+            label: <div className="text-[11px] lg:text-[15px] text-slate-900 uppercase">{t('columns.propertyClassification')}</div>,
             colSpan: tab === 'Unassessed' ? 7 : 8,
             align: 'center',
             headerClassName: commonClassificationHeaderClass
@@ -104,8 +109,8 @@ export const getAssessmentHeaderRows = (tab: string, t: (key: string) => string)
     ]
 ];
 
-export const commonAssessmentCellClass = `p-0 text-center text-table-header text-slate-950 font-bold select-none bg-white border ${commonBorderClass}`;
-export const commonAssessmentNoPaddingCellClass = `!p-0 text-center text-table-header text-slate-950 font-bold select-none bg-white h-[1px] border ${commonBorderClass}`;
+export const commonAssessmentCellClass = `p-0 text-center ${COMMON_BODY_TEXT_SIZE} ${COMMON_BODY_TEXT_COLOR} select-none bg-white border ${commonBorderClass}`;
+export const commonAssessmentNoPaddingCellClass = `!p-0 text-center ${COMMON_BODY_TEXT_SIZE} ${COMMON_BODY_TEXT_COLOR} select-none bg-white h-[1px] border ${commonBorderClass}`;
 
 export const getAssessmentColumns = (
     tab: string,
@@ -128,7 +133,10 @@ export const getAssessmentColumns = (
             align: 'left',
             cellClassName: `min-w-[140px] ${commonAssessmentCellClass}`,
             rowSpan: (row) => row.rowSpan ?? 0,
-            render: (value, row) => (row.zoneNo && value !== 'TOTAL' && value !== 'GRAND TOTAL') ? `${row.zoneNo} - ${value}` : value as React.ReactNode
+            render: (value, row) => {
+                const content = (row.zoneNo && !isTotalRow(row)) ? `${row.zoneNo} - ${value}` : value as React.ReactNode;
+                return <span className={isTotalRow(row) ? 'font-bold text-black' : 'font-normal'}>{content}</span>;
+            }
         },
         {
             key: 'totalStructure',
@@ -153,25 +161,25 @@ export const getAssessmentColumns = (
             cellClassName: `min-w-[130px] ${commonAssessmentCellClass}`,
             render: (value) => {
                 const colors = {
-                    'Assessed': 'text-blue-950 bg-blue-100',
-                    'Unassessed': 'text-amber-950 bg-amber-100',
-                    'Rented': 'text-orange-950 bg-orange-100',
-                    'Assessed + Unassessed': 'text-slate-800 bg-slate-100',
-                    'Additional Construction': 'text-blue-950 bg-blue-100',
-                    'Change Of Use': 'text-amber-950 bg-amber-100',
-                    'NoChange': 'text-orange-950 bg-orange-100',
-                    'Underassessed': 'text-orange-950 bg-orange-100',
-                    'Residential': 'text-blue-950 bg-blue-100',
-                    'Commercial': 'text-green-950 bg-green-100',
-                    'Industrial': 'text-purple-950 bg-purple-100',
-                    'Mixed Use': 'text-amber-950 bg-amber-100',
-                    'Public Utility': 'text-teal-950 bg-teal-100',
-                    'Open Plots': 'text-slate-950 bg-slate-100',
-                    'Owner': 'text-indigo-950 bg-indigo-100',
-                    'Renter': 'text-purple-950 bg-purple-100'
+                    'Assessed': 'text-black bg-blue-100/50',
+                    'Unassessed': 'text-black bg-amber-100/50',
+                    'Rented': 'text-black bg-orange-100/50',
+                    'Assessed + Unassessed': 'text-black bg-slate-100/50',
+                    'Additional Construction': 'text-black bg-blue-100/50',
+                    'Change Of Use': 'text-black bg-amber-100/50',
+                    'NoChange': 'text-black bg-orange-100/50',
+                    'Underassessed': 'text-black bg-orange-100/50',
+                    'Residential': 'text-black bg-blue-100/50',
+                    'Commercial': 'text-black bg-green-100/50',
+                    'Industrial': 'text-black bg-purple-100/50',
+                    'Mixed Use': 'text-black bg-amber-100/50',
+                    'Public Utility': 'text-black bg-teal-100/50',
+                    'Open Plots': 'text-black bg-slate-100/50',
+                    'Owner': 'text-black bg-indigo-100/50',
+                    'Renter': 'text-black bg-purple-100/50'
                 };
                 const colorClass = colors[value as keyof typeof colors] || 'text-slate-900';
-                return <div className={`h-full w-full py-3 -my-2 ${colorClass}`}>{value as React.ReactNode}</div>;
+                return <div className={`h-full w-full py-3 -my-2 font-semibold ${colorClass}`}>{value as React.ReactNode}</div>;
             }
         },
         {

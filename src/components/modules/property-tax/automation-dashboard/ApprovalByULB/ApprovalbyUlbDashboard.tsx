@@ -93,7 +93,10 @@ const ApprovalbyUlbDashboard = ({ serverData, exportData, exportRoleName }: Appr
         router.push(`${basePath}/approval-by-ulb/ulb-pending-signs${workflowStageId ? `?workflowStageId=${workflowStageId}` : ''}`);
     }, [router, basePath, workflowStageId]);
 
-    const columns = useMemo(() => getApprovalColumns(roles, handleNavigation, t), [roles, handleNavigation, t]);
+    const pageNumber = serverData?.pageNumber || 1;
+    const pageSize = serverData?.pageSize || 10;
+
+    const columns = useMemo(() => getApprovalColumns(roles, handleNavigation, t, pageNumber, pageSize), [roles, handleNavigation, t, pageNumber, pageSize]);
     const headerRows = useMemo(() => getApprovalHeaderRows(roles, t, 'zone', handleExportClick), [roles, t, handleExportClick]);
 
     const exportConfig = useMemo<ExportConfig<Record<string, unknown>>>(() => {
@@ -133,7 +136,7 @@ const ApprovalbyUlbDashboard = ({ serverData, exportData, exportRoleName }: Appr
                 columns={columns}
                 headerRows={headerRows}
                 data={tableData}
-                rowClassName={(row) => row.isTotal ? "bg-purple-200 dark:bg-purple-900/50 text-slate-900 dark:text-slate-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] border-t-2 border-slate-300 dark:border-slate-600 hover:bg-purple-200 dark:hover:bg-purple-900/70 transition-colors" : "group transition-colors border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"}
+                rowClassName={(row) => row.isTotal ? "bg-purple-100 dark:bg-purple-900/50 text-slate-900 dark:text-slate-100 font-semibold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] border-t-2 border-slate-300 dark:border-slate-600 hover:bg-purple-100 dark:hover:bg-purple-900/70 transition-colors" : "group transition-colors border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"}
                 getRowKey={(row, index) => `${row.zoneId || 'total'}-${index}`}
                 onRowClick={(row) => {
                     if (!row.isTotal) {

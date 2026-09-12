@@ -34,6 +34,9 @@ export type GeoSequencingData = {
 };
 
 export const commonBorderClass = 'border-slate-400 dark:border-slate-600';
+export const COMMON_BODY_TEXT_COLOR = 'text-black dark:text-slate-100';
+export const COMMON_BODY_CELL_CLASS = `w-full h-full p-2 text-[14px] ${COMMON_BODY_TEXT_COLOR} text-center whitespace-nowrap flex items-center justify-center transition-colors`;
+export const COMMON_CELL_WRAPPER_CLASS = `!p-0 border ${commonBorderClass}`;
 
 export const getGeoSequencingSharedColumns = (
     _t: (key: string) => string,
@@ -45,7 +48,7 @@ export const getGeoSequencingSharedColumns = (
 
     const renderClickableCell = (value: unknown, row: GeoSequencingData, key: string, colorClass: string) => (
         <div
-            className={`w-full h-full p-3 text-[13px] text-center font-bold whitespace-nowrap flex items-center justify-center transition-colors ${row.isTotal ? 'text-slate-900 dark:text-slate-100' : `cursor-pointer ${colorClass}`}`}
+            className={`${COMMON_BODY_CELL_CLASS} ${row.isTotal ? 'font-bold text-black dark:text-slate-100' : `font-normal cursor-pointer ${colorClass}`}`}
             onClick={(e) => {
                 e.stopPropagation();
                 if (row.isTotal) return;
@@ -57,10 +60,10 @@ export const getGeoSequencingSharedColumns = (
     );
 
     const srColumn = getCommonSrColumn<GeoSequencingData>();
-    srColumn.cellClassName = `p-3 text-slate-900 font-bold border ${commonBorderClass}`;
+    srColumn.cellClassName = `text-black border ${commonBorderClass}`;
 
     const divisionColumn = getCommonDivisionColumn<GeoSequencingData>(onRowClick, linkHref);
-    divisionColumn.cellClassName = `!p-0 border ${commonBorderClass} group-hover:border-l-indigo-500`;
+    divisionColumn.cellClassName = `${COMMON_CELL_WRAPPER_CLASS} group-hover:border-l-indigo-500`;
 
     const baseColumns: Column<GeoSequencingData>[] = [
         srColumn,
@@ -68,13 +71,13 @@ export const getGeoSequencingSharedColumns = (
     ];
 
     const cellStyles = {
-        geo: 'text-blue-900 dark:text-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900/40',
-        property: 'text-purple-950 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-900/40',
-        assessed: 'text-emerald-950 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/40',
-        unassessed: 'text-orange-950 dark:text-orange-200 hover:bg-orange-50 dark:hover:bg-orange-900/40'
+        geo: 'text-black dark:text-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900/40',
+        property: 'text-black dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-900/40',
+        assessed: 'text-black dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/40',
+        unassessed: 'text-black dark:text-orange-200 hover:bg-orange-50 dark:hover:bg-orange-900/40'
     };
 
-    const commonCellClass = `!p-0 border ${commonBorderClass}`;
+    const commonCellClass = COMMON_CELL_WRAPPER_CLASS;
 
     if (viewType === 'zone') {
         baseColumns.push({
@@ -159,10 +162,10 @@ export const getGeoSequencingSharedHeaderRows = (
 
     // Grouped background colors as requested
     const bgColors = {
-        geo: 'bg-blue-50 dark:bg-blue-900/40',
-        property: 'bg-purple-100 dark:bg-purple-900/40',
-        assessed: 'bg-emerald-100 dark:bg-emerald-900/40', // Common bg for Registered, Assessed, Newly Assessed
-        unassessed: 'bg-orange-100 dark:bg-orange-900/40' // Common bg for Unassessed, Inprocess
+        geo: 'bg-blue-50/50 dark:bg-blue-900/40',
+        property: 'bg-purple-100/80 dark:bg-purple-900/40',
+        assessed: 'bg-emerald-100/80 dark:bg-emerald-900/40', // Common bg for Registered, Assessed, Newly Assessed
+        unassessed: 'bg-orange-100/80 dark:bg-orange-900/40' // Common bg for Unassessed, Inprocess
     };
 
     const topRow: HeaderCell[] = [

@@ -243,11 +243,11 @@ const AssessmentDetailsContent = ({ serverData, propertyDescriptions }: { server
                 tableClassName="border-collapse"
                 paginationConfig={{ enabled: false, showPageSizeSelector: false }}
                 rowClassName={(row) => {
-                    if (row.zoneName === 'GRAND TOTAL' || row.id?.startsWith('gtot-')) {
-                        return "border-t-2 border-slate-400 text-slate-950 font-bold";
+                    if (row.zoneName === 'GRAND TOTAL' || row.id?.startsWith('gtot-') || row.isTotal) {
+                        return "border-t-2 border-slate-400 text-black font-bold [&_td]:font-bold [&_div]:font-bold";
                     }
                     if (row.zoneName === 'TOTAL' || row.id?.startsWith('tot-')) {
-                        return "border-t-2 border-slate-400 text-slate-950 font-bold";
+                        return "border-t-2 border-slate-400 text-black font-bold [&_td]:font-bold [&_div]:font-bold";
                     }
                     return "hover:bg-slate-50/50 transition-colors group";
                 }}

@@ -4,15 +4,18 @@ import { MapPin, Download } from 'lucide-react';
 import { Classification, ZoneDataRow } from '@/types/automation-dashboard/approval-by-ulb/approval-by-ulb.type';
 
 const roleColors = [
-    { header: 'bg-fuchsia-100', text: 'text-rose-900' },
-    { header: 'bg-cyan-100', text: 'text-teal-700' },
-    { header: 'bg-blue-100', text: 'text-blue-700' },
-    { header: 'bg-emerald-100', text: 'text-emerald-700' },
-    { header: 'bg-violet-100', text: 'text-violet-700' }
+    { header: 'bg-fuchsia-100/70', text: 'text-rose-900' },
+    { header: 'bg-cyan-100/50', text: 'text-teal-700' },
+    { header: 'bg-blue-100/70', text: 'text-blue-700' },
+    { header: 'bg-emerald-100/50', text: 'text-emerald-700' },
+    { header: 'bg-violet-100/70', text: 'text-violet-700' }
 ];
 
 export const commonBorderClass = 'border-slate-400 dark:border-slate-600';
-export const commonApprovalCellClass = `border ${commonBorderClass} p-1 text-center font-bold`;
+export const COMMON_BODY_TEXT_COLOR = 'text-black';
+export const COMMON_BODY_TEXT_SIZE = 'text-[14px]';
+export const COMMON_BODY_CELL_CLASS = `border ${commonBorderClass} p-1 text-center ${COMMON_BODY_TEXT_SIZE} ${COMMON_BODY_TEXT_COLOR}`;
+export const commonApprovalCellClass = COMMON_BODY_CELL_CLASS;
 export const commonApprovalHeaderClass = `border ${commonBorderClass} p-1 text-center text-table-header text-slate-700 sticky top-0 z-20`;
 export const commonApprovalSubHeaderClass = `border ${commonBorderClass} p-1 text-center text-table-header text-slate-700 min-w-[60px] sticky top-[42px] z-20`;
 
@@ -33,16 +36,18 @@ export const getUniqueRoles = (data: ZoneDataRow[]): RoleDef[] => {
 export const getApprovalColumns = (
     roles: RoleDef[],
     onDivisionClick?: (zoneId: string, zoneName: string) => void,
-    t?: (key: string) => string
+    t?: (key: string) => string,
+    pageNumber: number = 1,
+    pageSize: number = 10
 ): Column<ZoneDataRow>[] => {
-    const defaultCellClass = `border ${commonBorderClass} p-3 text-center font-bold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap`;
+    const defaultCellClass = `border ${commonBorderClass} p-3 text-center font-normal ${COMMON_BODY_TEXT_COLOR} ${COMMON_BODY_TEXT_SIZE} cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap`;
     const baseColumns: Column<ZoneDataRow>[] = [
         {
             key: 'sr',
             label: t ? t('columns.sr') : '',
             align: 'center',
             cellClassName: defaultCellClass,
-            render: (_value, row, index) => row.isTotal ? '' : index + 1
+            render: (_value, row, index) => row.isTotal ? '' : <span className={row.isTotal ? 'font-bold' : 'font-normal'}>{(pageNumber - 1) * pageSize + index + 1}</span>
         },
         {
             key: 'zoneName',
@@ -67,7 +72,7 @@ export const getApprovalColumns = (
                         }}
                     >
                         <MapPin className="h-4 w-4 text-indigo-600 flex-shrink-0" />
-                        <span className="text-slate-950 font-bold text-[13px] whitespace-nowrap">
+                        <span className="text-slate-950 text-[14px] whitespace-nowrap">
                             {row.zoneNo ? `${row.zoneNo} - ` : ''}{row.wardName || nameStr}
                         </span>
                     </div>
@@ -238,7 +243,7 @@ export const getApprovalHeaderRows = (
         },
         {
             label: (
-                <div className="flex flex-col items-center justify-center font-bold text-[14px] text-slate-700 leading-tight text-center whitespace-pre-wrap">
+                <div className="flex flex-col items-center justify-center font-bold text-[15px] text-slate-700 leading-tight text-center whitespace-pre-wrap">
                     <span>{t ? t('totalStructures') : 'Total Structures'}</span>
                 </div>
             ),
@@ -248,7 +253,7 @@ export const getApprovalHeaderRows = (
         },
         {
             label: (
-                <div className="flex flex-col items-center justify-center font-bold text-[14px] text-slate-700 leading-tight text-center whitespace-pre-wrap">
+                <div className="flex flex-col items-center justify-center font-bold text-[15px] text-slate-700 leading-tight text-center whitespace-pre-wrap">
                     <span>{t ? t('totalUnitsSubmitted') : 'Total Units Submitted'}</span>
                 </div>
             ),
@@ -258,7 +263,7 @@ export const getApprovalHeaderRows = (
         },
         {
             label: (
-                <div className="flex flex-col items-center justify-center font-bold text-[14px] text-slate-700 leading-tight text-center whitespace-pre-wrap">
+                <div className="flex flex-col items-center justify-center font-bold text-[15px] text-slate-700 leading-tight text-center whitespace-pre-wrap">
                     <span>{t ? t('totalDemandCr') : 'Total Demand (Cr)'}</span>
                 </div>
             ),
@@ -276,7 +281,7 @@ export const getApprovalHeaderRows = (
         topRow.push({
             label: (
                 <div className="relative flex items-center justify-center min-h-[36px]">
-                    <span className={`block w-full text-center leading-tight font-bold text-[14px] text-slate-700 ${viewType !== 'ward' ? 'pr-24' : ''}`}>{role}</span>
+                    <span className={`block w-full text-center leading-tight font-bold text-[15px] text-slate-700 ${viewType !== 'ward' ? 'pr-24' : ''}`}>{role}</span>
                     {viewType !== 'ward' && (
                         <button
                             type="button"
