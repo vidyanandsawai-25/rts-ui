@@ -394,4 +394,3 @@ For a stronger performance baseline:
 5. Capture server and SQL telemetry during the same test window.
 6. Define an SLA only after product requirements and repeated measurements are available.
 7. Run high-concurrency tests only with authorization and outside peak production traffic.
-
