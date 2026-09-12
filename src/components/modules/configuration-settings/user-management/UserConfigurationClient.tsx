@@ -2,9 +2,10 @@
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Settings, Users, Shield, AlertCircle } from 'lucide-react';
-import { Tabs, TabList, Tab, TabPanel, TableHeader, PageContainer } from '@/components/common';
-import { UserConfigurationClientProps } from '@/types/user-management';
 import { useTranslations } from 'next-intl';
+import { PageContainer, TableHeader, Tabs, TabList, Tab, TabPanel } from '@/components/common';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
+import { UserConfigurationClientProps } from '@/types/user-management';
 
 export function UserConfigurationClient({
   userManagement,
@@ -15,7 +16,20 @@ export function UserConfigurationClient({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations('userManagement');
   const tCommon = useTranslations('common');
+
+  const userLabel = useAliasLabel('User', t('aliasFallback.user'));
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
+  const designationLabel = useAliasLabel('Designation', t('aliasFallback.designation'));
+
+  const title = translations?.title || t('config.title', { user: userLabel });
+  const subtitle =
+    translations?.subtitle || t('config.subtitle', { user: userLabel, role: roleLabel });
+  const usersTab = translations?.usersTab || t('config.usersTab', { user: userLabel });
+  const rolesTab =
+    translations?.rolesTab ||
+    t('config.rolesTab', { role: roleLabel, designation: designationLabel });
 
   const activeTab = searchParams.get('tab') || 'users';
 
@@ -36,7 +50,7 @@ export function UserConfigurationClient({
   return (
     <PageContainer>
       <div className="space-y-3 overflow-x-hidden">
-        <TableHeader icon={Settings} title={translations.title} subtitle={translations.subtitle} />
+        <TableHeader icon={Settings} title={title} subtitle={subtitle} />
 
         {fetchError && (
           <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -58,11 +72,11 @@ export function UserConfigurationClient({
           <TabList className="grid w-full grid-cols-2 max-w-[1000px] overflow-hidden">
             <Tab value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              {translations.usersTab}
+              {usersTab}
             </Tab>
             <Tab value="roles" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
-              {translations.rolesTab}
+              {rolesTab}
             </Tab>
           </TabList>
 

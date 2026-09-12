@@ -1,6 +1,9 @@
 import { apiClient } from "@/services/api.service";
 import { getTranslations } from "next-intl/server";
 import { ApiError, normalizePagedResponse } from "@/lib/utils/api";
+import { getAppConfig } from "@/config/app.config";
+import { serverFetch } from "@/lib/utils/server-fetch";
+import { getAuthHeaders } from "@/lib/utils/server-auth-headers";
 import {
   LockedScreen,
   LockUnlockPropertyItem,
@@ -144,3 +147,52 @@ export async function getLockUnlockPropertiesByCategory(
 
   return normalizePagedResponse<LockUnlockPropertyItem>(response.data);
 }
+
+/**
+ * Fetches paginated properties with lock status details by Excel upload file.
+ * POST /api/LockUnlock/properties/search-by-excel
+ */
+export async function getLockUnlockPropertiesByExcel(
+  formData: FormData
+): Promise<LockUnlockPropertiesResponse> {
+  const config = getAppConfig();
+  const baseUrl = config.api.baseUrl?.trim().replace(/\/+$/, "");
+  if (!baseUrl) throw new Error("Backend API base URL is not configured");
+
+  const url = `${baseUrl}/LockUnlock/properties/search-by-excel`;
+  const headers = await getAuthHeaders();
+
+  const response = await serverFetch(url, {
+    method: "POST",
+    headers,
+    body: formData,
+    cache: "no-store",
+  });
+
+  const text = await response.text();
+  let data: Record<string, unknown> = {};
+  try {
+    data = text ? (JSON.parse(text) as Record<string, unknown>) : {};
+  } catch {
+    data = { message: text };
+  }
+
+  if (!response.ok || data.success === false) {
+    const t = await getTranslations("lockUnlock");
+    const errorMessage =
+      typeof data.message === "string"
+        ? data.message
+        : typeof data.error === "string"
+        ? data.error
+        : t("messages.fetchFailed");
+
+    throw new ApiError(
+      response.status ?? 500,
+      errorMessage,
+      "Get properties by excel failed"
+    );
+  }
+
+  return normalizePagedResponse<LockUnlockPropertyItem>(data);
+}
+

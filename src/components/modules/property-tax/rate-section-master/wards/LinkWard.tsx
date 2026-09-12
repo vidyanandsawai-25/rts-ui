@@ -160,9 +160,8 @@ export default function AddWard({
       return;
     }
 
-    // Find the rate section by id
-    const selectedRate = ssrAllRateSections.find(r => String(r.id) === selectedZoneNo);
-    if (!selectedRate?.id) {
+    const id = Number(selectedZoneNo);
+    if (!id || isNaN(id)) {
       return;
     }
 
@@ -175,7 +174,7 @@ export default function AddWard({
     } finally {
       setRateSectionSelectAllLoading(false);
     }
-  }, [selectedZoneNo, ssrAllRateSections, state]);
+  }, [selectedZoneNo, state]);
 
   return (
     <Drawer

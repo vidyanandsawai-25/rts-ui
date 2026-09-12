@@ -9,6 +9,7 @@ import { ScreenMasterManagement } from './ScreenMasterManagement';
 import { RolePermissionManager } from './RolePermissionManager';
 import { PageContainer } from '@/components/common/PageContainer';
 import { useQueryTransition } from '@/hooks/useQueryTransition';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import type {
   ScreenMasterData,
   ScreenGroupMasterData,
@@ -30,10 +31,6 @@ interface ScreenAccessLayoutProps {
   roles: RoleMasterData[];
   initialRoleAccess: ScreenAccessPermissionData[];
   dataRoleId?: number;
-  translations: {
-    title: string;
-    subtitle: string;
-  };
   screensPagination: PaginationData;
   groupsPagination: PaginationData;
   fetchError?: string;
@@ -51,7 +48,6 @@ export function ScreenAccessLayout({
   roles,
   initialRoleAccess,
   dataRoleId,
-  translations,
   screensPagination,
   groupsPagination,
   fetchError,
@@ -60,6 +56,18 @@ export function ScreenAccessLayout({
   const t = useTranslations('screenAccess');
   const tCommon = useTranslations('common');
   const { updateQueries } = useQueryTransition();
+
+  const screenLabel = useAliasLabel('Screen', t('aliasFallback.screen'));
+  const screenGroupLabel = useAliasLabel('Screen_Group', t('aliasFallback.screenGroup'));
+  const accessControlLabel = useAliasLabel('Access_Control', t('aliasFallback.accessControl'));
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
+
+  const headerTitle = t('title', { screen: screenLabel, accessControl: accessControlLabel });
+  const headerSubtitle = t('subtitle', {
+    screen: screenLabel,
+    screenGroup: screenGroupLabel,
+    role: roleLabel,
+  });
 
   const isUnauthorized =
     statusCode === 401 ||
@@ -86,7 +94,7 @@ export function ScreenAccessLayout({
 
     return (
       <PageContainer className="flex flex-col min-h-screen">
-        <TableHeader title={translations.title} subtitle={translations.subtitle} icon={Monitor} />
+        <TableHeader title={headerTitle} subtitle={headerSubtitle} icon={Monitor} />
         <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white rounded-xl border border-gray-200/80 shadow-sm mt-4 animate-in fade-in duration-300">
           <AlertCircle className="w-12 h-12 text-red-500 mb-4 animate-bounce" />
           <h3 className="text-lg font-semibold text-gray-900">{tCommon(messageKey)}</h3>
@@ -97,7 +105,7 @@ export function ScreenAccessLayout({
 
   return (
     <PageContainer className="flex flex-col min-h-screen">
-      <TableHeader title={translations.title} subtitle={translations.subtitle} icon={Monitor} />
+      <TableHeader title={headerTitle} subtitle={headerSubtitle} icon={Monitor} />
 
       {fetchError && (
         <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl shadow-sm flex items-start gap-3 animate-in fade-in duration-300">
@@ -127,14 +135,18 @@ export function ScreenAccessLayout({
                 className="gap-2 data-[state=active]:bg-white flex flex-col justify-center items-center py-4"
               >
                 <Monitor className="w-4 h-4 text-blue-600" />
-                <span className="font-semibold text-sm">{t('tabs.screenManagement')}</span>
+                <span className="font-semibold text-sm">
+                  {t('tabs.screenManagement', { screen: screenLabel })}
+                </span>
               </Tab>
               <Tab
                 value="access-control"
                 className="gap-2 px-6 data-[state=active]:bg-white flex flex-col justify-center items-center py-4"
               >
                 <Shield className="w-4 h-4 text-violet-600" />
-                <span className="font-semibold text-sm">{t('tabs.accessControl')}</span>
+                <span className="font-semibold text-sm">
+                  {t('tabs.accessControl', { accessControl: accessControlLabel })}
+                </span>
               </Tab>
             </TabList>
           </div>

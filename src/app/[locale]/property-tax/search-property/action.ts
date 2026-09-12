@@ -34,6 +34,7 @@ import {
 } from "@/lib/api/property-search";
 import { resolveSearchErrorMessage } from "@/lib/api/property-search/resolve-search-error-message";
 import { hasTabSearchInput } from "@/components/modules/property-tax/search-property/search-field-groups";
+import { logger } from "@/lib/utils/logger";
 
 /* ================= CONSTANTS ================= */
 
@@ -179,7 +180,8 @@ export async function listPropertyAssessmentStatusesAction(): Promise<
         id: status.id,
         label: formatAssessmentStatusLabel(status.statusName),
       }));
-  } catch {
+  } catch (err) {
+    logger.error("Failed to list property assessment statuses", { error: err as Error });
     return [];
   }
 }
@@ -201,7 +203,8 @@ export async function listPropertyCategoriesAction(): Promise<
       .sort((a, b) =>
         a.propertyCategoryName.localeCompare(b.propertyCategoryName, "mr")
       );
-  } catch {
+  } catch (err) {
+    logger.error("Failed to list property categories", { error: err as Error });
     return [];
   }
 }
@@ -219,19 +222,22 @@ export async function listPropertyWorkflowStagesAction(): Promise<
         stageName: stage.stageName,
         description: stage.description,
       }));
-  } catch {
+  } catch (err) {
+    logger.error("Failed to list property workflow stages", { error: err as Error });
     return [];
   }
 }
 
 /* ================= MAIN SEARCH ================= */
 
+const MAX_SEARCH_PAGE_SIZE = 100;
+
 /**
  * Wraps the .NET `/api/Property/search` endpoint.
  *
  * Stat cards set `DashboardFilter` (1–6) via the URL `status` param.
  * Form search (`isActive=1`) adds tab-specific Quick Search / KYC filters.
- * All requests use `PageSize=-1` so the table can paginate client-side.
+ * Applies bounded server-side pagination to guarantee safe Node.js memory footprint.
  */
 export async function filterPropertiesAction(
   selectedStatus: PropertyStatus | null,
@@ -266,17 +272,13 @@ export async function filterPropertiesAction(
     activeTab === "values-dues" &&
     searchCriteria.rateableValueFilter === "top";
 
-  const useLocalPagination = isRangeSearch || isKycNameSearch || isTopSearch;
-
-  let apiPageSize = pageSize;
+  const boundedPageSize = Math.min(Math.max(pageSize, 1), MAX_SEARCH_PAGE_SIZE);
+  let apiPageSize = boundedPageSize;
   let apiPageNumber: number | undefined = pageNumber;
   
-  if (isRangeSearch || isKycNameSearch) {
-    apiPageSize = -1;
-    apiPageNumber = undefined;
-  } else if (isTopSearch) {
-    apiPageSize = parsePositiveInteger(searchCriteria.rateableValueFrom || "") ?? 1;
-    apiPageNumber = undefined;
+  if (isTopSearch) {
+    apiPageSize = Math.min(parsePositiveInteger(searchCriteria.rateableValueFrom || "") ?? 1, MAX_SEARCH_PAGE_SIZE);
+    apiPageNumber = 1;
   }
 
   const payload = buildPropertySearchPayload(
@@ -323,7 +325,7 @@ export async function filterPropertiesAction(
       sortedResults = [...unique].sort((a, b) =>
         comparePropertyNo(a.propertyNo, b.propertyNo)
       );
-      totalCount = sortedResults.length;
+      totalCount = (ownerResult.totalCount || 0) + (occupierResult.totalCount || 0);
     } else {
       const result = await searchProperties(payload);
       const normalizedResults = result.items ?? [];
@@ -341,14 +343,8 @@ export async function filterPropertiesAction(
       totalCount = result.totalCount;
     }
 
-    const pageResults = useLocalPagination
-      ? sortedResults.slice((pageNumber - 1) * pageSize, pageNumber * pageSize)
-      : sortedResults;
-
-    await enrichApartmentUnitCounts(pageResults, payload, searchCriteria);
-
     return {
-      results: pageResults,
+      results: sortedResults,
       totalCount: isRangeSearch ? sortedResults.length : totalCount,
       error: null,
     };
@@ -358,48 +354,12 @@ export async function filterPropertiesAction(
           ? resolveSearchErrorMessage(err)
           : "Property search failed. Please review your filters and try again.";
 
+    logger.error("Property search failed", { error: err as Error });
     return { results: [], totalCount: 0, error: message };
   }
 }
 
-async function enrichApartmentUnitCounts(
-  results: SearchResult[],
-  payload: PropertySearchCriteriaPayload,
-  searchCriteria: SearchCriteria
-): Promise<void> {
-  const apartmentItems = results.filter(
-    (item) =>
-      item.category?.toLowerCase() === "apartment" ||
-      (item.childUnitCount !== undefined && item.childUnitCount !== null)
-  );
-
-  if (apartmentItems.length === 0) return;
-
-  const unitListPayload: PropertySearchCriteriaPayload = { ...payload };
-
-  if (searchCriteria.propertyNoFrom?.trim()) {
-    unitListPayload.propertyNoFrom = searchCriteria.propertyNoFrom.trim();
-  }
-  if (searchCriteria.propertyNoTo?.trim()) {
-    unitListPayload.propertyNoTo = searchCriteria.propertyNoTo.trim();
-  }
-
-  await Promise.all(
-    apartmentItems.map(async (item) => {
-      try {
-        const res = await fetchApartmentUnitList(item.propertyId, unitListPayload);
-        if (res && typeof res.totalCount === "number") {
-          item.childUnitCount = res.totalCount;
-        }
-      } catch {
-        // Keep original childUnitCount if fetch fails
-      }
-    })
-  );
-}
-
 /* ================= STATS ================= */
-
 
 export async function getMainCardsAction(params?: CardFilterParams): Promise<MainCardsResponse | null> {
   return fetchMainCards(params);
@@ -430,6 +390,7 @@ export async function fetchApartmentUnitListAction(
     const res = await fetchApartmentUnitList(propertyId, criteriaPayload);
     return { items: res.items, totalCount: res.totalCount, error: null };
   } catch (err) {
+    logger.error(`Failed to fetch apartment unit list for property ${propertyId}`, { error: err as Error });
     return {
       items: null,
       totalCount: 0,

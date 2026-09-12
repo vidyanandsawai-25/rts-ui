@@ -17,6 +17,7 @@ import { useTranslations } from 'next-intl';
 import { User, UserTableProps } from '@/types/user-management';
 
 import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export function UserTable({
   users,
@@ -31,6 +32,12 @@ export function UserTable({
   deletingId,
 }: UserTableProps) {
   const t = useTranslations('userManagement');
+  const userLabel = useAliasLabel('User', t('aliasFallback.user'));
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
+  const moduleLabel = useAliasLabel('Module', t('aliasFallback.module'));
+  const userCodeLabel = useAliasLabel('User_Code', t('aliasFallback.userCode'));
+
   const { canEdit, canDelete, haveFullAccess } = useActivePagePermissions();
   const showEdit = canEdit || haveFullAccess;
   const showDelete = canDelete || haveFullAccess;
@@ -38,7 +45,7 @@ export function UserTable({
 
   const columns = [
     {
-      label: t('table.user'),
+      label: t('table.user', { user: userLabel }),
       key: 'userName' as const,
       render: (value: unknown, row: User) => (
         <div className="flex items-center gap-3">
@@ -55,7 +62,7 @@ export function UserTable({
       ),
     },
     {
-      label: t('form.userCode'),
+      label: userCodeLabel || t('form.userCode', { userCode: userCodeLabel }),
       key: 'userCode' as const,
       render: (value: unknown) => (
         <div className="flex items-center">
@@ -82,7 +89,7 @@ export function UserTable({
       ),
     },
     {
-      label: `${t('table.departments')} - ${t('table.role')}`,
+      label: `${departmentLabel}s - ${roleLabel}`,
       key: 'roles' as const,
       render: (_: unknown, row: User) => {
         const isUserActive = row.isActive;
@@ -137,7 +144,7 @@ export function UserTable({
       },
     },
     {
-      label: t('table.modules'),
+      label: t('table.modules', { module: moduleLabel }),
       key: 'moduleNames' as const,
       render: (value: unknown) => {
         const items = value as string[];

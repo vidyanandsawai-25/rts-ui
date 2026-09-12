@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import type { RateMasterClientProps } from "@/types/RVRateMaster";
@@ -65,6 +65,12 @@ export default function RateMasterView({
   }, [useGroups]);
 
   const isPaginationEnabled = totalPages !== undefined && pageNumber !== undefined;
+  const filterValues = useMemo(() => ({
+    zone: initialZone,
+    useGroup: isOpenPlot ? "ALL" : (initialUseGroup || (useGroupsFiltered.length > 0 ? useGroupsFiltered[0].value : "")),
+    year: initialYear,
+  }), [initialZone, initialUseGroup, initialYear, isOpenPlot, useGroupsFiltered]);
+
   const {
     selectedZone,
     selectedUseGroup,
@@ -72,11 +78,7 @@ export default function RateMasterView({
     handleDropdownChange,
   } = useRateMasterFilters({
     mode: "add",
-    filterValues: {
-      zone: initialZone,
-      useGroup: isOpenPlot ? "ALL" : (initialUseGroup || (useGroupsFiltered.length > 0 ? useGroupsFiltered[0].value : "")),
-      year: initialYear,
-    },
+    filterValues,
     useGroupOptions: useGroupsFiltered,
   });
 
@@ -91,9 +93,13 @@ export default function RateMasterView({
   const handleUseGroupChange = useCallback((value: string) => {
     handleDropdownChange('useGroup', value);
   }, [handleDropdownChange]);
+  const [isGeneratingRate, startGenerateTransition] = useTransition();
+
   const handleGenerateRate = () => {
     const routePrefix = isOpenPlot ? 'openplot' : 'rvratemaster';
-    router.push(`/${locale}/property-tax/rate-master/${routePrefix}/add`);
+    startGenerateTransition(() => {
+      router.push(`/${locale}/property-tax/rate-master/${routePrefix}/add`);
+    });
   };
 
   const handleEditRate = () => {
@@ -191,6 +197,7 @@ export default function RateMasterView({
             isDownloadDisabled={isDownloadDisabled || isDrawerOpen}
             isActionDisabled={!!frequencyMismatch || isDrawerOpen}
             isDeleteDisabled={isDrawerOpen}
+            isGeneratingRate={isGeneratingRate}
             t={t}
           />
         </div>

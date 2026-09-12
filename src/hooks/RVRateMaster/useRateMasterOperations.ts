@@ -34,8 +34,9 @@ export function useRateMasterOperations({
   isOpenPlot = false,
 }: UseRateMasterOperationsProps) {
   const t = useTranslations("ptis_RVRateMaster");
-  const assessmentLabel = useAliasLabel("Assessment", t("aliasFallback.assessment"));
-  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+  const rateSection = useAliasLabel("Rate_Section", useAliasLabel("Rate Section", t("aliasFallback.rateSection")));
+  const assessment = useAliasLabel("Assessment", t("aliasFallback.assessment"));
+  const use = useAliasLabel("Use", t("aliasFallback.use"));
 
   const getUseGroupLabel = useCallback((useGroup: string) => {
     if (!useGroup) return "";
@@ -48,7 +49,7 @@ export function useRateMasterOperations({
   // Bulk create handler
   const handleBulkCreate = useCallback(async (completeMatrixData: Array<Record<string, unknown>>) => {
     if (!assessmentYear) {
-      toast.error(t('messages.validationSelectAssessmentYear', { assessment: assessmentLabel }));
+      toast.error(t('messages.validationSelectAssessmentYear', { assessment }));
       return { success: false };
     }
 
@@ -93,18 +94,18 @@ export function useRateMasterOperations({
       toast.success(t('messages.ratesAddedSuccess', { groups: useGroupLabels }));
       return { success: true };
     } else if (result.partialSuccess) {
-      toast.warning(t('messages.ratesAddedPartial', { count: successCount, errors: errorMessages.join('; '), use: useLabel }));
+      toast.warning(t('messages.ratesAddedPartial', { count: successCount, errors: errorMessages.join('; '), use }));
       return { success: true };
     } else {
       toast.error(t('messages.ratesAddedFailed', { errors: errorMessages.join('; ') }));
       return { success: false };
     }
-  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, mode, id, t, rateFrequency, rateUnit, getUseGroupLabel, isOpenPlot, assessmentLabel, useLabel]);
+  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, mode, id, t, rateFrequency, rateUnit, getUseGroupLabel, isOpenPlot, assessment, use]);
 
   // Bulk update handler
   const handleBulkUpdate = useCallback(async (completeMatrixData: Array<Record<string, unknown>>) => {
     if (!assessmentYear) {
-      toast.error(t('messages.validationSelectAssessmentYear', { assessment: assessmentLabel }));
+      toast.error(t('messages.validationSelectAssessmentYear', { assessment }));
       return { success: false };
     }
 
@@ -115,7 +116,7 @@ export function useRateMasterOperations({
     // Fetch backend rates for primary submission
     const primaryBackendRates = await fetchBackendRatesForSubmission(selectedZone, selectedUseGroup, assessmentYear);
     if (primaryBackendRates.length === 0) {
-      toast.error(t('messages.validationFetchUpdateFailed'));
+      toast.error(t('messages.validationFetchUpdateFailed', { rateSection, use }));
       return { success: false };
     }
     allRateSubmissions[0].backendRates = primaryBackendRates;
@@ -145,13 +146,13 @@ export function useRateMasterOperations({
       toast.success(t('messages.ratesUpdatedSuccess', { groups: useGroupLabels }));
       return { success: true };
     } else if (result.partialSuccess) {
-      toast.warning(t('messages.ratesUpdatedPartial', { count: successCount, errors: nonUpdateErrors.join('; '), use: useLabel }));
+      toast.warning(t('messages.ratesUpdatedPartial', { count: successCount, errors: nonUpdateErrors.join('; '), use }));
       return { success: true };
     } else {
       toast.error(t('messages.ratesUpdatedFailed', { errors: nonUpdateErrors.join('; ') }));
       return { success: false };
     }
-  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, rateUnit, getUseGroupLabel, isOpenPlot, assessmentLabel, useLabel]);
+  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, rateUnit, getUseGroupLabel, isOpenPlot, assessment, use, rateSection]);
 
   // Delete handler
   const handleDelete = useCallback(async (latestBackendRates: IBackendRateMaster[]) => {

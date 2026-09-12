@@ -70,8 +70,15 @@ const ServiceCard: React.FC<ServiceCardProps & { departmentId: number }> = ({
     const handleClick = (e: React.MouseEvent) => {
         e.preventDefault();
         startTransition(async () => {
+            // 1. Maintain background cookie for ambient fallback
             await setDepartmentContextAction(departmentId, title, moduleId, moduleName);
-            router.push(link);
+
+            // 2. Append explicit department and module params to link for tab isolation
+            const targetUrl = new URL(link, window.location.origin);
+            targetUrl.searchParams.set('deptId', String(departmentId));
+            if (moduleId) targetUrl.searchParams.set('modId', String(moduleId));
+
+            router.push(targetUrl.pathname + targetUrl.search);
         });
     };
 

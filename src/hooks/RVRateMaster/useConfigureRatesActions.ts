@@ -7,6 +7,7 @@ import { CODE_REGEX, TEXT_ALLOWED } from "@/lib/utils/validation-rules";
 import { normalize } from "@/lib/utils/sanitization";
 import type { ITypeOfUseDetails } from "@/types/RVRateMaster";
 import type { UseGroup, UseGroupIconKey } from "@/types/typeOfUse.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface GroupFormState {
   code: string;
@@ -53,6 +54,8 @@ export function useConfigureRatesActions({
   setSavedAny,
   t,
 }: UseConfigureRatesActionsProps) {
+  const typeOfUse = useAliasLabel("Type_Of_Use", useAliasLabel("Type of Use", t("aliasFallback.typeOfUse")));
+  const use = useAliasLabel("Use", t("aliasFallback.use"));
 
   const handleCheckboxChange = useCallback((id: number) => {
     const tu = allUseTypes.find(t => t.id === id);
@@ -318,7 +321,7 @@ export function useConfigureRatesActions({
     });
 
     if (hasInvalidSelection) {
-      toast.error(t("configureRates.toast.invalidSelection"));
+      toast.error(t("configureRates.toast.invalidSelection", { typeOfUse, use }));
       return;
     }
 
@@ -329,7 +332,7 @@ export function useConfigureRatesActions({
     const hasDuplicateGroupIds = selectedGroupIds.length !== new Set(selectedGroupIds).size;
 
     if (hasDuplicateGroupIds) {
-      toast.error(t("configureRates.toast.duplicateGroup"));
+      toast.error(t("configureRates.toast.duplicateGroup", { typeOfUse, use }));
       return;
     }
 
@@ -349,13 +352,13 @@ export function useConfigureRatesActions({
     });
 
     if (distinctSelected.length === 0) {
-      toast.info(t("configureRates.toast.useGroupsNotConfigured") || "Use Groups not Configured, so default use groups are shown.");
+      toast.info(t("configureRates.toast.useGroupsNotConfigured", { use }) || "Use Groups not Configured, so default use groups are shown.");
       onConfigureSelected?.([]);
       return;
     }
 
     onConfigureSelected?.(distinctSelected);
-  }, [allUseTypes, checkedIds, existingGroups, onConfigureSelected, t]);
+  }, [allUseTypes, checkedIds, existingGroups, onConfigureSelected, t, typeOfUse, use]);
 
   return {
     handleCheckboxChange,

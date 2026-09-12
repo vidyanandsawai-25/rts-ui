@@ -43,7 +43,7 @@ export function handleTemplateDownload(params: TemplateDownloadParams) {
     return;
   }
   if (!allZones || !Array.isArray(allZones)) {
-    toast.error(t('messages.validationNoRatesAvailable'));
+    toast.error(t('messages.noRatesAvailable'));
     return;
   }
 

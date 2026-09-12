@@ -29,6 +29,10 @@
       "propertyRange": {
         "label": "मालमत्ता श्रेणी",
         "sublabel": "मालमत्ता श्रेणी (पासून-पर्यंत)"
+      },
+      "excelUpload": {
+        "label": "एक्सेल अपलोड",
+        "sublabel": "एक्सेलद्वारे शोध"
       }
     }
   },
@@ -46,7 +50,21 @@
     "selectEndRange": "शेवटची श्रेणी निवडा",
     "showButton": "दाखवा",
     "clearButton": "साफ करा",
-    "mandatoryBanner": "* चिन्हांकित फील्ड अनिवार्य आहेत"
+    "mandatoryBanner": "* चिन्हांकित फील्ड अनिवार्य आहेत",
+    "uploadExcel": "एक्सेल अपलोड करा",
+    "downloadTemplate": "टेंम्पलेट डाउनलोड करा",
+    "searchDataByExcel": "एक्सेलद्वारे डेटा शोधा",
+    "dragDropText": "येथे एक्सेल फाईल (.xlsx, .xls) ड्रॅग आणि ड्रॉप करा, किंवा ब्राऊज करण्यासाठी क्लिक करा",
+    "rowsParsed": "फाईल मधून {count} पंक्ती पार्स केल्या",
+    "invalidFile": "अवैध फाईल. कृपया .xlsx किंवा .xls फाईल अपलोड करा.",
+    "wrongExcelUploaded": "चुकीची एक्सेल फाईल अपलोड केली.",
+    "missingColumns": "एक्सेलमध्ये ZoneNo, WardNo, आणि PropertyNo कॉलम असणे आवश्यक आहे.",
+    "noDataInFile": "अपलोड केलेल्या फाईलमध्ये कोणताही डेटा आढळला नाही.",
+    "tooManyRows": "एक्सेलमध्ये जास्त पंक्ती आहेत. कमाल मर्यादा {max} आहे.",
+    "duplicatesRemoved": "{count} डुप्लिकेट पंक्ती काढल्या.",
+    "excelUploadRequired": "कृपया प्रथम एक्सेल फाईल अपलोड करा.",
+    "fileSelected": "{name} निवडले",
+    "removeFile": "फाईल काढा"
   },
   "screenSelectionCard": {
     "title": "स्क्रीन निवड",
@@ -141,6 +159,7 @@
     "fetchNoResults": "कोणतीही मालमत्ता आढळली नाही.",
     "fetchFailed": "मालमत्ता लोड करण्यात अयशस्वी.",
     "fetchWardsError": "{wards} प्राप्त करण्यात त्रुटी:",
+    "excelDuplicatesNotice": "एक्सेल फाईलमध्ये {count} डुप्लिकेट {count, plural, =1 {नोंद आढळली} other {नोंदी आढळल्या}}. प्रत्येक मालमत्ता फक्त एकदाच दाखवली जात आहे.",
     "searchValidationError": "कृपया शोधण्यासाठी मूल्य प्रविष्ट करा.",
     "validationGreaterProperty": "मालमत्ता क्र. पर्यंत, मालमत्ता क्र. पासून पेक्षा मोठा असणे आवश्यक आहे."
   },

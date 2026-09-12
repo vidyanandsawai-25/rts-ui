@@ -20,6 +20,7 @@ import {
 } from '@/lib/constants/screen-access.constants';
 import { FormSection, FieldLabel, ErrorMsg, ToggleField } from './FormHelpers';
 import { TEXT_SANITIZE, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface ScreenFormProps {
   initialData?: Partial<ScreenMasterData>;
@@ -50,6 +51,14 @@ export function ScreenForm({
     t,
   } = useScreenForm({ initialData, isEdit: isEditProp });
 
+  const screenLabel = useAliasLabel('Screen', t('aliasFallback.screen'));
+  const screenGroupLabel = useAliasLabel('Screen_Group', t('aliasFallback.screenGroup'));
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
+  const moduleLabel = useAliasLabel('Module', t('aliasFallback.module'));
+  const screenCodeLabel = useAliasLabel('Screen_Code', t('aliasFallback.screenCode'));
+  const screenNameLabel = useAliasLabel('Screen_Name', t('aliasFallback.screenName'));
+  const routeLabel = useAliasLabel('Route', t('aliasFallback.route'));
+
   return (
     <Drawer
       open={open}
@@ -63,8 +72,8 @@ export function ScreenForm({
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
               {isEdit
-                ? t('screenManagement.screens.form.editTitle')
-                : t('screenManagement.screens.form.addTitle')}
+                ? t('screenManagement.screens.form.editTitle', { screen: screenLabel })
+                : t('screenManagement.screens.form.addTitle', { screen: screenLabel })}
             </h2>
           </div>
         </div>
@@ -80,7 +89,7 @@ export function ScreenForm({
             className="bg-blue-700 hover:bg-blue-800 text-white"
           >
             <Save className="w-4 h-4 mr-2" />
-            {t('screenManagement.screens.form.saveButton')}
+            {t('screenManagement.screens.form.saveButton', { screen: screenLabel })}
           </Button>
         </div>
       }
@@ -88,17 +97,13 @@ export function ScreenForm({
       <div className="p-6 space-y-6 pb-40">
         {/* Section 1: Identity */}
         <FormSection
-          title={t('screenManagement.screens.form.sectionIdentity')}
+          title={t('screenManagement.screens.form.sectionIdentity', { screen: screenLabel })}
           icon={<Layout className="w-4 h-4" />}
           color="blue"
         >
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-4">
-              <FieldLabel
-                htmlFor="screenCode"
-                label={t('screenManagement.screens.form.screenCode')}
-                required
-              />
+              <FieldLabel htmlFor="screenCode" label={screenCodeLabel} required />
               <Input
                 id="screenCode"
                 value={formData.screenCode || ''}
@@ -117,11 +122,7 @@ export function ScreenForm({
               {showError('screenCode') && <ErrorMsg error={errors.screenCode} />}
             </div>
             <div className="col-span-8">
-              <FieldLabel
-                htmlFor="screenName"
-                label={t('screenManagement.screens.form.screenName')}
-                required
-              />
+              <FieldLabel htmlFor="screenName" label={screenNameLabel} required />
               <Input
                 id="screenName"
                 value={formData.screenName || ''}
@@ -138,11 +139,7 @@ export function ScreenForm({
               {showError('screenName') && <ErrorMsg error={errors.screenName} />}
             </div>
             <div className="col-span-12">
-              <FieldLabel
-                htmlFor="routePath"
-                label={t('screenManagement.screens.form.route')}
-                required
-              />
+              <FieldLabel htmlFor="routePath" label={routeLabel} required />
               <Input
                 id="routePath"
                 value={formData.routePath || ''}
@@ -171,7 +168,7 @@ export function ScreenForm({
         >
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <FieldLabel label={t('screenManagement.screens.form.screenGroup')} required />
+              <FieldLabel label={screenGroupLabel} required />
               <Select
                 value={String(formData.screenGroupId || '')}
                 onChange={(_, val) => {
@@ -187,7 +184,9 @@ export function ScreenForm({
                         ? g.screenGroupName
                         : g.screenGroupLocalName || g.screenGroupName,
                   }))}
-                placeholder={t('screenManagement.screens.form.selectGroup')}
+                placeholder={t('screenManagement.screens.form.selectGroup', {
+                  screenGroup: screenGroupLabel,
+                })}
               />
               {showError('screenGroupId') && <ErrorMsg error={errors.screenGroupId} />}
             </div>
@@ -195,12 +194,7 @@ export function ScreenForm({
             {/* Department & Module side-by-side in single row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <FieldLabel
-                  label={t('screenManagement.screens.form.department', {
-                    defaultValue: 'Department',
-                  })}
-                  required
-                />
+                <FieldLabel label={departmentLabel} required />
                 <Select
                   value={formData.departmentMasterId ? String(formData.departmentMasterId) : ''}
                   onChange={(_, val) => {
@@ -223,6 +217,7 @@ export function ScreenForm({
                     label: d.departmentName + (d.departmentCode ? ` (${d.departmentCode})` : ''),
                   }))}
                   placeholder={t('screenManagement.screens.form.selectDepartment', {
+                    department: departmentLabel,
                     defaultValue: 'Select Department',
                   })}
                 />
@@ -232,12 +227,7 @@ export function ScreenForm({
               </div>
 
               <div>
-                <FieldLabel
-                  label={t('screenManagement.screens.form.module', {
-                    defaultValue: 'Module',
-                  })}
-                  required
-                />
+                <FieldLabel label={moduleLabel} required />
                 <Select
                   value={String(formData.moduleId || '')}
                   onChange={(_, val) => {
@@ -275,9 +265,11 @@ export function ScreenForm({
                   placeholder={
                     !formData.departmentMasterId
                       ? t('screenManagement.screens.form.selectDepartmentFirst', {
+                          department: departmentLabel,
                           defaultValue: 'Select Department First',
                         })
                       : t('screenManagement.screens.form.selectModule', {
+                          module: moduleLabel,
                           defaultValue: 'Select Module',
                         })
                   }
@@ -292,7 +284,7 @@ export function ScreenForm({
         {/* Section 3: Configuration */}
         {isEdit && (
           <FormSection
-            title={t('screenManagement.screens.form.sectionConfig')}
+            title={t('screenManagement.screens.form.sectionConfig', { screen: screenLabel })}
             icon={<Settings className="w-4 h-4" />}
             color="amber"
           >
@@ -303,7 +295,7 @@ export function ScreenForm({
                 onChange={(val) => handleChange('isActive', val)}
               />
               <ToggleField
-                label="Show in Menu"
+                label={t('screenManagement.screens.form.isMenu', { defaultValue: 'Show in Menu' })}
                 value={!!formData.isMenu}
                 onChange={(val) => handleChange('isMenu', val)}
               />

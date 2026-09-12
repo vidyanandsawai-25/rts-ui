@@ -9,7 +9,6 @@ import type { ULBImageCardProps } from '@/types/ulbconfig-master.types';
 export function ULBImageCard({
   title,
   imageUrl,
-  imageId,
   isUploading,
   required = false,
   onTriggerDelete,
@@ -71,7 +70,7 @@ export function ULBImageCard({
                   className={imageClassName}
                 />
               </div>
-              {imageId !== null && imageId !== undefined && !isNaN(imageId) && (
+              {onTriggerDelete && (
                 <Button
                   type="button"
                   size="sm"
@@ -80,7 +79,7 @@ export function ULBImageCard({
                     onTriggerDelete();
                   }}
                   disabled={isUploading}
-                  className="absolute -right-2 -top-2 h-7 w-7 rounded-full bg-rose-500 p-0 text-white shadow-md hover:bg-rose-600 focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
+                  className="absolute -right-2 -top-2 z-10 h-7 w-7 rounded-full bg-rose-500 p-0 text-white shadow-md hover:bg-rose-600 focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
                   title="Remove Image"
                 >
                   <Trash2 className="h-3.5 w-3.5" />

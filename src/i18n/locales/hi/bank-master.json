@@ -1,11 +1,22 @@
 {
-  "title": "बैंक मास्टर",
-  "subtitle": "बैंक और शाखा विवरण प्रबंधित करें",
-  "addBank": "बैंक जोड़ें",
+  "aliasFallback": {
+    "bank": "बैंक",
+    "bankCode": "बैंक कोड",
+    "bankName": "बैंक का नाम",
+    "branchName": "शाखा का नाम",
+    "ifscCode": "IFSC कोड",
+    "streetAddress": "सड़क का पता",
+    "city": "शहर",
+    "state": "राज्य",
+    "pincode": "पिनकोड"
+  },
+  "title": "{bank} मास्टर",
+  "subtitle": "{bank} और शाखा विवरण प्रबंधित करें",
+  "addBank": "{bank} जोड़ें",
   "stats": {
-    "totalBanks": "कुल बैंक",
+    "totalBanks": "कुल {bank}",
     "active": "सक्रिय",
-    "states": "राज्य"
+    "states": "{state}"
   },
   "filters": {
     "allStates": "सभी राज्य",
@@ -24,11 +35,11 @@
     "deleteBank": "{name} हटाएं"
   },
   "drawer": {
-    "addTitle": "नया बैंक जोड़ें",
-    "editTitle": "बैंक विवरण संपादित करें",
-    "subtitle": "बैंक विवरण कॉन्फ़िगर करने के लिए आवश्यक जानकारी भरें",
+    "addTitle": "नया {bank} जोड़ें",
+    "editTitle": "{bank} विवरण संपादित करें",
+    "subtitle": "{bank} विवरण कॉन्फ़िगर करने के लिए आवश्यक जानकारी भरें",
     "sections": {
-      "basicDetails": "बैंक बुनियादी विवरण",
+      "basicDetails": "{bank} बुनियादी विवरण",
       "addressDetails": "शाखा का पता विवरण"
     },
     "labels": {
@@ -53,22 +64,22 @@
       "pincode": "जैसे, 400001"
     },
     "footer": {
-      "adding": "नया बैंक जोड़ रहा है",
+      "adding": "नया {bank} जोड़ रहा है",
       "editing": "संपादन: {bankName}"
     },
     "buttons": {
-      "save": "बैंक सहेजें",
-      "update": "बैंक अपडेट करें"
+      "save": "{bank} सहेजें",
+      "update": "{bank} अपडेट करें"
     }
   },
   "messages": {
-    "createSuccess": "बैंक सफलतापूर्वक बनाया गया",
-    "createFailed": "बैंक बनाने में विफल",
-    "updateSuccess": "बैंक सफलतापूर्वक अपडेट किया गया",
-    "updateFailed": "बैंक अपडेट करने में विफल",
-    "deleteSuccess": "बैंक सफलतापूर्वक हटाया गया",
-    "deleteFailed": "बैंक हटाने में विफल",
-    "fetchFailed": "बैंक डेटा प्राप्त करने में विफल",
+    "createSuccess": "{bank} सफलतापूर्वक बनाया गया",
+    "createFailed": "{bank} बनाने में विफल",
+    "updateSuccess": "{bank} सफलतापूर्वक अपडेट किया गया",
+    "updateFailed": "{bank} अपडेट करने में विफल",
+    "deleteSuccess": "{bank} सफलतापूर्वक हटाया गया",
+    "deleteFailed": "{bank} हटाने में विफल",
+    "fetchFailed": "{bank} डेटा प्राप्त करने में विफल",
     "errorOccurred": "एक अप्रत्याशित त्रुटि हुई",
     "networkError": "नेटवर्क त्रुटि — कृपया अपना कनेक्शन जांचें और पुनः प्रयास करें",
     "searchResult": "{count} रिकॉर्ड \"{term}\" से मिलान करते हुए मिले",
@@ -76,8 +87,8 @@
     "unauthorizedToken": "अनधिकृत: टोकन समाप्त हो गया है या अमान्य है"
   },
   "confirm": {
-    "deleteTitle": "बैंक हटाएं ({bankName})?",
-    "deleteDescription": "क्या आप वाकई इस बैंक रिकॉर्ड को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
+    "deleteTitle": "{bank} हटाएं ({bankName})?",
+    "deleteDescription": "क्या आप वाकई इस {bank} रिकॉर्ड को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
   },
   "validation": {
     "bankCodeRequired": "बैंक कोड आवश्यक है",

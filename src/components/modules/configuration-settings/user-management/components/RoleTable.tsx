@@ -2,8 +2,8 @@ import { Shield, Edit2, Trash2, Loader2, Building2 } from 'lucide-react';
 import { MasterTable, Badge, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { Role, RoleTableProps } from '@/types/user-management';
-
 import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export function RoleTable({
   roles,
@@ -17,6 +17,9 @@ export function RoleTable({
   deletingId,
 }: RoleTableProps) {
   const t = useTranslations('userManagement');
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
+
   const { canEdit, canDelete, haveFullAccess } = useActivePagePermissions();
   const showEdit = canEdit || haveFullAccess;
   const showDelete = canDelete || haveFullAccess;
@@ -25,7 +28,7 @@ export function RoleTable({
   const columns = [
     {
       key: 'departmentName',
-      label: t('form.departments') || 'Department',
+      label: t('form.departments', { department: departmentLabel }) || `${departmentLabel}s`,
       width: '35%',
       render: (value: unknown, row: Role) => (
         <div className="flex items-center gap-2">
@@ -40,7 +43,7 @@ export function RoleTable({
     },
     {
       key: 'name',
-      label: t('table.role'),
+      label: t('table.role', { role: roleLabel }),
       width: '35%',
       render: (value: unknown) => (
         <div className="flex items-center gap-2">
@@ -72,7 +75,7 @@ export function RoleTable({
   return (
     <MasterTable<Role>
       data={roles}
-      emptyText={t('messages.noRoles')}
+      emptyText={t('messages.noRoles', { role: roleLabel })}
       columns={columns}
       pageSize={pageSize}
       pageNumber={pageNumber}

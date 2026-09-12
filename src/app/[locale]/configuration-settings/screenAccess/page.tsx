@@ -1,4 +1,3 @@
-import { getTranslations } from 'next-intl/server';
 import { ScreenAccessLayout } from '@/components/modules/configuration-settings/screenAccess/ScreenAccessLayout';
 import {
   getScreensAction,
@@ -17,7 +16,6 @@ import type { ScreenAccessPermissionData } from '@/types/screen-access.types';
 export const dynamic = 'force-dynamic';
 
 interface ScreenAccessPageProps {
-  params: Promise<{ locale: string }>;
   searchParams: Promise<{
     spage?: string;
     ssize?: string;
@@ -34,8 +32,7 @@ interface ScreenAccessPageProps {
   }>;
 }
 
-export default async function ScreenAccessPage({ params, searchParams }: ScreenAccessPageProps) {
-  const { locale } = await params;
+export default async function ScreenAccessPage({ searchParams }: ScreenAccessPageProps) {
   const sp = await searchParams;
 
   // Search/Filters/Pagination Params
@@ -52,8 +49,6 @@ export default async function ScreenAccessPage({ params, searchParams }: ScreenA
 
   const parsedRoleId = sp?.roleId ? parseInt(sp.roleId, 10) : undefined;
   const roleIdFromUrl = !Number.isNaN(parsedRoleId) ? parsedRoleId : undefined;
-
-  const t = await getTranslations({ locale, namespace: 'screenAccess' });
 
   const isAccessControl = tab === 'access-control';
   const isScreens = tab === 'screen-management' && subTab === 'screens';
@@ -182,7 +177,6 @@ export default async function ScreenAccessPage({ params, searchParams }: ScreenA
       dataRoleId={dataRoleId}
       screensPagination={mapPagination(fetchData.screens, ssize)}
       groupsPagination={mapPagination(fetchData.groups, gsize)}
-      translations={{ title: t('title'), subtitle: t('subtitle') }}
       fetchError={errorState.fetchError}
       statusCode={errorState.statusCode}
     />

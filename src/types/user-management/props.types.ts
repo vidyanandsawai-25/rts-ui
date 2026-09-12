@@ -14,11 +14,11 @@ export interface RoleDesignationMasterProps {
 }
 
 export interface UserConfigurationProps {
-  translations: {
-    title: string;
-    subtitle: string;
-    usersTab: string;
-    rolesTab: string;
+  translations?: {
+    title?: string;
+    subtitle?: string;
+    usersTab?: string;
+    rolesTab?: string;
   };
   initialData: {
     users: User[];
@@ -34,11 +34,11 @@ export interface UserConfigurationProps {
 export interface UserConfigurationClientProps {
   userManagement: React.ReactNode;
   roleDesignationMaster: React.ReactNode;
-  translations: {
-    title: string;
-    subtitle: string;
-    usersTab: string;
-    rolesTab: string;
+  translations?: {
+    title?: string;
+    subtitle?: string;
+    usersTab?: string;
+    rolesTab?: string;
   };
   fetchError?: string;
   statusCode?: number;
@@ -156,7 +156,7 @@ export interface BasicInfoStepProps {
   formData: UserFormData;
   setFormData: (data: UserFormData) => void;
   editingUser: User | null;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
   errors?: Record<string, string>;
 }
 
@@ -176,5 +176,5 @@ export interface ModuleAccessStepProps {
   toggleModule: (deptId: string, modId: string) => void;
   selectAllModules: (deptId: string, modules: MasterModule[]) => void;
   deselectAllModules: (deptId: string) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }

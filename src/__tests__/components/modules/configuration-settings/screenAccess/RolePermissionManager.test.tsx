@@ -5,6 +5,7 @@ import { RolePermissionManager } from '@/components/modules/configuration-settin
 import { updateScreenAccessAction } from '@/app/[locale]/configuration-settings/screenAccess/action.mutations';
 
 import { ConfirmProvider } from '@/components/common/ConfirmProvider';
+import { AliasLabelsProvider } from '@/lib/providers/AliasLabelsProvider';
 import type {
   ScreenMasterData,
   DepartmentMasterData,
@@ -703,6 +704,31 @@ describe('RolePermissionManager', () => {
       // The payload should contain the permission that was changed to no-access
       expect(payload[0]).toBeDefined();
       expect(payload[0].accessLevel).toBe('no-access');
+    });
+
+    it('renders with alias label overrides', () => {
+      const mockAliases = {
+        Department: 'Ministry',
+        Role: 'Designation',
+        Screen: 'Interface',
+      };
+
+      render(
+        <AliasLabelsProvider labels={mockAliases}>
+          <ConfirmProvider>
+            <RolePermissionManager
+              screens={mockScreens}
+              departments={mockDepartments}
+              modules={mockModules}
+              roles={mockRoles}
+              initialRoleAccess={[]}
+            />
+          </ConfirmProvider>
+        </AliasLabelsProvider>
+      );
+
+      // Verify header rendered with role/dept elements
+      expect(screen.getByRole('combobox', { name: /Select Role/i })).toBeInTheDocument();
     });
   });
 });

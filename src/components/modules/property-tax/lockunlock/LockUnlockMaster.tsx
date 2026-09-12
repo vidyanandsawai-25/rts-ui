@@ -2,20 +2,26 @@
 
 import React from "react";
 import { ShieldAlert } from "lucide-react";
-import { LockButton, UnlockButton, SearchButton, Card, WaitingWindow } from "@/components/common";
+import {
+  LockButton,
+  UnlockButton,
+  SearchButton,
+  Card,
+  WaitingWindow,
+  useToast,
+} from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
 import { MasterTable } from "@/components/common/MasterTable";
 import { SearchInput } from "@/components/common/SearchInput";
 import { WardItem } from "@/types/wardMaster.types";
-import { LockedScreen, LockUnlockPropertyItem, ModuleItem } from "@/types/lockunlock.types";
+import { LockedScreen, LockUnlockPropertyItem, ModuleItem, SEARCH_CATEGORY } from "@/types/lockunlock.types";
 import { useSearchParams } from "next/navigation";
-import { useLockUnlockMaster, PaginationState } from "@/hooks/lockunlock/useLockUnlockMaster";
+import { PaginationState } from "@/hooks/lockunlock/useLockUnlockMaster";
+import { useLockUnlockExcel } from "@/hooks/lockunlock/useLockUnlockExcel";
 import { TableModal } from "./TableModal";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
 import { PropertySelectionCard } from "./PropertySelectionCard";
 import { ScreenSelectionCard } from "./ScreenSelectionCard";
-
 import { ScopeSelectionCard } from "./ScopeSelectionCard";
 import { ZoneItem } from "@/types/zoneMaster.types";
 import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
@@ -41,6 +47,7 @@ export default function LockUnlockMaster({
 }: LockUnlockMasterProps): React.ReactElement {
   const searchParams = useSearchParams();
   const t = useTranslations("lockUnlock");
+  const toast = useToast();
   const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
   const partitionAlias = useAliasLabel("Partition", t("defaults.partition"));
   const propertyNoAlias = useAliasLabel("Property_No", useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo"))));
@@ -74,7 +81,13 @@ export default function LockUnlockMaster({
     columns,
     isActionPending,
     isShowPending,
-  } = useLockUnlockMaster({
+    isExcelSearching,
+    excelFile,
+    setExcelFile,
+    excelFileName,
+    setExcelFileName,
+    handleScopeChange,
+  } = useLockUnlockExcel({
     wardIdFromUrl: searchParams.get("wardId") || "",
     screens,
     dropdownProperties,
@@ -94,11 +107,7 @@ export default function LockUnlockMaster({
     value: String(z.id),
   }));
 
-
-  // Removed allSelectedAreLocked and allSelectedAreUnlocked logic per user request
-
   return (
-
     <div className="space-y-2">
       <WaitingWindow
         isOpen={isActionPending}
@@ -117,7 +126,7 @@ export default function LockUnlockMaster({
           <Card className="rounded-xl shadow-lg border border-[#1A86E8]/20 overflow-visible h-full flex flex-col pb-2 pt-4 px-4 bg-white">
             <ScopeSelectionCard
               selectedCategory={formData.searchCategory}
-              onChange={(categoryId) => handleSelectChange("searchCategory", categoryId.toString())}
+              onChange={handleScopeChange}
             />
             <div className="h-px bg-slate-200 w-full my-2" />
             <PropertySelectionCard
@@ -129,8 +138,12 @@ export default function LockUnlockMaster({
               toPropertyOptions={toPropertyOptions}
               handleShow={() => handleShow(true)}
               handleClearAll={handleClearAll}
-              isPending={isShowPending}
+              isPending={formData.searchCategory === SEARCH_CATEGORY.EXCEL ? isExcelSearching : isShowPending}
               isLoadingProperties={isLoadingProperties}
+              excelFile={excelFile}
+              setExcelFile={setExcelFile}
+              excelFileName={excelFileName}
+              setExcelFileName={setExcelFileName}
             />
             <div className="h-px bg-slate-200 w-full my-2" />
             <ScreenSelectionCard
@@ -186,7 +199,8 @@ export default function LockUnlockMaster({
                       label={t("resultsTable.lockButton")}
                       disabled={isPending}
                       className={
-                        (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory >= 1 && formData.searchCategory <= 4)) ||
+                        (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory === 1 || formData.searchCategory === 2)) ||
+                        (isAllPropertiesSelected && properties.length === 0) ||
                         selectedScreenIds.length === 0
                           ? "opacity-50 cursor-not-allowed hover:!bg-red-600 hover:!shadow-none active:!scale-100"
                           : ""
@@ -197,7 +211,10 @@ export default function LockUnlockMaster({
                           toast.error(t("messages.selectScreenRequired"));
                           return;
                         }
-                        if (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory >= 1 && formData.searchCategory <= 4)) {
+                        const hasSelected = isAllPropertiesSelected
+                          ? properties.length > 0
+                          : selectedPropertyIds.length > 0 || (formData.searchCategory === 1 || formData.searchCategory === 2);
+                        if (!hasSelected) {
                           e.preventDefault();
                           toast.error(t("messages.selectPropertyRequired"));
                           return;
@@ -211,7 +228,8 @@ export default function LockUnlockMaster({
                       label={t("resultsTable.unlockButton")}
                       disabled={isPending}
                       className={
-                        (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory >= 1 && formData.searchCategory <= 4)) ||
+                        (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory === 1 || formData.searchCategory === 2)) ||
+                        (isAllPropertiesSelected && properties.length === 0) ||
                         selectedScreenIds.length === 0
                           ? "opacity-50 cursor-not-allowed hover:!bg-green-600 hover:!shadow-none active:!scale-100"
                           : ""
@@ -222,7 +240,10 @@ export default function LockUnlockMaster({
                           toast.error(t("messages.selectScreenRequired"));
                           return;
                         }
-                        if (!isAllPropertiesSelected && selectedPropertyIds.length === 0 && !(formData.searchCategory >= 1 && formData.searchCategory <= 4)) {
+                        const hasSelected = isAllPropertiesSelected
+                          ? properties.length > 0
+                          : selectedPropertyIds.length > 0 || (formData.searchCategory === 1 || formData.searchCategory === 2);
+                        if (!hasSelected) {
                           e.preventDefault();
                           toast.error(t("messages.selectPropertyRequired"));
                           return;
@@ -264,6 +285,5 @@ export default function LockUnlockMaster({
         isPending={isPending}
       />
     </div>
-
   );
 }

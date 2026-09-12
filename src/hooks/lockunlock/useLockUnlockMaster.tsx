@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef, useTransition, useMemo } from "react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { LockedScreen, LockUnlockPropertyItem, LockUnlockPropertiesResponse } from "@/types/lockunlock.types";
+import { LockedScreen, LockUnlockPropertyItem, LockUnlockPropertiesResponse, SEARCH_CATEGORY } from "@/types/lockunlock.types";
 import { fetchLockUnlockPropertiesByCategoryAction, bulkLockUnlockPropertiesAction, fetchLockUnlockPropertiesPagedAction, bulkLockUnlockByCategoryAction } from "@/app/[locale]/property-tax/lockunlock/action";
-import { getScreenIds } from "@/lib/api/lockunlock/lockunlock.utils";
+import { getScreenIds, executeToggleLock } from "@/lib/api/lockunlock/lockunlock.utils";
 import { useLockUnlockColumns } from "./useLockUnlockColumns";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -620,68 +620,16 @@ export function useLockUnlockMaster({
   }, []);
 
   const handleToggleLock = (row: LockUnlockPropertyItem) => {
-    const willLock = !row.isLocked;
-
-    if (selectedScreenIds.length === 0) {
-      toast.error(t("messages.screenRequired", { action: willLock ? t("messages.lockButtonText").toLowerCase() : t("messages.unlockButtonText").toLowerCase() }));
-      return;
-    }
-
-    const lockedIds = getScreenIds(row.lockedScreens as unknown as []);
-
-    if (willLock) {
-      const allAlreadyLocked = selectedScreenIds.every(id => lockedIds.includes(id));
-      if (allAlreadyLocked) {
-        toast.error(t("messages.wrongScreenSelectedLock"));
-        return;
-      }
-    } else {
-      const noneAreLocked = selectedScreenIds.every(id => !lockedIds.includes(id));
-      if (noneAreLocked) {
-        toast.error(t("messages.wrongScreenSelectedUnlock"));
-        return;
-      }
-    }
-
-    const title = willLock ? t("messages.lockConfirmTitle") : t("messages.unlockConfirmTitle");
-    const fullPropertyNo = row.property || `${row.wardNo} - ${row.propertyNo}${row.partitionNo ? ` - ${row.partitionNo}` : ""}`;
-    const description = willLock
-      ? t("messages.lockConfirmDescription", { propertyNo: fullPropertyNo })
-      : t("messages.unlockConfirmDescription", { propertyNo: fullPropertyNo });
-
-    confirm({
-      variant: willLock ? "warning" : "info",
-      title,
-      description,
-      confirmText: willLock ? t("messages.lockButtonText") : t("messages.unlockButtonText"),
-      onConfirm: async () => {
-        setIsActionPending(true);
-        startTransition(async () => {
-          try {
-            const screenIds = selectedScreenIds;
-            const response = await bulkLockUnlockPropertiesAction({
-              propertyIds: [Number(row.propertyId)],
-              screenIds,
-              action: willLock ? "lock" : "unlock",
-            });
-
-            if (response.success) {
-              toast.success(
-                willLock
-                  ? t("messages.bulkSuccessLock", { count: 1 })
-                  : t("messages.bulkSuccessUnlock", { count: 1 })
-              );
-              handleShow();
-            } else {
-              toast.error(response.error || t("messages.operationFailed"));
-            }
-          } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : t("messages.unexpectedError"));
-          } finally {
-            setIsActionPending(false);
-          }
-        });
-      },
+    executeToggleLock({
+      row,
+      selectedScreenIds,
+      t,
+      confirm,
+      setIsActionPending,
+      toast,
+      bulkLockUnlockAction: bulkLockUnlockPropertiesAction,
+      onRefresh: () => handleShow(),
+      validateScreenState: true,
     });
   };
 
@@ -743,8 +691,14 @@ export function useLockUnlockMaster({
   };
 
   const handleBulkAction = (action: "lock" | "unlock") => {
-    const isScopeZoneOrWard = formData.searchCategory === 1 || formData.searchCategory === 2;
-    const isBulkCategoryAction = isScopeZoneOrWard || ((formData.searchCategory === 3 || formData.searchCategory === 4) && isAllPropertiesSelected);
+    const isScopeZoneOrWard =
+      formData.searchCategory === SEARCH_CATEGORY.ZONE ||
+      formData.searchCategory === SEARCH_CATEGORY.WARD;
+    const isBulkCategoryAction =
+      isScopeZoneOrWard ||
+      ((formData.searchCategory === SEARCH_CATEGORY.BUILDING ||
+        formData.searchCategory === SEARCH_CATEGORY.PROPERTY_RANGE) &&
+        isAllPropertiesSelected);
     const hasSelection = isBulkCategoryAction || selectedPropertyIds.length > 0;
 
     if (!hasSelection) {
@@ -1032,6 +986,8 @@ export function useLockUnlockMaster({
     handleSearchButtonClick,
     columns,
     isActionPending,
+    setIsActionPending,
     isShowPending,
+    resetSelectionState,
   };
 }

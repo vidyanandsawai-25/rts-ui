@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { User, UserStatsProps } from '@/types/user-management';
 
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
+
 const STAT_COLOR_MAP = {
   blue: {
     text: 'text-blue-700',
@@ -46,6 +48,7 @@ const STAT_COLOR_MAP = {
 
 export function UserStats({ users, cardFilter, onCardClick }: UserStatsProps) {
   const t = useTranslations('userManagement');
+  const userLabel = useAliasLabel('User', t('aliasFallback.user'));
 
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => u.status === 'Active').length;
@@ -71,15 +74,15 @@ export function UserStats({ users, cardFilter, onCardClick }: UserStatsProps) {
   const stats = [
     {
       id: 'all',
-      label: t('stats.totalUsers'),
+      label: t('stats.totalUsers', { user: userLabel }),
       value: totalUsers,
       icon: Users,
       color: 'indigo',
-      description: t('stats.registeredUsers'),
+      description: t('stats.registeredUsers', { user: userLabel }),
     },
     {
       id: 'active',
-      label: t('stats.activeUsers'),
+      label: t('stats.activeUsers', { user: userLabel }),
       value: activeUsers,
       icon: UserCheck,
       color: 'emerald',
@@ -87,11 +90,11 @@ export function UserStats({ users, cardFilter, onCardClick }: UserStatsProps) {
     },
     {
       id: 'inactive',
-      label: t('stats.inactiveUsers'),
+      label: t('stats.inactiveUsers', { user: userLabel }),
       value: inactiveUsers,
       icon: UserX,
       color: 'slate',
-      description: t('stats.deactivatedUsers'),
+      description: t('stats.deactivatedUsers', { user: userLabel }),
     },
     {
       id: 'highest',
@@ -105,7 +108,7 @@ export function UserStats({ users, cardFilter, onCardClick }: UserStatsProps) {
         : t('stats.noData'),
       icon: Award,
       color: 'orange',
-      description: t('stats.mostAssigned'),
+      description: t('stats.mostAssigned', { user: userLabel }),
     },
     {
       id: 'lowest',
@@ -119,7 +122,7 @@ export function UserStats({ users, cardFilter, onCardClick }: UserStatsProps) {
         : t('stats.noData'),
       icon: AlertTriangle,
       color: 'rose',
-      description: t('stats.leastAssigned'),
+      description: t('stats.leastAssigned', { user: userLabel }),
     },
   ];
 

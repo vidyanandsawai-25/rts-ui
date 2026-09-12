@@ -29,6 +29,10 @@
       "propertyRange": {
         "label": "Property Range",
         "sublabel": "From-to property range"
+      },
+      "excelUpload": {
+        "label": "Excel Upload",
+        "sublabel": "Search data by Excel"
       }
     }
   },
@@ -46,7 +50,21 @@
     "selectEndRange": "Select End Range",
     "showButton": "Show",
     "clearButton": "Clear all",
-    "mandatoryBanner": "Fields marked with * are mandatory"
+    "mandatoryBanner": "Fields marked with * are mandatory",
+    "uploadExcel": "Upload Excel",
+    "downloadTemplate": "Download Template",
+    "searchDataByExcel": "Search Data By Excel",
+    "dragDropText": "Drag & drop an Excel file (.xlsx, .xls) here, or click to browse",
+    "rowsParsed": "{count} rows parsed from file",
+    "invalidFile": "Invalid file. Please upload an .xlsx or .xls file.",
+    "wrongExcelUploaded": "Wrong Excel uploaded.",
+    "missingColumns": "Excel must contain ZoneNo, WardNo, and PropertyNo columns.",
+    "noDataInFile": "No data rows found in the uploaded file.",
+    "tooManyRows": "Excel has too many rows. Maximum allowed is {max}.",
+    "duplicatesRemoved": "{count} duplicate rows removed.",
+    "excelUploadRequired": "Please upload an Excel file first.",
+    "fileSelected": "{name} selected",
+    "removeFile": "Remove file"
   },
   "screenSelectionCard": {
     "title": "Screen selection",
@@ -141,6 +159,7 @@
     "fetchNoResults": "No properties found.",
     "fetchFailed": "Failed to load properties.",
     "fetchWardsError": "Error fetching {wards}:",
+    "excelDuplicatesNotice": "Found {count, plural, =1 {1 duplicate row} other {# duplicate rows}} in the Excel file. Each property is shown only once.",
     "searchValidationError": "Please enter a value to search.",
     "validationGreaterProperty": "The 'To Property' must be greater than the 'From Property'."
   },

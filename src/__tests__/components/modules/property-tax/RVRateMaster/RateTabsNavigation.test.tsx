@@ -15,6 +15,18 @@ vi.mock("next/navigation", () => ({
 
 const mockMessages = {
   ptis_RVRateMaster: {
+    aliasFallback: {
+      rateSection: "Rate Section",
+      constructionType: "Construction Type",
+      typeOfUse: "Type of Use",
+      taxZone: "Tax Zone",
+      category: "Category",
+      mouja: "Mouja",
+      zone: "Zone",
+      zones: "Zones",
+      use: "Use",
+      assessment: "Assessment",
+    },
     header: {
       rateableTab: "Rateable Value",
       capitalTab: "Capital Value",

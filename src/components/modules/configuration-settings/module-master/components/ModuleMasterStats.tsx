@@ -7,7 +7,8 @@ interface ModuleMasterStatsProps {
   totalCount: number;
   activeCount: number;
   inactiveCount: number;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+  moduleLabel?: string;
 }
 
 const STAT_STYLES = {
@@ -31,32 +32,40 @@ const STAT_STYLES = {
   },
 } as const;
 
-export function ModuleMasterStats({ totalCount, activeCount, inactiveCount, t }: ModuleMasterStatsProps) {
+export function ModuleMasterStats({
+  totalCount,
+  activeCount,
+  inactiveCount,
+  t,
+  moduleLabel,
+}: ModuleMasterStatsProps) {
+  const values = useMemo(() => ({ module: moduleLabel ?? '' }), [moduleLabel]);
+
   const stats = useMemo(
     () => [
       {
         id: 'total-modules',
-        label: t('stats.totalModules'),
+        label: t('stats.totalModules', values),
         value: totalCount,
         icon: Briefcase,
         ...STAT_STYLES.total,
       },
       {
         id: 'active-modules',
-        label: t('stats.active'),
+        label: t('stats.active', values),
         value: activeCount,
         icon: Activity,
         ...STAT_STYLES.active,
       },
       {
         id: 'inactive-modules',
-        label: t('stats.inactive'),
+        label: t('stats.inactive', values),
         value: inactiveCount,
         icon: PowerOff,
         ...STAT_STYLES.inactive,
       },
     ],
-    [totalCount, activeCount, inactiveCount, t]
+    [totalCount, activeCount, inactiveCount, t, values]
   );
 
   return (

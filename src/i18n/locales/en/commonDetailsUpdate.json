@@ -48,7 +48,12 @@
       "noApproval": "No Approval",
       "approval": "Approval",
       "refreshFields": "Refresh Enabled Fields",
-      "selectFieldPlaceholder": "Select Group"
+      "selectFieldPlaceholder": "Select Group",
+      "searchPlaceholder": "Search By Group Name",
+      "noResultsTitle": "No group found for \"{term}\"",
+      "noResultsHint": "Try a different keyword or",
+      "clearSearch": "clear search",
+      "searching": "Loading"
     },
     "newValues": {
       "title": "New Values",

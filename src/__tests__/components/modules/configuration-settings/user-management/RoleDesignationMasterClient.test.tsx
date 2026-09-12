@@ -64,17 +64,37 @@ vi.mock('sonner', () => ({
 
 const messages = {
   userManagement: {
-    title: 'User Management',
+    aliasFallback: {
+      user: 'User',
+      role: 'Role',
+      designation: 'Designation',
+      department: 'Department',
+      module: 'Module',
+      userCode: 'User Code',
+      username: 'Username',
+      firstName: 'First Name',
+      middleName: 'Middle Name',
+      lastName: 'Last Name',
+      email: 'Email Address',
+      mobileNo: 'Mobile Number',
+      description: 'Description',
+      designationCode: 'Code',
+      designationName: 'Designation Name',
+    },
+    title: '{user} Management',
     stats: {
-      totalRoles: 'Total Roles',
-      totalDesignations: 'Total Designations',
+      totalRoles: 'Total {role}s',
+      totalDesignations: 'Total {designation}s',
       assignedTo: 'Assigned to',
-      usersCount: '{count} Users',
+      usersCount: '{count} {user}s',
     },
     filters: {
       search: 'Search',
-      searchRole: 'Search Roles',
-      searchDesignation: 'Search Designations',
+      searchRole: 'Search {role}',
+      searchDesignation: 'Search {designation}',
+      status: 'Status',
+      active: 'Active',
+      inactive: 'Inactive',
     },
     actions: {
       add: 'Add',
@@ -82,40 +102,44 @@ const messages = {
       delete: 'Delete',
       cancel: 'Cancel',
       submit: 'Submit',
-      createRole: 'Create Role',
-      updateRole: 'Update Role',
-      createDesignation: 'Create Designation',
-      updateDesignation: 'Update Designation',
+      createRole: 'Create {role}',
+      updateRole: 'Update {role}',
+      createDesignation: 'Create {designation}',
+      updateDesignation: 'Update {designation}',
+      title: 'Actions',
     },
     form: {
       code: 'Code',
       description: 'Description',
       hierarchy: 'Hierarchy',
-      departmentNames: 'Departments',
-      moduleAccess: 'Module Access',
+      departments: '{department}s',
+      moduleAccess: '{module} Access',
       selectLevel: 'Select Level',
       selectDept: 'Select Dept',
       alldepartmentNames: 'All Departments',
     },
     table: {
-      role: 'Role',
+      role: '{role}',
       actions: 'Actions',
     },
     messages: {
-      noRoles: 'No roles found',
-      noDesignations: 'No designations found',
-      roleDeleteSuccess: 'Role deleted successfully',
-      designationDeleteSuccess: 'Designation deleted successfully',
+      noRoles: 'No {role}s found',
+      noDesignations: 'No {designation}s found',
+      roleDeleteSuccess: '{role} deleted successfully',
+      roleDeleteError: 'Failed to delete {role}',
+      designationDeleteSuccess: '{designation} deleted successfully',
+      designationDeleteError: 'Failed to delete {designation}',
     },
     roles: {
-      title: 'Role & Designation Master',
+      title: '{role} Master',
       subtitle: 'Manage system roles and designations',
-      rolesTab: 'Roles',
-      designationsTab: 'Designations',
-      addRole: 'Add Role',
-      editRole: 'Edit Role',
-      addDesignation: 'Add Designation',
-      editDesignation: 'Edit Designation',
+      subtitleDesignation: 'Manage designations',
+      rolesTab: '{role}s',
+      designationsTab: '{designation}s',
+      addRole: 'Add {role}',
+      editRole: 'Edit {role}',
+      addDesignation: 'Add {designation}',
+      editDesignation: 'Edit {designation}',
     },
     permissions: {
       create: 'Create',
@@ -214,7 +238,7 @@ describe('RoleDesignationMasterClient', () => {
 
   it('renders roles tab by default', () => {
     setup();
-    expect(screen.getByText('Role & Designation Master')).toBeInTheDocument();
+    expect(screen.getByText('Role Master')).toBeInTheDocument();
     expect(screen.getByText('Administrator')).toBeInTheDocument();
   });
 
@@ -242,7 +266,7 @@ describe('RoleDesignationMasterClient', () => {
 
   it('filters roles by search term', () => {
     setup();
-    const searchInput = screen.getByPlaceholderText('Search Roles');
+    const searchInput = screen.getByPlaceholderText('Search Role');
     fireEvent.change(searchInput, { target: { value: 'Admin' } });
     expect(screen.getByText('Administrator')).toBeInTheDocument();
 

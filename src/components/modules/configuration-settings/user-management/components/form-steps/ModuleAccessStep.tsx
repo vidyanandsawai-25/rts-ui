@@ -4,6 +4,7 @@ import { Layers, Shield, CheckCircle2 } from 'lucide-react';
 import { Badge, Button, Card, CardContent, Select } from '@/components/common';
 import { ModuleAccessStepProps } from '@/types/user-management';
 import { parseBoolean } from '@/lib/utils/type-guards';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 export function ModuleAccessStep({
   formData,
@@ -17,6 +18,10 @@ export function ModuleAccessStep({
   deselectAllModules,
   t,
 }: ModuleAccessStepProps) {
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
+  const moduleLabel = useAliasLabel('Module', t('aliasFallback.module'));
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
+
   if (formData.departmentIds.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 p-12">
@@ -25,12 +30,16 @@ export function ModuleAccessStep({
         </div>
 
         <div className="text-center">
-          <p className="text-lg font-semibold text-slate-600">{t('form.noDeptsSelected')}</p>
-          <p className="text-sm max-w-xs">{t('form.selectDeptPrompt')}</p>
+          <p className="text-lg font-semibold text-slate-600">
+            {t('form.noDeptsSelected', { department: departmentLabel })}
+          </p>
+          <p className="text-sm max-w-xs">
+            {t('form.selectDeptPrompt', { department: departmentLabel })}
+          </p>
         </div>
 
         <Button variant="secondary" onClick={() => setCurrentTab('departments')} className="mt-2">
-          {t('form.goToDepts')}
+          {t('form.goToDepts', { department: departmentLabel })}
         </Button>
       </div>
     );
@@ -167,7 +176,10 @@ export function ModuleAccessStep({
                       })
                     ) : (
                       <div className="col-span-2 text-center py-4 text-slate-400 text-sm">
-                        {t('form.noModulesForDept')}
+                        {t('form.noModulesForDept', {
+                          module: moduleLabel,
+                          department: departmentLabel,
+                        })}
                       </div>
                     )}
                   </div>
@@ -177,7 +189,7 @@ export function ModuleAccessStep({
                       <Shield className="w-3.5 h-3.5 text-blue-600" />
 
                       <span className="text-xs font-bold text-slate-700 uppercase tracking-tight">
-                        {t('roles.title')}
+                        {t('roles.title', { role: roleLabel })}
                       </span>
                     </div>
 
@@ -225,7 +237,9 @@ export function ModuleAccessStep({
                           },
                         });
                       }}
-                      placeholder={t('form.rolePlaceholder') || 'Select Role'}
+                      placeholder={
+                        t('form.rolePlaceholder', { role: roleLabel }) || `Select ${roleLabel}`
+                      }
                       className="bg-white h-8 text-xs [&_button]:h-8 [&_button]:text-xs [&_button]:py-1 [&_ul]:top-full [&_ul]:bottom-auto [&_ul]:mt-1 [&_ul]:mb-0"
                     />
                   </div>

@@ -29,6 +29,10 @@
       "propertyRange": {
         "label": "संपत्ति सीमा",
         "sublabel": "संपत्ति सीमा (से-तक)"
+      },
+      "excelUpload": {
+        "label": "एक्सेल अपलोड",
+        "sublabel": "एक्सेल से खोजें"
       }
     }
   },
@@ -46,7 +50,21 @@
     "selectEndRange": "अंतिम सीमा चुनें",
     "showButton": "दिखाएं",
     "clearButton": "साफ करें",
-    "mandatoryBanner": "* से चिह्नित फ़ील्ड अनिवार्य हैं"
+    "mandatoryBanner": "* से चिह्नित फ़ील्ड अनिवार्य हैं",
+    "uploadExcel": "एक्सेल अपलोड करें",
+    "downloadTemplate": "टम्प्लेट डाउनलोड करें",
+    "searchDataByExcel": "एक्सेल द्वारा डेटा खोजें",
+    "dragDropText": "यहां एक्सेल फ़ाइल (.xlsx, .xls) ड्रैग और ड्रॉप करें, या ब्राउज़ करने के लिए क्लिक करें",
+    "rowsParsed": "फ़ाइल से {count} पंक्तियाँ पार्स की गईं",
+    "invalidFile": "अमान्य फ़ाइल। कृपया .xlsx या .xls फ़ाइल अपलोड करें।",
+    "wrongExcelUploaded": "गलत एक्सेल फ़ाइल अपलोड की गई।",
+    "missingColumns": "एक्सेल में ZoneNo, WardNo, और PropertyNo कॉलम होने आवश्यक हैं।",
+    "noDataInFile": "अपलोड की गई फ़ाइल में कोई डेटा नहीं मिला।",
+    "tooManyRows": "एक्सेल में अत्यधिक पंक्तियाँ हैं। अधिकतम सीमा {max} है.",
+    "duplicatesRemoved": "{count} डुप्लिकेट पंक्तियाँ हटाई गईं।",
+    "excelUploadRequired": "कृपया पहले एक्सेल फ़ाइल अपलोड करें।",
+    "fileSelected": "{name} चयनित",
+    "removeFile": "फ़ाइल हटाएं"
   },
   "screenSelectionCard": {
     "title": "स्क्रीन चयन",
@@ -141,6 +159,7 @@
     "fetchNoResults": "कोई संपत्ति नहीं मिली।",
     "fetchFailed": "संपत्ति लोड करने में विफल।",
     "fetchWardsError": "{wards} प्राप्त करने में त्रुटि:",
+    "excelDuplicatesNotice": "एक्सेल फ़ाइल में {count} डुप्लिकेट {count, plural, =1 {प्रविष्टि पाई गई} other {प्रविष्टियाँ पाई गईं}}। प्रत्येक संपत्ति केवल एक बार दिखाई जा रही है।",
     "searchValidationError": "कृपया खोजने के लिए कोई मान दर्ज करें।",
     "validationGreaterProperty": "संपत्ति क्र. तक, संपत्ति क्र. से से बड़ा होना चाहिए।"
   },

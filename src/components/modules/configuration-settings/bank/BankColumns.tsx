@@ -7,13 +7,22 @@ import { BankMasterData } from '@/types/bank-master.types';
 
 export interface BankMasterTableRow extends BankMasterData, Record<string, unknown> {}
 
+export interface BankColumnLabels {
+  bankCode?: string;
+  bankName?: string;
+  branchName?: string;
+  ifscCode?: string;
+  location?: string;
+}
+
 export const getBankColumns = (
   t: (key: string) => string,
-  tCommon: (key: string) => string
+  tCommon: (key: string) => string,
+  labels?: BankColumnLabels
 ): Column<BankMasterTableRow>[] => [
   {
     key: 'bankCode',
-    label: t('table.code'),
+    label: labels?.bankCode || t('table.code'),
     width: '10%',
     render: (value) => (
       <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 font-mono border border-blue-300 rounded-md">
@@ -23,7 +32,11 @@ export const getBankColumns = (
   },
   {
     key: 'bankName',
-    label: t('table.bankBranch'),
+    label: labels?.bankName
+      ? labels.branchName
+        ? `${labels.bankName} & ${labels.branchName}`
+        : labels.bankName
+      : t('table.bankBranch'),
     width: '25%',
     render: (_, row) => (
       <div className="space-y-1">
@@ -37,7 +50,7 @@ export const getBankColumns = (
   },
   {
     key: 'ifscCode',
-    label: t('table.ifscCode'),
+    label: labels?.ifscCode || t('table.ifscCode'),
     width: '13%',
     render: (value) => (
       <span className="font-mono text-xs text-gray-700 bg-gray-50 px-2 py-1 rounded border border-gray-200">
@@ -47,7 +60,7 @@ export const getBankColumns = (
   },
   {
     key: 'city',
-    label: t('table.location'),
+    label: labels?.location || t('table.location'),
     width: '25%',
     render: (_, row) => (
       <div className="space-y-0.5">

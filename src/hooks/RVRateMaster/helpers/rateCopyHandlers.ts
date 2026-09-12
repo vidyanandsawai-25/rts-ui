@@ -77,7 +77,9 @@ export async function copyRatesFromUseGroup(params: CopyRatesParams & {
       toast.error(t('messages.validationNoRatesAvailable', { 
         source: getOptionLabel(useGroupOptions, sourceValue), 
         group: getOptionLabel(zoneOptions, selectedZone), 
-        year: getYearLabel(assessmentYear) 
+        year: getYearLabel(assessmentYear),
+        assessment: aliasLabels?.assessment || "Assessment",
+        ...aliasLabels,
       }));
       return;
     }
@@ -86,9 +88,11 @@ export async function copyRatesFromUseGroup(params: CopyRatesParams & {
 
     if (ratesByZone.size === 0) {
       toast.error(t('messages.validationNoRatesAvailable', { 
-        source: sourceValue, 
-        group: selectedZone, 
-        year: assessmentYear 
+        source: getOptionLabel(useGroupOptions, sourceValue), 
+        group: getOptionLabel(zoneOptions, selectedZone), 
+        year: getYearLabel(assessmentYear),
+        assessment: aliasLabels?.assessment || "Assessment",
+        ...aliasLabels,
       }));
       return;
     }
@@ -103,7 +107,8 @@ export async function copyRatesFromUseGroup(params: CopyRatesParams & {
     toast.success(t('messages.ratesCopiedSuccess', { 
       source: getOptionLabel(useGroupOptions, sourceValue), 
       group: getOptionLabel(zoneOptions, selectedZone), 
-      year: assessmentYear 
+      year: getYearLabel(assessmentYear),
+      ...aliasLabels,
     }));
   } catch (_error) {
     toast.error(t('messages.validationCopyFailed'));
@@ -158,7 +163,9 @@ export async function copyRatesFromRateSection(params: CopyRatesParams & {
       toast.error(t('messages.validationNoRatesAvailable', { 
         source: getOptionLabel(zoneOptions, sourceValue), 
         group: getOptionLabel(useGroupOptions, selectedUseGroup), 
-        year: getYearLabel(assessmentYear) 
+        year: getYearLabel(assessmentYear),
+        assessment: aliasLabels?.assessment || "Assessment",
+        ...aliasLabels,
       }));
       return;
     }
@@ -169,7 +176,9 @@ export async function copyRatesFromRateSection(params: CopyRatesParams & {
       toast.error(t('messages.validationNoRatesAvailable', { 
         source: getOptionLabel(zoneOptions, sourceValue), 
         group: getOptionLabel(useGroupOptions, selectedUseGroup), 
-        year: getYearLabel(assessmentYear) 
+        year: getYearLabel(assessmentYear),
+        assessment: aliasLabels?.assessment || "Assessment",
+        ...aliasLabels,
       }));
       return;
     }
@@ -184,7 +193,8 @@ export async function copyRatesFromRateSection(params: CopyRatesParams & {
     toast.success(t('messages.ratesCopiedSuccess', { 
       source: getOptionLabel(zoneOptions, sourceValue), 
       group: getOptionLabel(useGroupOptions, selectedUseGroup), 
-      year: getYearLabel(assessmentYear) 
+      year: getYearLabel(assessmentYear),
+      ...aliasLabels,
     }));
   } catch (_error) {
     toast.error(t('messages.validationCopyFailed'));

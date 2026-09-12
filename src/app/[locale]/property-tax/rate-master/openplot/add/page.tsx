@@ -3,12 +3,9 @@ import RateMasterView from "@/components/modules/property-tax/RVRateMaster/RateM
 import AddRateDrawer from "@/components/modules/property-tax/RVRateMaster/AddRateDrawer";
 import {
   getAssessmentYears,
-  getZoneDescriptionsPaged,
   getAllZoneDescriptions,
   getZoneOptions,
   getRateMasterByFilters,
-  getRateMasterData,
-  getRateMasterPagedAction,
   getRateFrequencyPolicy,
   getRateUnitPolicy,
   getOpenPlotTypeOfUseDetailsAction
@@ -35,34 +32,31 @@ export default async function AddOpenPlotRatePage({ searchParams }: PageProps) {
   const rawMatrixPageSize = Number(params?.matrixPageSize);
   const matrixPageSize = [100, 150, 200].includes(rawMatrixPageSize) ? rawMatrixPageSize : 100;
 
-  // Get filter values from URL
-  const selectedZone = params?.zone;
-  const selectedYear = params?.assessmentYear;
-
   const [
     zones,
     typeofuseDetailsResult,
-    paginatedZonesResult,
     allZonesResult,
     assessmentYears,
-    allMasterData,
     rateFrequencyPolicy,
     rateUnitPolicy,
   ] = await Promise.all([
     getZoneOptions(),
     getOpenPlotTypeOfUseDetailsAction(),
-    getZoneDescriptionsPaged(matrixPage, matrixPageSize),
-    getAllZoneDescriptions(), // Fetch all zones for copy rates functionality
+    getAllZoneDescriptions(), // Fetch all zones once for copy rates and in-memory pagination
     getAssessmentYears(),
-    getRateMasterData(1, -1), // Get all zones for mapping (pageSize: -1 gets all items)
     getRateFrequencyPolicy(), // Fetch rate frequency policy configuration
     getRateUnitPolicy(), // Fetch rate unit policy configuration
   ]);
 
   const typeofuseDetails = typeofuseDetailsResult.items || [];
 
-  // Extract zone descriptions for rate mapping
-  const allZoneDescriptions = allMasterData.zoneDescriptions;
+  // Derive paginated zones in-memory from allZonesResult to avoid extra network calls
+  const totalCount = allZonesResult.length;
+  const safePageSize = matrixPageSize > 0 ? matrixPageSize : 100;
+  const safePageNumber = Math.max(1, matrixPage);
+  const totalPages = Math.max(1, Math.ceil(totalCount / safePageSize));
+  const startIdx = (safePageNumber - 1) * safePageSize;
+  const paginatedZoneItems = allZonesResult.slice(startIdx, startIdx + safePageSize);
 
   // Map typeofuse to RateCategory structure for table headers (distinct typeOfUseGroupId)
   const distinctGroupIds = new Set<number>();
@@ -93,24 +87,6 @@ export default async function AddOpenPlotRatePage({ searchParams }: PageProps) {
       };
     });
 
-  // Get taxZoneIds for the current page of zones (for server-side filtering)
-  const paginatedTaxZoneIds = paginatedZonesResult.items.map(z => z.taxZoneId);
-
-  // Fetch filtered rates using the selected filters from URL (if any)
-  const ratesResult = await getRateMasterPagedAction(
-    1,
-    -1, // Fetch all matching rates for the filtered zones
-    rateCategories,
-    allZoneDescriptions,
-    selectedZone,
-    "ALL", // No useGroup filter for Open Plot
-    selectedYear,
-    paginatedTaxZoneIds, // Pass only the current page's zone IDs
-    true // isOpenPlot is true
-  );
-
-  const tableData = ratesResult.items;
-
   // Set initial values from searchParams if present, else fallback to first available options
   const initialZone = params?.zone || (zones && zones.length > 0 ? zones[0].value : "ALL");
   const initialYear = params?.assessmentYear || (assessmentYears && assessmentYears.length > 0 ? assessmentYears[0].value : "ALL");
@@ -133,9 +109,9 @@ export default async function AddOpenPlotRatePage({ searchParams }: PageProps) {
 
   // Prepare paginated zones data for the form
   const paginatedZonesData = {
-    items: paginatedZonesResult.items,
-    totalPages: paginatedZonesResult.totalPages,
-    totalCount: paginatedZonesResult.totalCount,
+    items: paginatedZoneItems,
+    totalPages,
+    totalCount,
     pageNumber: matrixPage,
     pageSize: matrixPageSize,
   };
@@ -163,7 +139,7 @@ export default async function AddOpenPlotRatePage({ searchParams }: PageProps) {
     <>
       <PageContainer className="pt-24">
         <RateMasterView
-          rateMasterData={tableData ?? []}
+          rateMasterData={[]}
           zones={zones ?? []}
           useGroups={openPlotUseGroups}
           assessmentYears={assessmentYears ?? []}
@@ -179,7 +155,7 @@ export default async function AddOpenPlotRatePage({ searchParams }: PageProps) {
         useGroups={openPlotUseGroups}
         assessmentYears={assessmentYears}
         assessmentYearRanges={assessmentYearRanges}
-        zoneDescriptions={paginatedZonesResult.items}
+        zoneDescriptions={paginatedZoneItems}
         allZones={allZonesResult}
         rateCategories={rateCategories}
         paginatedZonesData={paginatedZonesData}

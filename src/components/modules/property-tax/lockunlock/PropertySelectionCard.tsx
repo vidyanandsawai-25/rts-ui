@@ -13,6 +13,9 @@ import {
 import { useTranslations } from "next-intl";
 import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
 import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
+import { SEARCH_CATEGORY } from "@/types/lockunlock.types";
+
+import { ExcelUploadCard } from "./ExcelUploadCard";
 
 interface PropertySelectionCardProps {
   formData: {
@@ -32,6 +35,10 @@ interface PropertySelectionCardProps {
   handleClearAll: () => void;
   isPending: boolean;
   isLoadingProperties?: boolean;
+  excelFile?: File | null;
+  setExcelFile?: (file: File | null) => void;
+  excelFileName?: string;
+  setExcelFileName?: (name: string) => void;
 }
 
 export function PropertySelectionCard({
@@ -45,11 +52,29 @@ export function PropertySelectionCard({
   handleClearAll,
   isPending,
   isLoadingProperties = false,
+  excelFile = null,
+  setExcelFile = () => {},
+  excelFileName = "",
+  setExcelFileName = () => {},
 }: PropertySelectionCardProps) {
   const t = useTranslations("lockUnlock");
   const zoneAlias = useAliasLabel("Zone", t("defaults.zone"));
   const wardAlias = useAliasLabel("Ward", t("defaults.ward"));
   const propertyNoAlias = useAliasLabel("Property_No", useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo"))));
+
+  if (formData.searchCategory === SEARCH_CATEGORY.EXCEL) {
+    return (
+      <ExcelUploadCard
+        excelFile={excelFile}
+        setExcelFile={setExcelFile}
+        excelFileName={excelFileName}
+        setExcelFileName={setExcelFileName}
+        handleShow={handleShow}
+        handleClearAll={handleClearAll}
+        isPending={isPending}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-1">

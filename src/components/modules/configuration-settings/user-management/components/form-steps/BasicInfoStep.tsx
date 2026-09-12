@@ -190,6 +190,8 @@ function TwoFactorAdminSection({
   );
 }
 
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
+
 export function BasicInfoStep({
   formData,
   setFormData,
@@ -197,6 +199,14 @@ export function BasicInfoStep({
   t,
   errors = {},
 }: BasicInfoStepProps) {
+  const usernameLabel = useAliasLabel('Username', t('aliasFallback.username'));
+  const userCodeLabel = useAliasLabel('User_Code', t('aliasFallback.userCode'));
+  const firstNameLabel = useAliasLabel('First_Name', t('aliasFallback.firstName'));
+  const middleNameLabel = useAliasLabel('Middle_Name', t('aliasFallback.middleName'));
+  const lastNameLabel = useAliasLabel('Last_Name', t('aliasFallback.lastName'));
+  const emailLabel = useAliasLabel('Email', t('aliasFallback.email'));
+  const mobileNoLabel = useAliasLabel('Mobile_No', t('aliasFallback.mobileNo'));
+
   return (
     <div className="pr-2">
       <div className="space-y-4 pb-2">
@@ -207,7 +217,7 @@ export function BasicInfoStep({
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t('form.username')} *</Label>
+              <Label>{usernameLabel} *</Label>
               <Input
                 required
                 maxLength={20}
@@ -223,7 +233,7 @@ export function BasicInfoStep({
               {errors.userName && <ValidationMessage message={errors.userName} />}
             </div>
             <div className="space-y-2">
-              <Label>{t('form.userCode')}</Label>
+              <Label>{userCodeLabel}</Label>
               <Input
                 maxLength={15}
                 disabled={!!editingUser}
@@ -238,7 +248,7 @@ export function BasicInfoStep({
               {errors.userCode && <ValidationMessage message={errors.userCode} />}
             </div>
             <div className="space-y-2">
-              <Label>{t('form.firstName')} *</Label>
+              <Label>{firstNameLabel} *</Label>
               <Input
                 required
                 maxLength={40}
@@ -252,7 +262,7 @@ export function BasicInfoStep({
               {errors.firstName && <ValidationMessage message={errors.firstName} />}
             </div>
             <div className="space-y-2">
-              <Label>{t('form.middleName')}</Label>
+              <Label>{middleNameLabel}</Label>
               <Input
                 maxLength={40}
                 value={formData.middleName}
@@ -265,7 +275,7 @@ export function BasicInfoStep({
               {errors.middleName && <ValidationMessage message={errors.middleName} />}
             </div>
             <div className="space-y-2">
-              <Label>{t('form.lastName')} *</Label>
+              <Label>{lastNameLabel} *</Label>
               <Input
                 required
                 maxLength={40}
@@ -281,7 +291,7 @@ export function BasicInfoStep({
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                {t('form.email')} *
+                {emailLabel} *
               </Label>
               <Input
                 required
@@ -298,7 +308,7 @@ export function BasicInfoStep({
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                {t('form.mobileNo')} *
+                {mobileNoLabel} *
               </Label>
               <Input
                 required

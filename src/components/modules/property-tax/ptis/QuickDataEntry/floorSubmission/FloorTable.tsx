@@ -377,7 +377,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          {!viewOnly && !isAmenityProperty && !(categoryName?.trim().toLowerCase() === 'apartment' && !partitionNo?.trim()) && (
+          {!viewOnly && Boolean(categoryName?.trim()) && !isAmenityProperty && !(categoryName?.trim().toLowerCase() === 'apartment' && !partitionNo?.trim()) && (
             <div
               onClick={handleDataEntrySameAsClick}
               className="inline-block cursor-pointer"

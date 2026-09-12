@@ -770,13 +770,15 @@ export async function getAllWingsServer(): Promise<PagedResponse<WingItem>> {
 export async function getFieldRegistriesServer(
   pageNumber?: number,
   pageSize?: number,
-  updateCode?: string
+  updateCode?: string,
+  searchTerm?: string
 ): Promise<PagedResponse<BulkUpdateMaster> | BulkUpdateMaster[]> {
   try {
     const params = new URLSearchParams();
     if (pageNumber != null) params.append("PageNumber", String(pageNumber));
     if (pageSize != null) params.append("PageSize", String(pageSize));
     if (updateCode) params.append("UpdateCode", updateCode);
+    if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
 
     const response = await apiClient.get<PagedResponse<BulkUpdateMaster> | ApiWrappedResponse<BulkUpdateMaster[]>>(
       `/FieldRegistry/GetFieldRegistries?${params.toString()}`

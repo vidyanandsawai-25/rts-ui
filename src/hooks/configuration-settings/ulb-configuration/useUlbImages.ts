@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   deleteUlbImageAction,
@@ -50,6 +50,33 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
   
   const hasPendingImageChanges = pendingUploads.length > 0 || pendingDeletions.length > 0;
 
+  // Active blob URLs tracking to prevent browser RAM memory leaks
+  const activeBlobUrls = useRef<Set<string>>(new Set());
+
+  const revokeBlobUrl = useCallback((url: string | null | undefined) => {
+    if (url && url.startsWith('blob:')) {
+      URL.revokeObjectURL(url);
+      activeBlobUrls.current.delete(url);
+    }
+  }, []);
+
+  const createManagedBlobUrl = useCallback((file: File) => {
+    const url = URL.createObjectURL(file);
+    activeBlobUrls.current.add(url);
+    return url;
+  }, []);
+
+  useEffect(() => {
+    const urlsRef = activeBlobUrls.current;
+    return () => {
+      // Cleanup all unrevoked blob URLs on unmount
+      urlsRef.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+      urlsRef.clear();
+    };
+  }, []);
+
   const deleteImage = useCallback(async (id: string, category: 'Logo' | 'Background' | 'Gallery') => {
     confirm({
       variant: 'delete',
@@ -58,7 +85,13 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
       confirmText: 'Remove',
       cancelText: 'Cancel',
       onConfirm: async () => {
-        setImages((prev) => prev.filter((img) => img.id !== id));
+        setImages((prev) => {
+          const target = prev.find((img) => img.id === id);
+          if (target && target.url.startsWith('blob:')) {
+            revokeBlobUrl(target.url);
+          }
+          return prev.filter((img) => img.id !== id);
+        });
         if (category === 'Logo') onLogoChange(null);
 
         if (id.startsWith('temp-')) {
@@ -69,7 +102,7 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
         toast.info('Image removed. Click "Save Progress" to confirm.');
       }
     });
-  }, [confirm, onLogoChange]);
+  }, [confirm, onLogoChange, revokeBlobUrl]);
 
   const setAsBackground = useCallback(async (id: string) => {
     const target = images.find((img) => img.id === id);
@@ -116,7 +149,7 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
       }
 
       const tempId = `temp-${Date.now()}`;
-      const tempUrl = URL.createObjectURL(file);
+      const tempUrl = createManagedBlobUrl(file);
 
       const newImg: ULBImage = {
         id: tempId,
@@ -157,9 +190,15 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
         if (!replaceId) return toast.error('Replace target missing');
         
         if (replaceId.startsWith('temp-')) {
-           // Replacing an already pending upload
+           // Replacing an already pending upload -> revoke previous blob URL
            setImages((prev) =>
-              prev.map((i) => (i.id === replaceId ? { ...i, url: tempUrl, size: file.size } : i))
+              prev.map((i) => {
+                if (i.id === replaceId) {
+                  if (i.url.startsWith('blob:')) revokeBlobUrl(i.url);
+                  return { ...i, url: tempUrl, size: file.size };
+                }
+                return i;
+              })
            );
            setPendingUploads((prev) =>
               prev.map((u) => (u.tempId === replaceId ? { ...u, file } : u))
@@ -167,11 +206,13 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
         } else {
            // Replacing a real server image
            setImages((prev) =>
-              prev.map((i) =>
-                i.id === replaceId
-                  ? { ...i, url: tempUrl, name: finalTargetType, size: file.size, isBackgroundImage: finalTargetType === 'Background' }
-                  : i
-              )
+              prev.map((i) => {
+                if (i.id === replaceId) {
+                  if (i.url.startsWith('blob:')) revokeBlobUrl(i.url);
+                  return { ...i, url: tempUrl, name: finalTargetType, size: file.size, isBackgroundImage: finalTargetType === 'Background' };
+                }
+                return i;
+              })
            );
            setPendingUploads((prev) => [
               ...prev,
@@ -186,7 +227,7 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
 
       toast.info('Image added locally. Click "Save Progress" to confirm.');
     },
-    [images, onLogoChange]
+    [createManagedBlobUrl, images, onLogoChange, revokeBlobUrl]
   );
 
   const commitImageChanges = useCallback(async () => {
@@ -204,9 +245,9 @@ export function useUlbImages(initialImages: UlbImageMasterDto[], onLogoChange: (
       for (const upload of pendingUploads) {
         const formData = new FormData();
         formData.append('File', upload.file);
+        formData.append('ImageType', upload.category);
 
         if (upload.mode === 'upload') {
-          formData.append('ImageType', upload.category);
           const res = await uploadUlbImageAction(formData);
           if (!res.success) throw new Error(res.error || 'Upload failed');
         } else if (upload.mode === 'replace' && upload.replaceId) {

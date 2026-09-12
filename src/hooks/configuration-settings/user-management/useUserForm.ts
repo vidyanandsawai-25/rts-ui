@@ -1,6 +1,6 @@
 'use client';
 
-import { useReducer, useState, useEffect } from 'react';
+import { useReducer, useState, useEffect, useMemo } from 'react';
 import { User, UserFormData, MasterModule } from '@/types/user-management';
 import {
   createUserAction,
@@ -9,12 +9,51 @@ import {
 import { getUsersAction } from '@/app/[locale]/configuration-settings/user-management/actions';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { userManagementValidations } from '@/lib/utils/user-management-validation';
+import { userManagementValidations, UserValidationLabels } from '@/lib/utils/user-management-validation';
 import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import { formReducer, getInitialState } from './userFormReducer';
 
 export function useUserForm(onSuccess: (user: User) => void, initialData?: User) {
   const t = useTranslations('userManagement');
+  const userLabel = useAliasLabel('User', t('aliasFallback.user'));
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
+  const userCodeLabel = useAliasLabel('User_Code', t('aliasFallback.userCode'));
+  const usernameLabel = useAliasLabel('Username', t('aliasFallback.username'));
+  const firstNameLabel = useAliasLabel('First_Name', t('aliasFallback.firstName'));
+  const middleNameLabel = useAliasLabel('Middle_Name', t('aliasFallback.middleName'));
+  const lastNameLabel = useAliasLabel('Last_Name', t('aliasFallback.lastName'));
+  const emailLabel = useAliasLabel('Email', t('aliasFallback.email'));
+  const mobileNoLabel = useAliasLabel('Mobile_No', t('aliasFallback.mobileNo'));
+
+  const validationLabels: UserValidationLabels = useMemo(
+    () => ({
+      user: userLabel,
+      role: roleLabel,
+      department: departmentLabel,
+      userCode: userCodeLabel,
+      username: usernameLabel,
+      firstName: firstNameLabel,
+      middleName: middleNameLabel,
+      lastName: lastNameLabel,
+      email: emailLabel,
+      mobileNo: mobileNoLabel,
+    }),
+    [
+      userLabel,
+      roleLabel,
+      departmentLabel,
+      userCodeLabel,
+      usernameLabel,
+      firstNameLabel,
+      middleNameLabel,
+      lastNameLabel,
+      emailLabel,
+      mobileNoLabel,
+    ]
+  );
+
   const [currentTab, setCurrentTab] = useState('basic');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,7 +82,8 @@ export function useUserForm(onSuccess: (user: User) => void, initialData?: User)
       undefined,
       !!initialData,
       existingUsers,
-      initialData?.userId ?? (initialData?.id ? Number(initialData.id) : undefined)
+      initialData?.userId ?? (initialData?.id ? Number(initialData.id) : undefined),
+      validationLabels
     );
 
     setTimeout(() => {
@@ -64,14 +104,20 @@ export function useUserForm(onSuccess: (user: User) => void, initialData?: User)
 
           if (error) {
             let isRequiredError = false;
-            if (field === 'userName') isRequiredError = error === t('form.errors.usernameRequired');
+            if (field === 'userName')
+              isRequiredError =
+                error === t('form.errors.usernameRequired', { username: usernameLabel });
             else if (field === 'firstName')
-              isRequiredError = error === t('form.errors.firstNameRequired');
+              isRequiredError =
+                error === t('form.errors.firstNameRequired', { firstName: firstNameLabel });
             else if (field === 'lastName')
-              isRequiredError = error === t('form.errors.lastNameRequired');
-            else if (field === 'email') isRequiredError = error === t('form.errors.emailRequired');
+              isRequiredError =
+                error === t('form.errors.lastNameRequired', { lastName: lastNameLabel });
+            else if (field === 'email')
+              isRequiredError = error === t('form.errors.emailRequired', { email: emailLabel });
             else if (field === 'mobileNo')
-              isRequiredError = error === t('form.errors.mobileRequired');
+              isRequiredError =
+                error === t('form.errors.mobileRequired', { mobileNo: mobileNoLabel });
 
             const isNotEmpty = val !== undefined && val !== null && String(val).trim() !== '';
             if (isNotEmpty || !isRequiredError) {
@@ -86,7 +132,18 @@ export function useUserForm(onSuccess: (user: User) => void, initialData?: User)
         return nextErrors;
       });
     }, 0);
-  }, [formData, existingUsers, initialData, t]);
+  }, [
+    formData,
+    existingUsers,
+    initialData,
+    t,
+    validationLabels,
+    usernameLabel,
+    firstNameLabel,
+    lastNameLabel,
+    emailLabel,
+    mobileNoLabel,
+  ]);
 
   const steps = ['basic', 'departments', 'modules'];
   const currentIndex = steps.indexOf(currentTab);
@@ -100,7 +157,8 @@ export function useUserForm(onSuccess: (user: User) => void, initialData?: User)
       undefined,
       !!initialData,
       existingUsers,
-      initialData?.userId ?? (initialData?.id ? Number(initialData.id) : undefined)
+      initialData?.userId ?? (initialData?.id ? Number(initialData.id) : undefined),
+      validationLabels
     );
     const basicFields = [
       'userName',
@@ -136,7 +194,8 @@ export function useUserForm(onSuccess: (user: User) => void, initialData?: User)
         undefined,
         !!initialData,
         existingUsers,
-        initialData?.userId ?? (initialData?.id ? Number(initialData.id) : undefined)
+        initialData?.userId ?? (initialData?.id ? Number(initialData.id) : undefined),
+        validationLabels
       );
       if (validationErrors.departmentIds) {
         setErrors({ departmentIds: validationErrors.departmentIds });
@@ -165,7 +224,8 @@ export function useUserForm(onSuccess: (user: User) => void, initialData?: User)
         undefined,
         !!initialData,
         existingUsers,
-        initialData?.userId ?? (initialData?.id ? Number(initialData.id) : undefined)
+        initialData?.userId ?? (initialData?.id ? Number(initialData.id) : undefined),
+        validationLabels
       );
       if (validationErrors.departmentIds) {
         setErrors({ departmentIds: validationErrors.departmentIds });
@@ -198,7 +258,8 @@ export function useUserForm(onSuccess: (user: User) => void, initialData?: User)
       undefined,
       !!initialData,
       existingUsers,
-      initialData?.userId ?? (initialData?.id ? Number(initialData.id) : undefined)
+      initialData?.userId ?? (initialData?.id ? Number(initialData.id) : undefined),
+      validationLabels
     );
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -215,17 +276,21 @@ export function useUserForm(onSuccess: (user: User) => void, initialData?: User)
 
       if (res.success && res.data) {
         onSuccess(res.data as User);
-        toast.success(t(isEdit ? 'messages.updateSuccess' : 'messages.createSuccess'));
+        toast.success(
+          t(isEdit ? 'messages.updateSuccess' : 'messages.createSuccess', { user: userLabel })
+        );
         if (!isEdit) {
           const email = (formData as Partial<User>).email || '';
           toast.info(t('messages.passwordSentToEmail', { email }), { duration: 6000 });
         }
       } else {
         setErrors(res.validationErrors || {});
-        let errorMsg = res.message || t(isEdit ? 'messages.updateError' : 'messages.createError');
+        let errorMsg =
+          res.message ||
+          t(isEdit ? 'messages.updateError' : 'messages.createError', { user: userLabel });
         if (res.message) {
           if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
-            errorMsg = t(res.message);
+            errorMsg = t(res.message, { user: userLabel });
           } else {
             errorMsg = getCleanErrorMessage(res.message);
           }

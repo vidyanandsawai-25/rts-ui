@@ -21,8 +21,11 @@ export function useRateCategoriesSync({
   assessmentYear,
   t,
 }: RateCategoriesSyncProps) {
-  const rateSectionLabel = useAliasLabel("Rate_Section", t("aliasFallback.rateSection"));
-  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+  const rateSection = useAliasLabel("Rate_Section", useAliasLabel("Rate Section", t("aliasFallback.rateSection")));
+  const assessment = useAliasLabel("Assessment", t("aliasFallback.assessment"));
+  const use = useAliasLabel("Use", t("aliasFallback.use"));
+  const typeOfUse = useAliasLabel("Type_Of_Use", useAliasLabel("Type of Use", t("aliasFallback.typeOfUse")));
+  const category = useAliasLabel("Category", t("aliasFallback.category"));
   const [hasConfiguredRates, setHasConfiguredRates] = useState(false);
   const [isConfigureRatesOpen, setIsConfigureRatesOpen] = useState(false);
   const [localRateCategories, setLocalRateCategories] = useState<RateCategory[]>(rateCategories);
@@ -214,7 +217,7 @@ export function useRateCategoriesSync({
           setLocalRateCategories(toAddCategories);
           if (alreadyConfiguredCodes.length > 0) {
             const codesStr = `'${alreadyConfiguredCodes.join(", ")}'`;
-            toast.success(t('messages.validationRatesAlreadyExistSome', { codes: codesStr, use: useLabel }) || `Rates already exist for ${codesStr}. Only unconfigured use types are shown.`);
+            toast.success(t('messages.validationRatesAlreadyExistSome', { codes: codesStr, use }) || `Rates already exist for ${codesStr}. Only unconfigured use types are shown.`);
           }
         } else {
           const allCategories: RateCategory[] = [];
@@ -314,7 +317,7 @@ export function useRateCategoriesSync({
 
   const handleConfigureRatesClick = async () => {
     if (!selectedZone || selectedZone === "ALL" || !assessmentYear || assessmentYear === "ALL") {
-      toast.error(t('messages.selectRateSection', { rateSection: rateSectionLabel }));
+      toast.error(t('messages.selectRateSection', { rateSection, assessment }));
       return;
     }
     try {
@@ -324,8 +327,8 @@ export function useRateCategoriesSync({
       const details = detailsResult.items || [];
 
       confirm({
-        title: t('dialogs.configureUseTypeTitle', { use: useLabel }),
-        description: t('dialogs.configureUseTypeDescription', { use: useLabel }),
+        title: t('dialogs.configureUseTypeTitle', { typeOfUse, use }),
+        description: t('dialogs.configureUseTypeDescription', { typeOfUse, use, category }),
         confirmText: t('dialogs.confirmYes'),
         cancelText: t('dialogs.confirmNo'),
         onConfirm: () => {
@@ -391,7 +394,7 @@ export function useRateCategoriesSync({
         }
       });
     } catch (_err) {
-      toast.error(t('configureRates.toast.loadTypesOfUseFailed'));
+      toast.error(t('configureRates.toast.loadTypesOfUseFailed', { typeOfUse }));
     }
   };
 

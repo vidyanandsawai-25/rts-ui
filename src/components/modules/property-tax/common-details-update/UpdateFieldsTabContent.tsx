@@ -94,6 +94,9 @@ export const UpdateFieldsTabContent = (props: UpdateFieldsTabContentProps) => {
             handleMenuSelect={(code) => updateData.handleMenuSelect(code, true)}
             locale={props.locale}
             selectionType="multi"
+            searchValue={updateData.menuSearch}
+            onSearchChange={updateData.setMenuSearch}
+            isSearching={updateData.searchingMenu}
           />
         </div>
 

@@ -39,5 +39,5 @@ export function useAliasLabelsContext(): AliasLabelsContextValue {
  */
 export function useAliasLabel(keyName: string, fallback: string): string {
   const { labels } = useAliasLabelsContext();
-  return labels[keyName] || fallback;
+  return labels?.[keyName] || fallback;
 }

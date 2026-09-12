@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { getTypeOfUseDetailsAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import type { ITypeOfUseDetails, RateCategory } from "@/types/RVRateMaster";
 import type { UseGroup } from "@/types/typeOfUse.types";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface GroupFormState {
   code: string;
@@ -67,6 +68,7 @@ export function useConfigureRatesInitialization({
   setHasInitialized,
   t,
 }: ConfigureRatesInitializationProps) {
+  const typeOfUse = useAliasLabel("Type_Of_Use", useAliasLabel("Type of Use", t("aliasFallback.typeOfUse")));
 
   // Reset initialization state when drawer closes
   useEffect(() => {
@@ -198,13 +200,13 @@ export function useConfigureRatesInitialization({
         setTotalCount(result.totalCount || 0);
         setTotalPages(result.totalPages || 0);
       } catch (err) {
-        toast.error(t("configureRates.toast.loadTypesOfUseFailed"));
+        toast.error(t("configureRates.toast.loadTypesOfUseFailed", { typeOfUse }));
         logger.error("Failed to load types of use", { error: err as Error });
       } finally {
         setIsListLoading(false);
       }
     }
     loadPaginatedData();
-  }, [open, pageNumber, pageSize, debouncedSearch, allUseTypes, setPaginatedUseTypes, setTotalCount, setTotalPages, setIsListLoading, t]);
+  }, [open, pageNumber, pageSize, debouncedSearch, allUseTypes, setPaginatedUseTypes, setTotalCount, setTotalPages, setIsListLoading, t, typeOfUse]);
 }
 

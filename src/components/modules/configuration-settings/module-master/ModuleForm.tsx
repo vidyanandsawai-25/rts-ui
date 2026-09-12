@@ -4,6 +4,7 @@ import { Briefcase, AlertCircle } from 'lucide-react';
 import { Drawer } from '@/components/common/Drawer';
 import { ModuleMaster } from '@/types/moduleMaster.types';
 import { useModuleForm } from '@/hooks/configuration-settings/module-master/useModuleForm';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import { ModuleBasicDetails } from './components/ModuleBasicDetails';
 import { ModuleStatusToggle } from './components/ModuleStatusToggle';
 import { ModuleFormFooter } from './components/ModuleFormFooter';
@@ -41,6 +42,8 @@ export function ModuleForm({
     initialData,
     initialExistingModules: existingModules,
   });
+
+  const moduleLabel = useAliasLabel('Module', t('aliasFallback.module'));
 
   if (!hasWriteAccess) {
     return (
@@ -83,9 +86,13 @@ export function ModuleForm({
           </div>
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
-              {isEdit ? t('drawer.editTitle') : t('drawer.addTitle')}
+              {isEdit
+                ? t('drawer.editTitle', { module: moduleLabel })
+                : t('drawer.addTitle', { module: moduleLabel })}
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">{t('drawer.subtitle')}</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {t('drawer.subtitle', { module: moduleLabel })}
+            </p>
           </div>
         </div>
       }
@@ -97,6 +104,7 @@ export function ModuleForm({
           onCancel={handleCancel}
           t={t}
           tCommon={tCommon}
+          moduleLabel={moduleLabel}
         />
       }
     >

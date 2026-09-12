@@ -7,13 +7,22 @@ import { ModuleMaster } from '@/types/moduleMaster.types';
 
 export interface ModuleMasterTableRow extends ModuleMaster, Record<string, unknown> {}
 
+export interface ModuleColumnLabels {
+  moduleCode?: string;
+  moduleName?: string;
+  department?: string;
+  localName?: string;
+  description?: string;
+}
+
 export const getModuleColumns = (
-  t: (key: string) => string,
-  tCommon: (key: string) => string
+  t: (key: string, values?: Record<string, string | number>) => string,
+  tCommon: (key: string) => string,
+  labels?: ModuleColumnLabels
 ): Column<ModuleMasterTableRow>[] => [
   {
     key: 'moduleCode',
-    label: t('table.code'),
+    label: labels?.moduleCode || t('table.code'),
     width: '15%',
     render: (value) => (
       <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 font-mono border border-blue-300 rounded-md">
@@ -23,7 +32,11 @@ export const getModuleColumns = (
   },
   {
     key: 'moduleName',
-    label: t('table.name'),
+    label: labels?.moduleName
+      ? labels.department
+        ? `${labels.moduleName} & ${labels.department}`
+        : labels.moduleName
+      : t('table.name'),
     width: '25%',
     render: (_, row) => (
       <div className="space-y-1">
@@ -37,13 +50,13 @@ export const getModuleColumns = (
   },
   {
     key: 'moduleNameLocal',
-    label: t('table.localName'),
+    label: labels?.localName || t('table.localName'),
     width: '20%',
     render: (value) => <span className="text-gray-700">{value ? String(value) : '—'}</span>,
   },
   {
     key: 'moduleDescription',
-    label: t('table.description'),
+    label: labels?.description || t('table.description'),
     width: '25%',
     render: (value) => <span className="text-gray-600 text-sm">{value ? String(value) : '—'}</span>,
   },

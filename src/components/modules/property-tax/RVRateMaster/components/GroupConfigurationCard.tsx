@@ -9,6 +9,7 @@ import { Input } from "@/components/common/Input";
 import { ValidationMessage } from "@/components/common/ValidationMessage";
 import { Badge } from "@/components/common/Badge";
 import { Label } from "@/components/common/label";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 import { GroupIconSelector } from "../../typeofusemaster/GroupIconSelector";
 import type { ITypeOfUseDetails } from "@/types/RVRateMaster";
 import type { UseGroup } from "@/types/typeOfUse.types";
@@ -49,6 +50,8 @@ export function GroupConfigurationCard({
   handleSaveGroup,
   t,
 }: GroupConfigurationCardProps) {
+  const useLabel = useAliasLabel("Use", t("aliasFallback.use"));
+
   if (!form) return null;
 
   const isFormValid = () => {
@@ -109,7 +112,7 @@ export function GroupConfigurationCard({
             ) : (
               <UpdateButton
                 size="sm"
-                label={t('configureRates.updateUseGroup')}
+                label={t('configureRates.updateUseGroup', { use: useLabel })}
                 onClick={() => handleToggleMode(typeofuse.id)}
               />
             )
@@ -121,7 +124,7 @@ export function GroupConfigurationCard({
         <CardContent className="flex flex-col gap-3 py-3 w-full">
           <div className="flex flex-col">
             <Label className="text-xs font-semibold text-slate-500 mb-1.5 font-sans">
-              {t('configureRates.associatedUseGroup')}
+              {t('configureRates.associatedUseGroup', { use: useLabel })}
             </Label>
             <Badge variant="secondary" size="md" className="w-fit py-1.5 px-3 font-semibold text-xs rounded-full border border-slate-200 text-slate-700 bg-slate-50/80 shadow-xs">
               {typeofuse.typeOfUseGroupCode || t('configureRates.notApplicable')} - {typeofuse.groupName || t('configureRates.notApplicable')}

@@ -17,9 +17,11 @@ import { PagedResponse } from "@/types/common.types";
 import { useCommonDetailsUpdateActions } from "@/hooks/commonDetailsUpdate/useCommonDetailsUpdateActions";
 import { useBindApiOptions } from "@/hooks/commonDetailsUpdate/useBindApiOptions";
 import { useYearValidation, compileSafeRegex } from "@/hooks/commonDetailsUpdate/useUpdateFieldsValidation";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+const MENU_SEARCH_DEBOUNCE_MS = 400;
 
 function extractCategoryItems(data: any): { items: any[]; hasNext: boolean } {
   if (!data) return { items: [], hasNext: false };
@@ -140,6 +142,12 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     initialField ? initialField.split(',') : isExcelUploadTab ? [] : activeMenuItems.length > 0 && activeMenuItems[0]?.updateCode ? [activeMenuItems[0].updateCode] : []
   );
   const [menuSearch, setMenuSearch] = useState("");
+  const [serverSearchResults, setServerSearchResults] = useState<typeof activeMenuItems | null>(null);
+  const [searchingMenu, setSearchingMenu] = useState(false);
+  // Debounced group-search term. The debounce lives here in the hook file (not in the UI
+  // component), so the server API (GetFieldRegistries with SearchTerm) fires only after the
+  // user stops typing.
+  const debouncedMenuSearch = useDebounce(menuSearch, MENU_SEARCH_DEBOUNCE_MS);
   const [fieldConfigs, setFieldConfigs] = useState<BulkUpdateFieldConfig[]>(
     isExcelUploadTab && !initialField ? [] : props.initialFieldConfigs || []
   );
@@ -727,15 +735,67 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
 
 
 
+  // Server-side search: when the debounced term changes, call getFieldRegistriesAction with the
+  // SearchTerm so the filtering happens on the server.
+  useEffect(() => {
+    const term = debouncedMenuSearch.trim();
+
+    if (!term) {
+      setServerSearchResults(null);
+      setSearchingMenu(false);
+      return;
+    }
+
+    let cancelled = false;
+    setSearchingMenu(true);
+
+    const run = async () => {
+      try {
+        const fn = actions.getFieldRegistriesAction;
+        if (!fn) {
+          if (cancelled) return;
+          setSearchingMenu(false);
+          return;
+        }
+
+        const res = await fn(1, -1, undefined, term);
+        if (cancelled) return;
+
+        if (res.success && res.data) {
+          const data = res.data;
+          const items = 'items' in data ? (data.items ?? []) : Array.isArray(data) ? data : [];
+          setServerSearchResults(items.filter((item: typeof activeMenuItems[0]) => item.isActive !== false));
+        } else {
+          setServerSearchResults([]);
+        }
+      } catch {
+        if (!cancelled) setServerSearchResults([]);
+      } finally {
+        if (!cancelled) setSearchingMenu(false);
+      }
+    };
+
+    run();
+    return () => { cancelled = true; };
+  }, [debouncedMenuSearch, actions.getFieldRegistriesAction]);
+
+  // filteredMenuItems: combines server search results or immediate responsive client filter
   const filteredMenuItems = useMemo(() => {
-    if (!menuSearch.trim()) return activeMenuItems;
-    const q = menuSearch.toLowerCase();
+    const term = menuSearch.trim().toLowerCase();
+    if (!term) return activeMenuItems;
+
+    if (serverSearchResults !== null) {
+      return serverSearchResults;
+    }
+
+    // Instant filter while server debounce/request is in flight
     return activeMenuItems.filter(
       (item) =>
-        item.updateName.toLowerCase().includes(q) ||
-        item.updateNameMarathi.includes(menuSearch)
+        item.updateName?.toLowerCase().includes(term) ||
+        item.updateNameMarathi?.toLowerCase().includes(term) ||
+        item.description?.toLowerCase().includes(term)
     );
-  }, [activeMenuItems, menuSearch]);
+  }, [activeMenuItems, menuSearch, serverSearchResults]);
 
   // Use allWingOptions for the Wing dropdown (instead of ward-specific wings)
   const wingOptions: SelectOption[] = useMemo(
@@ -1879,6 +1939,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     selectedMenuItem,
     menuSearch,
     setMenuSearch,
+    searchingMenu,
     handleMenuSelect,
     // Field configs
     fieldConfigs,

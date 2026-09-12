@@ -1,10 +1,11 @@
 "use client";
 
-import { MapPin, Grid, Building2, Home } from "lucide-react";
+import { MapPin, Grid, Building2, Home, FileSpreadsheet } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/common";
 import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
+import { SEARCH_CATEGORY } from "@/types/lockunlock.types";
 
 interface ScopeSelectionCardProps {
   selectedCategory: number;
@@ -18,28 +19,34 @@ export function ScopeSelectionCard({ selectedCategory, onChange }: ScopeSelectio
 
   const options = [
     {
-      id: 1,
+      id: SEARCH_CATEGORY.ZONE,
       icon: MapPin,
       label: t("scopeSelectionCard.options.zone.label", { zone: zoneAlias }),
       sublabel: t("scopeSelectionCard.options.zone.sublabel", { zone: zoneAlias }),
     },
     {
-      id: 2,
+      id: SEARCH_CATEGORY.WARD,
       icon: Grid,
       label: t("scopeSelectionCard.options.ward.label", { ward: wardAlias }),
       sublabel: t("scopeSelectionCard.options.ward.sublabel", { ward: wardAlias }),
     },
     {
-      id: 3,
+      id: SEARCH_CATEGORY.BUILDING,
       icon: Building2,
       label: t("scopeSelectionCard.options.building.label"),
       sublabel: t("scopeSelectionCard.options.building.sublabel"),
     },
     {
-      id: 4,
+      id: SEARCH_CATEGORY.PROPERTY_RANGE,
       icon: Home,
       label: t("scopeSelectionCard.options.propertyRange.label"),
       sublabel: t("scopeSelectionCard.options.propertyRange.sublabel"),
+    },
+    {
+      id: SEARCH_CATEGORY.EXCEL,
+      icon: FileSpreadsheet,
+      label: t("scopeSelectionCard.options.excelUpload.label"),
+      sublabel: t("scopeSelectionCard.options.excelUpload.sublabel"),
     },
   ];
 

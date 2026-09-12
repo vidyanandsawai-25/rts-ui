@@ -46,14 +46,22 @@ export function useLockUnlockColumns({
 
   const isHeaderChecked = (): boolean => {
     if (properties.length === 0) return false;
-    if (isAllPropertiesSelected) return true;
-    return selectedPropertyIds.length === properties.length;
+    if (isAllPropertiesSelected) {
+      return !properties.some((p) => excludedPropertyIds.includes(p.propertyId));
+    }
+    return properties.every((p) => selectedPropertyIds.includes(p.propertyId));
   };
 
   const isHeaderIndeterminate = (): boolean => {
-    if (isAllPropertiesSelected) return excludedPropertyIds.length > 0;
-    const checkedCount = selectedPropertyIds.length;
-    return checkedCount > 0 && checkedCount < properties.length;
+    if (properties.length === 0) return false;
+    if (isAllPropertiesSelected) {
+      const hasExcluded = properties.some((p) => excludedPropertyIds.includes(p.propertyId));
+      const allExcluded = properties.every((p) => excludedPropertyIds.includes(p.propertyId));
+      return hasExcluded && !allExcluded;
+    }
+    const hasSelected = properties.some((p) => selectedPropertyIds.includes(p.propertyId));
+    const allSelected = properties.every((p) => selectedPropertyIds.includes(p.propertyId));
+    return hasSelected && !allSelected;
   };
 
   return [
@@ -196,7 +204,7 @@ export function useLockUnlockColumns({
             activeLabel={t("resultsTable.status.locked")}
             inactiveLabel={t("resultsTable.status.unlocked")}
             showPopup={false}
-            disabled={!isRowChecked(row.propertyId) || isPending}
+            disabled={isPending}
           />
         </div>
       ),

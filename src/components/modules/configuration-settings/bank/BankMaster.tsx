@@ -12,12 +12,11 @@ import type { BankMasterData } from '@/types/bank-master.types';
 import { useBankPagination } from '@/hooks/configuration-settings/bank/useBankPagination';
 import { useBankSearch } from '@/hooks/configuration-settings/bank/useBankSearch';
 import { useBankDelete } from '@/hooks/configuration-settings/bank/useBankDelete';
-
-
 import { getBankColumns, type BankMasterTableRow } from './BankColumns';
 import { BankMasterHeader } from './components/BankMasterHeader';
 import { BankMasterStats } from './components/BankMasterStats';
 import { BankMasterTable } from './components/BankMasterTable';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface BankMasterProps {
   data: BankMasterData[];
@@ -50,6 +49,13 @@ export function BankMaster({
 
   const [isPending, startTransition] = useTransition();
 
+  const bankLabel = useAliasLabel('Bank', t('aliasFallback.bank'));
+  const bankCodeLabel = useAliasLabel('Bank_Code', t('aliasFallback.bankCode'));
+  const bankNameLabel = useAliasLabel('Bank_Name', t('aliasFallback.bankName'));
+  const branchNameLabel = useAliasLabel('Branch_Name', t('aliasFallback.branchName'));
+  const ifscCodeLabel = useAliasLabel('IFSC_Code', t('aliasFallback.ifscCode'));
+  const stateLabel = useAliasLabel('State', t('aliasFallback.state'));
+
   const { search, currentSearchTerm, handleSearchChange } = useBankSearch({
     locale,
     startTransition,
@@ -65,7 +71,16 @@ export function BankMaster({
     startTransition,
   });
 
-  const columns = useMemo(() => getBankColumns(t, tCommon), [t, tCommon]);
+  const columns = useMemo(
+    () =>
+      getBankColumns(t, tCommon, {
+        bankCode: bankCodeLabel,
+        bankName: bankNameLabel,
+        branchName: branchNameLabel,
+        ifscCode: ifscCodeLabel,
+      }),
+    [t, tCommon, bankCodeLabel, bankNameLabel, branchNameLabel, ifscCodeLabel]
+  );
 
   const handleAdd = useCallback(() => {
     startTransition(() => {
@@ -76,6 +91,7 @@ export function BankMaster({
   const { handleDelete, isDeleting } = useBankDelete({
     t,
     startTransition,
+    bankLabel,
   });
 
   const handleEdit = useCallback(
@@ -96,7 +112,6 @@ export function BankMaster({
     ),
     [handleEdit, handleDelete]
   );
-
 
   return (
     <PageContainer>
@@ -121,6 +136,7 @@ export function BankMaster({
           onAdd={handleAdd}
           search={search}
           onSearchChange={handleSearchChange}
+          bankLabel={bankLabel}
         />
 
         <BankMasterStats
@@ -128,6 +144,8 @@ export function BankMaster({
           activeCount={statsData.activeCount}
           statesCount={statsData.uniqueStates.length}
           t={t}
+          bankLabel={bankLabel}
+          stateLabel={stateLabel}
         />
 
         <BankMasterTable

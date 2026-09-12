@@ -413,10 +413,11 @@ export async function addFieldRegistryAction(
 export async function getFieldRegistriesAction(
   pageNumber?: number,
   pageSize?: number,
-  updateCode?: string
+  updateCode?: string,
+  searchTerm?: string
 ): Promise<ActionResult<PagedResponse<BulkUpdateMaster>>> {
   try {
-    const data = await getFieldRegistriesServer(pageNumber, pageSize, updateCode);
+    const data = await getFieldRegistriesServer(pageNumber, pageSize, updateCode, searchTerm);
     if (Array.isArray(data)) {
       return {
         success: true,

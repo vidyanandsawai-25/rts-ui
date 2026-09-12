@@ -1,9 +1,17 @@
 {
-  "title": "मॉड्यूल मास्टर",
-  "subtitle": "विभागांतर्गत ॲप्लिकेशन मॉड्यूल्स आणि त्यांचे पदानुक्रमित कॉन्फिगरेशन व्यवस्थापित करा",
-  "addLabel": "मॉड्यूल जोडा",
+  "aliasFallback": {
+    "module": "मॉड्यूल",
+    "department": "विभाग",
+    "moduleCode": "मॉड्यूल कोड",
+    "moduleName": "मॉड्यूलचे नाव",
+    "localName": "स्थानिक नाव",
+    "description": "वर्णन"
+  },
+  "title": "{module} मास्टर",
+  "subtitle": "{department}ांतर्गत ॲप्लिकेशन {module}्स आणि त्यांचे पदानुक्रमित कॉन्फिगरेशन व्यवस्थापित करा",
+  "addLabel": "{module} जोडा",
   "stats": {
-    "totalModules": "एकूण मॉड्यूल्स",
+    "totalModules": "एकूण {module}",
     "active": "सक्रिय",
     "inactive": "निष्क्रिय"
   },
@@ -22,22 +30,22 @@
     "deleteModule": "{name} हटवा"
   },
   "drawer": {
-    "addTitle": "नवीन मॉड्यूल जोडा",
-    "editTitle": "मॉड्यूल तपशील संपादित करा",
-    "subtitle": "मॉड्यूल तपशील कॉन्फिगर करण्यासाठी आवश्यक माहिती भरा",
+    "addTitle": "नवीन {module} जोडा",
+    "editTitle": "{module} तपशील संपादित करा",
+    "subtitle": "{module} तपशील कॉन्फिगर करण्यासाठी आवश्यक माहिती भरा",
     "sections": {
-      "basicDetails": "मॉड्यूल मूलभूत तपशील"
+      "basicDetails": "{module} मूलभूत तपशील"
     },
     "labels": {
       "status": "स्थिती"
     },
     "footer": {
-      "adding": "नवीन मॉड्यूल जोडले जात आहे",
+      "adding": "नवीन {module} जोडले जात आहे",
       "editing": "संपादन: {moduleName}"
     },
     "buttons": {
-      "save": "मॉड्यूल जतन करा",
-      "update": "मॉड्यूल अपडेट करा"
+      "save": "{module} जतन करा",
+      "update": "{module} अपडेट करा"
     }
   },
   "form": {
@@ -59,21 +67,21 @@
     }
   },
   "messages": {
-    "createSuccess": "मॉड्यूल यशस्वीरित्या तयार केले",
-    "createFailed": "मॉड्यूल तयार करण्यात अयशस्वी",
-    "updateSuccess": "मॉड्यूल यशस्वीरित्या अपडेट केले",
-    "updateFailed": "मॉड्यूल अपडेट करण्यात अयशस्वी",
-    "deleteSuccess": "मॉड्यूल यशस्वीरित्या हटवले",
-    "deleteFailed": "मॉड्यूल हटवण्यात अयशस्वी",
-    "fetchFailed": "मॉड्यूल डेटा मिळवण्यात अयशस्वी",
+    "createSuccess": "{module} यशस्वीरित्या तयार केले",
+    "createFailed": "{module} तयार करण्यात अयशस्वी",
+    "updateSuccess": "{module} यशस्वीरित्या अपडेट केले",
+    "updateFailed": "{module} अपडेट करण्यात अयशस्वी",
+    "deleteSuccess": "{module} यशस्वीरित्या हटवले",
+    "deleteFailed": "{module} हटवण्यात अयशस्वी",
+    "fetchFailed": "{module} डेटा मिळवण्यात अयशस्वी",
     "unauthorizedToken": "अनधिकृत: टोकन कालबाह्य किंवा अवैध आहे",
     "errorOccurred": "काहीतरी चुकीचे घडले",
     "processingError": "तुमची विनंती प्रक्रिया करताना एक त्रुटी आली.",
     "validationError": "कृपया फॉर्ममधील त्रुटी दुरुस्त करा"
   },
   "confirm": {
-    "deleteTitle": "मॉड्यूल ({moduleName}) हटवायचे?",
-    "deleteDescription": "तुम्हाला खात्री आहे की तुम्हाला हे मॉड्यूल रेकॉर्ड हटवायचे आहे? ही कृती पूर्ववत केली जाऊ शकत नाही."
+    "deleteTitle": "{module} ({moduleName}) हटवायचे?",
+    "deleteDescription": "तुम्हाला खात्री आहे की तुम्हाला हे {module} रेकॉर्ड हटवायचे आहे? ही कृती पूर्ववत केली जाऊ शकत नाही."
   },
   "validation": {
     "departmentIdRequired": "विभाग आवश्यक आहे",
@@ -97,7 +105,7 @@
     "errorId": "एरर आयडी: {id}"
   },
   "loading": {
-    "message": "मॉड्यूल मास्टर लोड होत आहे...",
+    "message": "Loading Module Master...",
     "description": "कृपया प्रतीक्षा करा आम्ही मॉड्यूल मास्टर डेटा मिळवत आहोत"
   }
 }

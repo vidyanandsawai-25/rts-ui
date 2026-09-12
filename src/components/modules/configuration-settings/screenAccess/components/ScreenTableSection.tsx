@@ -12,6 +12,7 @@ import { Button } from '@/components/common/ActionButton';
 import { Edit2, Trash2 } from 'lucide-react';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { ManagementSection } from './ManagementSection';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 
 interface ScreenTableSectionProps {
   screens: ScreenMasterData[];
@@ -52,11 +53,17 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
 
   const t = useTranslations('screenAccess');
 
+  const screenLabel = useAliasLabel('Screen', t('aliasFallback.screen'));
+  const screenGroupLabel = useAliasLabel('Screen_Group', t('aliasFallback.screenGroup'));
+  const screenCodeLabel = useAliasLabel('Screen_Code', t('aliasFallback.screenCode'));
+  const screenNameLabel = useAliasLabel('Screen_Name', t('aliasFallback.screenName'));
+  const routeLabel = useAliasLabel('Route', t('aliasFallback.route'));
+
   const columns: Column<ScreenMasterDataWithExtras>[] = useMemo(
     () => [
       {
         key: 'screenName',
-        label: t('screenManagement.screens.table.screenName'),
+        label: screenNameLabel,
         width: '25%',
         render: (_, screen) => {
           const nameToDisplay =
@@ -68,7 +75,7 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
       },
       {
         key: 'screenCode',
-        label: t('screenManagement.screens.table.code'),
+        label: screenCodeLabel,
         width: '10%',
         render: (value) => (
           <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 font-mono border border-blue-300 rounded-md">
@@ -78,7 +85,7 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
       },
       {
         key: 'routePath',
-        label: t('screenManagement.screens.table.route'),
+        label: routeLabel,
         width: '40%',
         render: (value) => (
           <span
@@ -102,7 +109,7 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
         ),
       },
     ],
-    [t]
+    [t, screenNameLabel, screenCodeLabel, routeLabel]
   );
 
   return (
@@ -116,15 +123,15 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
       onPageSizeChange={onPageSizeChange}
       onAdd={onAdd}
       isPending={isPending}
-      searchPlaceholder={t('screenManagement.screens.searchPlaceholder')}
-      addButtonLabel={t('screenManagement.screens.addScreen')}
+      searchPlaceholder={t('screenManagement.screens.searchPlaceholder', { screen: screenLabel })}
+      addButtonLabel={t('screenManagement.screens.addScreen', { screen: screenLabel })}
       filters={[
         {
           id: 'filter-group',
           value: filterGroup,
           onChange: onFilterGroupChange,
           options: [
-            { value: 'all', label: t('filters.allGroups') },
+            { value: 'all', label: t('filters.allGroups', { screenGroup: screenGroupLabel }) },
             ...groups.map((g) => ({
               value: String(g.screenGroupId),
               label:
@@ -158,7 +165,7 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
               size="sm"
               onClick={() => hasValidId && onEdit(screen)}
               disabled={!hasValidId}
-              aria-label={t('screenManagement.screens.table.actions.edit')}
+              aria-label={t('screenManagement.screens.table.actions.edit', { screen: screenLabel })}
             >
               <Edit2 className="w-4 h-4" />
             </Button>
@@ -168,7 +175,9 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
               onClick={() => hasValidId && onDelete(id)}
               disabled={!hasValidId}
               className="text-red-600 disabled:opacity-30"
-              aria-label={t('screenManagement.screens.table.actions.delete')}
+              aria-label={t('screenManagement.screens.table.actions.delete', {
+                screen: screenLabel,
+              })}
             >
               <Trash2 className="w-4 h-4" />
             </Button>

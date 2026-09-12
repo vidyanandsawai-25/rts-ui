@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import type { IBackendRateMaster, ISelectOption, IZoneDescription, RateCategory } from "@/types/RVRateMaster";
 import type { ConfirmOptions } from "@/components/common/ConfirmProvider";
+import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 type MatrixRow = {
   id: number;
@@ -41,6 +42,9 @@ export function useRateCRUDHandlers(props: RateCRUDHandlersProps) {
     confirm, buildCompleteMatrixForSubmission, handleBulkCreate, handleBulkUpdate, handleDelete,
     handleClose, t, isOpenPlot, router
   } = props;
+  const rateSection = useAliasLabel("Rate_Section", useAliasLabel("Rate Section", t("aliasFallback.rateSection")));
+  const use = useAliasLabel("Use", t("aliasFallback.use"));
+  const assessment = useAliasLabel("Assessment", t("aliasFallback.assessment"));
 
   const handleAddRates = async () => {
     if (existingRateFound) {
@@ -127,6 +131,9 @@ export function useRateCRUDHandlers(props: RateCRUDHandlersProps) {
         zoneName,
         useGroup: useGroupLabel,
         assessmentYear: assessmentYearLabel,
+        rateSection,
+        use,
+        assessment,
       }),
       confirmText: t('dialogs.confirmDelete'),
       cancelText: t('dialogs.cancel'),

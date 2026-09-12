@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from "next/headers";
+import { unstable_cache } from "next/cache";
 import { getUserProfileCached } from "@/lib/api/user-profile-cache";
 import { Service } from "@/types/home/home.types";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
@@ -9,8 +10,7 @@ import type { Department } from "@/types/departmentActivation.types";
 import type { UserScreenAccess } from "@/types/user-screen-access.types";
 import { departmentActivationService } from "@/lib/api/configuration-settings/department-activation/departmentActivation.service";
 import { DEPARTMENT_COOKIES, CLIENT_COOKIE_OPTIONS } from '@/components/modules/login/constants';
-import { userScreenAccessService } from "@/lib/api/user-screen-access.service";
-import { filterScreensByAllocatedRoles, mergeUserScreens } from "@/lib/utils/module-access-guard";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Response type for listServices
@@ -119,13 +119,24 @@ function resolveModuleRouteSegment(
 }
 
 /**
+ * Cache master departments globally across all users (1-hour TTL, revalidated on master update)
+ */
+const getCachedMasterDepartments = unstable_cache(
+    async () => departmentActivationService.getDepartments(1, 1000),
+    ["global-master-departments"],
+    { revalidate: 3600, tags: ["department-master"] }
+);
+
+/**
  * Fetches user departments from User Profile API and returns as services
  * Only shows departments the user has active access to
  */
 export async function listServices(locale: string): Promise<ListServicesResponse> {
+    let currentUserId: number | null | undefined;
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
+        currentUserId = userId;
 
         if (!userId) {
             return { services: [], error: "User not authenticated" };
@@ -136,7 +147,7 @@ export async function listServices(locale: string): Promise<ListServicesResponse
         // Fetch profile, activation state and navigation metadata in parallel.
         const [profileResponse, departmentsResponse, screensResponse] = await Promise.all([
             getUserProfileCached(userId),
-            departmentActivationService.getDepartments(1, 1000).catch(() => ({ success: false, data: [] })),
+            getCachedMasterDepartments().catch(() => ({ success: false, data: [] })),
             userScreenAccessService
                 .getScreensForUser(userId, authToken)
                 .catch(() => ({ success: false, data: [] as UserScreenAccess[] }))
@@ -216,7 +227,12 @@ export async function listServices(locale: string): Promise<ListServicesResponse
             });
 
         return { services };
-    } catch (_error) {
+    } catch (error) {
+        logger.error("Failed to load user services on home screen", {
+            error: error instanceof Error ? error : new Error(String(error)),
+            userId: currentUserId,
+            locale,
+        });
         return {
             services: [],
             error: "Failed to load services. Please try refreshing the page."
@@ -301,6 +317,9 @@ export async function getUserProfileDisplayAction(): Promise<{
             },
         };
     } catch (error) {
+        logger.error("Failed to get user profile display action", {
+            error: error instanceof Error ? error : new Error(String(error)),
+        });
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Failed to fetch user profile',
@@ -358,42 +377,12 @@ export async function getUserProfileSSR(): Promise<{
                 .map(m => m.moduleName)
         )];
 
-        const isUserActive = profile.isActive === true || String(profile.isActive).toLowerCase() === 'true';
-        const safeDepts = Array.isArray(profile.departments) ? profile.departments : [];
-        const activeDepts = safeDepts.filter((d) => d && (d.isActive || !isUserActive));
-        const activeDeptIds = new Set(activeDepts.map((d) => String(d.departmentId)));
-
-        const roleAccess: Record<string, number[]> = {};
-        if (Array.isArray(profile.roleAllocations)) {
-          profile.roleAllocations.forEach((ra) => {
-            if (ra && (ra.isActive || !isUserActive)) {
-              const deptId = String(ra.departmentId);
-              if (activeDeptIds.has(deptId)) {
-                if (!roleAccess[deptId]) roleAccess[deptId] = [];
-                roleAccess[deptId].push(ra.userRoleId);
-              }
-            }
-          });
-        }
-
-        let hasSettingsAccess = false;
-        try {
-            const authToken = cookieStore.get('auth_token')?.value;
-            const screensRes = await userScreenAccessService.getScreensForUser(userId, authToken);
-            if (screensRes.success && Array.isArray(screensRes.data) && screensRes.data.length > 0) {
-                const filteredScreens = filterScreensByAllocatedRoles(screensRes.data, roleAccess);
-                const mergedScreens = mergeUserScreens(filteredScreens);
-                
-                hasSettingsAccess = mergedScreens.some(s => {
-                    const route = s.routePath || '';
-                    const isConfigRoute = route.startsWith('configuration-settings') || route.startsWith('/configuration-settings');
-                    const isViewableMenu = (s.isMenu === true || s.isMenu === 1) && s.canView && !s.haveNoAccess;
-                    return isConfigRoute && isViewableMenu;
-                });
-            }
-        } catch (e) {
-            console.error('Failed to verify configuration settings access', e);
-        }
+        // Check directly from cached profile role allocations without full screen matrix scan
+        const hasSettingsAccess = roles.some(role => 
+            /admin|superadmin|commissioner|head/i.test(role)
+        ) || (Array.isArray(profile.roleAllocations) && profile.roleAllocations.some(ra => 
+            ra.isActive && /config|admin|setting/i.test(ra.userRoleName)
+        ));
 
         const data: UserProfileDisplayValues = {
             fullName,
@@ -413,6 +402,9 @@ export async function getUserProfileSSR(): Promise<{
 
         return { data };
     } catch (error) {
+        logger.error("Failed to synchronize profile details on SSR", {
+            error: error instanceof Error ? error : new Error(String(error)),
+        });
         return {
             data: null,
             error: error instanceof Error ? error.message : "Failed to synchronize profile details"
@@ -459,3 +451,4 @@ export async function setDepartmentContextAction(
         return { success: false };
     }
 }
+

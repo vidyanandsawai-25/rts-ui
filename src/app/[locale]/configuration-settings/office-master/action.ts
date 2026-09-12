@@ -1,8 +1,7 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { unstable_cache, revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
-import { locales } from "@/i18n/config";
 import { createOffice, deleteOffice, getOfficesPaged, getOfficeById, updateOffice } from "@/lib/api/office-crud.service";
 import { ApiError } from "@/lib/utils/api";
 import { Office, OfficeFormModel } from "@/types/office.types";
@@ -97,11 +96,6 @@ export async function fetchOfficePagedServerAction(
 
     const result = await getOfficesPaged(pageNumber, pageSize, searchTerm, validSortBy, validSortOrder, type, status);
     
-    // Apply smart search ranking server-side if search is active
-    if (searchTerm && result.items && result.items.length > 0) {
-      result.items = applySearchRanking(result.items, searchTerm);
-    }
-    
     return result;
   } catch (error: unknown) {
     if (error instanceof ApiError) {
@@ -128,9 +122,9 @@ export async function createOfficeAction(
     }
 
     await createOffice(data, userId);
-    for (const locale of locales) {
-      revalidatePath(`/${locale}/configuration-settings/office-master`, "page");
-    }
+    revalidateTag("office-stats", "default");
+    revalidateTag("office-master", "default");
+    revalidatePath("/[locale]/configuration-settings/office-master", "page");
     return { success: true };
   } catch (error: unknown) {
     return parseOfficeActionError(error, "create");
@@ -149,9 +143,9 @@ export async function updateOfficeAction(
     }
 
     await updateOffice(data, userId);
-    for (const locale of locales) {
-      revalidatePath(`/${locale}/configuration-settings/office-master`, "page");
-    }
+    revalidateTag("office-stats", "default");
+    revalidateTag("office-master", "default");
+    revalidatePath("/[locale]/configuration-settings/office-master", "page");
     return { success: true };
   } catch (error: unknown) {
     return parseOfficeActionError(error, "update");
@@ -170,9 +164,9 @@ export async function deleteOfficeAction(
 
   try {
     await deleteOffice(officeId);
-    for (const locale of locales) {
-      revalidatePath(`/${locale}/configuration-settings/office-master`, "page");
-    }
+    revalidateTag("office-stats", "default");
+    revalidateTag("office-master", "default");
+    revalidatePath("/[locale]/configuration-settings/office-master", "page");
     return { success: true, message: "Office deleted successfully" };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -199,8 +193,8 @@ export async function getOfficeByIdAction(
   }
 }
 
-export async function fetchOfficeStatsServerAction() {
-  try {
+export const getCachedOfficeStats = unstable_cache(
+  async () => {
     const [headOffices, activeOffices, inactiveOffices] = await Promise.all([
       getOfficesPaged(1, 1, undefined, undefined, undefined, "Head Office", undefined),
       getOfficesPaged(1, 1, undefined, undefined, undefined, undefined, "true"),
@@ -212,6 +206,14 @@ export async function fetchOfficeStatsServerAction() {
       activeOfficesCount: activeOffices.totalCount,
       inactiveOfficesCount: inactiveOffices.totalCount,
     };
+  },
+  ["global-office-stats"],
+  { revalidate: 3600, tags: ["office-stats"] }
+);
+
+export async function fetchOfficeStatsServerAction() {
+  try {
+    return await getCachedOfficeStats();
   } catch (error) {
     logger.error("Failed to fetch office statistics", {
       error: error instanceof Error ? error : new Error(String(error)),
@@ -225,36 +227,4 @@ export async function fetchOfficeStatsServerAction() {
       error: true,
     };
   }
-}
-
-/**
- * Applies a smart match-position priority search ranking to items.
- */
-function applySearchRanking(items: Office[], searchTerm: string): Office[] {
-  const s = searchTerm.toLowerCase();
-  
-  const scored = items.map((item) => ({
-    item,
-    score: getMatchScore(item, s),
-  }));
-  
-  scored.sort((a, b) => a.score - b.score);
-  return scored.map((scored) => scored.item);
-}
-
-/**
- * Calculates a match score for an office based on search term position.
- */
-function getMatchScore(item: Office, searchTerm: string): number {
-  const code = (item.officeCode || "").toLowerCase();
-  const name = (item.officeName || "").toLowerCase();
-  
-  const getStrScore = (str: string): number => {
-    if (!str.includes(searchTerm)) return 999;
-    if (str.startsWith(searchTerm)) return 1;
-    if (str.endsWith(searchTerm)) return 3;
-    return 2;
-  };
-  
-  return Math.min(getStrScore(code), getStrScore(name));
 }

@@ -4,6 +4,7 @@ import { Users, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Drawer, Tabs, TabList, Tab, TabPanel, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { UserFormProps } from '@/types/user-management';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import { BasicInfoStep } from './form-steps/BasicInfoStep';
 import { DepartmentStep } from './form-steps/DepartmentStep';
 import { ModuleAccessStep } from './form-steps/ModuleAccessStep';
@@ -33,6 +34,10 @@ export function UserForm({
   errors = {},
 }: UserFormProps) {
   const t = useTranslations('userManagement');
+  const userLabel = useAliasLabel('User', t('aliasFallback.user'));
+  const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
+  const moduleLabel = useAliasLabel('Module', t('aliasFallback.module'));
+  const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
 
   return (
     <Drawer
@@ -46,14 +51,14 @@ export function UserForm({
           </div>
           <div className="flex flex-col">
             <span className="font-semibold text-slate-700">
-              {editingUser ? t('actions.edit') : t('actions.add')}
+              {editingUser ? t('actions.edit') : t('actions.add', { user: userLabel })}
             </span>
             <span className="text-sm text-slate-700 font-normal">
               {currentIndex === 0
                 ? t('form.basicInfo')
                 : currentIndex === 1
-                  ? t('form.departments')
-                  : t('form.moduleAccess')}
+                  ? t('form.departments', { department: departmentLabel })
+                  : t('form.moduleAccess', { module: moduleLabel })}
             </span>
           </div>
         </div>
@@ -61,9 +66,9 @@ export function UserForm({
       footer={
         <>
           <div className="text-sm text-slate-500">
-            {formData.departmentIds.length} {t('form.deptsSelected')} •{' '}
-            {Object.values(formData.moduleAccess).flat().length} {t('form.modulesSelected')} •{' '}
-            {Object.values(formData.roleAccess).flat().length} {t('form.rolesSelected')}
+            {formData.departmentIds.length} {t('form.deptsSelected', { department: departmentLabel })} •{' '}
+            {Object.values(formData.moduleAccess).flat().length} {t('form.modulesSelected', { module: moduleLabel })} •{' '}
+            {Object.values(formData.roleAccess).flat().length} {t('form.rolesSelected', { role: roleLabel })}
           </div>
           <div className="flex items-center gap-3">
             {!isFirstStep && (
@@ -133,11 +138,11 @@ export function UserForm({
             </Tab>
             <Tab value="departments" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              {t('form.departments')}
+              {t('form.departments', { department: departmentLabel })}
             </Tab>
             <Tab value="modules" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              {t('form.moduleAccess')}
+              {t('form.moduleAccess', { module: moduleLabel })}
             </Tab>
           </TabList>
 

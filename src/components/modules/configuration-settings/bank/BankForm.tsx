@@ -4,6 +4,7 @@ import { Landmark } from 'lucide-react';
 import { Drawer } from '@/components/common/Drawer';
 import { BankMasterData } from '@/types/bank-master.types';
 import { useBankForm } from '@/hooks/configuration-settings/bank/useBankForm';
+import { useAliasLabel } from '@/lib/providers/AliasLabelsProvider';
 import { BankBasicDetails } from './BankBasicDetails';
 import { BankAddressDetails } from './BankAddressDetails';
 import { BankStatusToggle } from './BankStatusToggle';
@@ -33,6 +34,8 @@ export function BankForm({ id, initialData }: BankFormProps) {
     initialData,
   });
 
+  const bankLabel = useAliasLabel('Bank', t('aliasFallback.bank'));
+
   return (
     <Drawer
       open={open}
@@ -45,9 +48,13 @@ export function BankForm({ id, initialData }: BankFormProps) {
           </div>
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
-              {isEdit ? t('drawer.editTitle') : t('drawer.addTitle')}
+              {isEdit
+                ? t('drawer.editTitle', { bank: bankLabel })
+                : t('drawer.addTitle', { bank: bankLabel })}
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">{t('drawer.subtitle')}</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {t('drawer.subtitle', { bank: bankLabel })}
+            </p>
           </div>
         </div>
       }
@@ -59,6 +66,7 @@ export function BankForm({ id, initialData }: BankFormProps) {
           onCancel={handleCancel}
           t={t}
           tCommon={tCommon}
+          bankLabel={bankLabel}
         />
       }
     >
