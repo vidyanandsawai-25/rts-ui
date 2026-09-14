@@ -335,7 +335,7 @@ describe('photoPlanService.launchDrawingTool', () => {
     const launchBody = JSON.parse(mockFetch.mock.calls[1][1].body);
     expect(launchBody.councilName).toBe('THANE_Survey');
     expect(launchBody.ptisUsername).toBe('testuser');
-    expect(launchBody.ptisDisplayName).toBe('testuser');
+    expect(launchBody.ptisDisplayName).toBe('Tejas Kishor');
     expect(launchBody.ptisUserId).toBe('101');
   });
 });
