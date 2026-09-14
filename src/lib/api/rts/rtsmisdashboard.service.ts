@@ -4,25 +4,41 @@ import type {
   RtsMisDashboardRequestInput,
   RtsMisDashboardRequest,
   RtsMisDashboardResponse,
+  RtsMisDashboardFlag,
 } from '@/types/rts/rtsmisdashboard.types';
 
-const AKOLA_ONESOLUTION_BASE_URL =
-  process.env.AKOLA_ONESOLUTION_BASE_URL ||
-  process.env.RTS_MIS_DASHBOARD_BASE_URL ||
-  'https://onesolutionakola.tabamc.in';
+function getOneSolutionBaseUrl(): string {
+  const url =
+    process.env.AKOLA_ONESOLUTION_BASE_URL?.trim() ||
+    process.env.RTS_MIS_DASHBOARD_BASE_URL?.trim();
 
-const RTS_MIS_DASHBOARD_URL =
-  `${AKOLA_ONESOLUTION_BASE_URL}/PropertyTaxMicroservice/PropertyTaxApi/AapleSarkar/GetMISDashboardData`;
+  if (!url) {
+    throw new Error(
+      'AKOLA_ONESOLUTION_BASE_URL is not configured in environment variables. Please check your .env file.'
+    );
+  }
+
+  return url.replace(/\/+$/, '');
+}
 
 export async function getRtsMisDashboardData(
   payload: RtsMisDashboardRequestInput = {}
 ): Promise<RtsMisDashboardResponse> {
+  const baseUrl = getOneSolutionBaseUrl();
+  const endpointUrl =
+    process.env.RTS_MIS_DASHBOARD_URL?.trim() ||
+    `${baseUrl}/PropertyTaxMicroservice/PropertyTaxApi/AapleSarkar/GetMISDashboardData`;
+
   const normalizedFlag = payload.Flag?.trim().toLowerCase();
-  const isApplicationDashboard = normalizedFlag === 'rtsapplicationdashboard';
-  const requestPayload: RtsMisDashboardRequest = {
-    Flag: isApplicationDashboard
+  const resolvedFlag: RtsMisDashboardFlag =
+    normalizedFlag === 'rtsapplicationdashboard'
       ? 'RTSApplicationDashboard'
-      : normalizedFlag === 'user' ? 'user' : 'admin',
+      : normalizedFlag === 'user'
+        ? 'user'
+        : 'admin';
+
+  const requestPayload: RtsMisDashboardRequest = {
+    Flag: resolvedFlag,
     UpicId: payload.UpicId?.trim() || null,
     ApplicationNo: payload.ApplicationNo?.trim() || null,
     DeparmentId: payload.DeparmentId ?? null,
@@ -37,7 +53,7 @@ export async function getRtsMisDashboardData(
     ApplicationStatus: payload.ApplicationStatus?.trim() || null,
   };
 
-  const response = await fetch(RTS_MIS_DASHBOARD_URL, {
+  const response = await fetch(endpointUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

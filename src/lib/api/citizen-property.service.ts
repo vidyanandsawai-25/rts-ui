@@ -18,10 +18,15 @@ export async function fetchCitizenPropertiesFromApi(
   value: string
 ): Promise<CitizenProperty[]> {
   try {
-    const baseUrl =
-      process.env.AKOLA_ONESOLUTION_BASE_URL ||
-      process.env.AKOLA_CITIZEN_PROPERTY_DETAILS_API_URL ||
-      'https://onesolutionakola.tabamc.in';
+    const rawBaseUrl =
+      process.env.AKOLA_ONESOLUTION_BASE_URL?.trim() ||
+      process.env.AKOLA_CITIZEN_PROPERTY_DETAILS_API_URL?.trim();
+    if (!rawBaseUrl) {
+      throw new Error(
+        'AKOLA_ONESOLUTION_BASE_URL is not configured in environment variables. Please check your .env file.'
+      );
+    }
+    const baseUrl = rawBaseUrl.replace(/\/+$/, '');
     const url = `${baseUrl}/PropertyTaxMicroService/PropertyTaxApi/Landing/GetCitizensDetails`;
 
     const payload: any = {

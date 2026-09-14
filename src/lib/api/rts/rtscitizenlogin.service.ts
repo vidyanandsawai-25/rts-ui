@@ -5,13 +5,19 @@ export type CitizenLoginPropertyOption = {
   items: string;
 };
 
-const AKOLA_ONESOLUTION_BASE_URL =
-  process.env.AKOLA_ONESOLUTION_BASE_URL ||
-  process.env.AKOLA_CITIZEN_PROPERTY_DETAILS_API_URL ||
-  'https://onesolutionakola.tabamc.in';
+function getOneSolutionBaseUrl(): string {
+  const url =
+    process.env.AKOLA_ONESOLUTION_BASE_URL?.trim() ||
+    process.env.AKOLA_CITIZEN_PROPERTY_DETAILS_API_URL?.trim();
 
-const LEGACY_PROPERTY_COMBO_URL =
-  `${AKOLA_ONESOLUTION_BASE_URL}/PropertyTax/FillComboForPayment/FillComboForPayments`;
+  if (!url) {
+    throw new Error(
+      'AKOLA_ONESOLUTION_BASE_URL is not configured in environment variables. Please check your .env file.'
+    );
+  }
+
+  return url.replace(/\/+$/, '');
+}
 
 function toErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;
@@ -23,7 +29,10 @@ async function fetchPropertyCombo(
   let response: Response;
 
   try {
-    response = await fetch(LEGACY_PROPERTY_COMBO_URL, {
+    const baseUrl = getOneSolutionBaseUrl();
+    const endpointUrl = `${baseUrl}/PropertyTax/FillComboForPayment/FillComboForPayments`;
+
+    response = await fetch(endpointUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
