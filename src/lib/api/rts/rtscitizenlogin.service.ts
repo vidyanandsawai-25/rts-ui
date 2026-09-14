@@ -5,8 +5,13 @@ export type CitizenLoginPropertyOption = {
   items: string;
 };
 
+const AKOLA_ONESOLUTION_BASE_URL =
+  process.env.AKOLA_ONESOLUTION_BASE_URL ||
+  process.env.AKOLA_CITIZEN_PROPERTY_DETAILS_API_URL ||
+  'https://onesolutionakola.tabamc.in';
+
 const LEGACY_PROPERTY_COMBO_URL =
-  `${process.env.AKOLA_CITIZEN_PROPERTY_DETAILS_API_URL}/PropertyTax/FillComboForPayment/FillComboForPayments`;
+  `${AKOLA_ONESOLUTION_BASE_URL}/PropertyTax/FillComboForPayment/FillComboForPayments`;
 
 function toErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;

@@ -18,7 +18,11 @@ export async function fetchCitizenPropertiesFromApi(
   value: string
 ): Promise<CitizenProperty[]> {
   try {
-    const url = `${process.env.AKOLA_CITIZEN_PROPERTY_DETAILS_API_URL}/PropertyTaxMicroService/PropertyTaxApi/Landing/GetCitizensDetails`;
+    const baseUrl =
+      process.env.AKOLA_ONESOLUTION_BASE_URL ||
+      process.env.AKOLA_CITIZEN_PROPERTY_DETAILS_API_URL ||
+      'https://onesolutionakola.tabamc.in';
+    const url = `${baseUrl}/PropertyTaxMicroService/PropertyTaxApi/Landing/GetCitizensDetails`;
 
     const payload: any = {
       searchType,
