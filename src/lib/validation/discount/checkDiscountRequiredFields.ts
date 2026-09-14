@@ -18,7 +18,7 @@ export const checkDiscountRequiredFields = (
         if (/\s/.test(strVal)) {
             return t("common.validation.numberNoSpaces") || "Spaces are not allowed in numbers.";
         }
-        if (!/^\d+$/.test(strVal)) {
+        if (!/^-?\d+$/.test(strVal)) {
             return t("discount.socialValidation.invalidInteger") || "Value must be a valid integer.";
         }
         const val = Number(strVal);
@@ -56,7 +56,7 @@ export const checkDiscountRequiredFields = (
         if (/\s/.test(strVal)) {
             return t("common.validation.numberNoSpaces") || "Spaces are not allowed in numbers.";
         }
-        if (!/^\d+(\.\d+)?$/.test(strVal)) {
+        if (!/^-?\d+(\.\d+)?$/.test(strVal)) {
             return t("discount.socialValidation.invalidDecimal") || "Value must be a valid decimal number.";
         }
         const parts = strVal.split(".");

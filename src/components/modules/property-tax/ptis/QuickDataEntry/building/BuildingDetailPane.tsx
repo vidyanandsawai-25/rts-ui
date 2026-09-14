@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { AlertCircle, Loader2, Trash2 } from "lucide-react";
-import { Input, ValidationMessage, Label } from "@/components/common";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { Input, ValidationMessage, Label, Button, DeleteButton, SaveButton } from "@/components/common";
 import { CertificateData, FloorCertificateDto } from "@/types/building-permission.types";
 import { mapTypeNameToKey } from "@/lib/utils/building-helpers";
 import { DocumentAttachment } from "./DocumentAttachment";
@@ -35,6 +35,7 @@ interface BuildingDetailPaneProps {
     cameFromFloor?: boolean;
     onDeleteCertificate?: () => void;
     isSaving?: boolean;
+    onSave?: () => void;
 }
 
 export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
@@ -59,6 +60,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     isFloorLoading = false,
     onDeleteCertificate,
     isSaving = false,
+    onSave,
 }) => {
     const { confirm } = useConfirm();
 
@@ -208,16 +210,15 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                         )}
                     </div>
                     {activeScope === "Floor" && onScopeChange && (
-                        <button
-                            type="button"
+                        <Button
+                            size="xs"
+                            variant="secondary"
                             disabled={isSaving}
                             onClick={() => !isSaving && onScopeChange("Property", null)}
-                            className={`px-2.5 py-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg transition-colors ${
-                                isSaving ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:bg-blue-100 cursor-pointer"
-                            }`}
+                            className="text-xs font-bold text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100 cursor-pointer"
                         >
                             {t("building.clearSelection") || "Clear Selection"}
-                        </button>
+                        </Button>
                     )}
                 </div>
 
@@ -343,21 +344,29 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
             <div className="pt-2.5 border-t border-blue-50 mt-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400">
                         {t("building.verifyDetailsNote") || "Verify document details & file attachment before saving changes."}
-                    </span>
+                    </Label>
                 </div>
-                {onDeleteCertificate && isCertificateFilled && isUpdateCase && !isDisabled && (
-                    <button
-                        type="button"
-                        disabled={isDisabled}
-                        onClick={handleDeleteCertificateWithConfirm}
-                        className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
-                    >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        {t("building.deleteCertificate") || "Delete Certificate & Data"}
-                    </button>
-                )}
+                <div className="flex items-center gap-2">
+                    {onDeleteCertificate && isCertificateFilled && isUpdateCase && !isDisabled && (
+                        <DeleteButton
+                            size="xs"
+                            disabled={isDisabled}
+                            onClick={handleDeleteCertificateWithConfirm}
+                        >
+                            {t("building.deleteCertificate") || "Delete Certificate & Data"}
+                        </DeleteButton>
+                    )}
+                    {onSave && (
+                        <SaveButton
+                            onClick={onSave}
+                            disabled={isSaving || isDisabled}
+                            isLoading={isSaving}
+                            label={t("common.saveChanges") || "Save Changes"}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );

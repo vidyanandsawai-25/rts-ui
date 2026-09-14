@@ -63,6 +63,11 @@ export interface PropertySearchResult {
 
 export type PropertySearchResultData = PropertySearchResult;
 
+export interface ApartmentQCSearchWingSummary {
+  wingDetailId: number;
+  wingName: string;
+}
+
 export interface PropertyListItem {
   propertyId: number;
   propertyNo: string;
@@ -71,6 +76,12 @@ export interface PropertyListItem {
   ownerName: string;
   address: string;
   displayProperty: string;
+  category?: number;
+  categoryLabel?: string;
+  societyDetailId?: number | null;
+  societyName?: string | null;
+  wings?: ApartmentQCSearchWingSummary[] | null;
+  wingDetailId?: number | null;
 }
 
 export interface WardData {
@@ -96,7 +107,15 @@ export interface PropwiseSuggestionItem {
   partitionNo?: string | null;
   upicId?: string;
   displayLabel?: string;
+  category?: number;
+  categoryLabel?: string;
+  societyDetailId?: number | null;
+  societyName?: string | null;
+  wings?: ApartmentQCSearchWingSummary[] | null;
+  wingDetailId?: number | null;
 }
+
+export type ApartmentQCSearchSuggestionItem = PropwiseSuggestionItem;
 
 export interface PropwiseSuggestionResponse {
   success: boolean;

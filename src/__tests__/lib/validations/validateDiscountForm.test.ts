@@ -201,7 +201,7 @@ describe("validateDiscountForm", () => {
             const item = createBaseAttr({ dataType: "DECIMAL", decimalValue: "-0.5", documentGuid: "some-guid" });
             const result = validateDiscountForm({ 1: item }, tMock);
             expect(result.isValid).toBe(false);
-            expect(result.errors[1]).toBe("Value must be a valid decimal number."); // regex check fails first for minus
+            expect(result.errors[1]).toBe("Value must be greater than zero.");
         });
 
         it("should fail if value is exactly 0", () => {

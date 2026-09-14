@@ -5,6 +5,7 @@ export const TABS: Tab[] = [
   { label: 'Property', href: 'Property', icon: Home },
   { label: 'Kyc', href: 'Kyc', icon: UserCheck },
   { label: 'Society', href: 'Society', icon: Building2 },
+  { label: 'Wing', href: 'Wing', icon: Building2 },
   { label: 'BuildingPermission', href: 'Building', icon: Building2 },
   { label: 'Discount', href: 'Discount', icon: Percent },
   { label: 'FloorSubmission', href: 'FloorSubmission', icon: Building2 },

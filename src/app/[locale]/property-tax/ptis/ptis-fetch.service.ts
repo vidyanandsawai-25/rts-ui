@@ -82,7 +82,7 @@ export async function fetchPtisPageData(
       const [propDetailsRes, propListRes, detailsRes] = await Promise.all([
         getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam),
         resolvedWardId
-          ? getPropertyListByWardAction(resolvedWardId, 500)
+          ? getPropertyListByWardAction(resolvedWardId, 50)
           : Promise.resolve({ success: true, data: [] }),
         detailsPromise
       ]);
@@ -102,7 +102,7 @@ export async function fetchPtisPageData(
       resolvedPropertyId = propertyIdParam ?? propertyDetailsResult.propertyId;
 
       const propListPromise = resolvedWardId
-        ? getPropertyListByWardAction(resolvedWardId, 500)
+        ? getPropertyListByWardAction(resolvedWardId, 50)
         : Promise.resolve({ success: true, data: [] });
 
       const detailsPromise = resolvedPropertyId

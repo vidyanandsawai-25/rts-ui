@@ -255,6 +255,6 @@ describe("useLockUnlockExcelUpload", () => {
     });
 
     expect(setExcelFile).not.toHaveBeenCalled();
-    expect(mockToast.error).toHaveBeenCalledWith("Excel has too many rows. Maximum allowed is 100,000.");
+    expect(mockToast.error).toHaveBeenCalledWith("Excel has too many rows. Maximum allowed is 1,00,000.");
   });
 });

@@ -216,7 +216,7 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
     const isViewerOpen = !!selectedPropertyForImage;
     const imageUrl = selectedPropertyForImage?.documentGuid || 'https://images.unsplash.com/photo-1546412414-e1885259563a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
 
-    const columns = getPropertyDashboardColumns(t, handleImageClick);
+    const columns = getPropertyDashboardColumns(t, handleImageClick, pageNumber, pageSize);
 
     const totalCount = serverData?.totalCount || 0;
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));

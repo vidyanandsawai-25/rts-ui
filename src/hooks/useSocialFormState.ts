@@ -3,32 +3,72 @@ import { FlatSocialAttributeState, flattenAttributes } from "@/lib/utils/social-
 import { hasSocialChangesComparedToInitial } from "@/lib/utils/social-changes";
 import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
 
-export const useSocialFormState = (initialSocialData: PropertySocialInfoResponseDto | null) => {
-    const initialFlatData = useMemo(() => {
-        return flattenAttributes(initialSocialData?.socialAttributes || []);
-    }, [initialSocialData]);
+import { SocialAttribute } from "@/types/social-attribute.types";
+
+export const useSocialFormState = (
+    initialSocialData: PropertySocialInfoResponseDto | null,
+    masterAttributes?: SocialAttribute[]
+) => {
+    const buildInitialData = useCallback(() => {
+        const flatData = flattenAttributes(initialSocialData?.socialAttributes || []);
+        if (masterAttributes && masterAttributes.length > 0) {
+            masterAttributes.forEach(attr => {
+                if (!flatData[attr.id]) {
+                    const isBitType = attr.dataType.toUpperCase() === "BIT";
+                    flatData[attr.id] = {
+                        id: null,
+                        socialAttributeId: attr.id,
+                        socialAttributeCode: attr.socialAttributeCode,
+                        socialAttributeName: attr.socialAttributeName,
+                        dataType: attr.dataType,
+                        parentAttributeId: attr.parentAttributeId,
+                        isRequiredWhenParentTrue: attr.isRequiredWhenParentTrue,
+                        bitValue: isBitType ? false : null,
+                        intValue: null,
+                        decimalValue: null,
+                        textValue: null,
+                        dateValue: null,
+                        documentBindingId: null,
+                        remark: null,
+                        isUploading: false,
+                        isPhotoRequired: attr.isPhotoRequired,
+                        isDocumentRequired: attr.isDocumentRequired,
+                        documentGuid: null,
+                        documentUrl: null,
+                        photoBindingId: null,
+                        photoGuid: null
+                    };
+                }
+            });
+        }
+        return flatData;
+    }, [initialSocialData, masterAttributes]);
+
+    const initialFlatData = useMemo(() => buildInitialData(), [buildInitialData]);
 
     const [formState, setFormState] = useState<{
         data: Record<number, FlatSocialAttributeState>;
         errors: Record<number, string>;
     }>(() => ({
-        data: flattenAttributes(initialSocialData?.socialAttributes || []),
+        data: buildInitialData(),
         errors: {}
     }));
+
+    const hasChanges = useMemo(() => {
+        return hasSocialChangesComparedToInitial(formState.data, initialFlatData);
+    }, [formState.data, initialFlatData]);
 
     const [prevInitialSocialData, setPrevInitialSocialData] = useState(initialSocialData);
 
     if (initialSocialData && initialSocialData !== prevInitialSocialData) {
         setPrevInitialSocialData(initialSocialData);
-        setFormState({
-            data: flattenAttributes(initialSocialData.socialAttributes || []),
-            errors: {}
-        });
+        if (!hasChanges) {
+            setFormState({
+                data: buildInitialData(),
+                errors: {}
+            });
+        }
     }
-
-    const hasChanges = useMemo(() => {
-        return hasSocialChangesComparedToInitial(formState.data, initialFlatData);
-    }, [formState.data, initialFlatData]);
 
     const handleInputChange = useCallback((
         attributeId: number,

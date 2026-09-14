@@ -57,9 +57,12 @@ export interface UpdatePropertySocietyDetailsDto {
   managerEmailId: string | null;
 }
 
+import { PropertyMasterData } from "./property-tax/apartment";
+
 export interface SocietyFormProps {
     societyData: PropertySocietyDetailsApiItem | null;
     propertyIdSearch: number;
     locale: string;
     WingMaster?: WingItem[];
+    propertyMasterData?: PropertyMasterData | null;
 }

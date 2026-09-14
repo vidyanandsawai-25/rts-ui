@@ -21,6 +21,7 @@ interface DrawerProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   hideHeader?: boolean;
+  zIndex?: number;
 }
 
 export function Drawer({
@@ -34,6 +35,7 @@ export function Drawer({
   hideHeader = false,
   className,
   bodyClassName,
+  zIndex,
 }: DrawerProps) {
   const tLogin = useTranslations("login");
   const [warningActive, setWarningActive] = React.useState(false);
@@ -230,6 +232,7 @@ export function Drawer({
     <>
       <div
         className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+        style={zIndex ? { zIndex: zIndex - 10 } : undefined}
         onClick={onClose}
         role="button"
         tabIndex={0}
@@ -243,6 +246,7 @@ export function Drawer({
       <div
         ref={drawerRef}
         tabIndex={-1}
+        style={zIndex ? { zIndex } : undefined}
         className={`
           drawer-instance
           drawer-${width}

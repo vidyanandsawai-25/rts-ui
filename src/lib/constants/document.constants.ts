@@ -24,6 +24,8 @@ export const REFERENCE_TABLE = {
   PropertyCertificate: 'PropertyCertificates',
   PropertyDiscount: 'PropertySocialDetails',
   PropertyPhoto: 'PropertyPhoto',
+  SocietyPhoto: 'SocietyPhoto',
+  WingPhoto: 'WingPhoto',
   PropertyOwner: 'PropertyOwners',
   BuildingPermission: 'BuildingPermissions',
   RenterMast: 'RenterMast',
@@ -37,6 +39,8 @@ export const DEPARTMENT_ID = {
 export const MODULE_ID = {
   PropertyCertificate: 1,
   PropertyPhoto: 1,
+  SocietyPhoto: 1,
+  WingPhoto: 1,
   PropertyDiscount: 1,
   PropertySocialDetails: 1,
   RenterMast: 1,
@@ -48,4 +52,3 @@ export const TAX_ZONING_DOCUMENT_TYPE_CODE = {
   LIST: 'TAX_ZONING_DOCUMENT_LIST',
   MAP: 'TAX_ZONING_DOCUMENT_MAP',
 } as const;
-

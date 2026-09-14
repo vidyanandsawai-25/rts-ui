@@ -123,6 +123,12 @@ export async function getPropertySuggestionsByPropwiseAction(
         partitionNo: item.partitionNo,
         upicId: item.upicId,
         displayLabel: item.displayLabel,
+        category: item.category,
+        categoryLabel: item.categoryLabel,
+        societyDetailId: item.societyDetailId,
+        societyName: item.societyName,
+        wingDetailId: item.wingDetailId,
+        wings: item.wings,
       })),
     };
   }

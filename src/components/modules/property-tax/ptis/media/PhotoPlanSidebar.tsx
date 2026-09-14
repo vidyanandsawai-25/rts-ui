@@ -47,7 +47,11 @@ export const PhotoPlanSidebar = memo(function PhotoPlanSidebar({
         {categories.map((cat, index) => {
           const isActive = selectedCategoryIndex === index;
           const photoCount =
-            typeof cat.photoCount === 'number' ? cat.photoCount : cat.images.length;
+            cat.images.length > 0
+              ? cat.images.length
+              : typeof cat.photoCount === 'number'
+              ? cat.photoCount
+              : 0;
           const firstImage = cat.images.find((img: AdditionalImage) => img.src);
 
           return (

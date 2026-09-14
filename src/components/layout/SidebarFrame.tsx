@@ -53,6 +53,10 @@ export function SidebarFrame({ closeMenuLabel, openMenuLabel = 'Open menu', chil
   };
 
 
+  const isDarkTheme =
+    pathname.includes('/assets') ||
+    pathname.includes('/property-tax/ptis');
+
   return (
     <>
       <Button
@@ -63,7 +67,11 @@ export function SidebarFrame({ closeMenuLabel, openMenuLabel = 'Open menu', chil
         aria-label={open ? closeMenuLabel : openMenuLabel}
         aria-expanded={open}
         aria-controls="mobile-sidebar"
-        className="sidebar-mobile-toggle lg:hidden fixed top-4 left-4 z-[60] bg-[#4b70a6] hover:bg-[#3d5a8a] backdrop-blur-xl p-3 rounded-xl border border-white/30 shadow-lg"
+        className={`sidebar-mobile-toggle lg:hidden fixed top-4 left-4 z-[60] backdrop-blur-xl p-3 rounded-xl border shadow-lg ${
+          isDarkTheme
+            ? 'bg-[#0B132B] hover:bg-[#152243] border-slate-700/80 text-white'
+            : 'bg-[#4b70a6] hover:bg-[#3d5a8a] border-white/30 text-white'
+        }`}
       >
         {open ? <X className="h-7 w-7 text-white" /> : <Menu className="h-7 w-7 text-white" />}
       </Button>
@@ -92,9 +100,12 @@ export function SidebarFrame({ closeMenuLabel, openMenuLabel = 'Open menu', chil
         className={`
           fixed top-20 left-0 bottom-0 z-50 shadow-xl flex flex-col overflow-hidden
           transition-all duration-300 ease-in-out border-r
-          ${pathname.includes('/assets')
-            ? 'bg-gradient-to-b from-[#000428] to-[#004e92] border-white/10'
-            : 'bg-white border-gray-200'
+          ${
+            pathname.includes('/assets')
+              ? 'bg-gradient-to-b from-[#000428] to-[#004e92] border-white/10 text-slate-200'
+              : isDarkTheme
+                ? 'bg-[#0B132B] border-slate-800/80 text-slate-200'
+                : 'bg-white border-gray-200 text-gray-800'
           }
           ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${collapsed ? 'w-16' : 'w-64 sidebar-expanded-aside'}

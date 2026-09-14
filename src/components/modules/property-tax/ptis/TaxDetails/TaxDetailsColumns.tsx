@@ -148,10 +148,16 @@ export function getPendingTaxDetailsFloorColumns(
       headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
       cellClassName: CELL_CENTER_CLASS,
       render: (row: PendingTaxRow) => {
-        const taxMatch = row.taxAmounts.find(
-          (tItem: TaxAmountItem) => tItem.taxName.trim().toLowerCase() === taxName.trim().toLowerCase()
-        );
-        const num = Number(taxMatch?.taxAmount ?? 0);
+        const lowerKey = taxName.trim().toLowerCase();
+        let num = 0;
+        if (lowerKey === 'totaltax' || lowerKey === 'taxtotal' || lowerKey === 'total tax' || lowerKey === 'total' || lowerKey === 'tax total') {
+          num = Number(row.taxTotal ?? 0);
+        } else {
+          const taxMatch = row.taxAmounts.find(
+            (tItem: TaxAmountItem) => tItem.taxName.trim().toLowerCase() === taxName.trim().toLowerCase()
+          );
+          num = Number(taxMatch?.taxAmount ?? 0);
+        }
         const decimals = Number.isInteger(num) ? 0 : 2;
         return (
           <div className={NUMBER_CELL_CLASSES}>
@@ -203,10 +209,16 @@ export function getRetroPendingYearFloorColumns(
       headerClassName: `${HEADER_TEXT_CLASSES} ${CELL_CENTER_CLASS}`,
       cellClassName: CELL_CENTER_CLASS,
       render: (row) => {
-        const taxMatch = row.taxAmounts.find(
-          (tItem: TaxAmountItem) => tItem.taxName.trim().toLowerCase() === taxName.trim().toLowerCase()
-        );
-        const num = Number(taxMatch?.taxAmount ?? 0);
+        const lowerKey = taxName.trim().toLowerCase();
+        let num = 0;
+        if (lowerKey === 'totaltax' || lowerKey === 'taxtotal' || lowerKey === 'total tax' || lowerKey === 'total' || lowerKey === 'tax total') {
+          num = Number(row.taxTotal ?? 0);
+        } else {
+          const taxMatch = row.taxAmounts.find(
+            (tItem: TaxAmountItem) => tItem.taxName.trim().toLowerCase() === taxName.trim().toLowerCase()
+          );
+          num = Number(taxMatch?.taxAmount ?? 0);
+        }
         const decimals = Number.isInteger(num) ? 0 : 2;
         return (
           <div className={NUMBER_CELL_CLASSES}>

@@ -189,7 +189,53 @@ export async function mapPtisFetchResults({
   let shouldRedirect = false;
   let redirectUrl = '';
 
-  const hasMissingParams = Boolean(resolvedPropertyId) && (!searchParams?.propertyNo || !searchParams?.wardNo);
+  const matchedProp = rawPropertyData.find(p => p.propertyId === resolvedPropertyId);
+  const finalSocietyDetailId =
+    matchedProp?.societyDetailId ||
+    societyDetails?.societyDetailId ||
+    (rawPropObj as Record<string, unknown>)?.societyDetailId ||
+    (rawPropObj as Record<string, unknown>)?.SocietyDetailId ||
+    (rawDataObj as Record<string, unknown>)?.societyDetailId ||
+    (rawDataObj as Record<string, unknown>)?.SocietyDetailId ||
+    (rawPropObj as Record<string, unknown>)?.societyId ||
+    (rawPropObj as Record<string, unknown>)?.SocietyId ||
+    (rawDataObj as Record<string, unknown>)?.societyId ||
+    (rawDataObj as Record<string, unknown>)?.SocietyId;
+
+  const finalWingDetailId =
+    matchedProp?.wingDetailId ||
+    (rawPropObj as Record<string, unknown>)?.wingDetailId ||
+    (rawPropObj as Record<string, unknown>)?.WingDetailId ||
+    (rawDataObj as Record<string, unknown>)?.wingDetailId ||
+    (rawDataObj as Record<string, unknown>)?.WingDetailId ||
+    (rawPropObj as Record<string, unknown>)?.wingId ||
+    (rawPropObj as Record<string, unknown>)?.WingId ||
+    (rawDataObj as Record<string, unknown>)?.wingId ||
+    (rawDataObj as Record<string, unknown>)?.WingId;
+
+  const hasSocietyInParams = Boolean(
+    searchParams?.societyDetailId ||
+    searchParams?.societydetailid ||
+    searchParams?.societyId ||
+    searchParams?.societyid ||
+    searchParams?.societyMasterId ||
+    searchParams?.societyMasterid
+  );
+
+  const hasWingInParams = Boolean(
+    searchParams?.wingDetailId ||
+    searchParams?.wingdetailid ||
+    searchParams?.wingId ||
+    searchParams?.wingid
+  );
+
+  const hasMissingParams = Boolean(resolvedPropertyId) && (
+    !searchParams?.propertyNo ||
+    !searchParams?.wardNo ||
+    (Boolean(finalSocietyDetailId) && !hasSocietyInParams) ||
+    (Boolean(finalWingDetailId) && !hasWingInParams)
+  );
+
   const isIdMismatch = Boolean(resolvedPropertyId) && (!propertyIdParam || propertyIdParam !== resolvedPropertyId);
 
   if (resolvedPropertyId && (isIdMismatch || hasMissingParams)) {
@@ -202,7 +248,11 @@ export async function mapPtisFetchResults({
     const newParams = new URLSearchParams();
     if (searchParams) {
       Object.entries(searchParams).forEach(([k, v]) => {
-        if (typeof v === 'string') newParams.set(k, v);
+        if (typeof v === 'string') {
+          newParams.set(k, v);
+        } else if (Array.isArray(v) && v.length > 0 && typeof v[0] === 'string') {
+          newParams.set(k, v[0]);
+        }
       });
     }
     newParams.set('propertyId', resolvedPropertyId.toString());
@@ -218,6 +268,13 @@ export async function mapPtisFetchResults({
     }
     if (finalWardId && !searchParams?.wardId) {
       newParams.set('wardId', finalWardId.toString());
+    }
+
+    if (finalSocietyDetailId && !hasSocietyInParams) {
+      newParams.set('societyDetailId', String(finalSocietyDetailId));
+    }
+    if (finalWingDetailId && !hasWingInParams) {
+      newParams.set('wingDetailId', String(finalWingDetailId));
     }
 
     shouldRedirect = true;

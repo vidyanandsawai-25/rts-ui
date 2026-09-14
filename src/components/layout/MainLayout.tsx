@@ -182,8 +182,7 @@ async function FooterWithUlb() {
 function HeaderSkeleton() {
   return (
     <div
-      className="fixed inset-x-0 top-0 z-40 h-20 w-full border-b border-white/10 shadow-2xl"
-      style={{ backgroundColor: '#4b70a6' }}
+      className="fixed inset-x-0 top-0 z-40 h-20 w-full border-b border-white/10 shadow-2xl bg-[#0B132B]"
       aria-hidden
     />
   );

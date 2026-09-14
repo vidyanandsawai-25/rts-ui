@@ -1,26 +1,48 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useMediaDrawerState } from '@/hooks/ptis/photoplan/useMediaDrawerState';
+import { useSearchParams } from 'next/navigation';
 import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
 import { useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
+import { useConfirm } from '@/components/common';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import { type WaybackRelease, WAYBACK_STATIC_TILE_URL } from '@/lib/api/wayback.service';
 import { latLngToTile } from '@/lib/utils/coordinate-utils';
 import { PhotoPlanDrawer } from './PhotoPlanDrawer';
 import { PropertyMediaPanelContent } from './PropertyMediaPanelContent';
 import { PropertyMediaPanelSkeleton } from './PropertyMediaPanelSkeleton';
+import { PropertyTypeModal } from './PropertyTypeModal';
 import { toast } from 'sonner';
-import { launchPhotoPlanDrawingToolAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
+import { launchPhotoPlanDrawingToolAction, getPhotosByPropertyAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
+import { getPropertyDrawPlanStatus } from '@/lib/api/property.service';
+import type { WingWiseWingDetails } from '@/types/property-tax/apartment';
+
+export interface PropertyItem {
+  id?: number;
+  isMainProperty?: boolean;
+  categoryId?: number | null;
+  propertyTypeId?: number | null;
+  type?: string | number | null;
+  societyDetailId?: number | null;
+}
+
 export interface PropertyMediaPanelProps {
+  property?: PropertyItem;
+  id?: number;
+  propertyId?: number;
+  isMainProperty?: boolean;
+  categoryId?: number | null;
+  propertyTypeId?: number | null;
+  type?: string | number | null;
+  societyDetailId?: number | null;
   wardNo?: string;
   propertyNo?: string;
   partitionNo?: string;
   propertyHolderName?: string;
   propertyHolderNameMarathi?: string;
   isQCApproved?: boolean;
-  propertyId?: number;
   councilName?: string;
   ptisUsername?: string;
   ptisDisplayName?: string;
@@ -34,18 +56,26 @@ export interface PropertyMediaPanelProps {
   initialWaybackReleases?: WaybackRelease[];
   onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
   onPhotoSlotsChange?: (slots: PropertyPhotoTypeWithStatusDto[]) => void;
+  wings?: WingWiseWingDetails[];
 }
 
 function PropertyMediaPanel({
+  property,
+  id,
+  propertyId: propPropertyId,
+  isMainProperty: propIsMainProperty,
+  categoryId: propCategoryId,
+  propertyTypeId: propPropertyTypeId,
+  type: _propType,
+  societyDetailId: propSocietyDetailId,
   wardNo = '',
   propertyNo = '',
   partitionNo = '',
-  propertyId,
-  councilName = 'THANE_Survey',
-  ptisUsername: propPtisUsername,
-  ptisDisplayName: propPtisDisplayName,
-  ptisUserId: propPtisUserId,
-  ptisBackendUri: propPtisBackendUri,
+  councilName: _councilName = 'THANE_Survey',
+  ptisUsername: _propPtisUsername,
+  ptisDisplayName: _propPtisDisplayName,
+  ptisUserId: _propPtisUserId,
+  ptisBackendUri: _propPtisBackendUri,
   initialPhotoSlots = [],
   initialPhotos = [],
   loading = false,
@@ -54,32 +84,94 @@ function PropertyMediaPanel({
   initialWaybackReleases = [],
   onPhotosChange,
   onPhotoSlotsChange,
+  wings = [],
 }: PropertyMediaPanelProps): React.ReactElement {
+  const searchParams = useSearchParams();
+  const searchPropertyId = searchParams?.get('propertyId') || searchParams?.get('propertyid');
+  const searchSocietyDetailId =
+    searchParams?.get('societyDetailId') ||
+    searchParams?.get('societydetailid') ||
+    searchParams?.get('societyId') ||
+    searchParams?.get('societyid') ||
+    searchParams?.get('societyMasterId') ||
+    searchParams?.get('societyMasterid');
+  const searchWingDetailId = searchParams?.get('wingDetailId') || searchParams?.get('wingdetailid') || searchParams?.get('wingId') || searchParams?.get('wingid');
+  const searchEntityType = searchParams?.get('entityType') || searchParams?.get('entitytype');
+  const searchWardNo = searchParams?.get('wardNo') || searchParams?.get('wardno');
+  const searchPropertyNo = searchParams?.get('propertyNo') || searchParams?.get('propertyno');
+  const searchPartitionNo = searchParams?.get('partitionNo') || searchParams?.get('partitionno');
+
+  const effectiveId = property?.id ?? propPropertyId ?? id ?? (searchPropertyId ? Number(searchPropertyId) : 0);
+  const effectiveWardNo = wardNo || searchWardNo || '';
+  const effectivePropertyNo = propertyNo || searchPropertyNo || '';
+  const effectivePartitionNo = partitionNo !== undefined && partitionNo !== null && partitionNo !== '' ? partitionNo : (searchPartitionNo || null);
+
+  const isPartitionEmptyOrMain = !effectivePartitionNo || effectivePartitionNo === '0' || String(effectivePartitionNo).trim() === '' || String(effectivePartitionNo).trim() === '-';
+  const effectiveIsMainProperty = propIsMainProperty !== undefined ? propIsMainProperty : (property?.isMainProperty ?? isPartitionEmptyOrMain);
+  const effectiveCategoryId = property?.categoryId ?? propCategoryId ?? 1;
+  const effectivePropertyTypeId = property?.propertyTypeId ?? propPropertyTypeId;
+  const effectiveSocietyDetailId = property?.societyDetailId ?? propSocietyDetailId;
+
+  const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
+
+  const { confirm } = useConfirm();
   const { isDrawerOpen, drawerInitialCategoryIndex, openDrawer, closeDrawer } =
     useMediaDrawerState();
   const { togglePanel } = useMediaPanel();
 
-  // Close the drawer if the propertyId changes (e.g. searching/switching property)
-  const prevPropertyIdRef = useRef(propertyId);
+  const selectedWingId = searchParams?.get('wingId');
+  const selectedWingDetailId = searchWingDetailId || searchParams?.get('wingDetailId');
+
+  const matchedWing = React.useMemo(() => {
+    return wings.find(
+      (w) =>
+        (selectedWingDetailId && String(w.wingDetailId) === selectedWingDetailId) ||
+        (selectedWingId && String(w.wingMasterId) === selectedWingId)
+    );
+  }, [wings, selectedWingId, selectedWingDetailId]);
+
+  const effectiveWingDetailId =
+    matchedWing?.wingDetailId ??
+    (selectedWingDetailId ? Number(selectedWingDetailId) : (wings && wings.length > 0 ? wings[0].wingDetailId : null));
+
+  const effectiveWingName = matchedWing
+    ? (matchedWing.wingName || `${matchedWing.wingNo} Wing`)
+    : (wings && wings.length > 0 ? (wings[0].wingName || `${wings[0].wingNo} Wing`) : (searchParams?.get('wingName') || ''));
+
+  const resolvedSocietyDetailId =
+    effectiveSocietyDetailId ?? (searchSocietyDetailId ? Number(searchSocietyDetailId) : null) ?? matchedWing?.societyId ?? (wings && wings.length > 0 ? wings[0].societyId : null);
+
+  const resolvedEntityType =
+    searchEntityType ||
+    (propPropertyTypeId === 140 || effectivePropertyTypeId === 140
+      ? 'S'
+      : (effectiveIsMainProperty && effectiveWingDetailId ? 'W' : (effectiveIsMainProperty && resolvedSocietyDetailId ? 'S' : 'P')));
+
+  // Close the drawer if the propertyId changes (e.g. switching property) or if no property is selected
+  const prevPropertyIdRef = useRef(effectiveId);
   useEffect(() => {
-    if (isDrawerOpen && propertyId !== prevPropertyIdRef.current) {
+    if (isDrawerOpen && (effectiveId !== prevPropertyIdRef.current || !effectiveId || effectiveId <= 0)) {
       closeDrawer();
     }
-    prevPropertyIdRef.current = propertyId;
-  }, [propertyId, isDrawerOpen, closeDrawer]);
+    prevPropertyIdRef.current = effectiveId;
+  }, [effectiveId, isDrawerOpen, closeDrawer]);
 
   const {
-    showMoreImages,
-    setShowMoreImages,
     hoverPreview,
     resetHoverPreview,
     categories,
     handleCategoriesChange,
     photoPlanCategory,
     propertyPhotoCategory,
+    societyPhotoCategory,
+    wingPhotoCategory,
+    amenityPhotoCategory,
     photoPlanPhoto,
     propertyPhoto,
-    remainingImages,
+    societyPhoto,
+    wingPhoto,
+    amenityPhoto,
+    isAmenityProperty,
     handleImageHover,
     handleImageLeave,
     cancelImageLeave,
@@ -91,23 +183,36 @@ function PropertyMediaPanel({
   } = usePropertyMedia({
     initialPhotoSlots,
     initialPhotos,
-    propertyId,
+    propertyId: effectiveId,
     initialLatitude,
     initialLongitude,
     initialWaybackReleases: initialWaybackReleases,
     onPhotosChange,
     onPhotoSlotsChange,
+    wings,
+    isMainProperty: effectiveIsMainProperty,
+    categoryId: effectiveCategoryId,
+    propertyTypeId: effectivePropertyTypeId,
+    entityType: resolvedEntityType,
   });
+
+  const getSelectPropertyErrorMsg = useCallback(() => {
+    const rawMsg = t('error.selectPropertyFirst') || t('selectPropertyFirst');
+    if (rawMsg && rawMsg !== 'error.selectPropertyFirst' && rawMsg !== 'selectPropertyFirst') {
+      return rawMsg;
+    }
+    return 'Please select a property first.';
+  }, [t]);
 
   const handleOpenDrawer = useCallback(
     (categoryIndex: number, imageIndex?: number, mode?: 'view' | 'create') => {
-      if (!propertyId || propertyId <= 0) {
-        toast.error(t('error.propertyIdMissing') || 'Property is missing. Please search and select a property first.');
+      if (!effectiveId || effectiveId <= 0) {
+        toast.error(getSelectPropertyErrorMsg());
         return;
       }
       openDrawer(categoryIndex, imageIndex, mode);
     },
-    [propertyId, openDrawer, t]
+    [effectiveId, getSelectPropertyErrorMsg, openDrawer]
   );
 
   useEffect(() => {
@@ -115,6 +220,48 @@ function PropertyMediaPanel({
       resetHoverPreview();
     }
   }, [loading, resetHoverPreview]);
+
+  // Listen for media update events (e.g., photo plan uploads/changes) to refetch photos live
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleMediaUpdated = async (event: Event) => {
+      const customEvent = event as CustomEvent<{ propertyId?: number }>;
+      const updatedPropId = customEvent.detail?.propertyId;
+      if (updatedPropId && updatedPropId !== effectiveId) return;
+
+      if (effectiveId && effectiveId > 0) {
+        try {
+          const res = await getPhotosByPropertyAction(effectiveId);
+          if (res.success && Array.isArray(res.data)) {
+            setPhotos(res.data);
+          }
+        } catch {
+          // Non-blocking catch
+        }
+      }
+    };
+
+    window.addEventListener('ptis:media-updated', handleMediaUpdated);
+    return () => window.removeEventListener('ptis:media-updated', handleMediaUpdated);
+  }, [effectiveId, setPhotos]);
+
+  // Keep PropertyMasterCard thumbnail synchronized with the loaded society / property photo
+  useEffect(() => {
+    const photoToSync = societyPhoto || propertyPhoto;
+    if (typeof window !== 'undefined' && photoToSync && (photoToSync.documentGuid || photoToSync.src)) {
+      window.dispatchEvent(
+        new CustomEvent('ptis:sync-thumbnail', {
+          detail: {
+            propertyId: effectiveId,
+            documentGuid: photoToSync.documentGuid,
+            photoUrl: photoToSync.src || photoToSync.fullSrc,
+          },
+        })
+      );
+    }
+  }, [effectiveId, societyPhoto, propertyPhoto]);
+
   const hasCoords = typeof initialLatitude === 'number' && Number.isFinite(initialLatitude) && typeof initialLongitude === 'number' && Number.isFinite(initialLongitude);
   const coords = hasCoords ? { lat: initialLatitude, lng: initialLongitude } : undefined;
   const waybackReleases = initialWaybackReleases;
@@ -149,65 +296,215 @@ function PropertyMediaPanel({
     }
   }
 
-  const handleCreateClick = useCallback(
-    async (e: React.MouseEvent) => {
-      e.stopPropagation();
-      
-      if (!propertyId) {
-        toast.error(t('error.propertyIdMissing') || 'Property is missing. Please search and select a property first.');
-        return;
-      }
+  const defaultPhotoTypeId = photoPlanCategory?.photoTypeId ?? 13;
+
+  // Drawing Tool Launcher
+  const launchDrawingApp = useCallback(
+    async (options?: {
+      type?: string | number | null;
+      photoTypeId?: number | null;
+      isAmenity?: boolean;
+      societyDetailId?: number | null;
+      wingDetailId?: number | null;
+    }) => {
+      if (!effectiveId || effectiveId <= 0) return;
 
       const toastId = toast.loading(t('media.preparingDrawingTool') || 'Preparing drawing tool...');
       try {
-        const returnUrl = typeof window !== 'undefined' ? window.location.href : '';
-
-        const result = await launchPhotoPlanDrawingToolAction(
-          propertyId,
-          councilName,
-          returnUrl,
-          propPtisUsername,
-          propPtisDisplayName,
-          propPtisUserId,
-          wardNo,
-          propertyNo,
-          partitionNo,
-          propPtisBackendUri
+        const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+        const isAmenityFlag = options?.isAmenity || isAmenityProperty || propPropertyTypeId === 140 || effectivePropertyTypeId === 140;
+        const targetEntityType = isAmenityFlag ? 'S' : resolvedEntityType;
+        const targetPhotoTypeId = options?.photoTypeId ?? defaultPhotoTypeId;
+        const targetSocietyDetailId = options?.societyDetailId ?? resolvedSocietyDetailId;
+        const targetWingDetailId = options?.wingDetailId ?? effectiveWingDetailId;
+        const res = await launchPhotoPlanDrawingToolAction(
+          effectiveId,
+          _councilName,
+          currentUrl,
+          _propPtisUsername,
+          _propPtisDisplayName,
+          _propPtisUserId,
+          effectiveWardNo,
+          effectivePropertyNo,
+          effectivePartitionNo,
+          _propPtisBackendUri,
+          options?.type,
+          isAmenityFlag,
+          targetEntityType,
+          targetSocietyDetailId,
+          targetWingDetailId,
+          targetPhotoTypeId
         );
 
-        if (!result.success || !result.data?.launchUrl) {
-           throw new Error(result.error || (t('media.launchUrlNotFound') || 'Launch URL not found in response.'));
-        }
-
-        const launchUrl = result.data.launchUrl;
-        
-        if (typeof launchUrl === 'string' && launchUrl.length > 0) {
-           const url = new URL(launchUrl);
-           if (url.protocol !== 'https:' && url.protocol !== 'http:') {
-             throw new Error('Invalid launch URL protocol.');
-           }
-           toast.success(t('media.redirectingDrawingTool') || 'Redirecting to drawing tool...', { id: toastId });
-           window.location.assign(url.toString());
+        if (res.success && res.data?.launchUrl) {
+          toast.success(t('media.redirectingDrawingTool') || 'Redirecting to drawing tool...', { id: toastId });
+          window.location.assign(res.data.launchUrl);
         } else {
-           throw new Error(t('media.launchUrlNotFound') || 'Launch URL not found in response.');
+          toast.error(res.error || t('media.failedToLaunchDrawingTool') || 'Failed to launch drawing tool.', { id: toastId });
         }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : (t('media.unexpectedError') || 'An unexpected error occurred.');
-        toast.error(errorMessage, { id: toastId });
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to launch drawing tool.', { id: toastId });
       }
     },
     [
-      propertyId,
+      effectiveId,
+      _councilName,
+      _propPtisUsername,
+      _propPtisDisplayName,
+      _propPtisUserId,
+      effectiveWardNo,
+      effectivePropertyNo,
+      effectivePartitionNo,
+      _propPtisBackendUri,
+      resolvedEntityType,
+      resolvedSocietyDetailId,
+      effectiveWingDetailId,
+      effectivePropertyTypeId,
+      isAmenityProperty,
+      defaultPhotoTypeId,
+      propPropertyTypeId,
       t,
-      councilName,
-      propPtisUsername,
-      propPtisDisplayName,
-      propPtisUserId,
-      wardNo,
-      propertyNo,
-      partitionNo,
-      propPtisBackendUri,
     ]
+  );
+
+  // Draw Button Workflow Handler - Strictly follows the workflow rules
+  const handleCreateClick = useCallback(
+    async (e?: React.MouseEvent) => {
+      if (e) e.stopPropagation();
+
+      if (!effectiveId || effectiveId <= 0) {
+        toast.error(getSelectPropertyErrorMsg());
+        return;
+      }
+
+      // Rule 1: Button Visibility & Guard: Hide/bypass if root/main property
+      if (effectiveIsMainProperty) {
+        return;
+      }
+
+      const executeLaunchFlow = async () => {
+        const statusToastId = toast.loading(t('media.checkingDetails') || 'Checking property details...');
+        try {
+          const apiRes = await getPropertyDrawPlanStatus(effectiveId);
+          if (typeof toast?.dismiss === 'function') toast.dismiss(statusToastId);
+
+          const rawRes = (apiRes as unknown as Record<string, unknown>) ?? {};
+          const rawData = (rawRes.data ?? rawRes.items ?? rawRes.Items ?? rawRes) as unknown;
+          const data = (Array.isArray(rawData) ? rawData[0] : ((rawData as Record<string, unknown>).items ?? (rawData as Record<string, unknown>).Items ?? rawData)) as Record<string, unknown> | undefined;
+
+          if (!apiRes.success && !data) {
+            toast.error(apiRes.error || 'Failed to fetch property details.');
+            return;
+          }
+
+          const fetchedSocietyDetailId = data?.societyDetailId ?? data?.SocietyDetailId ?? data?.societyId ?? data?.SocietyId;
+          const fetchedWingDetailId = data?.wingDetailId ?? data?.WingDetailId ?? data?.wingId ?? data?.WingId;
+          const targetSocietyDetailId = (fetchedSocietyDetailId && Number(fetchedSocietyDetailId) > 0)
+            ? Number(fetchedSocietyDetailId)
+            : resolvedSocietyDetailId;
+          const targetWingDetailId = (fetchedWingDetailId && Number(fetchedWingDetailId) > 0)
+            ? Number(fetchedWingDetailId)
+            : effectiveWingDetailId;
+
+          // Rule 2: Individual / Amenity Handling
+          const catName = String(data?.categoryName ?? data?.CategoryName ?? '').toLowerCase();
+          const isAmenity = Number(data?.propertyTypeId) === 140 || catName.includes('amenity');
+          const isIndividualOrAmenity =
+            data?.isIndividualOrAmenity === true ||
+            data?.requiresTypeAssignment === false ||
+            isAmenity ||
+            catName.includes('individual');
+
+          if (isIndividualOrAmenity) {
+            await launchDrawingApp({ isAmenity, societyDetailId: targetSocietyDetailId, wingDetailId: targetWingDetailId });
+            return;
+          }
+
+          // Strict evaluation of HasType / CurrentType from backend API
+          const rawTypeValue = data?.currentType ?? data?.CurrentType ?? data?.type ?? data?.Type;
+          const hasTypeFlag = data?.hasType ?? data?.HasType;
+
+          const hasTypeValue =
+            hasTypeFlag === true ||
+            (hasTypeFlag !== false &&
+              rawTypeValue !== null &&
+              rawTypeValue !== undefined &&
+              String(rawTypeValue).trim() !== '' &&
+              String(rawTypeValue).trim().toLowerCase() !== 'null');
+
+          if (hasTypeValue && rawTypeValue) {
+            // If hasType === true -> Execute direct redirect to CAD drawer
+            await launchDrawingApp({ type: rawTypeValue as string | number, societyDetailId: targetSocietyDetailId, wingDetailId: targetWingDetailId });
+            return;
+          }
+
+          // If hasType === false (Type is null/empty) -> Block redirect & open Type Selection Modal
+          setIsTypeModalOpen(true);
+        } catch (_err) {
+          if (typeof toast?.dismiss === 'function') toast.dismiss(statusToastId);
+          toast.error('Failed to check property details.');
+        }
+      };
+
+      if (photoPlanPhoto && photoPlanPhoto.hasPhoto) {
+        confirm({
+          title: t('media.existingPlanFound') || 'Existing Plan Found',
+          description: t('media.existingPlanEditConfirm') || 'This property already has a plan. Do you want to edit the plan?',
+          confirmText: t('common.yes') || 'Yes',
+          cancelText: t('common.no') || 'No',
+          onConfirm: executeLaunchFlow,
+          variant: 'info'
+        });
+      } else {
+        await executeLaunchFlow();
+      }
+    },
+    [
+      effectiveId,
+      effectiveIsMainProperty,
+      setIsTypeModalOpen,
+      launchDrawingApp,
+      t,
+      confirm,
+      getSelectPropertyErrorMsg,
+      photoPlanPhoto,
+    ]
+  );
+
+  const handleTypeAssigned = useCallback(
+    async (assignedType: string, isExistingSelection?: boolean) => {
+      setIsTypeModalOpen(false);
+
+      if (typeof window !== 'undefined' && effectiveId) {
+        window.dispatchEvent(
+          new CustomEvent('ptis:media-updated', {
+            detail: { propertyId: effectiveId, type: assignedType },
+          })
+        );
+      }
+
+      // If user selected an existing building plan type, apply shared plan & NEVER redirect to CAD tool
+      if (isExistingSelection) {
+        toast.success(t.has?.('media.sharedPlanApplied') ? t('media.sharedPlanApplied') : `Plan Type ${assignedType} assigned. Shared plan applied to property.`);
+        
+        // Refresh photos for current property to display shared plan immediately
+        if (effectiveId && effectiveId > 0) {
+          try {
+            const res = await getPhotosByPropertyAction(effectiveId);
+            if (res.success && Array.isArray(res.data)) {
+              setPhotos(res.data);
+            }
+          } catch {
+            // Non-blocking catch
+          }
+        }
+        return;
+      }
+
+      // If creating a NEW plan type -> Launch CAD drawing tool to draw custom plan
+      await launchDrawingApp({ type: assignedType });
+    },
+    [effectiveId, launchDrawingApp, setIsTypeModalOpen, setPhotos, t]
   );
 
   if (loading) {
@@ -221,16 +518,21 @@ function PropertyMediaPanel({
         t={t}
         openDrawer={handleOpenDrawer}
         handleImageHover={handleImageHover}
+        wings={wings}
         handleImageLeave={handleImageLeave}
         cancelImageLeave={cancelImageLeave}
         hoverPreview={hoverPreview}
-        showMoreImages={showMoreImages}
-        setShowMoreImages={setShowMoreImages}
         propertyPhoto={propertyPhoto}
         propertyPhotoCategory={propertyPhotoCategory}
-        remainingImages={remainingImages}
+        societyPhoto={societyPhoto}
+        societyPhotoCategory={societyPhotoCategory}
+        wingPhoto={wingPhoto}
+        wingPhotoCategory={wingPhotoCategory}
         photoPlanPhoto={photoPlanPhoto}
         photoPlanCategory={photoPlanCategory}
+        amenityPhoto={amenityPhoto}
+        amenityPhotoCategory={amenityPhotoCategory}
+        isAmenityProperty={isAmenityProperty}
         handleCreateClick={handleCreateClick}
         gisPhoto={gisPhoto}
         hasCoords={hasCoords}
@@ -241,6 +543,7 @@ function PropertyMediaPanel({
         fallbackBeforeUrl={fallbackBeforeUrl}
         fallbackAfterUrl={fallbackAfterUrl}
         cdCategory={cdCategory}
+        isMainProperty={effectiveIsMainProperty}
       />
 
       <div className="absolute top-1/2 -translate-y-1/2 -left-5 z-50 sm:hidden lg:block">
@@ -257,7 +560,7 @@ function PropertyMediaPanel({
         </button>
       </div>
 
-      {isDrawerOpen && (
+      {isDrawerOpen && effectiveId > 0 && (
         <PhotoPlanDrawer
           open={isDrawerOpen}
           onClose={closeDrawer}
@@ -267,14 +570,30 @@ function PropertyMediaPanel({
           wardNo={wardNo}
           propertyNo={propertyNo}
           partitionNo={partitionNo}
+          wingName={effectiveWingName}
+          wingDetailId={effectiveWingDetailId}
+          societyDetailId={resolvedSocietyDetailId}
           initialCategoryIndex={drawerInitialCategoryIndex}
-          propertyId={propertyId}
+          propertyId={effectiveId}
           fullyLoadedIds={fullyLoadedIds}
           onFullyLoadedIdsChange={setFullyLoadedIds}
           initialLatitude={hasCoords ? initialLatitude : undefined}
           initialLongitude={hasCoords ? initialLongitude : undefined}
           initialWaybackReleases={waybackReleases}
-          onDrawPlan={handleCreateClick}
+          onDrawPlan={effectiveIsMainProperty ? undefined : handleCreateClick}
+          onRequestTypeModal={() => setIsTypeModalOpen(true)}
+          isMainProperty={effectiveIsMainProperty}
+        />
+      )}
+
+      {isTypeModalOpen && effectiveId && (
+        <PropertyTypeModal
+          open={isTypeModalOpen}
+          onClose={() => setIsTypeModalOpen(false)}
+          propertyId={effectiveId}
+          societyDetailId={resolvedSocietyDetailId}
+          wingDetailId={effectiveWingDetailId}
+          onSuccess={handleTypeAssigned}
         />
       )}
     </div>

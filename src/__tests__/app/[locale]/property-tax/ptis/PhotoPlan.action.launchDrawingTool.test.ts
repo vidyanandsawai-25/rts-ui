@@ -48,6 +48,12 @@ describe('launchPhotoPlanDrawingToolAction', () => {
       propertyNo: '182',
       partitionNo: '0',
       ptisBackendUri: 'https://ptisthaneapi.scipl.info.in',
+      type: undefined,
+      isAmenity: undefined,
+      entityType: undefined,
+      societyDetailId: undefined,
+      wingDetailId: undefined,
+      photoTypeId: undefined,
     });
   });
 
@@ -79,6 +85,12 @@ describe('launchPhotoPlanDrawingToolAction', () => {
       propertyNo: undefined,
       partitionNo: undefined,
       ptisBackendUri: undefined,
+      type: undefined,
+      isAmenity: undefined,
+      entityType: undefined,
+      societyDetailId: undefined,
+      wingDetailId: undefined,
+      photoTypeId: undefined,
     });
   });
 

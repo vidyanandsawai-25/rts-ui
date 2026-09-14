@@ -511,10 +511,14 @@ div[role="dialog"] [role="combobox"]:focus {
   border-color: rgb(0, 162, 255) !important;
 }
 
+.scrollbar-none::-webkit-scrollbar,
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+  width: 0;
+  height: 0;
 }
 
+.scrollbar-none,
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -529,31 +533,92 @@ div[role="dialog"] [role="combobox"]:focus {
   scrollbar-width: none;
 }
 
-/* Chrome, Edge, Safari */
-::-webkit-scrollbar {
-  width: 1px !important;
-  height: 1px !important;
-}
+/* ==========================================================================
+   Minimal iOS-Style 3px Scrollbar: Hidden Buttons, Sleek Pill
+   Note: Do NOT set scrollbar-width or scrollbar-color here, as Chromium 121+
+   will then disable ::-webkit-scrollbar and render native Windows buttons.
+   ========================================================================== */
 
-::-webkit-scrollbar-track {
+/* Universal: Completely remove all native scrollbar buttons (arrows/steppers) */
+*::-webkit-scrollbar-button,
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-button:single-button,
+::-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment,
+::-webkit-scrollbar-button:vertical:start:increment,
+::-webkit-scrollbar-button:vertical:end:decrement,
+::-webkit-scrollbar-button:horizontal:start:increment,
+::-webkit-scrollbar-button:horizontal:end:decrement {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
   background: transparent !important;
+  border: none !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #165297 !important;
-  border-radius: 2px !important;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #153aa0 !important;
-}
-
+/* Universal: Minimal transparent iOS track and corner */
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track-piece,
+*::-webkit-scrollbar-corner,
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-track-piece,
 ::-webkit-scrollbar-corner {
   background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
 }
 
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #dde2f5 transparent;
+/* Universal: Ultra-thin 3px scrollbar */
+*::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 3px !important;
+  height: 3px !important;
+}
+
+/* Universal: Minimal iOS pill thumb */
+*::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.5) !important;
+  border-radius: 9999px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  transition: background-color 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.8) !important;
+}
+
+/* Table & Container Scrollbars: iOS Minimal 3px */
+.ios-scrollbar {
+  overflow: auto !important;
+}
+
+.ios-scrollbar::-webkit-scrollbar {
+  width: 3px !important;
+  height: 3px !important;
+}
+
+.ios-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+.ios-scrollbar::-webkit-scrollbar-track,
+.ios-scrollbar::-webkit-scrollbar-corner {
+  background: transparent !important;
+  border-radius: 9999px !important;
+}
+
+.ios-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.5) !important;
+  border-radius: 9999px !important;
+}
+
+.ios-scrollbar:hover::-webkit-scrollbar-thumb,
+.ios-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.8) !important;
 }

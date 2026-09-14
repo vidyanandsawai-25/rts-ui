@@ -28,6 +28,10 @@ export interface FooterActionPayload {
   dualExpand?: string | string[];
   categoryId?: number;
   societyDetailId?: number;
+  societyId?: string;
+  wingDetailId?: string;
+  wingId?: string;
+  isRedesign?: boolean;
 }
 
 const ptisEditRedirectSchema = z.object({
@@ -51,9 +55,14 @@ const ptisEditRedirectSchema = z.object({
   appartmentTab: z.string().optional(),
   subTab: z.string().optional(),
   showDetails: z.string().optional(),
+  societyDetailId: z.coerce.number().optional(),
+  societyId: z.string().optional(),
+  wingDetailId: z.string().optional(),
+  wingId: z.string().optional(),
   rateableExpand: z.union([z.string(), z.array(z.string())]).optional(),
   capitalExpand: z.union([z.string(), z.array(z.string())]).optional(),
   dualExpand: z.union([z.string(), z.array(z.string())]).optional(),
+  isApartment: z.boolean().optional(),
 });
 
 /**
@@ -123,9 +132,14 @@ export async function handleFooterAction(
           appartmentTab,
           subTab,
           showDetails,
+          societyDetailId,
+          societyId,
+          wingDetailId,
+          wingId,
           rateableExpand,
           capitalExpand,
           dualExpand,
+          isApartment,
         } = validationResult.data;
 
         const params = new URLSearchParams();
@@ -137,6 +151,13 @@ export async function handleFooterAction(
         if (appartmentTab) params.set('appartmentTab', appartmentTab);
         if (subTab) params.set('subTab', subTab);
         if (showDetails) params.set('showDetails', showDetails);
+        const activeSocId = societyDetailId || societyId;
+        if (activeSocId) {
+          params.set('societyDetailId', String(activeSocId));
+          params.set('societyId', String(activeSocId));
+        }
+        if (wingDetailId) params.set('wingDetailId', String(wingDetailId));
+        if (wingId) params.set('wingId', String(wingId));
 
         const handleExpand = (key: string, val: string | string[] | undefined) => {
           if (val) {
@@ -151,11 +172,17 @@ export async function handleFooterAction(
         handleExpand('capitalExpand', capitalExpand);
         handleExpand('dualExpand', dualExpand);
 
-        const activeTabKey = tab || 'propertydetails';
-        const config = MAIN_TO_QDE_MAP[activeTabKey] || MAIN_TO_QDE_MAP.propertydetails;
+        const activeTabKey = tab || (isApartment ? 'buildingpermission' : 'propertydetails');
+        const resolvedTabKey = (isApartment && (activeTabKey === 'propertydetails' || activeTabKey === 'kycdetails' || activeTabKey === 'societydetails' || activeTabKey === 'wingdetails'))
+          ? 'buildingpermission'
+          : ((activeTabKey === 'societydetails' || activeTabKey === 'wingdetails') ? 'propertydetails' : activeTabKey);
+        const config = MAIN_TO_QDE_MAP[resolvedTabKey] || (isApartment ? MAIN_TO_QDE_MAP.buildingpermission : MAIN_TO_QDE_MAP.propertydetails);
 
         params.set('propertyId', String(propertyId));
-        params.set('returnTab', config.mainTabId);
+        params.set('returnTab', isApartment ? 'apartment' : config.mainTabId);
+        params.set('hideWing', 'true');
+        params.set('hideSociety', 'true');
+        params.set('fromFooterEdit', 'true');
 
         const targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/${config.qdePath}`;
         const queryString = params.toString();

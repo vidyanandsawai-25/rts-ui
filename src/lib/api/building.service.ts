@@ -46,6 +46,136 @@ export async function getCertificateTypesWithStatus(
     };
 }
 
+// 1b. GET - Load certificate types with their current status for society/wing
+export async function getSocietyWingTypesWithStatus(
+    societyDetailId?: number | null,
+    wingDetailId?: number | null
+): Promise<ApiResponse<PropertyCertificateWithStatusDto[]>> {
+    let url = `/property-certificates/society-wing-types-with-status`;
+    const params = new URLSearchParams();
+    if (societyDetailId) params.append("societyDetailId", societyDetailId.toString());
+    if (wingDetailId) params.append("wingDetailId", wingDetailId.toString());
+    
+    if (params.toString()) {
+        url += `?${params.toString()}`;
+    }
+    
+    const response = await apiClient.get<BackendApiResponseWrapper<PropertyCertificateWithStatusDto[]>>(url);
+    
+    if (response.success && response.data) {
+        return {
+            success: response.data.success,
+            statusCode: response.statusCode,
+            data: response.data.items,
+            message: response.data.message || response.message
+        };
+    }
+    
+    return {
+        success: false,
+        statusCode: response.statusCode,
+        error: response.error,
+        message: response.message
+    };
+}
+
+// 2. GET - Load Certificate Type Master list dynamically
+export async function getCertificateTypeMaster(): Promise<ApiResponse<unknown[]>> {
+    try {
+        const response = await apiClient.get<BackendApiResponseWrapper<unknown[]>>('/property-certificates/type-master');
+        if (response.success && response.data) {
+            return {
+                success: response.data.success,
+                statusCode: response.statusCode,
+                data: response.data.items,
+                message: response.data.message || response.message
+            };
+        }
+        return {
+            success: false,
+            statusCode: response.statusCode,
+            error: response.error,
+            message: response.message
+        };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+}
+
+// 2b. GET - Load Wings dynamically by propertyId
+export async function getWingsByProperty(propertyId: string): Promise<ApiResponse<unknown[]>> {
+    try {
+        const response = await apiClient.get<BackendApiResponseWrapper<unknown[]>>(`/property-certificates/wings/${propertyId}`);
+        if (response.success && response.data) {
+            const rawData = response.data as unknown as Record<string, unknown>;
+            const items = Array.isArray(rawData.items)
+                ? rawData.items
+                : Array.isArray(rawData.data)
+                ? rawData.data
+                : Array.isArray(response.data)
+                ? (response.data as unknown[])
+                : [];
+            return {
+                success: true,
+                statusCode: response.statusCode,
+                data: items,
+                message: rawData.message ? String(rawData.message) : response.message
+            };
+        }
+        return {
+            success: false,
+            statusCode: response.statusCode,
+            error: response.error,
+            message: response.message
+        };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+}
+
+// 2c. GET - Load Units dynamically by propertyId
+export async function getUnitsByProperty(
+    propertyId: string,
+    wingDetailId?: number | null,
+    pageNumber: number = 1,
+    pageSize: number = 10
+): Promise<ApiResponse<unknown[]> & { totalCount?: number }> {
+    try {
+        let url = `/property-certificates/units/${propertyId}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+        if (wingDetailId) {
+            url += `&wingDetailId=${wingDetailId}`;
+        }
+        const response = await apiClient.get<BackendApiResponseWrapper<unknown[]> & { totalCount?: number }>(url);
+        if (response.success && response.data) {
+            const rawData = response.data as unknown as Record<string, unknown>;
+            return {
+                success: true,
+                statusCode: response.statusCode,
+                data: response.data.items,
+                totalCount: typeof rawData.totalCount === 'number' ? rawData.totalCount : undefined,
+                message: response.data.message || response.message
+            };
+        }
+        return {
+            success: false,
+            statusCode: response.statusCode,
+            error: response.error,
+            message: response.message
+        };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+}
+
 import { uploadDocument, deleteDocument } from "./document.service";
 import { DEPARTMENT_ID, MODULE_ID, REFERENCE_TABLE, BINDING_PURPOSE, DOCUMENT_TYPE } from "../constants/document.constants";
 
@@ -229,6 +359,54 @@ export async function deletePropertyCertificate(
             success: false,
             statusCode: response.statusCode,
             error: response.error,
+            message: response.message
+        };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+}
+
+// 8. POST - Add Certificate Record (/api/ApartmentQC/certificate-record)
+export interface ApartmentQcCertificateRecordPayload {
+    entityScope?: 'Society' | 'Wing' | 'Property';
+    level: number;
+    societyDetailId?: number | null;
+    societyId?: number | null;
+    wingDetailId?: number | null;
+    propertyDetailsId?: number | null;
+    propertyDetailsIds?: number[];
+    unitPropertyIds?: number[];
+    certificateTypeId: number;
+    certificateNo: string;
+    issueDate?: string;
+    certificateIssueDate?: string;
+    status?: string;
+    documentGuid?: string | null;
+}
+
+export async function postApartmentQcCertificateRecord(
+    payload: ApartmentQcCertificateRecordPayload
+): Promise<ApiResponse<unknown>> {
+    try {
+        const response = await apiClient.post<BackendApiResponseWrapper<unknown>>(
+            '/ApartmentQC/certificate-record',
+            payload
+        );
+        if (response.success && response.data) {
+            return {
+                success: response.data.success ?? true,
+                statusCode: response.statusCode,
+                data: response.data.items,
+                message: response.data.message || response.message
+            };
+        }
+        return {
+            success: false,
+            statusCode: response.statusCode,
+            error: response.error || response.message || 'Failed to post certificate record',
             message: response.message
         };
     } catch (error: unknown) {

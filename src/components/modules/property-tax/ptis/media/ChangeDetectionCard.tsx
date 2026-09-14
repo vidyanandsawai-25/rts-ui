@@ -35,7 +35,7 @@ export function ChangeDetectionCard({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className={`
-        relative flex-1 min-h-[150px] lg:min-h-0 w-full rounded-lg overflow-hidden
+        relative flex-1 min-h-[105px] lg:min-h-0 lg:h-0 w-full rounded-lg overflow-hidden
         border border-slate-200/80 shadow-md transition-all duration-300
         hover:shadow-lg hover:border-blue-400 bg-white
         ${onClick ? 'cursor-pointer hover:scale-[1.01]' : ''}

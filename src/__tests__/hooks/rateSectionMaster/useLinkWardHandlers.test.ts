@@ -12,7 +12,7 @@ vi.mock("next/navigation", () => ({
 
 describe("useLinkWardHandlers", () => {
   const mockPush = vi.fn();
-  const mockRouter = { push: mockPush, refresh: vi.fn(), back: vi.fn(), forward: vi.fn(), replace: vi.fn(), prefetch: vi.fn() };
+  const mockRouter = { push: mockPush, refresh: vi.fn(), back: vi.fn(), forward: vi.fn(), replace: vi.fn(), prefetch: vi.fn() } as unknown as AppRouterInstance;
 
   beforeEach(() => {
     vi.clearAllMocks();

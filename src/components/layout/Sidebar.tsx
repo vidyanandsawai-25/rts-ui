@@ -45,6 +45,9 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
   const brandTitle = activeScreenContext?.moduleName || t('sidebar.brandTitle');
   const brandSubtitle = activeScreenContext?.departmentName || t('sidebar.brandSubtitle');
 
+  const isAssetRoute = pathname.includes('/assets');
+  const isDarkTheme = isAssetRoute || pathname.includes('/property-tax/ptis');
+
   // Helper to extract the department segment (e.g. 'configuration-settings', 'property-tax')
   const getDepartment = (path: string): string => {
     const cleaned = path.replace(/^\//, '');
@@ -54,8 +57,6 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
 
   const currentDept = getDepartment(pathWithoutLocale);
 
-  // Dynamically extract department segments from the menu items returned by the API,
-  // while keeping 'configuration-settings' as a static filterable segment.
   const filterableDepartments = useMemo(() => {
     const depts = new Set<string>(['configuration-settings']);
     menuItems.forEach((item) => {
@@ -81,13 +82,11 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
 
   const isFilterable = filterableDepartments.includes(currentDept);
 
-  // Dynamically filter menu items based on the active department route
   const filteredMenuItems = useMemo(() => {
     if (!isFilterable) return menuItems;
 
     return menuItems
       .map((item) => {
-        // If it is a group, filter its subItems
         if (item.subItems && item.subItems.length > 0) {
           const filteredSub = item.subItems.filter((sub) => {
             const subPath = sub.href ? (sub.href.startsWith('/') ? sub.href : `/${sub.href}`) : '';
@@ -101,11 +100,9 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
         return item;
       })
       .filter((item) => {
-        // Keep group item only if it still has subItems after filtering
         if (item.subItems && item.subItems.length > 0) {
           return true;
         }
-        // Keep standalone item only if its path matches the current department
         if (item.href && item.href !== '#') {
           const itemPath = item.href.startsWith('/') ? item.href : `/${item.href}`;
           return getDepartment(itemPath) === currentDept;
@@ -114,7 +111,6 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
       });
   }, [menuItems, currentDept, isFilterable]);
 
-  // Collect all paths defined in the filtered sidebar menu items to determine most specific match
   const allPaths: string[] = [];
   filteredMenuItems.forEach((item) => {
     if (item.href && item.href !== '#') {
@@ -133,7 +129,6 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
     if (pathWithoutLocale === itemPath) return true;
     if (!pathWithoutLocale.startsWith(`${itemPath}/`)) return false;
 
-    // If prefix matches, verify there is no other more specific match in the sidebar paths list
     const hasMoreSpecificMatch = allPaths.some((otherPath) => {
       if (otherPath === itemPath) return false;
       return (
@@ -145,30 +140,28 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
     return !hasMoreSpecificMatch;
   };
 
-  const isAssetRoute = pathname.includes('/assets');
-
   return (
-    <SidebarFrame 
-      openMenuLabel={t('sidebar.openMenu')} 
+    <SidebarFrame
+      openMenuLabel={t('sidebar.openMenu')}
       closeMenuLabel={t('sidebar.closeMenu')}
     >
       <div
         className={`p-4 flex items-center gap-3 border-b transition-all duration-300 ease-in-out sidebar-brand-row ${
-          isAssetRoute ? 'border-white/10 bg-transparent' : 'border-gray-100 bg-white/50'
+          isDarkTheme ? 'border-slate-800 bg-[#0B132B]' : 'border-gray-100 bg-white/50'
         }`}
       >
-        <div className={`p-2 rounded-xl shadow-md shrink-0 ${isAssetRoute ? 'bg-indigo-600' : 'bg-[#4b70a6]'}`}>
+        <div className={`p-2 rounded-xl shadow-md shrink-0 ${isDarkTheme ? 'bg-blue-600' : 'bg-[#4b70a6]'}`}>
           <FileText className="h-6 w-6 text-white" />
         </div>
         <div className="sidebar-expandable-label flex flex-col transition-all duration-300 ease-in-out overflow-hidden min-w-0">
-          <span className={`text-[17px] font-bold leading-tight whitespace-nowrap ${isAssetRoute ? 'text-white' : 'text-gray-800'}`}>
+          <span className={`text-[17px] font-bold leading-tight whitespace-nowrap ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}>
             {brandTitle}
           </span>
-          <span className={`text-[12px] font-medium whitespace-nowrap ${isAssetRoute ? 'text-slate-300' : 'text-gray-500'}`}>{brandSubtitle}</span>
+          <span className={`text-[12px] font-medium whitespace-nowrap ${isDarkTheme ? 'text-slate-400' : 'text-gray-500'}`}>{brandSubtitle}</span>
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-2 px-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
+      <nav className="flex-1 overflow-y-auto py-2 px-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full">
         <div className="space-y-2">
           {filteredMenuItems.map((item, idx) => {
             const itemPath = item.href.startsWith('/') ? item.href : `/${item.href}`;
@@ -197,20 +190,20 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
                       [&::-webkit-details-marker]:hidden
                       ${
                         hasActiveChild
-                          ? isAssetRoute 
-                            ? 'bg-white/15 text-white' 
+                          ? isDarkTheme
+                            ? 'bg-[#1D4ED8] text-white shadow-md font-bold'
                             : 'bg-gray-100 text-[#4b70a6]'
-                          : isAssetRoute
-                            ? 'text-slate-300 hover:bg-white/5 hover:text-white'
+                          : isDarkTheme
+                            ? 'text-slate-300 hover:bg-slate-800/70 hover:text-white'
                             : 'text-gray-700 hover:bg-gray-100'
                       }
                     `}
                   >
                     <IconComponent
                       className={`h-6 w-6 shrink-0 ${
-                        hasActiveChild 
-                          ? isAssetRoute ? 'text-white' : 'text-[#4b70a6]'
-                          : isAssetRoute ? 'text-slate-400' : 'text-gray-500'
+                        hasActiveChild
+                          ? 'text-white'
+                          : isDarkTheme ? 'text-slate-400' : 'text-gray-500'
                       }`}
                     />
                     <div className="sidebar-expandable-label flex-1 min-w-0 transition-all duration-300 ease-in-out overflow-hidden">
@@ -220,26 +213,26 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
                           {item.nameHi && item.nameHi !== item.name && (
                             <span
                               className={`block whitespace-nowrap text-[11px] ${
-                                hasActiveChild 
-                                  ? isAssetRoute ? 'text-white/80' : 'text-[#4b70a6]/80' 
-                                  : isAssetRoute ? 'text-slate-400' : 'text-gray-400'
+                                hasActiveChild
+                                  ? 'text-white/80'
+                                  : isDarkTheme ? 'text-slate-400' : 'text-gray-400'
                               }`}
                             >
                               {item.nameHi}
                             </span>
                           )}
                         </div>
-                        <span className={`${isAssetRoute ? 'text-slate-400' : 'text-gray-400'} shrink-0 group-open/sub:hidden`}>
+                        <span className={`${isDarkTheme ? 'text-slate-400' : 'text-gray-400'} shrink-0 group-open/sub:hidden`}>
                           <ChevronRight size={14} />
                         </span>
-                        <span className={`${isAssetRoute ? 'text-slate-400' : 'text-gray-400'} shrink-0 hidden group-open/sub:inline`}>
+                        <span className={`${isDarkTheme ? 'text-slate-400' : 'text-gray-400'} shrink-0 hidden group-open/sub:inline`}>
                           <ChevronDown size={14} />
                         </span>
                       </div>
                     </div>
                   </summary>
                   <div className={`sidebar-expandable-label ml-5 border-l-2 pl-2 space-y-1 my-1 max-h-60 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full ${
-                    isAssetRoute ? 'border-white/10' : 'border-gray-200'
+                    isDarkTheme ? 'border-slate-700/80' : 'border-gray-200'
                   }`}>
                     {item.subItems!.map((sub, sIdx) => {
                       const subPath = sub.href.startsWith('/') ? sub.href : `/${sub.href}`;
@@ -250,11 +243,11 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
                           href={withLocale(locale, sub.href)}
                           className={`block px-3 py-1.5 rounded-lg text-[14px] font-medium transition-colors duration-200 ${
                             subActive
-                              ? isAssetRoute
-                                ? 'bg-white/20 text-white font-semibold'
+                              ? isDarkTheme
+                                ? 'bg-blue-600/30 text-white font-semibold border-l-2 border-blue-400'
                                 : 'bg-[#4b70a6]/10 text-[#4b70a6] font-semibold'
-                              : isAssetRoute
-                                ? `hover:bg-white/5 ${sub.className || 'text-slate-300 hover:text-white'}`
+                              : isDarkTheme
+                                ? `hover:bg-slate-800/60 ${sub.className || 'text-slate-300 hover:text-white'}`
                                 : `hover:bg-gray-50 ${sub.className || 'text-gray-600'}`
                           }`}
                         >
@@ -275,20 +268,20 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
                     flex items-center gap-3 px-3 py-3 rounded-xl text-[16px] font-semibold transition-all duration-300
                     ${
                       active
-                        ? isAssetRoute
-                          ? 'bg-white/20 text-white shadow-md font-bold'
+                        ? isDarkTheme
+                          ? 'bg-[#1D4ED8] text-white shadow-md font-bold'
                           : 'bg-gradient-to-r from-[#4b70a6] to-[#5a82b8] text-white shadow-md font-bold'
-                        : isAssetRoute
-                          ? 'text-slate-300 hover:bg-white/5 hover:text-white'
+                        : isDarkTheme
+                          ? 'text-slate-300 hover:bg-slate-800/70 hover:text-white'
                           : 'text-gray-700 hover:bg-gray-100'
                     }
                   `}
                 >
-                  <IconComponent className={`h-6 w-6 shrink-0 ${active ? 'text-white' : isAssetRoute ? 'text-slate-400' : 'text-gray-500'}`} />
+                  <IconComponent className={`h-6 w-6 shrink-0 ${active ? 'text-white' : isDarkTheme ? 'text-slate-400' : 'text-gray-500'}`} />
                   <div className="sidebar-expandable-label transition-all duration-300 ease-in-out overflow-hidden min-w-0">
                     <span className="block whitespace-nowrap text-[15px] font-medium leading-tight">{item.name}</span>
                     {item.nameHi && item.nameHi !== item.name && (
-                      <span className={`block whitespace-nowrap text-[11px] ${active ? 'text-white/70' : isAssetRoute ? 'text-slate-400' : 'text-gray-400'}`}>
+                      <span className={`block whitespace-nowrap text-[11px] ${active ? 'text-white/70' : isDarkTheme ? 'text-slate-400' : 'text-gray-400'}`}>
                         {item.nameHi}
                       </span>
                     )}
@@ -304,8 +297,8 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
         <Link
           href={withLocale(locale, isAssetRoute ? '/assets/municipal-Asset' : '/home')}
           className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-[15px] font-semibold transition-all duration-300 border shadow-md hover:shadow-lg hover:-translate-y-0.5 ${
-            isAssetRoute
-              ? 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+            isDarkTheme
+              ? 'bg-slate-800/80 hover:bg-slate-700 text-white border-slate-700/80'
               : 'bg-gradient-to-r from-[#4b70a6] to-[#3d5a8a] hover:from-[#3d5a8a] hover:to-[#2e466e] text-white border-white/20'
           }`}
         >

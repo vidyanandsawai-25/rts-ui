@@ -14,6 +14,10 @@ const COMPOSITE_KEY_SEP = '::' as const;
 export interface PartitionOptionValue {
   partitionNo: string;
   propertyId: number;
+  category?: number;
+  categoryLabel?: string;
+  societyDetailId?: number | null;
+  wingDetailId?: number | null;
 }
 
 /**
@@ -24,6 +28,10 @@ export interface PropertyOptionValue {
   propertyNo: string;
   partitionNo: string;
   propertyId: number;
+  category?: number;
+  categoryLabel?: string;
+  societyDetailId?: number | null;
+  wingDetailId?: number | null;
 }
 
 /** Builds a stable composite key for a property option. */
@@ -77,7 +85,14 @@ export function usePropertyOptions(
       .forEach((p) => {
         const normalized = normalizePartition(p.partitionNo);
         const key = buildPartitionOptionKey(p.propertyNo, normalized);
-        map.set(key, { partitionNo: normalized, propertyId: p.propertyId });
+        map.set(key, {
+          partitionNo: normalized,
+          propertyId: p.propertyId,
+          category: p.category,
+          categoryLabel: p.categoryLabel,
+          societyDetailId: p.societyDetailId,
+          wingDetailId: p.wingDetailId,
+        });
       });
 
     return map;

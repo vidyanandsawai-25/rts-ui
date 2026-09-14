@@ -8,6 +8,10 @@ export interface PropertySearchState {
   propertyNo: string;
   partitionNo: string;
   propertyId: string | null;
+  category?: number;
+  categoryLabel?: string;
+  societyDetailId?: number | null;
+  wingDetailId?: number | null;
 }
 
 export function usePropertySearchState(urlState: PropertySearchState) {
@@ -41,6 +45,14 @@ export function usePropertySearchState(urlState: PropertySearchState) {
     setDraft((prev) => ({ ...prev, propertyId: val }));
   }, []);
 
+  const setCategory = useCallback((cat?: number, label?: string) => {
+    setDraft((prev) => ({ ...prev, category: cat, categoryLabel: label }));
+  }, []);
+
+  const setExtraIds = useCallback((societyDetailId?: number | null, wingDetailId?: number | null) => {
+    setDraft((prev) => ({ ...prev, societyDetailId, wingDetailId }));
+  }, []);
+
   const handleWardSelection = useCallback((id: number | null, no: string) => {
     setDraft({
       wardId: id,
@@ -48,6 +60,10 @@ export function usePropertySearchState(urlState: PropertySearchState) {
       propertyNo: '',
       partitionNo: '',
       propertyId: null,
+      category: undefined,
+      categoryLabel: undefined,
+      societyDetailId: undefined,
+      wingDetailId: undefined,
     });
   }, []);
 
@@ -68,6 +84,8 @@ export function usePropertySearchState(urlState: PropertySearchState) {
     setPropertyNo,
     setPartitionNo,
     setPropertyId,
+    setCategory,
+    setExtraIds,
     handleWardSelection,
     getSearchParams,
   };

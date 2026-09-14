@@ -59,6 +59,10 @@ export function createPtisSchemas(t: PtisTranslate = defaultPtisTranslate) {
       partitionNo: partitionNoSchema,
       wardId: wardIdSchema.nullable().optional(),
       propertyId: z.string().nullable().optional(),
+      societyDetailId: z.union([z.number(), z.string()]).nullable().optional(),
+      wingDetailId: z.union([z.number(), z.string()]).nullable().optional(),
+      societyId: z.union([z.number(), z.string()]).nullable().optional(),
+      wingId: z.union([z.number(), z.string()]).nullable().optional(),
     }),
     propertyDetailsSchema: z
       .union([

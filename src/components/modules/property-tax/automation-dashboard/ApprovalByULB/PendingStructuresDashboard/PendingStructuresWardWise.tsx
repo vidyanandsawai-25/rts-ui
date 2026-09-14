@@ -42,7 +42,9 @@ const PendingStructuresWardWise = ({ wardId, serverData }: PendingStructuresWard
 
     const locale = pathname.split('/')[1] || 'en';
     const currentUrl = encodeURIComponent(`${pathname}?${searchParams.toString()}`);
-    const columns = useMemo(() => getPendingStructuresColumns(uniqueAuthorities, t, locale, currentUrl, router), [uniqueAuthorities, t, locale, currentUrl, router]);
+    const pageNumber = serverData?.pageNumber || 1;
+    const pageSize = serverData?.pageSize || 10;
+    const columns = useMemo(() => getPendingStructuresColumns(uniqueAuthorities, t, locale, currentUrl, router, pageNumber, pageSize), [uniqueAuthorities, t, locale, currentUrl, router, pageNumber, pageSize]);
 
     const tableData = useMemo(() => {
         if (!rawItems.length) return [];
@@ -130,7 +132,7 @@ const PendingStructuresWardWise = ({ wardId, serverData }: PendingStructuresWard
                         tableClassName="w-full border-collapse text-xs border border-slate-300"
                         theadClassName="sticky top-0 z-20"
                         maxBodyHeightClassName="flex-1 min-h-0"
-                        rowClassName={(row) => row.isTotal ? "bg-purple-100/50 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] border-t-2 border-slate-300 transition-colors" : "border-b border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"}
+                        rowClassName={(row) => row.isTotal ? "bg-purple-100 font-bold sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)] border-t-2 border-slate-300 transition-colors" : "border-b border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"}
                         loading={false}
                         totalCount={serverData?.totalCount || 0}
                         pageNumber={serverData?.pageNumber || 1}

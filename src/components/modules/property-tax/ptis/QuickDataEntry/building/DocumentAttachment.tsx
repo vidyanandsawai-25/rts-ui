@@ -48,7 +48,10 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
             setViewerData({ isOpen: true, url: URL.createObjectURL(pendingFile), name: fileName || "document" });
             return;
         }
-        if (!documentGuid) return;
+        if (!documentGuid) {
+            toast.info(t("building.noDocumentAttached") || "No document file attached for this record.");
+            return;
+        }
         setIsViewing(true);
         try {
             const { url } = await getDocumentBlobUrl(documentGuid, locale);

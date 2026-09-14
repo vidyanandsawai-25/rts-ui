@@ -8,7 +8,15 @@ import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 import Link from 'next/link';
 import { handleLocationClick } from '@/lib/utils/automation-dashboard/mapUtils';
 
-export const BORDER_CLASS = '!border-slate-400';
+export const BORDER_CLASS = '!border !border-slate-400';
+export const COMMON_HEADER_CLASS = `p-2 text-center font-bold text-slate-700 !border !border-slate-400`;
+export const COMMON_CELL_CLASS = `p-2 !border !border-slate-400 align-middle bg-white`;
+export const COMMON_CELL_CENTER_CLASS = `${COMMON_CELL_CLASS} text-center`;
+
+const formatTitleCase = (text: string | null | undefined): string => {
+  if (!text || text === '-') return '-';
+   return text.replace(/\b[a-z]/g, (char) => char.toUpperCase());
+};
 
 export const getSendToApproveHeaderRows = (
     selectedIds: string[],
@@ -31,7 +39,7 @@ export const getSendToApproveHeaderRows = (
                     </div>
                 ),
                 rowSpan: 2,
-                headerClassName: `p-2 text-center min-w-[50px] border ${BORDER_CLASS} bg-white z-10 sticky left-0`
+                headerClassName: `${COMMON_HEADER_CLASS} min-w-[50px] bg-white z-30 sticky left-0 top-0`
             },
             {
                 label: (
@@ -45,33 +53,33 @@ export const getSendToApproveHeaderRows = (
                     </>
                 ),
                 rowSpan: 2,
-                headerClassName: `p-2 text-left font-bold text-slate-700 border ${BORDER_CLASS} bg-white w-[180px] min-w-[180px]`
+                headerClassName: `${COMMON_HEADER_CLASS} text-left bg-white w-[180px] min-w-[180px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.categoryAndDesc') : "CATEGORY & DESC",
                 rowSpan: 2,
-                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-white w-[140px] min-w-[140px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-white w-[140px] min-w-[140px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.ownerAndOccupier') : "OWNER, OCCUPIER & SHOP",
                 rowSpan: 2,
-                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-white whitespace-normal break-words w-[240px] min-w-[240px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-white whitespace-normal break-words w-[240px] min-w-[240px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.mobile') : "MOBILE",
                 rowSpan: 2,
-                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-white w-[100px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-white w-[100px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.address') : "ADDRESS",
                 rowSpan: 2,
-                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-white whitespace-normal break-words w-[250px] min-w-[250px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-white whitespace-normal break-words w-[250px] min-w-[250px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.propertyDetailsNewVsOld') : "PROPERTY DETAILS (NEW VS OLD)",
                 colSpan: 2,
                 align: 'center',
-                headerClassName: `p-2 text-center font-bold text-slate-700 bg-amber-100 border ${BORDER_CLASS}`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-amber-50`
             },
             {
                 label: (
@@ -83,7 +91,7 @@ export const getSendToApproveHeaderRows = (
                     </>
                 ),
                 rowSpan: 2,
-                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-teal-100 w-[180px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-teal-50 w-[180px]`
             },
             {
                 label: (
@@ -94,7 +102,7 @@ export const getSendToApproveHeaderRows = (
                     </>
                 ),
                 rowSpan: 2,
-                headerClassName: `p-2 text-center font-bold text-slate-700 bg-emerald-100 border ${BORDER_CLASS} w-[100px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-emerald-50 w-[100px]`
             },
             {
                 label: (
@@ -105,7 +113,7 @@ export const getSendToApproveHeaderRows = (
                     </>
                 ),
                 rowSpan: 2,
-                headerClassName: `p-2 text-center font-bold text-slate-700 bg-purple-100 border ${BORDER_CLASS} w-[100px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-purple-50 w-[100px]`
             },
             {
                 label: (
@@ -118,25 +126,25 @@ export const getSendToApproveHeaderRows = (
                     </>
                 ),
                 rowSpan: 2,
-                headerClassName: `p-2 text-center font-bold border ${BORDER_CLASS} w-[100px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-white w-[100px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.actions') : "ACTIONS",
                 rowSpan: 2,
                 align: 'center',
-                headerClassName: `p-2 text-center font-bold text-slate-700 border ${BORDER_CLASS} bg-white w-[80px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-white w-[80px]`
             }
         ],
         [
             {
                 label: t ? t('propertyDetailsDashboard.columns.oldRecord') : "OLD RECORD",
                 align: 'center',
-                headerClassName: `p-2 text-center font-bold text-slate-700 bg-red-100 border ${BORDER_CLASS} w-[180px] min-w-[150px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-red-50 w-[180px] min-w-[150px]`
             },
             {
                 label: t ? t('propertyDetailsDashboard.columns.newRecord') : "NEW RECORD",
                 align: 'center',
-                headerClassName: `p-2 text-center font-bold text-slate-700 bg-emerald-100 border ${BORDER_CLASS} w-[180px] min-w-[150px]`
+                headerClassName: `${COMMON_HEADER_CLASS} bg-emerald-50 w-[180px] min-w-[150px]`
             }
         ]
     ];
@@ -203,7 +211,7 @@ const QcChecklistCell = ({ row, selectedIds, onQcToggle, t }: {
                     <span className={`shrink-0 transition-colors duration-200 ${isDone ? 'text-teal-500' : 'text-slate-400 group-hover/item:text-slate-500'}`}>
                         <Icon size={14} />
                     </span>
-                    <span className="text-[10px] text-slate-600 truncate font-medium group-hover/item:text-slate-900 transition-colors">
+                    <span className="text-[10px] text-slate-600 truncate font-normal group-hover/item:text-slate-900 transition-colors">
                         {label}
                     </span>
                 </div>
@@ -226,7 +234,7 @@ const QcChecklistCell = ({ row, selectedIds, onQcToggle, t }: {
                 {/* Column 3: Status (Pushed slightly right) */}
                 <div className="ml-1 w-[55px] shrink-0">
                     <span
-                        className={`text-[9px] font-bold tracking-tight transition-colors duration-200 ${isRedText ? 'text-rose-500 group-hover/item:text-rose-600' : 'text-teal-700'
+                        className={`text-[9px] font-normal tracking-tight transition-colors duration-200 ${isRedText ? 'text-rose-500 group-hover/item:text-rose-600' : 'text-teal-700'
                             }`}
                     >
                         {statusText}
@@ -260,7 +268,7 @@ export const getSendToApproveColumns = (
             key: 'id',
             label: '',
             width: '80px',
-            cellClassName: `p-2 text-center border ${BORDER_CLASS} z-10 sticky left-0 transition-colors bg-white`,
+            cellClassName: `${COMMON_CELL_CENTER_CLASS} z-10 sticky left-0 transition-colors bg-white border border-black`,
             render: (_val, row) => {
                 const isSelected = selectedIds.includes(row.id);
                 return (
@@ -277,14 +285,14 @@ export const getSendToApproveColumns = (
         {
             key: 'propertyNo',
             label: t ? t('propertyDetailsDashboard.columns.propertyDetails') : 'PROPERTY DETAILS',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle`,
+            cellClassName: COMMON_CELL_CLASS,
             render: (_, row) => (
                 <>
-                    <div className="font-semibold text-slate-900 text-[11px]">{row.propertyNo.new}</div>
-                    <div className="text-[10px] text-slate-500">
+                    <div className="font-normal text-slate-900 text-[11px]">{row.propertyNo.new}</div>
+                    <div className="text-[12px] text-slate-500">
                         {row.wardNo || 'N/A'}
                     </div>
-                    <div className="text-[11px] font-bold text-indigo-700 mt-1">
+                    <div className="text-[12px] font-normal text-indigo-700 mt-1">
                         {row.propertyNo.old || "N/A"}
                     </div>
                 </>
@@ -294,20 +302,20 @@ export const getSendToApproveColumns = (
             key: 'category',
             label: t ? t('propertyDetailsDashboard.columns.categoryAndDesc') : 'CATEGORY & DESC',
             align: 'center',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle text-center`,
+            cellClassName: COMMON_CELL_CENTER_CLASS,
             render: (_, row) => (
-                <div className="w-full text-center text-[11px]">
+                <div className="w-full text-center text-[12px]">
                     <div className="mb-1">
-                        <span className="inline-flex items-center rounded-md bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0 h-4 font-semibold">
+                        <span className="inline-flex items-center rounded-md bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0 h-4 font-normal">
                             {row.category}
                         </span>
                     </div>
-                    <div className="text-gray-900 leading-tight font-semibold mb-1.5">
+                    <div className="text-gray-900 leading-tight font-normal mb-1.5">
                         {row.categoryMarathi}
                     </div>
                     {row.desc.floors && (
                         <div className="flex items-center justify-center gap-1 flex-wrap">
-                            <span className="inline-flex items-center rounded-md bg-orange-50 text-orange-700 border border-orange-100 font-bold px-1.5 py-0 h-4">
+                            <span className="inline-flex items-center rounded-md bg-orange-50 text-orange-700 border border-orange-100 font-normal px-1.5 py-0 h-4">
                                 {t ? t('propertyDetailsDashboard.labels.floors') : 'Floors'}: {row.desc.floors}
                             </span>
                         </div>
@@ -318,18 +326,18 @@ export const getSendToApproveColumns = (
         {
             key: 'owner',
             label: t ? t('propertyDetailsDashboard.columns.ownerAndOccupier') : 'OWNER, OCCUPIER & SHOP',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle`,
+            cellClassName: COMMON_CELL_CLASS,
             render: (_, row) => (
-                <div className="space-y-0.5 text-[11px] font-semibold whitespace-normal break-words">
+                <div className="space-y-0.5 text-[12px] font-normal whitespace-normal break-words">
                     <div className="text-gray-900">
-                        <span className="text-slate-800 font-semibold">{t ? t('propertyDetailsDashboard.labels.owner') : 'Owner:'}</span> <span className="font-bold text-slate-900 uppercase">{row.owner}</span>
+                        <span className="text-slate-800 font-normal">{t ? t('propertyDetailsDashboard.labels.owner') : 'Owner:'}</span> <span className="font-normal text-slate-900">{formatTitleCase(row.owner)}</span>
                     </div>
                     <div className="text-gray-900">
-                        <span className="text-slate-800 font-semibold">{t ? t('propertyDetailsDashboard.labels.occupier') : 'Occupier:'}</span> <span className="font-bold text-slate-900 uppercase">{row.occupier}</span>
+                        <span className="text-slate-800 font-normal">{t ? t('propertyDetailsDashboard.labels.occupier') : 'Occupier:'}</span> <span className="font-normal text-slate-900">{formatTitleCase(row.occupier)}</span>
                     </div>
                     {row.shopName && (
                         <div className="text-gray-900">
-                            <span className="text-slate-800 font-semibold">{t ? t('propertyDetailsDashboard.labels.shopName') : 'Shop Name:'}</span> <span className="font-bold text-slate-900 uppercase">{row.shopName}</span>
+                            <span className="text-slate-800 font-normal">{t ? t('propertyDetailsDashboard.labels.shopName') : 'Shop Name:'}</span> <span className="font-normal text-slate-900">{formatTitleCase(row.shopName)}</span>
                         </div>
                     )}
                 </div>
@@ -339,38 +347,38 @@ export const getSendToApproveColumns = (
             key: 'mobile',
             label: t ? t('propertyDetailsDashboard.columns.mobile') : 'MOBILE',
             align: 'center',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle text-center`,
-            render: (val) => <div className="text-[12px] font-bold text-slate-900">{val as string}</div>
+            cellClassName: COMMON_CELL_CENTER_CLASS,
+            render: (val) => <div className="text-[13px] font-normal text-slate-900">{val as string}</div>
         },
         {
             key: 'address',
             label: t ? t('propertyDetailsDashboard.columns.address') : 'ADDRESS',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle`,
-            render: (val) => <div className="text-[11px] font-bold text-slate-900 uppercase leading-snug break-words whitespace-normal">{val as string}</div>
+            cellClassName: COMMON_CELL_CLASS,
+            render: (val) => <div className="text-[13px] font-normal text-slate-900 leading-snug break-words whitespace-normal">{formatTitleCase(val as string)}</div>
         },
         {
             key: 'oldRecord',
             label: t ? t('propertyDetailsDashboard.columns.oldRecord') : 'OLD RECORD',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle bg-red-50`,
+            cellClassName: COMMON_CELL_CLASS,
             render: (_, row) => {
                 const r = row.oldRecord;
                 return (
-                    <div className="space-y-2 text-[11px] leading-tight">
+                    <div className="space-y-2 text-[12px] leading-tight">
                         <div className="flex justify-between gap-1">
-                            <span className="text-slate-600 font-semibold">{t ? t('propertyDetailsDashboard.labels.area') : 'Area:'}</span>
-                            <span className="font-bold text-slate-900">{r.area}</span>
+                            <span className="text-slate-600 font-normal">{t ? t('propertyDetailsDashboard.labels.area') : 'Area:'}</span>
+                            <span className="font-normal text-slate-900">{r.area}</span>
                         </div>
                         <div className="flex justify-between gap-1">
-                            <span className="text-slate-600 font-semibold">{t ? t('propertyDetailsDashboard.labels.use') : 'Use:'}</span>
-                            <span className="font-bold text-slate-900">{r.use}</span>
+                            <span className="text-slate-600 font-normal">{t ? t('propertyDetailsDashboard.labels.use') : 'Use:'}</span>
+                            <span className="font-normal text-slate-900">{r.use}</span>
                         </div>
                         <div className="flex justify-between gap-1">
-                            <span className="text-slate-600 font-semibold">{t ? t('propertyDetailsDashboard.labels.rv') : 'RV:'}</span>
-                            <span className="font-bold text-slate-900">{r.rv}</span>
+                            <span className="text-slate-600 font-normal">{t ? t('propertyDetailsDashboard.labels.rv') : 'RV:'}</span>
+                            <span className="font-normal text-slate-900">{r.rv}</span>
                         </div>
-                        <div className="flex justify-between gap-1">
-                            <span className="text-slate-600 font-semibold">{t ? t('propertyDetailsDashboard.labels.totalTax') : 'Total Tax:'}</span>
-                            <span className="font-bold text-slate-900">{r.totalTax}</span>
+                        <div className="flex justify-between gap-1 pt-1 mt-1 border-t border-slate-300">
+                            <span className="text-slate-600 font-normal">{t ? t('propertyDetailsDashboard.labels.totalTax') : 'Total Tax:'}</span>
+                            <span className="font-normal text-slate-900">{r.totalTax}</span>
                         </div>
                     </div>
                 );
@@ -379,26 +387,26 @@ export const getSendToApproveColumns = (
         {
             key: 'newRecord',
             label: t ? t('propertyDetailsDashboard.columns.newRecord') : 'NEW RECORD',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle bg-emerald-50`,
+            cellClassName: COMMON_CELL_CLASS,
             render: (_, row) => {
                 const r = row.newRecord;
                 return (
-                    <div className="space-y-2 text-[11px] leading-tight">
+                    <div className="space-y-2 text-[12px] leading-tight">
                         <div className="flex justify-between gap-1">
-                            <span className="text-slate-700 font-semibold">{t ? t('propertyDetailsDashboard.labels.area') : 'Area:'}</span>
-                            <span className="font-bold text-slate-900">{r.area}</span>
+                            <span className="text-slate-700 font-normal">{t ? t('propertyDetailsDashboard.labels.area') : 'Area:'}</span>
+                            <span className="font-normal text-slate-900">{r.area}</span>
                         </div>
                         <div className="flex justify-between gap-1">
-                            <span className="text-slate-700 font-semibold">{t ? t('propertyDetailsDashboard.labels.use') : 'Use:'}</span>
-                            <span className="font-bold text-slate-900">{r.use}</span>
+                            <span className="text-slate-700 font-normal">{t ? t('propertyDetailsDashboard.labels.use') : 'Use:'}</span>
+                            <span className="font-normal text-slate-900">{r.use}</span>
                         </div>
                         <div className="flex justify-between gap-1">
-                            <span className="text-slate-700 font-semibold">{t ? t('propertyDetailsDashboard.labels.rv') : 'RV:'}</span>
-                            <span className="font-bold text-slate-900">{r.rv}</span>
+                            <span className="text-slate-700 font-normal">{t ? t('propertyDetailsDashboard.labels.rv') : 'RV:'}</span>
+                            <span className="font-normal text-slate-900">{r.rv}</span>
                         </div>
-                        <div className="flex justify-between gap-1">
-                            <span className="text-slate-700 font-semibold">{t ? t('propertyDetailsDashboard.labels.totalTax') : 'Total Tax:'}</span>
-                            <span className="font-bold text-slate-900">{r.totalTax}</span>
+                        <div className="flex justify-between gap-1 pt-1 mt-1 border-t border-slate-300">
+                            <span className="text-slate-700 font-normal">{t ? t('propertyDetailsDashboard.labels.totalTax') : 'Total Tax:'}</span>
+                            <span className="font-normal text-slate-900">{r.totalTax}</span>
                         </div>
                     </div>
                 );
@@ -407,7 +415,7 @@ export const getSendToApproveColumns = (
         {
             key: 'qcChecklist',
             label: t ? t('sendToApprove.columns.qcChecklist') : 'QC CHECKLIST',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle bg-teal-50`,
+            cellClassName: COMMON_CELL_CLASS,
             render: (_, row) => (
                 <QcChecklistCell
                     row={row}
@@ -421,18 +429,18 @@ export const getSendToApproveColumns = (
             key: 'additionalRevenue',
             label: t ? t('propertyDetailsDashboard.columns.additionalRevenue') : 'ADDITIONAL REVENUE',
             align: 'center',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle text-slate-700 bg-emerald-50`,
+            cellClassName: `${COMMON_CELL_CENTER_CLASS} text-slate-700`,
             render: (val) => (
-                <div className="text-[12px] font-bold text-slate-900">{val as number}</div>
+                <div className="text-[12px] font-normal text-slate-900">{val as number}</div>
             )
         },
         {
             key: 'propertyType',
             label: t ? t('propertyDetailsDashboard.columns.propertyType') : 'PROPERTY TYPE',
             align: 'center',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle bg-purple-50`,
+            cellClassName: COMMON_CELL_CENTER_CLASS,
             render: (_, row) => (
-                <span className="px-2 py-1 text-[11px] rounded-md font-bold text-slate-700 border border-slate-200 bg-slate-50">
+                <span className="px-2 py-1 text-[12px] rounded-md font-normal text-slate-700 border border-slate-200 bg-slate-50">
                     {row.propertyType}
                 </span>
             )
@@ -441,7 +449,7 @@ export const getSendToApproveColumns = (
             key: 'documents',
             label: t ? t('propertyDetailsDashboard.columns.documents') : 'DOCUMENTS',
             align: 'center',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle`,
+            cellClassName: COMMON_CELL_CENTER_CLASS,
             render: (_, row) => {
                 const documentGuid = row.documentGuid?.trim();
                 const planDocumentGuid = row.planDocumentGuid?.trim();
@@ -462,7 +470,7 @@ export const getSendToApproveColumns = (
                                     <div className="w-10 h-10 rounded overflow-hidden border border-purple-200 transition-all hover:scale-110 hover:border-purple-500 hover:shadow-md bg-purple-50 flex items-center justify-center">
                                         <div className="flex flex-col items-center justify-center">
                                             <FileText className="w-5 h-5 text-purple-600" />
-                                            <span className="text-[8px] font-bold text-purple-600 uppercase leading-none mt-0.5">PLAN</span>
+                                            <span className="text-[8px] font-normal text-purple-600 uppercase leading-none mt-0.5">PLAN</span>
                                         </div>
                                     </div>
                                 ) : (
@@ -483,7 +491,7 @@ export const getSendToApproveColumns = (
                                     {isPlan ? (
                                         <div className="flex flex-col items-center justify-center">
                                             <Icon className="w-5 h-5 text-purple-600" />
-                                            <span className="text-[8px] font-bold text-purple-600 uppercase leading-none mt-0.5">PLAN</span>
+                                            <span className="text-[8px] font-normal text-purple-600 uppercase leading-none mt-0.5">PLAN</span>
                                         </div>
                                     ) : (
                                         <Icon className="h-5 w-5 text-orange-300" />
@@ -506,12 +514,12 @@ export const getSendToApproveColumns = (
             key: 'actions',
             label: t ? t('propertyDetailsDashboard.columns.actions') : 'ACTIONS',
             align: 'center',
-            cellClassName: `p-2 border ${BORDER_CLASS} align-middle bg-slate-50`,
+            cellClassName: COMMON_CELL_CENTER_CLASS,
             render: (_, row) => (
                 <div className="flex flex-col items-center justify-center gap-1.5 py-1">
                     <Link
                         href={`#`}
-                        className="h-6 w-[65px] rounded-full text-xs flex items-center justify-center font-bold bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors cursor-pointer select-none"
+                        className="h-6 w-[65px] rounded-full text-xs flex items-center justify-center font-normal bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition-colors cursor-pointer select-none"
                     >
                         {t ? t('sendToApprove.columns.report') : 'Report'}
                     </Link>

@@ -85,6 +85,16 @@ function QuickDataEntryContent({
     }, [initialHasIncompatibleFloor]);
 
     useEffect(() => {
+        if (typeof window !== 'undefined') {
+            if (returnTab === 'apartment' || searchParams.get('from') === 'apartment') {
+                sessionStorage.setItem('qde_is_apartment', 'true');
+            } else {
+                sessionStorage.removeItem('qde_is_apartment');
+            }
+        }
+    }, [returnTab, searchParams]);
+
+    useEffect(() => {
         const checkBannerState = () => {
             const isActive = typeof window !== 'undefined' && !!(window as unknown as { __hasIncompatibleFloor?: boolean }).__hasIncompatibleFloor;
             setShowIncompatibleBanner(isActive);
@@ -122,19 +132,44 @@ function QuickDataEntryContent({
             if (propertyId) params.set('propertyId', propertyId);
             if (wardNo) params.set('wardNo', wardNo);
             if (wardId) params.set('wardId', wardId);
-            if (propertyNo) params.set('propertyNo', propertyNo);
-            if (partitionNo) params.set('partitionNo', partitionNo);
-            if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
-            if (valuationTab) params.set('valuationTab', valuationTab);
-            if (appartmentTab) params.set('appartmentTab', appartmentTab);
-            if (subTab) params.set('subTab', subTab);
-            if (showDetails) params.set('showDetails', showDetails);
-            if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
-            rateableExpands.forEach(v => params.append('rateableExpand', v));
-            capitalExpands.forEach(v => params.append('capitalExpand', v));
-            dualExpands.forEach(v => params.append('dualExpand', v));
 
-            router.push(`/${locale}/property-tax/ptis?${params}`);
+            const cleanPropertyNo =
+                wardNo && propertyNo && propertyNo.startsWith(`${wardNo}-`)
+                    ? propertyNo.slice(wardNo.length + 1)
+                    : propertyNo;
+
+            if (cleanPropertyNo) params.set('propertyNo', cleanPropertyNo);
+            if (partitionNo) params.set('partitionNo', partitionNo);
+
+            const isApartment = returnTab === 'apartment' ||
+                               resolvedReturnTab === 'apartment' ||
+                               searchParams.get('from') === 'apartment';
+
+            if (typeof window !== 'undefined') {
+                sessionStorage.removeItem('qde_is_apartment');
+            }
+
+            if (isApartment) {
+                const societyId = searchParams.get('societyId');
+                const wingId = searchParams.get('wingId');
+                const wingDetailId = searchParams.get('wingDetailId');
+                if (societyId) params.set('societyId', societyId);
+                if (wingId) params.set('wingId', wingId);
+                if (wingDetailId) params.set('wingDetailId', wingDetailId);
+                router.push(`/${locale}/property-tax/ptis/apartment?${params}`);
+            } else {
+                if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
+                if (valuationTab) params.set('valuationTab', valuationTab);
+                if (appartmentTab) params.set('appartmentTab', appartmentTab);
+                if (subTab) params.set('subTab', subTab);
+                if (showDetails) params.set('showDetails', showDetails);
+                if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
+                rateableExpands.forEach(v => params.append('rateableExpand', v));
+                capitalExpands.forEach(v => params.append('capitalExpand', v));
+                dualExpands.forEach(v => params.append('dualExpand', v));
+
+                router.push(`/${locale}/property-tax/ptis?${params}`);
+            }
         };
 
         const hasBuildingChanges = !!win.__buildingFormHasChanges;
@@ -241,12 +276,22 @@ function QuickDataEntryContent({
                     <Layers className="h-3 w-3 text-white/80" />
                     <span>{t('roomSubmission.info.partition')}: {appartmentPartition || partitionNo || '—'}</span>
                 </div>
-                {categoryName && (
-                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
-                        <Tag className="h-3 w-3 text-white/95" />
-                        <span>{t('floor.propertyCategory')}: {categoryName}</span>
-                    </div>
-                )}
+                {(() => {
+                    const rawCat = categoryName || searchParams.get('propertyCategory') || searchParams.get('categoryName') || '';
+                    const hasPartition = Boolean(appartmentPartition || partitionNo);
+                    const displayCategory = (hasPartition && rawCat.toLowerCase() === 'apartment')
+                        ? 'Apartment/Individual'
+                        : rawCat;
+
+                    if (!displayCategory) return null;
+
+                    return (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
+                            <Tag className="h-3 w-3 text-white/95" />
+                            <span>{t('floor.propertyCategory')}: {displayCategory}</span>
+                        </div>
+                    );
+                })()}
                 {propertyDescription && (
                     <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
                         <Tag className="h-3 w-3 text-white/95" />
@@ -283,7 +328,7 @@ function QuickDataEntryContent({
             <Drawer open={true} onClose={handleClose} title={drawerTitle} width="xl" hideHeader={isRenterPage}>
                 <div className="flex flex-col border-slate-300 bg-white shadow-sm min-h-[calc(100vh-60px)]">
                     {!isRenterPage && (
-                        <TabNavigation />
+                        <TabNavigation categoryName={categoryName} />
                     )}
                     {showIncompatibleBanner && (
                         <div className="mx-4 mt-3 flex items-start gap-3 p-3.5 bg-amber-50/90 border border-amber-200/80 text-amber-900 rounded-xl shadow-xs transition-all duration-300">

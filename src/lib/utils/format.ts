@@ -137,6 +137,19 @@ export function toTitleCase(str: string | null | undefined): string {
 
 // --- Reassessment Specific Formatting Utilities ---
 
+export function formatCompactCurrency(val: number): string {
+  const absVal = Math.abs(val);
+  let formatted = '';
+  if (absVal >= 100000) {
+    formatted = `${(absVal / 100000).toFixed(2).replace(/\.00$/, '').replace(/0$/, '')}L`;
+  } else if (absVal >= 1000) {
+    formatted = `${(absVal / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+  } else {
+    formatted = `${absVal}`;
+  }
+  return val < 0 ? `-₹${formatted}` : `₹${formatted}`;
+}
+
 export function formatReassessmentCurrency(value: number): string {
   if (value >= 10000000) {
     return `₹${(value / 10000000).toFixed(2)}Cr`;
@@ -151,6 +164,20 @@ export function sumReassessmentTaxAmounts(taxes: Record<string, number>): number
     (sum, val) => sum + (Number.isFinite(val) ? val : 0),
     0
   );
+}
+
+export function formatCompactCurrencyWithSign(val: number): string {
+  const formatted = formatCompactCurrency(Math.abs(val));
+  return val >= 0 ? `+${formatted}` : `-${formatted}`;
+}
+
+export function formatFullCurrency(val: number): string {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(val);
 }
 
 /**

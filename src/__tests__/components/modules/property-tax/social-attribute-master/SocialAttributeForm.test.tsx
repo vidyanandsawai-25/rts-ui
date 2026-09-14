@@ -46,7 +46,7 @@ vi.mocked(useRouter).mockImplementation(() => ({
   forward: vi.fn(),
   replace: mockRouterReplace,
   prefetch: vi.fn(),
-}));
+} as unknown as ReturnType<typeof useRouter>));
 
 describe('SocialAttributeForm', () => {
   beforeEach(() => {

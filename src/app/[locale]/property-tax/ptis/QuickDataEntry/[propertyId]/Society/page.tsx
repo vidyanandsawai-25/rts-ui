@@ -4,6 +4,8 @@ import SocietyForm from '@/components/modules/property-tax/ptis/QuickDataEntry/s
 import { getPropertySocietyDetailsAction } from './action';
 import { WingItem } from '@/types/property-basic-details.types';
 import { getWingMasterAction } from '../Property/action';
+import { getApartmentQcTopSectionAction } from '@/lib/api/ptis/apartment/apartment-qc-top-section.actions';
+import type { PropertyMasterData } from '@/types/property-tax/apartment';
 
 interface PageProps {
   params: Promise<{
@@ -25,20 +27,18 @@ export default async function SocietyFormPage({ params }: PageProps) {
 
   let propertySocietyDetails = null;
   let wingMasterList: WingItem[] = [];
+  let propertyMasterData: PropertyMasterData | null = null;
 
   try {
-    const [propertySocietyRes, wingMasterRes] = await Promise.all([
-      getPropertySocietyDetailsAction(pid),
-      getWingMasterAction(1, -1),
+    const [propertySocietyRes, wingMasterRes, topSectionRes] = await Promise.all([
+      getPropertySocietyDetailsAction(pid).catch(() => ({ success: false, data: null, error: null })),
+      getWingMasterAction(1, -1).catch(() => ({ success: false, data: [], error: null })),
+      getApartmentQcTopSectionAction(pid).catch(() => ({ success: false, data: undefined, error: null })),
     ]);
-    if (!propertySocietyRes.success) {
-      throw new Error(propertySocietyRes.error || 'Failed to fetch society details');
-    }
-    if (!wingMasterRes.success) {
-      throw new Error(wingMasterRes.error || 'Failed to fetch wing master');
-    }
-    propertySocietyDetails = propertySocietyRes.data ?? null;
-    wingMasterList = wingMasterRes.data || [];
+
+    propertySocietyDetails = propertySocietyRes?.data ?? null;
+    wingMasterList = wingMasterRes?.data || [];
+    propertyMasterData = topSectionRes?.data || null;
   } catch (error: unknown) {
     const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
 
@@ -78,6 +78,7 @@ export default async function SocietyFormPage({ params }: PageProps) {
       propertyIdSearch={Number(propertyId)}
       locale={locale}
       WingMaster={wingMasterList}
+      propertyMasterData={propertyMasterData}
     />
   );
 }

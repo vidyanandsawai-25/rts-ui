@@ -22,6 +22,8 @@ export interface AdditionalImage {
   file?: File;
   documentGuid?: string;
   downloadUrl?: string;
+  wingDetailId?: number;
+  wingName?: string;
 }
 
 interface MediaImageCardProps {
@@ -60,7 +62,7 @@ export function MediaImageCard({
 }: MediaImageCardProps): React.ReactElement {
   return (
     <div
-      className={`relative group bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-300 shadow-md ${hoverBorderColor} hover:border-4 transition-all cursor-pointer flex-1 min-h-[150px] lg:min-h-0`}
+      className={`relative group bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-300 shadow-md ${hoverBorderColor} hover:border-4 transition-all cursor-pointer flex-1 min-h-[105px] lg:min-h-0 lg:h-0`}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -153,7 +155,7 @@ export function AdditionalImagesGrid({
       <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-60 scrollbar-thin">
         {images.map((image, index) => (
           <div
-            key={image.propertyPhotoId || `${image.alt}-${index}`}
+            key={`add-img-${image.propertyPhotoId ?? 'id'}-${index}`}
             className="relative group bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200 shadow-md hover:border-blue-400 transition-all cursor-pointer h-24 flex-shrink-0 animate-in fade-in slide-in-from-top-2 duration-300"
             style={{ animationDelay: `${index * 50}ms` }}
             onClick={() => onImageClick?.(index)}
@@ -168,7 +170,9 @@ export function AdditionalImagesGrid({
               height={150}
             />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1 pointer-events-none">
-              <p className="text-white text-[8px] truncate">{image.title}</p>
+              <p className="text-white text-[8px] truncate">
+                {image.wingName ? `${image.title} (${image.wingName})` : image.title}
+              </p>
             </div>
           </div>
         ))}

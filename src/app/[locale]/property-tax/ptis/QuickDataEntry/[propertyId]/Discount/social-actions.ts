@@ -3,23 +3,26 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
-import { 
-    getPropertySocialInfo, 
-    upsertPropertySocialInfo, 
-    uploadSocialPhotoViaGlobalApi, 
-    replaceSocialPhotoViaGlobalApi, 
+import {
+    getPropertySocialInfo,
+    upsertPropertySocialInfo,
+    uploadSocialPhotoViaGlobalApi,
+    replaceSocialPhotoViaGlobalApi,
     deleteSocialPhotoViaGlobalApi,
-    deletePropertySocialDetail 
+    deletePropertySocialDetail,
+    createBulkPropertySocialDetail,
+    createPropertySocialDetail
 } from "@/lib/api/property-social-details.service";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { logger } from "@/lib/utils/logger";
 import { DiscountDocumentUploadResponseDto } from "@/types/discount.types";
 import { updateBindingReference } from "@/lib/api/document.service";
 import { ApiResponse } from "@/types/common.types";
-import { 
+import {
     PropertySocialInfoApiResponse,
     PropertySocialInfoItemDto,
-    SocialAttributeHierarchyDto
+    SocialAttributeHierarchyDto,
+    CreateBulkPropertySocialDetailDto
 } from "@/types/property-social-details.types";
 import {
     cleanCommonApiError,
@@ -51,6 +54,18 @@ export async function upsertPropertySocialInfoAction(
 
         const socialAttributes = JSON.parse(socialAttributesStr) as PropertySocialInfoItemDto[];
         const socialAttributeIdsToRemove = JSON.parse(socialAttributeIdsToRemoveStr) as number[];
+
+        const level = formData.get("level") as string | null;
+        const societyDetailId = formData.get("societyDetailId") ? Number(formData.get("societyDetailId")) : null;
+        const wingDetailId = formData.get("wingDetailId") ? Number(formData.get("wingDetailId")) : null;
+        const propertyIdsStr = formData.get("propertyIds") as string | null;
+        const isSociety = formData.get("isSociety");
+
+        const isApartmentOrWing = level === 'Apartment' || level === 'Wing';
+        const payloadPropertyId = isApartmentOrWing ? 0 : Number(propertyId);
+        const BuildingPropertyId =  Number(propertyId);
+        const payloadSocietyDetailId = societyDetailId;
+        const payloadWingDetailId = (level === 'Wing' || level === 'Unit') ? wingDetailId : null;
 
         const initialResponse = await getPropertySocialInfo(propertyId);
         const initialFlatData: Record<number, { id?: number | null; documentGuid?: string | null }> = {};
@@ -86,42 +101,87 @@ export async function upsertPropertySocialInfoAction(
                 const uploadResult = oldGuid
                     ? await replaceSocialPhotoViaGlobalApi(file, oldGuid, propIdNum, attrId, detailId, guidReference)
                     : await uploadSocialPhotoViaGlobalApi(file, propIdNum, attrId, detailId, guidReference);
+              
+                if (isSociety === "true") {
+                    if (uploadResult.success && uploadResult.data?.documentBindingId) {
+                        attr.documentBindingId = uploadResult.data.documentBindingId;
 
-                if (uploadResult.success && uploadResult.data?.documentBindingId) {
-                    attr.documentBindingId = uploadResult.data.documentBindingId;
-                } else {
-                    throw new Error(uploadResult.error || "Failed to upload document");
+                        if (level === 'Unit') {
+                            if (propertyIdsStr) {
+                                const bulkPayload: CreateBulkPropertySocialDetailDto = { 
+                                    isActive : true,                                                                      
+                                    createdBy: userId || 0,
+                                    propertyIds: propertyIdsStr,
+                                    socialAttributeId: attr.socialAttributeId || 0,
+                                    wingDetailId: payloadWingDetailId || 0,
+                                    societyDetailId: payloadSocietyDetailId || 0,
+                                    bitValue: attr.bitValue ?? false,
+                                    intValue: attr.intValue ?? 0,
+                                    decimalValue: attr.decimalValue ?? 0,
+                                    textValue: attr.textValue || "string",
+                                    dateValue: attr.dateValue || new Date().toISOString(),
+                                    documentBindingId: attr.documentBindingId || 0,
+                                    remark: attr.remark || "string"
+                                };
+                                await createBulkPropertySocialDetail(bulkPayload);
+                            }
+                        } else {
+                            const payload = {  
+                                isActive : true,                           
+                                createdBy: userId || 0,
+                                propertyId: payloadPropertyId || 0,
+                                socialAttributeId: attr.socialAttributeId || 0,
+                                wingDetailId: payloadWingDetailId || 0,
+                                societyDetailId: payloadSocietyDetailId || 0,
+                                bitValue: attr.bitValue ?? false,
+                                intValue: attr.intValue ?? 0,
+                                decimalValue: attr.decimalValue ?? 0,
+                                textValue: attr.textValue || "string",
+                                dateValue: attr.dateValue || new Date().toISOString(),
+                                documentBindingId: attr.documentBindingId || 0,
+                                remark: attr.remark || "string"
+                            };
+                            await createPropertySocialDetail(payload);
+                        }
+                    } else {
+                        throw new Error(uploadResult.error || "Failed to upload document");
+                    }
                 }
             } else if (oldGuid && (!attr.bitValue || !attr.documentBindingId)) {
                 await deleteSocialPhotoViaGlobalApi(oldGuid);
             }
         }
 
-        if (socialAttributes.length > 0 || socialAttributeIdsToRemove.length > 0) {
-            const response = await upsertPropertySocialInfo({
-                propertyId: Number(propertyId),
-                updatedBy: userId,
-                socialAttributes,
-                socialAttributeIdsToRemove,
-            });
-            if (!response.success || !response.data?.success) {
-                return { 
-                    success: false, 
-                    error: await cleanCommonApiError(
-                        response.data?.message || response.message || response.error, locale
-                    ), 
-                    statusCode: response.statusCode 
-                };
-            }
+        if (isSociety !== "true") {
+            if (socialAttributes.length > 0 || socialAttributeIdsToRemove.length > 0) {
+                const response = await upsertPropertySocialInfo({
+                    propertyId: BuildingPropertyId,
+                    societyDetailId: payloadSocietyDetailId,
+                    wingDetailId: payloadWingDetailId,
+                    propertyIds: level === 'Unit' ? propertyIdsStr : null,
+                    updatedBy: userId,
+                    socialAttributes,
+                    socialAttributeIdsToRemove,
+                });
+                if (!response.success || !response.data?.success) {
+                    return { 
+                        success: false, 
+                        error: await cleanCommonApiError(
+                            response.data?.message || response.message || response.error, locale
+                        ), 
+                        statusCode: response.statusCode 
+                    };
+                }
 
-            // Update document bindings for any newly created records
-            const savedItems = response.data.items || [];
-            for (const attr of socialAttributes) {
-                const isNew = !attr.id || attr.id === 0;
-                if (isNew && attr.documentBindingId) {
-                    const matchedItem = savedItems.find(item => item.socialAttributeId === attr.socialAttributeId);
-                    if (matchedItem && matchedItem.id) {
-                        await updateBindingReference(attr.documentBindingId, matchedItem.id);
+                // Update document bindings for any newly created records
+                const savedItems = response.data.items || [];
+                for (const attr of socialAttributes) {
+                    const isNew = !attr.id || attr.id === 0;
+                    if (isNew && attr.documentBindingId) {
+                        const matchedItem = savedItems.find(item => item.socialAttributeId === attr.socialAttributeId);
+                        if (matchedItem && matchedItem.id) {
+                            await updateBindingReference(attr.documentBindingId, matchedItem.id);
+                        }
                     }
                 }
             }

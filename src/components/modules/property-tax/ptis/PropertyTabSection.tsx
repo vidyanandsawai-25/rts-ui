@@ -56,11 +56,19 @@ export default function PropertyTabSection({
   const urlState = useSyncedSearchParams();
 
   // 2. Hook: Local Draft State (Prevents automatic searching on every selection)
-  const { draft, setWardNo, setPropertyNo, setPartitionNo, setPropertyId, handleWardSelection } =
-    usePropertySearchState({
-      ...urlState,
-      wardId: urlState.wardId || initialWardId,
-    });
+  const {
+    draft,
+    setWardNo,
+    setPropertyNo,
+    setPartitionNo,
+    setPropertyId,
+    setCategory,
+    setExtraIds,
+    handleWardSelection,
+  } = usePropertySearchState({
+    ...urlState,
+    wardId: urlState.wardId || initialWardId,
+  });
 
   // 3. Hook: Search & Navigation Logic
   const { isSearching, handleSearchProperty, updateUrl } = usePropertySearch();
@@ -141,11 +149,57 @@ export default function PropertyTabSection({
     }
   }, [initialData?.rawPropertyData, setPropertiesList]);
 
+  // Auto-sync missing societyDetailId & wingDetailId to URL searchParams when property is loaded
+  useEffect(() => {
+    if (!urlState.propertyId) return;
+
+    const currentPropId = Number(urlState.propertyId);
+    const matchedProp = propertiesList.find((p) => p.propertyId === currentPropId);
+
+    const rawPropDetails = initialData?.propertyDetails as unknown as Record<string, unknown> | undefined;
+
+    const resolvedSocietyId =
+      urlState.societyDetailId ??
+      matchedProp?.societyDetailId ??
+      initialData?.societyDetails?.societyDetailId ??
+      (rawPropDetails?.societyDetailId as number | undefined) ??
+      (rawPropDetails?.societyId as number | undefined) ??
+      null;
+
+    const resolvedWingId =
+      urlState.wingDetailId ??
+      matchedProp?.wingDetailId ??
+      (rawPropDetails?.wingDetailId as number | undefined) ??
+      (rawPropDetails?.wingId as number | undefined) ??
+      null;
+
+    const paramsToUpdate: Record<string, string | null> = {};
+    if (resolvedSocietyId && !urlState.societyDetailId) {
+      paramsToUpdate.societyDetailId = String(resolvedSocietyId);
+    }
+    if (resolvedWingId && !urlState.wingDetailId) {
+      paramsToUpdate.wingDetailId = String(resolvedWingId);
+    }
+
+    if (Object.keys(paramsToUpdate).length > 0) {
+      updateUrl(paramsToUpdate);
+    }
+  }, [
+    urlState.propertyId,
+    urlState.societyDetailId,
+    urlState.wingDetailId,
+    propertiesList,
+    initialData?.societyDetails?.societyDetailId,
+    initialData?.propertyDetails,
+    updateUrl,
+  ]);
+
   // Auto-resolve propertyId if typed values exactly match an item in suggestions list
   useEffect(() => {
     if (!draft.propertyNo) {
       if (draft.propertyId) {
         setPropertyId(null);
+        setExtraIds(undefined, undefined);
       }
       return;
     }
@@ -165,6 +219,9 @@ export default function PropertyTabSection({
       ) {
         // Current selection no longer matches input text, reset it
         setPropertyId(null);
+        setExtraIds(undefined, undefined);
+      } else {
+        setExtraIds(currentMatch.societyDetailId, currentMatch.wingDetailId);
       }
       return;
     }
@@ -178,8 +235,10 @@ export default function PropertyTabSection({
 
     if (exactMatch) {
       setPropertyId(exactMatch.propertyId.toString());
+      setCategory(exactMatch.category, exactMatch.categoryLabel);
+      setExtraIds(exactMatch.societyDetailId, exactMatch.wingDetailId);
     }
-  }, [draft.propertyNo, draft.partitionNo, draft.propertyId, propertiesList, setPropertyId]);
+  }, [draft.propertyNo, draft.partitionNo, draft.propertyId, propertiesList, setPropertyId, setCategory, setExtraIds]);
 
   const dynamicPropertyOptions = useMemo<SearchSelectOption[]>(() => {
     return propertiesList.map((p) => {
@@ -191,6 +250,10 @@ export default function PropertyTabSection({
           propertyNo: p.propertyNo,
           partitionNo: normalizedPartitionNo,
           propertyId: p.propertyId,
+          category: p.category,
+          categoryLabel: p.categoryLabel,
+          societyDetailId: p.societyDetailId,
+          wingDetailId: p.wingDetailId,
         }),
       };
     });
@@ -309,6 +372,11 @@ export default function PropertyTabSection({
           setPartitionNo={setPartitionNo}
           propertyId={draft.propertyId}
           setPropertyId={setPropertyId}
+          category={draft.category}
+          categoryLabel={draft.categoryLabel}
+          setCategory={setCategory}
+          societyDetailId={draft.societyDetailId}
+          wingDetailId={draft.wingDetailId}
           wardOptions={wardOptions}
           isFetchingWardOptions={isFetchingWardOptions}
           onFetchWardList={handleFetchWardList}
@@ -325,6 +393,7 @@ export default function PropertyTabSection({
           onPropertySearchChange={setSearchText}
           onPartitionSearchChange={setPartitionSearchText}
           isSearchingProperties={isSearchingProperties}
+          propertiesList={propertiesList}
         />
 
         <PropertyTabHeaders

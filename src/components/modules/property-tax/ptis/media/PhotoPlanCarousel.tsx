@@ -100,7 +100,7 @@ export function PhotoPlanCarousel({
           const isSelected = selectedImageIndex === actualIndex;
           return (
             <div
-              key={img.propertyPhotoId || actualIndex}
+              key={`carousel-img-${img.propertyPhotoId ?? 'id'}-${actualIndex}`}
               onClick={() => onSelectImage(actualIndex)}
               className={`relative group bg-white rounded-lg overflow-hidden border transition-all cursor-pointer w-[110px] sm:w-[130px] h-full flex flex-col shrink-0 ${
                 isSelected
@@ -118,18 +118,20 @@ export function PhotoPlanCarousel({
                   sizes="120px"
                 />
                 <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                  <Button
-                    size="xs"
-                    variant="secondary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onReplacePhoto(actualIndex);
-                    }}
-                    className="!p-1 hover:!bg-slate-50 rounded shadow !border-slate-200 !text-slate-600 hover:!text-green-600 cursor-pointer transition-colors !h-5 !w-5"
-                    title={t('media.replaceImage') || 'Replace Image'}
-                  >
-                    <Upload className="w-2.5 h-2.5" />
-                  </Button>
+                  {!isPhotoPlanCategory && (
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onReplacePhoto(actualIndex);
+                      }}
+                      className="!p-1 hover:!bg-slate-50 rounded shadow !border-slate-200 !text-slate-600 hover:!text-green-600 cursor-pointer transition-colors !h-5 !w-5"
+                      title={t('media.replaceImage') || 'Replace Image'}
+                    >
+                      <Upload className="w-2.5 h-2.5" />
+                    </Button>
+                  )}
                   <Button
                     size="xs"
                     variant="secondary"

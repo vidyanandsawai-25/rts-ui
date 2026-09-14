@@ -12,8 +12,20 @@ import { DiscountState, PropertyDiscountInfoResponseDto } from "@/types/discount
 import { useTranslations } from "next-intl";
 import { mapApiToDiscountState, mapDiscountStateToApi, hasDiscountChangesComparedToInitial } from "@/lib/utils/discount-helpers";
 import { validateDiscountForm } from "@/lib/utils/validateDiscountForm";
+import { SocialAttribute } from "@/types/social-attribute.types";
 
-export const useDiscountForm = (initialDiscountData: PropertyDiscountInfoResponseDto | null, propertyId: string) => {
+export const useDiscountForm = (
+    initialDiscountData: PropertyDiscountInfoResponseDto | null, 
+    propertyId: string,
+    masterAttributes?: SocialAttribute[],
+    options?: {
+        level?: 'Apartment' | 'Wing' | 'Unit';
+        societyDetailId?: string | null;
+        wingDetailId?: string | null;
+        propertyIds?: string;
+        isSociety?: boolean;
+    }
+) => {
     const t = useTranslations('quickDataEntry');
     const { isLoading: isSaving, startLoading, stopLoading } = useLoading(false);
     const [validationErrors, setValidationErrors] = useState<Record<number, string>>({});
@@ -21,19 +33,22 @@ export const useDiscountForm = (initialDiscountData: PropertyDiscountInfoRespons
     const params = useParams();
     const locale = params.locale as string;
     const router = useRouter();
-    const [discountData, setDiscountData] = useState<DiscountState>(() => mapApiToDiscountState(initialDiscountData));
+    const [discountData, setDiscountData] = useState<DiscountState>(() => mapApiToDiscountState(initialDiscountData, masterAttributes));
 
-    const initialMappedState = useMemo(() => mapApiToDiscountState(initialDiscountData), [initialDiscountData]);
-
-    const [prevInitial, setPrevInitial] = useState(initialDiscountData);
-    if (initialDiscountData && initialDiscountData !== prevInitial) {
-        setPrevInitial(initialDiscountData);
-        setDiscountData(mapApiToDiscountState(initialDiscountData));
-    }
+    const initialMappedState = useMemo(() => mapApiToDiscountState(initialDiscountData, masterAttributes), [initialDiscountData, masterAttributes]);
 
     const hasChanges = useMemo(() => {
         return hasDiscountChangesComparedToInitial(discountData, initialMappedState);
     }, [discountData, initialMappedState]);
+
+    const [prevInitialDiscountData, setPrevInitialDiscountData] = useState(initialDiscountData);
+
+    if (initialDiscountData && initialDiscountData !== prevInitialDiscountData) {
+        setPrevInitialDiscountData(initialDiscountData);
+        if (!hasChanges) {
+            setDiscountData(initialMappedState);
+        }
+    }
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -181,6 +196,12 @@ export const useDiscountForm = (initialDiscountData: PropertyDiscountInfoRespons
             const formData = new FormData();
             const payload = mapDiscountStateToApi(discountData);
             formData.append("discountAttributes", JSON.stringify(payload));
+            
+            if (options?.level) formData.append("level", options.level);
+            if (options?.societyDetailId) formData.append("societyDetailId", options.societyDetailId);
+            if (options?.wingDetailId) formData.append("wingDetailId", options.wingDetailId);
+            if (options?.propertyIds) formData.append("propertyIds", options.propertyIds);
+            if (options?.isSociety !== undefined) formData.append("isSociety", String(options.isSociety));
 
             // Append pending files
             Object.values(discountData).forEach(item => {

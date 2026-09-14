@@ -63,7 +63,7 @@ vi.mocked(useRouter).mockImplementation(() => ({
   push: mockRouterPush,
   replace: vi.fn(),
   prefetch: vi.fn(),
-}));
+} as unknown as ReturnType<typeof useRouter>));
 
 const mockCreate = vi.spyOn(actions, "createConstructionAction").mockResolvedValue({ success: true });
 const mockUpdate = vi.spyOn(actions, "updateConstructionAction").mockResolvedValue({ success: true });

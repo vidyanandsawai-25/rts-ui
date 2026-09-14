@@ -30,14 +30,14 @@ describe('Building Form Validation & Date Semantics', () => {
         it('should reject future dates', () => {
             const futureYear = new Date().getFullYear() + 5;
             const result = validateDocumentDate(`${futureYear}-01-01`);
-            expect(result).toEqual({ key: 'validation.dateFuture' });
+            expect(result).toEqual({ key: 'common.validation.dateFuture' });
         });
     });
 
     describe('validateDocumentNumber', () => {
         it('should reject document numbers with spaces', () => {
             const result = validateDocumentNumber('OC 12345', 'Occupancy Certificate (OC)');
-            expect(result).toEqual({ key: 'validation.numberNoSpaces' });
+            expect(result).toEqual({ key: 'common.validation.numberNoSpaces' });
         });
 
         it('should accept valid space-free document numbers', () => {

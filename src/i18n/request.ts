@@ -1,7 +1,7 @@
 /**
  * i18n Request Configuration
  * Server-side locale detection and message loading
- * Force reload: 1
+ * Force reload: 2
  */
 
 import { getRequestConfig } from 'next-intl/server';
@@ -32,6 +32,7 @@ export default getRequestConfig(async (params: any) => {
     ownershipTypeMessages,
     assetMessages,
     ptisMessages,
+    ptisRedesignMessages,
     floorFactorMasterMessages,
     weightageMasterMessages,
     configMasterMessages,
@@ -116,6 +117,7 @@ export default getRequestConfig(async (params: any) => {
     import(`./locales/${validatedLocale}/ownership-type.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/asset.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ptis.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/ptisRedesign.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/config-master.json`).then((m) => m.default),
@@ -262,6 +264,7 @@ export default getRequestConfig(async (params: any) => {
       'ownership-type': ownershipTypeMessages,
       asset: assetMessages,
       ptis: ptisMessages,
+      ptisRedesign: ptisRedesignMessages,
       floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
       weightageMaster: weightageMasterMessages.weightageMaster,
       configMaster: configMasterMessages.configMaster || configMasterMessages,

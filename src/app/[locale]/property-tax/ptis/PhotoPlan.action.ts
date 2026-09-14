@@ -2,6 +2,7 @@
 
 import { photoPlanService } from '@/lib/api/ptis/photoplan/photoplan.service';
 import { deleteDocument } from '@/lib/api/document.service';
+import { getPropertySocietyDetails } from '@/lib/api/property-society.service';
 import { ActionResult } from '@/types/common.types';
 import type { 
   PropertyPhotoDto, 
@@ -88,6 +89,9 @@ export async function uploadPropertyPhotoAction(
     const propertyPhotoId = Number(formData.get('PropertyPhotoId') || '0');
     const remarks = String(formData.get('Remarks') || '');
     const photoTypeCode = formData.get('PhotoTypeCode') as string | null;
+    const wingDetailId = Number(formData.get('WingDetailId') || '0');
+    const societyId = Number(formData.get('SocietyDetailId') || '0');
+    const wingName = formData.get('WingName') as string | null;
 
     const displayOrder = Number(formData.get('DisplayOrder') || '1');
 
@@ -108,7 +112,10 @@ export async function uploadPropertyPhotoAction(
       propertyPhotoId,
       displayOrder,
       remarks,
-      photoTypeCode || undefined
+      photoTypeCode || undefined,
+      wingDetailId || undefined,
+      societyId || undefined,
+      wingName || undefined
     );
 
     if (result.success && result.data) {
@@ -137,6 +144,9 @@ export async function replacePropertyPhotoAction(
     const referenceTableIdGuid = formData.get('ReferenceTableIdGuid') as string | null;
     const remarks = String(formData.get('Remarks') || '');
     const photoTypeCode = formData.get('PhotoTypeCode') as string | null;
+    const wingDetailId = Number(formData.get('WingDetailId') || '0');
+    const societyId = Number(formData.get('SocietyDetailId') || '0');
+    const wingName = formData.get('WingName') as string | null;
 
     if (!propertyPhotoId || isNaN(propertyPhotoId)) {
       return { success: false, error: t('media.propertyPhotoIdRequired') || 'Valid PropertyPhotoId is required' };
@@ -153,7 +163,10 @@ export async function replacePropertyPhotoAction(
       propertyPhotoId,
       referenceTableIdGuid || undefined,
       remarks,
-      photoTypeCode || undefined
+      photoTypeCode || undefined,
+      wingDetailId || undefined,
+      societyId || undefined,
+      wingName || undefined
     );
 
     if (result.success && result.data) {
@@ -223,9 +236,42 @@ export async function launchPhotoPlanDrawingToolAction(
   wardNo?: string,
   propertyNo?: string,
   partitionNo?: string | null,
-  ptisBackendUri?: string
+  ptisBackendUri?: string,
+  type?: string | number | null,
+  isAmenity?: boolean,
+  entityType?: string | null,
+  societyDetailId?: number | null,
+  wingDetailId?: number | null,
+  photoTypeId?: number | null
 ): Promise<ActionResult<{ launchUrl: string }>> {
   try {
+    let resolvedSocietyDetailId = (societyDetailId !== undefined && societyDetailId !== null && Number(societyDetailId) > 0)
+      ? Number(societyDetailId)
+      : (societyDetailId === undefined ? undefined : null);
+    let resolvedWingDetailId = (wingDetailId !== undefined && wingDetailId !== null && Number(wingDetailId) > 0)
+      ? Number(wingDetailId)
+      : (wingDetailId === undefined ? undefined : null);
+
+    const isAmenityProp = Boolean(isAmenity) || (type !== undefined && type !== null && Number(type) === 140);
+    const targetEntityType = entityType !== undefined
+      ? entityType
+      : (isAmenityProp ? 'S' : (wingDetailId ? 'W' : societyDetailId ? 'S' : undefined));
+
+    // Automatically resolve missing societyDetailId / wingDetailId for entityType 'S' or amenity properties
+    if ((!resolvedSocietyDetailId || Number(resolvedSocietyDetailId) <= 0) && propertyId && propertyId > 0 && (targetEntityType === 'S' || isAmenityProp)) {
+      try {
+        const socDetails = await getPropertySocietyDetails(propertyId);
+        if (socDetails && socDetails.societyDetailId && Number(socDetails.societyDetailId) > 0) {
+          resolvedSocietyDetailId = Number(socDetails.societyDetailId);
+        }
+        if (!resolvedWingDetailId && socDetails && socDetails.wingId && Number(socDetails.wingId) > 0) {
+          resolvedWingDetailId = Number(socDetails.wingId);
+        }
+      } catch {
+        // Non-blocking lookup fallback
+      }
+    }
+
     const result = await photoPlanService.launchDrawingTool({
       propertyId,
       councilName,
@@ -237,6 +283,12 @@ export async function launchPhotoPlanDrawingToolAction(
       propertyNo,
       partitionNo,
       ptisBackendUri,
+      type,
+      isAmenity,
+      entityType: targetEntityType,
+      societyDetailId: resolvedSocietyDetailId,
+      wingDetailId: resolvedWingDetailId,
+      photoTypeId,
     });
 
     if (result.success && result.launchUrl) {

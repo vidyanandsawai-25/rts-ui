@@ -47,7 +47,7 @@ vi.mocked(useRouter).mockImplementation(() => ({
   forward: vi.fn(),
   replace: mockRouterReplace,
   prefetch: vi.fn(),
-}));
+} as unknown as ReturnType<typeof useRouter>));
 
 Object.defineProperty(window, 'location', {
   value: { ...window.location, assign: vi.fn(), replace: vi.fn() },

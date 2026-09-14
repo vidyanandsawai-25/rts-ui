@@ -2,8 +2,11 @@
 
 import React, { useMemo, useState, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Tabs } from "@/components/common";
+import { Tabs, Button } from "@/components/common";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { Building2, Home, Store } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 import { useDiscountForm } from "@/hooks/useDiscountForm";
 import { DiscountPane } from "./DiscountPane";
 import { SocialDetailsForm } from "./SocialDetailsForm";
@@ -12,17 +15,29 @@ import { PropertySocialInfoResponseDto } from "@/types/property-social-details.t
 import { getFilteredDiscounts } from "@/lib/utils/discount-helpers";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { getLocalizedName } from "@/lib/utils/social-details";
-
+import { SocialAttribute } from "@/types/social-attribute.types";
+import { useDiscountLevelState } from "@/hooks/useDiscountLevelState";
+import { UnitSelectionItem, WingOption } from "@/types/building-permission.types";
 interface DiscountFormProps {
     initialDiscountData: PropertyDiscountInfoResponseDto | null;
     initialSocialData: PropertySocialInfoResponseDto | null;
     propertyId: string;
+    isSociety?: boolean;
+    discountMasterAttributes?: SocialAttribute[];
+    socialMasterAttributes?: SocialAttribute[];
+    wings?: WingOption[];
+    units?: UnitSelectionItem[];
 }
 
 const DiscountFormview: React.FC<DiscountFormProps> = ({
     initialDiscountData,
     initialSocialData,
-    propertyId
+    propertyId,
+    isSociety = false,
+    discountMasterAttributes = [],
+    socialMasterAttributes = [],
+    wings = [],
+    units = [],
 }) => {
     const t = useTranslations('quickDataEntry');
     const router = useRouter();
@@ -63,6 +78,27 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
             router.push(`${pathname}?${params.toString()}`);
         }
     }, [searchParams, router, pathname, activeTab, confirm, t]);
+    const isWingWise = searchParams.get('isWingWise') === 'true';
+    const levelParam = searchParams.get('level') as "Apartment" | "Wing" | "Unit" | null;
+    const societyDetailId = searchParams.get('societyDetailId');
+    const wingDetailId = searchParams.get('wingDetailId');
+    const initialWingDetailId = wingDetailId ? Number(wingDetailId) : null;
+
+    const levelState = useDiscountLevelState({
+        propertyId,
+        initialLevel: levelParam || (isWingWise ? 'Wing' : 'Apartment'),
+        initialWingDetailId,
+        isSociety, 
+        wings,
+        units
+    });
+
+    const handleLevelChange = useCallback((level: "Apartment" | "Wing" | "Unit") => {
+        levelState.setLevel(level);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("level", level);
+        router.push(`${pathname}?${params.toString()}`);
+    }, [levelState, searchParams, router, pathname]);
 
     const {
         discountData,
@@ -77,7 +113,15 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         handleDeleteDiscount,
         handleSave,
         revertDiscount
-    } = useDiscountForm(initialDiscountData, propertyId);
+    } = useDiscountForm(initialDiscountData, propertyId, discountMasterAttributes, {
+        level: levelState?.level,
+        societyDetailId,
+        wingDetailId: levelState && (levelState.level === 'Wing' || levelState.level === 'Unit') 
+            ? (levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : wingDetailId) 
+            : wingDetailId,
+        propertyIds: levelState ? Array.from(levelState.selectedUnitIds).join(",") : undefined,
+        isSociety: isSociety
+    });
 
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
@@ -88,16 +132,21 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
             const exists = discountData[selectedId];
             if (exists) return selectedId;
         }
-        const rootDiscounts = initialDiscountData?.discountAttributes || [];
+        const rootDiscounts = discountMasterAttributes.length > 0
+            ? discountMasterAttributes
+            : (initialDiscountData?.discountAttributes || []);
         return rootDiscounts.length > 0 ? rootDiscounts[0].id : null;
-    }, [discountData, selectedId, initialDiscountData?.discountAttributes]);
+    }, [discountData, selectedId, initialDiscountData?.discountAttributes, discountMasterAttributes]);
 
     const handleSelectDiscount = useCallback((id: number) => {
         if (activeSelectedId !== null && activeSelectedId !== id) {
             revertDiscount(activeSelectedId);
         }
         setSelectedId(id);
-    }, [activeSelectedId, revertDiscount]);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("socialAttributeId", id.toString());
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    }, [activeSelectedId, revertDiscount, searchParams, pathname, router]);
 
     const handleToggleEnabledWrapped = useCallback((id: number, checked: boolean) => {
         const item = discountData[id];
@@ -148,6 +197,17 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     }, [showActiveFirst, handleSelectDiscount]);
 
     const handleSaveClick = useCallback(async () => {
+        if (isSociety && levelState) {
+            if (levelState.level === 'Wing' && !levelState.selectedWingDetailId) {
+                toast.error(t('building.errors.selectWingRequired') || 'Please select a wing.');
+                return;
+            }
+            if (levelState.level === 'Unit' && levelState.selectedUnitIds.size === 0) {
+                toast.error(t('building.selectUnits') || 'Please select at least one unit.');
+                return;
+            }
+        }
+
         const result = await handleSave();
         if (result && !result.isValid && result.incompleteDiscounts) {
             const activeIncomplete = result.incompleteDiscounts.filter(
@@ -167,55 +227,111 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                 });
             }
         }
-    }, [handleSave, discountData, handleSelectDiscount]);
+    }, [handleSave, discountData, handleSelectDiscount, isSociety, levelState, t]);
 
     return (
         <>
-        <Tabs value={activeTab} onChange={handleTabChange} variant="pills" size="sm" className="w-full p-4">
-            <Tabs.TabList className="mb-4 bg-slate-100 p-1.5 rounded-xl max-w-md border border-slate-200">
-                <Tabs.Tab value="discount" className="w-1/2 justify-center py-2 text-xs font-bold cursor-pointer">
-                    {t("discount.title")}
-                </Tabs.Tab>
-                <Tabs.Tab value="social" className="w-1/2 justify-center py-2 text-xs font-bold cursor-pointer">
-                    {t("discount.socialTitle")}
-                </Tabs.Tab>
-            </Tabs.TabList>
+            <Tabs value={activeTab} onChange={handleTabChange} variant="pills" size="sm" className="w-full p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                    <Tabs.TabList className="bg-slate-100 p-1.5 rounded-xl min-w-[300px] w-full sm:w-auto border border-slate-200">
+                        <Tabs.Tab value="discount" className="w-1/2 justify-center py-2 text-xs font-bold cursor-pointer">
+                            {t("discount.title")}
+                        </Tabs.Tab>
+                        <Tabs.Tab value="social" className="w-1/2 justify-center py-2 text-xs font-bold cursor-pointer">
+                            {t("discount.socialTitle")}
+                        </Tabs.Tab>
+                    </Tabs.TabList>
 
-            {/* Discount Information Tab */}
-            <Tabs.TabPanel value="discount" className="h-[calc(100vh-275px)] min-h-[500px] flex flex-col mt-0">
-                <DiscountPane
-                    discountData={discountData}
-                    incompleteDiscounts={incompleteDiscounts}
-                    handleErrorTagClick={handleErrorTagClick}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    showActiveFirst={showActiveFirst}
-                    setShowActiveFirst={setShowActiveFirst}
-                    filteredDiscounts={filteredDiscounts}
-                    activeSelectedId={activeSelectedId}
-                    setSelectedId={handleSelectDiscount}
-                    handleToggleEnabled={handleToggleEnabledWrapped}
-                    validationErrors={validationErrors}
-                    selectedDiscount={selectedDiscount}
-                    handleInputChange={handleInputChange}
-                    handleFileUpload={handleFileUpload}
-                    handleFileDelete={handleFileDelete}
-                    handleDeleteDiscount={handleDeleteDiscount}
-                    isSaving={isSaving}
-                    hasChanges={hasChanges}
-                    onSave={handleSaveClick}
-                    t={t}
-                />
-            </Tabs.TabPanel>
+                    {isSociety && levelState && (
+                        <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                            {searchParams.get('isWingWise') !== 'true' && (
+                                <Button
+                                size="xs"
+                                variant={levelState.level === 'Apartment' ? 'primary' : 'ghost'}
+                                icon={Building2}
+                                onClick={() => handleLevelChange('Apartment')}
+                                className={cn(
+                                    'font-bold cursor-pointer rounded-lg transition-all',
+                                    levelState.level === 'Apartment'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
+                                )}
+                            >
+                                {t('building.apartmentLevel') || 'Apartment Level'}
+                            </Button>
+                            )}
+                            <Button
+                                size="xs"
+                                variant={levelState.level === 'Wing' ? 'primary' : 'ghost'}
+                                icon={Home}
+                                onClick={() => handleLevelChange('Wing')}
+                                className={cn(
+                                    'font-bold cursor-pointer rounded-lg transition-all',
+                                    levelState.level === 'Wing'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
+                                )}
+                            >
+                                {t('building.wingLevel') || 'Wing Level'}
+                            </Button>
+                            <Button
+                                size="xs"
+                                variant={levelState.level === 'Unit' ? 'primary' : 'ghost'}
+                                icon={Store}
+                                onClick={() => handleLevelChange('Unit')}
+                                className={cn(
+                                    'font-bold cursor-pointer rounded-lg transition-all',
+                                    levelState.level === 'Unit'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
+                                )}
+                            >
+                                {t('building.unitLevel') || 'Unit Level'}
+                            </Button>
+                        </div>
+                    )}
+                </div>
 
-            {/* Social Information Tab */}
-            <Tabs.TabPanel value="social" className="h-[calc(100vh-275px)] min-h-[500px] flex flex-col mt-0">
-                <SocialDetailsForm
-                    initialSocialData={initialSocialData}
-                    propertyId={propertyId}
-                />
-            </Tabs.TabPanel>
-        </Tabs>
+                {/* Discount Information Tab */}
+                <Tabs.TabPanel value="discount" className="h-[calc(100vh-275px)] min-h-[500px] flex flex-col mt-0">
+                    <DiscountPane
+                        discountData={discountData}
+                        incompleteDiscounts={incompleteDiscounts}
+                        handleErrorTagClick={handleErrorTagClick}
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        showActiveFirst={showActiveFirst}
+                        setShowActiveFirst={setShowActiveFirst}
+                        filteredDiscounts={filteredDiscounts}
+                        activeSelectedId={activeSelectedId}
+                        setSelectedId={handleSelectDiscount}
+                        handleToggleEnabled={handleToggleEnabledWrapped}
+                        validationErrors={validationErrors}
+                        selectedDiscount={selectedDiscount}
+                        handleInputChange={handleInputChange}
+                        handleFileUpload={handleFileUpload}
+                        handleFileDelete={handleFileDelete}
+                        handleDeleteDiscount={handleDeleteDiscount}
+                        isSaving={isSaving}
+                        hasChanges={hasChanges}
+                        onSave={handleSaveClick}
+                        t={t}
+                        levelState={levelState}
+                        isSociety={isSociety}
+                    />
+                </Tabs.TabPanel>
+
+                {/* Social Information Tab */}
+                <Tabs.TabPanel value="social" className="h-[calc(100vh-275px)] min-h-[500px] flex flex-col mt-0">
+                    <SocialDetailsForm
+                        initialSocialData={initialSocialData}
+                        propertyId={propertyId}
+                        levelState={levelState}
+                        isSociety={isSociety}
+                        socialMasterAttributes={socialMasterAttributes}
+                    />
+                </Tabs.TabPanel>
+            </Tabs>
         </>
     );
 };
