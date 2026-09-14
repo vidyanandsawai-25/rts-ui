@@ -66,7 +66,7 @@ export const photoPlanService = {
         departmentId: DEPARTMENT_ID.PTIS,
         moduleId: isSocietyPhoto ? MODULE_ID.SocietyPhoto : (isWingPhoto ? MODULE_ID.WingPhoto : MODULE_ID.PropertyPhoto),
         bindingPurpose: remarks || (isWingPhoto && wingName ? `Wing Photo | ${wingName}` : (isSocietyPhoto ? "Society Photo" : "Photo")),
-        documentType: photoTypeCode || String(photoTypeId),
+        documentType: (photoTypeCode?.toUpperCase() === 'PHOTO_PLAN' ? 'PROPERTY_PLAN' : photoTypeCode) || String(photoTypeId),
         isPrimaryDocument: true,
         referenceTableName: REFERENCE_TABLE.PropertyPhoto
       };
@@ -185,7 +185,7 @@ export const photoPlanService = {
         moduleId: isSocietyPhoto ? MODULE_ID.SocietyPhoto : (isWingPhoto ? MODULE_ID.WingPhoto : MODULE_ID.PropertyPhoto),
         referenceTableName: REFERENCE_TABLE.PropertyPhoto,
         bindingPurpose: remarks || (isWingPhoto && wingName ? `Wing Photo | ${wingName}` : (isSocietyPhoto ? "Society Photo" : "Photo")),
-        documentType: photoTypeCode || DOCUMENT_TYPE.Photo,
+        documentType: (photoTypeCode?.toUpperCase() === 'PHOTO_PLAN' ? 'PROPERTY_PLAN' : photoTypeCode) || DOCUMENT_TYPE.Photo,
         isPrimaryDocument: true
       };
 

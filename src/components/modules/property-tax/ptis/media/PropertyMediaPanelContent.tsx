@@ -417,7 +417,7 @@ export function PropertyMediaPanelContent({
           </>
         ) : null}
 
-        {!isMainProperty && (
+        {!isMainProperty && photoPlanCategory && (
           <>
             <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
             <MediaImageCard

@@ -12,7 +12,7 @@ import {
   buildPartitionOptionKey,
 } from '@/hooks/ptis/tab/usePropertyOptions';
 import type { PartitionOptionValue } from '@/hooks/ptis/tab/usePropertyOptions';
-import type { TabHeaderInfoData } from '@/types/ptis.types';
+import type { TabHeaderInfoData, PropertyListItem } from '@/types/ptis.types';
 
 export interface PropertySearchBarProps {
   wardNo: string;
@@ -63,6 +63,7 @@ export interface PropertySearchBarProps {
   onPropertySearchChange?: (search: string) => void;
   onPartitionSearchChange?: (search: string) => void;
   isSearchingProperties?: boolean;
+  propertiesList?: PropertyListItem[];
   showSummaryInfo?: boolean;
 }
 
@@ -98,6 +99,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   onPropertySearchChange,
   onPartitionSearchChange,
   isSearchingProperties = false,
+  propertiesList,
   showSummaryInfo = true,
 }) => {
   const t = useTranslations('ptis');
@@ -256,6 +258,14 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
         }
       }
 
+      if ((!societyDetailId || !wingDetailId) && propertyId && propertiesList) {
+        const found = propertiesList.find((p) => p.propertyId === Number(propertyId));
+        if (found) {
+          if (!societyDetailId && found.societyDetailId) societyDetailId = found.societyDetailId;
+          if (!wingDetailId && found.wingDetailId) wingDetailId = found.wingDetailId;
+        }
+      }
+
       onSearch({
         wardNo,
         propertyNo: finalPropertyNo,
@@ -268,7 +278,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
         wingDetailId,
       });
     },
-    [onSearch, wardNo, propertyNo, partitionNo, wardId, propertyId, category, categoryLabel, partitionOptionKey, partitionValueMap, propertySelectValue, draftSocietyDetailId, draftWingDetailId]
+    [onSearch, wardNo, propertyNo, partitionNo, wardId, propertyId, category, categoryLabel, partitionOptionKey, partitionValueMap, propertySelectValue, draftSocietyDetailId, draftWingDetailId, propertiesList]
   );
 
   // Format the Old No string, showing only '-' if there is no data

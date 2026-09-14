@@ -9,6 +9,41 @@ import type {
 } from '@/types/ptis.types';
 import { fetchWithCertSupport, getErrorFormattedMessage, extractItems } from './base-api';
 
+import { getPropertySocietyDetails } from '@/lib/api/property-society.service';
+
+async function enrichSuggestionsWithSocietyDetails(
+  items: PropwiseSuggestionItem[]
+): Promise<PropwiseSuggestionItem[]> {
+  return Promise.all(
+    items.map(async (item) => {
+      let societyDetailId = item.societyDetailId ?? null;
+      let wingDetailId = item.wingDetailId ?? null;
+
+      if ((!societyDetailId || societyDetailId <= 0) && item.propertyId > 0) {
+        try {
+          const socDetails = await getPropertySocietyDetails(item.propertyId);
+          if (socDetails) {
+            if (!societyDetailId && socDetails.societyDetailId && Number(socDetails.societyDetailId) > 0) {
+              societyDetailId = Number(socDetails.societyDetailId);
+            }
+            if (!wingDetailId && socDetails.wingId && Number(socDetails.wingId) > 0) {
+              wingDetailId = Number(socDetails.wingId);
+            }
+          }
+        } catch {
+          // non-blocking fallback
+        }
+      }
+
+      return {
+        ...item,
+        societyDetailId,
+        wingDetailId,
+      };
+    })
+  );
+}
+
 export const ptisSearchService = {
   async searchProperties(filters: {
     wardNo?: string;
@@ -112,9 +147,15 @@ export const ptisSearchService = {
     if (partitionNo) params.append('PartitionNo', partitionNo);
     params.append('MaxResults', maxResults.toString());
 
-    const response = await fetchWithCertSupport<PropwiseSuggestionResponse | PropwiseSuggestionItem[]>(
-      `/ApartmentQC/search/suggestions?${params.toString()}`
+    let response = await fetchWithCertSupport<PropwiseSuggestionResponse | PropwiseSuggestionItem[]>(
+      `/Property/propwisesearch/suggestions?${params.toString()}`
     );
+
+    if (!response.success || !response.data) {
+      response = await fetchWithCertSupport<PropwiseSuggestionResponse | PropwiseSuggestionItem[]>(
+        `/ApartmentQC/search/suggestions?${params.toString()}`
+      );
+    }
 
     if (!response.success) {
       return {
@@ -123,11 +164,65 @@ export const ptisSearchService = {
       };
     }
 
-    const items = extractItems<PropwiseSuggestionItem>(response.data);
+    const rawItems = extractItems<Record<string, unknown>>(response.data);
+
+    const extractId = (val: unknown): number | null => {
+      if (typeof val === 'number' && Number.isFinite(val) && val > 0) return val;
+      if (typeof val === 'string' && val.trim() !== '') {
+        const n = parseInt(val, 10);
+        if (Number.isFinite(n) && n > 0) return n;
+      }
+      return null;
+    };
+
+    const mappedItems: PropwiseSuggestionItem[] = rawItems.map((obj) => {
+      const propertyId = Number(obj.propertyId ?? obj.PropertyId ?? 0);
+      const propNo = String(obj.propertyNo ?? obj.PropertyNo ?? '');
+      const partNo = obj.partitionNo != null ? String(obj.partitionNo) : obj.PartitionNo != null ? String(obj.PartitionNo) : null;
+
+      const societyDetailId =
+        extractId(obj.societyDetailId) ??
+        extractId(obj.SocietyDetailId) ??
+        extractId(obj.societydetailid) ??
+        extractId(obj.societyId) ??
+        extractId(obj.SocietyId) ??
+        extractId(obj.societyid) ??
+        extractId(obj.societyMasterId) ??
+        null;
+
+      const wingDetailId =
+        extractId(obj.wingDetailId) ??
+        extractId(obj.WingDetailId) ??
+        extractId(obj.wingdetailid) ??
+        extractId(obj.wingId) ??
+        extractId(obj.WingId) ??
+        extractId(obj.wingid) ??
+        null;
+
+      return {
+        propertyId,
+        zoneId: obj.zoneId != null ? Number(obj.zoneId) : obj.ZoneId != null ? Number(obj.ZoneId) : undefined,
+        zoneNo: obj.zoneNo != null ? String(obj.zoneNo) : obj.ZoneNo != null ? String(obj.ZoneNo) : undefined,
+        wardId: obj.wardId != null ? Number(obj.wardId) : obj.WardId != null ? Number(obj.WardId) : wardId,
+        wardNo: obj.wardNo != null ? String(obj.wardNo) : obj.WardNo != null ? String(obj.WardNo) : undefined,
+        propertyNo: propNo,
+        partitionNo: partNo,
+        upicId: obj.upicId != null ? String(obj.upicId) : obj.UpicId != null ? String(obj.UpicId) : undefined,
+        displayLabel: obj.displayLabel != null ? String(obj.displayLabel) : obj.DisplayLabel != null ? String(obj.DisplayLabel) : (obj.displayProperty != null ? String(obj.displayProperty) : `${propNo}${partNo ? `-${partNo}` : ''}`),
+        category: obj.category != null ? Number(obj.category) : obj.Category != null ? Number(obj.Category) : undefined,
+        categoryLabel: obj.categoryLabel != null ? String(obj.categoryLabel) : obj.CategoryLabel != null ? String(obj.CategoryLabel) : undefined,
+        societyDetailId,
+        societyName: obj.societyName != null ? String(obj.societyName) : obj.SocietyName != null ? String(obj.SocietyName) : null,
+        wings: Array.isArray(obj.wings) ? (obj.wings as PropwiseSuggestionItem['wings']) : Array.isArray(obj.Wings) ? (obj.Wings as PropwiseSuggestionItem['wings']) : null,
+        wingDetailId,
+      };
+    });
+
+    const enrichedItems = await enrichSuggestionsWithSocietyDetails(mappedItems);
 
     return {
       success: true,
-      data: items,
+      data: enrichedItems,
     };
   },
 
@@ -168,24 +263,58 @@ export const ptisSearchService = {
       ?? (responsePageSize > 0 ? Math.ceil(totalCount / responsePageSize) : 1);
     const hasNext = response.data.hasNext ?? responsePageNumber < totalPages;
 
-    const items = response.data.items
-      .map((item): PropwiseSuggestionItem => ({
-        propertyId: Number(item.propertyId ?? item.id ?? 0),
-        propertyNo: String(item.propertyNo ?? ''),
-        partitionNo: item.partitionNo != null ? String(item.partitionNo) : null,
-        wardId: item.wardId != null ? Number(item.wardId) : wardId,
-        wardNo: item.wardNo != null ? String(item.wardNo) : undefined,
-        upicId: item.upicId != null ? String(item.upicId) : undefined,
-        displayLabel: item.displayProperty != null
-          ? String(item.displayProperty)
-          : String(item.propertyNo ?? ''),
-      }))
+    const extractId = (val: unknown): number | null => {
+      if (typeof val === 'number' && Number.isFinite(val) && val > 0) return val;
+      if (typeof val === 'string' && val.trim() !== '') {
+        const n = parseInt(val, 10);
+        if (Number.isFinite(n) && n > 0) return n;
+      }
+      return null;
+    };
+
+    const mappedItems: PropwiseSuggestionItem[] = response.data.items
+      .map((item): PropwiseSuggestionItem => {
+        const rawObj = item as unknown as Record<string, unknown>;
+        const societyDetailId =
+          extractId(item.societyDetailId) ??
+          extractId(rawObj.SocietyDetailId) ??
+          extractId(rawObj.societydetailid) ??
+          extractId(rawObj.societyId) ??
+          extractId(rawObj.SocietyId) ??
+          null;
+
+        const wingDetailId =
+          extractId(rawObj.wingDetailId) ??
+          extractId(rawObj.WingDetailId) ??
+          extractId(rawObj.wingdetailid) ??
+          extractId(rawObj.wingId) ??
+          extractId(rawObj.WingId) ??
+          null;
+
+        return {
+          propertyId: Number(item.propertyId ?? item.id ?? 0),
+          propertyNo: String(item.propertyNo ?? ''),
+          partitionNo: item.partitionNo != null ? String(item.partitionNo) : null,
+          wardId: item.wardId != null ? Number(item.wardId) : wardId,
+          wardNo: item.wardNo != null ? String(item.wardNo) : undefined,
+          upicId: item.upicId != null ? String(item.upicId) : undefined,
+          displayLabel: item.displayProperty != null
+            ? String(item.displayProperty)
+            : String(item.propertyNo ?? ''),
+          category: item.categoryId ?? (rawObj.category as number | undefined),
+          categoryLabel: item.categoryName ?? (rawObj.categoryLabel as string | undefined),
+          societyDetailId,
+          wingDetailId,
+        };
+      })
       .filter((item) => item.propertyId > 0 && item.propertyNo.trim() !== '');
+
+    const enrichedItems = await enrichSuggestionsWithSocietyDetails(mappedItems);
 
     return {
       success: true,
       data: {
-        items,
+        items: enrichedItems,
         totalCount,
         pageNumber: responsePageNumber,
         pageSize: responsePageSize,

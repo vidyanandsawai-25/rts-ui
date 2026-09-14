@@ -88,8 +88,14 @@ function PropertyMediaPanel({
 }: PropertyMediaPanelProps): React.ReactElement {
   const searchParams = useSearchParams();
   const searchPropertyId = searchParams?.get('propertyId') || searchParams?.get('propertyid');
-  const searchSocietyDetailId = searchParams?.get('societyDetailId') || searchParams?.get('societydetailid') || searchParams?.get('societyId');
-  const searchWingDetailId = searchParams?.get('wingDetailId') || searchParams?.get('wingdetailid') || searchParams?.get('wingId');
+  const searchSocietyDetailId =
+    searchParams?.get('societyDetailId') ||
+    searchParams?.get('societydetailid') ||
+    searchParams?.get('societyId') ||
+    searchParams?.get('societyid') ||
+    searchParams?.get('societyMasterId') ||
+    searchParams?.get('societyMasterid');
+  const searchWingDetailId = searchParams?.get('wingDetailId') || searchParams?.get('wingdetailid') || searchParams?.get('wingId') || searchParams?.get('wingid');
   const searchEntityType = searchParams?.get('entityType') || searchParams?.get('entitytype');
   const searchWardNo = searchParams?.get('wardNo') || searchParams?.get('wardno');
   const searchPropertyNo = searchParams?.get('propertyNo') || searchParams?.get('propertyno');
@@ -294,7 +300,13 @@ function PropertyMediaPanel({
 
   // Drawing Tool Launcher
   const launchDrawingApp = useCallback(
-    async (options?: { type?: string | number | null; photoTypeId?: number | null; isAmenity?: boolean }) => {
+    async (options?: {
+      type?: string | number | null;
+      photoTypeId?: number | null;
+      isAmenity?: boolean;
+      societyDetailId?: number | null;
+      wingDetailId?: number | null;
+    }) => {
       if (!effectiveId || effectiveId <= 0) return;
 
       const toastId = toast.loading(t('media.preparingDrawingTool') || 'Preparing drawing tool...');
@@ -303,6 +315,8 @@ function PropertyMediaPanel({
         const isAmenityFlag = options?.isAmenity || isAmenityProperty || propPropertyTypeId === 140 || effectivePropertyTypeId === 140;
         const targetEntityType = isAmenityFlag ? 'S' : resolvedEntityType;
         const targetPhotoTypeId = options?.photoTypeId ?? defaultPhotoTypeId;
+        const targetSocietyDetailId = options?.societyDetailId ?? resolvedSocietyDetailId;
+        const targetWingDetailId = options?.wingDetailId ?? effectiveWingDetailId;
         const res = await launchPhotoPlanDrawingToolAction(
           effectiveId,
           _councilName,
@@ -317,8 +331,8 @@ function PropertyMediaPanel({
           options?.type,
           isAmenityFlag,
           targetEntityType,
-          resolvedSocietyDetailId,
-          effectiveWingDetailId,
+          targetSocietyDetailId,
+          targetWingDetailId,
           targetPhotoTypeId
         );
 
@@ -383,6 +397,15 @@ function PropertyMediaPanel({
             return;
           }
 
+          const fetchedSocietyDetailId = data?.societyDetailId ?? data?.SocietyDetailId ?? data?.societyId ?? data?.SocietyId;
+          const fetchedWingDetailId = data?.wingDetailId ?? data?.WingDetailId ?? data?.wingId ?? data?.WingId;
+          const targetSocietyDetailId = (fetchedSocietyDetailId && Number(fetchedSocietyDetailId) > 0)
+            ? Number(fetchedSocietyDetailId)
+            : resolvedSocietyDetailId;
+          const targetWingDetailId = (fetchedWingDetailId && Number(fetchedWingDetailId) > 0)
+            ? Number(fetchedWingDetailId)
+            : effectiveWingDetailId;
+
           // Rule 2: Individual / Amenity Handling
           const catName = String(data?.categoryName ?? data?.CategoryName ?? '').toLowerCase();
           const isAmenity = Number(data?.propertyTypeId) === 140 || catName.includes('amenity');
@@ -393,7 +416,7 @@ function PropertyMediaPanel({
             catName.includes('individual');
 
           if (isIndividualOrAmenity) {
-            await launchDrawingApp({ isAmenity });
+            await launchDrawingApp({ isAmenity, societyDetailId: targetSocietyDetailId, wingDetailId: targetWingDetailId });
             return;
           }
 
@@ -411,7 +434,7 @@ function PropertyMediaPanel({
 
           if (hasTypeValue && rawTypeValue) {
             // If hasType === true -> Execute direct redirect to CAD drawer
-            await launchDrawingApp({ type: rawTypeValue as string | number });
+            await launchDrawingApp({ type: rawTypeValue as string | number, societyDetailId: targetSocietyDetailId, wingDetailId: targetWingDetailId });
             return;
           }
 

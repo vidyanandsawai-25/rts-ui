@@ -16,10 +16,22 @@ export function useSyncedSearchParams() {
   const propertyIdRaw = searchParams.get('propertyId');
   const propertyId = propertyIdRaw && propertyIdRaw.trim() ? propertyIdRaw : null;
 
-  const societyDetailId = toPositiveInt(searchParams.get('societyDetailId')) || null;
+  const societyDetailId =
+    toPositiveInt(searchParams.get('societyDetailId')) ||
+    toPositiveInt(searchParams.get('societydetailid')) ||
+    toPositiveInt(searchParams.get('societyId')) ||
+    toPositiveInt(searchParams.get('societyid')) ||
+    toPositiveInt(searchParams.get('societyMasterId')) ||
+    toPositiveInt(searchParams.get('societyMasterid')) ||
+    null;
   const societyId = toPositiveInt(searchParams.get('societyId')) || null;
   const wingId = toPositiveInt(searchParams.get('wingId')) || null;
-  const wingDetailId = toPositiveInt(searchParams.get('wingDetailId')) || null;
+  const wingDetailId =
+    toPositiveInt(searchParams.get('wingDetailId')) ||
+    toPositiveInt(searchParams.get('wingdetailid')) ||
+    toPositiveInt(searchParams.get('wingId')) ||
+    toPositiveInt(searchParams.get('wingid')) ||
+    null;
   const wingName = searchParams.get('wingName') || null;
 
   return {

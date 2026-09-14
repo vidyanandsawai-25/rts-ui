@@ -149,6 +149,51 @@ export default function PropertyTabSection({
     }
   }, [initialData?.rawPropertyData, setPropertiesList]);
 
+  // Auto-sync missing societyDetailId & wingDetailId to URL searchParams when property is loaded
+  useEffect(() => {
+    if (!urlState.propertyId) return;
+
+    const currentPropId = Number(urlState.propertyId);
+    const matchedProp = propertiesList.find((p) => p.propertyId === currentPropId);
+
+    const rawPropDetails = initialData?.propertyDetails as unknown as Record<string, unknown> | undefined;
+
+    const resolvedSocietyId =
+      urlState.societyDetailId ??
+      matchedProp?.societyDetailId ??
+      initialData?.societyDetails?.societyDetailId ??
+      (rawPropDetails?.societyDetailId as number | undefined) ??
+      (rawPropDetails?.societyId as number | undefined) ??
+      null;
+
+    const resolvedWingId =
+      urlState.wingDetailId ??
+      matchedProp?.wingDetailId ??
+      (rawPropDetails?.wingDetailId as number | undefined) ??
+      (rawPropDetails?.wingId as number | undefined) ??
+      null;
+
+    const paramsToUpdate: Record<string, string | null> = {};
+    if (resolvedSocietyId && !urlState.societyDetailId) {
+      paramsToUpdate.societyDetailId = String(resolvedSocietyId);
+    }
+    if (resolvedWingId && !urlState.wingDetailId) {
+      paramsToUpdate.wingDetailId = String(resolvedWingId);
+    }
+
+    if (Object.keys(paramsToUpdate).length > 0) {
+      updateUrl(paramsToUpdate);
+    }
+  }, [
+    urlState.propertyId,
+    urlState.societyDetailId,
+    urlState.wingDetailId,
+    propertiesList,
+    initialData?.societyDetails?.societyDetailId,
+    initialData?.propertyDetails,
+    updateUrl,
+  ]);
+
   // Auto-resolve propertyId if typed values exactly match an item in suggestions list
   useEffect(() => {
     if (!draft.propertyNo) {
@@ -348,6 +393,7 @@ export default function PropertyTabSection({
           onPropertySearchChange={setSearchText}
           onPartitionSearchChange={setPartitionSearchText}
           isSearchingProperties={isSearchingProperties}
+          propertiesList={propertiesList}
         />
 
         <PropertyTabHeaders

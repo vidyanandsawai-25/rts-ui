@@ -289,6 +289,10 @@ describe('PropertyMediaPanel - Draw Plan & Type Assignment Workflow', () => {
   });
 
   it('shows error toast when set-type API fails with error', async () => {
+    mockGetPropertyDrawPlanStatus.mockResolvedValue({
+      success: true,
+      data: { hasType: false },
+    });
     mockSavePlanTypeAction.mockResolvedValue({
       success: false,
       error: 'Type already exists',

@@ -190,10 +190,52 @@ export async function mapPtisFetchResults({
   let redirectUrl = '';
 
   const matchedProp = rawPropertyData.find(p => p.propertyId === resolvedPropertyId);
-  const finalSocietyDetailId = matchedProp?.societyDetailId || societyDetails?.societyDetailId || rawPropObj?.societyDetailId || rawDataObj?.societyDetailId || rawPropObj?.societyId || rawDataObj?.societyId;
-  const finalWingDetailId = matchedProp?.wingDetailId || rawPropObj?.wingDetailId || rawDataObj?.wingDetailId || rawPropObj?.wingId || rawDataObj?.wingId;
+  const finalSocietyDetailId =
+    matchedProp?.societyDetailId ||
+    societyDetails?.societyDetailId ||
+    (rawPropObj as Record<string, unknown>)?.societyDetailId ||
+    (rawPropObj as Record<string, unknown>)?.SocietyDetailId ||
+    (rawDataObj as Record<string, unknown>)?.societyDetailId ||
+    (rawDataObj as Record<string, unknown>)?.SocietyDetailId ||
+    (rawPropObj as Record<string, unknown>)?.societyId ||
+    (rawPropObj as Record<string, unknown>)?.SocietyId ||
+    (rawDataObj as Record<string, unknown>)?.societyId ||
+    (rawDataObj as Record<string, unknown>)?.SocietyId;
 
-  const hasMissingParams = Boolean(resolvedPropertyId) && (!searchParams?.propertyNo || !searchParams?.wardNo || (!!finalSocietyDetailId && !searchParams?.societyDetailId && !searchParams?.societyId) || (!!finalWingDetailId && !searchParams?.wingDetailId && !searchParams?.wingId));
+  const finalWingDetailId =
+    matchedProp?.wingDetailId ||
+    (rawPropObj as Record<string, unknown>)?.wingDetailId ||
+    (rawPropObj as Record<string, unknown>)?.WingDetailId ||
+    (rawDataObj as Record<string, unknown>)?.wingDetailId ||
+    (rawDataObj as Record<string, unknown>)?.WingDetailId ||
+    (rawPropObj as Record<string, unknown>)?.wingId ||
+    (rawPropObj as Record<string, unknown>)?.WingId ||
+    (rawDataObj as Record<string, unknown>)?.wingId ||
+    (rawDataObj as Record<string, unknown>)?.WingId;
+
+  const hasSocietyInParams = Boolean(
+    searchParams?.societyDetailId ||
+    searchParams?.societydetailid ||
+    searchParams?.societyId ||
+    searchParams?.societyid ||
+    searchParams?.societyMasterId ||
+    searchParams?.societyMasterid
+  );
+
+  const hasWingInParams = Boolean(
+    searchParams?.wingDetailId ||
+    searchParams?.wingdetailid ||
+    searchParams?.wingId ||
+    searchParams?.wingid
+  );
+
+  const hasMissingParams = Boolean(resolvedPropertyId) && (
+    !searchParams?.propertyNo ||
+    !searchParams?.wardNo ||
+    (Boolean(finalSocietyDetailId) && !hasSocietyInParams) ||
+    (Boolean(finalWingDetailId) && !hasWingInParams)
+  );
+
   const isIdMismatch = Boolean(resolvedPropertyId) && (!propertyIdParam || propertyIdParam !== resolvedPropertyId);
 
   if (resolvedPropertyId && (isIdMismatch || hasMissingParams)) {
@@ -228,13 +270,10 @@ export async function mapPtisFetchResults({
       newParams.set('wardId', finalWardId.toString());
     }
 
-    const finalSocietyDetailId = matchedProp?.societyDetailId || societyDetails?.societyDetailId || rawPropObj?.societyDetailId || rawDataObj?.societyDetailId || rawPropObj?.societyId || rawDataObj?.societyId;
-    const finalWingDetailId = matchedProp?.wingDetailId || rawPropObj?.wingDetailId || rawDataObj?.wingDetailId || rawPropObj?.wingId || rawDataObj?.wingId;
-
-    if (finalSocietyDetailId && !newParams.has('societyDetailId') && !newParams.has('societyId')) {
+    if (finalSocietyDetailId && !hasSocietyInParams) {
       newParams.set('societyDetailId', String(finalSocietyDetailId));
     }
-    if (finalWingDetailId && !newParams.has('wingDetailId') && !newParams.has('wingId')) {
+    if (finalWingDetailId && !hasWingInParams) {
       newParams.set('wingDetailId', String(finalWingDetailId));
     }
 

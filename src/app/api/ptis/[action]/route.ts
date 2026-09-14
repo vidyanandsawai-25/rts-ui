@@ -45,13 +45,17 @@ export async function GET(
         );
 
         if (result.success && result.data && Array.isArray(result.data.items)) {
-          // Return propertyId alongside propertyNo, partitionNo and displayLabel,
-          // but keep other internal database keys (zoneId, zoneNo, wardId, wardNo, upicId) hidden.
           const filtered = result.data.items.map((item) => ({
             propertyId: item.propertyId,
             propertyNo: item.propertyNo,
             partitionNo: item.partitionNo,
             displayLabel: item.displayLabel,
+            category: item.category,
+            categoryLabel: item.categoryLabel,
+            societyDetailId: item.societyDetailId,
+            societyName: item.societyName,
+            wings: item.wings,
+            wingDetailId: item.wingDetailId,
           }));
           return NextResponse.json({
             success: true,
