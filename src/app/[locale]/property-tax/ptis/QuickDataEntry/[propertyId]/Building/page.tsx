@@ -4,7 +4,6 @@ import { setRequestLocale } from 'next-intl/server';
 import BuildingForm from "@/components/modules/property-tax/ptis/QuickDataEntry/building/BuildingForm";
 import {
     getBuildingPermissionsAction,
-    getFloorCertificatesAction,
     getSocietyWingTypesWithStatusAction,
     getWingsByPropertyAction,
     getUnitsByPropertyAction,
@@ -12,15 +11,11 @@ import {
     getApartmentQcCertificateGridAction
 } from "./action";
 import {
-    getFloorSubmissionsByOwnerAction,
     getFloorDataAction,
     getConstructionTypeDataAction,
     getTypeOfUseDataAction,
-    getSubFloorDataAction,
-    getSubTypeOfUseDataAction,
     getPropertyBasicDetailsAction,
 } from '../FloorSubmission/actions';
-import { normalizeArrayResponse } from '@/lib/utils/action-response-helpers';
 import type { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResponse, SubTypeOfUseResponse } from '@/types/floor-details.types';
 import type { FloorData } from '@/types/room-details.types';
 
@@ -62,7 +57,7 @@ function BuildingFormSkeleton() {
 // 2. The Data Loader Component (Server Component)
 async function BuildingFormDataLoader({
     propertyId,
-    selectedFloorIdNum,
+    selectedFloorIdNum: _selectedFloorIdNum,
     searchCategory,
     searchSocietyId,
     searchWingDetailId,
@@ -83,19 +78,15 @@ async function BuildingFormDataLoader({
     rawSearchParams?: Record<string, string | string[] | undefined>,
     locale?: string,
 }) {
-    const targetPropId = levelParam === 'Unit' ? propertyId : null;
+    const targetPropId = null;
     const targetWingId = (levelParam === 'Wing' || levelParam === 'Unit') && searchWingDetailId ? Number(searchWingDetailId) : null;
     const targetSocId = (levelParam === 'Apartment' || !levelParam) && searchSocietyId ? Number(searchSocietyId) : null;
 
-    // Fetch building permissions, basic details, and floor lookups concurrently
+    // Fetch essential initial building permission, basic details, wings, units, and core lookup data concurrently
     const [
         response,
-        floorCertificatesResponse,
         floorDataResult,
         constructionTypeDataResult,
-        subFloorDataResult,
-        subTypeDataResult,
-        initialFloorsRaw,
         propertyBasicDetails,
         wingsResult,
         unitsResult,
@@ -107,15 +98,11 @@ async function BuildingFormDataLoader({
             : (searchSocietyId)
                 ? getSocietyWingTypesWithStatusAction(Number(searchSocietyId), null)
                 : getBuildingPermissionsAction(propertyId),
-        getFloorCertificatesAction(propertyId, selectedFloorIdNum),
         getFloorDataAction(),
         getConstructionTypeDataAction(),
-        getSubFloorDataAction(),
-        getSubTypeOfUseDataAction(),
-        getFloorSubmissionsByOwnerAction(propertyId),
         getPropertyBasicDetailsAction(propertyId),
         getWingsByPropertyAction(propertyId),
-        getUnitsByPropertyAction(propertyId, null, 1, 10),
+        getUnitsByPropertyAction(propertyId, targetWingId, 1, 10),
         getCertificateTypeMasterAction(),
         getApartmentQcCertificateGridAction(
             targetPropId,
@@ -125,7 +112,7 @@ async function BuildingFormDataLoader({
     ]);
 
     const resolvedPropertyTypeId = propertyBasicDetails?.propertyTypeId;
-    const useDataResult = await getTypeOfUseDataAction(resolvedPropertyTypeId);
+    const useDataResult = resolvedPropertyTypeId ? await getTypeOfUseDataAction(resolvedPropertyTypeId) : [];
 
     function checkResult<T>(res: unknown): T[] {
         if (res && typeof res === 'object' && 'success' in res && !(res as { success: boolean }).success) {
@@ -137,9 +124,10 @@ async function BuildingFormDataLoader({
     const floorData = checkResult<FloorResponse>(floorDataResult);
     const constructionTypeData = checkResult<ConstructionTypeResponse>(constructionTypeDataResult);
     const useData = checkResult<TypeOfUseApiItem>(useDataResult);
-    const subFloorData = checkResult<SubFloorResponse>(subFloorDataResult);
-    const subTypeData = checkResult<SubTypeOfUseResponse>(subTypeDataResult);
-    const initialFloors = normalizeArrayResponse<FloorData>(initialFloorsRaw);
+    const subFloorData: SubFloorResponse[] = [];
+    const subTypeData: SubTypeOfUseResponse[] = [];
+    const initialFloors: FloorData[] = [];
+    const floorCertificatesResponse = { success: true, data: null };
 
     // Process Wings SSR Data
     const rawWings = (wingsResult?.success && Array.isArray(wingsResult.data)) ? wingsResult.data as Record<string, unknown>[] : [];

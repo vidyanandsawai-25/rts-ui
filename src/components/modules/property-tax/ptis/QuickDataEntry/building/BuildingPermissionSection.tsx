@@ -8,6 +8,7 @@ import {
   Home,
   Store,
   Trash2,
+  Loader2,
 } from 'lucide-react';
 import { SaveButton, Input, Checkbox, Select, SearchInput, MasterTable, Badge, Button, Label, ValidationMessage } from '@/components/common';
 import type { Column } from '@/components/common';
@@ -145,6 +146,7 @@ export function BuildingPermissionSection({
     isLoadingMoreUnits,
     loadNextUnitsPage,
     gridRecords,
+    isLoadingGridRecords,
     activeCertificate,
   } = useCertificateModalState({
     propertyId,
@@ -359,7 +361,15 @@ export function BuildingPermissionSection({
   }, [filteredUnits]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden p-3 gap-3">
+    <div className="relative flex-1 flex flex-col min-h-0 h-full overflow-hidden p-3 gap-3">
+      {isSaving && (
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-50 flex items-center justify-center rounded-xl shadow-lg">
+          <div className="flex items-center gap-3 px-5 py-3 bg-slate-900/90 text-white rounded-xl shadow-2xl text-sm font-semibold animate-pulse">
+            <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
+            <span>{t('building.saving') || 'Saving building permissions & documents...'}</span>
+          </div>
+        </div>
+      )}
       {/* Title & Level Selector Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-2 gap-2 flex-shrink-0">
         <h2 className="text-base font-bold text-blue-900">
@@ -453,7 +463,15 @@ export function BuildingPermissionSection({
         </div>
 
         {/* Right Detail Pane */}
-        <div className="lg:col-span-8 xl:col-span-9 flex flex-col h-full min-h-0 bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto space-y-4 shadow-xs">
+        <div className="relative lg:col-span-8 xl:col-span-9 flex flex-col h-full min-h-0 bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto space-y-4 shadow-xs">
+          {isLoadingGridRecords && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center rounded-xl">
+              <div className="flex items-center gap-2 px-3 py-2 bg-slate-800/80 text-white rounded-lg shadow-md text-xs font-medium animate-pulse">
+                <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                Fetching wing data...
+              </div>
+            </div>
+          )}
           <div className="border-b border-slate-100 pb-2">
             <h3 className="text-base font-bold text-blue-900">
               {activeCertificateType?.certificateTypeName || 'Certificate'}
@@ -488,18 +506,20 @@ export function BuildingPermissionSection({
                           setFloorFilter('all');
                           setUseFilter('all');
 
-                          const params = new URLSearchParams(searchParams.toString());
+                          const params = new URLSearchParams(window.location.search);
                           params.set("wingDetailId", String(wing.wingDetailId));
-                          const nextUrl = `${pathname}?${params.toString()}`;
-                          router.push(nextUrl, { scroll: false });
+                          window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
                         }}
                         className={cn(
-                          'px-4 font-semibold rounded-lg transition-all cursor-pointer border',
+                          'px-4 font-semibold rounded-lg transition-all cursor-pointer border flex items-center gap-1.5',
                           isSelected
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs'
                             : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                         )}
                       >
+                        {isLoadingGridRecords && isSelected && (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                        )}
                         {wing.wingName}
                       </Button>
                     );

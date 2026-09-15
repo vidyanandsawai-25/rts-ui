@@ -138,6 +138,8 @@ export function useCertificateModalState({
     gridItemsRef.current = gridItems;
   }, [gridItems]);
 
+  const lastFetchedKeyRef = useRef<string | null>(null);
+
   // Sync grid items dynamically when level or selected targets change
   useEffect(() => {
     let isSubscribed = true;
@@ -151,16 +153,24 @@ export function useCertificateModalState({
     } else if (level === 'Wing') {
       targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
     } else if (level === 'Unit') {
-      targetPropId = targetUnitPropertyId ?? null;
+      targetPropId = null;
       targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
     }
 
     if (!targetPropId && !targetWingId && !targetSocId) return;
 
-    // Only refetch if gridItems is not already populated from SSR
-    if (gridItemsRef.current && (level === 'Apartment' && targetSocId === societyId)) {
+    const requestKey = `${level}_${targetPropId}_${targetWingId}_${targetSocId}`;
+    if (lastFetchedKeyRef.current === requestKey) {
       return;
     }
+
+    // Only refetch if gridItems is not already populated from SSR
+    if (gridItemsRef.current && (level === 'Apartment' && targetSocId === societyId)) {
+      lastFetchedKeyRef.current = requestKey;
+      return;
+    }
+
+    lastFetchedKeyRef.current = requestKey;
 
     Promise.resolve().then(() => {
       if (isSubscribed) setIsLoadingGridRecords(true);
