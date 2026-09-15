@@ -439,5 +439,52 @@
       "edit": "संपादित करा",
       "view": "पहा"
     }
+  },
+  "header": {
+    "propertyNo": "मालमत्ता क्र.:",
+    "upicId": "युपीआयसी आयडी:",
+    "copyUpic": "युपीआयसी कॉपी करा",
+    "societyName": "सोसायटीचे नाव:",
+    "editSociety": "सोसायटी संपादित करा"
+  },
+  "grid": {
+    "division": "विभाग:",
+    "wardNo": "प्रभाग क्र.:",
+    "category": "वर्गवारी:",
+    "taxZoneAndName": "कर क्षेत्र आणि नाव:",
+    "subZoneCsn": "उप क्षेत्र आणि सीएसएन:",
+    "plotNo": "प्लॉट क्र.:",
+    "landOwnerName": "जमीन मालकाचे नाव:",
+    "builderName": "बिल्डरचे नाव:",
+    "societyEmail": "सोसायटी ईमेल:",
+    "secretaryName": "सचिवांचे नाव:",
+    "secretaryMobile": "सचिवांचा मोबाईल:",
+    "secretaryEmail": "सचिवांचा ईमेल:",
+    "address": "पत्ता:",
+    "plotArea": "प्लॉट क्षेत्रफळ:",
+    "carpetBuiltUp": "कार्पेट / निर्मित क्षेत्रफळ:",
+    "oldCarpetBuiltUp": "जुने कार्पेट/निर्मित:",
+    "totalFloors": "एकूण मजले:",
+    "totalProperties": "एकूण मालमत्ता:"
+  },
+  "revenueCard": {
+    "addRevenue": "अतिरिक्त महसूल",
+    "desc": "तपशील:",
+    "oldCurrentTax": "जुना चालू कर"
+  },
+  "stats": {
+    "currentTax": "चालू कर",
+    "retroTax": "मागील कर",
+    "retroTaxTooltip": "मागील कर (थकबाकी)",
+    "totalTax": "एकूण कर",
+    "totalDemand": "एकूण मागणी",
+    "current": "चालू",
+    "pending": "प्रलंबित",
+    "demandDetails": "मागणी तपशील",
+    "total": "एकूण",
+    "currentDemand": "चालू मागणी",
+    "pendingDemand": "प्रलंबित मागणी",
+    "collection": "वसूली",
+    "totalBalance": "एकूण शिल्लक"
   }
-}
+}

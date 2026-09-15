@@ -468,6 +468,8 @@ function PropertyMediaPanel({
       confirm,
       getSelectPropertyErrorMsg,
       photoPlanPhoto,
+      effectiveWingDetailId,
+      resolvedSocietyDetailId,
     ]
   );
 

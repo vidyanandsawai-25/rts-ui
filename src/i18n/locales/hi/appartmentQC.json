@@ -439,5 +439,52 @@
       "edit": "संपादित करें",
       "view": "देखें"
     }
+  },
+  "header": {
+    "propertyNo": "संपत्ति नं.:",
+    "upicId": "यूपीआईसी आईडी:",
+    "copyUpic": "यूपीआईसी प्रतिलिपि करें",
+    "societyName": "सोसायटी का नाम:",
+    "editSociety": "सोसायटी संपादित करें"
+  },
+  "grid": {
+    "division": "विभाग:",
+    "wardNo": "प्रभाग नं.:",
+    "category": "श्रेणी:",
+    "taxZoneAndName": "कर क्षेत्र एवं नाम:",
+    "subZoneCsn": "उप क्षेत्र एवं सीएसएन:",
+    "plotNo": "भूखंड नं.:",
+    "landOwnerName": "भूमि मालिक का नाम:",
+    "builderName": "बिल्डर का नाम:",
+    "societyEmail": "सोसायटी ईमेल:",
+    "secretaryName": "सचिव का नाम:",
+    "secretaryMobile": "सचिव मोबाइल:",
+    "secretaryEmail": "सचिव ईमेल:",
+    "address": "पता:",
+    "plotArea": "भूखंड क्षेत्रफल:",
+    "carpetBuiltUp": "कार्पेट / निर्मित क्षेत्रफल:",
+    "oldCarpetBuiltUp": "पुराना कार्पेट/निर्मित:",
+    "totalFloors": "कुल मंजिलें:",
+    "totalProperties": "कुल संपत्तियां:"
+  },
+  "revenueCard": {
+    "addRevenue": "अतिरिक्त राजस्व",
+    "desc": "विवरण:",
+    "oldCurrentTax": "पुराना वर्तमान कर"
+  },
+  "stats": {
+    "currentTax": "वर्तमान कर",
+    "retroTax": "बकाया कर",
+    "retroTaxTooltip": "बकाया कर (पिछला)",
+    "totalTax": "कुल कर",
+    "totalDemand": "कुल मांग",
+    "current": "वर्तमान",
+    "pending": "लंबित",
+    "demandDetails": "मांग विवरण",
+    "total": "कुल",
+    "currentDemand": "वर्तमान मांग",
+    "pendingDemand": "लंबित मांग",
+    "collection": "वसूली",
+    "totalBalance": "कुल शेष"
   }
-}
+}

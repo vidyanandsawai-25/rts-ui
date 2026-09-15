@@ -445,5 +445,53 @@
       "edit": "Edit",
       "view": "View"
     }
+  },
+  "header": {
+    "propertyNo": "PROPERTY NO.:",
+    "upicId": "UPIC ID:",
+    "copyUpic": "Copy UPIC",
+    "societyName": "SOCIETY NAME:",
+    "editSociety": "Edit Society"
+  },
+  "grid": {
+    "division": "Division:",
+    "wardNo": "Ward No.:",
+    "category": "Category:",
+    "taxZoneAndName": "Tax Zone & Name:",
+    "subZoneCsn": "Sub Zone & CSN:",
+    "plotNo": "Plot No.:",
+    "landOwnerName": "Land Owner Name:",
+    "builderName": "Builder Name:",
+    "societyEmail": "Society Email:",
+    "secretaryName": "Secretary Name:",
+    "secretaryMobile": "Secretary Mobile:",
+    "secretaryEmail": "Secretary Email:",
+    "address": "Address:",
+    "plotArea": "Plot Area:",
+    "carpetBuiltUp": "Carpet / Built-up:",
+    "oldCarpetBuiltUp": "Old Carpet/Built-up:",
+    "totalFloors": "Total Floors:",
+    "totalProperties": "Total Properties:"
+  },
+  "revenueCard": {
+    "addRevenue": "ADD. REVENUE",
+    "desc": "DESC:",
+    "oldCurrentTax": "Old Current Tax"
+  },
+  "stats": {
+    "currentTax": "Current Tax",
+    "retroTax": "Retro Tax",
+    "retroTaxTooltip": "Retro Tax (Arrears)",
+    "totalTax": "Total Tax",
+    "totalDemand": "Total Demand",
+    "current": "Current",
+    "pending": "Pending",
+    "demandDetails": "Demand Details",
+    "total": "Total",
+    "currentDemand": "Current Demand",
+    "pendingDemand": "Pending Demand",
+    "collection": "Collection",
+    "totalBalance": "Total Balance"
   }
 }
+

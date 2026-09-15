@@ -283,7 +283,7 @@ function QuickDataEntryContent({
                         ? 'Apartment/Individual'
                         : rawCat;
 
-                    if (!displayCategory) return null;
+                    if (!displayCategory || displayCategory.toLowerCase() === 'apartment/individual') return null;
 
                     return (
                         <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">

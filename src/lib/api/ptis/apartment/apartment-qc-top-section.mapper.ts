@@ -10,6 +10,15 @@ const toPositiveNumberOrNull = (val: unknown): number | null => {
   return !isNaN(num) && num > 0 && num !== 2147483647 ? num : null;
 };
 
+const formatPhone = (val: unknown): string => {
+  if (val === null || val === undefined) return '-';
+  const str = String(val).trim();
+  if (!str || str === '-' || str === 'null' || str === 'undefined') return '-';
+  const digits = str.replace(/\D/g, '');
+  if (digits.length < 5) return '-';
+  return str.startsWith('+') ? str : `+91 ${digits.slice(-10)}`;
+};
+
 export function mapApartmentQcTopSectionToPropertyMasterData(
   dto?: ApartmentQcTopSectionDto | null
 ): PropertyMasterData {
@@ -75,13 +84,12 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
     : (overview?.secretaryNameEnglish && overview.secretaryNameEnglish !== '-') ? overview.secretaryNameEnglish
     : (firstWing?.secretaryNameEnglish && firstWing.secretaryNameEnglish !== '-') ? firstWing.secretaryNameEnglish : undefined;
 
-  const secretaryMobileNo = (info?.secretaryMobileNo && info.secretaryMobileNo !== '-')
-    ? (info.secretaryMobileNo.startsWith('+') ? info.secretaryMobileNo : `+91 ${info.secretaryMobileNo}`)
-    : (rawOverview?.secretaryMobileNo && rawOverview.secretaryMobileNo !== '-')
-      ? (String(rawOverview.secretaryMobileNo).startsWith('+') ? String(rawOverview.secretaryMobileNo) : `+91 ${String(rawOverview.secretaryMobileNo)}`)
-      : (firstWing?.secretaryMobileNo && firstWing.secretaryMobileNo !== '-')
-        ? (firstWing.secretaryMobileNo.startsWith('+') ? firstWing.secretaryMobileNo : `+91 ${firstWing.secretaryMobileNo}`)
-        : (rawDto?.secretaryMobileNo && rawDto.secretaryMobileNo !== '-') ? String(rawDto.secretaryMobileNo) : '-';
+  const rawSecMobile =
+    (info?.secretaryMobileNo && info.secretaryMobileNo !== '-') ? info.secretaryMobileNo
+    : (rawOverview?.secretaryMobileNo && rawOverview.secretaryMobileNo !== '-') ? rawOverview.secretaryMobileNo
+    : (firstWing?.secretaryMobileNo && firstWing.secretaryMobileNo !== '-') ? firstWing.secretaryMobileNo
+    : (rawDto?.secretaryMobileNo && rawDto.secretaryMobileNo !== '-') ? rawDto.secretaryMobileNo : undefined;
+  const secretaryMobileNo = formatPhone(rawSecMobile);
 
   const secretaryEmail = (info?.emailId && info.emailId !== '-') ? info.emailId
     : (info?.secretaryEmailId && info.secretaryEmailId !== '-') ? info.secretaryEmailId
@@ -95,13 +103,12 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
     : (overview?.managerNameEnglish && overview.managerNameEnglish !== '-') ? overview.managerNameEnglish
     : (firstWing?.managerNameEnglish && firstWing.managerNameEnglish !== '-') ? firstWing.managerNameEnglish : undefined;
 
-  const managerMobileNo = (info?.managerMobileNo && info.managerMobileNo !== '-')
-    ? (info.managerMobileNo.startsWith('+') ? info.managerMobileNo : `+91 ${info.managerMobileNo}`)
-    : (rawOverview?.managerMobileNo && rawOverview.managerMobileNo !== '-')
-      ? (String(rawOverview.managerMobileNo).startsWith('+') ? String(rawOverview.managerMobileNo) : `+91 ${String(rawOverview.managerMobileNo)}`)
-      : (firstWing?.managerMobileNo && firstWing.managerMobileNo !== '-')
-        ? (firstWing.managerMobileNo.startsWith('+') ? firstWing.managerMobileNo : `+91 ${firstWing.managerMobileNo}`)
-        : (rawDto?.managerMobileNo && rawDto.managerMobileNo !== '-') ? String(rawDto.managerMobileNo) : '-';
+  const rawMgrMobile =
+    (info?.managerMobileNo && info.managerMobileNo !== '-') ? info.managerMobileNo
+    : (rawOverview?.managerMobileNo && rawOverview.managerMobileNo !== '-') ? rawOverview.managerMobileNo
+    : (firstWing?.managerMobileNo && firstWing.managerMobileNo !== '-') ? firstWing.managerMobileNo
+    : (rawDto?.managerMobileNo && rawDto.managerMobileNo !== '-') ? rawDto.managerMobileNo : undefined;
+  const managerMobileNo = formatPhone(rawMgrMobile);
 
   const managerEmail = (info?.managerEmailId && info.managerEmailId !== '-') ? info.managerEmailId
     : (firstWing?.managerEmailId && firstWing.managerEmailId !== '-') ? firstWing.managerEmailId : '-';
