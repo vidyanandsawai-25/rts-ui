@@ -93,8 +93,8 @@ export const PhotoPlanSidebar = memo(function PhotoPlanSidebar({
                   </span>
                   <span className="text-[9px] xl:text-[10px] text-slate-400 font-normal mt-0.5">
                     {isLoading && photoCount === 0
-                      ? 'Loading...'
-                      : `${photoCount} ${photoCount === 1 ? t('media.photo') || 'photo' : t('media.photos') || 'photos'}`}
+                      ? (t('common.loading') || 'Loading...')
+                      : `${photoCount} ${photoCount === 1 ? (t('media.photo') || 'photo') : (t('media.photos') || 'photos')}`}
                   </span>
                 </div>
               </Button>

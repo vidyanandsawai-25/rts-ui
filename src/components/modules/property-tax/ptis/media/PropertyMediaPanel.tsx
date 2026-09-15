@@ -16,6 +16,8 @@ import { PropertyMediaPanelSkeleton } from './PropertyMediaPanelSkeleton';
 import { PropertyTypeModal } from './PropertyTypeModal';
 import { toast } from 'sonner';
 import { launchPhotoPlanDrawingToolAction, getPhotosByPropertyAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
+import { getPhotoSlotsAction, getPropertyPhotosAction } from '@/app/[locale]/property-tax/ptis/media-fetch.action';
+import { getWingPhotoTypesWithStatusAction, getPhotosByWingAction } from '@/app/[locale]/property-tax/ptis/WingPhoto.action';
 import { getPropertyDrawPlanStatus } from '@/lib/api/property.service';
 import type { WingWiseWingDetails } from '@/types/property-tax/apartment';
 
@@ -35,6 +37,7 @@ export interface PropertyMediaPanelProps {
   isMainProperty?: boolean;
   categoryId?: number | null;
   propertyTypeId?: number | null;
+  propertyDescription?: string;
   type?: string | number | null;
   societyDetailId?: number | null;
   wardNo?: string;
@@ -66,6 +69,7 @@ function PropertyMediaPanel({
   isMainProperty: propIsMainProperty,
   categoryId: propCategoryId,
   propertyTypeId: propPropertyTypeId,
+  propertyDescription,
   type: _propType,
   societyDetailId: propSocietyDetailId,
   wardNo = '',
@@ -106,9 +110,10 @@ function PropertyMediaPanel({
   const effectivePropertyNo = propertyNo || searchPropertyNo || '';
   const effectivePartitionNo = partitionNo !== undefined && partitionNo !== null && partitionNo !== '' ? partitionNo : (searchPartitionNo || null);
 
+  const effectiveCategoryId = property?.categoryId ?? propCategoryId ?? (searchParams?.get('categoryId') ? Number(searchParams.get('categoryId')) : 1);
+  const isApartment = effectiveCategoryId === 1;
   const isPartitionEmptyOrMain = !effectivePartitionNo || effectivePartitionNo === '0' || String(effectivePartitionNo).trim() === '' || String(effectivePartitionNo).trim() === '-';
-  const effectiveIsMainProperty = propIsMainProperty !== undefined ? propIsMainProperty : (property?.isMainProperty ?? isPartitionEmptyOrMain);
-  const effectiveCategoryId = property?.categoryId ?? propCategoryId ?? 1;
+  const effectiveIsMainProperty = isApartment ? (propIsMainProperty !== undefined ? propIsMainProperty : (property?.isMainProperty ?? isPartitionEmptyOrMain)) : false;
   const effectivePropertyTypeId = property?.propertyTypeId ?? propPropertyTypeId;
   const effectiveSocietyDetailId = property?.societyDetailId ?? propSocietyDetailId;
 
@@ -141,9 +146,24 @@ function PropertyMediaPanel({
   const resolvedSocietyDetailId =
     effectiveSocietyDetailId ?? (searchSocietyDetailId ? Number(searchSocietyDetailId) : null) ?? matchedWing?.societyId ?? (wings && wings.length > 0 ? wings[0].societyId : null);
 
+  const isAmenityFlag =
+    propPropertyTypeId === 140 ||
+    effectivePropertyTypeId === 140 ||
+    effectiveCategoryId === 140 ||
+    Boolean(
+      propertyDescription && (
+        propertyDescription.includes('अॅमिनीटी') ||
+        propertyDescription.includes('अ‍ॅमिनीटी') ||
+        propertyDescription.toLowerCase().includes('amenity')
+      )
+    ) ||
+    Boolean(
+      effectivePartitionNo && String(effectivePartitionNo).trim().toUpperCase().startsWith('AM')
+    );
+
   const resolvedEntityType =
     searchEntityType ||
-    (propPropertyTypeId === 140 || effectivePropertyTypeId === 140
+    (isAmenityFlag
       ? 'S'
       : (effectiveIsMainProperty && effectiveWingDetailId ? 'W' : (effectiveIsMainProperty && resolvedSocietyDetailId ? 'S' : 'P')));
 
@@ -193,7 +213,10 @@ function PropertyMediaPanel({
     isMainProperty: effectiveIsMainProperty,
     categoryId: effectiveCategoryId,
     propertyTypeId: effectivePropertyTypeId,
+    propertyDescription,
+    partitionNo: effectivePartitionNo,
     entityType: resolvedEntityType,
+    isAmenity: isAmenityFlag,
   });
 
   const getSelectPropertyErrorMsg = useCallback(() => {
@@ -228,13 +251,96 @@ function PropertyMediaPanel({
     const handleMediaUpdated = async (event: Event) => {
       const customEvent = event as CustomEvent<{ propertyId?: number }>;
       const updatedPropId = customEvent.detail?.propertyId;
-      if (updatedPropId && updatedPropId !== effectiveId) return;
+      if (updatedPropId && effectiveId && updatedPropId !== effectiveId) return;
 
       if (effectiveId && effectiveId > 0) {
         try {
-          const res = await getPhotosByPropertyAction(effectiveId);
-          if (res.success && Array.isArray(res.data)) {
-            setPhotos(res.data);
+          const promises: Promise<unknown>[] = [
+            getPhotoSlotsAction(effectiveId),
+            getPropertyPhotosAction(effectiveId),
+          ];
+
+          if (effectiveWingDetailId && effectiveWingDetailId > 0) {
+            promises.push(getWingPhotoTypesWithStatusAction(effectiveWingDetailId));
+            promises.push(getPhotosByWingAction(effectiveWingDetailId));
+          }
+
+          const [slotsRes, photosRes, wingSlotsRes, wingPhotosRes] = await Promise.all(promises);
+          const sRes = slotsRes as { success: boolean; data?: PropertyPhotoTypeWithStatusDto[] };
+          const pRes = photosRes as { success: boolean; data?: PropertyPhotoDto[] };
+
+          if (pRes?.success && Array.isArray(pRes.data)) {
+            const fetchedPhotos = [...pRes.data];
+            const wPhotosRes = wingPhotosRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
+            if (wPhotosRes?.success && Array.isArray(wPhotosRes.data)) {
+              const mappedWingPhotos = wPhotosRes.data.map((wp: Record<string, unknown>) => ({
+                propertyPhotoId: Number(wp.wingPhotoId || wp.propertyPhotoId || 0),
+                propertyId: Number(wp.wingId || wp.propertyId || 0),
+                photoTypeId: Number(wp.photoTypeId || 0),
+                photoTypeCode: String(wp.photoTypeCode || ''),
+                photoTypeName: String(wp.photoTypeName || ''),
+                displayOrder: Number(wp.displayOrder || 0),
+                remarks: wp.remarks ? String(wp.remarks) : undefined,
+                documentBindingId: wp.documentBindingId ? Number(wp.documentBindingId) : undefined,
+                documentGuid: wp.documentGuid ? String(wp.documentGuid) : undefined,
+                fileName: wp.fileName ? String(wp.fileName) : undefined,
+                mimeType: wp.mimeType ? String(wp.mimeType) : undefined,
+                viewUrl: wp.viewUrl ? String(wp.viewUrl) : undefined,
+                downloadUrl: wp.downloadUrl ? String(wp.downloadUrl) : undefined,
+                wingDetailId: wp.wingDetailId ? Number(wp.wingDetailId) : undefined,
+                wingName: wp.wingName ? String(wp.wingName) : undefined,
+              }));
+              mappedWingPhotos.forEach((wp) => {
+                const existingIdx = fetchedPhotos.findIndex(
+                  (p) =>
+                    p.propertyPhotoId === wp.propertyPhotoId &&
+                    (p.wingDetailId === wp.wingDetailId || (!p.wingDetailId && !wp.wingDetailId))
+                );
+                if (existingIdx !== -1) {
+                  fetchedPhotos[existingIdx] = { ...fetchedPhotos[existingIdx], ...wp };
+                } else {
+                  fetchedPhotos.push(wp as PropertyPhotoDto);
+                }
+              });
+            }
+
+            setPhotos(fetchedPhotos);
+            onPhotosChange?.(fetchedPhotos);
+          }
+
+          if (sRes?.success && Array.isArray(sRes.data)) {
+            const fetchedSlots = [...sRes.data];
+            const wSlotsRes = wingSlotsRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
+            if (wSlotsRes?.success && Array.isArray(wSlotsRes.data)) {
+              const mappedWingSlots = wSlotsRes.data.map((ws: Record<string, unknown>) => ({
+                photoTypeId: Number(ws.photoTypeId),
+                photoTypeCode: String(ws.photoTypeCode || ws.photoTypeSlotCode || ''),
+                photoTypeName: String(ws.photoTypeName || ws.photoTypeSlotName || ''),
+                displayOrder: Number(ws.displayOrder || 0),
+                hasPhoto: Boolean(ws.hasPhoto),
+                photoCount: Number(ws.photoCount || 0),
+                propertyPhotoId: Number(ws.wingPhotoId || ws.propertyPhotoId || 0),
+                remarks: ws.remarks ? String(ws.remarks) : undefined,
+                documentBindingId: ws.documentBindingId ? Number(ws.documentBindingId) : undefined,
+                documentGuid: ws.documentGuid ? String(ws.documentGuid) : undefined,
+                fileName: ws.fileName ? String(ws.fileName) : undefined,
+                mimeType: ws.mimeType ? String(ws.mimeType) : undefined,
+                viewUrl: ws.viewUrl ? String(ws.viewUrl) : undefined,
+              }));
+              mappedWingSlots.forEach((ws) => {
+                const existingIdx = fetchedSlots.findIndex(
+                  (s) =>
+                    (s.photoTypeCode && ws.photoTypeCode && s.photoTypeCode.toUpperCase() === ws.photoTypeCode.toUpperCase()) ||
+                    (s.photoTypeId === ws.photoTypeId && s.photoTypeCode?.toUpperCase().startsWith('WING_'))
+                );
+                if (existingIdx !== -1) {
+                  fetchedSlots[existingIdx] = { ...fetchedSlots[existingIdx], ...ws };
+                } else {
+                  fetchedSlots.push(ws as PropertyPhotoTypeWithStatusDto);
+                }
+              });
+            }
+            onPhotoSlotsChange?.(fetchedSlots);
           }
         } catch {
           // Non-blocking catch
@@ -244,7 +350,7 @@ function PropertyMediaPanel({
 
     window.addEventListener('ptis:media-updated', handleMediaUpdated);
     return () => window.removeEventListener('ptis:media-updated', handleMediaUpdated);
-  }, [effectiveId, setPhotos]);
+  }, [effectiveId, effectiveWingDetailId, setPhotos, onPhotosChange, onPhotoSlotsChange]);
 
   // Keep PropertyMasterCard thumbnail synchronized with the loaded society / property photo
   useEffect(() => {
@@ -408,12 +514,17 @@ function PropertyMediaPanel({
 
           // Rule 2: Individual / Amenity Handling
           const catName = String(data?.categoryName ?? data?.CategoryName ?? '').toLowerCase();
-          const isAmenity = Number(data?.propertyTypeId) === 140 || catName.includes('amenity');
+          const isAmenity = Number(data?.propertyTypeId) === 140 || catName.includes('amenity') || isAmenityFlag;
           const isIndividualOrAmenity =
             data?.isIndividualOrAmenity === true ||
             data?.requiresTypeAssignment === false ||
             isAmenity ||
-            catName.includes('individual');
+            catName.includes('individual') ||
+            catName.includes('industry') ||
+            catName.includes('plot') ||
+            effectiveCategoryId === 2 ||
+            effectiveCategoryId === 3 ||
+            effectiveCategoryId === 4;
 
           if (isIndividualOrAmenity) {
             await launchDrawingApp({ isAmenity, societyDetailId: targetSocietyDetailId, wingDetailId: targetWingDetailId });
@@ -462,6 +573,10 @@ function PropertyMediaPanel({
     [
       effectiveId,
       effectiveIsMainProperty,
+      effectiveCategoryId,
+      effectiveWingDetailId,
+      resolvedSocietyDetailId,
+      isAmenityFlag,
       setIsTypeModalOpen,
       launchDrawingApp,
       t,
@@ -487,8 +602,6 @@ function PropertyMediaPanel({
 
       // If user selected an existing building plan type, apply shared plan & NEVER redirect to CAD tool
       if (isExistingSelection) {
-        toast.success(t.has?.('media.sharedPlanApplied') ? t('media.sharedPlanApplied') : `Plan Type ${assignedType} assigned. Shared plan applied to property.`);
-        
         // Refresh photos for current property to display shared plan immediately
         if (effectiveId && effectiveId > 0) {
           try {
@@ -506,7 +619,7 @@ function PropertyMediaPanel({
       // If creating a NEW plan type -> Launch CAD drawing tool to draw custom plan
       await launchDrawingApp({ type: assignedType });
     },
-    [effectiveId, launchDrawingApp, setIsTypeModalOpen, setPhotos, t]
+    [effectiveId, launchDrawingApp, setIsTypeModalOpen, setPhotos]
   );
 
   if (loading) {

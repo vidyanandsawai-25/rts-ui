@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useTranslations, useLocale } from 'next-intl';
+import { useConfirm } from '@/components/common';
 import {
   uploadPropertyPhotoAction,
   replacePropertyPhotoAction,
@@ -34,6 +35,7 @@ export interface UsePhotoPlanMutationsProps {
   onRequestTypeModal?: () => void;
   isMainProperty?: boolean;
 }
+
 export function usePhotoPlanMutations({
   propertyId, wingDetailId, societyId, wingName, categories, onCategoriesChange,
   selectedCategoryIndex, selectedImageIndex, viewMode,
@@ -44,6 +46,7 @@ export function usePhotoPlanMutations({
 }: UsePhotoPlanMutationsProps) {
   const t = useTranslations('ptis');
   const locale = useLocale();
+  const { confirm } = useConfirm();
   const [isNamingOpen, setIsNamingOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isReplacing, setIsReplacing] = useState(false);
@@ -93,58 +96,117 @@ export function usePhotoPlanMutations({
         name.includes('photo plan') ||
         name.includes('property plan');
 
-      // Only check type if user is uploading a Property Plan slot AND it's NOT a main society/wing property
-      if (isPlanSlot && !isMainProperty && propertyId && propertyId > 0) {
-        try {
-          const apiRes = await getPropertyDrawPlanStatus(propertyId);
-          const rawRes = (apiRes as unknown as Record<string, unknown>) || {};
-          const rawData = (rawRes.data ?? rawRes.items ?? rawRes.Items ?? rawRes) as Record<string, unknown>;
-          const data = (Array.isArray(rawData) ? rawData[0] : ((rawData.items ?? rawData.Items ?? rawData) as Record<string, unknown>)) as Record<string, unknown>;
+      const hasExistingPlan = isPlanSlot && (
+        (activeCat?.images && activeCat.images.length > 0) ||
+        Boolean(activeCat?.hasPhoto)
+      );
 
-          const catName = String(data?.categoryName ?? data?.CategoryName ?? '').toLowerCase();
-          const isIndividualOrAmenity =
-            data?.isIndividualOrAmenity === true ||
-            data?.requiresTypeAssignment === false ||
-            catName.includes('individual') ||
-            catName.includes('amenity') ||
-            catName.includes('society') ||
-            catName.includes('wing') ||
-            Number(data?.propertyTypeId) === 140;
+      const proceedWithAddPhoto = async () => {
+        // Only check type if user is uploading a Property Plan slot AND it's NOT a main society/wing property
+        if (isPlanSlot && !isMainProperty && propertyId && propertyId > 0) {
+          try {
+            const apiRes = await getPropertyDrawPlanStatus(propertyId);
+            const rawRes = (apiRes as unknown as Record<string, unknown>) || {};
+            const rawData = (rawRes.data ?? rawRes.items ?? rawRes.Items ?? rawRes) as Record<string, unknown>;
+            const data = (Array.isArray(rawData) ? rawData[0] : ((rawData.items ?? rawData.Items ?? rawData) as Record<string, unknown>)) as Record<string, unknown>;
 
-          const rawTypeValue = data?.currentType ?? data?.CurrentType ?? data?.type ?? data?.Type;
-          const hasTypeFlag = data?.hasType ?? data?.HasType;
+            const catName = String(data?.categoryName ?? data?.CategoryName ?? '').toLowerCase();
+            const isIndividualOrAmenity =
+              data?.isIndividualOrAmenity === true ||
+              data?.requiresTypeAssignment === false ||
+              catName.includes('individual') ||
+              catName.includes('industry') ||
+              catName.includes('plot') ||
+              catName.includes('amenity') ||
+              catName.includes('society') ||
+              catName.includes('wing') ||
+              Number(data?.propertyTypeId) === 140;
 
-          const hasTypeValue =
-            hasTypeFlag === true ||
-            isIndividualOrAmenity ||
-            (hasTypeFlag !== false &&
-              rawTypeValue !== null &&
-              rawTypeValue !== undefined &&
-              String(rawTypeValue).trim() !== '' &&
-              String(rawTypeValue).trim().toLowerCase() !== 'null');
+            const rawTypeValue = data?.currentType ?? data?.CurrentType ?? data?.type ?? data?.Type;
+            const hasTypeFlag = data?.hasType ?? data?.HasType;
 
-          if (!hasTypeValue) {
-            if (onRequestTypeModal) {
-              onRequestTypeModal();
+            const hasTypeValue =
+              hasTypeFlag === true ||
+              isIndividualOrAmenity ||
+              (hasTypeFlag !== false &&
+                rawTypeValue !== null &&
+                rawTypeValue !== undefined &&
+                String(rawTypeValue).trim() !== '' &&
+                String(rawTypeValue).trim().toLowerCase() !== 'null');
+
+            if (!hasTypeValue) {
+              if (onRequestTypeModal) {
+                onRequestTypeModal();
+              }
+              return;
             }
-            return;
+          } catch (err) {
+            console.error('Failed to check property draw plan type status:', err);
           }
-        } catch (err) {
-          console.error('Failed to check property draw plan type status:', err);
         }
+
+        setIsReplacement(false);
+        setIsNamingOpen(true);
+      };
+
+      if (hasExistingPlan) {
+        confirm({
+          variant: 'warning',
+          title: t('media.replacePlanTitle') || 'Replace Existing Plan?',
+          description:
+            t('media.replacePlanDescription') ||
+            'Uploading a new plan image will replace the existing property plan. Are you sure you want to proceed?',
+          confirmText: t('media.replacePlanConfirm') || 'Replace Plan',
+          cancelText: t('common.cancel') || 'Cancel',
+          onConfirm: () => {
+            void proceedWithAddPhoto();
+          },
+        });
+        return;
       }
 
-      setIsReplacement(false);
-      setIsNamingOpen(true);
+      await proceedWithAddPhoto();
     },
-    [propertyId, categories, selectedCategoryIndex, isMainProperty, onRequestTypeModal]
+    [propertyId, categories, selectedCategoryIndex, isMainProperty, onRequestTypeModal, confirm, t]
   );
 
-  const handleReplacePhoto = useCallback((index: number) => {
-    setActiveIndexToReplace(index);
-    setIsReplacement(true);
-    setIsNamingOpen(true);
-  }, []);
+  const handleReplacePhoto = useCallback(
+    (index: number) => {
+      const activeCat = categories[selectedCategoryIndex];
+      const code = activeCat?.photoTypeCode?.toUpperCase() || '';
+      const name = activeCat?.photoTypeName?.toLowerCase() || '';
+      const isPlanSlot =
+        code === 'PROPERTY_PLAN' ||
+        code === 'PHOTO_PLAN' ||
+        code === 'PLAN' ||
+        code === 'DRAW_PLAN' ||
+        name.includes('photo plan') ||
+        name.includes('property plan');
+
+      const proceedWithReplace = () => {
+        setActiveIndexToReplace(index);
+        setIsReplacement(true);
+        setIsNamingOpen(true);
+      };
+
+      if (isPlanSlot) {
+        confirm({
+          variant: 'warning',
+          title: t('media.replacePlanTitle') || 'Replace Existing Plan?',
+          description:
+            t('media.replacePlanDescription') ||
+            'Uploading a new plan image will replace the existing property plan. Are you sure you want to proceed?',
+          confirmText: t('media.replacePlanConfirm') || 'Replace Plan',
+          cancelText: t('common.cancel') || 'Cancel',
+          onConfirm: proceedWithReplace,
+        });
+        return;
+      }
+
+      proceedWithReplace();
+    },
+    [categories, selectedCategoryIndex, confirm, t]
+  );
 
   const executeReplaceApi = useCallback(async (
     propertyPhotoId: number,
@@ -165,20 +227,12 @@ export function usePhotoPlanMutations({
     }
 
     setIsReplacing(true);
-    const isWingCat = Boolean(activeCategory?.photoTypeCode?.toUpperCase().startsWith('WING_') || activeCategory?.photoTypeName?.toLowerCase().includes('wing'));
-    const isSocietyCat = Boolean(
-      activeCategory?.photoTypeCode?.toUpperCase().startsWith('SOCIETY_') ||
-      activeCategory?.photoTypeCode?.toUpperCase().includes('AMENITY') ||
-      activeCategory?.photoTypeName?.toLowerCase().includes('society') ||
-      activeCategory?.photoTypeName?.toLowerCase().includes('amenity')
-    );
-
     const formData = new FormData();
     formData.append('File', file);
     if (propertyId) formData.append('PropertyId', propertyId.toString());
-    if (isWingCat && wingDetailId) formData.append('WingDetailId', wingDetailId.toString());
-    if (isSocietyCat && societyId) formData.append('SocietyDetailId', societyId.toString());
-    if (isWingCat && wingName) formData.append('WingName', wingName);
+    if (wingDetailId) formData.append('WingDetailId', wingDetailId.toString());
+    if (societyId) formData.append('SocietyDetailId', societyId.toString());
+    if (wingName) formData.append('WingName', wingName);
     if (activeCategory?.photoTypeId) formData.append('PhotoTypeId', activeCategory.photoTypeId.toString());
     if (activeCategory?.photoTypeCode) formData.append('PhotoTypeCode', activeCategory.photoTypeCode);
     formData.append('PropertyPhotoId', propertyPhotoId.toString());
@@ -198,7 +252,7 @@ export function usePhotoPlanMutations({
         clearDocumentCacheEntry(targetImg.src);
         const data = res.data;
         const url = (data.documentGuid ? getViewDocumentUrl(data.documentGuid) : data.viewUrl) || '';
-        const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, hasPhoto: true, src: url, fullSrc: url, propertyPhotoId: data.propertyPhotoId, documentGuid: data.documentGuid, downloadUrl: data.downloadUrl || img.downloadUrl, title: targetImg.title, remarks: targetImg.remarks, wingDetailId: wingDetailId ? Number(wingDetailId) : img.wingDetailId, wingName: wingName || img.wingName } : img);
+        const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, hasPhoto: true, src: url, fullSrc: url, propertyPhotoId: data.propertyPhotoId, documentGuid: data.documentGuid, downloadUrl: data.downloadUrl || img.downloadUrl, title: targetImg.title, remarks: targetImg.remarks, wingDetailId: wingDetailId ? Number(wingDetailId) : img.wingDetailId, wingName: wingName || img.wingName, societyDetailId: societyId ? Number(societyId) : img.societyDetailId } : img);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updated));
         toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
         refreshAfterMediaMutation();
@@ -263,20 +317,17 @@ export function usePhotoPlanMutations({
     const englishName = isDefaultName ? getEnglishCategoryName(activeCategory.photoTypeCode, name.trim()) : name.trim();
     const combinedRemarks = remarks ? `${englishName} | ${remarks}` : englishName;
 
-    const isWingCat = Boolean(activeCategory.photoTypeCode?.toUpperCase().startsWith('WING_') || activeCategory.photoTypeName?.toLowerCase().includes('wing'));
-    const isSocietyCat = Boolean(
-      activeCategory.photoTypeCode?.toUpperCase().startsWith('SOCIETY_') ||
-      activeCategory.photoTypeCode?.toUpperCase().includes('AMENITY') ||
-      activeCategory.photoTypeName?.toLowerCase().includes('society') ||
-      activeCategory.photoTypeName?.toLowerCase().includes('amenity')
+    const isWingCat = Boolean(
+      activeCategory.photoTypeCode?.toUpperCase().includes('WING') ||
+      activeCategory.photoTypeName?.toLowerCase().includes('wing')
     );
 
     const formData = new FormData();
     formData.append('File', file);
     formData.append('PropertyId', propertyId.toString());
-    if (isWingCat && wingDetailId) formData.append('WingDetailId', wingDetailId.toString());
-    if (isSocietyCat && societyId) formData.append('SocietyDetailId', societyId.toString());
-    if (isWingCat && wingName) formData.append('WingName', wingName);
+    if (wingDetailId) formData.append('WingDetailId', wingDetailId.toString());
+    if (societyId) formData.append('SocietyDetailId', societyId.toString());
+    if (wingName) formData.append('WingName', wingName);
     formData.append('PhotoTypeId', photoTypeId.toString());
     formData.append('PhotoTypeCode', activeCategory.photoTypeCode);
     formData.append('DisplayOrder', displayOrder.toString());
@@ -294,14 +345,18 @@ export function usePhotoPlanMutations({
           documentGuid: res.data.documentGuid,
           wingDetailId: isWingCat && wingDetailId ? Number(wingDetailId) : undefined,
           wingName: isWingCat && wingName ? wingName : undefined,
+          societyDetailId: societyId ? Number(societyId) : undefined,
         };
         const updatedImages = sortByOrder([...activeCategory.images, newImg]);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updatedImages));
         toast.success(t('media.photoUploadedSuccess') || 'Photo uploaded successfully');
         refreshAfterMediaMutation();
         const targetPhotoId = res.data.propertyPhotoId;
-        const newImgIndex = updatedImages.findIndex((img) => String(img.propertyPhotoId) === String(targetPhotoId));
-        if (newImgIndex !== -1) setViewerIndexAndModeValue(newImgIndex, 'viewer');
+        let newImgIndex = updatedImages.findIndex((img) => String(img.propertyPhotoId) === String(targetPhotoId));
+        if (newImgIndex === -1) {
+          newImgIndex = updatedImages.length > 0 ? updatedImages.length - 1 : 0;
+        }
+        setViewerIndexAndModeValue(newImgIndex, 'viewer');
       } else toast.error(res.error || t('media.failedToUpload') || 'Failed to upload photo');
     } catch {
       toast.error(t('media.unexpectedError') || 'An unexpected error occurred.');

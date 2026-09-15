@@ -123,7 +123,8 @@ export function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
       photo.fileName === other?.fileName &&
       photo.mimeType === other?.mimeType &&
       photo.wingDetailId === other?.wingDetailId &&
-      photo.wingName === other?.wingName
+      photo.wingName === other?.wingName &&
+      photo.societyDetailId === other?.societyDetailId
     );
   });
 }
@@ -426,6 +427,25 @@ export function usePropertyPhotosQuery(
       setLoading(false);
     }
   }, [propertyId, targetWingId, cacheKey]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleMediaUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ propertyId?: number }>;
+      const updatedPropId = customEvent.detail?.propertyId;
+      if (updatedPropId && propertyId && updatedPropId !== propertyId) return;
+
+      if (propertyId) {
+        propertyMediaCache.delete(cacheKey);
+        propertyMediaCache.delete(propertyId);
+        void refetch();
+      }
+    };
+
+    window.addEventListener('ptis:media-updated', handleMediaUpdated);
+    return () => window.removeEventListener('ptis:media-updated', handleMediaUpdated);
+  }, [propertyId, cacheKey, refetch]);
 
   return {
     loading,

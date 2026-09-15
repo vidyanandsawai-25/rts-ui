@@ -24,6 +24,7 @@ export interface AdditionalImage {
   downloadUrl?: string;
   wingDetailId?: number;
   wingName?: string;
+  societyDetailId?: number;
 }
 
 interface MediaImageCardProps {

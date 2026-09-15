@@ -33,7 +33,10 @@ export interface UsePropertyMediaProps {
   isMainProperty?: boolean;
   categoryId?: number | null;
   propertyTypeId?: number | null;
+  propertyDescription?: string | null;
+  partitionNo?: string | null;
   entityType?: string;
+  isAmenity?: boolean;
 }
 
 export function usePropertyMedia({
@@ -49,30 +52,68 @@ export function usePropertyMedia({
   isMainProperty = false,
   categoryId = null,
   propertyTypeId = null,
+  propertyDescription = null,
+  partitionNo = null,
   entityType,
+  isAmenity = false,
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
   const [showMoreImages, setShowMoreImages] = useState(false);
   const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave, resetHoverPreview } =
     useImageHoverPreview();
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
+  const [photoSlots, setPhotoSlots] = useState<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
+
+  const searchParams = useSearchParams();
+  const selectedWingId = searchParams?.get('wingId');
+  const rawWingDetailId = (searchParams?.get('wingDetailId') || searchParams?.get('wingdetailid'))
+    ? Number(searchParams?.get('wingDetailId') || searchParams?.get('wingdetailid'))
+    : null;
+
+  const matchedWing = useMemo(() => {
+    return (_wings as { wingDetailId?: number; wingMasterId?: number; wingName?: string; wingNo?: string }[] | undefined)?.find(
+      (w) =>
+        (rawWingDetailId && w.wingDetailId === rawWingDetailId) ||
+        (selectedWingId && String(w.wingMasterId) === selectedWingId)
+    );
+  }, [_wings, selectedWingId, rawWingDetailId]);
+
+  const wingsList = _wings as { wingName?: string; wingNo?: string; wingDetailId?: number }[] | undefined;
+  const firstWing = wingsList && wingsList.length > 0 ? wingsList[0] : undefined;
+  const resolvedWingDetailId =
+    matchedWing?.wingDetailId ??
+    rawWingDetailId ??
+    (firstWing?.wingDetailId ?? null);
+
+  const selectedWingName = matchedWing
+    ? (matchedWing.wingName || (matchedWing.wingNo ? `${matchedWing.wingNo} Wing` : ''))
+    : (searchParams?.get('wingName') || searchParams?.get('wingNo') || (firstWing ? (firstWing.wingName || (firstWing.wingNo ? `${firstWing.wingNo} Wing` : '')) : undefined));
 
   const prevPropertyIdRef = useRef(propertyId);
   const prevPhotosRef = useRef<PropertyPhotoDto[]>(initialPhotos);
   const prevSlotsRef = useRef<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
+
   useEffect(() => {
     if (propertyId !== prevPropertyIdRef.current) {
       prevPropertyIdRef.current = propertyId;
       resetHoverPreview();
       setFullyLoadedIds(new Set());
-      if (propertyId && propertyMediaCache.has(propertyId)) {
-        setPhotos(propertyMediaCache.get(propertyId)!.photos);
+      const cacheKey = propertyId ? `${propertyId}_${resolvedWingDetailId || 0}` : '';
+      if (cacheKey && propertyMediaCache.has(cacheKey)) {
+        const cached = propertyMediaCache.get(cacheKey)!;
+        setPhotos(cached.photos);
+        setPhotoSlots(cached.photoSlots);
+      } else if (propertyId && propertyMediaCache.has(propertyId)) {
+        const cached = propertyMediaCache.get(propertyId)!;
+        setPhotos(cached.photos);
+        setPhotoSlots(cached.photoSlots);
       } else {
         setPhotos(initialPhotos);
+        setPhotoSlots(initialPhotoSlots);
       }
     }
-  }, [propertyId, initialPhotos, resetHoverPreview]);
+  }, [propertyId, resolvedWingDetailId, initialPhotos, initialPhotoSlots, resetHoverPreview]);
 
   useEffect(() => {
     if (!arePhotosEqual(initialPhotos, prevPhotosRef.current)) {
@@ -86,29 +127,57 @@ export function usePropertyMedia({
     if (!areSlotsEqual(initialPhotoSlots, prevSlotsRef.current)) {
       resetHoverPreview();
       setFullyLoadedIds(new Set());
+      setPhotoSlots(initialPhotoSlots);
       prevSlotsRef.current = initialPhotoSlots;
     }
   }, [initialPhotoSlots, resetHoverPreview]);
 
-  const searchParams = useSearchParams();
-  const selectedWingId = searchParams?.get('wingId');
-  const selectedWingDetailId = searchParams?.get('wingDetailId') ? Number(searchParams.get('wingDetailId')) : null;
-
-  const matchedWing = useMemo(() => {
-    return (_wings as { wingDetailId?: number; wingMasterId?: number; wingName?: string; wingNo?: string }[] | undefined)?.find(
-      (w) =>
-        (selectedWingDetailId && w.wingDetailId === selectedWingDetailId) ||
-        (selectedWingId && String(w.wingMasterId) === selectedWingId)
+  const isAmenityDetected =
+    Boolean(isAmenity) ||
+    categoryId === 140 ||
+    propertyTypeId === 140 ||
+    entityType === 'AMENITY' ||
+    entityType === 'A' ||
+    Boolean(
+      propertyDescription && (
+        propertyDescription.includes('अॅमिनीटी') ||
+        propertyDescription.includes('अ‍ॅमिनीटी') ||
+        propertyDescription.toLowerCase().includes('amenity')
+      )
+    ) ||
+    Boolean(
+      partitionNo && String(partitionNo).trim().toUpperCase().startsWith('AM')
     );
-  }, [_wings, selectedWingId, selectedWingDetailId]);
-
-  const selectedWingName = matchedWing
-    ? (matchedWing.wingName || `${matchedWing.wingNo} Wing`)
-    : (searchParams?.get('wingName') || undefined);
 
   const categories = useMemo(
-    () => mapSlotsToCategories(initialPhotoSlots, photos, fullyLoadedIds, t, selectedWingName, selectedWingDetailId, isMainProperty, categoryId, propertyTypeId, entityType),
-    [initialPhotoSlots, photos, fullyLoadedIds, t, selectedWingName, selectedWingDetailId, isMainProperty, categoryId, propertyTypeId, entityType]
+    () =>
+      mapSlotsToCategories(
+        photoSlots.length > 0 ? photoSlots : initialPhotoSlots,
+        photos,
+        fullyLoadedIds,
+        t,
+        selectedWingName,
+        resolvedWingDetailId,
+        isMainProperty,
+        categoryId,
+        propertyTypeId,
+        entityType,
+        isAmenityDetected
+      ),
+    [
+      photoSlots,
+      initialPhotoSlots,
+      photos,
+      fullyLoadedIds,
+      t,
+      selectedWingName,
+      resolvedWingDetailId,
+      isMainProperty,
+      categoryId,
+      propertyTypeId,
+      entityType,
+      isAmenityDetected,
+    ]
   );
 
   const handleCategoriesChange = useCallback(
@@ -131,14 +200,17 @@ export function usePropertyMedia({
               documentGuid: img.documentGuid,
               wingDetailId: img.wingDetailId,
               wingName: img.wingName,
+              societyDetailId: img.societyDetailId,
             });
           }
         })
       );
       setPhotos(updated);
+      prevPhotosRef.current = updated;
 
       // Revalidate/update slots locally to keep front-end state in sync
-      const updatedSlots = initialPhotoSlots.map((slot) => {
+      const activeSlots = photoSlots.length > 0 ? photoSlots : initialPhotoSlots;
+      const updatedSlots = activeSlots.map((slot) => {
         const cat = newCats.find((c) => c.photoTypeId === slot.photoTypeId);
         if (!cat) return slot;
         const catPhotos = updated.filter((p) => p.photoTypeId === slot.photoTypeId);
@@ -152,6 +224,8 @@ export function usePropertyMedia({
           viewUrl: firstPhoto?.viewUrl,
         };
       });
+      setPhotoSlots(updatedSlots);
+      prevSlotsRef.current = updatedSlots;
 
       onPhotosChange?.(updated);
       onPhotoSlotsChange?.(updatedSlots);
@@ -163,18 +237,28 @@ export function usePropertyMedia({
           photos: updated,
           timestamp: Date.now(),
         });
+        if (resolvedWingDetailId) {
+          propertyMediaCache.set(`${propertyId}_${resolvedWingDetailId}`, {
+            photoSlots: updatedSlots,
+            photos: updated,
+            timestamp: Date.now(),
+          });
+        }
         evictOldestCacheEntry();
       }
     },
-    [propertyId, initialPhotoSlots, onPhotosChange, onPhotoSlotsChange, resetHoverPreview]
+    [propertyId, photoSlots, initialPhotoSlots, resolvedWingDetailId, onPhotosChange, onPhotoSlotsChange, resetHoverPreview]
   );
 
   const isAmenityProperty = useMemo(() => {
-    return categories.some(c => {
-      const code = c.photoTypeCode?.toUpperCase() || '';
-      return code === 'AMENITY_PHOTO' || code === 'AMENITY';
-    });
-  }, [categories]);
+    return (
+      isAmenityDetected ||
+      categoryId === 140 ||
+      propertyTypeId === 140 ||
+      entityType === 'AMENITY' ||
+      entityType === 'A'
+    );
+  }, [categoryId, propertyTypeId, entityType, isAmenityDetected]);
 
   const photoPlanCategory = useMemo(
     () =>
@@ -294,6 +378,8 @@ export function usePropertyMedia({
     hoverPreview,
     photos,
     setPhotos,
+    photoSlots,
+    setPhotoSlots,
     fullyLoadedIds,
     setFullyLoadedIds,
     categories,

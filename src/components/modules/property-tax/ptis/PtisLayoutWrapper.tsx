@@ -22,6 +22,7 @@ interface PtisLayoutWrapperProps {
   isMainProperty?: boolean;
   categoryId?: number | null;
   propertyTypeId?: number | null;
+  propertyDescription?: string;
   type?: string | number | null;
   societyDetailId?: number | null;
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
@@ -47,6 +48,7 @@ function PtisLayoutWrapperContent({
   isMainProperty,
   categoryId,
   propertyTypeId,
+  propertyDescription,
   type,
   societyDetailId,
   initialPhotoSlots = [],
@@ -98,6 +100,7 @@ function PtisLayoutWrapperContent({
             isMainProperty={isMainProperty}
             categoryId={categoryId}
             propertyTypeId={propertyTypeId}
+            propertyDescription={propertyDescription}
             type={type}
             societyDetailId={societyDetailId}
             initialPhotoSlots={photoSlots}

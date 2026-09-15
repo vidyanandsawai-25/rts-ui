@@ -19,6 +19,11 @@ vi.mock('sonner', () => ({
   },
 }));
 
+const mockConfirm = vi.fn((opts) => opts.onConfirm?.());
+vi.mock('@/components/common', () => ({
+  useConfirm: () => ({ confirm: mockConfirm }),
+}));
+
 vi.mock('@/app/[locale]/property-tax/ptis/PhotoPlan.action', () => ({
   uploadPropertyPhotoAction: vi.fn(),
   replacePropertyPhotoAction: vi.fn(),
@@ -134,5 +139,93 @@ describe('usePhotoPlanMutations', () => {
 
     expect(success).toBe(true);
     expect(photoPlanActions.replacePropertyPhotoAction).toHaveBeenCalled();
+  });
+
+  it('shows warning confirmation dialog when trying to upload/add photo to an existing plan slot', async () => {
+    const planCategories = [
+      {
+        photoTypeId: 10,
+        photoTypeCode: 'PHOTO_PLAN',
+        photoTypeName: 'Photo Plan',
+        photoCount: 1,
+        images: [
+          {
+            src: '/documents/plan-guid/view',
+            fullSrc: '/documents/plan-guid/view',
+            alt: 'Existing Plan',
+            title: 'Existing Plan',
+            propertyPhotoId: 501,
+            photoTypeId: 10,
+            photoTypeCode: 'PHOTO_PLAN',
+            documentGuid: 'plan-guid',
+          },
+        ],
+      },
+    ];
+
+    const { result } = renderHook(() =>
+      usePhotoPlanMutations({
+        ...defaultProps,
+        categories: planCategories,
+        selectedCategoryIndex: 0,
+        isMainProperty: true,
+      })
+    );
+
+    await act(async () => {
+      await result.current.handleAddPhoto();
+    });
+
+    expect(mockConfirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variant: 'warning',
+        title: 'media.replacePlanTitle',
+      })
+    );
+    expect(result.current.isNamingOpen).toBe(true);
+  });
+
+  it('shows warning confirmation dialog when handleReplacePhoto is called for a plan slot', () => {
+    const planCategories = [
+      {
+        photoTypeId: 10,
+        photoTypeCode: 'PHOTO_PLAN',
+        photoTypeName: 'Photo Plan',
+        photoCount: 1,
+        images: [
+          {
+            src: '/documents/plan-guid/view',
+            fullSrc: '/documents/plan-guid/view',
+            alt: 'Existing Plan',
+            title: 'Existing Plan',
+            propertyPhotoId: 501,
+            photoTypeId: 10,
+            photoTypeCode: 'PHOTO_PLAN',
+            documentGuid: 'plan-guid',
+          },
+        ],
+      },
+    ];
+
+    const { result } = renderHook(() =>
+      usePhotoPlanMutations({
+        ...defaultProps,
+        categories: planCategories,
+        selectedCategoryIndex: 0,
+      })
+    );
+
+    act(() => {
+      result.current.handleReplacePhoto(0);
+    });
+
+    expect(mockConfirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variant: 'warning',
+        title: 'media.replacePlanTitle',
+      })
+    );
+    expect(result.current.isNamingOpen).toBe(true);
+    expect(result.current.isReplacement).toBe(true);
   });
 });

@@ -66,6 +66,11 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
     )?.ownerName as string ||
     '';
 
+  const propertyDescription =
+    tabHeaderInfo?.description ||
+    ((pageData.propertyDetailsResult?.propertyDetails as unknown) as { propertyDescription?: string })?.propertyDescription ||
+    '';
+
   return (
     <PtisNavigationProvider properties={pageData.rawPropertyData}>
       <div className="flex flex-col gap-6 pb-24">
@@ -80,6 +85,7 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
           isMainProperty={data.isMainProp}
           categoryId={data.currentCategoryId}
           propertyTypeId={data.currentPropertyTypeId}
+          propertyDescription={propertyDescription}
           type={data.currentType}
           societyDetailId={data.currentSocietyDetailId}
           initialPhotoSlots={pageData.initialPhotoSlots}

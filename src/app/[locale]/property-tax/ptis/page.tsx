@@ -132,6 +132,10 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     (propertyDetailsResult?.propertyDetails as unknown as { type?: string; Type?: string })?.type ??
     (propertyDetailsResult?.propertyDetails as unknown as { type?: string; Type?: string })?.Type ??
     null;
+  const currentPropertyDescription =
+    tabHeaderInfo?.description ??
+    (propertyDetailsResult?.propertyDetails as unknown as { propertyDescription?: string })?.propertyDescription ??
+    '';
   const currentSocietyDetailId = societyDetails?.societyDetailId ?? undefined;
 
   const isApartmentSocietyProperty =
@@ -172,6 +176,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           isMainProperty={isMainProp}
           categoryId={currentCategoryId}
           propertyTypeId={currentPropertyTypeId}
+          propertyDescription={currentPropertyDescription}
           type={currentType}
           societyDetailId={currentSocietyDetailId}
           initialPhotoSlots={initialPhotoSlots}

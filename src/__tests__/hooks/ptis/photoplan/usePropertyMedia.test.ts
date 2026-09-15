@@ -136,4 +136,36 @@ describe('usePropertyMedia', () => {
     expect(hasPhotoPlan).toBe(true);
     expect(result.current.photoPlanCategory).toBeDefined();
   });
+
+  it('includes PHOTO_PLAN category for Amenity property (propertyTypeId=140 or entityType=S)', () => {
+    const { result } = renderHook(() =>
+      usePropertyMedia({
+        initialPhotoSlots: [
+          {
+            photoTypeId: 99,
+            photoTypeCode: 'AMENITY_PHOTO',
+            photoTypeName: 'Amenity Photo',
+            hasPhoto: true,
+            photoCount: 1,
+          },
+        ],
+        initialPhotos: [],
+        propertyId: 205,
+        propertyTypeId: 140,
+        entityType: 'S',
+        isMainProperty: false,
+      })
+    );
+
+    const hasPhotoPlan = result.current.categories.some(
+      (c) => c.photoTypeCode?.toUpperCase() === 'PHOTO_PLAN' || c.photoTypeName?.toLowerCase().includes('photo plan')
+    );
+    const hasChangeDetection = result.current.categories.some(
+      (c) => c.photoTypeCode?.toUpperCase() === 'CHANGE_DETECTION' || c.photoTypeName?.toLowerCase().includes('change detection')
+    );
+
+    expect(hasPhotoPlan).toBe(true);
+    expect(result.current.photoPlanCategory).toBeDefined();
+    expect(hasChangeDetection).toBe(true);
+  });
 });

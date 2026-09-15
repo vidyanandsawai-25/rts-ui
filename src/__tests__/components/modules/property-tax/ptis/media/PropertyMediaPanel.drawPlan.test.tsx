@@ -315,10 +315,14 @@ describe('PropertyMediaPanel - Draw Plan & Type Assignment Workflow', () => {
     fireEvent.click(drawButton);
 
     expect(await screen.findByText('media.assignTypeTitle')).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByText('media.fetchingBuildingPlanTypes')).not.toBeInTheDocument());
+    expect(await screen.findByText('media.assignedPlanType')).toBeInTheDocument();
 
     const proceedButton = screen.getByRole('button', { name: /media.proceed/i });
     fireEvent.click(proceedButton);
+
+    await waitFor(() => {
+      expect(mockSavePlanTypeAction).toHaveBeenCalled();
+    });
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Type already exists', expect.anything());
