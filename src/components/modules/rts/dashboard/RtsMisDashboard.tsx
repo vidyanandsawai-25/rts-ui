@@ -33,6 +33,10 @@ import type {
   RtsMisDashboardData,
   RtsMisDashboardModuleName,
 } from '@/types/rts/rtsmisdashboard.types';
+import {
+  localizeDepartmentName,
+  localizeServiceName,
+} from '@/lib/utils/rts/rts-mis-localization';
 
 interface DashboardProps {
   misDashboardData: RtsMisDashboardData;
@@ -56,6 +60,7 @@ interface DepartmentRow {
   srNo: number;
   id: string;
   name: string;
+  rawName: string;
   slug: string;
   totalServices: number;
   totalApplications: number;
@@ -73,6 +78,7 @@ interface ServiceRow {
   srNo: number;
   id: string;
   name: string;
+  rawName: string;
   totalApplications: number;
   fromRts: number;
   fromAapleSarkar: number;
@@ -389,20 +395,22 @@ export default function RtsMisDashboard({
   const departments = useMemo<DepartmentRow[]>(
     () =>
       (dashboardData.departmentWiseData ?? []).map((department, index) => {
-        const name =
+        const rawName =
           department.departmentName?.trim() ||
           t('misDashboard.departmentFallback', { number: index + 1 });
+        const name = localizeDepartmentName(rawName, locale);
         const departmentId =
-          department.departmentId ?? initialDepartmentIdsByName.get(getDepartmentNameKey(name));
+          department.departmentId ?? initialDepartmentIdsByName.get(getDepartmentNameKey(rawName));
         const id = String(
-          departmentId ?? `department-${createIdentifier(name, String(index + 1))}`
+          departmentId ?? `department-${createIdentifier(rawName, String(index + 1))}`
         );
 
         return {
           srNo: index + 1,
           id,
           name,
-          slug: createIdentifier(name, `department-${index + 1}`),
+          rawName,
+          slug: createIdentifier(rawName, `department-${index + 1}`),
           totalServices: Number(department.totalServices ?? 0),
           totalApplications: Number(department.totalApplications ?? 0),
           fromRts: Number(department.fromRTS ?? 0),
@@ -415,7 +423,7 @@ export default function RtsMisDashboard({
           sla: Number(department.sla ?? 0),
         };
       }),
-    [dashboardData.departmentWiseData, initialDepartmentIdsByName, t]
+    [dashboardData.departmentWiseData, initialDepartmentIdsByName, locale, t]
   );
 
   const expandedDepartment = useMemo(
@@ -549,26 +557,31 @@ export default function RtsMisDashboard({
       try {
         const response = await getDepartmentServices(
           numericId,
-          department.name,
+          department.rawName || department.name,
           moduleName,
           fromDate,
           toDate
         );
         const services = (response.serviceWiseData ?? []).map(
-          (service, index): ServiceRow => ({
-            srNo: index + 1,
-            id: `${department.id}-${createIdentifier(service.serviceName, String(index + 1))}`,
-            name: service.serviceName,
-            totalApplications: Number(service.totalApplications ?? 0),
-            fromRts: Number(service.rtsApplications ?? 0),
-            fromAapleSarkar: Number(service.aapleSarkarApplications ?? 0),
-            pending: Number(service.pending ?? 0),
-            approved: Number(service.approved ?? 0),
-            rejected: Number(service.rejected ?? 0),
-            reverted: Number(service.reverted ?? 0),
-            overdue: Number(service.overdueCount ?? 0),
-            sla: Number(service.sla ?? 0),
-          })
+          (service, index): ServiceRow => {
+            const rawName = service.serviceName;
+            const name = localizeServiceName(rawName, locale);
+            return {
+              srNo: index + 1,
+              id: `${department.id}-${createIdentifier(rawName, String(index + 1))}`,
+              name,
+              rawName,
+              totalApplications: Number(service.totalApplications ?? 0),
+              fromRts: Number(service.rtsApplications ?? 0),
+              fromAapleSarkar: Number(service.aapleSarkarApplications ?? 0),
+              pending: Number(service.pending ?? 0),
+              approved: Number(service.approved ?? 0),
+              rejected: Number(service.rejected ?? 0),
+              reverted: Number(service.reverted ?? 0),
+              overdue: Number(service.overdueCount ?? 0),
+              sla: Number(service.sla ?? 0),
+            };
+          }
         );
         setServicesByDepartment((current) => ({ ...current, [department.id]: services }));
       } catch {
@@ -581,7 +594,7 @@ export default function RtsMisDashboard({
         setLoadingDepartmentId((current) => (current === department.id ? null : current));
       }
     },
-    [fromDate, getDepartmentServices, moduleName, servicesByDepartment, t, toDate]
+    [fromDate, getDepartmentServices, locale, moduleName, servicesByDepartment, t, toDate]
   );
 
   useEffect(() => {
@@ -944,7 +957,7 @@ export default function RtsMisDashboard({
       },
       {
         key: 'name',
-        label: sortableHeader('name', 'Departments and Services'),
+        label: sortableHeader('name', t('misDashboard.departmentsAndServices')),
         width: '220px',
         headerClassName: 'bg-[#0A3275] text-white text-[11px] font-bold',
         cellClassName: 'font-bold text-slate-900',
@@ -1135,9 +1148,9 @@ export default function RtsMisDashboard({
                   className="ml-1 w-[150px]"
                   value={applicationSource}
                   options={[
-                    { value: 'rts', label: 'RTS' },
-                    { value: 'aaple-sarkar', label: 'Aaple Sarkar' },
-                    { value: 'offline', label: 'Offline' },
+                    { value: 'rts', label: t('misDashboard.rts') },
+                    { value: 'aaple-sarkar', label: t('misDashboard.aapleSarkar') },
+                    { value: 'offline', label: t('misDashboard.offline') },
                   ]}
                   onChange={(_event, value) => {
                     const nextSource = value as ApplicationSource;
