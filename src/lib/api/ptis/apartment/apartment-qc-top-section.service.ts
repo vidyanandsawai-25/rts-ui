@@ -7,15 +7,26 @@ import type {
 export type { ApartmentQcTopSectionDto, ApartmentQcTopSectionResponse };
 
 export interface UpdateApartmentQcTopSectionPayload {
-  ownerName: string;
-  ownerNameEnglish: string;
-  occupierName: string;
-  occupierNameEnglish: string;
+  ownerName?: string;
+  ownerNameEnglish?: string;
+  landOwnerName?: string;
+  landOwnerNameEnglish?: string;
+  owner?: string;
+  occupierName?: string;
+  occupierNameEnglish?: string;
+  builderName?: string;
+  builderNameEnglish?: string;
+  builder?: string;
+  builderEnglish?: string;
+  occupierRegional?: string;
   mobileNo: string;
   builderMobileNo?: string;
   alternateMobileNo: string;
   emailId: string;
+  societyEmail?: string;
+  societyEmailId?: string;
   address: string;
+  societyAddress?: string;
   societyAddressEnglish?: string;
   pinCode: string;
   plotNo: string;
@@ -28,6 +39,8 @@ export interface UpdateApartmentQcTopSectionPayload {
   ownerTypeId: number | null;
   societyName: string;
   societyNameEnglish: string;
+  propertyHolder?: string;
+  holderRegional?: string;
   secretaryName: string;
   secretaryNameEnglish: string;
   secretaryMobileNo: string;

@@ -7,6 +7,7 @@ import type {
   PropertyMasterData,
   ApartmentQcWingDto,
 } from '@/types/property-tax/apartment';
+import type { PropertySocietyDetailsApiItem } from '@/types/property-society-details.types';
 import type { ApartmentEditFormData, SectionWingScope } from './types';
 import type { FieldDiffItem } from './ApartmentEditConfirmModal';
 import { updateApartmentQcTopSectionAction } from '@/lib/api/ptis/apartment/apartment-qc-top-section.actions';
@@ -16,6 +17,7 @@ interface UseApartmentEditDrawerProps {
   open: boolean;
   propertyId?: number;
   propertyMasterData?: PropertyMasterData;
+  societyData?: PropertySocietyDetailsApiItem | null;
   locale?: string;
   onSuccess?: () => void;
   onClose?: () => void;
@@ -108,7 +110,10 @@ const computeInitialWingScope = (
   };
 };
 
-const getInitialFormState = (data?: PropertyMasterData): ApartmentEditFormData => {
+const getInitialFormState = (
+  data?: PropertyMasterData,
+  societyData?: PropertySocietyDetailsApiItem | null
+): ApartmentEditFormData => {
   const cleanMobile = (val?: string | null) => {
     if (!val || val === '-') return '';
     const digits = val.replace(/\D/g, '');
@@ -120,10 +125,75 @@ const getInitialFormState = (data?: PropertyMasterData): ApartmentEditFormData =
     return val;
   };
 
+  const isAsciiText = (val?: string | null) => {
+    if (!val || val === '-') return false;
+    return !/[^\x00-\x7F]/.test(val);
+  };
+
+  const initialLandOwner =
+    cleanText(societyData?.landOwnerName) ||
+    cleanText(data?.landOwnerName) ||
+    cleanText(data?.ownerName) ||
+    cleanText(data?.owner);
+
+  const initialBuilder =
+    cleanText(societyData?.builderName) ||
+    cleanText(data?.builderName) ||
+    cleanText(data?.occupierName);
+
+  const initialAddress =
+    cleanText(societyData?.societyAddress) ||
+    cleanText(data?.societyAddress) ||
+    cleanText(data?.address);
+
+  const initialSocietyName =
+    cleanText(societyData?.societyName) ||
+    cleanText(data?.societyName);
+
+  const initialLandOwnerEng =
+    cleanText(societyData?.landOwnerNameEnglish) ||
+    cleanText(data?.landOwnerNameEnglish) ||
+    cleanText(data?.ownerNameEnglish) ||
+    (isAsciiText(initialLandOwner) ? initialLandOwner : '');
+
+  const initialBuilderEng =
+    cleanText(societyData?.builderNameEnglish) ||
+    cleanText(data?.builderNameEnglish) ||
+    cleanText(data?.occupierNameEnglish) ||
+    (isAsciiText(initialBuilder) ? initialBuilder : '');
+
+  const initialSocietyNameEng =
+    cleanText(societyData?.societyNameEnglish) ||
+    cleanText(data?.societyNameEnglish) ||
+    (isAsciiText(initialSocietyName) ? initialSocietyName : '');
+
+  const initialAddressEng =
+    cleanText(societyData?.societyAddressEnglish) ||
+    cleanText(data?.societyAddressEnglish) ||
+    (isAsciiText(initialAddress) ? initialAddress : '');
+
+  const initialManagerName =
+    cleanText(societyData?.managerName) ||
+    cleanText(data?.managerName);
+
+  const initialManagerNameEng =
+    cleanText(societyData?.managerNameEnglish) ||
+    cleanText(data?.managerNameEnglish) ||
+    (isAsciiText(initialManagerName) ? initialManagerName : '');
+
+  const initialSecretaryName =
+    cleanText(societyData?.secretaryName) ||
+    cleanText(data?.secretaryName);
+
+  const initialSecretaryNameEng =
+    cleanText(societyData?.secretaryNameEnglish) ||
+    cleanText(data?.secretaryNameEnglish) ||
+    (isAsciiText(initialSecretaryName) ? initialSecretaryName : '');
+
   return {
-    id: data?.propertyId ?? null,
-    propertyId: data?.propertyId ?? null,
-    societyDetailId: null,
+    id: data?.propertyId ?? societyData?.propertyId ?? null,
+    propertyId: data?.propertyId ?? societyData?.propertyId ?? null,
+    societyDetailId: societyData?.societyDetailId ?? null,
     moujaId: resolvePositiveId(data?.moujaId),
     taxZoneId: resolvePositiveId(data?.taxZoneId),
     categoryId: resolvePositiveId(data?.categoryId),
@@ -131,8 +201,8 @@ const getInitialFormState = (data?: PropertyMasterData): ApartmentEditFormData =
     ownerTypeId: resolvePositiveId(data?.ownerTypeId),
     propertyNo: cleanText(data?.propertyNo),
     upic: cleanText(data?.upic),
-    societyName: cleanText(data?.societyName),
-    societyNameEnglish: cleanText(data?.societyNameEnglish),
+    societyName: initialSocietyName,
+    societyNameEnglish: initialSocietyNameEng,
     propertyDescription: cleanText(data?.propertyDescriptionRegional) || 'निवासी',
     division: cleanText(data?.division),
     wardNo: cleanText(data?.wardNo),
@@ -145,29 +215,26 @@ const getInitialFormState = (data?: PropertyMasterData): ApartmentEditFormData =
       (data?.subZoneCsnNo ? data.subZoneCsnNo.replace(/^CSN\s*-\s*/i, '').trim() : ''),
     pinCode: cleanText(data?.pinCode) || cleanText(data?.pincode),
     aadharNo: cleanText(data?.aadharNo),
-    societyAddress: cleanText(data?.societyAddress) || cleanText(data?.address),
-    societyAddressEnglish: cleanText(data?.societyAddressEnglish),
-    landOwnerName:
-      cleanText(data?.landOwnerName) || cleanText(data?.ownerName) || cleanText(data?.owner),
-    landOwnerNameEnglish:
-      cleanText(data?.landOwnerNameEnglish) || cleanText(data?.ownerNameEnglish),
-    occupierName: cleanText(data?.occupierName) || cleanText(data?.builderName),
-    occupierNameEnglish:
-      cleanText(data?.occupierNameEnglish) || cleanText(data?.builderNameEnglish),
-    builderName: cleanText(data?.builderName) || cleanText(data?.occupierName),
-    builderNameEnglish: cleanText(data?.builderNameEnglish) || cleanText(data?.occupierNameEnglish),
+    societyAddress: initialAddress,
+    societyAddressEnglish: initialAddressEng,
+    landOwnerName: initialLandOwner,
+    landOwnerNameEnglish: initialLandOwnerEng,
+    occupierName: initialBuilder,
+    occupierNameEnglish: initialBuilderEng,
+    builderName: initialBuilder,
+    builderNameEnglish: initialBuilderEng,
     builderMobileNo: cleanMobile(data?.builderMobileNo),
     mobileNo: cleanMobile(data?.mobileNo) || cleanMobile(data?.builderMobileNo),
     alternateMobileNo: cleanMobile(data?.altMobileNo) || cleanMobile(data?.alternateMobileNo),
-    societyEmail: cleanText(data?.societyEmail) || cleanText(data?.emailId),
-    managerName: cleanText(data?.managerName),
-    managerNameEnglish: cleanText(data?.managerNameEnglish),
-    managerMobileNo: cleanMobile(data?.managerMobileNo),
-    managerEmail: cleanText(data?.managerEmail),
-    secretaryName: cleanText(data?.secretaryName),
-    secretaryNameEnglish: cleanText(data?.secretaryNameEnglish),
-    secretaryMobileNo: cleanMobile(data?.secretaryMobileNo),
-    secretaryEmail: cleanText(data?.secretaryEmail),
+    societyEmail: cleanText(societyData?.societyEmailId) || cleanText(data?.societyEmail) || cleanText(data?.emailId),
+    managerName: initialManagerName,
+    managerNameEnglish: initialManagerNameEng,
+    managerMobileNo: cleanMobile(societyData?.managerMobileNo) || cleanMobile(data?.managerMobileNo),
+    managerEmail: cleanText(societyData?.managerEmailId) || cleanText(data?.managerEmail),
+    secretaryName: initialSecretaryName,
+    secretaryNameEnglish: initialSecretaryNameEng,
+    secretaryMobileNo: cleanMobile(societyData?.secretaryMobileNo) || cleanMobile(data?.secretaryMobileNo),
+    secretaryEmail: cleanText(societyData?.secretaryEmailId) || cleanText(data?.secretaryEmail),
   };
 };
 
@@ -183,8 +250,8 @@ export const VALIDATION_LIMITS = {
 
 export const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 export const INDIAN_MOBILE_PATTERN = /^[6-9]\d{9}$/;
-export const ENGLISH_TEXT_PATTERN = /^[A-Za-z0-9\s.,'’()&/_-]*$/;
-export const ENGLISH_NAME_PATTERN = /^[A-Za-z\s.,'’-]*$/;
+export const ENGLISH_TEXT_PATTERN = /^[A-Za-z0-9\s.,'’()&/_\-#:;+@]*$/;
+export const ENGLISH_NAME_PATTERN = /^[A-Za-z0-9\s.,'’/&()_-]*$/;
 
 /** Check for repeated digits like 000000, 999999 */
 const hasRepeatedDigits = (digits: string, minRepeat: number = 6): boolean => {
@@ -216,8 +283,6 @@ export const validateSingleField = (
         return `Society Name (Regional) cannot exceed ${VALIDATION_LIMITS.NAME_MAX} characters.`;
       }
       if (/^\d+$/.test(strVal)) return 'Society Name (Regional) cannot be only numbers.';
-      if (/^[^a-zA-Z0-9\u0900-\u097F]+$/.test(strVal))
-        return 'Society Name (Regional) contains invalid characters.';
       return null;
     }
 
@@ -240,7 +305,6 @@ export const validateSingleField = (
       if (strVal.length > VALIDATION_LIMITS.NAME_MAX) {
         return `Name cannot exceed ${VALIDATION_LIMITS.NAME_MAX} characters.`;
       }
-      if (/\d/.test(strVal)) return 'Name cannot contain numbers.';
       return null;
     }
 
@@ -253,7 +317,7 @@ export const validateSingleField = (
         return `Name cannot exceed ${VALIDATION_LIMITS.NAME_MAX} characters.`;
       }
       if (!ENGLISH_NAME_PATTERN.test(strVal)) {
-        return 'Please use English letters, spaces, dots and hyphens only.';
+        return 'Please use English letters, numbers and basic punctuation only.';
       }
       return null;
     }
@@ -379,6 +443,7 @@ export function useRedesignSocietyForm({
   open = true,
   propertyId,
   propertyMasterData,
+  societyData,
   locale: _locale = 'en',
   onSuccess,
   onClose,
@@ -407,9 +472,11 @@ export function useRedesignSocietyForm({
   })();
 
   const [formData, setFormData] = useState<ApartmentEditFormData>(() =>
-    getInitialFormState(propertyMasterData)
+    getInitialFormState(propertyMasterData, societyData)
   );
-  const initialFormRef = useRef<ApartmentEditFormData>(getInitialFormState(propertyMasterData));
+  const initialFormRef = useRef<ApartmentEditFormData>(
+    getInitialFormState(propertyMasterData, societyData)
+  );
   const [availableWings, setAvailableWings] = useState<ApartmentQcWingDto[]>(
     () => propertyMasterData?.wings || []
   );
@@ -436,10 +503,10 @@ export function useRedesignSocietyForm({
   const [detectedDiffs, setDetectedDiffs] = useState<FieldDiffItem[]>([]);
   const [isPending, startTransition] = useTransition();
 
-  // Instant hydration from SSR propertyMasterData when opened or data updates
+  // Instant hydration from SSR propertyMasterData & societyData when opened or data updates
   useEffect(() => {
     if (open) {
-      const initial = getInitialFormState(propertyMasterData);
+      const initial = getInitialFormState(propertyMasterData, societyData);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData(initial);
       initialFormRef.current = initial;
@@ -456,7 +523,7 @@ export function useRedesignSocietyForm({
         computeInitialWingScope(wings, propertyMasterData?.secretaryTargetWingDetailIds)
       );
     }
-  }, [open, propertyMasterData]);
+  }, [open, propertyMasterData, societyData]);
 
   const updateField = useCallback(
     <K extends keyof ApartmentEditFormData>(field: K, value: ApartmentEditFormData[K]) => {
@@ -652,16 +719,37 @@ export function useRedesignSocietyForm({
     );
 
     const patchPayload: UpdateApartmentQcTopSectionPayload = {
+      // Owner / Land Owner aliases
       ownerName: formData.landOwnerName?.trim() || '',
+      landOwnerName: formData.landOwnerName?.trim() || '',
+      owner: formData.landOwnerName?.trim() || '',
       ownerNameEnglish: formData.landOwnerNameEnglish?.trim() || '',
+      landOwnerNameEnglish: formData.landOwnerNameEnglish?.trim() || '',
+
+      // Builder / Occupier aliases
       occupierName: formData.builderName?.trim() || '',
+      builderName: formData.builderName?.trim() || '',
+      builder: formData.builderName?.trim() || '',
+      occupierRegional: formData.builderName?.trim() || '',
       occupierNameEnglish: formData.builderNameEnglish?.trim() || '',
+      builderNameEnglish: formData.builderNameEnglish?.trim() || '',
+      builderEnglish: formData.builderNameEnglish?.trim() || '',
+
+      // Mobile
       mobileNo: normalizedMobile,
       builderMobileNo: normalizedBuilderMobile || normalizedMobile,
       alternateMobileNo: normalizedAltMobile,
+
+      // Email
       emailId: formData.societyEmail?.trim() || '',
+      societyEmail: formData.societyEmail?.trim() || '',
+      societyEmailId: formData.societyEmail?.trim() || '',
+
+      // Address
       address: formData.societyAddress?.trim() || '',
+      societyAddress: formData.societyAddress?.trim() || '',
       societyAddressEnglish: formData.societyAddressEnglish?.trim() || '',
+
       pinCode: formData.pinCode?.trim() || '',
       plotNo: formData.plotNo?.trim() || '',
       surveyNo:
@@ -673,8 +761,14 @@ export function useRedesignSocietyForm({
       propertyTypeId: validPropertyTypeId,
       aadharNo: formData.aadharNo?.trim() || '',
       ownerTypeId: validOwnerTypeId,
+
+      // Society Name aliases
       societyName: formData.societyName?.trim() || '',
       societyNameEnglish: formData.societyNameEnglish?.trim() || '',
+      propertyHolder: formData.societyName?.trim() || '',
+      holderRegional: formData.societyName?.trim() || '',
+
+      // Secretary & Manager
       secretaryName: formData.secretaryName?.trim() || '',
       secretaryNameEnglish: formData.secretaryNameEnglish?.trim() || '',
       secretaryMobileNo: normalizedSecretaryMobile,
@@ -697,7 +791,7 @@ export function useRedesignSocietyForm({
         const patchRes = await updateApartmentQcTopSectionAction(targetPropId, patchPayload);
 
         if (patchRes.success) {
-          toast.success(patchRes.message || 'Apartment details updated successfully!');
+          toast.success(patchRes.message || 'Society details updated successfully!');
           initialFormRef.current = { ...formData };
           setIsConfirmOpen(false);
 
@@ -757,7 +851,7 @@ export function useRedesignSocietyForm({
         } else {
           toast.error(
             patchRes.error ||
-              'Unable to update apartment details. Please review your entries and try again.'
+              'Unable to update society details. Please review your entries and try again.'
           );
         }
       } catch (err) {

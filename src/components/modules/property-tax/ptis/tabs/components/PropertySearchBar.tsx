@@ -317,7 +317,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
             >
               {t('search.wardNo')}:
             </Label>
-            <div className="w-24 sm:w-28 lg:w-32 relative [&_ul]:top-full [&_ul]:!z-30">
+            <div className="w-28 sm:w-36 lg:w-40 relative [&_ul]:top-full [&_ul]:!z-30">
               <PTISSearchSelect
                 id="wardNo"
                 options={wardOptions}

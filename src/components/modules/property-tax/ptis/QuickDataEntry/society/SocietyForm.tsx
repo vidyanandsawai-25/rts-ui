@@ -34,6 +34,7 @@ const RedesignSocietyFormContent: React.FC<SocietyFormProps> = (props) => {
         open: true,
         propertyId: props.propertyIdSearch,
         propertyMasterData: props.propertyMasterData || undefined,
+        societyData: props.societyData,
         locale: props.locale,
         onSuccess: () => {
             // Updated successfully

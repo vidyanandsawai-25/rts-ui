@@ -1,4 +1,5 @@
 import type { PropertyMasterData, ApartmentQcTopSectionDto } from '@/types/property-tax/apartment';
+import type { PropertySocietyDetailsApiItem } from '@/types/property-society-details.types';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 import { mapPerformanceSummary } from './apartment-qc-performance.mapper';
 
@@ -20,17 +21,37 @@ const formatPhone = (val: unknown): string => {
 };
 
 export function mapApartmentQcTopSectionToPropertyMasterData(
-  dto?: ApartmentQcTopSectionDto | null
+  dto?: ApartmentQcTopSectionDto | null,
+  societyDetails?: PropertySocietyDetailsApiItem | null
 ): PropertyMasterData {
   if (!dto) {
     return {
-      propertyNo: '-', upic: '-', societyName: '-', ownerName: '-',
-      status: 'ACTIVE PROPERTY', category: '-', propertyDescriptionRegional: '-',
+      propertyNo: '-', upic: '-',
+      societyName: societyDetails?.societyName || '-',
+      ownerName: societyDetails?.landOwnerName || '-',
+      status: 'ACTIVE PROPERTY', category: 'Apartment', propertyDescriptionRegional: '-',
       division: '-', taxZone: '-', taxZoneAndName: '-', subZoneCsnNo: '-',
-      plotNo: '-', address: '-', societyAddress: '-', plotArea: '-',
+      plotNo: '-',
+      address: societyDetails?.societyAddress || '-',
+      societyAddress: societyDetails?.societyAddress || '-',
+      plotArea: '-',
       carpetBuiltUpArea: '-', oldCarpetBuiltUp: '-', totalFloors: '-',
-      totalPropertiesResCommAmen: '-', secretaryName: '-', secretaryMobileNo: '-',
-      secretaryEmail: '-', builderName: '-', landOwnerName: '-', societyEmail: '-',
+      totalPropertiesResCommAmen: '-',
+      secretaryName: societyDetails?.secretaryName || '-',
+      secretaryNameEnglish: societyDetails?.secretaryNameEnglish || undefined,
+      secretaryMobileNo: formatPhone(societyDetails?.secretaryMobileNo),
+      secretaryEmail: societyDetails?.secretaryEmailId || '-',
+      managerName: societyDetails?.managerName || '-',
+      managerNameEnglish: societyDetails?.managerNameEnglish || undefined,
+      managerMobileNo: formatPhone(societyDetails?.managerMobileNo),
+      managerEmail: societyDetails?.managerEmailId || '-',
+      builderName: societyDetails?.builderName || '-',
+      builderNameEnglish: societyDetails?.builderNameEnglish || undefined,
+      landOwnerName: societyDetails?.landOwnerName || '-',
+      landOwnerNameEnglish: societyDetails?.landOwnerNameEnglish || undefined,
+      societyNameEnglish: societyDetails?.societyNameEnglish || undefined,
+      societyAddressEnglish: societyDetails?.societyAddressEnglish || undefined,
+      societyEmail: societyDetails?.societyEmailId || '-',
       societyBuildingPhotoGuid: undefined, imageUrl: undefined,
       performance: mapPerformanceSummary(null),
     };
@@ -55,8 +76,18 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
       : (rawOverview?.upicId && rawOverview.upicId !== '-') ? String(rawOverview.upicId)
       : (rawDto?.upic && rawDto.upic !== '-') ? String(rawDto.upic) : '-';
 
-  const societyName = overview?.societyName || overview?.propertyHolder || overview?.owner || '-';
-  const ownerName = overview?.societyName || overview?.owner || overview?.propertyHolder || '-';
+  const societyName =
+    (overview?.societyName && overview.societyName !== '-') ? overview.societyName
+      : (societyDetails?.societyName && societyDetails.societyName !== '-') ? societyDetails.societyName
+      : (overview?.propertyHolder && overview.propertyHolder !== '-') ? overview.propertyHolder
+      : '-';
+
+  const ownerName =
+    (societyDetails?.landOwnerName && societyDetails.landOwnerName !== '-') ? societyDetails.landOwnerName
+      : (overview?.owner && overview.owner !== '-') ? overview.owner
+      : (overview?.propertyHolder && overview.propertyHolder !== '-') ? overview.propertyHolder
+      : '-';
+
   const status = overview?.propertyStatus ? `${overview.propertyStatus.toUpperCase()} PROPERTY` : 'ACTIVE PROPERTY';
   const category = overview?.propertyCategory || '-';
   const propertyDescriptionRegional = overview?.propertyDescription || '-';
@@ -66,7 +97,9 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
   const subZoneCsnNo = (rawInfo?.subZoneCsnNo && rawInfo.subZoneCsnNo !== '-') ? String(rawInfo.subZoneCsnNo)
     : (rawDto?.subZoneCsnNo && rawDto.subZoneCsnNo !== '-') ? String(rawDto.subZoneCsnNo) : '-';
   const plotNo = info?.plotNo || '-';
-  const address = info?.address || '-';
+  const address = (info?.address && info.address !== '-') ? info.address
+    : (societyDetails?.societyAddress && societyDetails.societyAddress !== '-') ? societyDetails.societyAddress
+    : '-';
 
   const plotArea = info?.plotAreaFt ? `${info.plotAreaFt.toLocaleString('en-IN')} sq.ft`
     : info?.plotAreaMtr ? `${info.plotAreaMtr} sq.mtr` : '-';
@@ -77,53 +110,64 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
   const wings = overview?.wings || [];
   const firstWing = wings[0];
 
-  const secretaryName = (overview?.secretaryName && overview.secretaryName !== '-') ? overview.secretaryName
+  const secretaryName = (societyDetails?.secretaryName && societyDetails.secretaryName !== '-') ? societyDetails.secretaryName
+    : (overview?.secretaryName && overview.secretaryName !== '-') ? overview.secretaryName
     : (firstWing?.secretaryName && firstWing.secretaryName !== '-') ? firstWing.secretaryName : '-';
 
-  const secretaryNameEnglish = (rawDto?.secretaryNameEnglish && rawDto.secretaryNameEnglish !== '-') ? String(rawDto.secretaryNameEnglish)
+  const secretaryNameEnglish = (societyDetails?.secretaryNameEnglish && societyDetails.secretaryNameEnglish !== '-') ? societyDetails.secretaryNameEnglish
+    : (rawDto?.secretaryNameEnglish && rawDto.secretaryNameEnglish !== '-') ? String(rawDto.secretaryNameEnglish)
     : (overview?.secretaryNameEnglish && overview.secretaryNameEnglish !== '-') ? overview.secretaryNameEnglish
     : (firstWing?.secretaryNameEnglish && firstWing.secretaryNameEnglish !== '-') ? firstWing.secretaryNameEnglish : undefined;
 
   const rawSecMobile =
-    (info?.secretaryMobileNo && info.secretaryMobileNo !== '-') ? info.secretaryMobileNo
+    (societyDetails?.secretaryMobileNo && societyDetails.secretaryMobileNo !== '-') ? societyDetails.secretaryMobileNo
+    : (info?.secretaryMobileNo && info.secretaryMobileNo !== '-') ? info.secretaryMobileNo
     : (rawOverview?.secretaryMobileNo && rawOverview.secretaryMobileNo !== '-') ? rawOverview.secretaryMobileNo
     : (firstWing?.secretaryMobileNo && firstWing.secretaryMobileNo !== '-') ? firstWing.secretaryMobileNo
     : (rawDto?.secretaryMobileNo && rawDto.secretaryMobileNo !== '-') ? rawDto.secretaryMobileNo : undefined;
   const secretaryMobileNo = formatPhone(rawSecMobile);
 
-  const secretaryEmail = (info?.emailId && info.emailId !== '-') ? info.emailId
+  const secretaryEmail = (societyDetails?.secretaryEmailId && societyDetails.secretaryEmailId !== '-') ? societyDetails.secretaryEmailId
+    : (info?.emailId && info.emailId !== '-') ? info.emailId
     : (info?.secretaryEmailId && info.secretaryEmailId !== '-') ? info.secretaryEmailId
     : (firstWing?.secretaryEmailId && firstWing.secretaryEmailId !== '-') ? firstWing.secretaryEmailId : '-';
 
-  const managerName = (rawDto?.managerName && rawDto.managerName !== '-') ? String(rawDto.managerName)
+  const managerName = (societyDetails?.managerName && societyDetails.managerName !== '-') ? societyDetails.managerName
+    : (rawDto?.managerName && rawDto.managerName !== '-') ? String(rawDto.managerName)
     : (overview?.managerName && overview.managerName !== '-') ? String(overview.managerName)
     : (firstWing?.managerName && firstWing.managerName !== '-') ? String(firstWing.managerName) : '-';
 
-  const managerNameEnglish = (rawDto?.managerNameEnglish && rawDto.managerNameEnglish !== '-') ? String(rawDto.managerNameEnglish)
+  const managerNameEnglish = (societyDetails?.managerNameEnglish && societyDetails.managerNameEnglish !== '-') ? societyDetails.managerNameEnglish
+    : (rawDto?.managerNameEnglish && rawDto.managerNameEnglish !== '-') ? String(rawDto.managerNameEnglish)
     : (overview?.managerNameEnglish && overview.managerNameEnglish !== '-') ? overview.managerNameEnglish
     : (firstWing?.managerNameEnglish && firstWing.managerNameEnglish !== '-') ? firstWing.managerNameEnglish : undefined;
 
   const rawMgrMobile =
-    (info?.managerMobileNo && info.managerMobileNo !== '-') ? info.managerMobileNo
+    (societyDetails?.managerMobileNo && societyDetails.managerMobileNo !== '-') ? societyDetails.managerMobileNo
+    : (info?.managerMobileNo && info.managerMobileNo !== '-') ? info.managerMobileNo
     : (rawOverview?.managerMobileNo && rawOverview.managerMobileNo !== '-') ? rawOverview.managerMobileNo
     : (firstWing?.managerMobileNo && firstWing.managerMobileNo !== '-') ? firstWing.managerMobileNo
     : (rawDto?.managerMobileNo && rawDto.managerMobileNo !== '-') ? rawDto.managerMobileNo : undefined;
   const managerMobileNo = formatPhone(rawMgrMobile);
 
-  const managerEmail = (info?.managerEmailId && info.managerEmailId !== '-') ? info.managerEmailId
+  const managerEmail = (societyDetails?.managerEmailId && societyDetails.managerEmailId !== '-') ? societyDetails.managerEmailId
+    : (info?.managerEmailId && info.managerEmailId !== '-') ? info.managerEmailId
     : (firstWing?.managerEmailId && firstWing.managerEmailId !== '-') ? firstWing.managerEmailId : '-';
 
-  const builderName = (rawOverview?.builderName && rawOverview.builderName !== '-') ? String(rawOverview.builderName)
+  const builderName = (societyDetails?.builderName && societyDetails.builderName !== '-') ? societyDetails.builderName
+    : (rawOverview?.builderName && rawOverview.builderName !== '-') ? String(rawOverview.builderName)
     : (overview?.builderName && overview.builderName !== '-') ? overview.builderName
     : (rawDto?.builderName && rawDto.builderName !== '-') ? String(rawDto.builderName)
     : (rawInfo?.builderName && rawInfo.builderName !== '-') ? String(rawInfo.builderName) : '-';
 
-  const landOwnerName = (rawOverview?.landOwnerName && rawOverview.landOwnerName !== '-') ? String(rawOverview.landOwnerName)
+  const landOwnerName = (societyDetails?.landOwnerName && societyDetails.landOwnerName !== '-') ? societyDetails.landOwnerName
+    : (rawOverview?.landOwnerName && rawOverview.landOwnerName !== '-') ? String(rawOverview.landOwnerName)
     : (rawDto?.landOwnerName && rawDto.landOwnerName !== '-') ? String(rawDto.landOwnerName)
     : (rawInfo?.landOwnerName && rawInfo.landOwnerName !== '-') ? String(rawInfo.landOwnerName)
     : (overview?.owner && overview.owner !== '-') ? overview.owner : '-';
 
-  const societyEmail = (rawDto?.societyEmailId && rawDto.societyEmailId !== '-') ? String(rawDto.societyEmailId)
+  const societyEmail = (societyDetails?.societyEmailId && societyDetails.societyEmailId !== '-') ? societyDetails.societyEmailId
+    : (rawDto?.societyEmailId && rawDto.societyEmailId !== '-') ? String(rawDto.societyEmailId)
     : (rawOverview?.societyEmailId && rawOverview.societyEmailId !== '-') ? String(rawOverview.societyEmailId)
     : (info?.emailId && info.emailId !== '-') ? info.emailId : undefined;
 
@@ -149,6 +193,20 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
     : (rawInfo?.pinCode && rawInfo.pinCode !== '-') ? String(rawInfo.pinCode)
     : (rawDto?.pinCode && rawDto.pinCode !== '-') ? String(rawDto.pinCode) : undefined;
 
+  const builderNameEnglish = (societyDetails?.builderNameEnglish && societyDetails.builderNameEnglish !== '-') ? societyDetails.builderNameEnglish
+    : (rawDto?.builderNameEnglish && rawDto.builderNameEnglish !== '-') ? String(rawDto.builderNameEnglish)
+    : ((rawDto?.builderEnglish && rawDto.builderEnglish !== '-') ? String(rawDto.builderEnglish) : undefined);
+
+  const landOwnerNameEnglish = (societyDetails?.landOwnerNameEnglish && societyDetails.landOwnerNameEnglish !== '-') ? societyDetails.landOwnerNameEnglish
+    : (rawDto?.landOwnerNameEnglish && rawDto.landOwnerNameEnglish !== '-') ? String(rawDto.landOwnerNameEnglish)
+    : ((rawDto?.ownerNameEnglish && rawDto.ownerNameEnglish !== '-') ? String(rawDto.ownerNameEnglish) : undefined);
+
+  const societyNameEnglish = (societyDetails?.societyNameEnglish && societyDetails.societyNameEnglish !== '-') ? societyDetails.societyNameEnglish
+    : (rawDto?.societyNameEnglish && rawDto.societyNameEnglish !== '-') ? String(rawDto.societyNameEnglish) : undefined;
+
+  const societyAddressEnglish = (societyDetails?.societyAddressEnglish && societyDetails.societyAddressEnglish !== '-') ? societyDetails.societyAddressEnglish
+    : (rawDto?.societyAddressEnglish && rawDto.societyAddressEnglish !== '-') ? String(rawDto.societyAddressEnglish) : undefined;
+
   return {
     propertyNo, upic, societyName, ownerName, status, category, propertyDescriptionRegional, division,
     wardNo: (rawInfo?.wardNo && rawInfo.wardNo !== '-') ? String(rawInfo.wardNo) : (rawInfo?.wardName && rawInfo.wardName !== '-') ? String(rawInfo.wardName) : (rawOverview?.wardNo && rawOverview.wardNo !== '-') ? String(rawOverview.wardNo) : (rawOverview?.wardName && rawOverview.wardName !== '-') ? String(rawOverview.wardName) : (rawDto?.wardNo && rawDto.wardNo !== '-') ? String(rawDto.wardNo) : '-',
@@ -167,19 +225,19 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
     alternateMobileNo: (rawInfo?.alternateMobileNo && rawInfo.alternateMobileNo !== '-') ? String(rawInfo.alternateMobileNo) : (rawDto?.alternateMobileNo && rawDto.alternateMobileNo !== '-') ? String(rawDto.alternateMobileNo) : undefined,
     pinCode, pincode: pinCode,
     occupierName: (rawOverview?.occupierName && rawOverview.occupierName !== '-') ? String(rawOverview.occupierName) : (rawDto?.occupierName && rawDto.occupierName !== '-') ? String(rawDto.occupierName) : builderName,
-    occupierNameEnglish: (rawOverview?.occupierNameEnglish && rawOverview.occupierNameEnglish !== '-') ? String(rawOverview.occupierNameEnglish) : (rawDto?.occupierNameEnglish && rawDto.occupierNameEnglish !== '-') ? String(rawDto.occupierNameEnglish) : undefined,
-    ownerNameEnglish: (rawOverview?.ownerNameEnglish && rawOverview.ownerNameEnglish !== '-') ? String(rawOverview.ownerNameEnglish) : (rawDto?.ownerNameEnglish && rawDto.ownerNameEnglish !== '-') ? String(rawDto.ownerNameEnglish) : (rawDto?.landOwnerNameEnglish && rawDto.landOwnerNameEnglish !== '-') ? String(rawDto.landOwnerNameEnglish) : undefined,
+    occupierNameEnglish: (rawOverview?.occupierNameEnglish && rawOverview.occupierNameEnglish !== '-') ? String(rawOverview.occupierNameEnglish) : (rawDto?.occupierNameEnglish && rawDto.occupierNameEnglish !== '-') ? String(rawDto.occupierNameEnglish) : builderNameEnglish,
+    ownerNameEnglish: landOwnerNameEnglish || ((rawOverview?.ownerNameEnglish && rawOverview.ownerNameEnglish !== '-') ? String(rawOverview.ownerNameEnglish) : (rawDto?.ownerNameEnglish && rawDto.ownerNameEnglish !== '-') ? String(rawDto.ownerNameEnglish) : undefined),
     secretaryTargetWingDetailIds, managerTargetWingDetailIds,
     secretaryName, secretaryNameEnglish, secretaryMobileNo, secretaryEmail,
     managerName, managerNameEnglish, managerMobileNo, managerEmail,
     builderName,
-    builderNameEnglish: (rawDto?.builderNameEnglish && rawDto.builderNameEnglish !== '-') ? String(rawDto.builderNameEnglish) : ((rawDto?.builderEnglish && rawDto.builderEnglish !== '-') ? String(rawDto.builderEnglish) : undefined),
+    builderNameEnglish,
     builderMobileNo: (rawDto?.builderMobileNo && rawDto.builderMobileNo !== '-') ? String(rawDto.builderMobileNo) : (rawInfo?.builderMobileNo && rawInfo.builderMobileNo !== '-') ? String(rawInfo.builderMobileNo) : (rawInfo?.mobileNo && rawInfo.mobileNo !== '-') ? String(rawInfo.mobileNo) : (rawDto?.mobileNo && rawDto.mobileNo !== '-') ? String(rawDto.mobileNo) : (rawOverview?.builderMobileNo && rawOverview.builderMobileNo !== '-') ? String(rawOverview.builderMobileNo) : undefined,
     mobileNo: (rawInfo?.mobileNo && rawInfo.mobileNo !== '-') ? String(rawInfo.mobileNo) : (rawDto?.mobileNo && rawDto.mobileNo !== '-') ? String(rawDto.mobileNo) : (rawInfo?.builderMobileNo && rawInfo.builderMobileNo !== '-') ? String(rawInfo.builderMobileNo) : (rawDto?.builderMobileNo && rawDto.builderMobileNo !== '-') ? String(rawDto.builderMobileNo) : undefined,
     landOwnerName,
-    landOwnerNameEnglish: (rawDto?.landOwnerNameEnglish && rawDto.landOwnerNameEnglish !== '-') ? String(rawDto.landOwnerNameEnglish) : ((rawDto?.ownerNameEnglish && rawDto.ownerNameEnglish !== '-') ? String(rawDto.ownerNameEnglish) : undefined),
-    societyNameEnglish: (rawDto?.societyNameEnglish && rawDto.societyNameEnglish !== '-') ? String(rawDto.societyNameEnglish) : undefined,
-    societyAddressEnglish: (rawDto?.societyAddressEnglish && rawDto.societyAddressEnglish !== '-') ? String(rawDto.societyAddressEnglish) : undefined,
+    landOwnerNameEnglish,
+    societyNameEnglish,
+    societyAddressEnglish,
     societyEmail,
     societyBuildingPhotoGuid: overview?.societyBuildingPhotoGuid || undefined,
     imageUrl: overview?.societyBuildingPhotoGuid ? getViewDocumentUrl(overview.societyBuildingPhotoGuid) : undefined,
