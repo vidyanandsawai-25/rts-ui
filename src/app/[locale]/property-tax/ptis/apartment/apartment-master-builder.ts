@@ -99,10 +99,34 @@ export function buildInitialPropertyMasterData(
     : (baseData?.secretaryMobileNo || '-');
   const effectiveSecEmail = (baseData?.secretaryEmail && baseData.secretaryEmail !== '-') ? baseData.secretaryEmail : (typeof rawSoc?.secretaryEmailId === 'string' && rawSoc.secretaryEmailId !== '-') ? rawSoc.secretaryEmailId : '-';
   const effectiveAddress = (baseData?.societyAddress && baseData.societyAddress !== '-') ? baseData.societyAddress : (baseData?.address && baseData.address !== '-') ? baseData.address : (typeof rawSoc?.societyAddress === 'string' && rawSoc.societyAddress !== '-') ? rawSoc.societyAddress : (typeof rawKyc?.address === 'string' && rawKyc.address !== '-') ? rawKyc.address : '-';
-  const effectivePlotArea = (baseData?.plotArea && baseData.plotArea !== '-') ? baseData.plotArea : (typeof rawPropDetails?.plotArea === 'string' || typeof rawPropDetails?.plotArea === 'number') ? `${String(rawPropDetails.plotArea)} sq.ft` : '-';
-  const effectiveCarpetBuiltUp = (baseData?.carpetBuiltUpArea && baseData.carpetBuiltUpArea !== '-') ? baseData.carpetBuiltUpArea : (rawPropDetails?.carpetArea && rawPropDetails?.builtUpArea) ? `${String(rawPropDetails.carpetArea)} / ${String(rawPropDetails.builtUpArea)}` : '-';
-  const effectiveTotalFloors = (baseData?.totalFloors && baseData.totalFloors !== '-') ? baseData.totalFloors : rawPropDetails?.totalFloors ? String(rawPropDetails.totalFloors) : '-';
-  const effectiveTotalProperties = (baseData?.totalPropertiesResCommAmen && baseData.totalPropertiesResCommAmen !== '-') ? baseData.totalPropertiesResCommAmen : rawPropDetails?.totalProperties ? String(rawPropDetails.totalProperties) : '-';
+  const rawPlotAreaStr = rawPropDetails?.plotArea != null ? String(rawPropDetails.plotArea).trim() : '';
+  const effectivePlotArea = (baseData?.plotArea && baseData.plotArea !== '-')
+    ? baseData.plotArea
+    : (rawPlotAreaStr !== '' && rawPlotAreaStr !== '-' && rawPlotAreaStr !== '0')
+      ? `${rawPlotAreaStr} sq.ft`
+      : '-';
+
+  const rawCarpet = rawPropDetails?.carpetArea != null ? String(rawPropDetails.carpetArea).trim() : '';
+  const rawBuiltUp = rawPropDetails?.builtUpArea != null ? String(rawPropDetails.builtUpArea).trim() : '';
+  const effectiveCarpetBuiltUp = (baseData?.carpetBuiltUpArea && baseData.carpetBuiltUpArea !== '-')
+    ? baseData.carpetBuiltUpArea
+    : (rawCarpet !== '' && rawBuiltUp !== '' && rawCarpet !== '-' && rawBuiltUp !== '-')
+      ? `${rawCarpet} / ${rawBuiltUp}`
+      : '-';
+
+  const rawFloors = rawPropDetails?.totalFloors != null ? String(rawPropDetails.totalFloors).trim() : '';
+  const effectiveTotalFloors = (baseData?.totalFloors && baseData.totalFloors !== '-')
+    ? baseData.totalFloors
+    : (rawFloors !== '' && rawFloors !== '-')
+      ? rawFloors
+      : '-';
+
+  const rawProps = rawPropDetails?.totalProperties != null ? String(rawPropDetails.totalProperties).trim() : '';
+  const effectiveTotalProperties = (baseData?.totalPropertiesResCommAmen && baseData.totalPropertiesResCommAmen !== '-')
+    ? baseData.totalPropertiesResCommAmen
+    : (rawProps !== '' && rawProps !== '-')
+      ? rawProps
+      : '-';
   const effectiveCategory = (baseData?.category && baseData.category !== '-') ? baseData.category : (typeof rawTabHeader?.category === 'string' && rawTabHeader.category !== '-') ? rawTabHeader.category : (typeof rawPropDetails?.categoryName === 'string' && rawPropDetails.categoryName !== '-') ? rawPropDetails.categoryName : 'Apartment';
   const effectiveDescRegional = (baseData?.propertyDescriptionRegional && baseData.propertyDescriptionRegional !== '-') ? baseData.propertyDescriptionRegional : (typeof rawPropDetails?.propertyDescriptionRegional === 'string' && rawPropDetails.propertyDescriptionRegional !== '-') ? rawPropDetails.propertyDescriptionRegional : 'निवासी व अनिवासी';
 
