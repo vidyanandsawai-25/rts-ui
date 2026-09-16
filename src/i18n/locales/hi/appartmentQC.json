@@ -465,7 +465,10 @@
     "carpetBuiltUp": "कार्पेट / निर्मित क्षेत्रफल:",
     "oldCarpetBuiltUp": "पुराना कार्पेट/निर्मित:",
     "totalFloors": "कुल मंजिलें:",
-    "totalProperties": "कुल संपत्तियां:"
+    "totalProperties": "कुल संपत्तियां:",
+    "resCommAmen": "(आवासीय/व्यावसायिक/सुविधा)",
+    "carpet": "कार्पेट:",
+    "builtUp": "निर्मित:"
   },
   "revenueCard": {
     "addRevenue": "अतिरिक्त राजस्व",

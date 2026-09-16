@@ -101,11 +101,40 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
     : (societyDetails?.societyAddress && societyDetails.societyAddress !== '-') ? societyDetails.societyAddress
     : '-';
 
-  const plotArea = info?.plotAreaFt ? `${info.plotAreaFt.toLocaleString('en-IN')} sq.ft`
-    : info?.plotAreaMtr ? `${info.plotAreaMtr} sq.mtr` : '-';
+  const plotArea = (info?.plotAreaFt != null && info?.plotAreaMtr != null)
+    ? `${info.plotAreaFt.toLocaleString('en-IN')} sq.ft / ${info.plotAreaMtr.toLocaleString('en-IN')} sq.m`
+    : info?.plotAreaFt != null
+    ? `${info.plotAreaFt.toLocaleString('en-IN')} sq.ft`
+    : info?.plotAreaMtr != null
+    ? `${info.plotAreaMtr.toLocaleString('en-IN')} sq.m`
+    : '-';
 
-  const carpetBuiltUpArea = (info?.carpetAreaFt != null && info?.builtUpAreaFt != null)
-    ? `${info.carpetAreaFt.toLocaleString('en-IN')} / ${info.builtUpAreaFt.toLocaleString('en-IN')}` : '-';
+  const carpetAreaFtMtr = (info?.carpetAreaFt != null && info?.carpetAreaMtr != null)
+    ? `${info.carpetAreaFt.toLocaleString('en-IN')} sq.ft (${info.carpetAreaMtr.toLocaleString('en-IN')} sq.m)`
+    : info?.carpetAreaFt != null
+    ? `${info.carpetAreaFt.toLocaleString('en-IN')} sq.ft`
+    : info?.carpetAreaMtr != null
+    ? `${info.carpetAreaMtr.toLocaleString('en-IN')} sq.m`
+    : undefined;
+
+  const builtUpAreaFtMtr = (info?.builtUpAreaFt != null && info?.builtUpAreaMtr != null)
+    ? `${info.builtUpAreaFt.toLocaleString('en-IN')} sq.ft (${info.builtUpAreaMtr.toLocaleString('en-IN')} sq.m)`
+    : info?.builtUpAreaFt != null
+    ? `${info.builtUpAreaFt.toLocaleString('en-IN')} sq.ft`
+    : info?.builtUpAreaMtr != null
+    ? `${info.builtUpAreaMtr.toLocaleString('en-IN')} sq.m`
+    : undefined;
+
+  const hasFt = info?.carpetAreaFt != null && info?.builtUpAreaFt != null;
+  const hasMtr = info?.carpetAreaMtr != null && info?.builtUpAreaMtr != null;
+
+  const carpetBuiltUpArea = (hasFt && hasMtr)
+    ? `${info?.carpetAreaFt?.toLocaleString('en-IN')} / ${info?.builtUpAreaFt?.toLocaleString('en-IN')} sq.ft (${info?.carpetAreaMtr?.toLocaleString('en-IN')} / ${info?.builtUpAreaMtr?.toLocaleString('en-IN')} sq.m)`
+    : hasFt
+    ? `${info?.carpetAreaFt?.toLocaleString('en-IN')} / ${info?.builtUpAreaFt?.toLocaleString('en-IN')} sq.ft`
+    : hasMtr
+    ? `${info?.carpetAreaMtr?.toLocaleString('en-IN')} / ${info?.builtUpAreaMtr?.toLocaleString('en-IN')} sq.m`
+    : '-';
 
   const wings = overview?.wings || [];
   const firstWing = wings[0];
@@ -209,13 +238,45 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
 
   return {
     propertyNo, upic, societyName, ownerName, status, category, propertyDescriptionRegional, division,
-    wardNo: (rawInfo?.wardNo && rawInfo.wardNo !== '-') ? String(rawInfo.wardNo) : (rawInfo?.wardName && rawInfo.wardName !== '-') ? String(rawInfo.wardName) : (rawOverview?.wardNo && rawOverview.wardNo !== '-') ? String(rawOverview.wardNo) : (rawOverview?.wardName && rawOverview.wardName !== '-') ? String(rawOverview.wardName) : (rawDto?.wardNo && rawDto.wardNo !== '-') ? String(rawDto.wardNo) : '-',
+    wardNo: (overview?.wardNo && overview.wardNo !== '-') ? String(overview.wardNo)
+      : (overview?.wardName && overview.wardName !== '-') ? String(overview.wardName)
+      : (info?.wardNo && info.wardNo !== '-') ? String(info.wardNo)
+      : (info?.wardName && info.wardName !== '-') ? String(info.wardName)
+      : (rawOverview?.wardNo && rawOverview.wardNo !== '-') ? String(rawOverview.wardNo)
+      : (rawOverview?.wardName && rawOverview.wardName !== '-') ? String(rawOverview.wardName)
+      : (rawInfo?.wardNo && rawInfo.wardNo !== '-') ? String(rawInfo.wardNo)
+      : (rawInfo?.wardName && rawInfo.wardName !== '-') ? String(rawInfo.wardName)
+      : (rawDto?.wardNo && rawDto.wardNo !== '-') ? String(rawDto.wardNo)
+      : '-',
     taxZone,
     taxZoneAndName: (rawInfo?.taxZoneAndName && rawInfo.taxZoneAndName !== '-') ? String(rawInfo.taxZoneAndName) : (rawInfo?.taxZone && rawInfo?.taxZoneName && rawInfo.taxZone !== '-' && rawInfo.taxZoneName !== '-') ? `${rawInfo.taxZone} - ${rawInfo.taxZoneName}` : (rawInfo?.taxZoneNo && rawInfo?.taxZoneName) ? `${rawInfo.taxZoneNo} - ${rawInfo.taxZoneName}` : taxZone,
     surveyNo, subZoneCsnNo, plotNo, address, societyAddress: address, plotArea, carpetBuiltUpArea,
-    oldCarpetBuiltUp: carpetBuiltUpArea,
-    totalFloors: (rawOverview?.totalFloors && rawOverview.totalFloors !== '-') ? String(rawOverview.totalFloors) : (rawInfo?.totalFloors && rawInfo.totalFloors !== '-') ? String(rawInfo.totalFloors) : (rawDto?.totalFloors && rawDto.totalFloors !== '-') ? String(rawDto.totalFloors) : '-',
-    totalPropertiesResCommAmen: (rawOverview?.totalProperties && rawOverview.totalProperties !== '-') ? String(rawOverview.totalProperties) : (rawOverview?.totalPropertiesResCommAmen && rawOverview.totalPropertiesResCommAmen !== '-') ? String(rawOverview.totalPropertiesResCommAmen) : (rawInfo?.totalProperties && rawInfo.totalProperties !== '-') ? String(rawInfo.totalProperties) : (rawDto?.totalProperties && rawDto.totalProperties !== '-') ? String(rawDto.totalProperties) : '-',
+    carpetAreaFtMtr, builtUpAreaFtMtr,
+    oldCarpetBuiltUp: (typeof rawInfo?.oldCarpetAreaFt === 'number' && typeof rawInfo?.oldBuiltUpAreaFt === 'number')
+      ? `${(rawInfo.oldCarpetAreaFt as number).toLocaleString('en-IN')} / ${(rawInfo.oldBuiltUpAreaFt as number).toLocaleString('en-IN')}`
+      : (rawDto?.oldCarpetBuiltUp && rawDto.oldCarpetBuiltUp !== '-')
+      ? String(rawDto.oldCarpetBuiltUp)
+      : '-',
+    totalFloors: (overview?.totalFloor && overview.totalFloor !== '-') ? String(overview.totalFloor)
+      : (overview?.totalFloors && overview.totalFloors !== '-') ? String(overview.totalFloors)
+      : (rawOverview?.totalFloor && rawOverview.totalFloor !== '-') ? String(rawOverview.totalFloor)
+      : (rawOverview?.totalFloors && rawOverview.totalFloors !== '-') ? String(rawOverview.totalFloors)
+      : (info?.totalFloor && info.totalFloor !== '-') ? String(info.totalFloor)
+      : (info?.totalFloors && info.totalFloors !== '-') ? String(info.totalFloors)
+      : (rawInfo?.totalFloor && rawInfo.totalFloor !== '-') ? String(rawInfo.totalFloor)
+      : (rawInfo?.totalFloors && rawInfo.totalFloors !== '-') ? String(rawInfo.totalFloors)
+      : (rawDto?.totalFloor && rawDto.totalFloor !== '-') ? String(rawDto.totalFloor)
+      : (rawDto?.totalFloors && rawDto.totalFloors !== '-') ? String(rawDto.totalFloors)
+      : '-',
+    totalPropertiesResCommAmen: (overview?.propertyCounts && (overview.propertyCounts.residential != null || overview.propertyCounts.commercial != null || overview.propertyCounts.amenity != null))
+      ? `${overview.propertyCounts.residential ?? 0} / ${overview.propertyCounts.commercial ?? 0} / ${overview.propertyCounts.amenity ?? 0}`
+      : (rawOverview?.propertyCounts && typeof rawOverview.propertyCounts === 'object')
+      ? `${(rawOverview.propertyCounts as Record<string, number>).residential ?? 0} / ${(rawOverview.propertyCounts as Record<string, number>).commercial ?? 0} / ${(rawOverview.propertyCounts as Record<string, number>).amenity ?? 0}`
+      : (rawOverview?.totalProperties && rawOverview.totalProperties !== '-') ? String(rawOverview.totalProperties)
+      : (rawOverview?.totalPropertiesResCommAmen && rawOverview.totalPropertiesResCommAmen !== '-') ? String(rawOverview.totalPropertiesResCommAmen)
+      : (rawInfo?.totalProperties && rawInfo.totalProperties !== '-') ? String(rawInfo.totalProperties)
+      : (rawDto?.totalProperties && rawDto.totalProperties !== '-') ? String(rawDto.totalProperties)
+      : '-',
     moujaId: toPositiveNumberOrNull(rawInfo?.moujaId ?? rawOverview?.moujaId ?? rawDto?.moujaId),
     taxZoneId: toPositiveNumberOrNull(rawInfo?.taxZoneId ?? rawOverview?.taxZoneId ?? rawDto?.taxZoneId),
     categoryId: toPositiveNumberOrNull(rawOverview?.categoryId ?? rawInfo?.categoryId ?? rawDto?.categoryId),

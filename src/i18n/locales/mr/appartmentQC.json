@@ -465,7 +465,10 @@
     "carpetBuiltUp": "कार्पेट / निर्मित क्षेत्रफळ:",
     "oldCarpetBuiltUp": "जुने कार्पेट/निर्मित:",
     "totalFloors": "एकूण मजले:",
-    "totalProperties": "एकूण मालमत्ता:"
+    "totalProperties": "एकूण मालमत्ता:",
+    "resCommAmen": "(निवासी/अनिवासी/सुविधा)",
+    "carpet": "कार्पेट:",
+    "builtUp": "निर्मित:"
   },
   "revenueCard": {
     "addRevenue": "अतिरिक्त महसूल",

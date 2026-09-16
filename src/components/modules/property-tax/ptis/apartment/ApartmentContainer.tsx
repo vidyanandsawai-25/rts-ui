@@ -164,8 +164,8 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
 
       <div className="px-3 pt-2">
         <PropertyMasterCard
-          data={initialPropertyMasterData} propertyId={propertyId ?? undefined}
-          wardNo={draft.wardNo || urlState.wardNo || initialData?.propertyDetails?.wardNo || initialData?.tabHeaderInfo?.oldWardNo || search.propertiesList.find((p) => p.propertyId === Number(propertyId || draft.propertyId))?.wardNo || search.wardOptions.find((w) => String(w.value) === String(draft.wardId || urlState.wardId))?.label || ''}
+          data={initialPropertyMasterData}
+          propertyId={propertyId ?? undefined}
           isLoading={isSearching}
         />
       </div>

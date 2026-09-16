@@ -17,7 +17,6 @@ interface PropertyMasterCardProps {
   data?: PropertyMasterData;
   onEdit?: () => void;
   propertyId?: number;
-  wardNo?: string;
   isLoading?: boolean;
 }
 
@@ -25,7 +24,6 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
   data,
   onEdit,
   propertyId,
-  wardNo,
   isLoading = false,
 }) => {
   const [masterData, setMasterData] = useState<PropertyMasterData | undefined>(data);
@@ -43,11 +41,9 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
   const effectiveWardNo =
     (masterData?.wardNo && masterData.wardNo !== '-')
       ? masterData.wardNo
-      : (wardNo && wardNo !== '-')
-        ? wardNo
-        : (data?.wardNo && data.wardNo !== '-')
-          ? data.wardNo
-          : '-';
+      : (data?.wardNo && data.wardNo !== '-')
+        ? data.wardNo
+        : '-';
 
   const currentData: PropertyMasterData = {
     ...(masterData || data || {}),
@@ -157,7 +153,7 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
         </div>
 
         {/* Center: Main Metadata & 3 Sections */}
-        <div className="flex-1 flex flex-col justify-start gap-1 min-w-0 pt-0 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-between gap-1.5 min-w-0 pt-0 overflow-hidden">
           {/* Top Identifiers Row */}
           <PropertyMasterHeader
             propertyNo={displayPropertyNo}

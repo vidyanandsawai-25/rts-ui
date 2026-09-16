@@ -471,7 +471,10 @@
     "carpetBuiltUp": "Carpet / Built-up:",
     "oldCarpetBuiltUp": "Old Carpet/Built-up:",
     "totalFloors": "Total Floors:",
-    "totalProperties": "Total Properties:"
+    "totalProperties": "Total Properties:",
+    "resCommAmen": "(Res/Comm/Amen)",
+    "carpet": "Carpet:",
+    "builtUp": "Built-up:"
   },
   "revenueCard": {
     "addRevenue": "ADD. REVENUE",

@@ -67,7 +67,7 @@ function resolveSocietyPhoto(pageData: PtisPageData): { guid?: string; url?: str
 export function buildInitialPropertyMasterData(
   params: BuildMasterDataParams
 ): PropertyMasterData | undefined {
-  const { resolvedPropertyId, baseData, pageData, wardNo, propertyNo, rawData } = params;
+  const { resolvedPropertyId, baseData, pageData, propertyNo, rawData } = params;
   if (!resolvedPropertyId && !baseData) return undefined;
 
   const { propertyDetailsResult, societyDetails, kycDetails, tabHeaderInfo, rawPropertyData } = pageData;
@@ -80,7 +80,13 @@ export function buildInitialPropertyMasterData(
 
   const { guid: photoGuid, url: photoUrl } = resolveSocietyPhoto(pageData);
 
-  const effectiveWardNo = (baseData?.wardNo && baseData.wardNo !== '-') ? baseData.wardNo : (wardNo && wardNo !== '-') ? wardNo : (typeof propDetails?.wardNo === 'string' ? propDetails.wardNo : '') || (typeof tabHeaderInfo?.oldWardNo === 'string' ? tabHeaderInfo.oldWardNo : '') || '-';
+  const effectiveWardNo = (baseData?.wardNo && baseData.wardNo !== '-')
+    ? baseData.wardNo
+    : (typeof propDetails?.wardNo === 'string' && propDetails.wardNo !== '-')
+    ? propDetails.wardNo
+    : (typeof tabHeaderInfo?.oldWardNo === 'string' && tabHeaderInfo.oldWardNo !== '-')
+    ? tabHeaderInfo.oldWardNo
+    : '-';
   const effectivePropNo = (baseData?.propertyNo && baseData.propertyNo !== '-') ? baseData.propertyNo : (propertyNo && propertyNo !== '-') ? propertyNo : (typeof propDetails?.propertyNo === 'string' ? propDetails.propertyNo : '') || (typeof tabHeaderInfo?.oldPropertyNo === 'string' ? tabHeaderInfo.oldPropertyNo : '') || '-';
   const effectiveUpic = (baseData?.upic && baseData.upic !== '-') ? baseData.upic : (typeof tabHeaderInfo?.upicId === 'string' ? tabHeaderInfo.upicId : '') || (typeof propDetails?.upicId === 'string' ? propDetails.upicId : '') || (typeof rawPropertyData?.[0]?.upicId === 'string' ? rawPropertyData[0].upicId : '') || '-';
   const effectiveSocietyName = (baseData?.societyName && baseData.societyName !== '-') ? baseData.societyName : (typeof societyDetails?.buildingSocietyName === 'string' ? societyDetails.buildingSocietyName : '') || (typeof rawSoc?.societyName === 'string' ? rawSoc.societyName : '') || (typeof kycDetails?.propertyHolderName === 'string' ? kycDetails.propertyHolderName : '') || (typeof tabHeaderInfo?.ownerName === 'string' ? tabHeaderInfo.ownerName : '') || '-';
@@ -162,7 +168,7 @@ export function buildInitialPropertyMasterData(
     managerNameEnglish: (baseData?.managerNameEnglish && baseData.managerNameEnglish !== '-') ? baseData.managerNameEnglish : (typeof rawSoc?.managerNameEnglish === 'string' && rawSoc.managerNameEnglish !== '-') ? rawSoc.managerNameEnglish : baseData?.managerNameEnglish,
     plotArea: effectivePlotArea,
     carpetBuiltUpArea: effectiveCarpetBuiltUp,
-    oldCarpetBuiltUp: baseData?.oldCarpetBuiltUp || effectiveCarpetBuiltUp,
+    oldCarpetBuiltUp: (baseData?.oldCarpetBuiltUp && baseData.oldCarpetBuiltUp !== '-') ? baseData.oldCarpetBuiltUp : (typeof rawSoc?.oldCarpetBuiltUp === 'string' && rawSoc.oldCarpetBuiltUp !== '-') ? rawSoc.oldCarpetBuiltUp : '-',
     totalFloors: effectiveTotalFloors,
     totalPropertiesResCommAmen: effectiveTotalProperties,
     societyBuildingPhotoGuid: baseData?.societyBuildingPhotoGuid || photoGuid,

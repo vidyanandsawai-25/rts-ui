@@ -1,11 +1,23 @@
 import type { ApartmentQcWingDto } from './property-master.types';
 
+export interface ApartmentPropertyCountsDto {
+  total?: number | null;
+  residential?: number | null;
+  commercial?: number | null;
+  amenity?: number | null;
+}
+
 export interface ApartmentQcPropertyOverviewDto {
   upic?: string | null;
   propertyId?: string | null;
+  wardNo?: string | null;
+  wardName?: string | null;
   isActive?: boolean;
   isLocked?: boolean;
   propertyStatus?: string | null;
+  totalFloor?: string | number | null;
+  totalFloors?: string | number | null;
+  propertyCounts?: ApartmentPropertyCountsDto | null;
   secretaryName?: string | null;
   secretaryNameEnglish?: string | null;
   secretaryMobileNo?: string | null;
@@ -71,6 +83,8 @@ export interface ApartmentQcPropertyInfoDto {
   carpetAreaMtr?: number | null;
   builtUpAreaFt?: number | null;
   builtUpAreaMtr?: number | null;
+  totalFloor?: string | number | null;
+  totalFloors?: string | number | null;
 }
 
 export interface ApartmentQcAdditionalRevenueDto {
