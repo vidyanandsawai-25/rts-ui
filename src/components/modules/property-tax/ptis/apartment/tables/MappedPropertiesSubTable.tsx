@@ -1,9 +1,10 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import React from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { MappedNewPropertyItem } from '@/types/property-mapping';
-import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Loader2, Edit2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { SelectedPropertyTaxBreakdown, TaxAmountItem } from './SelectedPropertyTaxBreakdown';
@@ -25,6 +26,23 @@ interface MappedPropertiesSubTableProps {
   cvTotal?: number | null;
 }
 
+const LABELS = {
+  propertyNo: 'Property no',
+  wingFlr: 'Wing / Flr',
+  type: 'Type',
+  use: 'Use',
+  constType: 'Const Type',
+  year: 'Year',
+  carpet: 'Carpet',
+  builtup: 'Builtup',
+  rv: 'RV (₹)',
+  cv: 'CV (₹)',
+  tax: 'Tax (₹)',
+  owner: 'Owner',
+  img: 'IMG',
+  plan: 'PLAN',
+};
+
 export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> = ({
   items,
   selectedPropId,
@@ -41,7 +59,22 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
   cvTaxes = [],
   cvTotal = null,
 }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const locale = useLocale();
   const isExisting = variant === 'existing';
+
+  const handleRedirectToPtis = (item: MappedNewPropertyItem) => {
+    const propId = item.id || item.pdnId;
+    const params = new URLSearchParams();
+    if (propId) params.set('propertyId', String(propId));
+    const wardNo = item.wardNo || searchParams.get('wardNo');
+    if (wardNo) params.set('wardNo', String(wardNo));
+    const wardId = item.wardId || searchParams.get('wardId');
+    if (wardId) params.set('wardId', String(wardId));
+    if (item.propertyNo) params.set('propertyNo', String(item.propertyNo));
+    router.push(`/${locale}/property-tax/ptis?${params.toString()}`);
+  };
 
   return (
     <div
@@ -57,23 +90,23 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
           isExisting ? 'bg-emerald-50 text-emerald-950 border-emerald-200' : 'bg-sky-50 text-sky-950 border-sky-200'
         )}>
           <tr className="h-8">
-            <th className={cn('px-2 py-1 text-center w-8 sticky left-0 z-30', isExisting ? 'bg-emerald-50' : 'bg-sky-50')}>#</th>
-            <th className={cn('px-2.5 py-1 whitespace-nowrap sticky left-8 z-30 border-r', isExisting ? 'bg-emerald-50 border-emerald-200' : 'bg-sky-50 border-sky-200')}>
-              Prop / Flat
+            <th className={cn('px-2 py-1 text-center w-16 min-w-[64px] sticky left-0 z-30', isExisting ? 'bg-emerald-50' : 'bg-sky-50')}>#</th>
+            <th className={cn('px-2.5 py-1 whitespace-nowrap sticky left-16 z-30 border-r', isExisting ? 'bg-emerald-50 border-emerald-200' : 'bg-sky-50 border-sky-200')}>
+              {LABELS.propertyNo}
             </th>
-            <th className="px-2.5 py-1 whitespace-nowrap">Wing / Flr</th>
-            <th className="px-2.5 py-1 whitespace-nowrap">Type</th>
-            <th className="px-2.5 py-1 whitespace-nowrap">Use</th>
-            <th className="px-2.5 py-1 whitespace-nowrap">Const Type</th>
-            <th className="px-2.5 py-1 text-center whitespace-nowrap">Year</th>
-            <th className="px-2.5 py-1 text-right whitespace-nowrap">Carpet</th>
-            <th className="px-2.5 py-1 text-right whitespace-nowrap">Builtup</th>
-            <th className="px-2.5 py-1 text-right whitespace-nowrap">RV (₹)</th>
-            <th className="px-2.5 py-1 text-right whitespace-nowrap">CV (₹)</th>
-            <th className="px-2.5 py-1 text-right whitespace-nowrap">Tax (₹)</th>
-            <th className="px-2.5 py-1 whitespace-nowrap">Owner</th>
-            <th className="px-1.5 py-1 text-center whitespace-nowrap">IMG</th>
-            <th className="px-1.5 py-1 text-center whitespace-nowrap">PLAN</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.wingFlr}</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.type}</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.use}</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.constType}</th>
+            <th className="px-2.5 py-1 text-center whitespace-nowrap">{LABELS.year}</th>
+            <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.carpet}</th>
+            <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.builtup}</th>
+            <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.rv}</th>
+            <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.cv}</th>
+            <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.tax}</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.owner}</th>
+            <th className="px-1.5 py-1 text-center whitespace-nowrap">{LABELS.img}</th>
+            <th className="px-1.5 py-1 text-center whitespace-nowrap">{LABELS.plan}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100 text-zinc-800 font-medium">
@@ -81,7 +114,23 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
             const isSelected = selectedPropId === m.id;
             const propPhotoGuid = m.propertyPhotoDocumentGuid || (m.photos as Array<{ photoTypeCode?: string; documentGuid?: string }> | undefined)?.find((p) => p.photoTypeCode === 'PROPERTY_PHOTO')?.documentGuid || null;
             const planPhotoGuid = m.planPhotoDocumentGuid || (m.photos as Array<{ photoTypeCode?: string; documentGuid?: string }> | undefined)?.find((p) => p.photoTypeCode === 'PLAN_PHOTO')?.documentGuid || null;
-            const propLabel = m.flatOrShopNo || m.propertyNo || String(m.id);
+            const rawItem = m as unknown as Record<string, unknown>;
+            const propNo = (m.propertyNo || '').trim();
+            const rawPart = (
+              m.partitionNo ??
+              (rawItem.partitionNo as string | number | undefined) ??
+              (rawItem.partNo as string | number | undefined) ??
+              (rawItem.partition as string | number | undefined) ??
+              ''
+            ).toString().trim();
+            const partNo = rawPart !== '' && rawPart !== '-' ? rawPart : '';
+            const flatNo = (m.flatOrShopNo || '').trim();
+
+            const subParts: string[] = [];
+            if (propNo) subParts.push(propNo);
+            if (partNo && partNo !== propNo) subParts.push(partNo);
+            if (flatNo && flatNo !== '-' && flatNo !== partNo && flatNo !== propNo) subParts.push(flatNo);
+            const propLabel = subParts.length > 0 ? subParts.join(' - ') : (flatNo || propNo || String(m.id));
 
             return (
               <React.Fragment key={`${m.id}-${idx}`}>
@@ -96,18 +145,39 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
                     )
                   )}
                 >
-                  <td className={cn('px-2 py-1 text-center text-zinc-400 font-bold sticky left-0 z-10 align-middle', isSelected ? (isExisting ? 'bg-emerald-100' : 'bg-sky-100') : 'bg-white')}>
-                    <div className="flex items-center justify-center gap-0.5">
-                      {isSelected ? (
-                        <ChevronDown className={cn('w-3 h-3', isExisting ? 'text-emerald-700' : 'text-sky-700')} />
-                      ) : (
-                        <ChevronRight className="w-3 h-3 text-zinc-400" />
-                      )}
-                      <span>{idx + 1}</span>
+                  <td className={cn('px-1.5 py-1 text-center font-bold sticky left-0 z-10 align-middle w-16 min-w-[64px]', isSelected ? (isExisting ? 'bg-emerald-100' : 'bg-sky-100') : 'bg-white')}>
+                    <div className="flex items-center justify-center gap-1">
+                      <button type="button" onClick={(e) => { e.stopPropagation(); onSelectProperty(m.id); }} className="p-0.5 rounded-sm hover:bg-zinc-200 text-zinc-600 cursor-pointer">
+                        {isSelected ? (
+                          <ChevronDown className={cn('w-3 h-3', isExisting ? 'text-emerald-700' : 'text-sky-700')} />
+                        ) : (
+                          <ChevronRight className="w-3 h-3 text-zinc-400" />
+                        )}
+                      </button>
+                      <span className="text-zinc-600 font-semibold text-[11px] min-w-[14px]">{idx + 1}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRedirectToPtis(m);
+                        }}
+                        className={cn(
+                          'p-1 rounded-md transition-all border cursor-pointer',
+                          isExisting
+                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-300'
+                            : 'bg-sky-100 text-sky-700 hover:bg-sky-200 border-sky-300'
+                        )}
+                        title="Open Individual PTIS Page"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                      </button>
                     </div>
                   </td>
-                  <td className={cn('px-2.5 py-1 font-bold text-zinc-900 whitespace-nowrap sticky left-8 z-10 border-r border-zinc-100 align-middle', isSelected ? (isExisting ? 'bg-emerald-100' : 'bg-sky-100') : 'bg-white')}>
-                    {m.flatOrShopNo || m.propertyNo || '-'}
+                  <td
+                    className={cn('px-2.5 py-1 font-bold text-zinc-900 whitespace-nowrap sticky left-16 z-10 border-r align-middle', isSelected ? (isExisting ? 'bg-emerald-100' : 'bg-sky-100') : 'bg-white', isExisting ? 'border-emerald-200' : 'border-sky-200')}
+                    title={`Property No: ${propNo || '-'} | Partition: ${partNo || '-'} | Flat No: ${flatNo || '-'}`}
+                  >
+                    {propLabel}
                   </td>
                   <td className={cn('px-2.5 py-1 font-semibold whitespace-nowrap align-middle', isExisting ? 'text-emerald-700' : 'text-blue-700')}>
                     {[m.wing, m.floor].filter(Boolean).join(' / ') || '-'}

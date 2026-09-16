@@ -45,7 +45,7 @@ export const DifferenceEngineTable: React.FC<DifferenceEngineTableProps> = ({
     <div
       ref={scrollRef}
       onScroll={onScroll}
-      className="w-full h-full overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-button]:!w-0 [&::-webkit-scrollbar-button]:!h-0"
+      className="w-full h-full overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar"
     >
       <table className="w-full text-left border-collapse min-w-max">
         <DifferenceEngineTableHeader taxMode={taxMode} />

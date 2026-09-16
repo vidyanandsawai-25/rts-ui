@@ -34,11 +34,23 @@ export function mapSurveyDetailToUnit(detail: SurveyDetailDto, fallbackId: strin
 
   const rawAny = detail as Record<string, unknown>;
   const propNo = (detail.propertyNo || detail.oldPropertyNo || '').trim();
+  const rawPartition = (
+    detail.partitionNo ??
+    detail.oldPartitionNo ??
+    (rawAny.partitionNo as string | number | undefined) ??
+    (rawAny.oldPartitionNo as string | number | undefined) ??
+    (rawAny.partition as string | number | undefined) ??
+    (rawAny.partNo as string | number | undefined) ??
+    ''
+  ).toString().trim();
+  const partitionNo = rawPartition !== '' && rawPartition !== '-' ? rawPartition : '';
   const flatNo = (detail.flatOrShopNo || '').trim();
-  let prop = '-';
-  if (propNo && flatNo) prop = `${propNo} / ${flatNo}`;
-  else if (propNo) prop = propNo;
-  else if (flatNo) prop = flatNo;
+
+  const parts: string[] = [];
+  if (propNo) parts.push(propNo);
+  if (partitionNo && partitionNo !== propNo) parts.push(partitionNo);
+  if (flatNo && flatNo !== '-' && flatNo !== partitionNo && flatNo !== propNo) parts.push(flatNo);
+  const prop = parts.length > 0 ? parts.join(' / ') : '-';
 
   const wing = (detail.wing || '').trim();
   const floorStr = (detail.floor || '').trim();
@@ -140,7 +152,9 @@ export function mapSurveyDetailToUnit(detail: SurveyDetailDto, fallbackId: strin
     null;
 
   return {
-    id: fallbackId, prop, propertyNo: propNo || undefined, oldPropertyNo: detail.oldPropertyNo || undefined, flatNo: flatNo || undefined,
+    id: fallbackId, prop, propertyNo: propNo || undefined, oldPropertyNo: detail.oldPropertyNo || undefined,
+    partitionNo: partitionNo || undefined,
+    flatNo: flatNo || undefined,
     propertyId: resolvedPropertyId ?? undefined,
     oldPropertyId: resolvedOldPropertyId ?? undefined,
     wgFl, type, cty, ayr, cyr, use, cpt, cptMtr, cptDisplay,

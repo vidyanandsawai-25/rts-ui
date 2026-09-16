@@ -76,7 +76,7 @@ export const UnitExpandedTaxDetails: React.FC<UnitExpandedTaxDetailsProps> = ({
       {loading ? (
         <div className="py-1 flex items-center gap-2 text-zinc-600 text-xs font-medium">
           <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
-          <span>Fetching {taxMode === 'rateable' ? 'Rateable' : 'Capital'} tax breakdown for Unit #{propertyId}...</span>
+          <span>Fetching {taxMode === 'rateable' ? 'Rateable' : 'Capital'} tax breakdown...</span>
         </div>
       ) : taxHeads.length === 0 ? (
         <div className="py-1 text-[11px] text-zinc-400 italic">

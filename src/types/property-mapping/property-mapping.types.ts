@@ -445,6 +445,7 @@ export interface MappedNewPropertyItem {
   taxZoneId?: number | null;
   zoneNo?: string | null;
   propertyNo?: string | null;
+  partitionNo?: string | null;
   wardId?: number | null;
   wardNo?: string | null;
   mobileNo?: string | null;
@@ -508,6 +509,7 @@ export interface MappedNewPropertiesApiResponse {
 
 export interface MappedNewPropertiesParams {
   oldPropertyId?: number | null;
+  wingDetailsId?: number | string | null;
   pageNumber?: number | null;
   pageSize?: number | null;
   searchTerm?: string | null;

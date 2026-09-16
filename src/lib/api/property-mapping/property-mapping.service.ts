@@ -285,6 +285,9 @@ export async function getMappedNewProperties(
     if (params.oldPropertyId !== undefined && params.oldPropertyId !== null) {
       queryParts.push(`OldPropertyId=${encodeURIComponent(params.oldPropertyId.toString())}`);
     }
+    if (params.wingDetailsId !== undefined && params.wingDetailsId !== null && params.wingDetailsId !== '') {
+      queryParts.push(`WingDetailsId=${encodeURIComponent(params.wingDetailsId.toString())}`);
+    }
     if (params.pageNumber !== undefined && params.pageNumber !== null) {
       queryParts.push(`PageNumber=${params.pageNumber}`);
     }

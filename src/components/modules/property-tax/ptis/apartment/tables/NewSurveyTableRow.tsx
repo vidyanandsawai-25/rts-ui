@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { AssessmentUnit, PtisTaxMode } from '@/types/property-tax/apartment';
-import { Edit2, ChevronRight, ChevronDown, Eye } from 'lucide-react';
+import { ChevronRight, ChevronDown, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { MappedPropertiesExpandedRow } from './MappedPropertiesExpandedRow';
@@ -14,7 +14,7 @@ interface NewSurveyTableRowProps {
   isExpanded: boolean;
   onHoverUnit: (id: string | null) => void;
   onToggleExpandRow: (id: string) => void;
-  onEditUnit: (unit: AssessmentUnit) => void;
+  onEditUnit?: (unit: AssessmentUnit) => void;
   onViewDocument?: (guid: string, title?: string) => void;
   onViewRules?: (unit: AssessmentUnit) => void;
   taxMode?: PtisTaxMode;
@@ -27,7 +27,6 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
   isExpanded,
   onHoverUnit,
   onToggleExpandRow,
-  onEditUnit,
   onViewDocument,
   onViewRules,
   taxMode,
@@ -42,6 +41,12 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
     (rawAny?.propertyMastOldId ? Number(rawAny.propertyMastOldId) : null) ??
     (taxDetailOldId ? Number(taxDetailOldId) : null) ??
     (rawAny?.oldPropertyId ? Number(rawAny.oldPropertyId) : null);
+  const wingDetailsId =
+    (rawAny?.wingDetailsId ? Number(rawAny.wingDetailsId) : null) ??
+    (rawAny?.wingDetailId ? Number(rawAny.wingDetailId) : null) ??
+    (rawAny?.WingDetailsId ? Number(rawAny.WingDetailsId) : null) ??
+    (rawAny?.WingDetailId ? Number(rawAny.WingDetailId) : null) ??
+    null;
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
 
@@ -53,18 +58,15 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
         className={cn('h-11 transition-colors cursor-pointer hover:bg-sky-50/60', isHovered && 'bg-sky-100/80', isExpanded && 'bg-sky-100/90')}
         onClick={() => onToggleExpandRow(unit.id)}
       >
-        <td className="px-1.5 py-1 text-center font-bold text-zinc-500 sticky left-0 bg-white z-10 border-r border-zinc-100 shadow-2xs h-11 w-16 min-w-[64px]">
-          <div className="flex items-center justify-center gap-1">
+        <td className="w-12 px-1 py-1 text-center font-bold text-zinc-500 sticky left-0 bg-white z-10 border-r border-zinc-100 shadow-2xs h-11">
+          <div className="flex items-center justify-center gap-1 text-zinc-400">
             <button type="button" onClick={(e) => { e.stopPropagation(); onToggleExpandRow(unit.id); }} className="p-0.5 rounded-sm hover:bg-zinc-200 text-zinc-600 cursor-pointer">
               {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-sky-700" /> : <ChevronRight className="w-3.5 h-3.5" />}
             </button>
-            <span className="font-bold text-zinc-400 text-xs min-w-[14px] text-center">{idx + 1}</span>
-            <button type="button" onClick={(e) => { e.stopPropagation(); onEditUnit(unit); }} className="p-1 rounded-md bg-sky-100 text-sky-700 hover:bg-sky-200 transition-all border border-sky-300 cursor-pointer" title="Edit Unit Details">
-              <Edit2 className="w-3 h-3" />
-            </button>
+            <span className="font-semibold text-zinc-600 text-xs min-w-[14px] text-center">{idx + 1}</span>
           </div>
         </td>
-        <td className="px-3 py-1.5 font-bold text-zinc-900 whitespace-nowrap" title={`Property No: ${unit.propertyNo || '-'} | Flat No: ${unit.flatNo || '-'}`}>{unit.prop}</td>
+        <td className="px-3 py-1.5 font-bold text-zinc-900 whitespace-nowrap" title={`Property No: ${unit.propertyNo || '-'} | Partition: ${unit.partitionNo || '-'} | Flat No: ${unit.flatNo || '-'}`}>{unit.prop}</td>
         <td className="px-3 py-1.5 text-blue-700 font-bold whitespace-nowrap" title={unit.wgFl}>{unit.wgFl}</td>
         <td className="px-3 py-1.5 whitespace-nowrap" title={unit.type}>{unit.type}</td>
         <td className="px-3 py-1.5 whitespace-nowrap" title={unit.cty}>{unit.cty}</td>
@@ -122,6 +124,7 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
             <MappedPropertiesExpandedRow
               oldPropertyId={oldPropertyId}
               propertyId={unit.propertyId ?? (raw?.id ? Number(raw.id) : null)}
+              wingDetailsId={wingDetailsId}
               variant="survey"
               onViewDocument={onViewDocument}
             />

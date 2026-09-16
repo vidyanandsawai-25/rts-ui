@@ -571,8 +571,8 @@ div[role="dialog"] [role="combobox"]:focus {
 /* Universal: Ultra-thin 3px scrollbar */
 *::-webkit-scrollbar,
 ::-webkit-scrollbar {
-  width: 3px !important;
-  height: 3px !important;
+  width: 5px !important;
+  height: 5px !important;
 }
 
 /* Universal: Minimal iOS pill thumb */
@@ -596,8 +596,8 @@ div[role="dialog"] [role="combobox"]:focus {
 }
 
 .ios-scrollbar::-webkit-scrollbar {
-  width: 3px !important;
-  height: 3px !important;
+  width: 5px !important;
+  height: 5px !important;
 }
 
 .ios-scrollbar::-webkit-scrollbar-button {

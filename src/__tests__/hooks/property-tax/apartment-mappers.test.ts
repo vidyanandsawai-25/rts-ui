@@ -61,6 +61,56 @@ describe('apartment-mappers — parseApartmentItemNodes property ID resolution',
     expect(pUnitResolved(oldUnits[0])).toBe(456);
     expect(oldUnits[0].oldPropertyId).toBe(2565750);
   });
+
+  it('correctly includes partitionNo in prop string and sets partitionNo property', () => {
+    const rawItems = [
+      {
+        newSurvey: {
+          id: 101,
+          propertyNo: '116',
+          partitionNo: '1',
+          flatOrShopNo: '202',
+        },
+        oldSurvey: {
+          id: 102,
+          propertyNo: '8071629',
+          oldPartitionNo: '0',
+          flatOrShopNo: '101',
+        },
+        difference: {},
+      },
+      {
+        newSurvey: {
+          id: 103,
+          propertyNo: '116',
+          partitionNo: '2',
+        },
+        oldSurvey: {
+          id: 104,
+          oldPropertyNo: '8071630',
+        },
+        difference: {},
+      },
+    ];
+
+    const { newUnits, oldUnits } = parseApartmentItemNodes(rawItems);
+
+    // With partition and flat: "116 / 1 / 202"
+    expect(newUnits[0].prop).toBe('116 / 1 / 202');
+    expect(newUnits[0].partitionNo).toBe('1');
+
+    // With partition 0 and flat: "8071629 / 0 / 101"
+    expect(oldUnits[0].prop).toBe('8071629 / 0 / 101');
+    expect(oldUnits[0].partitionNo).toBe('0');
+
+    // With partition only: "116 / 2"
+    expect(newUnits[1].prop).toBe('116 / 2');
+    expect(newUnits[1].partitionNo).toBe('2');
+
+    // Without partition: "8071630"
+    expect(oldUnits[1].prop).toBe('8071630');
+    expect(oldUnits[1].partitionNo).toBeUndefined();
+  });
 });
 
 function pUnitResolved(unit: { propertyId?: number | null }) {

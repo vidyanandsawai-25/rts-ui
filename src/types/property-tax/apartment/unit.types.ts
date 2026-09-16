@@ -10,6 +10,7 @@ export interface AssessmentUnit {
   oldPropertyNo?: string;
   oldPropertyId?: number | null;
   propertyId?: number | null;
+  partitionNo?: string;
   flatNo?: string;
   wgFl: string;
   type: string;

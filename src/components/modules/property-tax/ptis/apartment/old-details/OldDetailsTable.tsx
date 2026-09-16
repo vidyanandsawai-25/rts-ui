@@ -28,7 +28,7 @@ export const OldDetailsTable: React.FC<OldDetailsTableProps> = ({
       {/* Scrollable Data Table */}
       <div
         onScroll={onScroll}
-        className="w-full flex-1 min-h-0 overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-button]:!w-0 [&::-webkit-scrollbar-button]:!h-0"
+        className="w-full flex-1 min-h-0 overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-button]:!w-0 [&::-webkit-scrollbar-button]:!h-0"
       >
         <table className="w-full text-left border-collapse min-w-max">
           <OldDetailsTableHeader />

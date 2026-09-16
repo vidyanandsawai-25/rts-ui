@@ -1,7 +1,7 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   fetchMappedNewPropertiesAction,
   fetchApartmentPropertyTaxDetailsRvAction,
@@ -39,17 +39,28 @@ const extractTaxList = (raw: unknown) => {
 interface MappedPropertiesExpandedRowProps {
   oldPropertyId?: number | null;
   propertyId?: number | null;
+  wingDetailsId?: number | string | null;
   variant?: 'survey' | 'existing';
   onViewDocument?: (guid: string, title?: string) => void;
 }
 
+const LABELS = {
+  headerTitle: (len: number, total: number) => `Mapped New Properties (${len}${total > len ? ` of ${total}` : ''})`,
+  scrollHint: 'Scroll horizontally/vertically to browse all records • Click row to show tax',
+};
+
 export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowProps> = ({
   oldPropertyId,
   propertyId,
+  wingDetailsId,
   variant = 'survey',
   onViewDocument,
 }) => {
   const isExisting = variant === 'existing';
+  const searchParams = useSearchParams();
+  const resolvedWingDetailsId =
+    wingDetailsId ??
+    (searchParams.get('wingDetailsId') || searchParams.get('wingDetailId') || searchParams.get('WingDetailsId') || null);
   const [loading, setLoading] = useState(() => Boolean(oldPropertyId && oldPropertyId > 0));
   const [items, setItems] = useState<MappedNewPropertyItem[]>([]);
   const [selectedPropId, setSelectedPropId] = useState<number | null>(null);
@@ -116,7 +127,12 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
     if (!oldPropertyId || oldPropertyId <= 0) return;
     let isMounted = true;
 
-    fetchMappedNewPropertiesAction({ oldPropertyId, pageNumber: 1, pageSize: 25 })
+    fetchMappedNewPropertiesAction({
+      oldPropertyId,
+      wingDetailsId: resolvedWingDetailsId,
+      pageNumber: 1,
+      pageSize: 25,
+    })
       .then((res) => {
         if (!isMounted) return;
         const data = res.success ? res.data : null;
@@ -129,7 +145,7 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
       .finally(() => { if (isMounted) setLoading(false); });
 
     return () => { isMounted = false; };
-  }, [oldPropertyId]);
+  }, [oldPropertyId, resolvedWingDetailsId]);
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
@@ -138,7 +154,12 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
       setLoadingMore(true);
       const nextPage = pageNumber + 1;
 
-      fetchMappedNewPropertiesAction({ oldPropertyId, pageNumber: nextPage, pageSize: 25 })
+      fetchMappedNewPropertiesAction({
+        oldPropertyId,
+        wingDetailsId: resolvedWingDetailsId,
+        pageNumber: nextPage,
+        pageSize: 25,
+      })
         .then((res) => {
           if (res.success && res.data?.items?.length) {
             setItems((prev) => [...prev, ...(res.data?.items || [])]);
@@ -154,15 +175,15 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
           setLoadingMore(false);
         });
     }
-  }, [hasNext, oldPropertyId, pageNumber]);
+  }, [hasNext, oldPropertyId, pageNumber, resolvedWingDetailsId]);
 
   if (!oldPropertyId || oldPropertyId <= 0) {
     return (
       <EmptyMappedPropertiesState
         message={
           propertyId
-            ? `No mapped old properties found for New Property #${propertyId}`
-            : 'No Old Property ID associated with this unit.'
+            ? 'No mapped old properties found'
+            : 'No Old Property associated with this unit.'
         }
         theme={isExisting ? 'emerald' : 'sky'}
       />
@@ -178,7 +199,7 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
         )}
       >
         <Loader2 className={cn('w-3.5 h-3.5 animate-spin', isExisting ? 'text-emerald-600' : 'text-blue-600')} />
-        <span>Loading mapped properties for Old Property #{oldPropertyId}...</span>
+        <span>Loading mapped properties...</span>
       </div>
     );
   }
@@ -187,9 +208,9 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
     return (
       <EmptyMappedPropertiesState
         message={
-          propertyId
-            ? `No mapped old properties found for New Property #${propertyId}`
-            : `No mapped new properties found for Old Property #${oldPropertyId}`
+          isExisting
+            ? 'No mapped old properties found'
+            : 'No mapped new properties found'
         }
         theme={isExisting ? 'emerald' : 'sky'}
       />
@@ -206,10 +227,9 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
       <div className="flex items-center justify-between gap-2 px-1">
         <div className={cn('flex items-center gap-1.5 font-bold text-[11px]', isExisting ? 'text-emerald-950' : 'text-sky-950')}>
           <Building2 className={cn('w-3.5 h-3.5', isExisting ? 'text-emerald-700' : 'text-sky-700')} />
-          <span>Mapped New Properties ({items.length}{totalCount > items.length ? ` of ${totalCount}` : ''})</span>
-          <span className="text-[10px] font-normal text-zinc-500 font-mono">(Old #{oldPropertyId})</span>
+          <span>{LABELS.headerTitle(items.length, totalCount)}</span>
         </div>
-        <span className="text-[10px] text-zinc-400 italic">Scroll horizontally/vertically to browse all records • Click row to show tax</span>
+        <span className="text-[10px] text-zinc-400 italic">{LABELS.scrollHint}</span>
       </div>
 
       <MappedPropertiesSubTable

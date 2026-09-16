@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
@@ -34,10 +33,10 @@ export interface ApartmentContainerProps {
   rawData?: WingWiseDetailsItems | null;
   initialPropertyMasterData?: PropertyMasterData;
   initialQcTopSectionBelowFlex?:
-    | ApartmentQCTopSectionBelowFlexItemsDto
-    | ApartmentQCTopSectionBelowFlexResponseDto
-    | Record<string, unknown>
-    | null;
+  | ApartmentQCTopSectionBelowFlexItemsDto
+  | ApartmentQCTopSectionBelowFlexResponseDto
+  | Record<string, unknown>
+  | null;
   initialApartmentTaxDetails?: ApartmentTaxDetailsItem | null;
 }
 
@@ -50,17 +49,26 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
   const search = useApartmentPropertySearch(initialData, initialWardId, initialPropertyMasterData);
   const { urlState, draft, propertyId, isSearching } = search;
 
+  const wingsList = useMemo(() => rawData?.wings || [], [rawData?.wings]);
+  const firstWing = useMemo(() => wingsList?.[0] || null, [wingsList]);
+
+  const initialWingDetailId = urlState.wingDetailId
+    ? Number(urlState.wingDetailId)
+    : (initialData?.propertyDetails?.wingDetailId || firstWing?.wingDetailId || null);
+
+  const initialWingId = urlState.wingId
+    ? Number(urlState.wingId)
+    : (initialData?.propertyDetails?.wingId || firstWing?.wingMasterId || null);
+
   const apt = useApartment(
     propertyId,
-    urlState.wingId ? Number(urlState.wingId) : (initialData?.propertyDetails?.wingId || null),
-    urlState.wingDetailId ? Number(urlState.wingDetailId) : (initialData?.propertyDetails?.wingDetailId || null)
+    initialWingId,
+    initialWingDetailId
   );
 
   const lastPropertyIdRef = useRef<number | string | null>(propertyId);
-  const hasInitializedDefaultWingRef = useRef(Boolean(urlState.wingDetailId || initialData?.propertyDetails?.wingDetailId));
+  const hasInitializedDefaultWingRef = useRef(Boolean(urlState.wingDetailId || initialData?.propertyDetails?.wingDetailId || firstWing?.wingDetailId));
 
-  const wingsList = useMemo(() => rawData?.wings || [], [rawData?.wings]);
-  const firstWing = useMemo(() => wingsList?.[0] || null, [wingsList]);
   const activeWingId = apt.filters.wingId ?? null;
   const activeWingDetailId = apt.filters.wingDetailId ?? null;
   const activeSocietyDetailId = apt.filters.societyId ?? initialData?.societyDetails?.societyDetailId ?? rawData?.societyId ?? null;
@@ -75,25 +83,12 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
   useEffect(() => {
     if (lastPropertyIdRef.current !== propertyId) {
       lastPropertyIdRef.current = propertyId;
-      hasInitializedDefaultWingRef.current = Boolean(urlState.wingDetailId || initialData?.propertyDetails?.wingDetailId);
+      hasInitializedDefaultWingRef.current = Boolean(urlState.wingDetailId || initialData?.propertyDetails?.wingDetailId || firstWing?.wingDetailId);
     }
 
-    if (hasInitializedDefaultWingRef.current) {
-      return;
-    }
-
-    if (apt.filters.wingDetailId) {
-      hasInitializedDefaultWingRef.current = true;
-      return;
-    }
-
-    if (firstWing?.wingDetailId) {
-      hasInitializedDefaultWingRef.current = true;
+    if (!urlState.wingDetailId && firstWing?.wingDetailId) {
       const finalSocietyId = firstWing.societyId ?? activeSocietyDetailId;
       const wName = firstWing.wingName ?? firstWing.wingNo ?? null;
-      const updated = { ...apt.filters, wingId: firstWing.wingMasterId ?? null, wingDetailId: firstWing.wingDetailId, societyId: finalSocietyId, wingName: wName, pageNumber: 1, pageSize: 100 };
-      apt.setFilters(updated);
-      apt.fetchWingWiseData(updated);
       setWingParams({
         wardId: rawData?.wardId ? String(rawData.wardId) : null,
         wingId: firstWing.wingMasterId ? String(firstWing.wingMasterId) : null,
@@ -102,8 +97,7 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
         wingName: wName,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propertyId, firstWing, apt.filters.wingDetailId, activeSocietyDetailId, apt.setFilters, apt.fetchWingWiseData, setWingParams, rawData?.wardId, urlState.wingDetailId, initialData?.propertyDetails?.wingDetailId]);
+  }, [propertyId, firstWing, activeSocietyDetailId, setWingParams, rawData?.wardId, urlState.wingDetailId, initialData?.propertyDetails?.wingDetailId]);
 
   const panelWidthPercent = apt.hiddenPanels.length === 2 ? 100 : apt.hiddenPanels.length === 1 ? 50 : 33;
   const { surveyScrollRef, differenceScrollRef, existingScrollRef, handleSyncScroll } = useApartmentScrollSync(apt.loadMoreUnits);
@@ -192,8 +186,6 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
         onPageChange={apt.handlePageChange} onPageSizeChange={apt.handlePageSizeChange} isLoading={apt.isLoading} taxMode={actions.taxMode} onTaxModeChange={actions.setTaxMode} onRestoreAll={apt.restoreAllPanels}
         hiddenPanelsCount={apt.hiddenPanels.length + (actions.expandedPanel !== null ? 2 : 0)} isFullscreen={isFullscreen} onToggleFullscreen={toggleFullscreen}
       />
-
-      {apt.apiError && <div className="mx-3 mt-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">⚠️ {apt.apiError}</div>}
 
       <PtisRedesignWorkspace
         copy={copy} surveyUnits={apt.surveyUnits} differences={apt.differences} previousUnits={apt.previousUnits} totalDeltas={apt.totalDeltas} hoveredUnitId={apt.hoveredUnitId} expandedUnitIds={apt.expandedUnitIds}

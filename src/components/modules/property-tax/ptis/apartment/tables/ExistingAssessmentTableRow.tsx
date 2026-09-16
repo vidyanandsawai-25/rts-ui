@@ -61,7 +61,7 @@ export const ExistingAssessmentTableRow: React.FC<ExistingAssessmentTableRowProp
             <span className="font-semibold text-zinc-600">{idx + 1}</span>
           </div>
         </td>
-        <td className="px-1.5 py-1 font-bold text-zinc-900 whitespace-nowrap">{unit.prop}</td>
+        <td className="px-1.5 py-1 font-bold text-zinc-900 whitespace-nowrap" title={`Property No: ${unit.propertyNo || unit.oldPropertyNo || '-'} | Partition: ${unit.partitionNo || '-'} | Flat No: ${unit.flatNo || '-'}`}>{unit.prop}</td>
         <td className="px-1 py-1 text-emerald-700 font-semibold whitespace-nowrap">{unit.wgFl}</td>
         <td className="px-1 py-1 whitespace-nowrap">{unit.type}</td>
         <td className="px-1 py-1 whitespace-nowrap">{unit.cty}</td>
