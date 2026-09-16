@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   ApartmentTaxDetailsItem,
   TaxHeadItem,
@@ -14,6 +15,7 @@ export interface ApartmentTaxDetailsSectionProps {
   taxDetails?: ApartmentTaxDetailsItem | null;
   wardId?: string | number | null;
   propertyNo?: string | null;
+  wingMasterId?: number | string | null;
   taxMode?: PtisTaxMode;
   isLoading?: boolean;
 }
@@ -27,19 +29,17 @@ export function ApartmentTaxDetailsSection({
   taxDetails,
   wardId,
   propertyNo,
+  wingMasterId,
   taxMode = 'rateable',
   isLoading = false,
 }: ApartmentTaxDetailsSectionProps) {
-  const [activeTab, setActiveTab] = useState<'taxDetails' | 'arrears'>('taxDetails');
-  const [prevTaxDetails, setPrevTaxDetails] = useState<ApartmentTaxDetailsItem | null | undefined>(taxDetails);
-  const [detailsData, setDetailsData] = useState<ApartmentTaxDetailsItem | null | undefined>(taxDetails);
-  const [isFetching, setIsFetching] = useState<boolean>(false);
-  const isFirstMountRef = useRef<boolean>(true);
+  const searchParams = useSearchParams();
+  const urlWingId = searchParams?.get('wingId') || searchParams?.get('wingMasterId');
+  const effectiveWingMasterId = wingMasterId ?? (urlWingId ? Number(urlWingId) : null);
 
-  if (taxDetails !== prevTaxDetails) {
-    setPrevTaxDetails(taxDetails);
-    setDetailsData(taxDetails);
-  }
+  const [activeTab, setActiveTab] = useState<'taxDetails' | 'arrears'>('taxDetails');
+  const [detailsData, setDetailsData] = useState<ApartmentTaxDetailsItem | null>(null);
+  const lastFetchedRef = useRef<string>('');
 
   const currentTaxType = useMemo(() => {
     if (taxMode === 'capital') return 'CV';
@@ -48,32 +48,53 @@ export function ApartmentTaxDetailsSection({
   }, [taxMode]);
 
   useEffect(() => {
-    if (isFirstMountRef.current) { isFirstMountRef.current = false; if (taxDetails) return; }
-    if (!wardId || !propertyNo) return;
+    const cleanWardId = wardId != null ? String(wardId).trim() : '';
+    const cleanPropNo = propertyNo != null ? String(propertyNo).trim() : '';
+    const cleanWingMasterId = effectiveWingMasterId != null ? String(effectiveWingMasterId).trim() : '';
+
+    // Only call API when a wing card is selected (same as the comparison table)
+    if (!cleanWardId || !cleanPropNo || !cleanWingMasterId) {
+      return;
+    }
+
+    const fetchKey = `${cleanWardId}_${cleanPropNo}_${currentTaxType}_${cleanWingMasterId}`;
+    if (lastFetchedRef.current === fetchKey) {
+      return; // Already fetched for this wing selection
+    }
+    lastFetchedRef.current = fetchKey;
+
     let active = true;
 
     async function loadTaxDetails() {
-      setIsFetching(true);
       try {
-        const res = await getApartmentTaxDetailsAction(wardId!, propertyNo!, currentTaxType);
-        if (active && res.success && res.items) setDetailsData(res.items);
+        const res = await getApartmentTaxDetailsAction(cleanWardId, cleanPropNo, currentTaxType, cleanWingMasterId);
+        if (active) {
+          if (res && res.success && res.items) {
+            setDetailsData(res.items);
+          } else {
+            setDetailsData(null);
+          }
+        }
       } catch (err) {
         console.error('Error fetching tax details for mode:', currentTaxType, err);
-      } finally {
-        if (active) setIsFetching(false);
+        if (active) setDetailsData(null);
       }
     }
 
     loadTaxDetails();
     return () => { active = false; };
-  }, [wardId, propertyNo, currentTaxType, taxDetails]);
+  }, [wardId, propertyNo, currentTaxType, effectiveWingMasterId]);
+
+  const activeData = useMemo(() => {
+    return detailsData || taxDetails || null;
+  }, [detailsData, taxDetails]);
 
   const currentTaxHeads: TaxHeadItem[] = useMemo(() => {
-    if (!detailsData?.currentTaxes || detailsData.currentTaxes.length === 0) return [];
-    return detailsData.currentTaxes.flatMap((group) => group.taxHeads || []);
-  }, [detailsData]);
+    if (!activeData?.currentTaxes || activeData.currentTaxes.length === 0) return [];
+    return activeData.currentTaxes.flatMap((group) => group.taxHeads || []);
+  }, [activeData]);
 
-  const arrearsHeads: TaxHeadItem[] = useMemo(() => detailsData?.arrears || [], [detailsData]);
+  const arrearsHeads: TaxHeadItem[] = useMemo(() => activeData?.arrears || [], [activeData]);
   const activeHeads = activeTab === 'taxDetails' ? currentTaxHeads : arrearsHeads;
 
   const uniqueTaxNames = useMemo(() => {
@@ -104,17 +125,6 @@ export function ApartmentTaxDetailsSection({
 
   return (
     <div className="mx-3 mt-4 bg-white border border-zinc-200 rounded-lg shadow-xs overflow-hidden font-sans select-none relative">
-      {isFetching && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-900 text-white text-xs font-semibold rounded-md shadow-md animate-pulse">
-            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-            Loading {currentTaxType} Tax Details...
-          </div>
-        </div>
-      )}
 
       <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-zinc-50 border-b border-zinc-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
