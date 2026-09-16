@@ -30,11 +30,13 @@ export async function getCertificateTypesWithStatus(
     const response = await apiClient.get<BackendApiResponseWrapper<PropertyCertificateWithStatusDto[]>>(url);
     
     if (response.success && response.data) {
+        const raw = response.data as unknown as Record<string, unknown>;
+        const items = (raw.items ?? raw.Items ?? raw.data ?? raw) as PropertyCertificateWithStatusDto[];
         return {
-            success: response.data.success,
+            success: (raw.success as boolean) ?? response.data.success ?? true,
             statusCode: response.statusCode,
-            data: response.data.items,
-            message: response.data.message || response.message
+            data: items,
+            message: (raw.message as string) || response.message
         };
     }
     
@@ -63,11 +65,13 @@ export async function getSocietyWingTypesWithStatus(
     const response = await apiClient.get<BackendApiResponseWrapper<PropertyCertificateWithStatusDto[]>>(url);
     
     if (response.success && response.data) {
+        const raw = response.data as unknown as Record<string, unknown>;
+        const items = (raw.items ?? raw.Items ?? raw.data ?? raw) as PropertyCertificateWithStatusDto[];
         return {
-            success: response.data.success,
+            success: (raw.success as boolean) ?? response.data.success ?? true,
             statusCode: response.statusCode,
-            data: response.data.items,
-            message: response.data.message || response.message
+            data: items,
+            message: (raw.message as string) || response.message
         };
     }
     
@@ -84,11 +88,13 @@ export async function getCertificateTypeMaster(): Promise<ApiResponse<unknown[]>
     try {
         const response = await apiClient.get<BackendApiResponseWrapper<unknown[]>>('/property-certificates/type-master');
         if (response.success && response.data) {
+            const raw = response.data as unknown as Record<string, unknown>;
+            const items = (raw.items ?? raw.Items ?? raw.data ?? raw) as unknown[];
             return {
-                success: response.data.success,
+                success: (raw.success as boolean) ?? response.data.success ?? true,
                 statusCode: response.statusCode,
-                data: response.data.items,
-                message: response.data.message || response.message
+                data: items,
+                message: (raw.message as string) || response.message
             };
         }
         return {
@@ -369,6 +375,36 @@ export async function deletePropertyCertificate(
     }
 }
 
+// 7b. DELETE - Soft delete PropertyCertificate, DocumentBinding, and Document using DocumentId
+export async function deletePropertyCertificateByDocumentId(
+    documentId: number
+): Promise<ApiResponse<void>> {
+    try {
+        const response = await apiClient.delete<BackendApiResponseWrapper<void>>(
+            `/property-certificates/by-document/${documentId}`
+        );
+        if (response.success) {
+            return {
+                success: response.data ? response.data.success : true,
+                statusCode: response.statusCode,
+                message: response.data?.message || response.message || "Certificate deleted successfully"
+            };
+        }
+        return {
+            success: false,
+            statusCode: response.statusCode,
+            error: response.error || response.message || "Failed to delete certificate",
+            message: response.message
+        };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+}
+
+
 // 8. POST - Add Certificate Record (/api/ApartmentQC/certificate-record)
 export interface ApartmentQcCertificateRecordPayload {
     entityScope?: 'Society' | 'Wing' | 'Property';
@@ -387,20 +423,24 @@ export interface ApartmentQcCertificateRecordPayload {
     documentGuid?: string | null;
 }
 
+import type { CreateCertificateRecordResponseDto } from "@/types/building-permission.types";
+
 export async function postApartmentQcCertificateRecord(
     payload: ApartmentQcCertificateRecordPayload
-): Promise<ApiResponse<unknown>> {
+): Promise<ApiResponse<CreateCertificateRecordResponseDto>> {
     try {
-        const response = await apiClient.post<BackendApiResponseWrapper<unknown>>(
+        const response = await apiClient.post<BackendApiResponseWrapper<CreateCertificateRecordResponseDto>>(
             '/ApartmentQC/certificate-record',
             payload
         );
         if (response.success && response.data) {
+            const rawBody = response.data as unknown as Record<string, unknown>;
+            const rawItems = (rawBody.items ?? rawBody.Items ?? rawBody.data ?? rawBody) as CreateCertificateRecordResponseDto;
             return {
-                success: response.data.success ?? true,
+                success: (rawBody.success as boolean) ?? true,
                 statusCode: response.statusCode,
-                data: response.data.items,
-                message: response.data.message || response.message
+                data: rawItems,
+                message: (rawBody.message as string) || response.message
             };
         }
         return {

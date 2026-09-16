@@ -234,3 +234,11 @@ export interface BuildingFormProps {
     initialCertificateTypes?: CertificateTypeMasterOption[];
     initialCertificateGrid?: unknown;
 }
+
+export interface CreateCertificateRecordResponseDto {
+    effectiveScope: string;
+    propertyCertificateIds: number[];
+    unitCount: number;
+    taxRecalculationTriggered: boolean;
+}
+

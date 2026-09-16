@@ -276,9 +276,33 @@ export async function mapPtisFetchResults({
     if (finalWingDetailId && !hasWingInParams) {
       newParams.set('wingDetailId', String(finalWingDetailId));
     }
+    const currentParams = new URLSearchParams();
+    if (searchParams) {
+      Object.entries(searchParams).forEach(([k, v]) => {
+        if (typeof v === 'string') {
+          currentParams.set(k, v);
+        } else if (Array.isArray(v) && v.length > 0 && typeof v[0] === 'string') {
+          currentParams.set(k, v[0]);
+        }
+      });
+    }
 
-    shouldRedirect = true;
-    redirectUrl = `/${locale}/property-tax/ptis?${newParams.toString()}`;
+    let paramsChanged = false;
+    newParams.forEach((val, key) => {
+      if (currentParams.get(key) !== val) {
+        paramsChanged = true;
+      }
+    });
+    currentParams.forEach((val, key) => {
+      if (newParams.get(key) !== val) {
+        paramsChanged = true;
+      }
+    });
+
+    if (paramsChanged) {
+      shouldRedirect = true;
+      redirectUrl = `/${locale}/property-tax/ptis?${newParams.toString()}`;
+    }
   }
 
   const tabHeaderInfo = tabHeaderInfoResult?.success && tabHeaderInfoResult.data

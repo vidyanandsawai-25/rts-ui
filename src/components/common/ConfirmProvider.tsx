@@ -10,6 +10,8 @@ import { Tooltip } from "@/components/common/Tooltip";
 
 export type ConfirmVariant = "delete" | "add" | "update" | "info" | "warning";
 
+export type ConfirmSize = "sm" | "md" | "lg" | "xl";
+
 export type ConfirmMeta = {
   id?: string | number;
   name?: string;
@@ -18,6 +20,7 @@ export type ConfirmMeta = {
 
 export interface ConfirmOptions {
   variant?: ConfirmVariant;
+  size?: ConfirmSize;
   title?: string;
   description?: string;
   confirmText?: string;
@@ -193,6 +196,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
 
     return {
       variant,
+      size: payload?.size ?? "md",
       title: payload?.title ?? d.title,
       description: baseDesc,
       confirmText: payload?.confirmText ?? d.confirmText,
@@ -255,6 +259,23 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
 
   const confirmIcon = isDelete ? Trash2 : isAdd ? Plus : isUpdate ? Pencil : isWarning ? AlertTriangle : CheckCircle2;
 
+  // Size mapping
+  const sizeClassMap: Record<ConfirmSize, string> = {
+    sm: "max-w-[420px]",
+    md: "max-w-[500px]",
+    lg: "max-w-[560px]",
+    xl: "max-w-[640px]",
+  };
+  const sizeClass = sizeClassMap[computed.size] || sizeClassMap.md;
+
+  // Parse structured description details if present
+  const descParts = (computed.description || "").split("\n\n");
+  const hasBulletDetails = descParts.length > 1 && descParts.slice(1).some((p) => p.includes("•"));
+  const introText = descParts[0];
+  const detailItems = hasBulletDetails
+    ? descParts.slice(1).join("\n\n").split("\n").filter((l) => l.trim().length > 0)
+    : [];
+
   return (
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
@@ -265,13 +286,13 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
               {/* Backdrop */}
               <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={handleCancel} />
 
-              {/* Square Modal */}
+              {/* Sized Modal Box */}
               <div
                 ref={modalRef}
                 onKeyDown={handleKeyDown}
                 role="dialog"
                 aria-modal="true"
-                className="relative w-[420px] h-[420px] max-w-[92vw] max-h-[92vh] overflow-hidden rounded-2xl bg-white shadow-[0_30px_80px_rgba(0,0,0,0.25)] border border-gray-200 flex flex-col"
+                className={`relative w-full ${sizeClass} min-h-[380px] max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-[0_30px_80px_rgba(0,0,0,0.25)] border border-gray-200 flex flex-col`}
               >
                 {/* Top gradient bar */}
                 <div className={`h-1 w-full bg-gradient-to-r ${headerBar}`} />
@@ -280,29 +301,44 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="absolute right-3 top-3 rounded-full p-2 hover:bg-gray-100 text-gray-600"
+                  className="absolute right-3 top-3 rounded-full p-2 hover:bg-gray-100 text-gray-600 cursor-pointer transition-colors"
                   aria-label="Close"
                 >
                   <X className="h-5 w-5" />
                 </button>
 
                 {/* Center content */}
-                <div className="p-8 flex-1 flex flex-col items-center justify-center text-center">
-                  <div className={`h-16 w-16 rounded-2xl border flex items-center justify-center ${iconWrap}`}>
-                    <Icon className="h-8 w-8" />
+                <div className="p-6 sm:p-7 flex-1 flex flex-col items-center justify-center text-center">
+                  <div className={`h-14 w-14 rounded-2xl border flex items-center justify-center shrink-0 ${iconWrap}`}>
+                    <Icon className="h-7 w-7" />
                   </div>
 
-                  <h3 className="mt-5 text-2xl font-bold text-gray-900 leading-tight">{computed.title}</h3>
+                  <h3 className="mt-4 text-xl sm:text-2xl font-bold text-gray-900 leading-tight">{computed.title}</h3>
 
-                  <div className="mt-3 flex-1 overflow-y-auto w-full max-h-[140px] px-2 text-center scrollbar-thin">
-                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap inline-block text-center max-w-[360px]">
-                      {computed.description}
-                      {renderRecordMeta(computed.meta)}
-                    </p>
+                  <div className="mt-3 flex-1 overflow-y-auto w-full max-h-[260px] px-2 text-center scrollbar-thin">
+                    {hasBulletDetails ? (
+                      <div className="w-full text-center space-y-2.5">
+                        <p className="text-sm font-semibold text-gray-800">{introText}</p>
+                        <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-3 text-left space-y-1.5 shadow-2xs font-medium">
+                          {detailItems.map((line, idx) => (
+                            <div key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-slate-700">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
+                              <span>{line.replace(/^•\s*/, "")}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {renderRecordMeta(computed.meta)}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap inline-block text-center max-w-[460px]">
+                        {computed.description}
+                        {renderRecordMeta(computed.meta)}
+                      </p>
+                    )}
                   </div>
 
                   {/* Buttons */}
-                  <div className="mt-8 flex items-center justify-center gap-3">
+                  <div className="mt-5 flex items-center justify-center gap-3 shrink-0">
                     <DialogButton
                       variant="confirm"
                       label={computed.confirmText}

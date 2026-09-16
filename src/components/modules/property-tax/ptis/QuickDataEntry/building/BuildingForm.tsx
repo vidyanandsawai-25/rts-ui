@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import React, { useMemo, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Tabs } from "@/components/common";
 import { BuildingFormProps } from "@/types/building-permission.types";
 import { useBuildingForm } from "@/hooks/useBuildingForm";
@@ -11,7 +11,12 @@ import { BuildingDetailPane } from "./BuildingDetailPane";
 import type { WingOption, UnitSelectionItem } from "@/types/building-permission.types";
 
 import { toast } from "sonner";
-import { postApartmentQcCertificateRecordAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Building/action";
+import { useLocale } from "next-intl";
+import { 
+    postApartmentQcCertificateRecordAction, 
+    deletePropertyCertificateRecordAction 
+} from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Building/action";
+
 
 const BuildingForm: React.FC<BuildingFormProps> = ({
     initialBuildingPermission,
@@ -30,9 +35,29 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
     initialCertificateTypes = [],
     initialCertificateGrid = null,
 }) => {
+    const router = useRouter();
+    const locale = useLocale();
     const searchParams = useSearchParams();
     const [searchTerm, setSearchTerm] = useState("");
     const [showActiveFirst, setShowActiveFirst] = useState(false);
+
+    useEffect(() => {
+        const handleCompleted = (e: Event) => {
+            const customEvent = e as CustomEvent<{ societyDetailId?: number | null }>;
+            if (
+                !customEvent.detail?.societyDetailId ||
+                !societyDetailId ||
+                customEvent.detail.societyDetailId === societyDetailId
+            ) {
+                router.refresh();
+            }
+        };
+
+        window.addEventListener("tax-recalculation-completed", handleCompleted);
+        return () => {
+            window.removeEventListener("tax-recalculation-completed", handleCompleted);
+        };
+    }, [router, societyDetailId]);
 
     const {
         buildingPermission,
@@ -157,6 +182,21 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                         initialData={selectedCert}
                         isSaving={isSaving || isSectionSaving}
                         onDelete={(certTypeId) => handleDeleteCertificate(certTypeId)}
+                        onDeleteRecord={async (params) => {
+                            setIsSectionSaving(true);
+                            try {
+                                const res = await deletePropertyCertificateRecordAction(locale, propertyId, params);
+                                if (res.success) {
+                                    toast.success(res.message || t("building.deleteSuccess") || "Certificate deleted successfully!");
+                                    router.refresh();
+                                } else {
+                                    toast.error(res.error || res.message || "Failed to delete certificate.");
+                                }
+                                return res;
+                            } finally {
+                                setIsSectionSaving(false);
+                            }
+                        }}
                         onSave={async (payload) => {
                             setIsSectionSaving(true);
                             try {
@@ -176,71 +216,74 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                 const floorWingDetailId = initialFloors.length > 0 ? (initialFloors[0] as unknown as { wingDetailId?: number; societyWingId?: number }).wingDetailId || (initialFloors[0] as unknown as { societyWingId?: number }).societyWingId : null;
 
                                 const effectiveSocietyDetailId = societyDetailId ?? (urlSocietyDetailId ? Number(urlSocietyDetailId) : null);
-                                const effectiveWingDetailId = payload.selectedWingDetailId ?? (urlWingDetailId ? Number(urlWingDetailId) : (floorWingDetailId ?? null));
-
-                                const targetSocietyDetailId: number | null = effectiveSocietyDetailId;
-                                let targetWingDetailId: number | null = effectiveWingDetailId;
-                                let targetPropertyDetailsId: number | null = null;
-                                let entityType = "P";
-
-                                if (payload.level === "Apartment") {
-                                    entityType = "S";
-                                    targetPropertyDetailsId = null;
-                                } else if (payload.level === "Wing") {
-                                    entityType = "W";
-                                    targetWingDetailId = effectiveWingDetailId;
-                                    targetPropertyDetailsId = null;
-                                } else if (payload.level === "Unit") {
-                                    entityType = "P";
-                                    targetWingDetailId = effectiveWingDetailId;
-                                    targetPropertyDetailsId = payload.selectedUnitIds && payload.selectedUnitIds.length > 0 ? payload.selectedUnitIds[0] : null;
-                                }
-
-                                const certNo = payload.certificateNumber?.trim() 
-                                    || buildingPermission[payload.certificateTypeId]?.number 
-                                    || undefined;
-                                const certDate = payload.certificateDate 
-                                    || buildingPermission[payload.certificateTypeId]?.date 
-                                    || undefined;
-
-                                // 1. Execute handleSave to update building permission certificates
-                                await handleSave({ 
-                                    skipPropertyWideConfirmation: true,
-                                    onlyCertificateTypeId: payload.certificateTypeId,
-                                    overrideData: {
-                                        date: certDate,
-                                        number: certNo,
-                                        pendingFile: payload.attachedFiles && payload.attachedFiles.length > 0 ? payload.attachedFiles[0] : undefined,
-                                        propertyDetailsId: targetPropertyDetailsId,
-                                        entityType,
-                                        societyDetailId: targetSocietyDetailId,
-                                        wingDetailId: targetWingDetailId,
-                                    }
-                                });
-
                                 const parsedPropId = Number(propertyId);
                                 const finalUnitIds = (payload.selectedUnitIds && payload.selectedUnitIds.length > 0)
                                     ? payload.selectedUnitIds
                                     : (!isNaN(parsedPropId) && parsedPropId > 0 ? [parsedPropId] : []);
 
-                                // 2. Post to /api/ApartmentQC/certificate-record for multi-level cascade calculation
-                                const res = await postApartmentQcCertificateRecordAction("en", propertyId, {
-                                    level: payload.level,
-                                    selectedWingDetailId: payload.selectedWingDetailId,
-                                    selectedUnitIds: finalUnitIds,
-                                    isAllUnitsSelected: (payload as unknown as { isAllUnitsSelected?: boolean }).isAllUnitsSelected,
-                                    certificateTypeId: payload.certificateTypeId,
-                                    certificateDate: payload.certificateDate,
-                                    certificateNumber: payload.certificateNumber,
-                                    status: payload.status,
-                                    societyDetailId: effectiveSocietyDetailId ?? undefined,
-                                    attachedFile: payload.attachedFiles && payload.attachedFiles.length > 0 ? payload.attachedFiles[0] : null,
-                                });
+                                let effectiveWingDetailId = payload.selectedWingDetailId ?? (urlWingDetailId ? Number(urlWingDetailId) : (floorWingDetailId ?? null));
+                                if (payload.level === 'Unit' && finalUnitIds.length > 0) {
+                                    const matchedFloor = initialFloors.find((f) => {
+                                        const pId = f.id ?? (f as unknown as { propertyDetailsId?: number }).propertyDetailsId ?? (f as unknown as { propertyId?: number }).propertyId;
+                                        return pId === finalUnitIds[0];
+                                    });
+                                    const matchedWingId = (matchedFloor as unknown as { wingDetailId?: number; societyWingId?: number })?.wingDetailId || (matchedFloor as unknown as { societyWingId?: number })?.societyWingId;
+                                    if (matchedWingId) {
+                                        effectiveWingDetailId = Number(matchedWingId);
+                                    }
+                                }
 
-                                if (res && res.success) {
-                                    toast.success(res.message || t("building.saveSuccess") || "Certificate saved successfully!");
-                                } else if (res && !res.success) {
-                                    toast.error(res.error || res.message || "Failed to save certificate record.");
+                                if (effectiveSocietyDetailId && effectiveSocietyDetailId > 0) {
+                                    // Society / Wing / Unit level save with background tax recalculation
+                                    const formData = new FormData();
+                                    formData.append("payload", JSON.stringify({
+                                        level: payload.level,
+                                        selectedWingDetailId: effectiveWingDetailId,
+                                        selectedUnitIds: finalUnitIds,
+                                        isAllUnitsSelected: (payload as unknown as { isAllUnitsSelected?: boolean }).isAllUnitsSelected,
+                                        certificateTypeId: payload.certificateTypeId,
+                                        certificateDate: payload.certificateDate,
+                                        certificateNumber: payload.certificateNumber,
+                                        status: payload.status,
+                                        societyDetailId: effectiveSocietyDetailId,
+                                    }));
+                                    if (payload.attachedFiles && payload.attachedFiles.length > 0) {
+                                        formData.append("file", payload.attachedFiles[0]);
+                                    }
+
+                                    const res = await postApartmentQcCertificateRecordAction(locale, propertyId, formData);
+
+                                    if (res && res.success) {
+                                        toast.success(res.message || t("building.saveSuccess") || "Certificate saved successfully! Tax recalculation is running in the background.");
+                                        router.refresh();
+                                        return res;
+                                    } else if (res && !res.success) {
+                                        toast.error(res.error || res.message || "Failed to save certificate record.");
+                                        return res;
+                                    }
+                                    return res;
+                                } else {
+                                    // Standalone property-wide certificate save
+                                    const certNo = payload.certificateNumber?.trim() 
+                                        || buildingPermission[payload.certificateTypeId]?.number 
+                                        || undefined;
+                                    const certDate = payload.certificateDate 
+                                        || buildingPermission[payload.certificateTypeId]?.date 
+                                        || undefined;
+
+                                    await handleSave({ 
+                                        skipPropertyWideConfirmation: true,
+                                        onlyCertificateTypeId: payload.certificateTypeId,
+                                        overrideData: {
+                                            date: certDate,
+                                            number: certNo,
+                                            pendingFile: payload.attachedFiles && payload.attachedFiles.length > 0 ? payload.attachedFiles[0] : undefined,
+                                            propertyDetailsId: null,
+                                            entityType: "P",
+                                            societyDetailId: null,
+                                            wingDetailId: null,
+                                        }
+                                    });
                                 }
                             } finally {
                                 setIsSectionSaving(false);

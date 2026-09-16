@@ -337,5 +337,19 @@
     "errorIcon": "त्रुटी चिन्ह",
     "zoomLevel": "झूम स्तर",
     "loadError": "प्रतिमा लोड करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा."
+  },
+  "taxCalculation": {
+    "backgroundTitle": "पार्श्वभूमी कर पुनर्गणना",
+    "completedTitle": "कर पुनर्गणना पूर्ण",
+    "failedTitle": "कर गणना अयशस्वी",
+    "progress": "प्रगती",
+    "dismiss": "सूचना बंद करा",
+    "processingUnits": "{total} पैकी {processed} युनिट्सची गणना सुरू आहे...",
+    "recalculatedUnits": "{count} युनिट्सची पुनर्गणना पूर्ण",
+    "inProgress": "प्रगतीपथावर",
+    "completed": "पूर्ण",
+    "failed": "अयशस्वी",
+    "units": "युनिट्स",
+    "ready": "तयार"
   }
 }

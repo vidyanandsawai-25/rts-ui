@@ -74,21 +74,36 @@ export function useCertificateModalState({
     return resolvedWings.length > 0 ? resolvedWings[0].wingDetailId : null;
   });
 
-  useEffect(() => {
-    if (initialWingDetailId && resolvedWings.some(w => Number(w.wingDetailId) === Number(initialWingDetailId))) {
-      const targetId = Number(initialWingDetailId);
-      if (selectedWingDetailId !== targetId) {
-        queueMicrotask(() => setSelectedWingDetailId(targetId));
-      }
-    } else if (!selectedWingDetailId && resolvedWings.length > 0) {
-      queueMicrotask(() => setSelectedWingDetailId(resolvedWings[0].wingDetailId));
-    }
-  }, [initialWingDetailId, resolvedWings, selectedWingDetailId]);
-
   const [unitSearchQuery, setUnitSearchQuery] = useState('');
-  const [wingFilter, setWingFilterRaw] = useState<string>('all');
+  const [wingFilter, setWingFilterRaw] = useState<string>(() => {
+    if (initialWingDetailId && resolvedWings.some(w => Number(w.wingDetailId) === Number(initialWingDetailId))) {
+      return String(initialWingDetailId);
+    }
+    return resolvedWings.length > 0 ? String(resolvedWings[0].wingDetailId) : '';
+  });
   const [floorFilter, setFloorFilter] = useState<string>('all');
   const [useFilter, setUseFilter] = useState<string>('all');
+
+  const [prevInitialWingDetailId, setPrevInitialWingDetailId] = useState<number | null | undefined>(initialWingDetailId);
+  if (initialWingDetailId !== prevInitialWingDetailId) {
+    setPrevInitialWingDetailId(initialWingDetailId);
+    if (initialWingDetailId != null) {
+      const targetId = Number(initialWingDetailId);
+      if (resolvedWings.some(w => Number(w.wingDetailId) === targetId)) {
+        setSelectedWingDetailId(targetId);
+        setWingFilterRaw(String(targetId));
+      }
+    }
+  }
+
+  const [prevResolvedWingsLen, setPrevResolvedWingsLen] = useState<number>(resolvedWings.length);
+  if (resolvedWings.length !== prevResolvedWingsLen) {
+    setPrevResolvedWingsLen(resolvedWings.length);
+    if (resolvedWings.length > 0 && (!wingFilter || wingFilter === 'all')) {
+      const defaultWingId = selectedWingDetailId ?? resolvedWings[0].wingDetailId;
+      setWingFilterRaw(String(defaultWingId));
+    }
+  }
 
   const [selectedUnitIds, setSelectedUnitIds] = useState<Set<number>>(() => {
     const set = new Set<number>();
@@ -244,7 +259,7 @@ export function useCertificateModalState({
     setIsLoadingMoreUnits(false);
   }, [propertyId, isLoadingMoreUnits, hasMoreUnits, unitsPage, totalUnitsCount, wingFilter, getWingDetailIdFromFilter]);
 
-  // When wingFilter changes, re-fetch units from the API server-side
+  // When wingFilter changes, re-fetch units AND grid data in parallel
   const setWingFilter = useCallback((value: string) => {
     setWingFilterRaw(value);
     if (!propertyId) return;
@@ -252,6 +267,9 @@ export function useCertificateModalState({
     setUnitsPage(1);
     setHasMoreUnits(true);
     setIsLoadingMoreUnits(true);
+    setIsLoadingGridRecords(true);
+    // Clear unit selection since the new wing will have different units
+    setSelectedUnitIds(new Set());
 
     // Resolve wingDetailId using findWingDetailId helper
     const wingDetailIdParam = findWingDetailId(value, resolvedWings, gridItems);
@@ -259,11 +277,20 @@ export function useCertificateModalState({
       setSelectedWingDetailId(wingDetailIdParam);
     }
 
-    getUnitsByPropertyAction(propertyId, wingDetailIdParam, 1, 10).then((res) => {
-      if (res.success && Array.isArray(res.data)) {
-        const mappedUnits: UnitSelectionItem[] = (res.data as Record<string, unknown>[]).map(mapRawUnitItem);
+    // Pre-set lastFetchedKeyRef to prevent the grid-sync useEffect from re-fetching
+    const preemptKey = `${level}_${null}_${wingDetailIdParam}_${null}`;
+    lastFetchedKeyRef.current = preemptKey;
+
+    // Fetch units and certificate grid in parallel
+    const unitsPromise = getUnitsByPropertyAction(propertyId, wingDetailIdParam, 1, 10);
+    const gridPromise = getApartmentQcCertificateGridAction(null, wingDetailIdParam, null);
+
+    Promise.all([unitsPromise, gridPromise]).then(([unitsRes, gridRes]) => {
+      // Process units
+      if (unitsRes.success && Array.isArray(unitsRes.data)) {
+        const mappedUnits: UnitSelectionItem[] = (unitsRes.data as Record<string, unknown>[]).map(mapRawUnitItem);
         setDynamicUnits(mappedUnits);
-        const total = typeof res.totalCount === 'number' ? res.totalCount : mappedUnits.length;
+        const total = typeof unitsRes.totalCount === 'number' ? unitsRes.totalCount : mappedUnits.length;
         setTotalUnitsCount(total);
         setHasMoreUnits(mappedUnits.length < total);
       } else {
@@ -272,8 +299,15 @@ export function useCertificateModalState({
         setHasMoreUnits(false);
       }
       setIsLoadingMoreUnits(false);
+
+      // Process grid data
+      if (gridRes.success && gridRes.data) {
+        const normalized = normalizeCertificateGridData(gridRes.data);
+        setGridItems(normalized);
+      }
+      setIsLoadingGridRecords(false);
     });
-  }, [propertyId, resolvedWings, gridItems]);
+  }, [propertyId, resolvedWings, gridItems, level]);
 
 
 
@@ -289,47 +323,117 @@ export function useCertificateModalState({
   const [remarks, setRemarks] = useState<string>('');
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
-  const [inheritedFrom, setInheritedFrom] = useState<'Direct' | 'Wing' | 'Apartment' | null>(null);
-  const [activeCertificate, setActiveCertificate] = useState<CertificateItem | null>(null);
+  const selectedUnitPropertyIds = useMemo(() => {
+    return Array.from(selectedUnitIds).map((id) => {
+      const matched = resolvedUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id);
+      return matched?.propertyId || matched?.propertyDetailsId || id;
+    });
+  }, [selectedUnitIds, resolvedUnits]);
 
+  const selectedUnitNumbers = useMemo(() => {
+    return Array.from(selectedUnitIds).map((id) => {
+      const matched = resolvedUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id);
+      return matched?.unitNo || '';
+    }).filter(Boolean);
+  }, [selectedUnitIds, resolvedUnits]);
 
-
-
-
-  // Automatically update fields when gridItems, level, targetWingDetailId, targetUnitPropertyId, or selectedTypeId changes
-  useEffect(() => {
-    if (!gridItems) return;
-    const { certificate: match, inheritedFrom: source } = getActiveCertificateForLevel(
+  // Derived active certificate and inheritedFrom based on current level & selection
+  const { certificate: activeCertificate, inheritedFrom } = useMemo(() => {
+    if (!gridItems) return { certificate: null, inheritedFrom: null };
+    return getActiveCertificateForLevel(
       gridItems,
       level,
       selectedTypeId,
-      targetWingDetailId,
+      targetWingDetailId ?? selectedWingDetailId,
       targetUnitPropertyId,
-      societyId
+      societyId,
+      selectedUnitPropertyIds,
+      selectedUnitNumbers
     );
+  }, [
+    gridItems,
+    level,
+    selectedTypeId,
+    targetWingDetailId,
+    selectedWingDetailId,
+    targetUnitPropertyId,
+    societyId,
+    selectedUnitPropertyIds,
+    selectedUnitNumbers,
+  ]);
 
-    queueMicrotask(() => {
-      setInheritedFrom(source);
-      setActiveCertificate(match);
+  // Automatically update input fields when active certificate / selection targets change
+  const selectedIdsKey = selectedUnitPropertyIds.join(',');
+  const fieldSyncKey = `${level}_${selectedTypeId}_${targetWingDetailId ?? selectedWingDetailId}_${targetUnitPropertyId}_${societyId}_${selectedIdsKey}_${gridItems ? 'loaded' : 'none'}_${activeCertificate?.propertyCertificateId || activeCertificate?.certificateNumber || 'none'}`;
 
-      if (match) {
-        setCertificateNumber(match.certificateNumber || '');
-        const formattedDate = match.certificateDate
-          ? match.certificateDate.includes('T')
-            ? match.certificateDate.split('T')[0]
-            : match.certificateDate
-          : '';
-        setCertificateDate(formattedDate);
-        setStatus((match.status as CertificateStatus) || 'Active');
-      } else {
-        // If selected certificate has no record, reset input fields to empty
-        setCertificateNumber('');
-        setCertificateDate('');
-        setStatus('Active');
-        setAttachedFiles([]);
+  const [prevFieldSyncKey, setPrevFieldSyncKey] = useState<string>(fieldSyncKey);
+  if (fieldSyncKey !== prevFieldSyncKey) {
+    setPrevFieldSyncKey(fieldSyncKey);
+    if (activeCertificate) {
+      setCertificateNumber(activeCertificate.certificateNumber || '');
+      const formattedDate = activeCertificate.certificateDate
+        ? activeCertificate.certificateDate.includes('T')
+          ? activeCertificate.certificateDate.split('T')[0]
+          : activeCertificate.certificateDate
+        : '';
+      setCertificateDate(formattedDate);
+      setStatus((activeCertificate.status as CertificateStatus) || 'Active');
+    } else {
+      setCertificateNumber('');
+      setCertificateDate('');
+      setStatus('Active');
+    }
+  }
+
+  const refetchGrid = useCallback(async () => {
+    let targetPropId: string | number | null = null;
+    let targetWingId: number | string | null = null;
+    let targetSocId: number | string | null = null;
+
+    if (level === 'Apartment') {
+      targetSocId = societyId ?? null;
+    } else if (level === 'Wing') {
+      targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+    } else if (level === 'Unit') {
+      targetPropId = null;
+      targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+    }
+
+    if (!targetPropId && !targetWingId && !targetSocId) return null;
+
+    setIsLoadingGridRecords(true);
+    try {
+      const res = await getApartmentQcCertificateGridAction(targetPropId, targetWingId, targetSocId);
+      if (res.success && res.data) {
+        const normalized = normalizeCertificateGridData(res.data);
+        setGridItems(normalized);
+        const { certificate: match } = getActiveCertificateForLevel(
+          normalized,
+          level,
+          selectedTypeId,
+          targetWingDetailId ?? selectedWingDetailId,
+          targetUnitPropertyId,
+          societyId,
+          selectedUnitPropertyIds,
+          selectedUnitNumbers
+        );
+        if (match) {
+          setCertificateNumber(match.certificateNumber || '');
+          const formattedDate = match.certificateDate
+            ? match.certificateDate.includes('T')
+              ? match.certificateDate.split('T')[0]
+              : match.certificateDate
+            : '';
+          setCertificateDate(formattedDate);
+          setStatus((match.status as CertificateStatus) || 'Active');
+        }
+        return normalized;
       }
-    });
-  }, [gridItems, level, selectedTypeId, targetWingDetailId, targetUnitPropertyId, societyId]);
+      return null;
+    } finally {
+      setIsLoadingGridRecords(false);
+    }
+  }, [level, targetWingDetailId, selectedWingDetailId, societyId, selectedTypeId, targetUnitPropertyId, selectedUnitPropertyIds, selectedUnitNumbers]);
 
   const activeCertificateType = useMemo(
     () => resolvedCertificateTypes.find((t) => t.certificateTypeId === selectedTypeId) || resolvedCertificateTypes[0],
@@ -390,10 +494,11 @@ export function useCertificateModalState({
     });
   }, []);
 
-  const toggleAllUnits = useCallback(() => {
+  const toggleAllUnits = useCallback((forceSelect?: boolean) => {
     setSelectedUnitIds((prev) => {
       const next = new Set(prev);
-      if (isAllUnitsSelected) {
+      const shouldSelect = typeof forceSelect === 'boolean' ? forceSelect : !isAllUnitsSelected;
+      if (!shouldSelect) {
         filteredUnits.forEach((u) => next.delete(u.propertyDetailsId));
       } else {
         filteredUnits.forEach((u) => next.add(u.propertyDetailsId));
@@ -405,7 +510,9 @@ export function useCertificateModalState({
   return {
     level,
     setLevel,
-    selectedWingDetailId,
+    selectedWingDetailId: targetWingDetailId ?? selectedWingDetailId,
+    rawSelectedWingDetailId: selectedWingDetailId,
+    targetWingDetailId,
     setSelectedWingDetailId,
     unitSearchQuery,
     setUnitSearchQuery,
@@ -447,5 +554,6 @@ export function useCertificateModalState({
     isLoadingGridRecords,
     inheritedFrom,
     activeCertificate,
+    refetchGrid,
   };
 }

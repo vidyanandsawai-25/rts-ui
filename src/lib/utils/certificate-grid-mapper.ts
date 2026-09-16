@@ -11,15 +11,19 @@ export interface CertificateItem {
   unitsTotalCount?: number | null;
   unitsMissingCount?: number | null;
   coveredUnitNumbers?: string[];
+  coveredPropertyIds?: number[];
   certificateTypeId: number;
   certificateTypeCode?: string;
   certificateTypeName?: string;
   certificateDate?: string | null;
   certificateNumber?: string;
   status?: string;
+  propertyCertificateId?: number | null;
   hasDocument?: boolean;
   documentGuid?: string | null;
+  fileName?: string | null;
 }
+
 
 export interface WingOption {
   wingDetailId: number;
@@ -51,9 +55,43 @@ function mapRawCertificateItem(item: unknown): CertificateItem {
   if (!item || typeof item !== 'object') return item as CertificateItem;
   const raw = item as Record<string, unknown>;
   const certNo = String(raw.certificateNumber || raw.certificateNo || raw.CertificateNo || raw.CertificateNumber || '');
+  const certDate = (raw.certificateDate || raw.CertificateDate || raw.issueDate || raw.IssueDate || raw.date || raw.Date) as string | null | undefined;
+  const certTypeId = Number(raw.certificateTypeId || raw.CertificateTypeId || raw.typeId || raw.TypeId || 0);
+  const docGuid = (raw.documentGuid || raw.DocumentGuid || raw.guid || raw.Guid || raw.documentId || raw.DocumentId) as string | null | undefined;
+  const hasDoc = Boolean(raw.hasDocument || raw.HasDocument || raw.hasDocumentBinding || raw.HasDocumentBinding || (docGuid && String(docGuid).trim().length > 0 && String(docGuid).toLowerCase() !== 'null'));
+  const docName = (raw.fileName || raw.FileName || raw.documentName || raw.DocumentName || raw.name || raw.Name) as string | null | undefined;
+  const level = String(raw.level || raw.Level || 'Apartment');
+  const rawUnitNos = raw.coveredUnitNumbers || raw.CoveredUnitNumbers;
+  const coveredUnitNos = Array.isArray(rawUnitNos) ? (rawUnitNos as string[]) : [];
+  const rawPropIds = raw.coveredPropertyIds || raw.CoveredPropertyIds;
+  const coveredPropIds = Array.isArray(rawPropIds) ? (rawPropIds as number[]) : [];
+
   return {
     ...(raw as unknown as CertificateItem),
+    level: level as CertificateItem['level'],
+    certificateTypeId: certTypeId || (raw.certificateTypeId as number),
     certificateNumber: certNo,
+    certificateDate: certDate ? String(certDate) : (raw.certificateDate as string | null | undefined),
+    propertyCertificateId:
+      raw.propertyCertificateId != null
+        ? Number(raw.propertyCertificateId)
+        : raw.PropertyCertificateId != null
+          ? Number(raw.PropertyCertificateId)
+          : raw.id != null
+            ? Number(raw.id)
+            : raw.Id != null
+              ? Number(raw.Id)
+              : undefined,
+    hasDocument: hasDoc,
+    documentGuid: docGuid ? String(docGuid) : (raw.documentGuid as string | null | undefined),
+    fileName: docName ? String(docName) : (raw.fileName as string | null | undefined),
+
+    wingDetailId: raw.wingDetailId != null ? Number(raw.wingDetailId) : raw.WingDetailId != null ? Number(raw.WingDetailId) : (raw.wingDetailId as number | null | undefined),
+    societyDetailId: raw.societyDetailId != null ? Number(raw.societyDetailId) : raw.SocietyDetailId != null ? Number(raw.SocietyDetailId) : (raw.societyDetailId as number | null | undefined),
+    propertyId: raw.propertyId != null ? Number(raw.propertyId) : raw.PropertyId != null ? Number(raw.PropertyId) : (raw.propertyId as number | null | undefined),
+    propertyDetailsId: raw.propertyDetailsId != null ? Number(raw.propertyDetailsId) : raw.PropertyDetailsId != null ? Number(raw.PropertyDetailsId) : (raw.propertyDetailsId as number | null | undefined),
+    coveredUnitNumbers: coveredUnitNos,
+    coveredPropertyIds: coveredPropIds,
   };
 }
 
@@ -176,10 +214,104 @@ export function findWingDetailId(
   return !isNaN(valNum) && valNum > 0 ? valNum : null;
 }
 
+export type UnitCertificateStatusType = 'direct' | 'wing' | 'apartment' | 'none';
+
+export interface UnitStatusResolution {
+  status: UnitCertificateStatusType;
+  certificate: CertificateItem | null;
+  certificateNumber?: string;
+  certificateDate?: string | null;
+  hasDocument?: boolean;
+  documentGuid?: string | null;
+  fileName?: string | null;
+}
+
+/**
+ * Resolves the certificate status for an individual unit given the hierarchical grid items.
+ */
+export function resolveUnitCertificateStatus(
+  gridItems: CertificateGridItems | null | undefined,
+  certificateTypeId: number,
+  unit: { propertyId?: number | null; propertyDetailsId?: number | null; unitNo?: string | null; wingDetailId?: number | null },
+  societyId?: number | null
+): UnitStatusResolution {
+  if (!gridItems) {
+    return { status: 'none', certificate: null };
+  }
+
+  const { societyCertificates = [], wingCertificates = [], unitCertificates = [] } = gridItems;
+  const propId = unit.propertyId != null ? Number(unit.propertyId) : null;
+  const propDetailsId = unit.propertyDetailsId != null ? Number(unit.propertyDetailsId) : null;
+  const unitNumber = (unit.unitNo || '').trim().toLowerCase();
+  const wingId = unit.wingDetailId != null ? Number(unit.wingDetailId) : null;
+  const socId = societyId != null ? Number(societyId) : null;
+
+  // 1. Direct Unit Match
+  const directMatch = unitCertificates.find((c) => {
+    if (c.certificateTypeId !== certificateTypeId) return false;
+    if (propId != null && (c.propertyId === propId || c.coveredPropertyIds?.includes(propId))) return true;
+    if (propDetailsId != null && (c.propertyDetailsId === propDetailsId || c.coveredPropertyIds?.includes(propDetailsId))) return true;
+    if (unitNumber && c.coveredUnitNumbers?.some((num) => num.trim().toLowerCase() === unitNumber)) return true;
+    return false;
+  });
+
+  if (directMatch) {
+    return {
+      status: 'direct',
+      certificate: directMatch,
+      certificateNumber: directMatch.certificateNumber,
+      certificateDate: directMatch.certificateDate,
+      hasDocument: directMatch.hasDocument,
+      documentGuid: directMatch.documentGuid,
+      fileName: directMatch.fileName,
+    };
+  }
+
+  // 2. Wing Inherited Match
+  const wingMatch = wingCertificates.find((c) => {
+    if (c.certificateTypeId !== certificateTypeId) return false;
+    if (wingId != null && (c.wingDetailId === wingId || c.wingDetailId == null)) return true;
+    return false;
+  });
+
+  if (wingMatch && (wingMatch.certificateNumber || wingMatch.hasDocument || wingMatch.status === 'Active')) {
+    return {
+      status: 'wing',
+      certificate: wingMatch,
+      certificateNumber: wingMatch.certificateNumber,
+      certificateDate: wingMatch.certificateDate,
+      hasDocument: wingMatch.hasDocument,
+      documentGuid: wingMatch.documentGuid,
+      fileName: wingMatch.fileName,
+    };
+  }
+
+  // 3. Society / Apartment Inherited Match
+  const societyMatch = societyCertificates.find((c) => {
+    if (c.certificateTypeId !== certificateTypeId) return false;
+    if (socId != null && (c.societyDetailId === socId || c.societyDetailId == null)) return true;
+    return true;
+  });
+
+  if (societyMatch && (societyMatch.certificateNumber || societyMatch.hasDocument || societyMatch.status === 'Active')) {
+    return {
+      status: 'apartment',
+      certificate: societyMatch,
+      certificateNumber: societyMatch.certificateNumber,
+      certificateDate: societyMatch.certificateDate,
+      hasDocument: societyMatch.hasDocument,
+      documentGuid: societyMatch.documentGuid,
+      fileName: societyMatch.fileName,
+    };
+  }
+
+  return { status: 'none', certificate: null };
+}
+
 /**
  * Retrieves the matching certificate for the given UI level, certificateTypeId, wingDetailId, propertyId, and societyId.
  * Hierarchical mapping:
- * - Unit level: strict propertyId match -> wingDetailId match -> societyDetailId match
+ * - Unit level: strict propertyId/selectedPropertyIds match -> wingDetailId match -> societyDetailId match
  * - Wing level: wingDetailId match -> societyDetailId match
  * - Apartment level: societyDetailId match
  */
@@ -189,7 +321,9 @@ export function getActiveCertificateForLevel(
   selectedTypeId: number,
   selectedWingDetailId?: number | null,
   selectedPropertyId?: number | string | null,
-  selectedSocietyId?: number | string | null
+  selectedSocietyId?: number | string | null,
+  selectedPropertyIds?: (number | string)[] | null,
+  selectedUnitNumbers?: string[] | null
 ): MatchedCertificateResult {
   if (!gridItems) return { certificate: null, inheritedFrom: null };
 
@@ -198,23 +332,50 @@ export function getActiveCertificateForLevel(
   const numericWingId = selectedWingDetailId != null ? Number(selectedWingDetailId) : null;
   const numericSocietyId = selectedSocietyId != null ? Number(selectedSocietyId) : null;
 
-  // PRIORITY 1: Direct Unit Level Match (highest priority)
-  // Check unitCertificates, wingCertificates, or societyCertificates for an explicit matching propertyId
-  if (numericPropId != null) {
-    const unitMatch = unitCertificates.find(
-      (c) => c.certificateTypeId === selectedTypeId && (c.propertyId === numericPropId || c.propertyDetailsId === numericPropId)
-    );
-    if (unitMatch) return { certificate: unitMatch, inheritedFrom: 'Direct' };
+  // PRIORITY 1: Direct Unit Level Match (highest priority when at Unit level)
+  if (selectedLevel === 'Unit') {
+    const propIdList: number[] = [];
+    if (numericPropId != null) propIdList.push(numericPropId);
+    if (Array.isArray(selectedPropertyIds)) {
+      selectedPropertyIds.forEach((id) => {
+        const num = Number(id);
+        if (!isNaN(num) && num > 0 && !propIdList.includes(num)) {
+          propIdList.push(num);
+        }
+      });
+    }
 
-    const wingUnitMatch = wingCertificates.find(
-      (c) => c.certificateTypeId === selectedTypeId && (c.propertyId === numericPropId || c.propertyDetailsId === numericPropId)
-    );
-    if (wingUnitMatch) return { certificate: wingUnitMatch, inheritedFrom: 'Direct' };
+    const unitNumberList = (selectedUnitNumbers || []).map((n) => String(n).trim().toLowerCase());
 
-    const socUnitMatch = societyCertificates.find(
-      (c) => c.certificateTypeId === selectedTypeId && (c.propertyId === numericPropId || c.propertyDetailsId === numericPropId)
-    );
-    if (socUnitMatch) return { certificate: socUnitMatch, inheritedFrom: 'Direct' };
+    if (propIdList.length > 0 || unitNumberList.length > 0) {
+      const unitMatch = unitCertificates.find((c) => {
+        if (c.certificateTypeId !== selectedTypeId) return false;
+        if (c.propertyId != null && propIdList.includes(c.propertyId)) return true;
+        if (c.propertyDetailsId != null && propIdList.includes(c.propertyDetailsId)) return true;
+        if (c.coveredPropertyIds && c.coveredPropertyIds.some((id) => propIdList.includes(id))) return true;
+        if (c.coveredUnitNumbers && c.coveredUnitNumbers.some((num) => unitNumberList.includes(String(num).trim().toLowerCase()))) return true;
+        return false;
+      });
+      if (unitMatch) return { certificate: unitMatch, inheritedFrom: 'Direct' };
+
+      const wingUnitMatch = wingCertificates.find((c) => {
+        if (c.certificateTypeId !== selectedTypeId) return false;
+        if (c.propertyId != null && propIdList.includes(c.propertyId)) return true;
+        if (c.propertyDetailsId != null && propIdList.includes(c.propertyDetailsId)) return true;
+        if (c.coveredPropertyIds && c.coveredPropertyIds.some((id) => propIdList.includes(id))) return true;
+        return false;
+      });
+      if (wingUnitMatch) return { certificate: wingUnitMatch, inheritedFrom: 'Direct' };
+
+      const socUnitMatch = societyCertificates.find((c) => {
+        if (c.certificateTypeId !== selectedTypeId) return false;
+        if (c.propertyId != null && propIdList.includes(c.propertyId)) return true;
+        if (c.propertyDetailsId != null && propIdList.includes(c.propertyDetailsId)) return true;
+        if (c.coveredPropertyIds && c.coveredPropertyIds.some((id) => propIdList.includes(id))) return true;
+        return false;
+      });
+      if (socUnitMatch) return { certificate: socUnitMatch, inheritedFrom: 'Direct' };
+    }
   }
 
   // PRIORITY 2: Wing Level Match (second priority)

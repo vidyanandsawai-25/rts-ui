@@ -354,5 +354,19 @@
     "errorIcon": "Error icon",
     "zoomLevel": "Zoom level",
     "loadError": "Failed to load image. Please try again."
+  },
+  "taxCalculation": {
+    "backgroundTitle": "Background Tax Recalculation",
+    "completedTitle": "Tax Recalculation Complete",
+    "failedTitle": "Tax Calculation Failed",
+    "progress": "Progress",
+    "dismiss": "Dismiss notification",
+    "processingUnits": "Processing {processed} of {total} units...",
+    "recalculatedUnits": "Recalculated {count} unit(s)",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "failed": "Failed",
+    "units": "Units",
+    "ready": "Ready"
   }
 }

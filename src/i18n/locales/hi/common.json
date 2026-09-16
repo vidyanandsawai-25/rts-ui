@@ -338,5 +338,19 @@
     "errorIcon": "त्रुटि आइकन",
     "zoomLevel": "ज़ूम स्तर",
     "loadError": "छवि लोड करने में विफल। कृपया पुनः प्रयास करें।"
+  },
+  "taxCalculation": {
+    "backgroundTitle": "पृष्ठभूमि कर पुनर्गणना",
+    "completedTitle": "कर पुनर्गणना पूर्ण",
+    "failedTitle": "कर गणना विफल",
+    "progress": "प्रगति",
+    "dismiss": "सूचना बंद करें",
+    "processingUnits": "{total} में से {processed} इकाइयों की गणना की जा रही है...",
+    "recalculatedUnits": "{count} इकाइयों की पुनर्गणना पूर्ण",
+    "inProgress": "प्रगति में",
+    "completed": "पूर्ण",
+    "failed": "विफल",
+    "units": "इकाइयाँ",
+    "ready": "तैयार"
   }
 }
