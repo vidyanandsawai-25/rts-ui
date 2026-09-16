@@ -59,6 +59,7 @@ export const TYPE_FILTER_OPTIONS = [
   "hearingAndAppeal",
   "billDistribution",
   "billGeneration",
+  "billRecovery",
 ] as const;
 
 export type PropertyTypeOption = (typeof PROPERTY_TYPE_OPTIONS)[number];
@@ -81,5 +82,5 @@ export const LEGACY_TYPE_FILTER_VALUES: Record<string, TypeFilterOption> = {
   "Hearing and Appeals": "hearingAndAppeal",
   "Bills Distribution": "billDistribution",
   "Bill Generation": "billGeneration",
-  "Bill Recovery": "billGeneration",
+  "Bill Recovery": "billRecovery",
 };

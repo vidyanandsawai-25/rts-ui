@@ -117,7 +117,8 @@
         "noticeDistribution": "Notice Distribution",
         "hearingAndAppeal": "Hearing and Appeals",
         "billDistribution": "Bills Distribution",
-        "billGeneration": "Bill Recovery",
+        "billGeneration": "Bill Generation",
+        "billRecovery": "Bill Recovery",
         "qcRevert": "QC Revert"
       },
       "description": {

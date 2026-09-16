@@ -33,6 +33,7 @@ const TYPE_FILTER_DASHBOARD_MAP: Record<TypeFilterOption, number> = {
   hearingAndAppeal: 7,
   billDistribution: 8,
   billGeneration: 9,
+  billRecovery: 10,
 };
 
 /** Maps the Type Filter dropdown to `/Property/search` DashboardFilter values. */

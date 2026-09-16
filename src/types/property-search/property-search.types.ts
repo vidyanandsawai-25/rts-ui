@@ -402,24 +402,24 @@ export interface MainCardsResponse {
   previouslyRegistered: {
     structureCount: number;
     unitCount: number;
-    demand: number;
+    demand: number | string;
   };
   assessmentApproved: {
     assessed: {
       structureCount: number;
       unitCount: number;
-      demand: number;
+      demand: number | string;
     };
     unassessed: {
       structureCount: number;
       unitCount: number;
-      demand: number;
+      demand: number | string;
     };
   };
   additionalRevenueGenerated: {
     structureCount: number;
     unitCount: number;
-    demand: number;
+    demand: number | string;
   };
 }
 

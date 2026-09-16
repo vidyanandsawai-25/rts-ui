@@ -76,9 +76,11 @@ export function TopFilterRow({
     const key = getTranslationKey(opt.stageName);
     let label = opt.description || opt.stageName;
     try {
-      const translated = t(`options.typeFilter.${key}`);
-      if (translated && !translated.startsWith("options.typeFilter.")) {
-        label = translated;
+      if (key && t.has(`options.typeFilter.${key}`)) {
+        const translated = t(`options.typeFilter.${key}`);
+        if (translated && !translated.startsWith("options.typeFilter.")) {
+          label = translated;
+        }
       }
     } catch {}
     return {
