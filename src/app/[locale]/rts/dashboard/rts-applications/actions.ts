@@ -243,6 +243,21 @@ export async function getRtsApplicationProcessDataAction(
   const stages = getProcessSectionResult(stagesResult);
   const verification = getProcessSectionResult(verificationResult);
 
+  if (details.data && !details.data.issuedCertificateGuid && details.data.applicationNo) {
+    try {
+      const { getIssuedCertificateByApplicationNo } = await import(
+        '@/lib/api/rts/rtscertificate.service'
+      );
+      const issued = await getIssuedCertificateByApplicationNo(details.data.applicationNo);
+      if (issued) {
+        details.data.issuedCertificateGuid =
+          issued.documentGuid || issued.certificateGuid || null;
+      }
+    } catch {
+      // Ignore fallback failure
+    }
+  }
+
   return {
     currentUserId,
     currentUserName,
@@ -282,6 +297,21 @@ export async function getRtsApplicationFullDetailDataAction(
   const details = getProcessSectionResult(detailsResult);
   const stages = getProcessSectionResult(stagesResult);
   const payment = getProcessSectionResult(paymentResult);
+
+  if (details.data && !details.data.issuedCertificateGuid && details.data.applicationNo) {
+    try {
+      const { getIssuedCertificateByApplicationNo } = await import(
+        '@/lib/api/rts/rtscertificate.service'
+      );
+      const issued = await getIssuedCertificateByApplicationNo(details.data.applicationNo);
+      if (issued) {
+        details.data.issuedCertificateGuid =
+          issued.documentGuid || issued.certificateGuid || null;
+      }
+    } catch {
+      // Ignore fallback failure
+    }
+  }
 
   if (!payment.data) {
     console.error(
@@ -627,6 +657,26 @@ export async function getApplicationDetailAction(
           };
         });
 
+        let resolvedIssuedCertificateGuid =
+          viewDetails?.issuedCertificateGuid ||
+          (applicationHeader as any)?.issuedCertificateGuid ||
+          null;
+
+        if (!resolvedIssuedCertificateGuid && applicationNo) {
+          try {
+            const { getIssuedCertificateByApplicationNo } = await import(
+              '@/lib/api/rts/rtscertificate.service'
+            );
+            const issued = await getIssuedCertificateByApplicationNo(applicationNo);
+            if (issued) {
+              resolvedIssuedCertificateGuid =
+                issued.documentGuid || issued.certificateGuid || null;
+            }
+          } catch {
+            // Ignore fallback failure
+          }
+        }
+
         return {
           applicationNo,
           departmentId: (viewDetails as any)?.departmentId || applicationHeader?.departmentId || 0,
@@ -636,7 +686,7 @@ export async function getApplicationDetailAction(
           applicationStatus: rawStatus,
           isCertificateRequired: isCertRequired ?? false,
           certificateType: certType ?? 0,
-          issuedCertificateGuid: viewDetails?.issuedCertificateGuid || (applicationHeader as any)?.issuedCertificateGuid || null,
+          issuedCertificateGuid: resolvedIssuedCertificateGuid,
           answerGroups,
           workflow: dynamicWorkflow,
           approvalFlowStages,

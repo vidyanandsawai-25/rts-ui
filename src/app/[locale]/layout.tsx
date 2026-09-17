@@ -33,11 +33,18 @@ export async function generateMetadata(): Promise<Metadata> {
     ? `${ulbData.ulbName} Portal - ${ulbData.ulbAddress || appConfig.app.description}`
     : appConfig.app.description;
 
+  const logoUrl = ulbData?.ulbLogo?.trim() || '/images/councilLogo/logo.png';
+
   return {
     title,
     description,
     icons: {
-      icon: '/favicon.ico',
+      icon: [
+        { url: logoUrl },
+        { url: '/favicon.ico', sizes: 'any' },
+      ],
+      shortcut: logoUrl,
+      apple: logoUrl,
     },
   };
 }

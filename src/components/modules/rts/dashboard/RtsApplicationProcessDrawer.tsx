@@ -706,18 +706,17 @@ export default function RtsApplicationProcessDrawer({
                   );
                 })}
 
-                {/* Certificate Action Buttons: ONLY visible AFTER application is approved */}
+                {/* Certificate Action Button: Visible AFTER application is approved */}
                 {Boolean(isApproved) &&
                   data?.details?.isCertificateRequired !== false &&
                   data?.details?.certificateType !== 0 && (
                   (() => {
-                    const isManualType = Boolean(
+                    const isManual = Boolean(
                       verification?.isManualCertificate || data?.details?.certificateType === 2
                     );
                     const hasCertificate = Boolean(data?.details?.issuedCertificateGuid);
 
-                    // If certificate is already issued/uploaded, show View Certificate ONLY
-                    if (hasCertificate) {
+                    if (hasCertificate || !isManual) {
                       return (
                         <Button
                           type="button"
@@ -732,53 +731,44 @@ export default function RtsApplicationProcessDrawer({
                       );
                     }
 
-                    // If Type 2 (Manual) and not yet uploaded, show Upload Certificate
-                    if (isManualType) {
-                      return (
-                        <Button
-                          type="button"
-                          size="xs"
-                          variant="primary"
-                          icon={Upload}
-                          disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
-                          title={
-                            !hasOfficerAccess
-                              ? t('officerAccessDenied')
-                              : isEditing
-                                ? t('finishEditBeforeWorkflowAction')
-                                : undefined
-                          }
-                          onClick={() => setIsManualCertificateUploadOpen(true)}
-                          className="rounded-lg px-3 text-xs font-bold"
-                        >
-                          {t('uploadCertificate')}
-                        </Button>
-                      );
-                    }
-
-                    // If Type 1 (Digital) and not yet issued, show Issue Certificate
                     return (
                       <Button
                         type="button"
                         size="xs"
-                        variant="success"
-                        icon={Sparkles}
-                        disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
-                        title={
-                          !hasOfficerAccess
-                            ? t('officerAccessDenied')
-                            : isEditing
-                              ? t('finishEditBeforeWorkflowAction')
-                              : undefined
-                        }
-                        onClick={() => setIsCertModalOpen(true)}
+                        variant="primary"
+                        icon={Upload}
+                        onClick={() => setIsManualCertificateUploadOpen(true)}
                         className="rounded-lg px-3 text-xs font-bold"
                       >
-                        {t('issueCertificate')}
+                        {t('uploadCertificate')}
                       </Button>
                     );
                   })()
                 )}
+
+                {/* Pre-approval certificate actions: strictly for digital certificate templates on final stage */}
+                {!isApproved &&
+                  Boolean(verification?.canIssueCertificate) &&
+                  data?.details?.certificateType === 1 && (
+                    <Button
+                      type="button"
+                      size="xs"
+                      variant="success"
+                      icon={Sparkles}
+                      disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
+                      title={
+                        !hasOfficerAccess
+                          ? t('officerAccessDenied')
+                          : isEditing
+                            ? t('finishEditBeforeWorkflowAction')
+                            : undefined
+                      }
+                      onClick={() => setIsCertModalOpen(true)}
+                      className="rounded-lg px-3 text-xs font-bold"
+                    >
+                      {t('issueCertificate')}
+                    </Button>
+                  )}
 
                 {/* Note Sheet: Visible to ALL officers once first verification is done / history exists */}
                 {Boolean(
@@ -873,6 +863,30 @@ export default function RtsApplicationProcessDrawer({
                     <Sparkles className="h-3.5 w-3.5" />
                     प्रमाणपत्र संपादन
                   </button>
+                </>
+              )}
+              {headerStatus?.toLowerCase().includes('approv') &&
+                data?.details?.isCertificateRequired !== false &&
+                data?.details?.certificateType === 2 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setIsPrintCertModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition"
+                  >
+                    <FileCheck2 className="h-4 w-4" />
+                    प्रमाणपत्र पहा व प्रिंट करा
+                  </button>
+                  {!data?.details?.issuedCertificateGuid && (
+                    <button
+                      type="button"
+                      onClick={() => setIsManualCertificateUploadOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-lg text-xs font-bold transition"
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      प्रमाणपत्र अपलोड करा
+                    </button>
+                  )}
                 </>
               )}
               {headerStatus && (

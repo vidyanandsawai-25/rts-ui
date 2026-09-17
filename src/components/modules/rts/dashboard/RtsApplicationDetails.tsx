@@ -347,7 +347,7 @@ export default function RtsApplicationDetails({
 
                     {data.isCertificateRequired && data.certificateType === 2 && (
                       <div className="flex flex-col gap-2 pt-2 border-t border-slate-200">
-                        {data.issuedCertificateGuid ? (
+                        {Boolean(data.issuedCertificateGuid) ? (
                           <button
                             type="button"
                             onClick={() => setIsPrintCertModalOpen(true)}
@@ -360,10 +360,10 @@ export default function RtsApplicationDetails({
                           <button
                             type="button"
                             onClick={() => setIsManualCertModalOpen(true)}
-                            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition"
+                            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#4b70a6] hover:bg-[#3d5a8a] text-white rounded-xl text-xs font-bold shadow-xs transition"
                           >
                             <Upload className="h-4 w-4" />
-                            प्रमाणपत्र अपलोड करा (Upload Certificate)
+                            मॅन्युअल प्रमाणपत्र अपलोड करा (Upload Certificate)
                           </button>
                         )}
                       </div>

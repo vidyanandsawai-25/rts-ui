@@ -870,6 +870,19 @@ export default function RtsApplicationDashboard({
         data={drawer?.mode === 'fullDetail' ? drawer.data : null}
         onClose={() => updateDrawerUrl({ fullDetail: '', doc: '' })}
         onOpenDocument={openDocument}
+        onProcess={() => {
+          if (drawer?.mode !== 'fullDetail') return;
+          const currentStage = drawer.data.stages?.approvalStages.find((s) => s.isCurrentStage);
+          const stageName = currentStage?.stageName;
+          if (!stageName) return;
+          const parentUrl = `${pathname}?${new URLSearchParams(window.location.search).toString()}`;
+          window.sessionStorage.setItem('rts-application-process-parent', parentUrl);
+          updateDrawerUrl({
+            fullDetail: '',
+            process: `${drawer.record.applicationId}-${toApplicationFilterSlug(stageName)}`,
+            doc: '',
+          });
+        }}
       />
 
       <RtsApplicationProcessDrawer

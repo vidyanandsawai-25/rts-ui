@@ -18,7 +18,6 @@ import {
   Paperclip,
   Printer,
   Shield,
-  Sparkles,
   Upload,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -63,7 +62,9 @@ interface RtsApplicationFullDetailViewProps {
   data: RtsApplicationFullDetailData | null;
   onClose: () => void;
   onOpenDocument: (documentGuid: string) => void;
+  onProcess?: () => void;
 }
+
 
 interface DisplayDocument {
   id: number;
@@ -103,6 +104,7 @@ export default function RtsApplicationFullDetailView({
   data,
   onClose,
   onOpenDocument,
+  onProcess,
 }: RtsApplicationFullDetailViewProps) {
   const t = useTranslations('rts.applicationDashboard.processDrawer');
   const tCommon = useTranslations('common');
@@ -284,11 +286,25 @@ export default function RtsApplicationFullDetailView({
               {isApproved &&
                 data?.details?.isCertificateRequired !== false &&
                 data?.details?.certificateType !== 0 && (
-                (() => {
-                  const isManualType = data?.details?.certificateType === 2;
-                  const hasCertificate = Boolean(data?.details?.issuedCertificateGuid);
+                  (() => {
+                    const isManual = data?.details?.certificateType === 2;
+                    const hasCertificate = Boolean(data?.details?.issuedCertificateGuid);
 
-                  if (isManualType && !hasCertificate) {
+                    if (hasCertificate || !isManual) {
+                      return (
+                        <Button
+                          type="button"
+                          icon={FileCheck2}
+                          size="xs"
+                          variant="success"
+                          onClick={() => setIsPrintCertModalOpen(true)}
+                          className="rounded-lg px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          {t('viewCertificate')}
+                        </Button>
+                      );
+                    }
+
                     return (
                       <Button
                         type="button"
@@ -301,36 +317,19 @@ export default function RtsApplicationFullDetailView({
                         {t('uploadCertificate')}
                       </Button>
                     );
-                  }
-
-                  if (!isManualType && !hasCertificate) {
-                    return (
-                      <Button
-                        type="button"
-                        icon={Sparkles}
-                        size="xs"
-                        variant="primary"
-                        onClick={() => setIsCertModalOpen(true)}
-                        className="rounded-lg px-3 text-xs font-bold"
-                      >
-                        {t('issueCertificate')}
-                      </Button>
-                    );
-                  }
-
-                  return (
-                    <Button
-                      type="button"
-                      icon={FileCheck2}
-                      size="xs"
-                      variant="success"
-                      onClick={() => setIsPrintCertModalOpen(true)}
-                      className="rounded-lg px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
-                    >
-                      {t('viewCertificate')}
-                    </Button>
-                  );
-                })()
+                  })()
+                )}
+              {!isApproved && onProcess && (
+                <Button
+                  type="button"
+                  icon={Shield}
+                  size="xs"
+                  variant="primary"
+                  onClick={onProcess}
+                  className="rounded-lg px-3 text-xs font-bold"
+                >
+                  {t('processButton')}
+                </Button>
               )}
             </div>
             <Button variant="secondary" onClick={onClose} size="xs" className="rounded-lg px-5 text-xs font-bold">
