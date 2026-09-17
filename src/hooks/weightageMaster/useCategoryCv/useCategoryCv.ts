@@ -134,6 +134,12 @@ export function useCategoryCv({
 
     const refreshPage = (): void => router.refresh();
 
+    useEffect(() => {
+        setSelectedYear(currentSelectedYear);
+        setTypeOfUseId(currentTypeOfUse);
+        setSelectedTypeId(currentTypeOfUse ? Number(currentTypeOfUse) : null);
+    }, [currentSelectedYear, currentTypeOfUse, setSelectedYear, setTypeOfUseId, setSelectedTypeId]);
+
     // Specific change handlers
     const handleAssessmentYearChange = (value: string): void => {
         setSelectedYear(value);
@@ -142,14 +148,14 @@ export function useCategoryCv({
 
     const handleTypeOfUseChange = (value: string): void => {
         setTypeOfUseId(value);
-        setSelectedTypeId(Number(value));
-        router.push(buildUrl({ page: 1, typeOfUseId: value }));
+        setSelectedTypeId(value ? Number(value) : null);
+        router.push(buildUrl({ page: 1, leftPage: 1, typeOfUseId: value }));
     };
 
     const handleTypeRowClick = (row: UseType): void => {
         setSelectedTypeId(row.id);
         setTypeOfUseId(String(row.id));
-        router.push(buildUrl({ page: 1, typeOfUseId: String(row.id) }));
+        router.push(buildUrl({ page: 1, leftPage: 1, typeOfUseId: String(row.id) }));
     };
 
     const handleSort = (columnKey: string) => {
