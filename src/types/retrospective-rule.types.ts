@@ -28,6 +28,19 @@ export interface RetrospectiveRule {
   commonTaxationDescription: string;
   unauthorizedPenalty: string;
   status: RuleStatus;
+  priorityNo?: number;
+  matchType?: string;
+  isFallbackRule?: boolean;
+  authorizationStatus?: string;
+  legalCapEnabled?: boolean;
+  legalCapYears?: number;
+  noticeDays?: number;
+  versionNo?: string;
+  resolutionRef?: string | null;
+  effectiveFrom?: string;
+  effectiveTo?: string | null;
+  remarks?: string | null;
+  isActive?: boolean;
   availableEvidence?: EvidenceItemCode[];
   unavailableEvidence?: EvidenceItemCode[];
   compareEvidenceDates?: string;
@@ -169,24 +182,39 @@ export interface RuleLibraryCommonTaxation {
   percentageModeLabel: string;
 }
 
-export interface RuleLibraryApiResponse {
-  success: boolean;
-  message?: string;
-  items: {
-    commonTaxation?: RuleLibraryCommonTaxation;
-    rules?: {
-      items: RuleLibraryApiItem[];
-      totalCount: number;
-      pageNumber: number;
-      pageSize: number;
-      totalPages: number;
-      hasPrevious: boolean;
-      hasNext: boolean;
-    };
-  };
-  errors?: unknown;
-  correlationId?: string | null;
+export interface RetrospectiveRuleMasterItem {
+  id: number;
+  ruleCode: string;
+  ruleName: string;
+  ruleDescription: string;
+  priorityNo: number;
+  matchType: string;
+  isFallbackRule: boolean;
+  ruleStatus: string;
+  authorizationStatus: string | null;
+  legalCapEnabled: boolean;
+  legalCapYears: number;
+  noticeDays: number;
+  versionNo: string;
+  resolutionRef: string | null;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  remarks: string | null;
+  isActive: boolean;
+  createdDate: string;
+  updatedDate: string | null;
 }
+
+export interface RetrospectiveRuleMasterListResponse {
+  items: RetrospectiveRuleMasterItem[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+
 
 export interface RuleDetailEvidenceCondition {
   evidenceTypeId: number;
@@ -297,9 +325,29 @@ export interface RetrospectiveRuleDetailApiResponse {
   correlationId?: string | null;
 }
 
+export interface InitialTaxationData {
+  rateModes?: PolicyModeItem[];
+  percentageModes?: PolicyModeItem[];
+  activePolicy?: {
+    rateMode: string;
+    percentageMode: string;
+    [key: string]: unknown;
+  } | null;
+}
+
+export interface InitialActionData {
+  taxStartModes?: RuleActionModeItem[];
+  useDateOptions?: RuleActionModeItem[];
+  limitTypes?: RuleActionModeItem[];
+  taxCalculationModes?: RuleActionModeItem[];
+}
+
 export interface RetrospectiveRuleLibraryProps {
   initialRules?: RetrospectiveRule[];
   initialStats?: RetrospectiveRuleStats;
   fetchError?: string;
   statusCode?: number;
+  initialTaxationData?: InitialTaxationData;
+  initialActionData?: InitialActionData;
+  initialComparatorCodes?: RuleComparatorCodeItem[];
 }

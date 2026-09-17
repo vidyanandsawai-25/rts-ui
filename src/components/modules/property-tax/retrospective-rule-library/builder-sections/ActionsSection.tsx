@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Zap } from 'lucide-react';
 import { Badge } from '@/components/common';
 import { useRetrospectiveRuleActions } from '@/hooks/retrospective-rule-library/useRetrospectiveRuleActions';
-import type { EvidenceItemCode } from '@/types/retrospective-rule.types';
+import type { EvidenceItemCode, InitialActionData } from '@/types/retrospective-rule.types';
 
 import { RetrospectiveTaxForm } from './actions-subcomponents/RetrospectiveTaxForm';
 import { SplitPeriodTaxSection } from './actions-subcomponents/SplitPeriodTaxSection';
@@ -15,6 +15,7 @@ import { ActionsRuleSummary } from './actions-subcomponents/ActionsRuleSummary';
 interface ActionsSectionProps {
   ruleCode?: string;
   ruleName?: string;
+  initialData?: InitialActionData;
 
   // Row 1 fields
   taxStartsFrom: string;
@@ -85,6 +86,7 @@ export const ActionsSection: React.FC<ActionsSectionProps> = memo((props) => {
     availableEvidence,
     compareEvidenceDates,
     formErrors,
+    initialData,
   } = props;
 
   const t = useTranslations('retrospectiveRuleLibrary.builder.actions');
@@ -110,7 +112,12 @@ export const ActionsSection: React.FC<ActionsSectionProps> = memo((props) => {
     limitTypes,
     taxCalculationModes,
     isLoading,
-  } = useRetrospectiveRuleActions();
+  } = useRetrospectiveRuleActions({
+    initialTaxStartModes: initialData?.taxStartModes,
+    initialUseDateOptions: initialData?.useDateOptions,
+    initialLimitTypes: initialData?.limitTypes,
+    initialTaxCalculationModes: initialData?.taxCalculationModes,
+  });
 
   // Resolve selection values matching code or label
   const selectedTaxStartValue = useMemo(() => {

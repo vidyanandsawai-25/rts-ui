@@ -74,52 +74,130 @@ describe('RetrospectiveRuleLibrary Component', () => {
     ).toBeInTheDocument();
   });
 
-  const mockRules = [
+  const mockMasterRules = [
     {
       id: '1',
-      ruleCode: 'FUR-01',
-      ruleTitle: '6 Years From Today',
-      conditionDescription: 'When actual occupancy date is Not Available',
+      ruleCode: 'THA-09',
+      ruleTitle: 'OC + CC - 1.5x from CC to OC, then 1x',
+      conditionDescription: 'OC or CC is available and NONE',
       evidenceCategory: 'Authorized: OC or CC available' as const,
-      startLogicTitle: 'Occupancy Date = Today - 6 Years',
-      startLogicBoundary: '01/07/2021',
+      startLogicTitle: '6 Years Legal Cap • From 25-Aug-2026',
+      startLogicBoundary: 'Effective: 25-Aug-2026',
       commonTaxationBadge: 'Current-year for all years',
       commonTaxationDescription: 'Current-year percentage for all years',
       unauthorizedPenalty: 'Not applicable — OC/CC available',
       status: 'Active' as const,
+      priorityNo: 1,
+      authorizationStatus: 'AUTHORIZED',
     },
     {
       id: '2',
-      ruleCode: 'FUR-02',
-      ruleTitle: 'CC Date Minus 6 Months',
-      conditionDescription: 'When occupancy date is not available but CC date is available',
+      ruleCode: 'THA-01',
+      ruleTitle: 'OC evidence - start from OC date',
+      conditionDescription: 'Only OC is available. Retrospective tax applicable from OC date.',
       evidenceCategory: 'Authorized: OC or CC available' as const,
-      startLogicTitle: 'Occupancy Date = CC Date - 6 Months',
-      startLogicBoundary: '01/07/2021',
+      startLogicTitle: 'OC evidence available.',
+      startLogicBoundary: 'Effective: 01-Apr-2026',
       commonTaxationBadge: 'Current-year for all years',
       commonTaxationDescription: 'Current-year percentage for all years',
       unauthorizedPenalty: 'Not applicable — OC/CC available',
       status: 'Active' as const,
+      priorityNo: 10,
+      authorizationStatus: 'AUTHORIZED',
+    },
+    {
+      id: '8',
+      ruleCode: 'THA-07',
+      ruleTitle: 'Change detection fallback',
+      conditionDescription: 'OC, CC and electricity are not available. Change detection date is available.',
+      evidenceCategory: 'Unauthorized: OC & CC unavailable' as const,
+      startLogicTitle: 'Fallback rule based on change detection.',
+      startLogicBoundary: 'Effective: 01-Apr-2026',
+      commonTaxationBadge: 'Current-year for all years',
+      commonTaxationDescription: 'Current-year percentage for all years',
+      unauthorizedPenalty: 'Apply penalty as per the Act',
+      status: 'Review' as const,
+      priorityNo: 70,
+      authorizationStatus: 'UNAUTHORIZED',
     },
   ];
 
-  it('renders default date rules table section correctly', () => {
+  it('renders default date rules table with master API mapping correctly', () => {
     render(
       <RetrospectiveRuleLibraryClient
-        initialRules={mockRules}
+        initialRules={mockMasterRules}
         initialStats={INITIAL_RETROSPECTIVE_STATS}
       />
     );
 
     expect(screen.getAllByText('Default Date Rules')[0]).toBeInTheDocument();
-    expect(screen.getByText('6 Years From Today')).toBeInTheDocument();
-    expect(screen.getByText('CC Date Minus 6 Months')).toBeInTheDocument();
+    expect(screen.getByText('OC + CC - 1.5x from CC to OC, then 1x')).toBeInTheDocument();
+    expect(screen.getByText('OC evidence - start from OC date')).toBeInTheDocument();
+    expect(screen.getByText('Change detection fallback')).toBeInTheDocument();
+  });
+
+  it('filters rules by search query correctly', () => {
+    render(
+      <RetrospectiveRuleLibraryClient
+        initialRules={mockMasterRules}
+        initialStats={INITIAL_RETROSPECTIVE_STATS}
+      />
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search rule, evidence or result...');
+    fireEvent.change(searchInput, { target: { value: 'THA-07' } });
+
+    expect(screen.getByText('Change detection fallback')).toBeInTheDocument();
+    expect(screen.queryByText('OC + CC - 1.5x from CC to OC, then 1x')).not.toBeInTheDocument();
+  });
+
+  it('renders error banner when fetchError is provided', () => {
+    render(
+      <RetrospectiveRuleLibraryClient
+        initialRules={[]}
+        initialStats={INITIAL_RETROSPECTIVE_STATS}
+        fetchError="Database connection timeout"
+      />
+    );
+
+    expect(screen.getByText(/Database connection timeout/i)).toBeInTheDocument();
+  });
+
+  it('filters out rules where isActive is false', () => {
+    const rulesWithInactive = [
+      ...mockMasterRules,
+      {
+        id: '44',
+        ruleCode: 'FUR-022',
+        ruleTitle: 'Testing Inactive Rule',
+        conditionDescription: 'OC is available and NONE',
+        evidenceCategory: 'Authorized: OC or CC available' as const,
+        startLogicTitle: '6 Years Legal Cap',
+        startLogicBoundary: 'Effective: 01-Apr-2026',
+        commonTaxationBadge: 'Current-year for all years',
+        commonTaxationDescription: 'Current-year percentage for all years',
+        unauthorizedPenalty: 'Not applicable',
+        status: 'Draft' as const,
+        priorityNo: 1,
+        isActive: false,
+      },
+    ];
+
+    render(
+      <RetrospectiveRuleLibraryClient
+        initialRules={rulesWithInactive}
+        initialStats={INITIAL_RETROSPECTIVE_STATS}
+      />
+    );
+
+    expect(screen.queryByText('Testing Inactive Rule')).not.toBeInTheDocument();
+    expect(screen.getByText('OC + CC - 1.5x from CC to OC, then 1x')).toBeInTheDocument();
   });
 
   it('opens Rule Builder screen when edit button in Default Date Rules table is clicked', async () => {
     render(
       <RetrospectiveRuleLibraryClient
-        initialRules={mockRules}
+        initialRules={mockMasterRules}
         initialStats={INITIAL_RETROSPECTIVE_STATS}
       />
     );

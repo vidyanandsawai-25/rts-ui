@@ -1,8 +1,10 @@
 import type {
   RetrospectiveRule,
   RetrospectiveRuleStats,
-  RuleLibraryApiItem,
-  RuleLibraryApiResponse,
+  EvidenceCategory,
+  RuleStatus,
+  RetrospectiveRuleMasterItem,
+  RetrospectiveRuleMasterListResponse,
   RetrospectiveRuleMasterDetail,
   RetrospectiveRuleDetailApiResponse,
 } from '@/types/retrospective-rule.types';
@@ -14,8 +16,112 @@ export const INITIAL_RETROSPECTIVE_STATS: RetrospectiveRuleStats = {
   importedRulesCount: 0,
   readyActiveCount: 0,
   needReviewCount: 0,
-  lookbackGuardrailYears: 6,
+  lookbackGuardrailYears: 0,
 };
+
+function formatDefaultDateLogic(item: RetrospectiveRuleMasterItem): string {
+  if (item.remarks && !item.remarks.toLowerCase().includes('saved via')) {
+    return item.remarks;
+  }
+  const parts: string[] = [];
+  if (item.legalCapYears) {
+    parts.push(`${item.legalCapYears} Years Legal Cap`);
+  }
+  if (item.noticeDays && item.noticeDays > 0) {
+    parts.push(`${item.noticeDays}d notice`);
+  }
+  if (item.effectiveFrom) {
+    try {
+      const d = new Date(item.effectiveFrom);
+      if (!isNaN(d.getTime())) {
+        const formattedDate = d.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        });
+        parts.push(`From ${formattedDate}`);
+      }
+    } catch {
+      // ignore invalid date
+    }
+  }
+  return parts.length > 0 ? parts.join(' • ') : 'Standard Lookback Rule';
+}
+
+function mapMasterItemToRetrospectiveRule(item: RetrospectiveRuleMasterItem): RetrospectiveRule {
+  const isAuthorized =
+    item.authorizationStatus === 'AUTHORIZED' ||
+    (!item.authorizationStatus &&
+      (item.ruleDescription?.toUpperCase().includes('OC') ||
+        item.ruleDescription?.toUpperCase().includes('CC')));
+
+  const evidenceCategory: EvidenceCategory = isAuthorized
+    ? 'Authorized: OC or CC available'
+    : 'Unauthorized: OC & CC unavailable';
+
+  const startLogicTitle = formatDefaultDateLogic(item);
+
+  let formattedDate = '';
+  if (item.effectiveFrom) {
+    try {
+      const d = new Date(item.effectiveFrom);
+      if (!isNaN(d.getTime())) {
+        formattedDate = d.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        });
+      }
+    } catch {
+      formattedDate = item.effectiveFrom;
+    }
+  }
+
+  const startLogicBoundary = formattedDate
+    ? `Effective: ${formattedDate}`
+    : `Legal Cap: ${item.legalCapYears || 6} yrs`;
+
+  // Normalize status
+  let status: RuleStatus = 'Active';
+  if (item.ruleStatus) {
+    const s = String(item.ruleStatus).toLowerCase();
+    if (s.includes('inactive') || !item.isActive) status = 'Inactive';
+    else if (s.includes('review') || s.includes('clarification') || s.includes('needsclarification')) status = 'Review';
+    else if (s.includes('draft')) status = 'Draft';
+    else status = 'Active';
+  } else if (!item.isActive) {
+    status = 'Inactive';
+  }
+
+  return {
+    id: String(item.id),
+    ruleCode: item.ruleCode || `RULE-${item.id}`,
+    ruleTitle: item.ruleName || item.ruleCode,
+    conditionDescription: item.ruleDescription || 'No condition specified',
+    evidenceCategory,
+    startLogicTitle,
+    startLogicBoundary,
+    commonTaxationBadge: 'Current-year for all years',
+    commonTaxationDescription: 'Current-year percentage for all years',
+    unauthorizedPenalty: isAuthorized
+      ? 'Not applicable — OC/CC available'
+      : 'Apply penalty as per the Act',
+    status,
+    priorityNo: item.priorityNo,
+    matchType: item.matchType,
+    isFallbackRule: item.isFallbackRule,
+    authorizationStatus: item.authorizationStatus ?? undefined,
+    legalCapEnabled: item.legalCapEnabled,
+    legalCapYears: item.legalCapYears,
+    noticeDays: item.noticeDays,
+    versionNo: item.versionNo,
+    resolutionRef: item.resolutionRef,
+    effectiveFrom: item.effectiveFrom,
+    effectiveTo: item.effectiveTo,
+    remarks: item.remarks,
+    isActive: item.isActive,
+  };
+}
 
 export async function fetchRetrospectiveRulesServer(): Promise<{
   data: RetrospectiveRule[];
@@ -24,26 +130,22 @@ export async function fetchRetrospectiveRulesServer(): Promise<{
   error?: string;
 }> {
   try {
-    const res = await fetchWithCertSupport<RuleLibraryApiResponse>('/RuleLibrary?pageSize=100&PageSize=100');
-    if (res.success && res.data?.items?.rules?.items) {
-      const mappedRules: RetrospectiveRule[] = res.data.items.rules.items.map((item: RuleLibraryApiItem) => {
-        const isAuthorized =
-          item.authorizationStatus === 'AUTHORIZED' ||
-          (item.conditionTag && item.conditionTag.toLowerCase().includes('authorized'));
-        return {
-          id: String(item.id),
-          ruleCode: item.ruleCode || `RULE-${item.id}`,
-          ruleTitle: item.ruleName,
-          conditionDescription: item.conditionDescription,
-          evidenceCategory: isAuthorized ? 'Authorized: OC or CC available' : 'Unauthorized: OC & CC unavailable',
-          startLogicTitle: item.startLogicSummary,
-          startLogicBoundary: item.startLogicBoundary,
-          commonTaxationBadge: res.data?.items?.commonTaxation?.rateModeLabel || 'Current-year for all years',
-          commonTaxationDescription: res.data?.items?.commonTaxation?.percentageModeLabel || 'Current-year percentage for all years',
-          unauthorizedPenalty: item.penaltySummary || (isAuthorized ? 'Not applicable — OC/CC available' : 'Apply penalty as per the Act'),
-          status: item.ruleStatus || 'Active',
-        };
-      });
+    const res = await fetchWithCertSupport<RetrospectiveRuleMasterListResponse | RetrospectiveRuleMasterItem[]>(
+      '/RetrospectiveRuleMaster?PageSize=-1'
+    );
+
+    if (res.success && res.data) {
+      let rawItems: RetrospectiveRuleMasterItem[] = [];
+
+      if (Array.isArray(res.data)) {
+        rawItems = res.data;
+      } else if (res.data && Array.isArray((res.data as RetrospectiveRuleMasterListResponse).items)) {
+        rawItems = (res.data as RetrospectiveRuleMasterListResponse).items;
+      }
+
+      // Filter only rules where isActive is true
+      const activeRawItems = rawItems.filter((item) => item.isActive === true);
+      const mappedRules = activeRawItems.map(mapMasterItemToRetrospectiveRule);
 
       const activeCount = mappedRules.filter((r) => r.status === 'Active').length;
       const reviewCount = mappedRules.filter((r) => r.status === 'Review' || r.status === 'Draft').length;
@@ -51,7 +153,7 @@ export async function fetchRetrospectiveRulesServer(): Promise<{
       return {
         data: mappedRules,
         stats: {
-          importedRulesCount: res.data.items.rules.totalCount || mappedRules.length,
+          importedRulesCount: mappedRules.length,
           readyActiveCount: activeCount,
           needReviewCount: reviewCount,
           lookbackGuardrailYears: 6,

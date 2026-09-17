@@ -7,6 +7,8 @@ import { IndianRupee, Loader2 } from 'lucide-react';
 import { SaveButton, Badge } from '@/components/common';
 import { useTaxationModes } from '@/hooks/retrospective-rule-library/useTaxationModes';
 
+import type { InitialTaxationData } from '@/types/retrospective-rule.types';
+
 interface TaxationSectionProps {
   taxationRate: string;
   onTaxationRateChange: (rate: string) => void;
@@ -14,6 +16,7 @@ interface TaxationSectionProps {
   onTaxPercentageChange: (pct: string) => void;
   onSaveTaxation?: () => void;
   mode?: 'create' | 'edit';
+  initialData?: InitialTaxationData;
 }
 
 export const TaxationSection: React.FC<TaxationSectionProps> = memo(({
@@ -23,9 +26,14 @@ export const TaxationSection: React.FC<TaxationSectionProps> = memo(({
   onTaxPercentageChange,
   onSaveTaxation,
   mode = 'create',
+  initialData,
 }) => {
   const t = useTranslations('retrospectiveRuleLibrary.builder.taxation');
-  const { rateModes, percentageModes, activePolicy, isConfigured, isLoading, error } = useTaxationModes();
+  const { rateModes, percentageModes, activePolicy, isConfigured, isLoading, error } = useTaxationModes({
+    initialRateModes: initialData?.rateModes,
+    initialPercentageModes: initialData?.percentageModes,
+    initialActivePolicy: initialData?.activePolicy,
+  });
   const isEditMode = mode === 'edit' || isConfigured;
 
   // Auto-populate parent state from active backend policy if available

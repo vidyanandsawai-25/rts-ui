@@ -25,14 +25,25 @@ export interface UseTaxationModesReturn {
   refetchModes: () => Promise<void>;
 }
 
-export function useTaxationModes(): UseTaxationModesReturn {
-  const [rateModes, setRateModes] = useState<PolicyModeItem[]>([]);
-  const [percentageModes, setPercentageModes] = useState<PolicyModeItem[]>([]);
-  const [activePolicy, setActivePolicy] = useState<TaxPolicyItem | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export interface UseTaxationModesOptions {
+  initialRateModes?: PolicyModeItem[];
+  initialPercentageModes?: PolicyModeItem[];
+  initialActivePolicy?: TaxPolicyItem | null;
+}
+
+export function useTaxationModes(options?: UseTaxationModesOptions): UseTaxationModesReturn {
+  const hasInitialData = Boolean(
+    (options?.initialRateModes && options.initialRateModes.length > 0) ||
+    (options?.initialPercentageModes && options.initialPercentageModes.length > 0)
+  );
+
+  const [rateModes, setRateModes] = useState<PolicyModeItem[]>(options?.initialRateModes || []);
+  const [percentageModes, setPercentageModes] = useState<PolicyModeItem[]>(options?.initialPercentageModes || []);
+  const [activePolicy, setActivePolicy] = useState<TaxPolicyItem | null>(options?.initialActivePolicy || null);
+  const [isLoading, setIsLoading] = useState<boolean>(!hasInitialData);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchModes = useCallback(async () => {
+  const refetchModes = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -61,48 +72,42 @@ export function useTaxationModes(): UseTaxationModesReturn {
   }, []);
 
   useEffect(() => {
-    let isCancelled = false;
-    queueMicrotask(() => {
-      if (!isCancelled) {
-        setIsLoading(true);
-        setError(null);
-      }
-    });
-
-    Promise.all([
-      getRateModesAction(),
-      getPercentageModesAction(),
-      getTaxPolicyAction(),
-    ])
-      .then(([rateRes, percentageRes, policyRes]) => {
-        if (isCancelled) return;
-        if (rateRes.success && rateRes.data && rateRes.data.length > 0) {
-          setRateModes(rateRes.data);
-        }
-        if (percentageRes.success && percentageRes.data && percentageRes.data.length > 0) {
-          setPercentageModes(percentageRes.data);
-        }
-        if (policyRes.success && policyRes.data) {
-          setActivePolicy(policyRes.data as TaxPolicyItem);
-        } else {
-          setActivePolicy(null);
-        }
-      })
-      .catch((err: unknown) => {
-        if (!isCancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to fetch taxation modes');
-        }
-      })
-      .finally(() => {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
-      });
-
+    let isMounted = true;
+    if (!hasInitialData) {
+      Promise.all([
+        getRateModesAction(),
+        getPercentageModesAction(),
+        getTaxPolicyAction(),
+      ])
+        .then(([rateRes, percentageRes, policyRes]) => {
+          if (!isMounted) return;
+          if (rateRes.success && rateRes.data && rateRes.data.length > 0) {
+            setRateModes(rateRes.data);
+          }
+          if (percentageRes.success && percentageRes.data && percentageRes.data.length > 0) {
+            setPercentageModes(percentageRes.data);
+          }
+          if (policyRes.success && policyRes.data) {
+            setActivePolicy(policyRes.data as TaxPolicyItem);
+          } else {
+            setActivePolicy(null);
+          }
+        })
+        .catch((err: unknown) => {
+          if (isMounted) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch taxation modes');
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        });
+    }
     return () => {
-      isCancelled = true;
+      isMounted = false;
     };
-  }, []);
+  }, [hasInitialData]);
 
   return {
     rateModes,
@@ -111,6 +116,6 @@ export function useTaxationModes(): UseTaxationModesReturn {
     isConfigured: activePolicy !== null,
     isLoading,
     error,
-    refetchModes: fetchModes,
+    refetchModes,
   };
 }

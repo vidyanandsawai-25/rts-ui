@@ -16,7 +16,7 @@ export function useRuleEvidenceState(ruleId: string = '1'): UseRuleEvidenceState
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEvidenceState = useCallback(async () => {
+  const refetchEvidenceState = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -32,34 +32,25 @@ export function useRuleEvidenceState(ruleId: string = '1'): UseRuleEvidenceState
   }, [ruleId]);
 
   useEffect(() => {
-    let isCancelled = false;
-    queueMicrotask(() => {
-      if (!isCancelled) {
-        setIsLoading(true);
-        setError(null);
-      }
-    });
-
+    let isMounted = true;
     getRuleEvidenceStateAction(ruleId)
       .then((res) => {
-        if (isCancelled) return;
+        if (!isMounted) return;
         if (res.success && res.data && res.data.length > 0) {
           setEvidenceItems(res.data);
         }
       })
       .catch((err: unknown) => {
-        if (!isCancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to fetch evidence conditions');
-        }
+        if (!isMounted) return;
+        setError(err instanceof Error ? err.message : 'Failed to fetch evidence conditions');
       })
       .finally(() => {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
+        if (!isMounted) return;
+        setIsLoading(false);
       });
 
     return () => {
-      isCancelled = true;
+      isMounted = false;
     };
   }, [ruleId]);
 
@@ -67,6 +58,6 @@ export function useRuleEvidenceState(ruleId: string = '1'): UseRuleEvidenceState
     evidenceItems,
     isLoading,
     error,
-    refetchEvidenceState: fetchEvidenceState,
+    refetchEvidenceState,
   };
 }

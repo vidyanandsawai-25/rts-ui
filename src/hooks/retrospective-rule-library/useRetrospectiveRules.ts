@@ -31,6 +31,12 @@ export function useRetrospectiveRules({
   const [rules, setRules] = useState<RetrospectiveRule[]>(initialRules);
   const [stats, setStats] = useState<RetrospectiveRuleStats>(initialStats);
 
+  const [prevInitialRules, setPrevInitialRules] = useState(initialRules);
+  if (initialRules !== prevInitialRules) {
+    setPrevInitialRules(initialRules);
+    setRules(initialRules);
+  }
+
   // View state: 'library' or 'builder'
   const [viewMode, setViewMode] = useState<'library' | 'builder'>('library');
 
@@ -147,8 +153,8 @@ export function useRetrospectiveRules({
 
         setSelectedRule(fullRule);
       }
-    } catch (err) {
-      console.error('Failed to fetch rule detail for edit mode', err);
+    } catch {
+      // Fallback to basic rule already set
     }
   }, []);
 

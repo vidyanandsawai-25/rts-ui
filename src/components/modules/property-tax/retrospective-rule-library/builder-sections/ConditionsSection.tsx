@@ -13,7 +13,7 @@ import {
   Lightbulb,
   Lock,
 } from 'lucide-react';
-import type { EvidenceItemCode } from '@/types/retrospective-rule.types';
+import type { EvidenceItemCode, RuleComparatorCodeItem } from '@/types/retrospective-rule.types';
 
 import { Select } from '@/components/common';
 import { useRuleEvidenceState } from '@/hooks/retrospective-rule-library/useRuleEvidenceState';
@@ -31,6 +31,7 @@ interface ConditionsSectionProps {
   isAuthorized: boolean;
   formError?: string;
   compareDatesError?: string;
+  initialComparatorCodes?: RuleComparatorCodeItem[];
 }
 
 const getEvidenceIcon = (code: string) => {
@@ -55,10 +56,13 @@ export const ConditionsSection: React.FC<ConditionsSectionProps> = memo(({
   isAuthorized,
   formError,
   compareDatesError,
+  initialComparatorCodes,
 }) => {
   const t = useTranslations('retrospectiveRuleLibrary.builder.conditions');
   const { evidenceItems } = useRuleEvidenceState('1');
-  const { comparatorCodes, isLoading: isComparatorLoading } = useRuleComparatorCodes();
+  const { comparatorCodes, isLoading: isComparatorLoading } = useRuleComparatorCodes({
+    initialComparatorCodes,
+  });
 
   const displayList = React.useMemo(() => {
     return (evidenceItems || []).map((item) => ({
