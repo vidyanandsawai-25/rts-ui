@@ -40,6 +40,7 @@ interface MappedPropertiesExpandedRowProps {
   oldPropertyId?: number | null;
   propertyId?: number | null;
   wingDetailsId?: number | string | null;
+  societyDetailId?: number | string | null;
   variant?: 'survey' | 'existing';
   onViewDocument?: (guid: string, title?: string) => void;
 }
@@ -47,12 +48,14 @@ interface MappedPropertiesExpandedRowProps {
 const LABELS = {
   headerTitle: (len: number, total: number) => `Mapped New Properties (${len}${total > len ? ` of ${total}` : ''})`,
   scrollHint: 'Scroll horizontally/vertically to browse all records • Click row to show tax',
+  loading: 'Loading mapped properties...',
 };
 
 export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowProps> = ({
   oldPropertyId,
   propertyId,
   wingDetailsId,
+  societyDetailId,
   variant = 'survey',
   onViewDocument,
 }) => {
@@ -61,6 +64,9 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
   const resolvedWingDetailsId =
     wingDetailsId ??
     (searchParams.get('wingDetailsId') || searchParams.get('wingDetailId') || searchParams.get('WingDetailsId') || null);
+  const resolvedSocietyDetailId =
+    societyDetailId ??
+    (searchParams.get('societydetailid') || searchParams.get('societyDetailId') || searchParams.get('societyId') || null);
   const [loading, setLoading] = useState(() => Boolean(oldPropertyId && oldPropertyId > 0));
   const [items, setItems] = useState<MappedNewPropertyItem[]>([]);
   const [selectedPropId, setSelectedPropId] = useState<number | null>(null);
@@ -199,7 +205,7 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
         )}
       >
         <Loader2 className={cn('w-3.5 h-3.5 animate-spin', isExisting ? 'text-emerald-600' : 'text-blue-600')} />
-        <span>Loading mapped properties...</span>
+        <span>{LABELS.loading}</span>
       </div>
     );
   }
@@ -245,6 +251,8 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
         rvTotal={rvTotal}
         cvTaxes={cvTaxes}
         cvTotal={cvTotal}
+        wingDetailsId={resolvedWingDetailsId}
+        societyDetailId={resolvedSocietyDetailId}
       />
     </div>
   );

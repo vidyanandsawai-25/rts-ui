@@ -272,9 +272,15 @@ export async function launchPhotoPlanDrawingToolAction(
       }
     }
 
+    const effectiveCouncilName =
+      (councilName && councilName.trim() !== '' ? councilName : undefined) ??
+      process.env.NEXT_PUBLIC_COUNCIL_NAME ??
+      process.env.COUNCIL_NAME ??
+      '';
+
     const result = await photoPlanService.launchDrawingTool({
       propertyId,
-      councilName,
+      councilName: effectiveCouncilName,
       returnUrl,
       ptisUsername,
       ptisDisplayName,

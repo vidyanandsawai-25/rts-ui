@@ -26,6 +26,7 @@ export interface RuntimeConfig {
   authEnabled: boolean;
   featureAnalytics: boolean;
   featureDebug: boolean;
+  councilName?: string;
 }
 
 /**
@@ -37,6 +38,7 @@ const defaultConfig: RuntimeConfig = {
   authEnabled: false,
   featureAnalytics: false,
   featureDebug: false,
+  councilName: process.env.NEXT_PUBLIC_COUNCIL_NAME || process.env.COUNCIL_NAME || 'JALNA_survey',
 };
 
 /**
@@ -55,6 +57,11 @@ export function getServerRuntimeConfig(): RuntimeConfig {
     authEnabled: process.env.RUNTIME_AUTH_ENABLED === 'true',
     featureAnalytics: process.env.RUNTIME_FEATURE_ANALYTICS === 'true',
     featureDebug: process.env.RUNTIME_FEATURE_DEBUG === 'true',
+    councilName:
+      process.env.RUNTIME_COUNCIL_NAME ||
+      process.env.NEXT_PUBLIC_COUNCIL_NAME ||
+      process.env.COUNCIL_NAME ||
+      defaultConfig.councilName,
   };
 }
 

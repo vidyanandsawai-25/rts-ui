@@ -24,6 +24,8 @@ interface MappedPropertiesSubTableProps {
   rvTotal?: number | null;
   cvTaxes?: TaxAmountItem[];
   cvTotal?: number | null;
+  wingDetailsId?: number | string | null;
+  societyDetailId?: number | string | null;
 }
 
 const LABELS = {
@@ -41,6 +43,7 @@ const LABELS = {
   owner: 'Owner',
   img: 'IMG',
   plan: 'PLAN',
+  loadingMore: 'Loading more records...',
 };
 
 export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> = ({
@@ -58,22 +61,75 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
   rvTotal = null,
   cvTaxes = [],
   cvTotal = null,
+  wingDetailsId,
+  societyDetailId,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const locale = useLocale();
   const isExisting = variant === 'existing';
 
-  const handleRedirectToPtis = (item: MappedNewPropertyItem) => {
-    const propId = item.id || item.pdnId;
+  const handleRedirectToQuickDataEntry = (item: MappedNewPropertyItem) => {
+    const rawItem = item as unknown as Record<string, unknown>;
+    const propId = item.id || item.pdnId || (rawItem.propertyId ? Number(rawItem.propertyId) : null);
+    if (!propId) return;
+
     const params = new URLSearchParams();
-    if (propId) params.set('propertyId', String(propId));
+
     const wardNo = item.wardNo || searchParams.get('wardNo');
     if (wardNo) params.set('wardNo', String(wardNo));
+
     const wardId = item.wardId || searchParams.get('wardId');
     if (wardId) params.set('wardId', String(wardId));
-    if (item.propertyNo) params.set('propertyNo', String(item.propertyNo));
-    router.push(`/${locale}/property-tax/ptis?${params.toString()}`);
+
+    const propertyNo = item.propertyNo || searchParams.get('propertyNo');
+    if (propertyNo) params.set('propertyNo', String(propertyNo));
+
+    const rawPart = (
+      item.partitionNo ??
+      (rawItem.partitionNo as string | number | undefined) ??
+      (rawItem.partNo as string | number | undefined) ??
+      (rawItem.partition as string | number | undefined) ??
+      searchParams.get('partitionNo') ??
+      ''
+    ).toString().trim();
+    const partNo = rawPart !== '' && rawPart !== '-' ? rawPart : '';
+    if (partNo) params.set('partitionNo', partNo);
+
+    const resolvedWingDetailId =
+      item.wingDetailId ??
+      (rawItem.wingDetailId as string | number | undefined) ??
+      (rawItem.wingDetailsId as string | number | undefined) ??
+      wingDetailsId ??
+      searchParams.get('wingDetailId') ??
+      searchParams.get('wingDetailsId') ??
+      searchParams.get('WingDetailsId') ??
+      searchParams.get('wingdetailid');
+    if (resolvedWingDetailId) {
+      params.set('wingDetailId', String(resolvedWingDetailId));
+      params.set('wingdetailid', String(resolvedWingDetailId));
+    }
+
+    const resolvedSocietyDetailId =
+      (rawItem.societyDetailId as string | number | undefined) ??
+      (rawItem.societydetailid as string | number | undefined) ??
+      (rawItem.societyId as string | number | undefined) ??
+      societyDetailId ??
+      searchParams.get('societyDetailId') ??
+      searchParams.get('societydetailid') ??
+      searchParams.get('societyId');
+    if (resolvedSocietyDetailId) {
+      params.set('societydetailid', String(resolvedSocietyDetailId));
+      params.set('societyDetailId', String(resolvedSocietyDetailId));
+    }
+
+    params.set('propertyId', String(propId));
+    params.set('returnTab', 'propertydetails');
+    params.set('hideWing', 'true');
+    params.set('hideSociety', 'true');
+    params.set('fromFooterEdit', 'true');
+
+    router.push(`/${locale}/property-tax/ptis/QuickDataEntry/${propId}/Property?${params.toString()}`);
   };
 
   return (
@@ -159,7 +215,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleRedirectToPtis(m);
+                          handleRedirectToQuickDataEntry(m);
                         }}
                         className={cn(
                           'p-1 rounded-md transition-all border cursor-pointer',
@@ -167,7 +223,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
                             ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-300'
                             : 'bg-sky-100 text-sky-700 hover:bg-sky-200 border-sky-300'
                         )}
-                        title="Open Individual PTIS Page"
+                        title="Edit in Quick Data Entry"
                       >
                         <Edit2 className="w-3 h-3" />
                       </button>
@@ -248,7 +304,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
       {isLoadingMore && (
         <div className="py-1.5 flex items-center justify-center gap-1.5 text-[10px] text-zinc-500 bg-slate-50 border-t border-zinc-100">
           <Loader2 className={cn('w-3 h-3 animate-spin', isExisting ? 'text-emerald-600' : 'text-sky-600')} />
-          <span>Loading more records...</span>
+          <span>{LABELS.loadingMore}</span>
         </div>
       )}
     </div>

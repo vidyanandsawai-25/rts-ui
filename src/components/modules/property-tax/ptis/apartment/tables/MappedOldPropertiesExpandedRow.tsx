@@ -24,6 +24,8 @@ const LABELS = {
   oldRv: 'Old RV (₹)',
   oldTax: 'Old Tax (₹)',
   owner: 'Owner',
+  loading: 'Loading mapped properties...',
+  loadingMore: 'Loading more records...',
 };
 
 export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpandedRowProps> = ({
@@ -91,7 +93,7 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
     return (
       <div className="flex items-center gap-2 py-2 px-3 text-xs font-sans rounded-md border shadow-2xs sticky left-1 w-fit bg-emerald-50/80 border-emerald-200 text-emerald-900">
         <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
-        <span>Loading mapped properties...</span>
+        <span>{LABELS.loading}</span>
       </div>
     );
   }
@@ -220,7 +222,7 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
         {loadingMore && (
           <div className="py-1.5 flex items-center justify-center gap-1.5 text-[10px] text-zinc-500 bg-slate-50 border-t border-zinc-100">
             <Loader2 className="w-3 h-3 animate-spin text-emerald-600" />
-            <span>Loading more records...</span>
+            <span>{LABELS.loadingMore}</span>
           </div>
         )}
       </div>

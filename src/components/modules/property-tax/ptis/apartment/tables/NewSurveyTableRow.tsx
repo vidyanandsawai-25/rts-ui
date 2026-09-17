@@ -125,6 +125,11 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
               oldPropertyId={oldPropertyId}
               propertyId={unit.propertyId ?? (raw?.id ? Number(raw.id) : null)}
               wingDetailsId={wingDetailsId}
+              societyDetailId={
+                (rawAny?.societyDetailId ? Number(rawAny.societyDetailId) : null) ??
+                (rawAny?.societydetailid ? Number(rawAny.societydetailid) : null) ??
+                (rawAny?.societyId ? Number(rawAny.societyId) : null)
+              }
               variant="survey"
               onViewDocument={onViewDocument}
             />

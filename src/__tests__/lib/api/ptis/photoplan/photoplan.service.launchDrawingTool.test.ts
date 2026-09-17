@@ -333,9 +333,57 @@ describe('photoPlanService.launchDrawingTool', () => {
 
     expect(result.success).toBe(true);
     const launchBody = JSON.parse(mockFetch.mock.calls[1][1].body);
-    expect(launchBody.councilName).toBe('THANE_Survey');
+    expect(launchBody.councilName).toBe('');
     expect(launchBody.ptisUsername).toBe('testuser');
     expect(launchBody.ptisDisplayName).toBe('Tejas Kishor');
     expect(launchBody.ptisUserId).toBe('101');
+  });
+
+  it('dynamically uses councilName from process.env.NEXT_PUBLIC_COUNCIL_NAME when not explicitly provided', async () => {
+    const originalEnv = process.env.NEXT_PUBLIC_COUNCIL_NAME;
+    process.env.NEXT_PUBLIC_COUNCIL_NAME = 'JALNA_survey';
+
+    const mockFetch = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ token: 'mock-jwt-token' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ launchUrl: 'https://ptisplanapp.tabamc.in/draw?token=mock-jwt-token' }),
+      });
+
+    globalThis.fetch = mockFetch;
+
+    try {
+      const result = await photoPlanService.launchDrawingTool({
+        propertyId: 101,
+        councilName: '',
+        wardNo: 'JCMC10A',
+        propertyNo: '10',
+        returnUrl: 'https://www.google.com/',
+        ptisUsername: 'tejas',
+        ptisDisplayName: 'Tejas Kishor',
+        ptisUserId: '42',
+      });
+
+      expect(result.success).toBe(true);
+
+      // Verify Auth Request uses dynamic councilName
+      const authBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(authBody.councilName).toBe('JALNA_survey');
+
+      // Verify Launch Request uses dynamic councilName
+      const launchBody = JSON.parse(mockFetch.mock.calls[1][1].body);
+      expect(launchBody.councilName).toBe('JALNA_survey');
+      expect(launchBody.wardNo).toBe('JCMC10A');
+      expect(launchBody.propertyNo).toBe('10');
+    } finally {
+      if (originalEnv !== undefined) {
+        process.env.NEXT_PUBLIC_COUNCIL_NAME = originalEnv;
+      } else {
+        delete process.env.NEXT_PUBLIC_COUNCIL_NAME;
+      }
+    }
   });
 });

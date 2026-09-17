@@ -440,13 +440,17 @@ export const photoPlanService = {
         };
       }
 
-      const apiCouncilName = councilName || 'THANE_Survey';
+      const apiCouncilName =
+        (councilName && councilName.trim() !== '' ? councilName : undefined) ??
+        process.env.NEXT_PUBLIC_COUNCIL_NAME ??
+        process.env.COUNCIL_NAME ??
+        '';
 
       // 1. Authenticate user with static credentials
       const authBody = {
         username: 'tejas.d',
         password: '123456',
-        councilName: 'THANE_Survey'
+        councilName: apiCouncilName,
       };
 
       let loginRes = await fetch('https://apiptisplanapp.tabamc.in/api/auth/login', {

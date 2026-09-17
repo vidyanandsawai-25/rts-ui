@@ -75,7 +75,7 @@ function PropertyMediaPanel({
   wardNo = '',
   propertyNo = '',
   partitionNo = '',
-  councilName: _councilName = 'THANE_Survey',
+  councilName: _councilName,
   ptisUsername: _propPtisUsername,
   ptisDisplayName: _propPtisDisplayName,
   ptisUserId: _propPtisUserId,
@@ -434,9 +434,14 @@ function PropertyMediaPanel({
         const targetPhotoTypeId = options?.photoTypeId ?? defaultPhotoTypeId;
         const targetSocietyDetailId = options?.societyDetailId ?? resolvedSocietyDetailId;
         const targetWingDetailId = options?.wingDetailId ?? effectiveWingDetailId;
+        const effectiveCouncilName =
+          _councilName ||
+          process.env.NEXT_PUBLIC_COUNCIL_NAME ||
+          process.env.COUNCIL_NAME ||
+          'JALNA_survey';
         const res = await launchPhotoPlanDrawingToolAction(
           effectiveId,
-          _councilName,
+          effectiveCouncilName,
           currentUrl,
           _propPtisUsername,
           _propPtisDisplayName,
