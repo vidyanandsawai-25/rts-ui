@@ -162,8 +162,10 @@ export interface GetRtsApplicationApprovalListParams {
   serviceId?: number;
   applicationNo?: string;
   status?: string;
-  sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays';
+  sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays' | 'FIFO';
   sortOrder?: 'asc' | 'desc';
+  userId?: number;
+  isFifo?: boolean;
 }
 
 export interface UploadRtsDocumentPayload {

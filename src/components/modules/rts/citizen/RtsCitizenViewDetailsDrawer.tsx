@@ -529,22 +529,34 @@ export default function RtsCitizenViewDetailsDrawer({
 
             {normalizedStatus === "approved" && isCertRequired && certType === 2 && (
               <section className="rounded-xl border border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm space-y-2.5">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <Award className="w-5 h-5" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <Award className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-extrabold text-emerald-900">
+                        {language === "mr"
+                          ? "आपला अर्ज मंजूर करण्यात आला आहे!"
+                          : "Your application has been approved!"}
+                      </p>
+                      <p className="text-[11px] font-medium text-emerald-700">
+                        {language === "mr"
+                          ? "सदर सेवेसाठी विभागीय मूळ अधिकृत प्रमाणपत्र दिले जाईल."
+                          : "Departmental physical certificate is applicable for this service."}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-extrabold text-emerald-900">
-                      {language === "mr"
-                        ? "आपला अर्ज मंजूर करण्यात आला आहे!"
-                        : "Your application has been approved!"}
-                    </p>
-                    <p className="text-[11px] font-medium text-emerald-700">
-                      {language === "mr"
-                        ? "सदर सेवेसाठी विभागीय मूळ अधिकृत प्रमाणपत्र दिले जाईल."
-                        : "Departmental physical certificate is applicable for this service."}
-                    </p>
-                  </div>
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="primary"
+                    icon={Printer}
+                    onClick={() => setIsPrintCertModalOpen(true)}
+                    className="rounded-xl text-xs font-bold bg-[#4b70a6] hover:bg-[#3d5a8a] text-white shrink-0 px-3.5 py-1.5 shadow-sm"
+                  >
+                    {language === "mr" ? "प्रमाणपत्र प्रत पहा" : "View Certificate Copy"}
+                  </Button>
                 </div>
 
                 <div className="pt-2 border-t border-emerald-200/70 flex items-start gap-1.5 text-[11px] font-bold text-amber-900 bg-amber-50/90 rounded-lg p-2">
@@ -674,6 +686,8 @@ export default function RtsCitizenViewDetailsDrawer({
           isOpen={isPrintCertModalOpen}
           onClose={() => setIsPrintCertModalOpen(false)}
           applicationNo={applicationNumber}
+          certificateType={certType}
+          isManualCertificate={certType === 2}
         />
       )}
 

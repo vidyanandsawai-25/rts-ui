@@ -145,6 +145,7 @@ export interface RtsApplicationViewDetailsItem {
   remark?: string | null;
   isCertificateRequired?: boolean;
   certificateType?: number;
+  issuedCertificateGuid?: string | null;
   documents: RtsApplicationDocumentItem[];
   applicationDetails: RtsApplicationViewDetailField[];
 }

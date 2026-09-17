@@ -617,18 +617,29 @@ export default function ApplicationAndTrackingDrawer({
                     </div>
                   ) : detail?.certificateType === 2 ? (
                     <div className="mt-3.5 rounded-xl bg-emerald-50 border border-emerald-200 shadow-sm p-3.5 space-y-2">
-                      <div className="flex items-center gap-2.5">
-                        <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 shrink-0">
-                          <CheckCircle2 className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold text-emerald-900">
-                            {locale === "mr" ? "अर्ज मंजूर झाला आहे (Application Approved)" : "Application Approved"}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 shrink-0">
+                            <CheckCircle2 className="w-5 h-5" />
                           </div>
-                          <div className="text-[11px] text-emerald-700 font-medium">
-                            {locale === "mr" ? "सदर सेवेसाठी विभागीय मूळ अधिकृत प्रमाणपत्र दिले जाईल." : "Departmental physical certificate is applicable for this service."}
+                          <div>
+                            <div className="text-xs font-bold text-emerald-900">
+                              {locale === "mr" ? "अर्ज मंजूर झाला आहे (Application Approved)" : "Application Approved"}
+                            </div>
+                            <div className="text-[11px] text-emerald-700 font-medium">
+                              {locale === "mr" ? "सदर सेवेसाठी विभागीय मूळ अधिकृत प्रमाणपत्र दिले जाईल." : "Departmental physical certificate is applicable for this service."}
+                            </div>
                           </div>
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setShowCertificateModal(true)}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg shadow-xs transition cursor-pointer shrink-0"
+                        >
+                          <Download className="w-3.5 h-3.5 text-slate-600" />
+                          {locale === "mr" ? "प्रमाणपत्र प्रत पहा" : "View Certificate Copy"}
+                        </button>
                       </div>
                       <div className="pt-2 border-t border-emerald-200/80 flex items-start gap-1.5 text-[11px] font-bold text-amber-900 bg-amber-50/90 rounded-lg p-2">
                         <span className="text-amber-600">⚠️</span>
@@ -811,6 +822,8 @@ export default function ApplicationAndTrackingDrawer({
           isOpen={showCertificateModal}
           onClose={() => setShowCertificateModal(false)}
           applicationNo={selectedApplication.applicationNo}
+          certificateType={detail?.certificateType}
+          isManualCertificate={detail?.certificateType === 2}
         />
       )}
 

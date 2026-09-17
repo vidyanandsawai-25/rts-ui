@@ -23,8 +23,8 @@ import {
   hasApprovalOfficerAccess,
 } from '@/lib/utils/rts/approval-officer-access';
 import { getUsernameFromCookieStore } from '@/lib/utils/cookie';
-import { submitApplicationWorkflowAction } from '@/lib/api/rts/rts-workflow.service';
 import { getPaymentStatus, type PaymentStatusResult } from '@/lib/api/rts/rtspayment.service';
+import type { RTSCertificateType } from '@/types/rts/certificate.types';
 import type {
   RtsApplicationApprovalStage,
   RtsApplicationApprovalActionPayload,
@@ -44,7 +44,9 @@ import type {
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
 import type {
   ApplicationWorkflowState,
+  RtsApplicationOverallStatus,
   RtsApprovalFlowStageApiItem,
+  TrackHistoryActionType,
   WorkflowActionType,
 } from '@/types/rts/workflow.types';
 import type {
@@ -147,6 +149,7 @@ export interface RtsApplicationDetailData {
   applicationStatus: string;
   isCertificateRequired?: boolean;
   certificateType?: number;
+  issuedCertificateGuid?: string | null;
   answerGroups: ApplicationAnswerGroup[];
   workflow: ApplicationWorkflowState | null;
   approvalFlowStages?: RtsApprovalFlowStageApiItem[];
@@ -468,10 +471,111 @@ export async function getApplicationDetailAction(
 
   if (Number.isFinite(numericId) && numericId > 0) {
     try {
-      const [viewDetails, stageDetails] = await Promise.all([
+      const [viewDetails, stageDetails, verification, payment] = await Promise.all([
         getApprovalApplicationDetails(numericId).catch(() => null),
         getApprovalApplicationStages(numericId).catch(() => null),
+        getApprovalApplicationVerification(numericId).catch(() => null),
+        getPaymentStatus(numericId).catch(() => null),
       ]);
+
+      let applicationHeader = null;
+      try {
+        applicationHeader = await getRtsApplicationByNo(applicationNo);
+      } catch {
+        applicationHeader = null;
+      }
+
+      const sId = (viewDetails as any)?.serviceId || applicationHeader?.serviceId || 0;
+      const sName = (viewDetails as any)?.serviceName || (applicationHeader as any)?.serviceName || null;
+      let isCertRequired = (viewDetails as any)?.isCertificateRequired;
+      let certType = (viewDetails as any)?.certificateType;
+
+      if (isCertRequired === undefined || certType === undefined) {
+        const services = await getAllRtsServices().catch(() => []);
+        const matched = services.find((s) =>
+          (sId > 0 && s.id === sId) ||
+          (sName && s.serviceName && s.serviceName.trim().toLowerCase() === sName.trim().toLowerCase()) ||
+          (sName && s.serviceNameLocal && s.serviceNameLocal.trim().toLowerCase() === sName.trim().toLowerCase())
+        );
+        if (matched) {
+          isCertRequired = matched.isCertificateRequired === true && matched.certificateType !== 0;
+          certType = isCertRequired ? (matched.certificateType ?? 1) : 0;
+        }
+      }
+
+      const rawStatus = (viewDetails as any)?.applicationStatus || applicationHeader?.applicationStatus || 'pending';
+      const statusNorm = rawStatus.toLowerCase();
+      const isTerminal = ['approved', 'rejected'].includes(statusNorm);
+
+      const isPaymentPaid = Boolean(
+        payment?.paymentStatus?.toUpperCase() === 'SUCCESS' ||
+        payment?.paymentStatus?.toLowerCase() === 'paid' ||
+        payment?.receiptNo
+      );
+      const effectiveIsPaid = Boolean(verification?.isPaid || isPaymentPaid);
+
+      const availableActions: WorkflowActionType[] = [];
+      if (verification && !isTerminal) {
+        if (verification.canVerifyDocument) availableActions.push('verifyDocument');
+        if (verification.canPay && !effectiveIsPaid) availableActions.push('pay');
+        if (verification.canApprove) availableActions.push('approve');
+        if (verification.canReject) availableActions.push('reject');
+        if (verification.canReturn) availableActions.push('return');
+      }
+
+      const mappedOverallStatus: RtsApplicationOverallStatus =
+        statusNorm === 'approved'
+          ? 'approved'
+          : statusNorm === 'rejected'
+            ? 'rejected'
+            : statusNorm === 'reverted' || statusNorm === 'returned'
+              ? 'returned'
+              : 'pending';
+
+      const dynamicWorkflow: ApplicationWorkflowState = {
+        applicationId: numericId,
+        applicationNo,
+        departmentId: sId > 0 ? ((viewDetails as any)?.departmentId || applicationHeader?.departmentId || 0) : 0,
+        serviceId: sId,
+        applicationStatus: mappedOverallStatus,
+        paymentStatus: effectiveIsPaid
+          ? 'Paid'
+          : verification?.feesRequired
+            ? 'Pending'
+            : 'NotRequired',
+        currentStage: verification && verification.stageId > 0 ? {
+          id: verification.stageId,
+          approvalFlowId: verification.approvalFlowId || 0,
+          stageOrder: verification.stageOrder || 1,
+          stageName: verification.stageName || '',
+          employeeTypeId: 0,
+          slaDays: verification.slaDays ?? 0,
+          canVerifyDocument: Boolean(verification.canVerifyDocument),
+          canApprove: Boolean(verification.canApprove),
+          canReject: Boolean(verification.canReject),
+          canReturn: Boolean(verification.canReturn),
+          canPay: Boolean(verification.canPay),
+          isFinalStage: Boolean(verification.isFinalStage),
+          isActive: true,
+        } : null,
+        availableActions,
+        history: (stageDetails?.approvalStages || [])
+          .filter((s) => s.createdDate || s.status)
+          .map((s, idx) => ({
+            id: idx + 1,
+            applicationId: numericId,
+            fromStageId: null,
+            fromStageName: null,
+            toStageId: s.approvalFlowStageId ?? null,
+            toStageName: s.stageName ?? null,
+            actionType: (s.status as TrackHistoryActionType) || 'Submitted',
+            actionDate: s.createdDate || s.completedDate || '',
+            performedByUserId: null,
+            performedByUserName: s.userName || (s.firstName ? `${s.firstName} ${s.lastName || ''}`.trim() : null),
+            remark: s.remark ?? null,
+          })),
+        stageEnteredAt: stageDetails?.approvalStages?.find((s) => s.isCurrentStage)?.createdDate || null,
+      };
 
       if (
         viewDetails &&
@@ -502,51 +606,26 @@ export async function getApplicationDetailAction(
           })
         );
 
-        let approvalFlowStages: RtsApprovalFlowStageApiItem[] = [];
-        if (stageDetails && stageDetails.approvalStages.length > 0) {
-          approvalFlowStages = stageDetails.approvalStages.map((stg) => ({
+        const approvalFlowStages: RtsApprovalFlowStageApiItem[] = (stageDetails?.approvalStages || []).map((stg) => {
+          const isCurrent = stg.isCurrentStage;
+          return {
             id: stg.approvalFlowStageId,
-            approvalFlowId: 0,
+            approvalFlowId: verification?.approvalFlowId || 0,
             stageOrder: stg.stageOrder,
             stageName: stg.stageName,
             employeeTypeId: 0,
-            slaDays: 7,
-            canVerifyDocument: true,
-            canApprove: true,
-            canReject: true,
-            canReturn: true,
-            canPay: false,
-            isFinalStage: stg.stageOrder === stageDetails.totalApprovalStages,
+            slaDays: isCurrent && verification ? verification.slaDays : 0,
+            canVerifyDocument: isCurrent && verification ? Boolean(verification.canVerifyDocument) : false,
+            canApprove: isCurrent && verification ? Boolean(verification.canApprove) : false,
+            canReject: isCurrent && verification ? Boolean(verification.canReject) : false,
+            canReturn: isCurrent && verification ? Boolean(verification.canReturn) : false,
+            canPay: isCurrent && verification ? Boolean(verification.canPay) : false,
+            isFinalStage: stg.isFinalStage ?? (stg.stageOrder === stageDetails?.totalApprovalStages),
             isActive: true,
-            createdDate: '',
+            createdDate: stg.createdDate || '',
             updatedDate: null,
-          }));
-        }
-
-        let applicationHeader = null;
-        try {
-          applicationHeader = await getRtsApplicationByNo(applicationNo);
-        } catch {
-          applicationHeader = null;
-        }
-
-        const sId = (viewDetails as any)?.serviceId || applicationHeader?.serviceId || 0;
-        const sName = (viewDetails as any)?.serviceName || (applicationHeader as any)?.serviceName || null;
-        let isCertRequired = (viewDetails as any)?.isCertificateRequired;
-        let certType = (viewDetails as any)?.certificateType;
-
-        if (isCertRequired === undefined || certType === undefined) {
-          const services = await getAllRtsServices().catch(() => []);
-          const matched = services.find((s) =>
-            (sId > 0 && s.id === sId) ||
-            (sName && s.serviceName && s.serviceName.trim().toLowerCase() === sName.trim().toLowerCase()) ||
-            (sName && s.serviceNameLocal && s.serviceNameLocal.trim().toLowerCase() === sName.trim().toLowerCase())
-          );
-          if (matched) {
-            isCertRequired = matched.isCertificateRequired === true && matched.certificateType !== 0;
-            certType = isCertRequired ? (matched.certificateType ?? 1) : 0;
-          }
-        }
+          };
+        });
 
         return {
           applicationNo,
@@ -554,71 +633,43 @@ export async function getApplicationDetailAction(
           departmentName: (viewDetails as any)?.departmentName || null,
           serviceId: sId,
           serviceName: sName,
-          applicationStatus:
-            (viewDetails as any)?.applicationStatus ||
-            applicationHeader?.applicationStatus ||
-            'pending',
+          applicationStatus: rawStatus,
           isCertificateRequired: isCertRequired ?? false,
           certificateType: certType ?? 0,
+          issuedCertificateGuid: viewDetails?.issuedCertificateGuid || (applicationHeader as any)?.issuedCertificateGuid || null,
           answerGroups,
-          workflow: null,
+          workflow: dynamicWorkflow,
           approvalFlowStages,
           approvalStages: stageDetails?.approvalStages ?? [],
           completedStages: stageDetails?.completedStages ?? 0,
           totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
           isRevertedToCitizen: stageDetails?.isRevertedToCitizen ?? false,
           documents: viewDetails.documents ?? [],
-          verification: null,
+          verification,
           remark: (viewDetails as any)?.remark ?? (applicationHeader as any)?.remark ?? null,
         };
       }
 
-      // If viewDetails was null (e.g. ID not found in ViewApplicationDetails API), return live stages if present without mock fallback
-      let appHeader = null;
-      try {
-        appHeader = await getRtsApplicationByNo(applicationNo);
-      } catch {
-        appHeader = null;
-      }
-      let fallbackCertRequired = false;
-      let fallbackCertType = 0;
-      let sId = appHeader?.serviceId || 0;
-      let sName = (appHeader as any)?.serviceName || null;
-      let dId = appHeader?.departmentId || 0;
-
-      const services = await getAllRtsServices().catch(() => []);
-      const matched = services.find((s) =>
-        (sId > 0 && s.id === sId) ||
-        (sName && s.serviceName && s.serviceName.trim().toLowerCase() === sName.trim().toLowerCase()) ||
-        (sName && s.serviceNameLocal && s.serviceNameLocal.trim().toLowerCase() === sName.trim().toLowerCase())
-      );
-      if (matched) {
-        fallbackCertRequired = matched.isCertificateRequired === true && matched.certificateType !== 0;
-        fallbackCertType = fallbackCertRequired ? (matched.certificateType ?? 1) : 0;
-        sId = matched.id;
-        sName = matched.serviceName;
-        dId = matched.departmentId;
-      }
-
       return {
         applicationNo,
-        departmentId: dId,
+        departmentId: applicationHeader?.departmentId || 0,
         departmentName: null,
         serviceId: sId,
         serviceName: sName,
-        applicationStatus: appHeader?.applicationStatus || 'pending',
-        isCertificateRequired: fallbackCertRequired,
-        certificateType: fallbackCertType,
+        applicationStatus: rawStatus,
+        isCertificateRequired: isCertRequired ?? false,
+        certificateType: certType ?? 0,
+        issuedCertificateGuid: viewDetails?.issuedCertificateGuid || (applicationHeader as any)?.issuedCertificateGuid || null,
         answerGroups: [],
-        workflow: null,
+        workflow: dynamicWorkflow,
         approvalFlowStages: [],
         approvalStages: stageDetails?.approvalStages ?? [],
         completedStages: stageDetails?.completedStages ?? 0,
         totalApprovalStages: stageDetails?.totalApprovalStages ?? 0,
         isRevertedToCitizen: stageDetails?.isRevertedToCitizen ?? false,
         documents: [],
-        verification: null,
-        remark: null,
+        verification,
+        remark: (applicationHeader as any)?.remark ?? null,
       };
     } catch (err) {
       console.error(`Error in getApplicationDetailAction for ${applicationNo}:`, err);
@@ -640,6 +691,8 @@ export async function getApplicationDetailAction(
     totalApprovalStages: 0,
     isRevertedToCitizen: false,
     documents: [],
+    verification: null,
+    remark: null,
   };
 }
 
@@ -693,6 +746,7 @@ export interface AdminApplicationGridRow {
   assignedTo: string;
   assignedToName: string;
   assignedToRole: string;
+  assignedUserId?: number | null;
 }
 
 export interface RtsApplicationsDashboardResult {
@@ -713,8 +767,10 @@ export interface RtsApplicationsDashboardFilters {
   serviceId?: number;
   applicationNo?: string;
   status?: string;
-  sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays';
+  sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays' | 'FIFO';
   sortOrder?: 'asc' | 'desc';
+  assignedUserId?: number;
+  isFifo?: boolean;
 }
 
 async function getAllApprovalApplications(
@@ -729,6 +785,8 @@ async function getAllApprovalApplications(
       status: filters.status,
       sortBy: filters.sortBy,
       sortOrder: filters.sortOrder,
+      userId: filters.assignedUserId,
+      isFifo: filters.isFifo,
     });
 
   const firstPage = await requestPage(1);
@@ -849,12 +907,32 @@ function compareNullable<T>(
   return compare(left, right);
 }
 
+function isPendingOrActiveStatus(status: string | null | undefined): boolean {
+  if (!status) return true;
+  const s = status.trim().toLowerCase();
+  return s !== 'approved' && s !== 'rejected' && s !== 'reverted';
+}
+
+function getRowPriority(row: AdminApplicationGridRow, currentUserId?: number | null): number {
+  const isPending = isPendingOrActiveStatus(row.currentStatus);
+  if (!isPending) {
+    return 2; // Closed / Completed (Approved, Rejected, Reverted) -> bottom
+  }
+  // It is pending / active!
+  if (currentUserId && row.assignedUserId === currentUserId) {
+    return 0; // My Pending (assigned to this logged-in officer) -> TOP!
+  }
+  return 1; // Other Pending -> Middle
+}
+
 function sortDashboardRows(
   rows: AdminApplicationGridRow[],
   sortBy?: RtsApplicationsDashboardFilters['sortBy'],
-  sortOrder?: RtsApplicationsDashboardFilters['sortOrder']
+  sortOrder?: RtsApplicationsDashboardFilters['sortOrder'],
+  currentUserId?: number | null
 ): AdminApplicationGridRow[] {
-  const direction = sortBy ? (sortOrder === 'desc' ? -1 : 1) : -1;
+  // Default to FIFO ascending (oldest application first) unless desc is explicitly requested
+  const direction = sortOrder === 'desc' ? -1 : 1;
 
   return [...rows].sort((left, right) => {
     let comparison = 0;
@@ -887,14 +965,36 @@ function sortDashboardRows(
         comparison = (left.remainingDays ?? 0) - (right.remainingDays ?? 0);
         break;
       case 'CreatedDate':
-      default:
-        comparison =
-          new Date(left.applicationDate).getTime() - new Date(right.applicationDate).getTime();
+        if (sortOrder === 'desc') {
+          const leftTime = left.applicationDate ? new Date(left.applicationDate).getTime() : 0;
+          const rightTime = right.applicationDate ? new Date(right.applicationDate).getTime() : 0;
+          const validLeft = Number.isFinite(leftTime) ? leftTime : 0;
+          const validRight = Number.isFinite(rightTime) ? rightTime : 0;
+          comparison = validRight - validLeft;
+          break;
+        }
+        // If not desc, fall through to default (Pending on top + FIFO)
+      case 'FIFO':
+      default: {
+        // 1. Pending on top! (Rank 0: My Pending -> Rank 1: Other Pending -> Rank 2: Closed)
+        const rankDiff = getRowPriority(left, currentUserId) - getRowPriority(right, currentUserId);
+        if (rankDiff !== 0) {
+          return rankDiff;
+        }
+
+        // 2. Within each priority rank: strictly FIFO (earliest date first)
+        const leftTime = left.applicationDate ? new Date(left.applicationDate).getTime() : 0;
+        const rightTime = right.applicationDate ? new Date(right.applicationDate).getTime() : 0;
+        const validLeft = Number.isFinite(leftTime) ? leftTime : 0;
+        const validRight = Number.isFinite(rightTime) ? rightTime : 0;
+        comparison = validLeft - validRight;
         break;
+      }
     }
 
     if (comparison !== 0) return comparison * direction;
-    return right.applicationNo.localeCompare(left.applicationNo, undefined, { numeric: true });
+    // Tie-breaker: earlier application number first
+    return left.applicationNo.localeCompare(right.applicationNo, undefined, { numeric: true });
   });
 }
 
@@ -1012,6 +1112,7 @@ export async function getRtsApplicationsDashboardAction(
         assignedTo: assignedToStr,
         assignedToName,
         assignedToRole,
+        assignedUserId: app.userId ?? null,
       };
     });
 
@@ -1039,6 +1140,7 @@ export async function getRtsApplicationsDashboardAction(
       assignedTo: app.userName?.trim() || '—',
       assignedToName: app.userName?.trim() || '—',
       assignedToRole: '',
+      assignedUserId: null,
     }));
 
     const rowsByApplicationNo = new Map<string, AdminApplicationGridRow>();
@@ -1050,10 +1152,14 @@ export async function getRtsApplicationsDashboardAction(
       if (!rowsByApplicationNo.has(key)) rowsByApplicationNo.set(key, row);
     });
 
+    const cookieStore = await cookies();
+    const currentUserId = getCurrentApprovalOfficerUserId(cookieStore);
+
     const sortedRows = sortDashboardRows(
       Array.from(rowsByApplicationNo.values()),
       filters.sortBy,
-      filters.sortOrder
+      filters.sortOrder,
+      currentUserId
     );
     const pageSize = 10;
     const totalCount = sortedRows.length;
@@ -1116,15 +1222,33 @@ export async function submitApplicationActionAction(
   remark: string
 ): Promise<SubmitApplicationActionResult> {
   try {
-    const workflow = await submitApplicationWorkflowAction(applicationNo, {
-      actionType,
-      remark,
-    });
+    const numericId = parseInt(applicationNo.replace(/\D/g, ''), 10);
+    if (!numericId || numericId <= 0) {
+      return { success: false, message: 'Invalid application ID.' };
+    }
+
+    let result: { success: boolean; message?: string };
+    switch (actionType) {
+      case 'verifyDocument':
+        result = await verifyApprovalDocumentsAction(numericId, remark);
+        break;
+      case 'approve':
+        result = await verifyAndSendToApproveAction(numericId, remark);
+        break;
+      case 'reject':
+        result = await rejectApprovalApplicationAction(numericId, remark);
+        break;
+      case 'return':
+        result = await revertApprovalApplicationAction(numericId, remark);
+        break;
+      default:
+        result = { success: false, message: `Unsupported action type: ${actionType}` };
+    }
 
     revalidatePath(`/rts/dashboard/rts-applications/${applicationNo}`);
     revalidatePath('/rts/dashboard/rts-applications');
 
-    return { success: true, workflow };
+    return { success: result.success, message: result.message };
   } catch (error) {
     return {
       success: false,
@@ -1547,7 +1671,7 @@ export async function issueCertificateAction(
   customConditions?: string,
   actionRemark?: string,
   signAndApprove: boolean = true,
-  certificateType: import('@/types/rts/certificate.types').RTSCertificateType = 1,
+  certificateType: RTSCertificateType = 1,
   documentGuid?: string
 ) {
   try {

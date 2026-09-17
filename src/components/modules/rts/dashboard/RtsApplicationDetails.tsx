@@ -15,6 +15,7 @@ import {
   Shield,
   Sparkles,
   Undo2,
+  Upload,
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -22,6 +23,7 @@ import { useTranslations } from "next-intl";
 
 import { Badge, Card } from "@/components/common";
 import RtsCertificateApprovalModal from "./RtsCertificateApprovalModal";
+import RtsManualCertificateUploadModal from "./RtsManualCertificateUploadModal";
 import PrintableCertificateModal from "../citizen/PrintableCertificateModal";
 import type {
   RtsApplicationDetailData,
@@ -76,6 +78,7 @@ export default function RtsApplicationDetails({
   const [remark, setRemark] = useState("");
   const [documentChecks, setDocumentChecks] = useState<Record<number, boolean>>({});
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [isManualCertModalOpen, setIsManualCertModalOpen] = useState(false);
   const [isPrintCertModalOpen, setIsPrintCertModalOpen] = useState(false);
 
   const { workflow, answerGroups, applicationNo, applicationStatus, serviceName, departmentName } =
@@ -88,11 +91,9 @@ export default function RtsApplicationDetails({
 
   const availableActions = workflow?.availableActions ?? [];
   const normalizedStatus = applicationStatus.toLowerCase();
-  // Only a "pending" application is actionable by an officer. Approved/rejected
-  // are terminal; "returned" hands the application back to the citizen to
-  // correct and resubmit, so it isn't actionable again until that happens
-  // (server should flip status back to "pending" on resubmit).
-  const isActionable = normalizedStatus === "pending";
+  // Only non-terminal applications are actionable by an officer. Approved/rejected
+  // are terminal; "returned"/"reverted" hands the application back to the citizen.
+  const isActionable = !["approved", "rejected", "reverted", "returned"].includes(normalizedStatus);
 
   const currentStage = workflow?.currentStage ?? null;
 
@@ -106,9 +107,9 @@ export default function RtsApplicationDetails({
 
     return workflow.history.some(
       (entry) =>
-        entry.actionType === "VerifyDocument" &&
-        entry.toStageId === workflow.currentStage!.id &&
-        new Date(entry.actionDate).getTime() >= enteredAt
+        (entry.actionType.toLowerCase().includes("verify") || entry.actionType.toLowerCase().includes("document")) &&
+        (entry.toStageId === workflow.currentStage!.id || !entry.toStageId) &&
+        (!enteredAt || new Date(entry.actionDate).getTime() >= enteredAt)
     );
   }, [workflow]);
 
@@ -341,15 +342,30 @@ export default function RtsApplicationDetails({
                           <FileCheck2 className="h-4 w-4" />
                           अधिकृत प्रमाणपत्र पहा व प्रिंट करा
                         </button>
+                      </div>
+                    )}
 
-                        <button
-                          type="button"
-                          onClick={() => setIsCertModalOpen(true)}
-                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-[11px] font-semibold transition"
-                        >
-                          <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
-                          प्रमाणपत्र संपादित / पुन्हा जारी करा
-                        </button>
+                    {data.isCertificateRequired && data.certificateType === 2 && (
+                      <div className="flex flex-col gap-2 pt-2 border-t border-slate-200">
+                        {data.issuedCertificateGuid ? (
+                          <button
+                            type="button"
+                            onClick={() => setIsPrintCertModalOpen(true)}
+                            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition"
+                          >
+                            <FileCheck2 className="h-4 w-4" />
+                            अधिकृत प्रमाणपत्र पहा (View Certificate)
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setIsManualCertModalOpen(true)}
+                            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition"
+                          >
+                            <Upload className="h-4 w-4" />
+                            प्रमाणपत्र अपलोड करा (Upload Certificate)
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -514,6 +530,22 @@ export default function RtsApplicationDetails({
           isOpen={isPrintCertModalOpen}
           onClose={() => setIsPrintCertModalOpen(false)}
           applicationNo={applicationNo}
+          certificateType={data.certificateType}
+          isManualCertificate={data.certificateType === 2}
+          onUploadCertificate={() => setIsManualCertModalOpen(true)}
+        />
+      )}
+
+      {/* Manual Certificate Upload Modal */}
+      {isManualCertModalOpen && (
+        <RtsManualCertificateUploadModal
+          isOpen={isManualCertModalOpen}
+          onClose={() => setIsManualCertModalOpen(false)}
+          applicationId={workflow?.applicationId || parseInt(applicationNo.replace(/\D/g, ""), 10) || 0}
+          applicationNo={applicationNo}
+          onApproved={() => {
+            router.refresh();
+          }}
         />
       )}
     </div>

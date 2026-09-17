@@ -13,6 +13,7 @@ import {
   Calendar,
   Layers,
   RotateCcw,
+  Upload,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -27,6 +28,9 @@ interface PrintableCertificateModalProps {
   applicationNo?: string;
   applicationId?: number;
   certificateNo?: string;
+  isManualCertificate?: boolean;
+  certificateType?: number;
+  onUploadCertificate?: () => void;
 }
 
 interface PreviewControlsProps {
@@ -83,6 +87,9 @@ export default function PrintableCertificateModal({
   applicationNo,
   applicationId,
   certificateNo,
+  isManualCertificate,
+  certificateType,
+  onUploadCertificate,
 }: PrintableCertificateModalProps) {
   const t = useTranslations("rts.applicationDashboard.processDrawer.certificateViewer");
   const format = useFormatter();
@@ -96,7 +103,7 @@ export default function PrintableCertificateModal({
   const [isDraggingPreview, setIsDraggingPreview] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
-  const isManual = certificate?.certificateType === 2;
+  const isManual = certificate?.certificateType === 2 || certificateType === 2 || isManualCertificate === true;
   const lookupKey = applicationNo || (applicationId ? String(applicationId) : "") || certificateNo || "";
 
   const docViewUrl = certificate?.documentGuid
@@ -327,8 +334,29 @@ export default function PrintableCertificateModal({
           ) : error ? (
             <div className="h-64 flex flex-col items-center justify-center text-center p-6 bg-white rounded-lg border border-slate-200 max-w-md m-auto">
               <ShieldCheck className="w-10 h-10 text-amber-500 mb-2" />
-              <h4 className="text-sm font-bold text-slate-800 mb-1">{t("unavailableTitle")}</h4>
-              <p className="text-xs text-slate-500">{error}</p>
+              <h4 className="text-sm font-bold text-slate-800 mb-1">
+                {isManual ? 'विभागीय मॅन्युअल प्रमाणपत्र उपलब्ध नाही' : t("unavailableTitle")}
+              </h4>
+              <p className="text-xs text-slate-500">
+                {isManual
+                  ? 'सदर अर्जाचे विभागीय मॅन्युअल प्रमाणपत्र अद्याप अधिकृतरीत्या अपलोड केलेले नाही.'
+                  : error}
+              </p>
+              {isManual && onUploadCertificate && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="primary"
+                  icon={Upload}
+                  onClick={() => {
+                    onClose();
+                    onUploadCertificate();
+                  }}
+                  className="mt-3 rounded-lg px-4 text-xs font-bold"
+                >
+                  प्रमाणपत्र अपलोड करा (Upload Certificate)
+                </Button>
+              )}
             </div>
           ) : isManual && certificate ? (
             <div className="flex h-full min-h-0 flex-col gap-3 p-3 sm:p-4">

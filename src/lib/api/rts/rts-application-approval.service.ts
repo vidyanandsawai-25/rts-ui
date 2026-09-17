@@ -93,6 +93,8 @@ export async function getApprovalApplicationsPaged(
   if (params.status) queryParams.set('ApplicationStatus', params.status);
   if (params.sortBy) queryParams.set('SortBy', params.sortBy);
   if (params.sortOrder) queryParams.set('SortOrder', params.sortOrder);
+  if (params.userId != null) queryParams.set('UserId', String(params.userId));
+  if (params.isFifo != null) queryParams.set('IsFifo', String(params.isFifo));
 
   const queryString = queryParams.toString();
   const endpoint = `/RTSApplicationApproval${queryString ? `?${queryString}` : ''}`;

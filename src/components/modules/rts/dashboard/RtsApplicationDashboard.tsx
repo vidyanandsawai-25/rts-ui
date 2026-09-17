@@ -218,8 +218,9 @@ export default function RtsApplicationDashboard({
   );
 
   const sortableHeader = useCallback((key: ApplicationSortKey, label: string) => {
-    const isActive = filters.sortBy === key;
-    const direction = filters.sortOrder as SortDirection;
+    const isDefaultFifo = !filters.sortBy && key === 'CreatedDate';
+    const isActive = filters.sortBy === key || isDefaultFifo;
+    const direction = (filters.sortOrder as SortDirection) || (isDefaultFifo ? 'asc' : undefined);
     const Icon = !isActive ? ArrowUpDown : direction === 'asc' ? ArrowUp : ArrowDown;
 
     return (

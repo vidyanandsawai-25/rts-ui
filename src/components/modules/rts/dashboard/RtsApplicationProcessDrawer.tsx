@@ -335,7 +335,7 @@ export default function RtsApplicationProcessDrawer({
 
   const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
   const availableActions =
-    verification && hasOfficerAccess
+    verification && hasOfficerAccess && !isApproved
       ? ACTIONS.filter((action) => {
           if (action.key === 'canPay') {
             // If already paid, DO NOT show "Record Payment" button!
@@ -706,60 +706,78 @@ export default function RtsApplicationProcessDrawer({
                   );
                 })}
 
-                {verification?.canIssueCertificate && (
-                  <Button
-                    type="button"
-                    size="xs"
-                    variant="success"
-                    icon={Sparkles}
-                    disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
-                    title={
-                      !hasOfficerAccess
-                        ? t('officerAccessDenied')
-                        : isEditing
-                          ? t('finishEditBeforeWorkflowAction')
-                          : undefined
-                    }
-                    onClick={() => setIsCertModalOpen(true)}
-                    className="rounded-lg px-3 text-xs font-bold"
-                  >
-                    {t('issueCertificate')}
-                  </Button>
-                )}
+                {/* Certificate Action Buttons: ONLY visible AFTER application is approved */}
+                {Boolean(isApproved) &&
+                  data?.details?.isCertificateRequired !== false &&
+                  data?.details?.certificateType !== 0 && (
+                  (() => {
+                    const isManualType = Boolean(
+                      verification?.isManualCertificate || data?.details?.certificateType === 2
+                    );
+                    const hasCertificate = Boolean(data?.details?.issuedCertificateGuid);
 
-                {verification?.isManualCertificate && (
-                  <Button
-                    type="button"
-                    size="xs"
-                    variant="primary"
-                    icon={Upload}
-                    disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
-                    title={
-                      !hasOfficerAccess
-                        ? t('officerAccessDenied')
-                        : isEditing
-                          ? t('finishEditBeforeWorkflowAction')
-                          : undefined
+                    // If certificate is already issued/uploaded, show View Certificate ONLY
+                    if (hasCertificate) {
+                      return (
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="secondary"
+                          icon={Award}
+                          onClick={() => setIsPrintCertModalOpen(true)}
+                          className="rounded-lg px-3 text-xs font-bold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
+                        >
+                          अधिकृत प्रमाणपत्र पहा (View Certificate)
+                        </Button>
+                      );
                     }
-                    onClick={() => setIsManualCertificateUploadOpen(true)}
-                    className="rounded-lg px-3 text-xs font-bold"
-                  >
-                    {t('uploadCertificate')}
-                  </Button>
-                )}
 
-                {/* View Official Issued Certificate: Visible once the application is officially approved */}
-                {Boolean(isApproved) && (
-                  <Button
-                    type="button"
-                    size="xs"
-                    variant="secondary"
-                    icon={Award}
-                    onClick={() => setIsPrintCertModalOpen(true)}
-                    className="rounded-lg px-3 text-xs font-bold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
-                  >
-                    अधिकृत प्रमाणपत्र पहा (View Certificate)
-                  </Button>
+                    // If Type 2 (Manual) and not yet uploaded, show Upload Certificate
+                    if (isManualType) {
+                      return (
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="primary"
+                          icon={Upload}
+                          disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
+                          title={
+                            !hasOfficerAccess
+                              ? t('officerAccessDenied')
+                              : isEditing
+                                ? t('finishEditBeforeWorkflowAction')
+                                : undefined
+                          }
+                          onClick={() => setIsManualCertificateUploadOpen(true)}
+                          className="rounded-lg px-3 text-xs font-bold"
+                        >
+                          {t('uploadCertificate')}
+                        </Button>
+                      );
+                    }
+
+                    // If Type 1 (Digital) and not yet issued, show Issue Certificate
+                    return (
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="success"
+                        icon={Sparkles}
+                        disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
+                        title={
+                          !hasOfficerAccess
+                            ? t('officerAccessDenied')
+                            : isEditing
+                              ? t('finishEditBeforeWorkflowAction')
+                              : undefined
+                        }
+                        onClick={() => setIsCertModalOpen(true)}
+                        className="rounded-lg px-3 text-xs font-bold"
+                      >
+                        {t('issueCertificate')}
+                      </Button>
+                    );
+                  })()
                 )}
 
                 {/* Note Sheet: Visible to ALL officers once first verification is done / history exists */}
@@ -1582,6 +1600,9 @@ export default function RtsApplicationProcessDrawer({
           onClose={() => setIsPrintCertModalOpen(false)}
           applicationId={applicationId || undefined}
           applicationNo={headerApplicationNo}
+          certificateType={data?.details?.certificateType}
+          isManualCertificate={Boolean(verification?.isManualCertificate || data?.details?.certificateType === 2)}
+          onUploadCertificate={() => setIsManualCertificateUploadOpen(true)}
         />
       )}
     </>

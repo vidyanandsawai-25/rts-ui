@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { Button, Modal } from '@/components/common';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import {
+  issueCertificateAction,
   uploadManualCertificateDocumentAction,
   verifyAndSendToApproveAction,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
@@ -191,58 +192,19 @@ export default function RtsManualCertificateUploadModal({
       if (next === 1) setPosition({ x: 0, y: 0 });
       return next;
     });
-  const uploadSelectedFile = () => {
-    if (!file) {
-      toast.error(t('manualCertificateFileRequired'));
-      return;
-    }
-    confirm({
-      variant: 'warning',
-      title: t('confirmManualCertificateUploadTitle'),
-      description: t('confirmManualCertificateUploadDescription', {
-        applicationNo,
-        fileName: file.name,
-      }),
-      confirmText: t('uploadCertificate'),
-      onConfirm: async () => {
-        const formData = new FormData();
-        formData.set('file', file);
-        startTransition(async () => {
-          const result = await uploadManualCertificateDocumentAction(formData);
-          if (!result.success || !result.documentGuid) {
-            toast.error(result.error || t('manualCertificateUploadFailed'));
-            return;
-          }
-          setPreviewUrl(null);
-          setPreviewType(null);
-          setPreviewError(null);
-          setIsPreviewLoading(true);
-          setUploadedDocument({
-            guid: result.documentGuid,
-            fileName: result.fileName || file.name,
-            fileSizeBytes: result.fileSizeBytes || file.size,
-          });
-          toast.success(t('manualCertificateUploadSuccess'));
-        });
-      },
-    });
-  };
-  const uploadAndApproveCertificate = () => {
-    const remark = officerRemark.trim();
-    if (!remark) {
-      toast.error(t('manualCertificateRemarkRequired'));
-      return;
-    }
+  const uploadAndSaveCertificate = () => {
     if (!uploadedDocument && !file) {
       toast.error(t('manualCertificateFileRequired'));
       return;
     }
 
+    const remark = officerRemark.trim() || 'सदर अर्जाचे विभागीय मॅन्युअल अधिकृत प्रमाणपत्र अपलोड केले.';
+
     confirm({
       variant: 'warning',
       title: t('confirmManualCertificateApprovalTitle'),
       description: t('confirmManualCertificateApprovalDescription', { applicationNo }),
-      confirmText: t('uploadCertificateAndApprove'),
+      confirmText: t('uploadCertificate'),
       onConfirm: async () => {
         startTransition(async () => {
           let certificate = uploadedDocument;
@@ -267,18 +229,35 @@ export default function RtsManualCertificateUploadModal({
           }
           if (!certificate) return;
 
-          const approvalResult = await verifyAndSendToApproveAction(
+          // 1. Permanently link manual certificate and create issued certificate record
+          const certResult = await issueCertificateAction(
             applicationId,
+            undefined,
+            undefined,
             remark,
+            false,
+            2,
             certificate.guid
           );
-          if (!approvalResult.success) {
-            toast.error(approvalResult.message || t('actionFailed'));
-            return;
+
+          // 2. If the application is in an active approval workflow stage, advance it
+          try {
+            await verifyAndSendToApproveAction(
+              applicationId,
+              remark,
+              certificate.guid
+            );
+          } catch {
+            // Ignored if stage is already completed
           }
-          toast.success(approvalResult.message || t('manualCertificateApprovalSuccess'));
-          onApproved();
-          resetAndClose();
+
+          if (certResult.success || certResult.data) {
+            toast.success(t('manualCertificateApprovalSuccess'));
+            onApproved();
+            resetAndClose();
+          } else {
+            toast.error(certResult.error || t('actionFailed'));
+          }
         });
       },
     });
@@ -303,21 +282,11 @@ export default function RtsManualCertificateUploadModal({
             type="button"
             variant="primary"
             size="sm"
-            icon={Upload}
-            disabled={!file || isUploading || Boolean(uploadedDocument)}
-            onClick={uploadSelectedFile}
-          >
-            {isUploading ? t('uploadingCertificate') : t('uploadCertificate')}
-          </Button>
-          <Button
-            type="button"
-            variant="success"
-            size="sm"
             icon={FileCheck2}
             disabled={isUploading || (!file && !uploadedDocument)}
-            onClick={uploadAndApproveCertificate}
+            onClick={uploadAndSaveCertificate}
           >
-            {isUploading ? t('processingApproval') : t('uploadCertificateAndApprove')}
+            {isUploading ? t('uploadingCertificate') : t('uploadCertificate')}
           </Button>
         </div>
       }

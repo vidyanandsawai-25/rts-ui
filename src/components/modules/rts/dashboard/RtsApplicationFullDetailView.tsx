@@ -18,6 +18,8 @@ import {
   Paperclip,
   Printer,
   Shield,
+  Sparkles,
+  Upload,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -26,6 +28,7 @@ import { ApprovalStagesTimeline } from '@/components/modules/rts';
 import RtsApplicationNoteSheetModal from '@/components/modules/rts/dashboard/RtsApplicationNoteSheetModal';
 import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
 import RtsCertificateApprovalModal from '@/components/modules/rts/dashboard/RtsCertificateApprovalModal';
+import RtsManualCertificateUploadModal from '@/components/modules/rts/dashboard/RtsManualCertificateUploadModal';
 import PrintableCertificateModal from '@/components/modules/rts/citizen/PrintableCertificateModal';
 import { Badge, Button, Drawer, Input, Label, ViewButton } from '@/components/common';
 import type { RtsApplicationFullDetailData } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
@@ -119,6 +122,7 @@ export default function RtsApplicationFullDetailView({
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
   const [isPrintCertModalOpen, setIsPrintCertModalOpen] = useState(false);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [isManualCertificateUploadOpen, setIsManualCertificateUploadOpen] = useState(false);
 
   const loading = Boolean(open && record && !data);
   const fieldGroups = useMemo(() => {
@@ -220,7 +224,10 @@ export default function RtsApplicationFullDetailView({
 
   if (!record) return null;
 
-  const isApproved = record.applicationStatus?.toLowerCase().includes('approv');
+  const isApproved = Boolean(
+    record.applicationStatus?.toLowerCase().includes('approv') ||
+    data?.details?.applicationStatus?.toLowerCase().includes('approv')
+  );
   const expandAll = () => setOpenGroups(Object.fromEntries(fieldGroups.map((group) => [group.title, true])));
   const collapseAll = () => setOpenGroups(Object.fromEntries(fieldGroups.map((group) => [group.title, false])));
 
@@ -274,17 +281,56 @@ export default function RtsApplicationFullDetailView({
                   {t('viewReceipt')}
                 </Button>
               )}
-              {isApproved && (
-                <Button
-                  type="button"
-                  icon={FileCheck2}
-                  size="xs"
-                  variant="success"
-                  onClick={() => setIsPrintCertModalOpen(true)}
-                  className="rounded-lg px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
-                >
-                  {t('viewCertificate')}
-                </Button>
+              {isApproved &&
+                data?.details?.isCertificateRequired !== false &&
+                data?.details?.certificateType !== 0 && (
+                (() => {
+                  const isManualType = data?.details?.certificateType === 2;
+                  const hasCertificate = Boolean(data?.details?.issuedCertificateGuid);
+
+                  if (isManualType && !hasCertificate) {
+                    return (
+                      <Button
+                        type="button"
+                        icon={Upload}
+                        size="xs"
+                        variant="primary"
+                        onClick={() => setIsManualCertificateUploadOpen(true)}
+                        className="rounded-lg px-3 text-xs font-bold"
+                      >
+                        {t('uploadCertificate')}
+                      </Button>
+                    );
+                  }
+
+                  if (!isManualType && !hasCertificate) {
+                    return (
+                      <Button
+                        type="button"
+                        icon={Sparkles}
+                        size="xs"
+                        variant="primary"
+                        onClick={() => setIsCertModalOpen(true)}
+                        className="rounded-lg px-3 text-xs font-bold"
+                      >
+                        {t('issueCertificate')}
+                      </Button>
+                    );
+                  }
+
+                  return (
+                    <Button
+                      type="button"
+                      icon={FileCheck2}
+                      size="xs"
+                      variant="success"
+                      onClick={() => setIsPrintCertModalOpen(true)}
+                      className="rounded-lg px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      {t('viewCertificate')}
+                    </Button>
+                  );
+                })()
               )}
             </div>
             <Button variant="secondary" onClick={onClose} size="xs" className="rounded-lg px-5 text-xs font-bold">
@@ -632,6 +678,7 @@ export default function RtsApplicationFullDetailView({
           applicantName={record.citizenName || ''}
           onApproved={() => {
             setIsCertModalOpen(false);
+            window.location.reload();
           }}
         />
       )}
@@ -642,6 +689,22 @@ export default function RtsApplicationFullDetailView({
           onClose={() => setIsPrintCertModalOpen(false)}
           applicationId={record.applicationId}
           applicationNo={record.appId}
+          certificateType={data?.details?.certificateType}
+          isManualCertificate={data?.details?.certificateType === 2}
+          onUploadCertificate={() => setIsManualCertificateUploadOpen(true)}
+        />
+      )}
+
+      {isManualCertificateUploadOpen && record && (
+        <RtsManualCertificateUploadModal
+          isOpen={isManualCertificateUploadOpen}
+          onClose={() => setIsManualCertificateUploadOpen(false)}
+          applicationId={record.applicationId}
+          applicationNo={record.appId}
+          onApproved={() => {
+            setIsManualCertificateUploadOpen(false);
+            window.location.reload();
+          }}
         />
       )}
     </>

@@ -192,6 +192,9 @@ export function normalizeRtsApplicationViewDetailsItem(
     departmentName: parseString(data.departmentName),
     applicationStatus: parseString(data.applicationStatus),
     remark: parseNullableString(data.remark),
+    isCertificateRequired: Boolean(data.isCertificateRequired ?? data.IsCertificateRequired),
+    certificateType: parseNullableNumber(data.certificateType ?? data.CertificateType) ?? 0,
+    issuedCertificateGuid: parseNullableString(data.issuedCertificateGuid ?? data.IssuedCertificateGuid),
     documents,
     applicationDetails,
   };

@@ -62,6 +62,7 @@ export default async function RtsApplicationDashboardPage({
   const requestedServiceSlug = readQuery(query, 'service', 'Service')?.trim().toLowerCase() ?? '';
   const rawStatus = readQuery(query, 'status', 'Status')?.trim();
   const statusByNormalizedValue: Record<string, string> = {
+    all: '',
     pending: 'Pending',
     'application verified': 'Application Verified',
     'document verified': 'Document Verified',
@@ -74,7 +75,7 @@ export default async function RtsApplicationDashboardPage({
     duetoday: 'DueToday',
   };
   const status = rawStatus
-    ? statusByNormalizedValue[rawStatus.toLowerCase()]
+    ? statusByNormalizedValue[rawStatus.toLowerCase()] ?? rawStatus
     : undefined;
   const search = readQuery(query, 'search', 'Search')?.trim() ?? '';
   const pageNumber = getPositivePage(readQuery(query, 'pageNumber', 'PageNumber'));
