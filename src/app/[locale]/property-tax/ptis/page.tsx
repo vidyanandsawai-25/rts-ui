@@ -71,7 +71,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     showOldTaxParam, showMapDetailsParam, showDetailsParam, rateableTaxDetails, capitalTaxDetails,
     rateableTaxError, capitalTaxError, activeTab, hasAppliedRules,
     appliedRulesList, latitude, longitude, waybackReleases, tabHeaderInfo,
-    mappedPropertiesData,
+    mappedPropertiesData, wings,
   } = pageData;
   const ptisParams = parsePtisSearchParams(resolvedSearchParams);
   const valuationTab = ptisParams.tab;
@@ -185,6 +185,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           initialLongitude={longitude}
           initialWaybackReleases={waybackReleases}
           initialVisible={isMediaPanelVisible}
+          wings={wings}
         >
           <div className="flex flex-col gap-2 w-full">
             <PropertyTabSection

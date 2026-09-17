@@ -131,7 +131,7 @@ export function buildDetailsFromResults(
   societyResult: { success: boolean; data?: SocietyDetailsData } | null,
   oldDetailsResult: { success: boolean; data?: OldDetailsData } | null,
   oldFloorResult: { success: boolean; data?: OldFloorDetailsData[] } | null,
-  oldTaxesResult: { success: boolean; data?: OldTaxesData } | null
+  oldTaxesResult: { success: boolean; data?: OldTaxesData | OldTaxesData[] } | null
 ): {
   kycDetails: KYCDetailsData;
   societyDetails: SocietyDetailsData;
@@ -149,6 +149,7 @@ export function buildDetailsFromResults(
     oldFloorTableData: oldFloorResult?.success && Array.isArray(oldFloorResult.data)
       ? oldFloorResult.data : [],
     oldTaxesData: oldTaxesResult?.success && oldTaxesResult.data
-      ? oldTaxesResult.data : null,
+      ? (Array.isArray(oldTaxesResult.data) ? oldTaxesResult.data[0] ?? null : oldTaxesResult.data)
+      : null,
   };
 }

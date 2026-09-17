@@ -12,8 +12,10 @@ import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { fetchPropertyDetailsConcurrently } from './ptis-fetch-concurrent';
 import { mapPtisFetchResults } from './ptis-mapping.helper';
 import { defaultPropertyDetails } from '@/lib/constants/ptis.constants';
+import { getWingWiseDetails } from '@/lib/api/ptis/apartment/apartment-wing.service';
 import type { ActionResult } from '@/types/common.types';
 import type { PropertyListItem } from '@/types/ptis.types';
+import type { WingWiseWingDetails } from '@/types/property-tax/apartment';
 
 export async function fetchPtisPageData(
   searchParams: Record<string, string | string[] | undefined>,
@@ -68,6 +70,7 @@ export async function fetchPtisPageData(
   };
   let propertyListResult: ActionResult<PropertyListItem[]> | null = null;
   let detailResults: unknown[] = [];
+  let fetchedWings: WingWiseWingDetails[] = [];
 
   try {
     if (propertyIdParam && resolvedWardId) {
@@ -79,17 +82,31 @@ export async function fetchPtisPageData(
         showDetailsParam, activeTab
       );
 
-      const [propDetailsRes, propListRes, detailsRes] = await Promise.all([
+      const finalPropNo = propertyNo || searchParams?.propertyNo?.toString() || '';
+      const wingWisePromise = resolvedWardId && finalPropNo
+        ? getWingWiseDetails(resolvedWardId, finalPropNo).catch(() => null)
+        : Promise.resolve(null);
+
+      const [propDetailsRes, propListRes, detailsRes, wingWiseRes] = await Promise.all([
         getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam),
         resolvedWardId
           ? getPropertyListByWardAction(resolvedWardId, 50)
           : Promise.resolve({ success: true, data: [] }),
-        detailsPromise
+        detailsPromise,
+        wingWisePromise,
       ]);
 
       propertyDetailsResult = propDetailsRes;
       propertyListResult = propListRes;
       detailResults = detailsRes;
+      fetchedWings = wingWiseRes?.wings || [];
+
+      if (fetchedWings.length === 0 && resolvedWardId && propDetailsRes.propertyDetails?.propertyNo) {
+        const fallbackWingsRes = await getWingWiseDetails(resolvedWardId, propDetailsRes.propertyDetails.propertyNo).catch(() => null);
+        if (fallbackWingsRes?.wings) {
+          fetchedWings = fallbackWingsRes.wings;
+        }
+      }
     } else {
       // SCENARIO 2: One or both are missing. Resolve sequentially.
       const propDetailsRes = await getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam);
@@ -100,6 +117,7 @@ export async function fetchPtisPageData(
       }
 
       resolvedPropertyId = propertyIdParam ?? propertyDetailsResult.propertyId;
+      const finalPropNo = propertyNo || propertyDetailsResult.propertyDetails?.propertyNo || searchParams?.propertyNo?.toString() || '';
 
       const propListPromise = resolvedWardId
         ? getPropertyListByWardAction(resolvedWardId, 50)
@@ -114,13 +132,19 @@ export async function fetchPtisPageData(
           )
         : Promise.resolve(null);
 
-      const [propListRes, detailsRes] = await Promise.all([
+      const wingWisePromise = resolvedWardId && finalPropNo
+        ? getWingWiseDetails(resolvedWardId, finalPropNo).catch(() => null)
+        : Promise.resolve(null);
+
+      const [propListRes, detailsRes, wingWiseRes] = await Promise.all([
         propListPromise,
-        detailsPromise
+        detailsPromise,
+        wingWisePromise,
       ]);
 
       propertyListResult = propListRes;
       detailResults = detailsRes ? detailsRes : [];
+      fetchedWings = wingWiseRes?.wings || [];
     }
   } catch (err) {
     criticalError = getCleanErrorMessage(err, 'Failed to fetch property details.');
@@ -144,5 +168,6 @@ export async function fetchPtisPageData(
     locale,
     propertyIdParam,
     wardOptions,
+    wings: fetchedWings,
   });
 }

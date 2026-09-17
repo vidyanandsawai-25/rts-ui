@@ -30,6 +30,7 @@ import type {
 } from '@/types/ptis.types';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import type { TaxDetailsResult } from './TaxDetails/fetchTaxDetails';
+import type { WingWiseWingDetails } from '@/types/property-tax/apartment';
 
 type ConcurrentResultsTuple = [
   {
@@ -44,13 +45,13 @@ type ConcurrentResultsTuple = [
   ActionResult<BuildingPermissionData> | null,
   ActionResult<OldDetailsData> | null,
   ActionResult<OldFloorDetailsData[]> | null,
-  ActionResult<OldTaxesData> | null,
+  ActionResult<OldTaxesData[]> | null,
   ActionResult<DiscountData> | null,
   ActionResult<PropertyPhotoTypeWithStatusDto[]> | null,
   ActionResult<PropertyPhotoDto[]> | null,
   ActionResult<DualMethodResponse> | null,
   TaxDetailsResult | null,
-  { success: boolean; data?: { items?: PropertyRuleLogItem[] } } | null,
+  ActionResult<{ items: PropertyRuleLogItem[] }> | null,
   WaybackRelease[] | null,
   ActionResult<TabHeaderInfoData> | null,
   ActionResult<MappedPropertyItem[]> | null,
@@ -75,6 +76,7 @@ export async function mapPtisFetchResults({
   locale,
   propertyIdParam,
   wardOptions,
+  wings = [],
 }: {
   propertyDetailsResult: InitialDataResult;
   propertyListResult: ActionResult<PropertyListItem[]> | null;
@@ -93,6 +95,7 @@ export async function mapPtisFetchResults({
   locale: string;
   propertyIdParam: number | undefined;
   wardOptions: SearchSelectOption[];
+  wings?: WingWiseWingDetails[];
 }) {
   const results = detailResults.length > 0 ? detailResults : Array(19).fill(null);
   const [
@@ -213,6 +216,40 @@ export async function mapPtisFetchResults({
     (rawDataObj as Record<string, unknown>)?.wingId ||
     (rawDataObj as Record<string, unknown>)?.WingId;
 
+  const allWings: WingWiseWingDetails[] = [
+    ...(wings || []),
+    ...(((matchedProp?.wings as unknown as WingWiseWingDetails[]) || []))
+  ];
+
+  const targetWingDetailId =
+    finalWingDetailId ||
+    searchParams?.wingDetailId ||
+    searchParams?.wingdetailid;
+
+  const matchedWing = allWings.find(
+    (w) =>
+      (targetWingDetailId && String(w.wingDetailId) === String(targetWingDetailId)) ||
+      (searchParams?.wingId && String(w.wingMasterId) === String(searchParams.wingId))
+  );
+
+  const resolvedWingName =
+    matchedWing?.wingName?.trim() ||
+    matchedWing?.wingNo?.trim() ||
+    propertyDetailsResult.propertyDetails?.wingName?.trim() ||
+    propertyDetailsResult.propertyDetails?.wingNo?.trim();
+
+  if (resolvedWingName) {
+    if (propertyDetailsResult.propertyDetails && !propertyDetailsResult.propertyDetails.wingName) {
+      propertyDetailsResult.propertyDetails.wingName = resolvedWingName;
+    }
+    if (propertyDetailsResult.propertyDetails && !propertyDetailsResult.propertyDetails.wingNo && matchedWing?.wingNo) {
+      propertyDetailsResult.propertyDetails.wingNo = matchedWing.wingNo;
+    }
+    if (propertyDetailsResult.propertyDetails && !propertyDetailsResult.propertyDetails.wingDetailId && targetWingDetailId) {
+      propertyDetailsResult.propertyDetails.wingDetailId = Number(targetWingDetailId);
+    }
+  }
+
   const hasSocietyInParams = Boolean(
     searchParams?.societyDetailId ||
     searchParams?.societydetailid ||
@@ -233,7 +270,8 @@ export async function mapPtisFetchResults({
     !searchParams?.propertyNo ||
     !searchParams?.wardNo ||
     (Boolean(finalSocietyDetailId) && !hasSocietyInParams) ||
-    (Boolean(finalWingDetailId) && !hasWingInParams)
+    (Boolean(finalWingDetailId) && !hasWingInParams) ||
+    (Boolean(resolvedWingName) && !searchParams?.wingName && !searchParams?.wingname)
   );
 
   const isIdMismatch = Boolean(resolvedPropertyId) && (!propertyIdParam || propertyIdParam !== resolvedPropertyId);
@@ -275,6 +313,9 @@ export async function mapPtisFetchResults({
     }
     if (finalWingDetailId && !hasWingInParams) {
       newParams.set('wingDetailId', String(finalWingDetailId));
+    }
+    if (resolvedWingName && !searchParams?.wingName && !searchParams?.wingname) {
+      newParams.set('wingName', resolvedWingName);
     }
     const currentParams = new URLSearchParams();
     if (searchParams) {
@@ -348,5 +389,6 @@ export async function mapPtisFetchResults({
     waybackReleases,
     tabHeaderInfo,
     mappedPropertiesData,
+    wings: allWings,
   };
 }

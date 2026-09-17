@@ -31,6 +31,7 @@ export interface FooterActionPayload {
   societyId?: string;
   wingDetailId?: string;
   wingId?: string;
+  wingName?: string;
   isRedesign?: boolean;
 }
 
@@ -59,6 +60,7 @@ const ptisEditRedirectSchema = z.object({
   societyId: z.string().optional(),
   wingDetailId: z.string().optional(),
   wingId: z.string().optional(),
+  wingName: z.string().optional(),
   rateableExpand: z.union([z.string(), z.array(z.string())]).optional(),
   capitalExpand: z.union([z.string(), z.array(z.string())]).optional(),
   dualExpand: z.union([z.string(), z.array(z.string())]).optional(),
@@ -136,6 +138,7 @@ export async function handleFooterAction(
           societyId,
           wingDetailId,
           wingId,
+          wingName,
           rateableExpand,
           capitalExpand,
           dualExpand,
@@ -158,6 +161,7 @@ export async function handleFooterAction(
         }
         if (wingDetailId) params.set('wingDetailId', String(wingDetailId));
         if (wingId) params.set('wingId', String(wingId));
+        if (wingName) params.set('wingName', String(wingName));
 
         const handleExpand = (key: string, val: string | string[] | undefined) => {
           if (val) {

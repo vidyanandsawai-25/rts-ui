@@ -110,6 +110,17 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
       params.set('wingdetailid', String(resolvedWingDetailId));
     }
 
+    const resolvedWingName =
+      (item as unknown as { wingName?: string })?.wingName ??
+      (rawItem.wingName as string | undefined) ??
+      (item as unknown as { wing?: string })?.wing ??
+      (rawItem.wing as string | undefined) ??
+      searchParams.get('wingName') ??
+      searchParams.get('wingname');
+    if (resolvedWingName) {
+      params.set('wingName', String(resolvedWingName));
+    }
+
     const resolvedSocietyDetailId =
       (rawItem.societyDetailId as string | number | undefined) ??
       (rawItem.societydetailid as string | number | undefined) ??

@@ -19,6 +19,8 @@ import { launchPhotoPlanDrawingToolAction, getPhotosByPropertyAction } from '@/a
 import { getPhotoSlotsAction, getPropertyPhotosAction } from '@/app/[locale]/property-tax/ptis/media-fetch.action';
 import { getWingPhotoTypesWithStatusAction, getPhotosByWingAction } from '@/app/[locale]/property-tax/ptis/WingPhoto.action';
 import { getPropertyDrawPlanStatus } from '@/lib/api/property.service';
+import { getWingWiseDetailsAction } from '@/app/[locale]/property-tax/ptis/apartment/action';
+import { fetchWardIdAction } from '@/app/[locale]/property-tax/ptis/actions';
 import type { WingWiseWingDetails } from '@/types/property-tax/apartment';
 
 export interface PropertyItem {
@@ -124,12 +126,55 @@ function PropertyMediaPanel({
     useMediaDrawerState();
   const { togglePanel } = useMediaPanel();
 
+  const [fetchedWings, setFetchedWings] = useState<WingWiseWingDetails[]>([]);
+
+  const effectiveWings = React.useMemo(() => {
+    if (wings && wings.length > 0) return wings;
+    return fetchedWings;
+  }, [wings, fetchedWings]);
+
   const searchWingName = searchParams?.get('wingName') || searchParams?.get('wingname') || searchParams?.get('wingNo') || searchParams?.get('wingno');
   const selectedWingId = searchParams?.get('wingId');
   const selectedWingDetailId = searchWingDetailId || searchParams?.get('wingDetailId');
+  const searchWardId = searchParams?.get('wardId') || searchParams?.get('wardid');
+  const queryPropNo = effectivePropertyNo;
+
+  useEffect(() => {
+    let isSubscribed = true;
+    if (
+      effectiveWings.length === 0 &&
+      (selectedWingDetailId || searchWingDetailId) &&
+      queryPropNo &&
+      (searchWardId || effectiveWardNo)
+    ) {
+      const resolveAndFetchWings = async () => {
+        try {
+          let targetWardId = searchWardId;
+          if (!targetWardId && effectiveWardNo) {
+            const wardRes = await fetchWardIdAction(effectiveWardNo);
+            if (wardRes.success && wardRes.data?.wardId) {
+              targetWardId = String(wardRes.data.wardId);
+            }
+          }
+          if (targetWardId) {
+            const res = await getWingWiseDetailsAction(targetWardId, queryPropNo);
+            if (isSubscribed && res.success && res.data?.wings && res.data.wings.length > 0) {
+              setFetchedWings(res.data.wings);
+            }
+          }
+        } catch {
+          // Non-blocking catch
+        }
+      };
+      void resolveAndFetchWings();
+    }
+    return () => {
+      isSubscribed = false;
+    };
+  }, [effectiveWings.length, selectedWingDetailId, searchWingDetailId, searchWardId, effectiveWardNo, queryPropNo]);
 
   const matchedWing = React.useMemo(() => {
-    return wings.find(
+    return effectiveWings.find(
       (w) =>
         (selectedWingDetailId && String(w.wingDetailId) === String(selectedWingDetailId)) ||
         (selectedWingId && String(w.wingMasterId) === String(selectedWingId)) ||
@@ -140,20 +185,20 @@ function PropertyMediaPanel({
           (w.wingName && w.wingName.toLowerCase() === `${searchWingName.toLowerCase()} wing`)
         ))
     );
-  }, [wings, selectedWingId, selectedWingDetailId, searchWingName]);
+  }, [effectiveWings, selectedWingId, selectedWingDetailId, searchWingName]);
 
   const effectiveWingDetailId =
     matchedWing?.wingDetailId ??
-    (selectedWingDetailId ? Number(selectedWingDetailId) : (wings && wings.length > 0 ? wings[0].wingDetailId : null));
+    (selectedWingDetailId ? Number(selectedWingDetailId) : (effectiveWings && effectiveWings.length > 0 ? effectiveWings[0].wingDetailId : null));
 
   const effectiveWingName =
     (matchedWing?.wingName && matchedWing.wingName.trim()) ||
     (matchedWing?.wingNo && `${matchedWing.wingNo} Wing`) ||
     (searchWingName && searchWingName.trim()) ||
-    (wings && wings.length > 0 ? (wings[0].wingName || (wings[0].wingNo ? `${wings[0].wingNo} Wing` : '')) : '');
+    (effectiveWings && effectiveWings.length > 0 ? (effectiveWings[0].wingName || (effectiveWings[0].wingNo ? `${effectiveWings[0].wingNo} Wing` : '')) : '');
 
   const resolvedSocietyDetailId =
-    effectiveSocietyDetailId ?? (searchSocietyDetailId ? Number(searchSocietyDetailId) : null) ?? matchedWing?.societyId ?? (wings && wings.length > 0 ? wings[0].societyId : null);
+    effectiveSocietyDetailId ?? (searchSocietyDetailId ? Number(searchSocietyDetailId) : null) ?? matchedWing?.societyId ?? (effectiveWings && effectiveWings.length > 0 ? effectiveWings[0].societyId : null);
 
   const isAmenityFlag =
     propPropertyTypeId === 140 ||
@@ -218,7 +263,7 @@ function PropertyMediaPanel({
     initialWaybackReleases: initialWaybackReleases,
     onPhotosChange,
     onPhotoSlotsChange,
-    wings,
+    wings: effectiveWings,
     wingName: effectiveWingName,
     wingDetailId: effectiveWingDetailId,
     isMainProperty: effectiveIsMainProperty,
@@ -647,7 +692,7 @@ function PropertyMediaPanel({
             t={t}
             openDrawer={handleOpenDrawer}
             handleImageHover={handleImageHover}
-            wings={wings}
+            wings={effectiveWings}
             wingName={effectiveWingName}
             handleImageLeave={handleImageLeave}
             cancelImageLeave={cancelImageLeave}

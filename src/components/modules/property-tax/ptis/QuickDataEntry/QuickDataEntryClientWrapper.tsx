@@ -149,13 +149,17 @@ function QuickDataEntryContent({
                 sessionStorage.removeItem('qde_is_apartment');
             }
 
+            const wingName = searchParams.get('wingName') || searchParams.get('wingname');
+            const wingDetailId = searchParams.get('wingDetailId') || searchParams.get('wingdetailid');
+            const societyDetailId = searchParams.get('societyDetailId') || searchParams.get('societydetailid') || searchParams.get('societyId');
+
             if (isApartment) {
-                const societyId = searchParams.get('societyId');
+                const societyId = searchParams.get('societyId') || societyDetailId;
                 const wingId = searchParams.get('wingId');
-                const wingDetailId = searchParams.get('wingDetailId');
                 if (societyId) params.set('societyId', societyId);
                 if (wingId) params.set('wingId', wingId);
                 if (wingDetailId) params.set('wingDetailId', wingDetailId);
+                if (wingName) params.set('wingName', wingName);
                 router.push(`/${locale}/property-tax/ptis/apartment?${params}`);
             } else {
                 if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
@@ -164,6 +168,9 @@ function QuickDataEntryContent({
                 if (subTab) params.set('subTab', subTab);
                 if (showDetails) params.set('showDetails', showDetails);
                 if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
+                if (wingDetailId) params.set('wingDetailId', wingDetailId);
+                if (wingName) params.set('wingName', wingName);
+                if (societyDetailId) params.set('societyDetailId', societyDetailId);
                 rateableExpands.forEach(v => params.append('rateableExpand', v));
                 capitalExpands.forEach(v => params.append('capitalExpand', v));
                 dualExpands.forEach(v => params.append('dualExpand', v));
@@ -276,6 +283,16 @@ function QuickDataEntryContent({
                     <Layers className="h-3 w-3 text-white/80" />
                     <span>{t('roomSubmission.info.partition')}: {appartmentPartition || partitionNo || '—'}</span>
                 </div>
+                {(() => {
+                    const wing = searchParams.get('wingName') || searchParams.get('wingname');
+                    if (!wing) return null;
+                    return (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
+                            <Layers className="h-3 w-3 text-white/80" />
+                            <span>{t('aliasFallback.wing') || 'Wing'}: {wing}</span>
+                        </div>
+                    );
+                })()}
                 {(() => {
                     const rawCat = categoryName || searchParams.get('propertyCategory') || searchParams.get('categoryName') || '';
                     const hasPartition = Boolean(appartmentPartition || partitionNo);
