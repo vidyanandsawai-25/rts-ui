@@ -32,15 +32,15 @@ export async function getUlbConfigForLogin(): Promise<UlbMaster | undefined> {
   const defaultUlb: UlbMaster = {
     id: 1,
     ulbCode: "ULB",
-    ulbName: "Akola Municipal Corporation",
-    ulbNameLocal: "अकोला महानगरपालिका, अकोला",
+    ulbName: "Municipal Corporation",
+    ulbNameLocal: "महानगरपालिका",
     ulbTypeId: 1,
     isActive: true,
-    ulbLogo: "/images/logo.png",
-    email: "support@akolamc.in",
+    ulbLogo: "/images/councilLogo/logo.png",
+    email: "support@ulb.gov.in",
     phoneNo: "18002689959",
-    websiteUrl: "https://akolamc.in",
-    ulbAddress: "Akola Municipal Corporation Administrative Building",
+    websiteUrl: "https://ulb.gov.in",
+    ulbAddress: "Municipal Corporation Administrative Building",
   };
 
   try {
