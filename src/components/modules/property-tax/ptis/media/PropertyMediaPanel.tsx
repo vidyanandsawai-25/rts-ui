@@ -124,24 +124,33 @@ function PropertyMediaPanel({
     useMediaDrawerState();
   const { togglePanel } = useMediaPanel();
 
+  const searchWingName = searchParams?.get('wingName') || searchParams?.get('wingname') || searchParams?.get('wingNo') || searchParams?.get('wingno');
   const selectedWingId = searchParams?.get('wingId');
   const selectedWingDetailId = searchWingDetailId || searchParams?.get('wingDetailId');
 
   const matchedWing = React.useMemo(() => {
     return wings.find(
       (w) =>
-        (selectedWingDetailId && String(w.wingDetailId) === selectedWingDetailId) ||
-        (selectedWingId && String(w.wingMasterId) === selectedWingId)
+        (selectedWingDetailId && String(w.wingDetailId) === String(selectedWingDetailId)) ||
+        (selectedWingId && String(w.wingMasterId) === String(selectedWingId)) ||
+        (searchWingName && (
+          (w.wingName && w.wingName.toLowerCase() === searchWingName.toLowerCase()) ||
+          (w.wingNo && w.wingNo.toLowerCase() === searchWingName.toLowerCase()) ||
+          (w.wingName && w.wingName.toLowerCase() === `wing ${searchWingName.toLowerCase()}`) ||
+          (w.wingName && w.wingName.toLowerCase() === `${searchWingName.toLowerCase()} wing`)
+        ))
     );
-  }, [wings, selectedWingId, selectedWingDetailId]);
+  }, [wings, selectedWingId, selectedWingDetailId, searchWingName]);
 
   const effectiveWingDetailId =
     matchedWing?.wingDetailId ??
     (selectedWingDetailId ? Number(selectedWingDetailId) : (wings && wings.length > 0 ? wings[0].wingDetailId : null));
 
-  const effectiveWingName = matchedWing
-    ? (matchedWing.wingName || `${matchedWing.wingNo} Wing`)
-    : (wings && wings.length > 0 ? (wings[0].wingName || `${wings[0].wingNo} Wing`) : (searchParams?.get('wingName') || ''));
+  const effectiveWingName =
+    (matchedWing?.wingName && matchedWing.wingName.trim()) ||
+    (matchedWing?.wingNo && `${matchedWing.wingNo} Wing`) ||
+    (searchWingName && searchWingName.trim()) ||
+    (wings && wings.length > 0 ? (wings[0].wingName || (wings[0].wingNo ? `${wings[0].wingNo} Wing` : '')) : '');
 
   const resolvedSocietyDetailId =
     effectiveSocietyDetailId ?? (searchSocietyDetailId ? Number(searchSocietyDetailId) : null) ?? matchedWing?.societyId ?? (wings && wings.length > 0 ? wings[0].societyId : null);
@@ -210,6 +219,8 @@ function PropertyMediaPanel({
     onPhotosChange,
     onPhotoSlotsChange,
     wings,
+    wingName: effectiveWingName,
+    wingDetailId: effectiveWingDetailId,
     isMainProperty: effectiveIsMainProperty,
     categoryId: effectiveCategoryId,
     propertyTypeId: effectivePropertyTypeId,
@@ -583,8 +594,6 @@ function PropertyMediaPanel({
       confirm,
       getSelectPropertyErrorMsg,
       photoPlanPhoto,
-      effectiveWingDetailId,
-      resolvedSocietyDetailId,
     ]
   );
 
@@ -622,58 +631,61 @@ function PropertyMediaPanel({
     [effectiveId, launchDrawingApp, setIsTypeModalOpen, setPhotos]
   );
 
-  if (loading) {
-    return <PropertyMediaPanelSkeleton />;
-  }
-
   return (
-    <div className="h-auto lg:h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 relative">
-      <PropertyMediaPanelContent
-        categories={categories}
-        t={t}
-        openDrawer={handleOpenDrawer}
-        handleImageHover={handleImageHover}
-        wings={wings}
-        handleImageLeave={handleImageLeave}
-        cancelImageLeave={cancelImageLeave}
-        hoverPreview={hoverPreview}
-        propertyPhoto={propertyPhoto}
-        propertyPhotoCategory={propertyPhotoCategory}
-        societyPhoto={societyPhoto}
-        societyPhotoCategory={societyPhotoCategory}
-        wingPhoto={wingPhoto}
-        wingPhotoCategory={wingPhotoCategory}
-        photoPlanPhoto={photoPlanPhoto}
-        photoPlanCategory={photoPlanCategory}
-        amenityPhoto={amenityPhoto}
-        amenityPhotoCategory={amenityPhotoCategory}
-        isAmenityProperty={isAmenityProperty}
-        handleCreateClick={handleCreateClick}
-        gisPhoto={gisPhoto}
-        hasCoords={hasCoords}
-        cdBeforeImg={cdBeforeImg}
-        cdAfterImg={cdAfterImg}
-        cdBeforeLabel={cdBeforeLabel}
-        cdAfterLabel={cdAfterLabel}
-        fallbackBeforeUrl={fallbackBeforeUrl}
-        fallbackAfterUrl={fallbackAfterUrl}
-        cdCategory={cdCategory}
-        isMainProperty={effectiveIsMainProperty}
-      />
-
-      <div className="absolute top-1/2 -translate-y-1/2 -left-5 z-50 sm:hidden lg:block">
-        <button
-          type="button"
-          onClick={togglePanel}
-          className="w-10 h-24 flex items-center justify-center bg-transparent p-0 border-none outline-none focus:outline-none cursor-pointer hover:scale-110 active:scale-95 group transition-transform duration-200"
-          aria-label="Close panel"
-        >
-          <ChevronRight
-            className="w-6 h-6 text-[#64748B] group-hover:text-[#2563EB] scale-y-[3.5] scale-x-[1.5] opacity-75 group-hover:opacity-100 animate-pulse group-hover:animate-none transition-all"
-            strokeWidth={2.5}
+    <>
+      {loading ? (
+        <PropertyMediaPanelSkeleton />
+      ) : (
+        <div className="h-auto lg:h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 relative">
+          <PropertyMediaPanelContent
+            categories={categories}
+            t={t}
+            openDrawer={handleOpenDrawer}
+            handleImageHover={handleImageHover}
+            wings={wings}
+            wingName={effectiveWingName}
+            handleImageLeave={handleImageLeave}
+            cancelImageLeave={cancelImageLeave}
+            hoverPreview={hoverPreview}
+            propertyPhoto={propertyPhoto}
+            propertyPhotoCategory={propertyPhotoCategory}
+            societyPhoto={societyPhoto}
+            societyPhotoCategory={societyPhotoCategory}
+            wingPhoto={wingPhoto}
+            wingPhotoCategory={wingPhotoCategory}
+            photoPlanPhoto={photoPlanPhoto}
+            photoPlanCategory={photoPlanCategory}
+            amenityPhoto={amenityPhoto}
+            amenityPhotoCategory={amenityPhotoCategory}
+            isAmenityProperty={isAmenityProperty}
+            handleCreateClick={handleCreateClick}
+            gisPhoto={gisPhoto}
+            hasCoords={hasCoords}
+            cdBeforeImg={cdBeforeImg}
+            cdAfterImg={cdAfterImg}
+            cdBeforeLabel={cdBeforeLabel}
+            cdAfterLabel={cdAfterLabel}
+            fallbackBeforeUrl={fallbackBeforeUrl}
+            fallbackAfterUrl={fallbackAfterUrl}
+            cdCategory={cdCategory}
+            isMainProperty={effectiveIsMainProperty}
           />
-        </button>
-      </div>
+
+          <div className="absolute top-1/2 -translate-y-1/2 -left-5 z-50 sm:hidden lg:block">
+            <button
+              type="button"
+              onClick={togglePanel}
+              className="w-10 h-24 flex items-center justify-center bg-transparent p-0 border-none outline-none focus:outline-none cursor-pointer hover:scale-110 active:scale-95 group transition-transform duration-200"
+              aria-label="Close panel"
+            >
+              <ChevronRight
+                className="w-6 h-6 text-[#64748B] group-hover:text-[#2563EB] scale-y-[3.5] scale-x-[1.5] opacity-75 group-hover:opacity-100 animate-pulse group-hover:animate-none transition-all"
+                strokeWidth={2.5}
+              />
+            </button>
+          </div>
+        </div>
+      )}
 
       {isDrawerOpen && effectiveId > 0 && (
         <PhotoPlanDrawer
@@ -711,7 +723,7 @@ function PropertyMediaPanel({
           onSuccess={handleTypeAssigned}
         />
       )}
-    </div>
+    </>
   );
 }
 

@@ -111,6 +111,7 @@ export function PhotoPlanCarousel({
               <div className="flex-1 bg-slate-100 overflow-hidden relative">
                 <ImageWithFallback
                   src={img.src}
+                  documentGuid={img.documentGuid}
                   alt={img.title}
                   className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                   width={100}

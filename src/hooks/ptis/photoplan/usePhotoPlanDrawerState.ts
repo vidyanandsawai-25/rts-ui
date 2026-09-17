@@ -53,7 +53,9 @@ export function usePhotoPlanDrawerState({
   const initialHasImages = initialCat?.images && initialCat.images.length > 0;
 
   const [selectedImageIndex, setSelectedImageIndexState] = useState<number | null>(() => {
-    const val = searchParams.get('selectedImageIndex');
+    const val = typeof window !== 'undefined'
+      ? (new URLSearchParams(window.location.search).get('selectedImageIndex') ?? searchParams.get('selectedImageIndex'))
+      : searchParams.get('selectedImageIndex');
     if (val !== null) {
       const parsed = parseInt(val, 10);
       return !isNaN(parsed) ? parsed : (initialHasImages ? 0 : null);
@@ -62,7 +64,9 @@ export function usePhotoPlanDrawerState({
   });
 
   const [viewMode, setViewModeState] = useState<'grid' | 'viewer' | 'compare'>(() => {
-    const val = searchParams.get('viewMode');
+    const val = typeof window !== 'undefined'
+      ? (new URLSearchParams(window.location.search).get('viewMode') ?? searchParams.get('viewMode'))
+      : searchParams.get('viewMode');
     if (val === 'grid' || val === 'viewer' || val === 'compare') return val;
     if (initialCat?.photoTypeCode === 'CHANGE_DETECTION') {
       return initialHasImages ? 'compare' : 'grid';
@@ -230,7 +234,12 @@ export function usePhotoPlanDrawerState({
   const setViewerIndexAndMode = useCallback((idx: number | null, mode: 'grid' | 'viewer' | 'compare') => {
     setSelectedImageIndexState(idx);
     setViewModeState(mode);
-  }, [setSelectedImageIndexState, setViewModeState]);
+    updateUrlParams({
+      photoCategoryIndex: selectedCategoryIndex.toString(),
+      selectedImageIndex: idx !== null ? idx.toString() : null,
+      viewMode: mode,
+    });
+  }, [setSelectedImageIndexState, setViewModeState, selectedCategoryIndex, updateUrlParams]);
 
   const [prevInitialCategoryIndex, setPrevInitialCategoryIndex] = useState(initialCategoryIndex);
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -242,9 +251,13 @@ export function usePhotoPlanDrawerState({
       const hasImages = targetCat?.images && targetCat.images.length > 0;
       let targetIdx: number | null = hasImages ? 0 : null;
       let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION' ? (hasImages ? 'compare' : 'grid') : (hasImages ? 'viewer' : 'grid');
-      const selParam = searchParams.get('selectedImageIndex');
+      const selParam = typeof window !== 'undefined'
+        ? (new URLSearchParams(window.location.search).get('selectedImageIndex') ?? searchParams.get('selectedImageIndex'))
+        : searchParams.get('selectedImageIndex');
       if (selParam !== null && !isNaN(parseInt(selParam, 10))) targetIdx = parseInt(selParam, 10);
-      const modeParam = searchParams.get('viewMode');
+      const modeParam = typeof window !== 'undefined'
+        ? (new URLSearchParams(window.location.search).get('viewMode') ?? searchParams.get('viewMode'))
+        : searchParams.get('viewMode');
       if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
       setSelectedImageIndexState(targetIdx);
       setViewModeState(targetMode);
@@ -326,16 +339,17 @@ export function usePhotoPlanDrawerState({
     const img = selectedImageIndex !== null ? activeCategory?.images[selectedImageIndex] : null;
     if (!img) return;
 
-    if (img.documentGuid) {
+    const guid = img.documentGuid || (img.src || img.downloadUrl || '').match(/\/documents\/([^/]+)/)?.[1];
+    if (guid) {
       void downloadDocumentClient(
-        img.documentGuid,
+        decodeURIComponent(guid),
         `${img.title.replace(/\s+/g, '_')}.png`
       );
       return;
     }
 
     const downloadHref = img.downloadUrl || img.src;
-    if (downloadHref) {
+    if (downloadHref && !downloadHref.includes('/api/documents/')) {
       Object.assign(document.createElement('a'), {
         href: downloadHref, download: `${img.title.replace(/\s+/g, '_')}.png`
       }).click();

@@ -94,6 +94,25 @@ export function findCategory(categories: PhotoCategory[], codeKeywords: string[]
   });
 }
 
+export function formatWingCardLabel(baseLabel: string, wingName?: string | null): string {
+  if (!wingName || !wingName.trim()) return baseLabel;
+  const trimmed = wingName.trim();
+  const cleanWing = trimmed.replace(/^(?:wing\s+)/i, '').replace(/(?:\s+wing)$/i, '').trim() || trimmed;
+
+  // Check if baseLabel already contains the wing name in parentheses or as a distinct token
+  const escapedClean = cleanWing.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedTrimmed = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(?:\\(${escapedClean}\\)|\\b${escapedClean}\\b|\\(${escapedTrimmed}\\)|\\b${escapedTrimmed}\\b)`, 'i');
+
+  if (regex.test(baseLabel)) {
+    return baseLabel;
+  }
+
+  // If baseLabel already had a different parenthesized suffix like "(A)" or "(Wing A)", remove it first to avoid duplicate suffixes
+  const strippedBase = baseLabel.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  return `${strippedBase} (${cleanWing})`;
+}
+
 export function mapSlotsToCategories(
   slots: PropertyPhotoTypeWithStatusDto[],
   uploadedPhotos: PropertyPhotoDto[] = [],
@@ -151,8 +170,8 @@ export function mapSlotsToCategories(
       s.photoTypeCode?.toUpperCase().includes('WING') ||
       s.photoTypeName?.toLowerCase().includes('wing')
     );
-    if (wingName && isWingSlot && !nameVal.includes(`(${wingName})`)) {
-      nameVal = `${nameVal} (${wingName})`;
+    if (wingName && isWingSlot) {
+      nameVal = formatWingCardLabel(nameVal, wingName);
     }
     nameVal = nameVal.replace(/(\([^)]+\))\s*\1+/g, '$1');
 
@@ -466,8 +485,8 @@ export function mapSlotsToCategories(
     const count = catPhotos.length;
 
     let catName = cat.photoTypeName;
-    if (wingName && isWingCat && !catName.includes(`(${wingName})`)) {
-      catName = `${catName} (${wingName})`.replace(/(\([^)]+\))\s*\1+/g, '$1');
+    if (wingName && isWingCat) {
+      catName = formatWingCardLabel(catName, wingName).replace(/(\([^)]+\))\s*\1+/g, '$1');
     }
 
     return {

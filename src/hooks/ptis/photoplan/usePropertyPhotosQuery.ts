@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 
 export interface UsePropertyPhotosQueryResult {
@@ -164,6 +164,32 @@ export function usePropertyPhotosQuery(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const hasLoadedDataRef = useRef(
+    Boolean(
+      (propertyId && propertyMediaCache.has(cacheKey)) ||
+      initialPhotoSlots?.length ||
+      initialPhotos?.length
+    )
+  );
+
+  useEffect(() => {
+    if (photoSlots.length > 0 || photos.length > 0) {
+      hasLoadedDataRef.current = true;
+    }
+  }, [photoSlots.length, photos.length]);
+
+  const prevQueryPropIdRef = useRef(propertyId);
+  useEffect(() => {
+    if (propertyId !== prevQueryPropIdRef.current) {
+      prevQueryPropIdRef.current = propertyId;
+      hasLoadedDataRef.current = Boolean(
+        (propertyId && propertyMediaCache.has(cacheKey)) ||
+        initialPhotoSlots?.length ||
+        initialPhotos?.length
+      );
+    }
+  }, [propertyId, cacheKey, initialPhotoSlots, initialPhotos]);
+
   useEffect(() => {
     if (!propertyId) {
       setPhotoSlots([]);
@@ -199,7 +225,9 @@ export function usePropertyPhotosQuery(
     let isSubscribed = true;
 
     if (!cacheValid) {
-      setLoading(true);
+      if (!hasLoadedDataRef.current) {
+        setLoading(true);
+      }
       setError(null);
 
       const promises: Promise<unknown>[] = [
@@ -309,6 +337,7 @@ export function usePropertyPhotosQuery(
           }
         })
         .finally(() => {
+          hasLoadedDataRef.current = true;
           if (isSubscribed) setLoading(false);
         });
     }
@@ -320,7 +349,9 @@ export function usePropertyPhotosQuery(
 
   const refetch = useCallback(async () => {
     if (!propertyId) return;
-    setLoading(true);
+    if (!hasLoadedDataRef.current) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const promises: Promise<unknown>[] = [
@@ -424,6 +455,7 @@ export function usePropertyPhotosQuery(
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to reload property media');
     } finally {
+      hasLoadedDataRef.current = true;
       setLoading(false);
     }
   }, [propertyId, targetWingId, cacheKey]);

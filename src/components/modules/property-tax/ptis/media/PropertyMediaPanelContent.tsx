@@ -5,6 +5,7 @@ import { Button } from '@/components/common';
 import { Images, X, Plus } from 'lucide-react';
 import { ImageHoverPreview } from './ImageHoverPreview';
 import { MediaImageCard, AdditionalImagesGrid, type AdditionalImage } from './MediaImageCards';
+import { formatWingCardLabel } from './mediaData';
 import { ChangeDetectionCard } from './ChangeDetectionCard';
 import { GisMapCard } from './GisMapCard';
 import type { PhotoCategory } from './PhotoPlanSidebar';
@@ -15,6 +16,7 @@ interface PropertyMediaPanelContentProps {
   categories: PhotoCategory[];
   t: (key: string) => string;
   wings?: WingWiseWingDetails[];
+  wingName?: string;
   openDrawer: (categoryIndex: number, imageIndex?: number, mode?: 'view' | 'create') => void;
   handleImageHover: (
     src: string,
@@ -82,6 +84,7 @@ export function PropertyMediaPanelContent({
   fallbackAfterUrl,
   cdCategory,
   wings: _wings = [],
+  wingName,
   isMainProperty = false,
 }: PropertyMediaPanelContentProps): React.ReactElement {
   const isSociety = !isAmenityProperty && categories.some((c) => c.photoTypeCode?.startsWith('SOCIETY_') || c.photoTypeCode?.includes('SOCIETY'));
@@ -95,10 +98,23 @@ export function PropertyMediaPanelContent({
   const wingRemainingImages = React.useMemo(() => wingPhotoCategory?.images.slice(1) || [], [wingPhotoCategory]);
   const propertyRemainingImages = React.useMemo(() => propertyPhotoCategory?.images.slice(1) || [], [propertyPhotoCategory]);
 
+  const wingCardLabel = formatWingCardLabel(
+    wingPhotoCategory?.photoTypeName || wingPhoto?.title || (t('media.wingPhoto') || 'Wing Photo'),
+    wingName
+  );
+
+  const effectiveWingPhotoTitle = wingPhoto?.title
+    ? formatWingCardLabel(wingPhoto.title, wingName)
+    : wingCardLabel;
+
+  const effectiveWingPhotoAlt = wingPhoto?.alt
+    ? formatWingCardLabel(wingPhoto.alt, wingName)
+    : wingCardLabel;
+
   const mainCardLabel = isSociety
     ? (t('media.societyPhoto') || 'Society Photo')
     : isWing
-      ? (t('media.wingPhoto') || 'Wing Photo')
+      ? wingCardLabel
       : (t('media.propertyPhoto') || 'Property Photo');
 
   return (
@@ -174,12 +190,12 @@ export function PropertyMediaPanelContent({
               src={wingPhoto?.src || ''}
               documentGuid={wingPhoto?.documentGuid}
               fullSrc={wingPhoto?.fullSrc || ''}
-              alt={wingPhoto?.alt || (t('media.wingPhoto') || 'Wing Photo')}
-              label={wingPhoto?.title || (t('media.wingPhoto') || 'Wing Photo')}
+              alt={effectiveWingPhotoAlt}
+              label={effectiveWingPhotoTitle}
               hoverBorderColor="hover:border-blue-500"
               badgeText={expandedCategory !== 'wing' && wingRemainingImages.length > 0 ? `+${wingRemainingImages.length} ${t('media.more') || 'More'}` : undefined}
               onClick={() => openDrawer(wingPhotoCategory ? categories.indexOf(wingPhotoCategory) : 0, 0)}
-              onMouseEnter={() => handleImageHover(wingPhoto?.fullSrc || wingPhoto?.src || '', wingPhoto?.title || (t('media.wingPhoto') || 'Wing Photo'))}
+              onMouseEnter={() => handleImageHover(wingPhoto?.fullSrc || wingPhoto?.src || '', effectiveWingPhotoTitle)}
               onMouseLeave={handleImageLeave}
               hasPhoto={wingPhoto?.hasPhoto}
             >
@@ -324,12 +340,12 @@ export function PropertyMediaPanelContent({
               src={wingPhoto?.src || ''}
               documentGuid={wingPhoto?.documentGuid}
               fullSrc={wingPhoto?.fullSrc || ''}
-              alt={wingPhoto?.alt || (t('media.wingPhoto') || 'Wing Photo')}
-              label={wingPhoto?.title || (t('media.wingPhoto') || 'Wing Photo')}
+              alt={effectiveWingPhotoAlt}
+              label={effectiveWingPhotoTitle}
               hoverBorderColor="hover:border-blue-500"
               badgeText={expandedCategory !== 'wing' && wingRemainingImages.length > 0 ? `+${wingRemainingImages.length} ${t('media.more') || 'More'}` : undefined}
               onClick={() => openDrawer(wingPhotoCategory ? categories.indexOf(wingPhotoCategory) : 0, 0)}
-              onMouseEnter={() => handleImageHover(wingPhoto?.fullSrc || wingPhoto?.src || '', wingPhoto?.title || (t('media.wingPhoto') || 'Wing Photo'))}
+              onMouseEnter={() => handleImageHover(wingPhoto?.fullSrc || wingPhoto?.src || '', effectiveWingPhotoTitle)}
               onMouseLeave={handleImageLeave}
               hasPhoto={wingPhoto?.hasPhoto}
             >

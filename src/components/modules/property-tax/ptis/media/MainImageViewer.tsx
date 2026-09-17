@@ -75,9 +75,9 @@ export function MainImageViewer({ src, documentGuid, alt, rotation }: MainImageV
     transition: (isDragging || isZooming) ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   };
 
-  const effectiveSrc = resolvedSrc || src;
+  const effectiveSrc = resolvedSrc || (documentGuid || (src && (src.includes('/documents/') || src.startsWith('/api/documents'))) ? '' : src);
 
-  if ((!src && !documentGuid) || (hasError && !isLoading && !effectiveSrc)) {
+  if ((!src && !documentGuid) || (hasError && !isLoading && !effectiveSrc) || (!effectiveSrc && !isLoading)) {
     return <ImageErrorFallback alt={alt} errorLabel={t('media.imageUnavailable') || 'Image Unavailable'} />;
   }
 
@@ -94,20 +94,29 @@ export function MainImageViewer({ src, documentGuid, alt, rotation }: MainImageV
     >
       <div style={rotateStyle} className="relative flex items-center justify-center w-full h-full pointer-events-none">
         {isLoading && <ImageLoadingSkeleton />}
-        {!hasError && effectiveSrc && (
-          <NextImage
-            src={effectiveSrc}
-            alt={alt}
-            fill
-            sizes="(max-width: 1280px) 80vw, 70vw"
-            className="object-contain"
-            priority
-            quality={75}
-            onLoad={handleLoad}
-            onError={handleError}
-            unoptimized
-          />
-        )}
+        {!hasError && effectiveSrc && (() => {
+          const isTest = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+          const isDataOrBlob = effectiveSrc.startsWith('data:') || effectiveSrc.startsWith('blob:');
+          const shouldUnoptimize = isDataOrBlob || isTest;
+          const normalizedSrc =
+            !shouldUnoptimize && !effectiveSrc.startsWith('/') && !effectiveSrc.startsWith('http://') && !effectiveSrc.startsWith('https://')
+              ? `/${effectiveSrc}`
+              : effectiveSrc;
+          return (
+            <NextImage
+              src={normalizedSrc}
+              alt={alt}
+              fill
+              sizes="(max-width: 1280px) 80vw, 70vw"
+              className="object-contain"
+              priority
+              quality={75}
+              onLoad={handleLoad}
+              onError={handleError}
+              unoptimized={shouldUnoptimize}
+            />
+          );
+        })()}
       </div>
 
       <div

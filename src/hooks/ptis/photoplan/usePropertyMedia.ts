@@ -37,6 +37,8 @@ export interface UsePropertyMediaProps {
   partitionNo?: string | null;
   entityType?: string;
   isAmenity?: boolean;
+  wingName?: string;
+  wingDetailId?: number | null;
 }
 
 export function usePropertyMedia({
@@ -49,6 +51,8 @@ export function usePropertyMedia({
   onPhotosChange,
   onPhotoSlotsChange,
   wings: _wings,
+  wingName: propWingName,
+  wingDetailId: propWingDetailId,
   isMainProperty = false,
   categoryId = null,
   propertyTypeId = null,
@@ -66,6 +70,7 @@ export function usePropertyMedia({
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
 
   const searchParams = useSearchParams();
+  const searchWingName = searchParams?.get('wingName') || searchParams?.get('wingname') || searchParams?.get('wingNo') || searchParams?.get('wingno');
   const selectedWingId = searchParams?.get('wingId');
   const rawWingDetailId = (searchParams?.get('wingDetailId') || searchParams?.get('wingdetailid'))
     ? Number(searchParams?.get('wingDetailId') || searchParams?.get('wingdetailid'))
@@ -74,21 +79,30 @@ export function usePropertyMedia({
   const matchedWing = useMemo(() => {
     return (_wings as { wingDetailId?: number; wingMasterId?: number; wingName?: string; wingNo?: string }[] | undefined)?.find(
       (w) =>
+        (propWingDetailId && w.wingDetailId === propWingDetailId) ||
         (rawWingDetailId && w.wingDetailId === rawWingDetailId) ||
-        (selectedWingId && String(w.wingMasterId) === selectedWingId)
+        (selectedWingId && String(w.wingMasterId) === selectedWingId) ||
+        (searchWingName && (
+          (w.wingName && w.wingName.toLowerCase() === searchWingName.toLowerCase()) ||
+          (w.wingNo && w.wingNo.toLowerCase() === searchWingName.toLowerCase())
+        ))
     );
-  }, [_wings, selectedWingId, rawWingDetailId]);
+  }, [_wings, selectedWingId, rawWingDetailId, propWingDetailId, searchWingName]);
 
   const wingsList = _wings as { wingName?: string; wingNo?: string; wingDetailId?: number }[] | undefined;
   const firstWing = wingsList && wingsList.length > 0 ? wingsList[0] : undefined;
   const resolvedWingDetailId =
+    propWingDetailId ??
     matchedWing?.wingDetailId ??
     rawWingDetailId ??
     (firstWing?.wingDetailId ?? null);
 
-  const selectedWingName = matchedWing
-    ? (matchedWing.wingName || (matchedWing.wingNo ? `${matchedWing.wingNo} Wing` : ''))
-    : (searchParams?.get('wingName') || searchParams?.get('wingNo') || (firstWing ? (firstWing.wingName || (firstWing.wingNo ? `${firstWing.wingNo} Wing` : '')) : undefined));
+  const selectedWingName =
+    (propWingName && propWingName.trim()) ||
+    (matchedWing?.wingName && matchedWing.wingName.trim()) ||
+    (matchedWing?.wingNo ? `${matchedWing.wingNo} Wing` : '') ||
+    (searchWingName && searchWingName.trim()) ||
+    (firstWing ? (firstWing.wingName || (firstWing.wingNo ? `${firstWing.wingNo} Wing` : '')) : undefined);
 
   const prevPropertyIdRef = useRef(propertyId);
   const prevPhotosRef = useRef<PropertyPhotoDto[]>(initialPhotos);

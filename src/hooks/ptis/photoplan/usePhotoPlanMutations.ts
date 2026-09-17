@@ -255,8 +255,8 @@ export function usePhotoPlanMutations({
         const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, hasPhoto: true, src: url, fullSrc: url, propertyPhotoId: data.propertyPhotoId, documentGuid: data.documentGuid, downloadUrl: data.downloadUrl || img.downloadUrl, title: targetImg.title, remarks: targetImg.remarks, wingDetailId: wingDetailId ? Number(wingDetailId) : img.wingDetailId, wingName: wingName || img.wingName, societyDetailId: societyId ? Number(societyId) : img.societyDetailId } : img);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updated));
         toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
-        refreshAfterMediaMutation();
         setViewerIndexAndModeValue(index, 'viewer');
+        refreshAfterMediaMutation();
         return true;
       }
       toast.error(res.error || t('media.failedToReplace') || 'Failed to replace photo');
@@ -349,14 +349,13 @@ export function usePhotoPlanMutations({
         };
         const updatedImages = sortByOrder([...activeCategory.images, newImg]);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updatedImages));
-        toast.success(t('media.photoUploadedSuccess') || 'Photo uploaded successfully');
-        refreshAfterMediaMutation();
         const targetPhotoId = res.data.propertyPhotoId;
         let newImgIndex = updatedImages.findIndex((img) => String(img.propertyPhotoId) === String(targetPhotoId));
         if (newImgIndex === -1) {
           newImgIndex = updatedImages.length > 0 ? updatedImages.length - 1 : 0;
         }
         setViewerIndexAndModeValue(newImgIndex, 'viewer');
+        refreshAfterMediaMutation();
       } else toast.error(res.error || t('media.failedToUpload') || 'Failed to upload photo');
     } catch {
       toast.error(t('media.unexpectedError') || 'An unexpected error occurred.');

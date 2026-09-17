@@ -5,6 +5,7 @@ import { Download, Images } from 'lucide-react';
 import { Button, Badge } from '@/components/common';
 import { ImageWithFallback } from './ImageWithFallback';
 import { useTranslations } from 'next-intl';
+import { downloadDocumentClient } from '@/lib/utils/document-client-utils';
 
 export interface AdditionalImage {
   src: string;
@@ -89,6 +90,11 @@ export function MediaImageCard({
             aria-label="Download image"
             onClick={(e) => {
               e.stopPropagation();
+              const guid = documentGuid || (src || fullSrc || '').match(/\/documents\/([^/]+)/)?.[1];
+              if (guid) {
+                void downloadDocumentClient(decodeURIComponent(guid), `${label.replace(/\s+/g, '_')}.png`);
+                return;
+              }
               const link = document.createElement('a');
               link.href = fullSrc || src;
               link.download = `${label.replace(/\s+/g, '_')}.png`;
@@ -165,6 +171,7 @@ export function AdditionalImagesGrid({
           >
             <ImageWithFallback
               src={image.src}
+              documentGuid={image.documentGuid}
               alt={image.alt}
               className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
               width={200}

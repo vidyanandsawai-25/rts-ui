@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
+import NextImage from 'next/image';
 import { useTranslations } from 'next-intl';
 import { ImageSkeleton, ImagePlaceholder } from './ImageViewerFallbacks';
 import { getDocumentAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions';
@@ -17,6 +18,7 @@ interface ImageWithFallbackProps {
   fill?: boolean;
   sizes?: string;
   priority?: boolean;
+  unoptimized?: boolean;
   onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
   style?: React.CSSProperties;
 }
@@ -24,6 +26,9 @@ interface ImageWithFallbackProps {
 export const documentCache = new Map<string, string | Promise<string>>();
 
 export async function resolveDocumentUrl(src: string, documentGuid?: string): Promise<string> {
+  if (src && (src.startsWith('data:') || src.startsWith('blob:'))) {
+    return src;
+  }
   if (!src && !documentGuid) return '';
   
   let guid = documentGuid;
@@ -34,39 +39,19 @@ export async function resolveDocumentUrl(src: string, documentGuid?: string): Pr
     }
   }
   
+  // Static non-document URL (e.g. GIS static map, satellite tiles, local SVGs)
   if (!guid) return src;
   const decodedGuid = decodeURIComponent(guid);
   
-  if (documentCache.has(decodedGuid)) {
-    const cached = documentCache.get(decodedGuid)!;
-    if (typeof cached === 'string') return cached;
-    return cached;
-  }
-  
-  const promise = (async () => {
-    try {
-      const res = await getDocumentAction(decodedGuid, 'view');
-      if (res.success && res.data?.base64) {
-        const dataUrl = `data:${res.data.contentType};base64,${res.data.base64}`;
-        documentCache.set(decodedGuid, dataUrl);
-        return dataUrl;
-      }
-      if (src && !src.startsWith('data:') && (src.startsWith('http') || src.startsWith('/'))) {
-        return src;
-      }
-      documentCache.delete(decodedGuid);
-      return '';
-    } catch (_err) {
-      if (src && !src.startsWith('data:') && (src.startsWith('http') || src.startsWith('/'))) {
-        return src;
-      }
-      documentCache.delete(decodedGuid);
-      return '';
+  try {
+    const res = await getDocumentAction(decodedGuid, 'view');
+    if (res.success && res.data?.base64) {
+      return `data:${res.data.contentType};base64,${res.data.base64}`;
     }
-  })();
-  
-  documentCache.set(decodedGuid, promise);
-  return promise;
+    return '';
+  } catch (_err) {
+    return '';
+  }
 }
 
 export function ImageWithFallback({
@@ -80,6 +65,7 @@ export function ImageWithFallback({
   fill: _fill,
   sizes: _sizes,
   priority: _priority = false,
+  unoptimized,
   onLoad,
   style,
 }: ImageWithFallbackProps): React.ReactElement {
@@ -154,21 +140,32 @@ export function ImageWithFallback({
     ? 'contain'
     : undefined;
 
+  const isTest = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+  const isDataOrBlob = effectiveSrc.startsWith('data:') || effectiveSrc.startsWith('blob:');
+  const shouldUnoptimize = unoptimized ?? (isDataOrBlob || isTest);
+  const normalizedSrc =
+    !shouldUnoptimize && !effectiveSrc.startsWith('/') && !effectiveSrc.startsWith('http://') && !effectiveSrc.startsWith('https://')
+      ? `/${effectiveSrc}`
+      : effectiveSrc;
+
   return (
     <div className="relative w-full h-full overflow-hidden" style={style}>
       {isLoading && <ImageSkeleton className={`w-full h-full ${className}`} />}
       {effectiveSrc && (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          src={effectiveSrc}
+        <NextImage
+          src={normalizedSrc}
           alt={alt}
+          fill
+          sizes={_sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'}
+          priority={_priority}
           className={`w-full h-full ${className}`}
           style={{ objectFit: objectFit || 'cover' }}
           onError={handleError}
           onLoad={(e) => {
             handleLoad();
-            onLoad?.(e);
+            onLoad?.(e as unknown as React.SyntheticEvent<HTMLImageElement>);
           }}
+          unoptimized={shouldUnoptimize}
         />
       )}
     </div>
