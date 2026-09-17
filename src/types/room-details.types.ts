@@ -66,6 +66,8 @@ export interface FloorData {
     occupancyApplyOrNot?: boolean | string;
     renterDetails?: RenterDetailItem[];
     renterMast?: RenterMastItem[];
+    documentBindingId?: number;
+    documentGuid?: string;
     isTaxable?: boolean | string;
     isOpenPlot?: boolean | string | number;
     IsOpenPlot?: boolean | string | number;

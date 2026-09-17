@@ -301,5 +301,7 @@ export function normalizeFloorData(
     roomWiseSubmissionDetails: ((raw.roomWiseSubmissionDetails || raw.roomData || raw.propertyRooms || []) as unknown[]).map(r => normalizeRoomData(r as Record<string, unknown>)),
     renterDetails: (raw.renterDetails || []) as RenterDetailItem[],
     renterMast: rentersList,
+    documentBindingId: getNumber(raw.documentBindingId) || getNumber(firstRenter?.documentBindingId) || undefined,
+    documentGuid: getString(raw.documentGuid) || getString(firstRenter?.documentGuid) || undefined,
   };
 }

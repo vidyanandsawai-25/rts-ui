@@ -159,6 +159,16 @@ export const useFloorSync = (params: {
             rentYearly: (Number(renterData.nonCalculateRentMonthly || renterData.rentMonthly) || 0) * 12,
             renterDetails: renterData.renterDetails || finalForm.renterDetails || [],
             renterMast: renterData.renterMast || finalForm.renterMast || [],
+            documentBindingId:
+              renterData.documentBindingId ||
+              finalForm.documentBindingId ||
+              (renterData.renterMast && renterData.renterMast[0]?.documentBindingId) ||
+              undefined,
+            documentGuid:
+              renterData.documentGuid ||
+              finalForm.documentGuid ||
+              (renterData.renterMast && renterData.renterMast[0]?.documentGuid) ||
+              undefined,
           };
           finalForm = {
             ...finalForm,
@@ -221,6 +231,16 @@ export const useFloorSync = (params: {
           rentYearly: (Number(renterData.nonCalculateRentMonthly || renterData.rentMonthly) || 0) * 12,
           renterDetails: renterData.renterDetails || (finalForm?.renterDetails || []),
           renterMast: renterData.renterMast || (finalForm?.renterMast || []),
+          documentBindingId:
+            renterData.documentBindingId ||
+            finalForm?.documentBindingId ||
+            (renterData.renterMast && renterData.renterMast[0]?.documentBindingId) ||
+            undefined,
+          documentGuid:
+            renterData.documentGuid ||
+            finalForm?.documentGuid ||
+            (renterData.renterMast && renterData.renterMast[0]?.documentGuid) ||
+            undefined,
         };
 
         if (finalForm) {

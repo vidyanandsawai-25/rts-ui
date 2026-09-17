@@ -172,8 +172,17 @@ export function mapInitialRenterFormData(
     selfDeclarationAmount: selfDeclarationAmountVal,
     customDateRanges,
     taxLiability: details.taxLiability || firstRenterMast?.taxLiability || firstRenterDetail?.taxLiability || 'Renter',
-    documentBindingId: details.documentBindingId || firstRenterMast?.documentBindingId || undefined,
-    documentGuid: details.documentGuid || firstRenterMast?.documentGuid || undefined,
+    documentBindingId:
+      (details.documentBindingId ? Number(details.documentBindingId) : undefined) ||
+      (details.renterDetails && typeof details.renterDetails === 'object' && !Array.isArray(details.renterDetails) && details.renterDetails.documentBindingId ? Number(details.renterDetails.documentBindingId) : undefined) ||
+      (firstRenterMast?.documentBindingId ? Number(firstRenterMast.documentBindingId) : undefined) ||
+      (firstRenterDetail?.documentBindingId ? Number(firstRenterDetail.documentBindingId) : undefined),
+    documentGuid:
+      details.documentGuid ||
+      (details.renterDetails && typeof details.renterDetails === 'object' && !Array.isArray(details.renterDetails) && details.renterDetails.documentGuid) ||
+      firstRenterMast?.documentGuid ||
+      firstRenterDetail?.documentGuid ||
+      undefined,
   };
 
   const dbFloorId = details.floorId !== undefined ? details.floorId : details.floorID;
@@ -196,6 +205,8 @@ export function mapInitialRenterFormData(
       : {}),
     propertyId: Number(propertyId || details.ownerID || details.propertyId || 0) || undefined,
     renterDetails: mappedRenterDetails,
+    documentBindingId: mappedRenterDetails.documentBindingId,
+    documentGuid: mappedRenterDetails.documentGuid,
   };
 }
 

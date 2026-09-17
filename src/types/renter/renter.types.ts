@@ -40,6 +40,8 @@ export interface RenterFormData {
     renterTableEntries?: unknown[];
     grandTotal?: number;
     renterCustomIncrements?: unknown[];
+    documentBindingId?: number;
+    documentGuid?: string;
     [key: string]: unknown;
 }
 
