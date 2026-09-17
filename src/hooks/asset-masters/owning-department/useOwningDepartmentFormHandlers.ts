@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { OwningDepartmentFormModel } from "@/types/asset-masters/owning-department.types";
 import { saveOwningDepartment } from "@/app/[locale]/assets/configuration/master-data/owning-department/action";
-import { ASSET_MASTER_NAME_SANITIZE, DESCRIPTION_SANITIZE } from "@/lib/utils/asset-validation-rules";
+import { ALPHANUMERIC_WITH_SPACES_SANITIZE, DESCRIPTION_SANITIZE } from "@/lib/utils/asset-validation-rules";
 
 interface UseOwningDepartmentFormHandlersProps {
   formData: OwningDepartmentFormModel;
@@ -55,7 +55,7 @@ export function useOwningDepartmentFormHandlers({
     const { name, value } = e.target;
     let sanitizedValue = value;
     if (name === "owningDepartmentName") {
-      sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+      sanitizedValue = value.replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
       if (sanitizedValue.length > 100) {
         sanitizedValue = sanitizedValue.substring(0, 100);
       }
