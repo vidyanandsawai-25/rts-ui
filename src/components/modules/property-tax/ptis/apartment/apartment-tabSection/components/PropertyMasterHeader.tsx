@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Copy, Check, Pencil, Building2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { Tooltip } from '@/components/common/Tooltip';
 
 interface PropertyMasterHeaderProps {
   propertyNo: string;
@@ -29,7 +30,7 @@ export const PropertyMasterHeader: React.FC<PropertyMasterHeaderProps> = ({
 
   return (
     <div className="flex items-center justify-between gap-x-3 gap-y-0.5 border-b border-slate-100 pb-1 min-w-0">
-      <div className="flex items-center gap-x-4 gap-y-1 text-xs sm:text-[13px] min-w-0 overflow-hidden flex-wrap">
+      <div className="flex items-center gap-x-4 gap-y-1 text-xs sm:text-[13px] min-w-0 flex-1">
         {/* PROPERTY NO */}
         <div className="flex items-center gap-1 shrink-0">
           <span className="text-slate-400 font-bold text-xs">#</span>
@@ -55,12 +56,23 @@ export const PropertyMasterHeader: React.FC<PropertyMasterHeaderProps> = ({
         </div>
 
         {/* SOCIETY NAME */}
-        <div className="flex items-center gap-1 min-w-0 max-w-[260px] sm:max-w-[360px] lg:max-w-[480px]">
+        <div className="flex items-center gap-1 min-w-0 flex-1">
           <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
           <span className="text-slate-600 font-bold text-xs shrink-0">{t('header.societyName') || 'SOCIETY NAME:'}</span>
-          <span className="font-black text-[#ef4444] text-[13px] tracking-tight truncate" title={societyName}>
-            {societyName}
-          </span>
+          {societyName && societyName !== '-' ? (
+            <Tooltip
+              content={<div className="max-w-md whitespace-normal break-words font-semibold text-xs leading-relaxed">{societyName}</div>}
+              placement="top"
+            >
+              <span className="font-black text-[#ef4444] text-[13px] tracking-tight truncate cursor-pointer hover:underline inline-block min-w-0 flex-1" title={societyName}>
+                {societyName}
+              </span>
+            </Tooltip>
+          ) : (
+            <span className="font-black text-[#ef4444] text-[13px] tracking-tight truncate min-w-0 flex-1">
+              -
+            </span>
+          )}
         </div>
       </div>
 

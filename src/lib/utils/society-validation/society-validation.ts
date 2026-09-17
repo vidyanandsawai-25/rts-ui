@@ -51,12 +51,20 @@ export const societyValidators = {
     const trimmed = name.trim();
     if (trimmed.length === 0) return true;
 
-    if (/\d/.test(trimmed)) return false;
+    // No numbers in person names
+    if (/\d/.test(trimmed) || /[\u0966-\u096F]/.test(trimmed)) return false;
 
-    if (societyValidators.isOnlySpecialCharacters(trimmed)) return false;
-    const length = trimmed.length;
-    return length >= SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH &&
-      length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH;
+    // Reject repeated special characters (e.g. >>>, ...., ----)
+    if (/([.,'’/&()\-#+:;>_=@!$%^*~`\\?{}\[\]|])\1{2,}/.test(trimmed)) return false;
+
+    // Allow only letters, marks, spaces, and safe punctuation
+    if (!/^[\u0900-\u097F\uA8E0-\uA8FF\u200C\u200Da-zA-Z\s.,'’/&()\-]+$/.test(trimmed)) return false;
+
+    // Must have at least 2 letters
+    const letters = trimmed.match(/[\u0900-\u097F\uA8E0-\uA8FFa-zA-Z]/g);
+    if (!letters || letters.length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH) return false;
+
+    return trimmed.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH;
   },
 
   /**
@@ -67,12 +75,17 @@ export const societyValidators = {
     const trimmed = name.trim();
     if (trimmed.length === 0) return true;
 
-    if (/\d/.test(trimmed)) return false;
+    // Reject repeated special characters
+    if (/([.,'’/&()\-#+:;>_=@!$%^*~`\\?{}\[\]|])\1{2,}/.test(trimmed)) return false;
 
-    if (societyValidators.isOnlySpecialCharacters(trimmed)) return false;
-    const length = trimmed.length;
-    return length >= SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH &&
-      length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH;
+    // Allow letters, numbers, spaces, and safe society punctuation (+ is allowed)
+    if (!/^[\u0900-\u097F\uA8E0-\uA8FF\u200C\u200Da-zA-Z0-9\u0966-\u096F\s.,'’/&()\-+]+$/.test(trimmed)) return false;
+
+    // Must have at least 2 letters
+    const letters = trimmed.match(/[\u0900-\u097F\uA8E0-\uA8FFa-zA-Z]/g);
+    if (!letters || letters.length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH) return false;
+
+    return trimmed.length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH;
   },
 
   /**
@@ -82,6 +95,7 @@ export const societyValidators = {
     const digits = mobile.replace(/\D/g, '');
     if (digits.length === 0) return true;
     if (digits.length !== SOCIETY_VALIDATION_RULES.MOBILE_LENGTH || !/^[6-9]/.test(digits)) return false;
+    if (/^(\d)\1{9}$/.test(digits)) return false;
 
     return !hasRepeatedSequence(digits, 5);
   },
@@ -93,36 +107,41 @@ export const societyValidators = {
     const trimmedEmail = email.trim();
     if (!trimmedEmail) return true;
 
-    if (/[^a-zA-Z0-9@.]/.test(trimmedEmail)) return false;
+    if (trimmedEmail.length > SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) return false;
+    if (/[^a-zA-Z0-9@._%+-]/.test(trimmedEmail)) return false;
+    if (/\s/.test(trimmedEmail)) return false;
 
-    if (/\.{2,}/.test(trimmedEmail)) return false;
-
-    if (/^\./.test(trimmedEmail)) return false;
-
-    if (/\.@/.test(trimmedEmail)) return false;
+    if (/\.{2,}|_{2,}|-{2,}|\+{2,}/.test(trimmedEmail)) return false;
+    if (/^[._%+-]/.test(trimmedEmail)) return false;
+    if (/\.@|@\./.test(trimmedEmail)) return false;
 
     if ((trimmedEmail.match(/@/g) || []).length !== 1) return false;
 
     if (!trimmedEmail.includes('@')) return !isStrict;
 
     const atIndex = trimmedEmail.indexOf('@');
+    const localPart = trimmedEmail.substring(0, atIndex);
     const domain = trimmedEmail.substring(atIndex + 1);
 
-    if (!domain || domain.length < 2) return !isStrict;
+    if (!localPart || localPart.length > 64) return false;
+    if (!domain || domain.length < 2 || domain.length > 255) return !isStrict;
 
     if (domain.includes('.')) {
       const domainParts = domain.split('.');
       if (domainParts.length < 2) return false;
-      const tld = domainParts[domainParts.length - 1];
-      if (!tld || tld.length < 2 || !VALID_TLD_REGEX.test(tld)) return false;
+      for (const part of domainParts) {
+        if (!part || part.startsWith('-') || part.endsWith('-')) return false;
+      }
+      const tld = domainParts[domainParts.length - 1].toLowerCase();
+      if (!tld || tld.length < 2 || tld.length > 12) return false;
+      // Reject repeated characters in TLD (e.g. .commmmmm, .coooom, .iiinnn)
+      if (/(.)\1{2,}/.test(tld)) return false;
+      if (!VALID_TLD_REGEX.test(tld)) return false;
     } else {
       return !isStrict;
     }
 
-    const validEmailPattern = EMAIL_REGEX;
-
-    return trimmedEmail.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH &&
-      validEmailPattern.test(trimmedEmail);
+    return EMAIL_REGEX.test(trimmedEmail);
   },
 
   /**
@@ -135,6 +154,12 @@ export const societyValidators = {
 
     // Allow any sequence of hyphens like "-", "--", "---", etc.
     if (/^-+$/.test(trimmed)) return true;
+
+    // Reject repeated special characters
+    if (/([.,'’/&()\-#+:;>_=@!$%^*~`\\?{}\[\]|])\1{2,}/.test(trimmed)) return false;
+
+    // Check if address only contains allowed characters
+    if (!/^[\u0900-\u097F\uA8E0-\uA8FF\u200C\u200Da-zA-Z0-9\u0966-\u096F\s.,'’/&()\-#+:;]+$/.test(trimmed)) return false;
 
     // Check if address contains at least some valid letters or numbers
     const hasValidChars = /[\p{L}\p{N}]/u.test(trimmed);

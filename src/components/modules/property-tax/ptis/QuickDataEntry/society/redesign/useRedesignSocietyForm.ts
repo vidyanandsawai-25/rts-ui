@@ -240,7 +240,9 @@ const getInitialFormState = (
 
 // Common Validation Rules & Limits
 export const VALIDATION_LIMITS = {
+  NAME_MIN: 2,
   NAME_MAX: 100,
+  ADDRESS_MIN: 3,
   ADDRESS_MAX: 250,
   EMAIL_MAX: 100,
   MOBILE_EXACT: 10,
@@ -248,13 +250,49 @@ export const VALIDATION_LIMITS = {
   PINCODE_EXACT: 6,
 } as const;
 
-export const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 export const INDIAN_MOBILE_PATTERN = /^[6-9]\d{9}$/;
-export const ENGLISH_TEXT_PATTERN = /^[A-Za-z0-9\s.,'’()&/_\-#:;+@]*$/;
-export const ENGLISH_NAME_PATTERN = /^[A-Za-z0-9\s.,'’/&()_-]*$/;
+
+// Regional (Devanagari, Marathi, Hindi, multilingual) Person Name Pattern
+// Allows Devanagari letters/marks (\u0900-\u097F\uA8E0-\uA8FF\u200C\u200D), English letters, spaces, dots, commas, apostrophes, hyphens, slashes, ampersands, parentheses.
+// Disallows symbols like >, <, !, @, #, $, %, ^, *, +, =, ~, `, |, \, ?, {, }, [, ], ;, :, ", _, and numbers.
+export const REGIONAL_PERSON_NAME_PATTERN = /^[\u0900-\u097F\uA8E0-\uA8FF\u200C\u200Da-zA-Z\s.,'’/&()\-]+$/;
+
+// English Person Name Pattern: English letters, spaces, dots, commas, apostrophes, hyphens, slashes, ampersands, parentheses.
+// Disallows numbers and special symbols like >, <, !, @, #, $, %, etc.
+export const ENGLISH_PERSON_NAME_PATTERN = /^[a-zA-Z\s.,'’/&()\-]+$/;
+
+// Regional Society Name Pattern: Devanagari, English letters, numbers (0-9, \u0966-\u096F), spaces, dots, commas, apostrophes, hyphens, slashes, ampersands, parentheses, plus (+)
+export const REGIONAL_SOCIETY_NAME_PATTERN = /^[\u0900-\u097F\uA8E0-\uA8FF\u200C\u200Da-zA-Z0-9\u0966-\u096F\s.,'’/&()\-+]+$/;
+
+// English Society Name Pattern: English letters, numbers (0-9), spaces, dots, commas, apostrophes, hyphens, slashes, ampersands, parentheses, plus (+)
+export const ENGLISH_SOCIETY_NAME_PATTERN = /^[a-zA-Z0-9\s.,'’/&()\-+]+$/;
+
+// Regional Address Pattern: Devanagari, English letters, numbers (0-9, \u0966-\u096F), spaces, and address punctuation (.,'’/&()\-#+:;)
+export const REGIONAL_ADDRESS_PATTERN = /^[\u0900-\u097F\uA8E0-\uA8FF\u200C\u200Da-zA-Z0-9\u0966-\u096F\s.,'’/&()\-#+:;]+$/;
+
+// English Address Pattern: English letters, numbers (0-9), spaces, and address punctuation (.,'’/&()\-#+:;)
+export const ENGLISH_ADDRESS_PATTERN = /^[a-zA-Z0-9\s.,'’/&()\-#+:;]+$/;
+
+// Pattern to detect repeated consecutive punctuation (3 or more identical characters like >>> , .... , ---- , //// , ++++)
+export const REPEATED_SPECIAL_CHARS_PATTERN = /([.,'’/&()\-#+:;>_=@!$%^*~`\\?{}\[\]|])\1{2,}/;
+
+// Check if string contains at least one letter (Devanagari or English)
+export const HAS_LETTER_PATTERN = /[\u0900-\u097F\uA8E0-\uA8FFa-zA-Z]/;
+// Check if string contains at least 2 letters
+export const HAS_AT_LEAST_TWO_LETTERS_PATTERN = /(?:[\u0900-\u097F\uA8E0-\uA8FFa-zA-Z].*){2,}/;
+
+// Check if string contains at least one English letter
+export const HAS_ENGLISH_LETTER_PATTERN = /[a-zA-Z]/;
+// Check if string contains at least 2 English letters
+export const HAS_AT_LEAST_TWO_ENGLISH_LETTERS_PATTERN = /(?:[a-zA-Z].*){2,}/;
+
+/** Legacy patterns kept for backward compatibility */
+export const ENGLISH_TEXT_PATTERN = ENGLISH_SOCIETY_NAME_PATTERN;
+export const ENGLISH_NAME_PATTERN = ENGLISH_PERSON_NAME_PATTERN;
+export const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|in|org|net|edu|gov|mil|info|biz|me|io|nic|ai|app|dev|tech|online|store|site|live|pro|xyz|club|agency|digital|solutions|company|email|cloud|finance|global|group|services|systems|world|today|news|media|care|center)(?:\.[a-zA-Z]{2})?$/i;
 
 /** Check for repeated digits like 000000, 999999 */
-const hasRepeatedDigits = (digits: string, minRepeat: number = 6): boolean => {
+const hasRepeatedDigits = (digits: string, minRepeat: number = 5): boolean => {
   if (!digits || digits.length < minRepeat) return false;
   for (let i = 0; i <= digits.length - minRepeat; i++) {
     const char = digits[i];
@@ -265,6 +303,109 @@ const hasRepeatedDigits = (digits: string, minRepeat: number = 6): boolean => {
     }
   }
   return false;
+};
+
+/** Deep email address validation */
+export const validateEmailAddress = (email: string): string | null => {
+  if (!email) return null;
+  const strVal = email.trim();
+  if (!strVal) return null;
+
+  if (strVal.length > VALIDATION_LIMITS.EMAIL_MAX) {
+    return `Email cannot exceed ${VALIDATION_LIMITS.EMAIL_MAX} characters.`;
+  }
+
+  // Reject spaces or invalid characters
+  if (/\s/.test(strVal) || /[^a-zA-Z0-9@._%+-]/.test(strVal)) {
+    return 'Enter a valid email address (e.g. name@example.com).';
+  }
+
+  // Exactly one '@' symbol
+  const atCount = (strVal.match(/@/g) || []).length;
+  if (atCount !== 1) {
+    return 'Enter a valid email address with a single @ symbol.';
+  }
+
+  const [localPart, domainPart] = strVal.split('@');
+
+  // Local part validations
+  if (!localPart || localPart.length > 64) {
+    return 'Enter a valid email username before @.';
+  }
+  if (!/^[a-zA-Z0-9._%+-]+$/.test(localPart)) {
+    return 'Email username contains invalid characters.';
+  }
+  if (/^[._%+-]|[._%+-]$/.test(localPart)) {
+    return 'Email username cannot start or end with a dot or symbol.';
+  }
+  if (/\.{2,}|_{2,}|-{2,}|\+{2,}/.test(localPart)) {
+    return 'Email username cannot contain consecutive dots or symbols.';
+  }
+
+  // Domain part validations
+  if (!domainPart || domainPart.length > 255) {
+    return 'Enter a valid email domain.';
+  }
+  if (/^[.-]|[.-]$/.test(domainPart)) {
+    return 'Email domain cannot start or end with a dot or hyphen.';
+  }
+  if (/\.{2,}/.test(domainPart)) {
+    return 'Email domain cannot contain consecutive dots.';
+  }
+
+  const domainLabels = domainPart.split('.');
+  if (domainLabels.length < 2) {
+    return 'Email domain must have a valid extension (e.g. .com, .in).';
+  }
+
+  for (const label of domainLabels) {
+    if (!label) {
+      return 'Email domain structure is invalid.';
+    }
+    if (!/^[a-zA-Z0-9-]+$/.test(label)) {
+      return 'Email domain contains invalid characters.';
+    }
+    if (label.startsWith('-') || label.endsWith('-')) {
+      return 'Email domain labels cannot start or end with a hyphen.';
+    }
+  }
+
+  // Top-Level Domain (TLD) validation
+  const tld = domainLabels[domainLabels.length - 1].toLowerCase();
+  if (!/^[a-zA-Z]{2,12}$/.test(tld)) {
+    return 'Email domain extension must be valid (e.g. .com, .in).';
+  }
+
+  // Reject repeated letters in TLD (e.g., .commmmmm, .coooom, .iiinnn, .connnnn)
+  if (/(.)\1{2,}/.test(tld)) {
+    return 'Enter a valid domain extension without repeated characters (e.g. .com, .in).';
+  }
+
+  // Provider-specific domain checks (e.g. @gmail.com, @yahoo.com)
+  const provider = domainLabels[domainLabels.length - 2]?.toLowerCase();
+  const knownProviders: Record<string, string[]> = {
+    gmail: ['com', 'in', 'co.in'],
+    yahoo: ['com', 'in', 'co.in', 'co.uk', 'ca', 'fr'],
+    hotmail: ['com', 'co.in', 'co.uk'],
+    outlook: ['com', 'in', 'co.in'],
+    rediffmail: ['com'],
+    icloud: ['com'],
+    protonmail: ['com', 'me', 'ch'],
+    zoho: ['com', 'in'],
+  };
+
+  if (provider && knownProviders[provider]) {
+    const validTlds = knownProviders[provider];
+    const fullTld =
+      domainLabels.length > 2 && domainLabels[domainLabels.length - 2] === 'co'
+        ? `co.${tld}`
+        : tld;
+    if (!validTlds.includes(tld) && !validTlds.includes(fullTld)) {
+      return `Please enter a valid ${provider} email address (e.g. name@${provider}.com).`;
+    }
+  }
+
+  return null;
 };
 
 /** Validate a single field and return an error message or null */
@@ -278,11 +419,21 @@ export const validateSingleField = (
   switch (field) {
     case 'societyName': {
       if (!strVal) return 'Society Name (Regional) is required.';
-      if (strVal.length < 2) return 'Society Name (Regional) must be at least 2 characters.';
+      if (strVal.length < VALIDATION_LIMITS.NAME_MIN) {
+        return `Society Name (Regional) must be at least ${VALIDATION_LIMITS.NAME_MIN} characters.`;
+      }
       if (strVal.length > VALIDATION_LIMITS.NAME_MAX) {
         return `Society Name (Regional) cannot exceed ${VALIDATION_LIMITS.NAME_MAX} characters.`;
       }
-      if (/^\d+$/.test(strVal)) return 'Society Name (Regional) cannot be only numbers.';
+      if (REPEATED_SPECIAL_CHARS_PATTERN.test(strVal)) {
+        return 'Repeated special characters are not allowed.';
+      }
+      if (!REGIONAL_SOCIETY_NAME_PATTERN.test(strVal)) {
+        return 'Please enter a valid regional society name without special symbols.';
+      }
+      if (!HAS_AT_LEAST_TWO_LETTERS_PATTERN.test(strVal)) {
+        return 'Society Name (Regional) must contain letters, not only numbers or symbols.';
+      }
       return null;
     }
 
@@ -291,8 +442,14 @@ export const validateSingleField = (
       if (strVal.length > VALIDATION_LIMITS.NAME_MAX) {
         return `Society Name cannot exceed ${VALIDATION_LIMITS.NAME_MAX} characters.`;
       }
-      if (!ENGLISH_TEXT_PATTERN.test(strVal)) {
+      if (REPEATED_SPECIAL_CHARS_PATTERN.test(strVal)) {
+        return 'Repeated special characters are not allowed.';
+      }
+      if (!ENGLISH_SOCIETY_NAME_PATTERN.test(strVal)) {
         return 'Please use English letters, numbers and basic punctuation only.';
+      }
+      if (!HAS_AT_LEAST_TWO_ENGLISH_LETTERS_PATTERN.test(strVal)) {
+        return 'Society Name must contain English letters, not only numbers or symbols.';
       }
       return null;
     }
@@ -305,6 +462,18 @@ export const validateSingleField = (
       if (strVal.length > VALIDATION_LIMITS.NAME_MAX) {
         return `Name cannot exceed ${VALIDATION_LIMITS.NAME_MAX} characters.`;
       }
+      if (REPEATED_SPECIAL_CHARS_PATTERN.test(strVal)) {
+        return 'Repeated special characters are not allowed.';
+      }
+      if (/\d/.test(strVal) || /[\u0966-\u096F]/.test(strVal)) {
+        return 'Person names cannot contain numbers.';
+      }
+      if (!REGIONAL_PERSON_NAME_PATTERN.test(strVal)) {
+        return 'Please use letters, spaces, dots and hyphens only without special symbols.';
+      }
+      if (!HAS_AT_LEAST_TWO_LETTERS_PATTERN.test(strVal)) {
+        return 'Please enter a valid name with at least 2 letters.';
+      }
       return null;
     }
 
@@ -316,8 +485,17 @@ export const validateSingleField = (
       if (strVal.length > VALIDATION_LIMITS.NAME_MAX) {
         return `Name cannot exceed ${VALIDATION_LIMITS.NAME_MAX} characters.`;
       }
-      if (!ENGLISH_NAME_PATTERN.test(strVal)) {
-        return 'Please use English letters, numbers and basic punctuation only.';
+      if (REPEATED_SPECIAL_CHARS_PATTERN.test(strVal)) {
+        return 'Repeated special characters are not allowed.';
+      }
+      if (/\d/.test(strVal)) {
+        return 'Person names cannot contain numbers.';
+      }
+      if (!ENGLISH_PERSON_NAME_PATTERN.test(strVal)) {
+        return 'Please use English letters, spaces, dots and hyphens only.';
+      }
+      if (!HAS_AT_LEAST_TWO_ENGLISH_LETTERS_PATTERN.test(strVal)) {
+        return 'Please enter a valid English name with at least 2 letters.';
       }
       return null;
     }
@@ -336,7 +514,7 @@ export const validateSingleField = (
       if (!INDIAN_MOBILE_PATTERN.test(digits)) {
         return 'Mobile number must start with 6, 7, 8, or 9.';
       }
-      if (hasRepeatedDigits(digits, 6)) {
+      if (hasRepeatedDigits(digits, 5) || /^(\d)\1{9}$/.test(digits)) {
         return 'Please enter a valid mobile number.';
       }
       return null;
@@ -345,26 +523,22 @@ export const validateSingleField = (
     case 'societyEmail':
     case 'managerEmail':
     case 'secretaryEmail': {
-      if (!strVal) return null;
-      if (strVal.length > VALIDATION_LIMITS.EMAIL_MAX) {
-        return `Email cannot exceed ${VALIDATION_LIMITS.EMAIL_MAX} characters.`;
-      }
-      if (
-        !EMAIL_PATTERN.test(strVal) ||
-        /\.{2,}/.test(strVal) ||
-        /^\./.test(strVal) ||
-        /\.@/.test(strVal) ||
-        /@\./.test(strVal)
-      ) {
-        return 'Enter a valid email address (e.g. name@example.com).';
-      }
-      return null;
+      return validateEmailAddress(strVal);
     }
 
     case 'societyAddress': {
       if (!strVal) return null;
       if (strVal.length > VALIDATION_LIMITS.ADDRESS_MAX) {
         return `Address cannot exceed ${VALIDATION_LIMITS.ADDRESS_MAX} characters.`;
+      }
+      if (REPEATED_SPECIAL_CHARS_PATTERN.test(strVal)) {
+        return 'Repeated special characters are not allowed in address.';
+      }
+      if (!REGIONAL_ADDRESS_PATTERN.test(strVal)) {
+        return 'Please enter a valid address without invalid special symbols.';
+      }
+      if (!HAS_LETTER_PATTERN.test(strVal) && !/\d/.test(strVal) && !/[\u0966-\u096F]/.test(strVal)) {
+        return 'Address must contain letters or numbers.';
       }
       return null;
     }
@@ -374,24 +548,38 @@ export const validateSingleField = (
       if (strVal.length > VALIDATION_LIMITS.ADDRESS_MAX) {
         return `Address cannot exceed ${VALIDATION_LIMITS.ADDRESS_MAX} characters.`;
       }
-      if (!ENGLISH_TEXT_PATTERN.test(strVal)) {
-        return 'Please use English characters and punctuation only.';
+      if (REPEATED_SPECIAL_CHARS_PATTERN.test(strVal)) {
+        return 'Repeated special characters are not allowed in address.';
+      }
+      if (!ENGLISH_ADDRESS_PATTERN.test(strVal)) {
+        return 'Please use English letters, numbers and basic address punctuation only.';
+      }
+      if (!HAS_ENGLISH_LETTER_PATTERN.test(strVal) && !/\d/.test(strVal)) {
+        return 'Address must contain English letters or numbers.';
       }
       return null;
     }
 
     case 'pinCode': {
       if (!strVal) return null;
-      if (!/^[1-9]\d{5}$/.test(strVal)) {
-        return 'PIN Code must be a 6-digit number.';
+      const digits = strVal.replace(/\D/g, '');
+      if (digits.length !== VALIDATION_LIMITS.PINCODE_EXACT || !/^[1-9]\d{5}$/.test(digits)) {
+        return 'PIN Code must be a 6-digit number starting with 1-9.';
+      }
+      if (/^(\d)\1{5}$/.test(digits)) {
+        return 'PIN Code cannot consist of all identical digits.';
       }
       return null;
     }
 
     case 'aadharNo': {
       if (!strVal) return null;
-      if (!/^\d{12}$/.test(strVal.replace(/\D/g, ''))) {
-        return 'Aadhaar number must be 12 digits.';
+      const digits = strVal.replace(/\D/g, '');
+      if (digits.length !== VALIDATION_LIMITS.AADHAAR_EXACT || !/^[2-9]\d{11}$/.test(digits)) {
+        return 'Aadhaar number must be 12 digits and cannot start with 0 or 1.';
+      }
+      if (/^(\d)\1{11}$/.test(digits)) {
+        return 'Aadhaar number cannot consist of all identical digits.';
       }
       return null;
     }
