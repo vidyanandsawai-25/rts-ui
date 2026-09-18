@@ -5,7 +5,6 @@ import { ApartmentTaxDetailsResponse } from '@/types/property-tax/apartment';
 export interface GetApartmentTaxDetailsParams {
   wardId: number | string;
   propertyNo: string;
-  wingMasterId?: number | string | null;
   taxType?: string;
 }
 
@@ -25,12 +24,11 @@ function createErrorResponse(
 
 /**
  * Fetches tax details (current taxes and arrears) for an apartment property.
- * Endpoint: /ApartmentQC/Taxdetails?wardId={wardId}&propertyNo={propertyNo}&wingMasterId={wingMasterId}&taxType={taxType}
+ * Endpoint: /ApartmentQC/Taxdetails?wardId={wardId}&propertyNo={propertyNo}&taxType={taxType}
  */
 export async function getApartmentTaxDetails({
   wardId,
   propertyNo,
-  wingMasterId,
   taxType = 'RV',
 }: GetApartmentTaxDetailsParams): Promise<ApartmentTaxDetailsResponse> {
   try {
@@ -49,10 +47,6 @@ export async function getApartmentTaxDetails({
       propertyNo: cleanPropertyNo,
       taxType: cleanTaxType,
     });
-
-    if (wingMasterId !== undefined && wingMasterId !== null && String(wingMasterId).trim() !== '') {
-      params.append('wingMasterId', String(wingMasterId).trim());
-    }
 
     const endpoint = `/ApartmentQC/Taxdetails?${params.toString()}`;
     const response = await apiClient.get<ApartmentTaxDetailsResponse>(endpoint, {

@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
 import {
   ApartmentTaxDetailsItem,
   TaxHeadItem,
@@ -15,7 +14,6 @@ export interface ApartmentTaxDetailsSectionProps {
   taxDetails?: ApartmentTaxDetailsItem | null;
   wardId?: string | number | null;
   propertyNo?: string | null;
-  wingMasterId?: number | string | null;
   taxMode?: PtisTaxMode;
   isLoading?: boolean;
 }
@@ -29,14 +27,9 @@ export function ApartmentTaxDetailsSection({
   taxDetails,
   wardId,
   propertyNo,
-  wingMasterId,
   taxMode = 'rateable',
   isLoading = false,
 }: ApartmentTaxDetailsSectionProps) {
-  const searchParams = useSearchParams();
-  const urlWingId = searchParams?.get('wingId') || searchParams?.get('wingMasterId');
-  const effectiveWingMasterId = wingMasterId ?? (urlWingId ? Number(urlWingId) : null);
-
   const [activeTab, setActiveTab] = useState<'taxDetails' | 'arrears'>('taxDetails');
   const [detailsData, setDetailsData] = useState<ApartmentTaxDetailsItem | null>(null);
   const lastFetchedRef = useRef<string>('');
@@ -50,16 +43,14 @@ export function ApartmentTaxDetailsSection({
   useEffect(() => {
     const cleanWardId = wardId != null ? String(wardId).trim() : '';
     const cleanPropNo = propertyNo != null ? String(propertyNo).trim() : '';
-    const cleanWingMasterId = effectiveWingMasterId != null ? String(effectiveWingMasterId).trim() : '';
 
-    // Only call API when a wing card is selected (same as the comparison table)
-    if (!cleanWardId || !cleanPropNo || !cleanWingMasterId) {
+    if (!cleanWardId || !cleanPropNo) {
       return;
     }
 
-    const fetchKey = `${cleanWardId}_${cleanPropNo}_${currentTaxType}_${cleanWingMasterId}`;
+    const fetchKey = `${cleanWardId}_${cleanPropNo}_${currentTaxType}`;
     if (lastFetchedRef.current === fetchKey) {
-      return; // Already fetched for this wing selection
+      return; // Already fetched for this selection
     }
     lastFetchedRef.current = fetchKey;
 
@@ -67,7 +58,11 @@ export function ApartmentTaxDetailsSection({
 
     async function loadTaxDetails() {
       try {
-        const res = await getApartmentTaxDetailsAction(cleanWardId, cleanPropNo, currentTaxType, cleanWingMasterId);
+        const res = await getApartmentTaxDetailsAction(
+          cleanWardId,
+          cleanPropNo,
+          currentTaxType
+        );
         if (active) {
           if (res && res.success && res.items) {
             setDetailsData(res.items);
@@ -83,7 +78,7 @@ export function ApartmentTaxDetailsSection({
 
     loadTaxDetails();
     return () => { active = false; };
-  }, [wardId, propertyNo, currentTaxType, effectiveWingMasterId]);
+  }, [wardId, propertyNo, currentTaxType]);
 
   const activeData = useMemo(() => {
     return detailsData || taxDetails || null;

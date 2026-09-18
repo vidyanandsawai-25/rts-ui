@@ -151,11 +151,10 @@ export async function getWingWiseDetailsAction(wardId: string | number, property
 export async function getApartmentTaxDetailsAction(
   wardId: string | number,
   propertyNo: string,
-  taxType: string = 'RV',
-  wingMasterId?: string | number | null
+  taxType: string = 'RV'
 ): Promise<ApartmentTaxDetailsResponse> {
   try {
-    return await getApartmentTaxDetails({ wardId, propertyNo, taxType, wingMasterId });
+    return await getApartmentTaxDetails({ wardId, propertyNo, taxType });
   } catch (error) {
     return { success: false, message: error instanceof Error ? error.message : 'Failed to fetch tax details', items: null, totalCount: null, errors: [error instanceof Error ? error.message : 'Unknown error'], correlationId: null };
   }

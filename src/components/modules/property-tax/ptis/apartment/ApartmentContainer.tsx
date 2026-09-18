@@ -195,7 +195,7 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
         onRestoreAll={apt.restoreAllPanels} hiddenPanelsCount={apt.hiddenPanels.length + (actions.expandedPanel !== null ? 2 : 0)} isLoading={apt.isLoading || isSearching} isLoadingMore={apt.isLoadingMore}
       />
 
-      <ApartmentTaxDetailsSection taxDetails={initialApartmentTaxDetails} wardId={urlState.wardId || initialWardId || (rawData?.wardId ? String(rawData.wardId) : null)} propertyNo={urlState.propertyNo || initialData?.propertyDetails?.propertyNo} wingMasterId={activeWingId} taxMode={actions.taxMode} isLoading={isSearching} />
+      <ApartmentTaxDetailsSection taxDetails={initialApartmentTaxDetails} wardId={urlState.wardId || initialWardId || (rawData?.wardId ? String(rawData.wardId) : null)} propertyNo={urlState.propertyNo || initialData?.propertyDetails?.propertyNo} taxMode={actions.taxMode} isLoading={isSearching} />
       <TaxRulesDiscountsModal open={actions.isAppliedRulesDrawerOpen} onClose={actions.closeRulesModal} unit={actions.selectedRuleUnit} appliedRules={actions.appliedRulesForUnit} apartmentName={initialData?.societyDetails?.buildingSocietyName || ''} onViewDocument={actions.handleViewDocument} />
       <ImageViewer open={actions.isImageViewerOpen} onClose={actions.closeImageViewer} images={actions.imageViewerImages} showRotate showZoom showDownload className="z-[100000]" />
     </div>
