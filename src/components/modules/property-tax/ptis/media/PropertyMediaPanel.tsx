@@ -410,7 +410,15 @@ function PropertyMediaPanel({
 
   // Keep PropertyMasterCard thumbnail synchronized with the loaded society / property photo
   useEffect(() => {
-    const photoToSync = societyPhoto || propertyPhoto;
+    const isApartmentSociety =
+      effectiveIsMainProperty ||
+      (effectiveWings && effectiveWings.length > 0) ||
+      Boolean(resolvedSocietyDetailId);
+
+    // In apartment society view, only sync when society photo (specifically Society Place Photo) is available.
+    // Do NOT fall back to propertyPhoto/wingPhoto which leaks wing building photos into the top background slot.
+    const photoToSync = isApartmentSociety ? societyPhoto : (societyPhoto || propertyPhoto);
+
     if (typeof window !== 'undefined' && photoToSync && (photoToSync.documentGuid || photoToSync.src)) {
       window.dispatchEvent(
         new CustomEvent('ptis:sync-thumbnail', {
@@ -418,11 +426,13 @@ function PropertyMediaPanel({
             propertyId: effectiveId,
             documentGuid: photoToSync.documentGuid,
             photoUrl: photoToSync.src || photoToSync.fullSrc,
+            category: 'Society Place Photo',
+            photoTypeCode: societyPhotoCategory?.photoTypeCode || 'SOCIETY_PLACE',
           },
         })
       );
     }
-  }, [effectiveId, societyPhoto, propertyPhoto]);
+  }, [effectiveId, societyPhoto, propertyPhoto, effectiveIsMainProperty, effectiveWings, resolvedSocietyDetailId, societyPhotoCategory]);
 
   const hasCoords = typeof initialLatitude === 'number' && Number.isFinite(initialLatitude) && typeof initialLongitude === 'number' && Number.isFinite(initialLongitude);
   const coords = hasCoords ? { lat: initialLatitude, lng: initialLongitude } : undefined;

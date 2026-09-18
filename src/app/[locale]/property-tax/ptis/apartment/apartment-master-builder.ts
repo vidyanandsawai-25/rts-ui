@@ -21,23 +21,42 @@ export interface BuildMasterDataParams {
 
 function resolveSocietyPhoto(pageData: PtisPageData): { guid?: string; url?: string } {
   const { initialPhotos, initialPhotoSlots } = pageData;
+
+  const isSocietyPlace = (code?: string, name?: string) => {
+    const cUpper = code?.toUpperCase() || '';
+    const nLower = name?.toLowerCase() || '';
+    if (
+      cUpper.includes('BOARD') ||
+      nLower.includes('board') ||
+      cUpper.includes('SIGN') ||
+      nLower.includes('sign') ||
+      cUpper.includes('WING') ||
+      nLower.includes('wing')
+    ) {
+      return false;
+    }
+    return (
+      cUpper === 'SOCIETY_PLACE' ||
+      cUpper === 'SOCIETY_PLACE_PHOTO' ||
+      nLower.includes('society place') ||
+      cUpper === 'SOCIETY' ||
+      cUpper === 'SOCIETY_PHOTO' ||
+      cUpper === 'SOCIETY_BUILDING' ||
+      nLower === 'society photo'
+    );
+  };
+
   const societyPhotoObj =
     initialPhotos?.find(
       (p: { photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
-        p.photoTypeCode?.toUpperCase() === 'SOCIETY' ||
-        p.photoTypeCode?.toUpperCase() === 'SOCIETY_PHOTO' ||
-        p.photoTypeCode?.toUpperCase() === 'SOCIETY_BUILDING' ||
-        p.photoTypeName?.toLowerCase().includes('society') ||
-        p.photoTypeId === 5
+        p.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE' ||
+        p.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE_PHOTO' ||
+        p.photoTypeName?.toLowerCase().includes('society place')
     ) ||
     initialPhotos?.find(
       (p: { photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
-        p.photoTypeCode?.toUpperCase() === 'FRONT' ||
-        p.photoTypeCode?.toUpperCase() === 'PROPERTY_PHOTO' ||
-        p.photoTypeCode?.toUpperCase() === 'BUILDING_PHOTO' ||
-        p.photoTypeName?.toLowerCase().includes('front')
-    ) ||
-    initialPhotos?.[0];
+        isSocietyPlace(p.photoTypeCode, p.photoTypeName) || p.photoTypeId === 5
+    );
 
   let guid = societyPhotoObj?.documentGuid ? String(societyPhotoObj.documentGuid) : undefined;
   let url = guid ? getViewDocumentUrl(guid) : (societyPhotoObj?.viewUrl || undefined);
@@ -46,11 +65,15 @@ function resolveSocietyPhoto(pageData: PtisPageData): { guid?: string; url?: str
     const slotObj =
       initialPhotoSlots?.find(
         (s: { hasPhoto?: boolean; photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
-          s.hasPhoto &&
-          (s.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-            s.photoTypeName?.toLowerCase().includes('society') ||
-            s.photoTypeId === 5)
-      ) || initialPhotoSlots?.find((s: { hasPhoto?: boolean; photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) => s.hasPhoto);
+          Boolean(s.hasPhoto) &&
+          (s.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE' ||
+            s.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE_PHOTO' ||
+            s.photoTypeName?.toLowerCase().includes('society place'))
+      ) ||
+      initialPhotoSlots?.find(
+        (s: { hasPhoto?: boolean; photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
+          Boolean(s.hasPhoto) && isSocietyPlace(s.photoTypeCode, s.photoTypeName)
+      );
 
     if (slotObj) {
       if (slotObj.documentGuid) {

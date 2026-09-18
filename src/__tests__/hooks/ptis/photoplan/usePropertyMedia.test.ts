@@ -168,4 +168,77 @@ describe('usePropertyMedia', () => {
     expect(result.current.photoPlanCategory).toBeDefined();
     expect(hasChangeDetection).toBe(true);
   });
+
+  it('correctly maps societyPhoto to Society Place Photo and excludes Society Board Photo', () => {
+    const multiCategoriesSlots = [
+      {
+        photoTypeId: 10,
+        photoTypeCode: 'SOCIETY_BOARD',
+        photoTypeName: 'Society Board Photo',
+        hasPhoto: true,
+        photoCount: 1,
+      },
+      {
+        photoTypeId: 11,
+        photoTypeCode: 'SOCIETY_PLACE',
+        photoTypeName: 'Society Place Photo',
+        hasPhoto: true,
+        photoCount: 1,
+      },
+      {
+        photoTypeId: 12,
+        photoTypeCode: 'WING_BUILDING',
+        photoTypeName: 'Wing Building Photo',
+        hasPhoto: true,
+        photoCount: 1,
+      },
+    ];
+
+    const multiPhotos = [
+      {
+        propertyPhotoId: 201,
+        propertyId: 42,
+        photoTypeId: 10,
+        photoTypeCode: 'SOCIETY_BOARD',
+        photoTypeName: 'Society Board Photo',
+        viewUrl: '/documents/board/view',
+        documentGuid: 'guid-board',
+        displayOrder: 1,
+      },
+      {
+        propertyPhotoId: 202,
+        propertyId: 42,
+        photoTypeId: 11,
+        photoTypeCode: 'SOCIETY_PLACE',
+        photoTypeName: 'Society Place Photo',
+        viewUrl: '/documents/place/view',
+        documentGuid: 'guid-place',
+        displayOrder: 1,
+      },
+      {
+        propertyPhotoId: 203,
+        propertyId: 42,
+        photoTypeId: 12,
+        photoTypeCode: 'WING_BUILDING',
+        photoTypeName: 'Wing Building Photo',
+        viewUrl: '/documents/wing/view',
+        documentGuid: 'guid-wing',
+        displayOrder: 1,
+      },
+    ];
+
+    const { result } = renderHook(() =>
+      usePropertyMedia({
+        initialPhotoSlots: multiCategoriesSlots,
+        initialPhotos: multiPhotos,
+        propertyId: 42,
+        isMainProperty: true,
+      })
+    );
+
+    expect(result.current.societyPhotoCategory?.photoTypeCode).toBe('SOCIETY_PLACE');
+    expect(result.current.societyPhoto?.documentGuid).toBe('guid-place');
+    expect(result.current.societyPhoto?.documentGuid).not.toBe('guid-board');
+    expect(result.current.societyPhoto?.documentGuid).not.toBe('guid-wing');
+  });
 });

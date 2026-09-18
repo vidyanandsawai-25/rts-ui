@@ -228,4 +228,85 @@ describe('usePhotoPlanMutations', () => {
     expect(result.current.isNamingOpen).toBe(true);
     expect(result.current.isReplacement).toBe(true);
   });
+
+  it('dispatches ptis:sync-thumbnail when an image is uploaded specifically to Society Place Photo', async () => {
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+    vi.mocked(photoPlanActions.uploadPropertyPhotoAction).mockResolvedValueOnce({
+      success: true,
+      data: { propertyPhotoId: 301, documentGuid: 'society-place-guid', viewUrl: '/view/301' },
+    } as unknown as Awaited<ReturnType<typeof photoPlanActions.uploadPropertyPhotoAction>>);
+
+    const societyPlaceCategories = [
+      {
+        photoTypeId: 15,
+        photoTypeCode: 'SOCIETY_PLACE',
+        photoTypeName: 'Society Place Photo',
+        photoCount: 0,
+        images: [],
+      },
+    ];
+
+    const onCategoriesChange = vi.fn();
+    const { result } = renderHook(() =>
+      usePhotoPlanMutations({
+        ...defaultProps,
+        categories: societyPlaceCategories,
+        selectedCategoryIndex: 0,
+        onCategoriesChange,
+      })
+    );
+
+    const validFile = new File(['society place img'], 'place.jpg', { type: 'image/jpeg' });
+    await act(async () => {
+      await result.current.handleNamingSubmit('Society Place Photo', 1, 15, validFile);
+    });
+
+    const syncCall = dispatchSpy.mock.calls.find(
+      ([event]) => (event as CustomEvent).type === 'ptis:sync-thumbnail'
+    );
+    expect(syncCall).toBeDefined();
+    const syncDetail = (syncCall?.[0] as CustomEvent).detail;
+    expect(syncDetail.documentGuid).toBe('society-place-guid');
+    expect(syncDetail.category).toBe('Society Place Photo');
+    expect(onCategoriesChange).toHaveBeenCalled();
+  });
+
+  it('does NOT dispatch ptis:sync-thumbnail when an image is uploaded to other categories like Society Board Photo', async () => {
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+    vi.mocked(photoPlanActions.uploadPropertyPhotoAction).mockResolvedValueOnce({
+      success: true,
+      data: { propertyPhotoId: 302, documentGuid: 'society-board-guid', viewUrl: '/view/302' },
+    } as unknown as Awaited<ReturnType<typeof photoPlanActions.uploadPropertyPhotoAction>>);
+
+    const societyBoardCategories = [
+      {
+        photoTypeId: 16,
+        photoTypeCode: 'SOCIETY_BOARD',
+        photoTypeName: 'Society Board Photo',
+        photoCount: 0,
+        images: [],
+      },
+    ];
+
+    const onCategoriesChange = vi.fn();
+    const { result } = renderHook(() =>
+      usePhotoPlanMutations({
+        ...defaultProps,
+        categories: societyBoardCategories,
+        selectedCategoryIndex: 0,
+        onCategoriesChange,
+      })
+    );
+
+    const validFile = new File(['society board img'], 'board.jpg', { type: 'image/jpeg' });
+    await act(async () => {
+      await result.current.handleNamingSubmit('Society Board Photo', 1, 16, validFile);
+    });
+
+    const syncCalls = dispatchSpy.mock.calls.filter(
+      ([event]) => (event as CustomEvent).type === 'ptis:sync-thumbnail'
+    );
+    expect(syncCalls).toHaveLength(0);
+    expect(onCategoriesChange).toHaveBeenCalled();
+  });
 });

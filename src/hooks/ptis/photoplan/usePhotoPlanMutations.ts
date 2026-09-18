@@ -58,11 +58,15 @@ export function usePhotoPlanMutations({
     else { setSelectedImageIndex?.(idx); setViewMode?.(mode); }
   }, [setViewerIndexAndMode, setSelectedImageIndex, setViewMode]);
 
-  const refreshAfterMediaMutation = useCallback(() => {
+  const refreshAfterMediaMutation = useCallback((photoTypeCode?: string, categoryName?: string) => {
     if (typeof window === 'undefined') return;
     window.dispatchEvent(
       new CustomEvent('ptis:media-updated', {
-        detail: { propertyId },
+        detail: {
+          propertyId,
+          photoTypeCode,
+          category: categoryName,
+        },
       })
     );
   }, [propertyId]);
@@ -256,7 +260,31 @@ export function usePhotoPlanMutations({
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updated));
         toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
         setViewerIndexAndModeValue(index, 'viewer');
-        refreshAfterMediaMutation();
+
+        const imageCategory = activeCategory?.photoTypeName;
+        const englishCategory = getEnglishCategoryName(activeCategory?.photoTypeCode || '', activeCategory?.photoTypeName || '');
+        const isSocietyPlacePhoto =
+          imageCategory === 'Society Place Photo' ||
+          englishCategory === 'Society Place Photo' ||
+          activeCategory?.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE' ||
+          activeCategory?.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE_PHOTO' ||
+          Boolean(activeCategory?.photoTypeName?.toLowerCase().includes('society place'));
+
+        if (isSocietyPlacePhoto && typeof window !== 'undefined' && (data.documentGuid || url)) {
+          window.dispatchEvent(
+            new CustomEvent('ptis:sync-thumbnail', {
+              detail: {
+                propertyId,
+                documentGuid: data.documentGuid,
+                photoUrl: url,
+                category: 'Society Place Photo',
+                photoTypeCode: activeCategory?.photoTypeCode || 'SOCIETY_PLACE',
+              },
+            })
+          );
+        }
+
+        refreshAfterMediaMutation(activeCategory?.photoTypeCode, activeCategory?.photoTypeName);
         return true;
       }
       toast.error(res.error || t('media.failedToReplace') || 'Failed to replace photo');
@@ -355,7 +383,31 @@ export function usePhotoPlanMutations({
           newImgIndex = updatedImages.length > 0 ? updatedImages.length - 1 : 0;
         }
         setViewerIndexAndModeValue(newImgIndex, 'viewer');
-        refreshAfterMediaMutation();
+
+        const imageCategory = activeCategory.photoTypeName;
+        const englishCategory = getEnglishCategoryName(activeCategory.photoTypeCode || '', activeCategory.photoTypeName || '');
+        const isSocietyPlacePhoto =
+          imageCategory === 'Society Place Photo' ||
+          englishCategory === 'Society Place Photo' ||
+          activeCategory.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE' ||
+          activeCategory.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE_PHOTO' ||
+          Boolean(activeCategory.photoTypeName?.toLowerCase().includes('society place'));
+
+        if (isSocietyPlacePhoto && typeof window !== 'undefined' && (res.data.documentGuid || url)) {
+          window.dispatchEvent(
+            new CustomEvent('ptis:sync-thumbnail', {
+              detail: {
+                propertyId,
+                documentGuid: res.data.documentGuid,
+                photoUrl: url,
+                category: 'Society Place Photo',
+                photoTypeCode: activeCategory.photoTypeCode || 'SOCIETY_PLACE',
+              },
+            })
+          );
+        }
+
+        refreshAfterMediaMutation(activeCategory.photoTypeCode, activeCategory.photoTypeName);
       } else toast.error(res.error || t('media.failedToUpload') || 'Failed to upload photo');
     } catch {
       toast.error(t('media.unexpectedError') || 'An unexpected error occurred.');

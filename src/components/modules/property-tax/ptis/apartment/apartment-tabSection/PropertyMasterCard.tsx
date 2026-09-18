@@ -100,6 +100,21 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
   useEffect(() => {
     const handleMediaUpdated = (e: Event) => {
       const customEvent = e as CustomEvent;
+      const cat = customEvent.detail?.category || customEvent.detail?.photoCategory || customEvent.detail?.imageCategory;
+      const catCode = customEvent.detail?.photoTypeCode;
+
+      // Only allow Society Place Photo to update the main society photo placeholder
+      if (cat || catCode) {
+        const isSocietyPlace =
+          cat === 'Society Place Photo' ||
+          (typeof cat === 'string' && cat.toLowerCase().includes('society place')) ||
+          catCode === 'SOCIETY_PLACE' ||
+          catCode === 'SOCIETY_PLACE_PHOTO';
+        if (!isSocietyPlace) {
+          return;
+        }
+      }
+
       const docGuid = customEvent.detail?.documentGuid;
       const pUrl = customEvent.detail?.photoUrl || customEvent.detail?.viewUrl;
       if (docGuid) {

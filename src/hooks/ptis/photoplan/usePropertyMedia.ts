@@ -375,7 +375,25 @@ export function usePropertyMedia({
   }, [categories, propertyPhoto, photoPlanPhoto]);
 
   const societyPhotoCategory = useMemo(
-    () => findCategory(categories, ['SOCIETY', 'SOCIETY_BUILDING'], ['society', 'society building']),
+    () =>
+      findCategory(
+        categories,
+        ['SOCIETY_PLACE', 'SOCIETY_PLACE_PHOTO'],
+        ['society place photo', 'society place']
+      ) ||
+      findCategory(
+        categories,
+        ['SOCIETY_BUILDING', 'SOCIETY_PHOTO'],
+        ['society photo', 'society building']
+      ) ||
+      categories.find((c) => {
+        const code = c.photoTypeCode?.toUpperCase() || '';
+        const name = c.photoTypeName?.toLowerCase() || '';
+        if (code.includes('BOARD') || name.includes('board') || code.includes('SIGN') || name.includes('sign')) {
+          return false;
+        }
+        return code === 'SOCIETY' || name === 'society';
+      }),
     [categories]
   );
   const societyPhoto = societyPhotoCategory?.images?.[0];
