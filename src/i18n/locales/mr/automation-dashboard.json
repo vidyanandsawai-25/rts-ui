@@ -497,5 +497,38 @@
       "totalDemand": "एकूण मागणी (₹)",
       "additionalRevenue": "अतिरिक्त महसूल उत्पन्न (₹)"
     }
+  },
+  "missingPhotoPlan": {
+    "totalGapFields": "एकूण गॅप फील्ड्स",
+    "photoMissing": "फोटो गहाळ",
+    "planMissing": "प्लॅन गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "photoMissing": "फोटो गहाळ",
+      "planMissing": "प्लॅन गहाळ",
+      "totalMissing": "एकूण गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingDataAnalysis": {
+    "title": "गहाळ डेटा विश्लेषण",
+    "subtitle": "सर्व्हेयर ट्रॅकिंगसाठी रिअल-टाइम सिंक्रोनायझेशन गॅप सारांश",
+    "tabs": {
+      "photoPlan": "फोटो / प्लॅन",
+      "ownerName": "मालकाचे नाव",
+      "mobileNo": "मोबाईल क्र.",
+      "occupierName": "ताबाधारकाचे नाव",
+      "address": "पत्ता",
+      "shopName": "दुकानाचे नाव",
+      "registeredPropertyData": "नोंदणीकृत मालमत्ता डेटा"
+    }
   }
 }

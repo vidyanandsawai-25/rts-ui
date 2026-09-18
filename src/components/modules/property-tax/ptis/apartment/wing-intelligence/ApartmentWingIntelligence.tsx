@@ -43,13 +43,13 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
   const [editingWing, setEditingWing] = useState<WingData | null>(null);
   const { leftArrowRef, rightArrowRef, scrollNext, scrollPrev, checkScroll, initScrollRef } = useApartmentWingScrollControl();
   const { setWingParams } = useApartmentWingUrlParams();
-  
+
   const router = useRouter();
   const routeParams = useParams();
   const currentLocale = (routeParams?.locale as string) || defaultLocale;
-
+  
   const mappedWings: WingData[] = useMemo(() => {
-    return mapWingData(data, { wingLabel: 'Wing', blockLabel: 'Block' });
+    return mapWingData(data);
   }, [data]);
 
   const activeWing = useMemo(() => {
@@ -63,10 +63,10 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
     return null;
   }, [data, selectedWingDetailId, selectedWingId]);
 
-  const activeWingDetailId = selectedWingDetailId ?? activeWing?.wingDetailId ?? null;
-  const activeWingMasterId = selectedWingId ?? activeWing?.wingMasterId ?? null;
+  const activeWingDetailId = selectedWingDetailId !== undefined ? selectedWingDetailId : (activeWing?.wingDetailId ?? null);
+  const activeWingMasterId = selectedWingId !== undefined ? selectedWingId : (activeWing?.wingMasterId ?? null);
   const activeSocietyDetailId = selectedSocietyDetailId ?? activeWing?.societyId ?? data?.societyId ?? null;
-  const activeWingName = selectedWingName ?? activeWing?.wingName ?? activeWing?.wingNo ?? null;
+  const activeWingName = selectedWingName !== undefined ? selectedWingName : (activeWing?.wingName ?? activeWing?.wingNo ?? null);
 
   const handleCardSelect = (wing: WingData) => {
     const isCurrentlySelected = !!(
@@ -76,13 +76,13 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
 
     if (isCurrentlySelected) {
       // Toggle off: deselect the current wing
-      const socId = wing?.societyId ?? data?.societyId ?? selectedSocietyDetailId ?? null;
-      onWingSelect?.(null, null, socId, null, null);
+      onWingSelect?.(null, null, null, null, null);
       setWingParams({
         wardId: data?.wardId ? String(data.wardId) : null,
         wingId: null,
         wingDetailId: null,
-        societyId: socId ? String(socId) : null,
+        societyId: null,
+        societyDetailId: null,
         wingName: null,
       });
     } else {
@@ -97,6 +97,7 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
         wingId: wMasterId ? String(wMasterId) : null,
         wingDetailId: wDetailId ? String(wDetailId) : null,
         societyId: socId ? String(socId) : null,
+        societyDetailId: socId ? String(socId) : null,
         wingName: wName,
       });
     }
@@ -128,7 +129,8 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
   if (isLoading) {
     return <ApartmentWingSkeleton />;
   }
-
+  
+  
   return (
     <div className="bg-white p-3 rounded-xl border border-zinc-200 shadow-xs overflow-hidden relative font-sans">
       <ApartmentWingTopNav

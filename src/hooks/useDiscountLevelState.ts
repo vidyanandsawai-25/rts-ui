@@ -131,6 +131,16 @@ export function useDiscountLevelState({
     });
   }, [filteredUnits, isAllUnitsSelected]);
 
+  // Selected unit count limited to units currently present in the active list
+  const selectedUnitsCount = useMemo(() => {
+    const validIds = new Set(dynamicUnits.map((u) => u.propertyDetailsId));
+    let count = 0;
+    selectedUnitIds.forEach((id) => {
+      if (validIds.has(id)) count++;
+    });
+    return count;
+  }, [dynamicUnits, selectedUnitIds]);
+
   return {
     level,
     setLevel,
@@ -146,6 +156,7 @@ export function useDiscountLevelState({
     setUseFilter,
     selectedUnitIds,
     setSelectedUnitIds,
+    selectedUnitsCount,
     wings: dynamicWings,
     availableFloors,
     availableUses,

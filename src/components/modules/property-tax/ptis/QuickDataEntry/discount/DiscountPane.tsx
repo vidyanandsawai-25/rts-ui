@@ -236,7 +236,7 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                                     {t('building.selectUnits') || 'SELECT UNITS'}
                                 </Label>
                                 <Badge variant="secondary" size="sm" className="bg-white text-slate-600 font-semibold border border-slate-200">
-                                    {t('building.unitsSelected', { count: levelState.selectedUnitIds.size }) || `${levelState.selectedUnitIds.size} ${levelState.selectedUnitIds.size === 1 ? 'unit' : 'units'} selected`}
+                                    {t('building.unitsSelected', { count: levelState.selectedUnitsCount }) || `${levelState.selectedUnitsCount} ${levelState.selectedUnitsCount === 1 ? 'unit' : 'units'} selected`}
                                 </Badge>
                             </div>
 

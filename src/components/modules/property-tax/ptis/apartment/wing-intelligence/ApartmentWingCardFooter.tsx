@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { ArrowUpRight, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Tooltip } from "@/components/common";
 import { formatCompactCurrency, formatFullCurrency } from "@/lib/utils/format";
 import { ExemptionSummaryProps, OverallTaxSummaryProps, RevenueImpactSummaryProps, WingCardFooterProps } from "@/types/property-tax/apartment";
 
@@ -52,11 +51,9 @@ const OverallTaxSummary: React.FC<OverallTaxSummaryProps> = ({ from, to }) => {
     <div className="flex flex-col border border-slate-200 rounded-lg px-1.5 py-1 flex-1 bg-white justify-between">
       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{t('overallTax') || 'OVERALL TAX'}</span>
       <div>
-        <Tooltip content={`${formatFullCurrency(from)} \u2192 ${formatFullCurrency(to)}`} placement="top">
-          <div className="text-sm font-black text-slate-900 leading-none cursor-help w-fit">
-            {formatCompactCurrency(from)} - {formatCompactCurrency(to)}
-          </div>
-        </Tooltip>
+        <div className="text-sm font-black text-slate-900 leading-none w-fit">
+          {formatCompactCurrency(from)} - {formatCompactCurrency(to)}
+        </div>
         <div className="text-[9px] font-bold text-slate-400 mt-0.5 leading-none">
           {t('oldVsNewTotalTaxComparison') || 'Old vs Total Tax Comparison'}
         </div>
@@ -92,7 +89,7 @@ const RevenueImpactSummary: React.FC<RevenueImpactSummaryProps> = ({
             <div className="text-sm font-black text-emerald-600 leading-none flex items-center gap-0.5 mt-[1px]">
               {isPositive ? <ArrowUpRight size={14} strokeWidth={3} /> : null} 
               {!isPositive ? <ArrowUpRight size={14} strokeWidth={3} className="rotate-90" /> : null}
-              {formatCompactCurrency(Math.abs(amount))}
+              {formatCompactCurrency(typeof amount === 'number' ? Math.abs(amount) : amount)}
             </div>
           </div>
           <div className="text-[9px] font-bold text-teal-700 leading-none">
@@ -101,10 +98,9 @@ const RevenueImpactSummary: React.FC<RevenueImpactSummaryProps> = ({
         </div>
       </div>
       <Popover isOpen={isOpen} onClose={() => setIsOpen(false)} title={`${t('revImpactDetails') || 'REV IMPACT DETAILS'} – ${wingName}`}>
-        <RowItem label={t('previousRv') || 'PREVIOUS RV'} value={formatFullCurrency(prevValue)} />
-        <RowItem label={t('revisedRv') || 'REVISED RV'} value={formatFullCurrency(revisedValue)} valueClass="text-blue-800" />
-        <RowItem label={t('differenceRv') || 'DIFFERENCE RV'} value={formatFullCurrency(Math.abs(amount))} valueClass="text-emerald-600" />
-        <RowItem label={t('percentageChange') || 'PERCENTAGE CHANGE'} value={`${isPositive ? '+' : '-'}${pct}%`} valueClass="text-emerald-600" />
+        <RowItem label={t('previousRv') || 'PREVIOUS RV'} value={typeof prevValue === 'string' && prevValue ? (prevValue.startsWith('₹') ? prevValue : `₹${prevValue}`) : formatFullCurrency(prevValue)} />
+        <RowItem label={t('revisedRv') || 'REVISED RV'} value={typeof revisedValue === 'string' && revisedValue ? (revisedValue.startsWith('₹') ? revisedValue : `₹${revisedValue}`) : formatFullCurrency(revisedValue)} valueClass="text-blue-800" />
+        <RowItem label={t('differenceRv') || 'DIFFERENCE RV'} value={typeof amount === 'string' && amount ? (amount.startsWith('₹') ? amount : `₹${amount}`) : formatFullCurrency(amount)} valueClass="text-emerald-600" />
         <RowItem label={t('affectedUnits') || 'AFFECTED UNITS'} value={`${unitsCount} ${unitsCount === 1 ? (t('unit') || 'Unit') : (t('units') || 'Units')}`} isLast />
       </Popover>
     </div>

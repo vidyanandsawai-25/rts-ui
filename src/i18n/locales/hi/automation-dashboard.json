@@ -497,5 +497,38 @@
     "actions": {
       "approve": "अनुमोदित करें"
     }
+  },
+  "missingPhotoPlan": {
+    "totalGapFields": "कुल गैप फ़ील्ड्स",
+    "photoMissing": "फोटो अनुपलब्ध",
+    "planMissing": "प्लान अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "photoMissing": "फोटो अनुपलब्ध",
+      "planMissing": "प्लान अनुपलब्ध",
+      "totalMissing": "कुल अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingDataAnalysis": {
+    "title": "अनुपलब्ध डेटा विश्लेषण",
+    "subtitle": "सर्वेक्षक ट्रैकिंग के लिए वास्तविक समय सिंक्रनाइज़ेशन गैप सारांश",
+    "tabs": {
+      "photoPlan": "फोटो / प्लान",
+      "ownerName": "मालिक का नाम",
+      "mobileNo": "मोबाइल नंबर",
+      "occupierName": "कब्जेदार का नाम",
+      "address": "पता",
+      "shopName": "दुकान का नाम",
+      "registeredPropertyData": "पंजीकृत संपत्ति डेटा"
+    }
   }
 }

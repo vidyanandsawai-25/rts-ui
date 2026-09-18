@@ -34,16 +34,25 @@ export const ApartmentWingCardList: React.FC<WingCardListProps> = ({
   onAmcClick,
   onCardEdit,
 }) => {
+
+
+  const handleCardClick = (wing: WingData) => {
+    onCardSelect(wing);
+  };
+
+  const handleCardDoubleClick = (wing: WingData) => {
+    onCardSelect(wing);
+  };
+
   return (
     <div className="relative w-full">
       <div
         ref={initScrollRef}
         onScroll={checkScroll}
-        className={`flex gap-4 overflow-x-auto py-2 scroll-smooth ${
-          mappedWings.length > 3
+        className={`flex gap-4 overflow-x-auto py-2 scroll-smooth ${mappedWings.length > 3
             ? 'pb-4 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full'
             : 'scrollbar-hide'
-        }`}
+          }`}
       >
         {mappedWings?.map((wing, index) => {
           const isSelected = !!(
@@ -59,7 +68,8 @@ export const ApartmentWingCardList: React.FC<WingCardListProps> = ({
               <ApartmentWingCard
                 data={wing}
                 isSelected={isSelected}
-                onClick={() => onCardSelect(wing)}
+                onClick={() => handleCardClick(wing)}
+                onDoubleClick={() => handleCardDoubleClick(wing)}
                 onAmcClick={(e) => {
                   e.stopPropagation();
                   onAmcClick(wing);

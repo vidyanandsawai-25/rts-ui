@@ -23,7 +23,8 @@ export function useApartmentFilters(
   const urlPropertyId = searchParams?.get('propertyId') ? Number(searchParams.get('propertyId')) : null;
   const urlWingDetailId = searchParams?.get('wingDetailId') ? Number(searchParams.get('wingDetailId')) : null;
   const urlWingId = searchParams?.get('wingId') ? Number(searchParams.get('wingId')) : null;
-  const urlSocietyId = searchParams?.get('societyId') ? Number(searchParams.get('societyId')) : null;
+  const rawSocietyId = searchParams?.get('societyId') || searchParams?.get('societyDetailId');
+  const urlSocietyId = rawSocietyId ? Number(rawSocietyId) : null;
   const urlWingName = searchParams?.get('wingName') || null;
 
   const [filters, setFilters] = React.useState<SearchWingWiseFilters>({
@@ -59,8 +60,8 @@ export function useApartmentFilters(
         prev.propertyId === activePropertyId &&
         prev.wingId === activeWingId &&
         prev.wingDetailId === activeWingDetailId &&
-        (activeSocietyId === undefined || prev.societyId === activeSocietyId) &&
-        (activeWingName === undefined || prev.wingName === activeWingName)
+        prev.societyId === activeSocietyId &&
+        prev.wingName === activeWingName
       ) {
         return prev;
       }
@@ -69,8 +70,8 @@ export function useApartmentFilters(
         propertyId: activePropertyId,
         wingId: activeWingId,
         wingDetailId: activeWingDetailId,
-        societyId: activeSocietyId ?? prev.societyId ?? null,
-        wingName: activeWingName ?? prev.wingName ?? null,
+        societyId: activeSocietyId,
+        wingName: activeWingName,
       };
     });
   }, [urlPropertyId, initialPropertyId, urlWingDetailId, initialWingDetailId, urlWingId, initialWingId, urlSocietyId, urlWingName]);

@@ -137,10 +137,36 @@ export function toTitleCase(str: string | null | undefined): string {
 
 // --- Reassessment Specific Formatting Utilities ---
 
-export function formatCompactCurrency(val: number): string {
+export function formatCompactCurrency(val: number | string | null | undefined): string {
+  if (val === null || val === undefined) return '₹0';
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === '0') return '₹0';
+    if (trimmed.startsWith('₹')) return trimmed;
+    if (trimmed.endsWith('Crore') || trimmed.endsWith('Cr')) {
+      const numPart = trimmed.replace(/Crore|Cr/i, '').trim();
+      return `₹${numPart}Cr`;
+    }
+    if (trimmed.endsWith('Lakh')) {
+      const numPart = trimmed.replace(/Lakh/i, '').trim();
+      return `₹${numPart}L`;
+    }
+    if (/k$/i.test(trimmed) || /L$/i.test(trimmed)) {
+      return `₹${trimmed}`;
+    }
+    const parsed = parseFloat(trimmed.replace(/,/g, ''));
+    if (!isNaN(parsed)) {
+      val = parsed;
+    } else {
+      return `₹${trimmed}`;
+    }
+  }
+
   const absVal = Math.abs(val);
   let formatted = '';
-  if (absVal >= 100000) {
+  if (absVal >= 10000000) {
+    formatted = `${(absVal / 10000000).toFixed(2).replace(/\.00$/, '').replace(/0$/, '')}Cr`;
+  } else if (absVal >= 100000) {
     formatted = `${(absVal / 100000).toFixed(2).replace(/\.00$/, '').replace(/0$/, '')}L`;
   } else if (absVal >= 1000) {
     formatted = `${(absVal / 1000).toFixed(1).replace(/\.0$/, '')}k`;
@@ -166,12 +192,24 @@ export function sumReassessmentTaxAmounts(taxes: Record<string, number>): number
   );
 }
 
-export function formatCompactCurrencyWithSign(val: number): string {
-  const formatted = formatCompactCurrency(Math.abs(val));
-  return val >= 0 ? `+${formatted}` : `-${formatted}`;
+export function formatCompactCurrencyWithSign(val: number | string | null | undefined): string {
+  if (val === null || val === undefined) return '+₹0';
+  const str = String(val).trim();
+  if (str.startsWith('+') || str.startsWith('-')) return str;
+  const formatted = formatCompactCurrency(val);
+  return formatted.startsWith('-') ? formatted : `+${formatted}`;
 }
 
-export function formatFullCurrency(val: number): string {
+export function formatFullCurrency(val: number | string | null | undefined): string {
+  if (val === null || val === undefined) return '₹0';
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === '0') return '₹0';
+    if (trimmed.startsWith('₹')) return trimmed;
+    const parsed = parseFloat(trimmed.replace(/,/g, ''));
+    if (isNaN(parsed)) return `₹${trimmed}`;
+    val = parsed;
+  }
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',

@@ -497,5 +497,38 @@
       "totalDemand": "TOTAL DEMAND (₹)",
       "additionalRevenue": "ADDITIONAL REVENUE GENERATED (₹)"
     }
+  },
+  "missingPhotoPlan": {
+    "totalGapFields": "TOTAL GAP FIELDS",
+    "photoMissing": "PHOTO MISSING",
+    "planMissing": "PLAN MISSING",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "photoMissing": "PHOTO MISSING",
+      "planMissing": "PLAN MISSING",
+      "totalMissing": "TOTAL MISSING",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "missingDataAnalysis": {
+    "title": "MISSING DATA ANALYSIS",
+    "subtitle": "REAL-TIME SYNCHRONIZATION GAP SUMMARY FOR SURVEYOR TRACKING",
+    "tabs": {
+      "photoPlan": "Photo / Plan",
+      "ownerName": "Owner Name",
+      "mobileNo": "Mobile No.",
+      "occupierName": "Occupier Name",
+      "address": "Address",
+      "shopName": "Shop Name",
+      "registeredPropertyData": "Registered Property Data"
+    }
   }
 }

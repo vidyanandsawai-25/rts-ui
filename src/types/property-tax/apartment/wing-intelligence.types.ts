@@ -13,22 +13,22 @@ export interface StatBadgeProps {
 
 export interface ExemptionSummaryProps {
   wingName: string;
-  amount: number;
+  amount: string | number;
   count: number;
 }
 
 export interface OverallTaxSummaryProps {
-  from: number;
-  to: number;
+  from: string | number;
+  to: string | number;
 }
 
 export interface RevenueImpactSummaryProps {
   wingName: string;
-  amount: number;
+  amount: string | number;
   pct: number;
   isPositive: boolean;
-  previousRv?: number;
-  revisedRv?: number;
+  previousRv?: string | number;
+  revisedRv?: string | number;
   affectedUnits?: number;
 }
 
@@ -43,6 +43,7 @@ export interface WingCardHeaderProps {
     area: number;
     collectedPct: number;
   };
+  areaUnit?: string;
   colorClass: string;
   onAmcClick?: (e: React.MouseEvent) => void;
   onEdit?: (e: React.MouseEvent) => void;
@@ -52,28 +53,29 @@ export interface WingType {
   type: 'Residential' | 'Commercial' | 'Amenity';
   units: number;
   area: number;
-  old: number;
-  cur: number;
-  retro: number;
-  total: number;
-  rev: number;
+  old: string | number;
+  cur: string | number;
+  retro: string | number;
+  total: string | number;
+  rev: string | number;
   [key: string]: unknown;
 }
 
 export interface WingTypeTableProps {
   types: WingType[];
+  areaUnit?: string;
 }
 
 export interface WingCardFooterProps {
   wingName: string;
-  exemption: { amount: number; count: number };
-  overallTax: { from: number; to: number };
+  exemption: { amount: string | number; count: number };
+  overallTax: { from: string | number; to: string | number };
   revenueImpact: {
-    amount: number;
+    amount: string | number;
     pct: number;
     isPositive: boolean;
-    previousRv?: number;
-    revisedRv?: number;
+    previousRv?: string | number;
+    revisedRv?: string | number;
     affectedUnits?: number;
   };
 }
@@ -95,15 +97,16 @@ export interface WingData {
     area: number;
     collectedPct: number;
   };
+  areaUnit?: string;
   types: WingType[];
-  exemption: { amount: number; count: number };
-  overallTax: { from: number; to: number };
+  exemption: { amount: string | number; count: number };
+  overallTax: { from: string | number; to: string | number };
   revenueImpact: {
-    amount: number;
+    amount: string | number;
     pct: number;
     isPositive: boolean;
-    previousRv?: number;
-    revisedRv?: number;
+    previousRv?: string | number;
+    revisedRv?: string | number;
     affectedUnits?: number;
   };
   colorClass: string;
@@ -113,6 +116,7 @@ export interface WingCardProps {
   data: WingData;
   isSelected?: boolean;
   onClick?: () => void;
+  onDoubleClick?: () => void;
   onAmcClick?: (e: React.MouseEvent) => void;
   onEdit?: (e: React.MouseEvent) => void;
 }
@@ -126,6 +130,13 @@ export interface WingWisePropertyType {
   retroDemand: string;
   totalDemand: string;
   totalRevenue: string;
+}
+
+export interface RevenueImpactDetail {
+  previousRV?: string;
+  revisedRV?: string;
+  differenceRV?: string;
+  affectedUnits?: number;
 }
 
 export interface WingWiseWingDetails {
@@ -145,6 +156,7 @@ export interface WingWiseWingDetails {
   totalDemand: string;
   revenueImpact: string;
   revenueImpactPercentage: number;
+  revenueImpactDetails?: RevenueImpactDetail[];
   exemptionAppliedAmount: string;
   exemptedPropertyCount: number;
   propertyTypes: WingWisePropertyType[];
@@ -156,6 +168,7 @@ export interface WingWiseDetailsItems {
   wardId?: number;
   wardNo: string;
   societyId?: number;
+  rateMasterAreaUnit?: string | null;
   wings: WingWiseWingDetails[];
 }
 
