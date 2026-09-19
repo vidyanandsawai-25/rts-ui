@@ -241,4 +241,45 @@ describe('usePropertyMedia', () => {
     expect(result.current.societyPhoto?.documentGuid).not.toBe('guid-board');
     expect(result.current.societyPhoto?.documentGuid).not.toBe('guid-wing');
   });
+
+  it('generates coordinate-based satellite tile URL for gisPhoto when initial coordinates are provided', () => {
+    const { result } = renderHook(() =>
+      usePropertyMedia({
+        initialPhotoSlots: mockInitialSlots,
+        initialPhotos: mockInitialPhotos,
+        propertyId: 42,
+        initialLatitude: 19.84,
+        initialLongitude: 75.88,
+      })
+    );
+
+    expect(result.current.gisPhoto).toBeDefined();
+    expect(result.current.gisPhoto.src).toContain('arcgis.com');
+    expect(result.current.gisPhoto.src).toContain('/17/58163/93163');
+  });
+
+  it('inherits coordinates from wings when property-level coordinates are absent', () => {
+    const mockWings = [
+      {
+        wingDetailId: 10,
+        wingName: 'A Wing',
+        latitude: 19.84,
+        longitude: 75.88,
+      },
+    ];
+
+    const { result } = renderHook(() =>
+      usePropertyMedia({
+        initialPhotoSlots: mockInitialSlots,
+        initialPhotos: mockInitialPhotos,
+        propertyId: 42,
+        wings: mockWings,
+        wingDetailId: 10,
+      })
+    );
+
+    expect(result.current.gisPhoto).toBeDefined();
+    expect(result.current.gisPhoto.src).toContain('arcgis.com');
+    expect(result.current.gisPhoto.src).toContain('/17/58163/93163');
+  });
 });

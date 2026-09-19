@@ -102,7 +102,7 @@ async function BuildingFormDataLoader({
         getConstructionTypeDataAction(),
         getPropertyBasicDetailsAction(propertyId),
         getWingsByPropertyAction(propertyId),
-        getUnitsByPropertyAction(propertyId, targetWingId, 1, 10),
+        getUnitsByPropertyAction(propertyId, targetWingId, 1, 200),
         getCertificateTypeMasterAction(),
         getApartmentQcCertificateGridAction(
             targetPropId,
@@ -153,7 +153,7 @@ async function BuildingFormDataLoader({
         floorName: String(u.floorName || u.FloorName || u.floor || '1st Floor'),
         useName: String(u.useName || u.UseName || u.use || 'Residential'),
         isSelected: false,
-    }));
+    })).sort((a, b) => (a.unitNo || '').localeCompare(b.unitNo || '', undefined, { numeric: true, sensitivity: 'base' }));
 
     // Process Certificate Types Master SSR Data
     const rawTypes = (certificateTypesResult?.success && Array.isArray(certificateTypesResult.data)) ? certificateTypesResult.data as Record<string, unknown>[] : [];

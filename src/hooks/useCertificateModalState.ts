@@ -209,6 +209,11 @@ export function useCertificateModalState({
     };
   }, [level, targetWingDetailId, selectedWingDetailId, targetUnitPropertyId, societyId]);
 
+  // Helper: natural alphanumeric sort for units (e.g. A1, A2, A3, ..., A10, A12)
+  const naturalUnitSort = useCallback((a: UnitSelectionItem, b: UnitSelectionItem): number => {
+    return (a.unitNo || '').localeCompare(b.unitNo || '', undefined, { numeric: true, sensitivity: 'base' });
+  }, []);
+
   // Helper: map raw unit record from API to UnitSelectionItem
   const mapRawUnitItem = (u: Record<string, unknown>, idx: number): UnitSelectionItem => ({
     propertyDetailsId: Number(u.propertyDetailsId || u.PropertyDetailsId || u.id || u.Id || idx + 1),
@@ -230,14 +235,14 @@ export function useCertificateModalState({
     return matchedWing?.wingDetailId ?? null;
   }, [resolvedWings]);
 
-  // Load next 10 units on scroll (wing-scoped)
+  // Load next units on scroll (wing-scoped)
   const loadNextUnitsPage = useCallback(async () => {
     if (!propertyId || isLoadingMoreUnits || !hasMoreUnits) return;
     setIsLoadingMoreUnits(true);
 
     const nextPage = unitsPage + 1;
     const wingDetailIdParam = getWingDetailIdFromFilter(wingFilter);
-    const res = await getUnitsByPropertyAction(propertyId, wingDetailIdParam, nextPage, 10);
+    const res = await getUnitsByPropertyAction(propertyId, wingDetailIdParam, nextPage, 100);
 
     if (res.success && Array.isArray(res.data) && res.data.length > 0) {
       const newItems: UnitSelectionItem[] = (res.data as Record<string, unknown>[]).map(mapRawUnitItem);
@@ -245,7 +250,7 @@ export function useCertificateModalState({
       setDynamicUnits((prev) => {
         const existingIds = new Set(prev.map((item) => item.propertyDetailsId));
         const filteredNew = newItems.filter((item) => !existingIds.has(item.propertyDetailsId));
-        const updated = [...prev, ...filteredNew];
+        const updated = [...prev, ...filteredNew].sort(naturalUnitSort);
         const total = typeof res.totalCount === 'number' ? res.totalCount : totalUnitsCount;
         setTotalUnitsCount(total);
         setHasMoreUnits(updated.length < total);
@@ -257,7 +262,7 @@ export function useCertificateModalState({
     }
 
     setIsLoadingMoreUnits(false);
-  }, [propertyId, isLoadingMoreUnits, hasMoreUnits, unitsPage, totalUnitsCount, wingFilter, getWingDetailIdFromFilter]);
+  }, [propertyId, isLoadingMoreUnits, hasMoreUnits, unitsPage, totalUnitsCount, wingFilter, getWingDetailIdFromFilter, naturalUnitSort]);
 
   // When wingFilter changes, re-fetch units AND grid data in parallel
   const setWingFilter = useCallback((value: string) => {
@@ -281,14 +286,14 @@ export function useCertificateModalState({
     const preemptKey = `${level}_${null}_${wingDetailIdParam}_${null}`;
     lastFetchedKeyRef.current = preemptKey;
 
-    // Fetch units and certificate grid in parallel
-    const unitsPromise = getUnitsByPropertyAction(propertyId, wingDetailIdParam, 1, 10);
+    // Fetch all units in the wing (large page size) and certificate grid in parallel
+    const unitsPromise = getUnitsByPropertyAction(propertyId, wingDetailIdParam, 1, 200);
     const gridPromise = getApartmentQcCertificateGridAction(null, wingDetailIdParam, null);
 
     Promise.all([unitsPromise, gridPromise]).then(([unitsRes, gridRes]) => {
       // Process units
       if (unitsRes.success && Array.isArray(unitsRes.data)) {
-        const mappedUnits: UnitSelectionItem[] = (unitsRes.data as Record<string, unknown>[]).map(mapRawUnitItem);
+        const mappedUnits: UnitSelectionItem[] = (unitsRes.data as Record<string, unknown>[]).map(mapRawUnitItem).sort(naturalUnitSort);
         setDynamicUnits(mappedUnits);
         const total = typeof unitsRes.totalCount === 'number' ? unitsRes.totalCount : mappedUnits.length;
         setTotalUnitsCount(total);
@@ -307,7 +312,7 @@ export function useCertificateModalState({
       }
       setIsLoadingGridRecords(false);
     });
-  }, [propertyId, resolvedWings, gridItems, level]);
+  }, [propertyId, resolvedWings, gridItems, level, naturalUnitSort]);
 
 
 
@@ -459,7 +464,7 @@ export function useCertificateModalState({
 
   // Filtered unit list — wing filtering is server-side, floor/use/search are client-side
   const filteredUnits = useMemo(() => {
-    return resolvedUnits.filter((unit) => {
+    const list = resolvedUnits.filter((unit) => {
       if (floorFilter !== 'all' && unit.floorName.toLowerCase() !== floorFilter.toLowerCase()) {
         return false;
       }
@@ -475,7 +480,8 @@ export function useCertificateModalState({
       }
       return true;
     });
-  }, [resolvedUnits, floorFilter, useFilter, unitSearchQuery]);
+    return list.sort(naturalUnitSort);
+  }, [resolvedUnits, floorFilter, useFilter, unitSearchQuery, naturalUnitSort]);
 
   const isAllUnitsSelected = useMemo(() => {
     if (filteredUnits.length === 0) return false;

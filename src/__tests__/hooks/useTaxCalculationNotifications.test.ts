@@ -2,6 +2,13 @@ import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useTaxCalculationNotifications } from "@/hooks/useTaxCalculationNotifications";
 
+// Mock server actions
+vi.mock("@/app/actions/tax-calculation-job.actions", () => ({
+  pauseTaxCalculationJobAction: vi.fn().mockResolvedValue({ success: true }),
+  resumeTaxCalculationJobAction: vi.fn().mockResolvedValue({ success: true }),
+  cancelTaxCalculationJobAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
 // Mock EventSource
 class MockEventSource {
   static instances: MockEventSource[] = [];
@@ -78,6 +85,52 @@ describe("useTaxCalculationNotifications", () => {
     expect(result.current.jobsList[0].percentComplete).toBe(50);
     expect(result.current.isCalculating).toBe(true);
     expect(onProgress).toHaveBeenCalledTimes(1);
+  });
+
+  it("should support pausing, resuming, and cancelling a job", async () => {
+    const { result } = renderHook(() => useTaxCalculationNotifications());
+
+    const sse = MockEventSource.instances[0];
+
+    act(() => {
+      sse.emit("progress", {
+        jobId: "JOB001",
+        entityType: "S",
+        societyDetailId: 1509001,
+        wingDetailId: null,
+        processedUnits: 3,
+        totalUnits: 10,
+        percentComplete: 30,
+        status: "Processing",
+        message: "Processing...",
+      });
+    });
+
+    expect(result.current.jobsList[0].isPaused).toBeFalsy();
+
+    // Pause
+    await act(async () => {
+      const ok = await result.current.pauseJob("JOB001");
+      expect(ok).toBe(true);
+    });
+    expect(result.current.jobsList[0].status).toBe("Paused");
+    expect(result.current.jobsList[0].isPaused).toBe(true);
+
+    // Resume
+    await act(async () => {
+      const ok = await result.current.resumeJob("JOB001");
+      expect(ok).toBe(true);
+    });
+    expect(result.current.jobsList[0].status).toBe("Processing");
+    expect(result.current.jobsList[0].isPaused).toBe(false);
+
+    // Cancel / Terminate
+    await act(async () => {
+      const ok = await result.current.cancelJob("JOB001");
+      expect(ok).toBe(true);
+    });
+    expect(result.current.jobsList[0].status).toBe("Cancelled");
+    expect(result.current.jobsList[0].isCancelled).toBe(true);
   });
 
   it("should update job status on completion", () => {

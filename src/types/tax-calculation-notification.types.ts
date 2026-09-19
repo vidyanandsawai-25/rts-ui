@@ -1,3 +1,11 @@
+export type TaxCalculationJobStatus =
+  | 'Pending'
+  | 'Processing'
+  | 'Paused'
+  | 'Cancelled'
+  | 'Completed'
+  | 'Failed';
+
 export interface TaxCalculationProgressDto {
   jobId: string;
   entityType: string;
@@ -6,8 +14,9 @@ export interface TaxCalculationProgressDto {
   processedUnits: number;
   totalUnits: number;
   percentComplete: number;
-  status: 'Pending' | 'Processing' | 'Completed' | 'Failed';
+  status: TaxCalculationJobStatus;
   message: string;
+  isPaused?: boolean;
 }
 
 export interface TaxCalculationCompletedDto {
@@ -18,8 +27,10 @@ export interface TaxCalculationCompletedDto {
   totalUnits: number;
   succeededCount: number;
   failedCount: number;
+  status?: TaxCalculationJobStatus | string;
   isSuccess?: boolean;
   success?: boolean;
+  isCancelled?: boolean;
   durationMs?: number;
   completedAt?: string;
   message?: string;
@@ -35,10 +46,12 @@ export interface ActiveTaxCalculationJob {
   processedUnits: number;
   totalUnits: number;
   percentComplete: number;
-  status: 'Pending' | 'Processing' | 'Completed' | 'Failed';
+  status: TaxCalculationJobStatus;
   message: string;
   isCompleted?: boolean;
   isSuccess?: boolean;
+  isPaused?: boolean;
+  isCancelled?: boolean;
   succeededCount?: number;
   failedCount?: number;
   durationMs?: number;

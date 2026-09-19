@@ -88,7 +88,7 @@ export function PropertyMediaPanelContent({
   isMainProperty = false,
 }: PropertyMediaPanelContentProps): React.ReactElement {
   const isSociety = !isAmenityProperty && categories.some((c) => c.photoTypeCode?.startsWith('SOCIETY_') || c.photoTypeCode?.includes('SOCIETY'));
-  const isWing = !isAmenityProperty && categories.some((c) => c.photoTypeCode?.startsWith('WING_') || c.photoTypeCode?.includes('WING'));
+  const isWing = !isAmenityProperty && (Boolean(wingName) || Boolean(wingPhotoCategory) || categories.some((c) => c.photoTypeCode?.startsWith('WING_') || c.photoTypeCode?.includes('WING')));
 
   const hasPropertySlot = categories.some((c) => !c.isCustom && (c.photoTypeCode?.startsWith('PROPERTY_') || c.photoTypeCode === 'FRONT'));
 
@@ -134,7 +134,23 @@ export function PropertyMediaPanelContent({
       />
 
       <div className="flex-1 min-h-0 h-full overflow-y-auto p-2 flex flex-col sm:grid sm:grid-cols-3 lg:flex lg:flex-col gap-2 scrollbar-thin">
-        {isSociety && isWing ? (
+        {isAmenityProperty ? (
+          <>
+            {/* Amenity Photo Card */}
+            <MediaImageCard
+              src={amenityPhoto?.src || ''}
+              documentGuid={amenityPhoto?.documentGuid}
+              fullSrc={amenityPhoto?.fullSrc || ''}
+              alt={amenityPhoto?.alt || t('media.amenityPhoto') || 'Amenity Photo'}
+              label={amenityPhoto?.title || t('media.amenityPhoto') || 'Amenity Photo'}
+              hoverBorderColor="hover:border-emerald-500"
+              onClick={() => openDrawer(amenityPhotoCategory ? categories.indexOf(amenityPhotoCategory) : 0, 0)}
+              onMouseEnter={() => handleImageHover(amenityPhoto?.fullSrc || amenityPhoto?.src || '', amenityPhoto?.title || t('media.amenityPhoto') || 'Amenity Photo')}
+              onMouseLeave={handleImageLeave}
+              hasPhoto={amenityPhoto?.hasPhoto}
+            />
+          </>
+        ) : isSociety && isWing ? (
           <>
             {/* Society Photo Card */}
             <MediaImageCard
@@ -144,7 +160,11 @@ export function PropertyMediaPanelContent({
               alt={societyPhoto?.alt || (t('media.societyPhoto') || 'Society Photo')}
               label={societyPhoto?.title || (t('media.societyPhoto') || 'Society Photo')}
               hoverBorderColor="hover:border-blue-500"
-              badgeText={expandedCategory !== 'society' && societyRemainingImages.length > 0 ? `+${societyRemainingImages.length} ${t('media.more') || 'More'}` : undefined}
+              badgeText={
+                expandedCategory !== 'society' && societyRemainingImages.length > 0
+                  ? `+${societyRemainingImages.length} ${t('media.more') || 'More'}`
+                  : undefined
+              }
               onClick={() => openDrawer(societyPhotoCategory ? categories.indexOf(societyPhotoCategory) : 0, 0)}
               onMouseEnter={() => handleImageHover(societyPhoto?.fullSrc || societyPhoto?.src || '', societyPhoto?.title || (t('media.societyPhoto') || 'Society Photo'))}
               onMouseLeave={handleImageLeave}
@@ -193,7 +213,11 @@ export function PropertyMediaPanelContent({
               alt={effectiveWingPhotoAlt}
               label={effectiveWingPhotoTitle}
               hoverBorderColor="hover:border-blue-500"
-              badgeText={expandedCategory !== 'wing' && wingRemainingImages.length > 0 ? `+${wingRemainingImages.length} ${t('media.more') || 'More'}` : undefined}
+              badgeText={
+                expandedCategory !== 'wing' && wingRemainingImages.length > 0
+                  ? `+${wingRemainingImages.length} ${t('media.more') || 'More'}`
+                  : undefined
+              }
               onClick={() => openDrawer(wingPhotoCategory ? categories.indexOf(wingPhotoCategory) : 0, 0)}
               onMouseEnter={() => handleImageHover(wingPhoto?.fullSrc || wingPhoto?.src || '', effectiveWingPhotoTitle)}
               onMouseLeave={handleImageLeave}
@@ -243,7 +267,11 @@ export function PropertyMediaPanelContent({
                   alt={propertyPhoto?.alt || (t('media.propertyPhoto') || 'Property Photo')}
                   label={propertyPhoto?.title || (t('media.propertyPhoto') || 'Property Photo')}
                   hoverBorderColor="hover:border-blue-500"
-                  badgeText={expandedCategory !== 'property' && propertyRemainingImages.length > 0 ? `+${propertyRemainingImages.length} ${t('media.more') || 'More'}` : undefined}
+                  badgeText={
+                    expandedCategory !== 'property' && propertyRemainingImages.length > 0
+                      ? `+${propertyRemainingImages.length} ${t('media.more') || 'More'}`
+                      : undefined
+                  }
                   onClick={() => openDrawer(propertyPhotoCategory ? categories.indexOf(propertyPhotoCategory) : 0, 0)}
                   onMouseEnter={() => handleImageHover(propertyPhoto?.fullSrc || propertyPhoto?.src || '', propertyPhoto?.title || (t('media.propertyPhoto') || 'Property Photo'))}
                   onMouseLeave={handleImageLeave}
@@ -284,7 +312,7 @@ export function PropertyMediaPanelContent({
               </>
             )}
           </>
-        ) : isWing ? (
+        ) : isSociety ? (
           <>
             {/* Society Photo Card */}
             <MediaImageCard
@@ -294,7 +322,11 @@ export function PropertyMediaPanelContent({
               alt={societyPhoto?.alt || (t('media.societyPhoto') || 'Society Photo')}
               label={societyPhoto?.title || (t('media.societyPhoto') || 'Society Photo')}
               hoverBorderColor="hover:border-blue-500"
-              badgeText={expandedCategory !== 'society' && societyRemainingImages.length > 0 ? `+${societyRemainingImages.length} ${t('media.more') || 'More'}` : undefined}
+              badgeText={
+                expandedCategory !== 'society' && societyRemainingImages.length > 0
+                  ? `+${societyRemainingImages.length} ${t('media.more') || 'More'}`
+                  : undefined
+              }
               onClick={() => openDrawer(societyPhotoCategory ? categories.indexOf(societyPhotoCategory) : 0, 0)}
               onMouseEnter={() => handleImageHover(societyPhoto?.fullSrc || societyPhoto?.src || '', societyPhoto?.title || (t('media.societyPhoto') || 'Society Photo'))}
               onMouseLeave={handleImageLeave}
@@ -332,9 +364,9 @@ export function PropertyMediaPanelContent({
                 />
               </div>
             )}
-
-            <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
-
+          </>
+        ) : isWing ? (
+          <>
             {/* Wing Photo Card */}
             <MediaImageCard
               src={wingPhoto?.src || ''}
@@ -343,7 +375,11 @@ export function PropertyMediaPanelContent({
               alt={effectiveWingPhotoAlt}
               label={effectiveWingPhotoTitle}
               hoverBorderColor="hover:border-blue-500"
-              badgeText={expandedCategory !== 'wing' && wingRemainingImages.length > 0 ? `+${wingRemainingImages.length} ${t('media.more') || 'More'}` : undefined}
+              badgeText={
+                expandedCategory !== 'wing' && wingRemainingImages.length > 0
+                  ? `+${wingRemainingImages.length} ${t('media.more') || 'More'}`
+                  : undefined
+              }
               onClick={() => openDrawer(wingPhotoCategory ? categories.indexOf(wingPhotoCategory) : 0, 0)}
               onMouseEnter={() => handleImageHover(wingPhoto?.fullSrc || wingPhoto?.src || '', effectiveWingPhotoTitle)}
               onMouseLeave={handleImageLeave}
@@ -381,22 +417,82 @@ export function PropertyMediaPanelContent({
                 />
               </div>
             )}
+
+            {hasPropertySlot && (
+              <>
+                <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
+                {/* Inner Property Photo Card */}
+                <MediaImageCard
+                  src={propertyPhoto?.src || ''}
+                  documentGuid={propertyPhoto?.documentGuid}
+                  fullSrc={propertyPhoto?.fullSrc || ''}
+                  alt={propertyPhoto?.alt || (t('media.propertyPhoto') || 'Property Photo')}
+                  label={propertyPhoto?.title || (t('media.propertyPhoto') || 'Property Photo')}
+                  hoverBorderColor="hover:border-blue-500"
+                  badgeText={
+                    expandedCategory !== 'property' && propertyRemainingImages.length > 0
+                      ? `+${propertyRemainingImages.length} ${t('media.more') || 'More'}`
+                      : undefined
+                  }
+                  onClick={() => openDrawer(propertyPhotoCategory ? categories.indexOf(propertyPhotoCategory) : 0, 0)}
+                  onMouseEnter={() => handleImageHover(propertyPhoto?.fullSrc || propertyPhoto?.src || '', propertyPhoto?.title || (t('media.propertyPhoto') || 'Property Photo'))}
+                  onMouseLeave={handleImageLeave}
+                  hasPhoto={propertyPhoto?.hasPhoto}
+                >
+                  {propertyRemainingImages.length > 0 && (
+                    <Button
+                      variant="edit"
+                      size="xs"
+                      className="!h-7 !w-7 !p-0 shadow-lg bg-white cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedCategory((p) => (p === 'property' ? null : 'property'));
+                      }}
+                      aria-label={expandedCategory === 'property' ? 'Hide more images' : 'View more images'}
+                    >
+                      {expandedCategory === 'property' ? <X className="w-3.5 h-3.5 cursor-pointer" /> : <Images className="w-3.5 h-3.5 cursor-pointer" />}
+                    </Button>
+                  )}
+                </MediaImageCard>
+
+                {expandedCategory === 'property' && (
+                  <div className="col-span-full sm:col-span-3 lg:col-span-1 flex flex-col gap-2">
+                    <AdditionalImagesGrid
+                      images={propertyRemainingImages}
+                      onImageClick={(index: number) => {
+                        const clickedImg = propertyRemainingImages[index];
+                        const catIdx = categories.findIndex((c) => c.photoTypeId === clickedImg.photoTypeId);
+                        const targetCategory = categories[catIdx];
+                        const imgIdx = targetCategory ? targetCategory.images.findIndex((img) => img.propertyPhotoId === clickedImg.propertyPhotoId) : 0;
+                        openDrawer(catIdx >= 0 ? catIdx : 0, imgIdx >= 0 ? imgIdx : 0);
+                      }}
+                      onImageHover={handleImageHover}
+                      onImageLeave={handleImageLeave}
+                    />
+                  </div>
+                )}
+              </>
+            )}
           </>
-        ) : !isAmenityProperty ? (
+        ) : (
           <>
             {/* Standard Single Photo Card */}
             <MediaImageCard
-              src={(isSociety ? societyPhoto : propertyPhoto)?.src || ''}
-              documentGuid={(isSociety ? societyPhoto : propertyPhoto)?.documentGuid}
-              fullSrc={(isSociety ? societyPhoto : propertyPhoto)?.fullSrc || ''}
-              alt={(isSociety ? societyPhoto : propertyPhoto)?.alt || mainCardLabel}
-              label={(isSociety ? societyPhoto : propertyPhoto)?.title || mainCardLabel}
+              src={propertyPhoto?.src || ''}
+              documentGuid={propertyPhoto?.documentGuid}
+              fullSrc={propertyPhoto?.fullSrc || ''}
+              alt={propertyPhoto?.alt || mainCardLabel}
+              label={propertyPhoto?.title || mainCardLabel}
               hoverBorderColor="hover:border-blue-500"
-              badgeText={expandedCategory !== 'property' && propertyRemainingImages.length > 0 ? `+${propertyRemainingImages.length} ${t('media.more') || 'More'}` : undefined}
-              onClick={() => openDrawer((isSociety ? societyPhotoCategory : propertyPhotoCategory) ? categories.indexOf((isSociety ? societyPhotoCategory : propertyPhotoCategory)!) : 0, 0)}
-              onMouseEnter={() => handleImageHover((isSociety ? societyPhoto : propertyPhoto)?.fullSrc || (isSociety ? societyPhoto : propertyPhoto)?.src || '', (isSociety ? societyPhoto : propertyPhoto)?.title || mainCardLabel)}
+              badgeText={
+                expandedCategory !== 'property' && propertyRemainingImages.length > 0
+                  ? `+${propertyRemainingImages.length} ${t('media.more') || 'More'}`
+                  : undefined
+              }
+              onClick={() => openDrawer(propertyPhotoCategory ? categories.indexOf(propertyPhotoCategory) : 0, 0)}
+              onMouseEnter={() => handleImageHover(propertyPhoto?.fullSrc || propertyPhoto?.src || '', propertyPhoto?.title || mainCardLabel)}
               onMouseLeave={handleImageLeave}
-              hasPhoto={(isSociety ? societyPhoto : propertyPhoto)?.hasPhoto}
+              hasPhoto={propertyPhoto?.hasPhoto}
             >
               {propertyRemainingImages.length > 0 && (
                 <Button
@@ -430,23 +526,6 @@ export function PropertyMediaPanelContent({
                 />
               </div>
             )}
-          </>
-        ) : null}
-
-        {isAmenityProperty && (
-          <>
-            <MediaImageCard
-              src={amenityPhoto?.src || ''}
-              documentGuid={amenityPhoto?.documentGuid}
-              fullSrc={amenityPhoto?.fullSrc || ''}
-              alt={amenityPhoto?.alt || t('media.amenityPhoto') || 'Amenity Photo'}
-              label={amenityPhoto?.title || t('media.amenityPhoto') || 'Amenity Photo'}
-              hoverBorderColor="hover:border-emerald-500"
-              onClick={() => openDrawer(amenityPhotoCategory ? categories.indexOf(amenityPhotoCategory) : 0, 0)}
-              onMouseEnter={() => handleImageHover(amenityPhoto?.fullSrc || amenityPhoto?.src || '', amenityPhoto?.title || t('media.amenityPhoto') || 'Amenity Photo')}
-              onMouseLeave={handleImageLeave}
-              hasPhoto={amenityPhoto?.hasPhoto}
-            />
           </>
         )}
 

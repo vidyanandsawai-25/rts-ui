@@ -14,6 +14,7 @@ import {
   deletePropertyCertificateByDocumentId,
   getSocietyWingTypesWithStatus,
   postApartmentQcCertificateRecord,
+  deleteApartmentQcCertificateRecord,
 } from "@/lib/api/building.service";
 import { getDocumentDetails } from "@/lib/api/document.service";
 import { fetchApartmentQcCertificateGrid } from "@/lib/api/ptis/apartment/apartment-qc-top-section.service";
@@ -547,6 +548,49 @@ export async function deletePropertyCertificateRecordAction(
   params: DeletePropertyCertificateRecordParams
 ): Promise<ApiResponse<void>> {
   try {
+    const validSocietyDetailId = (params.societyDetailId && params.societyDetailId > 0)
+      ? params.societyDetailId
+      : undefined;
+
+    // 1. Apartment/QC context: Route through deleteApartmentQcCertificateRecord
+    if (validSocietyDetailId) {
+      let levelNum = 0; // 0 = Apartment
+      if (params.level === "Wing") {
+        levelNum = 1;
+      } else if (params.level === "Unit") {
+        levelNum = 2;
+      }
+
+      // If level is Unit, ensure we pass the selected unit property IDs
+      const unitPropertyIds = (params.level === "Unit" && params.selectedUnitIds && params.selectedUnitIds.length > 0)
+        ? params.selectedUnitIds
+        : (params.level === "Unit" && !isNaN(Number(propertyId)) && Number(propertyId) > 0 ? [Number(propertyId)] : undefined);
+
+      const qcRes = await deleteApartmentQcCertificateRecord({
+        level: levelNum,
+        societyDetailId: validSocietyDetailId,
+        wingDetailId: params.selectedWingDetailId ?? null,
+        unitPropertyIds: unitPropertyIds,
+        certificateTypeId: params.certificateTypeId,
+        documentGuid: params.documentGuid ?? null,
+      });
+
+      if (qcRes.success) {
+        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+        return {
+          success: true,
+          message: qcRes.message || "Certificate record deleted successfully",
+        };
+      }
+      
+      logger.warn("deleteApartmentQcCertificateRecord returned failure, falling back to direct certificate deletion", {
+        propertyId,
+        params,
+        errorMessage: qcRes.error,
+      });
+    }
+
+    // 2. Standalone / Individual Property / Non-Society fallback
     let docId = params.documentId;
 
     // If documentGuid is provided but not documentId, resolve DocumentId via getDocumentDetails
@@ -582,7 +626,6 @@ export async function deletePropertyCertificateRecordAction(
       });
     }
 
-
     // Fallback if documentGuid exists
     if (params.documentGuid && params.documentGuid.trim().length > 0 && params.documentGuid !== "pending") {
       await deleteCertificateDocument(params.documentGuid);
@@ -591,8 +634,13 @@ export async function deletePropertyCertificateRecordAction(
     // Fallback delete by propertyId & certificateTypeId
     if (params.certificateTypeId) {
       const propIdNum = parseInt(propertyId);
-      const unitDetailsId = params.selectedUnitIds && params.selectedUnitIds.length > 0 ? params.selectedUnitIds[0] : null;
-      await deletePropertyCertificate(propIdNum, params.certificateTypeId, unitDetailsId);
+      if (params.level === "Unit" && params.selectedUnitIds && params.selectedUnitIds.length > 0) {
+        await Promise.all(
+          params.selectedUnitIds.map((uId) => deletePropertyCertificate(uId, params.certificateTypeId, null))
+        );
+      } else {
+        await deletePropertyCertificate(propIdNum, params.certificateTypeId, null);
+      }
     }
 
     revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');

@@ -71,7 +71,7 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
     vi.clearAllMocks();
   });
 
-  it('renders "Wing Photo (B)" on wing card when wingName="B" is selected without uploaded photo', () => {
+  it('renders "Wing B" on wing card when wingName="B" is selected without uploaded photo', () => {
     render(
       <PropertyMediaPanelContent
         {...defaultProps}
@@ -80,10 +80,10 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
       />
     );
 
-    expect(screen.getByText('Wing Photo (B)')).toBeInTheDocument();
+    expect(screen.getByText('Wing B')).toBeInTheDocument();
   });
 
-  it('renders "Wing Photo (B)" when wingName="Wing B" is passed', () => {
+  it('renders "Wing B" when wingName="Wing B" is passed', () => {
     render(
       <PropertyMediaPanelContent
         {...defaultProps}
@@ -92,7 +92,7 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
       />
     );
 
-    expect(screen.getByText('Wing Photo (B)')).toBeInTheDocument();
+    expect(screen.getByText('Wing B')).toBeInTheDocument();
   });
 
   it('passes formatted wing title to handleImageHover on mouse enter', () => {
@@ -106,12 +106,12 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
       />
     );
 
-    const wingLabel = screen.getByText('Wing Photo (B)');
+    const wingLabel = screen.getByText('Wing B');
     // Find the card container
     const card = wingLabel.closest('div[class*="cursor-pointer"]');
     if (card) {
       fireEvent.mouseEnter(card);
-      expect(handleHover).toHaveBeenCalledWith('', 'Wing Photo (B)');
+      expect(handleHover).toHaveBeenCalledWith('', 'Wing B');
     }
   });
 
@@ -124,5 +124,20 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
     );
 
     expect(screen.getByText('Wing Photo')).toBeInTheDocument();
+  });
+
+  it('renders both Society Photo and Wing Photo when viewing an apartment property with a wing selected', () => {
+    render(
+      <PropertyMediaPanelContent
+        {...defaultProps}
+        isMainProperty={true}
+        wingName="Gana"
+        societyPhotoCategory={mockCategories[0]}
+        wingPhotoCategory={mockCategories[1]}
+      />
+    );
+
+    expect(screen.getByText('Society Photo')).toBeInTheDocument();
+    expect(screen.getByText('Wing Gana')).toBeInTheDocument();
   });
 });

@@ -99,18 +99,10 @@ export function formatWingCardLabel(baseLabel: string, wingName?: string | null)
   const trimmed = wingName.trim();
   const cleanWing = trimmed.replace(/^(?:wing\s+)/i, '').replace(/(?:\s+wing)$/i, '').trim() || trimmed;
 
-  // Check if baseLabel already contains the wing name in parentheses or as a distinct token
-  const escapedClean = cleanWing.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const escapedTrimmed = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(?:\\(${escapedClean}\\)|\\b${escapedClean}\\b|\\(${escapedTrimmed}\\)|\\b${escapedTrimmed}\\b)`, 'i');
-
-  if (regex.test(baseLabel)) {
-    return baseLabel;
+  if (baseLabel.includes('विंग')) {
+    return `विंग ${cleanWing}`;
   }
-
-  // If baseLabel already had a different parenthesized suffix like "(A)" or "(Wing A)", remove it first to avoid duplicate suffixes
-  const strippedBase = baseLabel.replace(/\s*\([^)]*\)\s*$/, '').trim();
-  return `${strippedBase} (${cleanWing})`;
+  return `Wing ${cleanWing}`;
 }
 
 export function mapSlotsToCategories(

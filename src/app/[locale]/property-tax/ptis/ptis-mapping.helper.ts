@@ -6,7 +6,8 @@ import {
 } from '@/lib/constants/ptis.constants';
 import { buildDetailsFromResults, buildPropertyOptions, InitialDataResult } from './ptis-data';
 import { normalizePartition } from '@/lib/utils/format';
-import type { WaybackRelease } from '@/lib/api/wayback.service';
+import { type WaybackRelease, DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
+import { extractCoordinates } from '@/lib/utils/coordinate-utils';
 import { assembleDualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { ActionResult } from '@/types/common.types';
 import type { PropertyListItem } from '@/types/ptis.types';
@@ -140,59 +141,15 @@ export async function mapPtisFetchResults({
     ? photosRes.data
     : [];
 
-  const waybackReleases = Array.isArray(waybackReleasesRes) ? waybackReleasesRes : [];
-
-  const parseCoord = (val: unknown): number | undefined => {
-    if (typeof val === 'number' && Number.isFinite(val) && val !== 0) return val;
-    if (typeof val === 'string' && val.trim() !== '') {
-      const parsed = parseFloat(val);
-      if (Number.isFinite(parsed) && parsed !== 0) return parsed;
-    }
-    return undefined;
-  };
-
-  const searchLatParam = searchParams?.latitude ?? searchParams?.lat;
-  const searchLngParam = searchParams?.longitude ?? searchParams?.lng;
+  const waybackReleases =
+    Array.isArray(waybackReleasesRes) && waybackReleasesRes.length > 0
+      ? waybackReleasesRes
+      : DEFAULT_WAYBACK_RELEASES;
 
   const rawPropObj = propertyDetailsResult?.propertyDetails as unknown as Record<string, unknown> | undefined;
   const rawDataObj = (Array.isArray(rawPropertyData) ? rawPropertyData[0] : rawPropertyData) as unknown as Record<string, unknown> | undefined;
+  const matchedProp = rawPropertyData.find((p) => p.propertyId === resolvedPropertyId);
 
-  const latitude =
-    parseCoord(searchLatParam) ??
-    parseCoord(rawPropObj?.latitude) ??
-    parseCoord(rawPropObj?.Latitude) ??
-    parseCoord(rawDataObj?.latitude) ??
-    parseCoord(rawDataObj?.Latitude);
-
-  const longitude =
-    parseCoord(searchLngParam) ??
-    parseCoord(rawPropObj?.longitude) ??
-    parseCoord(rawPropObj?.Longitude) ??
-    parseCoord(rawDataObj?.longitude) ??
-    parseCoord(rawDataObj?.Longitude);
-
-  const mappedPropertiesData = mappedPropertiesResult?.success && Array.isArray(mappedPropertiesResult.data)
-    ? mappedPropertiesResult.data
-    : [];
-
-  const rateableResult = rateableRes ?? undefined;
-  const capitalResult = capitalRes ?? undefined;
-
-  const dualSectionData = valuationTab === 'dual' && resolvedPropertyId
-    ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails, rateableRes, capitalRes, dualResult)
-    : undefined;
-
-  const taxDetails = taxDetailsRes ?? {
-    rateableTaxDetails: null,
-    capitalTaxDetails: null,
-    rateableTaxError: undefined,
-    capitalTaxError: undefined,
-  };
-
-  let shouldRedirect = false;
-  let redirectUrl = '';
-
-  const matchedProp = rawPropertyData.find(p => p.propertyId === resolvedPropertyId);
   const finalSocietyDetailId =
     matchedProp?.societyDetailId ||
     societyDetails?.societyDetailId ||
@@ -218,7 +175,7 @@ export async function mapPtisFetchResults({
 
   const allWings: WingWiseWingDetails[] = [
     ...(wings || []),
-    ...(((matchedProp?.wings as unknown as WingWiseWingDetails[]) || []))
+    ...(((matchedProp?.wings as unknown as WingWiseWingDetails[]) || [])),
   ];
 
   const targetWingDetailId =
@@ -231,6 +188,43 @@ export async function mapPtisFetchResults({
       (targetWingDetailId && String(w.wingDetailId) === String(targetWingDetailId)) ||
       (searchParams?.wingId && String(w.wingMasterId) === String(searchParams.wingId))
   );
+
+  const searchLatParam = searchParams?.latitude ?? searchParams?.lat;
+  const searchLngParam = searchParams?.longitude ?? searchParams?.lng;
+
+  const { latitude, longitude } = extractCoordinates([
+    {
+      latitude: searchLatParam as string | number | undefined,
+      longitude: searchLngParam as string | number | undefined,
+      gisCoordinates: (searchParams?.gisCoordinates ?? searchParams?.coordinates) as string | undefined,
+    },
+    matchedProp as unknown as Record<string, unknown>,
+    rawPropObj,
+    matchedWing as unknown as Record<string, unknown>,
+    societyDetails as unknown as Record<string, unknown>,
+    rawDataObj,
+  ]);
+
+  const mappedPropertiesData = mappedPropertiesResult?.success && Array.isArray(mappedPropertiesResult.data)
+    ? mappedPropertiesResult.data
+    : [];
+
+  const rateableResult = rateableRes ?? undefined;
+  const capitalResult = capitalRes ?? undefined;
+
+  const dualSectionData = valuationTab === 'dual' && resolvedPropertyId
+    ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails, rateableRes, capitalRes, dualResult)
+    : undefined;
+
+  const taxDetails = taxDetailsRes ?? {
+    rateableTaxDetails: null,
+    capitalTaxDetails: null,
+    rateableTaxError: undefined,
+    capitalTaxError: undefined,
+  };
+
+  let shouldRedirect = false;
+  let redirectUrl = '';
 
   const resolvedWingName =
     matchedWing?.wingName?.trim() ||

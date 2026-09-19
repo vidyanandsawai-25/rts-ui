@@ -274,7 +274,8 @@ export function BuildingPermissionSection({
     }
 
     const resolvedSelectedPropertyIds = Array.from(selectedUnitIds).map((id) => {
-      const matched = filteredUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id);
+      const matched = filteredUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id)
+        || units.find((u) => u.propertyDetailsId === id || u.propertyId === id);
       return matched?.propertyId || id;
     });
 
@@ -375,7 +376,8 @@ export function BuildingPermissionSection({
       onConfirm: async () => {
 
         const resolvedSelectedPropertyIds = Array.from(selectedUnitIds).map((id) => {
-          const matched = filteredUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id);
+          const matched = filteredUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id)
+            || units.find((u) => u.propertyDetailsId === id || u.propertyId === id);
           return matched?.propertyId || id;
         });
 

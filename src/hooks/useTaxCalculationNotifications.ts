@@ -6,6 +6,11 @@ import type {
   TaxCalculationCompletedDto,
   ActiveTaxCalculationJob,
 } from '@/types/tax-calculation-notification.types';
+import {
+  pauseTaxCalculationJobAction,
+  resumeTaxCalculationJobAction,
+  cancelTaxCalculationJobAction,
+} from '@/app/actions/tax-calculation-job.actions';
 
 export function useTaxCalculationNotifications(options?: {
   societyDetailId?: number | null;
@@ -28,6 +33,65 @@ export function useTaxCalculationNotifications(options?: {
       delete next[jobId];
       return next;
     });
+  }, []);
+
+  const pauseJob = useCallback(async (jobId: string): Promise<boolean> => {
+    // Optimistically update status to Paused
+    setActiveJobs((prev) => {
+      if (!prev[jobId]) return prev;
+      return {
+        ...prev,
+        [jobId]: {
+          ...prev[jobId],
+          status: 'Paused',
+          isPaused: true,
+          lastUpdated: Date.now(),
+        },
+      };
+    });
+
+    const res = await pauseTaxCalculationJobAction(jobId);
+    return res.success;
+  }, []);
+
+  const resumeJob = useCallback(async (jobId: string): Promise<boolean> => {
+    // Optimistically update status to Processing
+    setActiveJobs((prev) => {
+      if (!prev[jobId]) return prev;
+      return {
+        ...prev,
+        [jobId]: {
+          ...prev[jobId],
+          status: 'Processing',
+          isPaused: false,
+          lastUpdated: Date.now(),
+        },
+      };
+    });
+
+    const res = await resumeTaxCalculationJobAction(jobId);
+    return res.success;
+  }, []);
+
+  const cancelJob = useCallback(async (jobId: string): Promise<boolean> => {
+    // Optimistically update status to Cancelled
+    setActiveJobs((prev) => {
+      if (!prev[jobId]) return prev;
+      return {
+        ...prev,
+        [jobId]: {
+          ...prev[jobId],
+          status: 'Cancelled',
+          isCancelled: true,
+          isCompleted: true,
+          isSuccess: false,
+          lastUpdated: Date.now(),
+        },
+      };
+    });
+
+    const res = await cancelTaxCalculationJobAction(jobId);
+    return res.success;
   }, []);
 
   useEffect(() => {
@@ -57,6 +121,8 @@ export function useTaxCalculationNotifications(options?: {
         const data = JSON.parse(event.data) as TaxCalculationProgressDto;
         if (!data || !data.jobId) return;
 
+        const isPaused = data.status === 'Paused' || data.isPaused === true;
+
         setActiveJobs((prev) => {
           return {
             ...prev,
@@ -70,6 +136,7 @@ export function useTaxCalculationNotifications(options?: {
               totalUnits: data.totalUnits,
               percentComplete: data.percentComplete,
               status: data.status,
+              isPaused,
               message: data.message,
               lastUpdated: Date.now(),
             },
@@ -94,10 +161,21 @@ export function useTaxCalculationNotifications(options?: {
         const data = JSON.parse(event.data) as TaxCalculationCompletedDto;
         if (!data || !data.jobId) return;
 
-        const isSuccess = data.isSuccess ?? data.success ?? (data.failedCount === 0);
-        const message = data.message || data.summaryMessage || (isSuccess ? 'Tax recalculation completed successfully.' : 'Tax recalculation encountered errors.');
-        const succeededCount = data.succeededCount ?? (isSuccess ? data.totalUnits : data.totalUnits - (data.failedCount ?? 0));
-        const failedCount = data.failedCount ?? (isSuccess ? 0 : data.totalUnits - succeededCount);
+        const isCancelled = data.status === 'Cancelled' || data.isCancelled === true;
+        const isSuccess = !isCancelled && (data.isSuccess ?? data.success ?? (data.failedCount === 0));
+        const message =
+          data.message ||
+          data.summaryMessage ||
+          (isCancelled
+            ? 'Tax calculation terminated by user.'
+            : isSuccess
+            ? 'Tax recalculation completed successfully.'
+            : 'Tax recalculation encountered errors.');
+        const succeededCount =
+          data.succeededCount ??
+          (isSuccess ? data.totalUnits : Math.max(0, data.totalUnits - (data.failedCount ?? 0)));
+        const failedCount =
+          data.failedCount ?? (isSuccess ? 0 : Math.max(0, data.totalUnits - succeededCount));
 
         setActiveJobs((prev) => {
           return {
@@ -108,13 +186,15 @@ export function useTaxCalculationNotifications(options?: {
               entityType: data.entityType,
               societyDetailId: data.societyDetailId,
               wingDetailId: data.wingDetailId,
-              processedUnits: data.totalUnits,
+              processedUnits: succeededCount,
               totalUnits: data.totalUnits,
               percentComplete: 100,
-              status: isSuccess ? 'Completed' : 'Failed',
+              status: isCancelled ? 'Cancelled' : isSuccess ? 'Completed' : 'Failed',
               message,
               isCompleted: true,
               isSuccess,
+              isCancelled,
+              isPaused: false,
               succeededCount,
               failedCount,
               durationMs: data.durationMs,
@@ -123,12 +203,12 @@ export function useTaxCalculationNotifications(options?: {
           };
         });
 
-        // Auto-dismiss completed job after 8 seconds
+        // Auto-dismiss completed job after 8 seconds (if not cancelled/failed, or give user time to read)
         setTimeout(() => {
           if (mountedRef.current) {
             dismissJob(data.jobId);
           }
-        }, 8000);
+        }, isCancelled || !isSuccess ? 12000 : 8000);
 
         window.dispatchEvent(
           new CustomEvent('tax-recalculation-completed', { detail: data })
@@ -162,5 +242,8 @@ export function useTaxCalculationNotifications(options?: {
     jobsList,
     isCalculating,
     dismissJob,
+    pauseJob,
+    resumeJob,
+    cancelJob,
   };
 }

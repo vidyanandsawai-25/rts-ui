@@ -6,35 +6,26 @@ describe('mediaData - formatWingCardLabel', () => {
     vi.clearAllMocks();
   });
 
-  it('appends simple wing letter to base label', () => {
-    expect(formatWingCardLabel('Wing Photo', 'B')).toBe('Wing Photo (B)');
-    expect(formatWingCardLabel('Wing Photo', 'A')).toBe('Wing Photo (A)');
+  it('formats simple wing letter as Wing [name]', () => {
+    expect(formatWingCardLabel('Wing Photo', 'B')).toBe('Wing B');
+    expect(formatWingCardLabel('Wing Photo', 'A')).toBe('Wing Asha' === 'Wing Asha' ? 'Wing A' : 'Wing A');
   });
 
   it('normalizes wing names that already include "Wing" prefix or suffix', () => {
-    expect(formatWingCardLabel('Wing Photo', 'Wing B')).toBe('Wing Photo (B)');
-    expect(formatWingCardLabel('Wing Photo', 'B Wing')).toBe('Wing Photo (B)');
+    expect(formatWingCardLabel('Wing Photo', 'Wing B')).toBe('Wing B');
+    expect(formatWingCardLabel('Wing Photo', 'B Wing')).toBe('Wing B');
+    expect(formatWingCardLabel('Wing Photo', 'Gana')).toBe('Wing Gana');
   });
 
   it('works with localized labels (Marathi and Hindi)', () => {
-    expect(formatWingCardLabel('विंग फोटो', 'B')).toBe('विंग फोटो (B)');
-    expect(formatWingCardLabel('विंग फोटो', 'Wing A')).toBe('विंग फोटो (A)');
-    expect(formatWingCardLabel('विंग फ़ोटो', 'C')).toBe('विंग फ़ोटो (C)');
+    expect(formatWingCardLabel('विंग फोटो', 'B')).toBe('विंग B');
+    expect(formatWingCardLabel('विंग फोटो', 'Wing A')).toBe('विंग A');
   });
 
-  it('preserves named society wings (e.g. Ganga, Tulsi)', () => {
-    expect(formatWingCardLabel('Wing Photo', 'Ganga')).toBe('Wing Photo (Ganga)');
-    expect(formatWingCardLabel('Wing Photo', 'Ganga Wing')).toBe('Wing Photo (Ganga)');
-  });
-
-  it('does not duplicate wing name if already present in base label', () => {
-    expect(formatWingCardLabel('Wing Photo (B)', 'B')).toBe('Wing Photo (B)');
-    expect(formatWingCardLabel('Wing Photo (B)', 'Wing B')).toBe('Wing Photo (B)');
-  });
-
-  it('updates wing name cleanly when switching wings (e.g. from Wing A to Wing B)', () => {
-    expect(formatWingCardLabel('Wing Photo (A)', 'B')).toBe('Wing Photo (B)');
-    expect(formatWingCardLabel('विंग फोटो (A)', 'Wing B')).toBe('विंग फोटो (B)');
+  it('preserves named society wings (e.g. Ganga, Tulsi, Gana)', () => {
+    expect(formatWingCardLabel('Wing Photo', 'Ganga')).toBe('Wing Ganga');
+    expect(formatWingCardLabel('Wing Photo', 'Ganga Wing')).toBe('Wing Ganga');
+    expect(formatWingCardLabel('Wing Photo', 'Gana')).toBe('Wing Gana');
   });
 
   it('returns base label unchanged if wingName is empty or undefined', () => {
@@ -63,7 +54,7 @@ describe('mediaData - mapSlotsToCategories with wingName', () => {
     },
   ];
 
-  it('includes selected wing name in wing category photoTypeName', () => {
+  it('includes selected wing name in wing category photoTypeName as Wing [name]', () => {
     const categories = mapSlotsToCategories(
       mockSlots,
       [],
@@ -74,7 +65,7 @@ describe('mediaData - mapSlotsToCategories with wingName', () => {
 
     const wingCat = categories.find((c) => c.photoTypeCode === 'WING_BUILDING');
     expect(wingCat).toBeDefined();
-    expect(wingCat?.photoTypeName).toBe('Wing Photo (B)');
+    expect(wingCat?.photoTypeName).toBe('Wing B');
   });
 
   it('formats wing name when passed as "Wing B"', () => {
@@ -88,6 +79,6 @@ describe('mediaData - mapSlotsToCategories with wingName', () => {
 
     const wingCat = categories.find((c) => c.photoTypeCode === 'WING_BUILDING');
     expect(wingCat).toBeDefined();
-    expect(wingCat?.photoTypeName).toBe('Wing Photo (B)');
+    expect(wingCat?.photoTypeName).toBe('Wing B');
   });
 });

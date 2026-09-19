@@ -17,8 +17,8 @@ import {
   evictOldestCacheEntry,
 } from './usePropertyPhotosQuery';
 import { useImageHoverPreview } from './useImageHoverPreview';
-import { type WaybackRelease, WAYBACK_STATIC_TILE_URL } from '@/lib/api/wayback.service';
-import { latLngToTile } from '@/lib/utils/coordinate-utils';
+import { type WaybackRelease, DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
+import { extractCoordinates, getSatelliteTileUrl } from '@/lib/utils/coordinate-utils';
 
 export interface UsePropertyMediaProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
@@ -314,23 +314,28 @@ export function usePropertyMedia({
     [categories]
   );
 
-  const hasCoords =
-    typeof initialLatitude === 'number' &&
-    Number.isFinite(initialLatitude) &&
-    typeof initialLongitude === 'number' &&
-    Number.isFinite(initialLongitude);
+  const parsedCoords = useMemo(() => {
+    return extractCoordinates([
+      { latitude: initialLatitude, longitude: initialLongitude },
+      matchedWing as unknown as Record<string, unknown>,
+      ...(Array.isArray(_wings) ? _wings : []).map((w) => w as unknown as Record<string, unknown>),
+    ]);
+  }, [initialLatitude, initialLongitude, matchedWing, _wings]);
+
+  const hasCoords = parsedCoords.hasCoords;
+  const effectiveLat = parsedCoords.latitude;
+  const effectiveLng = parsedCoords.longitude;
 
   const gisPhoto = useMemo(() => {
     const photo = gisCategory?.images?.[0];
     let srcVal = '';
-    if (hasCoords) {
-      if (initialWaybackReleases && initialWaybackReleases.length > 0) {
-        const latestRelease = initialWaybackReleases[initialWaybackReleases.length - 1];
-        const tile = latLngToTile(initialLatitude!, initialLongitude!, 17);
-        srcVal = WAYBACK_STATIC_TILE_URL(latestRelease.releaseId, tile.x, tile.y, tile.z);
-      } else {
-        srcVal = '/gis_static.png';
-      }
+    if (hasCoords && effectiveLat !== undefined && effectiveLng !== undefined) {
+      const releases =
+        initialWaybackReleases && initialWaybackReleases.length > 0
+          ? initialWaybackReleases
+          : DEFAULT_WAYBACK_RELEASES;
+      const latestRelease = releases[releases.length - 1];
+      srcVal = getSatelliteTileUrl(effectiveLat, effectiveLng, 17, latestRelease?.releaseId);
     }
     return {
       src: srcVal,
@@ -341,7 +346,7 @@ export function usePropertyMedia({
       photoTypeCode: photo?.photoTypeCode || gisCategory?.photoTypeCode || 'GIS',
       propertyPhotoId: photo?.propertyPhotoId,
     };
-  }, [gisCategory, t, hasCoords, initialLatitude, initialLongitude, initialWaybackReleases]);
+  }, [gisCategory, t, hasCoords, effectiveLat, effectiveLng, initialWaybackReleases]);
 
   const signatureCategory = useMemo(
     () =>

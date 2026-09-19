@@ -185,7 +185,12 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                         onDeleteRecord={async (params) => {
                             setIsSectionSaving(true);
                             try {
-                                const res = await deletePropertyCertificateRecordAction(locale, propertyId, params);
+                                const urlSocietyDetailId = searchParams.get('societyDetailId') || searchParams.get('societyId');
+                                const effectiveSocietyDetailId = params.societyDetailId ?? societyDetailId ?? (urlSocietyDetailId ? Number(urlSocietyDetailId) : null);
+                                const res = await deletePropertyCertificateRecordAction(locale, propertyId, {
+                                    ...params,
+                                    societyDetailId: effectiveSocietyDetailId,
+                                });
                                 if (res.success) {
                                     toast.success(res.message || t("building.deleteSuccess") || "Certificate deleted successfully!");
                                     router.refresh();

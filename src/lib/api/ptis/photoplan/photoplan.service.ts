@@ -189,15 +189,18 @@ export const photoPlanService = {
         isPrimaryDocument: true
       };
 
-      if (isWingPhoto && wingDetailId && wingDetailId > 0) {
+      // When replacing, always reference the existing PropertyPhotoId directly so
+      // the backend handler (OnAfterUploadAsync) links the new binding to the
+      // existing row instead of creating a new one.
+      if (propertyPhotoId && propertyPhotoId > 0 && !isLikelyPropertyId) {
+        uploadParams.referenceTableId = propertyPhotoId;
+        uploadParams.referencePropertyName = "PropertyPhotoId";
+      } else if (isWingPhoto && wingDetailId && wingDetailId > 0) {
         uploadParams.referenceTableId = wingDetailId;
         uploadParams.referencePropertyName = "WingDetailId";
       } else if (isSocietyPhoto && _societyId && _societyId > 0) {
         uploadParams.referenceTableId = _societyId;
         uploadParams.referencePropertyName = "SocietyDetailId";
-      } else if (propertyPhotoId && propertyPhotoId > 0 && !isLikelyPropertyId) {
-        uploadParams.referenceTableId = propertyPhotoId;
-        uploadParams.referencePropertyName = "PropertyPhotoId";
       } else {
         uploadParams.referenceTableId = propertyId;
         uploadParams.referencePropertyName = "PropertyId";

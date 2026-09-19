@@ -423,7 +423,13 @@ export interface ApartmentQcCertificateRecordPayload {
     documentGuid?: string | null;
 }
 
-import type { CreateCertificateRecordResponseDto } from "@/types/building-permission.types";
+import type { 
+    CreateCertificateRecordResponseDto,
+    DeleteCertificateRecordRequestDto,
+    DeleteCertificateRecordResponseDto,
+} from "@/types/building-permission.types";
+
+export type DeleteApartmentQcCertificateRecordPayload = DeleteCertificateRecordRequestDto;
 
 export async function postApartmentQcCertificateRecord(
     payload: ApartmentQcCertificateRecordPayload
@@ -456,3 +462,36 @@ export async function postApartmentQcCertificateRecord(
         };
     }
 }
+
+// 9. POST/DELETE - Delete Certificate Record (/api/ApartmentQC/delete-certificate-record)
+export async function deleteApartmentQcCertificateRecord(
+    payload: DeleteApartmentQcCertificateRecordPayload
+): Promise<ApiResponse<DeleteCertificateRecordResponseDto>> {
+    try {
+        const response = await apiClient.post<BackendApiResponseWrapper<DeleteCertificateRecordResponseDto>>(
+            '/ApartmentQC/delete-certificate-record',
+            payload
+        );
+        if (response.success && response.data) {
+            const rawBody = response.data as unknown as Record<string, unknown>;
+            const rawItems = (rawBody.items ?? rawBody.Items ?? rawBody.data ?? rawBody) as DeleteCertificateRecordResponseDto;
+            return {
+                success: (rawBody.success as boolean) ?? true,
+                statusCode: response.statusCode,
+                data: rawItems,
+                message: (rawBody.message as string) || response.message
+            };
+        }
+        return {
+            success: false,
+            statusCode: response.statusCode,
+            error: response.error || response.message || 'Failed to delete certificate record',
+            message: response.message
+        };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+}

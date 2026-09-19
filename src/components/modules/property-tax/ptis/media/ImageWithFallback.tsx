@@ -71,13 +71,22 @@ export function ImageWithFallback({
 }: ImageWithFallbackProps): React.ReactElement {
   const [resolvedSrc, setResolvedSrc] = useState<string>('');
   const [hasError, setHasError] = useState(false);
+  const [triedFallback, setTriedFallback] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const t = useTranslations('ptis');
 
   const handleError = useCallback(() => {
-    setHasError(true);
-    setIsLoading(false);
-  }, []);
+    if (fallbackSrc && !triedFallback) {
+      setTriedFallback(true);
+      setResolvedSrc(fallbackSrc);
+      setHasError(false);
+      setIsLoading(true);
+    } else {
+      setHasError(true);
+      setIsLoading(false);
+      setResolvedSrc('');
+    }
+  }, [fallbackSrc, triedFallback]);
 
   const handleLoad = useCallback(() => {
     setIsLoading(false);
@@ -87,6 +96,7 @@ export function ImageWithFallback({
     let active = true;
     setIsLoading(true);
     setHasError(false);
+    setTriedFallback(false);
     setResolvedSrc('');
 
     const timer = setTimeout(() => {
@@ -97,8 +107,15 @@ export function ImageWithFallback({
     }, 15000);
 
     if (!src && !documentGuid) {
-      setHasError(true);
-      setIsLoading(false);
+      if (fallbackSrc) {
+        setTriedFallback(true);
+        setResolvedSrc(fallbackSrc);
+        setHasError(false);
+        setIsLoading(true);
+      } else {
+        setHasError(true);
+        setIsLoading(false);
+      }
       clearTimeout(timer);
       return;
     }
@@ -106,14 +123,30 @@ export function ImageWithFallback({
     resolveDocumentUrl(src, documentGuid)
       .then((url) => {
         if (active) {
-          setResolvedSrc(url);
-          setHasError(!url);
+          if (url) {
+            setResolvedSrc(url);
+            setHasError(false);
+          } else if (fallbackSrc) {
+            setTriedFallback(true);
+            setResolvedSrc(fallbackSrc);
+            setHasError(false);
+          } else {
+            setHasError(true);
+            setResolvedSrc('');
+          }
           setIsLoading(false);
         }
       })
       .catch(() => {
         if (active) {
-          setHasError(true);
+          if (fallbackSrc) {
+            setTriedFallback(true);
+            setResolvedSrc(fallbackSrc);
+            setHasError(false);
+          } else {
+            setHasError(true);
+            setResolvedSrc('');
+          }
           setIsLoading(false);
         }
       })
@@ -125,12 +158,12 @@ export function ImageWithFallback({
       active = false;
       clearTimeout(timer);
     };
-  }, [src, documentGuid]);
+  }, [src, documentGuid, fallbackSrc]);
 
-  const effectiveSrc = hasError && fallbackSrc ? fallbackSrc : resolvedSrc;
+  const effectiveSrc = !hasError ? resolvedSrc : '';
   const isSmall = _width !== undefined && _width < 100;
 
-  if ((hasError || (!src && !documentGuid)) && !fallbackSrc) {
+  if (hasError || !effectiveSrc) {
     return <ImagePlaceholder alt={alt} isSmall={isSmall} label={t('media.imageUnavailable')} />;
   }
 
@@ -142,7 +175,11 @@ export function ImageWithFallback({
 
   const isTest = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
   const isDataOrBlob = effectiveSrc.startsWith('data:') || effectiveSrc.startsWith('blob:');
-  const shouldUnoptimize = unoptimized ?? (isDataOrBlob || isTest);
+  const isRemoteTile =
+    effectiveSrc.includes('arcgis.com') ||
+    effectiveSrc.includes('arcgisonline.com') ||
+    effectiveSrc.includes('openstreetmap.org');
+  const shouldUnoptimize = unoptimized ?? (isDataOrBlob || isRemoteTile || isTest);
   const normalizedSrc =
     !shouldUnoptimize && !effectiveSrc.startsWith('/') && !effectiveSrc.startsWith('http://') && !effectiveSrc.startsWith('https://')
       ? `/${effectiveSrc}`

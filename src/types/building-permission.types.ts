@@ -242,3 +242,20 @@ export interface CreateCertificateRecordResponseDto {
     taxRecalculationTriggered: boolean;
 }
 
+export interface DeleteCertificateRecordRequestDto {
+    level: number; // 0 = Apartment, 1 = Wing, 2 = Unit
+    societyDetailId: number;
+    wingDetailId?: number | null;
+    unitPropertyIds?: number[];
+    certificateTypeId: number;
+    documentGuid?: string | null;
+}
+
+export interface DeleteCertificateRecordResponseDto {
+    effectiveScope: string;
+    deletedPropertyCertificateIds: number[];
+    deletedCount: number;
+    taxRecalculationTriggered: boolean;
+    recalculationSummary?: unknown;
+}
+

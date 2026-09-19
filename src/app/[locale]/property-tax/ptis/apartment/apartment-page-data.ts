@@ -14,9 +14,11 @@ import {
   getWingWiseDetails,
   getApartmentTaxDetails,
 } from '@/lib/api/ptis/apartment';
-import { propertyWorkflowStageService } from '@/lib/api/ptis/propertyWorkflowStage/propertyWorkflowStage.service';
 import type { PropertyMasterData, ApartmentTaxDetailsItem } from '@/types/property-tax/apartment';
 import type { PropertyWorkflowStage } from '@/types/propertyWorkflowStage.types';
+import { propertyWorkflowStageService } from '@/lib/api/ptis/propertyWorkflowStage/propertyWorkflowStage.service';
+import { extractCoordinates } from '@/lib/utils/coordinate-utils';
+import { DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
 import { buildInitialPropertyMasterData, PtisPageData } from './apartment-master-builder';
 
 export interface LoadedApartmentPageData {
@@ -147,6 +149,25 @@ export async function loadApartmentPageData(
     rawData,
     initialApartmentTaxDetails,
   });
+
+  if (pageData.latitude === undefined || pageData.longitude === undefined) {
+    const aptCoords = extractCoordinates([
+      { latitude: pageData.latitude, longitude: pageData.longitude },
+      ...(rawData?.wings || []).map((w) => w as unknown as Record<string, unknown>),
+      rawData as unknown as Record<string, unknown>,
+      initialPropertyMasterData as unknown as Record<string, unknown>,
+      pageData.societyDetails as unknown as Record<string, unknown>,
+      pageData.propertyDetailsResult?.propertyDetails as unknown as Record<string, unknown>,
+    ]);
+    if (aptCoords.hasCoords) {
+      pageData.latitude = aptCoords.latitude;
+      pageData.longitude = aptCoords.longitude;
+    }
+  }
+
+  if (!pageData.waybackReleases || pageData.waybackReleases.length === 0) {
+    pageData.waybackReleases = DEFAULT_WAYBACK_RELEASES;
+  }
 
   const currentCategoryId = pageData.propertyDetailsResult?.propertyDetails?.categoryId ?? initialPropertyMasterData?.categoryId ?? undefined;
   const currentCategoryName = pageData.tabHeaderInfo?.category ?? initialPropertyMasterData?.category ?? '';

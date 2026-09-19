@@ -17,8 +17,9 @@ import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
 import { getRateableValue } from './RateableValue.action';
 import { getDualMethod } from './DualMethod.action';
-import { fetchTaxDetailsByTab } from './TaxDetails/fetchTaxDetails';
 import { getPropertyComparisonAction } from './PropertyComparison.action';
+import { fetchTaxDetailsByTab } from './TaxDetails/fetchTaxDetails';
+import { fetchWaybackReleases, DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
 
 export async function fetchPropertyDetailsConcurrently(
   propertyId: number,
@@ -198,7 +199,7 @@ export async function fetchPropertyDetailsConcurrently(
     dualMethodPromise,
     taxDetailsPromise,
     ruleLogsPromise,
-    Promise.resolve(null),
+    fetchWaybackReleases().catch(() => DEFAULT_WAYBACK_RELEASES),
     headerInfoPromise,
     mappedPropertiesPromise,
     comparisonPromise,

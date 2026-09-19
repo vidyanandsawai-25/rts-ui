@@ -8,8 +8,8 @@ import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
 import { useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
 import { useConfirm } from '@/components/common';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
-import { type WaybackRelease, WAYBACK_STATIC_TILE_URL } from '@/lib/api/wayback.service';
-import { latLngToTile } from '@/lib/utils/coordinate-utils';
+import { type WaybackRelease, WAYBACK_STATIC_TILE_URL, DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
+import { latLngToTile, extractCoordinates } from '@/lib/utils/coordinate-utils';
 import { PhotoPlanDrawer } from './PhotoPlanDrawer';
 import { PropertyMediaPanelContent } from './PropertyMediaPanelContent';
 import { PropertyMediaPanelSkeleton } from './PropertyMediaPanelSkeleton';
@@ -434,9 +434,22 @@ function PropertyMediaPanel({
     }
   }, [effectiveId, societyPhoto, propertyPhoto, effectiveIsMainProperty, effectiveWings, resolvedSocietyDetailId, societyPhotoCategory]);
 
-  const hasCoords = typeof initialLatitude === 'number' && Number.isFinite(initialLatitude) && typeof initialLongitude === 'number' && Number.isFinite(initialLongitude);
-  const coords = hasCoords ? { lat: initialLatitude, lng: initialLongitude } : undefined;
-  const waybackReleases = initialWaybackReleases;
+  const parsedCoords = React.useMemo(() => {
+    return extractCoordinates([
+      { latitude: initialLatitude, longitude: initialLongitude },
+      matchedWing as unknown as Record<string, unknown>,
+      ...(Array.isArray(effectiveWings) ? effectiveWings : []).map((w) => w as unknown as Record<string, unknown>),
+      property as unknown as Record<string, unknown>,
+    ]);
+  }, [initialLatitude, initialLongitude, matchedWing, effectiveWings, property]);
+
+  const hasCoords = parsedCoords.hasCoords;
+  const effectiveLat = parsedCoords.latitude;
+  const effectiveLng = parsedCoords.longitude;
+  const waybackReleases =
+    initialWaybackReleases && initialWaybackReleases.length > 0
+      ? initialWaybackReleases
+      : DEFAULT_WAYBACK_RELEASES;
   const cdCategory = categories.find((c) => c.photoTypeCode === 'CHANGE_DETECTION');
   let cdBeforeImg = cdCategory?.images?.[0]?.src || '';
   let cdAfterImg = cdCategory?.images?.[1]?.src || '';
@@ -444,11 +457,10 @@ function PropertyMediaPanel({
   let cdAfterLabel = t('media.afterCustomLabel') || 'After (New)';
   let fallbackBeforeUrl = '';
   let fallbackAfterUrl = '';
-  if (hasCoords && waybackReleases.length > 0) {
-    const activeCoords = coords!;
-    const tile = latLngToTile(activeCoords.lat, activeCoords.lng, 17);
-    const beforeRelease = waybackReleases[0];
-    const afterRelease = waybackReleases[waybackReleases.length - 1];
+  if (hasCoords && effectiveLat !== undefined && effectiveLng !== undefined) {
+    const tile = latLngToTile(effectiveLat, effectiveLng, 17);
+    const beforeRelease = waybackReleases[0] || DEFAULT_WAYBACK_RELEASES[0];
+    const afterRelease = waybackReleases[waybackReleases.length - 1] || DEFAULT_WAYBACK_RELEASES[DEFAULT_WAYBACK_RELEASES.length - 1];
 
     if (beforeRelease && afterRelease) {
       fallbackBeforeUrl = WAYBACK_STATIC_TILE_URL(beforeRelease.releaseId, tile.x, tile.y, tile.z);
@@ -493,7 +505,7 @@ function PropertyMediaPanel({
           _councilName ||
           process.env.NEXT_PUBLIC_COUNCIL_NAME ||
           process.env.COUNCIL_NAME ||
-          'JALNA_survey';
+          '';
         const res = await launchPhotoPlanDrawingToolAction(
           effectiveId,
           effectiveCouncilName,
@@ -764,8 +776,8 @@ function PropertyMediaPanel({
           propertyId={effectiveId}
           fullyLoadedIds={fullyLoadedIds}
           onFullyLoadedIdsChange={setFullyLoadedIds}
-          initialLatitude={hasCoords ? initialLatitude : undefined}
-          initialLongitude={hasCoords ? initialLongitude : undefined}
+          initialLatitude={hasCoords ? effectiveLat : undefined}
+          initialLongitude={hasCoords ? effectiveLng : undefined}
           initialWaybackReleases={waybackReleases}
           onDrawPlan={effectiveIsMainProperty ? undefined : handleCreateClick}
           onRequestTypeModal={() => setIsTypeModalOpen(true)}
