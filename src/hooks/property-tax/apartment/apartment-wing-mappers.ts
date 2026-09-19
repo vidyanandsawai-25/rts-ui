@@ -14,22 +14,28 @@ export function mapWingData(
 ): WingData[] {
   return data?.wings?.map((wing, index) => {
     const revDetails = wing?.revenueImpactDetails?.[0];
+
     const prevRv = revDetails?.previousRV ?? wing?.oldDemand ?? 0;
     const revisedRv = revDetails?.revisedRV ?? wing?.currentDemand ?? 0;
     const revDiff = revDetails?.differenceRV ?? wing?.revenueImpact ?? 0;
+    const revImpactAmount = wing?.revenueImpact ?? revDiff ?? 0;
+    const revImpactPct = wing?.revenueImpactPercentage ?? 0;
     const revAffectedUnits = revDetails?.affectedUnits ?? wing?.propertyCount ?? 0;
 
+    const wingName = wing?.wingName || wing?.wingNo || '';
+    const wingNo = wing?.wingNo || '';
+
     return {
-      id: wing?.wingNo || index.toString(),
+      id: wingNo || wingName || index.toString(),
       wingId: wing?.wingId,
       wingMasterId: wing?.wingMasterId,
       wingDetailId: wing?.wingDetailId,
       societyId: wing?.societyId ?? data?.societyId ?? null,
-      wingNo: wing?.wingNo,
-      letter: wing?.wingName?.trim()?.charAt(0),
-      name: wing?.wingName || (wing?.wingNo),
+      wingNo: wingNo,
+      letter: (wingName || wingNo || 'W').charAt(0).toUpperCase(),
+      name: wingName,
       rating: wing?.collectionPercentage || 0,
-      blockName: wing?.wingNo ? `${wing.wingNo}` : '',
+      blockName: wingNo ? `${wingNo}` : wingName,
       stats: {
         floors: wing?.floorRange || '0',
         props: wing?.propertyCount || 0,
@@ -57,11 +63,12 @@ export function mapWingData(
         to: wing?.totalDemand ?? wing?.currentDemand ?? 0,
       },
       revenueImpact: {
-        amount: revDiff,
-        pct: wing?.revenueImpactPercentage || 0,
-        isPositive: String(revDiff).indexOf('-') === -1,
+        amount: revImpactAmount,
+        pct: revImpactPct,
+        isPositive: String(revImpactAmount).indexOf('-') === -1,
         previousRv: prevRv,
         revisedRv: revisedRv,
+        differenceRv: revDiff,
         affectedUnits: revAffectedUnits,
       },
       colorClass: WING_THEME_COLORS[index % WING_THEME_COLORS.length],

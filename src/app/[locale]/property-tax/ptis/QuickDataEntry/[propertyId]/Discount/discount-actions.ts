@@ -84,9 +84,10 @@ export async function updateDiscountDetailsAction(
                 const attrId = attr.socialAttributeId;
                 const guidReference = detailId === 0 ? crypto.randomUUID() : undefined;
 
+
                 const uploadResult = oldGuid
                     ? await replaceDiscountDocViaGlobalApi(file, oldGuid, propIdNum, attrId, detailId, guidReference)
-                    : await uploadDiscountDocViaGlobalApi(file, propIdNum, attrId, detailId, guidReference);
+                    : await uploadDiscountDocViaGlobalApi(file, propIdNum, attrId, detailId, guidReference);                                
 
                 if (isSociety === "true") {
                     if (uploadResult.success && uploadResult.data?.documentBindingId) {

@@ -20,6 +20,7 @@ import { SocialAttribute } from "@/types/social-attribute.types";
 
 export interface UnitRow extends Record<string, unknown> {
     propertyDetailsId: number;
+    propertyId?: number;
     unitNo: string;
     wingName: string;
     floorName: string;
@@ -292,8 +293,8 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 render: (_, row) => (
                     <div onClick={(e) => e.stopPropagation()}>
                         <Checkbox
-                            checked={levelState.selectedUnitIds.has(row.propertyDetailsId as number)}
-                            onCheckedChange={() => levelState.toggleUnitSelection(row.propertyDetailsId as number)}
+                            checked={levelState.selectedUnitIds.has((row.propertyId ?? row.propertyDetailsId) as number)}
+                            onCheckedChange={() => levelState.toggleUnitSelection((row.propertyId ?? row.propertyDetailsId) as number)}
                         />
                     </div>
                 ),
@@ -329,6 +330,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         if (!levelState) return [];
         return levelState.filteredUnits.map((u) => ({
             propertyDetailsId: u.propertyDetailsId,
+            propertyId: u.propertyId,
             unitNo: u.unitNo,
             wingName: u.wingName,
             floorName: u.floorName,
@@ -488,10 +490,10 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                                         levelState.loadNextUnitsPage();
                                     }
                                 }}
-                                getRowKey={(row) => row.propertyDetailsId as number}
-                                onRowClick={(row) => levelState.toggleUnitSelection(row.propertyDetailsId as number)}
+                                getRowKey={(row) => (row.propertyId ?? row.propertyDetailsId) as number}
+                                onRowClick={(row) => levelState.toggleUnitSelection((row.propertyId ?? row.propertyDetailsId) as number)}
                                 rowClassName={(row) =>
-                                    levelState.selectedUnitIds.has(row.propertyDetailsId as number) ? 'bg-blue-50/60' : ''
+                                    levelState.selectedUnitIds.has((row.propertyId ?? row.propertyDetailsId) as number) ? 'bg-blue-50/60' : ''
                                 }
                             />
                             {levelState.isLoadingMoreUnits && (

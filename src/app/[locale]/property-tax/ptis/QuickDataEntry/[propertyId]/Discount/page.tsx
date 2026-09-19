@@ -1,12 +1,14 @@
 
 import { setRequestLocale } from 'next-intl/server';
 import DiscountFormview from "@/components/modules/property-tax/ptis/QuickDataEntry/discount/DiscountFormview";
-import { getDiscountDetailsAction, getSocialAttributeMasterAction, getDiscountWingsAction,
-     getDiscountUnitsAction, getPropertySocialDetailsByFiltersAction 
-    } from './discount-actions';
+import {
+    getDiscountDetailsAction, getSocialAttributeMasterAction, getDiscountWingsAction,
+    getDiscountUnitsAction, getPropertySocialDetailsByFiltersAction
+} from './discount-actions';
 import { getPropertySocialInfoAction } from './social-actions';
 import { getPropertyBasicDetailsAction } from '../FloorSubmission/actions';
 import type { WingOption, UnitSelectionItem } from "@/types/building-permission.types";
+import type { PropertySocialDetailsDto } from "@/types/property-social-details.types";
 
 export const dynamic = 'force-dynamic';
 interface PageProps {
@@ -22,17 +24,12 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
     setRequestLocale(locale);
 
     const propertyBasicDetails = await getPropertyBasicDetailsAction(propertyId);
-
     const pb = (propertyBasicDetails || {}) as Record<string, unknown>;
+
     const sp = resolvedSearchParams;
-    const isWingWise = sp.isWingWise === 'true';
-    const rawCategory = sp.propertyCategory || sp.category;
-    const searchCategory = Array.isArray(rawCategory) ? rawCategory[0] : rawCategory;
-    const sCat = (searchCategory || '').toLowerCase();
+    const sCat = String(sp.propertyCategory || sp.category || '').toLowerCase();
     const bCat = String(pb.categoryName || pb.propertyCategoryName || '').toLowerCase();
-
     const isExplicitIndividual = sCat.includes('individual') || bCat.includes('individual');
-
     const isExplicitApartment =
         sCat.includes('apartment') ||
         sCat.includes('society') ||
@@ -42,8 +39,9 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
         bCat.includes('society') ||
         bCat.includes('flat') ||
         bCat.includes('complex');
+    const isWingWise = sp.isWingWise === 'true';
 
-    const searchSocietyId = sp.societyDetailId || sp.societyId;
+    const searchSocietyId = sp.societyDetailId || sp.societyId || pb.societyDetailId || pb.societyId;
     const hasSocietyId = Boolean(
         (searchSocietyId && String(searchSocietyId) !== '0') ||
         (pb.societyDetailId && Number(pb.societyDetailId) > 0) ||
@@ -57,6 +55,7 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
     let socialAttributeMaster: Awaited<ReturnType<typeof getSocialAttributeMasterAction>> = { success: true, data: [] };
     let mappedWings: WingOption[] = [];
     let mappedUnits: UnitSelectionItem[] = [];
+    let savedDetails: PropertySocialDetailsDto[] = [];
     let finalWingDetailId: number | null = null;
     const level = sp.level || (isWingWise ? 'Wing' : 'Apartment');
 
@@ -72,25 +71,24 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
         finalWingDetailId = parsedWingDetailId;
         if (!finalWingDetailId && mappedWings.length > 0) {
             finalWingDetailId = mappedWings[0].wingDetailId;
-        }      
+        }
         const WingDetilasId = level === 'Apartment' ? null : finalWingDetailId
 
         const isDiscountTab = activeTab === 'discount';
+        const searchSocialAttributeId = sp.socialAttributeId ? Number(sp.socialAttributeId) : undefined;
 
         const [masterRes, unitsResponse, savedDetailsResponse] = await Promise.all([
             getSocialAttributeMasterAction(isDiscountTab),
             getDiscountUnitsAction(propertyId, finalWingDetailId, 1, 10),
-            // No socialAttributeId filter: every saved attribute of the wing is needed, not just the selected one.
-            searchSocietyId ? getPropertySocialDetailsByFiltersAction(undefined, Number(searchSocietyId), WingDetilasId || undefined) : Promise.resolve({ success: true, data: [] })
+            searchSocietyId ? getPropertySocialDetailsByFiltersAction(searchSocialAttributeId, Number(searchSocietyId), WingDetilasId || undefined) : Promise.resolve({ success: true, data: [] })
         ]);
         socialAttributeMaster = masterRes;
 
-        mappedUnits = unitsResponse?.success && unitsResponse?.data?.items && Array.isArray(unitsResponse.data.items) ? unitsResponse.data.items : [];
-
-        // An empty result must still produce an empty payload so the previous wing's data is cleared.
-        const savedDetails = savedDetailsResponse?.success && Array.isArray(savedDetailsResponse.data)
+        savedDetails = savedDetailsResponse?.success && Array.isArray(savedDetailsResponse.data)
             ? savedDetailsResponse.data
-            : [];           
+            : [];
+
+        mappedUnits = unitsResponse?.success && unitsResponse?.data?.items && Array.isArray(unitsResponse.data.items) ? unitsResponse.data.items : [];
 
         // dataType and the document/photo flags only exist on the master list.
         const masterById = new Map((masterRes.data || []).map(a => [a.id, a]));
@@ -226,6 +224,7 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
             socialMasterAttributes={socialMasterAttributes}
             wings={mappedWings}
             units={mappedUnits}
+            savedPropertyDetails={savedDetails}
         />
     );
 }

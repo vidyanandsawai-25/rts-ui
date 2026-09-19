@@ -65,8 +65,7 @@ export const ApartmentWingCardHeader: React.FC<WingCardHeaderProps> = ({
         <StatBadge label={t('floors') || 'FLOORS'} value={`${stats.floors}`} />
         <StatBadge label={t('props') || 'PROPS'} value={stats.props} />
         <StatBadge label={areaLabel} value={stats.area.toLocaleString()} />
-        <StatBadge label={t('selected') || 'SELECTED'} value={`${stats.collectedPct}%`} highlight />
-
+        {/* <StatBadge label={t('selected') || 'SELECTED'} value={`${stats.collectedPct}%`} highlight /> */}
         <div className="relative ml-2 cursor-pointer" onClick={onAmcClick}>
           <div className="bg-white/95 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors">
             <FileText size={18} strokeWidth={2} className="text-blue-600" />

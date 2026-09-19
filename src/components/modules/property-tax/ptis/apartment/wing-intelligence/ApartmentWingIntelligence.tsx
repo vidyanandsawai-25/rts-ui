@@ -132,7 +132,7 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
   
   
   return (
-    <div className="bg-white p-3 rounded-xl border border-zinc-200 shadow-xs overflow-hidden relative font-sans">
+    <div className="bg-white p-3 rounded-xl border border-zinc-200 shadow-xs relative font-sans">
       <ApartmentWingTopNav
         activeSection={activeSection}
         onToggleSection={(section) => {

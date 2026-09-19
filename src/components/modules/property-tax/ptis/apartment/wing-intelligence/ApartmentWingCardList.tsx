@@ -91,9 +91,9 @@ export const ApartmentWingCardList: React.FC<WingCardListProps> = ({
         aria-label="Scroll left"
         onClick={scrollPrev}
         onKeyDown={(e) => e.key === 'Enter' && scrollPrev()}
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 bg-white p-1 rounded-full shadow-md border border-black cursor-pointer hover:bg-slate-50 z-10 hidden"
+        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 bg-white w-8 h-8 flex items-center justify-center rounded-full shadow-md border border-black cursor-pointer hover:bg-slate-50 z-10 hidden"
       >
-        <ChevronLeft className="text-blue-600" size={20} />
+        <ChevronLeft className="text-blue-600 shrink-0" size={20} />
       </div>
       <div
         ref={rightArrowRef}
@@ -102,9 +102,9 @@ export const ApartmentWingCardList: React.FC<WingCardListProps> = ({
         aria-label="Scroll right"
         onClick={scrollNext}
         onKeyDown={(e) => e.key === 'Enter' && scrollNext()}
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 bg-white p-1 rounded-full shadow-md border border-black cursor-pointer hover:bg-slate-50 z-10 hidden"
+        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 bg-white w-8 h-8 flex items-center justify-center rounded-full shadow-md border border-black cursor-pointer hover:bg-slate-50 z-10 hidden"
       >
-        <ChevronRight className="text-blue-600" size={20} />
+        <ChevronRight className="text-blue-600 shrink-0" size={20} />
       </div>
     </div>
   );

@@ -15,18 +15,27 @@ const Popover: React.FC<{
 
   return (
     <>
-      <div 
-        className="fixed inset-0 z-40" 
-        onClick={(e) => { e.stopPropagation(); onClose(); }} 
+      <div
+        className="fixed inset-0 z-40"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
       />
       <div
-        className="absolute z-50 bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-2xl border border-slate-200 p-4 w-[280px] cursor-default pointer-events-auto"
+        className="absolute z-50 bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-2xl border border-slate-200 p-3.5 w-[300px] cursor-default pointer-events-auto animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">
-          <h3 className="text-xs font-black text-blue-800 uppercase tracking-wider">{title}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors relative z-50">
-            <X size={14} strokeWidth={3} />
+        <div className="flex justify-between items-start border-b border-slate-200 pb-2 mb-2.5 gap-2">
+          <h3 className="text-[11px] font-black text-blue-800 uppercase tracking-wider leading-snug flex-1 pr-1">{title}</h3>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="text-slate-400 hover:text-slate-600 transition-colors p-0.5 rounded-full hover:bg-slate-100 shrink-0 mt-0.5"
+          >
+            <X size={14} strokeWidth={2.5} />
           </button>
         </div>
         <div className="flex flex-col gap-2.5 relative z-50">
@@ -69,17 +78,19 @@ const RevenueImpactSummary: React.FC<RevenueImpactSummaryProps> = ({
   isPositive,
   previousRv,
   revisedRv,
+  differenceRv,
   affectedUnits,
 }) => {
   const t = useTranslations('ptisRedesign.wingIntelligence');
   const [isOpen, setIsOpen] = useState(false);
   const prevValue = previousRv ?? 0;
   const revisedValue = revisedRv ?? 0;
+  const diffValue = differenceRv ?? amount ?? 0;
   const unitsCount = affectedUnits ?? 0;
-  
+
   return (
     <div className="relative flex-1">
-      <div 
+      <div
         onClick={(e) => { e.stopPropagation(); setIsOpen(true); }}
         className="flex flex-col h-full border border-emerald-200 rounded-lg px-1.5 py-1 bg-[#f0fdf4] justify-between cursor-pointer hover:bg-[#dcfce7] transition-colors"
       >
@@ -87,20 +98,20 @@ const RevenueImpactSummary: React.FC<RevenueImpactSummaryProps> = ({
         <div className="flex flex-col">
           <div className="flex items-center gap-0.5 mb-0.5">
             <div className="text-sm font-black text-emerald-600 leading-none flex items-center gap-0.5 mt-[1px]">
-              {isPositive ? <ArrowUpRight size={14} strokeWidth={3} /> : null} 
+              {isPositive ? <ArrowUpRight size={14} strokeWidth={3} /> : null}
               {!isPositive ? <ArrowUpRight size={14} strokeWidth={3} className="rotate-90" /> : null}
               {formatCompactCurrency(typeof amount === 'number' ? Math.abs(amount) : amount)}
             </div>
           </div>
-          <div className="text-[9px] font-bold text-teal-700 leading-none">
-            {isPositive ? (t('increase') || 'Increase') : (t('decrease') || 'Decrease')} {pct}% {t('vsOldTax') || 'vs old tax'}
+          <div className="text-[9px] font-bold text-teal-700 leading-none">            
+            {isPositive ? (t('increase') || 'Increase') : (t('decrease') || 'Decrease')} {(pct)}% {t('vsOldTax') || 'vs old tax'}
           </div>
         </div>
       </div>
       <Popover isOpen={isOpen} onClose={() => setIsOpen(false)} title={`${t('revImpactDetails') || 'REV IMPACT DETAILS'} – ${wingName}`}>
         <RowItem label={t('previousRv') || 'PREVIOUS RV'} value={typeof prevValue === 'string' && prevValue ? (prevValue.startsWith('₹') ? prevValue : `₹${prevValue}`) : formatFullCurrency(prevValue)} />
         <RowItem label={t('revisedRv') || 'REVISED RV'} value={typeof revisedValue === 'string' && revisedValue ? (revisedValue.startsWith('₹') ? revisedValue : `₹${revisedValue}`) : formatFullCurrency(revisedValue)} valueClass="text-blue-800" />
-        <RowItem label={t('differenceRv') || 'DIFFERENCE RV'} value={typeof amount === 'string' && amount ? (amount.startsWith('₹') ? amount : `₹${amount}`) : formatFullCurrency(amount)} valueClass="text-emerald-600" />
+        <RowItem label={t('differenceRv') || 'DIFFERENCE RV'} value={typeof diffValue === 'string' && diffValue ? (diffValue.startsWith('₹') ? diffValue : `₹${diffValue}`) : formatFullCurrency(diffValue)} valueClass="text-emerald-600" />
         <RowItem label={t('affectedUnits') || 'AFFECTED UNITS'} value={`${unitsCount} ${unitsCount === 1 ? (t('unit') || 'Unit') : (t('units') || 'Units')}`} isLast />
       </Popover>
     </div>
@@ -113,7 +124,7 @@ const ExemptionSummary: React.FC<ExemptionSummaryProps> = ({ wingName, amount, c
 
   return (
     <div className="relative flex-1">
-      <div 
+      <div
         onClick={(e) => { e.stopPropagation(); setIsOpen(true); }}
         className="flex flex-col h-full border border-purple-100 rounded-lg px-1.5 py-1 bg-[#faf5ff] justify-between cursor-pointer hover:bg-purple-100 transition-colors"
       >
@@ -126,16 +137,18 @@ const ExemptionSummary: React.FC<ExemptionSummaryProps> = ({ wingName, amount, c
             </span>
             <span className="text-[9px] font-bold text-purple-700 leading-none">{t('exempted') || 'Exempted'}</span>
           </div>
+          <span className="text-[9px] font-bold text-purple-700 leading-none mb-0.5">{'In process'}</span>
           <button className="text-[10px] font-extrabold text-blue-700 self-start hover:underline leading-none">
             {t('viewList') || 'View List'} &gt;
           </button>
         </div>
       </div>
-      <Popover isOpen={isOpen} onClose={() => setIsOpen(false)} title={`${t('exemptionDetails') || 'EXEMPTION DETAILS'} – ${wingName}`}>
-        <RowItem label={t('exemptedUnits') || 'EXEMPTED UNITS'} value={`${count} ${t('units') || 'Units'}`} />
-        <RowItem label={t('category') || 'CATEGORY'} value={<div className="text-right max-w-[120px] leading-tight">{t('freedomFighterExemption') || 'Freedom Fighter & Defense Exemption'}</div>} valueClass="text-purple-700" />
-        <RowItem label={t('eligibleUnits') || 'ELIGIBLE UNITS'} value="Flat 102, Flat 204" />
-        <RowItem label={t('exemptionAmount') || 'EXEMPTION AMOUNT'} value={formatFullCurrency(amount)} valueClass="text-purple-700" isLast />
+      {/* <Popover isOpen={isOpen} onClose={() => setIsOpen(false)} title={`${t('exemptionDetails') || 'EXEMPTION DETAILS'} (In Process) – ${wingName}`}> */}
+      <Popover isOpen={isOpen} onClose={() => setIsOpen(false)} title={`${t('exemptionDetails') || 'EXEMPTION DETAILS'} (In Process) – ${wingName}`}>        
+        <RowItem label={t('exemptedUnits') || 'EXEMPTED UNITS'} value={'N/A'} />
+        <RowItem label={t('category') || 'CATEGORY'} value={<div className="text-right max-w-[120px] leading-tight">{"N/A"}</div>} valueClass="text-purple-700" />
+        <RowItem label={t('eligibleUnits') || 'ELIGIBLE UNITS'} value="N/A" />
+        <RowItem label={t('exemptionAmount') || 'EXEMPTION AMOUNT'} value="N/A" valueClass="text-purple-700" isLast />
       </Popover>
     </div>
   );
@@ -157,6 +170,7 @@ export const ApartmentWingCardFooter: React.FC<WingCardFooterProps> = ({
         isPositive={revenueImpact.isPositive}
         previousRv={revenueImpact.previousRv ?? overallTax.from}
         revisedRv={revenueImpact.revisedRv ?? overallTax.to}
+        differenceRv={revenueImpact.differenceRv ?? revenueImpact.amount}
         affectedUnits={revenueImpact.affectedUnits}
       />
       <ExemptionSummary wingName={wingName} amount={exemption.amount} count={exemption.count} />

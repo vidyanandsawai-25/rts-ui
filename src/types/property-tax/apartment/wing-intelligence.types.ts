@@ -29,6 +29,7 @@ export interface RevenueImpactSummaryProps {
   isPositive: boolean;
   previousRv?: string | number;
   revisedRv?: string | number;
+  differenceRv?: string | number;
   affectedUnits?: number;
 }
 
@@ -76,6 +77,7 @@ export interface WingCardFooterProps {
     isPositive: boolean;
     previousRv?: string | number;
     revisedRv?: string | number;
+    differenceRv?: string | number;
     affectedUnits?: number;
   };
 }
@@ -107,6 +109,7 @@ export interface WingData {
     isPositive: boolean;
     previousRv?: string | number;
     revisedRv?: string | number;
+    differenceRv?: string | number;
     affectedUnits?: number;
   };
   colorClass: string;

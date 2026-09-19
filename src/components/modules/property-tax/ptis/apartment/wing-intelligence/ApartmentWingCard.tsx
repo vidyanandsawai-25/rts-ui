@@ -6,6 +6,7 @@ import { ApartmentWingCardFooter } from './ApartmentWingCardFooter';
 import { WingCardProps } from '@/types/property-tax/apartment';
 
 export const ApartmentWingCard: React.FC<WingCardProps> = ({ data, isSelected, onClick, onDoubleClick, onAmcClick, onEdit }) => {
+
   return (
     <div
       onClick={onClick}

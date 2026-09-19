@@ -18,6 +18,7 @@ import { getLocalizedName } from "@/lib/utils/social-details";
 import { SocialAttribute } from "@/types/social-attribute.types";
 import { useDiscountLevelState } from "@/hooks/useDiscountLevelState";
 import { UnitSelectionItem, WingOption } from "@/types/building-permission.types";
+import { PropertySocialDetailsDto } from "@/types/property-social-details.types";
 interface DiscountFormProps {
     initialDiscountData: PropertyDiscountInfoResponseDto | null;
     initialSocialData: PropertySocialInfoResponseDto | null;
@@ -27,6 +28,7 @@ interface DiscountFormProps {
     socialMasterAttributes?: SocialAttribute[];
     wings?: WingOption[];
     units?: UnitSelectionItem[];
+    savedPropertyDetails?: PropertySocialDetailsDto[];
 }
 
 const DiscountFormview: React.FC<DiscountFormProps> = ({
@@ -38,6 +40,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     socialMasterAttributes = [],
     wings = [],
     units = [],
+    savedPropertyDetails = [],
 }) => {
     const t = useTranslations('quickDataEntry');
     const router = useRouter();
@@ -90,7 +93,8 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         initialWingDetailId,
         isSociety, 
         wings,
-        units
+        units,
+        savedPropertyDetails
     });
 
     const handleLevelChange = useCallback((level: "Apartment" | "Wing" | "Unit") => {

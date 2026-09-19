@@ -142,23 +142,32 @@ export function formatCompactCurrency(val: number | string | null | undefined): 
   if (typeof val === 'string') {
     const trimmed = val.trim();
     if (!trimmed || trimmed === '0') return '₹0';
-    if (trimmed.startsWith('₹')) return trimmed;
-    if (trimmed.endsWith('Crore') || trimmed.endsWith('Cr')) {
-      const numPart = trimmed.replace(/Crore|Cr/i, '').trim();
-      return `₹${numPart}Cr`;
+    if (trimmed.startsWith('₹') || trimmed.startsWith('-₹') || trimmed.startsWith('+₹')) return trimmed;
+
+    const isNegative = trimmed.startsWith('-');
+    const cleanStr = trimmed.replace(/^[-\s]+/, '');
+
+    if (cleanStr.endsWith('Crore') || cleanStr.endsWith('Cr')) {
+      const numPart = cleanStr.replace(/Crore|Cr/i, '').trim();
+      return `${isNegative ? '-' : ''}₹${numPart}Cr`;
     }
-    if (trimmed.endsWith('Lakh')) {
-      const numPart = trimmed.replace(/Lakh/i, '').trim();
-      return `₹${numPart}L`;
+    if (cleanStr.endsWith('Lakh')) {
+      const numPart = cleanStr.replace(/Lakh/i, '').trim();
+      return `${isNegative ? '-' : ''}₹${numPart}L`;
     }
-    if (/k$/i.test(trimmed) || /L$/i.test(trimmed)) {
-      return `₹${trimmed}`;
+    if (/L$/i.test(cleanStr)) {
+      const numPart = cleanStr.replace(/L$/i, '').trim();
+      return `${isNegative ? '-' : ''}₹${numPart}L`;
     }
-    const parsed = parseFloat(trimmed.replace(/,/g, ''));
+    if (/k$/i.test(cleanStr)) {
+      const numPart = cleanStr.replace(/k$/i, '').trim();
+      return `${isNegative ? '-' : ''}₹${numPart}k`;
+    }
+    const parsed = parseFloat(cleanStr.replace(/,/g, ''));
     if (!isNaN(parsed)) {
-      val = parsed;
+      val = isNegative ? -parsed : parsed;
     } else {
-      return `₹${trimmed}`;
+      return `${isNegative ? '-' : ''}₹${cleanStr}`;
     }
   }
 
