@@ -825,6 +825,7 @@ export interface RtsApplicationsDashboardFilters {
   departmentName?: string;
   serviceId?: number;
   applicationNo?: string;
+  search?: string;
   status?: string;
   sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays' | 'FIFO';
   sortOrder?: 'asc' | 'desc';
@@ -840,16 +841,19 @@ async function getApprovalApplicationsPage(
   totalPages: number;
   pageNumber: number;
 } | null> {
+  const isExplicitSort = Boolean(filters.sortBy && filters.sortBy !== 'FIFO');
+  const isFifoMode = filters.isFifo ?? !isExplicitSort;
   const pageResult = await getApprovalApplicationsPaged({
     pageNumber: filters.pageNumber || 1,
     departmentId: filters.departmentId,
     serviceId: filters.serviceId,
     applicationNo: filters.applicationNo,
+    search: filters.search ?? filters.applicationNo,
     status: filters.status,
     sortBy: filters.sortBy,
     sortOrder: filters.sortOrder,
     userId: filters.assignedUserId,
-    isFifo: filters.isFifo,
+    isFifo: isFifoMode,
   });
 
   return {
@@ -939,23 +943,10 @@ function isPendingOrActiveStatus(status: string | null | undefined): boolean {
   return s !== 'approved' && s !== 'rejected' && s !== 'reverted';
 }
 
-function getRowPriority(row: AdminApplicationGridRow, currentUserId?: number | null): number {
-  const isPending = isPendingOrActiveStatus(row.currentStatus);
-  if (!isPending) {
-    return 2; // Closed / Completed (Approved, Rejected, Reverted) -> bottom
-  }
-  // It is pending / active!
-  if (currentUserId && row.assignedUserId === currentUserId) {
-    return 0; // My Pending (assigned to this logged-in officer) -> TOP!
-  }
-  return 1; // Other Pending -> Middle
-}
-
 function sortDashboardRows(
   rows: AdminApplicationGridRow[],
   sortBy?: RtsApplicationsDashboardFilters['sortBy'],
-  sortOrder?: RtsApplicationsDashboardFilters['sortOrder'],
-  currentUserId?: number | null
+  sortOrder?: RtsApplicationsDashboardFilters['sortOrder']
 ): AdminApplicationGridRow[] {
   // Default to FIFO ascending (oldest application first) unless desc is explicitly requested
   const direction = sortOrder === 'desc' ? -1 : 1;
@@ -990,25 +981,24 @@ function sortDashboardRows(
         if (left.remainingDays != null && right.remainingDays == null) return -1;
         comparison = (left.remainingDays ?? 0) - (right.remainingDays ?? 0);
         break;
-      case 'CreatedDate':
-        if (sortOrder === 'desc') {
-          const leftTime = left.applicationDate ? new Date(left.applicationDate).getTime() : 0;
-          const rightTime = right.applicationDate ? new Date(right.applicationDate).getTime() : 0;
-          const validLeft = Number.isFinite(leftTime) ? leftTime : 0;
-          const validRight = Number.isFinite(rightTime) ? rightTime : 0;
-          comparison = validRight - validLeft;
-          break;
-        }
-        // If not desc, fall through to default (Pending on top + FIFO)
+      case 'CreatedDate': {
+        const leftTime = left.applicationDate ? new Date(left.applicationDate).getTime() : 0;
+        const rightTime = right.applicationDate ? new Date(right.applicationDate).getTime() : 0;
+        const validLeft = Number.isFinite(leftTime) ? leftTime : 0;
+        const validRight = Number.isFinite(rightTime) ? rightTime : 0;
+        comparison = validLeft - validRight;
+        break;
+      }
       case 'FIFO':
       default: {
-        // 1. Pending on top! (Rank 0: My Pending -> Rank 1: Other Pending -> Rank 2: Closed)
-        const rankDiff = getRowPriority(left, currentUserId) - getRowPriority(right, currentUserId);
-        if (rankDiff !== 0) {
-          return rankDiff;
+        // Strict FIFO mode: Pending/active applications first, then closed (Approved, Rejected, Reverted)
+        const leftPending = isPendingOrActiveStatus(left.currentStatus) ? 0 : 1;
+        const rightPending = isPendingOrActiveStatus(right.currentStatus) ? 0 : 1;
+        if (leftPending !== rightPending) {
+          return leftPending - rightPending;
         }
 
-        // 2. Within each priority rank: strictly FIFO (earliest date first)
+        // Within each priority group: earliest created date first (FIFO)
         const leftTime = left.applicationDate ? new Date(left.applicationDate).getTime() : 0;
         const rightTime = right.applicationDate ? new Date(right.applicationDate).getTime() : 0;
         const validLeft = Number.isFinite(leftTime) ? leftTime : 0;
@@ -1177,14 +1167,10 @@ export async function getRtsApplicationsDashboardAction(
       };
     });
 
-    const cookieStore = await cookies();
-    const currentUserId = getCurrentApprovalOfficerUserId(cookieStore);
-
     const rows = sortDashboardRows(
       approvalRows,
       filters.sortBy,
-      filters.sortOrder,
-      currentUserId
+      filters.sortOrder
     );
 
     const pageSize = 10;

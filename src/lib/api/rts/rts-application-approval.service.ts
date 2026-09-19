@@ -89,7 +89,11 @@ export async function getApprovalApplicationsPaged(
   queryParams.set('PageSize', '10');
   if (params.departmentId != null) queryParams.set('DepartmentId', String(params.departmentId));
   if (params.serviceId != null) queryParams.set('ServiceId', String(params.serviceId));
-  if (params.applicationNo) queryParams.set('ApplicationNo', params.applicationNo);
+  if (params.search) {
+    queryParams.set('SearchTerm', params.search);
+    if (!params.applicationNo) queryParams.set('ApplicationNo', params.search);
+  }
+  if (params.applicationNo && !queryParams.has('ApplicationNo')) queryParams.set('ApplicationNo', params.applicationNo);
   if (params.status) queryParams.set('ApplicationStatus', params.status);
   if (params.sortBy) queryParams.set('SortBy', params.sortBy);
   if (params.sortOrder) queryParams.set('SortOrder', params.sortOrder);

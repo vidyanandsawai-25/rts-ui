@@ -90,15 +90,20 @@ export default async function RtsApplicationDashboardPage({
     : undefined;
 
   const department = departments.find(
-    (item) => toApplicationFilterSlug(item.departmentName) === departmentSlug
+    (item) =>
+      item.id.toString() === departmentSlug ||
+      toApplicationFilterSlug(item.departmentName) === departmentSlug ||
+      (item.departmentNameLocal && toApplicationFilterSlug(item.departmentNameLocal) === departmentSlug)
   );
-  const service = department
-    ? services.find(
-        (item) =>
-          item.departmentId === department.id &&
-          toApplicationFilterSlug(item.serviceName) === requestedServiceSlug
-      )
-    : undefined;
+  const service = services.find(
+    (item) =>
+      (!department || item.departmentId === department.id) &&
+      (item.id.toString() === requestedServiceSlug ||
+        toApplicationFilterSlug(item.serviceName) === requestedServiceSlug ||
+        (item.serviceNameLocal && toApplicationFilterSlug(item.serviceNameLocal) === requestedServiceSlug))
+  );
+
+  const effectiveDepartment = department || (service ? departments.find((d) => d.id === service.departmentId) : undefined);
 
   const requestedDocumentGuid = readQuery(query, 'doc', 'Doc')?.trim() ?? '';
   const requestedProcess = parseProcessRoute(readQuery(query, 'process', 'Process'));
@@ -110,10 +115,11 @@ export default async function RtsApplicationDashboardPage({
   const [result, processDrawerData, fullDetailDrawerData] = await Promise.all([
     getRtsApplicationsDashboardAction({
       pageNumber,
-      departmentId: department?.id,
-      departmentName: department?.departmentName,
+      departmentId: effectiveDepartment?.id,
+      departmentName: effectiveDepartment?.departmentName,
       serviceId: service?.id,
       applicationNo: search || undefined,
+      search: search || undefined,
       status,
       sortBy,
       sortOrder,
@@ -207,8 +213,8 @@ export default async function RtsApplicationDashboardPage({
         departments={departments}
         services={services}
         filters={{
-          department: department ? departmentSlug : '',
-          service: service ? requestedServiceSlug : '',
+          department: effectiveDepartment ? toApplicationFilterSlug(effectiveDepartment.departmentName) : '',
+          service: service ? toApplicationFilterSlug(service.serviceName) : '',
           status: status ?? '',
           search,
           sortBy: sortBy ?? '',

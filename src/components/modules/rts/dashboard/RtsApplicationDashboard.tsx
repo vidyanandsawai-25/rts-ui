@@ -210,9 +210,10 @@ export default function RtsApplicationDashboard({
   const updateUrl = useCallback(
     (changes: Record<string, string>) => {
       const params = new URLSearchParams(window.location.search);
-      ['Department', 'Service', 'Status', 'Search', 'PageSize', 'PageNumber', 'SortBy', 'SortOrder'].forEach((key) =>
-        params.delete(key)
-      );
+      [
+        'department', 'service', 'status', 'search', 'pageSize', 'pageNumber', 'sortBy', 'sortOrder',
+        'Department', 'Service', 'Status', 'Search', 'PageSize', 'PageNumber', 'SortBy', 'SortOrder',
+      ].forEach((key) => params.delete(key));
 
       Object.entries(changes).forEach(([key, value]) => {
         if (value) params.set(key, value);
@@ -306,7 +307,7 @@ export default function RtsApplicationDashboard({
     if (searchTerm === filters.search) return;
     const timeoutId = window.setTimeout(() => {
       updateUrl({ ...filters, search: searchTerm.trim(), pageNumber: '1' });
-    }, 1000);
+    }, 400);
     return () => window.clearTimeout(timeoutId);
   }, [filters, searchTerm, updateUrl]);
 
@@ -749,6 +750,7 @@ export default function RtsApplicationDashboard({
               <SearchInput
                 value={searchTerm}
                 onChange={setSearchTerm}
+                onEnter={() => updateUrl({ ...filters, search: searchTerm.trim(), pageNumber: '1' })}
                 placeholder={t('applicationDashboard.applications.searchPlaceholder')}
                 className="mb-0 w-full font-medium"
               />
