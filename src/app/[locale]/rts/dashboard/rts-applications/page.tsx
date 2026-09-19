@@ -107,7 +107,7 @@ export default async function RtsApplicationDashboardPage({
   const drawerApplicationId = requestedProcess?.applicationId ?? requestedFullDetailId ?? requestedViewId;
 
   // Run dashboard query and drawer queries concurrently in parallel for instant response
-  const [result, processDrawerData, fullDetailDrawerData, directDrawerRow] = await Promise.all([
+  const [result, processDrawerData, fullDetailDrawerData] = await Promise.all([
     getRtsApplicationsDashboardAction({
       pageNumber,
       departmentId: department?.id,
@@ -124,14 +124,44 @@ export default async function RtsApplicationDashboardPage({
     drawerApplicationId && requestedFullDetailId
       ? getRtsApplicationFullDetailDataAction(drawerApplicationId)
       : Promise.resolve(null),
-    drawerApplicationId
-      ? getApprovalApplicationRowAction(drawerApplicationId)
-      : Promise.resolve(null),
   ]);
 
-  const drawerRow = drawerApplicationId
-    ? result.rows.find((row) => row.applicationId === drawerApplicationId) ?? directDrawerRow
+  let drawerRow = drawerApplicationId
+    ? result.rows.find((row) => row.applicationId === drawerApplicationId) ?? null
     : null;
+
+  if (!drawerRow && drawerApplicationId) {
+    const details = processDrawerData?.details || fullDetailDrawerData?.details;
+    if (details) {
+      drawerRow = {
+        source: 'approval',
+        applicationId: details.applicationId ?? drawerApplicationId,
+        applicationNo: details.applicationNo || `RTS${drawerApplicationId}`,
+        propertyNo: null,
+        upicId: null,
+        applicationDate: '',
+        applicantName: '—',
+        serviceName: details.serviceName || 'Unknown Service',
+        serviceNameLocal: null,
+        departmentName: details.departmentName || 'Unknown Department',
+        departmentNameLocal: null,
+        currentStatus: details.applicationStatus || 'Pending',
+        currentStageName: details.applicationStatus || 'Pending',
+        remarks: details.remark || '—',
+        expectedSlaDays: 7,
+        remainingDays: null,
+        dueDays: null,
+        overdueDays: null,
+        lastUpdatedDate: '',
+        assignedTo: '—',
+        assignedToName: '—',
+        assignedToRole: '',
+        assignedUserId: null,
+      };
+    } else {
+      drawerRow = await getApprovalApplicationRowAction(drawerApplicationId);
+    }
+  }
 
   const currentStageSlug = processDrawerData?.verification?.stageName
     ? toApplicationFilterSlug(processDrawerData.verification.stageName)
