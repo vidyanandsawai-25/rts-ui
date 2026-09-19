@@ -50,7 +50,7 @@ describe("useTypeOfUseForm", () => {
     expect(result.current.formData.typeOfUseGroupId).toBe(0);
     expect(result.current.formData.typeOfUseCode).toBe("");
     expect(result.current.formData.description).toBe("");
-    expect(result.current.formData.searchSequence).toBe(1);
+    expect(result.current.formData.searchSequence).toBe("");
     expect(result.current.formData.type).toBe("");
   });
 

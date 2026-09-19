@@ -162,6 +162,54 @@ export default function TypeOfUseFormDrawer({
         )}
 
         <div className="space-y-4">
+          <Input
+            ref={codeRef}
+            name="typeOfUseCode"
+            label={t("type.fields.typeId", { default: "Type Of Use Code" })}
+            required
+            placeholder={t("type.placeholders.typeId", { default: "e.g., RES, COM" })}
+            value={formData.typeOfUseCode}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            fullWidth
+          />
+          <ValidationMessage
+            message={errors.typeOfUseCode}
+            visible={showError("typeOfUseCode")}
+          />
+
+          <Input
+            name="description"
+            label={t("type.fields.description.label", { default: "Description" })}
+            required
+            placeholder={t("type.placeholders.description", { default: "Enter description" })}
+            value={formData.description}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            fullWidth
+          />
+          <ValidationMessage
+            message={errors.description}
+            visible={showError("description")}
+          />
+
+          <Input
+            type="number"
+            name="searchSequence"
+            label={t("type.fields.sequence", { default: "Sequence" })}
+            required
+            min={0}
+            max={999}
+            value={formData.searchSequence}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            fullWidth
+          />
+          <ValidationMessage
+            message={errors.searchSequence}
+            visible={showError("searchSequence")}
+          />
+
           <SearchSelect
             name="assetCategoryId"
             label={t("type.fields.category", { default: "Asset Category" })}
@@ -229,37 +277,6 @@ export default function TypeOfUseFormDrawer({
             visible={showError("typeOfUseGroupId")}
           />
 
-          <Input
-            ref={codeRef}
-            name="typeOfUseCode"
-            label={t("type.fields.typeId", { default: "Type Of Use Code" })}
-            required
-            placeholder={t("type.placeholders.typeId", { default: "e.g., RES, COM" })}
-            value={formData.typeOfUseCode}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            fullWidth
-          />
-          <ValidationMessage
-            message={errors.typeOfUseCode}
-            visible={showError("typeOfUseCode")}
-          />
-
-          <Input
-            name="description"
-            label={t("type.fields.description.label", { default: "Description" })}
-            required
-            placeholder={t("type.placeholders.description", { default: "Enter description" })}
-            value={formData.description}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            fullWidth
-          />
-          <ValidationMessage
-            message={errors.description}
-            visible={showError("description")}
-          />
-
           <SearchSelect
             name="type"
             label={t("type.fields.type.label", { default: "Type" })}
@@ -280,23 +297,6 @@ export default function TypeOfUseFormDrawer({
           <ValidationMessage
             message={errors.type}
             visible={showError("type")}
-          />
-
-          <Input
-            type="number"
-            name="searchSequence"
-            label={t("type.fields.sequence", { default: "Sequence" })}
-            required
-            min={0}
-            max={999}
-            value={formData.searchSequence}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            fullWidth
-          />
-          <ValidationMessage
-            message={errors.searchSequence}
-            visible={showError("searchSequence")}
           />
         </div>
 

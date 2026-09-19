@@ -45,7 +45,7 @@ export function useSubTypeOfUseForm({
     isActive: initialData?.isActive ?? true,
     typeOfUseId: initialData?.typeOfUseId ?? urlTypeOfUseId,
     description: initialData?.description ?? "",
-    searchSequence: initialData?.searchSequence ?? 1,
+    searchSequence: initialData?.searchSequence ?? "",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof AssetSubTypeOfUseFormModel, string>>>({});

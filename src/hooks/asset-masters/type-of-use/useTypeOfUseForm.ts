@@ -52,7 +52,7 @@ export function useTypeOfUseForm({
     typeOfUseCode: initialData?.typeOfUseCode ?? "",
     description: initialData?.description ?? "",
     type: initialData?.type ?? "",
-    searchSequence: initialData?.searchSequence ?? 1,
+    searchSequence: initialData?.searchSequence ?? "",
   });
 
   const types = initialTypes;

@@ -22,8 +22,13 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
     if (sanitizedValue.length > DESCRIPTION_MAX) {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
-  } else if (name === "designationName" || name === "designationLocal") {
-    sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, "").trimStart().replace(/\s{2,}/g, " ");
+  } else if (name === "designationName") {
+    sanitizedValue = value.replace(/[^a-zA-Z0-9 ]/g, "").trimStart().replace(/ {2,}/g, " ");
+    if (sanitizedValue.length > NAME_MAX) {
+      sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
+    }
+  } else if (name === "designationLocal") {
+    sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N} ]/gu, "").trimStart().replace(/ {2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -55,7 +60,7 @@ export const validateDesignationForm = (
       if (!str) return t('form.validation.designationNameRequired');
       if (str.length > NAME_MAX) return t('form.validation.designationNameMaxLength', { count: NAME_MAX });
       if (/^0+$/.test(str)) return t('form.validation.designationNameFormat');
-      if (!/^[\p{L}\p{M}\p{N}]+(?:[\s][\p{L}\p{M}\p{N}]+)*$/u.test(str)) return t('form.validation.designationNameFormat');
+      if (!/^[a-zA-Z0-9]+(?: [a-zA-Z0-9]+)*$/.test(str)) return t('form.validation.designationNameFormat');
       return undefined;
     },
     designationLocal: (val: unknown) => {

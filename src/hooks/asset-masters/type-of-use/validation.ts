@@ -143,8 +143,11 @@ export const validateTypeOfUseForm = (
       return undefined;
     },
     searchSequence: (val: unknown) => {
+      if (val === "" || val === undefined || val === null || String(val).trim() === "") {
+        return t("messages.sequenceRequired", { default: "Sequence is required" });
+      }
       const n = Number(val);
-      if (val === undefined || val === null || isNaN(n) || n < 0) {
+      if (isNaN(n) || n < 0) {
         return t("messages.sequenceNonNegative", { default: "Sequence must be 0 or greater" });
       }
       if (n > 999) {
@@ -186,8 +189,11 @@ export const validateSubTypeOfUseForm = (
       return undefined;
     },
     searchSequence: (val: unknown) => {
+      if (val === "" || val === undefined || val === null || String(val).trim() === "") {
+        return t("messages.sequenceRequired", { default: "Sequence is required" });
+      }
       const n = Number(val);
-      if (val === undefined || val === null || isNaN(n) || n < 0) {
+      if (isNaN(n) || n < 0) {
         return t("messages.sequenceNonNegative", { default: "Sequence must be 0 or greater" });
       }
       if (n > 999) {

@@ -78,7 +78,7 @@ export default function TypeOfUseForm({
         />
 
         <Card className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} noValidate className="space-y-6">
             {isEdit && (
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div
@@ -122,6 +122,59 @@ export default function TypeOfUseForm({
             )}
 
             <div className="space-y-4">
+              <Input
+                ref={codeRef}
+                name="typeOfUseCode"
+                label={t("type.fields.typeId", { default: "Type Of Use Code" })}
+                required
+                placeholder={t("type.placeholders.typeId", { default: "e.g., RES, COM" })}
+                value={formData.typeOfUseCode}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                fullWidth
+              />
+              <ValidationMessage
+                message={errors.typeOfUseCode}
+                visible={showError("typeOfUseCode")}
+              />
+
+              <Input
+                name="description"
+                label={t("type.fields.description.label", { default: "Description" })}
+                required
+                placeholder={t("type.placeholders.description", { default: "Enter description" })}
+                value={formData.description}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                fullWidth
+              />
+              <ValidationMessage
+                message={errors.description}
+                visible={showError("description")}
+              />
+
+              <Input
+                type="number"
+                name="searchSequence"
+                label={t("type.fields.sequence", { default: "Sequence" })}
+                required
+                min={0}
+                max={999}
+                value={formData.searchSequence === "" ? "" : formData.searchSequence}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                onKeyDown={(e) => {
+                  if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E") {
+                    e.preventDefault();
+                  }
+                }}
+                fullWidth
+              />
+              <ValidationMessage
+                message={errors.searchSequence}
+                visible={showError("searchSequence")}
+              />
+
               <SearchSelect
                 name="assetCategoryId"
                 label={t("type.fields.category", { default: "Asset Category" })}
@@ -189,37 +242,6 @@ export default function TypeOfUseForm({
                 visible={showError("typeOfUseGroupId")}
               />
 
-              <Input
-                ref={codeRef}
-                name="typeOfUseCode"
-                label={t("type.fields.typeId", { default: "Type Of Use Code" })}
-                required
-                placeholder={t("type.placeholders.typeId", { default: "e.g., RES, COM" })}
-                value={formData.typeOfUseCode}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                fullWidth
-              />
-              <ValidationMessage
-                message={errors.typeOfUseCode}
-                visible={showError("typeOfUseCode")}
-              />
-
-              <Input
-                name="description"
-                label={t("type.fields.description.label", { default: "Description" })}
-                required
-                placeholder={t("type.placeholders.description", { default: "Enter description" })}
-                value={formData.description}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                fullWidth
-              />
-              <ValidationMessage
-                message={errors.description}
-                visible={showError("description")}
-              />
-
               <SearchSelect
                 name="type"
                 label={t("type.fields.type.label", { default: "Type" })}
@@ -240,28 +262,6 @@ export default function TypeOfUseForm({
               <ValidationMessage
                 message={errors.type}
                 visible={showError("type")}
-              />
-
-                            <Input
-                type="number"
-                name="searchSequence"
-                label={t("type.fields.sequence", { default: "Sequence" })}
-                required
-                min={0}
-                max={999}
-                value={formData.searchSequence === "" ? "" : formData.searchSequence}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                onKeyDown={(e) => {
-                  if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E") {
-                    e.preventDefault();
-                  }
-                }}
-                fullWidth
-              />
-              <ValidationMessage
-                message={errors.searchSequence}
-                visible={showError("searchSequence")}
               />
             </div>
 

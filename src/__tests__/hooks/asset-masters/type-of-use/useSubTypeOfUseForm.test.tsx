@@ -46,7 +46,7 @@ describe("useSubTypeOfUseForm", () => {
     expect(result.current.isEdit).toBe(false);
     expect(result.current.formData.typeOfUseId).toBe(0);
     expect(result.current.formData.description).toBe("");
-    expect(result.current.formData.searchSequence).toBe(1);
+    expect(result.current.formData.searchSequence).toBe("");
     expect(result.current.formData.isActive).toBe(true);
   });
 

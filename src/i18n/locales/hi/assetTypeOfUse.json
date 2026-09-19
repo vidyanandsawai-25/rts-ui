@@ -68,6 +68,7 @@
     "descriptionMaxLength": "उपयोग प्रकार के नाम की अधिकतम लंबाई १०० वर्ण है",
     "subTypeNameRequired": "उप-प्रकार का नाम आवश्यक है",
     "subTypeNameMaxLength": "उप-प्रकार के नाम की अधिकतम लंबाई 100 वर्ण है",
+    "sequenceRequired": "अनुक्रम आवश्यक है",
     "sequenceNonNegative": "अनुक्रम 0 या उससे अधिक होना चाहिए",
     "sequenceMaxLimit": "अनुक्रम 999 या उससे कम होना चाहिए",
     "typeCreated": "उपयोग प्रकार सफलतापूर्वक बनाया गया",

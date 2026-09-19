@@ -68,6 +68,7 @@
     "descriptionMaxLength": "Type of Use Name maximum length is 100 characters",
     "subTypeNameRequired": "Sub-Type Name is required",
     "subTypeNameMaxLength": "Sub-Type Name maximum length is 100 characters",
+    "sequenceRequired": "Sequence is required",
     "sequenceNonNegative": "Sequence must be 0 or greater",
     "sequenceMaxLimit": "Sequence must be 999 or less",
     "typeCreated": "Type created successfully",

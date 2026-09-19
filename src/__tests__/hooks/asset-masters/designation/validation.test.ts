@@ -1,4 +1,4 @@
-import { validateDesignationForm } from '@/hooks/asset-masters/designation/validation';
+import { validateDesignationForm, sanitizeFieldValue } from '@/hooks/asset-masters/designation/validation';
 import { DesignationFormModel } from '@/types/asset-masters/designation.types';
 import { describe, test, expect } from 'vitest';
 
@@ -113,5 +113,32 @@ describe('validateDesignationForm', () => {
 
     const errorsEdit = validateDesignationForm({ ...validModel, isActive: false }, t, true);
     expect(errorsEdit).toEqual({});
+  });
+
+  test('designationName rejects Marathi characters and designationLocal accepts Marathi characters', () => {
+    const errorsNameMarathi = validateDesignationForm({ ...baseModel, designationCode: 'CODE1', designationName: 'मराठी पद' }, t, false);
+    expect(errorsNameMarathi.designationName).toBe('form.validation.designationNameFormat');
+
+    const validLocalModel: DesignationFormModel = {
+      ...baseModel,
+      designationCode: 'CODE1',
+      designationName: 'Manager',
+      designationLocal: 'व्यवस्थापक',
+      owningDepartmentId: 1,
+      isActive: true,
+    };
+    const errorsLocal = validateDesignationForm(validLocalModel, t, false);
+    expect(errorsLocal.designationLocal).toBeUndefined();
+  });
+});
+
+describe('sanitizeFieldValue for Designation', () => {
+  test('sanitizes designationName by removing Marathi / non-English characters', () => {
+    expect(sanitizeFieldValue('designationName', 'Manager123मराठी')).toBe('Manager123');
+    expect(sanitizeFieldValue('designationName', 'Senior   Engineer')).toBe('Senior Engineer');
+  });
+
+  test('sanitizes designationLocal keeping Marathi characters', () => {
+    expect(sanitizeFieldValue('designationLocal', 'व्यवस्थापक 123')).toBe('व्यवस्थापक 123');
   });
 });
