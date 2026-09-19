@@ -39,6 +39,7 @@ export function OwningDepartmentHeader({
         <AddButton
           label={t("add")}
           onClick={() => router.push(`/${locale}/assets/configuration/master-data/owning-department/add`)}
+          className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
         />
       </div>
     </div>

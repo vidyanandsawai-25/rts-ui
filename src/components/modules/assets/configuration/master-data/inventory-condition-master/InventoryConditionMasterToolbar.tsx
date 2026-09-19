@@ -60,6 +60,7 @@ export function InventoryConditionMasterToolbar() {
       <AddButton
         label={t("addNew", { name: tNames("inventory-condition-master") })}
         onClick={() => router.push(`${base}/inventory-condition/add`)}
+        className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
       />
     </div>
   );

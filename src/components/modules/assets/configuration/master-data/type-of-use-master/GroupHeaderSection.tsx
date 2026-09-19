@@ -40,6 +40,7 @@ export function GroupHeaderSection({
             size="sm"
             label={t("group.add")}
             onClick={onAddGroup}
+            className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
           />
         </div>
       </div>

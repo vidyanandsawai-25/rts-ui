@@ -67,12 +67,15 @@ export function MoujaTableSection({
           <AddButton
             label={addMoujaLabel}
             onClick={onAddMouja}
+            className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
           />
         </div>
       </div>
 
       <div className="mouja-table-container">
         <MasterTable<Mouja>
+          theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+          footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
           columns={columns}
           data={moujas}
           loading={false}

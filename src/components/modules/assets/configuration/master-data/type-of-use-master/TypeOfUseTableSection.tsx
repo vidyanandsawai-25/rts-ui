@@ -74,6 +74,7 @@ export function TypeOfUseTableSection({
             size="md"
             label={addTypeLabel}
             onClick={onAddType}
+            className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
           />
         </div>
       </div>
@@ -97,7 +98,7 @@ export function TypeOfUseTableSection({
             emptyText={tCommon("messages.noRecordsFound")}
             emptyIcon={<Layers2 className="mx-auto mb-2 h-8 w-8 text-slate-300" />}
             maxHeightClassName="max-h-[320px] sm:max-h-[350px] lg:max-h-[415px] overflow-y-auto"
-            className="border-none rounded-none shadow-none"
+            className="border-none rounded-none shadow-none [&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
             renderCard={(typeItem) => {
               const selected = String(typeItem.id) === selectedTypeOfUseId;
               return (

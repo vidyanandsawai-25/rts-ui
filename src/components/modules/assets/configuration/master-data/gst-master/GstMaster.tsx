@@ -39,6 +39,7 @@ export function GstMaster(props: GstMasterProps) {
           onActionClick={() => {
             router.push(`/${locale}/assets/configuration/master-data/gst-master/add`);
           }}
+          className="[&>div>div:last-child>button]:!bg-[#0f3d8a] [&>div>div:last-child>button:hover]:!bg-[#0b2f6b] [&>div>div:last-child>button]:!text-white"
           rightContent={
             <div className="flex w-full justify-end">
               <SearchInput
@@ -51,6 +52,8 @@ export function GstMaster(props: GstMasterProps) {
           }
         />
         <MasterTable<GstMaster>
+          theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+          footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
           columns={columns}
           data={data}
           loading={isPending}

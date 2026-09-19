@@ -58,6 +58,7 @@ export function AssetCategoryMasterToolbar() {
       <AddButton
         label={t("addNew", { name: tNames("asset-category-master") })}
         onClick={() => router.push(`${base}/asset-category/add`)}
+        className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
       />
     </div>
   );

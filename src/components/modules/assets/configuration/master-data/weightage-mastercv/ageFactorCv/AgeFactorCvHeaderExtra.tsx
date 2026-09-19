@@ -131,6 +131,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = Rea
                             size="sm"
                             label={t('buttons.addAge')}
                             onClick={() => setIsAddYearRangeModalOpen(true)}
+                            className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
                         />
 
                         <Modal
@@ -147,7 +148,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = Rea
                                     />
                                     <AddButton
                                         size="sm"
-                                        className="bg-blue-600"
+                                        className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
                                         onClick={() => {
                                             handleAddAgeRange();
                                         }}
@@ -225,7 +226,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = Rea
                     size="sm"
                     onClick={handleGenerateAll}
                     disabled={!hasNewRecords || isGeneratingAll || isBulkUpdating || isUpdating}
-                    className="h-[34px] px-4 font-bold bg-[#0052CC]"
+                    className="h-[34px] px-4 font-bold !bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
                     label={isGeneratingAll ? tW('common.buttons.generating') : tW('common.buttons.generateAll')}
                 />
                 <ApplyButton

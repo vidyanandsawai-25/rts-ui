@@ -130,6 +130,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                         size="sm"
                         onClick={handleGenerateAll}
                         disabled={!hasNewRecords || isGeneratingAll || isBulkUpdating || isUpdating}
+                        className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
                     />
                     <ApplyButton
                         label={tW("common.buttons.apply")}

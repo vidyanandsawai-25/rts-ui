@@ -58,6 +58,7 @@ export function OwnershipTypeMasterToolbar() {
       <AddButton
         label={t("addNew", { name: tNames("ownership-type-master") })}
         onClick={() => router.push(`${base}/ownership-type/add`)}
+        className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
       />
     </div>
   );

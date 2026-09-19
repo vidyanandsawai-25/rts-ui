@@ -14,7 +14,7 @@ export function AssessmentYearRangeToolbar() {
   return (
     <div className="flex items-center gap-3">
       <AddButton
-        className="w-full"
+        className="w-full !bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
         label={tCV("form.addTitle")}
         onClick={() => router.push(`${base}/add`)}
       />

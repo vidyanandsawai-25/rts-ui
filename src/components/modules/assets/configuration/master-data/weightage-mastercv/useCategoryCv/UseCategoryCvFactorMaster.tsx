@@ -178,6 +178,8 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
 
             <div className="grid grid-cols-1 xl:grid-cols-[40%_59%] gap-4 items-start">
                 <MasterTable<UseType>
+                    theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+                    footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
                     columns={typeOfUseColumns}
                     data={typeOfUseTableData}
                     height="lg"
@@ -196,6 +198,8 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
                 />
 
                 <MasterTable<UseFactorCVMaster>
+                    theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+                    footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
                     columns={columns}
                     data={data}
                     pageNumber={pageNumber}
