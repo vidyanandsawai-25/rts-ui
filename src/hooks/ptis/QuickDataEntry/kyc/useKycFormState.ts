@@ -43,10 +43,12 @@ export const useKycFormState = (
     occupierNameEnglish: KycDetailsData?.occupierNameEnglish && KycDetailsData.occupierNameEnglish.trim() !== ''
       ? KycDetailsData.occupierNameEnglish
       : (KycDetailsData?.occupierName ?? ''),
-    flatOrShopName: KycDetailsData?.flatOrShopName ?? '',
-    flatOrShopNameEnglish: KycDetailsData?.flatOrShopNameEnglish && KycDetailsData.flatOrShopNameEnglish.trim() !== ''
-      ? KycDetailsData.flatOrShopNameEnglish
-      : (KycDetailsData?.flatOrShopName ?? ''),
+    flatOrShopName: (KycDetailsData?.flatOrShopName === '.' || KycDetailsData?.flatOrShopName === '-') ? '' : (KycDetailsData?.flatOrShopName ?? ''),
+    flatOrShopNameEnglish: (KycDetailsData?.flatOrShopNameEnglish === '.' || KycDetailsData?.flatOrShopNameEnglish === '-')
+      ? ''
+      : (KycDetailsData?.flatOrShopNameEnglish && KycDetailsData.flatOrShopNameEnglish.trim() !== ''
+        ? KycDetailsData.flatOrShopNameEnglish
+        : ((KycDetailsData?.flatOrShopName === '.' || KycDetailsData?.flatOrShopName === '-') ? '' : (KycDetailsData?.flatOrShopName ?? ''))),
     emailId: KycDetailsData?.emailId ?? '',
     address: KycDetailsData?.address ?? '',
     addressEnglish: KycDetailsData?.addressEnglish && KycDetailsData.addressEnglish.trim() !== ''

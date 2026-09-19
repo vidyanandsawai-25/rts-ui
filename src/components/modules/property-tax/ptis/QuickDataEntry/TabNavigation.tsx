@@ -53,6 +53,7 @@ export function TabNavigation({ categoryName }: TabNavigationProps = {}) {
   const effectiveCategoryName = displayCategory.toLowerCase();
   const isMainApartmentCategory = !hasPartition && (effectiveCategoryName.includes('apartment') || returnTab === 'apartment');
   const isIndividualProperty =
+    returnTab === 'individual' ||
     effectiveCategoryName.includes('apartment/individual') ||
     effectiveCategoryName.includes('individual') ||
     effectiveCategoryName === 'individual';
@@ -169,6 +170,7 @@ export function TabNavigation({ categoryName }: TabNavigationProps = {}) {
   };
 
   const isApartment = returnTab === 'apartment' || searchParams.get('from') === 'apartment';
+  const isIndividual = returnTab === 'individual' || searchParams.get('from') === 'individual';
 
   const visibleTabs = isApartment
     ? TABS.filter((tab) => {
@@ -205,7 +207,11 @@ export function TabNavigation({ categoryName }: TabNavigationProps = {}) {
 
           const tabPath = `${baseTabPath}/${tab.href}`;
 
-          const tabReturnValue = isApartment ? 'apartment' : (RETURN_TAB_BY_QDE_HREF[tab.href] || returnTab);
+          const tabReturnValue = isApartment
+            ? 'apartment'
+            : isIndividual
+            ? 'individual'
+            : (RETURN_TAB_BY_QDE_HREF[tab.href] || returnTab);
 
           // For FloorSubmission tab: exclude propertyId if we have search params
           // to let the page resolve authoritative ID from backend

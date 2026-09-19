@@ -46,6 +46,8 @@ async function getActionErrorMessage(error: unknown): Promise<string> {
   return t('property.errors.failedToConnect.description');
 }
 
+import { patchIndividualProperty } from '@/lib/api/ptis/individual';
+
 // Property Basic Details
 export async function getPropertyBasicDetailsAction(
   propertyId: number
@@ -57,6 +59,7 @@ export async function getPropertyBasicDetailsAction(
     return { success: false, error: await getActionErrorMessage(error) };
   }
 }
+
 
 // Property Categories
 export async function getPropertyCategoriesAction(
@@ -114,6 +117,17 @@ export async function getMoujaMasterAction(
   }
 }
 
+async function isIndividualCategory(categoryId: number | null): Promise<boolean> {
+  if (!categoryId) return false;
+  try {
+    const categories = await getPropertyCategories(1, 100);
+    const cat = categories.find((c) => c.id === categoryId);
+    return cat?.propertyCategoryName?.toLowerCase() === 'individual';
+  } catch {
+    return false;
+  }
+}
+
 //update property basic details
 export const updatePropertyBasicDetailsAction = async (
   locale: string,
@@ -123,22 +137,67 @@ export const updatePropertyBasicDetailsAction = async (
 ): Promise<ActionResult<null>> => {
   try {
     const result = await updatePropertyBasicDetails(propertyId, payload);
-    if (!result.success) {
+    if (result.success) {
+      if (shouldRevalidate) {
+        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, 'page');
+        revalidatePath(
+          `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission`,
+          'page'
+        );
+      }
       return result;
     }
 
-    if (shouldRevalidate) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, 'page');
-      revalidatePath(
-        `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission`,
-        'page'
-      );
+    const isIndividual = await isIndividualCategory(payload.categoryId);
+
+    if (isIndividual) {
+      // Fallback: try PATCH individual property endpoint
+      const patchRes = await patchIndividualProperty(propertyId, {
+        categoryId: payload.categoryId,
+        taxZoneId: payload.taxZoneId,
+        moujaId: payload.moujaId,
+        propertyTypeId: payload.propertyTypeId,
+        surveyNo: payload.surveyNo,
+        plotNo: payload.plotNo,
+      });
+
+      if (patchRes.success) {
+        if (shouldRevalidate) {
+          revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, 'page');
+          revalidatePath(`/${locale}/property-tax/ptis/individual`, 'page');
+        }
+        return { success: true, data: null };
+      }
     }
+
     return result;
   } catch (error) {
+    const isIndividual = await isIndividualCategory(payload.categoryId);
+    if (isIndividual) {
+      try {
+        const patchRes = await patchIndividualProperty(propertyId, {
+          categoryId: payload.categoryId,
+          taxZoneId: payload.taxZoneId,
+          moujaId: payload.moujaId,
+          propertyTypeId: payload.propertyTypeId,
+          surveyNo: payload.surveyNo,
+          plotNo: payload.plotNo,
+        });
+        if (patchRes.success) {
+          if (shouldRevalidate) {
+            revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, 'page');
+            revalidatePath(`/${locale}/property-tax/ptis/individual`, 'page');
+          }
+          return { success: true, data: null };
+        }
+      } catch (_e) {
+        // ignore
+      }
+    }
     return { success: false, error: await getActionErrorMessage(error) };
   }
 };
+
 
 // tax zone master
 export async function getTaxZonesAction(

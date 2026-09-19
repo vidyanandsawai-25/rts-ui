@@ -28,11 +28,12 @@ export default async function KycFormPage({ params }: PageProps): Promise<React.
 
   let ownerTypeList: OwnerTypeApiItem[] = [];
   let kycDetailsData: KycDetails | null = null;
+  let primaryError: unknown = null;
 
   try {
     const [kycResponse, ownerTypes] = await Promise.all([
       getPropertyKycById(propertyIdNum),
-      getOwnerTypes(),
+      getOwnerTypes().catch(() => [] as OwnerTypeApiItem[]),
     ]);
 
     ownerTypeList = ownerTypes;
@@ -46,45 +47,89 @@ export default async function KycFormPage({ params }: PageProps): Promise<React.
       };
     }
   } catch (error: unknown) {
-    const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
+    primaryError = error;
+  }
 
-    if (error instanceof ApiError) {
-      if (error.statusCode === 401) {
-        throw new Error(t('kyc.errors.unauthorized'));
-      } else if (error.statusCode === 403) {
-        throw new Error(t('kyc.errors.forbidden'));
-      } else if (error.statusCode === 404) {
-        throw new Error(t('kyc.errors.notFound'));
-      } else if (error.statusCode >= 500) {
-        throw new Error(t('kyc.errors.serverError'));
-      } else {
-        throw new Error(error.contextMessage || t('kyc.errors.defaultApiError', { message: error.message }));
+  if (!kycDetailsData) {
+    // Fallback: try dedicated Individual property API
+    try {
+      const { fetchIndividualQcTopSection } = await import('@/lib/api/ptis/individual');
+      const individualRes = await fetchIndividualQcTopSection(propertyIdNum);
+      if (individualRes.success && individualRes.data) {
+        const item = individualRes.data;
+
+        let matchedOwnerTypeId: number | null = null;
+        if (ownerTypeList.length === 0) {
+          ownerTypeList = await getOwnerTypes().catch(() => [] as OwnerTypeApiItem[]);
+        }
+        if (item.ownerCategory) {
+          const match = ownerTypeList.find(
+            (ot) => ot.ownerType?.toLowerCase() === item.ownerCategory?.toLowerCase()
+          );
+          if (match) {
+            matchedOwnerTypeId = match.id;
+          }
+        }
+
+        kycDetailsData = {
+          propertyId: propertyIdNum,
+          ownerTypeId: matchedOwnerTypeId,
+          ownerType: item.ownerCategory || null,
+          adharCardNo: item.aadharNo || null,
+          aadharCardNo: item.aadharNo || null,
+          mobileNo: item.mobileNo || null,
+          alternateMobileNo: item.alternateMobileNo || null,
+          emailId: item.emailId || null,
+          ownerTitle: item.ownerTitle || null,
+          ownerName: item.ownerName || item.propertyHolder || null,
+          ownerTitleEnglish: null,
+          ownerNameEnglish: null,
+          occupierTitle: null,
+          occupierName: item.occupierName || null,
+          occupierTitleEnglish: null,
+          occupierNameEnglish: null,
+          flatOrShopName: null,
+          flatOrShopNameEnglish: null,
+          flatOrShopNo: null,
+          flatOrShopNoEnglish: null,
+          address: item.address || null,
+          location: null,
+          addressEnglish: item.addressEnglish || null,
+          locationEnglish: null,
+          pinCode: item.pinCode || null,
+        };
       }
+    } catch (_e) {
+      // ignore
     }
-
-    const msg = error instanceof Error ? error.message.toLowerCase() : "";
-    if (msg.includes('fetch failed') || msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('econnrefused')) {
-      throw new Error(t('kyc.errors.failedToConnect.description'));
-    }
-    // Check for other known KYC errors
-    if (msg.includes('invalid property id')) {
-      throw new Error(t('kyc.errors.invalidPropertyId'));
-    }
-    if (msg.includes('kyc details not found') || msg.includes('not found')) {
-      throw new Error(t('kyc.errors.kycNotFound'));
-    }
-    if (msg.includes('failed to fetch owner types')) {
-      throw new Error(t('kyc.errors.fetchOwnerTypes'));
-    }
-    if (msg.includes('failed to load property kyc details')) {
-      throw new Error(t('kyc.errors.fetchKycDetails'));
-    }
-    throw error;
   }
 
   if (!kycDetailsData) {
     const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
-    throw new Error(t('kyc.errors.kycNotFound'));
+
+    if (primaryError instanceof ApiError) {
+      if (primaryError.statusCode === 401) {
+        throw new Error(t('kyc.errors.unauthorized'));
+      } else if (primaryError.statusCode === 403) {
+        throw new Error(t('kyc.errors.forbidden'));
+      } else if (primaryError.statusCode === 404) {
+        throw new Error(t('kyc.errors.notFound'));
+      } else if (primaryError.statusCode >= 500) {
+        throw new Error(t('kyc.errors.serverError'));
+      } else {
+        throw new Error(primaryError.contextMessage || t('kyc.errors.defaultApiError', { message: primaryError.message }));
+      }
+    }
+
+    const msg = primaryError instanceof Error ? primaryError.message.toLowerCase() : "";
+    if (msg.includes('fetch failed') || msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('econnrefused')) {
+      throw new Error(t('kyc.errors.failedToConnect.description'));
+    }
+    if (msg.includes('invalid property id')) {
+      throw new Error(t('kyc.errors.invalidPropertyId'));
+    }
+
+    throw primaryError instanceof Error ? primaryError : new Error(t('kyc.errors.kycNotFound'));
   }
 
   return (

@@ -47,6 +47,7 @@ export default getRequestConfig(async ({ locale }) => {
     bankMasterMessages,
     screenAccessMessages,
     appartmentQCMessages,
+    individualMessages,
     departmentMasterMessages,
     departmentActivationMessages,
     homeMessages,
@@ -137,6 +138,9 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/appartmentQC.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/individual.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/departmentMaster.json`)
@@ -277,6 +281,7 @@ export default getRequestConfig(async ({ locale }) => {
       bankMaster: bankMasterMessages,
       screenAccess: screenAccessMessages,
       appartmentQC: appartmentQCMessages,
+      individual: individualMessages,
       departmentMaster: departmentMasterMessages,
       departmentActivation: departmentActivationMessages,
       home: homeMessages,

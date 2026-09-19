@@ -51,6 +51,18 @@ export const normalizePartition = (val: string | null | undefined): string => {
   const trimmed = (val ?? '').trim();
   return trimmed === '0' ? '' : trimmed;
 };
+
+/**
+ * Formats a 12-digit Aadhar number into 4-digit groups (e.g. 5856 7591 4738).
+ */
+export function formatAadharNumber(aadhar?: string | null): string {
+  if (!aadhar || aadhar === '-' || aadhar.trim() === '') return '';
+  const digits = aadhar.replace(/\D/g, '');
+  if (digits.length === 12) {
+    return `${digits.slice(0, 4)} ${digits.slice(4, 8)} ${digits.slice(8, 12)}`;
+  }
+  return aadhar.trim();
+}
 // --- PTIS Specific Formatting Utilities ---
 
 function formatNumber(

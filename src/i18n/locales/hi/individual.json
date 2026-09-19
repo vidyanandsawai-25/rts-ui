@@ -1,0 +1,36 @@
+{
+  "header": {
+    "propertyNo": "संपत्ति नं.:",
+    "upicId": "यूपीआईसी आईडी:",
+    "ownerName": "मालिक का नाम:",
+    "copyUpic": "यूपीआईसी प्रतिलिपि करें",
+    "edit": "संपादित करें",
+    "editOwner": "संपत्ति / मालिक विवरण संपादित करें"
+  },
+  "grid": {
+    "owner": "मालिक",
+    "propertyHolder": "संपत्ति धारक",
+    "holderRegional": "धारक (क्षेत्रीय)",
+    "occupierName": "अधिभोगी का नाम",
+    "occupierRegional": "अधिभोगी (क्षेत्रीय)",
+    "ownerCategory": "मालिक श्रेणी",
+    "division": "विभाग",
+    "moujaName": "मौजा का नाम",
+    "surveyNo": "सर्वे नं.",
+    "taxZone": "कर क्षेत्र",
+    "plotNo": "भूखंड नं.",
+    "aadharTitle": "आधार / शीर्षक",
+    "mobileNo": "मोबाइल नं.",
+    "emailId": "ईमेल आईडी",
+    "societyAddress": "सोसायटी का पता",
+    "plotAreaFtMtr": "भूखंड क्षेत्रफल (फिट/मी)",
+    "carpetAreaFtMtr": "कार्पेट क्षेत्रफल (फिट/मी)",
+    "builtUpAreaFtMtr": "निर्मित क्षेत्रफल (फिट/मी)"
+  },
+  "photo": {
+    "noPhoto": "फोटो नहीं",
+    "viewPhoto": "संपत्ति फोटो देखने के लिए क्लिक करें",
+    "propertyPhoto": "संपत्ति फोटो",
+    "propertyDocument": "संपत्ति दस्तावेज़"
+  }
+}

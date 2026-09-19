@@ -14,6 +14,7 @@ export interface PropertyDetailsData {
   totalCarpetArea: string;
   builtupArea: string;
   category?: string;
+  categoryId?: number;
   wingNo?: string;
   moujaNo?: string;
   moujaDescription?: string;

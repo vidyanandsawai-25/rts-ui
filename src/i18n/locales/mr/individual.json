@@ -1,0 +1,36 @@
+{
+  "header": {
+    "propertyNo": "मालमत्ता क्र.:",
+    "upicId": "युपीआयसी आयडी:",
+    "ownerName": "मालकाचे नाव:",
+    "copyUpic": "युपीआयसी कॉपी करा",
+    "edit": "संपादित करा",
+    "editOwner": "मालमत्ता / मालकाचा तपशील संपादित करा"
+  },
+  "grid": {
+    "owner": "मालक",
+    "propertyHolder": "मालमत्ता धारक",
+    "holderRegional": "धारक (प्रादेशिक)",
+    "occupierName": "भोगवटादाराचे नाव",
+    "occupierRegional": "भोगवटादार (प्रादेशिक)",
+    "ownerCategory": "मालक वर्गवारी",
+    "division": "विभाग",
+    "moujaName": "मौजेचे नाव",
+    "surveyNo": "सर्व्हे क्र.",
+    "taxZone": "कर क्षेत्र",
+    "plotNo": "प्लॉट क्र.",
+    "aadharTitle": "आधार / शीर्षक",
+    "mobileNo": "मोबाईल क्र.",
+    "emailId": "ईमेल आयडी",
+    "societyAddress": "सोसायटीचा पत्ता",
+    "plotAreaFtMtr": "प्लॉट क्षेत्रफळ (फूट/मी)",
+    "carpetAreaFtMtr": "कार्पेट क्षेत्रफळ (फूट/मी)",
+    "builtUpAreaFtMtr": "निर्मित क्षेत्रफळ (फूट/मी)"
+  },
+  "photo": {
+    "noPhoto": "छायाचित्र नाही",
+    "viewPhoto": "मालमत्तेचे छायाचित्र पाहण्यासाठी क्लिक करा",
+    "propertyPhoto": "मालमत्ता छायाचित्र",
+    "propertyDocument": "मालमत्ता दस्तऐवज"
+  }
+}

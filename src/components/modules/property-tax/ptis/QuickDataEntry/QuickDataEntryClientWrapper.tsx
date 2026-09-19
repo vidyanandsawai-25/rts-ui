@@ -145,6 +145,10 @@ function QuickDataEntryContent({
                                resolvedReturnTab === 'apartment' ||
                                searchParams.get('from') === 'apartment';
 
+            const isIndividual = returnTab === 'individual' ||
+                                 resolvedReturnTab === 'individual' ||
+                                 searchParams.get('from') === 'individual';
+
             if (typeof window !== 'undefined') {
                 sessionStorage.removeItem('qde_is_apartment');
             }
@@ -161,6 +165,8 @@ function QuickDataEntryContent({
                 if (wingDetailId) params.set('wingDetailId', wingDetailId);
                 if (wingName) params.set('wingName', wingName);
                 router.push(`/${locale}/property-tax/ptis/apartment?${params}`);
+            } else if (isIndividual) {
+                router.push(`/${locale}/property-tax/ptis/individual?${params}`);
             } else {
                 if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
                 if (valuationTab) params.set('valuationTab', valuationTab);

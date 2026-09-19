@@ -89,6 +89,8 @@ export async function getPropertyKycByIdAction(
   }
 }
 
+import { patchIndividualProperty } from '@/lib/api/ptis/individual';
+
 /**
  * Updates property KYC details with validation and error handling
  */
@@ -104,16 +106,96 @@ export async function updatePropertyKycAction(
 
   try {
     const response = await updatePropertyKyc(propertyId, payload);
-    // Revalidate the affected KYC page cache for the current locale only
-    revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Kyc`, 'page');
+    if (response?.success) {
+      // Revalidate the affected KYC page cache for the current locale only
+      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Kyc`, 'page');
+      revalidatePath(`/${locale}/property-tax/ptis/individual`, 'page');
+      return {
+        success: true,
+        message: response.message || KYC_ACTION_SUCCESS.UPDATE_SUCCESS,
+      };
+    }
+
+    const isIndividual = payload.ownerType?.toLowerCase() === 'individual';
+
+    if (isIndividual) {
+      // Fallback: try dedicated PATCH /Property/{propertyId}/individual
+      const patchRes = await patchIndividualProperty(propertyId, {
+        ownerName: payload.ownerName,
+        ownerNameEnglish: payload.ownerNameEnglish,
+        ownerTitle: payload.ownerTitle,
+        ownerTitleEnglish: payload.ownerTitleEnglish,
+        occupierName: payload.occupierName,
+        occupierNameEnglish: payload.occupierNameEnglish,
+        occupierTitle: payload.occupierTitle,
+        occupierTitleEnglish: payload.occupierTitleEnglish,
+        ownerTypeId: payload.ownerTypeId,
+        aadharNo: payload.adharCardNo || payload.aadharCardNo,
+        mobileNo: payload.mobileNo,
+        alternateMobileNo: payload.alternateMobileNo,
+        emailId: payload.emailId,
+        address: payload.address,
+        addressEnglish: payload.addressEnglish,
+        pinCode: payload.pinCode,
+      });
+
+      if (patchRes.success) {
+        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Kyc`, 'page');
+        revalidatePath(`/${locale}/property-tax/ptis/individual`, 'page');
+        return {
+          success: true,
+          message: 'KYC details updated successfully',
+        };
+      }
+    }
+
     return {
-      success: true,
-      message: response.message || KYC_ACTION_SUCCESS.UPDATE_SUCCESS,
+      success: false,
+      error:
+        (response as unknown as { error?: string })?.error ||
+        (typeof response?.errors === 'string' ? response.errors : undefined) ||
+        KYC_ACTION_ERRORS.UPDATE_KYC_DETAILS,
     };
   } catch (error) {
+    const isIndividual = payload.ownerType?.toLowerCase() === 'individual';
+    if (isIndividual) {
+      try {
+        const patchRes = await patchIndividualProperty(propertyId, {
+          ownerName: payload.ownerName,
+          ownerNameEnglish: payload.ownerNameEnglish,
+          ownerTitle: payload.ownerTitle,
+          ownerTitleEnglish: payload.ownerTitleEnglish,
+          occupierName: payload.occupierName,
+          occupierNameEnglish: payload.occupierNameEnglish,
+          occupierTitle: payload.occupierTitle,
+          occupierTitleEnglish: payload.occupierTitleEnglish,
+          ownerTypeId: payload.ownerTypeId,
+          aadharNo: payload.adharCardNo || payload.aadharCardNo,
+          mobileNo: payload.mobileNo,
+          alternateMobileNo: payload.alternateMobileNo,
+          emailId: payload.emailId,
+          address: payload.address,
+          addressEnglish: payload.addressEnglish,
+          pinCode: payload.pinCode,
+        });
+
+        if (patchRes.success) {
+          revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Kyc`, 'page');
+          revalidatePath(`/${locale}/property-tax/ptis/individual`, 'page');
+          return {
+            success: true,
+            message: 'KYC details updated successfully',
+          };
+        }
+      } catch (_e) {
+        // ignore
+      }
+    }
+
     return {
       success: false,
       error: error instanceof Error ? error.message : KYC_ACTION_ERRORS.UPDATE_KYC_DETAILS,
     };
   }
 }
+

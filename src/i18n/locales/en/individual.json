@@ -1,0 +1,36 @@
+{
+  "header": {
+    "propertyNo": "PROPERTY NO.:",
+    "upicId": "UPIC ID:",
+    "ownerName": "OWNER NAME:",
+    "copyUpic": "Copy UPIC",
+    "edit": "Edit",
+    "editOwner": "Edit Property / Owner Details"
+  },
+  "grid": {
+    "owner": "Owner",
+    "propertyHolder": "Property Holder",
+    "holderRegional": "Holder (Regional)",
+    "occupierName": "Occupier Name",
+    "occupierRegional": "Occupier (Regional)",
+    "ownerCategory": "Owner Category",
+    "division": "Division",
+    "moujaName": "Mouja Name",
+    "surveyNo": "Survey No.",
+    "taxZone": "Tax Zone",
+    "plotNo": "Plot No.",
+    "aadharTitle": "Aadhar / Title",
+    "mobileNo": "Mobile No.",
+    "emailId": "Email ID",
+    "societyAddress": "Society Address",
+    "plotAreaFtMtr": "Plot Area (Ft/Mtr)",
+    "carpetAreaFtMtr": "Carpet Area (Ft/Mtr)",
+    "builtUpAreaFtMtr": "Built-Up Area (Ft/Mtr)"
+  },
+  "photo": {
+    "noPhoto": "No Photo",
+    "viewPhoto": "Click to view property photo",
+    "propertyPhoto": "Property Photo",
+    "propertyDocument": "Property Document"
+  }
+}

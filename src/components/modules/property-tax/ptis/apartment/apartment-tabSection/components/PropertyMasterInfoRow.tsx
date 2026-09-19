@@ -86,4 +86,3 @@ export const PropertyMasterInfoRow: React.FC<PropertyMasterInfoRowProps> = ({
     </div>
   );
 };
-
