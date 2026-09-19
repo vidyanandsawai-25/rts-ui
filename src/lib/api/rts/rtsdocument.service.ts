@@ -82,14 +82,44 @@ export async function uploadRtsDocument(
   return data.items;
 }
 
+function getRtsDocumentUrl(documentGuid: string, action: "view" | "download"): string {
+  const guid = documentGuid.trim();
+  if (!guid) throw new Error("Document GUID is required");
+
+  const baseUrl = getAppConfig().api.baseUrl?.trim();
+  if (!baseUrl) throw new Error("API base URL is not configured");
+
+  return `${baseUrl.replace(/\/$/, "")}/documents/${encodeURIComponent(guid)}/${action}`;
+}
+
 export async function viewAdminRtsDocument(documentGuid: string): Promise<Response> {
-  return apiClient.fetch(`/documents/${encodeURIComponent(documentGuid)}/view`, {
+  try {
+    const response = await apiClient.fetch(`/documents/${encodeURIComponent(documentGuid)}/view`, {
+      cache: "no-store",
+    });
+    if (response.ok) return response;
+  } catch {}
+
+  // Fallback to anonymous serverFetch for [AllowAnonymous] document endpoints
+  return serverFetch(getRtsDocumentUrl(documentGuid, "view"), {
+    method: "GET",
+    headers: { Accept: "*/*" },
     cache: "no-store",
   });
 }
 
 export async function downloadAdminRtsDocument(documentGuid: string): Promise<Response> {
-  return apiClient.fetch(`/documents/${encodeURIComponent(documentGuid)}/download`, {
+  try {
+    const response = await apiClient.fetch(`/documents/${encodeURIComponent(documentGuid)}/download`, {
+      cache: "no-store",
+    });
+    if (response.ok) return response;
+  } catch {}
+
+  // Fallback to anonymous serverFetch for [AllowAnonymous] document endpoints
+  return serverFetch(getRtsDocumentUrl(documentGuid, "download"), {
+    method: "GET",
+    headers: { Accept: "*/*" },
     cache: "no-store",
   });
 }
