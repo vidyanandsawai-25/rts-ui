@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -142,6 +142,14 @@ export default function RtsApplicationDashboard({
   const displayLocale = getDisplayLocale(locale);
 
   const [searchTerm, setSearchTerm] = useState(filters.search);
+  const [isDrawerTransitionPending, startDrawerTransition] = useTransition();
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (drawer) {
+      setPendingActionId(null);
+    }
+  }, [drawer]);
 
   const numberFormatter = useMemo(
     () => new Intl.NumberFormat(displayLocale),
@@ -242,16 +250,19 @@ export default function RtsApplicationDashboard({
   }, [filters.sortBy, filters.sortOrder, updateUrl]);
 
   const updateDrawerUrl = useCallback(
-    (changes: Record<string, string>) => {
+    (changes: Record<string, string>, actionId?: string) => {
+      if (actionId) setPendingActionId(actionId);
       const params = new URLSearchParams(window.location.search);
       Object.entries(changes).forEach(([key, value]) => {
         if (value) params.set(key, value);
         else params.delete(key);
       });
       const query = params.toString();
-      router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
+      startDrawerTransition(() => {
+        router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
+      });
     },
-    [pathname, router]
+    [pathname, router, startDrawerTransition]
   );
 
   const openDocument = useCallback(
@@ -766,7 +777,13 @@ export default function RtsApplicationDashboard({
             <div className="flex justify-center">
               {row.source === 'approval' && row.applicationId > 0 ? (
                 <ViewButton
-                  onClick={() => updateDrawerUrl({ view: String(row.applicationId), process: '', doc: '' })}
+                  onClick={() =>
+                    updateDrawerUrl(
+                      { view: String(row.applicationId), process: '', doc: '' },
+                      `view-${row.applicationId}`
+                    )
+                  }
+                  isLoading={isDrawerTransitionPending && pendingActionId === `view-${row.applicationId}`}
                   aria-label={t('applicationDashboard.actions.viewDetailsAria', {
                     appId: row.applicationNo,
                   })}

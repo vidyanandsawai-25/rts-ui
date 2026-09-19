@@ -37,7 +37,6 @@ import type {
 } from '@/types/rts/application-approval.types';
 import { computeOverdueDays, computeRemainingDays } from '@/lib/utils/rts/application-grid';
 import type {
-  RtsMisDashboardApplicationItem,
   RtsMisDashboardDepartmentItem,
   RtsMisDashboardResponse,
 } from '@/types/rts/rtsmisdashboard.types';
@@ -243,7 +242,12 @@ export async function getRtsApplicationProcessDataAction(
   const stages = getProcessSectionResult(stagesResult);
   const verification = getProcessSectionResult(verificationResult);
 
-  if (details.data && !details.data.issuedCertificateGuid && details.data.applicationNo) {
+  if (
+    details.data &&
+    !details.data.issuedCertificateGuid &&
+    details.data.applicationNo &&
+    details.data.applicationStatus?.toLowerCase().includes('approv')
+  ) {
     try {
       const { getIssuedCertificateByApplicationNo } = await import(
         '@/lib/api/rts/rtscertificate.service'
@@ -298,7 +302,12 @@ export async function getRtsApplicationFullDetailDataAction(
   const stages = getProcessSectionResult(stagesResult);
   const payment = getProcessSectionResult(paymentResult);
 
-  if (details.data && !details.data.issuedCertificateGuid && details.data.applicationNo) {
+  if (
+    details.data &&
+    !details.data.issuedCertificateGuid &&
+    details.data.applicationNo &&
+    details.data.applicationStatus?.toLowerCase().includes('approv')
+  ) {
     try {
       const { getIssuedCertificateByApplicationNo } = await import(
         '@/lib/api/rts/rtscertificate.service'
@@ -823,50 +832,39 @@ export interface RtsApplicationsDashboardFilters {
   isFifo?: boolean;
 }
 
-async function getAllApprovalApplications(
+async function getApprovalApplicationsPage(
   filters: RtsApplicationsDashboardFilters
-): Promise<{ applications: RtsApprovalApplicationListItem[]; totalCount: number } | null> {
-  const requestPage = (pageNumber: number) =>
-    getApprovalApplicationsPaged({
-      pageNumber,
-      departmentId: filters.departmentId,
-      serviceId: filters.serviceId,
-      applicationNo: filters.applicationNo,
-      status: filters.status,
-      sortBy: filters.sortBy,
-      sortOrder: filters.sortOrder,
-      userId: filters.assignedUserId,
-      isFifo: filters.isFifo,
-    });
+): Promise<{
+  applications: RtsApprovalApplicationListItem[];
+  totalCount: number;
+  totalPages: number;
+  pageNumber: number;
+} | null> {
+  const pageResult = await getApprovalApplicationsPaged({
+    pageNumber: filters.pageNumber || 1,
+    departmentId: filters.departmentId,
+    serviceId: filters.serviceId,
+    applicationNo: filters.applicationNo,
+    status: filters.status,
+    sortBy: filters.sortBy,
+    sortOrder: filters.sortOrder,
+    userId: filters.assignedUserId,
+    isFifo: filters.isFifo,
+  });
 
-  const firstPage = await requestPage(1);
-  const applications = [...firstPage.applications];
-
-  // Keep concurrent backend requests bounded when a filter matches many pages.
-  for (let startPage = 2; startPage <= firstPage.totalPages; startPage += 10) {
-    const endPage = Math.min(startPage + 9, firstPage.totalPages);
-    const pageNumbers = Array.from(
-      { length: endPage - startPage + 1 },
-      (_, index) => startPage + index
-    );
-    const pages = await Promise.all(pageNumbers.map(requestPage));
-    pages.forEach((page) => applications.push(...page.applications));
-  }
-
-  return { applications, totalCount: firstPage.totalCount };
+  return {
+    applications: pageResult.applications,
+    totalCount: pageResult.totalCount,
+    totalPages: pageResult.totalPages,
+    pageNumber: pageResult.pageNumber,
+  };
 }
 
-interface MisDashboardApplicationsResult {
-  applications: RtsMisDashboardApplicationItem[];
-  departmentWiseData: RtsMisDashboardDepartmentItem[];
-}
-
-async function getAllMisDashboardApplications(
+async function getMisDashboardKpiData(
   filters: RtsApplicationsDashboardFilters
-): Promise<MisDashboardApplicationsResult> {
-  const pageSize = 10;
-  const requestPage = (pageNumber: number) =>
-    getRtsMisDashboardData({
+): Promise<RtsMisDashboardDepartmentItem[]> {
+  try {
+    const response = await getRtsMisDashboardData({
       Flag: 'RTSApplicationDashboard',
       UpicId: null,
       ApplicationNo: filters.applicationNo ?? null,
@@ -876,40 +874,18 @@ async function getAllMisDashboardApplications(
       ModuleName: null,
       FromDate: null,
       ToDate: null,
-      pageNumber,
-      pageSize,
+      pageNumber: 1,
+      pageSize: 1,
       ApplicationStatus: filters.status ?? null,
     });
 
-  const firstResponse = await requestPage(1);
-  if (!firstResponse.status) {
-    return { applications: [], departmentWiseData: [] };
+    if (response?.status && Array.isArray(response.data?.departmentWiseData)) {
+      return response.data.departmentWiseData;
+    }
+    return [];
+  } catch {
+    return [];
   }
-
-  const applications = Array.isArray(firstResponse.data?.rtsApplicationDashboardDetails)
-    ? [...firstResponse.data.rtsApplicationDashboardDetails]
-    : [];
-  const departmentWiseData = Array.isArray(firstResponse.data?.departmentWiseData)
-    ? firstResponse.data.departmentWiseData
-    : [];
-  const totalRecords = firstResponse.data?.totalRecords ?? applications.length;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
-
-  for (let startPage = 2; startPage <= totalPages; startPage += 10) {
-    const endPage = Math.min(startPage + 9, totalPages);
-    const pageNumbers = Array.from(
-      { length: endPage - startPage + 1 },
-      (_, index) => startPage + index
-    );
-    const responses = await Promise.all(pageNumbers.map(requestPage));
-    responses.forEach((response) => {
-      if (response.status && Array.isArray(response.data?.rtsApplicationDashboardDetails)) {
-        applications.push(...response.data.rtsApplicationDashboardDetails);
-      }
-    });
-  }
-
-  return { applications, departmentWiseData };
 }
 
 function asDashboardCount(value: number | null | undefined): number {
@@ -1059,12 +1035,50 @@ function parseSlaDays(sla: string | number | undefined | null): number {
  * Real API combined dashboard action — fetches aggregated KPIs and full application grid
  * from GET /api/RTSApplication.
  */
+export async function getApprovalApplicationRowAction(
+  applicationId: number
+): Promise<AdminApplicationGridRow | null> {
+  try {
+    const details = await getApprovalApplicationDetails(applicationId);
+    if (!details) return null;
+
+    return {
+      source: 'approval',
+      applicationId: details.applicationId ?? applicationId,
+      applicationNo: details.applicationNo || `RTS${applicationId}`,
+      propertyNo: null,
+      upicId: null,
+      applicationDate: '',
+      applicantName: '—',
+      serviceName: details.serviceName || 'Unknown Service',
+      serviceNameLocal: null,
+      departmentName: details.departmentName || 'Unknown Department',
+      departmentNameLocal: null,
+      currentStatus: details.applicationStatus || 'Pending',
+      currentStageName: details.applicationStatus || 'Pending',
+      remarks: details.remark || '—',
+      expectedSlaDays: 7,
+      remainingDays: null,
+      dueDays: null,
+      overdueDays: null,
+      lastUpdatedDate: '',
+      assignedTo: '—',
+      assignedToName: '—',
+      assignedToRole: '',
+      assignedUserId: null,
+    };
+  } catch (err) {
+    console.error(`Failed to load single application row ${applicationId}:`, err);
+    return null;
+  }
+}
+
 export async function getRtsApplicationsDashboardAction(
   filters: RtsApplicationsDashboardFilters = { pageNumber: 1 }
 ): Promise<RtsApplicationsDashboardResult> {
   try {
-    const [approvalRes, cards, misDashboard] = await Promise.all([
-      getAllApprovalApplications(filters).catch((err) => {
+    const [approvalRes, cards, misDepartments] = await Promise.all([
+      getApprovalApplicationsPage(filters).catch((err) => {
         console.error('Failed to fetch approval applications list:', err);
         return null;
       }),
@@ -1072,13 +1086,10 @@ export async function getRtsApplicationsDashboardAction(
         console.error('Failed to fetch RTS application dashboard cards API:', err);
         return null;
       }),
-      getAllMisDashboardApplications(filters).catch(() => ({
-        applications: [],
-        departmentWiseData: [],
-      })),
+      getMisDashboardKpiData(filters),
     ]);
 
-    const misKpis = getMisDepartmentKpis(misDashboard.departmentWiseData);
+    const misKpis = getMisDepartmentKpis(misDepartments);
     const total = (cards?.totalApplications ?? approvalRes?.totalCount ?? 0) + misKpis.total;
     const pending = (cards?.pending ?? 0) + misKpis.pending;
     const approved = (cards?.approved ?? 0) + misKpis.approved;
@@ -1166,57 +1177,20 @@ export async function getRtsApplicationsDashboardAction(
       };
     });
 
-    const misRows: AdminApplicationGridRow[] = misDashboard.applications.map((app) => ({
-      source: 'mis',
-      applicationId: 0,
-      applicationNo: app.applicationNo,
-      propertyNo: app.propertyNo?.trim() || null,
-      upicId: app.upicId?.trim() || null,
-      applicationDate: app.createdDate,
-      applicantName: app.applicantName?.trim() || '—',
-      serviceName: app.serviceName || 'Unknown Service',
-      serviceNameLocal: app.serviceNameLocal?.trim() || null,
-      departmentName: app.departmentName || 'Unknown Department',
-      departmentNameLocal: app.departmentNameLocal?.trim() || null,
-      currentStatus: app.applicationStatus || 'Pending',
-      currentStageName: app.applicationStatus || 'Pending',
-      remarks: app.remark?.trim() || '—',
-      expectedSlaDays:
-        typeof app.sla === 'number' ? app.sla : parseInt(String(app.sla ?? '0'), 10) || 0,
-      remainingDays: app.remainingDays,
-      dueDays: app.dueDays,
-      overdueDays: app.overdueDays,
-      lastUpdatedDate: app.updatedDate || app.createdDate,
-      assignedTo: app.userName?.trim() || '—',
-      assignedToName: app.userName?.trim() || '—',
-      assignedToRole: '',
-      assignedUserId: null,
-    }));
-
-    const rowsByApplicationNo = new Map<string, AdminApplicationGridRow>();
-    approvalRows.forEach((row) =>
-      rowsByApplicationNo.set(row.applicationNo.trim().toLowerCase(), row)
-    );
-    misRows.forEach((row) => {
-      const key = row.applicationNo.trim().toLowerCase();
-      if (!rowsByApplicationNo.has(key)) rowsByApplicationNo.set(key, row);
-    });
-
     const cookieStore = await cookies();
     const currentUserId = getCurrentApprovalOfficerUserId(cookieStore);
 
-    const sortedRows = sortDashboardRows(
-      Array.from(rowsByApplicationNo.values()),
+    const rows = sortDashboardRows(
+      approvalRows,
       filters.sortBy,
       filters.sortOrder,
       currentUserId
     );
+
     const pageSize = 10;
-    const totalCount = sortedRows.length;
-    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-    const pageNumber = Math.min(Math.max(filters.pageNumber, 1), totalPages);
-    const pageStart = (pageNumber - 1) * pageSize;
-    const rows = sortedRows.slice(pageStart, pageStart + pageSize);
+    const totalCount = approvalRes?.totalCount ?? rows.length;
+    const totalPages = approvalRes?.totalPages ?? Math.max(1, Math.ceil(totalCount / pageSize));
+    const pageNumber = approvalRes?.pageNumber ?? Math.min(Math.max(filters.pageNumber, 1), totalPages);
 
     return {
       kpis,

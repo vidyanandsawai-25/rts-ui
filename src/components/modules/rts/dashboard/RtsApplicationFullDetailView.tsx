@@ -190,6 +190,8 @@ export default function RtsApplicationFullDetailView({
 
     let active = true;
     let objectUrl: string | null = null;
+    const controller = new AbortController();
+
     setDocumentPreviewUrl(null);
     setDocumentPreviewType(null);
     setDocumentPreviewError(null);
@@ -197,7 +199,10 @@ export default function RtsApplicationFullDetailView({
 
     void (async () => {
       try {
-        const response = await fetch(getAdminRtsDocumentViewUrl(activeDocument.guid), { credentials: 'same-origin' });
+        const response = await fetch(getAdminRtsDocumentViewUrl(activeDocument.guid), {
+          credentials: 'same-origin',
+          signal: controller.signal,
+        });
         if (!response.ok) throw new Error('Document preview request failed.');
 
         const blob = await response.blob();
@@ -211,7 +216,8 @@ export default function RtsApplicationFullDetailView({
         } else {
           setDocumentPreviewType('file');
         }
-      } catch {
+      } catch (err) {
+        if ((err as Error)?.name === 'AbortError') return;
         if (active) setDocumentPreviewError(t('previewUnavailable'));
       } finally {
         if (active) setIsDocumentPreviewLoading(false);
@@ -220,6 +226,7 @@ export default function RtsApplicationFullDetailView({
 
     return () => {
       active = false;
+      controller.abort();
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [activeDocument?.guid, activeDocument?.isUploaded, open, t]);

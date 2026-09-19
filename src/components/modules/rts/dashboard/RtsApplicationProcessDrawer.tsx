@@ -415,6 +415,7 @@ export default function RtsApplicationProcessDrawer({
 
     let active = true;
     let objectUrl: string | null = null;
+    const controller = new AbortController();
 
     setDocumentPreviewUrl(null);
     setDocumentPreviewType(null);
@@ -425,6 +426,7 @@ export default function RtsApplicationProcessDrawer({
       try {
         const response = await fetch(getAdminRtsDocumentViewUrl(activeDocument.guid), {
           credentials: 'same-origin',
+          signal: controller.signal,
         });
         if (!response.ok) throw new Error(`Document preview request failed (${response.status}).`);
 
@@ -440,7 +442,8 @@ export default function RtsApplicationProcessDrawer({
         } else {
           setDocumentPreviewType('file');
         }
-      } catch {
+      } catch (err) {
+        if ((err as Error)?.name === 'AbortError') return;
         if (active) setDocumentPreviewError(t('previewUnavailable'));
       } finally {
         if (active) setIsDocumentPreviewLoading(false);
@@ -449,6 +452,7 @@ export default function RtsApplicationProcessDrawer({
 
     return () => {
       active = false;
+      controller.abort();
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [activeDocument?.guid, activeDocument?.isUploaded, open, t]);

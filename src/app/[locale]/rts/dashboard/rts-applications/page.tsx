@@ -1,6 +1,7 @@
 import RtsApplicationDashboard from '@/components/modules/rts/dashboard/RtsApplicationDashboard';
 import { toApplicationFilterSlug } from '@/lib/utils/rts/application-filter-slug';
 import {
+  getApprovalApplicationRowAction,
   getRtsApplicationFilterOptionsAction,
   getRtsApplicationFullDetailDataAction,
   getRtsApplicationsDashboardAction,
@@ -99,31 +100,39 @@ export default async function RtsApplicationDashboardPage({
       )
     : undefined;
 
-  const result = await getRtsApplicationsDashboardAction({
-    pageNumber,
-    departmentId: department?.id,
-    departmentName: department?.departmentName,
-    serviceId: service?.id,
-    applicationNo: search || undefined,
-    status,
-    sortBy,
-    sortOrder,
-  });
-
   const requestedDocumentGuid = readQuery(query, 'doc', 'Doc')?.trim() ?? '';
   const requestedProcess = parseProcessRoute(readQuery(query, 'process', 'Process'));
   const requestedFullDetailId = getPositiveApplicationId(readQuery(query, 'fullDetail', 'FullDetail'));
   const requestedViewId = getPositiveApplicationId(readQuery(query, 'view', 'View'));
   const drawerApplicationId = requestedProcess?.applicationId ?? requestedFullDetailId ?? requestedViewId;
+
+  // Run dashboard query and drawer queries concurrently in parallel for instant response
+  const [result, processDrawerData, fullDetailDrawerData, directDrawerRow] = await Promise.all([
+    getRtsApplicationsDashboardAction({
+      pageNumber,
+      departmentId: department?.id,
+      departmentName: department?.departmentName,
+      serviceId: service?.id,
+      applicationNo: search || undefined,
+      status,
+      sortBy,
+      sortOrder,
+    }),
+    drawerApplicationId && (requestedProcess || requestedViewId)
+      ? getRtsApplicationProcessDataAction(drawerApplicationId)
+      : Promise.resolve(null),
+    drawerApplicationId && requestedFullDetailId
+      ? getRtsApplicationFullDetailDataAction(drawerApplicationId)
+      : Promise.resolve(null),
+    drawerApplicationId
+      ? getApprovalApplicationRowAction(drawerApplicationId)
+      : Promise.resolve(null),
+  ]);
+
   const drawerRow = drawerApplicationId
-    ? result.rows.find((row) => row.applicationId === drawerApplicationId) ?? null
+    ? result.rows.find((row) => row.applicationId === drawerApplicationId) ?? directDrawerRow
     : null;
-  const processDrawerData = drawerRow && (requestedProcess || requestedViewId)
-    ? await getRtsApplicationProcessDataAction(drawerRow.applicationId)
-    : null;
-  const fullDetailDrawerData = drawerRow && requestedFullDetailId
-    ? await getRtsApplicationFullDetailDataAction(drawerRow.applicationId)
-    : null;
+
   const currentStageSlug = processDrawerData?.verification?.stageName
     ? toApplicationFilterSlug(processDrawerData.verification.stageName)
     : '';
