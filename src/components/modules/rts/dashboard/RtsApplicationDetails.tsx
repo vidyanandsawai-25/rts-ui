@@ -441,14 +441,40 @@ export default function RtsApplicationDetails({
                     : t("applicationDetails.verifyPage.submit")}
                 </button>
               </div>
+            ) : applicationStatus.toLowerCase().includes("approv") ? (
+              <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
+                  <Award className="h-4 w-4 text-emerald-600" />
+                  अर्जाला अंतिम मंजुरी मिळालेली आहे (Application Approved).
+                </div>
+                {data.certificateType === 2 && !data.issuedCertificateGuid ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsManualCertModalOpen(true)}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-blue-600 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700"
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    मॅन्युअल प्रमाणपत्र अपलोड करा (Upload Certificate)
+                  </button>
+                ) : data.isCertificateRequired !== false && data.certificateType !== 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsPrintCertModalOpen(true)}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700"
+                  >
+                    <FileCheck2 className="h-3.5 w-3.5" />
+                    अधिकृत प्रमाणपत्र पहा (View Certificate)
+                  </button>
+                ) : null}
+              </div>
             ) : decisionActions.length === 0 ? (
               <p className="py-6 text-center text-xs font-semibold text-slate-400">
                 {t("applicationDetails.noActionsAvailable")}
               </p>
             ) : (
               <div className="space-y-4">
-                {/* Certificate Decision Feature strictly for Final Approval Stage only */}
-                {decisionActions.includes("approve") && Boolean(currentStage?.isFinalStage) && (
+                {/* Certificate Decision Feature strictly for Final Approval Stage on Digital Template (Type 1) */}
+                {decisionActions.includes("approve") && Boolean(currentStage?.isFinalStage) && data.certificateType === 1 && (
                   <div className="p-3 bg-linear-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-emerald-900 flex items-center gap-1">

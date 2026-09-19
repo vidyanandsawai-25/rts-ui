@@ -850,29 +850,19 @@ export default function RtsApplicationProcessDrawer({
               {headerStatus?.toLowerCase().includes('approv') &&
                 data?.details?.isCertificateRequired === true &&
                 data?.details?.certificateType === 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setIsPrintCertModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition"
-                  >
-                    <FileCheck2 className="h-4 w-4" />
-                    प्रमाणपत्र पहा व प्रिंट करा
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsCertModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-lg text-xs font-bold transition"
-                  >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    प्रमाणपत्र संपादन
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={() => setIsPrintCertModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition"
+                >
+                  <FileCheck2 className="h-4 w-4" />
+                  प्रमाणपत्र पहा व प्रिंट करा
+                </button>
               )}
               {headerStatus?.toLowerCase().includes('approv') &&
                 data?.details?.isCertificateRequired !== false &&
                 data?.details?.certificateType === 2 && (
-                <>
+                data?.details?.issuedCertificateGuid ? (
                   <button
                     type="button"
                     onClick={() => setIsPrintCertModalOpen(true)}
@@ -881,17 +871,16 @@ export default function RtsApplicationProcessDrawer({
                     <FileCheck2 className="h-4 w-4" />
                     प्रमाणपत्र पहा व प्रिंट करा
                   </button>
-                  {!data?.details?.issuedCertificateGuid && (
-                    <button
-                      type="button"
-                      onClick={() => setIsManualCertificateUploadOpen(true)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-lg text-xs font-bold transition"
-                    >
-                      <Upload className="h-3.5 w-3.5" />
-                      प्रमाणपत्र अपलोड करा
-                    </button>
-                  )}
-                </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsManualCertificateUploadOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-lg text-xs font-bold transition"
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    प्रमाणपत्र अपलोड करा
+                  </button>
+                )
               )}
               {headerStatus && (
                 <Badge {...getRtsApplicationStatusBadgeProps(headerStatus)}>{headerStatus}</Badge>
