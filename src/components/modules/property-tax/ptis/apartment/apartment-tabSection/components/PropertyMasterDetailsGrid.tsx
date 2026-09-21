@@ -13,7 +13,6 @@ import {
   Mail,
   Phone,
   Home,
-  Ruler,
   Maximize2,
   History,
   Layers,
@@ -80,7 +79,6 @@ export const PropertyMasterDetailsGrid: React.FC<PropertyMasterDetailsGridProps>
           minWidth="min-w-[130px]"
           isMultiline
         />
-        <PropertyMasterInfoRow icon={Ruler} label={t('grid.plotArea') || 'Plot Area:'} value={data?.plotArea} minWidth="min-w-[130px]" />
         <PropertyMasterInfoRow
           icon={Maximize2}
           label={t('grid.carpetBuiltUp') || 'Carpet / Built-up:'}

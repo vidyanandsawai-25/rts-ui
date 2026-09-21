@@ -1,6 +1,7 @@
 /* eslint-disable i18next/no-literal-string */
 'use client';
 
+import Link from 'next/link';
 import { AlertCircle, RotateCcw, Home } from 'lucide-react';
 import { useLocale } from 'next-intl';
 
@@ -43,14 +44,13 @@ export default function PtisIndividualError({ error, reset }: PtisIndividualErro
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => (window.location.href = `/${locale}/property-tax/ptis`)}
+          <Link
+            href={`/${locale}/property-tax/ptis`}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer"
           >
             <Home className="w-3.5 h-3.5 text-slate-600" />
             <span>Go to Search</span>
-          </button>
+          </Link>
 
           <button
             type="button"

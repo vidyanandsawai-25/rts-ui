@@ -48,8 +48,9 @@ function formatAreaFtMtr(ft?: number | string | null, mtr?: number | string | nu
  * Map additional revenue DTO into UI performance data structure
  */
 export function mapIndividualPerformanceData(
-  rev?: IndividualAdditionalRevenueDto | null
+  revInput?: IndividualAdditionalRevenueDto | IndividualAdditionalRevenueDto[] | null
 ): IndividualPerformanceData {
+  const rev = Array.isArray(revInput) ? revInput[0] : revInput;
   if (!rev) {
     return {
       thisAssessmentRevenue: '₹0',
@@ -74,9 +75,11 @@ export function mapIndividualPerformanceData(
   const diffAmount = rev.differenceAmount ?? 0;
   const changePct = rev.changePercent ?? 0;
   const isNegative = diffAmount < 0 || changePct < 0;
+  const rawDifference = rev.differenceAmount;
+  const heroAmount = rawDifference ?? rev.totalTax ?? rev.currentTax ?? 0;
 
   return {
-    thisAssessmentRevenue: formatIndianCurrency(rev.totalTax ?? rev.currentTax ?? 0),
+    thisAssessmentRevenue: formatIndianCurrency(heroAmount),
     revenueGrowthPct: `${changePct}%`,
     isGrowthNegative: isNegative,
     currentTax: formatIndianCurrency(rev.currentTax),

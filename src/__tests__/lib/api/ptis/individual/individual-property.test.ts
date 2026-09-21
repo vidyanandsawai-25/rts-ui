@@ -93,7 +93,7 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
           changePercent: 33.33,
         };
         const res = mapIndividualPerformanceData(mockRev);
-        expect(res.thisAssessmentRevenue).toBe('₹60,000');
+        expect(res.thisAssessmentRevenue).toBe('₹15,000');
         expect(res.isGrowthNegative).toBe(false);
         expect(res.differenceAmount).toBe('₹15,000');
       });
@@ -107,6 +107,24 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
         const res = mapIndividualPerformanceData(mockRev);
         expect(res.isGrowthNegative).toBe(true);
         expect(res.differenceAmount).toBe('-₹10,000');
+        expect(res.thisAssessmentRevenue).toBe('-₹10,000');
+      });
+
+      it('handles array input for additionalRevenue correctly', () => {
+        const mockRevArray: IndividualAdditionalRevenueDto[] = [
+          {
+            currentTax: 116340,
+            retroTax: 953,
+            totalTax: 117293,
+            differenceAmount: -60871979,
+            changePercent: -99.81,
+          },
+        ];
+        const res = mapIndividualPerformanceData(mockRevArray);
+        expect(res.thisAssessmentRevenue).toBe('-₹6,08,71,979');
+        expect(res.differenceAmount).toBe('-₹6,08,71,979');
+        expect(res.totalTax).toBe('₹1,17,293');
+        expect(res.isGrowthNegative).toBe(true);
       });
     });
 

@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent, act, renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IndividualMasterHeader } from '@/components/modules/property-tax/ptis/individual/individual-tabSection/components/IndividualMasterHeader';
@@ -206,15 +207,11 @@ describe('Individual Property - Components & Hook', () => {
       expect(destination).toContain('returnTab=individual');
     });
 
-    it('updates client state on ptis:individual-top-section-updated event', () => {
-      render(<IndividualPropertyMasterCard data={mockData} />);
-      act(() => {
-        window.dispatchEvent(
-          new CustomEvent('ptis:individual-top-section-updated', {
-            detail: { updatedValues: { ownerName: 'Abhishek Bachchan' } },
-          })
-        );
-      });
+    it('renders updated data when props update from server revalidation', () => {
+      const { rerender } = render(<IndividualPropertyMasterCard data={mockData} />);
+      expect(screen.getAllByText('Amitabh Bachchan').length).toBeGreaterThan(0);
+
+      rerender(<IndividualPropertyMasterCard data={{ ...mockData, ownerName: 'Abhishek Bachchan' }} />);
       expect(screen.getAllByText('Abhishek Bachchan').length).toBeGreaterThan(0);
     });
   });

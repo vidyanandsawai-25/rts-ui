@@ -53,7 +53,7 @@ export interface IndividualPropertyDto {
   individualPropertyGuid?: string | null;
   individualPropertyPhotoGuid?: string | null;
   societyBuildingPhotoGuid?: string | null;
-  additionalRevenue?: IndividualAdditionalRevenueDto | null;
+  additionalRevenue?: IndividualAdditionalRevenueDto | IndividualAdditionalRevenueDto[] | null;
 }
 
 export interface IndividualPropertyApiResponse {

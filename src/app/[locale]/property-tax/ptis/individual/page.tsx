@@ -10,7 +10,7 @@ import { PtisNavigationProvider } from '@/components/modules/property-tax/ptis/s
 import { buildFooterActions } from '@/app/[locale]/property-tax/ptis/buildFooterActions';
 import { fetchPtisPageData } from '@/app/[locale]/property-tax/ptis/ptis-fetch.service';
 import { propertyWorkflowStageService } from '@/lib/api/ptis/propertyWorkflowStage/propertyWorkflowStage.service';
-import { getIndividualQcTopSectionAction } from '@/lib/api/ptis/individual';
+import { getIndividualQcTopSectionAction } from './action';
 import { buildInitialIndividualMasterData } from './individual-property.builder';
 import { toSafeString } from '@/lib/utils/format';
 import { PtisInitialData } from '@/types/ptis.types';
@@ -54,9 +54,23 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
     isPropIdValid ? getIndividualQcTopSectionAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
   ]);
 
-  const workflowStages = workflowStagesResult?.success && workflowStagesResult.data ? workflowStagesResult.data : [];
-  const currentWorkflowStageId = currentWorkflow?.success ? currentWorkflow.data?.workflowStageId : undefined;
   const resolvedPropertyId = isPropIdValid ? propertyIdRaw : (pageData?.resolvedPropertyId ?? undefined);
+
+  let finalTopSectionRes = topSectionRes;
+  let finalCurrentWorkflow = currentWorkflow;
+
+  // Complete SSR: if property was resolved from pageData (e.g. wardNo + propertyNo search), fetch remaining details server-side
+  if (resolvedPropertyId && (!finalTopSectionRes || !finalCurrentWorkflow)) {
+    const [lateTopSection, lateWorkflow] = await Promise.all([
+      !finalTopSectionRes ? getIndividualQcTopSectionAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
+      !finalCurrentWorkflow ? propertyWorkflowStageService.getCurrentWorkflowDetail(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
+    ]);
+    if (lateTopSection) finalTopSectionRes = lateTopSection;
+    if (lateWorkflow) finalCurrentWorkflow = lateWorkflow;
+  }
+
+  const workflowStages = workflowStagesResult?.success && workflowStagesResult.data ? workflowStagesResult.data : [];
+  const currentWorkflowStageId = finalCurrentWorkflow?.success ? finalCurrentWorkflow.data?.workflowStageId : undefined;
 
   const initialData: PtisInitialData = {
     propertyDetails: pageData.propertyDetailsResult?.propertyDetails || undefined,
@@ -77,7 +91,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
     mappedPropertiesData: pageData.mappedPropertiesData,
   };
 
-  const baseData = topSectionRes?.success && topSectionRes.data ? topSectionRes.data : undefined;
+  const baseData = finalTopSectionRes?.success && finalTopSectionRes.data ? finalTopSectionRes.data : undefined;
   const initialPropertyMasterData = buildInitialIndividualMasterData({
     resolvedPropertyId,
     baseData,
