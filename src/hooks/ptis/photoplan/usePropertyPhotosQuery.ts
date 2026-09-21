@@ -130,7 +130,10 @@ export function arePhotosEqual(a: PropertyPhotoDto[], b: PropertyPhotoDto[]) {
 }
 
 import { getPhotoSlotsAction, getPropertyPhotosAction } from '@/app/[locale]/property-tax/ptis/media-fetch.action';
+import { getPropertyPhotoTypesByScopeAction } from '@/app/[locale]/property-tax/ptis/PhotoPlanType.action';
 import { getWingPhotoTypesWithStatusAction, getPhotosByWingAction } from '@/app/[locale]/property-tax/ptis/WingPhoto.action';
+import { getPhotosBySocietyAction, getSocietyPhotoTypesWithStatusAction } from '@/app/[locale]/property-tax/ptis/SocietyPhoto.action';
+import { getViewDocumentUrl, getDownloadDocumentUrl } from '@/lib/utils/document-utils';
 import { useSearchParams } from 'next/navigation';
 
 export function usePropertyPhotosQuery(
@@ -138,12 +141,41 @@ export function usePropertyPhotosQuery(
   isPanelOpen?: boolean,
   isDrawerOpen?: boolean,
   initialPhotoSlots: PropertyPhotoTypeWithStatusDto[] = [],
-  initialPhotos: PropertyPhotoDto[] = []
+  initialPhotos: PropertyPhotoDto[] = [],
+  societyId?: number | null,
+  societyPhotoFallbackGuid?: string,
+  societyPhotoFallbackUrl?: string
 ): UsePropertyPhotosQueryResult {
   const searchParams = useSearchParams();
+  const [activeWingParams, setActiveWingParams] = useState<{
+    wingId: number | null;
+    wingDetailId: number | null;
+    societyId: number | null;
+  } | null>(null);
+
+  useEffect(() => {
+    const handleParamsChange = (e: Event) => {
+      const detail = (e as CustomEvent<Record<string, string | null>>).detail;
+      if (!detail) return;
+      const wId = detail.wingId ? Number(detail.wingId) : null;
+      const wdId = detail.wingDetailId ? Number(detail.wingDetailId) : null;
+      const sId = (detail.societyDetailId || detail.societyId) ? Number(detail.societyDetailId || detail.societyId) : null;
+      setActiveWingParams({ wingId: wId, wingDetailId: wdId, societyId: sId });
+    };
+    window.addEventListener('ptis:wing-params-changed', handleParamsChange);
+    return () => window.removeEventListener('ptis:wing-params-changed', handleParamsChange);
+  }, []);
+
   const wingIdParam = (searchParams?.get('wingId') || searchParams?.get('wingid')) ? Number(searchParams.get('wingId') || searchParams.get('wingid')) : null;
   const wingDetailIdParam = (searchParams?.get('wingDetailId') || searchParams?.get('wingdetailid')) ? Number(searchParams.get('wingDetailId') || searchParams.get('wingdetailid')) : null;
-  const targetWingId = wingDetailIdParam && wingDetailIdParam > 0 ? wingDetailIdParam : wingIdParam;
+  const effectiveWingDetailId = activeWingParams?.wingDetailId !== undefined ? activeWingParams.wingDetailId : wingDetailIdParam;
+  const effectiveWingId = activeWingParams?.wingId !== undefined ? activeWingParams.wingId : wingIdParam;
+  const targetWingId = effectiveWingDetailId && effectiveWingDetailId > 0 ? effectiveWingDetailId : effectiveWingId;
+
+  const searchSocietyId = (searchParams?.get('societyDetailId') || searchParams?.get('societydetailid') || searchParams?.get('societyId') || searchParams?.get('societyid'))
+    ? Number(searchParams.get('societyDetailId') || searchParams.get('societydetailid') || searchParams.get('societyId') || searchParams.get('societyid'))
+    : null;
+  const targetSocietyId = activeWingParams?.societyId !== undefined ? activeWingParams.societyId : (societyId && societyId > 0 ? societyId : searchSocietyId);
 
   const cacheKey = propertyId ? `${propertyId}_${targetWingId || 0}` : '';
 
@@ -203,9 +235,22 @@ export function usePropertyPhotosQuery(
       const cached = propertyMediaCache.get(cacheKey)!;
       setPhotoSlots(cached.photoSlots);
       setPhotos(cached.photos);
-    } else {
+    } else if (initialPhotoSlots.length > 0 || initialPhotos.length > 0) {
       setPhotoSlots(initialPhotoSlots);
-      setPhotos(initialPhotos);
+      setPhotos((prevPhotos) => {
+        const isSocietyPhoto = (p: PropertyPhotoDto) => Boolean(
+          p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
+          p.photoTypeName?.toLowerCase().includes('society')
+        );
+        const currentSocPhotos = prevPhotos.filter(isSocietyPhoto);
+        const mergedInitialPhotos = [...initialPhotos];
+        currentSocPhotos.forEach(sp => {
+          if (!mergedInitialPhotos.some(ip => (ip.documentGuid && ip.documentGuid === sp.documentGuid) || (ip.propertyPhotoId && ip.propertyPhotoId === sp.propertyPhotoId))) {
+            mergedInitialPhotos.push(sp);
+          }
+        });
+        return mergedInitialPhotos;
+      });
     }
   }, [propertyId, initialPhotoSlots, initialPhotos, cacheKey]);
 
@@ -233,15 +278,27 @@ export function usePropertyPhotosQuery(
       const promises: Promise<unknown>[] = [
         getPhotoSlotsAction(propertyId!),
         getPropertyPhotosAction(propertyId!),
+        getPropertyPhotoTypesByScopeAction('PROPERTY'),
       ];
 
       if (targetWingId && targetWingId > 0) {
         promises.push(getWingPhotoTypesWithStatusAction(targetWingId));
         promises.push(getPhotosByWingAction(targetWingId));
+      } else {
+        promises.push(Promise.resolve({ success: true, data: [] }));
+        promises.push(Promise.resolve({ success: true, data: [] }));
+      }
+
+      if (targetSocietyId && targetSocietyId > 0) {
+        promises.push(getSocietyPhotoTypesWithStatusAction(targetSocietyId));
+        promises.push(getPhotosBySocietyAction(targetSocietyId));
+      } else {
+        promises.push(Promise.resolve({ success: true, data: [] }));
+        promises.push(Promise.resolve({ success: true, data: [] }));
       }
 
       Promise.all(promises)
-        .then(([slotsRes, photosRes, wingSlotsRes, wingPhotosRes]) => {
+        .then(([slotsRes, photosRes, propTypesRes, wingSlotsRes, wingPhotosRes, socSlotsRes, socPhotosRes]) => {
           if (!isSubscribed) return;
 
           const sRes = slotsRes as { success: boolean; error?: string; data?: PropertyPhotoTypeWithStatusDto[] };
@@ -258,6 +315,35 @@ export function usePropertyPhotosQuery(
 
           const slots = [...(sRes.data || [])];
           const fetchedPhotos = [...(pRes.data || [])];
+
+          // Dynamically ensure all active slots from ptis.PropertyPhotoType for PROPERTY scope exist
+          const pTypesRes = propTypesRes as { success: boolean; data?: import('@/types/photoplan.types').PropertyPhotoTypeRecord[] } | undefined;
+          if (pTypesRes?.success && Array.isArray(pTypesRes.data)) {
+            pTypesRes.data.forEach((pt) => {
+              if (pt.isActive === false) return;
+              const ptCode = (pt.photoTypeCode || '').toUpperCase();
+              const existingIdx = slots.findIndex(
+                (s) =>
+                  (s.photoTypeCode && s.photoTypeCode.toUpperCase() === ptCode) ||
+                  s.photoTypeId === pt.id
+              );
+              if (existingIdx === -1) {
+                slots.push({
+                  photoTypeId: pt.id,
+                  photoTypeCode: pt.photoTypeCode,
+                  photoTypeName: pt.photoTypeName,
+                  photoScope: pt.photoScope || 'PROPERTY',
+                  displayOrder: pt.displayOrder || 1,
+                  hasPhoto: false,
+                  photoCount: 0,
+                });
+              } else {
+                if (!slots[existingIdx].photoScope) {
+                  slots[existingIdx].photoScope = pt.photoScope || 'PROPERTY';
+                }
+              }
+            });
+          }
 
           const wSlotsRes = wingSlotsRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
           if (wSlotsRes && wSlotsRes.success && wSlotsRes.data) {
@@ -321,15 +407,141 @@ export function usePropertyPhotosQuery(
             });
           }
 
-          setPhotoSlots(slots);
-          setPhotos(fetchedPhotos);
+          const sSlotsRes = socSlotsRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
+          if (sSlotsRes && sSlotsRes.success && sSlotsRes.data) {
+            const mappedSocSlots = sSlotsRes.data.map((ss: Record<string, unknown>) => ({
+              photoTypeId: Number(ss.photoTypeId),
+              photoTypeCode: String(ss.photoTypeCode || ss.photoTypeSlotCode || ''),
+              photoTypeName: String(ss.photoTypeName || ss.photoTypeSlotName || ''),
+              displayOrder: Number(ss.displayOrder || 0),
+              hasPhoto: Boolean(ss.hasPhoto),
+              photoCount: Number(ss.photoCount || 0),
+              propertyPhotoId: Number(ss.societyPhotoId || ss.propertyPhotoId || 0),
+              remarks: ss.remarks ? String(ss.remarks) : undefined,
+              documentBindingId: ss.documentBindingId ? Number(ss.documentBindingId) : undefined,
+              documentGuid: ss.documentGuid ? String(ss.documentGuid) : undefined,
+              fileName: ss.fileName ? String(ss.fileName) : undefined,
+              mimeType: ss.mimeType ? String(ss.mimeType) : undefined,
+              viewUrl: ss.viewUrl ? String(ss.viewUrl) : undefined,
+            }));
+            mappedSocSlots.forEach(ss => {
+              const existingIdx = slots.findIndex((s) => 
+                (s.photoTypeCode && ss.photoTypeCode && s.photoTypeCode.toUpperCase() === ss.photoTypeCode.toUpperCase()) ||
+                (s.photoTypeId === ss.photoTypeId && s.photoTypeCode?.toUpperCase().startsWith('SOCIETY_'))
+              );
+              if (existingIdx !== -1) {
+                slots[existingIdx] = { ...slots[existingIdx], ...ss };
+              } else {
+                slots.push(ss as PropertyPhotoTypeWithStatusDto);
+              }
+            });
+          }
 
-          propertyMediaCache.set(cacheKey, {
-            photoSlots: slots,
-            photos: fetchedPhotos,
-            timestamp: Date.now(),
+          const sPhotosRes = socPhotosRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
+          if (sPhotosRes && sPhotosRes.success && sPhotosRes.data) {
+            const mappedSocPhotos = sPhotosRes.data.map((sp: Record<string, unknown>) => ({
+              propertyPhotoId: Number(sp.societyPhotoId || sp.propertyPhotoId || 0),
+              propertyId: Number(sp.societyId || sp.propertyId || 0),
+              photoTypeId: Number(sp.photoTypeId || 0),
+              photoTypeCode: String(sp.photoTypeCode || ''),
+              photoTypeName: String(sp.photoTypeName || ''),
+              displayOrder: Number(sp.displayOrder || 0),
+              remarks: sp.remarks ? String(sp.remarks) : undefined,
+              documentBindingId: sp.documentBindingId ? Number(sp.documentBindingId) : undefined,
+              documentGuid: sp.documentGuid ? String(sp.documentGuid) : undefined,
+              fileName: sp.fileName ? String(sp.fileName) : undefined,
+              mimeType: sp.mimeType ? String(sp.mimeType) : undefined,
+              viewUrl: sp.viewUrl ? String(sp.viewUrl) : undefined,
+              downloadUrl: sp.downloadUrl ? String(sp.downloadUrl) : undefined,
+              societyDetailId: targetSocietyId || undefined,
+            }));
+            mappedSocPhotos.forEach(sp => {
+              const existingIdx = fetchedPhotos.findIndex((p) => 
+                p.propertyPhotoId === sp.propertyPhotoId && 
+                p.photoTypeCode?.toUpperCase() === sp.photoTypeCode?.toUpperCase()
+              );
+              if (existingIdx !== -1) {
+                fetchedPhotos[existingIdx] = { ...fetchedPhotos[existingIdx], ...sp };
+              } else {
+                fetchedPhotos.push(sp as PropertyPhotoDto);
+              }
+            });
+          }
+
+          // Retain existing society photos across wing transitions so society photos are never lost
+          const isSocietyPhoto = (p: PropertyPhotoDto) => Boolean(
+            p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
+            p.photoTypeName?.toLowerCase().includes('society')
+          );
+          const existingSocPhotos = initialPhotos.filter(isSocietyPhoto);
+          existingSocPhotos.forEach(ep => {
+            const alreadyExists = fetchedPhotos.some(fp => 
+              (fp.documentGuid && ep.documentGuid && fp.documentGuid === ep.documentGuid) ||
+              (fp.propertyPhotoId && ep.propertyPhotoId && fp.propertyPhotoId === ep.propertyPhotoId)
+            );
+            if (!alreadyExists) {
+              fetchedPhotos.push(ep);
+            }
           });
-          evictOldestCacheEntry();
+
+          // Inject fallback society photo if provided and not yet in fetchedPhotos
+          if (societyPhotoFallbackGuid || societyPhotoFallbackUrl) {
+            const hasSoc = fetchedPhotos.some(isSocietyPhoto);
+            if (!hasSoc) {
+              const resolvedFallbackUrl = societyPhotoFallbackUrl || (societyPhotoFallbackGuid ? getViewDocumentUrl(societyPhotoFallbackGuid) : undefined);
+              fetchedPhotos.push({
+                propertyPhotoId: 0,
+                propertyId: propertyId || 0,
+                photoTypeId: 5,
+                photoTypeCode: 'SOCIETY_PLACE',
+                photoTypeName: 'Society Place Photo',
+                displayOrder: 1,
+                documentGuid: societyPhotoFallbackGuid,
+                viewUrl: resolvedFallbackUrl,
+                downloadUrl: societyPhotoFallbackGuid ? getDownloadDocumentUrl(societyPhotoFallbackGuid) : undefined,
+                societyDetailId: targetSocietyId || undefined,
+              });
+            }
+          }
+
+          // If fetchedPhotos has a society photo, mark the society slot as hasPhoto: true
+          const firstSoc = fetchedPhotos.find(isSocietyPhoto);
+          if (firstSoc) {
+            const socSlotIdx = slots.findIndex((s) =>
+              s.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
+              s.photoTypeName?.toLowerCase().includes('society')
+            );
+            if (socSlotIdx !== -1) {
+              slots[socSlotIdx] = {
+                ...slots[socSlotIdx],
+                hasPhoto: true,
+                documentGuid: firstSoc.documentGuid || slots[socSlotIdx].documentGuid,
+                viewUrl: firstSoc.viewUrl || slots[socSlotIdx].viewUrl,
+              };
+            }
+          }
+
+          setPhotoSlots(slots);
+          setPhotos((prevPhotos) => {
+            const merged = [...fetchedPhotos];
+            const prevSoc = prevPhotos.filter(isSocietyPhoto);
+            prevSoc.forEach(ep => {
+              const alreadyExists = merged.some(fp => 
+                (fp.documentGuid && ep.documentGuid && fp.documentGuid === ep.documentGuid) ||
+                (fp.propertyPhotoId && ep.propertyPhotoId && fp.propertyPhotoId === ep.propertyPhotoId)
+              );
+              if (!alreadyExists) {
+                merged.push(ep);
+              }
+            });
+            propertyMediaCache.set(cacheKey, {
+              photoSlots: slots,
+              photos: merged,
+              timestamp: Date.now(),
+            });
+            evictOldestCacheEntry();
+            return merged;
+          });
         })
         .catch((err) => {
           if (isSubscribed) {
@@ -345,7 +557,7 @@ export function usePropertyPhotosQuery(
     return () => {
       isSubscribed = false;
     };
-  }, [propertyId, targetWingId, isPanelOpen, isDrawerOpen, initialPhotoSlots, initialPhotos, cacheKey]);
+  }, [propertyId, targetWingId, targetSocietyId, isPanelOpen, isDrawerOpen, initialPhotoSlots, initialPhotos, cacheKey, societyPhotoFallbackGuid, societyPhotoFallbackUrl]);
 
   const refetch = useCallback(async () => {
     if (!propertyId) return;
@@ -357,14 +569,26 @@ export function usePropertyPhotosQuery(
       const promises: Promise<unknown>[] = [
         getPhotoSlotsAction(propertyId),
         getPropertyPhotosAction(propertyId),
+        getPropertyPhotoTypesByScopeAction('PROPERTY'),
       ];
 
       if (targetWingId && targetWingId > 0) {
         promises.push(getWingPhotoTypesWithStatusAction(targetWingId));
         promises.push(getPhotosByWingAction(targetWingId));
+      } else {
+        promises.push(Promise.resolve({ success: true, data: [] }));
+        promises.push(Promise.resolve({ success: true, data: [] }));
       }
 
-      const [slotsRes, photosRes, wingSlotsRes, wingPhotosRes] = await Promise.all(promises);
+      if (targetSocietyId && targetSocietyId > 0) {
+        promises.push(getSocietyPhotoTypesWithStatusAction(targetSocietyId));
+        promises.push(getPhotosBySocietyAction(targetSocietyId));
+      } else {
+        promises.push(Promise.resolve({ success: true, data: [] }));
+        promises.push(Promise.resolve({ success: true, data: [] }));
+      }
+
+      const [slotsRes, photosRes, propTypesRes, wingSlotsRes, wingPhotosRes, socSlotsRes, socPhotosRes] = await Promise.all(promises);
 
       const sRes = slotsRes as { success: boolean; error?: string; data?: PropertyPhotoTypeWithStatusDto[] };
       const pRes = photosRes as { success: boolean; error?: string; data?: PropertyPhotoDto[] };
@@ -380,6 +604,34 @@ export function usePropertyPhotosQuery(
 
       const fetchedSlots = [...(sRes.data || [])];
       const fetchedPhotos = [...(pRes.data || [])];
+
+      const pTypesRes = propTypesRes as { success: boolean; data?: import('@/types/photoplan.types').PropertyPhotoTypeRecord[] } | undefined;
+      if (pTypesRes?.success && Array.isArray(pTypesRes.data)) {
+        pTypesRes.data.forEach((pt) => {
+          if (pt.isActive === false) return;
+          const ptCode = (pt.photoTypeCode || '').toUpperCase();
+          const existingIdx = fetchedSlots.findIndex(
+            (s) =>
+              (s.photoTypeCode && s.photoTypeCode.toUpperCase() === ptCode) ||
+              s.photoTypeId === pt.id
+          );
+          if (existingIdx === -1) {
+            fetchedSlots.push({
+              photoTypeId: pt.id,
+              photoTypeCode: pt.photoTypeCode,
+              photoTypeName: pt.photoTypeName,
+              photoScope: pt.photoScope || 'PROPERTY',
+              displayOrder: pt.displayOrder || 1,
+              hasPhoto: false,
+              photoCount: 0,
+            });
+          } else {
+            if (!fetchedSlots[existingIdx].photoScope) {
+              fetchedSlots[existingIdx].photoScope = pt.photoScope || 'PROPERTY';
+            }
+          }
+        });
+      }
 
       const wSlotsRes = wingSlotsRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
       if (wSlotsRes && wSlotsRes.success && wSlotsRes.data) {
@@ -443,6 +695,120 @@ export function usePropertyPhotosQuery(
         });
       }
 
+      const sSlotsRes = socSlotsRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
+      if (sSlotsRes && sSlotsRes.success && sSlotsRes.data) {
+        const mappedSocSlots = sSlotsRes.data.map((ss: Record<string, unknown>) => ({
+          photoTypeId: Number(ss.photoTypeId),
+          photoTypeCode: String(ss.photoTypeCode || ss.photoTypeSlotCode || ''),
+          photoTypeName: String(ss.photoTypeName || ss.photoTypeSlotName || ''),
+          displayOrder: Number(ss.displayOrder || 0),
+          hasPhoto: Boolean(ss.hasPhoto),
+          photoCount: Number(ss.photoCount || 0),
+          propertyPhotoId: Number(ss.societyPhotoId || ss.propertyPhotoId || 0),
+          remarks: ss.remarks ? String(ss.remarks) : undefined,
+          documentBindingId: ss.documentBindingId ? Number(ss.documentBindingId) : undefined,
+          documentGuid: ss.documentGuid ? String(ss.documentGuid) : undefined,
+          fileName: ss.fileName ? String(ss.fileName) : undefined,
+          mimeType: ss.mimeType ? String(ss.mimeType) : undefined,
+          viewUrl: ss.viewUrl ? String(ss.viewUrl) : undefined,
+        }));
+        mappedSocSlots.forEach(ss => {
+          const existingIdx = fetchedSlots.findIndex((s) => 
+            (s.photoTypeCode && ss.photoTypeCode && s.photoTypeCode.toUpperCase() === ss.photoTypeCode.toUpperCase()) ||
+            (s.photoTypeId === ss.photoTypeId && s.photoTypeCode?.toUpperCase().startsWith('SOCIETY_'))
+          );
+          if (existingIdx !== -1) {
+            fetchedSlots[existingIdx] = { ...fetchedSlots[existingIdx], ...ss };
+          } else {
+            fetchedSlots.push(ss as PropertyPhotoTypeWithStatusDto);
+          }
+        });
+      }
+
+      const sPhotosRes = socPhotosRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
+      if (sPhotosRes && sPhotosRes.success && sPhotosRes.data) {
+        const mappedSocPhotos = sPhotosRes.data.map((sp: Record<string, unknown>) => ({
+          propertyPhotoId: Number(sp.societyPhotoId || sp.propertyPhotoId || 0),
+          propertyId: Number(sp.societyId || sp.propertyId || 0),
+          photoTypeId: Number(sp.photoTypeId || 0),
+          photoTypeCode: String(sp.photoTypeCode || ''),
+          photoTypeName: String(sp.photoTypeName || ''),
+          displayOrder: Number(sp.displayOrder || 0),
+          remarks: sp.remarks ? String(sp.remarks) : undefined,
+          documentBindingId: sp.documentBindingId ? Number(sp.documentBindingId) : undefined,
+          documentGuid: sp.documentGuid ? String(sp.documentGuid) : undefined,
+          fileName: sp.fileName ? String(sp.fileName) : undefined,
+          mimeType: sp.mimeType ? String(sp.mimeType) : undefined,
+          viewUrl: sp.viewUrl ? String(sp.viewUrl) : undefined,
+          downloadUrl: sp.downloadUrl ? String(sp.downloadUrl) : undefined,
+          societyDetailId: targetSocietyId || undefined,
+        }));
+        mappedSocPhotos.forEach(sp => {
+          const existingIdx = fetchedPhotos.findIndex((p) => 
+            p.propertyPhotoId === sp.propertyPhotoId && 
+            p.photoTypeCode?.toUpperCase() === sp.photoTypeCode?.toUpperCase()
+          );
+          if (existingIdx !== -1) {
+            fetchedPhotos[existingIdx] = { ...fetchedPhotos[existingIdx], ...sp };
+          } else {
+            fetchedPhotos.push(sp as PropertyPhotoDto);
+          }
+        });
+      }
+
+      // Retain existing society photos across wing transitions
+      const isSocietyPhoto = (p: PropertyPhotoDto) => Boolean(
+        p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
+        p.photoTypeName?.toLowerCase().includes('society')
+      );
+      const existingSocPhotos = [...photos, ...initialPhotos].filter(isSocietyPhoto);
+      existingSocPhotos.forEach(ep => {
+        const alreadyExists = fetchedPhotos.some(fp => 
+          (fp.documentGuid && ep.documentGuid && fp.documentGuid === ep.documentGuid) ||
+          (fp.propertyPhotoId && ep.propertyPhotoId && fp.propertyPhotoId === ep.propertyPhotoId)
+        );
+        if (!alreadyExists) {
+          fetchedPhotos.push(ep);
+        }
+      });
+
+      // Inject fallback society photo if provided and not yet in fetchedPhotos
+      if (societyPhotoFallbackGuid || societyPhotoFallbackUrl) {
+        const hasSoc = fetchedPhotos.some(isSocietyPhoto);
+        if (!hasSoc) {
+          const resolvedFallbackUrl = societyPhotoFallbackUrl || (societyPhotoFallbackGuid ? getViewDocumentUrl(societyPhotoFallbackGuid) : undefined);
+          fetchedPhotos.push({
+            propertyPhotoId: 0,
+            propertyId: propertyId || 0,
+            photoTypeId: 5,
+            photoTypeCode: 'SOCIETY_PLACE',
+            photoTypeName: 'Society Place Photo',
+            displayOrder: 1,
+            documentGuid: societyPhotoFallbackGuid,
+            viewUrl: resolvedFallbackUrl,
+            downloadUrl: societyPhotoFallbackGuid ? getDownloadDocumentUrl(societyPhotoFallbackGuid) : undefined,
+            societyDetailId: targetSocietyId || undefined,
+          });
+        }
+      }
+
+      // If fetchedPhotos has a society photo, mark the society slot as hasPhoto: true
+      const firstSoc = fetchedPhotos.find(isSocietyPhoto);
+      if (firstSoc) {
+        const socSlotIdx = fetchedSlots.findIndex((s) =>
+          s.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
+          s.photoTypeName?.toLowerCase().includes('society')
+        );
+        if (socSlotIdx !== -1) {
+          fetchedSlots[socSlotIdx] = {
+            ...fetchedSlots[socSlotIdx],
+            hasPhoto: true,
+            documentGuid: firstSoc.documentGuid || fetchedSlots[socSlotIdx].documentGuid,
+            viewUrl: firstSoc.viewUrl || fetchedSlots[socSlotIdx].viewUrl,
+          };
+        }
+      }
+
       setPhotoSlots(fetchedSlots);
       setPhotos(fetchedPhotos);
 
@@ -458,7 +824,7 @@ export function usePropertyPhotosQuery(
       hasLoadedDataRef.current = true;
       setLoading(false);
     }
-  }, [propertyId, targetWingId, cacheKey]);
+  }, [propertyId, targetWingId, targetSocietyId, cacheKey, societyPhotoFallbackGuid, societyPhotoFallbackUrl, photos, initialPhotos]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

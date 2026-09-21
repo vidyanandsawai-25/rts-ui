@@ -25,6 +25,7 @@ interface BottomActionBarProps {
   properties?: PropertyListItem[];
   categoryId?: number;
   societyDetailId?: number;
+  wingDetailId?: number;
   isCombined?: boolean;
   workflowStages?: PropertyWorkflowStage[];
   currentWorkflowStageId?: number;
@@ -44,6 +45,7 @@ export function BottomActionBar({
   properties = [],
   categoryId,
   societyDetailId,
+  wingDetailId,
   isCombined = false,
   workflowStages = [],
   currentWorkflowStageId,
@@ -57,7 +59,8 @@ export function BottomActionBar({
   const { handleActionClick, isPending: isActionPending, clickedCommand } = useFooterActionHandler(
     onAction,
     categoryId,
-    societyDetailId
+    societyDetailId,
+    wingDetailId
   );
 
   const groupedActions = useFooterActions(actions, actionOverrides);

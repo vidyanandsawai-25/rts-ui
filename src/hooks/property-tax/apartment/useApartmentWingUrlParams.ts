@@ -18,6 +18,10 @@ export function useApartmentWingUrlParams() {
 
       // Update URL in browser without triggering full Next.js Server Component reload loop
       window.history.replaceState(null, '', url.toString());
+
+      // Notify client-side listeners and trigger searchParams update in components
+      window.dispatchEvent(new CustomEvent('ptis:wing-params-changed', { detail: updates }));
+      window.dispatchEvent(new PopStateEvent('popstate'));
     } catch {
       // Fallback safe no-op
     }

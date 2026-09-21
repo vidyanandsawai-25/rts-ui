@@ -318,6 +318,13 @@ const FloorTable: React.FC<FloorTableProps> = ({
       setEditingFloorForm(normalizeFloorFormData(floor) as FloorData);
       setSelectedFloor(floor);
       setIsAddingNewFloor(false);
+
+      requestAnimationFrame(() => {
+        const formEl = document.getElementById('edit-floor-form-section');
+        if (formEl) {
+          formEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
     },
     [
       filteredFloors,

@@ -70,7 +70,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     dualSectionData, initialPhotoSlots, initialPhotos, showFloorParam,
     showOldTaxParam, showMapDetailsParam, showDetailsParam, rateableTaxDetails, capitalTaxDetails,
     rateableTaxError, capitalTaxError, activeTab, hasAppliedRules,
-    appliedRulesList, latitude, longitude, waybackReleases, tabHeaderInfo,
+    appliedRulesList, latitude, longitude, societyLatitude, societyLongitude, waybackReleases, tabHeaderInfo,
     mappedPropertiesData, wings,
   } = pageData;
   const ptisParams = parsePtisSearchParams(resolvedSearchParams);
@@ -183,6 +183,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           initialPhotos={initialPhotos}
           initialLatitude={latitude}
           initialLongitude={longitude}
+          societyLatitude={societyLatitude}
+          societyLongitude={societyLongitude}
           initialWaybackReleases={waybackReleases}
           initialVisible={isMediaPanelVisible}
           wings={wings}
@@ -244,8 +246,15 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               }
             />
           }
-          categoryId={propertyDetailsResult.propertyDetails.categoryId}
-          societyDetailId={societyDetails.societyDetailId}
+          categoryId={currentCategoryId}
+          societyDetailId={!isIndividual && isApartment ? societyDetails.societyDetailId : undefined}
+          wingDetailId={
+            !isIndividual && isApartment && Boolean(partitionNo && partitionNo !== '0' && partitionNo.trim() !== '')
+              ? (societyDetails.wingDetailId
+                  ? Number(societyDetails.wingDetailId)
+                  : (resolvedSearchParams?.wingDetailId ? Number(resolvedSearchParams.wingDetailId) : undefined))
+              : undefined
+          }
           isCombined={!!tabHeaderInfo?.isCombined}
         />
       </div>

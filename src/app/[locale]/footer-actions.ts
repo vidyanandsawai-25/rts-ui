@@ -64,6 +64,7 @@ const ptisEditRedirectSchema = z.object({
   rateableExpand: z.union([z.string(), z.array(z.string())]).optional(),
   capitalExpand: z.union([z.string(), z.array(z.string())]).optional(),
   dualExpand: z.union([z.string(), z.array(z.string())]).optional(),
+  categoryId: z.coerce.number().optional(),
   isApartment: z.boolean().optional(),
 });
 
@@ -142,6 +143,7 @@ export async function handleFooterAction(
           rateableExpand,
           capitalExpand,
           dualExpand,
+          categoryId,
           isApartment,
         } = validationResult.data;
 
@@ -154,14 +156,26 @@ export async function handleFooterAction(
         if (appartmentTab) params.set('appartmentTab', appartmentTab);
         if (subTab) params.set('subTab', subTab);
         if (showDetails) params.set('showDetails', showDetails);
-        const activeSocId = societyDetailId || societyId;
-        if (activeSocId) {
-          params.set('societyDetailId', String(activeSocId));
-          params.set('societyId', String(activeSocId));
+
+        const isIndividualProp = categoryId === 2 || (categoryId !== undefined && categoryId !== 1);
+        const isApartmentProp = !isIndividualProp && (isApartment || categoryId === 1);
+        const isApartmentInnerProperty = isApartmentProp && Boolean(partitionNo && partitionNo !== '0' && partitionNo.trim() !== '');
+
+        if (isApartmentProp) {
+          const activeSocId = societyDetailId || societyId;
+          if (activeSocId) {
+            params.set('societyDetailId', String(activeSocId));
+            params.set('societyId', String(activeSocId));
+          }
+          if (isApartmentInnerProperty) {
+            const activeWingId = wingDetailId || wingId;
+            if (activeWingId) {
+              params.set('wingDetailId', String(activeWingId));
+              params.set('wingId', String(activeWingId));
+            }
+            if (wingName) params.set('wingName', String(wingName));
+          }
         }
-        if (wingDetailId) params.set('wingDetailId', String(wingDetailId));
-        if (wingId) params.set('wingId', String(wingId));
-        if (wingName) params.set('wingName', String(wingName));
 
         const handleExpand = (key: string, val: string | string[] | undefined) => {
           if (val) {
@@ -204,6 +218,7 @@ export async function handleFooterAction(
         if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
         if (payload.categoryId) params.set('categoryId', String(payload.categoryId));
         if (payload.societyDetailId) params.set('societyDetailId', String(payload.societyDetailId));
+        if (payload.wingDetailId) params.set('wingDetailId', String(payload.wingDetailId));
 
         const queryString = params.toString();
         const suffix = queryString ? `?${queryString}` : '';
@@ -219,6 +234,8 @@ export async function handleFooterAction(
         if (payload.wardNo) params.set('wardNo', payload.wardNo);
         if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
         if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
+        if (payload.societyDetailId) params.set('societyDetailId', String(payload.societyDetailId));
+        if (payload.wingDetailId) params.set('wingDetailId', String(payload.wingDetailId));
         params.set('from', 'ptis');
 
         const queryString = params.toString();

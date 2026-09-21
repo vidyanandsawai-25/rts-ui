@@ -216,6 +216,8 @@ export function buildPropertySearchColumns(
               wardId={row.wardId ? Number(row.wardId) : wardOpt?.id}
               propertyNo={row.propertyNo}
               partitionNo={row.partitionNo}
+              societyDetailId={row.societyDetailId || row.societyId}
+              wingDetailId={row.wingDetailId || row.wingId}
               locale={locale}
               copyLabel={t('columns.upicId')}
             />

@@ -133,6 +133,8 @@ export interface PropertyMasterData {
   categoryTag?: string;
   propertyDescriptionRegional?: string;
   wings?: ApartmentQcWingDto[];
+  latitude?: string | number | null;
+  longitude?: string | number | null;
 }
 
 export type IndividualPropertyMasterData = PropertyMasterData;

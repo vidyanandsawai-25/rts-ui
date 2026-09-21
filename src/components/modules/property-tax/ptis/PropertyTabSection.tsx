@@ -157,11 +157,16 @@ export default function PropertyTabSection({
     const matchedProp = propertiesList.find((p) => p.propertyId === currentPropId);
 
     const rawPropDetails = initialData?.propertyDetails as unknown as Record<string, unknown> | undefined;
+    const wingsList = (matchedProp as unknown as { wings?: Array<{ societyId?: number; societyDetailId?: number; wingDetailId?: number; wingMasterId?: number }> })?.wings || (initialData as unknown as { wings?: Array<{ societyId?: number; societyDetailId?: number; wingDetailId?: number; wingMasterId?: number }> })?.wings;
 
     const resolvedSocietyId =
       urlState.societyDetailId ??
       matchedProp?.societyDetailId ??
+      matchedProp?.societyId ??
+      wingsList?.[0]?.societyId ??
+      wingsList?.[0]?.societyDetailId ??
       initialData?.societyDetails?.societyDetailId ??
+      initialData?.societyDetails?.societyId ??
       (rawPropDetails?.societyDetailId as number | undefined) ??
       (rawPropDetails?.societyId as number | undefined) ??
       null;
@@ -169,6 +174,11 @@ export default function PropertyTabSection({
     const resolvedWingId =
       urlState.wingDetailId ??
       matchedProp?.wingDetailId ??
+      matchedProp?.wingId ??
+      wingsList?.[0]?.wingDetailId ??
+      wingsList?.[0]?.wingMasterId ??
+      initialData?.societyDetails?.wingDetailId ??
+      initialData?.societyDetails?.wingId ??
       (rawPropDetails?.wingDetailId as number | undefined) ??
       (rawPropDetails?.wingId as number | undefined) ??
       null;
@@ -190,7 +200,11 @@ export default function PropertyTabSection({
     urlState.wingDetailId,
     propertiesList,
     initialData?.societyDetails?.societyDetailId,
+    initialData?.societyDetails?.societyId,
+    initialData?.societyDetails?.wingDetailId,
+    initialData?.societyDetails?.wingId,
     initialData?.propertyDetails,
+    initialData,
     updateUrl,
   ]);
 
@@ -221,7 +235,10 @@ export default function PropertyTabSection({
         setPropertyId(null);
         setExtraIds(undefined, undefined);
       } else {
-        setExtraIds(currentMatch.societyDetailId, currentMatch.wingDetailId);
+        const matchWings = (currentMatch as unknown as { wings?: Array<{ societyId?: number; societyDetailId?: number; wingDetailId?: number; wingMasterId?: number }> })?.wings;
+        const socId = currentMatch.societyDetailId || currentMatch.societyId || matchWings?.[0]?.societyId || matchWings?.[0]?.societyDetailId;
+        const wingId = currentMatch.wingDetailId || currentMatch.wingId || matchWings?.[0]?.wingDetailId || matchWings?.[0]?.wingMasterId;
+        setExtraIds(socId, wingId);
       }
       return;
     }
@@ -236,7 +253,10 @@ export default function PropertyTabSection({
     if (exactMatch) {
       setPropertyId(exactMatch.propertyId.toString());
       setCategory(exactMatch.category, exactMatch.categoryLabel);
-      setExtraIds(exactMatch.societyDetailId, exactMatch.wingDetailId);
+      const matchWings = (exactMatch as unknown as { wings?: Array<{ societyId?: number; societyDetailId?: number; wingDetailId?: number; wingMasterId?: number }> })?.wings;
+      const socId = exactMatch.societyDetailId || exactMatch.societyId || matchWings?.[0]?.societyId || matchWings?.[0]?.societyDetailId;
+      const wingId = exactMatch.wingDetailId || exactMatch.wingId || matchWings?.[0]?.wingDetailId || matchWings?.[0]?.wingMasterId;
+      setExtraIds(socId, wingId);
     }
   }, [draft.propertyNo, draft.partitionNo, draft.propertyId, propertiesList, setPropertyId, setCategory, setExtraIds]);
 
@@ -244,6 +264,7 @@ export default function PropertyTabSection({
     return propertiesList.map((p) => {
       const trimmedPartitionNo = (p.partitionNo ?? '').trim();
       const normalizedPartitionNo = trimmedPartitionNo === '0' ? '' : trimmedPartitionNo;
+      const pWings = (p as unknown as { wings?: Array<{ societyId?: number; societyDetailId?: number; wingDetailId?: number; wingMasterId?: number }> })?.wings;
       return {
         label: `${p.propertyNo}${normalizedPartitionNo ? ` - ${normalizedPartitionNo}` : ''}`,
         value: JSON.stringify({
@@ -252,8 +273,8 @@ export default function PropertyTabSection({
           propertyId: p.propertyId,
           category: p.category,
           categoryLabel: p.categoryLabel,
-          societyDetailId: p.societyDetailId,
-          wingDetailId: p.wingDetailId,
+          societyDetailId: p.societyDetailId || p.societyId || pWings?.[0]?.societyId || pWings?.[0]?.societyDetailId,
+          wingDetailId: p.wingDetailId || p.wingId || pWings?.[0]?.wingDetailId || pWings?.[0]?.wingMasterId,
         }),
       };
     });

@@ -348,6 +348,10 @@ export const useBuildingForm = (
             entityType?: string;
             societyDetailId?: number | null;
             wingDetailId?: number | null;
+            documentGuid?: string | null;
+            existingDocumentGuid?: string | null;
+            propertyCertificateId?: number | null;
+            isFileModified?: boolean;
         };
     }): Promise<{
         success: boolean;
@@ -357,7 +361,7 @@ export const useBuildingForm = (
     }> => {
         if (isSaving) return { success: false, isValid: true };
         
-        const targetTypeId = opts?.onlyCertificateTypeId ?? selectedTypeId;
+        const targetTypeId = opts?.onlyCertificateTypeId ?? selectedTypeId ?? firstCertTypeId;
         if (targetTypeId === null) {
             toast.error("No certificate selected to save.");
             return { success: false, isValid: true };
@@ -380,6 +384,8 @@ export const useBuildingForm = (
                     ? opts.overrideData.number 
                     : baseCert.number,
                 pendingFile: opts.overrideData.pendingFile || baseCert.pendingFile,
+                documentGuid: opts.overrideData.documentGuid !== undefined ? (opts.overrideData.documentGuid || undefined) : baseCert.documentGuid,
+                propertyCertificateId: opts.overrideData.propertyCertificateId !== undefined ? opts.overrideData.propertyCertificateId : baseCert.propertyCertificateId,
             }
             : baseCert;
 
@@ -489,15 +495,22 @@ export const useBuildingForm = (
                     const urlSocietyDetailId = searchParams?.get('societyDetailId') || searchParams?.get('societyId');
                     const urlWingDetailId = searchParams?.get('wingDetailId') || searchParams?.get('wingId');
 
-                    const targetSocietyDetailId = (opts?.overrideData?.societyDetailId !== undefined && opts.overrideData.societyDetailId !== null)
+                    const isSocietyMode = opts?.overrideData?.societyDetailId !== undefined
+                        ? (opts.overrideData.societyDetailId !== null && Number(opts.overrideData.societyDetailId) > 0)
+                        : Boolean(urlSocietyDetailId && Number(urlSocietyDetailId) > 0);
+
+                    const targetSocietyDetailId = (opts?.overrideData?.societyDetailId !== undefined)
                         ? opts.overrideData.societyDetailId
                         : (urlSocietyDetailId ? Number(urlSocietyDetailId) : null);
 
-                    const targetWingDetailId = (opts?.overrideData?.wingDetailId !== undefined && opts.overrideData.wingDetailId !== null)
-                        ? opts.overrideData.wingDetailId
-                        : (urlWingDetailId ? Number(urlWingDetailId) : null);
+                    const targetWingDetailId = isSocietyMode
+                        ? ((opts?.overrideData?.wingDetailId !== undefined)
+                            ? opts.overrideData.wingDetailId
+                            : (urlWingDetailId ? Number(urlWingDetailId) : null))
+                        : null;
                     const targetPropertyDetailsIds = opts?.overrideData?.propertyDetailsIds;
 
+                    const resolvedDocGuid = getCleanGuid(activeCert.documentGuid) || getCleanGuid(opts?.overrideData?.documentGuid) || getCleanGuid(opts?.overrideData?.existingDocumentGuid) || null;
                     const saveReq = {
                         propertyId: parseInt(propertyId),
                         propertyDetailsId: targetPropertyDetailsId,
@@ -510,6 +523,11 @@ export const useBuildingForm = (
                         entityType: targetEntityType,
                         societyDetailId: targetSocietyDetailId,
                         wingDetailId: targetWingDetailId,
+                        documentGuid: resolvedDocGuid,
+                        existingDocumentGuid: resolvedDocGuid,
+                        propertyCertificateId: activeCert.propertyCertificateId || opts?.overrideData?.propertyCertificateId || null,
+                        isFileModified: opts?.overrideData?.isFileModified ?? !!activeCert.pendingFile,
+                        hasExistingDocument: Boolean(resolvedDocGuid),
                     };
 
                     const result = await saveCertificateAction(locale, propertyId, saveReq);
@@ -620,7 +638,7 @@ export const useBuildingForm = (
         } finally {
             stopLoading();
         }
-    }, [buildingPermission, isSaving, locale, propertyId, startLoading, stopLoading, t, setFieldErrors, setIncompleteCertificates, setValidationErrors, selectedTypeId, activeScope, activeFloorId, floors, getCombinedFloors, router, markCurrentStateAsSaved]);
+    }, [buildingPermission, isSaving, locale, propertyId, startLoading, stopLoading, t, setFieldErrors, setIncompleteCertificates, setValidationErrors, selectedTypeId, firstCertTypeId, activeScope, activeFloorId, floors, getCombinedFloors, router, markCurrentStateAsSaved]);
 
     const { handleFileUpload, handleFileDelete } = useBuildingFileUpload(
         buildingPermission,
@@ -629,9 +647,9 @@ export const useBuildingForm = (
         t as unknown as (key: string, values?: Record<string, string | number>) => string
     );
 
-    const handleDeleteCertificate = useCallback(async (certificateTypeId: number) => {
+    const handleDeleteCertificate = useCallback(async (certificateTypeId: number): Promise<{ success: boolean; message?: string }> => {
         const activeCert = buildingPermission[certificateTypeId];
-        if (!activeCert) return;
+        if (!activeCert) return { success: false, message: "Certificate not found" };
 
         const isSavedOnBackend = typeof activeCert.propertyCertificateId === "number" && activeCert.propertyCertificateId > 0;
 
@@ -648,8 +666,9 @@ export const useBuildingForm = (
                 );
 
                 if (!response.success) {
-                    toast.error(response.message || "Failed to delete certificate");
-                    return;
+                    const errorMsg = response.message || "Failed to delete certificate";
+                    toast.error(errorMsg);
+                    return { success: false, message: errorMsg };
                 }
             }
 
@@ -679,8 +698,11 @@ export const useBuildingForm = (
                 
                 router.refresh();
             }
+            return { success: true };
         } catch (_error) {
-            toast.error("An error occurred while deleting the certificate");
+            const errorMsg = "An error occurred while deleting the certificate";
+            toast.error(errorMsg);
+            return { success: false, message: errorMsg };
         } finally {
             stopLoading();
         }

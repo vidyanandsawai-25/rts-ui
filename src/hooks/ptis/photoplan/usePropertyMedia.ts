@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
 import {
@@ -19,6 +19,7 @@ import {
 import { useImageHoverPreview } from './useImageHoverPreview';
 import { type WaybackRelease, DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
 import { extractCoordinates, getSatelliteTileUrl } from '@/lib/utils/coordinate-utils';
+import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 
 export interface UsePropertyMediaProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
@@ -39,6 +40,11 @@ export interface UsePropertyMediaProps {
   isAmenity?: boolean;
   wingName?: string;
   wingDetailId?: number | null;
+  societyPhotoFallbackGuid?: string;
+  societyPhotoFallbackUrl?: string;
+  societyLatitude?: number;
+  societyLongitude?: number;
+  isQuickDataEntry?: boolean;
 }
 
 export function usePropertyMedia({
@@ -60,8 +66,16 @@ export function usePropertyMedia({
   partitionNo = null,
   entityType,
   isAmenity = false,
+  societyPhotoFallbackGuid,
+  societyPhotoFallbackUrl,
+  societyLatitude,
+  societyLongitude,
+  isQuickDataEntry: propIsQuickDataEntry,
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
+  const pathname = usePathname();
+  const isQdeRoute = typeof pathname === 'string' && pathname.toLowerCase().includes('quickdataentry');
+  const effectiveIsQuickDataEntry = propIsQuickDataEntry !== undefined ? propIsQuickDataEntry : isQdeRoute;
   const [showMoreImages, setShowMoreImages] = useState(false);
   const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave, resetHoverPreview } =
     useImageHoverPreview();
@@ -146,6 +160,32 @@ export function usePropertyMedia({
     }
   }, [initialPhotoSlots, resetHoverPreview]);
 
+  const loadPhotoSlotsOnDemand = useCallback(async () => {
+    if (photoSlots.length > 0) return;
+    try {
+      const { getPropertyPhotoTypesByScopeAction } = await import(
+        '@/app/[locale]/property-tax/ptis/PhotoPlanType.action'
+      );
+      const res = await getPropertyPhotoTypesByScopeAction('PROPERTY');
+      if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+        const dynamicSlots: PropertyPhotoTypeWithStatusDto[] = res.data
+          .filter((st) => st.isActive !== false)
+          .map((st) => ({
+            photoTypeId: st.id,
+            photoTypeCode: st.photoTypeCode,
+            photoTypeName: st.photoTypeName,
+            photoScope: st.photoScope || 'PROPERTY',
+            displayOrder: st.displayOrder || 1,
+            hasPhoto: false,
+            photoCount: 0,
+          }));
+        setPhotoSlots((prev) => (prev.length === 0 ? dynamicSlots : prev));
+      }
+    } catch {
+      // Ignore on-demand loading errors
+    }
+  }, [photoSlots.length]);
+
   const isAmenityDetected =
     Boolean(isAmenity) ||
     categoryId === 140 ||
@@ -163,6 +203,13 @@ export function usePropertyMedia({
       partitionNo && String(partitionNo).trim().toUpperCase().startsWith('AM')
     );
 
+  const hasExplicitWing = Boolean(
+    propWingDetailId ||
+    rawWingDetailId ||
+    selectedWingId ||
+    searchWingName
+  );
+
   const categories = useMemo(
     () =>
       mapSlotsToCategories(
@@ -176,7 +223,12 @@ export function usePropertyMedia({
         categoryId,
         propertyTypeId,
         entityType,
-        isAmenityDetected
+        isAmenityDetected,
+        societyPhotoFallbackGuid,
+        societyPhotoFallbackUrl,
+        effectiveIsQuickDataEntry,
+        partitionNo,
+        hasExplicitWing
       ),
     [
       photoSlots,
@@ -191,6 +243,11 @@ export function usePropertyMedia({
       propertyTypeId,
       entityType,
       isAmenityDetected,
+      societyPhotoFallbackGuid,
+      societyPhotoFallbackUrl,
+      effectiveIsQuickDataEntry,
+      partitionNo,
+      hasExplicitWing,
     ]
   );
 
@@ -319,8 +376,9 @@ export function usePropertyMedia({
       { latitude: initialLatitude, longitude: initialLongitude },
       matchedWing as unknown as Record<string, unknown>,
       ...(Array.isArray(_wings) ? _wings : []).map((w) => w as unknown as Record<string, unknown>),
+      { latitude: societyLatitude, longitude: societyLongitude },
     ]);
-  }, [initialLatitude, initialLongitude, matchedWing, _wings]);
+  }, [initialLatitude, initialLongitude, matchedWing, _wings, societyLatitude, societyLongitude]);
 
   const hasCoords = parsedCoords.hasCoords;
   const effectiveLat = parsedCoords.latitude;
@@ -401,7 +459,24 @@ export function usePropertyMedia({
       }),
     [categories]
   );
-  const societyPhoto = societyPhotoCategory?.images?.[0];
+  const societyPhoto = useMemo(() => {
+    const fromCat = societyPhotoCategory?.images?.[0];
+    if (fromCat && (fromCat.src || fromCat.documentGuid)) return fromCat;
+    if (societyPhotoFallbackGuid || societyPhotoFallbackUrl) {
+      const url = societyPhotoFallbackUrl || (societyPhotoFallbackGuid ? getViewDocumentUrl(societyPhotoFallbackGuid) : '');
+      return {
+        src: url,
+        fullSrc: url,
+        alt: t('media.societyPhoto') || 'Society Photo',
+        title: t('media.societyPhoto') || 'Society Photo',
+        photoTypeId: societyPhotoCategory?.photoTypeId || 5,
+        photoTypeCode: societyPhotoCategory?.photoTypeCode || 'SOCIETY_PLACE',
+        documentGuid: societyPhotoFallbackGuid,
+        hasPhoto: true,
+      };
+    }
+    return fromCat;
+  }, [societyPhotoCategory, societyPhotoFallbackGuid, societyPhotoFallbackUrl, t]);
 
   const wingPhotoCategory = useMemo(
     () => findCategory(categories, ['WING_BUILDING', 'WING_PHOTO', 'WING'], ['wing building', 'wing photo', 'wing']),
@@ -441,6 +516,7 @@ export function usePropertyMedia({
     resetHoverPreview,
     signatureCategory,
     signaturePhoto,
+    loadPhotoSlotsOnDemand,
     t,
   };
 }

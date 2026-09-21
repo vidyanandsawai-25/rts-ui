@@ -15,6 +15,7 @@ vi.mock('next-intl', () => ({
       'tabs.Discount': 'Discount & Social Data',
       'tabs.FloorSubmission': 'Floor',
       'tabs.OldDetails': 'Old Details',
+      'photos.showPropertyPhotos': 'Property Photos',
     };
     return map[key] || key;
   },
@@ -138,5 +139,25 @@ describe('TabNavigation Component', () => {
     expect(screen.getByText('Building Permission')).toBeInTheDocument();
     expect(screen.getByText('Discount & Social Data')).toBeInTheDocument();
     expect(screen.getByText('Old Details')).toBeInTheDocument();
+  });
+
+  it('renders and handles media panel toggle button always in blue highlight', () => {
+    const onToggle = vi.fn();
+    const { rerender } = render(
+      <TabNavigation onToggleMediaPanel={onToggle} isMediaPanelOpen={false} />
+    );
+
+    const toggleBtn = screen.getByRole('button', { name: /Property Photos/i });
+    expect(toggleBtn).toBeInTheDocument();
+    expect(toggleBtn.className).toContain('from-blue-500 to-blue-600');
+    expect(toggleBtn.className).not.toContain('ring-2 ring-blue-400');
+
+    toggleBtn.click();
+    expect(onToggle).toHaveBeenCalledTimes(1);
+
+    rerender(<TabNavigation onToggleMediaPanel={onToggle} isMediaPanelOpen={true} />);
+    const activeToggleBtn = screen.getByRole('button', { name: /Property Photos/i });
+    expect(activeToggleBtn.className).toContain('from-blue-500 to-blue-600');
+    expect(activeToggleBtn.className).toContain('ring-2 ring-blue-400');
   });
 });

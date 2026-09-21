@@ -11,6 +11,7 @@ export interface PhotoCategory {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   images: AdditionalImage[];
   isCustom?: boolean;
   photoCount?: number;

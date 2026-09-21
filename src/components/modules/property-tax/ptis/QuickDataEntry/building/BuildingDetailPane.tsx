@@ -33,9 +33,13 @@ interface BuildingDetailPaneProps {
     floors?: FloorCertificateDto[];
         isFloorLoading?: boolean;
     cameFromFloor?: boolean;
-    onDeleteCertificate?: () => void;
+    onDeleteCertificate?: () => void | Promise<unknown>;
     isSaving?: boolean;
-    onSave?: () => void;
+    isDeletingCertificate?: boolean;
+    hasChanges?: boolean;
+    saveError?: string;
+    deleteError?: string;
+    onSave?: () => void | Promise<unknown>;
 }
 
 export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
@@ -60,9 +64,23 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     isFloorLoading = false,
     onDeleteCertificate,
     isSaving = false,
+    isDeletingCertificate = false,
+    hasChanges = false,
+    saveError,
+    deleteError,
     onSave,
 }) => {
     const { confirm } = useConfirm();
+    const [localIsDeleting, setLocalIsDeleting] = React.useState(false);
+    const [actionError, setActionError] = React.useState<string | null>(null);
+    const isDeleting = isDeletingCertificate || localIsDeleting;
+
+    const currentContextKey = `${data?.certificateTypeId}-${activeScope}-${activeFloorId}`;
+    const [prevContextKey, setPrevContextKey] = React.useState(currentContextKey);
+    if (prevContextKey !== currentContextKey) {
+        setPrevContextKey(currentContextKey);
+        setActionError(null);
+    }
 
     const displayData = React.useMemo(() => {
         if (activeScope === "Floor" && data && !data.enabled && propertyWideCert) {
@@ -155,8 +173,38 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                 confirmText: t("building.confirmDeleteCertificateOk") || "Yes, Delete",
                 cancelText: t("building.confirmDeleteCertificateCancel") || "No, Cancel",
                 variant: "delete",
-                onConfirm: onDeleteCertificate
+                onConfirm: async () => {
+                    setLocalIsDeleting(true);
+                    setActionError(null);
+                    try {
+                        const res = await onDeleteCertificate();
+                        if (res && typeof res === "object" && (res as { success?: boolean }).success === false) {
+                            const errorMsg = (res as { message?: string; error?: string }).error || (res as { message?: string; error?: string }).message || t("building.deleteError") || "Failed to delete certificate";
+                            setActionError(errorMsg);
+                        }
+                    } catch (err: unknown) {
+                        const errorMsg = err instanceof Error ? err.message : (t("building.deleteError") || "Failed to delete certificate");
+                        setActionError(errorMsg);
+                    } finally {
+                        setLocalIsDeleting(false);
+                    }
+                }
             });
+        }
+    };
+
+    const handleSaveClick = async () => {
+        if (!onSave || isSaving || isDeleting || isDisabled || !hasChanges) return;
+        setActionError(null);
+        try {
+            const res = await onSave();
+            if (res && typeof res === "object" && (res as { success?: boolean }).success === false) {
+                const errorMsg = (res as { message?: string; error?: string }).error || (res as { message?: string; error?: string }).message || t("building.saveError") || "Failed to save changes";
+                setActionError(errorMsg);
+            }
+        } catch (err: unknown) {
+            const errorMsg = err instanceof Error ? err.message : (t("building.saveError") || "Failed to save changes");
+            setActionError(errorMsg);
         }
     };
 
@@ -301,7 +349,10 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                                 <Label className="text-sm font-bold text-blue-800">{t("building.certificateNumber", { name: displayName || "Document" })}<span className="text-red-500 ml-0.5">*</span></Label>
                                 <Input
                                     value={displayData.number}
-                                    onChange={(e) => onInputChange("number", e.target.value.replace(/\s+/g, ""))}
+                                    onChange={(e) => {
+                                        onInputChange("number", e.target.value.replace(/\s+/g, ""));
+                                        setActionError(null);
+                                    }}
                                     onKeyDown={(e) => { if (e.key === " ") e.preventDefault(); }}
                                     placeholder={t("building.certificateNumberPlaceholder", { name: displayName || "document" })}
                                     disabled={isDisabled}
@@ -323,7 +374,10 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                                     type="date"
                                     max={maxDate}
                                     value={displayData.date}
-                                    onChange={(e) => onInputChange("date", e.target.value)}
+                                    onChange={(e) => {
+                                        onInputChange("date", e.target.value);
+                                        setActionError(null);
+                                    }}
                                     placeholder={t("building.certificateDatePlaceholder", { name: displayName || "document" })}
                                     disabled={isDisabled}
                                     className={`h-10 text-sm placeholder:text-gray-400 [&::-webkit-datetime-edit]:text-gray-800 focus:ring-1 shadow-sm transition-colors font-semibold ${
@@ -341,6 +395,23 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                 )}
             </div>
 
+            {(actionError || saveError || deleteError) && (
+                <div className="mb-2 p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between text-xs text-red-700">
+                    <div className="flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                        <span className="font-semibold">{actionError || saveError || deleteError}</span>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setActionError(null)}
+                        className="text-red-500 hover:text-red-700 font-bold ml-2 cursor-pointer"
+                        aria-label="Dismiss error"
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
+
             <div className="pt-2.5 border-t border-blue-50 mt-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
@@ -352,7 +423,9 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                     {onDeleteCertificate && isCertificateFilled && isUpdateCase && !isDisabled && (
                         <DeleteButton
                             size="xs"
-                            disabled={isDisabled}
+                            aria-label={t("building.deleteCertificate") || "Delete Certificate & Data"}
+                            disabled={isDisabled || isSaving || isDeleting}
+                            isLoading={isDeleting}
                             onClick={handleDeleteCertificateWithConfirm}
                         >
                             {t("building.deleteCertificate") || "Delete Certificate & Data"}
@@ -360,8 +433,8 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                     )}
                     {onSave && (
                         <SaveButton
-                            onClick={onSave}
-                            disabled={isSaving || isDisabled}
+                            onClick={handleSaveClick}
+                            disabled={!hasChanges || isSaving || isDeleting || isDisabled}
                             isLoading={isSaving}
                             label={t("common.saveChanges") || "Save Changes"}
                         />

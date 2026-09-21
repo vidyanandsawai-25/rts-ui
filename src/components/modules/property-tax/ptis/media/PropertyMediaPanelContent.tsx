@@ -52,6 +52,7 @@ interface PropertyMediaPanelContentProps {
   fallbackAfterUrl: string;
   cdCategory?: PhotoCategory;
   isMainProperty?: boolean;
+  isQuickDataEntry?: boolean;
 }
 
 export function PropertyMediaPanelContent({
@@ -86,17 +87,57 @@ export function PropertyMediaPanelContent({
   wings: _wings = [],
   wingName,
   isMainProperty = false,
+  isQuickDataEntry = false,
 }: PropertyMediaPanelContentProps): React.ReactElement {
-  const isSociety = !isAmenityProperty && categories.some((c) => c.photoTypeCode?.startsWith('SOCIETY_') || c.photoTypeCode?.includes('SOCIETY'));
-  const isWing = !isAmenityProperty && (Boolean(wingName) || Boolean(wingPhotoCategory) || categories.some((c) => c.photoTypeCode?.startsWith('WING_') || c.photoTypeCode?.includes('WING')));
-
-  const hasPropertySlot = categories.some((c) => !c.isCustom && (c.photoTypeCode?.startsWith('PROPERTY_') || c.photoTypeCode === 'FRONT'));
-
   const [expandedCategory, setExpandedCategory] = React.useState<'society' | 'wing' | 'property' | null>(null);
 
   const societyRemainingImages = React.useMemo(() => societyPhotoCategory?.images.slice(1) || [], [societyPhotoCategory]);
   const wingRemainingImages = React.useMemo(() => wingPhotoCategory?.images.slice(1) || [], [wingPhotoCategory]);
   const propertyRemainingImages = React.useMemo(() => propertyPhotoCategory?.images.slice(1) || [], [propertyPhotoCategory]);
+
+  if (isQuickDataEntry) {
+    return (
+      <>
+        <ImageHoverPreview
+          key={hoverPreview?.src ?? 'empty'}
+          src={hoverPreview?.src ?? ''}
+          title={hoverPreview?.title ?? ''}
+          visible={hoverPreview !== null}
+          onMouseEnter={cancelImageLeave}
+          onMouseLeave={handleImageLeave}
+        />
+        <div className="flex-1 min-h-0 h-full overflow-y-auto p-2 flex flex-col gap-2 scrollbar-thin">
+          {categories.map((cat, idx) => {
+            const firstImg = cat.images[0];
+            return (
+              <MediaImageCard
+                key={cat.photoTypeId || cat.photoTypeCode}
+                src={firstImg?.src || ''}
+                documentGuid={firstImg?.documentGuid}
+                fullSrc={firstImg?.fullSrc || ''}
+                alt={cat.photoTypeName}
+                label={cat.photoTypeName}
+                hoverBorderColor="hover:border-blue-500"
+                onClick={() => {
+                  openDrawer(idx, 0);
+                }}
+                onMouseEnter={() =>
+                  handleImageHover(firstImg?.fullSrc || firstImg?.src || '', cat.photoTypeName)
+                }
+                onMouseLeave={handleImageLeave}
+                hasPhoto={firstImg?.hasPhoto}
+              />
+            );
+          })}
+        </div>
+      </>
+    );
+  }
+
+  const isSociety = !isAmenityProperty && categories.some((c) => c.photoTypeCode?.startsWith('SOCIETY_') || c.photoTypeCode?.includes('SOCIETY'));
+  const isWing = !isAmenityProperty && (Boolean(wingName) || Boolean(wingPhotoCategory) || categories.some((c) => c.photoTypeCode?.startsWith('WING_') || c.photoTypeCode?.includes('WING')));
+
+  const hasPropertySlot = categories.some((c) => !c.isCustom && (c.photoTypeCode?.startsWith('PROPERTY_') || c.photoTypeCode === 'FRONT'));
 
   const wingCardLabel = formatWingCardLabel(
     wingPhotoCategory?.photoTypeName || wingPhoto?.title || (t('media.wingPhoto') || 'Wing Photo'),
@@ -149,6 +190,62 @@ export function PropertyMediaPanelContent({
               onMouseLeave={handleImageLeave}
               hasPhoto={amenityPhoto?.hasPhoto}
             />
+
+            {/* Society Photo Card for Amenity Property */}
+            {(societyPhotoCategory || societyPhoto?.hasPhoto) && (
+              <>
+                <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
+                <MediaImageCard
+                  src={societyPhoto?.src || ''}
+                  documentGuid={societyPhoto?.documentGuid}
+                  fullSrc={societyPhoto?.fullSrc || ''}
+                  alt={societyPhoto?.alt || (t('media.societyPhoto') || 'Society Photo')}
+                  label={societyPhoto?.title || (t('media.societyPhoto') || 'Society Photo')}
+                  hoverBorderColor="hover:border-blue-500"
+                  badgeText={
+                    expandedCategory !== 'society' && societyRemainingImages.length > 0
+                      ? `+${societyRemainingImages.length} ${t('media.more') || 'More'}`
+                      : undefined
+                  }
+                  onClick={() => openDrawer(societyPhotoCategory ? categories.indexOf(societyPhotoCategory) : 0, 0)}
+                  onMouseEnter={() => handleImageHover(societyPhoto?.fullSrc || societyPhoto?.src || '', societyPhoto?.title || (t('media.societyPhoto') || 'Society Photo'))}
+                  onMouseLeave={handleImageLeave}
+                  hasPhoto={societyPhoto?.hasPhoto}
+                >
+                  {societyRemainingImages.length > 0 && (
+                    <Button
+                      variant="edit"
+                      size="xs"
+                      className="!h-7 !w-7 !p-0 shadow-lg bg-white cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedCategory((p) => (p === 'society' ? null : 'society'));
+                      }}
+                      aria-label={expandedCategory === 'society' ? 'Hide more images' : 'View more images'}
+                    >
+                      {expandedCategory === 'society' ? <X className="w-3.5 h-3.5 cursor-pointer" /> : <Images className="w-3.5 h-3.5 cursor-pointer" />}
+                    </Button>
+                  )}
+                </MediaImageCard>
+
+                {expandedCategory === 'society' && (
+                  <div className="col-span-full sm:col-span-3 lg:col-span-1 flex flex-col gap-2">
+                    <AdditionalImagesGrid
+                      images={societyRemainingImages}
+                      onImageClick={(index: number) => {
+                        const clickedImg = societyRemainingImages[index];
+                        const catIdx = categories.findIndex((c) => c.photoTypeId === clickedImg.photoTypeId);
+                        const targetCategory = categories[catIdx];
+                        const imgIdx = targetCategory ? targetCategory.images.findIndex((img) => img.propertyPhotoId === clickedImg.propertyPhotoId) : 0;
+                        openDrawer(catIdx >= 0 ? catIdx : 0, imgIdx >= 0 ? imgIdx : 0);
+                      }}
+                      onImageHover={handleImageHover}
+                      onImageLeave={handleImageLeave}
+                    />
+                  </div>
+                )}
+              </>
+            )}
           </>
         ) : isSociety && isWing ? (
           <>

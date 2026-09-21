@@ -61,6 +61,10 @@ export interface SocietyDetailsData {
   managerName: string;
   managerEmail: string;
   managerMobileNo: string;
+  societyDetailId?: number | null;
+  societyId?: number | null;
+  wingDetailId?: number | null;
+  wingId?: number | null;
 }
 
 export interface BuildingPermissionItem {

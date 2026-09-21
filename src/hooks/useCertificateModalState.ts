@@ -327,6 +327,10 @@ export function useCertificateModalState({
   const [status, setStatus] = useState<CertificateStatus>('Active');
   const [remarks, setRemarks] = useState<string>('');
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [existingDocumentGuid, setExistingDocumentGuid] = useState<string | null>(initialData?.documentGuid || null);
+  const [existingFileName, setExistingFileName] = useState<string | null>(initialData?.fileName || null);
+  const [existingPropertyCertificateId, setExistingPropertyCertificateId] = useState<number | null>(initialData?.propertyCertificateId || null);
+  const [hasExistingDocument, setHasExistingDocument] = useState<boolean>(Boolean(initialData?.documentGuid));
 
   const selectedUnitPropertyIds = useMemo(() => {
     return Array.from(selectedUnitIds).map((id) => {
@@ -383,10 +387,20 @@ export function useCertificateModalState({
         : '';
       setCertificateDate(formattedDate);
       setStatus((activeCertificate.status as CertificateStatus) || 'Active');
+      setExistingDocumentGuid(activeCertificate.documentGuid || null);
+      setExistingFileName(activeCertificate.fileName || null);
+      setExistingPropertyCertificateId(activeCertificate.propertyCertificateId || null);
+      setHasExistingDocument(Boolean(activeCertificate.hasDocument || activeCertificate.documentGuid));
+      setAttachedFiles([]);
     } else {
       setCertificateNumber('');
       setCertificateDate('');
       setStatus('Active');
+      setExistingDocumentGuid(null);
+      setExistingFileName(null);
+      setExistingPropertyCertificateId(null);
+      setHasExistingDocument(false);
+      setAttachedFiles([]);
     }
   }
 
@@ -431,6 +445,10 @@ export function useCertificateModalState({
             : '';
           setCertificateDate(formattedDate);
           setStatus((match.status as CertificateStatus) || 'Active');
+          setExistingDocumentGuid(match.documentGuid || null);
+          setExistingFileName(match.fileName || null);
+          setExistingPropertyCertificateId(match.propertyCertificateId || null);
+          setHasExistingDocument(Boolean(match.hasDocument || match.documentGuid));
         }
         return normalized;
       }
@@ -543,6 +561,14 @@ export function useCertificateModalState({
     setRemarks,
     attachedFiles,
     setAttachedFiles,
+    existingDocumentGuid,
+    setExistingDocumentGuid,
+    existingFileName,
+    setExistingFileName,
+    existingPropertyCertificateId,
+    setExistingPropertyCertificateId,
+    hasExistingDocument,
+    setHasExistingDocument,
     wings: resolvedWings,
     certificateTypes: resolvedCertificateTypes,
     availableFloors,

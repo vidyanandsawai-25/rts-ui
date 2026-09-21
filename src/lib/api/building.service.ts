@@ -421,6 +421,11 @@ export interface ApartmentQcCertificateRecordPayload {
     certificateIssueDate?: string;
     status?: string;
     documentGuid?: string | null;
+    existingDocumentGuid?: string | null;
+    propertyCertificateId?: number | null;
+    isFileModified?: boolean;
+    hasDocument?: boolean;
+    fileName?: string | null;
 }
 
 import type { 

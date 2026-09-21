@@ -32,6 +32,10 @@ interface PtisLayoutWrapperProps {
   initialWaybackReleases?: WaybackRelease[];
   initialVisible?: boolean;
   wings?: WingWiseWingDetails[];
+  societyBuildingPhotoGuid?: string;
+  societyPhotoUrl?: string;
+  societyLatitude?: number;
+  societyLongitude?: number;
 }
 
 import { useWaybackReleases } from '@/hooks/ptis/useWaybackReleases';
@@ -57,6 +61,10 @@ function PtisLayoutWrapperContent({
   initialLongitude,
   initialWaybackReleases = [],
   wings = [],
+  societyBuildingPhotoGuid,
+  societyPhotoUrl,
+  societyLatitude,
+  societyLongitude,
 }: PtisLayoutWrapperProps) {
   const { isPanelVisible } = useMediaPanel();
   const searchParams = useSearchParams();
@@ -66,7 +74,10 @@ function PtisLayoutWrapperContent({
     isPanelVisible,
     isDrawerOpen,
     initialPhotoSlots,
-    initialPhotos
+    initialPhotos,
+    societyDetailId,
+    societyBuildingPhotoGuid,
+    societyPhotoUrl
   );
   const { waybackReleases } = useWaybackReleases(isPanelVisible || isDrawerOpen);
 
@@ -112,6 +123,10 @@ function PtisLayoutWrapperContent({
             onPhotosChange={setPhotos}
             onPhotoSlotsChange={setPhotoSlots}
             wings={wings}
+            societyBuildingPhotoGuid={societyBuildingPhotoGuid}
+            societyPhotoUrl={societyPhotoUrl}
+            societyLatitude={societyLatitude}
+            societyLongitude={societyLongitude}
           />
         </div>
       </div>

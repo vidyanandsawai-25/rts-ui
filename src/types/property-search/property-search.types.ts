@@ -114,6 +114,10 @@ export interface SearchResult {
   cv: number | null;
   totalTax: number;
   status: PropertyStatus;
+  societyDetailId?: number | null;
+  societyId?: number | null;
+  wingDetailId?: number | null;
+  wingId?: number | null;
 }
 
 /* ================= STATS ================= */
@@ -271,6 +275,8 @@ export interface UpicLinkCellProps {
   wardId?: number;
   propertyNo?: string;
   partitionNo?: string;
+  societyDetailId?: number | null;
+  wingDetailId?: number | null;
   locale: string;
   copyLabel: string;
 }

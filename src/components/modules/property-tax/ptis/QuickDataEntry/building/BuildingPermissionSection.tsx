@@ -13,6 +13,9 @@ import {
   Info,
   Pencil,
   Eye,
+  FileCheck,
+  Paperclip,
+  AlertCircle,
 } from 'lucide-react';
 import { SaveButton, Input, Checkbox, Select, SearchInput, MasterTable, Badge, Button, Label, ValidationMessage, DocumentViewerModal } from '@/components/common';
 import type { Column } from '@/components/common';
@@ -46,6 +49,7 @@ export interface UnitRow extends Record<string, unknown> {
   hasDocument?: boolean;
   documentGuid?: string | null;
   fileName?: string | null;
+  propertyCertificateId?: number | null;
 }
 
 const DEFAULT_UNIT_STATUS: UnitStatusResolution = { status: 'none', certificate: null };
@@ -73,6 +77,13 @@ export interface BuildingPermissionSectionProps {
     status: CertificateStatus;
     remarks: string;
     attachedFiles: File[];
+    documentGuid?: string | null;
+    existingDocumentGuid?: string | null;
+    fileName?: string | null;
+    propertyCertificateId?: number | null;
+    hasExistingDocument?: boolean;
+    isFileModified?: boolean;
+    preserveExistingDocument?: boolean;
   }) => Promise<boolean | { success?: boolean; message?: string } | void> | void;
   onDelete?: (certificateTypeId: number) => void;
   onDeleteRecord?: (params: {
@@ -132,6 +143,8 @@ export function BuildingPermissionSection({
   const [showActiveFirst, setShowActiveFirst] = useState(false);
   const [enabledStateMap, setEnabledStateMap] = useState<Record<number, boolean>>({});
   const [removedAttachmentTypeIds, setRemovedAttachmentTypeIds] = useState<Set<number>>(new Set());
+  const [isDeletingRecord, setIsDeletingRecord] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const isWingWise = searchParams?.get('isWingWise') === 'true';
 
@@ -163,12 +176,16 @@ export function BuildingPermissionSection({
     remarks,
     attachedFiles,
     setAttachedFiles,
+    existingDocumentGuid,
+    existingFileName,
+    existingPropertyCertificateId,
+    hasExistingDocument,
     wings: activeWings,
     certificateTypes: activeCertificateTypes,
     filteredUnits,
-    isAllUnitsSelected,
+    isAllUnitsSelected: _isAllUnitsSelected,
     toggleUnitSelection,
-    toggleAllUnits,
+    toggleAllUnits: _toggleAllUnits,
     isLoadingMoreUnits,
     loadNextUnitsPage,
     gridItems,
@@ -211,6 +228,7 @@ export function BuildingPermissionSection({
   const handleSelectCertificate = (typeId: number) => {
     setSelectedTypeId(typeId);
     setFieldErrors({});
+    setActionError(null);
   };
 
   const handleToggleEnabled = (typeId: number, checked: boolean) => {
@@ -252,56 +270,98 @@ export function BuildingPermissionSection({
     // 3. Document attachment validation
     if (attachedFiles.length === 0 && !(level === 'Apartment' && initialData?.documentGuid && !removedAttachmentTypeIds.has(selectedTypeId))) {
       const activeGridMatch = activeCertificate || gridRecords.find((r) => r.certificateTypeId === selectedTypeId);
-      if (removedAttachmentTypeIds.has(selectedTypeId) || (!activeGridMatch?.hasDocument && !activeGridMatch?.documentGuid)) {
+      if (removedAttachmentTypeIds.has(selectedTypeId) || (!activeGridMatch?.hasDocument && !activeGridMatch?.documentGuid && !existingDocumentGuid)) {
         errors.document = t('common.validation.documentRequired') || 'Certificate document attachment is required.';
       }
     }
 
-    // 4. Level-specific validation
+    // 4. Scope-specific validation
     if (!isApartmentIndividual && level === 'Wing' && !selectedWingDetailId) {
-      errors.wing = t('building.errors.selectWingRequired') || 'Please select a wing.';
+      errors.wing = t('building.errors.wingRequired') || 'Please select a wing.';
     }
-    if (!isApartmentIndividual && level === 'Unit') {
-      if (selectedUnitIds.size === 0) {
-        errors.unit = t('building.selectUnits') || 'Please select at least one unit.';
-      }
+    if (!isApartmentIndividual && level === 'Unit' && selectedUnitIds.size === 0) {
+      errors.unit = t('building.errors.unitRequired') || 'Please select at least one unit.';
     }
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      toast.error(t('common.validation.fixErrors') || 'Please correct validation errors before saving.');
       return;
     }
 
-    const resolvedSelectedPropertyIds = Array.from(selectedUnitIds).map((id) => {
+    const resolvedSelectedPropertyIds = Array.from(selectedUnitIds).filter((id) => {
+      if (selectedUnitIds.size === 1) return true;
+      const stat = unitStatusMap.get(id);
+      return stat?.status !== 'direct' && !stat?.certificate?.propertyCertificateId;
+    }).map((id) => {
       const matched = filteredUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id)
         || units.find((u) => u.propertyDetailsId === id || u.propertyId === id);
       return matched?.propertyId || id;
     });
 
+    const resolvedSelectedUnitDetailsIds = Array.from(selectedUnitIds).filter((id) => {
+      if (selectedUnitIds.size === 1) return true;
+      const stat = unitStatusMap.get(id);
+      return stat?.status !== 'direct' && !stat?.certificate?.propertyCertificateId;
+    });
+
+    const isFileExplicitlyDeleted = removedAttachmentTypeIds.has(selectedTypeId);
+    const isNewFileAttached = attachedFiles.length > 0;
+    const isFileModified = isNewFileAttached || isFileExplicitlyDeleted;
+
+    let resolvedDocGuid: string | null = null;
+    let resolvedFileName: string | null = null;
+    let resolvedCertId: number | null = null;
+
+    if (!isFileExplicitlyDeleted) {
+      if (level === 'Unit' && selectedUnitIds.size === 1) {
+        const unitId = Array.from(selectedUnitIds)[0];
+        const unitStat = unitStatusMap.get(unitId);
+        resolvedDocGuid = existingDocumentGuid || unitStat?.certificate?.documentGuid || activeCertificate?.documentGuid || null;
+        resolvedFileName = existingFileName || unitStat?.certificate?.fileName || activeCertificate?.fileName || null;
+        resolvedCertId = existingPropertyCertificateId || unitStat?.certificate?.propertyCertificateId || activeCertificate?.propertyCertificateId || null;
+      } else {
+        resolvedDocGuid = existingDocumentGuid || activeCertificate?.documentGuid || (level === 'Apartment' ? initialData?.documentGuid : null) || null;
+        resolvedFileName = existingFileName || activeCertificate?.fileName || (level === 'Apartment' ? initialData?.fileName : null) || null;
+        resolvedCertId = existingPropertyCertificateId || activeCertificate?.propertyCertificateId || (level === 'Apartment' ? initialData?.propertyCertificateId : null) || null;
+      }
+    }
+
+    const hasDoc = Boolean(resolvedDocGuid || activeCertificate?.hasDocument || hasExistingDocument);
+
     setFieldErrors({});
+    setActionError(null);
     try {
       const result = await onSave?.({
         level,
         selectedWingDetailId,
         selectedUnitIds: resolvedSelectedPropertyIds,
-        selectedUnitDetailsIds: Array.from(selectedUnitIds),
-        isAllUnitsSelected,
+        selectedUnitDetailsIds: resolvedSelectedUnitDetailsIds,
+        isAllUnitsSelected: isAllSelectableUnitsSelected,
         certificateTypeId: selectedTypeId,
         certificateDate,
         certificateNumber,
         status,
         remarks,
-        attachedFiles,
+        attachedFiles: isNewFileAttached ? attachedFiles : [],
+        documentGuid: resolvedDocGuid,
+        existingDocumentGuid: resolvedDocGuid,
+        fileName: resolvedFileName,
+        propertyCertificateId: resolvedCertId,
+        hasExistingDocument: hasDoc,
+        isFileModified,
+        preserveExistingDocument: !isFileModified && hasDoc,
       });
 
       const isSuccess = result !== false && (typeof result !== 'object' || result === null || (result as { success?: boolean }).success !== false);
       if (isSuccess) {
         setAttachedFiles([]);
         await refetchGrid();
+      } else if (result && typeof result === 'object' && (result as { success?: boolean }).success === false) {
+        setActionError((result as { message?: string; error?: string }).error || (result as { message?: string; error?: string }).message || t('building.saveError') || 'Failed to save changes');
       }
-    } catch (_error) {
-      // Handled by onSave
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : (t('building.saveError') || 'Failed to save changes');
+      setActionError(msg);
     }
   };
 
@@ -374,6 +434,8 @@ export function BuildingPermissionSection({
       confirmText: t('building.confirmDeleteCertificateOk') || 'Yes, Delete',
       cancelText: t('building.confirmDeleteCertificateCancel') || 'No, Cancel',
       onConfirm: async () => {
+        setIsDeletingRecord(true);
+        setActionError(null);
 
         const resolvedSelectedPropertyIds = Array.from(selectedUnitIds).map((id) => {
           const matched = filteredUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id)
@@ -383,7 +445,7 @@ export function BuildingPermissionSection({
 
         try {
           if (onDeleteRecord) {
-            await onDeleteRecord({
+            const res = await onDeleteRecord({
               certificateTypeId: selectedTypeId,
               documentGuid: docGuid,
               propertyCertificateId: certId,
@@ -392,6 +454,10 @@ export function BuildingPermissionSection({
               selectedUnitIds: resolvedSelectedPropertyIds,
               societyDetailId: societyId ? Number(societyId) : null,
             });
+            if (res && typeof res === 'object' && (res as { success?: boolean }).success === false) {
+              setActionError((res as { message?: string; error?: string }).error || (res as { message?: string; error?: string }).message || t('building.deleteError') || 'Failed to delete certificate');
+              return;
+            }
           } else if (onDelete) {
             onDelete(selectedTypeId);
           }
@@ -401,8 +467,11 @@ export function BuildingPermissionSection({
           setEnabledStateMap((prev) => ({ ...prev, [selectedTypeId]: false }));
           setFieldErrors({});
           await refetchGrid();
-        } catch (_err) {
-          // handled
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : (t('building.deleteError') || 'Failed to delete certificate');
+          setActionError(msg);
+        } finally {
+          setIsDeletingRecord(false);
         }
       },
     });
@@ -565,58 +634,106 @@ export function BuildingPermissionSection({
   })();
 
   const handleClearSelection = () => {
-    toggleAllUnits(false);
+    setSelectedUnitIds(new Set());
   };
 
-  const handleSelectAllApplied = () => {
-    filteredUnits.forEach((u) => {
-      const stat = unitStatusMap.get(u.propertyDetailsId);
-      if (stat?.status === 'direct' && !selectedUnitIds.has(u.propertyDetailsId)) {
-        toggleUnitSelection(u.propertyDetailsId);
+  const selectableUnits = filteredUnits.filter((u) => {
+    const stat = unitStatusMap.get(u.propertyDetailsId);
+    return stat?.status !== 'direct' && !stat?.certificate?.propertyCertificateId;
+  });
+
+  const isAllSelectableUnitsSelected =
+    selectableUnits.length > 0 && selectableUnits.every((u) => selectedUnitIds.has(u.propertyDetailsId));
+
+  const handleToggleAllUnits = (forceSelect?: boolean) => {
+    const shouldSelect = typeof forceSelect === 'boolean' ? forceSelect : !isAllSelectableUnitsSelected;
+    setSelectedUnitIds((prev) => {
+      const next = new Set(prev);
+      if (!shouldSelect) {
+        filteredUnits.forEach((u) => next.delete(u.propertyDetailsId));
+      } else {
+        selectableUnits.forEach((u) => next.add(u.propertyDetailsId));
       }
+      return next;
     });
   };
 
-  const unitTableColumns = useMemo<Column<UnitRow>[]>(() => {
-    return [
+  const handleToggleUnitSelection = (propertyDetailsId: number) => {
+    const stat = unitStatusMap.get(propertyDetailsId);
+    if (stat?.status === 'direct' || Boolean(stat?.certificate?.propertyCertificateId)) {
+      return;
+    }
+    toggleUnitSelection(propertyDetailsId);
+  };
+
+  const unitTableColumns: Column<UnitRow>[] = [
       {
         key: 'propertyDetailsId',
         label: (
           <div onClick={(e) => e.stopPropagation()}>
             <Checkbox
-              checked={isAllUnitsSelected}
-              onCheckedChange={toggleAllUnits}
+              checked={isAllSelectableUnitsSelected}
+              onCheckedChange={handleToggleAllUnits}
+              disabled={selectableUnits.length === 0}
+              className={cn(selectableUnits.length === 0 && "opacity-50 cursor-not-allowed")}
             />
           </div>
         ),
         width: '40px',
         align: 'center',
-        render: (_, row) => (
-          <div onClick={(e) => e.stopPropagation()}>
-            <Checkbox
-              checked={selectedUnitIds.has(row.propertyDetailsId as number)}
-              onCheckedChange={() => {
-                toggleUnitSelection(row.propertyDetailsId as number);
-                if (fieldErrors.unit) setFieldErrors((prev) => ({ ...prev, unit: undefined }));
-              }}
-            />
-          </div>
-        ),
+        render: (_, row) => {
+          const isDirectApplied = row.certStatus === 'direct' || Boolean(row.propertyCertificateId);
+          return (
+            <label
+              onClick={(e) => e.stopPropagation()}
+              className={cn(
+                "inline-flex items-center justify-center p-1 rounded",
+                isDirectApplied ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              )}
+              title={
+                isDirectApplied
+                  ? (t('building.unitAlreadyHasCertTooltip') || 'This unit already has an applied certificate. Use the Edit action to modify.')
+                  : undefined
+              }
+            >
+              <Checkbox
+                disabled={isDirectApplied}
+                checked={selectedUnitIds.has(row.propertyDetailsId as number)}
+                className={cn(isDirectApplied && "opacity-50 cursor-not-allowed")}
+                onCheckedChange={() => {
+                  if (isDirectApplied) return;
+                  handleToggleUnitSelection(row.propertyDetailsId as number);
+                  if (fieldErrors.unit) setFieldErrors((prev) => ({ ...prev, unit: undefined }));
+                }}
+              />
+            </label>
+          );
+        },
       },
       {
         key: 'unitNo',
         label: t('building.unit') || 'UNIT',
-        render: (val, row) => (
-          <div className="flex items-center gap-1.5">
-            <span className="font-bold text-blue-900">{String(val || '')}</span>
-            {row.certStatus === 'direct' && (
-              <span
-                className="inline-block w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-100 flex-shrink-0"
-                title={t('building.directCertTooltip') || 'Direct certificate applied to this unit'}
-              />
-            )}
-          </div>
-        ),
+        render: (val, row) => {
+          const isDirectApplied = row.certStatus === 'direct' || Boolean(row.propertyCertificateId);
+          return (
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-blue-900">{String(val || '')}</span>
+              {isDirectApplied && (
+                <span
+                  className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200 text-[10px] font-semibold flex-shrink-0"
+                  title={
+                    row.fileName
+                      ? `${t('building.uploadedDoc') || 'Document'}: ${row.fileName}`
+                      : (t('building.directCertTooltip') || 'Certificate document uploaded for this unit')
+                  }
+                >
+                  <Paperclip className="w-3 h-3 text-emerald-600 shrink-0" />
+                  <span>{t('building.uploaded') || 'Uploaded'}</span>
+                </span>
+              )}
+            </div>
+          );
+        },
       },
       {
         key: 'wingName',
@@ -634,6 +751,7 @@ export function BuildingPermissionSection({
                 title={row.certNumber ? `Direct Certificate: #${row.certNumber}` : 'Applied'}
               >
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <FileCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                 <span className="font-mono text-[11px] truncate max-w-[150px]">
                   {row.certNumber ? `#${row.certNumber}` : (t('building.statusApplied') || 'Applied')}
                 </span>
@@ -712,7 +830,6 @@ export function BuildingPermissionSection({
         },
       },
     ];
-  }, [isAllUnitsSelected, toggleAllUnits, selectedUnitIds, toggleUnitSelection, fieldErrors.unit, locale, t, setSelectedUnitIds]);
 
   const unitTableData: UnitRow[] = filteredUnits
     .map((u) => {
@@ -728,6 +845,7 @@ export function BuildingPermissionSection({
         hasDocument: stat.hasDocument,
         documentGuid: stat.documentGuid,
         fileName: stat.fileName,
+        propertyCertificateId: stat.certificate?.propertyCertificateId,
       };
     })
     .filter((row) => {
@@ -981,17 +1099,6 @@ export function BuildingPermissionSection({
                     </button>
                   )}
 
-                  {appliedUnitsCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleSelectAllApplied}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-white hover:bg-slate-100 text-slate-700 cursor-pointer border border-slate-200 transition-all"
-                      title={t('building.selectAppliedTooltip')}
-                    >
-                      {t('building.selectApplied')}
-                    </button>
-                  )}
-
                   {selectedUnitIds.size > 0 && (
                     <button
                       type="button"
@@ -1058,20 +1165,22 @@ export function BuildingPermissionSection({
                   }
                 }}
                 onRowClick={(row) => {
-                  toggleUnitSelection(row.propertyDetailsId as number);
+                  if (row.certStatus === 'direct' || Boolean(row.propertyCertificateId)) {
+                    return;
+                  }
+                  handleToggleUnitSelection(row.propertyDetailsId as number);
                   if (fieldErrors.unit) setFieldErrors((prev) => ({ ...prev, unit: undefined }));
                 }}
-                getRowKey={(row) => row.propertyDetailsId as number}
+                getRowKey={(row, i) => `${row.propertyDetailsId ?? ''}-${i}`}
                 rowClassName={(row) => {
                   const isSelected = selectedUnitIds.has(row.propertyDetailsId as number);
-                  const isDirectApplied = row.certStatus === 'direct';
+                  const isDirectApplied = row.certStatus === 'direct' || Boolean(row.propertyCertificateId);
                   return cn(
-                    'cursor-pointer select-none transition-colors',
-                    isSelected
-                      ? 'bg-blue-100/90 font-semibold ring-2 ring-blue-500/60 border-l-4 border-l-blue-600 shadow-sm'
-                      : isDirectApplied
-                        ? 'bg-emerald-50/25 hover:bg-emerald-50/40 border-l-4 border-l-emerald-500'
-                        : 'hover:bg-slate-50/80'
+                    'select-none transition-colors',
+                    isDirectApplied
+                      ? 'cursor-not-allowed opacity-85 bg-emerald-50/20 border-l-4 border-l-emerald-500 hover:bg-emerald-50/30'
+                      : 'cursor-pointer hover:bg-slate-50/80',
+                    isSelected && 'bg-blue-100/90 font-semibold ring-2 ring-blue-500/60 border-l-4 border-l-blue-600 shadow-sm'
                   );
                 }}
               />
@@ -1215,13 +1324,31 @@ export function BuildingPermissionSection({
         </div>
       </div>
 
+      {actionError && (
+        <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between text-xs text-red-700 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+            <span className="font-semibold">{actionError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionError(null)}
+            className="text-red-500 hover:text-red-700 font-bold ml-2 cursor-pointer"
+            aria-label="Dismiss error"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 flex-shrink-0">
         {onDeleteRecord || onDelete ? (
           <Button
             variant="delete"
             size="sm"
             icon={Trash2}
-            disabled={isSaving || !hasExistingRecord}
+            disabled={isSaving || isDeletingRecord || !hasExistingRecord}
+            isLoading={isDeletingRecord}
             onClick={handleDeleteClick}
             className={cn(
               "text-xs font-bold border rounded-lg",
@@ -1235,7 +1362,7 @@ export function BuildingPermissionSection({
         ) : <div />}
         <SaveButton
           onClick={handleSaveClick}
-          disabled={isSaving || !isDirty}
+          disabled={isSaving || isDeletingRecord || !isDirty}
           isLoading={isSaving}
           label={t('common.saveChanges') || 'Save Changes'}
         />

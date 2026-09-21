@@ -9,7 +9,8 @@ import type {
   PropertyPhotoDto, 
   PropertyPhotoTypeWithStatusDto, 
   PropertyPhotoUploadResponseDto,
-  PropertyPhotoGalleryDto
+  PropertyPhotoGalleryDto,
+  PropertyPhotoTypeRecord
 } from "@/types/photoplan.types";
 import { getAppConfig } from "@/config/app.config";
 
@@ -318,6 +319,26 @@ export const photoPlanService = {
         error: error instanceof Error ? error.message : String(error)
       };
     }
+  },
+
+  // 5b. GET - All photo types from ptis.PropertyPhotoType table (optionally filtered by photoScope)
+  async getAllPropertyPhotoTypes(scope?: string): Promise<ApiResponse<PropertyPhotoTypeRecord[]>> {
+    const response = await apiClient.get<BackendApiResponseWrapper<PropertyPhotoTypeRecord[]>>(
+      '/PropertyPhotoType',
+      { cache: 'no-store' }
+    );
+    if (response.success && response.data?.items) {
+      let items = response.data.items;
+      if (Array.isArray(items)) {
+        if (scope) {
+          items = items.filter(
+            (item) => item.photoScope?.toUpperCase() === scope.toUpperCase() && item.isActive !== false
+          );
+        }
+        return { success: true, statusCode: response.statusCode, data: items };
+      }
+    }
+    return { success: false, statusCode: response.statusCode, error: response.error, message: response.message };
   },
 
   // 6. PUT - Update a photo type name (rename slot)

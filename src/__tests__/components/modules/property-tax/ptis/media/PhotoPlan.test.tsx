@@ -845,7 +845,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
   });
 
   describe('mapSlotsToCategories - Amenity Property', () => {
-    it('only returns Photo Plan, Amenity Photo, and Change Detection slots for amenity property', () => {
+    it('returns Photo Plan, Amenity Photo, Society slots, and Change Detection for amenity property', () => {
       const slots: PropertyPhotoTypeWithStatusDto[] = [
         { photoTypeId: 1, photoTypeCode: 'PROPERTY_FRONT', photoTypeName: 'Property Front Photo', hasPhoto: false },
         { photoTypeId: 2, photoTypeCode: 'PROPERTY_SIDE', photoTypeName: 'Property Side Photo', hasPhoto: false },
@@ -892,11 +892,11 @@ describe('PhotoPlan Section - Complete Tests', () => {
       expect(codes).toContain('PHOTO_PLAN');
       expect(codes).toContain('AMENITY_PHOTO');
       expect(codes).toContain('CHANGE_DETECTION');
+      expect(codes).toContain('SOCIETY_PLACE');
 
-      // None of the property, society, or wing scopes should be present
+      // Property and wing scopes should NOT be present
       expect(codes).not.toContain('PROPERTY_FRONT');
       expect(codes).not.toContain('PROPERTY_SIDE');
-      expect(codes).not.toContain('SOCIETY_PLACE');
       expect(codes).not.toContain('WING_BUILDING');
 
       // Check that amenity photo category has only the amenity photo and not wing photo

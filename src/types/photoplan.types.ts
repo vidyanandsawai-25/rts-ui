@@ -21,6 +21,8 @@ export interface PropertyPhotoTypeWithStatusDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
+  description?: string;
   displayOrder?: number;
   hasPhoto: boolean;
   photoCount?: number;
@@ -31,6 +33,17 @@ export interface PropertyPhotoTypeWithStatusDto {
   mimeType?: string;
   viewUrl?: string;
   downloadUrl?: string;
+  isActive?: boolean;
+}
+
+export interface PropertyPhotoTypeRecord {
+  id: number;
+  photoTypeCode: string;
+  photoTypeName: string;
+  description?: string;
+  displayOrder?: number;
+  photoScope?: string;
+  isActive?: boolean;
 }
 
 export interface PropertyPhotoUploadResponseDto {

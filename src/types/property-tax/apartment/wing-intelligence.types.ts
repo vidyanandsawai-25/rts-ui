@@ -147,6 +147,7 @@ export interface WingWiseWingDetails {
   wingMasterId?: number;
   wingDetailId?: number;
   societyId?: number;
+  societyDetailId?: number;
   wingNo: string;
   wingName: string;
   propertyCount: number;
@@ -163,6 +164,8 @@ export interface WingWiseWingDetails {
   exemptionAppliedAmount: string;
   exemptedPropertyCount: number;
   propertyTypes: WingWisePropertyType[];
+  latitude?: string | number | null;
+  longitude?: string | number | null;
 }
 
 export interface WingWiseDetailsItems {
@@ -173,6 +176,8 @@ export interface WingWiseDetailsItems {
   societyId?: number;
   rateMasterAreaUnit?: string | null;
   wings: WingWiseWingDetails[];
+  latitude?: string | number | null;
+  longitude?: string | number | null;
 }
 
 export interface WingWiseDetailsResponse {

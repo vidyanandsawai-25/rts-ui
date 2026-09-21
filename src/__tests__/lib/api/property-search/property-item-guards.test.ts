@@ -149,8 +149,25 @@ describe("property-item-guards", () => {
     };
 
     const normalized = normalizePropertySearchResponse(response);
-    console.log("=== NORMALIZED RESULTS ===", JSON.stringify(normalized, null, 2));
     expect(normalized.items.length).toBe(1);
     expect(normalized.items[0].propertyId).toBe(3886413);
+  });
+
+  it("normalizes societyDetailId, societyId, wingDetailId, and wingId from various casings", () => {
+    const item1 = normalizePropertySearchItem({
+      propertyId: 501,
+      SocietyDetailId: 10,
+      WingDetailId: 20,
+    });
+    expect(item1.societyDetailId).toBe(10);
+    expect(item1.wingDetailId).toBe(20);
+
+    const item2 = normalizePropertySearchItem({
+      propertyId: 502,
+      societyId: "15",
+      wingId: "25",
+    });
+    expect(item2.societyDetailId).toBe(15);
+    expect(item2.wingDetailId).toBe(25);
   });
 });

@@ -29,6 +29,7 @@ export function Drawer({
   onClose,
   title,
   headerActions,
+  className,
   width = "md",
   children,
   footer,
@@ -247,8 +248,10 @@ export function Drawer({
           shadow-2xl
           flex flex-col
           focus:outline-none
+          transition-[width] duration-300 ease-in-out overflow-hidden
           animate-in slide-in-from-right duration-300
           ${responsiveValidationClasses}
+          ${className || ""}
         `}
         role="dialog"
         aria-modal="true"
@@ -290,7 +293,7 @@ export function Drawer({
         )}
 
         {/* ================= BODY ================= */}
-        <div className={`flex-1 ${bodyClassName || "overflow-y-auto"}`}>
+        <div className={`flex-1 ${bodyClassName || "overflow-y-auto overflow-x-hidden"}`}>
           <div className="min-h-full">
             {children}
           </div>

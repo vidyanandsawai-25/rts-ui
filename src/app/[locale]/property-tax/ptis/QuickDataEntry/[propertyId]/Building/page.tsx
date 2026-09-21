@@ -174,12 +174,19 @@ async function BuildingFormDataLoader({
     const sCat = (searchCategory || '').toLowerCase();
     const pb = (propertyBasicDetails || {}) as Record<string, unknown>;
     const bCat = String(pb.categoryName || pb.propertyCategoryName || '').toLowerCase();
+    const categoryId = Number(pb.categoryId ?? pb.CategoryId);
 
     // 1. Explicit Individual check
-    const isExplicitIndividual = sCat.includes('individual') || bCat.includes('individual');
+    const isExplicitIndividual =
+        sCat.includes('individual') ||
+        bCat.includes('individual') ||
+        categoryId === 2 ||
+        categoryId === 3 ||
+        categoryId === 4;
 
     // 2. Explicit Apartment / Society check
     const isExplicitApartment =
+        categoryId === 1 ||
         sCat.includes('apartment') ||
         sCat.includes('society') ||
         sCat.includes('flat') ||
@@ -189,26 +196,67 @@ async function BuildingFormDataLoader({
         bCat.includes('flat') ||
         bCat.includes('complex');
 
+    const wingSocietyItem = rawWings.find(w => Number(w.societyDetailId || w.SocietyDetailId || w.societyId || w.SocietyId) > 0);
+    const resolvedWingSocietyDetailId = wingSocietyItem
+        ? Number(wingSocietyItem.societyDetailId || wingSocietyItem.SocietyDetailId || wingSocietyItem.societyId || wingSocietyItem.SocietyId)
+        : null;
+
     // 3. Query params / Society ID check
     const hasSocietyId = Boolean(
         (searchSocietyId && String(searchSocietyId) !== '0') ||
         (pb.societyDetailId && Number(pb.societyDetailId) > 0) ||
-        (pb.societyId && Number(pb.societyId) > 0)
+        (pb.societyId && Number(pb.societyId) > 0) ||
+        (resolvedWingSocietyDetailId && resolvedWingSocietyDetailId > 0)
     );
 
     const isSociety = !isExplicitIndividual && (isExplicitApartment || hasSocietyId);
 
-    const resolvedSocietyDetailId = searchSocietyId
-        ? Number(searchSocietyId)
-        : (pb.societyDetailId ? Number(pb.societyDetailId) : (pb.societyId ? Number(pb.societyId) : null));
+    const resolvedSocietyDetailId = isSociety
+        ? (searchSocietyId
+            ? Number(searchSocietyId)
+            : (pb.societyDetailId ? Number(pb.societyDetailId) : (pb.societyId ? Number(pb.societyId) : resolvedWingSocietyDetailId)))
+        : null;
 
-    // Redirect to include societyDetailId in searchParams if missing
-    if (resolvedSocietyDetailId && !searchSocietyId && rawSearchParams && locale) {
+    const resolvedWingDetailId = isSociety
+        ? (searchWingDetailId
+            ? Number(searchWingDetailId)
+            : (pb.wingDetailId ? Number(pb.wingDetailId) : (pb.wingId ? Number(pb.wingId) : (initialWings[0]?.wingDetailId ?? null))))
+        : null;
+
+    // Redirect to include societyDetailId / wingDetailId in searchParams if missing, or strip if not society
+    const hasSpuriousSocietyOrWing = !isSociety && Boolean(
+        searchSocietyId ||
+        searchWingDetailId ||
+        rawSearchParams?.societyDetailId ||
+        rawSearchParams?.wingDetailId ||
+        rawSearchParams?.societyId ||
+        rawSearchParams?.wingId
+    );
+    const needsSocietyRedirect = Boolean(isSociety && resolvedSocietyDetailId && !searchSocietyId);
+    const needsWingRedirect = Boolean(isSociety && resolvedWingDetailId && !searchWingDetailId);
+
+    if ((needsSocietyRedirect || needsWingRedirect || hasSpuriousSocietyOrWing) && rawSearchParams && locale) {
         const params = new URLSearchParams();
         Object.entries(rawSearchParams).forEach(([k, v]) => {
             if (typeof v === 'string') params.set(k, v);
         });
-        params.set('societyDetailId', String(resolvedSocietyDetailId));
+        if (!isSociety) {
+            params.delete('societyDetailId');
+            params.delete('societydetailid');
+            params.delete('societyId');
+            params.delete('societyid');
+            params.delete('wingDetailId');
+            params.delete('wingdetailid');
+            params.delete('wingId');
+            params.delete('wingid');
+        } else {
+            if (resolvedSocietyDetailId && !params.has('societyDetailId')) {
+                params.set('societyDetailId', String(resolvedSocietyDetailId));
+            }
+            if (resolvedWingDetailId && !params.has('wingDetailId')) {
+                params.set('wingDetailId', String(resolvedWingDetailId));
+            }
+        }
         redirect(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building?${params.toString()}`);
     }
 
@@ -220,6 +268,7 @@ async function BuildingFormDataLoader({
             propertyId={propertyId}
             isSociety={isSociety}
             societyDetailId={resolvedSocietyDetailId}
+            wingDetailId={resolvedWingDetailId}
             floorData={floorData}
             constructionTypeData={constructionTypeData}
             useData={useData}

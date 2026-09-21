@@ -140,4 +140,49 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
     expect(screen.getByText('Society Photo')).toBeInTheDocument();
     expect(screen.getByText('Wing Gana')).toBeInTheDocument();
   });
+
+  it('renders dynamic slots in quick data entry mode and triggers openDrawer on card click', () => {
+    const mockOpenDrawer = vi.fn();
+    const qdeCategories: PhotoCategory[] = [
+      {
+        photoTypeId: 101,
+        photoTypeCode: 'PROPERTY_FRONT',
+        photoTypeName: 'Front Photo',
+        photoScope: 'PROPERTY',
+        isCustom: false,
+        hasPhoto: false,
+        photoCount: 0,
+        images: [],
+      },
+      {
+        photoTypeId: 102,
+        photoTypeCode: 'PROPERTY_SIDE',
+        photoTypeName: 'Side Photo',
+        photoScope: 'PROPERTY',
+        isCustom: false,
+        hasPhoto: false,
+        photoCount: 0,
+        images: [],
+      },
+    ];
+
+    render(
+      <PropertyMediaPanelContent
+        {...defaultProps}
+        categories={qdeCategories}
+        isQuickDataEntry={true}
+        openDrawer={mockOpenDrawer}
+      />
+    );
+
+    expect(screen.getByText('Front Photo')).toBeInTheDocument();
+    expect(screen.getByText('Side Photo')).toBeInTheDocument();
+
+    const frontCard = screen.getByText('Front Photo').closest('div[class*="cursor-pointer"]');
+    expect(frontCard).not.toBeNull();
+    if (frontCard) {
+      fireEvent.click(frontCard);
+      expect(mockOpenDrawer).toHaveBeenCalledWith(0, 0);
+    }
+  });
 });

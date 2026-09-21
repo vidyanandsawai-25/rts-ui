@@ -236,6 +236,16 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     }
   }, [hasIncompatibleFloor]);
 
+  const editFloorSectionRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (selectedFloor || isAddingNewFloor) {
+      requestAnimationFrame(() => {
+        editFloorSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+  }, [selectedFloor, isAddingNewFloor]);
+
   // Show full-screen loader during save/update/delete operations
   if (isOperationLoading) {
     return (
@@ -249,12 +259,12 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
   return (
     <>
-      <div className="flex flex-col h-full bg-slate-50 overflow-hidden relative">
+      <div className="flex flex-col min-h-full bg-slate-50 relative">
         {/* Show overlay loader during save/update/delete operations to keep component tree mounted */}
         <SubmissionOverlayLoader isLoading={isOperationLoading} t={t} />
         {/* Render API errors if any */}
         <SubmissionApiErrors apiErrors={props.apiErrors} t={t} />
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 p-2 sm:p-2.5 space-y-2.5">
           {/* All Floors Table Section */}
           <FloorTable
             t={t}
@@ -420,7 +430,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
           {/* Edit Floor Form Section */}
           {(selectedFloor || isAddingNewFloor) && !showDataEntrySameAsDrawer && (
-            <div className="!mt-2 space-y-3">
+            <div ref={editFloorSectionRef} id="edit-floor-form-section" className="!mt-2 space-y-3">
               <FloorForm
                 t={t}
                 selectedFloor={selectedFloor}

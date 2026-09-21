@@ -41,7 +41,7 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
         bCat.includes('complex');
     const isWingWise = sp.isWingWise === 'true';
 
-    const searchSocietyId = sp.societyDetailId || sp.societyId || pb.societyDetailId || pb.societyId;
+    let searchSocietyId = sp.societyDetailId || sp.societyId || pb.societyDetailId || pb.societyId;
     const hasSocietyId = Boolean(
         (searchSocietyId && String(searchSocietyId) !== '0') ||
         (pb.societyDetailId && Number(pb.societyDetailId) > 0) ||
@@ -67,6 +67,14 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
 
         const wingsResponse = await getDiscountWingsAction(propertyId);
         mappedWings = wingsResponse?.success && Array.isArray(wingsResponse?.data) ? wingsResponse.data : [];
+
+        if (!searchSocietyId && mappedWings.length > 0) {
+            const firstW = mappedWings[0] as unknown as Record<string, unknown>;
+            const wingSocId = firstW.societyDetailId || firstW.SocietyDetailId || firstW.societyId || firstW.SocietyId;
+            if (wingSocId) {
+                searchSocietyId = String(wingSocId);
+            }
+        }
 
         finalWingDetailId = parsedWingDetailId;
         if (!finalWingDetailId && mappedWings.length > 0) {

@@ -90,5 +90,7 @@ describe('BuildingForm', () => {
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
     expect(saveBtn).toBeInTheDocument();
     fireEvent.click(saveBtn);
+
+    await screen.findByRole('button', { name: /Save Changes/i });
   });
 });

@@ -120,6 +120,8 @@ export const ptisMapper = {
       managerEmail: data.managerEmailId || '',
       managerMobileNo: data.managerMobileNo || '',
       societyDetailId: data.societyDetailId,
+      latitude: data.latitude ?? null,
+      longitude: data.longitude ?? null,
     };
   },
 

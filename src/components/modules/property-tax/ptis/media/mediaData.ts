@@ -116,7 +116,12 @@ export function mapSlotsToCategories(
   categoryId: number | null = null,
   _propertyTypeId: number | null = null,
   entityType?: string,
-  isAmenityProp?: boolean
+  isAmenityProp?: boolean,
+  societyPhotoFallbackGuid?: string,
+  societyPhotoFallbackUrl?: string,
+  isQuickDataEntry: boolean = false,
+  partitionNo?: string | null,
+  _hasExplicitWing: boolean = false
 ): PhotoCategory[] {
   const systemCodes = [
     'FRONT', 'FLOOR', 'GIS', 'BACK', 'LIVING', 'KITCHEN', 'BEDROOM', 'BATHROOM', 'BALCONY', 'TERRACE', 'PARKING', 'CHANGE_DETECTION',
@@ -218,7 +223,12 @@ export function mapSlotsToCategories(
       matchingPhoto = uploadedPhotos.find(p => {
         if (!checkIsSocietyPhoto(p)) return false;
         return isPhotoMatch(s.photoTypeCode, s.photoTypeId, p.photoTypeCode, p.photoTypeId);
-      });
+      }) || uploadedPhotos.find(checkIsSocietyPhoto);
+      if (!matchingPhoto && (societyPhotoFallbackGuid || societyPhotoFallbackUrl)) {
+        hasPhoto = true;
+        documentGuid = societyPhotoFallbackGuid || documentGuid;
+        viewUrl = societyPhotoFallbackUrl || (societyPhotoFallbackGuid ? getViewDocumentUrl(societyPhotoFallbackGuid) : viewUrl);
+      }
     } else {
       matchingPhoto = uploadedPhotos.find(p => {
         if (checkIsAmenityPhoto(p) || checkIsWingPhoto(p) || checkIsSocietyPhoto(p)) return false;
@@ -254,6 +264,7 @@ export function mapSlotsToCategories(
       photoTypeId: s.photoTypeId,
       photoTypeCode: s.photoTypeCode,
       photoTypeName: nameVal,
+      photoScope: s.photoScope,
       isCustom: !systemCodes.includes(s.photoTypeCode.toUpperCase()),
       hasPhoto,
       photoCount: s.photoCount,
@@ -264,12 +275,13 @@ export function mapSlotsToCategories(
   });
 
   const hasCD = baseCats.some((c) => c.photoTypeCode === 'CHANGE_DETECTION');
-  if (!hasCD) {
+  if (!isQuickDataEntry && !hasCD) {
     const cdName = t ? (t.has?.('media.changeDetection') ? t('media.changeDetection') : 'Change Detection') : 'Change Detection';
     baseCats.push({
       photoTypeId: 9999,
       photoTypeCode: 'CHANGE_DETECTION',
       photoTypeName: cdName,
+      photoScope: undefined,
       isCustom: false,
       hasPhoto: true,
       photoCount: 2,
@@ -297,12 +309,13 @@ export function mapSlotsToCategories(
       c.photoTypeCode?.toUpperCase() === 'AMENITY' ||
       c.photoTypeName?.toLowerCase().includes('amenity')
   );
-  if (isAmenity && !hasAmenitySlot) {
+  if (!isQuickDataEntry && isAmenity && !hasAmenitySlot) {
     const amenityName = t ? (t.has?.('media.amenityPhoto') ? t('media.amenityPhoto') : 'Amenity Photo') : 'Amenity Photo';
     baseCats.unshift({
       photoTypeId: 14,
       photoTypeCode: 'AMENITY_PHOTO',
       photoTypeName: amenityName,
+      photoScope: undefined,
       isCustom: false,
       hasPhoto: false,
       photoCount: 0,
@@ -313,18 +326,44 @@ export function mapSlotsToCategories(
   }
 
   const hasPlan = baseCats.some(isPhotoPlanCat);
-  if (!hasPlan && (!isMainProperty || isIndividual || isAmenity)) {
-    const planName = t ? (t.has?.('media.photoPlan') ? t('media.photoPlan') : 'Photo Plan') : 'Photo Plan';
-    baseCats.unshift({
+  if (!hasPlan && (!isMainProperty || isIndividual || isAmenity || isQuickDataEntry)) {
+    const planName = isQuickDataEntry
+      ? (t ? (t.has?.('media.propertyPlan') ? t('media.propertyPlan') : 'Property Plan') : 'Property Plan')
+      : (t ? (t.has?.('media.photoPlan') ? t('media.photoPlan') : 'Photo Plan') : 'Photo Plan');
+    const newPlanCat = {
       photoTypeId: 13,
-      photoTypeCode: 'PHOTO_PLAN',
+      photoTypeCode: isQuickDataEntry ? 'PROPERTY_PLAN' : 'PHOTO_PLAN',
       photoTypeName: planName,
+      photoScope: 'PROPERTY',
       isCustom: false,
       hasPhoto: false,
       photoCount: 0,
       propertyPhotoId: undefined,
       documentGuid: undefined,
       viewUrl: undefined,
+    };
+    if (isQuickDataEntry) {
+      const sideIdx = baseCats.findIndex((c) => (c.photoTypeCode || '').toUpperCase() === 'PROPERTY_SIDE');
+      if (sideIdx !== -1) {
+        baseCats.splice(sideIdx + 1, 0, newPlanCat);
+      } else {
+        const frontIdx = baseCats.findIndex((c) => (c.photoTypeCode || '').toUpperCase() === 'PROPERTY_FRONT');
+        if (frontIdx !== -1) {
+          baseCats.splice(frontIdx + 1, 0, newPlanCat);
+        } else {
+          baseCats.push(newPlanCat);
+        }
+      }
+    } else {
+      baseCats.unshift(newPlanCat);
+    }
+  }
+
+  if (isQuickDataEntry) {
+    baseCats.forEach((c) => {
+      if (isPhotoPlanCat(c)) {
+        c.photoTypeName = t ? (t.has?.('media.propertyPlan') ? t('media.propertyPlan') : 'Property Plan') : 'Property Plan';
+      }
     });
   }
 
@@ -333,17 +372,72 @@ export function mapSlotsToCategories(
   const isSocietyMaster =
     ((categoryId === 3 && isMainProperty) || (isMainProperty && !selectedWingDetailId && !wingName) || entityType === 'S') && !isAmenity && !isIndividual;
 
+  const isPartitionEmptyOrMain =
+    !partitionNo ||
+    partitionNo === '0' ||
+    String(partitionNo).trim() === '' ||
+    String(partitionNo).trim() === '-';
+
+  const isSocietyMainProperty =
+    !isAmenity &&
+    !isIndividual &&
+    (isMainProperty || isPartitionEmptyOrMain) &&
+    (categoryId === 1 || categoryId === 3 || entityType === 'S' || Boolean(societyPhotoFallbackGuid) || Boolean(societyPhotoFallbackUrl));
+
+  const isInnerSocietyWingProperty =
+    !isAmenity &&
+    !isIndividual &&
+    !isSocietyMainProperty &&
+    (categoryId === 1 || Boolean(selectedWingDetailId) || Boolean(wingName));
+
   const filteredCats = baseCats.filter(c => {
     const code = c.photoTypeCode?.toUpperCase() || '';
     const isPlan = isPhotoPlanCat(c);
     const isPropScope = !c.isCustom && (code.startsWith('PROPERTY_') || isPlan);
 
+    if (isQuickDataEntry) {
+      // Always exclude GIS / Satellite View and Change Detection from QDE
+      if (
+        code === 'GIS' ||
+        code === 'CHANGE_DETECTION' ||
+        code.includes('SATELLITE') ||
+        c.photoTypeName?.toLowerCase().includes('satellite view') ||
+        c.photoTypeName?.toLowerCase().includes('change detection')
+      ) {
+        return false;
+      }
+
+      // 1. Inner property of society wings: only load property scope slots in QDE
+      if (isInnerSocietyWingProperty) {
+        const scope = c.photoScope?.toUpperCase();
+        if (scope) {
+          return scope === 'PROPERTY' || isPlan;
+        }
+        return code.startsWith('PROPERTY_') || isPlan;
+      }
+
+      // 2. Society main property: only load society scope slots in QDE
+      if (isSocietyMainProperty) {
+        const scope = c.photoScope?.toUpperCase();
+        if (scope) {
+          return scope === 'SOCIETY';
+        }
+        return code.startsWith('SOCIETY_') || c.photoTypeName?.toLowerCase().includes('society');
+      }
+
+      // Fall through to entity-based filtering below (same as main PTIS screen)
+    }
+
     if (isAmenity) {
       const isAmenitySlot =
         code.startsWith('AMENITY') ||
         c.photoTypeName?.toLowerCase().includes('amenity');
+      const isSocietySlot =
+        c.photoScope?.toUpperCase() === 'SOCIETY' ||
+        code.startsWith('SOCIETY_') ||
+        c.photoTypeName?.toLowerCase().includes('society');
       const isCD = code === 'CHANGE_DETECTION';
-      if (isAmenitySlot || isPlan || isCD || c.isCustom) return true;
+      if (isAmenitySlot || isSocietySlot || isPlan || isCD || c.isCustom) return true;
       return false;
     }
 
@@ -417,6 +511,7 @@ export function mapSlotsToCategories(
           }
         } else if (isSocietyCat) {
           if (!pIsSociety) return false;
+          return isPhotoMatch(cat.photoTypeCode, cat.photoTypeId, p.photoTypeCode, p.photoTypeId);
         } else {
           if (pIsAmenity || pIsWing || pIsSociety) return false;
           const isPlanPhoto = isPhotoPlanCat(p) || p.remarks?.toLowerCase().includes('property plan') || p.remarks?.toLowerCase().includes('photo plan') || p.photoTypeCode?.toUpperCase().includes('PLAN');
@@ -434,12 +529,15 @@ export function mapSlotsToCategories(
       .map(p => mapPropertyPhotoToAdditionalImage(p, cat.photoTypeName));
 
     const isFullyLoaded = fullyLoadedIds?.has(cat.photoTypeId);
+    const hasSocietyFallback = isSocietyCat && Boolean(societyPhotoFallbackGuid || societyPhotoFallbackUrl);
 
-    if (catPhotos.length === 0 && !isFullyLoaded && cat.hasPhoto && (cat.viewUrl || cat.documentGuid)) {
+    if (catPhotos.length === 0 && !isFullyLoaded && (cat.hasPhoto || hasSocietyFallback) && (cat.viewUrl || cat.documentGuid || hasSocietyFallback)) {
       const isPlanCat = isPhotoPlanCat(cat);
       const isPlanSlot = isPlanCat || cat.photoTypeCode?.toUpperCase().includes('PLAN');
       if (!isPlanSlot) {
-        const resolvedUrl = cat.documentGuid ? getViewDocumentUrl(cat.documentGuid) : cat.viewUrl;
+        const effectiveGuid = cat.documentGuid || (isSocietyCat ? societyPhotoFallbackGuid : undefined);
+        const effectiveViewUrl = cat.viewUrl || (isSocietyCat ? societyPhotoFallbackUrl : undefined) || (effectiveGuid ? getViewDocumentUrl(effectiveGuid) : undefined);
+        const resolvedUrl = effectiveGuid ? getViewDocumentUrl(effectiveGuid) : effectiveViewUrl;
         catPhotos = [{
           src: resolvedUrl || '',
           fullSrc: resolvedUrl || '',
@@ -449,8 +547,8 @@ export function mapSlotsToCategories(
           photoTypeCode: cat.photoTypeCode,
           propertyPhotoId: cat.propertyPhotoId,
           hasPhoto: true,
-          documentGuid: cat.documentGuid?.toString(),
-          downloadUrl: cat.documentGuid ? getDownloadDocumentUrl(cat.documentGuid.toString()) : (cat.viewUrl ? cat.viewUrl.replace('/view', '/download') : undefined),
+          documentGuid: effectiveGuid?.toString(),
+          downloadUrl: effectiveGuid ? getDownloadDocumentUrl(effectiveGuid.toString()) : (effectiveViewUrl ? effectiveViewUrl.replace('/view', '/download') : undefined),
         }];
       }
     }

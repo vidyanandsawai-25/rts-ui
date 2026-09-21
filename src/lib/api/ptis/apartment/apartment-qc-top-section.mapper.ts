@@ -53,6 +53,8 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
       societyAddressEnglish: societyDetails?.societyAddressEnglish || undefined,
       societyEmail: societyDetails?.societyEmailId || '-',
       societyBuildingPhotoGuid: undefined, imageUrl: undefined,
+      latitude: societyDetails?.latitude,
+      longitude: societyDetails?.longitude,
       performance: mapPerformanceSummary(null),
     };
   }
@@ -318,6 +320,8 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
     societyBuildingPhotoGuid: overview?.societyBuildingPhotoGuid || undefined,
     imageUrl: overview?.societyBuildingPhotoGuid ? getViewDocumentUrl(overview.societyBuildingPhotoGuid) : undefined,
     wings: overview?.wings || [],
+    latitude: (rawOverview?.latitude ?? rawInfo?.latitude ?? rawDto?.latitude ?? societyDetails?.latitude) as string | number | null | undefined,
+    longitude: (rawOverview?.longitude ?? rawInfo?.longitude ?? rawDto?.longitude ?? societyDetails?.longitude) as string | number | null | undefined,
     performance,
   };
 }

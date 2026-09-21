@@ -24,6 +24,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
     propertyId,
     isSociety = true,
     societyDetailId,
+    wingDetailId,
     floorData = [],
     constructionTypeData = [],
     useData = [],
@@ -61,6 +62,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
 
     const {
         buildingPermission,
+        hasChanges,
         isSaving,
         handleFileUpload,
         handleFileDelete,
@@ -220,28 +222,39 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                 const urlWingDetailId = searchParams.get('wingDetailId') || searchParams.get('wingId');
                                 const floorWingDetailId = initialFloors.length > 0 ? (initialFloors[0] as unknown as { wingDetailId?: number; societyWingId?: number }).wingDetailId || (initialFloors[0] as unknown as { societyWingId?: number }).societyWingId : null;
 
-                                const effectiveSocietyDetailId = societyDetailId ?? (urlSocietyDetailId ? Number(urlSocietyDetailId) : null);
+                                const wingSocId = (initialWings.find((w) => (w as unknown as { societyDetailId?: number; societyId?: number }).societyDetailId || (w as unknown as { societyDetailId?: number; societyId?: number }).societyId) as unknown as { societyDetailId?: number; societyId?: number } | undefined);
+                                const fallbackSocDetailId = wingSocId?.societyDetailId || wingSocId?.societyId || null;
+
+                                const effectiveSocietyDetailId = isSociety
+                                    ? (societyDetailId ?? (urlSocietyDetailId ? Number(urlSocietyDetailId) : (fallbackSocDetailId ? Number(fallbackSocDetailId) : null)))
+                                    : null;
                                 const parsedPropId = Number(propertyId);
                                 const finalUnitIds = (payload.selectedUnitIds && payload.selectedUnitIds.length > 0)
                                     ? payload.selectedUnitIds
                                     : (!isNaN(parsedPropId) && parsedPropId > 0 ? [parsedPropId] : []);
 
-                                let effectiveWingDetailId = payload.selectedWingDetailId ?? (urlWingDetailId ? Number(urlWingDetailId) : (floorWingDetailId ?? null));
-                                if (payload.level === 'Unit' && finalUnitIds.length > 0) {
-                                    const matchedFloor = initialFloors.find((f) => {
-                                        const pId = f.id ?? (f as unknown as { propertyDetailsId?: number }).propertyDetailsId ?? (f as unknown as { propertyId?: number }).propertyId;
-                                        return pId === finalUnitIds[0];
-                                    });
-                                    const matchedWingId = (matchedFloor as unknown as { wingDetailId?: number; societyWingId?: number })?.wingDetailId || (matchedFloor as unknown as { societyWingId?: number })?.societyWingId;
-                                    if (matchedWingId) {
-                                        effectiveWingDetailId = Number(matchedWingId);
+                                const firstWingOptionId = initialWings.length > 0 ? initialWings[0].wingDetailId : (wingOptions.length > 0 ? wingOptions[0].wingDetailId : null);
+                                let effectiveWingDetailId: number | null = null;
+                                if (isSociety && effectiveSocietyDetailId && effectiveSocietyDetailId > 0) {
+                                    effectiveWingDetailId = payload.selectedWingDetailId ?? (wingDetailId ?? (urlWingDetailId ? Number(urlWingDetailId) : (floorWingDetailId ?? firstWingOptionId)));
+                                    if (payload.level === 'Unit' && finalUnitIds.length > 0) {
+                                        const matchedFloor = initialFloors.find((f) => {
+                                            const pId = f.id ?? (f as unknown as { propertyDetailsId?: number }).propertyDetailsId ?? (f as unknown as { propertyId?: number }).propertyId;
+                                            return pId === finalUnitIds[0];
+                                        });
+                                        const matchedWingId = (matchedFloor as unknown as { wingDetailId?: number; societyWingId?: number })?.wingDetailId || (matchedFloor as unknown as { societyWingId?: number })?.societyWingId;
+                                        if (matchedWingId) {
+                                            effectiveWingDetailId = Number(matchedWingId);
+                                        }
                                     }
                                 }
 
+                                const hasNewFile = Boolean(payload.attachedFiles && payload.attachedFiles.length > 0);
+                                const isFileModified = payload.isFileModified ?? hasNewFile;
+
                                 if (effectiveSocietyDetailId && effectiveSocietyDetailId > 0) {
                                     // Society / Wing / Unit level save with background tax recalculation
-                                    const formData = new FormData();
-                                    formData.append("payload", JSON.stringify({
+                                    const payloadObj: Record<string, unknown> = {
                                         level: payload.level,
                                         selectedWingDetailId: effectiveWingDetailId,
                                         selectedUnitIds: finalUnitIds,
@@ -251,8 +264,25 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                         certificateNumber: payload.certificateNumber,
                                         status: payload.status,
                                         societyDetailId: effectiveSocietyDetailId,
-                                    }));
-                                    if (payload.attachedFiles && payload.attachedFiles.length > 0) {
+                                        isFileModified,
+                                        hasNewDocument: hasNewFile,
+                                        preserveExistingDocument: !isFileModified && Boolean(payload.hasExistingDocument || payload.documentGuid),
+                                    };
+
+                                    if (payload.documentGuid) {
+                                        payloadObj.documentGuid = payload.documentGuid;
+                                        payloadObj.existingDocumentGuid = payload.documentGuid;
+                                    }
+                                    if (payload.fileName) {
+                                        payloadObj.fileName = payload.fileName;
+                                    }
+                                    if (payload.propertyCertificateId) {
+                                        payloadObj.propertyCertificateId = payload.propertyCertificateId;
+                                    }
+
+                                    const formData = new FormData();
+                                    formData.append("payload", JSON.stringify(payloadObj));
+                                    if (hasNewFile && payload.attachedFiles[0]) {
                                         formData.append("file", payload.attachedFiles[0]);
                                     }
 
@@ -282,11 +312,15 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                         overrideData: {
                                             date: certDate,
                                             number: certNo,
-                                            pendingFile: payload.attachedFiles && payload.attachedFiles.length > 0 ? payload.attachedFiles[0] : undefined,
+                                            pendingFile: hasNewFile ? payload.attachedFiles[0] : undefined,
                                             propertyDetailsId: null,
                                             entityType: "P",
                                             societyDetailId: null,
                                             wingDetailId: null,
+                                            documentGuid: payload.documentGuid,
+                                            existingDocumentGuid: payload.documentGuid,
+                                            propertyCertificateId: payload.propertyCertificateId,
+                                            isFileModified,
                                         }
                                     });
                                 }
@@ -339,17 +373,19 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                     onScopeChange={(scope, floorId) => selectFloorOrPropertyScope(scope, floorId)}
                                     floors={floors}
                                     isFloorLoading={isFloorLoading}
+                                    isSaving={isSaving}
+                                    hasChanges={hasChanges}
                                     onDeleteCertificate={async () => {
                                         if (activeSelectedTypeId !== null) {
-                                            await handleDeleteCertificate(activeSelectedTypeId);
+                                            return await handleDeleteCertificate(activeSelectedTypeId);
                                         }
                                     }}
-                                    onSave={() => {
+                                    onSave={async () => {
                                         const urlSocietyDetailId = searchParams.get('societyDetailId') || searchParams.get('societyId');
                                         const urlWingDetailId = searchParams.get('wingDetailId') || searchParams.get('wingId');
                                         const effectiveSocietyDetailId = societyDetailId ?? (urlSocietyDetailId ? Number(urlSocietyDetailId) : null);
                                         const effectiveWingDetailId = urlWingDetailId ? Number(urlWingDetailId) : null;
-                                        handleSave({
+                                        return await handleSave({
                                             overrideData: {
                                                 societyDetailId: effectiveSocietyDetailId,
                                                 wingDetailId: effectiveWingDetailId,

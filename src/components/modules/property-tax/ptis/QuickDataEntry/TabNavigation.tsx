@@ -2,14 +2,17 @@
 
 import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { Images } from 'lucide-react';
 import { TABS, RETURN_TAB_BY_QDE_HREF, TAB_GRADIENT_CLASSES } from './navigation-constants';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 
 interface TabNavigationProps {
   categoryName?: string;
+  isMediaPanelOpen?: boolean;
+  onToggleMediaPanel?: () => void;
 }
 
-export function TabNavigation({ categoryName }: TabNavigationProps = {}) {
+export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPanel }: TabNavigationProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -189,105 +192,122 @@ export function TabNavigation({ categoryName }: TabNavigationProps = {}) {
 
   return (
     <div className="bg-white border-b-2 border-slate-300 px-3 py-2 shadow-sm overflow-x-auto no-scrollbar">
-      <nav
-        className="flex md:grid w-full gap-1.5 h-auto p-1 rounded-lg"
-        style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
-      >
-        {visibleTabs.map((tab) => {
-          const currentPath = pathname.split('?')[0];
-          const pathSegments = currentPath.split('/').filter(Boolean);
+      <div className="flex items-center gap-2">
+        <nav
+          className="flex md:grid flex-1 gap-1.5 h-auto p-1 rounded-lg"
+          style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
+        >
+          {visibleTabs.map((tab) => {
+            const currentPath = pathname.split('?')[0];
+            const pathSegments = currentPath.split('/').filter(Boolean);
 
-          // Find the base path up to the propertyId segment.
-          // The structure is expected to be .../QuickDataEntry/[propertyId]/...
-          const qdeIndex = pathSegments.indexOf('QuickDataEntry');
-          const baseTabPath =
-            qdeIndex !== -1 && pathSegments[qdeIndex + 1]
-              ? `/${pathSegments.slice(0, qdeIndex + 2).join('/')}`
-              : `/${pathSegments.slice(0, -1).join('/')}`;
+            // Find the base path up to the propertyId segment.
+            // The structure is expected to be .../QuickDataEntry/[propertyId]/...
+            const qdeIndex = pathSegments.indexOf('QuickDataEntry');
+            const baseTabPath =
+              qdeIndex !== -1 && pathSegments[qdeIndex + 1]
+                ? `/${pathSegments.slice(0, qdeIndex + 2).join('/')}`
+                : `/${pathSegments.slice(0, -1).join('/')}`;
 
-          const tabPath = `${baseTabPath}/${tab.href}`;
+            const tabPath = `${baseTabPath}/${tab.href}`;
 
-          const tabReturnValue = isApartment
-            ? 'apartment'
-            : isIndividual
-            ? 'individual'
-            : (RETURN_TAB_BY_QDE_HREF[tab.href] || returnTab);
+            const tabReturnValue = isApartment
+              ? 'apartment'
+              : isIndividual
+              ? 'individual'
+              : (RETURN_TAB_BY_QDE_HREF[tab.href] || returnTab);
 
-          // For FloorSubmission tab: exclude propertyId if we have search params
-          // to let the page resolve authoritative ID from backend
-          let tabQueryString = queryString;
-          if (tab.href === 'FloorSubmission' && hasPropertyKeys) {
-            const tabParams = new URLSearchParams();
-            if (wardNo) tabParams.set('wardNo', wardNo);
-            if (wardId) tabParams.set('wardId', wardId);
-            if (propertyNo) tabParams.set('propertyNo', propertyNo);
-            if (partitionNo) tabParams.set('partitionNo', partitionNo);
-            if (tabReturnValue) tabParams.set('returnTab', tabReturnValue);
-            if (valuationTab) tabParams.set('valuationTab', valuationTab);
-            if (appartmentTab) tabParams.set('appartmentTab', appartmentTab);
-            if (subTab) tabParams.set('subTab', subTab);
-            if (showDetails) tabParams.set('showDetails', showDetails);
-            if (appartmentPartition) tabParams.set('appartmentPartition', appartmentPartition);
-            if (parentPropertyId) tabParams.set('parentPropertyId', parentPropertyId);
-            if (fromSocietyEdit) tabParams.set('fromSocietyEdit', 'true');
-            if (fromWingEdit) tabParams.set('fromWingEdit', 'true');
-            if (fromFooterEdit) tabParams.set('fromFooterEdit', 'true');
-            if (hideWing) tabParams.set('hideWing', 'true');
-            if (hideSociety) tabParams.set('hideSociety', 'true');
-            rateableExpands.forEach(v => tabParams.append('rateableExpand', v));
-            capitalExpands.forEach(v => tabParams.append('capitalExpand', v));
-            dualExpands.forEach(v => tabParams.append('dualExpand', v));
-            tabQueryString = tabParams.toString();
-          } else {
-            const tabParams = new URLSearchParams(queryString);
-            if (tabReturnValue) {
-              tabParams.set('returnTab', tabReturnValue);
+            // For FloorSubmission tab: exclude propertyId if we have search params
+            // to let the page resolve authoritative ID from backend
+            let tabQueryString = queryString;
+            if (tab.href === 'FloorSubmission' && hasPropertyKeys) {
+              const tabParams = new URLSearchParams();
+              if (wardNo) tabParams.set('wardNo', wardNo);
+              if (wardId) tabParams.set('wardId', wardId);
+              if (propertyNo) tabParams.set('propertyNo', propertyNo);
+              if (partitionNo) tabParams.set('partitionNo', partitionNo);
+              if (tabReturnValue) tabParams.set('returnTab', tabReturnValue);
+              if (valuationTab) tabParams.set('valuationTab', valuationTab);
+              if (appartmentTab) tabParams.set('appartmentTab', appartmentTab);
+              if (subTab) tabParams.set('subTab', subTab);
+              if (showDetails) tabParams.set('showDetails', showDetails);
+              if (appartmentPartition) tabParams.set('appartmentPartition', appartmentPartition);
+              if (parentPropertyId) tabParams.set('parentPropertyId', parentPropertyId);
+              if (fromSocietyEdit) tabParams.set('fromSocietyEdit', 'true');
+              if (fromWingEdit) tabParams.set('fromWingEdit', 'true');
+              if (fromFooterEdit) tabParams.set('fromFooterEdit', 'true');
+              if (hideWing) tabParams.set('hideWing', 'true');
+              if (hideSociety) tabParams.set('hideSociety', 'true');
+              rateableExpands.forEach(v => tabParams.append('rateableExpand', v));
+              capitalExpands.forEach(v => tabParams.append('capitalExpand', v));
+              dualExpands.forEach(v => tabParams.append('dualExpand', v));
+              tabQueryString = tabParams.toString();
             } else {
-              tabParams.delete('returnTab');
+              const tabParams = new URLSearchParams(queryString);
+              if (tabReturnValue) {
+                tabParams.set('returnTab', tabReturnValue);
+              } else {
+                tabParams.delete('returnTab');
+              }
+              tabQueryString = tabParams.toString();
             }
-            tabQueryString = tabParams.toString();
-          }
 
-          const tabHref = tabQueryString ? `${tabPath}?${tabQueryString}` : tabPath;
+            const tabHref = tabQueryString ? `${tabPath}?${tabQueryString}` : tabPath;
 
-          const activeSegment = pathname.split('/').pop() ?? '';
-          const oldDetailsSectionPath = `${baseTabPath}/OldDetails`;
+            const activeSegment = pathname.split('/').pop() ?? '';
+            const oldDetailsSectionPath = `${baseTabPath}/OldDetails`;
 
-          // This is safe and intentional for single-segment tabs; OldDetails is a section tab
-          // and should remain active for any nested route under /OldDetails/.
-          const isOldDetailsTab = tab.href === 'OldDetails/old-taxation';
-          const isActive = isOldDetailsTab
-            ? pathname === tabPath ||
-              pathname === oldDetailsSectionPath ||
-              pathname.startsWith(`${oldDetailsSectionPath}/`)
-            : activeSegment === tab.href || pathname === tabPath;
+            // This is safe and intentional for single-segment tabs; OldDetails is a section tab
+            // and should remain active for any nested route under /OldDetails/.
+            const isOldDetailsTab = tab.href === 'OldDetails/old-taxation';
+            const isActive = isOldDetailsTab
+              ? pathname === tabPath ||
+                pathname === oldDetailsSectionPath ||
+                pathname.startsWith(`${oldDetailsSectionPath}/`)
+              : activeSegment === tab.href || pathname === tabPath;
 
-          const Icon = tab.icon;
+            const Icon = tab.icon;
 
-          const gradientClass = TAB_GRADIENT_CLASSES.activeClass;
+            const gradientClass = TAB_GRADIENT_CLASSES.activeClass;
 
-          const tabLabel = isApartment && tab.label === 'Society'
-            ? (t('tabs.SocietyDetails') || 'Society Details')
-            : t(`tabs.${tab.label}`);
+            const tabLabel = isApartment && tab.label === 'Society'
+              ? (t('tabs.SocietyDetails') || 'Society Details')
+              : t(`tabs.${tab.label}`);
 
-          return (
-            <button
-              key={tab.href}
-              onClick={() => handleTabClick(tabHref)}
-              data-href={tabHref}
-              className={[
-                'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md cursor-pointer text-left focus:outline-none whitespace-nowrap justify-center',
-                isActive
-                  ? `bg-linear-to-br ${gradientClass} text-white shadow-lg`
-                  : 'bg-white text-gray-600 border-gray-300 hover:bg-slate-50',
-              ].join(' ')}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tabLabel}</span>
-            </button>
-          );
-        })}
-      </nav>
+            return (
+              <button
+                key={tab.href}
+                onClick={() => handleTabClick(tabHref)}
+                data-href={tabHref}
+                className={[
+                  'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md cursor-pointer text-left focus:outline-none whitespace-nowrap justify-center',
+                  isActive
+                    ? `bg-linear-to-br ${gradientClass} text-white shadow-lg`
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-slate-50',
+                ].join(' ')}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tabLabel}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {onToggleMediaPanel && (
+          <button
+            type="button"
+            onClick={onToggleMediaPanel}
+            className={[
+              'shrink-0 inline-flex items-center gap-1.5 px-2.5 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md cursor-pointer focus:outline-none whitespace-nowrap',
+              'bg-linear-to-br from-blue-500 to-blue-600 border-blue-700 text-white shadow-md hover:from-blue-600 hover:to-blue-700 hover:shadow-lg',
+              isMediaPanelOpen ? 'ring-2 ring-blue-400 ring-offset-1 shadow-lg' : '',
+            ].filter(Boolean).join(' ')}
+            aria-label={t('photos.showPropertyPhotos') || 'Property Photos'}
+          >
+            <Images className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }

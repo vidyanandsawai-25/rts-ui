@@ -9,39 +9,65 @@ import { TabNavigation } from "./TabNavigation";
 import { cn } from '@/lib/utils/cn';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { QDE_TO_MAIN_MAP } from '@/lib/utils/qde-tab-mapping';
+import { MediaPanelProvider, useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
+import { usePropertyPhotosQuery } from '@/hooks/ptis/photoplan/usePropertyPhotosQuery';
+import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
+import PropertyMediaPanel from '../media/PropertyMediaPanel';
 
 export function QuickDataEntryClientWrapper({
     children,
+    categoryId,
+    propertyTypeId,
     categoryName,
     propertyDescription,
     initialHasIncompatibleFloor = false,
+    initialPhotoSlots = [],
+    initialPhotos = [],
 }: {
     children: ReactNode;
+    categoryId?: number | null;
+    propertyTypeId?: number | null;
     categoryName?: string;
     propertyDescription?: string;
     initialHasIncompatibleFloor?: boolean;
+    initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
+    initialPhotos?: PropertyPhotoDto[];
 }) {
     return (
-        <QuickDataEntryContent
-            categoryName={categoryName}
-            propertyDescription={propertyDescription}
-            initialHasIncompatibleFloor={initialHasIncompatibleFloor}
-        >
-            {children}
-        </QuickDataEntryContent>
+        <MediaPanelProvider initialVisible={false} syncWithCookie={false}>
+            <QuickDataEntryContent
+                categoryId={categoryId}
+                propertyTypeId={propertyTypeId}
+                categoryName={categoryName}
+                propertyDescription={propertyDescription}
+                initialHasIncompatibleFloor={initialHasIncompatibleFloor}
+                initialPhotoSlots={initialPhotoSlots}
+                initialPhotos={initialPhotos}
+            >
+                {children}
+            </QuickDataEntryContent>
+        </MediaPanelProvider>
     );
 }
 
 function QuickDataEntryContent({
     children,
+    categoryId,
+    propertyTypeId,
     categoryName,
     propertyDescription,
     initialHasIncompatibleFloor = false,
+    initialPhotoSlots = [],
+    initialPhotos = [],
 }: {
     children: ReactNode;
+    categoryId?: number | null;
+    propertyTypeId?: number | null;
     categoryName?: string;
     propertyDescription?: string;
     initialHasIncompatibleFloor?: boolean;
+    initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
+    initialPhotos?: PropertyPhotoDto[];
 }) {
     const router = useRouter();
     const pathname = usePathname();
@@ -74,6 +100,31 @@ function QuickDataEntryContent({
     const resolvedReturnTab = returnTab || derivedReturnTab || 'olddetails';
 
     const { confirm } = useConfirm();
+    const { isPanelVisible, togglePanel } = useMediaPanel();
+    const isMediaPanelOpen = isPanelVisible;
+
+    const numericPropertyId = propertyId ? Number(propertyId) : undefined;
+    const searchSocietyId =
+        searchParams.get('societyDetailId') ||
+        searchParams.get('societydetailid') ||
+        searchParams.get('societyId') ||
+        searchParams.get('societyid');
+    const numericSocietyId = searchSocietyId ? Number(searchSocietyId) : null;
+
+    const {
+        loading: mediaLoading,
+        photoSlots,
+        photos,
+        setPhotos,
+        setPhotoSlots,
+    } = usePropertyPhotosQuery(
+        numericPropertyId,
+        isPanelVisible,
+        false,
+        initialPhotoSlots,
+        initialPhotos,
+        numericSocietyId
+    );
 
     const [isFormSaving] = useState(false);
     const [showIncompatibleBanner, setShowIncompatibleBanner] = useState(initialHasIncompatibleFloor);
@@ -259,11 +310,12 @@ function QuickDataEntryContent({
     const isBusy = isFormSaving || (typeof window !== 'undefined' && !!(window as unknown as { __buildingFormIsSaving?: boolean }).__buildingFormIsSaving);
 
     const drawerClassName = cn(
-        "quick-data-entry-wrapper",
-        "[&_div.fixed.right-0]:!w-[97vw]",
-        "md:[&_div.fixed.right-0]:!w-[1000px]",
-        "lg:[&_div.fixed.right-0]:!w-[1100px]",
-        "xl:[&_div.fixed.right-0]:!w-[1200px]",
+        `quick-data-entry-wrapper transition-[width] duration-300 ease-in-out overflow-hidden ${
+            isMediaPanelOpen
+                ? 'w-[75vw] [&_div.fixed.right-0]:!w-[75vw]'
+                : 'w-[60vw] [&_div.fixed.right-0]:!w-[60vw]'
+        }`,
+        "[&_div.fixed.right-0]:transition-[width] [&_div.fixed.right-0]:duration-300 [&_div.fixed.right-0]:ease-in-out [&_div.fixed.right-0]:overflow-hidden",
         !isRenterPage && "[&_div.fixed.right-0>div:first-child]:!bg-blue-600",
         !isRenterPage && "[&_div.fixed.right-0>div:first-child_h2]:!text-white",
         !isRenterPage && "[&_div.fixed.right-0>div:first-child_button_svg]:!text-white",
@@ -348,10 +400,24 @@ function QuickDataEntryContent({
                     }}
                 />
             )}
-            <Drawer open={true} onClose={handleClose} title={drawerTitle} width="xl" hideHeader={isRenterPage}>
-                <div className="flex flex-col border-slate-300 bg-white shadow-sm min-h-[calc(100vh-60px)]">
+            <Drawer
+                open={true}
+                onClose={handleClose}
+                title={drawerTitle}
+                width="xl"
+                hideHeader={isRenterPage}
+                bodyClassName="overflow-y-auto overflow-x-hidden"
+                className={`transition-[width] duration-300 ease-in-out overflow-hidden ${
+                    isMediaPanelOpen ? '!w-[75vw]' : '!w-[60vw]'
+                }`}
+            >
+                <div className="flex flex-col border-slate-300 bg-white shadow-sm min-h-[calc(100vh-60px)] overflow-x-hidden">
                     {!isRenterPage && (
-                        <TabNavigation categoryName={categoryName} />
+                        <TabNavigation
+                            categoryName={categoryName}
+                            isMediaPanelOpen={isMediaPanelOpen}
+                            onToggleMediaPanel={togglePanel}
+                        />
                     )}
                     {showIncompatibleBanner && (
                         <div className="mx-4 mt-3 flex items-start gap-3 p-3.5 bg-amber-50/90 border border-amber-200/80 text-amber-900 rounded-xl shadow-xs transition-all duration-300">
@@ -370,8 +436,43 @@ function QuickDataEntryContent({
                             </div>
                         </div>
                     )}
-                    <div className="flex-1 flex flex-col">
-                        {children}
+                    <div className="flex-1 flex flex-row min-h-0 relative p-1.5 md:p-2 gap-2 transition-all duration-300 overflow-x-hidden">
+                        <div className="flex-1 min-w-0 flex flex-col transition-all duration-300 ease-in-out">
+                            {children}
+                        </div>
+
+                        {!isRenterPage && (
+                            <div
+                                className={cn(
+                                    "transition-all duration-300 ease-in-out z-30 shrink-0 sticky top-0 self-start h-[calc(100vh-140px)]",
+                                    isMediaPanelOpen
+                                        ? 'w-[208px] shrink-0 opacity-100 translate-x-0'
+                                        : 'w-0 opacity-0 translate-x-full pointer-events-none overflow-hidden'
+                                )}
+                            >
+                                <PropertyMediaPanel
+                                    propertyId={numericPropertyId}
+                                    categoryId={
+                                        categoryId ??
+                                        (searchParams.get('categoryId') ? Number(searchParams.get('categoryId')) : null) ??
+                                        (searchParams.get('hideWing') === 'true' && searchParams.get('hideSociety') === 'true' ? 2 : null) ??
+                                        (categoryName?.toLowerCase().includes('individual') ? 2 : categoryName?.toLowerCase().includes('apartment') ? 1 : null)
+                                    }
+                                    propertyTypeId={propertyTypeId ?? undefined}
+                                    initialPhotoSlots={photoSlots}
+                                    initialPhotos={photos}
+                                    loading={mediaLoading}
+                                    onPhotosChange={setPhotos}
+                                    onPhotoSlotsChange={setPhotoSlots}
+                                    societyDetailId={numericSocietyId ?? undefined}
+                                    wardNo={wardNo}
+                                    propertyNo={propertyNo}
+                                    partitionNo={partitionNo}
+                                    propertyDescription={propertyDescription}
+                                    isQuickDataEntry={true}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </Drawer>

@@ -62,6 +62,11 @@ export interface PropertyMediaPanelProps {
   onPhotosChange?: (photos: PropertyPhotoDto[]) => void;
   onPhotoSlotsChange?: (slots: PropertyPhotoTypeWithStatusDto[]) => void;
   wings?: WingWiseWingDetails[];
+  societyBuildingPhotoGuid?: string;
+  societyPhotoUrl?: string;
+  societyLatitude?: number;
+  societyLongitude?: number;
+  isQuickDataEntry?: boolean;
 }
 
 function PropertyMediaPanel({
@@ -91,6 +96,11 @@ function PropertyMediaPanel({
   onPhotosChange,
   onPhotoSlotsChange,
   wings = [],
+  societyBuildingPhotoGuid,
+  societyPhotoUrl,
+  societyLatitude,
+  societyLongitude,
+  isQuickDataEntry,
 }: PropertyMediaPanelProps): React.ReactElement {
   const searchParams = useSearchParams();
   const searchPropertyId = searchParams?.get('propertyId') || searchParams?.get('propertyid');
@@ -112,7 +122,9 @@ function PropertyMediaPanel({
   const effectivePropertyNo = propertyNo || searchPropertyNo || '';
   const effectivePartitionNo = partitionNo !== undefined && partitionNo !== null && partitionNo !== '' ? partitionNo : (searchPartitionNo || null);
 
-  const effectiveCategoryId = property?.categoryId ?? propCategoryId ?? (searchParams?.get('categoryId') ? Number(searchParams.get('categoryId')) : 1);
+  const searchCategoryId = searchParams?.get('categoryId') ? Number(searchParams.get('categoryId')) : null;
+  const isIndividualFromParams = (searchParams?.get('hideWing') === 'true' && searchParams?.get('hideSociety') === 'true');
+  const effectiveCategoryId = property?.categoryId ?? propCategoryId ?? searchCategoryId ?? (isIndividualFromParams ? 2 : 1);
   const isApartment = effectiveCategoryId === 1;
   const isPartitionEmptyOrMain = !effectivePartitionNo || effectivePartitionNo === '0' || String(effectivePartitionNo).trim() === '' || String(effectivePartitionNo).trim() === '-';
   const effectiveIsMainProperty = isApartment ? (propIsMainProperty !== undefined ? propIsMainProperty : (property?.isMainProperty ?? isPartitionEmptyOrMain)) : false;
@@ -132,6 +144,25 @@ function PropertyMediaPanel({
     if (wings && wings.length > 0) return wings;
     return fetchedWings;
   }, [wings, fetchedWings]);
+
+  const [activeWingParams, setActiveWingParams] = useState<{
+    wingId: number | null;
+    wingDetailId: number | null;
+    societyId: number | null;
+  } | null>(null);
+
+  useEffect(() => {
+    const handleParamsChange = (e: Event) => {
+      const detail = (e as CustomEvent<Record<string, string | null>>).detail;
+      if (!detail) return;
+      const wId = detail.wingId ? Number(detail.wingId) : null;
+      const wdId = detail.wingDetailId ? Number(detail.wingDetailId) : null;
+      const sId = (detail.societyDetailId || detail.societyId) ? Number(detail.societyDetailId || detail.societyId) : null;
+      setActiveWingParams({ wingId: wId, wingDetailId: wdId, societyId: sId });
+    };
+    window.addEventListener('ptis:wing-params-changed', handleParamsChange);
+    return () => window.removeEventListener('ptis:wing-params-changed', handleParamsChange);
+  }, []);
 
   const searchWingName = searchParams?.get('wingName') || searchParams?.get('wingname') || searchParams?.get('wingNo') || searchParams?.get('wingno');
   const selectedWingId = searchParams?.get('wingId');
@@ -174,10 +205,12 @@ function PropertyMediaPanel({
   }, [effectiveWings.length, selectedWingDetailId, searchWingDetailId, searchWardId, effectiveWardNo, queryPropNo]);
 
   const matchedWing = React.useMemo(() => {
+    const currentWingDetailId = activeWingParams?.wingDetailId !== undefined ? activeWingParams.wingDetailId : selectedWingDetailId;
+    const currentWingId = activeWingParams?.wingId !== undefined ? activeWingParams.wingId : selectedWingId;
     return effectiveWings.find(
       (w) =>
-        (selectedWingDetailId && String(w.wingDetailId) === String(selectedWingDetailId)) ||
-        (selectedWingId && String(w.wingMasterId) === String(selectedWingId)) ||
+        (currentWingDetailId && String(w.wingDetailId) === String(currentWingDetailId)) ||
+        (currentWingId && String(w.wingMasterId) === String(currentWingId)) ||
         (searchWingName && (
           (w.wingName && w.wingName.toLowerCase() === searchWingName.toLowerCase()) ||
           (w.wingNo && w.wingNo.toLowerCase() === searchWingName.toLowerCase()) ||
@@ -185,20 +218,26 @@ function PropertyMediaPanel({
           (w.wingName && w.wingName.toLowerCase() === `${searchWingName.toLowerCase()} wing`)
         ))
     );
-  }, [effectiveWings, selectedWingId, selectedWingDetailId, searchWingName]);
+  }, [effectiveWings, selectedWingId, selectedWingDetailId, searchWingName, activeWingParams]);
 
   const effectiveWingDetailId =
-    matchedWing?.wingDetailId ??
-    (selectedWingDetailId ? Number(selectedWingDetailId) : (effectiveWings && effectiveWings.length > 0 ? effectiveWings[0].wingDetailId : null));
+    activeWingParams?.wingDetailId !== undefined
+      ? activeWingParams.wingDetailId
+      : (matchedWing?.wingDetailId ??
+        (selectedWingDetailId ? Number(selectedWingDetailId) : (!isQuickDataEntry && effectiveWings && effectiveWings.length > 0 ? effectiveWings[0].wingDetailId : null)));
 
   const effectiveWingName =
     (matchedWing?.wingName && matchedWing.wingName.trim()) ||
     (matchedWing?.wingNo && `${matchedWing.wingNo} Wing`) ||
     (searchWingName && searchWingName.trim()) ||
-    (effectiveWings && effectiveWings.length > 0 ? (effectiveWings[0].wingName || (effectiveWings[0].wingNo ? `${effectiveWings[0].wingNo} Wing` : '')) : '');
+    (!isQuickDataEntry && effectiveWings && effectiveWings.length > 0 ? (effectiveWings[0].wingName || (effectiveWings[0].wingNo ? `${effectiveWings[0].wingNo} Wing` : '')) : '');
 
   const resolvedSocietyDetailId =
-    effectiveSocietyDetailId ?? (searchSocietyDetailId ? Number(searchSocietyDetailId) : null) ?? matchedWing?.societyId ?? (effectiveWings && effectiveWings.length > 0 ? effectiveWings[0].societyId : null);
+    activeWingParams?.societyId ??
+    effectiveSocietyDetailId ??
+    (searchSocietyDetailId ? Number(searchSocietyDetailId) : null) ??
+    matchedWing?.societyId ??
+    (effectiveWings && effectiveWings.length > 0 ? effectiveWings[0].societyId : null);
 
   const isAmenityFlag =
     propPropertyTypeId === 140 ||
@@ -273,6 +312,11 @@ function PropertyMediaPanel({
     partitionNo: effectivePartitionNo,
     entityType: resolvedEntityType,
     isAmenity: isAmenityFlag,
+    societyPhotoFallbackGuid: societyBuildingPhotoGuid,
+    societyPhotoFallbackUrl: societyPhotoUrl,
+    societyLatitude,
+    societyLongitude,
+    isQuickDataEntry,
   });
 
   const getSelectPropertyErrorMsg = useCallback(() => {
@@ -440,8 +484,9 @@ function PropertyMediaPanel({
       matchedWing as unknown as Record<string, unknown>,
       ...(Array.isArray(effectiveWings) ? effectiveWings : []).map((w) => w as unknown as Record<string, unknown>),
       property as unknown as Record<string, unknown>,
+      { latitude: societyLatitude, longitude: societyLongitude },
     ]);
-  }, [initialLatitude, initialLongitude, matchedWing, effectiveWings, property]);
+  }, [initialLatitude, initialLongitude, matchedWing, effectiveWings, property, societyLatitude, societyLongitude]);
 
   const hasCoords = parsedCoords.hasCoords;
   const effectiveLat = parsedCoords.latitude;
@@ -741,6 +786,7 @@ function PropertyMediaPanel({
             fallbackAfterUrl={fallbackAfterUrl}
             cdCategory={cdCategory}
             isMainProperty={effectiveIsMainProperty}
+            isQuickDataEntry={isQuickDataEntry}
           />
 
           <div className="absolute top-1/2 -translate-y-1/2 -left-5 z-50 sm:hidden lg:block">
@@ -782,6 +828,7 @@ function PropertyMediaPanel({
           onDrawPlan={effectiveIsMainProperty ? undefined : handleCreateClick}
           onRequestTypeModal={() => setIsTypeModalOpen(true)}
           isMainProperty={effectiveIsMainProperty}
+          zIndex={130}
         />
       )}
 

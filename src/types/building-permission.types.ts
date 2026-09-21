@@ -156,6 +156,12 @@ export interface SaveCertificateRequestDto {
     isPrimaryDocument?: boolean;
     status?: CertificateStatus;
     remarks?: string | null;
+    documentGuid?: string | null;
+    existingDocumentGuid?: string | null;
+    propertyCertificateId?: number | null;
+    isFileModified?: boolean;
+    hasExistingDocument?: boolean;
+    fileName?: string | null;
 }
 
 export interface SaveCertificateResponseDto {
@@ -223,6 +229,7 @@ export interface BuildingFormProps {
     propertyId: string;
     isSociety?: boolean;
     societyDetailId?: number | null;
+    wingDetailId?: number | null;
     floorData?: FloorResponse[];
     constructionTypeData?: ConstructionTypeResponse[];
     useData?: TypeOfUseApiItem[];

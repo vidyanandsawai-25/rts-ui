@@ -45,6 +45,8 @@ export interface LoadedApartmentPageData {
     | null;
   initialApartmentTaxDetails: ApartmentTaxDetailsItem | null;
   isApartmentSocietyProperty: boolean;
+  societyLatitude?: number;
+  societyLongitude?: number;
 }
 
 export async function loadApartmentPageData(
@@ -153,11 +155,12 @@ export async function loadApartmentPageData(
   if (pageData.latitude === undefined || pageData.longitude === undefined) {
     const aptCoords = extractCoordinates([
       { latitude: pageData.latitude, longitude: pageData.longitude },
+      pageData.propertyDetailsResult?.propertyDetails as unknown as Record<string, unknown>,
       ...(rawData?.wings || []).map((w) => w as unknown as Record<string, unknown>),
       rawData as unknown as Record<string, unknown>,
       initialPropertyMasterData as unknown as Record<string, unknown>,
       pageData.societyDetails as unknown as Record<string, unknown>,
-      pageData.propertyDetailsResult?.propertyDetails as unknown as Record<string, unknown>,
+      { latitude: pageData.societyLatitude, longitude: pageData.societyLongitude },
     ]);
     if (aptCoords.hasCoords) {
       pageData.latitude = aptCoords.latitude;
@@ -200,5 +203,7 @@ export async function loadApartmentPageData(
     initialQcTopSectionBelowFlex,
     initialApartmentTaxDetails,
     isApartmentSocietyProperty,
+    societyLatitude: pageData.societyLatitude,
+    societyLongitude: pageData.societyLongitude,
   };
 }

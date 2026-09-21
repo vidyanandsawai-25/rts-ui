@@ -92,9 +92,13 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
           initialPhotos={pageData.initialPhotos}
           initialLatitude={pageData.latitude}
           initialLongitude={pageData.longitude}
+          societyLatitude={data.societyLatitude ?? (data.initialPropertyMasterData?.latitude ? Number(data.initialPropertyMasterData.latitude) : undefined)}
+          societyLongitude={data.societyLongitude ?? (data.initialPropertyMasterData?.longitude ? Number(data.initialPropertyMasterData.longitude) : undefined)}
           initialWaybackReleases={pageData.waybackReleases}
           initialVisible={isMediaPanelVisible}
           wings={data.rawData?.wings}
+          societyBuildingPhotoGuid={data.initialPropertyMasterData?.societyBuildingPhotoGuid}
+          societyPhotoUrl={data.initialPropertyMasterData?.imageUrl}
         >
           <ApartmentContainer
             copy={copy}

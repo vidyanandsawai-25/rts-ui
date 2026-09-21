@@ -69,7 +69,7 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
   }, [handleOpenDropdown, handleOpenPlotCategoryFocus]);
 
   return (
-    <div className="bg-[#f8fafc] border border-slate-200 rounded-2xl p-3 flex flex-row items-center justify-between gap-2 shadow-sm w-full relative z-20">
+    <div className="bg-[#f8fafc] border border-slate-200 rounded-2xl p-2 sm:p-2.5 flex flex-row items-center justify-between gap-2 shadow-sm w-full relative z-20">
       {/* Left side: Icon & Title info */}
       <div className="flex items-center gap-2 shrink-0">
         <div className="flex items-center justify-center bg-blue-600 text-white p-2 rounded-xl shadow-md shadow-blue-200/50">

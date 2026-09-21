@@ -78,6 +78,8 @@ export async function mapPtisFetchResults({
   propertyIdParam,
   wardOptions,
   wings = [],
+  societyLatitude,
+  societyLongitude,
 }: {
   propertyDetailsResult: InitialDataResult;
   propertyListResult: ActionResult<PropertyListItem[]> | null;
@@ -97,6 +99,8 @@ export async function mapPtisFetchResults({
   propertyIdParam: number | undefined;
   wardOptions: SearchSelectOption[];
   wings?: WingWiseWingDetails[];
+  societyLatitude?: number;
+  societyLongitude?: number;
 }) {
   const results = detailResults.length > 0 ? detailResults : Array(19).fill(null);
   const [
@@ -150,44 +154,120 @@ export async function mapPtisFetchResults({
   const rawDataObj = (Array.isArray(rawPropertyData) ? rawPropertyData[0] : rawPropertyData) as unknown as Record<string, unknown> | undefined;
   const matchedProp = rawPropertyData.find((p) => p.propertyId === resolvedPropertyId);
 
-  const finalSocietyDetailId =
-    matchedProp?.societyDetailId ||
-    societyDetails?.societyDetailId ||
-    (rawPropObj as Record<string, unknown>)?.societyDetailId ||
-    (rawPropObj as Record<string, unknown>)?.SocietyDetailId ||
-    (rawDataObj as Record<string, unknown>)?.societyDetailId ||
-    (rawDataObj as Record<string, unknown>)?.SocietyDetailId ||
-    (rawPropObj as Record<string, unknown>)?.societyId ||
-    (rawPropObj as Record<string, unknown>)?.SocietyId ||
-    (rawDataObj as Record<string, unknown>)?.societyId ||
-    (rawDataObj as Record<string, unknown>)?.SocietyId;
+  const rawCatId =
+    propertyDetailsResult?.propertyDetails?.categoryId ??
+    (matchedProp as unknown as Record<string, unknown>)?.categoryId ??
+    (rawPropObj as Record<string, unknown>)?.categoryId ??
+    (rawPropObj as Record<string, unknown>)?.CategoryId ??
+    (rawDataObj as Record<string, unknown>)?.categoryId ??
+    (rawDataObj as Record<string, unknown>)?.CategoryId;
+  const categoryId = rawCatId !== undefined && rawCatId !== null ? Number(rawCatId) : undefined;
+  const rawCatName = String(
+    propertyDetailsResult?.propertyDetails?.category ??
+    (rawPropObj as Record<string, unknown>)?.categoryName ??
+    (matchedProp as unknown as Record<string, unknown>)?.category ??
+    (matchedProp as unknown as Record<string, unknown>)?.categoryName ??
+    ''
+  ).toLowerCase();
+  const isIndividual = categoryId === 2 || rawCatName.includes('individual');
+  const isApartmentCategory = !isIndividual && (categoryId === 1 || rawCatName.includes('apartment') || rawCatName.includes('society'));
 
-  const finalWingDetailId =
-    matchedProp?.wingDetailId ||
-    (rawPropObj as Record<string, unknown>)?.wingDetailId ||
-    (rawPropObj as Record<string, unknown>)?.WingDetailId ||
-    (rawDataObj as Record<string, unknown>)?.wingDetailId ||
-    (rawDataObj as Record<string, unknown>)?.WingDetailId ||
-    (rawPropObj as Record<string, unknown>)?.wingId ||
-    (rawPropObj as Record<string, unknown>)?.WingId ||
-    (rawDataObj as Record<string, unknown>)?.wingId ||
-    (rawDataObj as Record<string, unknown>)?.WingId;
+  const rawPartitionNo = String(
+    searchParams?.partitionNo ??
+    matchedProp?.partitionNo ??
+    propertyDetailsResult?.propertyDetails?.partitionNo ??
+    (rawPropObj as Record<string, unknown>)?.partitionNo ??
+    (rawDataObj as Record<string, unknown>)?.partitionNo ??
+    ''
+  ).trim();
+  const hasValidPartition = rawPartitionNo !== '' && rawPartitionNo !== '0' && rawPartitionNo !== '-';
+  const isApartmentInnerProperty = isApartmentCategory && hasValidPartition;
 
-  const allWings: WingWiseWingDetails[] = [
-    ...(wings || []),
-    ...(((matchedProp?.wings as unknown as WingWiseWingDetails[]) || [])),
-  ];
+  const allWings: WingWiseWingDetails[] = isApartmentCategory
+    ? [
+        ...(wings || []),
+        ...(((matchedProp?.wings as unknown as WingWiseWingDetails[]) || [])),
+      ]
+    : [];
 
-  const targetWingDetailId =
-    finalWingDetailId ||
-    searchParams?.wingDetailId ||
-    searchParams?.wingdetailid;
+  const searchWingDetailIdParam = isApartmentInnerProperty
+    ? (searchParams?.wingDetailId ||
+       searchParams?.wingdetailid ||
+       searchParams?.wingId ||
+       searchParams?.wingid)
+    : undefined;
 
-  const matchedWing = allWings.find(
-    (w) =>
-      (targetWingDetailId && String(w.wingDetailId) === String(targetWingDetailId)) ||
-      (searchParams?.wingId && String(w.wingMasterId) === String(searchParams.wingId))
-  );
+  const targetWingDetailId = isApartmentInnerProperty
+    ? (searchWingDetailIdParam ||
+       matchedProp?.wingDetailId ||
+       matchedProp?.wingId ||
+       (rawPropObj as Record<string, unknown>)?.wingDetailId ||
+       (rawPropObj as Record<string, unknown>)?.WingDetailId ||
+       (rawDataObj as Record<string, unknown>)?.wingDetailId ||
+       (rawDataObj as Record<string, unknown>)?.WingDetailId ||
+       (rawPropObj as Record<string, unknown>)?.wingId ||
+       (rawPropObj as Record<string, unknown>)?.WingId ||
+       (rawDataObj as Record<string, unknown>)?.wingId ||
+       (rawDataObj as Record<string, unknown>)?.WingId)
+    : undefined;
+
+  const matchedWing = isApartmentInnerProperty
+    ? allWings.find(
+        (w) =>
+          (targetWingDetailId && String(w.wingDetailId) === String(targetWingDetailId)) ||
+          (targetWingDetailId && String(w.wingMasterId) === String(targetWingDetailId)) ||
+          (searchParams?.wingId && String(w.wingMasterId) === String(searchParams.wingId)) ||
+          (searchParams?.wingid && String(w.wingMasterId) === String(searchParams.wingid))
+      )
+    : undefined;
+
+  const searchSocietyDetailIdParam = isApartmentCategory
+    ? (searchParams?.societyDetailId ||
+       searchParams?.societydetailid ||
+       searchParams?.societyId ||
+       searchParams?.societyid)
+    : undefined;
+
+  const finalSocietyDetailId = isApartmentCategory
+    ? (searchSocietyDetailIdParam ||
+       matchedProp?.societyDetailId ||
+       matchedProp?.societyId ||
+       matchedWing?.societyId ||
+       matchedWing?.societyDetailId ||
+       allWings[0]?.societyId ||
+       allWings[0]?.societyDetailId ||
+       societyDetails?.societyDetailId ||
+       (rawPropObj as Record<string, unknown>)?.societyDetailId ||
+       (rawPropObj as Record<string, unknown>)?.SocietyDetailId ||
+       (rawDataObj as Record<string, unknown>)?.societyDetailId ||
+       (rawDataObj as Record<string, unknown>)?.SocietyDetailId ||
+       (rawPropObj as Record<string, unknown>)?.societyId ||
+       (rawPropObj as Record<string, unknown>)?.SocietyId ||
+       (rawDataObj as Record<string, unknown>)?.societyId ||
+       (rawDataObj as Record<string, unknown>)?.SocietyId)
+    : undefined;
+
+  const finalWingDetailId = isApartmentInnerProperty
+    ? (targetWingDetailId ||
+       matchedWing?.wingDetailId ||
+       allWings[0]?.wingDetailId)
+    : undefined;
+
+  if (isApartmentCategory && finalSocietyDetailId && Number(finalSocietyDetailId) > 0) {
+    societyDetails.societyDetailId = Number(finalSocietyDetailId);
+    societyDetails.societyId = Number(finalSocietyDetailId);
+  } else if (!isApartmentCategory) {
+    societyDetails.societyDetailId = undefined;
+    societyDetails.societyId = undefined;
+  }
+
+  if (isApartmentInnerProperty && finalWingDetailId && Number(finalWingDetailId) > 0) {
+    societyDetails.wingDetailId = Number(finalWingDetailId);
+    societyDetails.wingId = Number(finalWingDetailId);
+  } else {
+    societyDetails.wingDetailId = undefined;
+    societyDetails.wingId = undefined;
+  }
 
   const searchLatParam = searchParams?.latitude ?? searchParams?.lat;
   const searchLngParam = searchParams?.longitude ?? searchParams?.lng;
@@ -202,6 +282,7 @@ export async function mapPtisFetchResults({
     rawPropObj,
     matchedWing as unknown as Record<string, unknown>,
     societyDetails as unknown as Record<string, unknown>,
+    { latitude: societyLatitude, longitude: societyLongitude },
     rawDataObj,
   ]);
 
@@ -226,13 +307,14 @@ export async function mapPtisFetchResults({
   let shouldRedirect = false;
   let redirectUrl = '';
 
-  const resolvedWingName =
-    matchedWing?.wingName?.trim() ||
-    matchedWing?.wingNo?.trim() ||
-    propertyDetailsResult.propertyDetails?.wingName?.trim() ||
-    propertyDetailsResult.propertyDetails?.wingNo?.trim();
+  const resolvedWingName = isApartmentInnerProperty
+    ? (matchedWing?.wingName?.trim() ||
+       matchedWing?.wingNo?.trim() ||
+       propertyDetailsResult.propertyDetails?.wingName?.trim() ||
+       propertyDetailsResult.propertyDetails?.wingNo?.trim())
+    : undefined;
 
-  if (resolvedWingName) {
+  if (isApartmentInnerProperty && resolvedWingName) {
     if (propertyDetailsResult.propertyDetails && !propertyDetailsResult.propertyDetails.wingName) {
       propertyDetailsResult.propertyDetails.wingName = resolvedWingName;
     }
@@ -242,6 +324,10 @@ export async function mapPtisFetchResults({
     if (propertyDetailsResult.propertyDetails && !propertyDetailsResult.propertyDetails.wingDetailId && targetWingDetailId) {
       propertyDetailsResult.propertyDetails.wingDetailId = Number(targetWingDetailId);
     }
+  } else if (!isApartmentInnerProperty && propertyDetailsResult.propertyDetails) {
+    propertyDetailsResult.propertyDetails.wingDetailId = undefined;
+    propertyDetailsResult.propertyDetails.wingName = undefined;
+    propertyDetailsResult.propertyDetails.wingNo = undefined;
   }
 
   const hasSocietyInParams = Boolean(
@@ -260,17 +346,21 @@ export async function mapPtisFetchResults({
     searchParams?.wingid
   );
 
+  const hasSpuriousParams =
+    (!isApartmentCategory && hasSocietyInParams) ||
+    (!isApartmentInnerProperty && hasWingInParams);
+
   const hasMissingParams = Boolean(resolvedPropertyId) && (
     !searchParams?.propertyNo ||
     !searchParams?.wardNo ||
-    (Boolean(finalSocietyDetailId) && !hasSocietyInParams) ||
-    (Boolean(finalWingDetailId) && !hasWingInParams) ||
-    (Boolean(resolvedWingName) && !searchParams?.wingName && !searchParams?.wingname)
+    (isApartmentCategory && Boolean(finalSocietyDetailId) && !hasSocietyInParams) ||
+    (isApartmentInnerProperty && Boolean(finalWingDetailId) && !hasWingInParams) ||
+    (isApartmentInnerProperty && Boolean(resolvedWingName) && !searchParams?.wingName && !searchParams?.wingname)
   );
 
   const isIdMismatch = Boolean(resolvedPropertyId) && (!propertyIdParam || propertyIdParam !== resolvedPropertyId);
 
-  if (resolvedPropertyId && (isIdMismatch || hasMissingParams)) {
+  if (resolvedPropertyId && (isIdMismatch || hasMissingParams || hasSpuriousParams)) {
     const matchedProp = rawPropertyData.find(p => p.propertyId === resolvedPropertyId);
     const finalPropNo = matchedProp?.propertyNo || propertyDetailsResult.propertyDetails?.propertyNo;
     const finalPartNo = matchedProp?.partitionNo ?? propertyDetailsResult.propertyDetails?.partitionNo;
@@ -289,6 +379,23 @@ export async function mapPtisFetchResults({
     }
     newParams.set('propertyId', resolvedPropertyId.toString());
 
+    if (!isApartmentCategory) {
+      newParams.delete('societyDetailId');
+      newParams.delete('societydetailid');
+      newParams.delete('societyId');
+      newParams.delete('societyid');
+      newParams.delete('societyMasterId');
+      newParams.delete('societyMasterid');
+    }
+    if (!isApartmentInnerProperty) {
+      newParams.delete('wingDetailId');
+      newParams.delete('wingdetailid');
+      newParams.delete('wingId');
+      newParams.delete('wingid');
+      newParams.delete('wingName');
+      newParams.delete('wingname');
+    }
+
     if (finalPropNo && !searchParams?.propertyNo) {
       newParams.set('propertyNo', finalPropNo);
     }
@@ -302,13 +409,13 @@ export async function mapPtisFetchResults({
       newParams.set('wardId', finalWardId.toString());
     }
 
-    if (finalSocietyDetailId && !hasSocietyInParams) {
+    if (isApartmentCategory && finalSocietyDetailId && !hasSocietyInParams) {
       newParams.set('societyDetailId', String(finalSocietyDetailId));
     }
-    if (finalWingDetailId && !hasWingInParams) {
+    if (isApartmentInnerProperty && finalWingDetailId && !hasWingInParams) {
       newParams.set('wingDetailId', String(finalWingDetailId));
     }
-    if (resolvedWingName && !searchParams?.wingName && !searchParams?.wingname) {
+    if (isApartmentInnerProperty && resolvedWingName && !searchParams?.wingName && !searchParams?.wingname) {
       newParams.set('wingName', resolvedWingName);
     }
     const currentParams = new URLSearchParams();
@@ -380,6 +487,8 @@ export async function mapPtisFetchResults({
     appliedRulesList: ruleLogsRes?.success && ruleLogsRes.data && ruleLogsRes.data.items ? ruleLogsRes.data.items : [],
     latitude,
     longitude,
+    societyLatitude,
+    societyLongitude,
     waybackReleases,
     tabHeaderInfo,
     mappedPropertiesData,

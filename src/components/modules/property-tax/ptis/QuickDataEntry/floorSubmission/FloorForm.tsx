@@ -130,8 +130,8 @@ const FloorForm: React.FC<FloorFormProps & {
     }, [editingFloorForm, isAddingNewFloor, selectedFloorType, isUseValidForProperty]);
 
     return (
-      <div className="bg-white rounded-xl shadow-lg border-2 border-blue-100 m-0 p-4 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
-        <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-blue-200">
+      <div className="bg-white rounded-xl shadow-lg border-2 border-blue-100 m-0 p-2.5 sm:p-3 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
+        <div className="flex items-center justify-between mb-2.5 pb-2 border-b-2 border-blue-200">
           <h3 className="text-sm font-bold text-blue-800 flex items-center gap-2">
             <Edit2 className="w-4 h-4" />
             {(!selectedFloor && isAddingNewFloor)
@@ -147,7 +147,7 @@ const FloorForm: React.FC<FloorFormProps & {
           />
         </div>
 
-        <div className={selectedFloorType === 'OpenPlot' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4' : 'grid grid-cols-1 md:grid-cols-3 gap-4'}>
+        <div className={selectedFloorType === 'OpenPlot' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3' : 'grid grid-cols-1 md:grid-cols-3 gap-3'}>
           <BasicInfoSection
             t={t}
             editingFloorForm={editingFloorForm}

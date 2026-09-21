@@ -65,6 +65,8 @@ export function UpicLinkCell({
   wardId,
   propertyNo,
   partitionNo,
+  societyDetailId,
+  wingDetailId,
   locale,
   copyLabel,
 }: UpicLinkCellProps) {
@@ -89,6 +91,12 @@ export function UpicLinkCell({
   }
   if (partitionNo !== undefined && partitionNo !== null && partitionNo !== "") {
     params.set("partitionNo", partitionNo);
+  }
+  if (societyDetailId) {
+    params.set("societyDetailId", String(societyDetailId));
+  }
+  if (wingDetailId) {
+    params.set("wingDetailId", String(wingDetailId));
   }
 
   const searchStateVal = activeFiltersExist ? currentQuery : "clear";

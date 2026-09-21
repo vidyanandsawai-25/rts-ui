@@ -197,6 +197,8 @@ export function buildInitialPropertyMasterData(
     societyBuildingPhotoGuid: baseData?.societyBuildingPhotoGuid || photoGuid,
     imageUrl: baseData?.imageUrl || photoUrl,
     propertyDescriptionRegional: effectiveDescRegional,
+    latitude: baseData?.latitude ?? (rawSoc?.latitude as string | number | null | undefined) ?? pageData?.latitude,
+    longitude: baseData?.longitude ?? (rawSoc?.longitude as string | number | null | undefined) ?? pageData?.longitude,
     performance: perf || {
       thisAssessmentRevenue: '₹0',
       revenueGrowthPct: '',
