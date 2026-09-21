@@ -157,7 +157,7 @@ export const validateTypeOfUseForm = (
     },
     type: (val: unknown) => {
       const strVal = String(val ?? "").trim();
-      if (!strVal) return t("type.selectType", { default: "Type is required" });
+      if (!strVal) return t("type.fields.selectType", { default: "Type is required" });
       return undefined;
     },
     isActive: (val: unknown) => {
@@ -178,7 +178,7 @@ export const validateSubTypeOfUseForm = (
   const schema = {
     typeOfUseId: (val: unknown) => {
       const n = Number(val);
-      if (!n || n <= 0) return t("type.selectType", { default: "Type is required" });
+      if (!n || n <= 0) return t("type.fields.selectType", { default: "Type is required" });
       return undefined;
     },
     description: (val: unknown) => {

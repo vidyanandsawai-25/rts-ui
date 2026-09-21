@@ -1,4 +1,5 @@
 {
+  "noDataFound": "कोई डेटा नहीं मिला",
   "title": "उपयोग प्रकार मास्टर",
   "seq": "अनुक्रम",
   "selectIcon": "आइकन चुनें",
@@ -45,7 +46,7 @@
     "AssetTypeOfUse_AssetTypeId_Required": "मालमत्ता प्रकार आवश्यक है",
     "AssetTypeOfUse_TypeOfUseGroupId_Required": "समूह आवश्यक है",
     "AssetTypeOfUse_TypeOfUseCode_Required": "उपयोग प्रकार कोड आवश्यक है",
-    "AssetTypeOfUse_TypeOfUseCode_MaxLen_20": "उपयोग प्रकार कोड की अधिकतम लंबाई 10 वर्ण है",
+    "AssetTypeOfUse_TypeOfUseCode_MaxLen_10": "उपयोग प्रकार कोड की अधिकतम लंबाई 10 वर्ण है",
     "AssetTypeOfUse_Description_Required": "उपयोग प्रकार का नाम आवश्यक है",
     "AssetTypeOfUse_Description_MaxLen_100": "उपयोग प्रकार के नाम की अधिकतम लंबाई १०० वर्ण है",
     "AssetSubTypeOfUse_TypeOfUseId_Required": "उपयोग प्रकार आवश्यक है",

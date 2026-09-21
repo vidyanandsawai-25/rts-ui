@@ -147,7 +147,7 @@ export default function SubTypeOfUseForm({ id, initialData, typeOfUses }: SubTyp
                 required
                 min={0}
                 max={999}
-                value={formData.searchSequence}
+                value={formData.searchSequence === "" ? "" : formData.searchSequence}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 fullWidth

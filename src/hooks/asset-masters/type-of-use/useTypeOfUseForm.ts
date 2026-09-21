@@ -40,8 +40,10 @@ export function useTypeOfUseForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
-  const urlGroupId = parseInt(sp.get("selectedGroupId") ?? "0", 10) || 0;
-  const urlCategoryId = parseInt(sp.get("assetCategoryId") ?? "0", 10) || 0;
+  const parseQueryId = (value: string | null): number =>
+    value && /^\d+$/.test(value) ? Number(value) : 0;
+  const urlGroupId = parseQueryId(sp.get("selectedGroupId"));
+  const urlCategoryId = parseQueryId(sp.get("assetCategoryId"));
 
   const [formData, setFormData] = useState<AssetTypeOfUseFormModel>({
     id: id ?? initialData?.id,
@@ -56,7 +58,6 @@ export function useTypeOfUseForm({
   });
 
   const types = initialTypes;
-  const isLoadingTypes = false;
   const [errors, setErrors] = useState<Partial<Record<keyof AssetTypeOfUseFormModel, string>>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
@@ -90,8 +91,13 @@ export function useTypeOfUseForm({
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
     const val = parseVal(name, value);
+    if (name === "assetCategoryId") {
+      const categoryId = Number(val);
+      setFormData((p) => ({ ...p, assetCategoryId: categoryId, assetTypeId: 0 }));
+      onCategoryChange?.(categoryId);
+      return;
+    }
     setFormData((p) => ({ ...p, [name]: val }));
-    if (name === "assetCategoryId") onCategoryChange?.(Number(val));
   }, [onCategoryChange]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>): void => {
@@ -110,18 +116,13 @@ export function useTypeOfUseForm({
     });
   }, [formData, validate]);
 
-  const mapApiError = useCallback((result: { statusCode?: number; message?: string; errors?: Record<string, string> | null }) => {
-    if (result.errors) {
-      for (const val of Object.values(result.errors)) {
+  const mapApiError = useCallback((result: { statusCode?: number; message?: string; validationErrors?: Record<string, string | string[]> }) => {
+    if (result.validationErrors) {
+      for (const raw of Object.values(result.validationErrors)) {
+        const val = Array.isArray(raw) ? raw[0] : raw;
         if (val) {
           const cleanVal = val.replace(/\.$/, "");
-          const translationKey = `apiErrors.${cleanVal}` as never;
-          try {
-            const translated = t(translationKey);
-            if (translated && translated !== translationKey && !translated.includes(translationKey)) {
-              return translated;
-            }
-          } catch {}
+          return getErrorMessage(cleanVal, result.statusCode, t, tCommon, t("type.title"));
         }
       }
     }
@@ -196,7 +197,6 @@ export function useTypeOfUseForm({
     types,
     open,
     setOpen,
-    isLoadingTypes,
     handleChange,
     handleBlur,
     handleSubmit,

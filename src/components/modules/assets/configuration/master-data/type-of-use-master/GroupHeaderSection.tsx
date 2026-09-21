@@ -171,6 +171,11 @@ export function GroupHeaderSection({
             </div>
           );
         })}
+        {groups.length === 0 && (
+          <div className="flex min-w-[230px] items-center justify-center rounded-xl border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-500">
+            {t("noDataFound")}
+          </div>
+        )}
       </div>
     </div>
   );

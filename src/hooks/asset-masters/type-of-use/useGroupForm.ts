@@ -97,18 +97,13 @@ export function useGroupForm({
     });
   }, [formData, validate]);
 
-  const mapApiError = useCallback((result: { statusCode?: number; message?: string; errors?: Record<string, string> | null }) => {
-    if (result.errors) {
-      for (const val of Object.values(result.errors)) {
+  const mapApiError = useCallback((result: { statusCode?: number; message?: string; validationErrors?: Record<string, string | string[]> }) => {
+    if (result.validationErrors) {
+      for (const raw of Object.values(result.validationErrors)) {
+        const val = Array.isArray(raw) ? raw[0] : raw;
         if (val) {
           const cleanVal = val.replace(/\.$/, "");
-          const translationKey = `apiErrors.${cleanVal}` as never;
-          try {
-            const translated = t(translationKey);
-            if (translated && translated !== translationKey && !translated.includes(translationKey)) {
-              return translated;
-            }
-          } catch {}
+          return getErrorMessage(cleanVal, result.statusCode, t, tCommon, t("group.title"));
         }
       }
     }

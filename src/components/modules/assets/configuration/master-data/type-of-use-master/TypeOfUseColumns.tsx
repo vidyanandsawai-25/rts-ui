@@ -177,7 +177,7 @@ export function getSubTypeOfUseColumns(
       label: createSortableLabel(t("subtype.fields.sequence.label", { default: "Sequence" }), "searchSequence"),
       width: "25%",
       align: "center",
-      render: (value) => <span>{typeof value === "number" ? value : 0}</span>,
+      render: (value) => <span>{typeof value === "number" ? value : "-"}</span>,
     },
     {
       key: "isActive",

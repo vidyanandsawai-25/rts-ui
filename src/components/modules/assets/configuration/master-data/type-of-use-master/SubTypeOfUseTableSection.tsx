@@ -2,6 +2,7 @@
 
 import { Layers3 } from "lucide-react";
 import { SearchInput } from "@/components/common";
+import { useTranslations } from "next-intl";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton, AddButton } from "@/components/common/ActionButtons";
 import type { Column } from "@/components/common/MasterTable";
@@ -55,6 +56,7 @@ export function SubTypeOfUseTableSection({
   loading = false,
   selectedType,
 }: SubTypeOfUseTableSectionProps) {
+  const t = useTranslations("assetTypeOfUse");
   return (
     <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white shadow-sm lg:h-[600px] flex flex-col">
       {/* Header */}
@@ -116,6 +118,7 @@ export function SubTypeOfUseTableSection({
           )}
           actionLabel={actionsLabel}
           paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+          emptyText={t("noDataFound")}
           getRowKey={(row) => String(row.id)}
         />
       </div>

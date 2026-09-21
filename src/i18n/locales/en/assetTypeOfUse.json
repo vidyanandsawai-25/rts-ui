@@ -1,5 +1,6 @@
 {
   "title": "Type of Use Master",
+  "noDataFound": "No data found",
   "seq": "Seq",
   "selectIcon": "Select icon",
   "residential": "Residential",
@@ -45,7 +46,7 @@
     "AssetTypeOfUse_AssetTypeId_Required": "Asset Type is required",
     "AssetTypeOfUse_TypeOfUseGroupId_Required": "Group is required",
     "AssetTypeOfUse_TypeOfUseCode_Required": "Type of Use Code is required",
-    "AssetTypeOfUse_TypeOfUseCode_MaxLen_20": "Type of Use Code maximum length is 10 characters",
+    "AssetTypeOfUse_TypeOfUseCode_MaxLen_10": "Type of Use Code maximum length is 10 characters",
     "AssetTypeOfUse_Description_Required": "Type of Use Name is required",
     "AssetTypeOfUse_Description_MaxLen_100": "Type of Use Name maximum length is 100 characters",
     "AssetSubTypeOfUse_TypeOfUseId_Required": "Type of Use is required",

@@ -1,4 +1,5 @@
 {
+  "noDataFound": "डेटा सापडला नाही",
   "title": "वापर प्रकार मास्टर",
   "seq": "अनुक्रम",
   "selectIcon": "चिन्ह निवडा",
@@ -45,7 +46,7 @@
     "AssetTypeOfUse_AssetTypeId_Required": "मालमत्ता प्रकार आवश्यक आहे",
     "AssetTypeOfUse_TypeOfUseGroupId_Required": "गट आवश्यक आहे",
     "AssetTypeOfUse_TypeOfUseCode_Required": "वापर प्रकार कोड आवश्यक आहे",
-    "AssetTypeOfUse_TypeOfUseCode_MaxLen_20": "वापर प्रकार कोडची कमाल लांबी १० अक्षरे आहे",
+    "AssetTypeOfUse_TypeOfUseCode_MaxLen_10": "वापर प्रकार कोडची कमाल लांबी १० अक्षरे आहे",
     "AssetTypeOfUse_Description_Required": "वापर प्रकाराचे नाव आवश्यक आहे",
     "AssetTypeOfUse_Description_MaxLen_100": "वापर प्रकाराच्या नावाची कमाल लांबी १०० अक्षरे आहे",
     "AssetSubTypeOfUse_TypeOfUseId_Required": "वापर प्रकार आवश्यक आहे",
