@@ -9,13 +9,13 @@ describe('filterOpenPlotCategories Utility Tests', () => {
     expect(filterOpenPlotCategories([])).toEqual([]);
   });
 
-  it('should filter records where typeOfUseCategoryId === 3 or code matches open plot codes', () => {
+  it('should filter records where typeOfUseCategoryId === 4', () => {
     const rawData = [
       {
         id: 50,
         typeOfUseCode: 'OPC',
         description: 'खुला भूखंड अनिवासी',
-        typeOfUseCategoryId: 3,
+        typeOfUseCategoryId: 4,
         isActive: true,
       },
       {
@@ -33,20 +33,20 @@ describe('filterOpenPlotCategories Utility Tests', () => {
     expect(result[0].typeOfUseCode).toBe('OPC');
   });
 
-  it('should map typeOfUseCategoryId=3 API records dynamically', () => {
+  it('should map typeOfUseCategoryId=4 API records dynamically', () => {
     const rawData = [
       {
         id: 10,
         typeOfUseCode: 'OP',
         description: 'खुला भूखंड निवासी',
-        typeOfUseCategoryId: 3,
+        typeOfUseCategoryId: 4,
         isActive: true,
       },
       {
         id: 15111,
         typeOfUseCode: 'OPI',
         description: 'खुला भूखंड औद्योगिक',
-        typeOfUseCategoryId: 3,
+        typeOfUseCategoryId: 4,
         isActive: true,
       },
     ];

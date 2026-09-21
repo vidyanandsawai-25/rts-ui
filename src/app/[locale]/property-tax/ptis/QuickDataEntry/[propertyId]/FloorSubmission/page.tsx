@@ -140,8 +140,7 @@ export default async function FloorSubmissionPage({
         (shouldLoadAll || asString(sp.loadFloor) === 'true') ? getFloorDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadConstruction) === 'true') ? getConstructionTypeDataAction() : Promise.resolve([]),
         getTypeOfUseDataAction(resolvedPropertyTypeId),
-        // shouldLoadOpenPlotCategory ? getOpenPlotCategoryDataAction() : Promise.resolve([]),
-        getOpenPlotCategoryDataAction(),
+        getOpenPlotCategoryDataAction(resolvedPropertyTypeId),
         (shouldLoadAll || asString(sp.loadSubFloor) === 'true') ? getSubFloorDataAction() : Promise.resolve([]),
         shouldLoadSubType ? getSubTypeOfUseDataAction(effectiveUseIdForPrefetch) : Promise.resolve([]),
         getRoomTypeDataAction(),
@@ -298,6 +297,7 @@ export default async function FloorSubmissionPage({
                 initialFloors={initialFloors}
                 initialFloorDetails={initialFloorDetails}
                 initialPlotArea={initialPlotArea}
+                propertyTypeId={resolvedPropertyTypeId}
                 locale={locale}
                 apiErrors={metadataErrors}
             />

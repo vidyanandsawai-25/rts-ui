@@ -22,6 +22,7 @@ export interface UsePlotAreaCalculatorParams {
   selectedFloorType?: 'Construction' | 'OpenPlot';
   openPlotCategories?: OpenPlotCategoryItem[];
   selectedOpenPlotCategory?: OpenPlotCategoryItem | null;
+  propertyTypeId?: string | number;
 }
 
 interface PlotBaseline {
@@ -41,6 +42,7 @@ export function usePlotAreaCalculator({
   selectedFloorType = 'Construction',
   openPlotCategories,
   selectedOpenPlotCategory,
+  propertyTypeId,
 }: UsePlotAreaCalculatorParams) {
   const [length, setLength] = useState<string>(() =>
     initialPlotArea?.length != null ? String(initialPlotArea.length) : ''
@@ -167,7 +169,7 @@ export function usePlotAreaCalculator({
     if (isCategoryLoading) return;
     setIsCategoryLoading(true);
     try {
-      const data = await getOpenPlotCategoryDataAction();
+      const data = await getOpenPlotCategoryDataAction(propertyTypeId);
       if (Array.isArray(data) && data.length > 0) {
         const mapped = filterOpenPlotCategories(data);
         if (mapped.length > 0) {
@@ -179,7 +181,7 @@ export function usePlotAreaCalculator({
     } finally {
       setIsCategoryLoading(false);
     }
-  }, [isCategoryLoading]);
+  }, [isCategoryLoading, propertyTypeId]);
 
   const categoryList = useMemo(
     () => (categories?.length ? categories : (openPlotCategories?.length ? openPlotCategories : [])),

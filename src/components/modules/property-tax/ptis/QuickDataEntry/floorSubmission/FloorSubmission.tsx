@@ -293,6 +293,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               t={t}
               layout="single-row"
               propertyId={props.initialPropertyID}
+              propertyTypeId={props.propertyTypeId || (props.initialPropertyData as any)?.propertyTypeId || (props.initialPropertyData as any)?.propertyTypeID}
               initialPlotArea={dynamicPlotArea}
               isLoading={isAddingArea}
               buttonText={openPlotRecord ? (t('floor.updateArea') || 'Update Area') : (t('floor.applyArea') || 'Add Area')}

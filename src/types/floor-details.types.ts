@@ -249,6 +249,7 @@ export interface EditSidebarProps {
         width?: number | string | null;
         totalPlotArea?: number | string | null;
     } | null;
+    propertyTypeId?: string | number;
     apiErrors?: string[];
 }
 
