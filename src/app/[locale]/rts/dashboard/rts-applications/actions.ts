@@ -830,6 +830,7 @@ export interface RtsApplicationsDashboardFilters {
   sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays' | 'FIFO';
   sortOrder?: 'asc' | 'desc';
   assignedUserId?: number;
+  currentUserId?: number;
   isFifo?: boolean;
 }
 
@@ -853,6 +854,7 @@ async function getApprovalApplicationsPage(
     sortBy: filters.sortBy,
     sortOrder: filters.sortOrder,
     userId: filters.assignedUserId,
+    currentUserId: filters.currentUserId,
     isFifo: isFifoMode,
   });
 
@@ -943,10 +945,23 @@ function isPendingOrActiveStatus(status: string | null | undefined): boolean {
   return s !== 'approved' && s !== 'rejected' && s !== 'reverted';
 }
 
+function getRowPriority(row: AdminApplicationGridRow, currentUserId?: number | null): number {
+  const isPending = isPendingOrActiveStatus(row.currentStatus);
+  if (!isPending) {
+    return 2; // Closed / Completed (Approved, Rejected, Reverted) -> bottom
+  }
+  // Pending / Active
+  if (currentUserId && row.assignedUserId === currentUserId) {
+    return 0; // My Pending (assigned to this logged-in officer) -> TOP!
+  }
+  return 1; // Other Pending -> Middle
+}
+
 function sortDashboardRows(
   rows: AdminApplicationGridRow[],
   sortBy?: RtsApplicationsDashboardFilters['sortBy'],
-  sortOrder?: RtsApplicationsDashboardFilters['sortOrder']
+  sortOrder?: RtsApplicationsDashboardFilters['sortOrder'],
+  currentUserId?: number | null
 ): AdminApplicationGridRow[] {
   // Default to FIFO ascending (oldest application first) unless desc is explicitly requested
   const direction = sortOrder === 'desc' ? -1 : 1;
@@ -991,14 +1006,13 @@ function sortDashboardRows(
       }
       case 'FIFO':
       default: {
-        // Strict FIFO mode: Pending/active applications first, then closed (Approved, Rejected, Reverted)
-        const leftPending = isPendingOrActiveStatus(left.currentStatus) ? 0 : 1;
-        const rightPending = isPendingOrActiveStatus(right.currentStatus) ? 0 : 1;
-        if (leftPending !== rightPending) {
-          return leftPending - rightPending;
+        // 1. Prioritize: Logged-in officer's pending on top (Rank 0), other pending (Rank 1), closed (Rank 2)
+        const rankDiff = getRowPriority(left, currentUserId) - getRowPriority(right, currentUserId);
+        if (rankDiff !== 0) {
+          return rankDiff;
         }
 
-        // Within each priority group: earliest created date first (FIFO)
+        // 2. Within each priority group: earliest created date first (FIFO)
         const leftTime = left.applicationDate ? new Date(left.applicationDate).getTime() : 0;
         const rightTime = right.applicationDate ? new Date(right.applicationDate).getTime() : 0;
         const validLeft = Number.isFinite(leftTime) ? leftTime : 0;
@@ -1067,8 +1081,15 @@ export async function getRtsApplicationsDashboardAction(
   filters: RtsApplicationsDashboardFilters = { pageNumber: 1 }
 ): Promise<RtsApplicationsDashboardResult> {
   try {
+    const cookieStore = await cookies();
+    const currentUserId = getCurrentApprovalOfficerUserId(cookieStore);
+    const effectiveFilters: RtsApplicationsDashboardFilters = {
+      ...filters,
+      currentUserId: filters.currentUserId ?? currentUserId ?? undefined,
+    };
+
     const [approvalRes, cards, misDepartments] = await Promise.all([
-      getApprovalApplicationsPage(filters).catch((err) => {
+      getApprovalApplicationsPage(effectiveFilters).catch((err) => {
         console.error('Failed to fetch approval applications list:', err);
         return null;
       }),
@@ -1076,7 +1097,7 @@ export async function getRtsApplicationsDashboardAction(
         console.error('Failed to fetch RTS application dashboard cards API:', err);
         return null;
       }),
-      getMisDashboardKpiData(filters),
+      getMisDashboardKpiData(effectiveFilters),
     ]);
 
     const misKpis = getMisDepartmentKpis(misDepartments);
@@ -1170,7 +1191,8 @@ export async function getRtsApplicationsDashboardAction(
     const rows = sortDashboardRows(
       approvalRows,
       filters.sortBy,
-      filters.sortOrder
+      filters.sortOrder,
+      currentUserId
     );
 
     const pageSize = 10;

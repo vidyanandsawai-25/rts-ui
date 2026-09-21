@@ -98,6 +98,7 @@ export async function getApprovalApplicationsPaged(
   if (params.sortBy) queryParams.set('SortBy', params.sortBy);
   if (params.sortOrder) queryParams.set('SortOrder', params.sortOrder);
   if (params.userId != null) queryParams.set('UserId', String(params.userId));
+  if (params.currentUserId != null) queryParams.set('CurrentUserId', String(params.currentUserId));
   if (params.isFifo != null) queryParams.set('IsFifo', String(params.isFifo));
 
   const queryString = queryParams.toString();
