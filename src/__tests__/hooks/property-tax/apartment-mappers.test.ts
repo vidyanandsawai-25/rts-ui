@@ -95,16 +95,18 @@ describe('apartment-mappers — parseApartmentItemNodes property ID resolution',
 
     const { newUnits, oldUnits } = parseApartmentItemNodes(rawItems);
 
-    // With partition and flat: "116 / 1 / 202"
-    expect(newUnits[0].prop).toBe('116 / 1 / 202');
+    // With partition and flat: "116 - 1 - 202"
+    expect(newUnits[0].prop).toBe('116 - 1 - 202');
     expect(newUnits[0].partitionNo).toBe('1');
+    expect(newUnits[0].flatNo).toBe('202');
 
-    // With partition 0 and flat: "8071629 / 0 / 101"
-    expect(oldUnits[0].prop).toBe('8071629 / 0 / 101');
+    // With partition 0 and flat: "8071629 - 0 - 101"
+    expect(oldUnits[0].prop).toBe('8071629 - 0 - 101');
     expect(oldUnits[0].partitionNo).toBe('0');
+    expect(oldUnits[0].flatNo).toBe('101');
 
-    // With partition only: "116 / 2"
-    expect(newUnits[1].prop).toBe('116 / 2');
+    // With partition only: "116 - 2"
+    expect(newUnits[1].prop).toBe('116 - 2');
     expect(newUnits[1].partitionNo).toBe('2');
 
     // Without partition: "8071630"

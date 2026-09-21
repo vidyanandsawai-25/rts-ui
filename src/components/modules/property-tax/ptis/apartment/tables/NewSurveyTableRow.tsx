@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { AssessmentUnit, PtisTaxMode } from '@/types/property-tax/apartment';
-import { ChevronRight, ChevronDown, Eye } from 'lucide-react';
+import { ChevronRight, ChevronDown, Eye, Edit2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { MappedPropertiesExpandedRow } from './MappedPropertiesExpandedRow';
@@ -31,6 +33,10 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
   onViewRules,
   taxMode,
 }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const locale = useLocale();
+
   const raw = unit.rawSurvey;
   const propPhotoGuid = raw?.propertyPhotoDocumentGuid || raw?.photos?.find((p) => p.photoTypeCode === 'PROPERTY_PHOTO')?.documentGuid || null;
   const planPhotoGuid = raw?.planPhotoDocumentGuid || raw?.photos?.find((p) => p.photoTypeCode === 'PLAN_PHOTO')?.documentGuid || null;
@@ -41,6 +47,7 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
     (rawAny?.propertyMastOldId ? Number(rawAny.propertyMastOldId) : null) ??
     (taxDetailOldId ? Number(taxDetailOldId) : null) ??
     (rawAny?.oldPropertyId ? Number(rawAny.oldPropertyId) : null);
+  const hasMappedProperties = Boolean(oldPropertyId && oldPropertyId > 0);
   const wingDetailsId =
     (rawAny?.wingDetailsId ? Number(rawAny.wingDetailsId) : null) ??
     (rawAny?.wingDetailId ? Number(rawAny.wingDetailId) : null) ??
@@ -50,19 +57,58 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
 
+  const handleRedirectToPtis = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const propId = raw?.id || raw?.pdnId || unit.propertyId || unit.id;
+    const params = new URLSearchParams();
+    if (propId) params.set('propertyId', String(propId));
+    const wardNo = raw?.wardNo || searchParams.get('wardNo');
+    if (wardNo) params.set('wardNo', String(wardNo));
+    const wardId = raw?.wardId || searchParams.get('wardId');
+    if (wardId) params.set('wardId', String(wardId));
+    const propertyNo = unit.propertyNo || raw?.propertyNo;
+    if (propertyNo) params.set('propertyNo', String(propertyNo));
+    const partitionNo = unit.partitionNo || raw?.partitionNo;
+    if (partitionNo) params.set('partitionNo', String(partitionNo));
+    router.push(`/${locale}/property-tax/ptis?${params.toString()}`);
+  };
+
   return (
     <React.Fragment key={unit.id ? `${unit.id}-${idx}` : idx}>
       <tr
         onMouseEnter={() => onHoverUnit(unit.id)}
         onMouseLeave={() => onHoverUnit(null)}
         className={cn('h-11 transition-colors cursor-pointer hover:bg-sky-50/60', isHovered && 'bg-sky-100/80', isExpanded && 'bg-sky-100/90')}
-        onClick={() => onToggleExpandRow(unit.id)}
+        onClick={() => {
+          if (hasMappedProperties) {
+            onToggleExpandRow(unit.id);
+          }
+        }}
       >
         <td className="w-12 px-1 py-1 text-center font-bold text-zinc-500 sticky left-0 bg-white z-10 border-r border-zinc-100 shadow-2xs h-11">
           <div className="flex items-center justify-center gap-1 text-zinc-400">
-            <button type="button" onClick={(e) => { e.stopPropagation(); onToggleExpandRow(unit.id); }} className="p-0.5 rounded-sm hover:bg-zinc-200 text-zinc-600 cursor-pointer">
-              {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-sky-700" /> : <ChevronRight className="w-3.5 h-3.5" />}
-            </button>
+            {hasMappedProperties ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleExpandRow(unit.id);
+                }}
+                className="p-0.5 rounded-sm hover:bg-zinc-200 text-zinc-600 cursor-pointer"
+                title="Expand mapped properties"
+              >
+                {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-sky-700" /> : <ChevronRight className="w-3.5 h-3.5" />}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleRedirectToPtis}
+                className="p-1 rounded-md transition-all border cursor-pointer bg-sky-100 text-sky-700 hover:bg-sky-200 border-sky-300 shadow-2xs"
+                title="Open Individual PTIS Page"
+              >
+                <Edit2 className="w-3 h-3" />
+              </button>
+            )}
             <span className="font-semibold text-zinc-600 text-xs min-w-[14px] text-center">{idx + 1}</span>
           </div>
         </td>
@@ -118,7 +164,7 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
         </td>
       </tr>
 
-      {isExpanded && (
+      {isExpanded && hasMappedProperties && (
         <tr className="bg-sky-50/40 border-b border-sky-200 transition-all">
           <td colSpan={showRv && showCv ? 26 : (showRv || showCv ? 25 : 24)} className="p-1.5 text-zinc-700 font-sans align-middle">
             <MappedPropertiesExpandedRow

@@ -55,6 +55,8 @@ export function normalizeSurveyDetail(data: Record<string, unknown> | null | und
       zoneNo: null,
       propertyNo: '',
       oldPropertyNo: null,
+      partitionNo: null,
+      oldPartitionNo: null,
       wardId: null,
       wardNo: null,
       mobileNo: null,
@@ -140,6 +142,10 @@ export function normalizeSurveyDetail(data: Record<string, unknown> | null | und
     zoneNo: toNullableString(data.zoneNo),
     propertyNo: toNullableString(data.propertyNo) ?? '',
     oldPropertyNo: toNullableString(data.oldPropertyNo),
+    partitionNo: toNullableString(data.partitionNo ?? data.partNo ?? data.partition ?? data.partitionNumber),
+    oldPartitionNo: toNullableString(data.oldPartitionNo),
+    propertyFloorId: toNullableNumber(data.propertyFloorId),
+    wingDetailId: toNullableNumber(data.wingDetailId ?? data.wingDetailsId),
     wardId: toNullableNumber(data.wardId),
     wardNo: toNullableString(data.wardNo),
     mobileNo: toNullableString(data.mobileNo),
@@ -269,6 +275,12 @@ export function isApartmentWingWiseItemShape(value: unknown): value is Record<st
 
 export function normalizeApartmentWingWiseItem(data: Record<string, unknown>): ApartmentWingWiseItemDto {
   const newSurveyRaw = (data.newSurvey ?? data.newSurveyDetail ?? data) as Record<string, unknown> | undefined;
+  const mergedNewSurveyRaw = newSurveyRaw
+    ? {
+        ...newSurveyRaw,
+        partitionNo: newSurveyRaw.partitionNo ?? data.partitionNo ?? data.partNo ?? data.partition,
+      }
+    : undefined;
   const oldSurveyRaw = (data.oldSurvey ?? data.oldSurveyDetail) as Record<string, unknown> | undefined;
   const diffRaw = (data.difference ?? data.differenceDetail) as Record<string, unknown> | undefined;
 
@@ -276,13 +288,14 @@ export function normalizeApartmentWingWiseItem(data: Record<string, unknown>): A
     ? {
         ...oldSurveyRaw,
         oldTaxDetails: oldSurveyRaw.oldTaxDetails ?? data.oldTaxDetails,
+        partitionNo: oldSurveyRaw.partitionNo ?? oldSurveyRaw.oldPartitionNo ?? data.oldPartitionNo ?? data.partitionNo,
       }
     : data.oldTaxDetails
-    ? { oldTaxDetails: data.oldTaxDetails }
+    ? { oldTaxDetails: data.oldTaxDetails, partitionNo: data.oldPartitionNo ?? data.partitionNo }
     : undefined;
 
   return {
-    newSurvey: normalizeSurveyDetail(newSurveyRaw),
+    newSurvey: normalizeSurveyDetail(mergedNewSurveyRaw),
     oldSurvey: normalizeSurveyDetail(oldSurveyWithTaxes),
     difference: normalizeDifferenceDetail(diffRaw),
   };

@@ -29,7 +29,7 @@ interface MappedPropertiesSubTableProps {
 }
 
 const LABELS = {
-  propertyNo: 'Property no',
+  propertyNo: 'Prop / Parti / Flat No',
   wingFlr: 'Wing / Flr',
   type: 'Type',
   use: 'Use',
@@ -182,16 +182,32 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
             const propPhotoGuid = m.propertyPhotoDocumentGuid || (m.photos as Array<{ photoTypeCode?: string; documentGuid?: string }> | undefined)?.find((p) => p.photoTypeCode === 'PROPERTY_PHOTO')?.documentGuid || null;
             const planPhotoGuid = m.planPhotoDocumentGuid || (m.photos as Array<{ photoTypeCode?: string; documentGuid?: string }> | undefined)?.find((p) => p.photoTypeCode === 'PLAN_PHOTO')?.documentGuid || null;
             const rawItem = m as unknown as Record<string, unknown>;
-            const propNo = (m.propertyNo || '').trim();
+            const propNo = (
+              m.propertyNo ||
+              (rawItem.propertyNo as string | undefined) ||
+              (rawItem.propNo as string | undefined) ||
+              ''
+            ).toString().trim();
             const rawPart = (
               m.partitionNo ??
               (rawItem.partitionNo as string | number | undefined) ??
               (rawItem.partNo as string | number | undefined) ??
               (rawItem.partition as string | number | undefined) ??
+              (rawItem.partitionNumber as string | number | undefined) ??
               ''
             ).toString().trim();
             const partNo = rawPart !== '' && rawPart !== '-' ? rawPart : '';
-            const flatNo = (m.flatOrShopNo || '').trim();
+            const flatNo = (
+              m.flatOrShopNo ??
+              m.flatOrShopNoEnglish ??
+              m.flatOrShopName ??
+              m.flatOrShopNameEnglish ??
+              (rawItem.flatNo as string | number | undefined) ??
+              (rawItem.shopNo as string | number | undefined) ??
+              (rawItem.flatOrShopNo as string | number | undefined) ??
+              (rawItem.flatOrShopName as string | number | undefined) ??
+              ''
+            ).toString().trim();
 
             const subParts: string[] = [];
             if (propNo) subParts.push(propNo);

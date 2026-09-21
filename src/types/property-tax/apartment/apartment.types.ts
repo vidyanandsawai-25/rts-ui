@@ -53,6 +53,7 @@ export interface SurveyDetailDto {
   partType?: string | null;
   bhk?: string | null;
   wing?: string | null;
+  wingDetailId?: number | null;
   noOfRooms?: number | null;
   floor?: string | null;
   subFloor?: string | null;
