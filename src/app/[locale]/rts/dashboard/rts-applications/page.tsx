@@ -89,19 +89,22 @@ export default async function RtsApplicationDashboardPage({
     ? requestedSortOrder
     : undefined;
 
-  const department = departments.find(
-    (item) =>
-      item.id.toString() === departmentSlug ||
-      toApplicationFilterSlug(item.departmentName) === departmentSlug ||
-      (item.departmentNameLocal && toApplicationFilterSlug(item.departmentNameLocal) === departmentSlug)
-  );
-  const service = services.find(
-    (item) =>
-      (!department || item.departmentId === department.id) &&
-      (item.id.toString() === requestedServiceSlug ||
-        toApplicationFilterSlug(item.serviceName) === requestedServiceSlug ||
-        (item.serviceNameLocal && toApplicationFilterSlug(item.serviceNameLocal) === requestedServiceSlug))
-  );
+  const department = departmentSlug
+    ? departments.find(
+        (item) =>
+          item.id.toString() === departmentSlug ||
+          toApplicationFilterSlug(item.departmentName) === departmentSlug
+      )
+    : undefined;
+
+  const service = requestedServiceSlug
+    ? services.find(
+        (item) =>
+          (!department || item.departmentId === department.id) &&
+          (item.id.toString() === requestedServiceSlug ||
+            toApplicationFilterSlug(item.serviceName) === requestedServiceSlug)
+      )
+    : undefined;
 
   const effectiveDepartment = department || (service ? departments.find((d) => d.id === service.departmentId) : undefined);
 
