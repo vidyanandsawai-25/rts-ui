@@ -27,8 +27,8 @@ describe('mapApartmentQcTopSectionToPropertyMasterData - Additional Revenue', ()
     const result = mapApartmentQcTopSectionToPropertyMasterData(mockDto);
 
     expect(result.performance).toBeDefined();
-    // Main revenue hero number is formatted differenceAmount without minus sign
-    expect(result.performance?.thisAssessmentRevenue).toBe('₹6,59,221');
+    // Main revenue hero number is formatted differenceAmount with minus sign if negative
+    expect(result.performance?.thisAssessmentRevenue).toBe('-₹6,59,221');
     // Percentage growth formatted nicely with down arrow for negative change
     expect(result.performance?.revenueGrowthPct).toBe('↓ 96.72%');
     expect(result.performance?.isGrowthNegative).toBe(true);
@@ -104,5 +104,60 @@ describe('mapApartmentQcTopSectionToPropertyMasterData - Additional Revenue', ()
     expect(emptyDtoResult.performance?.thisAssessmentRevenue).toBe('₹0');
     expect(emptyDtoResult.performance?.revenueGrowthPct).toBe('');
     expect(emptyDtoResult.performance?.currentTax).toBe('-');
+  });
+
+  it('correctly maps old carpet and built-up areas with both sq.ft and sq.m', () => {
+    const mockDto: ApartmentQcTopSectionDto = {
+      propertyOverview: {
+        propertyId: 'PROP-002',
+      },
+      propertyInfo: {
+        carpetAreaFt: 2325.02,
+        carpetAreaMtr: 216,
+        builtUpAreaFt: 2790.03,
+        builtUpAreaMtr: 259.2,
+        oldCarpetAreaFt: 8638.33,
+        oldCarpetAreaMtr: 802.53,
+        oldBuiltUpAreaFt: 10366,
+        oldBuiltUpAreaMtr: 963.03,
+      },
+    };
+
+    const result = mapApartmentQcTopSectionToPropertyMasterData(mockDto);
+
+    expect(result.carpetAreaFtMtr).toBe('2,325.02 sq.ft / 216 sq.m');
+    expect(result.builtUpAreaFtMtr).toBe('2,790.03 sq.ft / 259.2 sq.m');
+    expect(result.oldCarpetAreaFtMtr).toBe('8,638.33 sq.ft / 802.53 sq.m');
+    expect(result.oldBuiltUpAreaFtMtr).toBe('10,366 sq.ft / 963.03 sq.m');
+    expect(result.oldCarpetBuiltUp).toBe('8,638.33 / 10,366 sq.ft (802.53 / 963.03 sq.m)');
+  });
+
+  it('correctly maps subZoneNo and csn into subZoneCsnNo', () => {
+    // Both subZoneNo and csn present
+    const dtoWithBoth: ApartmentQcTopSectionDto = {
+      propertyOverview: {
+        subZoneNo: 'A',
+        csn: '143',
+      },
+    };
+    expect(mapApartmentQcTopSectionToPropertyMasterData(dtoWithBoth).subZoneCsnNo).toBe('A - 143');
+
+    // Only csn present
+    const dtoWithCsn: ApartmentQcTopSectionDto = {
+      propertyOverview: {
+        subZoneNo: null,
+        csn: '24',
+      },
+    };
+    expect(mapApartmentQcTopSectionToPropertyMasterData(dtoWithCsn).subZoneCsnNo).toBe('CSN - 24');
+
+    // Only subZoneNo present
+    const dtoWithSubZone: ApartmentQcTopSectionDto = {
+      propertyOverview: {
+        subZoneNo: 'SZ-1',
+        csn: null,
+      },
+    };
+    expect(mapApartmentQcTopSectionToPropertyMasterData(dtoWithSubZone).subZoneCsnNo).toBe('SZ-1');
   });
 });

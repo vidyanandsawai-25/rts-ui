@@ -463,12 +463,18 @@
     "address": "पता:",
     "plotArea": "भूखंड क्षेत्रफल:",
     "carpetBuiltUp": "कार्पेट / निर्मित क्षेत्रफल:",
-    "oldCarpetBuiltUp": "पुराना कार्पेट/निर्मित:",
+    "oldCarpetBuiltUp": "पुराना कार्पेट / निर्मित:",
     "totalFloors": "कुल मंजिलें:",
     "totalProperties": "कुल संपत्तियां:",
     "resCommAmen": "(आवासीय/व्यावसायिक/सुविधा)",
     "carpet": "कार्पेट:",
-    "builtUp": "निर्मित:"
+    "builtUp": "निर्मित:",
+    "oldCarpet": "पुराना कार्पेट:",
+    "oldBuiltUp": "पुराना निर्मित:",
+    "carpetArea": "कार्पेट क्षेत्रफल:",
+    "builtUpArea": "निर्मित क्षेत्रफल:",
+    "current": "वर्तमान:",
+    "old": "पुराना:"
   },
   "revenueCard": {
     "addRevenue": "अतिरिक्त राजस्व",

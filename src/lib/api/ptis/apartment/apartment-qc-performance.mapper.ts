@@ -50,7 +50,7 @@ export function mapPerformanceSummary(
 
   const thisAssessmentRevenue =
     heroAmount !== undefined && heroAmount !== null
-      ? formatAmount(heroAmount, { absolute: true })
+      ? formatAmount(heroAmount)
       : '₹0';
 
   const rawChangePct = addRev.changePercent;

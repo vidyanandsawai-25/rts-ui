@@ -165,7 +165,7 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
             <CreditCard className="w-3 h-3 shrink-0" />
             <span className="text-[10px] font-bold leading-none truncate">{t('stats.collection') || 'Collection'}</span>
           </div>
-          <span className="text-[8px] font-bold px-1 py-0.5 rounded-full border border-emerald-500 bg-emerald-50 text-emerald-700 leading-none shrink-0">
+          <span className="text-[9.5px] font-extrabold px-1.5 py-0.5 rounded-full border border-emerald-500 bg-emerald-50 text-emerald-700 leading-none shrink-0">
             {performance?.collectionPercent || '0%'}
           </span>
         </div>

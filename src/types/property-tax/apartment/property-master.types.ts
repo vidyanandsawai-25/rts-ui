@@ -120,8 +120,10 @@ export interface PropertyMasterData {
   plotAreaFtMtr?: string;
   carpetBuiltUpArea?: string;
   carpetAreaFtMtr?: string;
-  oldCarpetBuiltUp?: string;
   builtUpAreaFtMtr?: string;
+  oldCarpetBuiltUp?: string;
+  oldCarpetAreaFtMtr?: string;
+  oldBuiltUpAreaFtMtr?: string;
   totalFloors?: string;
   totalPropertiesResCommAmen?: string;
 

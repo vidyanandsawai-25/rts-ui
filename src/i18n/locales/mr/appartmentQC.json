@@ -463,12 +463,18 @@
     "address": "पत्ता:",
     "plotArea": "प्लॉट क्षेत्रफळ:",
     "carpetBuiltUp": "कार्पेट / निर्मित क्षेत्रफळ:",
-    "oldCarpetBuiltUp": "जुने कार्पेट/निर्मित:",
+    "oldCarpetBuiltUp": "जुने कार्पेट / निर्मित:",
     "totalFloors": "एकूण मजले:",
     "totalProperties": "एकूण मालमत्ता:",
     "resCommAmen": "(निवासी/अनिवासी/सुविधा)",
     "carpet": "कार्पेट:",
-    "builtUp": "निर्मित:"
+    "builtUp": "निर्मित:",
+    "oldCarpet": "जुने कार्पेट:",
+    "oldBuiltUp": "जुने निर्मित:",
+    "carpetArea": "कार्पेट क्षेत्रफळ:",
+    "builtUpArea": "निर्मित क्षेत्रफळ:",
+    "current": "चालू:",
+    "old": "जुने:"
   },
   "revenueCard": {
     "addRevenue": "अतिरिक्त महसूल",

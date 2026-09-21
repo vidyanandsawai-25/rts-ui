@@ -12,6 +12,8 @@ export interface ApartmentQcPropertyOverviewDto {
   propertyId?: string | null;
   wardNo?: string | null;
   wardName?: string | null;
+  subZoneNo?: string | null;
+  csn?: string | null;
   isActive?: boolean;
   isLocked?: boolean;
   propertyStatus?: string | null;
@@ -65,6 +67,10 @@ export interface ApartmentQcPropertyInfoDto {
   surveyNo?: string | null;
   plotNo?: string | null;
   taxZone?: string | null;
+  subZoneNo?: string | null;
+  subZone?: string | null;
+  csn?: string | null;
+  subZoneCsnNo?: string | null;
   mobileNo?: string | null;
   alternateMobileNo?: string | null;
   builderMobileNo?: string | null;
@@ -83,6 +89,10 @@ export interface ApartmentQcPropertyInfoDto {
   carpetAreaMtr?: number | null;
   builtUpAreaFt?: number | null;
   builtUpAreaMtr?: number | null;
+  oldCarpetAreaFt?: number | null;
+  oldCarpetAreaMtr?: number | null;
+  oldBuiltUpAreaFt?: number | null;
+  oldBuiltUpAreaMtr?: number | null;
   totalFloor?: string | number | null;
   totalFloors?: string | number | null;
 }

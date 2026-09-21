@@ -35,7 +35,9 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
       address: societyDetails?.societyAddress || '-',
       societyAddress: societyDetails?.societyAddress || '-',
       plotArea: '-',
-      carpetBuiltUpArea: '-', oldCarpetBuiltUp: '-', totalFloors: '-',
+      carpetBuiltUpArea: '-', oldCarpetBuiltUp: '-',
+      oldCarpetAreaFtMtr: undefined, oldBuiltUpAreaFtMtr: undefined,
+      totalFloors: '-',
       totalPropertiesResCommAmen: '-',
       secretaryName: societyDetails?.secretaryName || '-',
       secretaryNameEnglish: societyDetails?.secretaryNameEnglish || undefined,
@@ -96,8 +98,43 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
   const division = info?.division || '-';
   const taxZone = info?.taxZone || '-';
   const surveyNo = info?.surveyNo || '';
-  const subZoneCsnNo = (rawInfo?.subZoneCsnNo && rawInfo.subZoneCsnNo !== '-') ? String(rawInfo.subZoneCsnNo)
-    : (rawDto?.subZoneCsnNo && rawDto.subZoneCsnNo !== '-') ? String(rawDto.subZoneCsnNo) : '-';
+  const cleanField = (val: unknown): string | null => {
+    if (val === null || val === undefined) return null;
+    const str = String(val).trim();
+    return (str && str !== '-' && str !== 'null' && str !== 'undefined') ? str : null;
+  };
+
+  const rawSubZone = cleanField(
+    overview?.subZoneNo ??
+    rawOverview?.subZoneNo ??
+    rawOverview?.subZone ??
+    info?.subZoneNo ??
+    rawInfo?.subZoneNo ??
+    rawInfo?.subZone ??
+    rawDto?.subZoneNo ??
+    rawDto?.subZone
+  );
+
+  const rawCsn = cleanField(
+    overview?.csn ??
+    rawOverview?.csn ??
+    info?.csn ??
+    rawInfo?.csn ??
+    rawDto?.csn
+  );
+
+  const subZoneCsnNo = (() => {
+    if (rawSubZone && rawCsn) {
+      const cleanCsn = rawCsn.replace(/^CSN\s*[-:]?\s*/i, '').trim();
+      return `${rawSubZone} - ${cleanCsn}`;
+    }
+    if (rawSubZone) return rawSubZone;
+    if (rawCsn) {
+      return rawCsn.toUpperCase().startsWith('CSN') ? rawCsn : `CSN - ${rawCsn}`;
+    }
+    const legacy = cleanField(rawInfo?.subZoneCsnNo ?? rawDto?.subZoneCsnNo ?? rawOverview?.subZoneCsnNo);
+    return legacy || '-';
+  })();
   const plotNo = info?.plotNo || '-';
   const address = (info?.address && info.address !== '-') ? info.address
     : (societyDetails?.societyAddress && societyDetails.societyAddress !== '-') ? societyDetails.societyAddress
@@ -113,20 +150,20 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
     ? `${plotAreaMtr.toLocaleString('en-IN')} sq.m`
     : '-';
 
-  const carpetAreaFt = toPositiveNumberOrNull(info?.carpetAreaFt ?? rawInfo?.carpetAreaFt);
-  const carpetAreaMtr = toPositiveNumberOrNull(info?.carpetAreaMtr ?? rawInfo?.carpetAreaMtr);
+  const carpetAreaFt = toPositiveNumberOrNull(info?.carpetAreaFt ?? rawInfo?.carpetAreaFt ?? rawOverview?.carpetAreaFt ?? rawDto?.carpetAreaFt);
+  const carpetAreaMtr = toPositiveNumberOrNull(info?.carpetAreaMtr ?? rawInfo?.carpetAreaMtr ?? rawOverview?.carpetAreaMtr ?? rawDto?.carpetAreaMtr);
   const carpetAreaFtMtr = (carpetAreaFt != null && carpetAreaMtr != null)
-    ? `${carpetAreaFt.toLocaleString('en-IN')} sq.ft (${carpetAreaMtr.toLocaleString('en-IN')} sq.m)`
+    ? `${carpetAreaFt.toLocaleString('en-IN')} sq.ft / ${carpetAreaMtr.toLocaleString('en-IN')} sq.m`
     : carpetAreaFt != null
     ? `${carpetAreaFt.toLocaleString('en-IN')} sq.ft`
     : carpetAreaMtr != null
     ? `${carpetAreaMtr.toLocaleString('en-IN')} sq.m`
     : undefined;
 
-  const builtUpAreaFt = toPositiveNumberOrNull(info?.builtUpAreaFt ?? rawInfo?.builtUpAreaFt);
-  const builtUpAreaMtr = toPositiveNumberOrNull(info?.builtUpAreaMtr ?? rawInfo?.builtUpAreaMtr);
+  const builtUpAreaFt = toPositiveNumberOrNull(info?.builtUpAreaFt ?? rawInfo?.builtUpAreaFt ?? rawOverview?.builtUpAreaFt ?? rawDto?.builtUpAreaFt);
+  const builtUpAreaMtr = toPositiveNumberOrNull(info?.builtUpAreaMtr ?? rawInfo?.builtUpAreaMtr ?? rawOverview?.builtUpAreaMtr ?? rawDto?.builtUpAreaMtr);
   const builtUpAreaFtMtr = (builtUpAreaFt != null && builtUpAreaMtr != null)
-    ? `${builtUpAreaFt.toLocaleString('en-IN')} sq.ft (${builtUpAreaMtr.toLocaleString('en-IN')} sq.m)`
+    ? `${builtUpAreaFt.toLocaleString('en-IN')} sq.ft / ${builtUpAreaMtr.toLocaleString('en-IN')} sq.m`
     : builtUpAreaFt != null
     ? `${builtUpAreaFt.toLocaleString('en-IN')} sq.ft`
     : builtUpAreaMtr != null
@@ -143,6 +180,47 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
     : hasMtr
     ? `${carpetAreaMtr!.toLocaleString('en-IN')} / ${builtUpAreaMtr!.toLocaleString('en-IN')} sq.m`
     : '-';
+
+  const oldCarpetAreaFt = toPositiveNumberOrNull(info?.oldCarpetAreaFt ?? rawInfo?.oldCarpetAreaFt ?? rawDto?.oldCarpetAreaFt);
+  const oldCarpetAreaMtr = toPositiveNumberOrNull(info?.oldCarpetAreaMtr ?? rawInfo?.oldCarpetAreaMtr ?? rawDto?.oldCarpetAreaMtr);
+  const oldCarpetAreaFtMtr = (oldCarpetAreaFt != null && oldCarpetAreaMtr != null)
+    ? `${oldCarpetAreaFt.toLocaleString('en-IN')} sq.ft / ${oldCarpetAreaMtr.toLocaleString('en-IN')} sq.m`
+    : oldCarpetAreaFt != null
+    ? `${oldCarpetAreaFt.toLocaleString('en-IN')} sq.ft`
+    : oldCarpetAreaMtr != null
+    ? `${oldCarpetAreaMtr.toLocaleString('en-IN')} sq.m`
+    : undefined;
+
+  const oldBuiltUpAreaFt = toPositiveNumberOrNull(info?.oldBuiltUpAreaFt ?? rawInfo?.oldBuiltUpAreaFt ?? rawDto?.oldBuiltUpAreaFt);
+  const oldBuiltUpAreaMtr = toPositiveNumberOrNull(info?.oldBuiltUpAreaMtr ?? rawInfo?.oldBuiltUpAreaMtr ?? rawDto?.oldBuiltUpAreaMtr);
+  const oldBuiltUpAreaFtMtr = (oldBuiltUpAreaFt != null && oldBuiltUpAreaMtr != null)
+    ? `${oldBuiltUpAreaFt.toLocaleString('en-IN')} sq.ft / ${oldBuiltUpAreaMtr.toLocaleString('en-IN')} sq.m`
+    : oldBuiltUpAreaFt != null
+    ? `${oldBuiltUpAreaFt.toLocaleString('en-IN')} sq.ft`
+    : oldBuiltUpAreaMtr != null
+    ? `${oldBuiltUpAreaMtr.toLocaleString('en-IN')} sq.m`
+    : undefined;
+
+  const hasOldFt = oldCarpetAreaFt != null && oldBuiltUpAreaFt != null;
+  const hasOldMtr = oldCarpetAreaMtr != null && oldBuiltUpAreaMtr != null;
+
+  const oldCarpetBuiltUp = (hasOldFt && hasOldMtr)
+    ? `${oldCarpetAreaFt!.toLocaleString('en-IN')} / ${oldBuiltUpAreaFt!.toLocaleString('en-IN')} sq.ft (${oldCarpetAreaMtr!.toLocaleString('en-IN')} / ${oldBuiltUpAreaMtr!.toLocaleString('en-IN')} sq.m)`
+    : hasOldFt
+    ? `${oldCarpetAreaFt!.toLocaleString('en-IN')} / ${oldBuiltUpAreaFt!.toLocaleString('en-IN')} sq.ft`
+    : hasOldMtr
+    ? `${oldCarpetAreaMtr!.toLocaleString('en-IN')} / ${oldBuiltUpAreaMtr!.toLocaleString('en-IN')} sq.m`
+    : oldCarpetAreaFt != null
+    ? `${oldCarpetAreaFt.toLocaleString('en-IN')} sq.ft`
+    : oldBuiltUpAreaFt != null
+    ? `${oldBuiltUpAreaFt.toLocaleString('en-IN')} sq.ft`
+    : (() => {
+        const rawOld = rawDto?.oldCarpetBuiltUp ?? rawInfo?.oldCarpetBuiltUp;
+        if (rawOld && rawOld !== '-' && rawOld !== '0' && rawOld !== '0 / 0' && rawOld !== '0/0') {
+          return String(rawOld);
+        }
+        return '-';
+      })();
 
   const wings = overview?.wings || [];
   const firstWing = wings[0];
@@ -260,20 +338,7 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
     taxZoneAndName: (rawInfo?.taxZoneAndName && rawInfo.taxZoneAndName !== '-') ? String(rawInfo.taxZoneAndName) : (rawInfo?.taxZone && rawInfo?.taxZoneName && rawInfo.taxZone !== '-' && rawInfo.taxZoneName !== '-') ? `${rawInfo.taxZone} - ${rawInfo.taxZoneName}` : (rawInfo?.taxZoneNo && rawInfo?.taxZoneName) ? `${rawInfo.taxZoneNo} - ${rawInfo.taxZoneName}` : taxZone,
     surveyNo, subZoneCsnNo, plotNo, address, societyAddress: address, plotArea, carpetBuiltUpArea,
     carpetAreaFtMtr, builtUpAreaFtMtr,
-    oldCarpetBuiltUp: (() => {
-      const oldCarpet = toPositiveNumberOrNull(rawInfo?.oldCarpetAreaFt ?? rawDto?.oldCarpetAreaFt);
-      const oldBuiltUp = toPositiveNumberOrNull(rawInfo?.oldBuiltUpAreaFt ?? rawDto?.oldBuiltUpAreaFt);
-      if (oldCarpet != null && oldBuiltUp != null) {
-        return `${oldCarpet.toLocaleString('en-IN')} / ${oldBuiltUp.toLocaleString('en-IN')}`;
-      }
-      if (oldCarpet != null) return `${oldCarpet.toLocaleString('en-IN')}`;
-      if (oldBuiltUp != null) return `${oldBuiltUp.toLocaleString('en-IN')}`;
-      const rawOld = rawDto?.oldCarpetBuiltUp ?? rawInfo?.oldCarpetBuiltUp;
-      if (rawOld && rawOld !== '-' && rawOld !== '0' && rawOld !== '0 / 0' && rawOld !== '0/0') {
-        return String(rawOld);
-      }
-      return '-';
-    })(),
+    oldCarpetBuiltUp, oldCarpetAreaFtMtr, oldBuiltUpAreaFtMtr,
     totalFloors: (overview?.totalFloor && overview.totalFloor !== '-') ? String(overview.totalFloor)
       : (overview?.totalFloors && overview.totalFloors !== '-') ? String(overview.totalFloors)
       : (rawOverview?.totalFloor && rawOverview.totalFloor !== '-') ? String(rawOverview.totalFloor)

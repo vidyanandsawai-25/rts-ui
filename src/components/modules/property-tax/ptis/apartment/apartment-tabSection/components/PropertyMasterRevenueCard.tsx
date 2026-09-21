@@ -81,7 +81,7 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
           </span>
           {performance?.revenueGrowthPct ? (
             <span
-              className={`text-[10px] font-bold tracking-tight mt-1 ${
+              className={`text-[13px] font-extrabold tracking-tight mt-1 ${
                 performance?.isGrowthNegative ? 'text-rose-600' : 'text-emerald-600'
               }`}
             >

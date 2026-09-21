@@ -115,7 +115,19 @@ export function buildInitialPropertyMasterData(
   const effectiveSocietyName = (baseData?.societyName && baseData.societyName !== '-') ? baseData.societyName : (typeof societyDetails?.buildingSocietyName === 'string' ? societyDetails.buildingSocietyName : '') || (typeof rawSoc?.societyName === 'string' ? rawSoc.societyName : '') || (typeof kycDetails?.propertyHolderName === 'string' ? kycDetails.propertyHolderName : '') || (typeof tabHeaderInfo?.ownerName === 'string' ? tabHeaderInfo.ownerName : '') || '-';
   const effectiveDivision = (baseData?.division && baseData.division !== '-') ? baseData.division : (typeof rawPropDetails?.division === 'string' && rawPropDetails.division !== '-') ? rawPropDetails.division : (typeof rawPropDetails?.divisionName === 'string' && rawPropDetails.divisionName !== '-') ? rawPropDetails.divisionName : (typeof rawTabHeader?.division === 'string' && rawTabHeader.division !== '-') ? rawTabHeader.division : '-';
   const effectiveTaxZoneAndName = (baseData?.taxZoneAndName && baseData.taxZoneAndName !== '-') ? baseData.taxZoneAndName : (rawPropDetails?.taxZone && rawPropDetails?.taxZoneName) ? `${String(rawPropDetails.taxZone)} - ${String(rawPropDetails.taxZoneName)}` : '-';
-  const effectiveSubZoneCsn = (baseData?.subZoneCsnNo && baseData.subZoneCsnNo !== '-') ? baseData.subZoneCsnNo : rawPropDetails?.csn ? `CSN - ${String(rawPropDetails.csn)}` : rawPropDetails?.subZone ? `CSN - ${String(rawPropDetails.subZone)}` : rawTabHeader?.surveyNo ? `CSN - ${String(rawTabHeader.surveyNo)}` : '-';
+  const rawSubZ = rawPropDetails?.subZoneNo || rawPropDetails?.subZone || rawTabHeader?.subZoneNo || rawTabHeader?.subZone;
+  const rawC = rawPropDetails?.csn || rawTabHeader?.csn;
+  const effectiveSubZoneCsn = (baseData?.subZoneCsnNo && baseData.subZoneCsnNo !== '-')
+    ? baseData.subZoneCsnNo
+    : (rawSubZ && rawC)
+    ? `${String(rawSubZ)} - ${String(rawC).replace(/^CSN\s*[-:]?\s*/i, '').trim()}`
+    : rawSubZ
+    ? String(rawSubZ)
+    : rawC
+    ? (String(rawC).toUpperCase().startsWith('CSN') ? String(rawC) : `CSN - ${String(rawC)}`)
+    : rawTabHeader?.surveyNo
+    ? `CSN - ${String(rawTabHeader.surveyNo)}`
+    : '-';
   const effectivePlotNo = (baseData?.plotNo && baseData.plotNo !== '-') ? baseData.plotNo : (typeof rawPropDetails?.plotNo === 'string' && rawPropDetails.plotNo !== '-') ? rawPropDetails.plotNo : (typeof rawTabHeader?.plotNo === 'string' && rawTabHeader.plotNo !== '-') ? rawTabHeader.plotNo : '-';
   const effectiveLandOwner = (baseData?.landOwnerName && baseData.landOwnerName !== '-') ? baseData.landOwnerName : (typeof rawSoc?.landOwnerName === 'string' && rawSoc.landOwnerName !== '-') ? rawSoc.landOwnerName : (typeof rawKyc?.propertyHolderNameMarathi === 'string' && rawKyc.propertyHolderNameMarathi !== '-') ? rawKyc.propertyHolderNameMarathi : baseData?.ownerName || '-';
   const effectiveBuilder = (baseData?.builderName && baseData.builderName !== '-') ? baseData.builderName : (typeof rawSoc?.builderName === 'string' && rawSoc.builderName !== '-') ? rawSoc.builderName : (typeof rawKyc?.occupierNameMarathi === 'string' && rawKyc.occupierNameMarathi !== '-') ? rawKyc.occupierNameMarathi : '-';
@@ -191,7 +203,11 @@ export function buildInitialPropertyMasterData(
     managerNameEnglish: (baseData?.managerNameEnglish && baseData.managerNameEnglish !== '-') ? baseData.managerNameEnglish : (typeof rawSoc?.managerNameEnglish === 'string' && rawSoc.managerNameEnglish !== '-') ? rawSoc.managerNameEnglish : baseData?.managerNameEnglish,
     plotArea: effectivePlotArea,
     carpetBuiltUpArea: effectiveCarpetBuiltUp,
+    carpetAreaFtMtr: baseData?.carpetAreaFtMtr,
+    builtUpAreaFtMtr: baseData?.builtUpAreaFtMtr,
     oldCarpetBuiltUp: (baseData?.oldCarpetBuiltUp && baseData.oldCarpetBuiltUp !== '-') ? baseData.oldCarpetBuiltUp : (typeof rawSoc?.oldCarpetBuiltUp === 'string' && rawSoc.oldCarpetBuiltUp !== '-') ? rawSoc.oldCarpetBuiltUp : '-',
+    oldCarpetAreaFtMtr: baseData?.oldCarpetAreaFtMtr,
+    oldBuiltUpAreaFtMtr: baseData?.oldBuiltUpAreaFtMtr,
     totalFloors: effectiveTotalFloors,
     totalPropertiesResCommAmen: effectiveTotalProperties,
     societyBuildingPhotoGuid: baseData?.societyBuildingPhotoGuid || photoGuid,

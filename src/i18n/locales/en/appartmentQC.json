@@ -469,12 +469,18 @@
     "address": "Address:",
     "plotArea": "Plot Area:",
     "carpetBuiltUp": "Carpet / Built-up:",
-    "oldCarpetBuiltUp": "Old Carpet/Built-up:",
+    "oldCarpetBuiltUp": "Old Carpet / Built-up:",
     "totalFloors": "Total Floors:",
     "totalProperties": "Total Properties:",
     "resCommAmen": "(Res/Comm/Amen)",
     "carpet": "Carpet:",
-    "builtUp": "Built-up:"
+    "builtUp": "Built-up:",
+    "oldCarpet": "Old Carpet:",
+    "oldBuiltUp": "Old Built-up:",
+    "carpetArea": "Carpet Area:",
+    "builtUpArea": "Built-up Area:",
+    "current": "Current:",
+    "old": "Old:"
   },
   "revenueCard": {
     "addRevenue": "ADD. REVENUE",

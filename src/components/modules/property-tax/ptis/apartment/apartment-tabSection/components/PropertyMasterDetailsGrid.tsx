@@ -14,7 +14,6 @@ import {
   Phone,
   Home,
   Maximize2,
-  History,
   Layers,
   Clock,
 } from 'lucide-react';
@@ -32,6 +31,33 @@ export const PropertyMasterDetailsGrid: React.FC<PropertyMasterDetailsGridProps>
   const resCommAmenLabel = (rawResCommAmen && !rawResCommAmen.includes('appartmentQC') && !rawResCommAmen.includes('resCommAmen'))
     ? rawResCommAmen
     : '(Res/Comm/Amen)';
+
+  const renderAreaRow = (currentVal?: string, oldVal?: string, fallbackVal?: string) => {
+    const hasCurrent = Boolean(currentVal && currentVal !== '-' && currentVal.trim() !== '');
+    const hasOld = Boolean(oldVal && oldVal !== '-' && oldVal.trim() !== '');
+
+    if (!hasCurrent && !hasOld) {
+      return (fallbackVal && fallbackVal !== '-' && fallbackVal.trim() !== '') ? fallbackVal : '-';
+    }
+
+    return (
+      <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 leading-tight text-left">
+        <div className="inline-flex items-center whitespace-nowrap">
+          <span className="text-slate-600 font-semibold mr-1">{t('grid.current') || 'Current:'}</span>
+          <span className={hasCurrent ? "font-bold text-[#1d4ed8]" : "font-semibold text-slate-400"}>
+            {hasCurrent ? currentVal : '-'}
+          </span>
+        </div>
+        <span className="text-slate-300 font-normal">|</span>
+        <div className="inline-flex items-center whitespace-nowrap">
+          <span className="text-slate-600 font-semibold mr-1">{t('grid.old') || 'Old:'}</span>
+          <span className={hasOld ? "font-bold text-[#1d4ed8]" : "font-semibold text-slate-400"}>
+            {hasOld ? oldVal : '-'}
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[0.85fr_1.25fr_1.9fr] xl:grid-cols-[0.8fr_1.2fr_2.0fr] gap-x-3.5 lg:gap-x-5 h-full flex-1 text-[12px] pt-1 min-w-0">
@@ -81,38 +107,17 @@ export const PropertyMasterDetailsGrid: React.FC<PropertyMasterDetailsGridProps>
         />
         <PropertyMasterInfoRow
           icon={Maximize2}
-          label={t('grid.carpetBuiltUp') || 'Carpet / Built-up:'}
-          value={
-            (data?.carpetAreaFtMtr || data?.builtUpAreaFtMtr) ? (
-              <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 leading-tight text-left">
-                {data?.carpetAreaFtMtr && (
-                  <div className="inline-flex items-center whitespace-nowrap">
-                    <span className="text-slate-600 font-semibold mr-1">{t('grid.carpet') || 'Carpet:'}</span>
-                    <span className="font-bold text-[#1d4ed8]">{data.carpetAreaFtMtr}</span>
-                  </div>
-                )}
-                {data?.carpetAreaFtMtr && data?.builtUpAreaFtMtr && (
-                  <span className="text-slate-300 font-normal">|</span>
-                )}
-                {data?.builtUpAreaFtMtr && (
-                  <div className="inline-flex items-center whitespace-nowrap">
-                    <span className="text-slate-600 font-semibold mr-1">{t('grid.builtUp') || 'Built-up:'}</span>
-                    <span className="font-bold text-[#1d4ed8]">{data.builtUpAreaFtMtr}</span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              data?.carpetBuiltUpArea
-            )
-          }
+          label={t('grid.carpetArea') || 'Carpet Area:'}
+          value={renderAreaRow(data?.carpetAreaFtMtr, data?.oldCarpetAreaFtMtr, data?.carpetBuiltUpArea)}
           minWidth="min-w-[130px]"
           isMultiline
         />
         <PropertyMasterInfoRow
-          icon={History}
-          label={t('grid.oldCarpetBuiltUp') || 'Old Carpet/Built-up:'}
-          value={data?.oldCarpetBuiltUp}
+          icon={Building2}
+          label={t('grid.builtUpArea') || 'Built-up Area:'}
+          value={renderAreaRow(data?.builtUpAreaFtMtr, data?.oldBuiltUpAreaFtMtr, data?.oldCarpetBuiltUp)}
           minWidth="min-w-[130px]"
+          isMultiline
         />
         <PropertyMasterInfoRow icon={Layers} label={t('grid.totalFloors') || 'Total Floors:'} value={data?.totalFloors} minWidth="min-w-[130px]" />
         <PropertyMasterInfoRow
