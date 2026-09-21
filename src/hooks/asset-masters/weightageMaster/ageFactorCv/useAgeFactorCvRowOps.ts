@@ -31,8 +31,8 @@ export const useAgeFactorCvRowOps = ({
     addToast,
     getRowUid,
 }: UseAgeFactorCvRowOpsParams) => {
-    const t = useTranslations('ageFactorMaster');
-    const tW = useTranslations('weightageMaster');
+    const t = useTranslations('assetWeightageMaster.age');
+    const tW = useTranslations('assetWeightageMaster');
     const locale = useLocale();
     const router = useRouter();
     const [isUpdating, setIsUpdating] = useState(false);

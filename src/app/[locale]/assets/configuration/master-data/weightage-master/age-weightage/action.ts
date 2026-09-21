@@ -142,7 +142,7 @@ export async function updateAgeFactorCVMasterAction(
   payload: AgeFactorCVMasterUpdate
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    const t = await getTranslations('ageFactorMaster');
+    const t = await getTranslations('assetWeightageMaster.age');
     if (!id || id <= 0) {
       return {
         success: false,
@@ -218,7 +218,7 @@ export async function createAgeFactorCVMasterAction(
       createdBy: userId
     };
 
-    const t = await getTranslations('ageFactorMaster');
+    const t = await getTranslations('assetWeightageMaster.age');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tService = (key: string) => t(key as any);
     const response = await createAgeFactorCVMaster(createPayload, tService);
@@ -263,7 +263,7 @@ export async function bulkCreateAgeFactorCVMasterAction(
       createdBy: userId
     }));
 
-    const t = await getTranslations('ageFactorMaster');
+    const t = await getTranslations('assetWeightageMaster.age');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tService = (key: string) => t(key as any);
     const response = await bulkCreateAgeFactorCVMaster(bulkCreatePayload, tService);
@@ -311,7 +311,7 @@ export async function bulkUpdateAgeFactorCVMasterAction(
       }
     }));
 
-    const t = await getTranslations('ageFactorMaster');
+    const t = await getTranslations('assetWeightageMaster.age');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tService = (key: string) => t(key as any);
     await bulkUpdateAgeFactorCVMaster(bulkUpdatePayload, tService);
@@ -341,7 +341,7 @@ export async function deleteAgeFactorCVMasterAction(
   id: number
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    const t = await getTranslations('ageFactorMaster');
+    const t = await getTranslations('assetWeightageMaster.age');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tService = (key: string) => t(key as any);
     const response = await deleteAgeFactorCVMaster(id, tService);
@@ -372,7 +372,7 @@ export async function bulkDeleteAgeFactorCVMasterAction(
   ids: number[]
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    const t = await getTranslations('ageFactorMaster');
+    const t = await getTranslations('assetWeightageMaster.age');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tService = (key: string) => t(key as any);
     const response = await bulkDeleteAgeFactorCVMaster(ids, tService);

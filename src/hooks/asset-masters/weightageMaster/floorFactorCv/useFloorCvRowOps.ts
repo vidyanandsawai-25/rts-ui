@@ -36,7 +36,7 @@ export function useFloorCvRowOps({
     refreshPage,
     clearFilters,
 }: UseFloorCvRowOpsParams) {
-    const tW = useTranslations("weightageMaster");
+    const tW = useTranslations("assetWeightageMaster");
 
     const handleCellChange = (rowId: string, columnId: string, value: string | number): void => {
         const numValue = typeof value === "string" ? (value === "" ? 0 : parseFloat(value)) : value;

@@ -7,7 +7,7 @@ import { AddButton } from "@/components/common";
 export function AssessmentYearRangeToolbar() {
   const router = useRouter();
   const locale = useLocale();
-  const tCV = useTranslations("assessmentYearRange.capitalValue");
+  const tCV = useTranslations("assetAssessmentYearRange.capitalValue");
 
   const base = `/${locale}/assets/configuration/master-data/assessment-year-range/capitalvalue`;
 

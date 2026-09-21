@@ -8,5 +8,5 @@ export const capitalValueConfig: AssessmentYearRangeConfig = {
   endpoint: "asset-management/assessment-year-range-cv",
   idField: "id",
   routePath: "/assets/configuration/master-data/assessment-year-range/capitalvalue",
-  translationNamespace: "assessmentYearRange.capitalValue",
+  translationNamespace: "assetAssessmentYearRange.capitalValue",
 };

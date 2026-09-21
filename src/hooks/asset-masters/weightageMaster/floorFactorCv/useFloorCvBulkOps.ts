@@ -56,8 +56,8 @@ export function useFloorCvBulkOps({
     clearFilters,
     floorOptions,
 }: UseFloorCvBulkOpsParams) {
-    const t = useTranslations("floorFactorMaster");
-    const tW = useTranslations("weightageMaster");
+    const t = useTranslations("assetWeightageMaster.floor");
+    const tW = useTranslations("assetWeightageMaster");
 
     // Handle filter apply with bulk factor update
     const handleApplyFilter = (): void => {

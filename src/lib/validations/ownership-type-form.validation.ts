@@ -1,5 +1,5 @@
 import type { OwnershipTypeFormModel } from "@/types/asset-masters/ownership-type.types";
-import { DESCRIPTION_REGEX, isAllZeros, ASSET_MASTER_NAME_REGEX } from "../utils/asset-validation-rules";
+import { DESCRIPTION_REGEX, isAllZeros, NAME_ONLY_REGEX } from "../utils/asset-validation-rules";
 
 export function validateOwnershipTypeForm(
   data: OwnershipTypeFormModel,
@@ -14,7 +14,7 @@ export function validateOwnershipTypeForm(
     errors.ownershipTypeName = t("configuration.masterData.form.errors.nameInvalid");
   } else if (nameStr.length > 50) {
     errors.ownershipTypeName = t("configuration.masterData.form.errors.nameTooLong50");
-  } else if (!ASSET_MASTER_NAME_REGEX.test(nameStr)) {
+  } else if (!NAME_ONLY_REGEX.test(nameStr)) {
     errors.ownershipTypeName = t("configuration.masterData.form.errors.nameInvalid");
   }
   
@@ -22,7 +22,7 @@ export function validateOwnershipTypeForm(
   if (descStr) {
     if (isAllZeros(descStr)) {
       errors.description = t("configuration.masterData.form.errors.descriptionInvalid");
-    } else if (descStr.length > 500) {
+    } else if (descStr.length > 100) {
       errors.description = t("configuration.masterData.form.errors.descriptionTooLong");
     } else if (!DESCRIPTION_REGEX.test(descStr)) {
       errors.description = t("configuration.masterData.form.errors.descriptionInvalid");

@@ -56,7 +56,7 @@ export async function fetchUseFactorCVMasterPagedServerAction(
       pageNumber > MAX_PAGE_NUMBER
     ) {
       const { getTranslations } = await import('next-intl/server');
-      const t = await getTranslations('useCategoryFactorMaster');
+      const t = await getTranslations('assetWeightageMaster.subType');
       throw new Error(t('errors.invalidPaginationParameters'));
     }
 
@@ -84,7 +84,7 @@ export async function fetchUseFactorCVMasterPagedServerAction(
 
     if (!response.success || !response.data) {
       const { getTranslations } = await import('next-intl/server');
-      const t = await getTranslations('useCategoryFactorMaster');
+      const t = await getTranslations('assetWeightageMaster.subType');
       throw new Error(response.error || t('errors.fetchFailed'));
     }
 
@@ -344,7 +344,7 @@ export async function fetchTypeOfUsePaged(
 
     if (!response.success || !response.data) {
       const { getTranslations } = await import('next-intl/server');
-      const t = await getTranslations('useCategoryFactorMaster');
+      const t = await getTranslations('assetWeightageMaster.subType');
       throw new Error(response.error || t('errors.fetchTypeOfUseFailed'));
     }
 

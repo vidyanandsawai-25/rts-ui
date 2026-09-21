@@ -101,6 +101,8 @@ export default getRequestConfig(async ({ locale }) => {
     retrospectiveRuleLibraryMessages,
     taxZoningRangeMessages,
     aliasMasterMessages,
+    assetWeightageMasterMessages,
+    assetAssessmentYearRangeMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -245,6 +247,8 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/retrospectiveRuleLibrary.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxZoningRange.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/aliasMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetWeightageMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetAssessmentYearRange.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -337,6 +341,10 @@ export default getRequestConfig(async ({ locale }) => {
       retrospectiveRuleLibrary: retrospectiveRuleLibraryMessages,
       taxZoningRange: taxZoningRangeMessages?.taxZoningRange || taxZoningRangeMessages,
       aliasMaster: aliasMasterMessages,
+      assetWeightageMaster:
+        assetWeightageMasterMessages?.assetWeightageMaster || assetWeightageMasterMessages,
+      assetAssessmentYearRange:
+        assetAssessmentYearRangeMessages?.assetAssessmentYearRange || assetAssessmentYearRangeMessages,
     },
   };
 });

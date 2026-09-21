@@ -47,8 +47,8 @@ export async function fetchNatureFactorCVMasterPagedServerAction(
       (pageSize > MAX_PAGE_SIZE && pageSize !== -1) ||
       pageNumber > MAX_PAGE_NUMBER
     ) {
-      const t = await getTranslations('common');
-      throw new Error(t('errors.apiValidationFailed'));
+      const t = await getTranslations('assetWeightageMaster.nature');
+      throw new Error(t('errors.invalidPaginationParameters'));
     }
 
     // Ensure selectedYearRange is not passed if empty
@@ -98,7 +98,7 @@ export async function updateNatureFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     if (!id || id <= 0) {
-      const t = await getTranslations('natureFactorCVMaster');
+      const t = await getTranslations('assetWeightageMaster.nature');
       return {
         success: false,
         message: t('errors.invalidNatureFactorCVId'),
@@ -162,7 +162,7 @@ export async function createNatureFactorCVMasterAction(
       }
       return { success: true, data: response.data };
     } else {
-      const t = await getTranslations('natureFactorCVMaster');
+      const t = await getTranslations('assetWeightageMaster.nature');
       return { success: false, message: cleanErrorMessage(response.error, t('errors.createFailed')), statusCode: 500 };
     }
   } catch (error: unknown) {
@@ -207,7 +207,7 @@ export async function bulkCreateNatureFactorCVMasterAction(
       }
       return { success: true, data: response.data };
     } else {
-      const t = await getTranslations('natureFactorCVMaster');
+      const t = await getTranslations('assetWeightageMaster.nature');
       return { success: false, message: cleanErrorMessage(response?.error, t('errors.bulkCreateFailed')), statusCode: 500 };
     }
   } catch (error: unknown) {

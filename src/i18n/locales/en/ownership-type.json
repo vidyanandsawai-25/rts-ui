@@ -69,7 +69,7 @@
           "nameTooLong50": "Name cannot exceed 50 characters",
           "nameInvalidChars": "Name contains invalid characters",
           "nameDuplicate": "This name already exists",
-          "descriptionTooLong": "Description cannot exceed 500 characters",
+          "descriptionTooLong": "Description cannot exceed 100 characters",
           "descInvalidChars": "Description contains invalid characters"
         }
       },

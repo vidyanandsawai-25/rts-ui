@@ -21,7 +21,7 @@ export default function Error({ error, reset }: ErrorProps) {
     <ErrorPage 
       error={error} 
       reset={reset} 
-      translationNamespace="assessmentYearRange.capitalValue.error" 
+      translationNamespace="assetAssessmentYearRange.capitalValue.error" 
     />
   );
 }

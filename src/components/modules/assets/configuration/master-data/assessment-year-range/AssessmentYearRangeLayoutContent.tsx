@@ -14,7 +14,7 @@ interface AssessmentYearRangeLayoutContentProps {
 export function AssessmentYearRangeLayoutContent({
   children,
 }: AssessmentYearRangeLayoutContentProps) {
-  const tCV = useTranslations("assessmentYearRange.capitalValue");
+  const tCV = useTranslations("assetAssessmentYearRange.capitalValue");
   const { hasError } = useAssessmentYearRangeError();
 
   return (

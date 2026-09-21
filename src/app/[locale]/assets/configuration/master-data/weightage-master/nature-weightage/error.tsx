@@ -21,7 +21,7 @@ export default function NatureWeightageError({ error, reset }: ErrorProps) {
     <ErrorPage
       error={error}
       reset={reset}
-      translationNamespace="natureFactorCVMaster.error"
+      translationNamespace="assetWeightageMaster.nature.error"
     />
   );
 }

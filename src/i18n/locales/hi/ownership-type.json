@@ -69,7 +69,7 @@
           "nameTooLong50": "नाम 50 वर्णों से अधिक नहीं हो सकता",
           "nameInvalidChars": "नाम में अमान्य वर्ण हैं",
           "nameDuplicate": "यह नाम पहले से मौजूद है",
-          "descriptionTooLong": "विवरण 500 वर्णों से अधिक नहीं हो सकता",
+          "descriptionTooLong": "विवरण 100 वर्णों से अधिक नहीं हो सकता",
           "descInvalidChars": "विवरण में अमान्य वर्ण हैं"
         }
       },

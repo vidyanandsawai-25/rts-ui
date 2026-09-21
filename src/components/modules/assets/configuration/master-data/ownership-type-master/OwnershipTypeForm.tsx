@@ -13,7 +13,7 @@ import { FormFieldsSection } from "./FormFieldsSection";
 import type { OwnershipTypeFormModel } from "@/types/asset-masters/ownership-type.types";
 import { validateOwnershipTypeForm } from "@/lib/validations/ownership-type-form.validation";
 import { useOwnershipTypeSubmit } from "@/hooks/asset-masters/ownership-type/useOwnershipTypeSubmit";
-import { ASSET_MASTER_TEXT_SANITIZE, ASSET_MASTER_NAME_SANITIZE } from "@/lib/utils/validation-rules";
+import { ASSET_MASTER_TEXT_SANITIZE, NAME_ONLY_SANITIZE } from "@/lib/utils/validation-rules";
 import { cn } from "@/lib/utils/cn";
 
 export function OwnershipTypeForm({ id, initialData }: { id?: number; initialData?: import("@/types/asset-masters/ownership-type.types").OwnershipTypeFormModel | null; }) {
@@ -69,11 +69,14 @@ export function OwnershipTypeForm({ id, initialData }: { id?: number; initialDat
     let newValue = value;
 
     if (name === "ownershipTypeName") {
-      newValue = newValue.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+      newValue = newValue.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     }
     
     if (name === "description") {
       newValue = newValue.replace(ASSET_MASTER_TEXT_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+      if (newValue.length > 100) {
+        newValue = newValue.substring(0, 100);
+      }
     }
     
     if (typeof newValue === "string" && newValue.length > 0 && ["ownershipTypeName", "description"].includes(name)) {

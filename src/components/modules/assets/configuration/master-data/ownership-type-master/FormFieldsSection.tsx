@@ -37,7 +37,7 @@ export function FormFieldsSection({
         onChange={onChange}
         onBlur={onBlur}
         placeholder={t("configuration.masterData.form.placeholders.description")}
-        maxLength={500}
+        maxLength={100}
         error={showError("description") ? true : false}
         errorMessage={showError("description") ? errors.description : undefined}
         className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"

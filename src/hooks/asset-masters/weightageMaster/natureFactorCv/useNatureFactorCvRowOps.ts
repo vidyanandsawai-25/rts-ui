@@ -36,7 +36,7 @@ export function useNatureFactorCvRowOps({
     refreshPage,
     clearFilters,
 }: UseNatureFactorCvRowOpsParams) {
-    const tW = useTranslations("weightageMaster");
+    const tW = useTranslations("assetWeightageMaster");
 
     const handleCellChange = (rowId: string, columnId: string, value: number): void => {
         if (value < 0) {
