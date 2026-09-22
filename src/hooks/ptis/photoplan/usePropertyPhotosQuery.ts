@@ -164,7 +164,8 @@ export function usePropertyPhotosQuery(
   initialPhotos: PropertyPhotoDto[] = [],
   societyId?: number | null,
   societyPhotoFallbackGuid?: string,
-  societyPhotoFallbackUrl?: string
+  societyPhotoFallbackUrl?: string,
+  propWingDetailId?: number | null
 ): UsePropertyPhotosQueryResult {
   const searchParams = useSearchParams();
   const [activeWingParams, setActiveWingParams] = useState<{
@@ -188,7 +189,9 @@ export function usePropertyPhotosQuery(
 
   const wingIdParam = (searchParams?.get('wingId') || searchParams?.get('wingid')) ? Number(searchParams.get('wingId') || searchParams.get('wingid')) : null;
   const wingDetailIdParam = (searchParams?.get('wingDetailId') || searchParams?.get('wingdetailid')) ? Number(searchParams.get('wingDetailId') || searchParams.get('wingdetailid')) : null;
-  const effectiveWingDetailId = activeWingParams?.wingDetailId !== undefined ? activeWingParams.wingDetailId : wingDetailIdParam;
+  const effectiveWingDetailId = activeWingParams?.wingDetailId !== undefined
+    ? activeWingParams.wingDetailId
+    : (wingDetailIdParam ?? (propWingDetailId && propWingDetailId > 0 ? propWingDetailId : null));
   const effectiveWingId = activeWingParams?.wingId !== undefined ? activeWingParams.wingId : wingIdParam;
   const targetWingId = effectiveWingDetailId && effectiveWingDetailId > 0 ? effectiveWingDetailId : effectiveWingId;
 
@@ -202,6 +205,13 @@ export function usePropertyPhotosQuery(
   const [photoSlots, setPhotoSlots] = useState<PropertyPhotoTypeWithStatusDto[]>(() => {
     if (propertyId && propertyMediaCache.has(cacheKey)) {
       return propertyMediaCache.get(cacheKey)!.photoSlots;
+    }
+    if (propertyId && cacheKey && initialPhotoSlots.length > 0) {
+      propertyMediaCache.set(cacheKey, {
+        photoSlots: initialPhotoSlots,
+        photos: initialPhotos,
+        timestamp: Date.now(),
+      });
     }
     return initialPhotoSlots;
   });

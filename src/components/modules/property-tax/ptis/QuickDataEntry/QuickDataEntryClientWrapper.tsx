@@ -13,6 +13,7 @@ import { MediaPanelProvider, useMediaPanel } from '@/hooks/ptis/photoplan/useMed
 import { usePropertyPhotosQuery } from '@/hooks/ptis/photoplan/usePropertyPhotosQuery';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import PropertyMediaPanel from '../media/PropertyMediaPanel';
+import type { WingWiseWingDetails } from '@/types/property-tax/apartment/wing-intelligence.types';
 
 export function QuickDataEntryClientWrapper({
     children,
@@ -23,6 +24,10 @@ export function QuickDataEntryClientWrapper({
     initialHasIncompatibleFloor = false,
     initialPhotoSlots = [],
     initialPhotos = [],
+    societyDetailId,
+    wings = [],
+    wingName,
+    wingDetailId,
 }: {
     children: ReactNode;
     categoryId?: number | null;
@@ -32,6 +37,10 @@ export function QuickDataEntryClientWrapper({
     initialHasIncompatibleFloor?: boolean;
     initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
     initialPhotos?: PropertyPhotoDto[];
+    societyDetailId?: number | null;
+    wings?: WingWiseWingDetails[];
+    wingName?: string;
+    wingDetailId?: number | null;
 }) {
     return (
         <MediaPanelProvider initialVisible={false} syncWithCookie={false}>
@@ -43,6 +52,10 @@ export function QuickDataEntryClientWrapper({
                 initialHasIncompatibleFloor={initialHasIncompatibleFloor}
                 initialPhotoSlots={initialPhotoSlots}
                 initialPhotos={initialPhotos}
+                societyDetailId={societyDetailId}
+                wings={wings}
+                wingName={wingName}
+                wingDetailId={wingDetailId}
             >
                 {children}
             </QuickDataEntryContent>
@@ -59,6 +72,10 @@ function QuickDataEntryContent({
     initialHasIncompatibleFloor = false,
     initialPhotoSlots = [],
     initialPhotos = [],
+    societyDetailId,
+    wings = [],
+    wingName,
+    wingDetailId,
 }: {
     children: ReactNode;
     categoryId?: number | null;
@@ -68,6 +85,10 @@ function QuickDataEntryContent({
     initialHasIncompatibleFloor?: boolean;
     initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
     initialPhotos?: PropertyPhotoDto[];
+    societyDetailId?: number | null;
+    wings?: WingWiseWingDetails[];
+    wingName?: string;
+    wingDetailId?: number | null;
 }) {
     const router = useRouter();
     const pathname = usePathname();
@@ -103,13 +124,18 @@ function QuickDataEntryContent({
     const { isPanelVisible, togglePanel } = useMediaPanel();
     const isMediaPanelOpen = isPanelVisible;
 
+    const isDrawerOpen = searchParams.get('drawer') === 'photo-plan';
+
     const numericPropertyId = propertyId ? Number(propertyId) : undefined;
     const searchSocietyId =
         searchParams.get('societyDetailId') ||
         searchParams.get('societydetailid') ||
         searchParams.get('societyId') ||
         searchParams.get('societyid');
-    const numericSocietyId = searchSocietyId ? Number(searchSocietyId) : null;
+    const numericSocietyId = searchSocietyId ? Number(searchSocietyId) : (societyDetailId ? Number(societyDetailId) : null);
+
+    const searchWingDetailId = searchParams.get('wingDetailId') || searchParams.get('wingdetailid');
+    const numericWingDetailId = searchWingDetailId ? Number(searchWingDetailId) : (wingDetailId ? Number(wingDetailId) : null);
 
     const {
         loading: mediaLoading,
@@ -120,10 +146,13 @@ function QuickDataEntryContent({
     } = usePropertyPhotosQuery(
         numericPropertyId,
         isPanelVisible,
-        false,
+        isDrawerOpen,
         initialPhotoSlots,
         initialPhotos,
-        numericSocietyId
+        numericSocietyId,
+        undefined,
+        undefined,
+        numericWingDetailId
     );
 
     const [isFormSaving] = useState(false);
@@ -465,6 +494,9 @@ function QuickDataEntryContent({
                                     onPhotosChange={setPhotos}
                                     onPhotoSlotsChange={setPhotoSlots}
                                     societyDetailId={numericSocietyId ?? undefined}
+                                    wings={wings}
+                                    wingName={wingName || (searchParams.get('wingName') || searchParams.get('wingname') || undefined)}
+                                    wingDetailId={numericWingDetailId ?? undefined}
                                     wardNo={wardNo}
                                     propertyNo={propertyNo}
                                     partitionNo={partitionNo}
