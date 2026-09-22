@@ -4,9 +4,9 @@ import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
 import { 
     upsertPropertySocialInfoAction,
-    deletePropertySocialDetailAction,
+    deletePropertySocialDetailsByHierarchyAction,
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions";
-import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
+import { PropertySocialInfoResponseDto, DeletePropertySocialDetailsByHierarchyParams } from "@/types/property-social-details.types";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { useTranslations } from "next-intl";
 import {
@@ -32,6 +32,8 @@ export const useSocialDetailsForm = (
         wingDetailId?: string | null;
         propertyIds?: string;
         isSociety?: boolean;
+        selectedUnitCount?: number;
+        totalUnitCount?: number;
     }
 ) => {
     const t = useTranslations("quickDataEntry");
@@ -158,9 +160,58 @@ export const useSocialDetailsForm = (
         startLoading();
         try {
             if (isSavedOnBackend) {
-                const response = await deletePropertySocialDetailAction(
+                const currentLevel = options?.level || 'Apartment';
+                const socId = options?.societyDetailId ? Number(options.societyDetailId) : undefined;
+                const wingId = options?.wingDetailId ? Number(options.wingDetailId) : undefined;
+                const docBindingId = (activeItem.documentBindingId ?? activeItem.photoBindingId) ?? undefined;
+
+                const hierarchyParams: DeletePropertySocialDetailsByHierarchyParams = {
+                    socialAttributeId: id,
+                };
+
+                if (currentLevel === 'Apartment') {
+                    // Apartment Level: societyDetailId, socialAttributeId, documentBindingId
+                    if (socId !== undefined) hierarchyParams.societyDetailId = socId;
+                    if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
+                } else if (currentLevel === 'Wing') {
+                    // Wing Level: societyDetailsId, wingDetailId, socialAttributeId, documentBindingId
+                    if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
+                    if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
+                    if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
+                } else if (currentLevel === 'Unit') {
+                    // Unit Level: 2 cases
+                    if (socId !== undefined) hierarchyParams.societyDetailId = socId;
+                    if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
+
+                    const selectedIds = options?.propertyIds
+                        ? options.propertyIds.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n) && n > 0)
+                        : [];
+
+                    const isAllUnits = options?.totalUnitCount && options?.selectedUnitCount
+                        ? options.selectedUnitCount >= options.totalUnitCount
+                        : false;
+
+                    if (isAllUnits) {
+                        // Case 2 (All units): socialAttributeId, societyDetailId, wingDetailId, documentBindingId, propertyIds
+                        if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
+                        if (selectedIds.length > 0) hierarchyParams.propertyIds = selectedIds;
+                    } else {
+                        // Case 1 (Specific units): societyDetailId, wingDetailId, socialAttributeId, propertyIds
+                        if (selectedIds.length > 0) {
+                            hierarchyParams.propertyIds = selectedIds;
+                        } else if (propertyId && !isNaN(Number(propertyId))) {
+                            hierarchyParams.propertyIds = [Number(propertyId)];
+                        }
+                    }
+                } else {
+                    if (propertyId && !isNaN(Number(propertyId))) {
+                        hierarchyParams.propertyId = Number(propertyId);
+                    }
+                }
+
+                const response = await deletePropertySocialDetailsByHierarchyAction(
+                    hierarchyParams,
                     propertyId,
-                    id,
                     locale
                 );
 
@@ -221,7 +272,7 @@ export const useSocialDetailsForm = (
         } finally {
             stopLoading();
         }
-    }, [socialData, propertyId, locale, setFormState, startLoading, stopLoading, t, router]);
+    }, [socialData, propertyId, locale, options, setFormState, startLoading, stopLoading, t, router]);
 
     const revertSocialAttribute = useCallback((id: number) => {
         setFormState((prev) => {

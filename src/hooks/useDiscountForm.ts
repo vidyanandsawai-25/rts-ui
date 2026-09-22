@@ -4,18 +4,19 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
-import { 
+import {
     updateDiscountDetailsAction,
-    deletePropertySocialDetailAction,
+    deletePropertySocialDetailsByHierarchyAction,
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions";
 import { DiscountState, PropertyDiscountInfoResponseDto } from "@/types/discount.types";
 import { useTranslations } from "next-intl";
 import { mapApiToDiscountState, mapDiscountStateToApi, hasDiscountChangesComparedToInitial } from "@/lib/utils/discount-helpers";
 import { validateDiscountForm } from "@/lib/utils/validateDiscountForm";
 import { SocialAttribute } from "@/types/social-attribute.types";
+import { DeletePropertySocialDetailsByHierarchyParams } from "@/types/property-social-details.types";
 
 export const useDiscountForm = (
-    initialDiscountData: PropertyDiscountInfoResponseDto | null, 
+    initialDiscountData: PropertyDiscountInfoResponseDto | null,
     propertyId: string,
     masterAttributes?: SocialAttribute[],
     options?: {
@@ -24,6 +25,8 @@ export const useDiscountForm = (
         wingDetailId?: string | null;
         propertyIds?: string;
         isSociety?: boolean;
+        selectedUnitCount?: number;
+        totalUnitCount?: number;
     }
 ) => {
     const t = useTranslations('quickDataEntry');
@@ -73,10 +76,10 @@ export const useDiscountForm = (
             const isBitType = item.dataType?.toUpperCase() === "BIT";
             return {
                 ...prev,
-                [id]: { 
-                    ...item, 
-                    enabled: checked, 
-                    bitValue: isBitType ? checked : item.bitValue 
+                [id]: {
+                    ...item,
+                    enabled: checked,
+                    bitValue: isBitType ? checked : item.bitValue
                 }
             };
         });
@@ -130,9 +133,58 @@ export const useDiscountForm = (
         startLoading();
         try {
             if (isSavedOnBackend) {
-                const response = await deletePropertySocialDetailAction(
+                const currentLevel = options?.level || 'Apartment';
+                const socId = options?.societyDetailId ? Number(options.societyDetailId) : undefined;
+                const wingId = options?.wingDetailId ? Number(options.wingDetailId) : undefined;
+                const docBindingId = activeItem.documentBindingId ?? undefined;
+
+                const hierarchyParams: DeletePropertySocialDetailsByHierarchyParams = {
+                    socialAttributeId: id,
+                };
+
+                if (currentLevel === 'Apartment') {
+                    // Apartment Level: societyDetailId, socialAttributeId, documentBindingId (propertyId not passed or 0/null)
+                    if (socId !== undefined) hierarchyParams.societyDetailId = socId;
+                    if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
+                } else if (currentLevel === 'Wing') {
+                    // Wing Level: societyDetailsId, wingDetailId, socialAttributeId, documentBindingId (propertyId not passed or 0/null)
+                    if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
+                    if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
+                    if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
+                } else if (currentLevel === 'Unit') {
+                    // Unit Level: 2 cases
+                    if (socId !== undefined) hierarchyParams.societyDetailId = socId;
+                    if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
+
+                    const selectedIds = options?.propertyIds
+                        ? options.propertyIds.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n) && n > 0)
+                        : [];
+
+                    const isAllUnits = options?.totalUnitCount && options?.selectedUnitCount
+                        ? options.selectedUnitCount >= options.totalUnitCount
+                        : false;
+
+                    if (isAllUnits) {
+                        // Case 2 (All units): socialAttributeId, societyDetailId, wingDetailId, documentBindingId, propertyIds
+                        if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
+                        if (selectedIds.length > 0) hierarchyParams.propertyIds = selectedIds;
+                    } else {
+                        // Case 1 (Specific units): societyDetailId, wingDetailId, socialAttributeId, propertyIds
+                        if (selectedIds.length > 0) {
+                            hierarchyParams.propertyIds = selectedIds;
+                        } else if (propertyId && !isNaN(Number(propertyId))) {
+                            hierarchyParams.propertyIds = [Number(propertyId)];
+                        }
+                    }
+                } else {
+                    if (propertyId && !isNaN(Number(propertyId))) {
+                        hierarchyParams.propertyId = Number(propertyId);
+                    }
+                }
+
+                const response = await deletePropertySocialDetailsByHierarchyAction(
+                    hierarchyParams,
                     propertyId,
-                    id,
                     locale
                 );
 
@@ -178,7 +230,7 @@ export const useDiscountForm = (
         } finally {
             stopLoading();
         }
-    }, [discountData, propertyId, locale, clearError, startLoading, stopLoading, t, router]);
+    }, [discountData, propertyId, locale, options, clearError, startLoading, stopLoading, t, router]);
 
     const handleSave = async () => {
         if (isSaving) return { success: false, isValid: true };
@@ -196,7 +248,7 @@ export const useDiscountForm = (
             const formData = new FormData();
             const payload = mapDiscountStateToApi(discountData);
             formData.append("discountAttributes", JSON.stringify(payload));
-            
+
             if (options?.level) formData.append("level", options.level);
             if (options?.societyDetailId) formData.append("societyDetailId", options.societyDetailId);
             if (options?.wingDetailId) formData.append("wingDetailId", options.wingDetailId);
@@ -222,7 +274,7 @@ export const useDiscountForm = (
             return { success: false, isValid: true };
         } finally { stopLoading(); }
     };
-    
+
     const revertDiscount = useCallback((id: number) => {
         setDiscountData((prev) => {
             const initialItem = initialMappedState[id];

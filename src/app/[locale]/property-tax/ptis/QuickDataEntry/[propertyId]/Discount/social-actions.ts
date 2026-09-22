@@ -11,7 +11,8 @@ import {
     deleteSocialPhotoViaGlobalApi,
     deletePropertySocialDetail,
     createBulkPropertySocialDetail,
-    createPropertySocialDetail
+    createPropertySocialDetail,
+    deletePropertySocialDetailsByHierarchy
 } from "@/lib/api/property-social-details.service";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { logger } from "@/lib/utils/logger";
@@ -22,7 +23,8 @@ import {
     PropertySocialInfoApiResponse,
     PropertySocialInfoItemDto,
     SocialAttributeHierarchyDto,
-    CreateBulkPropertySocialDetailDto
+    CreateBulkPropertySocialDetailDto,
+    DeletePropertySocialDetailsByHierarchyParams
 } from "@/types/property-social-details.types";
 import {
     cleanCommonApiError,
@@ -46,6 +48,7 @@ export async function upsertPropertySocialInfoAction(
     formData: FormData
 ): Promise<ApiResponse<void>> {
     try {
+        const t = await getTranslations({ locale, namespace: "quickDataEntry" });
         const userId = getUserIdFromCookies(await cookies());
         if (!userId) return { success: false, error: "Unauthorized: Please log in." };
 
@@ -63,7 +66,7 @@ export async function upsertPropertySocialInfoAction(
 
         const isApartmentOrWing = level === 'Apartment' || level === 'Wing';
         const payloadPropertyId = isApartmentOrWing ? 0 : Number(propertyId);
-        const BuildingPropertyId =  Number(propertyId);
+        const BuildingPropertyId = Number(propertyId);
         const payloadSocietyDetailId = societyDetailId;
         const payloadWingDetailId = (level === 'Wing' || level === 'Unit') ? wingDetailId : null;
 
@@ -101,15 +104,23 @@ export async function upsertPropertySocialInfoAction(
                 const uploadResult = oldGuid
                     ? await replaceSocialPhotoViaGlobalApi(file, oldGuid, propIdNum, attrId, detailId, guidReference)
                     : await uploadSocialPhotoViaGlobalApi(file, propIdNum, attrId, detailId, guidReference);
-              
+
                 if (isSociety === "true") {
                     if (uploadResult.success && uploadResult.data?.documentBindingId) {
                         attr.documentBindingId = uploadResult.data.documentBindingId;
+                       
+                        if (!payloadSocietyDetailId) {
+                            throw new Error(t("discount.societyDetailIdRequired") || "Society Detail ID is required to submit the document.");
+                        }
 
+                        if (!attr.documentBindingId) {
+                            throw new Error(t("discount.documentBindingIdRequired") || "Document Binding ID is required to submit the document.");
+                        }
+                        
                         if (level === 'Unit') {
                             if (propertyIdsStr) {
-                                const bulkPayload: CreateBulkPropertySocialDetailDto = { 
-                                    isActive : true,                                                                      
+                                const bulkPayload: CreateBulkPropertySocialDetailDto = {
+                                    isActive: true,
                                     createdBy: userId || 0,
                                     propertyIds: propertyIdsStr,
                                     socialAttributeId: attr.socialAttributeId || 0,
@@ -126,8 +137,8 @@ export async function upsertPropertySocialInfoAction(
                                 await createBulkPropertySocialDetail(bulkPayload);
                             }
                         } else {
-                            const payload = {  
-                                isActive : true,                           
+                            const payload = {
+                                isActive: true,
                                 createdBy: userId || 0,
                                 propertyId: payloadPropertyId || 0,
                                 socialAttributeId: attr.socialAttributeId || 0,
@@ -188,7 +199,6 @@ export async function upsertPropertySocialInfoAction(
         }
 
         revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
-        const t = await getTranslations({ locale, namespace: "quickDataEntry" });
         return {
             success: true,
             message: t("discount.socialConfirm.saveSuccess") || "Property social information updated successfully"
@@ -283,3 +293,21 @@ export async function deletePropertySocialDetailAction(
         return handleActionError(error, "discount.deleteError", locale);
     }
 }
+
+export async function deletePropertySocialDetailsByHierarchyAction(
+    params: DeletePropertySocialDetailsByHierarchyParams,
+    propertyId?: string,
+    locale?: string
+): Promise<ApiResponse<void>> {
+    try {
+        const response = await deletePropertySocialDetailsByHierarchy(params);
+        if (response.success && propertyId && locale) {
+            revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
+        }
+        return response;
+    } catch (error: unknown) {
+        logger.error("deletePropertySocialDetailsByHierarchyAction failed", { params, error: error as Error });
+        return handleActionError(error, "discount.deleteError", locale);
+    }
+}
+

@@ -81,25 +81,25 @@ export const ApplicableTaxes = ({
 
         {/* Summary Cards */}
         <div className="grid grid-cols-5 gap-3">
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+          <div className="bg-blue-50 border border-blue-100 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-blue-600/70 uppercase tracking-wider">{t('totalTax')}</span>
-            <span className="text-xl font-black text-slate-800">{t('currencySymbol')} {summary.totalTax?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-base font-black text-slate-800 leading-tight">{t('currencySymbol')} {summary.totalTax?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('residentialRV')}</span>
-            <span className="text-lg font-bold text-slate-800">{t('currencySymbol')} {summary.residentialRV?.toLocaleString('en-IN')}</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">{t('currencySymbol')} {summary.residentialRV?.toLocaleString('en-IN')}</span>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('commercialRV')}</span>
-            <span className="text-lg font-bold text-slate-800">{t('currencySymbol')} {summary.commercialRV?.toLocaleString('en-IN')}</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">{t('currencySymbol')} {summary.commercialRV?.toLocaleString('en-IN')}</span>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('area')}</span>
-            <span className="text-lg font-bold text-slate-800">{summary.area} {t('squareMeters')}</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">{summary.area} {t('squareMeters') || 'm²'}</span>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('toilets')}</span>
-            <span className="text-lg font-bold text-slate-800">{summary.toilets}</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">{summary.toilets}</span>
           </div>
         </div>
 

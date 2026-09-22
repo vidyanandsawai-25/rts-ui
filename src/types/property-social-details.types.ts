@@ -45,7 +45,7 @@ export interface PropertySocialDetailsDto {
     socialAttributeCode?: string | null;
     socialAttributeName?: string | null;
     isActive?: boolean;
-     documentGuid?: string | null;
+    documentGuid?: string | null;
     photoGuid?: string | null;
     photoBindingId?: number | null;
     isPhotoRequired?: boolean;
@@ -123,3 +123,15 @@ export interface UpsertPropertySocialInfoDto {
     socialAttributes: PropertySocialInfoItemDto[];
     socialAttributeIdsToRemove: number[];
 }
+
+export interface DeletePropertySocialDetailsByHierarchyParams {
+    societyAttributeId?: number;
+    socialAttributeId?: number;
+    societyDetailsId?: number;
+    societyDetailId?: number;
+    wingDetailId?: number;
+    documentBindingId?: number;
+    propertyId?: number | null;
+    propertyIds?: number[];
+}
+

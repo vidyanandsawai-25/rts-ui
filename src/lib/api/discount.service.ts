@@ -2,8 +2,8 @@ import { apiClient } from "@/services/api.service";
 import { handleApiResponse } from "@/lib/utils/api";
 import { getTranslations } from "next-intl/server";
 import { ApiResponse } from "@/types/common.types";
-import { 
-    PropertyDiscountInfoResponseDto, 
+import {
+    PropertyDiscountInfoResponseDto,
     DiscountDocumentUploadResponseDto,
     UpsertPropertyDiscountInfoDto
 } from "@/types/discount.types";

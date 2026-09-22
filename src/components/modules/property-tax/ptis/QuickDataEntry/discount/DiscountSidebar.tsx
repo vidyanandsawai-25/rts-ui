@@ -140,7 +140,7 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
                 ) : (
                     discounts.map((discount) => {
                         const isSelected = selectedId === discount.id;
-        const hasError = isActiveDiscount(discount) && !!validationErrors?.[discount.id];
+                        const hasError = isActiveDiscount(discount) && !!validationErrors?.[discount.id];
                         const displayName = getLocalizedName(
                             discount.socialAttributeCode,
                             discount.socialAttributeName,
@@ -165,18 +165,16 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
                             >
                                 {/* Active Selection Border Indicator */}
                                 {isSelected && (
-                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${
-                                        hasError ? "bg-red-600" : "bg-blue-600"
-                                    }`} />
+                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${hasError ? "bg-red-600" : "bg-blue-600"
+                                        }`} />
                                 )}
 
                                 <div className="flex justify-between items-start gap-2 pl-1.5">
                                     <span
-                                        className={`text-sm font-bold transition-colors line-clamp-2 flex-1 cursor-pointer select-none ${
-                                            isSelected 
-                                                ? hasError ? "text-red-900" : "text-blue-900" 
-                                                : hasError ? "text-red-800 hover:text-red-900" : "text-gray-700 group-hover:text-blue-800"
-                                        }`}
+                                        className={`text-sm font-bold transition-colors line-clamp-2 flex-1 cursor-pointer select-none ${isSelected
+                                            ? hasError ? "text-red-900" : "text-blue-900"
+                                            : hasError ? "text-red-800 hover:text-red-900" : "text-gray-700 group-hover:text-blue-800"
+                                            }`}
                                     >
                                         {displayName}
                                     </span>

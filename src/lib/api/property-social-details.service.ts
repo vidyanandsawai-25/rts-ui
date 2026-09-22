@@ -8,7 +8,8 @@ import {
     UpsertPropertySocialInfoApiResponse,
     CreatePropertySocialDetailDto,
     CreateBulkPropertySocialDetailDto,
-    PropertySocialDetailsDto
+    PropertySocialDetailsDto,   
+    DeletePropertySocialDetailsByHierarchyParams
 } from "@/types/property-social-details.types";
 import { DiscountDocumentUploadResponseDto } from "@/types/discount.types";
 import { uploadDocument, deleteDocument } from "./document.service";
@@ -34,16 +35,16 @@ export async function upsertPropertySocialInfo(payload: UpsertPropertySocialInfo
 /**
  * Create a single social detail directly via POST for document upload across all levels
  */
-export async function createPropertySocialDetail(payload: CreatePropertySocialDetailDto): Promise<ApiResponse<PropertySocialDetailsDto>> {       
-    const response = await apiClient.post<PropertySocialDetailsDto>("/PropertySocialDetails", payload);           
+export async function createPropertySocialDetail(payload: CreatePropertySocialDetailDto): Promise<ApiResponse<PropertySocialDetailsDto>> {    
+    const response = await apiClient.post<PropertySocialDetailsDto>("/PropertySocialDetails", payload);    
     return response;
 }
 
 /**
  * Create bulk social details via POST
  */
-export async function createBulkPropertySocialDetail(payload: CreateBulkPropertySocialDetailDto): Promise<ApiResponse<PropertySocialDetailsDto[]>> {       
-    const response = await apiClient.post<PropertySocialDetailsDto[]>("/PropertySocialDetails/Bulk/by-property-ids", payload);     
+export async function createBulkPropertySocialDetail(payload: CreateBulkPropertySocialDetailDto): Promise<ApiResponse<PropertySocialDetailsDto[]>> {    
+    const response = await apiClient.post<PropertySocialDetailsDto[]>("/PropertySocialDetails/Bulk/by-property-ids", payload);    
     return response;
 }
 
@@ -51,24 +52,24 @@ export async function createBulkPropertySocialDetail(payload: CreateBulkProperty
  * Get property social details by filters
  */
 export async function getPropertySocialDetailsByFilters(
-  socialAttributeId?: number,
-  societyDetailId?: number,
-  wingDetailId?: number
+    socialAttributeId?: number,
+    societyDetailId?: number,
+    wingDetailId?: number
 ): Promise<PropertySocialDetailsDto[] | null> {
     const params = new URLSearchParams();
     if (socialAttributeId) params.append('socialAttributeId', socialAttributeId.toString());
     if (societyDetailId) params.append('societyDetailId', societyDetailId.toString());
     if (wingDetailId) params.append('wingDetailId', wingDetailId.toString());
-    
+
     const url = `/PropertySocialDetails/by-filters?${params.toString()}`;
     const response = await apiClient.get<{ items?: PropertySocialDetailsDto[] }>(url);
-    
+
     const t = await getTranslations("quickDataEntry");
     const errorMessage = t.has("discount.socialConfirm.fetchError")
         ? t("discount.socialConfirm.fetchError")
         : "Failed to fetch property social details";
     const responseData = handleApiResponse(response, errorMessage);
-    
+
     return responseData.items ?? null;
 }
 
@@ -197,3 +198,54 @@ export async function deletePropertySocialDetail(propertyId: string, socialAttri
         };
     }
 }
+
+/**
+ * Delete property social details by hierarchy (wing/apartment/society/unit wise)
+ * Endpoint: /PropertySocialDetails/by-hierarchy
+ */
+export async function deletePropertySocialDetailsByHierarchy(
+    params: DeletePropertySocialDetailsByHierarchyParams
+): Promise<ApiResponse<void>> {
+    try {
+        const queryParams = new URLSearchParams();
+
+        if (params.societyAttributeId !== undefined && params.societyAttributeId !== null) {
+            queryParams.append("societyAttributeId", params.societyAttributeId.toString());
+        }
+        if (params.socialAttributeId !== undefined && params.socialAttributeId !== null) {
+            queryParams.append("socialAttributeId", params.socialAttributeId.toString());
+        }
+        if (params.societyDetailsId !== undefined && params.societyDetailsId !== null) {
+            queryParams.append("societyDetailsId", params.societyDetailsId.toString());
+        }
+        if (params.societyDetailId !== undefined && params.societyDetailId !== null) {
+            queryParams.append("societyDetailId", params.societyDetailId.toString());
+        }
+        if (params.wingDetailId !== undefined && params.wingDetailId !== null) {
+            queryParams.append("wingDetailId", params.wingDetailId.toString());
+        }
+        if (params.documentBindingId !== undefined && params.documentBindingId !== null) {
+            queryParams.append("documentBindingId", params.documentBindingId.toString());
+        }
+        if (params.propertyId !== undefined) {
+            queryParams.append("propertyId", params.propertyId === null ? "" : params.propertyId.toString());
+        }
+        if (params.propertyIds && Array.isArray(params.propertyIds) && params.propertyIds.length > 0) {
+            params.propertyIds.forEach(id => {
+                queryParams.append("propertyIds", id.toString());
+            });
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = `/PropertySocialDetails/by-apartment-wing-unit${queryString ? `?${queryString}` : ""}`;
+        const response = await apiClient.delete<void>(endpoint);
+        return response;
+
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+}
+

@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useSocialDetailsForm } from '@/hooks/useSocialDetailsForm';
 import { toast } from 'sonner';
-import { deletePropertySocialDetailAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions';
+import { deletePropertySocialDetailsByHierarchyAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions';
 
 vi.mock('next/navigation', () => ({
   useParams: () => ({ locale: 'en' }),
@@ -36,7 +36,7 @@ vi.mock('@/components/common/ConfirmProvider', () => ({
 
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions', () => ({
   upsertPropertySocialInfoAction: vi.fn(),
-  deletePropertySocialDetailAction: vi.fn(),
+  deletePropertySocialDetailsByHierarchyAction: vi.fn(),
 }));
 
 const mockSocialData = {
@@ -67,8 +67,8 @@ describe('useSocialDetailsForm', () => {
     expect(result.current.socialData[1].bitValue).toBe(true);
   });
 
-  it('should call deletePropertySocialDetailAction and clear local state recursively on handleDeleteSocialDetail', async () => {
-    vi.mocked(deletePropertySocialDetailAction).mockResolvedValue({ success: true });
+  it('should call deletePropertySocialDetailsByHierarchyAction and clear local state recursively on handleDeleteSocialDetail', async () => {
+    vi.mocked(deletePropertySocialDetailsByHierarchyAction).mockResolvedValue({ success: true });
 
     const { result } = renderHook(() => useSocialDetailsForm(mockSocialData, "123"));
 
@@ -76,7 +76,11 @@ describe('useSocialDetailsForm', () => {
       await result.current.handleDeleteSocialDetail(1);
     });
 
-    expect(deletePropertySocialDetailAction).toHaveBeenCalledWith("123", 1, "en");
+    expect(deletePropertySocialDetailsByHierarchyAction).toHaveBeenCalledWith(
+      { socialAttributeId: 1 },
+      "123",
+      "en"
+    );
     expect(result.current.socialData[1].bitValue).toBe(false);
     expect(result.current.socialData[1].documentGuid).toBeNull();
     expect(toast.success).toHaveBeenCalledWith("discount.deleteSuccess");

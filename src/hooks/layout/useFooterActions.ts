@@ -18,11 +18,14 @@ export function useFooterActions(
   return useMemo(() => {
     const processedActions = (Array.isArray(actions) ? actions : [])
       .map((a) => {
+        const overrideCanView = overrides?.[a.actionCommand]?.canView;
+        const finalCanView = overrideCanView !== undefined ? overrideCanView : a.canView;
+
         let isAuthorized = true;
 
         if (a.haveNoAccess) {
           isAuthorized = false;
-        } else if (a.canView === false) {
+        } else if (finalCanView === false) {
           isAuthorized = false;
         } else if (a.haveFullAccess) {
           isAuthorized = true;
@@ -64,6 +67,8 @@ export function useFooterActions(
 
         return {
           ...a,
+          canView: finalCanView,
+          haveFullAccess: overrideCanView === false ? false : a.haveFullAccess,
           isEnabled: Boolean(baseEnabled) && isAuthorized,
         };
       })

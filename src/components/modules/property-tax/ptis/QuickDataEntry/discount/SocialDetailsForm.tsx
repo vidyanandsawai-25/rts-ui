@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useTransition } from "react";
 import { useSocialDetailsForm } from "@/hooks/useSocialDetailsForm";
 import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
 import { useDiscountLevelState } from "@/hooks/useDiscountLevelState";
@@ -17,6 +17,7 @@ import { Button, Label, Badge, SearchInput, Select, MasterTable, Checkbox } from
 import type { Column } from "@/components/common";
 import { cn } from "@/lib/utils/cn";
 import { SocialAttribute } from "@/types/social-attribute.types";
+import { Loader2 } from "lucide-react";
 
 export interface UnitRow extends Record<string, unknown> {
     propertyDetailsId: number;
@@ -49,7 +50,9 @@ interface SocialDetailsFormProps {
     propertyId: string;
     levelState?: ReturnType<typeof useDiscountLevelState>;
     isSociety?: boolean;
+    societyDetailId?: number;
     socialMasterAttributes?: SocialAttribute[];
+    isWingLoading?: boolean;
 }
 
 export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
@@ -57,18 +60,24 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
     propertyId,
     levelState,
     isSociety,
-    socialMasterAttributes = []
+    societyDetailId: propSocietyDetailId,
+    socialMasterAttributes = [],
+    isWingLoading = false
 }) => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const t = useTranslations("quickDataEntry");
+    const [isWingPending, startWingTransition] = useTransition();
 
     const updateUrl = (params: URLSearchParams) => {
         const nextUrl = `${pathname}?${params.toString()}`;
-        router.push(nextUrl, { scroll: false });
+        startWingTransition(() => {
+            router.push(nextUrl, { scroll: false });
+        });
     };
-    const societyDetailId = searchParams.get('societyDetailId');
+    const isLoadingWing = isWingLoading || isWingPending;
+    const societyDetailId = searchParams.get('societyDetailId') || (propSocietyDetailId ? String(propSocietyDetailId) : null);
     const wingDetailId = searchParams.get('wingDetailId');
     const { confirm } = useConfirm();
     const {
@@ -92,7 +101,9 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
             ? (levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : wingDetailId)
             : wingDetailId,
         propertyIds: levelState ? Array.from(levelState.selectedUnitIds).join(",") : undefined,
-        isSociety
+        isSociety,
+        selectedUnitCount: levelState ? levelState.selectedUnitIds.size : undefined,
+        totalUnitCount: levelState ? levelState.filteredUnits.length : undefined
     });
 
     const [selectedId, setSelectedId] = React.useState<number | null>(null);
@@ -373,7 +384,16 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 </div>
 
                 {/* Right Detail Pane */}
-                <div className="lg:col-span-7 xl:col-span-8 h-auto lg:h-full lg:overflow-y-auto pr-1 flex flex-col gap-3">
+                <div className="relative lg:col-span-7 xl:col-span-8 h-auto lg:h-full lg:overflow-y-auto pr-1 flex flex-col gap-3">
+                    {/* Loading Overlay */}
+                    {isLoadingWing && (
+                        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center rounded-xl">
+                            <div className="flex items-center gap-2 px-3 py-2 bg-slate-800/80 text-white rounded-lg shadow-md text-xs font-medium animate-pulse">
+                                <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                                <span>{t('building.fetchingWingData') || 'Fetching wing data...'}</span>
+                            </div>
+                        </div>
+                    )}
                     {isSociety && levelState && (levelState.level === 'Wing' || levelState.level === 'Unit') && (
                         <div className="flex-shrink-0 space-y-2 bg-slate-50/60 p-3 rounded-xl border border-slate-200">
                             <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">

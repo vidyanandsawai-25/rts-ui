@@ -80,15 +80,17 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
         if (!finalWingDetailId && mappedWings.length > 0) {
             finalWingDetailId = mappedWings[0].wingDetailId;
         }
-        const WingDetilasId = level === 'Apartment' ? null : finalWingDetailId
-
         const isDiscountTab = activeTab === 'discount';
         const searchSocialAttributeId = sp.socialAttributeId ? Number(sp.socialAttributeId) : undefined;
 
         const [masterRes, unitsResponse, savedDetailsResponse] = await Promise.all([
             getSocialAttributeMasterAction(isDiscountTab),
             getDiscountUnitsAction(propertyId, finalWingDetailId, 1, 10),
-            searchSocietyId ? getPropertySocialDetailsByFiltersAction(searchSocialAttributeId, Number(searchSocietyId), WingDetilasId || undefined) : Promise.resolve({ success: true, data: [] })
+            searchSocietyId
+                ? (level === 'Apartment'
+                    ? getPropertySocialDetailsByFiltersAction(searchSocialAttributeId, Number(searchSocietyId))
+                    : getPropertySocialDetailsByFiltersAction(searchSocialAttributeId, Number(searchSocietyId), finalWingDetailId || undefined))
+                : Promise.resolve({ success: true, data: [] })
         ]);
         socialAttributeMaster = masterRes;
 
@@ -228,6 +230,7 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
             initialSocialData={initialSocialData}
             propertyId={propertyId}
             isSociety={isSociety}
+            societyDetailId={searchSocietyId ? Number(searchSocietyId) : undefined}
             discountMasterAttributes={discountMasterAttributes}
             socialMasterAttributes={socialMasterAttributes}
             wings={mappedWings}

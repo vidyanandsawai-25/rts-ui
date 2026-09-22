@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useDiscountForm } from '@/hooks/useDiscountForm';
 import { toast } from 'sonner';
-import { deletePropertySocialDetailAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions';
+import { deletePropertySocialDetailsByHierarchyAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions';
 
 vi.mock('next/navigation', () => ({
   useParams: () => ({ locale: 'en' }),
@@ -30,7 +30,7 @@ vi.mock('@/hooks/useLoading', () => ({
 
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions', () => ({
   updateDiscountDetailsAction: vi.fn(),
-  deletePropertySocialDetailAction: vi.fn(),
+  deletePropertySocialDetailsByHierarchyAction: vi.fn(),
 }));
 
 const mockDiscountData = {
@@ -62,8 +62,8 @@ describe('useDiscountForm', () => {
     expect(result.current.discountData[1].enabled).toBe(true);
   });
 
-  it('should call deletePropertySocialDetailAction and clear local state on handleDeleteDiscount', async () => {
-    vi.mocked(deletePropertySocialDetailAction).mockResolvedValue({ success: true });
+  it('should call deletePropertySocialDetailsByHierarchyAction and clear local state on handleDeleteDiscount', async () => {
+    vi.mocked(deletePropertySocialDetailsByHierarchyAction).mockResolvedValue({ success: true });
 
     const { result } = renderHook(() => useDiscountForm(mockDiscountData, "123"));
 
@@ -71,7 +71,11 @@ describe('useDiscountForm', () => {
       await result.current.handleDeleteDiscount(1);
     });
 
-    expect(deletePropertySocialDetailAction).toHaveBeenCalledWith("123", 1, "en");
+    expect(deletePropertySocialDetailsByHierarchyAction).toHaveBeenCalledWith(
+      { socialAttributeId: 1, documentBindingId: 100 },
+      "123",
+      "en"
+    );
     expect(result.current.discountData[1].bitValue).toBe(false);
     expect(result.current.discountData[1].enabled).toBe(false);
     expect(result.current.discountData[1].documentGuid).toBeNull();

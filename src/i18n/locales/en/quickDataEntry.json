@@ -1438,6 +1438,8 @@
     "discount": {
         "title": "Discount Information",
         "description": "Configure discount eligibility and percentage for this property",
+        "societyDetailIdRequired": "Society Detail ID is required to submit the document.",
+        "documentBindingIdRequired": "Document Binding ID is required to submit the document.",
         "socialTitle": "Other Social Information",
         "socialDescription": "Configure social attributes, status, and associated documents for this property.",
         "simpleTogglesTitle": "Social Attributes",

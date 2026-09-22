@@ -58,6 +58,7 @@
     "residentialRV": "RESIDENTIAL RV",
     "commercialRV": "COMMERCIAL RV",
     "area": "AREA",
+    "squareMeters": "m²",
     "toilets": "TOILETS",
     "showInactive": "Show inactive",
     "print": "Print",

@@ -10,6 +10,7 @@ export function useFooterActionHandler(
   onAction?: (command: string) => void,
   categoryId?: number,
   societyDetailId?: number,
+  categoryName?: string,
   wingDetailId?: number
 ) {
   const searchParams = useSearchParams();
@@ -107,6 +108,8 @@ export function useFooterActionHandler(
         capitalExpand: capitalExpandParam,
         dualExpand: dualExpandParam,
         categoryId,
+        categoryName,
+        // societyDetailId: explicitSocDetailId ? Number(explicitSocDetailId) : societyDetailId,
         societyDetailId: explicitSocDetailId ? Number(explicitSocDetailId) : undefined,
         societyId: societyIdParam,
         wingDetailId: explicitWingDetailId,
@@ -115,10 +118,8 @@ export function useFooterActionHandler(
       });
       if (result.success) {
         toast.success(result.message || 'Action executed.');
-      } else {
-        const errorMsg = result.error
-          ? (t.has(result.error) ? t(result.error) : result.error)
-          : 'Action failed.';
+      } else if (result.error) {
+        const errorMsg = t.has(result.error) ? t(result.error) : result.error;
         toast.error(errorMsg);
       }
     });

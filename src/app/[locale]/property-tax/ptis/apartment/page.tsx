@@ -128,6 +128,8 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
             />
           }
           categoryId={pageData.propertyDetailsResult?.propertyDetails?.categoryId}
+          categoryName={tabHeaderInfo?.category || 'Apartment'}
+          partitionNo={data.partitionNo}
           societyDetailId={pageData.societyDetails?.societyDetailId}
           isCombined={!!tabHeaderInfo?.isCombined}
         />

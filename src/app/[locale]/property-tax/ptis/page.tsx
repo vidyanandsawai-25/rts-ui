@@ -246,6 +246,10 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               }
             />
           }
+          // categoryId={propertyDetailsResult.propertyDetails.categoryId}
+          categoryName={currentCategoryName}
+          partitionNo={partitionNo}
+          // societyDetailId={societyDetails.societyDetailId}
           categoryId={currentCategoryId}
           societyDetailId={!isIndividual && isApartment ? societyDetails.societyDetailId : undefined}
           wingDetailId={

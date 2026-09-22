@@ -129,27 +129,6 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     const hasRemark = typeof tWithHas.has === "function" && tWithHas.has("discount.remark");
     const hasRemarkPlaceholder = typeof tWithHas.has === "function" && tWithHas.has("discount.remarkPlaceholder");
 
-    const hasAnyData = !!(
-        (data.intValue !== null && data.intValue !== undefined) ||
-        (data.decimalValue !== null && data.decimalValue !== undefined) ||
-        data.textValue?.trim() ||
-        data.dateValue?.trim() ||
-        data.documentGuid?.trim() ||
-        data.documentBindingId ||
-        data.remark?.trim()
-    );
-
-    if (!isActiveDiscount(data) && !hasAnyData) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-full bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-                <AlertCircle size={36} className="text-blue-500 mb-3" />
-                <h4 className="text-base font-bold text-gray-800 mb-2">{displayName}</h4>
-                <p className="text-sm font-semibold text-gray-500 max-w-sm">
-                    {t("discount.enableDiscountPrompt") || "This discount type is currently disabled. Toggle it active in the sidebar list to edit details and attach documents."}
-                </p>
-            </div>
-        );
-    }
 
     const isDisabled = !isActiveDiscount(data);
     const docRequiredMsg = t("common.validation.documentRequired") || "Document is required.";

@@ -27,6 +27,7 @@ export interface FooterActionPayload {
   capitalExpand?: string | string[];
   dualExpand?: string | string[];
   categoryId?: number;
+  categoryName?: string;
   societyDetailId?: number;
   societyId?: string;
   wingDetailId?: string;
@@ -34,7 +35,7 @@ export interface FooterActionPayload {
   wingName?: string;
   isRedesign?: boolean;
 }
-
+ 
 const ptisEditRedirectSchema = z.object({
   propertyId: z.coerce.number().positive(),
   locale: z.enum(['en', 'hi', 'mr']).default('en'),
@@ -265,6 +266,21 @@ export async function handleFooterAction(
         if (!payload.propertyId) {
           return { success: false, error: 'error.propertyIdMissing' };
         }
+        const isApartmentCategory =
+          payload.categoryId === 1 ||
+          payload.categoryId === 0 ||
+          String(payload.categoryName || '').toLowerCase().includes('apartment');
+        const hasPartitionNo = Boolean(
+          payload.partitionNo &&
+          payload.partitionNo !== '0' &&
+          payload.partitionNo.trim() !== '' &&
+          payload.partitionNo.trim() !== '-'
+        );
+
+        if (isApartmentCategory && !hasPartitionNo) {
+          return { success: false, error: '' };
+        }
+
         const payloadLocale = payload.locale || 'en';
         const params = new URLSearchParams();
         params.set('propertyId', payload.propertyId);

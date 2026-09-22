@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Tabs, Button } from "@/components/common";
 import { useTranslations } from "next-intl";
@@ -29,6 +29,7 @@ interface DiscountFormProps {
     wings?: WingOption[];
     units?: UnitSelectionItem[];
     savedPropertyDetails?: PropertySocialDetailsDto[];
+    societyDetailId?: number;
 }
 
 const DiscountFormview: React.FC<DiscountFormProps> = ({
@@ -36,6 +37,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     initialSocialData,
     propertyId,
     isSociety = false,
+    societyDetailId: propSocietyDetailId,
     discountMasterAttributes = [],
     socialMasterAttributes = [],
     wings = [],
@@ -47,6 +49,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { confirm } = useConfirm();
+    const [isPendingTransition, startTransition] = useTransition();
 
     const activeTab = searchParams.get("view") || "discount";
 
@@ -72,13 +75,17 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                     }
                     const params = new URLSearchParams(searchParams.toString());
                     params.set("view", String(value));
-                    router.push(`${pathname}?${params.toString()}`);
+                    startTransition(() => {
+                        router.push(`${pathname}?${params.toString()}`);
+                    });
                 }
             });
         } else {
             const params = new URLSearchParams(searchParams.toString());
             params.set("view", String(value));
-            router.push(`${pathname}?${params.toString()}`);
+            startTransition(() => {
+                router.push(`${pathname}?${params.toString()}`);
+            });
         }
     }, [searchParams, router, pathname, activeTab, confirm, t]);
     const isWingWise = searchParams.get('isWingWise') === 'true';
@@ -91,7 +98,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         propertyId,
         initialLevel: levelParam || (isWingWise ? 'Wing' : 'Apartment'),
         initialWingDetailId,
-        isSociety, 
+        isSociety,
         wings,
         units,
         savedPropertyDetails
@@ -101,7 +108,9 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         levelState.setLevel(level);
         const params = new URLSearchParams(searchParams.toString());
         params.set("level", level);
-        router.push(`${pathname}?${params.toString()}`);
+        startTransition(() => {
+            router.push(`${pathname}?${params.toString()}`);
+        });
     }, [levelState, searchParams, router, pathname]);
 
     const {
@@ -119,12 +128,14 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         revertDiscount
     } = useDiscountForm(initialDiscountData, propertyId, discountMasterAttributes, {
         level: levelState?.level,
-        societyDetailId,
-        wingDetailId: levelState && (levelState.level === 'Wing' || levelState.level === 'Unit') 
-            ? (levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : wingDetailId) 
+        societyDetailId: societyDetailId || (propSocietyDetailId ? String(propSocietyDetailId) : null),
+        wingDetailId: levelState && (levelState.level === 'Wing' || levelState.level === 'Unit')
+            ? (levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : wingDetailId)
             : wingDetailId,
         propertyIds: levelState ? Array.from(levelState.selectedUnitIds).join(",") : undefined,
-        isSociety: isSociety
+        isSociety: isSociety,
+        selectedUnitCount: levelState ? levelState.selectedUnitIds.size : undefined,
+        totalUnitCount: levelState ? levelState.filteredUnits.length : undefined
     });
 
     const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -250,19 +261,19 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                         <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
                             {searchParams.get('isWingWise') !== 'true' && (
                                 <Button
-                                size="xs"
-                                variant={levelState.level === 'Apartment' ? 'primary' : 'ghost'}
-                                icon={Building2}
-                                onClick={() => handleLevelChange('Apartment')}
-                                className={cn(
-                                    'font-bold cursor-pointer rounded-lg transition-all',
-                                    levelState.level === 'Apartment'
-                                        ? 'bg-blue-600 text-white shadow-sm'
-                                        : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
-                                )}
-                            >
-                                {t('building.apartmentLevel') || 'Apartment Level'}
-                            </Button>
+                                    size="xs"
+                                    variant={levelState.level === 'Apartment' ? 'primary' : 'ghost'}
+                                    icon={Building2}
+                                    onClick={() => handleLevelChange('Apartment')}
+                                    className={cn(
+                                        'font-bold cursor-pointer rounded-lg transition-all',
+                                        levelState.level === 'Apartment'
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
+                                    )}
+                                >
+                                    {t('building.apartmentLevel') || 'Apartment Level'}
+                                </Button>
                             )}
                             <Button
                                 size="xs"
@@ -322,6 +333,8 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                         t={t}
                         levelState={levelState}
                         isSociety={isSociety}
+                        isWingLoading={isPendingTransition}
+                        savedPropertyDetails={savedPropertyDetails}
                     />
                 </Tabs.TabPanel>
 
@@ -332,7 +345,9 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                         propertyId={propertyId}
                         levelState={levelState}
                         isSociety={isSociety}
+                        societyDetailId={propSocietyDetailId}
                         socialMasterAttributes={socialMasterAttributes}
+                        isWingLoading={isPendingTransition}
                     />
                 </Tabs.TabPanel>
             </Tabs>

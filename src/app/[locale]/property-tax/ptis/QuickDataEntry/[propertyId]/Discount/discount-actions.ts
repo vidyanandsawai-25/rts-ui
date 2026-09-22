@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import {
     getDiscountDetails,
     updateDiscountDetails,
@@ -13,7 +14,7 @@ import {
 } from "@/lib/api/discount.service";
 import {
     createPropertySocialDetail, deletePropertySocialDetail, createBulkPropertySocialDetail,
-    getPropertySocialDetailsByFilters
+    getPropertySocialDetailsByFilters, deletePropertySocialDetailsByHierarchy
 } from "@/lib/api/property-social-details.service";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { logger } from "@/lib/utils/logger";
@@ -27,7 +28,7 @@ import {
 } from "@/types/discount.types";
 import { WingOption, UnitSelectionItem } from "@/types/building-permission.types";
 import { ApiResponse } from "@/types/common.types";
-import { CreateBulkPropertySocialDetailDto, PropertySocialDetailsDto } from "@/types/property-social-details.types";
+import { CreateBulkPropertySocialDetailDto, PropertySocialDetailsDto, DeletePropertySocialDetailsByHierarchyParams } from "@/types/property-social-details.types";
 import {
     cleanCommonApiError,
     handleActionError,
@@ -50,6 +51,7 @@ export async function updateDiscountDetailsAction(
     formData: FormData
 ): Promise<ApiResponse<void>> {
     try {
+        const t = await getTranslations({ locale, namespace: "quickDataEntry" });
         const userId = getUserIdFromCookies(await cookies());
         if (!userId) return { success: false, error: "Unauthorized: Please log in." };
 
@@ -87,11 +89,20 @@ export async function updateDiscountDetailsAction(
 
                 const uploadResult = oldGuid
                     ? await replaceDiscountDocViaGlobalApi(file, oldGuid, propIdNum, attrId, detailId, guidReference)
-                    : await uploadDiscountDocViaGlobalApi(file, propIdNum, attrId, detailId, guidReference);                                
+                    : await uploadDiscountDocViaGlobalApi(file, propIdNum, attrId, detailId, guidReference);
 
                 if (isSociety === "true") {
                     if (uploadResult.success && uploadResult.data?.documentBindingId) {
                         attr.documentBindingId = uploadResult.data.documentBindingId;
+
+                        if (!payloadSocietyDetailId) {
+                            throw new Error(t("discount.societyDetailIdRequired") || "Society Detail ID is required to submit the document.");
+                        }
+
+                        if (!attr.documentBindingId) {
+                            throw new Error(t("discount.documentBindingIdRequired") || "Document Binding ID is required to submit the document.");
+                        }
+
                         if (level === 'Unit' && propertyIdsStr) {
                             const bulkPayload: CreateBulkPropertySocialDetailDto = {
                                 isActive: true,
@@ -276,7 +287,7 @@ export async function getSocialAttributeMasterAction(isActive?: boolean): Promis
 export async function createBulkPropertySocialDetailAction(
     payload: CreateBulkPropertySocialDetailDto
 ): Promise<ApiResponse<PropertySocialDetailsDto[]>> {
-    try {
+    try {        
         const response = await createBulkPropertySocialDetail(payload);
         return response;
     } catch (error: unknown) {
@@ -325,3 +336,23 @@ export async function getPropertySocialDetailsByFiltersAction(
         return handleActionError(error, "discount.unexpectedError");
     }
 }
+
+export async function deletePropertySocialDetailsByHierarchyAction(
+    params: DeletePropertySocialDetailsByHierarchyParams,
+    propertyId?: string,
+    locale?: string
+): Promise<ApiResponse<void>> {
+    try {
+        console.log("api call from here :", params, "propertyId :", propertyId);
+        const response = await deletePropertySocialDetailsByHierarchy(params);
+        if (response.success && propertyId && locale) {
+            revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
+        }
+        console.log("response :", response);
+        return response;
+    } catch (error: unknown) {
+        logger.error("deletePropertySocialDetailsByHierarchyAction failed", { params, error: error as Error });
+        return handleActionError(error, "discount.deleteError", locale);
+    }
+}
+

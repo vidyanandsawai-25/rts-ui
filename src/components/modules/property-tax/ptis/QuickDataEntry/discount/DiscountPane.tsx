@@ -1,9 +1,8 @@
-"use client";
-
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-
-import { Button, Label, Badge, SearchInput, Select, MasterTable, Checkbox } from '@/components/common';
+import { useLocale } from "next-intl";
+import { toast } from "sonner";
+import { Button, Label, Badge, SearchInput, Select, MasterTable, Checkbox, DocumentViewerModal } from '@/components/common';
 import type { Column } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 import { ValidationErrorBanner } from "./ValidationErrorBanner";
@@ -11,6 +10,9 @@ import { DiscountSidebar } from "./DiscountSidebar";
 import { DiscountDetailPane } from "./DiscountDetailPane";
 import { DiscountAttributeState, DiscountState } from "@/types/discount.types";
 import { useDiscountLevelState } from "@/hooks/useDiscountLevelState";
+import { Loader2, Eye, Pencil } from "lucide-react";
+import { getDocumentBlobUrl } from "@/lib/utils/document-client-utils";
+import { PropertySocialDetailsDto } from "@/types/property-social-details.types";
 
 interface DiscountPaneProps {
     discountData: DiscountState;
@@ -40,6 +42,8 @@ interface DiscountPaneProps {
     };
     levelState?: ReturnType<typeof useDiscountLevelState>;
     isSociety?: boolean;
+    isWingLoading?: boolean;
+    savedPropertyDetails?: PropertySocialDetailsDto[];
 }
 
 export interface UnitRow extends Record<string, unknown> {
@@ -73,21 +77,66 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
     hasChanges,
     onSave,
 
+    savedPropertyDetails = [],
     t,
     levelState,
-    isSociety = false
+    isSociety = false,
+    isWingLoading = false
 }) => {
+    const locale = useLocale();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const [isWingPending, startWingTransition] = useTransition();
+    const [viewerModalData, setViewerModalData] = useState<{ isOpen: boolean; fileUrl: string; fileName: string } | null>(null);
 
     const updateUrl = (params: URLSearchParams) => {
         const nextUrl = `${pathname}?${params.toString()}`;
-        router.push(nextUrl, { scroll: false });
+        startWingTransition(() => {
+            router.push(nextUrl, { scroll: false });
+        });
+    };
+    const isLoadingWing = isWingLoading || isWingPending;
+
+    const handleViewUnitDocument = async (row: UnitRow, uploadedItem?: PropertySocialDetailsDto) => {
+        if (!uploadedItem?.documentGuid) {
+            toast.info(t("building.noDocumentAttached") || "No document file attached for this unit.");
+            return;
+        }
+        try {
+            const { url } = await getDocumentBlobUrl(uploadedItem.documentGuid, locale);
+            setViewerModalData({
+                isOpen: true,
+                fileUrl: url,
+                fileName: uploadedItem.socialAttributeName || `Unit_${row.unitNo}_Document`,
+            });
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Failed to view document");
+        }
+    };
+
+    const handleEditUnit = (row: UnitRow) => {
+        const unitPropId = (row.propertyId ?? row.propertyDetailsId) as number;
+        if (levelState && !levelState.selectedUnitIds.has(unitPropId)) {
+            levelState.toggleUnitSelection(unitPropId);
+        }
+        if (activeSelectedId !== null) {
+            setSelectedId(activeSelectedId);
+        }
     };
 
     const unitTableColumns = useMemo<Column<UnitRow>[]>(() => {
         if (!levelState) return [];
+
+        const uploadedUnitsMap = new Map<number, PropertySocialDetailsDto>();
+        if (savedPropertyDetails && activeSelectedId) {
+            savedPropertyDetails.forEach((item) => {
+                if (item.socialAttributeId === activeSelectedId && item.propertyId && (item.documentGuid || item.documentBindingId)) {
+                    uploadedUnitsMap.set(item.propertyId, item);
+                }
+            });
+        }
+
         return [
             {
                 key: 'propertyDetailsId',
@@ -101,14 +150,26 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                 ),
                 width: '40px',
                 align: 'center',
-                render: (_, row) => (
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                            checked={levelState.selectedUnitIds.has((row.propertyId ?? row.propertyDetailsId) as number)}
-                            onCheckedChange={() => levelState.toggleUnitSelection((row.propertyId ?? row.propertyDetailsId) as number)}
-                        />
-                    </div>
-                ),
+                render: (_, row) => {
+                    const unitPropId = (row.propertyId ?? row.propertyDetailsId) as number;
+                    const uploadedItem = uploadedUnitsMap.get(unitPropId);
+                    const hasUploadedDoc = !!uploadedItem;
+                    const isSelected = levelState.selectedUnitIds.has(unitPropId) || hasUploadedDoc;
+
+                    return (
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                                checked={isSelected}
+                                disabled={hasUploadedDoc}
+                                onCheckedChange={() => {
+                                    if (!hasUploadedDoc) {
+                                        levelState.toggleUnitSelection(unitPropId);
+                                    }
+                                }}
+                            />
+                        </div>
+                    );
+                },
             },
             {
                 key: 'unitNo',
@@ -134,8 +195,46 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                     </Badge>
                 ),
             },
+            {
+                key: 'action',
+                label: 'Action',
+                width: '90px',
+                align: 'center',
+                render: (_, row) => {
+                    const unitPropId = (row.propertyId ?? row.propertyDetailsId) as number;
+                    const uploadedItem = uploadedUnitsMap.get(unitPropId);
+                    const hasUploadedDoc = !!uploadedItem;
+
+                    return (
+                        <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                            <button
+                                type="button"
+                                onClick={() => handleEditUnit(row)}
+                                className="p-1 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 transition-colors cursor-pointer"
+                                title="Edit"
+                            >
+                                <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleViewUnitDocument(row, uploadedItem)}
+                                disabled={!hasUploadedDoc}
+                                className={cn(
+                                    "p-1 rounded-md border transition-colors cursor-pointer",
+                                    hasUploadedDoc
+                                        ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border-emerald-200"
+                                        : "bg-slate-50 text-slate-300 border-slate-200 cursor-not-allowed"
+                                )}
+                                title="View"
+                            >
+                                <Eye className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    );
+                },
+            },
         ];
-    }, [levelState]);
+    }, [levelState, savedPropertyDetails, activeSelectedId, locale, t]);
 
     const unitTableData = useMemo<UnitRow[]>(() => {
         if (!levelState) return [];
@@ -186,7 +285,16 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                 </div>
 
                 {/* Right Detail Pane */}
-                <div className="lg:col-span-7 xl:col-span-8 h-auto lg:h-full lg:overflow-y-auto pr-1 flex flex-col gap-3">
+                <div className="relative lg:col-span-7 xl:col-span-8 h-auto lg:h-full lg:overflow-y-auto pr-1 flex flex-col gap-3">
+                    {/* Loading Overlay */}
+                    {isLoadingWing && (
+                        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center rounded-xl">
+                            <div className="flex items-center gap-2 px-3 py-2 bg-slate-800/80 text-white rounded-lg shadow-md text-xs font-medium animate-pulse">
+                                <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                                <span>{t('building.fetchingWingData') || 'Fetching wing data...'}</span>
+                            </div>
+                        </div>
+                    )}
                     {isSociety && levelState && (levelState.level === 'Wing' || levelState.level === 'Unit') && (
                         <div className="flex-shrink-0 space-y-2 bg-slate-50/60 p-3 rounded-xl border border-slate-200">
                             <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
@@ -348,6 +456,14 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                     />
                 </div>
             </div>
+            {viewerModalData?.isOpen && (
+                <DocumentViewerModal
+                    isOpen={viewerModalData.isOpen}
+                    onClose={() => setViewerModalData(null)}
+                    fileUrl={viewerModalData.fileUrl}
+                    fileName={viewerModalData.fileName}
+                />
+            )}
         </div>
     );
 };
