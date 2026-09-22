@@ -85,6 +85,7 @@ export interface SurveyDetailDto {
   newTaxTotalCV?: number | null;
   newTaxTotalRV?: number | null;
   retroTaxTotal?: number | null;
+  currentDemand?: number | null;
   yearlyRent?: number | null;
   monthlyRate?: number | null;
   yearlyRate?: number | null;

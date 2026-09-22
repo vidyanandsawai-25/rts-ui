@@ -192,7 +192,7 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
                     <td className="px-2.5 py-1 text-center whitespace-nowrap align-middle">{m.constructionYear || m.oldAssessmentYear || '-'}</td>
                     <td className="px-2.5 py-1 text-right font-mono whitespace-nowrap align-middle">{m.builtupASqFt ?? m.constructionArea ?? m.carpetASqFt ?? '-'}</td>
                     <td className="px-2.5 py-1 text-right font-mono font-bold text-emerald-800 whitespace-nowrap align-middle">{m.rateableValue != null ? `₹${Number(m.rateableValue).toLocaleString()}` : '-'}</td>
-                    <td className="px-2.5 py-1 text-right font-mono font-bold text-emerald-950 whitespace-nowrap align-middle">{m.totalTax != null ? `₹${Number(m.totalTax).toLocaleString()}` : '-'}</td>
+                    <td className="px-2.5 py-1 text-right font-mono font-bold text-emerald-950 whitespace-nowrap align-middle">{(m.totalTax ?? m.oldTotalTax) != null ? `₹${Number(m.totalTax ?? m.oldTotalTax).toLocaleString()}` : '-'}</td>
                     <td className="px-2.5 py-1 truncate max-w-[120px] whitespace-nowrap align-middle" title={m.ownerName || m.ownerNameEnglish || '-'}>{m.ownerName || m.ownerNameEnglish || '-'}</td>
                   </tr>
 
@@ -204,10 +204,10 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
                             selectedPropId={m.id}
                             loadingRv={false}
                             rvTaxes={oldHeads}
-                            rvTotal={m.totalTax ?? null}
+                            rvTotal={(m.totalTax ?? m.oldTotalTax) ?? null}
                             propertyLabel={propertyLabel}
                             variant="existing"
-                            fallbackTax={m.totalTax}
+                            fallbackTax={(m.totalTax ?? m.oldTotalTax) ?? undefined}
                             onClose={() => setSelectedPropId(null)}
                           />
                         </div>

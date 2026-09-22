@@ -113,6 +113,59 @@ describe('apartment-mappers — parseApartmentItemNodes property ID resolution',
     expect(oldUnits[1].prop).toBe('8071630');
     expect(oldUnits[1].partitionNo).toBeUndefined();
   });
+
+  it('correctly maps totalTax on oldSurvey to tax and taxDisplay', () => {
+    const rawItems = [
+      {
+        newSurvey: {
+          id: 1,
+          capitalValue: 0,
+          rateableValue: 28084.87,
+          newTaxTotal: 25182.0,
+          newTaxTotalCV: 0,
+          newTaxTotalRV: 28084.87,
+          retroTaxTotal: 31768.0,
+          carpetASqMtr: 269.75,
+          carpetASqFt: 4939.34,
+          builtupASqMtr: 323.71,
+          builtupASqFt: 3484.32,
+        },
+        oldSurvey: {
+          rateableValue: 37557,
+          capitalValue: null,
+          totalTax: 35382,
+          retroTaxTotal: null,
+          csn: '16',
+          constructionArea: 3530,
+          builtupASqMtr: 3530,
+          builtupASqFt: 37996.567,
+        },
+        difference: {
+          carpetAreaSqMeterDiff: 269.75,
+          carpetAreaSqFeetDiff: 4939.34,
+          builtupAreaSqMeterDiff: -3206.29,
+          builtupAreaSqFeetDiff: -34512.247,
+          rateableValueDiff: -9472.13,
+          capitalValueDiff: 0,
+          totalTaxDiff: -10200.0,
+          retroTaxDiff: 31768.0,
+        },
+      },
+    ];
+
+    const { newUnits, oldUnits, mappedDiffs } = parseApartmentItemNodes(rawItems);
+
+    expect(newUnits[0].tax).toBe(25182);
+    expect(newUnits[0].taxDisplay).toBe('₹25,182');
+    expect(newUnits[0].rv).toBe(28084.87);
+
+    expect(oldUnits[0].tax).toBe(35382);
+    expect(oldUnits[0].taxDisplay).toBe('₹35,382');
+    expect(oldUnits[0].rv).toBe(37557);
+    expect(oldUnits[0].rvDisplay).toBe('37,557');
+
+    expect(mappedDiffs[0].taxDiff).toBe(-10200);
+  });
 });
 
 function pUnitResolved(unit: { propertyId?: number | null }) {

@@ -61,7 +61,7 @@ export const ExistingAssessmentTableRow: React.FC<ExistingAssessmentTableRowProp
             <span className="font-semibold text-zinc-600">{idx + 1}</span>
           </div>
         </td>
-        <td className="px-1.5 py-1 font-bold text-zinc-900 whitespace-nowrap w-28 min-w-[100px] max-w-[125px]" title={`Property No: ${unit.propertyNo || unit.oldPropertyNo || '-'} | Partition: ${unit.partitionNo || '-'} | Flat No: ${unit.flatNo || '-'}`}>{unit.prop}</td>
+        <td className="px-1.5 py-1 font-bold text-zinc-900 whitespace-nowrap w-28 min-w-[100px] max-w-[125px]" title={`Property No: ${unit.propertyNo || unit.oldPropertyNo || '-'} | Partition: ${unit.partitionNo || '-'} | Flat No: ${unit.flatNo || '-'} | Owner: ${unit.owner || '-'}`}>{unit.prop}</td>
         <td className="px-1 py-1 text-emerald-700 font-semibold whitespace-nowrap">{unit.wgFl}</td>
         <td className="px-1 py-1 whitespace-nowrap">{unit.type}</td>
         <td className="px-1 py-1 whitespace-nowrap">{unit.cty}</td>
@@ -83,9 +83,6 @@ export const ExistingAssessmentTableRow: React.FC<ExistingAssessmentTableRowProp
         {showRv && <td className="px-1 py-1 text-right font-mono font-bold text-emerald-700 whitespace-nowrap">{unit.rvDisplay}</td>}
         {showCv && <td className="px-1 py-1 text-right font-mono font-bold whitespace-nowrap">{unit.cvDisplay || '-'}</td>}
         <td className="px-1 py-1 text-right font-mono font-bold text-emerald-950 whitespace-nowrap">{unit.taxDisplay}</td>
-        <td className="px-1 py-1 text-right font-mono whitespace-nowrap">{unit.pen ? `₹${unit.pen.toLocaleString()}` : '-'}</td>
-        <td className="px-1 py-1 truncate max-w-[120px] whitespace-nowrap" title={unit.owner || '-'}>{unit.owner || '-'}</td>
-        <td className="px-1 py-1 truncate max-w-[120px] whitespace-nowrap" title={unit.ocpr || '-'}>{unit.ocpr || '-'}</td>
         <td className="px-1 py-1 text-center whitespace-nowrap">
           {propPhotoGuid ? (
             <div onClick={(e) => { e.stopPropagation(); onViewDocument?.(propPhotoGuid, `Unit ${unit.prop} - Property Photo`); }} className="w-7 h-7 mx-auto rounded border border-zinc-300 overflow-hidden shadow-2xs cursor-pointer hover:border-emerald-500 hover:scale-105 transition-all bg-zinc-100 flex items-center justify-center" title="Click to view Property Photo">

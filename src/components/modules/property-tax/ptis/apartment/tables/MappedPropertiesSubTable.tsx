@@ -221,6 +221,10 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
             if (flatNo && flatNo !== '-' && flatNo !== partNo && flatNo !== propNo) subParts.push(flatNo);
             const propLabel = subParts.length > 0 ? subParts.join(' - ') : (flatNo || propNo || String(m.id));
 
+            const taxVal = isExisting
+              ? (m.totalTax ?? m.oldTotalTax ?? m.newTaxTotal ?? null)
+              : (m.newTaxTotal ?? m.totalTax ?? null);
+
             return (
               <React.Fragment key={`${m.id}-${idx}`}>
                 <tr
@@ -283,7 +287,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
                   <td className="px-2.5 py-1 text-right font-mono whitespace-nowrap align-middle">{m.builtupASqFt ?? m.builtupASqMtr ?? '-'}</td>
                   <td className="px-2.5 py-1 text-right font-mono font-bold text-emerald-700 whitespace-nowrap align-middle">{m.rateableValue != null ? `₹${Number(m.rateableValue).toLocaleString()}` : '-'}</td>
                   <td className="px-2.5 py-1 text-right font-mono font-bold whitespace-nowrap align-middle">{m.capitalValue != null ? `₹${Number(m.capitalValue).toLocaleString()}` : '-'}</td>
-                  <td className={cn('px-2.5 py-1 text-right font-mono font-bold whitespace-nowrap align-middle', isExisting ? 'text-emerald-950' : 'text-sky-950')}>{m.newTaxTotal != null ? `₹${Number(m.newTaxTotal).toLocaleString()}` : '-'}</td>
+                  <td className={cn('px-2.5 py-1 text-right font-mono font-bold whitespace-nowrap align-middle', isExisting ? 'text-emerald-950' : 'text-sky-950')}>{taxVal != null ? `₹${Number(taxVal).toLocaleString()}` : '-'}</td>
                   <td className="px-2.5 py-1 truncate max-w-[120px] whitespace-nowrap align-middle" title={m.ownerName || m.ownerNameEnglish || '-'}>{m.ownerName || m.ownerNameEnglish || '-'}</td>
 
                   <td className="px-1.5 py-1 text-center whitespace-nowrap align-middle">
@@ -326,7 +330,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
                           cvTotal={cvTotal}
                           propertyLabel={propLabel}
                           variant={variant}
-                          fallbackTax={m.newTaxTotal}
+                          fallbackTax={taxVal != null ? Number(taxVal) : (m.newTaxTotal ?? 0)}
                           onClose={() => onSelectProperty(m.id)}
                         />
                       </div>

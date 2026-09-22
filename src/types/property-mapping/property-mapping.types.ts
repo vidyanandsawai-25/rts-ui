@@ -486,6 +486,8 @@ export interface MappedNewPropertyItem {
   newTaxTotal?: number | null;
   newTaxTotalCV?: number | null;
   newTaxTotalRV?: number | null;
+  totalTax?: number | null;
+  oldTotalTax?: number | null;
   retroTaxTotal?: number | null;
   currentDemand?: number | null;
   carpetASqMtr?: number | null;
@@ -562,6 +564,7 @@ export interface MappedOldPropertyItem {
   rateableValue?: number | null;
   capitalValue?: number | null;
   totalTax?: number | null;
+  oldTotalTax?: number | null;
   retroTaxTotal?: number | null;
   csn?: string | null;
   constructionArea?: number | null;

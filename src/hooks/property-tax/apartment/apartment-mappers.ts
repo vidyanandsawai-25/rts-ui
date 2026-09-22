@@ -21,18 +21,41 @@ export function extractArrayFromPayload(obj: unknown): unknown[] {
   return [];
 }
 
-export function mapSurveyDetailToUnit(detail: SurveyDetailDto, fallbackId: string): AssessmentUnit {
-  if (!detail || !detail.id) {
+export function mapSurveyDetailToUnit(
+  detail: SurveyDetailDto,
+  fallbackId: string,
+  variant?: 'survey' | 'existing'
+): AssessmentUnit {
+  const rawAny = (detail || {}) as Record<string, unknown>;
+  const hasData =
+    Boolean(detail) &&
+    (Boolean(detail.id && detail.id > 0) ||
+      Boolean(detail.propertyNo) ||
+      Boolean(detail.oldPropertyNo) ||
+      Boolean(detail.rateableValue != null) ||
+      Boolean(detail.totalTax != null) ||
+      Boolean(detail.oldTotalTax != null) ||
+      Boolean(detail.newTaxTotal != null) ||
+      Boolean(detail.carpetASqFt != null) ||
+      Boolean(detail.carpetASqMtr != null) ||
+      Boolean(detail.builtupASqFt != null) ||
+      Boolean(detail.builtupASqMtr != null) ||
+      Boolean(detail.constructionArea != null) ||
+      Boolean(detail.csn) ||
+      Boolean(rawAny.rateableValue != null) ||
+      Boolean(rawAny.totalTax != null) ||
+      Boolean(rawAny.oldTotalTax != null));
+
+  if (!hasData) {
     return {
       id: fallbackId, prop: '-', wgFl: '-', type: '-', cty: '-', ayr: '-', cyr: '-', use: '-',
       cpt: 0, cptDisplay: '-', bua: 0, buaDisplay: '-', ocNo: '-', occdt: '-', rntr: '-',
       rentDisplay: '-', appliedOn: '-', rateDisplay: '-', rate: 0, yrv: '-', depr: '-',
-      alv: '-', mr: '-', rv: 0, rvDisplay: '-', tax: 0, taxDisplay: detail?.newTaxTotal != null ? `₹${detail.newTaxTotal.toLocaleString()}` : '-',
+      alv: '-', mr: '-', rv: 0, rvDisplay: '-', tax: 0, taxDisplay: '-',
       cv: 0, rttx: 0, pen: 0, rawSurvey: detail,
     };
   }
 
-  const rawAny = detail as Record<string, unknown>;
   const propNo = (
     detail.propertyNo ||
     detail.oldPropertyNo ||
@@ -147,11 +170,30 @@ export function mapSurveyDetailToUnit(detail: SurveyDetailDto, fallbackId: strin
   const mrVal = detail.maintenance ?? null;
   const mr = mrVal != null ? mrVal.toLocaleString() : '-';
 
-  const rawRv = detail.rateableValue ?? detail.oldRV ?? null;
+  const rawRv =
+    detail.rateableValue ??
+    detail.oldRV ??
+    (rawAny.rateableValue as number | undefined) ??
+    (rawAny.oldRV as number | undefined) ??
+    null;
   const rv = rawRv ?? 0;
   const rvDisplay = rawRv != null ? rawRv.toLocaleString() : '-';
 
-  const rawTax = detail.totalTax ?? detail.newTaxTotal ?? detail.newTaxTotalRV ?? detail.oldTotalTax ?? null;
+  const rawTax =
+    variant === 'existing'
+      ? (detail.totalTax ??
+          detail.oldTotalTax ??
+          (rawAny.totalTax as number | undefined) ??
+          (rawAny.oldTotalTax as number | undefined) ??
+          detail.newTaxTotal ??
+          null)
+      : (detail.newTaxTotal ??
+          detail.newTaxTotalRV ??
+          detail.totalTax ??
+          (rawAny.newTaxTotal as number | undefined) ??
+          (rawAny.totalTax as number | undefined) ??
+          detail.oldTotalTax ??
+          null);
   const tax = rawTax ?? 0;
   const taxDisplay = rawTax != null ? `₹${rawTax.toLocaleString()}` : '-';
 
@@ -227,8 +269,8 @@ export function parseApartmentItemNodes(itemList: unknown[], defaultPropertyId?:
     }
     seenIds.add(id);
 
-    const sUnit = mapSurveyDetailToUnit(newSurveyObj, id);
-    const pUnit = mapSurveyDetailToUnit(oldSurveyObj, id);
+    const sUnit = mapSurveyDetailToUnit(newSurveyObj, id, 'survey');
+    const pUnit = mapSurveyDetailToUnit(oldSurveyObj, id, 'existing');
 
     const rawOldAny = (oldSurveyObj || {}) as Record<string, unknown>;
     const rawNewAny = (newSurveyObj || {}) as Record<string, unknown>;
