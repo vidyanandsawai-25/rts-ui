@@ -103,6 +103,9 @@ export default getRequestConfig(async ({ locale }) => {
     aliasMasterMessages,
     assetWeightageMasterMessages,
     assetAssessmentYearRangeMessages,
+    geographyTypeMasterMessages,
+    geographyUnitMasterMessages,
+    geographySharedMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -249,6 +252,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/aliasMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetWeightageMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetAssessmentYearRange.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/geographyTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/geographyUnitMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/geographyShared.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -345,6 +351,9 @@ export default getRequestConfig(async ({ locale }) => {
         assetWeightageMasterMessages?.assetWeightageMaster || assetWeightageMasterMessages,
       assetAssessmentYearRange:
         assetAssessmentYearRangeMessages?.assetAssessmentYearRange || assetAssessmentYearRangeMessages,
+      geographyTypeMaster: geographyTypeMasterMessages,
+      geographyUnitMaster: geographyUnitMasterMessages,
+      geographyShared: geographySharedMessages,
     },
   };
 });
