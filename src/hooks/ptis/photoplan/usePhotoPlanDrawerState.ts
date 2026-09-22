@@ -60,9 +60,9 @@ export function usePhotoPlanDrawerState({
       : searchParams.get('selectedImageIndex');
     if (val !== null) {
       const parsed = parseInt(val, 10);
-      return !isNaN(parsed) ? parsed : (initialHasImages ? 0 : null);
+      return !isNaN(parsed) ? parsed : (initialHasImages ? initialCat.images.length - 1 : null);
     }
-    return initialHasImages ? 0 : null;
+    return initialHasImages ? initialCat.images.length - 1 : null;
   });
 
   const [viewMode, setViewModeState] = useState<'grid' | 'viewer' | 'compare'>(() => {
@@ -124,6 +124,8 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
       if (wingRes?.success && wingRes.data) {
         wingRes.data.forEach((wp) => {
           const norm = normalizeToPropertyPhoto(wp as unknown as Record<string, unknown>, propertyId);
+          const isPlan = norm.photoTypeCode?.toUpperCase().includes('PLAN') || norm.photoTypeId === 13;
+          if (isPlan) return;
           if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
             fetchedPhotos.push(norm);
           }
@@ -132,6 +134,8 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
       if (socRes?.success && socRes.data) {
         socRes.data.forEach((sp) => {
           const norm = normalizeToPropertyPhoto(sp as unknown as Record<string, unknown>, propertyId);
+          const isPlan = norm.photoTypeCode?.toUpperCase().includes('PLAN') || norm.photoTypeId === 13;
+          if (isPlan) return;
           if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
             fetchedPhotos.push(norm);
           }
@@ -201,6 +205,8 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
           if (wingRes?.success && wingRes.data) {
             wingRes.data.forEach((wp) => {
               const norm = normalizeToPropertyPhoto(wp as unknown as Record<string, unknown>, propertyId);
+              const isPlan = norm.photoTypeCode?.toUpperCase().includes('PLAN') || norm.photoTypeId === 13;
+              if (isPlan) return;
               if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
                 fetchedPhotos.push(norm);
               }
@@ -209,6 +215,8 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
           if (socRes?.success && socRes.data) {
             socRes.data.forEach((sp) => {
               const norm = normalizeToPropertyPhoto(sp as unknown as Record<string, unknown>, propertyId);
+              const isPlan = norm.photoTypeCode?.toUpperCase().includes('PLAN') || norm.photoTypeId === 13;
+              if (isPlan) return;
               if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
                 fetchedPhotos.push(norm);
               }
@@ -259,11 +267,26 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
   useEffect(() => {
     if (!areCategoriesEqual(categories, prevCategories)) {
       Promise.resolve().then(() => {
+        const merged = mergeCategories(cachedCategories, categories);
+        const prevActiveCat = prevCategories[selectedCategoryIndex];
+        const nextActiveCat = merged[selectedCategoryIndex];
+        const prevCount = prevActiveCat?.images?.length ?? 0;
+        const nextCount = nextActiveCat?.images?.length ?? 0;
+
         setPrevCategories(categories);
-        setCachedCategories((prev) => mergeCategories(prev, categories));
+        setCachedCategories(merged);
+
+        if (nextCount > prevCount && nextCount > 0) {
+          setSelectedImageIndexState(nextCount - 1);
+          setViewModeState('viewer');
+        } else if (selectedImageIndex !== null && nextCount > 0 && selectedImageIndex >= nextCount) {
+          setSelectedImageIndexState(nextCount - 1);
+        } else if (nextCount === 0) {
+          setSelectedImageIndexState(null);
+        }
       });
     }
-  }, [categories, prevCategories]);
+  }, [categories, prevCategories, cachedCategories, selectedCategoryIndex, selectedImageIndex]);
 
   const updateUrlParams = useCallback((newParams: Record<string, string | null>) => {
     if (typeof window === 'undefined') return;
@@ -283,7 +306,7 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
     setSelectedCategoryIndexState(idx);
     const targetCat = cachedCategories[idx];
     const hasImgs = targetCat?.images && targetCat.images.length > 0;
-    const nextImgIdx = hasImgs ? 0 : null;
+    const nextImgIdx = hasImgs ? targetCat.images.length - 1 : null;
     const nextViewMode = targetCat?.photoTypeCode === 'CHANGE_DETECTION'
       ? (hasImgs ? 'compare' : 'grid')
       : (hasImgs ? 'viewer' : 'grid');
@@ -310,7 +333,7 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
       setSelectedCategoryIndexState(initialCategoryIndex);
       const targetCat = categories[initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0];
       const hasImages = targetCat?.images && targetCat.images.length > 0;
-      let targetIdx: number | null = hasImages ? 0 : null;
+      let targetIdx: number | null = hasImages ? targetCat.images.length - 1 : null;
       let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION' ? (hasImages ? 'compare' : 'grid') : (hasImages ? 'viewer' : 'grid');
       const selParam = typeof window !== 'undefined'
         ? (new URLSearchParams(window.location.search).get('selectedImageIndex') ?? searchParams.get('selectedImageIndex'))

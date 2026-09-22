@@ -106,6 +106,12 @@ export function isCacheValid(key: string | number): boolean {
   return Date.now() - entry.timestamp < CACHE_TTL_MS;
 }
 
+const isPlanPhotoItem = (item: { photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number }) =>
+  item.photoTypeId === 13 ||
+  Boolean(item.photoTypeCode?.toUpperCase().includes('PLAN')) ||
+  Boolean(item.photoTypeName?.toLowerCase().includes('plan'));
+
+
 export function areSlotsEqual(a: PropertyPhotoTypeWithStatusDto[], b: PropertyPhotoTypeWithStatusDto[]) {
   if (a.length !== b.length) return false;
   return a.every((slot, i) => {
@@ -408,7 +414,7 @@ export function usePropertyPhotosQuery(
               wingDetailId: wp.wingDetailId ? Number(wp.wingDetailId) : undefined,
               wingName: wp.wingName ? String(wp.wingName) : undefined,
             }));
-            mappedWingPhotos.forEach(wp => {
+            mappedWingPhotos.filter(wp => !isPlanPhotoItem(wp)).forEach(wp => {
               const existingIdx = fetchedPhotos.findIndex((p) => 
                 p.propertyPhotoId === wp.propertyPhotoId && 
                 (p.wingDetailId === wp.wingDetailId || (!p.wingDetailId && !wp.wingDetailId))
@@ -438,7 +444,7 @@ export function usePropertyPhotosQuery(
               mimeType: ss.mimeType ? String(ss.mimeType) : undefined,
               viewUrl: ss.viewUrl ? String(ss.viewUrl) : undefined,
             }));
-            mappedSocSlots.forEach(ss => {
+            mappedSocSlots.filter(ss => !isPlanPhotoItem(ss)).forEach(ss => {
               const existingIdx = slots.findIndex((s) => 
                 (s.photoTypeCode && ss.photoTypeCode && s.photoTypeCode.toUpperCase() === ss.photoTypeCode.toUpperCase()) ||
                 (s.photoTypeId === ss.photoTypeId && s.photoTypeCode?.toUpperCase().startsWith('SOCIETY_'))
@@ -469,7 +475,7 @@ export function usePropertyPhotosQuery(
               downloadUrl: sp.downloadUrl ? String(sp.downloadUrl) : undefined,
               societyDetailId: targetSocietyId || undefined,
             }));
-            mappedSocPhotos.forEach(sp => {
+            mappedSocPhotos.filter(sp => !isPlanPhotoItem(sp)).forEach(sp => {
               const existingIdx = fetchedPhotos.findIndex((p) => 
                 p.propertyPhotoId === sp.propertyPhotoId && 
                 p.photoTypeCode?.toUpperCase() === sp.photoTypeCode?.toUpperCase()
@@ -697,7 +703,7 @@ export function usePropertyPhotosQuery(
           wingDetailId: wp.wingDetailId ? Number(wp.wingDetailId) : undefined,
           wingName: wp.wingName ? String(wp.wingName) : undefined,
         }));
-        mappedWingPhotos.forEach(wp => {
+        mappedWingPhotos.filter(wp => !isPlanPhotoItem(wp)).forEach(wp => {
           const existingIdx = fetchedPhotos.findIndex((p) => 
             p.propertyPhotoId === wp.propertyPhotoId && 
             (p.wingDetailId === wp.wingDetailId || (!p.wingDetailId && !wp.wingDetailId))
@@ -727,7 +733,7 @@ export function usePropertyPhotosQuery(
           mimeType: ss.mimeType ? String(ss.mimeType) : undefined,
           viewUrl: ss.viewUrl ? String(ss.viewUrl) : undefined,
         }));
-        mappedSocSlots.forEach(ss => {
+        mappedSocSlots.filter(ss => !isPlanPhotoItem(ss)).forEach(ss => {
           const existingIdx = fetchedSlots.findIndex((s) => 
             (s.photoTypeCode && ss.photoTypeCode && s.photoTypeCode.toUpperCase() === ss.photoTypeCode.toUpperCase()) ||
             (s.photoTypeId === ss.photoTypeId && s.photoTypeCode?.toUpperCase().startsWith('SOCIETY_'))
@@ -758,7 +764,7 @@ export function usePropertyPhotosQuery(
           downloadUrl: sp.downloadUrl ? String(sp.downloadUrl) : undefined,
           societyDetailId: targetSocietyId || undefined,
         }));
-        mappedSocPhotos.forEach(sp => {
+        mappedSocPhotos.filter(sp => !isPlanPhotoItem(sp)).forEach(sp => {
           const existingIdx = fetchedPhotos.findIndex((p) => 
             p.propertyPhotoId === sp.propertyPhotoId && 
             p.photoTypeCode?.toUpperCase() === sp.photoTypeCode?.toUpperCase()

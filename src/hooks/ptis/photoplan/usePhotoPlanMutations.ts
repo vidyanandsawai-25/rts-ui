@@ -109,7 +109,7 @@ export function usePhotoPlanMutations({
         Boolean(activeCat?.hasPhoto)
       );
 
-      const proceedWithAddPhoto = async () => {
+      const proceedWithAddPhoto = async (shouldReplace = false) => {
         // Only check type if user is uploading a Property Plan slot AND it's NOT a main society/wing property
         if (isPlanSlot && !isMainProperty && propertyId && propertyId > 0) {
           try {
@@ -153,7 +153,16 @@ export function usePhotoPlanMutations({
           }
         }
 
-        setIsReplacement(false);
+        if (shouldReplace && activeCat?.images && activeCat.images.length > 0) {
+          const targetIndex = (selectedImageIndex !== null && selectedImageIndex !== undefined && selectedImageIndex >= 0 && selectedImageIndex < activeCat.images.length)
+            ? selectedImageIndex
+            : 0;
+          setActiveIndexToReplace(targetIndex);
+          setIsReplacement(true);
+        } else {
+          setActiveIndexToReplace(null);
+          setIsReplacement(false);
+        }
         setIsNamingOpen(true);
       };
 
@@ -167,15 +176,15 @@ export function usePhotoPlanMutations({
           confirmText: t('media.replacePlanConfirm') || 'Replace Plan',
           cancelText: t('common.cancel') || 'Cancel',
           onConfirm: () => {
-            void proceedWithAddPhoto();
+            void proceedWithAddPhoto(true);
           },
         });
         return;
       }
 
-      await proceedWithAddPhoto();
+      await proceedWithAddPhoto(false);
     },
-    [propertyId, categories, selectedCategoryIndex, isMainProperty, onRequestTypeModal, confirm, t]
+    [propertyId, categories, selectedCategoryIndex, selectedImageIndex, isMainProperty, onRequestTypeModal, confirm, t]
   );
 
   const handleReplacePhoto = useCallback(
@@ -343,8 +352,8 @@ export function usePhotoPlanMutations({
     if (isReplacement) {
       if (activeIndexToReplace === null) return;
       const targetImg = activeCategory.images[activeIndexToReplace];
-      const propertyPhotoId = targetImg?.propertyPhotoId;
-      if (!propertyPhotoId) return;
+      const propertyPhotoId = targetImg?.propertyPhotoId ?? (activeCategory.propertyPhotoId ? Number(activeCategory.propertyPhotoId) : 0);
+      if (propertyPhotoId === undefined || propertyPhotoId === null) return;
       const success = await executeReplaceApi(propertyPhotoId, file, {
         ...targetImg, title: name, remarks: remarks || '',
       }, activeIndexToReplace);
@@ -397,7 +406,14 @@ export function usePhotoPlanMutations({
         const updatedImages = sortByOrder([...activeCategory.images, newImg]);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updatedImages));
         const targetPhotoId = res.data.propertyPhotoId;
-        let newImgIndex = updatedImages.findIndex((img) => String(img.propertyPhotoId) === String(targetPhotoId));
+        const targetDocGuid = res.data.documentGuid;
+        let newImgIndex = updatedImages.indexOf(newImg);
+        if (newImgIndex === -1 && targetDocGuid) {
+          newImgIndex = updatedImages.findIndex((img) => img.documentGuid === targetDocGuid);
+        }
+        if (newImgIndex === -1 && targetPhotoId) {
+          newImgIndex = updatedImages.findIndex((img) => String(img.propertyPhotoId) === String(targetPhotoId));
+        }
         if (newImgIndex === -1) {
           newImgIndex = updatedImages.length > 0 ? updatedImages.length - 1 : 0;
         }

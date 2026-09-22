@@ -108,24 +108,25 @@ export function PropertyMediaPanelContent({
         />
         <div className="flex-1 min-h-0 h-full overflow-y-auto p-2 flex flex-col gap-2 scrollbar-thin">
           {categories.map((cat, idx) => {
-            const firstImg = cat.images[0];
+            const latestImg = cat.images && cat.images.length > 0 ? cat.images[cat.images.length - 1] : cat.images[0];
+            const latestImgIdx = cat.images && cat.images.length > 0 ? cat.images.length - 1 : 0;
             return (
               <MediaImageCard
                 key={cat.photoTypeId || cat.photoTypeCode}
-                src={firstImg?.src || ''}
-                documentGuid={firstImg?.documentGuid}
-                fullSrc={firstImg?.fullSrc || ''}
+                src={latestImg?.src || ''}
+                documentGuid={latestImg?.documentGuid}
+                fullSrc={latestImg?.fullSrc || ''}
                 alt={cat.photoTypeName}
                 label={cat.photoTypeName}
                 hoverBorderColor="hover:border-blue-500"
                 onClick={() => {
-                  openDrawer(idx, 0);
+                  openDrawer(idx, latestImgIdx);
                 }}
                 onMouseEnter={() =>
-                  handleImageHover(firstImg?.fullSrc || firstImg?.src || '', cat.photoTypeName)
+                  handleImageHover(latestImg?.fullSrc || latestImg?.src || '', cat.photoTypeName)
                 }
                 onMouseLeave={handleImageLeave}
-                hasPhoto={firstImg?.hasPhoto}
+                hasPhoto={latestImg?.hasPhoto}
               />
             );
           })}
@@ -636,7 +637,11 @@ export function PropertyMediaPanelContent({
               alt={photoPlanPhoto?.alt || t('media.photoPlan')}
               label={photoPlanPhoto?.title || t('media.photoPlan')}
               hoverBorderColor="hover:border-purple-500"
-              onClick={() => openDrawer(photoPlanCategory ? categories.indexOf(photoPlanCategory) : 0, 0)}
+              onClick={() => {
+                const catIdx = photoPlanCategory ? categories.indexOf(photoPlanCategory) : 0;
+                const imgIdx = photoPlanCategory?.images && photoPlanCategory.images.length > 0 ? photoPlanCategory.images.length - 1 : 0;
+                openDrawer(catIdx >= 0 ? catIdx : 0, imgIdx);
+              }}
               onMouseEnter={() => handleImageHover(photoPlanPhoto?.fullSrc || photoPlanPhoto?.src || '', photoPlanPhoto?.title || t('media.photoPlan'))}
               onMouseLeave={handleImageLeave}
               hasPhoto={photoPlanPhoto?.hasPhoto}

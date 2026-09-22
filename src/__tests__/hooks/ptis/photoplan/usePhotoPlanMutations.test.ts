@@ -183,6 +183,7 @@ describe('usePhotoPlanMutations', () => {
       })
     );
     expect(result.current.isNamingOpen).toBe(true);
+    expect(result.current.isReplacement).toBe(true);
   });
 
   it('shows warning confirmation dialog when handleReplacePhoto is called for a plan slot', () => {

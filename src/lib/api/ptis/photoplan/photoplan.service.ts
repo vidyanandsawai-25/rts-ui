@@ -105,16 +105,24 @@ export const photoPlanService = {
         const photosResponse = await this.getPhotosByProperty(propertyId);
         if (photosResponse.success && Array.isArray(photosResponse.data)) {
           const photosList = photosResponse.data;
-          const newPhoto = photosList.find(
+          let newPhoto = photosList.find(
             (p) =>
               (p.documentGuid && docGuidStr && p.documentGuid.toLowerCase() === docGuidStr.toLowerCase()) ||
-              (p.documentBindingId && targetBindingId && Number(p.documentBindingId) === Number(targetBindingId)) ||
-              (p.photoTypeCode &&
-                photoTypeCode &&
-                p.photoTypeCode.toUpperCase() === String(photoTypeCode).toUpperCase() &&
-                (wingDetailId == null || Number(p.wingDetailId) === Number(wingDetailId)) &&
-                (_societyId == null || Number(p.societyDetailId) === Number(_societyId)))
+              (p.documentBindingId && targetBindingId && Number(p.documentBindingId) === Number(targetBindingId))
           );
+
+          if (!newPhoto && photoTypeCode) {
+            const matchingPhotos = photosList
+              .filter(
+                (p) =>
+                  p.photoTypeCode &&
+                  p.photoTypeCode.toUpperCase() === String(photoTypeCode).toUpperCase() &&
+                  (wingDetailId == null || Number(p.wingDetailId) === Number(wingDetailId)) &&
+                  (_societyId == null || Number(p.societyDetailId) === Number(_societyId))
+              )
+              .sort((a, b) => (b.propertyPhotoId ?? 0) - (a.propertyPhotoId ?? 0));
+            newPhoto = matchingPhotos[0];
+          }
 
           if (newPhoto) {
             resolvedPhotoId = newPhoto.propertyPhotoId || resolvedPhotoId;
@@ -511,7 +519,13 @@ export const photoPlanService = {
         ? (process.env.PHOTO_PLAN_PROD_RETURN_URL || 'https://ptisthane.scipl.info')
         : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
-      const envBackendUrl = process.env.RUNTIME_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || getAppConfig().api.baseUrl || 'https://ptisthaneapi.scipl.info.in/api';
+      const envBackendUrl = process.env.DRAWING_TOOL_BACKEND_URL ||
+        process.env.NEXT_PUBLIC_DRAWING_TOOL_BACKEND_URL ||
+        process.env.PTIS_BACKEND_PUBLIC_URI ||
+        process.env.RUNTIME_API_BASE_URL ||
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        getAppConfig().api.baseUrl ||
+        'https://ptisthaneapi.scipl.info.in/api';
       const resolvedPtisBackendUri = (ptisBackendUri || envBackendUrl).replace(/\/api\/?$/, '') || 'https://ptisthaneapi.scipl.info.in';
 
       let safeReturnUrl: string;

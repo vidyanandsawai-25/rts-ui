@@ -163,7 +163,7 @@ export async function replacePropertyPhotoAction(
     const societyId = Number(formData.get('SocietyDetailId') || '0');
     const wingName = formData.get('WingName') as string | null;
 
-    if (!propertyPhotoId || isNaN(propertyPhotoId)) {
+    if (propertyPhotoId === undefined || propertyPhotoId === null || isNaN(propertyPhotoId) || propertyPhotoId < 0) {
       return { success: false, error: t('media.propertyPhotoIdRequired') || 'Valid PropertyPhotoId is required' };
     }
     if (!file || file.size === 0) {
