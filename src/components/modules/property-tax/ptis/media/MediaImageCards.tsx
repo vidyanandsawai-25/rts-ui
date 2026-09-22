@@ -42,6 +42,7 @@ interface MediaImageCardProps {
   children?: React.ReactNode;
   priority?: boolean;
   hasPhoto?: boolean;
+  emptyLabel?: string;
 }
 
 /**
@@ -61,6 +62,7 @@ export function MediaImageCard({
   children,
   priority,
   hasPhoto,
+  emptyLabel,
 }: MediaImageCardProps): React.ReactElement {
   return (
     <div
@@ -77,6 +79,8 @@ export function MediaImageCard({
         width={400}
         height={300}
         priority={priority}
+        hasPhoto={hasPhoto}
+        emptyLabel={emptyLabel}
       />
 
       {/* Action buttons (visible on hover) */}

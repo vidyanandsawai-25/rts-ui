@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { launchPhotoPlanDrawingToolAction, getPhotosByPropertyAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
 import { getPhotoSlotsAction, getPropertyPhotosAction } from '@/app/[locale]/property-tax/ptis/media-fetch.action';
 import { getWingPhotoTypesWithStatusAction, getPhotosByWingAction } from '@/app/[locale]/property-tax/ptis/WingPhoto.action';
+import { getSocietyPhotoTypesWithStatusAction, getPhotosBySocietyAction } from '@/app/[locale]/property-tax/ptis/SocietyPhoto.action';
 import { getPropertyDrawPlanStatus } from '@/lib/api/property.service';
 import { getWingWiseDetailsAction } from '@/app/[locale]/property-tax/ptis/apartment/action';
 import { fetchWardIdAction } from '@/app/[locale]/property-tax/ptis/actions';
@@ -363,9 +364,20 @@ function PropertyMediaPanel({
           if (effectiveWingDetailId && effectiveWingDetailId > 0) {
             promises.push(getWingPhotoTypesWithStatusAction(effectiveWingDetailId));
             promises.push(getPhotosByWingAction(effectiveWingDetailId));
+          } else {
+            promises.push(Promise.resolve({ success: true, data: [] }));
+            promises.push(Promise.resolve({ success: true, data: [] }));
           }
 
-          const [slotsRes, photosRes, wingSlotsRes, wingPhotosRes] = await Promise.all(promises);
+          if (resolvedSocietyDetailId && resolvedSocietyDetailId > 0) {
+            promises.push(getSocietyPhotoTypesWithStatusAction(resolvedSocietyDetailId));
+            promises.push(getPhotosBySocietyAction(resolvedSocietyDetailId));
+          } else {
+            promises.push(Promise.resolve({ success: true, data: [] }));
+            promises.push(Promise.resolve({ success: true, data: [] }));
+          }
+
+          const [slotsRes, photosRes, wingSlotsRes, wingPhotosRes, socSlotsRes, socPhotosRes] = await Promise.all(promises);
           const sRes = slotsRes as { success: boolean; data?: PropertyPhotoTypeWithStatusDto[] };
           const pRes = photosRes as { success: boolean; data?: PropertyPhotoDto[] };
 
@@ -400,6 +412,38 @@ function PropertyMediaPanel({
                   fetchedPhotos[existingIdx] = { ...fetchedPhotos[existingIdx], ...wp };
                 } else {
                   fetchedPhotos.push(wp as PropertyPhotoDto);
+                }
+              });
+            }
+
+            const sPhotosRes = socPhotosRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
+            if (sPhotosRes?.success && Array.isArray(sPhotosRes.data)) {
+              const mappedSocPhotos = sPhotosRes.data.map((sp: Record<string, unknown>) => ({
+                propertyPhotoId: Number(sp.societyPhotoId || sp.propertyPhotoId || 0),
+                propertyId: Number(sp.societyId || sp.propertyId || 0),
+                photoTypeId: Number(sp.photoTypeId || 0),
+                photoTypeCode: String(sp.photoTypeCode || ''),
+                photoTypeName: String(sp.photoTypeName || ''),
+                displayOrder: Number(sp.displayOrder || 0),
+                remarks: sp.remarks ? String(sp.remarks) : undefined,
+                documentBindingId: sp.documentBindingId ? Number(sp.documentBindingId) : undefined,
+                documentGuid: sp.documentGuid ? String(sp.documentGuid) : undefined,
+                fileName: sp.fileName ? String(sp.fileName) : undefined,
+                mimeType: sp.mimeType ? String(sp.mimeType) : undefined,
+                viewUrl: sp.viewUrl ? String(sp.viewUrl) : undefined,
+                downloadUrl: sp.downloadUrl ? String(sp.downloadUrl) : undefined,
+                societyDetailId: resolvedSocietyDetailId || undefined,
+              }));
+              mappedSocPhotos.forEach((sp) => {
+                const existingIdx = fetchedPhotos.findIndex(
+                  (p) =>
+                    p.propertyPhotoId === sp.propertyPhotoId &&
+                    p.photoTypeCode?.toUpperCase() === sp.photoTypeCode?.toUpperCase()
+                );
+                if (existingIdx !== -1) {
+                  fetchedPhotos[existingIdx] = { ...fetchedPhotos[existingIdx], ...sp };
+                } else {
+                  fetchedPhotos.push(sp as PropertyPhotoDto);
                 }
               });
             }
@@ -440,6 +484,37 @@ function PropertyMediaPanel({
                 }
               });
             }
+
+            const sSlotsRes = socSlotsRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
+            if (sSlotsRes?.success && Array.isArray(sSlotsRes.data)) {
+              const mappedSocSlots = sSlotsRes.data.map((ss: Record<string, unknown>) => ({
+                photoTypeId: Number(ss.photoTypeId),
+                photoTypeCode: String(ss.photoTypeCode || ss.photoTypeSlotCode || ''),
+                photoTypeName: String(ss.photoTypeName || ss.photoTypeSlotName || ''),
+                displayOrder: Number(ss.displayOrder || 0),
+                hasPhoto: Boolean(ss.hasPhoto),
+                photoCount: Number(ss.photoCount || 0),
+                propertyPhotoId: Number(ss.societyPhotoId || ss.propertyPhotoId || 0),
+                remarks: ss.remarks ? String(ss.remarks) : undefined,
+                documentBindingId: ss.documentBindingId ? Number(ss.documentBindingId) : undefined,
+                documentGuid: ss.documentGuid ? String(ss.documentGuid) : undefined,
+                fileName: ss.fileName ? String(ss.fileName) : undefined,
+                mimeType: ss.mimeType ? String(ss.mimeType) : undefined,
+                viewUrl: ss.viewUrl ? String(ss.viewUrl) : undefined,
+              }));
+              mappedSocSlots.forEach((ss) => {
+                const existingIdx = fetchedSlots.findIndex(
+                  (s) =>
+                    (s.photoTypeCode && ss.photoTypeCode && s.photoTypeCode.toUpperCase() === ss.photoTypeCode.toUpperCase()) ||
+                    (s.photoTypeId === ss.photoTypeId && s.photoTypeCode?.toUpperCase().startsWith('SOCIETY_'))
+                );
+                if (existingIdx !== -1) {
+                  fetchedSlots[existingIdx] = { ...fetchedSlots[existingIdx], ...ss };
+                } else {
+                  fetchedSlots.push(ss as PropertyPhotoTypeWithStatusDto);
+                }
+              });
+            }
             onPhotoSlotsChange?.(fetchedSlots);
           }
         } catch {
@@ -450,7 +525,7 @@ function PropertyMediaPanel({
 
     window.addEventListener('ptis:media-updated', handleMediaUpdated);
     return () => window.removeEventListener('ptis:media-updated', handleMediaUpdated);
-  }, [effectiveId, effectiveWingDetailId, setPhotos, onPhotosChange, onPhotoSlotsChange]);
+  }, [effectiveId, effectiveWingDetailId, resolvedSocietyDetailId, setPhotos, onPhotosChange, onPhotoSlotsChange]);
 
   // Keep PropertyMasterCard thumbnail synchronized with the loaded society / property photo
   useEffect(() => {

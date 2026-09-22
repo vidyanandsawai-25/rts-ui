@@ -19,6 +19,8 @@ import type { PropertyWorkflowStage } from '@/types/propertyWorkflowStage.types'
 import { propertyWorkflowStageService } from '@/lib/api/ptis/propertyWorkflowStage/propertyWorkflowStage.service';
 import { extractCoordinates } from '@/lib/utils/coordinate-utils';
 import { DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
+import { getPhotosBySocietyAction, getSocietyPhotoTypesWithStatusAction } from '@/app/[locale]/property-tax/ptis/SocietyPhoto.action';
+import type { PropertyPhotoDto, PropertyPhotoTypeWithStatusDto, SocietyPhotoTypeWithStatusDto } from '@/types/photoplan.types';
 import { buildInitialPropertyMasterData, PtisPageData } from './apartment-master-builder';
 
 export interface LoadedApartmentPageData {
@@ -141,6 +143,84 @@ export async function loadApartmentPageData(
     mappedPropertiesData: pageData.mappedPropertiesData,
   };
 
+  const searchSocietyId =
+    resolvedSearchParams?.societyDetailId ||
+    resolvedSearchParams?.societydetailid ||
+    resolvedSearchParams?.societyId ||
+    resolvedSearchParams?.societyid;
+  const currentSocietyDetailId =
+    (pageData.societyDetails as unknown as { societyDetailId?: number })?.societyDetailId ??
+    rawData?.societyId ??
+    (searchSocietyId ? Number(searchSocietyId) : undefined) ??
+    undefined;
+
+  if (currentSocietyDetailId && currentSocietyDetailId > 0) {
+    const hasSocietyInPhotos = pageData.initialPhotos?.some(
+      (p) =>
+        p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
+        p.photoTypeName?.toLowerCase().includes('society')
+    );
+    if (!hasSocietyInPhotos) {
+      try {
+        const [socPhotosRes, socSlotsRes] = await Promise.all([
+          getPhotosBySocietyAction(currentSocietyDetailId),
+          getSocietyPhotoTypesWithStatusAction(currentSocietyDetailId),
+        ]);
+        if (socPhotosRes?.success && Array.isArray(socPhotosRes.data)) {
+          const mappedSocPhotos: PropertyPhotoDto[] = socPhotosRes.data.map((sp) => ({
+            propertyPhotoId: Number(sp.societyPhotoId || 0),
+            propertyId: resolvedPropertyId || 0,
+            photoTypeId: Number(sp.photoTypeId || 0),
+            photoTypeCode: String(sp.photoTypeCode || ''),
+            photoTypeName: String(sp.photoTypeName || ''),
+            displayOrder: Number(sp.displayOrder || 0),
+            remarks: sp.remarks ? String(sp.remarks) : undefined,
+            documentBindingId: sp.documentBindingId ? Number(sp.documentBindingId) : undefined,
+            documentGuid: sp.documentGuid ? String(sp.documentGuid) : undefined,
+            fileName: sp.fileName ? String(sp.fileName) : undefined,
+            mimeType: sp.mimeType ? String(sp.mimeType) : undefined,
+            viewUrl: sp.viewUrl ? String(sp.viewUrl) : undefined,
+            downloadUrl: sp.downloadUrl ? String(sp.downloadUrl) : undefined,
+            societyDetailId: currentSocietyDetailId,
+          }));
+          pageData.initialPhotos = [...(pageData.initialPhotos || []), ...mappedSocPhotos];
+        }
+        if (socSlotsRes?.success && Array.isArray(socSlotsRes.data)) {
+          const mappedSocSlots: PropertyPhotoTypeWithStatusDto[] = socSlotsRes.data.map((ss: SocietyPhotoTypeWithStatusDto) => ({
+            photoTypeId: Number(ss.photoTypeId),
+            photoTypeCode: String(ss.photoTypeCode || ''),
+            photoTypeName: String(ss.photoTypeName || ''),
+            displayOrder: Number(ss.displayOrder || 0),
+            hasPhoto: Boolean(ss.hasPhoto),
+            photoCount: Number(ss.photoCount || 0),
+            propertyPhotoId: Number(ss.societyPhotoId || 0),
+            remarks: ss.remarks ? String(ss.remarks) : undefined,
+            documentGuid: ss.documentGuid ? String(ss.documentGuid) : undefined,
+            fileName: ss.fileName ? String(ss.fileName) : undefined,
+            mimeType: ss.mimeType ? String(ss.mimeType) : undefined,
+            viewUrl: ss.viewUrl ? String(ss.viewUrl) : undefined,
+          }));
+          const existingSlots = [...(pageData.initialPhotoSlots || [])];
+          mappedSocSlots.forEach((ss) => {
+            const existingIdx = existingSlots.findIndex(
+              (s) =>
+                (s.photoTypeCode && ss.photoTypeCode && s.photoTypeCode.toUpperCase() === ss.photoTypeCode.toUpperCase()) ||
+                (s.photoTypeId === ss.photoTypeId && s.photoTypeCode?.toUpperCase().startsWith('SOCIETY_'))
+            );
+            if (existingIdx !== -1) {
+              existingSlots[existingIdx] = { ...existingSlots[existingIdx], ...ss };
+            } else {
+              existingSlots.push(ss as PropertyPhotoTypeWithStatusDto);
+            }
+          });
+          pageData.initialPhotoSlots = existingSlots;
+        }
+      } catch {
+        // Non-blocking fetch fallback
+      }
+    }
+  }
+
   const baseData = (topSectionRes?.success && topSectionRes.data) ? topSectionRes.data : undefined;
   const initialPropertyMasterData = buildInitialPropertyMasterData({
     resolvedPropertyId,
@@ -179,7 +259,6 @@ export async function loadApartmentPageData(
   const isMainProp = isApartment && (!partitionNo || partitionNo === '0' || partitionNo.trim() === '' || partitionNo.trim() === '-');
   const currentPropertyTypeId = (pageData.propertyDetailsResult?.propertyDetails as unknown as { propertyTypeId?: number })?.propertyTypeId ?? initialPropertyMasterData?.propertyTypeId ?? undefined;
   const currentType = pageData.tabHeaderInfo?.type ?? (pageData.propertyDetailsResult?.propertyDetails as unknown as { type?: string })?.type ?? (initialPropertyMasterData as unknown as { type?: string })?.type ?? null;
-  const currentSocietyDetailId = (pageData.societyDetails as unknown as { societyDetailId?: number })?.societyDetailId ?? rawData?.societyId ?? undefined;
 
   const isApartmentSocietyProperty = isMainProp || currentCategoryId === 0 || String(currentCategoryName).toLowerCase() === 'apartment society property';
 

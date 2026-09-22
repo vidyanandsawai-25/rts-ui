@@ -132,13 +132,25 @@ export function PhotoPlanViewer({
               </div>
             </div>
           ) : (
-            <MainImageViewer
-              key={currentImage?.documentGuid || currentImage?.src || ''}
-              src={currentImage?.src || ''}
-              documentGuid={currentImage?.documentGuid}
-              alt={currentImage?.title || ''}
-              rotation={0}
-            />
+            <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+              <MainImageViewer
+                key={currentImage?.documentGuid || currentImage?.src || ''}
+                src={currentImage?.src || ''}
+                documentGuid={currentImage?.documentGuid}
+                alt={currentImage?.title || ''}
+                rotation={0}
+              />
+              {(isReplacing || isDeleting) && (
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] z-30 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200 select-none">
+                  <div className="w-10 h-10 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+                  <p className="text-xs font-semibold text-slate-700">
+                    {isReplacing
+                      ? (t('media.replacingPhoto') || 'Replacing photo...')
+                      : (t('media.deletingPhoto') || 'Deleting photo...')}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

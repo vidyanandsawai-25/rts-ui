@@ -205,5 +205,65 @@ describe('mediaData - mapSlotsToCategories in QuickDataEntry mode', () => {
     expect(categories.some((c) => c.photoTypeCode === 'GIS')).toBe(false);
     expect(categories.some((c) => c.photoTypeCode === 'CHANGE_DETECTION')).toBe(false);
   });
+
+  it('only attaches uploaded photo to the matching society slot without bleeding into other society slots', () => {
+    const societySlots = [
+      { photoTypeId: 5, photoTypeCode: 'SOCIETY_PLACE', photoTypeName: 'Society Place Photo', photoScope: 'SOCIETY', displayOrder: 1, hasPhoto: false },
+      { photoTypeId: 6, photoTypeCode: 'SOCIETY_BOARD', photoTypeName: 'Society Board Photo', photoScope: 'SOCIETY', displayOrder: 2, hasPhoto: false },
+      { photoTypeId: 7, photoTypeCode: 'SOCIETY_SIGN_BOARD', photoTypeName: 'Society Sign Board Photo', photoScope: 'SOCIETY', displayOrder: 3, hasPhoto: false },
+    ];
+
+    const uploadedSocietyPlacePhoto = [
+      {
+        propertyPhotoId: 12304,
+        propertyId: 2078892,
+        photoTypeId: 5,
+        photoTypeCode: 'SOCIETY_PLACE',
+        photoTypeName: 'Society Place Photo',
+        displayOrder: 1,
+        remarks: 'Society Place Photo',
+        documentGuid: 'guid-soc-place-12304',
+        viewUrl: '/api/documents/guid-soc-place-12304/view',
+        societyDetailId: 1507857,
+      },
+    ];
+
+    const categories = mapSlotsToCategories(
+      societySlots,
+      uploadedSocietyPlacePhoto,
+      undefined,
+      undefined,
+      undefined,
+      null,
+      false,
+      1,
+      null,
+      'S',
+      false,
+      undefined,
+      undefined,
+      false
+    );
+
+    const placeCat = categories.find((c) => c.photoTypeId === 5);
+    const boardCat = categories.find((c) => c.photoTypeId === 6);
+    const signBoardCat = categories.find((c) => c.photoTypeId === 7);
+
+    // Place slot should have the photo
+    expect(placeCat).toBeDefined();
+    expect(placeCat?.hasPhoto).toBe(true);
+    expect(placeCat?.images).toHaveLength(1);
+    expect(placeCat?.images[0].documentGuid).toBe('guid-soc-place-12304');
+
+    // Board and Sign Board slots MUST NOT have the photo
+    expect(boardCat).toBeDefined();
+    expect(boardCat?.hasPhoto).toBe(false);
+    expect(boardCat?.images).toHaveLength(0);
+
+    expect(signBoardCat).toBeDefined();
+    expect(signBoardCat?.hasPhoto).toBe(false);
+    expect(signBoardCat?.images).toHaveLength(0);
+  });
 });
+
 

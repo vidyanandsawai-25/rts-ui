@@ -8,7 +8,8 @@ import {
 } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
 import { usePhotoPlanDelete } from './usePhotoPlanDelete';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
-import { clearDocumentCacheEntry } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
+import { clearDocumentCacheEntry, documentCache } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
+import { propertyMediaCache } from './usePropertyPhotosQuery';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
 import type { AdditionalImage } from '@/components/modules/property-tax/ptis/media/MediaImageCards';
 import {
@@ -60,16 +61,19 @@ export function usePhotoPlanMutations({
 
   const refreshAfterMediaMutation = useCallback((photoTypeCode?: string, categoryName?: string) => {
     if (typeof window === 'undefined') return;
+    propertyMediaCache.invalidateProperty(propertyId, societyId);
     window.dispatchEvent(
       new CustomEvent('ptis:media-updated', {
         detail: {
           propertyId,
+          societyDetailId: societyId,
+          societyId,
           photoTypeCode,
           category: categoryName,
         },
       })
     );
-  }, [propertyId]);
+  }, [propertyId, societyId]);
 
   const activeCategory = categories[selectedCategoryIndex];
 
@@ -254,8 +258,16 @@ export function usePhotoPlanMutations({
       const res = await replacePropertyPhotoAction(propertyPhotoId, oldDocumentGuid, formData, locale);
       if (res.success && res.data) {
         clearDocumentCacheEntry(targetImg.src);
+        if (targetImg.documentGuid) clearDocumentCacheEntry(targetImg.documentGuid);
         const data = res.data;
         const url = (data.documentGuid ? getViewDocumentUrl(data.documentGuid) : data.viewUrl) || '';
+        if (typeof window !== 'undefined' && file) {
+          try {
+            const previewUrl = URL.createObjectURL(file);
+            if (data.documentGuid) documentCache.set(data.documentGuid, previewUrl);
+            if (url) documentCache.set(url, previewUrl);
+          } catch {}
+        }
         const updated = activeCategory.images.map((img: AdditionalImage, i: number) => i === index ? { ...img, hasPhoto: true, src: url, fullSrc: url, propertyPhotoId: data.propertyPhotoId, documentGuid: data.documentGuid, downloadUrl: data.downloadUrl || img.downloadUrl, title: targetImg.title, remarks: targetImg.remarks, wingDetailId: wingDetailId ? Number(wingDetailId) : img.wingDetailId, wingName: wingName || img.wingName, societyDetailId: societyId ? Number(societyId) : img.societyDetailId } : img);
         onCategoriesChange(patchCategory(categories, selectedCategoryIndex, updated));
         toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
@@ -365,6 +377,13 @@ export function usePhotoPlanMutations({
       const res = await uploadPropertyPhotoAction(formData, locale);
       if (res.success && res.data) {
         const url = (res.data.documentGuid ? getViewDocumentUrl(res.data.documentGuid) : res.data.viewUrl) || '';
+        if (typeof window !== 'undefined' && file) {
+          try {
+            const previewUrl = URL.createObjectURL(file);
+            if (res.data.documentGuid) documentCache.set(res.data.documentGuid, previewUrl);
+            if (url) documentCache.set(url, previewUrl);
+          } catch {}
+        }
         const newImg: AdditionalImage = {
           src: url, fullSrc: url, alt: name, title: name,
           photoTypeId, propertyPhotoId: res.data.propertyPhotoId,

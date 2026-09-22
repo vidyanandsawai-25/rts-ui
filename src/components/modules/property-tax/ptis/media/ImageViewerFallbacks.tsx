@@ -1,12 +1,34 @@
+'use client';
+
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 /** Skeleton shown while the main image is loading. */
-export function ImageLoadingSkeleton(): React.ReactElement {
+export function ImageLoadingSkeleton({
+  label,
+  subtitle,
+}: {
+  label?: string;
+  subtitle?: string;
+} = {}): React.ReactElement {
+  const t = useTranslations('ptis');
+  const displayLabel = label || t('media.loadingImage') || 'Loading image...';
+  const displaySubtitle = subtitle || t('media.pleaseWait') || 'Please wait a moment...';
+
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-slate-100/60 animate-pulse">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-16 h-16 rounded-lg bg-slate-200/80" />
-        <div className="w-32 h-3 rounded bg-slate-200/80" />
+    <div className="absolute inset-0 flex items-center justify-center bg-slate-100/75 backdrop-blur-[2px] z-20 transition-all select-none">
+      <div className="flex flex-col items-center justify-center gap-3 p-6 bg-white/95 rounded-2xl shadow-lg border border-slate-200/90 max-w-xs text-center animate-in fade-in duration-200">
+        <div className="relative flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full border-3 border-blue-100 border-t-blue-600 animate-spin" />
+        </div>
+        <div className="flex flex-col items-center gap-0.5">
+          <span className="text-xs font-semibold text-slate-700 tracking-wide">
+            {displayLabel}
+          </span>
+          <span className="text-[11px] text-slate-400">
+            {displaySubtitle}
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -316,6 +316,7 @@ describe('PropertyMediaPanel - Draw Plan & Type Assignment Workflow', () => {
 
     expect(await screen.findByText('media.assignTypeTitle')).toBeInTheDocument();
     expect(await screen.findByText('media.assignedPlanType')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: /media.proceed/i })).not.toBeDisabled());
 
     const proceedButton = screen.getByRole('button', { name: /media.proceed/i });
     fireEvent.click(proceedButton);

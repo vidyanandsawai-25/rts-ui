@@ -21,6 +21,8 @@ interface ImageWithFallbackProps {
   unoptimized?: boolean;
   onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
   style?: React.CSSProperties;
+  hasPhoto?: boolean;
+  emptyLabel?: string;
 }
 
 export const documentCache = new Map<string, string | Promise<string>>();
@@ -39,19 +41,44 @@ export async function resolveDocumentUrl(src: string, documentGuid?: string): Pr
     }
   }
   
-  // Static non-document URL (e.g. GIS static map, satellite tiles, local SVGs)
-  if (!guid) return src;
-  const decodedGuid = decodeURIComponent(guid);
-  
-  try {
-    const res = await getDocumentAction(decodedGuid, 'view');
-    if (res.success && res.data?.base64) {
-      return `data:${res.data.contentType};base64,${res.data.base64}`;
+  // Guard against invalid GUID string literals ('undefined', 'null', whitespace)
+  if (!guid || guid === 'undefined' || guid === 'null' || !guid.trim()) {
+    if (src && !src.includes('/documents/undefined') && !src.includes('/documents/null')) {
+      return src;
     }
     return '';
-  } catch (_err) {
-    return '';
   }
+  
+  const decodedGuid = decodeURIComponent(guid);
+
+  if (documentCache.has(decodedGuid)) {
+    return documentCache.get(decodedGuid)!;
+  }
+  if (documentCache.has(guid)) {
+    return documentCache.get(guid)!;
+  }
+  if (src && documentCache.has(src)) {
+    return documentCache.get(src)!;
+  }
+  
+  const fetchPromise = (async () => {
+    try {
+      const res = await getDocumentAction(decodedGuid, 'view');
+      if (res.success && res.data?.base64) {
+        const dataUrl = `data:${res.data.contentType};base64,${res.data.base64}`;
+        documentCache.set(decodedGuid, dataUrl);
+        return dataUrl;
+      }
+      documentCache.delete(decodedGuid);
+      return '';
+    } catch (_err) {
+      documentCache.delete(decodedGuid);
+      return '';
+    }
+  })();
+
+  documentCache.set(decodedGuid, fetchPromise);
+  return fetchPromise;
 }
 
 export function ImageWithFallback({
@@ -68,6 +95,8 @@ export function ImageWithFallback({
   unoptimized,
   onLoad,
   style,
+  hasPhoto,
+  emptyLabel,
 }: ImageWithFallbackProps): React.ReactElement {
   const [resolvedSrc, setResolvedSrc] = useState<string>('');
   const [hasError, setHasError] = useState(false);
@@ -106,14 +135,19 @@ export function ImageWithFallback({
       }
     }, 15000);
 
-    if (!src && !documentGuid) {
+    const isBlank =
+      (!src || src === 'undefined' || src === 'null' || !src.trim()) &&
+      (!documentGuid || documentGuid === 'undefined' || documentGuid === 'null' || !documentGuid.trim());
+
+    if (isBlank) {
       if (fallbackSrc) {
         setTriedFallback(true);
         setResolvedSrc(fallbackSrc);
         setHasError(false);
         setIsLoading(true);
       } else {
-        setHasError(true);
+        setHasError(false);
+        setResolvedSrc('');
         setIsLoading(false);
       }
       clearTimeout(timer);
@@ -162,9 +196,35 @@ export function ImageWithFallback({
 
   const effectiveSrc = !hasError ? resolvedSrc : '';
   const isSmall = _width !== undefined && _width < 100;
+  const isSlotBlank =
+    hasPhoto === false ||
+    ((!src || src === 'undefined' || src === 'null' || !src.trim()) &&
+      (!documentGuid || documentGuid === 'undefined' || documentGuid === 'null' || !documentGuid.trim()) &&
+      !effectiveSrc);
 
-  if (hasError || !effectiveSrc) {
-    return <ImagePlaceholder alt={alt} isSmall={isSmall} label={t('media.imageUnavailable')} />;
+  if (isLoading && !effectiveSrc && !isSlotBlank) {
+    return (
+      <div className={`relative w-full h-full overflow-hidden bg-slate-100 flex items-center justify-center ${className}`} style={style}>
+        <ImageSkeleton className="w-full h-full" />
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin opacity-70" />
+        </div>
+      </div>
+    );
+  }
+
+  // If the slot has no photo uploaded or has no document specified, show 'No Photo'
+  if (isSlotBlank) {
+    return <ImagePlaceholder alt={alt} isSmall={isSmall} label={emptyLabel || t('media.noPhoto') || 'No Photo'} />;
+  }
+
+  // If an actual image was specified but failed to load, show 'Image Unavailable'
+  if (hasError) {
+    return <ImagePlaceholder alt={alt} isSmall={isSmall} label={t('media.imageUnavailable') || 'Image Unavailable'} />;
+  }
+
+  if (!effectiveSrc) {
+    return <ImagePlaceholder alt={alt} isSmall={isSmall} label={emptyLabel || t('media.noPhoto') || 'No Photo'} />;
   }
 
   const objectFit = className.includes('object-cover')
@@ -219,5 +279,6 @@ export function clearDocumentCacheEntry(srcOrGuid?: string): void {
   const guid = match ? match[1] : srcOrGuid;
   const decodedGuid = decodeURIComponent(guid);
   documentCache.delete(decodedGuid);
+  documentCache.delete(guid);
   documentCache.delete(srcOrGuid);
 }

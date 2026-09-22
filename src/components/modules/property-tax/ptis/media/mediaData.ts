@@ -223,8 +223,14 @@ export function mapSlotsToCategories(
       matchingPhoto = uploadedPhotos.find(p => {
         if (!checkIsSocietyPhoto(p)) return false;
         return isPhotoMatch(s.photoTypeCode, s.photoTypeId, p.photoTypeCode, p.photoTypeId);
-      }) || uploadedPhotos.find(checkIsSocietyPhoto);
-      if (!matchingPhoto && (societyPhotoFallbackGuid || societyPhotoFallbackUrl)) {
+      });
+      const isPrimarySocietySlot = !Boolean(
+        s.photoTypeCode?.toUpperCase().includes('BOARD') ||
+        s.photoTypeName?.toLowerCase().includes('board') ||
+        s.photoTypeCode?.toUpperCase().includes('SIGN') ||
+        s.photoTypeName?.toLowerCase().includes('sign')
+      );
+      if (!matchingPhoto && isPrimarySocietySlot && (societyPhotoFallbackGuid || societyPhotoFallbackUrl)) {
         hasPhoto = true;
         documentGuid = societyPhotoFallbackGuid || documentGuid;
         viewUrl = societyPhotoFallbackUrl || (societyPhotoFallbackGuid ? getViewDocumentUrl(societyPhotoFallbackGuid) : viewUrl);
@@ -529,14 +535,20 @@ export function mapSlotsToCategories(
       .map(p => mapPropertyPhotoToAdditionalImage(p, cat.photoTypeName));
 
     const isFullyLoaded = fullyLoadedIds?.has(cat.photoTypeId);
-    const hasSocietyFallback = isSocietyCat && Boolean(societyPhotoFallbackGuid || societyPhotoFallbackUrl);
+    const isPrimarySocietySlot = isSocietyCat && !Boolean(
+      cat.photoTypeCode?.toUpperCase().includes('BOARD') ||
+      cat.photoTypeName?.toLowerCase().includes('board') ||
+      cat.photoTypeCode?.toUpperCase().includes('SIGN') ||
+      cat.photoTypeName?.toLowerCase().includes('sign')
+    );
+    const hasSocietyFallback = isPrimarySocietySlot && Boolean(societyPhotoFallbackGuid || societyPhotoFallbackUrl);
 
     if (catPhotos.length === 0 && !isFullyLoaded && (cat.hasPhoto || hasSocietyFallback) && (cat.viewUrl || cat.documentGuid || hasSocietyFallback)) {
       const isPlanCat = isPhotoPlanCat(cat);
       const isPlanSlot = isPlanCat || cat.photoTypeCode?.toUpperCase().includes('PLAN');
       if (!isPlanSlot) {
-        const effectiveGuid = cat.documentGuid || (isSocietyCat ? societyPhotoFallbackGuid : undefined);
-        const effectiveViewUrl = cat.viewUrl || (isSocietyCat ? societyPhotoFallbackUrl : undefined) || (effectiveGuid ? getViewDocumentUrl(effectiveGuid) : undefined);
+        const effectiveGuid = cat.documentGuid || (isPrimarySocietySlot ? societyPhotoFallbackGuid : undefined);
+        const effectiveViewUrl = cat.viewUrl || (isPrimarySocietySlot ? societyPhotoFallbackUrl : undefined) || (effectiveGuid ? getViewDocumentUrl(effectiveGuid) : undefined);
         const resolvedUrl = effectiveGuid ? getViewDocumentUrl(effectiveGuid) : effectiveViewUrl;
         catPhotos = [{
           src: resolvedUrl || '',

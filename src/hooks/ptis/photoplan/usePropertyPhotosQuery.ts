@@ -57,6 +57,20 @@ class PropertyMediaCacheWrapper {
     this.cache.clear();
   }
 
+  invalidateProperty(propertyId?: number | string | null, societyId?: number | string | null): void {
+    const keysToDelete: string[] = [];
+    const propStr = propertyId ? String(propertyId) : null;
+    const socStr = societyId ? String(societyId) : null;
+    this.cache.forEach((_, key) => {
+      if (propStr && (key === propStr || key.startsWith(`${propStr}_`))) {
+        keysToDelete.push(key);
+      } else if (socStr && key.endsWith(`_${socStr}`)) {
+        keysToDelete.push(key);
+      }
+    });
+    keysToDelete.forEach((k) => this.cache.delete(k));
+  }
+
   forEach(callbackfn: (value: {
     photoSlots: PropertyPhotoTypeWithStatusDto[];
     photos: PropertyPhotoDto[];
@@ -177,7 +191,7 @@ export function usePropertyPhotosQuery(
     : null;
   const targetSocietyId = activeWingParams?.societyId !== undefined ? activeWingParams.societyId : (societyId && societyId > 0 ? societyId : searchSocietyId);
 
-  const cacheKey = propertyId ? `${propertyId}_${targetWingId || 0}` : '';
+  const cacheKey = propertyId ? `${propertyId}_${targetWingId || 0}_${targetSocietyId || 0}` : '';
 
   const [photoSlots, setPhotoSlots] = useState<PropertyPhotoTypeWithStatusDto[]>(() => {
     if (propertyId && propertyMediaCache.has(cacheKey)) {
@@ -504,22 +518,23 @@ export function usePropertyPhotosQuery(
             }
           }
 
-          // If fetchedPhotos has a society photo, mark the society slot as hasPhoto: true
-          const firstSoc = fetchedPhotos.find(isSocietyPhoto);
-          if (firstSoc) {
-            const socSlotIdx = slots.findIndex((s) =>
-              s.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-              s.photoTypeName?.toLowerCase().includes('society')
+          // For each society photo, mark its matching society slot as hasPhoto: true
+          fetchedPhotos.filter(isSocietyPhoto).forEach((sp) => {
+            const idx = slots.findIndex(
+              (s) =>
+                (s.photoTypeId && sp.photoTypeId && Number(s.photoTypeId) === Number(sp.photoTypeId)) ||
+                (s.photoTypeCode && sp.photoTypeCode && s.photoTypeCode.toUpperCase() === sp.photoTypeCode.toUpperCase())
             );
-            if (socSlotIdx !== -1) {
-              slots[socSlotIdx] = {
-                ...slots[socSlotIdx],
+            if (idx !== -1) {
+              slots[idx] = {
+                ...slots[idx],
                 hasPhoto: true,
-                documentGuid: firstSoc.documentGuid || slots[socSlotIdx].documentGuid,
-                viewUrl: firstSoc.viewUrl || slots[socSlotIdx].viewUrl,
+                documentGuid: sp.documentGuid || slots[idx].documentGuid,
+                viewUrl: sp.viewUrl || slots[idx].viewUrl,
+                propertyPhotoId: sp.propertyPhotoId || slots[idx].propertyPhotoId,
               };
             }
-          }
+          });
 
           setPhotoSlots(slots);
           setPhotos((prevPhotos) => {
@@ -792,22 +807,23 @@ export function usePropertyPhotosQuery(
         }
       }
 
-      // If fetchedPhotos has a society photo, mark the society slot as hasPhoto: true
-      const firstSoc = fetchedPhotos.find(isSocietyPhoto);
-      if (firstSoc) {
-        const socSlotIdx = fetchedSlots.findIndex((s) =>
-          s.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-          s.photoTypeName?.toLowerCase().includes('society')
+      // For each society photo, mark its matching society slot as hasPhoto: true
+      fetchedPhotos.filter(isSocietyPhoto).forEach((sp) => {
+        const idx = fetchedSlots.findIndex(
+          (s) =>
+            (s.photoTypeId && sp.photoTypeId && Number(s.photoTypeId) === Number(sp.photoTypeId)) ||
+            (s.photoTypeCode && sp.photoTypeCode && s.photoTypeCode.toUpperCase() === sp.photoTypeCode.toUpperCase())
         );
-        if (socSlotIdx !== -1) {
-          fetchedSlots[socSlotIdx] = {
-            ...fetchedSlots[socSlotIdx],
+        if (idx !== -1) {
+          fetchedSlots[idx] = {
+            ...fetchedSlots[idx],
             hasPhoto: true,
-            documentGuid: firstSoc.documentGuid || fetchedSlots[socSlotIdx].documentGuid,
-            viewUrl: firstSoc.viewUrl || fetchedSlots[socSlotIdx].viewUrl,
+            documentGuid: sp.documentGuid || fetchedSlots[idx].documentGuid,
+            viewUrl: sp.viewUrl || fetchedSlots[idx].viewUrl,
+            propertyPhotoId: sp.propertyPhotoId || fetchedSlots[idx].propertyPhotoId,
           };
         }
-      }
+      });
 
       setPhotoSlots(fetchedSlots);
       setPhotos(fetchedPhotos);
@@ -830,20 +846,20 @@ export function usePropertyPhotosQuery(
     if (typeof window === 'undefined') return;
 
     const handleMediaUpdated = (event: Event) => {
-      const customEvent = event as CustomEvent<{ propertyId?: number }>;
+      const customEvent = event as CustomEvent<{ propertyId?: number; societyDetailId?: number; societyId?: number }>;
       const updatedPropId = customEvent.detail?.propertyId;
+      const updatedSocId = customEvent.detail?.societyDetailId || customEvent.detail?.societyId;
       if (updatedPropId && propertyId && updatedPropId !== propertyId) return;
 
       if (propertyId) {
-        propertyMediaCache.delete(cacheKey);
-        propertyMediaCache.delete(propertyId);
+        propertyMediaCache.invalidateProperty(propertyId, targetSocietyId || updatedSocId);
         void refetch();
       }
     };
 
     window.addEventListener('ptis:media-updated', handleMediaUpdated);
     return () => window.removeEventListener('ptis:media-updated', handleMediaUpdated);
-  }, [propertyId, cacheKey, refetch]);
+  }, [propertyId, cacheKey, targetWingId, targetSocietyId, refetch]);
 
   return {
     loading,

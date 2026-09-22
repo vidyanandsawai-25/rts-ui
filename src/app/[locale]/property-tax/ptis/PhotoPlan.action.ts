@@ -11,6 +11,20 @@ import type {
 } from '@/types/photoplan.types';
 import { z } from 'zod';
 import { getTranslations } from 'next-intl/server';
+import { revalidatePath } from 'next/cache';
+import { locales } from '@/i18n/config';
+
+function revalidateMediaPaths(): void {
+  try {
+    for (const loc of locales) {
+      revalidatePath(`/${loc}/property-tax/ptis/apartment`);
+      revalidatePath(`/${loc}/property-tax/ptis`);
+      revalidatePath(`/${loc}/property-tax/ptis/QuickDataEntry`);
+    }
+  } catch {
+    // Ignore outside request context
+  }
+}
 
 const idSchema = z.number().positive();
 
@@ -119,6 +133,7 @@ export async function uploadPropertyPhotoAction(
     );
 
     if (result.success && result.data) {
+      revalidateMediaPaths();
       return { success: true, data: result.data, message: t('media.photoUploadedSuccess') || 'Photo uploaded successfully' };
     }
     return { success: false, error: result.error || t('media.failedToUpload') || 'Upload failed' };
@@ -170,6 +185,7 @@ export async function replacePropertyPhotoAction(
     );
 
     if (result.success && result.data) {
+      revalidateMediaPaths();
       return { success: true, data: result.data, message: t('media.photoReplacedSuccess') || 'Photo replaced successfully' };
     }
     return { success: false, error: result.error || t('media.failedToReplace') || 'Replace failed' };
@@ -194,7 +210,11 @@ export async function deletePropertyPhotoAction(
     const result = await deleteDocument(documentGuid);
 
     if (result.success) {
+      revalidateMediaPaths();
       return { success: true, data: {}, message: t('media.photoDeletedSuccess') || 'Photo deleted successfully' };
+    }
+    if (result.statusCode === 403) {
+      return { success: false, error: t('media.deletePermissionDenied') || 'You do not have permission to delete this photo' };
     }
     return { success: false, error: result.error || t('media.failedToDelete') || 'Delete failed' };
   } catch (error) {
@@ -215,6 +235,7 @@ export async function updatePropertyPhotoTypeAction(
   try {
     const result = await photoPlanService.updatePropertyPhotoType(id, photoTypeCode, photoTypeName);
     if (result.success) {
+      revalidateMediaPaths();
       return { success: true, data: {}, message: t('media.renameSuccess') || 'Photo plan name updated successfully' };
     }
     return { success: false, error: result.error || t('media.failedToRename') || 'Failed to rename photo plan' };

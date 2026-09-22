@@ -9,6 +9,8 @@ import { useMediaDrawerState } from './useMediaDrawerState';
 import type { PropertyPhotoDto } from '@/types/photoplan.types';
 import { propertyMediaCache, isCacheValid, evictOldestCacheEntry } from './usePropertyPhotosQuery';
 import { getPhotosByPropertyAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
+import { getPhotosByWingAction } from '@/app/[locale]/property-tax/ptis/WingPhoto.action';
+import { getPhotosBySocietyAction } from '@/app/[locale]/property-tax/ptis/SocietyPhoto.action';
 
 export interface UsePhotoPlanDrawerStateProps {
   categories: PhotoCategory[];
@@ -86,35 +88,74 @@ export function usePhotoPlanDrawerState({
     categoriesRef.current = categories;
   }, [categories]);
 
+function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId: number): PropertyPhotoDto {
+  return {
+    propertyPhotoId: Number(item.propertyPhotoId || item.societyPhotoId || item.wingPhotoId || 0),
+    propertyId: Number(item.propertyId || fallbackPropId || 0),
+    photoTypeId: Number(item.photoTypeId || 0),
+    photoTypeCode: String(item.photoTypeCode || ''),
+    photoTypeName: String(item.photoTypeName || ''),
+    displayOrder: Number(item.displayOrder || 1),
+    remarks: item.remarks ? String(item.remarks) : undefined,
+    documentBindingId: item.documentBindingId ? Number(item.documentBindingId) : undefined,
+    documentGuid: item.documentGuid ? String(item.documentGuid) : undefined,
+    fileName: item.fileName ? String(item.fileName) : undefined,
+    mimeType: item.mimeType ? String(item.mimeType) : undefined,
+    viewUrl: item.viewUrl ? String(item.viewUrl) : undefined,
+    downloadUrl: item.downloadUrl ? String(item.downloadUrl) : undefined,
+    wingDetailId: item.wingDetailId ? Number(item.wingDetailId) : undefined,
+    wingName: item.wingName ? String(item.wingName) : undefined,
+    societyDetailId: item.societyDetailId ? Number(item.societyDetailId) : undefined,
+  };
+}
+
   const loadPhotos = useCallback(async () => {
     if (!propertyId) return;
     setIsLoadingPhotos(true);
     setFetchError(null);
     try {
-      const res = await getPhotosByPropertyAction(propertyId);
-      if (res.success && res.data) {
-        const fetchedPhotos = res.data;
-        onPhotosChange?.(fetchedPhotos);
-
-        const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
-        onFullyLoadedIdsChange?.(allCatIds);
-
-        const cached = propertyMediaCache.get(propertyId);
-        propertyMediaCache.set(propertyId, {
-          photoSlots: cached?.photoSlots || [],
-          photos: fetchedPhotos,
-          timestamp: Date.now(),
+      const [propRes, wingRes, socRes] = await Promise.all([
+        getPhotosByPropertyAction(propertyId),
+        wingDetailId ? getPhotosByWingAction(wingDetailId) : Promise.resolve(null),
+        societyId ? getPhotosBySocietyAction(societyId) : Promise.resolve(null),
+      ]);
+      const fetchedPhotos: PropertyPhotoDto[] = [];
+      if (propRes.success && propRes.data) fetchedPhotos.push(...propRes.data);
+      if (wingRes?.success && wingRes.data) {
+        wingRes.data.forEach((wp) => {
+          const norm = normalizeToPropertyPhoto(wp as unknown as Record<string, unknown>, propertyId);
+          if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
+            fetchedPhotos.push(norm);
+          }
         });
-        evictOldestCacheEntry();
-      } else {
-        setFetchError(res.error || res.message || 'Failed to load photos');
       }
+      if (socRes?.success && socRes.data) {
+        socRes.data.forEach((sp) => {
+          const norm = normalizeToPropertyPhoto(sp as unknown as Record<string, unknown>, propertyId);
+          if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
+            fetchedPhotos.push(norm);
+          }
+        });
+      }
+
+      onPhotosChange?.(fetchedPhotos);
+
+      const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
+      onFullyLoadedIdsChange?.(allCatIds);
+
+      const cached = propertyMediaCache.get(propertyId);
+      propertyMediaCache.set(propertyId, {
+        photoSlots: cached?.photoSlots || [],
+        photos: fetchedPhotos,
+        timestamp: Date.now(),
+      });
+      evictOldestCacheEntry();
     } catch (err) {
       setFetchError(err instanceof Error ? err.message : 'Failed to load photos');
     } finally {
       setIsLoadingPhotos(false);
     }
-  }, [propertyId, onPhotosChange, onFullyLoadedIdsChange]);
+  }, [propertyId, wingDetailId, societyId, onPhotosChange, onFullyLoadedIdsChange]);
 
   useEffect(() => {
     if (!propertyId) return;
@@ -123,7 +164,9 @@ export function usePhotoPlanDrawerState({
     if (fullyLoadedIds.size === 0) {
       if (propertyMediaCache.has(propertyId) && isCacheValid(propertyId)) {
         const cached = propertyMediaCache.get(propertyId);
-        if (cached && cached.photos) {
+        const hasSocietyReq = Boolean(societyId && societyId > 0);
+        const cachedHasSoc = cached?.photos?.some((p) => p.photoTypeCode?.toUpperCase().includes('SOCIETY'));
+        if (cached && cached.photos && (!hasSocietyReq || cachedHasSoc)) {
           onPhotosChange?.(cached.photos);
           const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
           onFullyLoadedIdsChange?.(allCatIds);
@@ -146,26 +189,44 @@ export function usePhotoPlanDrawerState({
 
       setIsLoadingPhotos(true);
       setFetchError(null);
-      getPhotosByPropertyAction(propertyId)
-        .then((res) => {
+      Promise.all([
+        getPhotosByPropertyAction(propertyId),
+        wingDetailId ? getPhotosByWingAction(wingDetailId) : Promise.resolve(null),
+        societyId ? getPhotosBySocietyAction(societyId) : Promise.resolve(null),
+      ])
+        .then(([propRes, wingRes, socRes]) => {
           if (!isSubscribed) return;
-          if (res.success && res.data) {
-            const fetchedPhotos = res.data;
-            onPhotosChange?.(fetchedPhotos);
-
-            const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
-            onFullyLoadedIdsChange?.(allCatIds);
-
-            const cachedEntry = propertyMediaCache.get(propertyId);
-            propertyMediaCache.set(propertyId, {
-              photoSlots: cachedEntry?.photoSlots || [],
-              photos: fetchedPhotos,
-              timestamp: Date.now(),
+          const fetchedPhotos: PropertyPhotoDto[] = [];
+          if (propRes.success && propRes.data) fetchedPhotos.push(...propRes.data);
+          if (wingRes?.success && wingRes.data) {
+            wingRes.data.forEach((wp) => {
+              const norm = normalizeToPropertyPhoto(wp as unknown as Record<string, unknown>, propertyId);
+              if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
+                fetchedPhotos.push(norm);
+              }
             });
-            evictOldestCacheEntry();
-          } else {
-            setFetchError(res.error || res.message || 'Failed to load photos');
           }
+          if (socRes?.success && socRes.data) {
+            socRes.data.forEach((sp) => {
+              const norm = normalizeToPropertyPhoto(sp as unknown as Record<string, unknown>, propertyId);
+              if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
+                fetchedPhotos.push(norm);
+              }
+            });
+          }
+
+          onPhotosChange?.(fetchedPhotos);
+
+          const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
+          onFullyLoadedIdsChange?.(allCatIds);
+
+          const cachedEntry = propertyMediaCache.get(propertyId);
+          propertyMediaCache.set(propertyId, {
+            photoSlots: cachedEntry?.photoSlots || [],
+            photos: fetchedPhotos,
+            timestamp: Date.now(),
+          });
+          evictOldestCacheEntry();
         })
         .catch((err) => {
           if (isSubscribed) {
@@ -184,7 +245,7 @@ export function usePhotoPlanDrawerState({
     return () => {
       isSubscribed = false;
     };
-  }, [propertyId, fullyLoadedIds.size, onPhotosChange, onFullyLoadedIdsChange]);
+  }, [propertyId, wingDetailId, societyId, fullyLoadedIds.size, onPhotosChange, onFullyLoadedIdsChange]);
 
   const prevDrawerPropIdRef = useRef(propertyId);
   useEffect(() => {

@@ -4,6 +4,7 @@ import { deletePropertyPhotoAction } from '@/app/[locale]/property-tax/ptis/Phot
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
 import { patchCategory } from '@/lib/utils/ptis-photo-plan-localization';
 import type { AdditionalImage } from '@/components/modules/property-tax/ptis/media/MediaImageCards';
+import { clearDocumentCacheEntry } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 
 interface UsePhotoPlanDeleteProps {
   propertyId?: number;
@@ -55,6 +56,8 @@ export function usePhotoPlanDelete({
           setIsDeleting(false);
           return;
         }
+        clearDocumentCacheEntry(imgToDelete.src);
+        if (imgToDelete.documentGuid) clearDocumentCacheEntry(imgToDelete.documentGuid);
         toast.success(t('media.photoDeletedSuccess') || 'Photo deleted successfully');
         onMutationSuccess?.();
       } catch {
