@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { UnitDifference, PtisTaxMode } from '@/types/property-tax/apartment';
+import { cn } from '@/lib/utils/cn';
 import { DifferenceEngineTableHeader } from './DifferenceEngineTableHeader';
 import { DifferenceEngineTableRow } from './DifferenceEngineTableRow';
 import { PtisTableSkeleton } from './PtisTableSkeleton';
@@ -24,6 +25,7 @@ interface DifferenceEngineTableProps {
   onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
   taxMode?: PtisTaxMode;
   isLoading?: boolean;
+  isFullscreen?: boolean;
 }
 
 export const DifferenceEngineTable: React.FC<DifferenceEngineTableProps> = ({
@@ -36,6 +38,7 @@ export const DifferenceEngineTable: React.FC<DifferenceEngineTableProps> = ({
   onScroll,
   taxMode,
   isLoading = false,
+  isFullscreen = false,
 }) => {
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
@@ -45,7 +48,10 @@ export const DifferenceEngineTable: React.FC<DifferenceEngineTableProps> = ({
     <div
       ref={scrollRef}
       onScroll={onScroll}
-      className="w-full h-full overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar"
+      className={cn(
+        'w-full overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar',
+        isFullscreen ? 'h-full' : 'max-h-[calc(100vh-230px)]'
+      )}
     >
       <table className="w-full text-left border-collapse min-w-max">
         <DifferenceEngineTableHeader taxMode={taxMode} />

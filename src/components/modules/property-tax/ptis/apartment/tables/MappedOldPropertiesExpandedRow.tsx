@@ -119,7 +119,7 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
 
       <div
         onScroll={handleScroll}
-        className="max-h-72 overflow-x-auto overflow-y-auto rounded-md border border-emerald-200/90 bg-white shadow-2xs ios-scrollbar w-fit max-w-full"
+        className="max-h-[380px] overflow-x-auto overflow-y-auto rounded-md border border-emerald-200/90 bg-white shadow-2xs ios-scrollbar w-fit max-w-full"
       >
         <table className="w-max text-left border-collapse text-[10.5px] leading-tight">
           <thead className="sticky top-0 bg-emerald-50 text-emerald-950 font-bold border-b border-emerald-200 z-20 text-[10px] uppercase tracking-wider shadow-2xs">

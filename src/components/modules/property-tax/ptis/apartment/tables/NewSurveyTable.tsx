@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { AssessmentUnit, PtisTaxMode } from '@/types/property-tax/apartment';
+import { cn } from '@/lib/utils/cn';
 import { NewSurveyTableHeader } from './NewSurveyTableHeader';
 import { NewSurveyTableRow } from './NewSurveyTableRow';
 import { PtisTableSkeleton } from './PtisTableSkeleton';
@@ -20,6 +21,7 @@ interface NewSurveyTableProps {
   onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
   taxMode?: PtisTaxMode;
   isLoading?: boolean;
+  isFullscreen?: boolean;
 }
 
 export const NewSurveyTable: React.FC<NewSurveyTableProps> = ({
@@ -35,16 +37,20 @@ export const NewSurveyTable: React.FC<NewSurveyTableProps> = ({
   onScroll,
   taxMode,
   isLoading = false,
+  isFullscreen = false,
 }) => {
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
-  const totalCols = showRv && showCv ? 26 : (showRv || showCv ? 25 : 24);
+  const totalCols = showRv && showCv ? 21 : (showRv || showCv ? 20 : 19);
 
   return (
     <div
       ref={scrollRef}
       onScroll={onScroll}
-      className="w-full h-full overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar"
+      className={cn(
+        'w-full overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar',
+        isFullscreen ? 'h-full' : 'max-h-[calc(100vh-230px)]'
+      )}
     >
       <table className="w-full text-left border-collapse min-w-max">
         <NewSurveyTableHeader taxMode={taxMode} />

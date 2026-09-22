@@ -91,6 +91,7 @@ export interface SurveyDetailDto {
   yearlyRate?: number | null;
   depreciation?: number | null;
   annualRentalValue?: number | null;
+  alv?: number | null;
   maintenance?: number | null;
   sdrr?: number | null;
   baseValue?: number | null;

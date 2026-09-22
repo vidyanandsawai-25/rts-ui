@@ -30,7 +30,7 @@ export const NewSurveyTableFooter: React.FC<NewSurveyTableFooterProps> = ({ unit
         </td>
         <td className="px-3 py-1.5 text-right font-mono text-white whitespace-nowrap">{totals.cpt.toLocaleString()}</td>
         <td className="px-3 py-1.5 text-right font-mono text-white whitespace-nowrap">{totals.bua.toLocaleString()}</td>
-        <td colSpan={10}></td>
+        <td colSpan={5}></td>
         {showRv && (
           <td className="px-3 py-1.5 text-right font-mono text-white whitespace-nowrap">{totals.rv.toLocaleString()}</td>
         )}

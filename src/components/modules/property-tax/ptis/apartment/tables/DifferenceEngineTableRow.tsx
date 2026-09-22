@@ -36,6 +36,30 @@ export const DifferenceEngineTableRow: React.FC<DifferenceEngineTableRowProps> =
   const taxVal = raw?.totalTaxDiff ?? diff.taxDiff ?? 0;
   const rtTaxVal = raw?.retroTaxDiff ?? diff.rtTaxDiff ?? 0;
 
+  const formatDiff = (val: number | null | undefined, unit?: string, isCurrency = false) => {
+    if (val == null) return { text: '-', className: 'text-zinc-400 font-semibold' };
+    if (val === 0) {
+      const text = isCurrency ? '₹0' : unit ? `0 ${unit}` : '0';
+      return { text, className: 'text-zinc-500 font-semibold' };
+    }
+    const absFormatted = Math.abs(val).toLocaleString();
+    if (val < 0) {
+      const text = isCurrency ? `-₹${absFormatted}` : unit ? `-${absFormatted} ${unit}` : `-${absFormatted}`;
+      return { text, className: 'text-rose-600 font-bold' };
+    }
+    const text = isCurrency ? `+₹${absFormatted}` : unit ? `+${absFormatted} ${unit}` : `+${absFormatted}`;
+    return { text, className: 'text-emerald-600 font-bold' };
+  };
+
+  const carpetFtData = formatDiff(carpetFt, 'sq.ft');
+  const carpetMtrData = formatDiff(carpetMtr, 'sq.mt');
+  const buaFtData = formatDiff(buaFt, 'sq.ft');
+  const buaMtrData = formatDiff(buaMtr, 'sq.mt');
+  const rvData = formatDiff(rvVal, undefined, true);
+  const cvData = formatDiff(cvVal, undefined, true);
+  const taxData = formatDiff(taxVal, undefined, true);
+  const rtTaxData = formatDiff(rtTaxVal, undefined, true);
+
   return (
     <React.Fragment key={diff.unitId ? `${diff.unitId}-${idx}` : idx}>
       <tr
@@ -48,33 +72,33 @@ export const DifferenceEngineTableRow: React.FC<DifferenceEngineTableRowProps> =
           isExpanded && 'bg-amber-100/90'
         )}
       >
-        <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
-          {carpetFt.toLocaleString()} sq.ft
+        <td className={cn('px-3 py-1.5 text-right font-mono whitespace-nowrap', carpetFtData.className)}>
+          {carpetFtData.text}
         </td>
-        <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
-          {carpetMtr.toLocaleString()} sq.mt
+        <td className={cn('px-3 py-1.5 text-right font-mono whitespace-nowrap', carpetMtrData.className)}>
+          {carpetMtrData.text}
         </td>
-        <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
-          {buaFt.toLocaleString()} sq.ft
+        <td className={cn('px-3 py-1.5 text-right font-mono whitespace-nowrap', buaFtData.className)}>
+          {buaFtData.text}
         </td>
-        <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
-          {buaMtr.toLocaleString()} sq.mt
+        <td className={cn('px-3 py-1.5 text-right font-mono whitespace-nowrap', buaMtrData.className)}>
+          {buaMtrData.text}
         </td>
         {showRv && (
-          <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
-            ₹{rvVal.toLocaleString()}
+          <td className={cn('px-3 py-1.5 text-right font-mono whitespace-nowrap', rvData.className)}>
+            {rvData.text}
           </td>
         )}
         {showCv && (
-          <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
-            {cvVal != null ? `₹${cvVal.toLocaleString()}` : '-'}
+          <td className={cn('px-3 py-1.5 text-right font-mono whitespace-nowrap', cvData.className)}>
+            {cvData.text}
           </td>
         )}
-        <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
-          ₹{taxVal.toLocaleString()}
+        <td className={cn('px-3 py-1.5 text-right font-mono whitespace-nowrap', taxData.className)}>
+          {taxData.text}
         </td>
-        <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
-          ₹{rtTaxVal.toLocaleString()}
+        <td className={cn('px-3 py-1.5 text-right font-mono whitespace-nowrap', rtTaxData.className)}>
+          {rtTaxData.text}
         </td>
       </tr>
 

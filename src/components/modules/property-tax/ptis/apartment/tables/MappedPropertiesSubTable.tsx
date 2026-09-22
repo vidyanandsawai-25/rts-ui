@@ -147,7 +147,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
     <div
       onScroll={onScroll}
       className={cn(
-        'max-h-72 overflow-x-auto overflow-y-auto rounded-md border bg-white shadow-2xs ios-scrollbar w-fit max-w-full',
+        'max-h-[380px] overflow-x-auto overflow-y-auto rounded-md border bg-white shadow-2xs ios-scrollbar w-fit max-w-full',
         isExisting ? 'border-emerald-200' : 'border-sky-200'
       )}
     >

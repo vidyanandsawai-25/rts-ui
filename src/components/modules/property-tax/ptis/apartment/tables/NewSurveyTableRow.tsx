@@ -73,6 +73,18 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
     router.push(`/${locale}/property-tax/ptis?${params.toString()}`);
   };
 
+  const getSignedColorClass = (val: string | number | null | undefined, defaultClass = '') => {
+    if (val == null) return defaultClass;
+    const s = String(val).trim();
+    if (s.startsWith('-') || s.startsWith('₹-') || s.startsWith('-₹')) {
+      return 'text-rose-600 font-bold';
+    }
+    if (s.startsWith('+') || s.startsWith('₹+') || s.startsWith('+₹')) {
+      return 'text-emerald-600 font-bold';
+    }
+    return defaultClass;
+  };
+
   return (
     <React.Fragment key={unit.id ? `${unit.id}-${idx}` : idx}>
       <tr
@@ -125,21 +137,16 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
         <td className="px-3 py-1.5 text-center whitespace-nowrap">{unit.occdt}</td>
         <td className="px-3 py-1.5 whitespace-nowrap" title={unit.rntr}>{unit.rntr}</td>
         <td className="px-3 py-1.5 text-right font-mono whitespace-nowrap">{unit.rentDisplay}</td>
-        <td className="px-3 py-1.5 text-center whitespace-nowrap">{unit.appliedOn}</td>
-        <td className="px-3 py-1.5 text-right font-mono whitespace-nowrap">{unit.rateDisplay}</td>
-        <td className="px-3 py-1.5 text-right font-bold font-mono whitespace-nowrap">{unit.yrv}</td>
-        <td className="px-3 py-1.5 text-right font-mono whitespace-nowrap">{unit.depr}</td>
         <td className="px-3 py-1.5 text-right font-bold font-mono whitespace-nowrap">{unit.alv}</td>
-        <td className="px-3 py-1.5 text-right font-mono whitespace-nowrap">{unit.mr}</td>
         {showRv && (
-          <td className="px-3 py-1.5 text-right font-bold font-mono whitespace-nowrap">{unit.rvDisplay || '-'}</td>
+          <td className={cn("px-3 py-1.5 text-right font-bold font-mono whitespace-nowrap", getSignedColorClass(unit.rvDisplay))}>{unit.rvDisplay || '-'}</td>
         )}
         {showCv && (
-          <td className="px-3 py-1.5 text-right font-bold font-mono whitespace-nowrap" title={`Capital Value: ${unit.cvDisplay || unit.cv || '-'}`}>
+          <td className={cn("px-3 py-1.5 text-right font-bold font-mono whitespace-nowrap", getSignedColorClass(unit.cvDisplay || unit.cv))} title={`Capital Value: ${unit.cvDisplay || unit.cv || '-'}`}>
             {unit.cvDisplay || (unit.cv ? `₹${unit.cv.toLocaleString()}` : '-')}
           </td>
         )}
-        <td className="px-3 py-1.5 text-right font-bold font-mono text-blue-900 whitespace-nowrap">{unit.taxDisplay || '-'}</td>
+        <td className={cn("px-3 py-1.5 text-right font-bold font-mono whitespace-nowrap", getSignedColorClass(unit.taxDisplay, "text-blue-900"))}>{unit.taxDisplay || '-'}</td>
 
         <td className="px-1 py-1 text-center whitespace-nowrap">
           {propPhotoGuid ? (
@@ -166,7 +173,7 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
 
       {isExpanded && hasMappedProperties && (
         <tr className="bg-sky-50/40 border-b border-sky-200 transition-all">
-          <td colSpan={showRv && showCv ? 26 : (showRv || showCv ? 25 : 24)} className="p-1.5 text-zinc-700 font-sans align-middle">
+          <td colSpan={showRv && showCv ? 21 : (showRv || showCv ? 20 : 19)} className="p-1.5 text-zinc-700 font-sans align-middle">
             <MappedPropertiesExpandedRow
               oldPropertyId={oldPropertyId}
               propertyId={unit.propertyId ?? (raw?.id ? Number(raw.id) : null)}

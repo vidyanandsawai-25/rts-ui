@@ -165,7 +165,12 @@ export function mapSurveyDetailToUnit(
   if (deprVal != null && deprPer != null) depr = `${deprVal.toLocaleString()} (${deprPer}%)`;
   else if (deprVal != null) depr = deprVal.toLocaleString();
 
-  const alvVal = detail.annualRentalValue ?? (rawAny.alv as number | undefined) ?? null;
+  const alvVal =
+    detail.alv ??
+    detail.annualRentalValue ??
+    (rawAny.alv as number | undefined) ??
+    (rawAny.annualRentalValue as number | undefined) ??
+    null;
   const alv = alvVal != null ? alvVal.toLocaleString() : '-';
   const mrVal = detail.maintenance ?? null;
   const mr = mrVal != null ? mrVal.toLocaleString() : '-';
