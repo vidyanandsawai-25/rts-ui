@@ -519,12 +519,9 @@ export const photoPlanService = {
         ? (process.env.PHOTO_PLAN_PROD_RETURN_URL || 'https://ptisthane.scipl.info')
         : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
-      const envBackendUrl = process.env.DRAWING_TOOL_BACKEND_URL ||
-        process.env.NEXT_PUBLIC_DRAWING_TOOL_BACKEND_URL ||
-        process.env.PTIS_BACKEND_PUBLIC_URI ||
-        process.env.RUNTIME_API_BASE_URL ||
-        process.env.NEXT_PUBLIC_API_BASE_URL ||
+      const envBackendUrl =
         getAppConfig().api.baseUrl ||
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
         'https://ptisthaneapi.scipl.info.in/api';
       const resolvedPtisBackendUri = (ptisBackendUri || envBackendUrl).replace(/\/api\/?$/, '') || 'https://ptisthaneapi.scipl.info.in';
 

@@ -183,12 +183,25 @@ export function PhotoPlanNamingModal({
   const isFileInvalid = isFileRequiredMissing || !!fileValidationErrKey || isImageCorrupted;
   const isSaveDisabled = isLoading || isValidatingImage || !name.trim() || !displayOrder.trim() || (!isEdit && !photoTypeId) || isFileInvalid || Object.keys(errors).length > 0;
   const selectedPhotoTypeName = availableTypes.find((t) => String(t.value) === String(photoTypeId))?.label || defaultName || t('media.slot') || 'Photo Slot';
+  const isPlanSlot = Boolean(
+    _photoTypeCode?.toUpperCase().includes('PLAN') ||
+    selectedPhotoTypeName?.toLowerCase().includes('plan') ||
+    defaultName?.toLowerCase().includes('plan')
+  );
   const titleStr = isEdit
     ? (t('media.editPhotoDetails') || 'Edit Photo Details')
     : isReplacement
-      ? (t('media.replaceImageTitle') || 'Replace Image')
-      : (t('media.addPhotoFor', { name: selectedPhotoTypeName }) || `Add Photo for ${selectedPhotoTypeName}`);
-  const subtitleStr = isEdit ? (t('media.editPhotoSubtitle') || 'Update the display name, display order and remarks.') : undefined;
+      ? isPlanSlot
+        ? (t('media.replacePlan') || 'Replace Plan')
+        : (t('media.replaceImageTitle') || 'Replace Image')
+      : isPlanSlot
+        ? (t('media.uploadPlan') || 'Upload Plan')
+        : (t('media.addPhotoFor', { name: selectedPhotoTypeName }) || `Add Photo for ${selectedPhotoTypeName}`);
+  const subtitleStr = isEdit
+    ? (t('media.editPhotoSubtitle') || 'Update the display name, display order and remarks.')
+    : isReplacement && isPlanSlot
+      ? (t('media.replacePlanDescription') || 'Uploading a new plan image will replace the existing property plan.')
+      : undefined;
 
   const handleEditorSave = async (file: File) => (setSelectedFile(file), true);
   const handleEditorClose = () => { if (editImageSrc) URL.revokeObjectURL(editImageSrc); setEditImageSrc(null); };
@@ -201,7 +214,15 @@ export function PhotoPlanNamingModal({
         footer={
           <div className="flex gap-2 justify-end w-full">
             <Button variant="secondary" onClick={onClose} type="button" disabled={isLoading} className="cursor-pointer hover:!bg-slate-100 hover:!text-slate-900 transition-all hover:scale-105 active:scale-95 duration-200">{t('actions.cancel') || 'Cancel'}</Button>
-            <Button variant="primary" onClick={handleSubmit} type="button" disabled={isSaveDisabled} className="!bg-blue-600 hover:!bg-blue-700 !text-white font-medium px-4 py-2 rounded-lg cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? (t('media.saving') || 'Saving...') : (t('actions.save') || 'Save')}</Button>
+            <Button variant="primary" onClick={handleSubmit} type="button" disabled={isSaveDisabled} className="!bg-blue-600 hover:!bg-blue-700 !text-white font-medium px-4 py-2 rounded-lg cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              {isLoading
+                ? (t('media.saving') || 'Saving...')
+                : isReplacement
+                  ? isPlanSlot
+                    ? (t('media.replacePlanConfirm') || 'Replace Plan')
+                    : (t('media.replaceImage') || 'Replace Image')
+                  : (t('actions.save') || 'Save')}
+            </Button>
           </div>
         }
       >

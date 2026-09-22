@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Download, Upload, Trash2 } from 'lucide-react';
+import { Download, Upload, Trash2, RefreshCw, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/common';
 
@@ -65,21 +65,39 @@ export function PhotoPlanToolbar({
           )}
           {hasImage ? (
             <>
-              {!isPhotoPlanCategory && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  (onReplace ?? onUpload)();
+                }}
+                disabled={isMutating}
+                isLoading={isReplacing}
+                icon={isPhotoPlanCategory ? RefreshCw : Upload}
+                className="h-full shrink-0"
+                aria-label={isPhotoPlanCategory ? (t('media.replacePlan') || 'Replace Plan') : (t('media.replaceImage') || 'Replace Image')}
+              >
+                <span className="hidden sm:inline">
+                  {isReplacing
+                    ? (t('media.replacing') || 'Replacing...')
+                    : isPhotoPlanCategory
+                      ? (t('media.replacePlan') || 'Replace Plan')
+                      : (t('media.replaceImage') || 'Replace Image')}
+                </span>
+              </Button>
+              {isPhotoPlanCategory && totalCount < 2 && (
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   size="sm"
-                  onClick={() => {
-                    (onReplace ?? onUpload)();
-                  }}
+                  onClick={onUpload}
                   disabled={isMutating}
-                  isLoading={isReplacing}
-                  icon={Upload}
-                  className="h-full shrink-0"
-                  aria-label={t('media.replaceImage')}
+                  isLoading={isAdding}
+                  icon={Plus}
+                  className="h-full shrink-0 font-medium"
+                  aria-label={t('media.addNewPlan') || 'Add New Plan'}
                 >
-                  <span className="hidden sm:inline">
-                    {isReplacing ? (t('media.replacing') || 'Replacing...') : (t('media.replaceImage') || 'Replace Image')}
+                  <span>
+                    {t('media.addNewPlan') || 'Add New Plan'}
                   </span>
                 </Button>
               )}
@@ -116,10 +134,14 @@ export function PhotoPlanToolbar({
               isLoading={isAdding}
               icon={Upload}
               className="h-full shrink-0"
-              aria-label={t('media.uploadImage')}
+              aria-label={isPhotoPlanCategory ? (t('media.uploadPlan') || 'Upload Plan') : (t('media.uploadImage') || 'Upload Image')}
             >
               <span className="hidden sm:inline">
-                {isAdding ? (t('media.uploading') || 'Uploading...') : (t('media.uploadImage') || 'Upload Image')}
+                {isAdding
+                  ? (t('media.uploading') || 'Uploading...')
+                  : isPhotoPlanCategory
+                    ? (t('media.uploadPlan') || 'Upload Plan')
+                    : (t('media.uploadImage') || 'Upload Image')}
               </span>
             </Button>
           )}

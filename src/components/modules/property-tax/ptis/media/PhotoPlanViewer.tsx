@@ -122,7 +122,7 @@ export function PhotoPlanViewer({
               </p>
               <div className="flex gap-4">
                 <Button onClick={onUpload} disabled={isMutating} variant="primary" icon={Upload}>
-                  {t('media.uploadImage') || 'Upload Image'}
+                  {isPhotoPlanCategory ? (t('media.uploadPlan') || 'Upload Plan') : (t('media.uploadImage') || 'Upload Image')}
                 </Button>
                 {isPhotoPlanCategory && onDrawPlan && (
                   <Button onClick={onDrawPlan} disabled={isMutating} variant="primary" className="bg-purple-600 hover:bg-purple-700 text-white border-none" icon={Plus}>

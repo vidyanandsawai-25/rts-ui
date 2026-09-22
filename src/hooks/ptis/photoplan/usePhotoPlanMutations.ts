@@ -104,10 +104,9 @@ export function usePhotoPlanMutations({
         name.includes('photo plan') ||
         name.includes('property plan');
 
-      const hasExistingPlan = isPlanSlot && (
-        (activeCat?.images && activeCat.images.length > 0) ||
-        Boolean(activeCat?.hasPhoto)
-      );
+      const planCount = isPlanSlot
+        ? (activeCat?.images?.length ?? (activeCat?.hasPhoto ? 1 : 0))
+        : 0;
 
       const proceedWithAddPhoto = async (shouldReplace = false) => {
         // Only check type if user is uploading a Property Plan slot AND it's NOT a main society/wing property
@@ -166,20 +165,27 @@ export function usePhotoPlanMutations({
         setIsNamingOpen(true);
       };
 
-      if (hasExistingPlan) {
-        confirm({
-          variant: 'warning',
-          title: t('media.replacePlanTitle') || 'Replace Existing Plan?',
-          description:
-            t('media.replacePlanDescription') ||
-            'Uploading a new plan image will replace the existing property plan. Are you sure you want to proceed?',
-          confirmText: t('media.replacePlanConfirm') || 'Replace Plan',
-          cancelText: t('common.cancel') || 'Cancel',
-          onConfirm: () => {
-            void proceedWithAddPhoto(true);
-          },
-        });
-        return;
+      if (isPlanSlot) {
+        if (planCount >= 2) {
+          toast.warning(t('media.maxPlansReached') || 'A maximum of 2 plans can be added for a single property.');
+          return;
+        }
+
+        if (planCount === 1) {
+          confirm({
+            variant: 'warning',
+            title: t('media.addNewPlanTitle') || 'Add New Plan?',
+            description:
+              t('media.addNewPlanDescription') ||
+              'Are you sure you want to add an additional plan for this property? A maximum of 2 plans are allowed.',
+            confirmText: t('media.addNewPlanConfirm') || 'Add Plan',
+            cancelText: t('common.cancel') || 'Cancel',
+            onConfirm: () => {
+              void proceedWithAddPhoto(false);
+            },
+          });
+          return;
+        }
       }
 
       await proceedWithAddPhoto(false);
