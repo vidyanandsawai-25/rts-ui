@@ -191,10 +191,13 @@ export function useExcelImportActions({
     }
   };
 
-  const executeJob = async (isScheduled: boolean, scheduledDateTime?: string) => {
+  const executeJob = async (isScheduled: boolean, scheduledDateTime?: string, forceRecalculate?: boolean) => {
     state.setIsValidating(true);
     try {
       const scopeData = mapExcelDataToPayload(state.rows, state.selectedScopeType, zoneOptions, state.fetchedWards);
+      if (forceRecalculate) {
+        scopeData.forceRecalculate = true;
+      }
       const payload = {
         financeYearId: Number(financeYearId),
         operation: 'addTax',

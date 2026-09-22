@@ -7,10 +7,10 @@ import { Tabs } from '@/components/common/Tabs';
 import { Button } from '@/components/common/ActionButton';
 import { Select } from '@/components/common/select';
 import { DashboardCard } from '@/components/common/DashboardCard';
-import { CheckCircle, FileText, BookOpen } from 'lucide-react';
+import { CheckCircle, FileText, BookOpen, AlertTriangle, Download, Play } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/utils/logger';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -72,6 +72,8 @@ export interface AddTaxesActionsProps {
   getJobPropertiesAction: (jobId: string, pageNumber: number, pageSize: number, status?: string) => Promise<any>;
   getImportTemplateAction: () => Promise<any>;
   getServerTimeAction: () => Promise<any>;
+  getMasterDataChangeSummaryAction?: (financeYearId: string | number) => Promise<any>;
+  exportMasterDataChangesCsvAction?: (financeYearId: string | number) => Promise<any>;
 }
 
 interface AddTaxesConsoleProps {
@@ -119,6 +121,7 @@ export default function AddTaxesConsole({
     isFinanceYearActive,
     refreshStats,
     clearSelectionData,
+    masterDataChangeSummary,
   } = useAddTaxesState(initData, effectiveScopeOptions, actionsProp);
 
   const pathname = usePathname();
@@ -333,17 +336,78 @@ export default function AddTaxesConsole({
     }
   };
 
+  const [isExportingMasterDataCsv, setIsExportingMasterDataCsv] = useState(false);
+  const [isProceedingMasterData, setIsProceedingMasterData] = useState(false);
+  const [isManualScopeBusy, setIsManualScopeBusy] = useState(false);
+  const masterDataRecalcHandlerRef = useRef<((scope?: string) => void) | null>(null);
+
+  const handleProceedMasterDataExecution = async () => {
+    setIsProceedingMasterData(true);
+    try {
+      if (masterDataRecalcHandlerRef.current) {
+        await masterDataRecalcHandlerRef.current('masterDataChange');
+      }
+    } finally {
+      setIsProceedingMasterData(false);
+    }
+  };
+
+  const handleExportMasterDataCsv = async () => {
+    if (isExportingMasterDataCsv) return;
+    if (!financeYearId) {
+      toast.error(t('masterDataChange.selectFinanceYearExportError'));
+      return;
+    }
+    if (!actionsProp.exportMasterDataChangesCsvAction) {
+      toast.error(t('masterDataChange.exportActionUnavailable'));
+      return;
+    }
+
+    setIsExportingMasterDataCsv(true);
+    const toastId = toast.loading(t('masterDataChange.exportingCsvToast'));
+
+    try {
+      const res = await actionsProp.exportMasterDataChangesCsvAction(financeYearId);
+      if (!res.success || !res.data) {
+        throw new Error(res.error || t('masterDataChange.exportFailedToast'));
+      }
+
+      const { base64, fileName } = res.data;
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'text/csv;charset=utf-8;' });
+
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', fileName || `master_data_affected_properties_FY${financeYearId}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+      toast.success(t('masterDataChange.exportSuccessToast'), { id: toastId });
+    } catch (error) {
+      toast.error((error as Error).message || t('masterDataChange.exportFailedToast'), { id: toastId });
+    } finally {
+      setIsExportingMasterDataCsv(false);
+    }
+  };
+
   const mappedFinanceYearOptions = financeYearOptions.map(opt => ({
     value: String(opt.value),
     label: opt.label
   }));
 
-
   return (
     <div className={cn("relative w-full", !isFinanceYearActive && "min-h-[450px]")}>
       <div className="flex flex-col gap-4">
         {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
           {/* Finance Year */}
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <Select
@@ -363,6 +427,13 @@ export default function AddTaxesConsole({
             valueColor="text-gray-900"
             onExportExcel={() => handleExportProperties('all')}
             isExporting={exportingStatus === 'all'}
+          />
+          <DashboardCard
+            label={t('stats.transmastProperties')}
+            value={stats.transmastProperties}
+            valueColor="text-purple-600"
+            onExportExcel={() => handleExportProperties('Transmast')}
+            isExporting={exportingStatus === 'Transmast'}
           />
           <DashboardCard
             label={t('stats.eligibleRecords')}
@@ -397,6 +468,49 @@ export default function AddTaxesConsole({
             </div>
           </div>
         </div>
+
+        {/* Master Data Change Alert Banner */}
+        {masterDataChangeSummary && (masterDataChangeSummary.affectedCount ?? 0) > 0 && (
+          <div className="bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-all duration-200">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-semibold text-amber-900">
+                  {t('masterDataChange.alertTitle')}
+                </h4>
+                <p className="text-xs text-amber-800 mt-0.5">
+                  <span className="font-bold text-amber-950">
+                    {t('masterDataChange.alertDescription', { count: (masterDataChangeSummary.affectedCount ?? 0).toLocaleString() })}
+                  </span>
+                  {masterDataChangeSummary.remarkSummary ? ` (${masterDataChangeSummary.remarkSummary})` : ''}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="primary"
+                size="sm"
+                icon={Play}
+                onClick={handleProceedMasterDataExecution}
+                isLoading={isProceedingMasterData}
+                disabled={isProceedingMasterData || isManualScopeBusy || Boolean(masterDataChangeSummary?.activeJobCode)}
+                className="bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-xs border border-amber-700"
+              >
+                {masterDataChangeSummary?.activeJobCode ? t('masterDataChange.scheduled') : t('masterDataChange.proceedExecution')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={Download}
+                onClick={handleExportMasterDataCsv}
+                disabled={isExportingMasterDataCsv}
+                className="bg-white border-amber-300 text-amber-900 hover:bg-amber-100 hover:border-amber-400 font-medium shadow-xs"
+              >
+                {isExportingMasterDataCsv ? t('masterDataChange.exporting') : t('masterDataChange.exportAffectedProperties')}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Processing Job */}
         {isFinanceYearActive && activeJob && showProgress && (
@@ -435,12 +549,14 @@ export default function AddTaxesConsole({
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left Panel - Scope Selection */}
                 <ScopeSelectionPanel
+                  onProceedDisabledChange={setIsManualScopeBusy}
                   scopes={scopes}
                   selectedScope={selectedScope}
                   handleScopeChange={handleScopeChange}
                   selectionData={selectionData}
                   handleSelectionChange={handleSelectionChange}
                   scopeOptions={effectiveScopeOptions}
+                  onBindMasterDataRecalc={(fn: (scope?: string) => void) => { masterDataRecalcHandlerRef.current = fn; }}
                   onStartExecution={(jobId, total, scheduledTime) => {
                     setActiveJob({ jobId, total, scheduledTime });
                     refreshStats();

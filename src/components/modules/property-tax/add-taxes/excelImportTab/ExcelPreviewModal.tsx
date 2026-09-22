@@ -79,7 +79,7 @@ export function ExcelPreviewModal({
       {previewData && (
         <div className="flex flex-col gap-6">
           {/* Summary Cards */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <DashboardCard
               label={t('preview.totalSelected')}
               value={previewData.totalSelected}
@@ -94,6 +94,11 @@ export function ExcelPreviewModal({
               label={t('preview.skipped')}
               value={previewData.skipped}
               valueColor="text-red-700"
+            />
+            <DashboardCard
+              label={t('preview.alreadyTaxed')}
+              value={previewData.alreadyTaxed}
+              valueColor="text-amber-700"
             />
           </div>
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { logger } from '@/lib/utils/logger';
-import { InitOperationsResponse, ScopeOptionItem, ScopeItem, Scope, Action, FinanceYearOption } from '@/types/addTaxes.types';
+import { InitOperationsResponse, ScopeOptionItem, ScopeItem, Scope, Action, FinanceYearOption, MasterDataChangeSummary } from '@/types/addTaxes.types';
 import {
   Globe,
   MapPin,
@@ -16,26 +16,13 @@ import {
 
 export type { Scope, Action };
 
-function isSelectionDataEqual(a: Record<string, string[]>, b: Record<string, string[]>) {
-  const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
-  if (keysA.length !== keysB.length) return false;
-  for (const key of keysA) {
-    if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
-    const valA = a[key] || [];
-    const valB = b[key] || [];
-    if (valA.length !== valB.length) return false;
-    for (let i = 0; i < valA.length; i++) {
-      if (valA[i] !== valB[i]) return false;
-    }
-  }
-  return true;
-}
-
 export function useAddTaxesState(
   initData: InitOperationsResponse | null,
   scopeOptions: ScopeOptionItem[],
-  clientActions: { initOperationsAction: (financeYearId?: string | number) => Promise<InitOperationsResponse | null> }
+  clientActions: {
+    initOperationsAction: (financeYearId?: string | number) => Promise<InitOperationsResponse | null>;
+    getMasterDataChangeSummaryAction?: (financeYearId: string | number) => Promise<MasterDataChangeSummary | null>;
+  }
 ) {
   const t = useTranslations('addTaxes');
   const router = useRouter();
@@ -51,25 +38,24 @@ export function useAddTaxesState(
 
   const isLocalUpdateRef = useRef(false);
 
-  // Sync selectionData from URL parameters on mount or when scope/searchParams change
+  // Track which scope has been initialized to prevent re-running on URL changes
+  const initializedScopeRef = useRef<string | null>(null);
+
+  // Sync selectionData from URL parameters ONLY on mount or when scope changes (not on URL param changes)
   useEffect(() => {
     if (!scopeOptions || scopeOptions.length === 0) return;
 
-    if (isLocalUpdateRef.current) {
-      isLocalUpdateRef.current = false;
-      return;
-    }
+    // Skip if already initialized for this scope (user is actively selecting, don't overwrite)
+    if (initializedScopeRef.current === selectedScope) return;
 
     const currentParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : searchParams;
     const urlScope = currentParams.get('scope');
-    if (urlScope && urlScope !== selectedScope) {
-      return;
-    }
+    const effectiveScope = (urlScope || selectedScope) as Scope;
 
-    const currentScopeData = scopeOptions.find(s => s.scopeType === selectedScope);
+    const currentScopeData = scopeOptions.find(s => s.scopeType === effectiveScope);
     if (!currentScopeData) return;
 
-    const optionsToRender = selectedScope === 'property' ? ['Search Property'] : (currentScopeData.options || []);
+    const optionsToRender = effectiveScope === 'property' ? ['Search Property'] : (currentScopeData.options || []);
     const newSelectionData: Record<string, string[]> = {};
 
     for (const option of optionsToRender) {
@@ -105,21 +91,16 @@ export function useAddTaxesState(
       }
     }
 
-    // Only update if it actually changed to prevent infinite loops
-    let timer: NodeJS.Timeout;
-    if (!isSelectionDataEqual(selectionData, newSelectionData)) {
-      timer = setTimeout(() => {
-        setSelectionData(newSelectionData);
-        setIsInitialized(true);
-      }, 0);
-    } else {
-      timer = setTimeout(() => {
-        setIsInitialized(true);
-      }, 0);
-    }
+    // Mark this scope as initialized so we don't overwrite user selections on URL changes
+    initializedScopeRef.current = effectiveScope;
+
+    const timer = setTimeout(() => {
+      setSelectionData(newSelectionData);
+      setIsInitialized(true);
+    }, 0);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedScope, scopeOptions, searchParams, isInitialized]);
+  }, [selectedScope, scopeOptions]);
 
   const handleSelectionChange = (key: string, values: string[], labels?: string[]) => {
     isLocalUpdateRef.current = true;
@@ -177,10 +158,7 @@ export function useAddTaxesState(
       const lowerK = k.toLowerCase();
       const mappedParam = Object.keys(keyMap).find(mk => lowerK.includes(mk));
       if (mappedParam && vals && vals.length > 0) {
-        const validVals = vals.filter(v => v !== 'select-all');
-        if (validVals.length > 0) {
-          params.set(keyMap[mappedParam], validVals.join(','));
-        }
+        params.set(keyMap[mappedParam], vals.join(','));
       }
 
       const mappedLabelParam = Object.keys(labelMap).find(mk => lowerK.includes(mk));
@@ -193,10 +171,7 @@ export function useAddTaxesState(
             params.delete(paramName);
           }
         } else if (vals && vals.length > 0) {
-          const validVals = vals.filter(v => v !== 'select-all');
-          if (validVals.length > 0) {
-            params.set(paramName, validVals.join(','));
-          }
+          params.set(paramName, vals.join(','));
         }
       }
     });
@@ -235,6 +210,7 @@ export function useAddTaxesState(
 
   const [currentInitData, setCurrentInitData] = useState<InitOperationsResponse | null>(initData);
   const [isLoadingInit, setIsLoadingInit] = useState(false);
+  const [masterDataChangeSummary, setMasterDataChangeSummary] = useState<MasterDataChangeSummary | null>(null);
 
   useEffect(() => {
     if (!financeYearId) return;
@@ -242,9 +218,18 @@ export function useAddTaxesState(
     const fetchInitData = async () => {
       setIsLoadingInit(true);
       try {
-        const data = await clientActions.initOperationsAction(financeYearId);
+        const [data, mdcSummary] = await Promise.all([
+          clientActions.initOperationsAction(financeYearId),
+          clientActions.getMasterDataChangeSummaryAction
+            ? clientActions.getMasterDataChangeSummaryAction(financeYearId)
+            : Promise.resolve(null)
+        ]);
+
         if (data && active) {
           setCurrentInitData(data);
+        }
+        if (mdcSummary && active) {
+          setMasterDataChangeSummary(mdcSummary);
         }
       } catch (err) {
         logger.error("Failed to load init data for finance year", { error: err as Error });
@@ -261,9 +246,18 @@ export function useAddTaxesState(
   const refreshStats = async () => {
     if (!financeYearId) return;
     try {
-      const data = await clientActions.initOperationsAction(financeYearId);
+      const [data, mdcSummary] = await Promise.all([
+        clientActions.initOperationsAction(financeYearId),
+        clientActions.getMasterDataChangeSummaryAction
+          ? clientActions.getMasterDataChangeSummaryAction(financeYearId)
+          : Promise.resolve(null)
+      ]);
+
       if (data) {
         setCurrentInitData(data);
+      }
+      if (mdcSummary) {
+        setMasterDataChangeSummary(mdcSummary);
       }
     } catch (err) {
       logger.error("Failed to load init data for finance year", { error: err as Error });
@@ -303,8 +297,11 @@ export function useAddTaxesState(
   };
 
   const handleScopeChange = (val: Scope) => {
+    // Reset init ref so new scope gets initialized from URL on tab change
+    initializedScopeRef.current = null;
     setSelectedScope(val);
     setSelectionData({}); // clear selections on scope change
+    setIsInitialized(false);
     
     // Clear all other query params except scope, financeYearId, and tab to avoid race conditions
     const params = new URLSearchParams();
@@ -314,11 +311,15 @@ export function useAddTaxesState(
     if (tab) params.set('tab', tab);
     params.set('scope', val);
     
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `${pathname}?${params.toString()}`);
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const stats = currentInitData?.summary || {
     totalProperties: 0,
+    transmastProperties: 0,
     eligibleRecords: 0,
     skippedRecords: 0,
     runningJobs: 0
@@ -396,6 +397,7 @@ export function useAddTaxesState(
     financeYearLabel,
     isLoadingInit,
     refreshStats,
-    clearSelectionData
+    clearSelectionData,
+    masterDataChangeSummary
   };
 }

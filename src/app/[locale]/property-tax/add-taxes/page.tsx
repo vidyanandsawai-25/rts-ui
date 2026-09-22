@@ -18,7 +18,9 @@ import {
   getAuditDetailAction,
   getJobPropertiesAction,
   getImportTemplateAction,
-  getServerTimeAction
+  getServerTimeAction,
+  getMasterDataChangeSummaryAction,
+  exportMasterDataChangesCsvAction
 } from './actions';
 
 interface AddTaxesPageProps {
@@ -58,7 +60,9 @@ export default async function AddTaxesPage({ params }: AddTaxesPageProps) {
     getAuditDetailAction,
     getJobPropertiesAction,
     getImportTemplateAction,
-    getServerTimeAction
+    getServerTimeAction,
+    getMasterDataChangeSummaryAction,
+    exportMasterDataChangesCsvAction
   };
 
   return (

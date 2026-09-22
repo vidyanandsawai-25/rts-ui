@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useTranslations } from 'next-intl';
 import { Card } from '@/components/common/Card';
@@ -11,6 +12,7 @@ import { Modal } from '@/components/common/Modal';
 import { MasterTable, Column } from '@/components/common/MasterTable';
 import { DashboardCard } from '@/components/common/DashboardCard';
 import { CancelButton } from '@/components/common/ActionButtons';
+import { OperationPreviewRecord } from '@/types/addTaxes.types';
 
 export function ScopeSelectionPanel({
   scopes,
@@ -22,9 +24,14 @@ export function ScopeSelectionPanel({
   onStartExecution,
   isInitialized,
   financeYear,
-  actions
+  financeYearId,
+  actions,
+  onProceedDisabledChange,
+  onBindMasterDataRecalc
 }: ScopeSelectionPanelProps) {
   const t = useTranslations('addTaxes');
+
+
   const currentScopeData = scopeOptions.find(s => s.scopeType === selectedScope);
   const optionsToRender = selectedScope === 'property' ? ['Search Property'] : (currentScopeData?.options || []);
 
@@ -50,8 +57,24 @@ export function ScopeSelectionPanel({
     isExportingPreview,
     handleDownloadPreviewExport,
     fetchedZones, fetchZones,
-    fetchedPropertyTypes, fetchPropertyTypes
-  } = useScopeSelection(selectedScope, selectionData, currentScopeData, [], isInitialized, onStartExecution, actions);
+    fetchedPropertyTypes, fetchPropertyTypes,
+    isProceedDisabled,
+    activeMasterDataScope
+  } = useScopeSelection(selectedScope, selectionData, currentScopeData, [], isInitialized, onStartExecution, actions, financeYearId);
+
+  useEffect(() => {
+    onProceedDisabledChange?.(isProceedDisabled);
+  }, [isProceedDisabled, onProceedDisabledChange]);
+
+  useEffect(() => {
+    if (onBindMasterDataRecalc) {
+      onBindMasterDataRecalc(async (overrideScope?: any) => {
+        const targetScope = overrideScope || 'masterDataChange';
+        await handleCalculateEligible(targetScope);
+        setIsModalOpen(true);
+      });
+    }
+  }, [onBindMasterDataRecalc, handleScopeChange, handleCalculateEligible, setIsModalOpen]);
 
   const previewColumns: Column<any>[] = [
     { key: 'zone', label: t('preview.columns.zone'), width: '15%' },
@@ -81,7 +104,20 @@ export function ScopeSelectionPanel({
       key: 'skipReason',
       label: t('preview.columns.skipReason'),
       width: '25%',
-      render: (val) => <div className="text-xs text-gray-500">{val ? (t.has(val) ? t(val) : val) : '-'}</div>
+      render: (val, record: OperationPreviewRecord) => {
+        if (record.skipReasonCode === 'DetailsMissing' && record.missingFieldKeys && record.missingFieldKeys.length > 0) {
+          const translatedFields = record.missingFieldKeys
+            .map((key: string) => (t.has(`skipReasons.fields.${key}`) ? t(`skipReasons.fields.${key}`) : key))
+            .join(', ');
+          const prefix = t.has('skipReasons.detailsMissingPrefix') ? t('skipReasons.detailsMissingPrefix') : 'Property details not found: ';
+          const suffix = t.has('skipReasons.detailsMissingSuffix') ? t('skipReasons.detailsMissingSuffix') : ' missing';
+          return <div className="text-xs text-gray-500">{`${prefix}${translatedFields}${suffix}`}</div>;
+        }
+        if (record.skipReasonCode && t.has(`skipReasons.${record.skipReasonCode}`)) {
+          return <div className="text-xs text-gray-500">{t(`skipReasons.${record.skipReasonCode}`)}</div>;
+        }
+        return <div className="text-xs text-gray-500">{val ? (t.has(val) ? t(val) : val) : '-'}</div>;
+      }
     }
   ];
 
@@ -142,10 +178,11 @@ export function ScopeSelectionPanel({
         setIsModalOpen={setIsModalOpen}
         currentScopeData={currentScopeData}
         eligibleCount={eligibleCount}
-        onStartExecution={executeJob}
+        onStartExecution={(isScheduled, scheduledDateTime) => executeJob(isScheduled, scheduledDateTime, activeMasterDataScope)}
         onPreview={handlePreview}
         isPreviewLoading={isPreviewLoading}
         financeYear={financeYear}
+        selectedScope={activeMasterDataScope || selectedScope}
       />
 
       <Modal
@@ -163,7 +200,7 @@ export function ScopeSelectionPanel({
         {previewData && (
           <div className="flex flex-col gap-6">
             {/* Summary Cards */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <DashboardCard
                 label={t('preview.totalSelected')}
                 value={previewData.totalSelected}
@@ -184,6 +221,11 @@ export function ScopeSelectionPanel({
                 valueColor="text-red-700"
                 onExportExcel={() => handleDownloadPreviewExport('skipped')}
                 isExporting={isExportingPreview?.skipped}
+              />
+              <DashboardCard
+                label={t('preview.alreadyTaxed')}
+                value={previewData.alreadyTaxed}
+                valueColor="text-amber-700"
               />
             </div>
 

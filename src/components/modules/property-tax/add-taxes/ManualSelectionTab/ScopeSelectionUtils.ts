@@ -16,7 +16,10 @@ export interface ScopeSelectionPanelProps {
   onPreview?: () => Promise<void>;
   isPreviewLoading?: boolean;
   financeYear?: string;
+  financeYearId?: string | number;
   actions: AddTaxesActionsProps;
+    onBindMasterDataRecalc?: (fn: (scope?: Scope | string) => Promise<void> | void) => void;
+  onProceedDisabledChange?: (disabled: boolean) => void;
 }
 
 export const getFieldConfig = (
@@ -229,8 +232,9 @@ export const getHeaderTitle = (scope: Scope, displayName: string, options: strin
     return opt.toUpperCase();
   }).join(', ');
 
-  const scopeKey = scope === 'all' ? 'allProperties' : scope === 'zone' ? 'zoneNode' : scope === 'ward' ? 'wardSector' : scope === 'building' ? 'buildingWise' : scope === 'property' ? 'propertyWise' : scope === 'range' ? 'propertyRange' : scope;
+  const scopeKey = scope === 'all' ? 'allProperties' : scope === 'zone' ? 'zoneNode' : scope === 'ward' ? 'wardSector' : scope === 'building' ? 'buildingWise' : scope;
   const titleKey = `scopeSelection.scopes.${scopeKey}`;
   const scopeDisplayName = t.has(titleKey) ? t(titleKey) : displayName;
-  return `${scopeDisplayName.toUpperCase()} — SELECT ${localizedOptions}`;
+  const selectLabel = t.has('dynamicFields.headerTitle.select') ? t('dynamicFields.headerTitle.select').toUpperCase() : 'SELECT';
+  return `${scopeDisplayName.toUpperCase()} — ${selectLabel} ${localizedOptions}`;
 };

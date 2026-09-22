@@ -15,6 +15,7 @@ import {
   OperationPreviewResponse,
   ImportTemplateResponse,
   JobPropertyPaginatedResponse,
+  MasterDataChangeSummary,
 } from "@/types/addTaxes.types";
 import {
   isSearchPropertyItemShape,
@@ -251,7 +252,7 @@ export async function getEligibleCount(
     }
 
     if (!response.data) {
-      return { eligible: 0, total: 0, skipped: 0 };
+      return { eligible: 0, total: 0, skipped: 0, alreadyTaxed: 0 };
     }
 
     // Validate response shape before returning
@@ -259,7 +260,7 @@ export async function getEligibleCount(
       return normalizeEligibleCountResponse(response.data as Record<string, unknown>);
     }
 
-    return { eligible: 0, total: 0, skipped: 0 };
+    return { eligible: 0, total: 0, skipped: 0, alreadyTaxed: 0 };
   } catch (error) {
     logger.error("Error getting eligible count", undefined, error);
     throw error;
@@ -506,3 +507,71 @@ export async function exportProperties(
     throw error;
   }
 }
+
+/**
+ * Get master data change summary (affected recalculation properties count).
+ * API: GET /property-tax/operations/master-data-changes/summary?financeYearId={financeYearId}
+ */
+export async function getMasterDataChangeSummary(
+  financeYearId: string | number
+): Promise<MasterDataChangeSummary> {
+  try {
+    const response = await apiClient.get<MasterDataChangeSummary>(
+      `/property-tax/operations/master-data-changes/summary?financeYearId=${encodeURIComponent(String(financeYearId))}`
+    );
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to fetch master data change summary",
+        "Get master data change summary failed"
+      );
+    }
+    if (!response.data) {
+      return { affectedCount: 0 };
+    }
+    return response.data;
+  } catch (error) {
+    logger.error("Error fetching master data change summary", undefined, error);
+    throw error;
+  }
+}
+
+/**
+ * Export affected master data change properties as CSV.
+ * API: GET /property-tax/operations/master-data-changes/export?financeYearId={financeYearId}
+ */
+export async function exportMasterDataChangesCsv(
+  financeYearId: string | number
+): Promise<{ base64: string; fileName: string }> {
+  try {
+    const endpoint = `/property-tax/operations/master-data-changes/export?financeYearId=${encodeURIComponent(String(financeYearId))}`;
+    logger.info("exportMasterDataChangesCsv: Requesting export", { financeYearId });
+
+    const response = await apiClient.fetch(endpoint);
+    if (!response.ok) {
+      const errText = await response.text().catch(() => response.statusText);
+      throw new ApiError(
+        response.status,
+        `Failed to export master data changes (${response.status}): ${errText || response.statusText}`,
+        "Export master data changes failed"
+      );
+    }
+
+    const contentDisposition = response.headers.get("content-disposition");
+    let fileName = `master_data_affected_properties_FY${financeYearId}.csv`;
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (match && match[1]) {
+        fileName = match[1].replace(/['"]/g, "");
+      }
+    }
+
+    const fileBuffer = await response.arrayBuffer();
+    const base64 = Buffer.from(fileBuffer).toString("base64");
+    return { base64, fileName };
+  } catch (error) {
+    logger.error("Error exporting master data changes CSV", undefined, error);
+    throw error;
+  }
+}
+

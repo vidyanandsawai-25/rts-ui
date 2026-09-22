@@ -2,8 +2,8 @@
 "use server";
 
 import { ApiError } from '@/lib/utils/api';
-import { initOperations, getScopeOptions, searchProperties, getEligibleCount, executeOperation, getJobProperties, getJobStatus, previewOperation, getAuditList, getAuditDetail, getImportTemplate, exportProperties, getServerTime } from '@/lib/api/add-taxes/operations.service';
-import { InitOperationsResponse, ScopeOptionsResponse, ExecuteOperationPayload, SearchPropertiesResponse, OperationPreviewPayload, ImportTemplateResponse } from '@/types/addTaxes.types';
+import { initOperations, getScopeOptions, searchProperties, getEligibleCount, executeOperation, getJobProperties, getJobStatus, previewOperation, getAuditList, getAuditDetail, getImportTemplate, exportProperties, getServerTime, getMasterDataChangeSummary, exportMasterDataChangesCsv } from '@/lib/api/add-taxes/operations.service';
+import { InitOperationsResponse, ScopeOptionsResponse, ExecuteOperationPayload, SearchPropertiesResponse, OperationPreviewPayload, ImportTemplateResponse, MasterDataChangeSummary } from '@/types/addTaxes.types';
 import type { JobPropertyPaginatedResponse } from '@/types/addTaxes.types';
 import { createLogger } from '@/lib/utils/server-logger';
 
@@ -116,7 +116,7 @@ export async function getEligibleCountAction(payload: any): Promise<any> {
             logger.error("[getEligibleCountAction] Error:", undefined, error);
             errorMsg = (error as Error).message || errorMsg;
         }
-        return { eligible: 0, total: 0, skipped: 0, error: errorMsg };
+        return { eligible: 0, total: 0, skipped: 0, alreadyTaxed: 0, error: errorMsg };
     }
 }
 
@@ -252,3 +252,31 @@ export async function getJobStatusAction(jobId: string) {
         return { success: false, error: errorMsg };
     }
 }
+
+export async function getMasterDataChangeSummaryAction(financeYearId: string | number): Promise<MasterDataChangeSummary | null> {
+    try {
+        return await getMasterDataChangeSummary(financeYearId);
+    } catch (error) {
+        if (error instanceof ApiError) {
+            logger.error(`[getMasterDataChangeSummaryAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
+        } else {
+            logger.error("[getMasterDataChangeSummaryAction] Error:", undefined, error);
+        }
+        return null;
+    }
+}
+
+export async function exportMasterDataChangesCsvAction(financeYearId: string | number) {
+    try {
+        const result = await exportMasterDataChangesCsv(financeYearId);
+        return { success: true, data: result };
+    } catch (error) {
+        logger.error('[exportMasterDataChangesCsvAction] Error:', undefined, error);
+        let errorMsg = 'Failed to export master data changes CSV';
+        if (error instanceof ApiError) {
+            errorMsg = error.responseText || error.message || errorMsg;
+        }
+        return { success: false, error: errorMsg };
+    }
+}
+
