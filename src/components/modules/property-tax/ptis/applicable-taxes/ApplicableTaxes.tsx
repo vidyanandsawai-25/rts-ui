@@ -83,7 +83,7 @@ export const ApplicableTaxes = ({
         <div className="grid grid-cols-5 gap-3">
           <div className="bg-blue-50 border border-blue-100 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-blue-600/70 uppercase tracking-wider">{t('totalTax')}</span>
-            <span className="text-base font-black text-slate-800 leading-tight">{t('currencySymbol')} {summary.totalTax?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-base font-black text-slate-800 leading-tight">{t('currencySymbol')} {summary.totalTax?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('residentialRV')}</span>
@@ -95,7 +95,11 @@ export const ApplicableTaxes = ({
           </div>
           <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('area')}</span>
-            <span className="text-sm font-bold text-slate-800 leading-tight">{summary.area} {t('squareMeters') || 'm²'}</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">
+              {typeof summary.area === 'number'
+                ? summary.area.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                : (Number(summary.area || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))} {t('squareMeters') || 'm²'}
+            </span>
           </div>
           <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('toilets')}</span>

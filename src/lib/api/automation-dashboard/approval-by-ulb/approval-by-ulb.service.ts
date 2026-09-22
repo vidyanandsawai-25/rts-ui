@@ -13,7 +13,7 @@ import { apiClient } from "@/services/api.service";
 import { handleApiResponse } from "@/lib/utils/api";
 
 export async function getApprovalByUlbGridDetails(): Promise<ApprovalByUlbItems | null> {
-    const response = await apiClient.get<ApprovalByUlbResponse>("/PropertySignature/dashboard/sign-grid", { cache: "force-cache" });
+    const response = await apiClient.get<ApprovalByUlbResponse>("/AutomationDashboard/PropertySignature/dashboard-sign-grid", { cache: "force-cache" });
     const t = await getTranslations("automationDashboard");
 
     const responseData = handleApiResponse(response, t("errors.fetchApprovalByUlbDetails") || "Failed to fetch approval by ULB details");
@@ -31,7 +31,7 @@ export async function getWardWiseApprovalByUlbGridDetails(
     params.append("pageSize", pageSize.toString());
 
     const response = await apiClient.get<ApprovalByUlbResponse>(
-        `/PropertySignature/dashboard/ward-wise-summary/zone?${params.toString()}`,
+        `/AutomationDashboard/PropertySignature/ward-wise-summary/zone?${params.toString()}`,
         { cache: "force-cache" }
     );
 
@@ -54,9 +54,10 @@ export async function getBuildingWiseData(
     params.append("pageSize", pageSize.toString());
 
     const response = await apiClient.get<BuildingWiseResponse>(
-        `/PropertySignature/GetBuildingWiseData?${params.toString()}`,
+        `/AutomationDashboard/PropertySignature/get-building-wise-details?${params.toString()}`,
         { cache: "force-cache" }
     );
+
     const t = await getTranslations("automationDashboard");
 
     const responseData = handleApiResponse(response, t("errors.fetchBuildingWiseData") || "Failed to fetch building-wise data");
@@ -70,7 +71,7 @@ export async function exportPendingData(
     params.append("signAuthorityId", signAuthorityId.toString());
 
     const response = await apiClient.get<PendingExportResponse>(
-        `/PropertySignature/pending-export?${params.toString()}`,
+        `/AutomationDashboard/PropertySignature/pending-export?${params.toString()}`,
         { cache: "no-store" }
     );
     const t = await getTranslations("automationDashboard");
@@ -93,7 +94,7 @@ export async function getPropertyWiseData(
     params.append("pageSize", pageSize.toString());
 
     const response = await apiClient.get<PropertyWiseResponse>(
-        `/PropertySignature/GetPropertyWiseData?${params.toString()}`,
+        `/AutomationDashboard/PropertySignature/get-property-wise-details?${params.toString()}`,
         { cache: "force-cache" }
     );
     const t = await getTranslations("automationDashboard");

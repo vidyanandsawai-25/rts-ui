@@ -97,6 +97,14 @@ export interface TaxCalculationSummary {
   toilets: number;
 }
 
+export interface TypeOfUseTaxPercentage {
+  typeOfUseId: number;
+  description: string;
+  type: string;
+  taxPercentage: number;
+  baseType: string;
+}
+
 export type TaxCalculationItem = {
   taxId: number;
   taxName: string;
@@ -108,6 +116,7 @@ export type TaxCalculationItem = {
   types: string | null;
   baseTypes: string | null;
   averageTaxPercentage: number | null;
+  typeOfUseTaxPercentages?: TypeOfUseTaxPercentage[];
   resultModes: string | null;
   resultBases: string | null;
   resultValues: string | null;

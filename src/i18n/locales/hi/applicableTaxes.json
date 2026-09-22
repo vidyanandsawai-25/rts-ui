@@ -66,10 +66,15 @@
     "applicableTo": "पर लागू",
     "residentialAndShop": "आवासीय + दुकान",
     "residential": "आवासीय",
-    "commercialOnly": "केवल वाणिज्यिक",
+    "commercialOnly": "वाणिज्यिक",
     "wholeProperty": "पूरी संपत्ति",
     "ruleRate": "नियम / दर",
     "statusOnOff": "स्थिति चालू / बंद",
     "amount": "राशि",
-    "currencySymbol": "₹"
+    "currencySymbol": "₹",
+    "breakdown": "विवरण",
+    "avg": "औसत",
+    "type": "प्रकार",
+    "base": "आधार",
+    "viewRateBreakdown": "दर विवरण देखें"
 }

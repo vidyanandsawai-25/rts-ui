@@ -16,7 +16,7 @@ export const FixedFooter = ({ onConfirm, totalAmount = 0 }: FixedFooterProps) =>
           {t('totalTaxLabel')}
         </span>
         <span className="text-xl font-black text-blue-900">
-          {t('currencySymbol')} {totalAmount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          {t('currencySymbol')} {totalAmount?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
       </div>
       

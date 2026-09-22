@@ -343,12 +343,10 @@ export async function deletePropertySocialDetailsByHierarchyAction(
     locale?: string
 ): Promise<ApiResponse<void>> {
     try {
-        console.log("api call from here :", params, "propertyId :", propertyId);
         const response = await deletePropertySocialDetailsByHierarchy(params);
         if (response.success && propertyId && locale) {
             revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
         }
-        console.log("response :", response);
         return response;
     } catch (error: unknown) {
         logger.error("deletePropertySocialDetailsByHierarchyAction failed", { params, error: error as Error });

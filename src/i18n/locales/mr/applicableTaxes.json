@@ -67,10 +67,15 @@
     "applicableTo": "यावर लागू",
     "residentialAndShop": "निवासी + दुकान",
     "residential": "निवासी",
-    "commercialOnly": "केवळ व्यावसायिक",
+    "commercialOnly": "व्यावसायिक",
     "wholeProperty": "संपूर्ण मालमत्ता",
     "ruleRate": "नियम / दर",
     "statusOnOff": "स्थिती चालू / बंद",
     "amount": "रक्कम",
-    "currencySymbol": "₹"
+    "currencySymbol": "₹",
+    "breakdown": "तपशील",
+    "avg": "सरासरी",
+    "type": "प्रकार",
+    "base": "आधार",
+    "viewRateBreakdown": "दर तपशील पहा"
 }
