@@ -15,7 +15,7 @@ interface ColumnDef {
 
 const EXISTING_ASSESSMENT_COLUMNS: ColumnDef[] = [
   { key: 'index', label: '#', title: 'Serial Number / Row Index', className: 'px-1 py-1 text-center w-12 sticky left-0 bg-emerald-100/90 text-emerald-950 z-30 border-r border-emerald-200 shadow-2xs' },
-  { key: 'prop', label: 'PROP / PARTI / FLAT NO', title: 'Property Number / Partition Number / Flat Number', className: 'px-3 py-2 text-left min-w-[180px]' },
+  { key: 'prop', label: 'PROP NO', title: 'Property Number / Partition Number / Flat Number', className: 'px-2.5 py-2 text-left w-28 min-w-[100px] max-w-[125px]' },
   { key: 'wgFl', label: 'WING / FLOOR', title: 'Wing Name and Floor Number', className: 'px-3 py-2 text-left min-w-[120px]' },
   { key: 'type', label: 'TYPE', title: 'Apartment Type / Property Category', className: 'px-3 py-2 text-left min-w-[80px]' },
   { key: 'cty', label: 'CONST TYPE', title: 'Construction Type', className: 'px-3 py-2 text-left min-w-[120px]' },

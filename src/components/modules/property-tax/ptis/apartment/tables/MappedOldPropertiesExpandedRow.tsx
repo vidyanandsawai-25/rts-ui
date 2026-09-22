@@ -108,7 +108,7 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
   }
 
   return (
-    <div className="p-2 rounded-lg border border-emerald-200 bg-emerald-50/40 text-xs font-sans shadow-2xs space-y-1.5 select-none w-full max-w-[calc(100vw-100px)] sticky left-1">
+    <div className="p-2 rounded-lg border border-emerald-200 bg-emerald-50/40 text-xs font-sans shadow-2xs space-y-1.5 select-none w-fit max-w-[calc(100vw-100px)] sticky left-1">
       <div className="flex items-center justify-between gap-2 px-1">
         <div className="flex items-center gap-1.5 font-bold text-[11px] text-emerald-950">
           <History className="w-3.5 h-3.5 text-emerald-700" />
@@ -119,13 +119,13 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
 
       <div
         onScroll={handleScroll}
-        className="max-h-72 overflow-x-auto overflow-y-auto rounded-md border border-emerald-200/90 bg-white shadow-2xs ios-scrollbar"
+        className="max-h-72 overflow-x-auto overflow-y-auto rounded-md border border-emerald-200/90 bg-white shadow-2xs ios-scrollbar w-fit max-w-full"
       >
-        <table className="w-max min-w-full text-left border-collapse text-[10.5px] leading-tight">
+        <table className="w-max text-left border-collapse text-[10.5px] leading-tight">
           <thead className="sticky top-0 bg-emerald-50 text-emerald-950 font-bold border-b border-emerald-200 z-20 text-[10px] uppercase tracking-wider shadow-2xs">
             <tr className="h-8">
               <th className="px-2 py-1 text-center w-12 min-w-[48px] sticky left-0 bg-emerald-50 z-30">#</th>
-              <th className="px-2.5 py-1 whitespace-nowrap sticky left-12 bg-emerald-50 z-30 border-r border-emerald-200">{LABELS.oldPropertyNo}</th>
+              <th className="px-2.5 py-1 whitespace-nowrap sticky left-12 bg-emerald-50 z-30 border-r border-emerald-200 w-28 min-w-[100px] max-w-[125px]">{LABELS.oldPropertyNo}</th>
               <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.wingFlr}</th>
               <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.use}</th>
               <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.constType}</th>

@@ -112,7 +112,7 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
             <span className="font-semibold text-zinc-600 text-xs min-w-[14px] text-center">{idx + 1}</span>
           </div>
         </td>
-        <td className="px-3 py-1.5 font-bold text-zinc-900 whitespace-nowrap" title={`Property No: ${unit.propertyNo || '-'} | Partition: ${unit.partitionNo || '-'} | Flat No: ${unit.flatNo || '-'}`}>{unit.prop}</td>
+        <td className="px-2.5 py-1.5 font-bold text-zinc-900 whitespace-nowrap w-28 min-w-[100px] max-w-[125px]" title={`Property No: ${unit.propertyNo || '-'} | Partition: ${unit.partitionNo || '-'} | Flat No: ${unit.flatNo || '-'}`}>{unit.prop}</td>
         <td className="px-3 py-1.5 text-blue-700 font-bold whitespace-nowrap" title={unit.wgFl}>{unit.wgFl}</td>
         <td className="px-3 py-1.5 whitespace-nowrap" title={unit.type}>{unit.type}</td>
         <td className="px-3 py-1.5 whitespace-nowrap" title={unit.cty}>{unit.cty}</td>

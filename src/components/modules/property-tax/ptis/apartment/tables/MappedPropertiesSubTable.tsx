@@ -29,7 +29,7 @@ interface MappedPropertiesSubTableProps {
 }
 
 const LABELS = {
-  propertyNo: 'Prop / Parti / Flat No',
+  propertyNo: 'Prop No',
   wingFlr: 'Wing / Flr',
   type: 'Type',
   use: 'Use',
@@ -147,18 +147,24 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
     <div
       onScroll={onScroll}
       className={cn(
-        'max-h-72 overflow-x-auto overflow-y-auto rounded-md border bg-white shadow-2xs ios-scrollbar',
+        'max-h-72 overflow-x-auto overflow-y-auto rounded-md border bg-white shadow-2xs ios-scrollbar w-fit max-w-full',
         isExisting ? 'border-emerald-200' : 'border-sky-200'
       )}
     >
-      <table className="w-max min-w-full text-left border-collapse text-[10.5px] leading-tight">
+      <table className="w-max text-left border-collapse text-[10.5px] leading-tight">
         <thead className={cn(
           'sticky top-0 font-bold border-b z-20 text-[10px] uppercase tracking-wider shadow-2xs',
           isExisting ? 'bg-emerald-50 text-emerald-950 border-emerald-200' : 'bg-sky-50 text-sky-950 border-sky-200'
         )}>
           <tr className="h-8">
             <th className={cn('px-2 py-1 text-center w-16 min-w-[64px] sticky left-0 z-30', isExisting ? 'bg-emerald-50' : 'bg-sky-50')}>#</th>
-            <th className={cn('px-2.5 py-1 whitespace-nowrap sticky left-16 z-30 border-r', isExisting ? 'bg-emerald-50 border-emerald-200' : 'bg-sky-50 border-sky-200')}>
+            <th
+              className={cn(
+                'px-2.5 py-1 whitespace-nowrap sticky left-16 z-30 border-r w-28 min-w-[100px] max-w-[125px]',
+                isExisting ? 'bg-emerald-50 border-emerald-200' : 'bg-sky-50 border-sky-200'
+              )}
+              title="Property Number / Partition Number / Flat Number"
+            >
               {LABELS.propertyNo}
             </th>
             <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.wingFlr}</th>
@@ -257,7 +263,11 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
                     </div>
                   </td>
                   <td
-                    className={cn('px-2.5 py-1 font-bold text-zinc-900 whitespace-nowrap sticky left-16 z-10 border-r align-middle', isSelected ? (isExisting ? 'bg-emerald-100' : 'bg-sky-100') : 'bg-white', isExisting ? 'border-emerald-200' : 'border-sky-200')}
+                    className={cn(
+                      'px-2.5 py-1 font-bold text-zinc-900 whitespace-nowrap sticky left-16 z-10 border-r align-middle w-28 min-w-[100px] max-w-[125px]',
+                      isSelected ? (isExisting ? 'bg-emerald-100' : 'bg-sky-100') : 'bg-white',
+                      isExisting ? 'border-emerald-200' : 'border-sky-200'
+                    )}
                     title={`Property No: ${propNo || '-'} | Partition: ${partNo || '-'} | Flat No: ${flatNo || '-'}`}
                   >
                     {propLabel}

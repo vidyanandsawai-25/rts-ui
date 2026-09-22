@@ -226,7 +226,7 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
   return (
     <div
       className={cn(
-        'p-2 rounded-lg border text-xs font-sans shadow-2xs space-y-1.5 select-none w-full max-w-[calc(100vw-100px)] sticky left-1',
+        'p-2 rounded-lg border text-xs font-sans shadow-2xs space-y-1.5 select-none w-fit max-w-[calc(100vw-100px)] sticky left-1',
         isExisting ? 'bg-emerald-50/50 border-emerald-200' : 'bg-sky-50/50 border-sky-200'
       )}
     >

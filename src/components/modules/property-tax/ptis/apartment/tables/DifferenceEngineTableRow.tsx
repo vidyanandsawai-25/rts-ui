@@ -52,13 +52,13 @@ export const DifferenceEngineTableRow: React.FC<DifferenceEngineTableRowProps> =
           {carpetFt.toLocaleString()} sq.ft
         </td>
         <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
-          {carpetMtr.toLocaleString()} m²
+          {carpetMtr.toLocaleString()} sq.mt
         </td>
         <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
           {buaFt.toLocaleString()} sq.ft
         </td>
         <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">
-          {buaMtr.toLocaleString()} m²
+          {buaMtr.toLocaleString()} sq.mt
         </td>
         {showRv && (
           <td className="px-3 py-1.5 text-right font-mono font-bold whitespace-nowrap text-zinc-800">

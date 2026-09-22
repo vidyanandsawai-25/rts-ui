@@ -13,26 +13,18 @@ interface DifferenceEngineTableFooterProps {
     taxDiff: number;
     rtTaxDiff: number;
   };
-  totalDeltas?: {
-    carpetDelta: number;
-    buaDelta: number;
-    rvDelta: number;
-    cvDelta?: number;
-    taxDelta: number;
-    rtTaxDelta: number;
-  };
   taxMode?: PtisTaxMode;
 }
 
-export const DifferenceEngineTableFooter: React.FC<DifferenceEngineTableFooterProps> = ({ totalDiffs, totalDeltas, taxMode }) => {
+export const DifferenceEngineTableFooter: React.FC<DifferenceEngineTableFooterProps> = ({ totalDiffs, taxMode }) => {
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
-  const carpetTotal = Math.abs(totalDiffs?.carpetDiff ?? totalDeltas?.carpetDelta ?? 0);
-  const buaTotal = Math.abs(totalDiffs?.buaDiff ?? totalDeltas?.buaDelta ?? 0);
-  const rvTotal = Math.abs(totalDiffs?.rvDiff ?? totalDeltas?.rvDelta ?? 0);
-  const cvTotal = Math.abs(totalDiffs?.cvDiff ?? totalDeltas?.cvDelta ?? 0);
-  const taxTotal = Math.abs(totalDiffs?.taxDiff ?? totalDeltas?.taxDelta ?? 0);
-  const rtTaxTotal = Math.abs(totalDiffs?.rtTaxDiff ?? totalDeltas?.rtTaxDelta ?? 0);
+  const carpetTotal = Math.abs(totalDiffs?.carpetDiff ?? 0);
+  const buaTotal = Math.abs(totalDiffs?.buaDiff ?? 0);
+  const rvTotal = Math.abs(totalDiffs?.rvDiff ?? 0);
+  const cvTotal = Math.abs(totalDiffs?.cvDiff ?? 0);
+  const taxTotal = Math.abs(totalDiffs?.taxDiff ?? 0);
+  const rtTaxTotal = Math.abs(totalDiffs?.rtTaxDiff ?? 0);
 
   return (
     <tfoot className="sticky bottom-0 z-20 shadow-md bg-gradient-to-r from-[#78350f] via-[#92400e] to-[#78350f]">

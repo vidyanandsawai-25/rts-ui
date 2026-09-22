@@ -14,10 +14,10 @@ interface ColumnDef {
 }
 
 const DIFFERENCE_COLUMNS: ColumnDef[] = [
-  { key: 'carpetFt', label: 'CARPET (FT²)', title: 'Carpet Area Difference in Square Feet', className: 'px-3 py-2 text-right min-w-[105px]' },
-  { key: 'carpetMtr', label: 'CARPET (M²)', title: 'Carpet Area Difference in Square Meters', className: 'px-3 py-2 text-right min-w-[105px]' },
-  { key: 'buaFt', label: 'BUA (FT²)', title: 'Built-up Area Difference in Square Feet', className: 'px-3 py-2 text-right min-w-[105px]' },
-  { key: 'buaMtr', label: 'BUA (M²)', title: 'Built-up Area Difference in Square Meters', className: 'px-3 py-2 text-right min-w-[105px]' },
+  { key: 'carpetFt', label: 'CARPET (sq.ft)', title: 'Carpet Area Difference in Square Feet', className: 'px-3 py-2 text-right min-w-[105px]' },
+  { key: 'carpetMtr', label: 'CARPET (sq.mt)', title: 'Carpet Area Difference in Square Meters', className: 'px-3 py-2 text-right min-w-[105px]' },
+  { key: 'buaFt', label: 'BUA (sq.ft)', title: 'Built-up Area Difference in Square Feet', className: 'px-3 py-2 text-right min-w-[105px]' },
+  { key: 'buaMtr', label: 'BUA (sq.mt)', title: 'Built-up Area Difference in Square Meters', className: 'px-3 py-2 text-right min-w-[105px]' },
   { key: 'rv', label: 'RV', title: 'Rateable Value Difference', className: 'px-3 py-2 text-right min-w-[95px]' },
   { key: 'cv', label: 'CV', title: 'Capital Value Difference', className: 'px-3 py-2 text-right min-w-[95px]' },
   { key: 'tax', label: 'TOTAL TAX', title: 'Total Property Tax Difference', className: 'px-3 py-2 text-right min-w-[100px]' },
