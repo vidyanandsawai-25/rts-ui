@@ -41,8 +41,7 @@ export interface RtsApplicationViewDrawerRecord {
 interface ApplicationDrawerContentProps {
   record: RtsApplicationViewDrawerRecord;
   data: RtsApplicationProcessData | null;
-  onOpenFullDetails?: () => void;
-  onOpenReadOnlyDetails?: () => void;
+  onOpenApplication?: () => void;
   onOpenDocument: (documentGuid: string) => void;
 }
 
@@ -51,8 +50,7 @@ interface RtsApplicationViewDrawerProps {
   record: RtsApplicationViewDrawerRecord | null;
   data: RtsApplicationProcessData | null;
   onClose: () => void;
-  onOpenFullDetails?: () => void;
-  onOpenReadOnlyDetails?: () => void;
+  onOpenApplication?: () => void;
   onOpenDocument: (documentGuid: string) => void;
 }
 
@@ -66,7 +64,7 @@ interface DisplayDocument {
   locationMetadata: FileLatLogCaptureMetadata | null;
 }
 
-function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadOnlyDetails, onOpenDocument }: ApplicationDrawerContentProps) {
+function ApplicationDrawerContent({ record, data, onOpenApplication, onOpenDocument }: ApplicationDrawerContentProps) {
   const tProcess = useTranslations('rts.applicationDashboard.processDrawer');
   const locale = useLocale();
   const detail = data?.details ?? null;
@@ -78,8 +76,6 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
   const numberFormatter = new Intl.NumberFormat(
     locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN',
   );
-  const normalizedStatus = record.applicationStatus.trim().toLowerCase();
-  const hasFinalApplicationStatus = normalizedStatus.includes('approved') || normalizedStatus.includes('reject');
   const fileLatLogMetadataByFieldDefinitionId = new Map(
     (detail?.applicationDetails ?? [])
       .filter((field) => String(field.fieldType ?? '').trim().toLowerCase() === 'filelatlog')
@@ -337,40 +333,24 @@ function ApplicationDrawerContent({ record, data, onOpenFullDetails, onOpenReadO
           )}
         </section>
 
-        {hasFinalApplicationStatus && onOpenReadOnlyDetails ? (
-          <section className="space-y-3.5 rounded-xl border border-emerald-200/90 bg-emerald-50/70 p-4.5 shadow-sm sm:p-5">
-            <div className="flex items-center gap-2 text-emerald-950">
-              <Shield className="h-4.5 w-4.5 shrink-0 text-emerald-600" />
-              <h4 className="text-xs font-extrabold uppercase tracking-wide">{tProcess('fullDetailTitle')}</h4>
-            </div>
-            <p className="text-[11.5px] font-medium leading-relaxed text-emerald-800/90">{tProcess('fullDetailDescription')}</p>
-            <Button
-              variant="secondary"
-              icon={Eye}
-              onClick={onOpenReadOnlyDetails}
-              className="w-auto justify-center rounded-xl border-emerald-200 bg-white py-2.5 text-xs font-bold text-emerald-800 shadow-sm hover:bg-emerald-100"
-            >
-              {tProcess('viewFullDetails')}
-            </Button>
-          </section>
-        ) : onOpenFullDetails ? (
+        {onOpenApplication ? (
           <section className="rounded-xl border border-blue-200/90 bg-blue-50/80 p-4.5 sm:p-5 space-y-3.5 shadow-sm">
             <div className="flex items-center gap-2 text-blue-950">
               <Shield className="h-4.5 w-4.5 text-blue-600 shrink-0" />
               <h4 className="text-xs font-extrabold uppercase tracking-wide">
-                {tProcess('processBannerTitle')}
+                {tProcess('openApplicationTitle')}
               </h4>
             </div>
             <p className="text-[11.5px] text-blue-800/90 font-medium leading-relaxed">
-              {tProcess('processBannerDescription')}
+              {tProcess('openApplicationDescription')}
             </p>
             <Button
               variant="primary"
               icon={Eye}
-              onClick={onOpenFullDetails}
+              onClick={onOpenApplication}
               className="w-auto justify-center py-2.5 text-xs font-bold rounded-xl shadow-sm"
             >
-              {tProcess('processButton')}
+              {tProcess('openApplicationButton')}
             </Button>
           </section>
         ) : null}
@@ -385,8 +365,7 @@ export default function RtsApplicationViewDrawer({
   record,
   data,
   onClose,
-  onOpenFullDetails,
-  onOpenReadOnlyDetails,
+  onOpenApplication,
   onOpenDocument,
 }: RtsApplicationViewDrawerProps) {
   const tCommon = useTranslations('common');
@@ -472,8 +451,7 @@ export default function RtsApplicationViewDrawer({
           <ApplicationDrawerContent
             record={record}
             data={data}
-            onOpenFullDetails={onOpenFullDetails}
-            onOpenReadOnlyDetails={onOpenReadOnlyDetails}
+            onOpenApplication={onOpenApplication}
             onOpenDocument={onOpenDocument}
           />
         </div>

@@ -37,9 +37,12 @@ export default async function ServiceDashboardPage({ params, searchParams }: Das
   const query = await searchParams;
   setRequestLocale(locale);
 
-  const { departments, userApplications, upicId } = await getCitizenDashboardData();
   const getQueryValue = (value: string | string[] | undefined) =>
     typeof value === 'string' ? value : undefined;
+  const requestedPageNumber = Number.parseInt(getQueryValue(query.pageNumber) ?? '', 10);
+  const { departments, userApplications, upicId, pagination } = await getCitizenDashboardData(
+    requestedPageNumber
+  );
   const routeState = await getCitizenDashboardRouteState(userApplications, {
     details: getQueryValue(query.details),
     payment: getQueryValue(query.payment),
@@ -52,6 +55,7 @@ export default async function ServiceDashboardPage({ params, searchParams }: Das
         departments={departments}
         userApplications={userApplications}
         upicId={upicId}
+        pagination={pagination}
         routeState={routeState}
       />
     </CitizenLayout>

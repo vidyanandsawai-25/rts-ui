@@ -33,7 +33,7 @@ interface RtsCertificateApprovalModalProps {
   applicationNo: string;
   applicantName?: string;
   serviceName?: string;
-  onApproved: () => void;
+  onIssued: () => void;
 }
 
 export default function RtsCertificateApprovalModal({
@@ -43,10 +43,11 @@ export default function RtsCertificateApprovalModal({
   applicationNo,
   applicantName,
   serviceName,
-  onApproved,
+  onIssued,
 }: RtsCertificateApprovalModalProps) {
   const locale = useLocale();
   const t = useTranslations("rts.applicationDashboard.processDrawer.certificateApproval");
+  const tProcess = useTranslations("rts.applicationDashboard.processDrawer");
 
   const [isPending, startTransition] = useTransition();
   const [loadingPreview, setLoadingPreview] = useState(true);
@@ -165,7 +166,7 @@ export default function RtsCertificateApprovalModal({
     }));
   };
 
-  const handleIssueAndApprove = () => {
+  const handleIssueCertificate = () => {
     const isManual = isManualMode;
 
     // Validate mandatory officer fields from template configuration (only in non-manual mode)
@@ -199,16 +200,14 @@ export default function RtsCertificateApprovalModal({
         officerInputs,
         undefined,
         finalRemark,
-        true,
+        false,
         isManual ? 2 : 1,
         uploadedDocGuid || undefined
       );
 
       if (res.success) {
-        toast.success(
-          isManual ? t("manualApprovalSuccess") : t("issueSuccess")
-        );
-        onApproved();
+        toast.success(t("issueSuccess"));
+        onIssued();
         onClose();
       } else {
         toast.error(res.error || t("issueFailed"));
@@ -587,9 +586,7 @@ export default function RtsCertificateApprovalModal({
         <div className="border-t border-slate-200 px-5 py-3 bg-white flex flex-wrap justify-between items-center gap-3 shrink-0 rounded-b-lg">
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>
-              {isManualMode ? t("manualApprovalHint") : t("digitalApprovalHint")}
-            </span>
+            <span>{tProcess("issueCertificate")}</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -597,7 +594,7 @@ export default function RtsCertificateApprovalModal({
               {t("cancel")}
             </Button>
             <Button
-              onClick={handleIssueAndApprove}
+              onClick={handleIssueCertificate}
               icon={Award}
               iconPosition="left"
               size="sm"
@@ -620,11 +617,7 @@ export default function RtsCertificateApprovalModal({
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md flex items-center gap-1.5 rounded-xl px-4 py-2 cursor-pointer transition-all"
             >
               {/* <Award className="w-4 h-4" /> */}
-              {isPending
-                ? t("processing")
-                : isManualMode
-                  ? t("attachAndApprove")
-                  : t("approveAndIssue")}
+              {isPending ? t("processing") : tProcess("issueCertificate")}
             </Button>
           </div>
         </div>

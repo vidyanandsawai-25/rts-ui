@@ -21,13 +21,7 @@ import { useConfirm } from '@/components/common/ConfirmProvider';
 import {
   issueCertificateAction,
   uploadManualCertificateDocumentAction,
-  verifyAndSendToApproveAction,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
-import {
-  downloadRtsDocument,
-  getAdminRtsDocumentDownloadUrl,
-  getAdminRtsDocumentViewUrl,
-} from '@/lib/api/rts/rtsdocument.client';
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_EXTENSIONS = /\.(pdf|png|jpe?g|doc|docx)$/i;
@@ -36,7 +30,7 @@ type PreviewType = 'image' | 'pdf' | 'unsupported' | null;
 interface RtsManualCertificateUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApproved: () => void;
+  onIssued: () => void;
   applicationId: number;
   applicationNo: string;
 }
@@ -56,7 +50,7 @@ function getPreviewType(fileName: string, contentType: string): PreviewType {
 export default function RtsManualCertificateUploadModal({
   isOpen,
   onClose,
-  onApproved,
+  onIssued,
   applicationId,
   applicationNo,
 }: RtsManualCertificateUploadModalProps) {
@@ -65,13 +59,8 @@ export default function RtsManualCertificateUploadModal({
   const inputRef = useRef<HTMLInputElement>(null);
   const dragStart = useRef({ x: 0, y: 0 });
   const [file, setFile] = useState<File | null>(null);
-  const [isUploading, startTransition] = useTransition();
   const [officerRemark, setOfficerRemark] = useState('');
-  const [uploadedDocument, setUploadedDocument] = useState<{
-    guid: string;
-    fileName: string;
-    fileSizeBytes: number;
-  } | null>(null);
+  const [isUploading, startTransition] = useTransition();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewType, setPreviewType] = useState<PreviewType>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
@@ -79,33 +68,19 @@ export default function RtsManualCertificateUploadModal({
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const activeFileName = uploadedDocument?.fileName || file?.name || '';
+  const activeFileName = file?.name || '';
 
   useEffect(() => {
-    if (!isOpen || (!file && !uploadedDocument)) return;
+    if (!isOpen || !file) return;
     let active = true;
     let objectUrl: string | null = null;
     const loadPreview = async () => {
       try {
         await Promise.resolve();
-        if (uploadedDocument) {
-          const response = await fetch(getAdminRtsDocumentViewUrl(uploadedDocument.guid), {
-            credentials: 'same-origin',
-          });
-          if (!response.ok) throw new Error(t('previewRequestFailed', { status: response.status }));
-          const blob = await response.blob();
-          if (!blob.size) throw new Error(t('previewEmpty'));
-          objectUrl = URL.createObjectURL(blob);
-          if (active) {
-            setPreviewUrl(objectUrl);
-            setPreviewType(getPreviewType(uploadedDocument.fileName, blob.type));
-          }
-        } else if (file) {
-          objectUrl = URL.createObjectURL(file);
-          if (active) {
-            setPreviewUrl(objectUrl);
-            setPreviewType(getPreviewType(file.name, file.type));
-          }
+        objectUrl = URL.createObjectURL(file);
+        if (active) {
+          setPreviewUrl(objectUrl);
+          setPreviewType(getPreviewType(file.name, file.type));
         }
       } catch (error) {
         if (active)
@@ -119,11 +94,10 @@ export default function RtsManualCertificateUploadModal({
       active = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [file, isOpen, t, uploadedDocument]);
+  }, [file, isOpen, t]);
 
   const resetAndClose = () => {
     setFile(null);
-    setUploadedDocument(null);
     setOfficerRemark('');
     setPreviewUrl(null);
     setPreviewType(null);
@@ -151,7 +125,6 @@ export default function RtsManualCertificateUploadModal({
       toast.error(t('manualCertificateFileSizeInvalid'));
       return;
     }
-    setUploadedDocument(null);
     setPreviewUrl(null);
     setPreviewType(null);
     setPreviewError(null);
@@ -162,13 +135,7 @@ export default function RtsManualCertificateUploadModal({
   };
   const downloadActiveFile = async () => {
     try {
-      if (uploadedDocument) {
-        await downloadRtsDocument({
-          url: getAdminRtsDocumentDownloadUrl(uploadedDocument.guid),
-          fallbackFileName: uploadedDocument.fileName,
-          errorMessage: t('downloadFailed'),
-        });
-      } else if (file) {
+      if (file) {
         const url = URL.createObjectURL(file);
         const link = document.createElement('a');
         link.href = url;
@@ -192,77 +159,49 @@ export default function RtsManualCertificateUploadModal({
       if (next === 1) setPosition({ x: 0, y: 0 });
       return next;
     });
-  const uploadAndSaveCertificate = () => {
-    if (!uploadedDocument && !file) {
+  const uploadCertificate = () => {
+    if (!file) {
       toast.error(t('manualCertificateFileRequired'));
       return;
     }
-
     const remark = officerRemark.trim() || 'सदर अर्जाचे विभागीय मॅन्युअल अधिकृत प्रमाणपत्र अपलोड केले.';
-
     confirm({
       variant: 'warning',
       title: t('confirmManualCertificateApprovalTitle'),
       description: t('confirmManualCertificateApprovalDescription', { applicationNo }),
       confirmText: t('uploadCertificate'),
-      onConfirm: async () => {
+      onConfirm: () => {
         startTransition(async () => {
-          let certificate = uploadedDocument;
-          if (!certificate && file) {
-            const formData = new FormData();
-            formData.set('file', file);
-            const uploadResult = await uploadManualCertificateDocumentAction(formData);
-            if (!uploadResult.success || !uploadResult.documentGuid) {
-              toast.error(uploadResult.error || t('manualCertificateUploadFailed'));
-              return;
-            }
-            certificate = {
-              guid: uploadResult.documentGuid,
-              fileName: uploadResult.fileName || file.name,
-              fileSizeBytes: uploadResult.fileSizeBytes || file.size,
-            };
-            setPreviewUrl(null);
-            setPreviewType(null);
-            setPreviewError(null);
-            setIsPreviewLoading(true);
-            setUploadedDocument(certificate);
+          const formData = new FormData();
+          formData.set('file', file);
+          const uploadResult = await uploadManualCertificateDocumentAction(formData);
+          if (!uploadResult.success || !uploadResult.documentGuid) {
+            toast.error(uploadResult.error || t('manualCertificateUploadFailed'));
+            return;
           }
-          if (!certificate) return;
 
-          // 1. Permanently link manual certificate and create issued certificate record
-          const certResult = await issueCertificateAction(
+          const certificateResult = await issueCertificateAction(
             applicationId,
             undefined,
             undefined,
             remark,
             false,
             2,
-            certificate.guid
+            uploadResult.documentGuid
           );
-
-          // 2. If the application is in an active approval workflow stage, advance it
-          try {
-            await verifyAndSendToApproveAction(
-              applicationId,
-              remark,
-              certificate.guid
-            );
-          } catch {
-            // Ignored if stage is already completed
+          if (!certificateResult.success && !certificateResult.data) {
+            toast.error(certificateResult.error || t('actionFailed'));
+            return;
           }
 
-          if (certResult.success || certResult.data) {
-            toast.success(t('manualCertificateApprovalSuccess'));
-            onApproved();
-            resetAndClose();
-          } else {
-            toast.error(certResult.error || t('actionFailed'));
-          }
+          toast.success(t('manualCertificateIssueSuccess'));
+          onIssued();
+          resetAndClose();
         });
       },
     });
   };
-  const hasPreviewSource = Boolean(file || uploadedDocument);
+  const hasPreviewSource = Boolean(file);
 
   return (
     <Modal
@@ -271,8 +210,8 @@ export default function RtsManualCertificateUploadModal({
       title={t('manualCertificateUploadTitle')}
       subtitle={t('manualCertificateUploadSubtitle', { applicationNo })}
       maxWidth="2xl"
-      contentClassName="!max-h-none"
-      bodyClassName="!overflow-visible !p-2"
+      contentClassName="h-[min(82vh,46rem)]"
+      bodyClassName="!overflow-hidden !p-3"
       footer={
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
           <Button type="button" variant="secondary" size="sm" onClick={resetAndClose}>
@@ -283,53 +222,50 @@ export default function RtsManualCertificateUploadModal({
             variant="primary"
             size="sm"
             icon={FileCheck2}
-            disabled={isUploading || (!file && !uploadedDocument)}
-            onClick={uploadAndSaveCertificate}
+            disabled={isUploading || !file}
+            onClick={uploadCertificate}
           >
-            {isUploading ? t('uploadingCertificate') : t('uploadCertificate')}
+            {isUploading
+              ? t('uploadingCertificate')
+              : t('uploadCertificate')}
           </Button>
         </div>
       }
     >
-      <div className="grid gap-4 lg:grid-cols-[19rem_minmax(0,1fr)]">
-        <div className="space-y-4">
-          <section className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white">
-                <FileCheck2 className="h-5 w-5" />
+      <div className="grid h-full min-h-0 gap-3 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <aside className="min-h-0 space-y-3 overflow-y-auto">
+          <section className="rounded-lg border border-blue-100 bg-blue-50/60 p-3">
+            <div className="flex items-start gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-600 text-white">
+                <FileCheck2 className="h-4 w-4" />
               </div>
-              <div>
-                <p className="text-sm font-bold text-slate-800">
+              <div className="min-w-0">
+                <p className="text-xs font-bold leading-4 text-slate-800">
                   {t('manualCertificateReviewTitle')}
                 </p>
-                <p className="mt-1 text-xs leading-5 text-slate-600">
+                <p className="mt-1 text-[11px] leading-4 text-slate-600">
                   {t('manualCertificateReviewDescription')}
                 </p>
               </div>
             </div>
           </section>
-          <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <label
-              htmlFor="manual-certificate-officer-remark"
-              className="text-sm font-bold text-slate-800"
-            >
-              {t('officerRemark')}
-            </label>
-            <textarea
-              id="manual-certificate-officer-remark"
-              value={officerRemark}
-              disabled={isUploading}
-              onChange={(event) => setOfficerRemark(event.target.value)}
-              placeholder={t('manualCertificateRemarkPlaceholder')}
-              rows={8}
-              className="mt-3 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
-            />
-            <p className="mt-3 text-xs leading-5 text-slate-500">
-              {t('manualCertificateRemarkHint')}
-            </p>
+          <section className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <label
+                htmlFor="manual-certificate-officer-remark"
+                className="text-sm font-bold text-slate-800"
+              >
+                {t('officerRemark')}
+              </label>
+              <textarea
+                id="manual-certificate-officer-remark"
+                value={officerRemark}
+                disabled={isUploading}
+                onChange={(event) => setOfficerRemark(event.target.value)}
+                placeholder={t('manualCertificateRemarkPlaceholder')}
+                rows={4}
+                className="mt-3 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              />
           </section>
-        </div>
-        <div className="space-y-4">
           <input
             ref={inputRef}
             type="file"
@@ -341,7 +277,7 @@ export default function RtsManualCertificateUploadModal({
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white px-6 py-9 text-center transition hover:border-blue-400 hover:bg-blue-50/40"
+              className="flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-white px-4 py-6 text-center transition hover:border-blue-400 hover:bg-blue-50/40"
             >
               <Upload className="h-7 w-7 text-blue-600" />
               <span className="mt-3 text-sm font-bold text-slate-800">
@@ -351,18 +287,28 @@ export default function RtsManualCertificateUploadModal({
             </button>
           )}
           {hasPreviewSource && (
-            <section className="overflow-hidden rounded-xl border border-slate-200 bg-slate-950 shadow-sm">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-left transition hover:border-blue-300 hover:bg-blue-50/40"
+            >
+              <span className="block truncate text-xs font-bold text-slate-800">{activeFileName}</span>
+              <span className="mt-0.5 block text-[10px] text-slate-500">
+                {file ? formatFileSize(file.size) : ''} - {t('selectManualCertificate')}
+              </span>
+            </button>
+          )}
+        </aside>
+        <div className="min-h-0 min-w-0">
+          {hasPreviewSource && (
+            <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-slate-950 shadow-sm">
               <header className="flex items-center justify-between gap-3 border-b border-slate-700 bg-slate-900 px-3 py-2 text-white">
                 <div className="flex min-w-0 items-center gap-2">
                   <FileText className="h-4 w-4 shrink-0 text-blue-300" />
                   <div className="min-w-0">
                     <p className="truncate text-xs font-bold">{activeFileName}</p>
                     <p className="text-[10px] text-slate-400">
-                      {uploadedDocument
-                        ? formatFileSize(uploadedDocument.fileSizeBytes)
-                        : file
-                          ? formatFileSize(file.size)
-                          : ''}
+                      {file ? formatFileSize(file.size) : ''}
                     </p>
                   </div>
                 </div>
@@ -376,20 +322,18 @@ export default function RtsManualCertificateUploadModal({
                   >
                     {t('download')}
                   </Button>
-                  {!uploadedDocument && (
-                    <Button
-                      type="button"
-                      size="xs"
-                      variant="danger"
-                      icon={Trash2}
-                      onClick={removeLocalFile}
-                    >
-                      {t('remove')}
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="danger"
+                    icon={Trash2}
+                    onClick={removeLocalFile}
+                  >
+                    {t('remove')}
+                  </Button>
                 </div>
               </header>
-                <main className="relative flex h-[min(76vh,43rem)] min-h-[22rem] items-center justify-center overflow-hidden bg-slate-950">
+              <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-slate-950">
                 {isPreviewLoading ? (
                   <div className="flex flex-col items-center gap-3 text-slate-300">
                     <LoaderCircle className="h-7 w-7 animate-spin text-blue-400" />
@@ -479,18 +423,10 @@ export default function RtsManualCertificateUploadModal({
               </main>
             </section>
           )}
-          {uploadedDocument && (
-            <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-sm font-bold text-emerald-900">
-                {t('manualCertificateUploadSuccess')}
-              </p>
-              <p className="mt-1 truncate text-xs font-mono text-emerald-800">
-                {uploadedDocument.guid}
-              </p>
-              <p className="mt-2 text-xs leading-5 text-emerald-700">
-                {t('manualCertificateGuidPendingAssociation')}
-              </p>
-            </section>
+          {!hasPreviewSource && (
+            <div className="flex h-full min-h-[16rem] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-100 px-6 text-center text-sm font-medium text-slate-500">
+              {t('selectManualCertificate')}
+            </div>
           )}
         </div>
       </div>

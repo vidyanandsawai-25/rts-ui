@@ -63,6 +63,8 @@ export interface RtsApprovalApplicationListItem {
   updatedDate: string | null;
   userId: number | null;
   userName: string | null;
+  officerFirstName: string | null;
+  officerLastName: string | null;
   action?: number;
   sessionId: string | null;
   ownerId: number | null;
@@ -206,6 +208,7 @@ export interface RtsApplicationVerificationItem {
   canIssueCertificate: boolean;
   canEditCertificate: boolean;
   isManualCertificate: boolean;
+  canUploadManualCertificate: boolean;
   serviceId?: number | null;
   serviceName?: string | null;
   serviceFees?: number | null;
@@ -234,8 +237,6 @@ export interface RtsApplicationApprovalActionPayload {
   updatedBy: number;
   remark: string;
   status: string;
-  /** Certificate document GUID supplied when processing an issued certificate. */
-  issuedCertificateGuid?: string | null;
 }
 
 export interface RtsApplicationApprovalFieldUpdatePayload extends RtsApplicationApprovalActionPayload {

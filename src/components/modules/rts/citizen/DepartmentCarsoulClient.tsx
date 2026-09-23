@@ -19,6 +19,8 @@ import {
   CreditCard,
   Printer,
   RotateCcw,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import TableHeader from "@/components/common/TableHeader";
@@ -27,7 +29,10 @@ import RtsCitizenViewDetailsDrawer from "@/components/modules/rts/citizen/RtsCit
 import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
 import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
 import { getPaymentReceiptAction } from "@/app/[locale]/service/payment/actions";
-import type { CitizenDashboardRouteState } from "@/app/[locale]/service/dashboard/actions";
+import type {
+  CitizenDashboardPagination,
+  CitizenDashboardRouteState,
+} from "@/app/[locale]/service/dashboard/actions";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
@@ -58,6 +63,7 @@ type DepartmentCarsoulClientProps = {
   departments: Department[];
   userApplications: RtsMisDashboardUserApplicationItem[];
   upicId?: string;
+  pagination: CitizenDashboardPagination;
   routeState: CitizenDashboardRouteState;
 };
 
@@ -114,6 +120,7 @@ export default function DepartmentCarsoulClient({
   departments,
   userApplications,
   upicId,
+  pagination,
   routeState,
 }: DepartmentCarsoulClientProps) {
   const router = useRouter();
@@ -139,6 +146,14 @@ export default function DepartmentCarsoulClient({
     const queryString = params.toString();
     const href = `${localePrefix}/service/dashboard${queryString ? `?${queryString}` : ''}`;
     router[mode](href, { scroll: false });
+  };
+
+  const changeApplicationPage = (pageNumber: number) => {
+    if (pageNumber < 1 || pageNumber === pagination.pageNumber) return;
+
+    updateDashboardRoute((params) => {
+      params.set('pageNumber', String(pageNumber));
+    });
   };
 
   const openDetails = (applicationNo: string) => {
@@ -272,6 +287,34 @@ export default function DepartmentCarsoulClient({
     const appId = app.applicationNo.toLowerCase();
     return serviceName.includes(query) || appId.includes(query);
   });
+
+  const paginationControls = (
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-3 pt-3">
+      <p className="text-xs font-semibold text-slate-500">
+        {t('page', { page: pagination.pageNumber })}
+      </p>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => changeApplicationPage(pagination.pageNumber - 1)}
+          disabled={!pagination.hasPreviousPage}
+          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+          {t('previous')}
+        </button>
+        <button
+          type="button"
+          onClick={() => changeApplicationPage(pagination.pageNumber + 1)}
+          disabled={!pagination.hasNextPage}
+          className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          {t('next')}
+          <ChevronRight className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  );
 
   const renderDashboardOverview = () => {
     return (
@@ -535,6 +578,7 @@ export default function DepartmentCarsoulClient({
               </table>
             </div>
           )}
+          {paginationControls}
         </div>
 
         {routeState.detailApplication && (

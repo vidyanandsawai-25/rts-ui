@@ -115,6 +115,12 @@ export function normalizeRtsApprovalApplicationListItem(
     updatedDate: parseNullableString(data.updatedDate),
     userId: parseNullableNumber(data.userId),
     userName: parseNullableString(data.userName),
+    officerFirstName: parseNullableString(
+      data.officerFirstName ?? data.officerfirstname ?? data.OfficerFirstName
+    ),
+    officerLastName: parseNullableString(
+      data.officerLastName ?? data.officerlastname ?? data.OfficerLastName
+    ),
     action: parseNumber(data.action),
     sessionId: parseNullableString(data.sessionId),
     ownerId: parseNullableNumber(data.ownerId),
@@ -274,6 +280,9 @@ export function normalizeRtsApplicationVerificationItem(
     canIssueCertificate: Boolean(data.canIssueCertificate ?? data.CanIssueCertificate),
     canEditCertificate: Boolean(data.canEditCertificate ?? data.CanEditCertificate),
     isManualCertificate: Boolean(data.isManualCertificate ?? data.IsManualCertificate),
+    canUploadManualCertificate: Boolean(
+      data.canUploadManualCertificate ?? data.CanUploadManualCertificate
+    ),
     serviceId: parseNullableNumber(data.serviceId ?? data.ServiceId),
     serviceName: parseNullableString(data.serviceName ?? data.ServiceName),
     serviceFees: parseNullableNumber(data.serviceFees ?? data.ServiceFees),

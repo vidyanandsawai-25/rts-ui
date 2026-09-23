@@ -1,8 +1,12 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_cache } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { getRtsMisDashboardData } from '@/lib/api/rts/rtsmisdashboard.service';
+import {
+  getRtsApplicationDashboardData,
+  type RtsApplicationDashboardRequestInput,
+} from '@/lib/api/rts/rtsapplicationdashboard.service';
 import { getAllRtsServices } from '@/lib/api/rts/rtsservices.service';
 import { getAllRtsDepartments } from '@/lib/api/rts/rtsdepartment.service';
 import { getRtsApplicationByNo } from '@/lib/api/rts/rtsapplication.service';
@@ -12,6 +16,7 @@ import {
   getApprovalApplicationsPaged,
   getApprovalApplicationStages,
   getApprovalApplicationVerification,
+  getApprovalApplicationVerificationResult,
   rejectApprovalApplication,
   revertApprovalApplication,
   verifyAndCorrectApproval,
@@ -37,6 +42,7 @@ import type {
 } from '@/types/rts/application-approval.types';
 import { computeOverdueDays, computeRemainingDays } from '@/lib/utils/rts/application-grid';
 import type {
+  RtsMisDashboardApplicationItem,
   RtsMisDashboardDepartmentItem,
   RtsMisDashboardResponse,
 } from '@/types/rts/rtsmisdashboard.types';
@@ -167,6 +173,7 @@ export interface RtsApplicationProcessData {
   details: RtsApplicationViewDetailsItem | null;
   stages: RtsApplicationApprovalStagesItem | null;
   verification: RtsApplicationVerificationItem | null;
+  verificationStatusCode: number | null;
   errors: {
     details: string | null;
     stages: string | null;
@@ -224,6 +231,7 @@ export async function getRtsApplicationProcessDataAction(
       details: null,
       stages: null,
       verification: null,
+      verificationStatusCode: null,
       errors: {
         details: 'Invalid application ID.',
         stages: 'Invalid application ID.',
@@ -235,12 +243,14 @@ export async function getRtsApplicationProcessDataAction(
   const [detailsResult, stagesResult, verificationResult] = await Promise.allSettled([
     getApprovalApplicationDetails(applicationId),
     getApprovalApplicationStages(applicationId),
-    getApprovalApplicationVerification(applicationId),
+    getApprovalApplicationVerificationResult(applicationId),
   ]);
 
   const details = getProcessSectionResult(detailsResult);
   const stages = getProcessSectionResult(stagesResult);
-  const verification = getProcessSectionResult(verificationResult);
+  const verificationLookup = getProcessSectionResult(verificationResult);
+  const verification = verificationLookup.data?.data ?? null;
+  const verificationError = verificationLookup.data?.error ?? verificationLookup.error;
 
   if (
     details.data &&
@@ -267,11 +277,12 @@ export async function getRtsApplicationProcessDataAction(
     currentUserName,
     details: details.data,
     stages: stages.data,
-    verification: verification.data,
+    verification,
+    verificationStatusCode: verificationLookup.data?.statusCode ?? null,
     errors: {
       details: details.error,
       stages: stages.error,
-      verification: verification.error,
+      verification: verificationError,
     },
   };
 }
@@ -367,8 +378,7 @@ async function submitApprovalDecision(
   applicationId: number,
   remark: string,
   submit: (payload: RtsApplicationApprovalActionPayload) => Promise<{ message: string }>,
-  status: string,
-  issuedCertificateGuid?: string
+  status: string
 ): Promise<RtsApplicationApprovalActionResult> {
   if (!Number.isInteger(applicationId) || applicationId <= 0) {
     return { success: false, message: 'Invalid application ID.' };
@@ -388,7 +398,6 @@ async function submitApprovalDecision(
       updatedBy: actor.updatedBy,
       remark: normalizedRemark,
       status,
-      ...(issuedCertificateGuid ? { issuedCertificateGuid } : {}),
     });
 
     revalidatePath('/rts/dashboard/rts-applications');
@@ -415,15 +424,13 @@ export async function verifyApprovalDocumentsAction(
 
 export async function verifyAndSendToApproveAction(
   applicationId: number,
-  remark: string,
-  issuedCertificateGuid?: string
+  remark: string
 ): Promise<RtsApplicationApprovalActionResult> {
   return submitApprovalDecision(
     applicationId,
     remark,
     (payload) => verifyAndSendToApprove(applicationId, payload),
-    'Approved',
-    issuedCertificateGuid
+    'Approved'
   );
 }
 
@@ -783,7 +790,7 @@ export interface ApplicationsDashboardKpis {
 }
 
 export interface AdminApplicationGridRow {
-  source: 'approval' | 'mis';
+  source: 'approval' | 'applicationDashboard';
   applicationId: number;
   applicationNo: string;
   propertyNo: string | null;
@@ -832,81 +839,214 @@ export interface RtsApplicationsDashboardFilters {
   assignedUserId?: number;
   currentUserId?: number;
   isFifo?: boolean;
+  myApplications?: boolean;
 }
 
-async function getApprovalApplicationsPage(
-  filters: RtsApplicationsDashboardFilters
+const DASHBOARD_PAGE_SIZE = 10;
+const SOURCE_PAGE_SIZE_LIMIT = 100;
+const APPLICATION_DASHBOARD_CACHE_SECONDS = 15;
+
+const getCachedApplicationDashboardPage = unstable_cache(
+  async (payload: RtsApplicationDashboardRequestInput) =>
+    getRtsApplicationDashboardData(payload),
+  ['rts-application-dashboard-page'],
+  { revalidate: APPLICATION_DASHBOARD_CACHE_SECONDS }
+);
+
+function getSourcePageSize(targetSize: number, loadAll: boolean): number {
+  return Math.max(1, Math.min(loadAll ? SOURCE_PAGE_SIZE_LIMIT : targetSize, SOURCE_PAGE_SIZE_LIMIT));
+}
+
+function shouldLoadAllForGlobalSort(filters: RtsApplicationsDashboardFilters): boolean {
+  const sortBy = filters.sortBy ?? 'CreatedDate';
+  return sortBy !== 'CreatedDate' && sortBy !== 'FIFO';
+}
+
+function getCreatedDateOrder(
+  applications: RtsMisDashboardApplicationItem[]
+): 'ascending' | 'descending' | 'unknown' {
+  let previousTimestamp: number | null = null;
+  let detectedOrder: 'ascending' | 'descending' | null = null;
+
+  for (const application of applications) {
+    const timestamp = new Date(application.createdDate).getTime();
+    if (!Number.isFinite(timestamp)) continue;
+    if (previousTimestamp == null || timestamp === previousTimestamp) {
+      previousTimestamp = timestamp;
+      continue;
+    }
+
+    const currentOrder = timestamp > previousTimestamp ? 'ascending' : 'descending';
+    if (detectedOrder && detectedOrder !== currentOrder) return 'unknown';
+    detectedOrder = currentOrder;
+    previousTimestamp = timestamp;
+  }
+
+  return detectedOrder ?? 'unknown';
+}
+
+function getHeadPageNumbers(totalCount: number, pageSize: number, targetSize: number): number[] {
+  const pageCount = Math.max(
+    1,
+    Math.ceil(Math.min(totalCount, targetSize) / pageSize)
+  );
+  return Array.from({ length: pageCount }, (_, index) => index + 1);
+}
+
+function getTailPageNumbers(totalCount: number, pageSize: number, targetSize: number): number[] {
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  let firstPage = totalPages;
+  let availableRows = totalCount - (totalPages - 1) * pageSize;
+
+  while (firstPage > 1 && availableRows < targetSize) {
+    firstPage -= 1;
+    availableRows += pageSize;
+  }
+
+  return Array.from(
+    { length: totalPages - firstPage + 1 },
+    (_, index) => firstPage + index
+  );
+}
+
+async function getApprovalApplicationsWindow(
+  filters: RtsApplicationsDashboardFilters,
+  targetSize: number,
+  loadAll: boolean
 ): Promise<{
   applications: RtsApprovalApplicationListItem[];
   totalCount: number;
-  totalPages: number;
-  pageNumber: number;
 } | null> {
-  const isExplicitSort = Boolean(filters.sortBy && filters.sortBy !== 'FIFO');
-  const isFifoMode = filters.isFifo ?? !isExplicitSort;
-  const pageResult = await getApprovalApplicationsPaged({
-    pageNumber: filters.pageNumber || 1,
+  const pageSize = getSourcePageSize(targetSize, loadAll);
+  const hasExplicitSort = Boolean(filters.sortBy || filters.sortOrder);
+  const isFifo = filters.isFifo ?? !hasExplicitSort;
+  const requestPage = (pageNumber: number) => getApprovalApplicationsPaged({
+    pageNumber,
+    pageSize,
     departmentId: filters.departmentId,
     serviceId: filters.serviceId,
     applicationNo: filters.applicationNo,
     search: filters.search ?? filters.applicationNo,
     status: filters.status,
-    sortBy: filters.sortBy,
-    sortOrder: filters.sortOrder,
+    sortBy: isFifo ? undefined : filters.sortBy ?? 'CreatedDate',
+    sortOrder: isFifo ? undefined : filters.sortOrder ?? 'asc',
     userId: filters.assignedUserId,
     currentUserId: filters.currentUserId,
-    isFifo: isFifoMode,
+    isFifo,
   });
 
+  const firstPage = await requestPage(1);
+  const rowsToLoad = loadAll
+    ? firstPage.totalCount
+    : Math.min(firstPage.totalCount, targetSize);
+  const pageCount = Math.max(1, Math.ceil(rowsToLoad / pageSize));
+  const remainingPages = pageCount > 1
+    ? await Promise.all(
+        Array.from({ length: pageCount - 1 }, (_, index) => requestPage(index + 2).catch((error) => {
+          console.error(`Failed to fetch approval application page ${index + 2}:`, error);
+          return null;
+        }))
+      )
+    : [];
+
   return {
-    applications: pageResult.applications,
-    totalCount: pageResult.totalCount,
-    totalPages: pageResult.totalPages,
-    pageNumber: pageResult.pageNumber,
+    applications: [
+      ...firstPage.applications,
+      ...remainingPages.flatMap((page) => page?.applications ?? []),
+    ],
+    totalCount: firstPage.totalCount,
   };
 }
 
-async function getMisDashboardKpiData(
-  filters: RtsApplicationsDashboardFilters
-): Promise<RtsMisDashboardDepartmentItem[]> {
-  try {
-    const response = await getRtsMisDashboardData({
-      Flag: 'RTSApplicationDashboard',
-      UpicId: null,
-      ApplicationNo: filters.applicationNo ?? null,
-      DeparmentId: filters.departmentId ?? null,
-      DeparmentName: filters.departmentName ?? null,
-      ServiceId: filters.serviceId ?? null,
-      ModuleName: null,
-      FromDate: null,
-      ToDate: null,
-      pageNumber: 1,
-      pageSize: 1,
-      ApplicationStatus: filters.status ?? null,
-    });
+async function getApplicationDashboardWindow(
+  payload: RtsApplicationDashboardRequestInput,
+  targetSize: number,
+  loadAll: boolean,
+  desiredSortOrder: RtsApplicationsDashboardFilters['sortOrder'] = 'asc'
+): Promise<{
+  applications: RtsMisDashboardApplicationItem[];
+  departments: RtsMisDashboardDepartmentItem[];
+  totalCount: number;
+} | null> {
+  // The external endpoint has no working sort parameter. Detect its date
+  // direction and load only the head or tail needed by the requested date sort.
+  const pageSize = SOURCE_PAGE_SIZE_LIMIT;
+  const requestPage = (pageNumber: number) => getCachedApplicationDashboardPage({
+    ...payload,
+    PageNumber: pageNumber,
+    PageSize: pageSize,
+  });
+  const firstResponse = await requestPage(1);
+  if (!firstResponse.status) return null;
 
-    if (response?.status && Array.isArray(response.data?.departmentWiseData)) {
-      return response.data.departmentWiseData;
-    }
-    return [];
-  } catch {
-    return [];
-  }
+  const firstApplications = firstResponse.data?.applicationDahboardData ?? [];
+  const totalCount = firstResponse.data?.totalRecords ?? firstApplications.length;
+  const dateOrder = getCreatedDateOrder(firstApplications);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const shouldLoadHead =
+    (desiredSortOrder === 'asc' && dateOrder === 'ascending') ||
+    (desiredSortOrder === 'desc' && dateOrder === 'descending');
+  const pageNumbers = loadAll || dateOrder === 'unknown'
+    ? Array.from({ length: totalPages }, (_, index) => index + 1)
+    : shouldLoadHead
+      ? getHeadPageNumbers(totalCount, pageSize, targetSize)
+      : getTailPageNumbers(totalCount, pageSize, targetSize);
+  const additionalPageNumbers = pageNumbers.filter((pageNumber) => pageNumber !== 1);
+  const additionalPages = additionalPageNumbers.length > 0
+    ? await Promise.all(
+        additionalPageNumbers.map((pageNumber) => requestPage(pageNumber).catch((error) => {
+          console.error(`Failed to fetch application-dashboard page ${pageNumber}:`, error);
+          return null;
+        }))
+      )
+    : [];
+  const selectedFirstPage = pageNumbers.includes(1) ? firstApplications : [];
+
+  return {
+    applications: [
+      ...selectedFirstPage,
+      ...additionalPages.flatMap((response) =>
+        response?.status ? response.data?.applicationDahboardData ?? [] : []
+      ),
+    ],
+    departments: firstResponse.data?.dashboardCardCount ?? [],
+    totalCount,
+  };
+}
+
+async function getApplicationDashboardCountSnapshot(
+  payload: RtsApplicationDashboardRequestInput
+): Promise<{
+  applications: RtsMisDashboardApplicationItem[];
+  departments: RtsMisDashboardDepartmentItem[];
+  totalCount: number;
+} | null> {
+  const response = await getCachedApplicationDashboardPage({
+    ...payload,
+    PageNumber: 1,
+    PageSize: 1,
+  });
+  if (!response.status) return null;
+
+  return {
+    applications: [],
+    departments: response.data?.dashboardCardCount ?? [],
+    totalCount: 0,
+  };
 }
 
 function asDashboardCount(value: number | null | undefined): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
 }
 
-function getMisDepartmentKpis(departments: RtsMisDashboardDepartmentItem[]) {
+function getApplicationDashboardKpis(departments: RtsMisDashboardDepartmentItem[]) {
   return departments.reduce(
     (totals, department) => ({
       total: totals.total + asDashboardCount(department.totalApplications),
       pending: totals.pending + asDashboardCount(department.pending),
       approved: totals.approved + asDashboardCount(department.approved),
       rejected: totals.rejected + asDashboardCount(department.rejected),
-      // Do not use overdueApplications: the backend identifies overdue totals with overdueCount.
-      overdue: totals.overdue + asDashboardCount(department.overdueCount),
+      overdue: totals.overdue + asDashboardCount(department.overdueApplications),
       reverted: totals.reverted + asDashboardCount(department.reverted),
       today: totals.today + asDashboardCount(department.todayApplications),
       dueToday: totals.dueToday + asDashboardCount(department.dueToday),
@@ -928,104 +1068,194 @@ function getKpiPercentage(value: number, total: number): number {
   return total > 0 ? Math.round((value / total) * 100) : 0;
 }
 
-function compareNullable<T>(
+function compareOptional<T>(
   left: T | null | undefined,
   right: T | null | undefined,
-  compare: (a: T, b: T) => number
+  compare: (a: T, b: T) => number,
+  direction: 1 | -1
 ): number {
   if (left == null && right == null) return 0;
   if (left == null) return 1;
   if (right == null) return -1;
-  return compare(left, right);
+  return compare(left, right) * direction;
 }
 
-function isPendingOrActiveStatus(status: string | null | undefined): boolean {
-  if (!status) return true;
-  const s = status.trim().toLowerCase();
-  return s !== 'approved' && s !== 'rejected' && s !== 'reverted';
-}
+function compareDashboardRows(
+  left: AdminApplicationGridRow,
+  right: AdminApplicationGridRow,
+  sortBy: RtsApplicationsDashboardFilters['sortBy'] = 'CreatedDate',
+  sortOrder: RtsApplicationsDashboardFilters['sortOrder'] = 'asc'
+): number {
+  const direction: 1 | -1 = sortOrder === 'desc' ? -1 : 1;
+  let comparison = 0;
 
-function getRowPriority(row: AdminApplicationGridRow, currentUserId?: number | null): number {
-  const isPending = isPendingOrActiveStatus(row.currentStatus);
-  if (!isPending) {
-    return 2; // Closed / Completed (Approved, Rejected, Reverted) -> bottom
+  switch (sortBy) {
+    case 'applicationNo':
+      comparison = left.applicationNo.localeCompare(right.applicationNo, undefined, { numeric: true }) * direction;
+      break;
+    case 'ApplicantName':
+      comparison = left.applicantName.localeCompare(right.applicantName, undefined, { sensitivity: 'base' }) * direction;
+      break;
+    case 'ApplicationStatus':
+      comparison = left.currentStatus.localeCompare(right.currentStatus, undefined, { sensitivity: 'base' }) * direction;
+      break;
+    case 'UpdatedDate': {
+      const leftTime = new Date(left.lastUpdatedDate).getTime();
+      const rightTime = new Date(right.lastUpdatedDate).getTime();
+      comparison = compareOptional(
+        Number.isFinite(leftTime) ? leftTime : null,
+        Number.isFinite(rightTime) ? rightTime : null,
+        (a, b) => a - b,
+        direction
+      );
+      break;
+    }
+    case 'RemainingDays':
+      comparison = compareOptional(
+        left.remainingDays,
+        right.remainingDays,
+        (a, b) => a - b,
+        direction
+      );
+      break;
+    case 'FIFO':
+    case 'CreatedDate':
+    default: {
+      const leftTime = new Date(left.applicationDate).getTime();
+      const rightTime = new Date(right.applicationDate).getTime();
+      comparison = compareOptional(
+        Number.isFinite(leftTime) ? leftTime : null,
+        Number.isFinite(rightTime) ? rightTime : null,
+        (a, b) => a - b,
+        direction
+      );
+      break;
+    }
   }
-  // Pending / Active
-  if (currentUserId && row.assignedUserId === currentUserId) {
-    return 0; // My Pending (assigned to this logged-in officer) -> TOP!
-  }
-  return 1; // Other Pending -> Middle
+
+  if (comparison !== 0) return comparison;
+  return left.applicationNo.localeCompare(right.applicationNo, undefined, { numeric: true });
 }
 
 function sortDashboardRows(
   rows: AdminApplicationGridRow[],
-  sortBy?: RtsApplicationsDashboardFilters['sortBy'],
-  sortOrder?: RtsApplicationsDashboardFilters['sortOrder'],
-  currentUserId?: number | null
+  sortBy: RtsApplicationsDashboardFilters['sortBy'] = 'CreatedDate',
+  sortOrder: RtsApplicationsDashboardFilters['sortOrder'] = 'asc'
 ): AdminApplicationGridRow[] {
-  // Default to FIFO ascending (oldest application first) unless desc is explicitly requested
-  const direction = sortOrder === 'desc' ? -1 : 1;
+  return [...rows].sort((left, right) =>
+    compareDashboardRows(left, right, sortBy, sortOrder)
+  );
+}
 
-  return [...rows].sort((left, right) => {
-    let comparison = 0;
-    switch (sortBy) {
-      case 'applicationNo':
-        comparison = left.applicationNo.localeCompare(right.applicationNo, undefined, {
-          numeric: true,
-        });
-        break;
-      case 'ApplicantName':
-        comparison = left.applicantName.localeCompare(right.applicantName, undefined, {
-          sensitivity: 'base',
-        });
-        break;
-      case 'ApplicationStatus':
-        comparison = left.currentStatus.localeCompare(right.currentStatus, undefined, {
-          sensitivity: 'base',
-        });
-        break;
-      case 'UpdatedDate':
-        comparison = compareNullable(
-          left.lastUpdatedDate || null,
-          right.lastUpdatedDate || null,
-          (a, b) => new Date(a).getTime() - new Date(b).getTime()
-        );
-        break;
-      case 'RemainingDays':
-        if (left.remainingDays == null && right.remainingDays != null) return 1;
-        if (left.remainingDays != null && right.remainingDays == null) return -1;
-        comparison = (left.remainingDays ?? 0) - (right.remainingDays ?? 0);
-        break;
-      case 'CreatedDate': {
-        const leftTime = left.applicationDate ? new Date(left.applicationDate).getTime() : 0;
-        const rightTime = right.applicationDate ? new Date(right.applicationDate).getTime() : 0;
-        const validLeft = Number.isFinite(leftTime) ? leftTime : 0;
-        const validRight = Number.isFinite(rightTime) ? rightTime : 0;
-        comparison = validLeft - validRight;
-        break;
-      }
-      case 'FIFO':
-      default: {
-        // 1. Prioritize: Logged-in officer's pending on top (Rank 0), other pending (Rank 1), closed (Rank 2)
-        const rankDiff = getRowPriority(left, currentUserId) - getRowPriority(right, currentUserId);
-        if (rankDiff !== 0) {
-          return rankDiff;
-        }
+function mergePrioritizedDashboardRows(
+  approvalRows: AdminApplicationGridRow[],
+  applicationDashboardRows: AdminApplicationGridRow[],
+  currentUserId: number | undefined,
+  sortBy: RtsApplicationsDashboardFilters['sortBy'],
+  sortOrder: RtsApplicationsDashboardFilters['sortOrder']
+): AdminApplicationGridRow[] {
+  const priorityApprovalRows = currentUserId == null
+    ? []
+    : approvalRows.filter((row) => row.assignedUserId === currentUserId);
+  const remainingRows = [
+    ...approvalRows.filter(
+      (row) => currentUserId == null || row.assignedUserId !== currentUserId
+    ),
+    ...applicationDashboardRows,
+  ];
 
-        // 2. Within each priority group: earliest created date first (FIFO)
-        const leftTime = left.applicationDate ? new Date(left.applicationDate).getTime() : 0;
-        const rightTime = right.applicationDate ? new Date(right.applicationDate).getTime() : 0;
-        const validLeft = Number.isFinite(leftTime) ? leftTime : 0;
-        const validRight = Number.isFinite(rightTime) ? rightTime : 0;
-        comparison = validLeft - validRight;
-        break;
-      }
+  return [
+    ...sortDashboardRows(priorityApprovalRows, sortBy, sortOrder),
+    ...sortDashboardRows(remainingRows, sortBy, sortOrder),
+  ];
+}
+
+function deduplicateDashboardRows(
+  rows: AdminApplicationGridRow[]
+): { rows: AdminApplicationGridRow[]; duplicateCount: number } {
+  const rowsByApplicationNo = new Map<string, AdminApplicationGridRow>();
+  const rowsWithoutApplicationNo: AdminApplicationGridRow[] = [];
+  let duplicateCount = 0;
+
+  for (const row of rows) {
+    const applicationKey = row.applicationNo.trim().toLocaleUpperCase();
+
+    if (!applicationKey) {
+      rowsWithoutApplicationNo.push(row);
+      continue;
     }
 
-    if (comparison !== 0) return comparison * direction;
-    // Tie-breaker: earlier application number first
-    return left.applicationNo.localeCompare(right.applicationNo, undefined, { numeric: true });
+    const existingRow = rowsByApplicationNo.get(applicationKey);
+    if (!existingRow) {
+      rowsByApplicationNo.set(applicationKey, row);
+      continue;
+    }
+
+    duplicateCount += 1;
+
+    // Approval rows carry the actionable application ID. Keep that row while
+    // filling identifiers that may only be present in the dashboard response.
+    const preferredRow = row.source === 'approval' ? row : existingRow;
+    const fallbackRow = preferredRow === row ? existingRow : row;
+
+    rowsByApplicationNo.set(applicationKey, {
+      ...preferredRow,
+      propertyNo: preferredRow.propertyNo || fallbackRow.propertyNo,
+      upicId: preferredRow.upicId || fallbackRow.upicId,
+    });
+  }
+
+  return {
+    rows: [...rowsByApplicationNo.values(), ...rowsWithoutApplicationNo],
+    duplicateCount,
+  };
+}
+
+function reconcileDashboardRows(
+  approvalRows: AdminApplicationGridRow[],
+  applicationDashboardRows: AdminApplicationGridRow[]
+): {
+  approvalRows: AdminApplicationGridRow[];
+  applicationDashboardRows: AdminApplicationGridRow[];
+  duplicateCount: number;
+} {
+  const uniqueApproval = deduplicateDashboardRows(approvalRows);
+  const uniqueApplicationDashboard = deduplicateDashboardRows(applicationDashboardRows);
+  const externalRowsByApplicationNo = new Map<string, AdminApplicationGridRow>();
+  const externalRowsWithoutApplicationNo: AdminApplicationGridRow[] = [];
+
+  for (const row of uniqueApplicationDashboard.rows) {
+    const key = row.applicationNo.trim().toLocaleUpperCase();
+    if (key) externalRowsByApplicationNo.set(key, row);
+    else externalRowsWithoutApplicationNo.push(row);
+  }
+
+  let crossSourceDuplicateCount = 0;
+  const reconciledApprovalRows = uniqueApproval.rows.map((row) => {
+    const key = row.applicationNo.trim().toLocaleUpperCase();
+    const fallbackRow = key ? externalRowsByApplicationNo.get(key) : undefined;
+    if (!fallbackRow) return row;
+
+    crossSourceDuplicateCount += 1;
+    externalRowsByApplicationNo.delete(key);
+    return {
+      ...row,
+      propertyNo: row.propertyNo || fallbackRow.propertyNo,
+      upicId: row.upicId || fallbackRow.upicId,
+    };
   });
+
+  return {
+    approvalRows: reconciledApprovalRows,
+    applicationDashboardRows: [
+      ...externalRowsByApplicationNo.values(),
+      ...externalRowsWithoutApplicationNo,
+    ],
+    duplicateCount:
+      uniqueApproval.duplicateCount +
+      uniqueApplicationDashboard.duplicateCount +
+      crossSourceDuplicateCount,
+  };
 }
 
 function parseSlaDays(sla: string | number | undefined | null): number {
@@ -1035,9 +1265,51 @@ function parseSlaDays(sla: string | number | undefined | null): number {
   return Number.isNaN(parsed) ? 7 : parsed;
 }
 
+function mapApplicationDashboardRow(
+  application: RtsMisDashboardApplicationItem
+): AdminApplicationGridRow {
+  const slaDays = parseSlaDays(application.sla);
+  const status = application.applicationStatus?.trim() || 'Pending';
+  const isActionable = status.toLowerCase() === 'pending' || status.toLowerCase() === 'submitted';
+  const assignedToName = application.userName?.trim() || '—';
+
+  return {
+    source: 'applicationDashboard',
+    applicationId: application.id > 0 ? application.id : 0,
+    applicationNo: application.applicationNo,
+    propertyNo: application.propertyNo?.trim() || null,
+    upicId: application.upicId?.trim() || null,
+    applicationDate: application.createdDate,
+    applicantName: application.applicantName?.trim() || '—',
+    serviceName: application.serviceName || 'Unknown Service',
+    serviceNameLocal: application.serviceNameLocal?.trim() || null,
+    departmentName: application.departmentName || 'Unknown Department',
+    departmentNameLocal: application.departmentNameLocal?.trim() || null,
+    currentStatus: status,
+    currentStageName: status.charAt(0).toUpperCase() + status.slice(1),
+    remarks: application.remark?.trim() || '—',
+    expectedSlaDays: slaDays,
+    remainingDays: application.remainingDays != null
+      ? application.remainingDays
+      : isActionable
+        ? computeRemainingDays(application.createdDate, slaDays)
+        : null,
+    dueDays: application.dueDays ?? null,
+    overdueDays: application.overdueDays != null
+      ? application.overdueDays
+      : isActionable
+        ? computeOverdueDays(application.createdDate, slaDays)
+        : null,
+    lastUpdatedDate: application.updatedDate || application.createdDate,
+    assignedTo: assignedToName,
+    assignedToName,
+    assignedToRole: '',
+    assignedUserId: application.userId ?? null,
+  };
+}
+
 /**
- * Real API combined dashboard action — fetches aggregated KPIs and full application grid
- * from GET /api/RTSApplication.
+ * Combines the approval and external application dashboards into one FIFO grid.
  */
 export async function getApprovalApplicationRowAction(
   applicationId: number
@@ -1081,34 +1353,84 @@ export async function getRtsApplicationsDashboardAction(
   filters: RtsApplicationsDashboardFilters = { pageNumber: 1 }
 ): Promise<RtsApplicationsDashboardResult> {
   try {
+    const pageSize = DASHBOARD_PAGE_SIZE;
+    const requestedPageNumber = Number.isInteger(filters.pageNumber) && filters.pageNumber > 0
+      ? filters.pageNumber
+      : 1;
+    // One extra UI page protects the requested window when the APIs overlap,
+    // while remaining bounded for the common early-page workflow.
+    const targetPrefixSize = (requestedPageNumber + 1) * pageSize;
+    const loadAllForGlobalSort = shouldLoadAllForGlobalSort(filters);
     const cookieStore = await cookies();
     const currentUserId = getCurrentApprovalOfficerUserId(cookieStore);
+    const isMyApplicationsMode = filters.myApplications === true;
     const effectiveFilters: RtsApplicationsDashboardFilters = {
       ...filters,
-      currentUserId: filters.currentUserId ?? currentUserId ?? undefined,
+      assignedUserId: isMyApplicationsMode
+        ? currentUserId ?? undefined
+        : filters.assignedUserId,
+      currentUserId: isMyApplicationsMode ? undefined : currentUserId ?? undefined,
+    };
+    const applicationDashboardPayload: RtsApplicationDashboardRequestInput = {
+      UpicId: null,
+      ApplicationNo: filters.applicationNo ?? filters.search ?? null,
+      ApplicationStatus: filters.status ?? null,
+      DepartmentName: filters.departmentName ?? null,
+      ServiceId: filters.serviceId ?? null,
+      FromDate: null,
+      ToDate: null,
     };
 
-    const [approvalRes, cards, misDepartments] = await Promise.all([
-      getApprovalApplicationsPage(effectiveFilters).catch((err) => {
-        console.error('Failed to fetch approval applications list:', err);
-        return null;
-      }),
+    const approvalApplicationsRequest = isMyApplicationsMode && currentUserId == null
+      ? Promise.resolve(null)
+      : getApprovalApplicationsWindow(
+          effectiveFilters,
+          targetPrefixSize,
+          loadAllForGlobalSort
+        ).catch((err) => {
+          console.error('Failed to fetch approval applications list:', err);
+          return null;
+        });
+    const applicationDashboardRequest = isMyApplicationsMode
+      ? getApplicationDashboardCountSnapshot(applicationDashboardPayload).catch((err) => {
+          console.error('Failed to fetch application dashboard count snapshot:', err);
+          return null;
+        })
+      : getApplicationDashboardWindow(
+          applicationDashboardPayload,
+          targetPrefixSize,
+          loadAllForGlobalSort,
+          filters.sortOrder ?? 'asc'
+        ).catch((err) => {
+          console.error('Failed to fetch application dashboard data:', err);
+          return null;
+        });
+
+    const [approvalRes, cards, applicationDashboardWindow] = await Promise.all([
+      approvalApplicationsRequest,
       getApplicationDashboardCards().catch((err) => {
         console.error('Failed to fetch RTS application dashboard cards API:', err);
         return null;
       }),
-      getMisDashboardKpiData(effectiveFilters),
+      applicationDashboardRequest,
     ]);
 
-    const misKpis = getMisDepartmentKpis(misDepartments);
-    const total = (cards?.totalApplications ?? approvalRes?.totalCount ?? 0) + misKpis.total;
-    const pending = (cards?.pending ?? 0) + misKpis.pending;
-    const approved = (cards?.approved ?? 0) + misKpis.approved;
-    const rejected = (cards?.rejected ?? 0) + misKpis.rejected;
-    const overdue = (cards?.overdueApplications ?? 0) + misKpis.overdue;
-    const reverted = (cards?.reverted ?? 0) + misKpis.reverted;
-    const today = (cards?.todayApplications ?? 0) + misKpis.today;
-    const dueToday = (cards?.dueToday ?? 0) + misKpis.dueToday;
+    const externalApplications = applicationDashboardWindow?.applications ?? [];
+    const externalDepartments = applicationDashboardWindow?.departments ?? [];
+    const externalTotalCount = applicationDashboardWindow?.totalCount ?? externalApplications.length;
+    const externalKpis = getApplicationDashboardKpis(externalDepartments);
+    const externalKpiTotal = externalDepartments.length > 0
+      ? externalKpis.total
+      : externalTotalCount;
+
+    const total = (cards?.totalApplications ?? approvalRes?.totalCount ?? 0) + externalKpiTotal;
+    const pending = (cards?.pending ?? 0) + externalKpis.pending;
+    const approved = (cards?.approved ?? 0) + externalKpis.approved;
+    const rejected = (cards?.rejected ?? 0) + externalKpis.rejected;
+    const overdue = (cards?.overdueApplications ?? 0) + externalKpis.overdue;
+    const reverted = (cards?.reverted ?? 0) + externalKpis.reverted;
+    const today = (cards?.todayApplications ?? 0) + externalKpis.today;
+    const dueToday = (cards?.dueToday ?? 0) + externalKpis.dueToday;
 
     const kpis: ApplicationsDashboardKpis = {
       total,
@@ -1127,7 +1449,7 @@ export async function getRtsApplicationsDashboardAction(
       todayPercentage: getKpiPercentage(today, total),
       dueTodayPercentage: getKpiPercentage(dueToday, total),
       overduePercentage: getKpiPercentage(overdue, total),
-      isLive: true,
+      isLive: Boolean(approvalRes || cards || applicationDashboardWindow),
     };
 
     const rawApps = approvalRes?.applications ?? [];
@@ -1157,8 +1479,12 @@ export async function getRtsApplicationsDashboardAction(
       const currentStageName = app.applicationStatus
         ? app.applicationStatus.charAt(0).toUpperCase() + app.applicationStatus.slice(1)
         : 'Pending';
-      const assignedToName = app.userName?.trim() || '—';
-      const assignedToStr = assignedToName;
+      const officerFullName = [app.officerFirstName, app.officerLastName]
+        .map((name) => name?.trim())
+        .filter((name): name is string => Boolean(name))
+        .join(' ');
+      const assignedToStr = app.userName?.trim() || '—';
+      const assignedToName = officerFullName || assignedToStr;
       const assignedToRole = '';
 
       return {
@@ -1188,17 +1514,24 @@ export async function getRtsApplicationsDashboardAction(
       };
     });
 
-    const rows = sortDashboardRows(
-      approvalRows,
+    const applicationDashboardRows = externalApplications.map(mapApplicationDashboardRow);
+    const reconciledRows = reconcileDashboardRows(approvalRows, applicationDashboardRows);
+    const mergedRows = mergePrioritizedDashboardRows(
+      reconciledRows.approvalRows,
+      reconciledRows.applicationDashboardRows,
+      effectiveFilters.currentUserId,
       filters.sortBy,
-      filters.sortOrder,
-      currentUserId
+      filters.sortOrder
     );
-
-    const pageSize = 10;
-    const totalCount = approvalRes?.totalCount ?? rows.length;
-    const totalPages = approvalRes?.totalPages ?? Math.max(1, Math.ceil(totalCount / pageSize));
-    const pageNumber = approvalRes?.pageNumber ?? Math.min(Math.max(filters.pageNumber, 1), totalPages);
+    const combinedSourceTotal = (approvalRes?.totalCount ?? approvalRows.length) + externalTotalCount;
+    const totalCount = Math.max(
+      mergedRows.length,
+      combinedSourceTotal - reconciledRows.duplicateCount
+    );
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const pageNumber = Math.min(requestedPageNumber, totalPages);
+    const startIndex = (pageNumber - 1) * pageSize;
+    const rows = mergedRows.slice(startIndex, startIndex + pageSize);
 
     return {
       kpis,

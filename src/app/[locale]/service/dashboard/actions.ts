@@ -11,7 +11,7 @@
 import { cookies } from "next/headers";
 import { apiClient } from "@/services/api.service";
 import { getDashboardDepartments } from "@/lib/api/dashboard";
-import { getRtsMisDashboardData } from "@/lib/api/rts/rtsmisdashboard.service";
+import { getRtsCitizenDashboardData } from "@/lib/api/rts/rtscitizendashboard.service";
 import { getApprovalApplicationsPaged } from "@/lib/api/rts/rts-application-approval.service";
 import {
   resolveExternalServiceNavigation,
@@ -37,7 +37,34 @@ export type DashboardData = {
 export type CitizenDashboardData = DashboardData & {
   userApplications: RtsMisDashboardUserApplicationItem[];
   upicId?: string;
+  pagination: CitizenDashboardPagination;
 };
+
+export type CitizenDashboardPagination = {
+  pageNumber: number;
+  pageSize: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+};
+
+const CITIZEN_DASHBOARD_PAGE_SIZE = 50;
+
+function normalizeCitizenDashboardPageNumber(pageNumber: number | undefined): number {
+  return Number.isInteger(pageNumber) && pageNumber! > 0 ? pageNumber! : 1;
+}
+
+function createCitizenDashboardPagination(
+  pageNumber: number,
+  resultCount: number
+): CitizenDashboardPagination {
+  return {
+    pageNumber,
+    pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
+    hasPreviousPage: pageNumber > 1,
+    // The endpoint has no total-count field, so a full page is the only next-page signal.
+    hasNextPage: resultCount === CITIZEN_DASHBOARD_PAGE_SIZE,
+  };
+}
 
 export async function getDashboardData(): Promise<DashboardData> {
   const departments = await getDashboardDepartments();
@@ -211,9 +238,14 @@ export async function resolveCitizenResubmitNavigationAction(
       return { success: false, error: "Citizen profile is incomplete." };
     }
 
-    const misResponse = await getRtsMisDashboardData({ Flag: "user", UpicId: upicId });
-    const belongsToCitizen = misResponse.status &&
-      (misResponse.data.userApplicationDashboardData ?? []).some(
+    const citizenResponse = await getRtsCitizenDashboardData({
+      UpicId: upicId,
+      ApplicationNo: normalizedApplicationNo,
+      pageNumber: 1,
+      pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
+    });
+    const belongsToCitizen = citizenResponse.status &&
+      (citizenResponse.data.result ?? []).some(
         (application) =>
           application.applicationNo.trim().toLowerCase() ===
           normalizedApplicationNo.toLowerCase()
@@ -303,7 +335,11 @@ export async function resolveExternalServiceNavigationAction(
 }
 
 /** Loads all citizen dashboard data from the active server-side profile session. */
-export async function getCitizenDashboardData(): Promise<CitizenDashboardData> {
+export async function getCitizenDashboardData(
+  requestedPageNumber?: number
+): Promise<CitizenDashboardData> {
+  const pageNumber = normalizeCitizenDashboardPageNumber(requestedPageNumber);
+  const emptyPagination = createCitizenDashboardPagination(pageNumber, 0);
   let departments: DepartmentDTO[] = [];
   try {
     departments = await getDashboardDepartments();
@@ -314,25 +350,31 @@ export async function getCitizenDashboardData(): Promise<CitizenDashboardData> {
   try {
     const profileCookie = (await cookies()).get("rts_citizen_profile")?.value;
     if (!profileCookie) {
-      return { departments, userApplications: [] };
+      return { departments, userApplications: [], pagination: emptyPagination };
     }
 
     const profile = JSON.parse(profileCookie) as CitizenProfileCookie;
     const upicId = profile.upicId?.trim();
     if (!upicId) {
-      return { departments, userApplications: [] };
+      return { departments, userApplications: [], pagination: emptyPagination };
     }
 
-    const response = await getRtsMisDashboardData({ Flag: "user", UpicId: upicId }).catch(() => ({ status: false, data: { userApplicationDashboardData: [] } }));
+    const response = await getRtsCitizenDashboardData({
+      UpicId: upicId,
+      pageNumber,
+      pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
+    }).catch(() => null);
+    const userApplications = response?.status ? response.data.result ?? [] : [];
 
     return {
       departments,
       upicId,
-      userApplications: response.status ? response.data.userApplicationDashboardData ?? [] : [],
+      userApplications,
+      pagination: createCitizenDashboardPagination(pageNumber, userApplications.length),
     };
   } catch (error) {
     console.error("Failed to load citizen dashboard data:", error);
-    return { departments, userApplications: [] };
+    return { departments, userApplications: [], pagination: emptyPagination };
   }
 }
 
@@ -346,8 +388,12 @@ export async function getCitizenMisApplications(): Promise<RtsMisDashboardUserAp
     const upicId = profile.upicId?.trim();
     if (!upicId) return [];
 
-    const response = await getRtsMisDashboardData({ Flag: "user", UpicId: upicId });
-    return response.status ? response.data.userApplicationDashboardData ?? [] : [];
+    const response = await getRtsCitizenDashboardData({
+      UpicId: upicId,
+      pageNumber: 1,
+      pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
+    });
+    return response.status ? response.data.result ?? [] : [];
   } catch (error) {
     console.error("Failed to load citizen MIS applications:", error);
     return [];
@@ -372,31 +418,31 @@ export async function searchCitizenMisApplicationsAction(
 
   try {
     // 1. Try external live API (onesolutionakola.tabamc.in) by UPIC ID
-    const upicResponse = await getRtsMisDashboardData({
-      Flag: 'user',
+    const upicResponse = await getRtsCitizenDashboardData({
       UpicId: normalizedValue,
-      ApplicationNo: '',
+      pageNumber: 1,
+      pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
     }).catch(() => null);
 
     if (
       upicResponse?.status &&
-      (upicResponse.data?.userApplicationDashboardData?.length ?? 0) > 0
+      (upicResponse.data?.result?.length ?? 0) > 0
     ) {
-      return { success: true, items: upicResponse.data.userApplicationDashboardData ?? [] };
+      return { success: true, items: upicResponse.data.result ?? [] };
     }
 
     // 2. Try external live API (onesolutionakola.tabamc.in) by ApplicationNo
-    const applicationResponse = await getRtsMisDashboardData({
-      Flag: 'user',
-      UpicId: '',
+    const applicationResponse = await getRtsCitizenDashboardData({
       ApplicationNo: normalizedValue,
+      pageNumber: 1,
+      pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
     }).catch(() => null);
 
     if (
       applicationResponse?.status &&
-      (applicationResponse.data?.userApplicationDashboardData?.length ?? 0) > 0
+      (applicationResponse.data?.result?.length ?? 0) > 0
     ) {
-      const rawItems = applicationResponse.data?.userApplicationDashboardData ?? [];
+      const rawItems = applicationResponse.data?.result ?? [];
       const exactMatch = rawItems.filter(
         (item) => item.applicationNo?.trim().toLowerCase() === normalizedValue.toLowerCase()
       );

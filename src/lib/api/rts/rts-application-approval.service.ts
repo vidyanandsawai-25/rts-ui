@@ -86,7 +86,7 @@ export async function getApprovalApplicationsPaged(
 }> {
   const queryParams = new URLSearchParams();
   if (params.pageNumber != null) queryParams.set('PageNumber', String(params.pageNumber));
-  queryParams.set('PageSize', '10');
+  queryParams.set('PageSize', String(params.pageSize ?? 10));
   if (params.departmentId != null) queryParams.set('DepartmentId', String(params.departmentId));
   if (params.serviceId != null) queryParams.set('ServiceId', String(params.serviceId));
   if (params.search) {
@@ -222,21 +222,54 @@ export async function getApprovalApplicationStages(
 export async function getApprovalApplicationVerification(
   id: number | string
 ): Promise<RtsApplicationVerificationItem> {
+  const result = await getApprovalApplicationVerificationResult(id);
+  return result.data ?? normalizeRtsApplicationVerificationItem({});
+}
+
+export interface RtsApplicationVerificationLookupResult {
+  data: RtsApplicationVerificationItem | null;
+  statusCode: number | null;
+  error: string | null;
+}
+
+export async function getApprovalApplicationVerificationResult(
+  id: number | string
+): Promise<RtsApplicationVerificationLookupResult> {
   try {
     const response = await apiClient.get<RtsApplicationVerificationApiResponse>(
       `/RTSApplicationApproval/${encodeURIComponent(String(id))}/approval-officer`,
       { cache: 'no-store' }
     );
 
-    if (!response.success || !response.data || (response.data.success !== true && response.data.status !== true)) {
-      return normalizeRtsApplicationVerificationItem({});
+    if (!response.success || !response.data) {
+      return {
+        data: null,
+        statusCode: response.statusCode ?? null,
+        error: response.error || 'Unable to load approval officer details.',
+      };
     }
 
-    return normalizeRtsApplicationVerificationItem(
-      (getApprovalItems(response.data) ?? {}) as Record<string, unknown>
-    );
-  } catch {
-    return normalizeRtsApplicationVerificationItem({});
+    if (response.data.success !== true && response.data.status !== true) {
+      return {
+        data: null,
+        statusCode: response.statusCode ?? 200,
+        error: response.data.message || 'Approval officer details are unavailable.',
+      };
+    }
+
+    return {
+      data: normalizeRtsApplicationVerificationItem(
+        (getApprovalItems(response.data) ?? {}) as Record<string, unknown>
+      ),
+      statusCode: response.statusCode ?? 200,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      statusCode: null,
+      error: error instanceof Error ? error.message : 'Unable to load approval officer details.',
+    };
   }
 }
 

@@ -657,6 +657,7 @@ export default function RtsApplicationFullDetailView({
               details: data.details,
               stages: data.stages,
               verification: null,
+              verificationStatusCode: null,
               errors: {
                 details: data.errors.details,
                 stages: data.errors.stages,
@@ -682,7 +683,7 @@ export default function RtsApplicationFullDetailView({
           applicationNo={record.appId}
           serviceName={record.serviceName}
           applicantName={record.citizenName || ''}
-          onApproved={() => {
+          onIssued={() => {
             setIsCertModalOpen(false);
             window.location.reload();
           }}
@@ -707,7 +708,7 @@ export default function RtsApplicationFullDetailView({
           onClose={() => setIsManualCertificateUploadOpen(false)}
           applicationId={record.applicationId}
           applicationNo={record.appId}
-          onApproved={() => {
+          onIssued={() => {
             setIsManualCertificateUploadOpen(false);
             window.location.reload();
           }}

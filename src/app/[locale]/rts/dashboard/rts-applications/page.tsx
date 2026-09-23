@@ -38,14 +38,14 @@ function getPositiveApplicationId(value: string | undefined): number | null {
 
 function parseProcessRoute(value: string | undefined): {
   applicationId: number;
-  stageSlug: string;
+  stageSlug?: string;
 } | null {
-  const match = value?.trim().toLowerCase().match(/^(\d+)-(.+)$/);
+  const match = value?.trim().toLowerCase().match(/^(\d+)(?:-(.+))?$/);
   if (!match) return null;
 
   const applicationId = getPositiveApplicationId(match[1]);
-  return applicationId && match[2]
-    ? { applicationId, stageSlug: match[2] }
+  return applicationId
+    ? { applicationId, ...(match[2] ? { stageSlug: match[2] } : {}) }
     : null;
 }
 
@@ -88,6 +88,10 @@ export default async function RtsApplicationDashboardPage({
   const sortOrder = requestedSortOrder === 'asc' || requestedSortOrder === 'desc'
     ? requestedSortOrder
     : undefined;
+  const myApplicationsValue = readQuery(query, 'myApplications', 'MyApplications')
+    ?.trim()
+    .toLowerCase();
+  const myApplications = myApplicationsValue === 'true' || myApplicationsValue === '1';
 
   const department = departmentSlug
     ? departments.find(
@@ -126,6 +130,7 @@ export default async function RtsApplicationDashboardPage({
       status,
       sortBy,
       sortOrder,
+      myApplications,
     }),
     drawerApplicationId && (requestedProcess || requestedViewId)
       ? getRtsApplicationProcessDataAction(drawerApplicationId)
@@ -172,10 +177,6 @@ export default async function RtsApplicationDashboardPage({
     }
   }
 
-  const currentStageSlug = processDrawerData?.verification?.stageName
-    ? toApplicationFilterSlug(processDrawerData.verification.stageName)
-    : '';
-
   const drawer = requestedDocumentGuid
     ? {
         mode: 'document' as const,
@@ -187,7 +188,7 @@ export default async function RtsApplicationDashboardPage({
     : requestedProcess &&
         drawerRow &&
         processDrawerData &&
-        requestedProcess.stageSlug === currentStageSlug
+        processDrawerData.verification
       ? {
           mode: 'process' as const,
           record: drawerRow,
@@ -222,6 +223,7 @@ export default async function RtsApplicationDashboardPage({
           search,
           sortBy: sortBy ?? '',
           sortOrder: sortOrder ?? '',
+          myApplications,
         }}
         locale={locale}
         drawer={drawer}

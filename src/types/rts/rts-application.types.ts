@@ -158,6 +158,7 @@ export interface RtsApplicationApiApplicantDetail {
 
 export interface GetRtsApplicationApprovalListParams {
   pageNumber?: number;
+  pageSize?: number;
   departmentId?: number;
   serviceId?: number;
   applicationNo?: string;

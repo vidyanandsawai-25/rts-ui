@@ -548,14 +548,16 @@ export default function RtsApplicationProcessDrawer({
     if (!applicationId) return;
 
     startDecisionTransition(async () => {
+      const decisionRemark = officerRemark.trim();
+
       const result =
         actionKey === 'canVerifyDocument'
-          ? await verifyApprovalDocumentsAction(applicationId, officerRemark)
+          ? await verifyApprovalDocumentsAction(applicationId, decisionRemark)
           : actionKey === 'canApprove'
-            ? await verifyAndSendToApproveAction(applicationId, officerRemark)
+            ? await verifyAndSendToApproveAction(applicationId, decisionRemark)
             : actionKey === 'canReject'
-              ? await rejectApprovalApplicationAction(applicationId, officerRemark)
-              : await revertApprovalApplicationAction(applicationId, officerRemark);
+              ? await rejectApprovalApplicationAction(applicationId, decisionRemark)
+              : await revertApprovalApplicationAction(applicationId, decisionRemark);
 
       if (!result.success) {
         toast.error(
@@ -712,48 +714,55 @@ export default function RtsApplicationProcessDrawer({
 
                 {/* Certificate Action Button: Visible AFTER application is approved */}
                 {Boolean(isApproved) &&
-                  data?.details?.isCertificateRequired !== false &&
-                  data?.details?.certificateType !== 0 && (
+                  data?.details?.issuedCertificateGuid && (
                   (() => {
-                    const isManual = Boolean(
-                      verification?.isManualCertificate || data?.details?.certificateType === 2
-                    );
                     const hasCertificate = Boolean(data?.details?.issuedCertificateGuid);
 
-                    if (hasCertificate || !isManual) {
-                      return (
-                        <Button
-                          type="button"
-                          size="xs"
-                          variant="secondary"
-                          icon={Award}
-                          onClick={() => setIsPrintCertModalOpen(true)}
-                          className="rounded-lg px-3 text-xs font-bold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
-                        >
-                          अधिकृत प्रमाणपत्र पहा (View Certificate)
-                        </Button>
-                      );
-                    }
+                    if (!hasCertificate) return null;
 
                     return (
                       <Button
                         type="button"
                         size="xs"
-                        variant="primary"
-                        icon={Upload}
-                        onClick={() => setIsManualCertificateUploadOpen(true)}
-                        className="rounded-lg px-3 text-xs font-bold"
+                        variant="secondary"
+                        icon={Award}
+                        onClick={() => setIsPrintCertModalOpen(true)}
+                        className="rounded-lg px-3 text-xs font-bold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
                       >
-                        {t('uploadCertificate')}
+                        अधिकृत प्रमाणपत्र पहा (View Certificate)
                       </Button>
                     );
                   })()
                 )}
 
-                {/* Pre-approval certificate actions: strictly for digital certificate templates on final stage */}
-                {!isApproved &&
+                {/* Certificate actions become available only after workflow approval. */}
+                {isApproved &&
+                  verification?.canUploadManualCertificate === true &&
+                  !data?.details?.issuedCertificateGuid && (
+                    <Button
+                      type="button"
+                      size="xs"
+                      variant="primary"
+                      icon={Upload}
+                      disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
+                      title={
+                        !hasOfficerAccess
+                          ? t('officerAccessDenied')
+                          : isEditing
+                            ? t('finishEditBeforeWorkflowAction')
+                            : undefined
+                      }
+                      onClick={() => setIsManualCertificateUploadOpen(true)}
+                      className="rounded-lg px-3 text-xs font-bold"
+                    >
+                      {t('uploadCertificate')}
+                    </Button>
+                  )}
+
+                {isApproved &&
                   Boolean(verification?.canIssueCertificate) &&
-                  data?.details?.certificateType === 1 && (
+                  verification?.isManualCertificate !== true &&
+                  !data?.details?.issuedCertificateGuid && (
                     <Button
                       type="button"
                       size="xs"
@@ -1204,7 +1213,7 @@ export default function RtsApplicationProcessDrawer({
                         </section>
                       ) : null)}
 
-                    {hasOfficerAccess ? (
+                    {hasOfficerAccess && !isApproved ? (
                       <section className="rounded-xl border border-blue-200 bg-white p-4 shadow-sm mb-1">
                         <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3">
                           <Shield className="h-4 w-4 text-blue-600" />
@@ -1581,7 +1590,7 @@ export default function RtsApplicationProcessDrawer({
           applicationNo={headerApplicationNo}
           serviceName={record?.serviceName || verification?.serviceName || undefined}
           applicantName={applicantName}
-          onApproved={() => {
+          onIssued={() => {
             setIsCertModalOpen(false);
             onSuccess?.();
           }}
@@ -1594,7 +1603,7 @@ export default function RtsApplicationProcessDrawer({
           onClose={() => setIsManualCertificateUploadOpen(false)}
           applicationId={applicationId}
           applicationNo={headerApplicationNo}
-          onApproved={() => {
+          onIssued={() => {
             setIsManualCertificateUploadOpen(false);
             onSuccess?.();
           }}

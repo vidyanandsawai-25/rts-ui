@@ -544,7 +544,7 @@ export default function RtsApplicationDetails({
               .find((a) => a.fieldCode.toLowerCase().includes("name") || a.label.toLowerCase().includes("नाव"))
               ?.displayValue || ""
           }
-          onApproved={() => {
+          onIssued={() => {
             router.refresh();
           }}
         />
@@ -569,7 +569,7 @@ export default function RtsApplicationDetails({
           onClose={() => setIsManualCertModalOpen(false)}
           applicationId={workflow?.applicationId || parseInt(applicationNo.replace(/\D/g, ""), 10) || 0}
           applicationNo={applicationNo}
-          onApproved={() => {
+          onIssued={() => {
             router.refresh();
           }}
         />

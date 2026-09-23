@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import {
   AlertOctagon,
   ArrowDown,
@@ -13,9 +14,14 @@ import {
   Clock3,
   FileText,
   LayoutDashboard,
+  MoonStar,
   RotateCcw,
+  Sun,
+  Sunrise,
+  Sunset,
   TimerReset,
   TriangleAlert,
+  UserRound,
 } from 'lucide-react';
 
 import {
@@ -26,6 +32,7 @@ import {
   MasterTable,
   SearchInput,
   Select,
+  ToggleSwitch,
   ViewButton,
 } from '@/components/common';
 import type { Column } from '@/components/common/MasterTable';
@@ -62,6 +69,7 @@ interface RtsApplicationDashboardProps {
     search: string;
     sortBy: string;
     sortOrder: string;
+    myApplications: boolean;
   };
   locale: string;
   drawer: {
@@ -163,7 +171,16 @@ export default function RtsApplicationDashboard({
   );
 
   const gridRows = useMemo<GridRow[]>(
-    () => rows.map((row) => ({ ...row, id: row.applicationNo })),
+    () => rows.map((row, index) => {
+      const rowIdentity = row.applicationId > 0
+        ? String(row.applicationId)
+        : row.applicationNo.trim().toLocaleUpperCase() || `row-${index}`;
+
+      return {
+        ...row,
+        id: `${row.source}:${rowIdentity}`,
+      };
+    }),
     [rows]
   );
 
@@ -208,15 +225,16 @@ export default function RtsApplicationDashboard({
   }, [locale, t]);
 
   const updateUrl = useCallback(
-    (changes: Record<string, string>) => {
+    (changes: Record<string, string | boolean>) => {
       const params = new URLSearchParams(window.location.search);
       [
-        'department', 'service', 'status', 'search', 'pageSize', 'pageNumber', 'sortBy', 'sortOrder',
-        'Department', 'Service', 'Status', 'Search', 'PageSize', 'PageNumber', 'SortBy', 'SortOrder',
+        'department', 'service', 'status', 'search', 'pageSize', 'pageNumber', 'sortBy', 'sortOrder', 'myApplications',
+        'Department', 'Service', 'Status', 'Search', 'PageSize', 'PageNumber', 'SortBy', 'SortOrder', 'MyApplications',
       ].forEach((key) => params.delete(key));
 
       Object.entries(changes).forEach(([key, value]) => {
-        if (value) params.set(key, value);
+        if (value === true) params.set(key, 'true');
+        else if (typeof value === 'string' && value) params.set(key, value);
         else params.delete(key);
       });
       params.set('pageSize', '10');
@@ -236,6 +254,7 @@ export default function RtsApplicationDashboard({
       <button
         type="button"
         onClick={() => updateUrl({
+          ...filters,
           sortBy: key,
           sortOrder: isActive && direction === 'asc' ? 'desc' : 'asc',
           pageNumber: '1',
@@ -248,7 +267,7 @@ export default function RtsApplicationDashboard({
         <Icon aria-hidden className={`size-3 shrink-0 ${isActive ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`} />
       </button>
     );
-  }, [filters.sortBy, filters.sortOrder, updateUrl]);
+  }, [filters, updateUrl]);
 
   const updateDrawerUrl = useCallback(
     (changes: Record<string, string>, actionId?: string) => {
@@ -273,24 +292,35 @@ export default function RtsApplicationDashboard({
     [updateDrawerUrl]
   );
 
-  const openProcess = useCallback(() => {
+  const openApplication = useCallback(() => {
     if (drawer?.mode !== 'view') return;
-    const stageName = drawer.data.verification?.stageName;
-    if (!stageName) return;
+
+    if (drawer.data.verificationStatusCode === 404) {
+      updateDrawerUrl({
+        view: '',
+        fullDetail: String(drawer.record.applicationId),
+        process: '',
+        doc: '',
+      });
+      return;
+    }
+
+    if (!drawer.data.verification) {
+      toast.error(
+        drawer.data.errors.verification ||
+          t('applicationDashboard.applications.workflowUnavailable')
+      );
+      return;
+    }
 
     const parentUrl = `${pathname}?${new URLSearchParams(window.location.search).toString()}`;
     window.sessionStorage.setItem('rts-application-process-parent', parentUrl);
     updateDrawerUrl({
       view: '',
-      process: `${drawer.record.applicationId}-${toApplicationFilterSlug(stageName)}`,
+      process: String(drawer.record.applicationId),
       doc: '',
     });
-  }, [drawer, pathname, updateDrawerUrl]);
-
-  const openFullDetails = useCallback(() => {
-    if (drawer?.mode !== 'view') return;
-    updateDrawerUrl({ view: '', process: '', fullDetail: String(drawer.record.applicationId), doc: '' });
-  }, [drawer, updateDrawerUrl]);
+  }, [drawer, pathname, router, t, updateDrawerUrl]);
 
   const closeProcess = useCallback(() => {
     const storedParent = window.sessionStorage.getItem('rts-application-process-parent');
@@ -324,9 +354,10 @@ export default function RtsApplicationDashboard({
       search: '',
       sortBy: '',
       sortOrder: '',
+      myApplications: filters.myApplications,
       pageNumber: '1',
     });
-  }, [updateUrl]);
+  }, [filters.myApplications, updateUrl]);
 
   const formatDate = useCallback(
     (value: string) => {
@@ -339,6 +370,41 @@ export default function RtsApplicationDashboard({
       }).format(date);
     },
     [displayLocale, t]
+  );
+
+  const renderDateTime = useCallback(
+    (value: string) => {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return <span className="font-medium text-slate-700">{t('applicationDashboard.table.na')}</span>;
+      }
+
+      const hour = date.getHours();
+      const timeVisual = hour >= 5 && hour < 12
+        ? { Icon: Sunrise, iconClassName: 'text-amber-500' }
+        : hour >= 12 && hour < 17
+          ? { Icon: Sun, iconClassName: 'text-orange-500' }
+          : hour >= 17 && hour < 21
+            ? { Icon: Sunset, iconClassName: 'text-rose-500' }
+            : { Icon: MoonStar, iconClassName: 'text-indigo-500' };
+      const time = new Intl.DateTimeFormat(displayLocale, {
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+
+      return (
+        <div className="inline-flex flex-col items-center justify-center gap-1">
+          <span className="whitespace-nowrap font-medium text-slate-700">
+            {formatDate(value)}
+          </span>
+          <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600">
+            <timeVisual.Icon aria-hidden className={`size-3.5 ${timeVisual.iconClassName}`} />
+            <span>{time}</span>
+          </span>
+        </div>
+      );
+    },
+    [displayLocale, formatDate, t]
   );
 
   const formatDays = useCallback(
@@ -456,6 +522,17 @@ export default function RtsApplicationDashboard({
   const columns = useMemo<Column<GridRow>[]>(
     () => [
       {
+        key: 'id',
+        label: t('applicationDashboard.table.srNo'),
+        width: '68px',
+        align: 'center',
+        render: (_value, _row, rowIndex) => (
+          <span className="font-mono text-sm font-bold text-slate-500">
+            {numberFormatter.format((pagination.pageNumber - 1) * pagination.pageSize + rowIndex + 1)}
+          </span>
+        ),
+      },
+      {
         key: 'applicationNo',
         label: sortableHeader('applicationNo', t('applicationDashboard.table.applicationNo')),
         align: 'center',
@@ -490,9 +567,7 @@ export default function RtsApplicationDashboard({
         key: 'applicationDate',
         label: sortableHeader('CreatedDate', t('applicationDashboard.table.applicationDate')),
         align: 'center',
-        render: (_value, row) => (
-          <span className="font-medium text-slate-700">{formatDate(row.applicationDate)}</span>
-        ),
+        render: (_value, row) => renderDateTime(row.applicationDate),
       },
       {
         key: 'applicantName',
@@ -531,20 +606,34 @@ export default function RtsApplicationDashboard({
       {
         key: 'assignedTo',
         label: t('applicationDashboard.table.assignedTo'),
-        render: (_value, row) => (
-          <div className="flex flex-col">
-            <span className="font-medium text-slate-800 text-[13px]">
-              {[row.assignedToName, row.assignedTo].find(
-                (value) => value && !/^[-—]+$/.test(value.trim())
-              ) || t('applicationDashboard.table.officerFallback')}
-            </span>
-            {row.assignedToRole && (
-              <span className="text-[11px] font-bold text-teal-600 uppercase tracking-wider mt-0.5">
-                {row.assignedToRole}
+        render: (_value, row) => {
+          const hasValue = (value: string) => Boolean(value && !/^[-—]+$/.test(value.trim()));
+          const officerName = hasValue(row.assignedToName) ? row.assignedToName.trim() : '';
+          const userName = hasValue(row.assignedTo) ? row.assignedTo.trim() : '';
+          const displayName = officerName || userName || t('applicationDashboard.table.officerFallback');
+          const showUserName = Boolean(
+            userName && userName.toLocaleLowerCase() !== displayName.toLocaleLowerCase()
+          );
+
+          return (
+            <div className="flex flex-col items-start gap-1">
+              <span className="text-[13px] font-semibold text-slate-800">
+                {displayName}
               </span>
-            )}
-          </div>
-        ),
+              {showUserName && (
+                <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                  <UserRound aria-hidden className="size-3 text-blue-600" />
+                  {userName}
+                </span>
+              )}
+              {row.assignedToRole && (
+                <span className="text-[11px] font-bold uppercase tracking-wider text-teal-600">
+                  {row.assignedToRole}
+                </span>
+              )}
+            </div>
+          );
+        },
       },
       {
         key: 'currentStatus',
@@ -562,11 +651,7 @@ export default function RtsApplicationDashboard({
         key: 'lastUpdatedDate',
         label: sortableHeader('UpdatedDate', t('applicationDashboard.table.lastUpdatedDate')),
         align: 'center',
-        render: (_value, row) => (
-          <span className="font-medium text-slate-700">
-            {formatDate(row.lastUpdatedDate)}
-          </span>
-        ),
+        render: (_value, row) => renderDateTime(row.lastUpdatedDate),
       },
       {
         key: 'remainingDays',
@@ -605,7 +690,16 @@ export default function RtsApplicationDashboard({
         ),
       },
     ],
-    [locale, t, formatDate, formatDays, sortableHeader]
+    [
+      locale,
+      t,
+      renderDateTime,
+      formatDays,
+      sortableHeader,
+      numberFormatter,
+      pagination.pageNumber,
+      pagination.pageSize,
+    ]
   );
 
   return (
@@ -692,8 +786,8 @@ export default function RtsApplicationDashboard({
         padding="none"
         className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
       >
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-200 px-6 py-4">
-          <div>
+        <div className="flex min-w-0 flex-col gap-4 border-b border-slate-200 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="shrink-0">
             <h2 className="flex items-center gap-2 text-md font-bold text-[#183B6B]">
               <FileText className="h-4.5 w-4.5 text-[#183B6B]" />
               {t('applicationDashboard.applications.title')}
@@ -703,7 +797,7 @@ export default function RtsApplicationDashboard({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+          <div className="flex w-full min-w-0 flex-wrap items-center gap-3 lg:flex-1 lg:justify-end">
             <div className="w-full sm:w-44 space-y-1">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
                 {t('applicationDashboard.table.department')}
@@ -756,16 +850,32 @@ export default function RtsApplicationDashboard({
               />
             </div>
 
-            {hasActiveTableFilters && (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={clearTableFilters}
-                className="mt-4.5"
-              >
-                {t('applicationDashboard.filters.clearFilters')}
-              </Button>
-            )}
+            <div className="mt-4.5 flex shrink-0 items-center gap-2">
+              <div className="flex h-9 items-center rounded-lg border border-slate-200 bg-slate-50 px-3">
+                <ToggleSwitch
+                  checked={filters.myApplications}
+                  onChange={(checked) => updateUrl({
+                    ...filters,
+                    myApplications: checked,
+                    pageNumber: '1',
+                  })}
+                  label={t('applicationDashboard.filters.showMyApplications')}
+                  showPopup={false}
+                  activeLabel={t('applicationDashboard.filters.showMyApplications')}
+                  inactiveLabel={t('applicationDashboard.filters.showMyApplications')}
+                />
+              </div>
+
+              {hasActiveTableFilters && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={clearTableFilters}
+                >
+                  {t('applicationDashboard.filters.clearFilters')}
+                </Button>
+              )}
+            </div>
 
           </div>
         </div>
@@ -861,8 +971,7 @@ export default function RtsApplicationDashboard({
         }
         data={drawer?.mode === 'view' ? drawer.data : null}
         onClose={() => updateDrawerUrl({ view: '', process: '', doc: '' })}
-        onOpenFullDetails={openProcess}
-        onOpenReadOnlyDetails={openFullDetails}
+        onOpenApplication={openApplication}
         onOpenDocument={openDocument}
       />
 
@@ -891,14 +1000,11 @@ export default function RtsApplicationDashboard({
         onOpenDocument={openDocument}
         onProcess={() => {
           if (drawer?.mode !== 'fullDetail') return;
-          const currentStage = drawer.data.stages?.approvalStages.find((s) => s.isCurrentStage);
-          const stageName = currentStage?.stageName;
-          if (!stageName) return;
           const parentUrl = `${pathname}?${new URLSearchParams(window.location.search).toString()}`;
           window.sessionStorage.setItem('rts-application-process-parent', parentUrl);
           updateDrawerUrl({
             fullDetail: '',
-            process: `${drawer.record.applicationId}-${toApplicationFilterSlug(stageName)}`,
+            process: String(drawer.record.applicationId),
             doc: '',
           });
         }}
