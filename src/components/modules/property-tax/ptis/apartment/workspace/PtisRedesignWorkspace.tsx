@@ -124,7 +124,7 @@ export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
               onToggleExpand={() => onToggleExpandPanel('survey')}
               isExpanded={expandedPanel === 'survey'}
             />
-            <div className={cn('overflow-hidden', isFullscreen ? 'flex-1 min-h-0' : '')}>
+            <div className={cn('overflow-hidden flex flex-col flex-1 min-h-0', isFullscreen ? 'h-full' : '')}>
               <NewSurveyTable
                 units={surveyUnits} hoveredUnitId={hoveredUnitId} expandedUnitIds={expandedUnitIds}
                 onHoverUnit={onHoverUnit} onToggleExpandRow={onToggleExpandRow} onEditUnit={onEditUnit}
@@ -153,7 +153,7 @@ export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
               onToggleExpand={() => onToggleExpandPanel('difference')}
               isExpanded={expandedPanel === 'difference'}
             />
-            <div className={cn('overflow-hidden', isFullscreen ? 'flex-1 min-h-0' : '')}>
+            <div className={cn('overflow-hidden flex flex-col flex-1 min-h-0', isFullscreen ? 'h-full' : '')}>
               <DifferenceEngineTable
                 differences={differences} totalDeltas={totalDeltas} hoveredUnitId={hoveredUnitId}
                 expandedUnitIds={expandedUnitIds} onHoverUnit={onHoverUnit} onToggleExpandRow={onToggleExpandRow}
@@ -181,7 +181,7 @@ export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
               onToggleExpand={() => onToggleExpandPanel('existing')}
               isExpanded={expandedPanel === 'existing'}
             />
-            <div className={cn('overflow-hidden', isFullscreen ? 'flex-1 min-h-0' : '')}>
+            <div className={cn('overflow-hidden flex flex-col flex-1 min-h-0', isFullscreen ? 'h-full' : '')}>
               <ExistingAssessmentTable
                 units={previousUnits} hoveredUnitId={hoveredUnitId} expandedUnitIds={expandedUnitIds}
                 onHoverUnit={onHoverUnit} onToggleExpandRow={onToggleExpandRow} onViewDocument={onViewDocument}

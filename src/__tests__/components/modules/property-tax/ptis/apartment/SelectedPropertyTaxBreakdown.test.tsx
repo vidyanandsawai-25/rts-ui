@@ -2,6 +2,20 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { SelectedPropertyTaxBreakdown } from '@/components/modules/property-tax/ptis/apartment/tables/SelectedPropertyTaxBreakdown';
 
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string, params?: Record<string, unknown>) => {
+    if (key === 'propertyPrefix') return `Property ${params?.label ?? ''}`;
+    if (key === 'unitPrefix') return `Unit #${params?.id ?? ''}`;
+    if (key === 'appliedTaxBreakdown') return `${params?.property ?? ''} Applied Tax Breakdown`;
+    if (key === 'totalTaxBadge') return `TOTAL ${params?.mode ?? ''} TAX: ₹${params?.amount ?? ''}`;
+    if (key === 'closeTooltip') return 'Close Tax Breakdown';
+    if (key === 'calculating') return 'Calculating RV & CV taxes...';
+    if (key === 'headsCount') return `(${params?.count ?? ''} heads)`;
+    return key;
+  },
+  useLocale: () => 'en',
+}));
+
 describe('SelectedPropertyTaxBreakdown', () => {
   const mockRvTaxes = [
     { taxName: 'General Tax', taxAmount: 1000 },

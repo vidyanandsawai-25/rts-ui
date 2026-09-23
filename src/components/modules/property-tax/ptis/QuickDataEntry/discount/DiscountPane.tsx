@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useTransition } from "react";
+import React, { useMemo, useState, useTransition, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
@@ -98,7 +98,7 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
     };
     const isLoadingWing = isWingLoading || isWingPending;
 
-    const handleViewUnitDocument = async (row: UnitRow, uploadedItem?: PropertySocialDetailsDto) => {
+    const handleViewUnitDocument = useCallback(async (row: UnitRow, uploadedItem?: PropertySocialDetailsDto) => {
         if (!uploadedItem?.documentGuid) {
             toast.info(t("building.noDocumentAttached") || "No document file attached for this unit.");
             return;
@@ -113,9 +113,9 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
         } catch (error: unknown) {
             toast.error(error instanceof Error ? error.message : "Failed to view document");
         }
-    };
+    }, [locale, t]);
 
-    const handleEditUnit = (row: UnitRow) => {
+    const handleEditUnit = useCallback((row: UnitRow) => {
         const unitPropId = (row.propertyId ?? row.propertyDetailsId) as number;
         if (levelState && !levelState.selectedUnitIds.has(unitPropId)) {
             levelState.toggleUnitSelection(unitPropId);
@@ -123,7 +123,7 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
         if (activeSelectedId !== null) {
             setSelectedId(activeSelectedId);
         }
-    };
+    }, [levelState, activeSelectedId, setSelectedId]);
 
     const unitTableColumns = useMemo<Column<UnitRow>[]>(() => {
         if (!levelState) return [];
@@ -234,7 +234,7 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                 },
             },
         ];
-    }, [levelState, savedPropertyDetails, activeSelectedId, locale, t]);
+    }, [levelState, savedPropertyDetails, activeSelectedId, handleEditUnit, handleViewUnitDocument]);
 
     const unitTableData = useMemo<UnitRow[]>(() => {
         if (!levelState) return [];

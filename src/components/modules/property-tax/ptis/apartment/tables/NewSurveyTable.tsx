@@ -24,6 +24,8 @@ interface NewSurveyTableProps {
   isFullscreen?: boolean;
 }
 
+import { useTranslations } from 'next-intl';
+
 export const NewSurveyTable: React.FC<NewSurveyTableProps> = ({
   units,
   hoveredUnitId,
@@ -39,6 +41,7 @@ export const NewSurveyTable: React.FC<NewSurveyTableProps> = ({
   isLoading = false,
   isFullscreen = false,
 }) => {
+  const t = useTranslations('ptisRedesign.subTables');
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
   const totalCols = showRv && showCv ? 21 : (showRv || showCv ? 20 : 19);
@@ -48,8 +51,11 @@ export const NewSurveyTable: React.FC<NewSurveyTableProps> = ({
       ref={scrollRef}
       onScroll={onScroll}
       className={cn(
-        'w-full overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar',
-        isFullscreen ? 'h-full' : 'max-h-[calc(100vh-230px)]'
+        'w-full overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar sticky bottom-0',
+        '[&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-slate-400/70 hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-thumb]:rounded-full',
+        isFullscreen
+          ? 'h-full'
+          : 'h-auto max-h-[396px]'
       )}
     >
       <table className="w-full text-left border-collapse min-w-max">
@@ -75,7 +81,7 @@ export const NewSurveyTable: React.FC<NewSurveyTableProps> = ({
         </tbody>
       </table>
       {!isLoading && units.length === 0 && (
-        <PtisEmptyTableState message="No survey assessment units returned from API." />
+        <PtisEmptyTableState message={t('emptyState') || 'No survey assessment units found.'} />
       )}
     </div>
   );

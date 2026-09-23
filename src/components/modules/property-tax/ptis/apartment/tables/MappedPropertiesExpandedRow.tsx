@@ -36,6 +36,8 @@ const extractTaxList = (raw: unknown) => {
   return { list: [...regular, ...totals], total: totalVal };
 };
 
+import { useTranslations } from 'next-intl';
+
 interface MappedPropertiesExpandedRowProps {
   oldPropertyId?: number | null;
   propertyId?: number | null;
@@ -45,12 +47,6 @@ interface MappedPropertiesExpandedRowProps {
   onViewDocument?: (guid: string, title?: string) => void;
 }
 
-const LABELS = {
-  headerTitle: (len: number, total: number) => `Mapped New Properties (${len}${total > len ? ` of ${total}` : ''})`,
-  scrollHint: 'Scroll horizontally/vertically to browse all records • Click row to show tax',
-  loading: 'Loading mapped properties...',
-};
-
 export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowProps> = ({
   oldPropertyId,
   propertyId,
@@ -59,6 +55,7 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
   variant = 'survey',
   onViewDocument,
 }) => {
+  const t = useTranslations('ptisRedesign.subTables');
   const isExisting = variant === 'existing';
   const searchParams = useSearchParams();
   const resolvedWingDetailsId =
@@ -188,8 +185,8 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
       <EmptyMappedPropertiesState
         message={
           propertyId
-            ? 'No mapped old properties found'
-            : 'No Old Property associated with this unit.'
+            ? (t('noMappedOld') || 'No mapped old properties found')
+            : (t('noOldProp') || 'No Old Property associated with this unit.')
         }
         theme={isExisting ? 'emerald' : 'sky'}
       />
@@ -205,7 +202,7 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
         )}
       >
         <Loader2 className={cn('w-3.5 h-3.5 animate-spin', isExisting ? 'text-emerald-600' : 'text-blue-600')} />
-        <span>{LABELS.loading}</span>
+        <span>{t('loading') || 'Loading mapped properties...'}</span>
       </div>
     );
   }
@@ -215,13 +212,16 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
       <EmptyMappedPropertiesState
         message={
           isExisting
-            ? 'No mapped old properties found'
-            : 'No mapped new properties found'
+            ? (t('noMappedOld') || 'No mapped old properties found')
+            : (t('noMappedNew') || 'No mapped new properties found')
         }
         theme={isExisting ? 'emerald' : 'sky'}
       />
     );
   }
+
+  const totalSuffix = totalCount > items.length ? (t('ofTotal', { total: totalCount }) || ` of ${totalCount}`) : '';
+  const headerTitle = t('mappedNewTitle', { count: items.length, totalSuffix }) || `Mapped New Properties (${items.length}${totalSuffix})`;
 
   return (
     <div
@@ -233,9 +233,9 @@ export const MappedPropertiesExpandedRow: React.FC<MappedPropertiesExpandedRowPr
       <div className="flex items-center justify-between gap-2 px-1">
         <div className={cn('flex items-center gap-1.5 font-bold text-[11px]', isExisting ? 'text-emerald-950' : 'text-sky-950')}>
           <Building2 className={cn('w-3.5 h-3.5', isExisting ? 'text-emerald-700' : 'text-sky-700')} />
-          <span>{LABELS.headerTitle(items.length, totalCount)}</span>
+          <span>{headerTitle}</span>
         </div>
-        <span className="text-[10px] text-zinc-400 italic">{LABELS.scrollHint}</span>
+        <span className="text-[10px] text-zinc-400 italic">{t('scrollHint') || 'Scroll horizontally/vertically to browse all records • Click row to show tax'}</span>
       </div>
 
       <MappedPropertiesSubTable

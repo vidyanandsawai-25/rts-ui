@@ -114,7 +114,7 @@ export function useFooterActionHandler(
         societyId: societyIdParam,
         wingDetailId: explicitWingDetailId,
         wingId: wingIdParam,
-        isApartment: !isIndividual && (isApartment || categoryId === 1),
+        isApartment,
       });
       if (result.success) {
         toast.success(result.message || 'Action executed.');

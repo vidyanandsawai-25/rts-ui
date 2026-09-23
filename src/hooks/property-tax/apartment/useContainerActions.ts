@@ -41,25 +41,34 @@ export function useContainerActions({
 
   const handleActionQuickDataEntry = useCallback((unit: AssessmentUnit) => {
     const raw = unit.rawSurvey;
-    const propId = raw?.id || raw?.pdnId || unit.id || propertyId;
+    const propId = raw?.id || raw?.pdnId || unit.propertyId || unit.id || propertyId;
     if (!propId) return;
 
     const queryParams = new URLSearchParams();
+    if (propertyId) queryParams.set('parentPropertyId', String(propertyId));
     if (raw?.propertyFloorId) queryParams.set('floorId', String(raw.propertyFloorId));
     if (raw?.wardNo) queryParams.set('wardNo', String(raw.wardNo));
     if (raw?.wardId) queryParams.set('wardId', String(raw.wardId));
-    if (raw?.propertyNo) queryParams.set('propertyNo', String(raw.propertyNo));
-    if (raw?.partitionNo) queryParams.set('partitionNo', String(raw.partitionNo));
+    if (raw?.propertyNo || unit.propertyNo) queryParams.set('propertyNo', String(raw?.propertyNo || unit.propertyNo));
+    if (raw?.partitionNo || unit.partitionNo) queryParams.set('partitionNo', String(raw?.partitionNo || unit.partitionNo));
     const activeSocId = societyDetailId || societyId;
     if (activeSocId) {
       queryParams.set('societyDetailId', String(activeSocId));
+      queryParams.set('societydetailid', String(activeSocId));
       queryParams.set('societyId', String(activeSocId));
     }
-    if (wingDetailId) queryParams.set('wingDetailId', String(wingDetailId));
+    if (wingDetailId) {
+      queryParams.set('wingDetailId', String(wingDetailId));
+      queryParams.set('wingdetailid', String(wingDetailId));
+    }
     if (wingId) queryParams.set('wingId', String(wingId));
     queryParams.set('returnTab', 'apartment');
+    queryParams.set('from', 'apartment');
+    queryParams.set('hideWing', 'true');
+    queryParams.set('hideSociety', 'true');
+    queryParams.set('fromFooterEdit', 'true');
 
-    router.push(`/${_locale}${ROUTES.PROPERTY_TAX.PTIS}/QuickDataEntry/${propId}/FloorSubmission?${queryParams.toString()}`);
+    router.push(`/${_locale}${ROUTES.PROPERTY_TAX.PTIS}/QuickDataEntry/${propId}/Property?${queryParams.toString()}`);
   }, [_locale, propertyId, societyDetailId, societyId, wingDetailId, wingId, router]);
 
   const handleViewDocument = useCallback(async (guid: string, title = 'Document Preview') => {

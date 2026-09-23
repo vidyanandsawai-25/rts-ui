@@ -7,6 +7,7 @@ import DiscountDataTab from '@/components/modules/property-tax/ptis/tabs/Discoun
 import { OldDetailsPanel } from '../old-details/OldDetailsPanel';
 import type { BuildingPermissionData, DiscountData } from '@/types/ptis.types';
 import { WingIntelligenceTopNavSection } from './ApartmentWingTopNav';
+import { useTranslations } from 'next-intl';
 
 export interface WingIntelligencePanelsProps {
   activeSection: WingIntelligenceTopNavSection;
@@ -33,10 +34,11 @@ export const ApartmentWingPanels: React.FC<WingIntelligencePanelsProps> = ({
   wingName,
   selectedFloor,
 }) => {
+  const tPanels = useTranslations('ptisRedesign.panels');
   const titles = {
-    building: 'BUILDING PERMISSION (Certificates & Clearances)',
-    discount: 'DISCOUNT & SOCIAL DATA (Discounts & Concessions)',
-    oldDetails: 'OLD DETAILS (Mapped Properties Society / Wing Wise)',
+    building: tPanels('building') || 'BUILDING PERMISSION (Certificates & Clearances)',
+    discount: tPanels('discount') || 'DISCOUNT & SOCIAL DATA (Discounts & Concessions)',
+    oldDetails: tPanels('oldDetails') || 'OLD DETAILS (Mapped Properties Society / Wing Wise)',
   };
 
   const title = titles[activeSection as 'building' | 'discount' | 'oldDetails'];

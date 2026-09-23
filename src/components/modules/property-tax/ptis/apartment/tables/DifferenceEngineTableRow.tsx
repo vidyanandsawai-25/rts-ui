@@ -1,9 +1,10 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import React from 'react';
 import { UnitDifference, PtisTaxMode } from '@/types/property-tax/apartment';
 import { cn } from '@/lib/utils/cn';
+
+import { useTranslations } from 'next-intl';
 
 interface DifferenceEngineTableRowProps {
   diff: UnitDifference;
@@ -24,6 +25,7 @@ export const DifferenceEngineTableRow: React.FC<DifferenceEngineTableRowProps> =
   onToggleExpandRow,
   taxMode,
 }) => {
+  const t = useTranslations('ptisRedesign.differenceColumns');
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
   const raw = diff.rawDiff;
@@ -106,7 +108,7 @@ export const DifferenceEngineTableRow: React.FC<DifferenceEngineTableRowProps> =
       {isExpanded && (
         <tr className="bg-amber-50/20 border-b border-amber-200 transition-all h-12">
           <td colSpan={showRv && showCv ? 8 : (showRv || showCv ? 7 : 6)} className="p-1 text-zinc-400 font-sans h-12 align-middle text-center text-[10px]">
-            <span className="italic">Details displayed across columns</span>
+            <span className="italic">{t('detailsAcrossColumns') || 'Details displayed across columns'}</span>
           </td>
         </tr>
       )}

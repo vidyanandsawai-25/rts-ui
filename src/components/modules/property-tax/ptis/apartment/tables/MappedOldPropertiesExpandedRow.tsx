@@ -8,29 +8,16 @@ import { cn } from '@/lib/utils/cn';
 import { SelectedPropertyTaxBreakdown, TaxAmountItem } from './SelectedPropertyTaxBreakdown';
 import { EmptyMappedPropertiesState } from './EmptyMappedPropertiesState';
 
+import { useTranslations } from 'next-intl';
+
 interface MappedOldPropertiesExpandedRowProps {
   propertyId?: number | null;
 }
 
-const LABELS = {
-  headerTitle: (len: number, total: number) => `Mapped Old Properties (${len}${total > len ? ` of ${total}` : ''})`,
-  clickHint: 'Click any row to show/hide tax breakdown',
-  oldPropertyNo: 'Old Property No',
-  wingFlr: 'Wing / Flr',
-  use: 'Use',
-  constType: 'Const Type',
-  year: 'Year',
-  areaSqft: 'Area (sqft)',
-  oldRv: 'Old RV (₹)',
-  oldTax: 'Old Tax (₹)',
-  owner: 'Owner',
-  loading: 'Loading mapped properties...',
-  loadingMore: 'Loading more records...',
-};
-
 export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpandedRowProps> = ({
   propertyId,
 }) => {
+  const t = useTranslations('ptisRedesign.subTables');
   const [loading, setLoading] = useState(() => Boolean(propertyId && propertyId > 0));
   const [items, setItems] = useState<MappedOldPropertyItem[]>([]);
   const [selectedPropId, setSelectedPropId] = useState<number | null>(null);
@@ -39,7 +26,6 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
   const [totalCount, setTotalCount] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const loadingMoreRef = useRef(false);
-
 
   useEffect(() => {
     if (!propertyId || propertyId <= 0) return;
@@ -83,7 +69,7 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
   if (!propertyId || propertyId <= 0) {
     return (
       <EmptyMappedPropertiesState
-        message="No New Property associated with this unit."
+        message={t('noNewProp') || 'No New Property associated with this unit.'}
         theme="emerald"
       />
     );
@@ -93,7 +79,7 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
     return (
       <div className="flex items-center gap-2 py-2 px-3 text-xs font-sans rounded-md border shadow-2xs sticky left-1 w-fit bg-emerald-50/80 border-emerald-200 text-emerald-900">
         <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
-        <span>{LABELS.loading}</span>
+        <span>{t('loading') || 'Loading mapped properties...'}</span>
       </div>
     );
   }
@@ -101,39 +87,45 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
   if (items.length === 0) {
     return (
       <EmptyMappedPropertiesState
-        message="No mapped properties found"
+        message={t('noMappedOld') || 'No mapped properties found'}
         theme="emerald"
       />
     );
   }
+
+  const totalSuffix = totalCount > items.length ? (t('ofTotal', { total: totalCount }) || ` of ${totalCount}`) : '';
+  const headerTitle = t('mappedOldTitle', { count: items.length, totalSuffix }) || `Mapped Old Properties (${items.length}${totalSuffix})`;
 
   return (
     <div className="p-2 rounded-lg border border-emerald-200 bg-emerald-50/40 text-xs font-sans shadow-2xs space-y-1.5 select-none w-fit max-w-[calc(100vw-100px)] sticky left-1">
       <div className="flex items-center justify-between gap-2 px-1">
         <div className="flex items-center gap-1.5 font-bold text-[11px] text-emerald-950">
           <History className="w-3.5 h-3.5 text-emerald-700" />
-          <span>{LABELS.headerTitle(items.length, totalCount)}</span>
+          <span>{headerTitle}</span>
         </div>
-        <span className="text-[10px] text-zinc-500 font-medium">{LABELS.clickHint}</span>
+        <span className="text-[10px] text-zinc-500 font-medium">{t('clickHint') || 'Click any row to show/hide tax breakdown'}</span>
       </div>
 
       <div
         onScroll={handleScroll}
-        className="max-h-[380px] overflow-x-auto overflow-y-auto rounded-md border border-emerald-200/90 bg-white shadow-2xs ios-scrollbar w-fit max-w-full"
+        className={cn(
+          'overflow-x-auto overflow-y-auto rounded-md border border-emerald-200/90 bg-white shadow-2xs ios-scrollbar w-fit max-w-full',
+          selectedPropId ? 'max-h-[420px]' : 'h-auto max-h-[288px]'
+        )}
       >
         <table className="w-max text-left border-collapse text-[10.5px] leading-tight">
           <thead className="sticky top-0 bg-emerald-50 text-emerald-950 font-bold border-b border-emerald-200 z-20 text-[10px] uppercase tracking-wider shadow-2xs">
             <tr className="h-8">
               <th className="px-2 py-1 text-center w-12 min-w-[48px] sticky left-0 bg-emerald-50 z-30">#</th>
-              <th className="px-2.5 py-1 whitespace-nowrap sticky left-12 bg-emerald-50 z-30 border-r border-emerald-200 w-28 min-w-[100px] max-w-[125px]">{LABELS.oldPropertyNo}</th>
-              <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.wingFlr}</th>
-              <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.use}</th>
-              <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.constType}</th>
-              <th className="px-2.5 py-1 text-center whitespace-nowrap">{LABELS.year}</th>
-              <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.areaSqft}</th>
-              <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.oldRv}</th>
-              <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.oldTax}</th>
-              <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.owner}</th>
+              <th className="px-2.5 py-1 whitespace-nowrap sticky left-12 bg-emerald-50 z-30 border-r border-emerald-200 w-28 min-w-[100px] max-w-[125px]">{t('oldPropertyNo') || 'Old Property No'}</th>
+              <th className="px-2.5 py-1 whitespace-nowrap">{t('wingFlr') || 'Wing / Flr'}</th>
+              <th className="px-2.5 py-1 whitespace-nowrap">{t('use') || 'Use'}</th>
+              <th className="px-2.5 py-1 whitespace-nowrap">{t('constType') || 'Const Type'}</th>
+              <th className="px-2.5 py-1 text-center whitespace-nowrap">{t('year') || 'Year'}</th>
+              <th className="px-2.5 py-1 text-right whitespace-nowrap">{t('areaSqft') || 'Area (sqft)'}</th>
+              <th className="px-2.5 py-1 text-right whitespace-nowrap">{t('oldRv') || 'Old RV (₹)'}</th>
+              <th className="px-2.5 py-1 text-right whitespace-nowrap">{t('oldTax') || 'Old Tax (₹)'}</th>
+              <th className="px-2.5 py-1 whitespace-nowrap">{t('owner') || 'Owner'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 text-zinc-800 font-medium">
@@ -222,7 +214,7 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
         {loadingMore && (
           <div className="py-1.5 flex items-center justify-center gap-1.5 text-[10px] text-zinc-500 bg-slate-50 border-t border-zinc-100">
             <Loader2 className="w-3 h-3 animate-spin text-emerald-600" />
-            <span>{LABELS.loadingMore}</span>
+            <span>{t('loadingMore') || 'Loading more records...'}</span>
           </div>
         )}
       </div>

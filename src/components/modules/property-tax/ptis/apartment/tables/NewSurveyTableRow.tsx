@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils/cn';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { MappedPropertiesExpandedRow } from './MappedPropertiesExpandedRow';
 
+import { useTranslations } from 'next-intl';
+
 interface NewSurveyTableRowProps {
   unit: AssessmentUnit;
   idx: number;
@@ -29,6 +31,7 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
   isExpanded,
   onHoverUnit,
   onToggleExpandRow,
+  onEditUnit,
   onViewDocument,
   onViewRules,
   taxMode,
@@ -36,6 +39,7 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const locale = useLocale();
+  const t = useTranslations('ptisRedesign.subTables');
 
   const raw = unit.rawSurvey;
   const propPhotoGuid = raw?.propertyPhotoDocumentGuid || raw?.photos?.find((p) => p.photoTypeCode === 'PROPERTY_PHOTO')?.documentGuid || null;
@@ -57,20 +61,51 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
 
-  const handleRedirectToPtis = (e: React.MouseEvent) => {
+  const handleEditUnit = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (onEditUnit) {
+      onEditUnit(unit);
+      return;
+    }
     const propId = raw?.id || raw?.pdnId || unit.propertyId || unit.id;
+    if (!propId) return;
+
     const params = new URLSearchParams();
-    if (propId) params.set('propertyId', String(propId));
+    const parentPropId = searchParams.get('parentPropertyId') || searchParams.get('propertyId');
+    if (parentPropId) params.set('parentPropertyId', String(parentPropId));
+    params.set('propertyId', String(propId));
     const wardNo = raw?.wardNo || searchParams.get('wardNo');
     if (wardNo) params.set('wardNo', String(wardNo));
     const wardId = raw?.wardId || searchParams.get('wardId');
     if (wardId) params.set('wardId', String(wardId));
-    const propertyNo = unit.propertyNo || raw?.propertyNo;
+    const propertyNo = unit.propertyNo || raw?.propertyNo || searchParams.get('propertyNo');
     if (propertyNo) params.set('propertyNo', String(propertyNo));
-    const partitionNo = unit.partitionNo || raw?.partitionNo;
-    if (partitionNo) params.set('partitionNo', String(partitionNo));
-    router.push(`/${locale}/property-tax/ptis?${params.toString()}`);
+    const partitionNo = unit.partitionNo || raw?.partitionNo || searchParams.get('partitionNo');
+    if (partitionNo && partitionNo !== '-') params.set('partitionNo', String(partitionNo));
+
+    const socId = searchParams.get('societyDetailId') || searchParams.get('societydetailid') || searchParams.get('societyId');
+    if (socId) {
+      params.set('societyDetailId', String(socId));
+      params.set('societydetailid', String(socId));
+      params.set('societyId', String(socId));
+    }
+
+    const resolvedWingId = wingDetailsId || searchParams.get('wingDetailId') || searchParams.get('wingdetailid') || searchParams.get('wingId');
+    if (resolvedWingId) {
+      params.set('wingDetailId', String(resolvedWingId));
+      params.set('wingdetailid', String(resolvedWingId));
+      params.set('wingId', String(resolvedWingId));
+    }
+    const wName = searchParams.get('wingName') || searchParams.get('wingname');
+    if (wName) params.set('wingName', String(wName));
+
+    params.set('returnTab', 'apartment');
+    params.set('from', 'apartment');
+    params.set('hideWing', 'true');
+    params.set('hideSociety', 'true');
+    params.set('fromFooterEdit', 'true');
+
+    router.push(`/${locale}/property-tax/ptis/QuickDataEntry/${propId}/Property?${params.toString()}`);
   };
 
   const getSignedColorClass = (val: string | number | null | undefined, defaultClass = '') => {
@@ -107,16 +142,16 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
                   onToggleExpandRow(unit.id);
                 }}
                 className="p-0.5 rounded-sm hover:bg-zinc-200 text-zinc-600 cursor-pointer"
-                title="Expand mapped properties"
+                title={t('expandMapped') || 'Expand mapped properties'}
               >
                 {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-sky-700" /> : <ChevronRight className="w-3.5 h-3.5" />}
               </button>
             ) : (
               <button
                 type="button"
-                onClick={handleRedirectToPtis}
+                onClick={handleEditUnit}
                 className="p-1 rounded-md transition-all border cursor-pointer bg-sky-100 text-sky-700 hover:bg-sky-200 border-sky-300 shadow-2xs"
-                title="Open Individual PTIS Page"
+                title={t('editInQuickEntry') || 'Edit in Quick Data Entry'}
               >
                 <Edit2 className="w-3 h-3" />
               </button>
@@ -150,21 +185,21 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
 
         <td className="px-1 py-1 text-center whitespace-nowrap">
           {propPhotoGuid ? (
-            <div onClick={(e) => { e.stopPropagation(); onViewDocument?.(propPhotoGuid, `Unit ${unit.prop} - Property Photo`); }} className="w-7 h-7 mx-auto rounded border border-zinc-300 overflow-hidden shadow-2xs cursor-pointer hover:border-sky-500 hover:scale-105 transition-all bg-zinc-100 flex items-center justify-center" title="Click to view Property Photo">
+            <div onClick={(e) => { e.stopPropagation(); onViewDocument?.(propPhotoGuid, `Unit ${unit.prop} - Property Photo`); }} className="w-7 h-7 mx-auto rounded border border-zinc-300 overflow-hidden shadow-2xs cursor-pointer hover:border-sky-500 hover:scale-105 transition-all bg-zinc-100 flex items-center justify-center" title={t('viewPropPhoto') || 'Click to view Property Photo'}>
               <ImageWithFallback src="" documentGuid={propPhotoGuid} alt="Property" className="w-full h-full object-cover" />
             </div>
           ) : <span className="text-zinc-300">-</span>}
         </td>
         <td className="px-1 py-1 text-center whitespace-nowrap">
           {planPhotoGuid ? (
-            <div onClick={(e) => { e.stopPropagation(); onViewDocument?.(planPhotoGuid, `Unit ${unit.prop} - Floor Plan`); }} className="w-7 h-7 mx-auto rounded border border-zinc-300 overflow-hidden shadow-2xs cursor-pointer hover:border-sky-500 hover:scale-105 transition-all bg-zinc-100 flex items-center justify-center" title="Click to view Floor Plan">
+            <div onClick={(e) => { e.stopPropagation(); onViewDocument?.(planPhotoGuid, `Unit ${unit.prop} - Floor Plan`); }} className="w-7 h-7 mx-auto rounded border border-zinc-300 overflow-hidden shadow-2xs cursor-pointer hover:border-sky-500 hover:scale-105 transition-all bg-zinc-100 flex items-center justify-center" title={t('viewFloorPlan') || 'Click to view Floor Plan'}>
               <ImageWithFallback src="" documentGuid={planPhotoGuid} alt="Plan" className="w-full h-full object-cover" />
             </div>
           ) : <span className="text-zinc-300">-</span>}
         </td>
         <td className="px-1 py-1 text-center whitespace-nowrap">
           <div className="flex items-center justify-center">
-            <button type="button" onClick={(e) => { e.stopPropagation(); onViewRules?.(unit); }} className="p-1 rounded-md text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-all border border-blue-200 cursor-pointer shadow-2xs" title="View Applied Rules for this Unit">
+            <button type="button" onClick={(e) => { e.stopPropagation(); onViewRules?.(unit); }} className="p-1 rounded-md text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-all border border-blue-200 cursor-pointer shadow-2xs" title={t('viewRules') || 'View Applied Rules for this Unit'}>
               <Eye className="w-3.5 h-3.5" />
             </button>
           </div>

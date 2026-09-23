@@ -5,6 +5,7 @@ import React from 'react';
 import { Coins, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import type { ApartmentPropertyTaxDetailItem } from '@/types/property-tax/apartment';
+import { useTranslations } from 'next-intl';
 
 export interface TaxAmountItem {
   taxName?: string;
@@ -43,6 +44,7 @@ export const SelectedPropertyTaxBreakdown: React.FC<SelectedPropertyTaxBreakdown
   fallbackTax,
   onClose,
 }) => {
+  const t = useTranslations('ptisRedesign.taxBreakdown');
   const isExisting = variant === 'existing';
   const hasCvData = cvTaxes.length > 0 || (cvTotal !== null && cvTotal > 0);
   const hasRvData = rvTaxes.length > 0 || (rvTotal !== null && rvTotal > 0);
@@ -61,6 +63,44 @@ export const SelectedPropertyTaxBreakdown: React.FC<SelectedPropertyTaxBreakdown
   };
   const filteredHeads = activeTaxes.filter((h) => !isTotalHead(h.taxName || h.taxHeadName || h.taxHeadCode));
 
+  const getLocalizedTaxHeadName = (name: string): string => {
+    const clean = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const headKeyMap: Record<string, string> = {
+      generaltax: 'generalTax',
+      stateeducationtax: 'stateEducationTax',
+      stateemploymenttax: 'stateEmploymentTax',
+      treecess: 'treeCess',
+      specialwatercess: 'specialWaterCess',
+      roadcess: 'roadCess',
+      firecess: 'fireCess',
+      lightcess: 'lightCess',
+      waterbenefitcess: 'waterBenefitCess',
+      sewagedisposalcess: 'sewageDisposalCess',
+      specialeducationtax: 'specialEducationTax',
+      drainagetax: 'drainageTax',
+      drainagecess: 'drainageTax',
+      watertax: 'waterTax',
+      conservancytax: 'conservancyTax',
+      streettax: 'streetTax',
+    };
+    const key = headKeyMap[clean];
+    if (key) {
+      try {
+        const translated = t(`taxHeads.${key}` as Parameters<typeof t>[0]);
+        if (translated && !translated.includes('taxHeads.')) return translated;
+      } catch {
+        // fallback
+      }
+    }
+    return name;
+  };
+
+  const propertyText = propertyLabel
+    ? (t('propertyPrefix', { label: propertyLabel }) || `Property ${propertyLabel}`)
+    : (t('unitPrefix', { id: selectedPropId }) || `Unit #${selectedPropId}`);
+
+  const headerTitle = t('appliedTaxBreakdown', { property: propertyText }) || `${propertyText} Applied Tax Breakdown`;
+
   return (
     <div
       className={cn(
@@ -71,9 +111,11 @@ export const SelectedPropertyTaxBreakdown: React.FC<SelectedPropertyTaxBreakdown
       <div className="flex items-center justify-between gap-2 border-b pb-1 border-zinc-200/80">
         <div className="flex items-center gap-1.5 font-bold text-[11px] text-zinc-800">
           <Coins className={cn('w-3.5 h-3.5', isExisting ? 'text-emerald-700' : 'text-sky-700')} />
-          <span>{propertyLabel ? `Property ${propertyLabel}` : `Unit #${selectedPropId}`} Applied Tax Breakdown</span>
+          <span>{headerTitle}</span>
           {filteredHeads.length > 0 && (
-            <span className="text-[10px] font-normal text-zinc-400">({filteredHeads.length} heads)</span>
+            <span className="text-[10px] font-normal text-zinc-400">
+              {t('headsCount', { count: filteredHeads.length }) || `(${filteredHeads.length} heads)`}
+            </span>
           )}
         </div>
 
@@ -116,7 +158,8 @@ export const SelectedPropertyTaxBreakdown: React.FC<SelectedPropertyTaxBreakdown
                   : 'bg-slate-900 border-slate-950 text-sky-200'
               )}
             >
-              TOTAL {isCv ? 'CV' : 'RV'} TAX: ₹{Number(displayTotal).toLocaleString()}
+              {t('totalTaxBadge', { mode: isCv ? 'CV' : 'RV', amount: Number(displayTotal).toLocaleString() }) ||
+                `TOTAL ${isCv ? 'CV' : 'RV'} TAX: ₹${Number(displayTotal).toLocaleString()}`}
             </div>
           )}
           {onClose && (
@@ -124,7 +167,7 @@ export const SelectedPropertyTaxBreakdown: React.FC<SelectedPropertyTaxBreakdown
               type="button"
               onClick={onClose}
               className="p-0.5 rounded hover:bg-zinc-200 text-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer"
-              title="Close Tax Breakdown"
+              title={t('closeTooltip') || 'Close Tax Breakdown'}
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -136,24 +179,28 @@ export const SelectedPropertyTaxBreakdown: React.FC<SelectedPropertyTaxBreakdown
         {isLoading ? (
           <span className="flex items-center gap-1.5 py-1 text-zinc-500">
             <Loader2 className={cn('w-3.5 h-3.5 animate-spin', isExisting ? 'text-emerald-600' : 'text-sky-600')} />
-            <span>Calculating RV & CV taxes...</span>
+            <span>{t('calculating') || 'Calculating RV & CV taxes...'}</span>
           </span>
         ) : filteredHeads.length === 0 ? (
           <div className="flex items-center gap-1.5 text-zinc-500 py-0.5">
-            <span className="italic">No individual head breakdown available.</span>
+            <span className="italic">{t('noBreakdown') || 'No individual head breakdown available.'}</span>
             {displayTotal != null && (
-              <span className="font-semibold text-zinc-700">Total Tax: ₹{Number(displayTotal).toLocaleString()}</span>
+              <span className="font-semibold text-zinc-700">
+                {t('totalTaxLabel', { amount: Number(displayTotal).toLocaleString() }) ||
+                  `Total Tax: ₹${Number(displayTotal).toLocaleString()}`}
+              </span>
             )}
           </div>
         ) : (
           filteredHeads.map((h, i) => {
-            const name = h.taxName || h.taxHeadName || h.taxHeadCode || 'Tax';
+            const rawName = h.taxName || h.taxHeadName || h.taxHeadCode || 'Tax';
+            const localizedName = getLocalizedTaxHeadName(rawName);
             const amt = Number(h.taxAmount ?? h.amount ?? 0);
             const isZero = amt === 0;
 
             return (
               <div
-                key={`${name}-${i}`}
+                key={`${rawName}-${i}`}
                 className={cn(
                   'px-2 py-0.5 rounded shadow-2xs flex items-center gap-1 shrink-0 text-[10px] transition-colors border whitespace-nowrap',
                   isZero
@@ -162,10 +209,10 @@ export const SelectedPropertyTaxBreakdown: React.FC<SelectedPropertyTaxBreakdown
                     ? 'bg-white border-emerald-200 text-zinc-800'
                     : 'bg-white border-sky-200 text-zinc-800'
                 )}
-                title={`${name}: ₹${amt.toLocaleString()}`}
+                title={`${localizedName}: ₹${amt.toLocaleString()}`}
               >
                 <span className={isZero ? 'text-zinc-400' : 'text-zinc-600 font-medium'}>
-                  {name}:
+                  {localizedName}:
                 </span>
                 <span
                   className={cn(

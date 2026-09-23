@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils/cn';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { SelectedPropertyTaxBreakdown, TaxAmountItem } from './SelectedPropertyTaxBreakdown';
 
+import { useTranslations } from 'next-intl';
+
 interface MappedPropertiesSubTableProps {
   items: MappedNewPropertyItem[];
   selectedPropId: number | null;
@@ -27,24 +29,6 @@ interface MappedPropertiesSubTableProps {
   wingDetailsId?: number | string | null;
   societyDetailId?: number | string | null;
 }
-
-const LABELS = {
-  propertyNo: 'Prop No',
-  wingFlr: 'Wing / Flr',
-  type: 'Type',
-  use: 'Use',
-  constType: 'Const Type',
-  year: 'Year',
-  carpet: 'Carpet',
-  builtup: 'Builtup',
-  rv: 'RV (₹)',
-  cv: 'CV (₹)',
-  tax: 'Tax (₹)',
-  owner: 'Owner',
-  img: 'IMG',
-  plan: 'PLAN',
-  loadingMore: 'Loading more records...',
-};
 
 export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> = ({
   items,
@@ -67,6 +51,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
   const router = useRouter();
   const searchParams = useSearchParams();
   const locale = useLocale();
+  const t = useTranslations('ptisRedesign.subTables');
   const isExisting = variant === 'existing';
 
   const handleRedirectToQuickDataEntry = (item: MappedNewPropertyItem) => {
@@ -135,7 +120,8 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
     }
 
     params.set('propertyId', String(propId));
-    params.set('returnTab', 'propertydetails');
+    params.set('returnTab', 'apartment');
+    params.set('from', 'apartment');
     params.set('hideWing', 'true');
     params.set('hideSociety', 'true');
     params.set('fromFooterEdit', 'true');
@@ -147,7 +133,8 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
     <div
       onScroll={onScroll}
       className={cn(
-        'max-h-[380px] overflow-x-auto overflow-y-auto rounded-md border bg-white shadow-2xs ios-scrollbar w-fit max-w-full',
+        'overflow-x-auto overflow-y-auto rounded-md border bg-white shadow-2xs ios-scrollbar w-fit max-w-full',
+        selectedPropId ? 'max-h-[420px]' : 'h-auto max-h-[288px]',
         isExisting ? 'border-emerald-200' : 'border-sky-200'
       )}
     >
@@ -165,21 +152,21 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
               )}
               title="Property Number / Partition Number / Flat Number"
             >
-              {LABELS.propertyNo}
+              {t('propNo') || 'Prop No'}
             </th>
-            <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.wingFlr}</th>
-            <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.type}</th>
-            <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.use}</th>
-            <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.constType}</th>
-            <th className="px-2.5 py-1 text-center whitespace-nowrap">{LABELS.year}</th>
-            <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.carpet}</th>
-            <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.builtup}</th>
-            <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.rv}</th>
-            <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.cv}</th>
-            <th className="px-2.5 py-1 text-right whitespace-nowrap">{LABELS.tax}</th>
-            <th className="px-2.5 py-1 whitespace-nowrap">{LABELS.owner}</th>
-            <th className="px-1.5 py-1 text-center whitespace-nowrap">{LABELS.img}</th>
-            <th className="px-1.5 py-1 text-center whitespace-nowrap">{LABELS.plan}</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{t('wingFlr') || 'Wing / Flr'}</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{t('type') || 'Type'}</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{t('use') || 'Use'}</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{t('constType') || 'Const Type'}</th>
+            <th className="px-2.5 py-1 text-center whitespace-nowrap">{t('year') || 'Year'}</th>
+            <th className="px-2.5 py-1 text-right whitespace-nowrap">{t('carpet') || 'Carpet'}</th>
+            <th className="px-2.5 py-1 text-right whitespace-nowrap">{t('builtup') || 'Builtup'}</th>
+            <th className="px-2.5 py-1 text-right whitespace-nowrap">{t('rv') || 'RV (₹)'}</th>
+            <th className="px-2.5 py-1 text-right whitespace-nowrap">{t('cv') || 'CV (₹)'}</th>
+            <th className="px-2.5 py-1 text-right whitespace-nowrap">{t('tax') || 'Tax (₹)'}</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{t('owner') || 'Owner'}</th>
+            <th className="px-1.5 py-1 text-center whitespace-nowrap">{t('img') || 'IMG'}</th>
+            <th className="px-1.5 py-1 text-center whitespace-nowrap">{t('plan') || 'PLAN'}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100 text-zinc-800 font-medium">
@@ -260,7 +247,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
                             ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-300'
                             : 'bg-sky-100 text-sky-700 hover:bg-sky-200 border-sky-300'
                         )}
-                        title="Edit in Quick Data Entry"
+                        title={t('editInQuickEntry') || 'Edit in Quick Data Entry'}
                       >
                         <Edit2 className="w-3 h-3" />
                       </button>
@@ -345,7 +332,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
       {isLoadingMore && (
         <div className="py-1.5 flex items-center justify-center gap-1.5 text-[10px] text-zinc-500 bg-slate-50 border-t border-zinc-100">
           <Loader2 className={cn('w-3 h-3 animate-spin', isExisting ? 'text-emerald-600' : 'text-sky-600')} />
-          <span>{LABELS.loadingMore}</span>
+          <span>{t('loadingMore') || 'Loading more records...'}</span>
         </div>
       )}
     </div>

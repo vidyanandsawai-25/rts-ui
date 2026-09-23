@@ -43,6 +43,7 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
   const fromSocietyEdit = searchParams.get('fromSocietyEdit') === 'true';
   const fromWingEdit = searchParams.get('fromWingEdit') === 'true';
   const fromFooterEdit = searchParams.get('fromFooterEdit') === 'true';
+  const fromParam = searchParams.get('from') || '';
   const hideWing = searchParams.get('hideWing') === 'true' || fromSocietyEdit || fromFooterEdit;
   const hideSociety = searchParams.get('hideSociety') === 'true' || fromWingEdit || fromFooterEdit;
 
@@ -86,6 +87,7 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
   if (fromSocietyEdit) params.set('fromSocietyEdit', 'true');
   if (fromWingEdit) params.set('fromWingEdit', 'true');
   if (fromFooterEdit) params.set('fromFooterEdit', 'true');
+  if (fromParam) params.set('from', fromParam);
   if (hideWing) params.set('hideWing', 'true');
   if (hideSociety) params.set('hideSociety', 'true');
   rateableExpands.forEach(v => params.append('rateableExpand', v));

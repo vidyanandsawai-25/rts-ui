@@ -221,13 +221,16 @@ function QuickDataEntryContent({
             if (cleanPropertyNo) params.set('propertyNo', cleanPropertyNo);
             if (partitionNo) params.set('partitionNo', partitionNo);
 
-            const isApartment = returnTab === 'apartment' ||
-                               resolvedReturnTab === 'apartment' ||
-                               searchParams.get('from') === 'apartment';
+            const isExplicitApartment = returnTab === 'apartment' || searchParams.get('from') === 'apartment';
+            const isApartment = isExplicitApartment ||
+                               (!returnTab && (
+                                   resolvedReturnTab === 'apartment' ||
+                                   (typeof window !== 'undefined' && sessionStorage.getItem('qde_is_apartment') === 'true')
+                               ));
 
             const isIndividual = returnTab === 'individual' ||
-                                 resolvedReturnTab === 'individual' ||
-                                 searchParams.get('from') === 'individual';
+                                 searchParams.get('from') === 'individual' ||
+                                 (!returnTab && resolvedReturnTab === 'individual');
 
             if (typeof window !== 'undefined') {
                 sessionStorage.removeItem('qde_is_apartment');
@@ -240,11 +243,30 @@ function QuickDataEntryContent({
             if (isApartment) {
                 const societyId = searchParams.get('societyId') || societyDetailId;
                 const wingId = searchParams.get('wingId');
-                if (societyId) params.set('societyId', societyId);
-                if (wingId) params.set('wingId', wingId);
-                if (wingDetailId) params.set('wingDetailId', wingDetailId);
-                if (wingName) params.set('wingName', wingName);
-                router.push(`/${locale}/property-tax/ptis/apartment?${params}`);
+                const resolvedParentPropId =
+                    parentPropertyId ||
+                    searchParams.get('parentPropertyId') ||
+                    searchParams.get('parentpropertyid') ||
+                    societyId;
+
+                if (resolvedParentPropId) {
+                    params.set('propertyId', String(resolvedParentPropId));
+                }
+                params.delete('partitionNo');
+                if (societyId) params.set('societyId', String(societyId));
+                if (wingId) params.set('wingId', String(wingId));
+                if (wingDetailId) params.set('wingDetailId', String(wingDetailId));
+                if (wingName) params.set('wingName', String(wingName));
+
+                // Clean up QDE internal params
+                params.delete('fromFooterEdit');
+                params.delete('hideWing');
+                params.delete('hideSociety');
+                params.delete('from');
+                params.delete('returnTab');
+                params.delete('parentPropertyId');
+
+                router.push(`/${locale}/property-tax/ptis/apartment?${params.toString()}`);
             } else if (isIndividual) {
                 router.push(`/${locale}/property-tax/ptis/individual?${params}`);
             } else {
