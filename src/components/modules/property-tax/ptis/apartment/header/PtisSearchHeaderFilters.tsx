@@ -36,7 +36,7 @@ export const PtisSearchHeaderFilters: React.FC<PtisSearchHeaderFiltersProps> = (
 }) => {
   const t = useTranslations('ptisRedesign.headerFilters');
   const locale = useLocale();
-  const floorList = availableFloors.length > 0 ? availableFloors : ['1', '2', '3', '4', '5', '6', '7'];
+  const floorList = availableFloors;
 
   const selectedWingIndex = React.useMemo(() => {
     if (!wings || wings.length === 0) return 0;

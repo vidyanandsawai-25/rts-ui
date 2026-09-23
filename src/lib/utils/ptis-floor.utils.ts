@@ -7,56 +7,9 @@ export function normalizeFloor(floor: unknown): string {
   return String(floor).trim();
 }
 
-export function formatFloorLabel(floor: string, locale?: string): string {
-  const trimmed = floor.trim();
-  const lower = trimmed.toLowerCase();
-  const isGround = lower === '0' || lower === 'g' || lower.includes('ground') || lower.includes('तळमजला') || lower.includes('भूतल');
-
-  if (isGround) {
-    if (locale === 'mr') return 'तळमजला';
-    if (locale === 'hi') return 'भूतल';
-    return 'Ground Floor';
-  }
-
-  const numMatch = trimmed.match(/^(\d+)$/);
-  if (numMatch) {
-    const n = parseInt(numMatch[1], 10);
-    if (locale === 'mr') {
-      const mrOrdinals: Record<number, string> = {
-        1: 'पहिला मजला',
-        2: 'दुसरा मजला',
-        3: 'तिसरा मजला',
-        4: 'चौथा मजला',
-        5: 'पाचवा मजला',
-        6: 'सहावा मजला',
-        7: 'सातवा मजला',
-        8: 'आठवा मजला',
-        9: 'नववा मजला',
-        10: 'दहावा मजला',
-      };
-      return mrOrdinals[n] || `${n} वा मजला`;
-    }
-    if (locale === 'hi') {
-      const hiOrdinals: Record<number, string> = {
-        1: 'पहली मंजिल',
-        2: 'दूसरी मंजिल',
-        3: 'तीसरी मंजिल',
-        4: 'चौथी मंजिल',
-        5: 'पांचवीं मंजिल',
-        6: 'छठी मंजिल',
-        7: 'सातवीं मंजिल',
-        8: 'आठवीं मंजिल',
-        9: 'नौवीं मंजिल',
-        10: 'दसवीं मंजिल',
-      };
-      return hiOrdinals[n] || `${n}वीं मंजिल`;
-    }
-    const s = ['th', 'st', 'nd', 'rd'];
-    const v = n % 100;
-    const suffix = s[(v - 20) % 10] || s[v] || s[0];
-    return `${n}${suffix} Floor`;
-  }
-  return trimmed;
+export function formatFloorLabel(floor: string, _locale?: string): string {
+  if (floor == null) return '';
+  return String(floor).trim();
 }
 
 export function matchesFloor(
@@ -103,8 +56,8 @@ export function matchesFloor(
 }
 
 export function extractAvailableFloors(
-  surveyUnits?: { flr?: unknown; rawSurvey?: { floor?: unknown } }[],
-  previousUnits?: { flr?: unknown; rawSurvey?: { floor?: unknown } }[],
+  surveyUnits?: { flr?: unknown; wgFl?: string; rawSurvey?: { floor?: unknown } }[],
+  previousUnits?: { flr?: unknown; wgFl?: string; rawSurvey?: { floor?: unknown } }[],
   wings?: { wingMasterId?: number; floorRange?: string }[],
   selectedWingId?: number | null
 ): string[] {
@@ -121,10 +74,22 @@ export function extractAvailableFloors(
   surveyUnits?.forEach((u) => {
     collect(u.rawSurvey?.floor);
     collect(u.flr);
+    if (!u.flr && !u.rawSurvey?.floor && u.wgFl && typeof u.wgFl === 'string') {
+      const parts = u.wgFl.split('/');
+      if (parts.length > 1) {
+        collect(parts[parts.length - 1]);
+      }
+    }
   });
   previousUnits?.forEach((u) => {
     collect(u.rawSurvey?.floor);
     collect(u.flr);
+    if (!u.flr && !u.rawSurvey?.floor && u.wgFl && typeof u.wgFl === 'string') {
+      const parts = u.wgFl.split('/');
+      if (parts.length > 1) {
+        collect(parts[parts.length - 1]);
+      }
+    }
   });
 
   if (set.size === 0 && wings && wings.length > 0) {
@@ -145,7 +110,7 @@ export function extractAvailableFloors(
   }
 
   if (set.size === 0) {
-    return ['1', '2', '3', '4', '5', '6', '7'];
+    return [];
   }
 
   return Array.from(set).sort((a, b) => {
