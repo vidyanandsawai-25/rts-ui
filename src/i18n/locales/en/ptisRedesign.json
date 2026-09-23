@@ -2,7 +2,7 @@
   "errors": {
     "fetchWingWiseDetails": "Failed to fetch wing wise details"
   },
-  "title": "Property Tax Assessment - Survey & Difference Engine",  
+  "title": "Property Tax Assessment - Survey & Difference Engine",
   "newSurveyTitle": "NEW SURVEY (Current)",
   "differenceEngineTitle": "DIFFERENCE ENGINE",
   "existingAssessmentTitle": "EXISTING ASSESSMENT (Previous)",
@@ -53,7 +53,7 @@
     "rtTaxDelta": "RT TAX Δ",
     "suggestion": "SUGGESTION"
   },
-   "wingIntelligence": {
+  "wingIntelligence": {
     "wingIntelligence": "WING INTELLIGENCE",
     "valuation": {
       "rv": "Rateable Value (RV)",

@@ -6,7 +6,7 @@ import { formatCompactCurrency, formatCompactCurrencyWithSign } from '@/lib/util
 import { MasterTable, Column } from '@/components/common/MasterTable';
 import { WingType, WingTypeTableProps } from '@/types/property-tax/apartment';
 
-const COMMON_HEADER_CLASS = '!py-1 text-[9px] font-bold uppercase tracking-wider';
+const COMMON_HEADER_CLASS = '!py-1.5 text-[13px] font-black uppercase tracking-wider';
 const COMMON_CELL_CLASS = '!py-1 !px-1';
 
 export const ApartmentWingTypeTable: React.FC<WingTypeTableProps> = ({ types, areaUnit }) => {
@@ -19,7 +19,7 @@ export const ApartmentWingTypeTable: React.FC<WingTypeTableProps> = ({ types, ar
       key: 'type',
       label: t('type') || 'Type',
       align: 'left',
-      headerClassName: `${COMMON_HEADER_CLASS} !pr-1 !pl-3 text-slate-500`,
+      headerClassName: `${COMMON_HEADER_CLASS} !pr-1 !pl-3 text-slate-700`,
       cellClassName: '!py-1 !pr-0 !pl-0',
       render: (_val, row) => (
         <div className="flex items-center gap-1.5">
@@ -32,7 +32,7 @@ export const ApartmentWingTypeTable: React.FC<WingTypeTableProps> = ({ types, ar
       key: 'units',
       label: t('units') || 'Units',
       align: 'center',
-      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-slate-500`,
+      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-slate-700`,
       cellClassName: COMMON_CELL_CLASS,
       render: (_val, row) => (
         <span className="font-bold text-[10px] text-slate-800">{row.units}</span>
@@ -42,7 +42,7 @@ export const ApartmentWingTypeTable: React.FC<WingTypeTableProps> = ({ types, ar
       key: 'area',
       label: areaHeaderLabel,
       align: 'center',
-      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-slate-500`,
+      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-slate-700`,
       cellClassName: COMMON_CELL_CLASS,
       render: (_val, row) => (
         <span className="font-bold text-[10px] text-slate-800">{row.area.toLocaleString()}</span>
@@ -52,7 +52,7 @@ export const ApartmentWingTypeTable: React.FC<WingTypeTableProps> = ({ types, ar
       key: 'old',
       label: t('old') || 'Old',
       align: 'center',
-      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-slate-400`,
+      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-slate-600`,
       cellClassName: COMMON_CELL_CLASS,
       render: (_val, row) => (
         <div className="font-semibold text-[10px] text-slate-500">{formatCompactCurrency(row.old)}</div>
@@ -62,7 +62,7 @@ export const ApartmentWingTypeTable: React.FC<WingTypeTableProps> = ({ types, ar
       key: 'cur',
       label: t('cur') || 'Cur',
       align: 'center',
-      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-blue-500`,
+      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-blue-700`,
       cellClassName: COMMON_CELL_CLASS,
       render: (_val, row) => (
         <div className="font-bold text-[10px] text-blue-600">{formatCompactCurrency(row.cur)}</div>
@@ -72,7 +72,7 @@ export const ApartmentWingTypeTable: React.FC<WingTypeTableProps> = ({ types, ar
       key: 'retro',
       label: t('retro') || 'Retro',
       align: 'center',
-      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-purple-500`,
+      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-purple-700`,
       cellClassName: COMMON_CELL_CLASS,
       render: (_val, row) => (
         <div className="font-bold text-[10px] text-purple-600">{formatCompactCurrency(row.retro)}</div>
@@ -82,7 +82,7 @@ export const ApartmentWingTypeTable: React.FC<WingTypeTableProps> = ({ types, ar
       key: 'total',
       label: t('total') || 'Total',
       align: 'center',
-      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-slate-500`,
+      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-slate-700`,
       cellClassName: COMMON_CELL_CLASS,
       render: (_val, row) => (
         <div className="font-bold text-[10px] text-slate-900">{formatCompactCurrency(row.total)}</div>
@@ -92,7 +92,7 @@ export const ApartmentWingTypeTable: React.FC<WingTypeTableProps> = ({ types, ar
       key: 'rev',
       label: t('deltaRev') || 'Δ Rev',
       align: 'center',
-      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-emerald-500`,
+      headerClassName: `${COMMON_HEADER_CLASS} !px-1 text-emerald-700`,
       cellClassName: COMMON_CELL_CLASS,
       render: (_val, row) => {
         const isNegative = typeof row.rev === 'number' ? row.rev < 0 : String(row.rev).trim().startsWith('-');

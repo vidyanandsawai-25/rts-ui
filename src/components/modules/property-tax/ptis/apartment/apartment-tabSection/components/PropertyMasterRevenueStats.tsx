@@ -165,9 +165,6 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
             <CreditCard className="w-3 h-3 shrink-0" />
             <span className="text-[10px] font-bold leading-none truncate">{t('stats.collection') || 'Collection'}</span>
           </div>
-          <span className="text-[9.5px] font-extrabold px-1.5 py-0.5 rounded-full border border-emerald-500 bg-emerald-50 text-emerald-700 leading-none shrink-0">
-            {performance?.collectionPercent || '0%'}
-          </span>
         </div>
         <span className="text-xs font-black text-slate-900 leading-tight mt-0.5 truncate">
           {performance?.collectionAmount || '-'}
@@ -180,9 +177,6 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
               <CreditCard className="w-3.5 h-3.5 shrink-0" />
               <span className="text-[11px] font-bold">{t('stats.collection') || 'Collection'}</span>
             </div>
-            <span className="text-[9px] font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/50 px-1 py-0.2 rounded">
-              {performance?.collectionPercent || '0%'}
-            </span>
           </div>
           <div className="text-xs font-bold text-white pt-0.5">
             {performance?.collectionAmount || '-'}

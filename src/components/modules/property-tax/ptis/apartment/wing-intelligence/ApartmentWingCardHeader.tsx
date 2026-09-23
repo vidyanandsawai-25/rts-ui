@@ -9,7 +9,7 @@ const StatBadge: React.FC<StatBadgeProps> = ({ label, value, highlight }) => {
   return (
     <div className="flex flex-col items-center justify-center bg-white rounded-[8px] px-2 py-1 min-w-[3.5rem] shadow-sm">
       <span className="text-[13px] font-black text-[#132c66] leading-none mb-0.5">{value}</span>
-      <span className={`text-[7px] font-extrabold uppercase tracking-wide ${highlight ? 'bg-emerald-500 text-white px-1 py-[1px] rounded-sm mt-0.5' : 'text-slate-400'}`}>
+      <span className={`text-[7px] font-black uppercase tracking-wide ${highlight ? 'bg-emerald-500 text-white px-1 py-[1px] rounded-sm mt-0.5' : 'text-slate-600'}`}>
         {label}
       </span>
     </div>

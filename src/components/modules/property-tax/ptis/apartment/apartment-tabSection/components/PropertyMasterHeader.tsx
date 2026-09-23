@@ -57,19 +57,19 @@ export const PropertyMasterHeader: React.FC<PropertyMasterHeaderProps> = ({
 
         {/* SOCIETY NAME */}
         <div className="flex items-center gap-1 min-w-0 flex-1">
-          <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
-          <span className="text-slate-600 font-bold text-xs shrink-0">{t('header.societyName') || 'SOCIETY NAME:'}</span>
+          <Building2 className="w-4.5 h-4.5 text-slate-500 shrink-0" />
+          <span className="text-slate-700 font-bold text-xs shrink-0">{t('header.societyName') || 'SOCIETY NAME:'}</span>
           {societyName && societyName !== '-' ? (
             <Tooltip
               content={<div className="max-w-md whitespace-normal break-words font-semibold text-xs leading-relaxed">{societyName}</div>}
               placement="top"
             >
-              <span className="font-black text-[#ef4444] text-[13px] tracking-tight truncate cursor-pointer hover:underline inline-block min-w-0 flex-1" title={societyName}>
+              <span className="font-black text-[#ef4444] text-[16px] tracking-tight truncate cursor-pointer hover:underline inline-block min-w-0 flex-1" title={societyName}>
                 {societyName}
               </span>
             </Tooltip>
           ) : (
-            <span className="font-black text-[#ef4444] text-[13px] tracking-tight truncate min-w-0 flex-1">
+            <span className="font-black text-[#ef4444] text-[16px] tracking-tight truncate min-w-0 flex-1">
               -
             </span>
           )}

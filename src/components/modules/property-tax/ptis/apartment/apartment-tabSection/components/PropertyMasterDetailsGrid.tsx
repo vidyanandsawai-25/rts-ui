@@ -43,7 +43,6 @@ export const PropertyMasterDetailsGrid: React.FC<PropertyMasterDetailsGridProps>
     return (
       <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 leading-tight text-left">
         <div className="inline-flex items-center whitespace-nowrap">
-          <span className="text-slate-600 font-semibold mr-1">{t('grid.current') || 'Current:'}</span>
           <span className={hasCurrent ? "font-bold text-[#1d4ed8]" : "font-semibold text-slate-400"}>
             {hasCurrent ? currentVal : '-'}
           </span>

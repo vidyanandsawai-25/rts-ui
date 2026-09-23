@@ -50,8 +50,8 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
       {/* Top: Header Row with DESC */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-1 gap-2">
         <div className="flex items-center gap-1.5 shrink-0">
-          <TrendingUp className="w-3.5 h-3.5 text-slate-800" />
-          <span className="text-[11px] font-black text-slate-900 tracking-tight whitespace-nowrap">
+          <TrendingUp className="w-5 h-5 text-slate-900" />
+          <span className="text-[15px] font-black text-slate-900 tracking-tight whitespace-nowrap">
             {t('revenueCard.addRevenue') || 'ADD. REVENUE'}
           </span>
         </div>
@@ -65,7 +65,7 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
 
       {/* Middle: 3D Mascot Avatar + Amount & Growth Pill */}
       <div className="flex items-center justify-between px-1 py-0.5">
-        <AnimatedMascot className="w-14 h-14" size={56} mood={mascotMood} />
+        <AnimatedMascot className="w-20 h-20" size={80} mood={mascotMood} />
         <div
           className="flex flex-col items-end"
           title={
