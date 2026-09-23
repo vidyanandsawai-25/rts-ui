@@ -33,6 +33,7 @@ import type { RTSCertificateType } from '@/types/rts/certificate.types';
 import type {
   RtsApplicationApprovalStage,
   RtsApplicationApprovalActionPayload,
+  RtsApplicationApprovalDecisionResponse,
   RtsApplicationApprovalFieldValuePayload,
   RtsApplicationApprovalStagesItem,
   RtsApplicationDocumentItem,
@@ -195,6 +196,7 @@ export interface RtsApplicationFullDetailData {
 export interface RtsApplicationApprovalActionResult {
   success: boolean;
   message?: string;
+  applicationStatus?: string;
   errorCode?: 'OFFICER_ACCESS_DENIED';
 }
 
@@ -377,7 +379,7 @@ async function resolveApprovalActor(applicationId: number): Promise<ApprovalActo
 async function submitApprovalDecision(
   applicationId: number,
   remark: string,
-  submit: (payload: RtsApplicationApprovalActionPayload) => Promise<{ message: string }>,
+  submit: (payload: RtsApplicationApprovalActionPayload) => Promise<RtsApplicationApprovalDecisionResponse>,
   status: string
 ): Promise<RtsApplicationApprovalActionResult> {
   if (!Number.isInteger(applicationId) || applicationId <= 0) {
@@ -400,8 +402,14 @@ async function submitApprovalDecision(
       status,
     });
 
+    const applicationStatus = (result.items ?? result.item)?.status?.trim();
+
     revalidatePath('/rts/dashboard/rts-applications');
-    return { success: true, message: result.message };
+    return {
+      success: true,
+      message: result.message,
+      ...(applicationStatus ? { applicationStatus } : {}),
+    };
   } catch (error) {
     return {
       success: false,

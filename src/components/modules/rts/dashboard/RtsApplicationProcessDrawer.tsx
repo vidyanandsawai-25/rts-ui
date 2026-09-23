@@ -97,7 +97,9 @@ interface RtsApplicationProcessDrawerProps {
   data: RtsApplicationProcessData | null;
   onClose: () => void;
   onOpenDocument: (documentGuid: string) => void;
-  onSuccess?: () => void;
+  onRefresh?: () => void;
+  onWorkflowComplete?: () => void;
+  onCertificateIssued?: () => void;
 }
 
 interface DisplayDocument {
@@ -225,7 +227,9 @@ export default function RtsApplicationProcessDrawer({
   data,
   onClose,
   onOpenDocument,
-  onSuccess,
+  onRefresh,
+  onWorkflowComplete,
+  onCertificateIssued,
 }: RtsApplicationProcessDrawerProps) {
   const t = useTranslations('rts.applicationDashboard.processDrawer');
   const tCommon = useTranslations('common');
@@ -579,7 +583,11 @@ export default function RtsApplicationProcessDrawer({
                 : t('revertApplication'))
       );
       setOfficerRemark('');
-      onSuccess?.();
+      if (result.applicationStatus?.trim().toLowerCase() === 'approved') {
+        onRefresh?.();
+      } else {
+        onWorkflowComplete?.();
+      }
     });
   };
 
@@ -621,7 +629,7 @@ export default function RtsApplicationProcessDrawer({
       setInitialFieldValues(editedFieldValues);
       setIsEditing(false);
       setOfficerRemark('');
-      onSuccess?.();
+      onRefresh?.();
     });
   };
 
@@ -1573,7 +1581,7 @@ export default function RtsApplicationProcessDrawer({
             toast.success(
               `ऑफलाइन शुल्क ₹${receipt.amount} यशस्वीरीत्या जमा झाले. पावती क्र. ${receipt.receiptNo}`
             );
-            onSuccess?.();
+            onRefresh?.();
           }}
         />
       )}
@@ -1592,7 +1600,7 @@ export default function RtsApplicationProcessDrawer({
           applicantName={applicantName}
           onIssued={() => {
             setIsCertModalOpen(false);
-            onSuccess?.();
+            onCertificateIssued?.();
           }}
         />
       )}
@@ -1605,7 +1613,7 @@ export default function RtsApplicationProcessDrawer({
           applicationNo={headerApplicationNo}
           onIssued={() => {
             setIsManualCertificateUploadOpen(false);
-            onSuccess?.();
+            onCertificateIssued?.();
           }}
         />
       )}

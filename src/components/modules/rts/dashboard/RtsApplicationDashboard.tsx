@@ -333,6 +333,24 @@ export default function RtsApplicationDashboard({
     updateDrawerUrl({ process: '', doc: '' });
   }, [router, updateDrawerUrl]);
 
+  const completeWorkflow = useCallback(() => {
+    window.sessionStorage.removeItem('rts-application-process-parent');
+    updateDrawerUrl({ view: '', fullDetail: '', process: '', doc: '' });
+  }, [updateDrawerUrl]);
+
+  const openIssuedCertificateDetails = useCallback(
+    (applicationId: number) => {
+      window.sessionStorage.removeItem('rts-application-process-parent');
+      updateDrawerUrl({
+        view: '',
+        fullDetail: String(applicationId),
+        process: '',
+        doc: '',
+      });
+    },
+    [updateDrawerUrl]
+  );
+
   useEffect(() => {
     if (searchTerm === filters.search) return;
     const timeoutId = window.setTimeout(() => {
@@ -1034,7 +1052,12 @@ export default function RtsApplicationDashboard({
         data={drawer?.mode === 'process' ? drawer.data : null}
         onClose={closeProcess}
         onOpenDocument={openDocument}
-        onSuccess={() => router.refresh()}
+        onRefresh={() => router.refresh()}
+        onWorkflowComplete={completeWorkflow}
+        onCertificateIssued={() => {
+          if (drawer?.mode !== 'process') return;
+          openIssuedCertificateDetails(drawer.record.applicationId);
+        }}
       />
 
       {drawer?.mode === 'document' && drawer.document.documentGuid && (
