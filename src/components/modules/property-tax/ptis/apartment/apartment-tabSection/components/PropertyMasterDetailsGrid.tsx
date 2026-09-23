@@ -3,7 +3,6 @@
 import React from 'react';
 import {
   MapPin,
-  Landmark,
   Tag,
   FileSpreadsheet,
   Crosshair,
@@ -63,7 +62,6 @@ export const PropertyMasterDetailsGrid: React.FC<PropertyMasterDetailsGridProps>
       {/* SECTION 1: General & Location Info */}
       <div className="flex flex-col justify-between md:border-r md:border-slate-100 md:pr-3 min-w-0 overflow-hidden gap-y-1.5">
         <PropertyMasterInfoRow icon={MapPin} label={t('grid.division') || 'Division:'} value={data?.division} minWidth="min-w-[125px]" />
-        <PropertyMasterInfoRow icon={Landmark} label={t('grid.wardNo') || 'Ward No.:'} value={data?.wardNo} minWidth="min-w-[125px]" />
         <PropertyMasterInfoRow icon={Tag} label={t('grid.category') || 'Category:'} value={data?.category} minWidth="min-w-[125px]" />
         <PropertyMasterInfoRow
           icon={FileSpreadsheet}
@@ -73,16 +71,16 @@ export const PropertyMasterDetailsGrid: React.FC<PropertyMasterDetailsGridProps>
         />
         <PropertyMasterInfoRow icon={Crosshair} label={t('grid.subZoneCsn') || 'Sub Zone & CSN:'} value={data?.subZoneCsnNo} minWidth="min-w-[125px]" />
         <PropertyMasterInfoRow icon={Grid} label={t('grid.plotNo') || 'Plot No.:'} value={data?.plotNo} minWidth="min-w-[125px]" />
-      </div>
-
-      {/* SECTION 2: Ownership & Management */}
-      <div className="flex flex-col justify-between md:border-r md:border-slate-100 md:pr-3 min-w-0 overflow-hidden gap-y-1.5">
         <PropertyMasterInfoRow
           icon={User}
           label={t('grid.landOwnerName') || 'Land Owner Name:'}
           value={data?.landOwnerName || data?.owner}
           minWidth="min-w-[130px]"
         />
+      </div>
+
+      {/* SECTION 2: Ownership & Management */}
+      <div className="flex flex-col justify-between md:border-r md:border-slate-100 md:pr-3 min-w-0 overflow-hidden gap-y-1.5">
         <PropertyMasterInfoRow icon={Building2} label={t('grid.builderName') || 'Builder Name:'} value={data?.builderName} minWidth="min-w-[130px]" />
         <PropertyMasterInfoRow icon={Mail} label={t('grid.societyEmail') || 'Society Email:'} value={data?.societyEmail} minWidth="min-w-[130px]" />
         <PropertyMasterInfoRow icon={User} label={t('grid.secretaryName') || 'Secretary Name:'} value={data?.secretaryName} minWidth="min-w-[130px]" />
@@ -93,6 +91,7 @@ export const PropertyMasterDetailsGrid: React.FC<PropertyMasterDetailsGridProps>
           minWidth="min-w-[130px]"
         />
         <PropertyMasterInfoRow icon={Mail} label={t('grid.secretaryEmail') || 'Secretary Email:'} value={data?.secretaryEmail} minWidth="min-w-[130px]" />
+        <PropertyMasterInfoRow icon={User} label={t('grid.managerNameEnglish') || 'Manager Name (Eng):'} value={data?.managerNameEnglish || data?.managerName} minWidth="min-w-[130px]" />
       </div>
 
       {/* SECTION 3: Society Address & Property Metrics */}

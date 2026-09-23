@@ -147,7 +147,9 @@
       "units": "इकाइयाँ",
       "clickExemptionSection": "छूट प्राप्त संपत्तियों वाली इकाइयों को देखने के लिए विंग कार्ड पर छूट अनुभाग पर क्लिक करें।",
       "close": "बंद करें",
-      "viewDetailedAmcLedger": "विस्तृत एएमसी लेजर देखें"
+      "viewDetailedAmcLedger": "विस्तृत एएमसी लेजर देखें",
+      "taxDetailsTab": "कर विवरण ({type})",
+      "arrearsTab": "बकाया"
     }
   }
 }

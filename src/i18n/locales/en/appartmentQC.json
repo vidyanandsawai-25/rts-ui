@@ -59,6 +59,8 @@
     "kyc": "KYC"
   },
   "taxDetails": {
+    "taxDetailsTab": "Tax Details ({type})",
+    "arrearsTab": "Arrears",
     "title": "Property Tax Details Summary",
     "subtitle": "Aggregated tax details by Method",
     "propertyType": "Property Type",
@@ -462,6 +464,7 @@
     "plotNo": "Plot No.:",
     "landOwnerName": "Land Owner Name:",
     "builderName": "Builder Name:",
+    "managerNameEnglish": "Manager Name:",
     "societyEmail": "Society Email:",
     "secretaryName": "Secretary Name:",
     "secretaryMobile": "Secretary Mobile:",

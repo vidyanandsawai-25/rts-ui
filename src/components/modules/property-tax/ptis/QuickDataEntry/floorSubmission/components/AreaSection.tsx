@@ -76,25 +76,25 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
         error={formErrors.areaSqFt}
         labelExtra={
           !isOpenPlot ? (
-            <span className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 border border-blue-100 rounded-full">
-              <span className="relative flex h-2 w-2">
+            <span className="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 border border-blue-100 rounded-full shrink-0 whitespace-nowrap">
+              <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
               </span>
-              <span className="text-[9px] text-blue-700 font-bold uppercase tracking-tight">
-                {t('floor.autoCalculated')}
+              <span className="text-[8px] text-blue-700 font-bold uppercase tracking-tight">
+                {t('floor.autoCalculated') || 'Auto'}
               </span>
             </span>
           ) : undefined
         }
       >
         <div className="group relative">
-          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-slate-100/90 hover:bg-slate-200/90 px-2 py-1 rounded-md border border-slate-300 shadow-sm transition-all duration-200 group-hover:shadow group-focus-within:border-blue-400 group-focus-within:ring-1 group-focus-within:ring-blue-100 z-20">
-            <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">
+          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-slate-100/90 hover:bg-slate-200/90 px-1.5 py-0.5 rounded border border-slate-300 shadow-2xs transition-all duration-200 group-hover:shadow group-focus-within:border-blue-400 group-focus-within:ring-1 group-focus-within:ring-blue-100 z-20">
+            <span className="text-[9px] font-black text-slate-700 uppercase tracking-wider">
               {t('floor.sqFt')}
             </span>
             <>
-              <div className="w-[1px] h-3.5 bg-slate-400 mx-0.5 opacity-60" />
+              <div className="w-[1px] h-3 bg-slate-400 mx-0.5 opacity-60" />
               <button
                 ref={toggleButtonRef}
                 type="button"
@@ -117,10 +117,10 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
                   }
                   setShowRoomSubmission(true);
                 }}
-                className="flex items-center justify-center p-1 rounded hover:bg-blue-600 hover:text-white text-blue-600 transition-all active:scale-90"
+                className="flex items-center justify-center p-0.5 rounded hover:bg-blue-600 hover:text-white text-blue-600 transition-all active:scale-90"
                 title={t('floor.openRoomSubmission') || 'Open Room Submission'}
               >
-                <LayoutGrid className="w-3.5 h-3.5" />
+                <LayoutGrid className="w-3 h-3" />
               </button>
             </>
           </div>
@@ -132,7 +132,7 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
             value={editingFloorForm.areaSqFt ? parseFloat(String(editingFloorForm.areaSqFt)).toFixed(2) : ''}
             readOnly={true}
             className={cn(
-              "h-9 text-sm pr-24 border-gray-300 focus:border-blue-500 focus:ring-blue-200 transition-colors",
+              "h-9 text-sm pr-20 border-gray-300 focus:border-blue-500 focus:ring-blue-200 transition-colors",
               "bg-gray-50 cursor-default group-hover:bg-blue-50/30"
             )}
           />
@@ -144,7 +144,7 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
         id="floor-area-sqm"
         label={isOpenPlot ? (t('floor.plotAreaSqM') || 'Plot Area (Sq M)') : t('floor.areaSqM')}
         value={editingFloorForm.areaSqM ? parseFloat(String(editingFloorForm.areaSqM)).toFixed(2) : ''}
-        badgeText={!isOpenPlot ? t('floor.autoCalculated') : undefined}
+        badgeText={!isOpenPlot ? (t('floor.autoCalculated') || 'Auto') : undefined}
       />
 
       {!isOpenPlot && (
@@ -171,8 +171,8 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
 
   return (
     <div className={cn(
-      "grid grid-cols-1 gap-4",
-      isOpenPlot ? "md:col-span-2 md:grid-cols-2" : "md:col-span-3 md:grid-cols-5"
+      "grid grid-cols-5 gap-2.5 w-full",
+      isOpenPlot ? "col-span-2 grid-cols-2" : "col-span-3 grid-cols-5"
     )}>
       {content}
     </div>

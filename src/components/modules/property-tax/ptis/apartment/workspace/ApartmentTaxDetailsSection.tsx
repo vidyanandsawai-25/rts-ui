@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   ApartmentTaxDetailsItem,
   TaxHeadItem,
@@ -30,6 +31,7 @@ export function ApartmentTaxDetailsSection({
   taxMode = 'rateable',
   isLoading = false,
 }: ApartmentTaxDetailsSectionProps) {
+  const t = useTranslations('appartmentQC');
   const [activeTab, setActiveTab] = useState<'taxDetails' | 'arrears'>('taxDetails');
   const [detailsData, setDetailsData] = useState<ApartmentTaxDetailsItem | null>(null);
   const lastFetchedRef = useRef<string>('');
@@ -127,30 +129,23 @@ export function ApartmentTaxDetailsSection({
             <button
               type="button"
               onClick={() => setActiveTab('taxDetails')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
-                activeTab === 'taxDetails' ? 'bg-white text-blue-700 shadow-xs' : 'text-zinc-600 hover:text-zinc-900'
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${activeTab === 'taxDetails' ? 'bg-white text-blue-700 shadow-xs' : 'text-zinc-600 hover:text-zinc-900'
+                }`}
             >
-              Tax Details ({currentTaxType})
+              {t('taxDetails.taxDetailsTab', { type: currentTaxType })}
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('arrears')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
-                activeTab === 'arrears' ? 'bg-white text-blue-700 shadow-xs' : 'text-zinc-600 hover:text-zinc-900'
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${activeTab === 'arrears' ? 'bg-white text-blue-700 shadow-xs' : 'text-zinc-600 hover:text-zinc-900'
+                }`}
             >
-              Arrears
-              {arrearsHeads.length > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-800 rounded-full font-bold">
-                  {arrearsHeads.length}
-                </span>
-              )}
+              {t('taxDetails.arrearsTab')}
             </button>
           </div>
-          <span className="text-[11px] font-bold px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 rounded-md">
+          {/* <span className="text-[11px] font-bold px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 rounded-md">
             Mode: {currentTaxType === 'CV' ? 'Capital Value (CV)' : currentTaxType === 'Dual' ? 'Dual Method (RV + CVM)' : 'Rateable Value (RV)'}
-          </span>
+          </span> */}
         </div>
       </div>
 

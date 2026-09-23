@@ -147,7 +147,9 @@
       "units": "युनिट्स",
       "clickExemptionSection": "सूट प्राप्त मालमत्ता असलेली युनिट्स पाहण्यासाठी विंग कार्डवरील सूट विभागावर क्लिक करा.",
       "close": "बंद करा",
-      "viewDetailedAmcLedger": "सविस्तर एएमसी खातेवही पहा"
+      "viewDetailedAmcLedger": "सविस्तर एएमसी खातेवही पहा",
+      "taxDetailsTab": "कर तपशील ({type})",
+      "arrearsTab": "थकीत"
     }
   }
 }

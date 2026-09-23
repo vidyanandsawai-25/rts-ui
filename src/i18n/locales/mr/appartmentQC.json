@@ -59,6 +59,8 @@
     "kyc": "केवायसी"
   },
   "taxDetails": {
+    "taxDetailsTab": "कर तपशील ({type})",
+    "arrearsTab": "थकीत",
     "title": "मालमत्ता कर तपशील सारांश",
     "subtitle": "मालमत्ता प्रकारानुसार एकत्रित कर तपशील",
     "propertyType": "मालमत्तेचा प्रकार",
@@ -456,6 +458,7 @@
     "plotNo": "प्लॉट क्र.:",
     "landOwnerName": "जमीन मालकाचे नाव:",
     "builderName": "बिल्डरचे नाव:",
+    "managerNameEnglish": "व्यवस्थापकाचे नाव:",
     "societyEmail": "सोसायटी ईमेल:",
     "secretaryName": "सचिवांचे नाव:",
     "secretaryMobile": "सचिवांचा मोबाईल:",

@@ -59,6 +59,8 @@
     "kyc": "केवाईसी"
   },
   "taxDetails": {
+    "taxDetailsTab": "कर विवरण ({type})",
+    "arrearsTab": "बकाया",
     "title": "संपत्ति कर विवरण सारांश",
     "subtitle": "संपत्ति प्रकार के अनुसार समेकित कर विवरण",
     "propertyType": "संपत्ति का प्रकार",
@@ -456,6 +458,7 @@
     "plotNo": "भूखंड नं.:",
     "landOwnerName": "भूमि मालिक का नाम:",
     "builderName": "बिल्डर का नाम:",
+    "managerNameEnglish": "प्रबंधक का नाम:",
     "societyEmail": "सोसायटी ईमेल:",
     "secretaryName": "सचिव का नाम:",
     "secretaryMobile": "सचिव मोबाइल:",

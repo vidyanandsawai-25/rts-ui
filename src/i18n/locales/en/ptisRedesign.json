@@ -147,7 +147,9 @@
       "units": "units",
       "clickExemptionSection": "Click the Exemption section on the wing card to view units with exempted properties.",
       "close": "Close",
-      "viewDetailedAmcLedger": "View Detailed AMC Ledger"
+      "viewDetailedAmcLedger": "View Detailed AMC Ledger",
+      "taxDetailsTab": "Tax Details ({type})",
+      "arrearsTab": "Arrears"
     }
   }
 }

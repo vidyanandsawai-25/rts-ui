@@ -175,20 +175,14 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
   const isApartment = returnTab === 'apartment' || searchParams.get('from') === 'apartment';
   const isIndividual = returnTab === 'individual' || searchParams.get('from') === 'individual';
 
-  const visibleTabs = isApartment
-    ? TABS.filter((tab) => {
-        if (tab.label === 'Property' || tab.label === 'Kyc') return false;
-        if ((hideWing || isIndividualProperty) && tab.label === 'Wing') return false;
-        if ((hideSociety || isIndividualProperty) && tab.label === 'Society') return false;
-        if (isMainApartmentCategory && tab.label === 'FloorSubmission') return false;
-        return true;
-      })
-    : TABS.filter((tab) => {
-        if ((hideWing || isIndividualProperty) && tab.label === 'Wing') return false;
-        if ((hideSociety || isIndividualProperty) && tab.label === 'Society') return false;
-        if (isMainApartmentCategory && tab.label === 'FloorSubmission') return false;
-        return true;
-      });
+  const visibleTabs = TABS.filter((tab) => {
+    // Hide Property and KYC tabs ONLY if it is pure Apartment (Main Apartment without Partition)
+    if (isMainApartmentCategory && (tab.label === 'Property' || tab.label === 'Kyc')) return false;
+    if (isMainApartmentCategory && tab.label === 'FloorSubmission') return false;
+    if ((hideWing || isIndividualProperty) && tab.label === 'Wing') return false;
+    if ((hideSociety || isIndividualProperty) && tab.label === 'Society') return false;
+    return true;
+  });
 
   return (
     <div className="bg-white border-b-2 border-slate-300 px-3 py-2 shadow-sm overflow-x-auto no-scrollbar">

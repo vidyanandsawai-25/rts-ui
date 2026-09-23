@@ -191,11 +191,11 @@ export async function handleFooterAction(
         handleExpand('capitalExpand', capitalExpand);
         handleExpand('dualExpand', dualExpand);
 
-        const activeTabKey = tab || (isApartment ? 'buildingpermission' : 'propertydetails');
-        const resolvedTabKey = (isApartment && (activeTabKey === 'propertydetails' || activeTabKey === 'kycdetails' || activeTabKey === 'societydetails' || activeTabKey === 'wingdetails'))
-          ? 'buildingpermission'
-          : ((activeTabKey === 'societydetails' || activeTabKey === 'wingdetails') ? 'propertydetails' : activeTabKey);
-        const config = MAIN_TO_QDE_MAP[resolvedTabKey] || (isApartment ? MAIN_TO_QDE_MAP.buildingpermission : MAIN_TO_QDE_MAP.propertydetails);
+        const activeTabKey = tab || 'propertydetails';
+        const resolvedTabKey = (activeTabKey === 'societydetails' || activeTabKey === 'wingdetails') 
+          ? 'propertydetails' 
+          : activeTabKey;
+        const config = MAIN_TO_QDE_MAP[resolvedTabKey] || MAIN_TO_QDE_MAP.propertydetails;
 
         params.set('propertyId', String(propertyId));
         params.set('returnTab', isApartment ? 'apartment' : config.mainTabId);
