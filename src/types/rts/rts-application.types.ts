@@ -164,6 +164,8 @@ export interface GetRtsApplicationApprovalListParams {
   applicationNo?: string;
   search?: string;
   status?: string;
+  fromDate?: string;
+  toDate?: string;
   sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays' | 'FIFO';
   sortOrder?: 'asc' | 'desc';
   userId?: number;

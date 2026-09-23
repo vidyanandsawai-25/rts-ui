@@ -95,6 +95,8 @@ export async function getApprovalApplicationsPaged(
   }
   if (params.applicationNo && !queryParams.has('ApplicationNo')) queryParams.set('ApplicationNo', params.applicationNo);
   if (params.status) queryParams.set('ApplicationStatus', params.status);
+  if (params.fromDate) queryParams.set('FromDate', params.fromDate);
+  if (params.toDate) queryParams.set('ToDate', params.toDate);
   if (params.sortBy) queryParams.set('SortBy', params.sortBy);
   if (params.sortOrder) queryParams.set('SortOrder', params.sortOrder);
   if (params.userId != null) queryParams.set('UserId', String(params.userId));

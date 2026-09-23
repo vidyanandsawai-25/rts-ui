@@ -842,6 +842,8 @@ export interface RtsApplicationsDashboardFilters {
   applicationNo?: string;
   search?: string;
   status?: string;
+  fromDate?: string;
+  toDate?: string;
   sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays' | 'FIFO';
   sortOrder?: 'asc' | 'desc';
   assignedUserId?: number;
@@ -853,6 +855,14 @@ export interface RtsApplicationsDashboardFilters {
 const DASHBOARD_PAGE_SIZE = 10;
 const SOURCE_PAGE_SIZE_LIMIT = 100;
 const APPLICATION_DASHBOARD_CACHE_SECONDS = 15;
+
+function toDashboardDateTime(value: string | undefined, boundary: 'start' | 'end'): string | undefined {
+  const date = value?.trim();
+  if (!date) return undefined;
+  if (date.includes('T')) return date;
+
+  return `${date}T${boundary === 'start' ? '00:00:00' : '23:59:59.999'}`;
+}
 
 const getCachedApplicationDashboardPage = unstable_cache(
   async (payload: RtsApplicationDashboardRequestInput) =>
@@ -936,6 +946,8 @@ async function getApprovalApplicationsWindow(
     applicationNo: filters.applicationNo,
     search: filters.search ?? filters.applicationNo,
     status: filters.status,
+    fromDate: toDashboardDateTime(filters.fromDate, 'start'),
+    toDate: toDashboardDateTime(filters.toDate, 'end'),
     sortBy: isFifo ? undefined : filters.sortBy ?? 'CreatedDate',
     sortOrder: isFifo ? undefined : filters.sortOrder ?? 'asc',
     userId: filters.assignedUserId,
@@ -1385,8 +1397,8 @@ export async function getRtsApplicationsDashboardAction(
       ApplicationStatus: filters.status ?? null,
       DepartmentName: filters.departmentName ?? null,
       ServiceId: filters.serviceId ?? null,
-      FromDate: null,
-      ToDate: null,
+      FromDate: toDashboardDateTime(filters.fromDate, 'start') ?? null,
+      ToDate: toDashboardDateTime(filters.toDate, 'end') ?? null,
     };
 
     const approvalApplicationsRequest = isMyApplicationsMode && currentUserId == null

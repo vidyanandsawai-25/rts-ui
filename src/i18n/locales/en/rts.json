@@ -517,6 +517,9 @@
       "allDepartments": "All Departments",
       "allServices": "All Services",
       "allStatuses": "All Statuses",
+      "dateRange": "Date Range",
+      "fromDate": "From date",
+      "toDate": "To date",
       "showMyApplications": "Show my applications",
       "clearFilters": "Clear filters"
     },

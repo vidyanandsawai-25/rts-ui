@@ -67,6 +67,8 @@ interface RtsApplicationDashboardProps {
     service: string;
     status: string;
     search: string;
+    fromDate: string;
+    toDate: string;
     sortBy: string;
     sortOrder: string;
     myApplications: boolean;
@@ -228,8 +230,8 @@ export default function RtsApplicationDashboard({
     (changes: Record<string, string | boolean>) => {
       const params = new URLSearchParams(window.location.search);
       [
-        'department', 'service', 'status', 'search', 'pageSize', 'pageNumber', 'sortBy', 'sortOrder', 'myApplications',
-        'Department', 'Service', 'Status', 'Search', 'PageSize', 'PageNumber', 'SortBy', 'SortOrder', 'MyApplications',
+        'department', 'service', 'status', 'search', 'fromDate', 'toDate', 'pageSize', 'pageNumber', 'sortBy', 'sortOrder', 'myApplications',
+        'Department', 'Service', 'Status', 'Search', 'FromDate', 'ToDate', 'PageSize', 'PageNumber', 'SortBy', 'SortOrder', 'MyApplications',
       ].forEach((key) => params.delete(key));
 
       Object.entries(changes).forEach(([key, value]) => {
@@ -360,7 +362,7 @@ export default function RtsApplicationDashboard({
   }, [filters, searchTerm, updateUrl]);
 
   const hasActiveTableFilters = Boolean(
-    filters.department || filters.service || filters.status || filters.search || filters.sortBy || filters.sortOrder
+    filters.department || filters.service || filters.status || filters.search || filters.fromDate || filters.toDate || filters.sortBy || filters.sortOrder
   );
 
   const clearTableFilters = useCallback(() => {
@@ -370,6 +372,8 @@ export default function RtsApplicationDashboard({
       service: '',
       status: '',
       search: '',
+      fromDate: '',
+      toDate: '',
       sortBy: '',
       sortOrder: '',
       myApplications: filters.myApplications,
@@ -815,7 +819,8 @@ export default function RtsApplicationDashboard({
             </p>
           </div>
 
-          <div className="flex w-full min-w-0 flex-wrap items-center gap-3 lg:flex-1 lg:justify-end">
+          <div className="flex w-full min-w-0 flex-col gap-3 lg:flex-1 lg:items-end">
+            <div className="flex w-full min-w-0 flex-wrap items-end gap-3 lg:justify-end">
             <div className="w-full sm:w-44 space-y-1">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
                 {t('applicationDashboard.table.department')}
@@ -855,21 +860,58 @@ export default function RtsApplicationDashboard({
               />
             </div>
 
-            <div className="w-full sm:w-56 space-y-1">
+            <div className="w-full sm:w-[15.5rem] space-y-1">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
-                {tCommon('actions.search')}
+                {t('applicationDashboard.filters.dateRange')}
               </Label>
-              <SearchInput
-                value={searchTerm}
-                onChange={setSearchTerm}
-                onEnter={() => updateUrl({ ...filters, search: searchTerm.trim(), pageNumber: '1' })}
-                placeholder={t('applicationDashboard.applications.searchPlaceholder')}
-                className="mb-0 w-full font-medium"
-              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="date"
+                  value={filters.fromDate}
+                  max={filters.toDate || undefined}
+                  aria-label={t('applicationDashboard.filters.fromDate')}
+                  onChange={(event) => updateUrl({
+                    ...filters,
+                    fromDate: event.target.value,
+                    toDate: filters.toDate && event.target.value > filters.toDate
+                      ? event.target.value
+                      : filters.toDate,
+                    pageNumber: '1',
+                  })}
+                  className="h-9 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+                <input
+                  type="date"
+                  value={filters.toDate}
+                  min={filters.fromDate || undefined}
+                  aria-label={t('applicationDashboard.filters.toDate')}
+                  onChange={(event) => updateUrl({
+                    ...filters,
+                    toDate: event.target.value,
+                    pageNumber: '1',
+                  })}
+                  className="h-9 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
             </div>
 
-            <div className="mt-4.5 flex shrink-0 items-center gap-2">
-              <div className="flex h-9 items-center rounded-lg border border-slate-200 bg-slate-50 px-3">
+            </div>
+
+            <div className="flex w-full shrink-0 flex-wrap items-end justify-center gap-2 lg:justify-end">
+              <div className="w-full flex-none space-y-1 md:w-72">
+                <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
+                  {tCommon('actions.search')}
+                </Label>
+                <SearchInput
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  onEnter={() => updateUrl({ ...filters, search: searchTerm.trim(), pageNumber: '1' })}
+                  placeholder={t('applicationDashboard.applications.searchPlaceholder')}
+                  className="mb-0 w-full font-medium"
+                />
+              </div>
+
+              <div className="flex h-9 flex-none items-center rounded-lg border border-slate-200 bg-slate-50 px-3">
                 <ToggleSwitch
                   checked={filters.myApplications}
                   onChange={(checked) => updateUrl({
@@ -889,6 +931,7 @@ export default function RtsApplicationDashboard({
                   variant="primary"
                   size="sm"
                   onClick={clearTableFilters}
+                  className="mb-0.5"
                 >
                   {t('applicationDashboard.filters.clearFilters')}
                 </Button>

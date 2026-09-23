@@ -36,6 +36,19 @@ function getPositiveApplicationId(value: string | undefined): number | null {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
+function getIsoDate(value: string | undefined): string | undefined {
+  const date = value?.trim();
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return undefined;
+
+  const [year, month, day] = date.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day
+    ? date
+    : undefined;
+}
+
 function parseProcessRoute(value: string | undefined): {
   applicationId: number;
   stageSlug?: string;
@@ -79,6 +92,11 @@ export default async function RtsApplicationDashboardPage({
     ? statusByNormalizedValue[rawStatus.toLowerCase()] ?? rawStatus
     : undefined;
   const search = readQuery(query, 'search', 'Search')?.trim() ?? '';
+  const fromDate = getIsoDate(readQuery(query, 'fromDate', 'FromDate'));
+  const requestedToDate = getIsoDate(readQuery(query, 'toDate', 'ToDate'));
+  const toDate = fromDate && requestedToDate && requestedToDate < fromDate
+    ? fromDate
+    : requestedToDate;
   const pageNumber = getPositivePage(readQuery(query, 'pageNumber', 'PageNumber'));
   const requestedSortBy = readQuery(query, 'sortBy', 'SortBy')?.trim();
   const sortBy = requestedSortBy && SORT_BY_VALUES.has(requestedSortBy as ApprovalSortBy)
@@ -128,6 +146,8 @@ export default async function RtsApplicationDashboardPage({
       applicationNo: search || undefined,
       search: search || undefined,
       status,
+      fromDate,
+      toDate,
       sortBy,
       sortOrder,
       myApplications,
@@ -221,6 +241,8 @@ export default async function RtsApplicationDashboardPage({
           service: service ? toApplicationFilterSlug(service.serviceName) : '',
           status: status ?? '',
           search,
+          fromDate: fromDate ?? '',
+          toDate: toDate ?? '',
           sortBy: sortBy ?? '',
           sortOrder: sortOrder ?? '',
           myApplications,

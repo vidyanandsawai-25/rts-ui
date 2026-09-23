@@ -517,6 +517,9 @@
       "allDepartments": "सभी विभाग",
       "allServices": "सभी सेवाएँ",
       "allStatuses": "सभी स्थितियाँ",
+      "dateRange": "दिनांक सीमा",
+      "fromDate": "आरंभ तिथि",
+      "toDate": "अंतिम तिथि",
       "showMyApplications": "मेरे आवेदन दिखाएँ",
       "clearFilters": "फ़िल्टर साफ़ करें"
     },

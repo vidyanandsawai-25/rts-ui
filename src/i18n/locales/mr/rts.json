@@ -520,6 +520,9 @@
       "allDepartments": "सर्व विभाग",
       "allServices": "सर्व सेवा",
       "allStatuses": "सर्व स्थिती",
+      "dateRange": "दिनांक श्रेणी",
+      "fromDate": "पासून दिनांक",
+      "toDate": "पर्यंत दिनांक",
       "showMyApplications": "माझे अर्ज दाखवा",
       "clearFilters": "फिल्टर साफ करा"
     },
