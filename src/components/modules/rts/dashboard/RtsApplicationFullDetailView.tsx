@@ -18,7 +18,6 @@ import {
   Paperclip,
   Printer,
   Shield,
-  Upload,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -170,8 +169,11 @@ export default function RtsApplicationFullDetailView({
   const payment = data?.payment ?? null;
   const currentStageIndex = stages?.approvalStages.findIndex((stage) => stage.isCurrentStage) ?? -1;
   const isFreeService = Boolean(payment && (!payment.isFeeRequired || payment.requiredFee <= 0));
-  const isPaymentSuccessful = payment?.paymentStatus.trim().toLowerCase() === 'success';
-  const canViewReceipt = Boolean(isPaymentSuccessful && payment?.receiptNo);
+  const normalizedPaymentStatus = payment?.paymentStatus?.trim().toLowerCase();
+  const isPaymentSuccessful = Boolean(
+    payment?.receiptNo || normalizedPaymentStatus === 'success' || normalizedPaymentStatus === 'paid'
+  );
+  const canViewReceipt = Boolean(payment?.receiptNo);
 
   useEffect(() => {
     setActiveDocumentIndex(0);
@@ -290,42 +292,18 @@ export default function RtsApplicationFullDetailView({
                   {t('viewReceipt')}
                 </Button>
               )}
-              {isApproved &&
-                data?.details?.isCertificateRequired !== false &&
-                data?.details?.certificateType !== 0 && (
-                  (() => {
-                    const isManual = data?.details?.certificateType === 2;
-                    const hasCertificate = Boolean(data?.details?.issuedCertificateGuid);
-
-                    if (hasCertificate || !isManual) {
-                      return (
-                        <Button
-                          type="button"
-                          icon={FileCheck2}
-                          size="xs"
-                          variant="success"
-                          onClick={() => setIsPrintCertModalOpen(true)}
-                          className="rounded-lg px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
-                        >
-                          {t('viewCertificate')}
-                        </Button>
-                      );
-                    }
-
-                    return (
-                      <Button
-                        type="button"
-                        icon={Upload}
-                        size="xs"
-                        variant="primary"
-                        onClick={() => setIsManualCertificateUploadOpen(true)}
-                        className="rounded-lg px-3 text-xs font-bold"
-                      >
-                        {t('uploadCertificate')}
-                      </Button>
-                    );
-                  })()
-                )}
+              {isApproved && data?.details?.issuedCertificateGuid && (
+                <Button
+                  type="button"
+                  icon={FileCheck2}
+                  size="xs"
+                  variant="success"
+                  onClick={() => setIsPrintCertModalOpen(true)}
+                  className="rounded-lg px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  {t('viewCertificate')}
+                </Button>
+              )}
               {!isApproved && onProcess && (
                 <Button
                   type="button"
