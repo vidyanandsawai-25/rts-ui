@@ -106,6 +106,9 @@ export default getRequestConfig(async ({ locale }) => {
     geographyTypeMasterMessages,
     geographyUnitMasterMessages,
     geographySharedMessages,
+    meterTestStatusMasterMessages,
+    meterTypeMasterMessages,
+    readingSourceMasterMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -255,6 +258,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/geographyTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/geographyUnitMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/geographyShared.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/meterTestStatusMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/meterTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/readingSourceMaster.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -354,6 +360,9 @@ export default getRequestConfig(async ({ locale }) => {
       geographyTypeMaster: geographyTypeMasterMessages,
       geographyUnitMaster: geographyUnitMasterMessages,
       geographyShared: geographySharedMessages,
+      meterTestStatusMaster: meterTestStatusMasterMessages,
+      meterTypeMaster: meterTypeMasterMessages,
+      readingSourceMaster: readingSourceMasterMessages,
     },
   };
 });

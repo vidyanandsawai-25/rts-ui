@@ -316,9 +316,9 @@ export async function getUserProfileSSR(): Promise<{
         )];
 
         // Check directly from cached profile role allocations without full screen matrix scan
-        const hasSettingsAccess = roles.some(role => 
+        const hasSettingsAccess = roles.some(role =>
             /admin|superadmin|commissioner|head/i.test(role)
-        ) || (Array.isArray(profile.roleAllocations) && profile.roleAllocations.some(ra => 
+        ) || (Array.isArray(profile.roleAllocations) && profile.roleAllocations.some(ra =>
             ra.isActive && /config|admin|setting/i.test(ra.userRoleName)
         ));
 

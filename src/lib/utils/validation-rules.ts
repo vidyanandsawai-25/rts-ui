@@ -32,6 +32,10 @@ export const CODE_SANITIZE = /[^A-Za-z0-9_]/g; // Remove any characters except a
 export const CODE_WITH_DECIMAL_REGEX = /^(?!.*\.\.)[A-Za-z0-9](?:[A-Za-z0-9._]*[A-Za-z0-9])?$/;
 export const CODE_WITH_DECIMAL_SANITIZE = /[^A-Za-z0-9._]/g;
 
+// Alphanumeric only (letters and digits, no special characters, no spaces, no underscores)
+export const ALPHANUMERIC_ONLY_REGEX = /^[A-Za-z0-9]+$/;
+export const ALPHANUMERIC_ONLY_SANITIZE = /[^A-Za-z0-9]/g;
+
 // Asset Mouja No: Allow alphanumeric (multilingual), hyphens (-), and underscores (_)
 export const ASSET_MOUJA_NO_REGEX = /^[\p{L}\p{M}\p{N}](?:[\p{L}\p{M}\p{N}_\-]*[\p{L}\p{M}\p{N}])?$/u;
 export const ASSET_MOUJA_NO_SANITIZE = /[^\p{L}\p{M}\p{N}_\-]/gu;
