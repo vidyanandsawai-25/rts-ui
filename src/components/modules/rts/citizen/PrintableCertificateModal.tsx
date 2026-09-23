@@ -354,16 +354,16 @@ export default function PrintableCertificateModal({
                   }}
                   className="mt-3 rounded-lg px-4 text-xs font-bold"
                 >
-                  प्रमाणपत्र अपलोड करा (Upload Certificate)
+                  {t("uploadCertificate")}
                 </Button>
               )}
             </div>
           ) : isManual && certificate ? (
-            <div className="flex h-full min-h-0 flex-col gap-3 p-3 sm:p-4">
+            <div className="flex h-full min-h-0 flex-col gap-3 bg-gradient-to-b from-slate-100 to-slate-200/70 p-3 sm:p-4">
               {/* Responsive Document Viewer: Image or PDF */}
               {docViewUrl ? (
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                  <div className="p-2 sm:p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs">
+                <div className="flex min-h-[18rem] min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.14)]">
+                  <div className="flex items-center justify-between border-b border-slate-200 bg-white px-3 py-2.5 text-xs sm:px-4">
                     <span className="font-bold text-slate-700 flex items-center gap-1.5">
                       <FileText className="w-4 h-4 text-emerald-600" />
                       {t("uploadedCertificate")}
@@ -379,7 +379,7 @@ export default function PrintableCertificateModal({
                     </a>
                   </div>
 
-                  <div className="relative min-h-0 flex-1 overflow-hidden bg-slate-950/90">
+                  <div className="relative min-h-0 flex-1 overflow-hidden bg-slate-950">
                     {isImage ? (
                       <div
                         className={`flex h-full w-full touch-none items-center justify-center overflow-hidden ${previewZoom > 0.65 ? (isDraggingPreview ? "cursor-grabbing" : "cursor-grab") : ""}`}
@@ -428,7 +428,7 @@ export default function PrintableCertificateModal({
               ) : null}
 
               {/* Compact Verification Metadata Strip */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+              <div className="grid shrink-0 grid-cols-2 gap-2.5 rounded-2xl border border-slate-200 bg-white p-3 text-xs shadow-sm sm:grid-cols-4 sm:px-4">
                 <div>
                   <span className="text-[11px] text-slate-500 font-semibold flex items-center gap-1">
                     <Layers className="w-3 h-3 text-indigo-600" /> {t("service")}

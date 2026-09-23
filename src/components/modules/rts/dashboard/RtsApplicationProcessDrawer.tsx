@@ -24,7 +24,6 @@ import {
   Save,
   Shield,
   Sparkles,
-  Upload,
   XCircle,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -338,6 +337,16 @@ export default function RtsApplicationProcessDrawer({
   );
 
   const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
+
+  const openCertificateIssueModal = () => {
+    if (verification?.isManualCertificate) {
+      setIsManualCertificateUploadOpen(true);
+      return;
+    }
+
+    setIsCertModalOpen(true);
+  };
+
   const availableActions =
     verification && hasOfficerAccess && !isApproved
       ? ACTIONS.filter((action) => {
@@ -743,33 +752,9 @@ export default function RtsApplicationProcessDrawer({
                   })()
                 )}
 
-                {/* Certificate actions become available only after workflow approval. */}
-                {isApproved &&
-                  verification?.canUploadManualCertificate === true &&
-                  !data?.details?.issuedCertificateGuid && (
-                    <Button
-                      type="button"
-                      size="xs"
-                      variant="primary"
-                      icon={Upload}
-                      disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
-                      title={
-                        !hasOfficerAccess
-                          ? t('officerAccessDenied')
-                          : isEditing
-                            ? t('finishEditBeforeWorkflowAction')
-                            : undefined
-                      }
-                      onClick={() => setIsManualCertificateUploadOpen(true)}
-                      className="rounded-lg px-3 text-xs font-bold"
-                    >
-                      {t('uploadCertificate')}
-                    </Button>
-                  )}
-
+                {/* The approval-officer response determines the certificate issue mode. */}
                 {isApproved &&
                   Boolean(verification?.canIssueCertificate) &&
-                  verification?.isManualCertificate !== true &&
                   !data?.details?.issuedCertificateGuid && (
                     <Button
                       type="button"
@@ -784,7 +769,7 @@ export default function RtsApplicationProcessDrawer({
                             ? t('finishEditBeforeWorkflowAction')
                             : undefined
                       }
-                      onClick={() => setIsCertModalOpen(true)}
+                      onClick={openCertificateIssueModal}
                       className="rounded-lg px-3 text-xs font-bold"
                     >
                       {t('issueCertificate')}
@@ -865,21 +850,7 @@ export default function RtsApplicationProcessDrawer({
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {headerStatus?.toLowerCase().includes('approv') &&
-                data?.details?.isCertificateRequired === true &&
-                data?.details?.certificateType === 1 && (
-                <button
-                  type="button"
-                  onClick={() => setIsPrintCertModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition"
-                >
-                  <FileCheck2 className="h-4 w-4" />
-                  प्रमाणपत्र पहा व प्रिंट करा
-                </button>
-              )}
-              {headerStatus?.toLowerCase().includes('approv') &&
-                data?.details?.isCertificateRequired !== false &&
-                data?.details?.certificateType === 2 && (
-                data?.details?.issuedCertificateGuid ? (
+                data?.details?.issuedCertificateGuid && (
                   <button
                     type="button"
                     onClick={() => setIsPrintCertModalOpen(true)}
@@ -888,17 +859,7 @@ export default function RtsApplicationProcessDrawer({
                     <FileCheck2 className="h-4 w-4" />
                     प्रमाणपत्र पहा व प्रिंट करा
                   </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsManualCertificateUploadOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-lg text-xs font-bold transition"
-                  >
-                    <Upload className="h-3.5 w-3.5" />
-                    प्रमाणपत्र अपलोड करा
-                  </button>
-                )
-              )}
+                )}
               {headerStatus && (
                 <Badge {...getRtsApplicationStatusBadgeProps(headerStatus)}>{headerStatus}</Badge>
               )}
@@ -1626,7 +1587,6 @@ export default function RtsApplicationProcessDrawer({
           applicationNo={headerApplicationNo}
           certificateType={data?.details?.certificateType}
           isManualCertificate={Boolean(verification?.isManualCertificate || data?.details?.certificateType === 2)}
-          onUploadCertificate={() => setIsManualCertificateUploadOpen(true)}
         />
       )}
     </>

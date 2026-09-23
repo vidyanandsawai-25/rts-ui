@@ -278,11 +278,8 @@ export function normalizeRtsApplicationVerificationItem(
     canEdit: Boolean(data.canEdit ?? data.CanEdit),
     canViewNoteSheet: Boolean(data.canViewNoteSheet ?? data.CanViewNoteSheet),
     canIssueCertificate: Boolean(data.canIssueCertificate ?? data.CanIssueCertificate),
-    canEditCertificate: Boolean(data.canEditCertificate ?? data.CanEditCertificate),
     isManualCertificate: Boolean(data.isManualCertificate ?? data.IsManualCertificate),
-    canUploadManualCertificate: Boolean(
-      data.canUploadManualCertificate ?? data.CanUploadManualCertificate
-    ),
+    canViewCertificate: Boolean(data.canViewCertificate ?? data.CanViewCertificate),
     serviceId: parseNullableNumber(data.serviceId ?? data.ServiceId),
     serviceName: parseNullableString(data.serviceName ?? data.ServiceName),
     serviceFees: parseNullableNumber(data.serviceFees ?? data.ServiceFees),

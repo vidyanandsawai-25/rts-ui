@@ -206,9 +206,8 @@ export interface RtsApplicationVerificationItem {
   canEdit: boolean;
   canViewNoteSheet: boolean;
   canIssueCertificate: boolean;
-  canEditCertificate: boolean;
   isManualCertificate: boolean;
-  canUploadManualCertificate: boolean;
+  canViewCertificate: boolean;
   serviceId?: number | null;
   serviceName?: string | null;
   serviceFees?: number | null;

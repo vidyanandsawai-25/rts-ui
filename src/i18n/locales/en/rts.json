@@ -769,6 +769,7 @@
         "loadFailed": "Failed to load certificate.",
         "uploadedCertificate": "Official Uploaded Certificate",
         "viewFullSize": "View Full Size",
+        "uploadCertificate": "Upload Certificate",
         "manualDocumentTitle": "Manual Certificate Document",
         "service": "Service",
         "applicant": "Applicant",
