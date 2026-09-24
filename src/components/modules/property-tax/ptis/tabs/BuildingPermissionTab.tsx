@@ -1,18 +1,24 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { format } from 'date-fns';
-import { AlertCircle, Eye, Loader2 } from 'lucide-react';
-import FieldShell from '@/components/common/FieldShell';
-import { ValueDisplay } from './components/ValueDisplay';
+import { AlertCircle, Eye, Pencil, Loader2, FileText } from 'lucide-react';
 import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
 import { DocumentViewerModal } from '@/components/common';
 import { toast } from 'sonner';
+import { getIndividualBuildingCertificatesAction } from '@/app/[locale]/property-tax/ptis/individual/action';
 import type { BuildingPermissionData, BuildingPermissionItem } from '@/types/ptis.types';
+import { cn } from '@/lib/utils/cn';
 
 export interface BuildingPermissionTabProps {
   data?: BuildingPermissionData;
+  propertyId?: number | string | null;
+  wardNo?: string | null;
+  wardId?: number | string | null;
+  propertyNo?: string | null;
+  partitionNo?: string | null;
   onFieldChange?: (field: string, value: string | boolean) => void;
   readOnly?: boolean;
   isExpanded?: boolean;
@@ -20,10 +26,19 @@ export interface BuildingPermissionTabProps {
 
 const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
   data,
-  isExpanded = false,
+  propertyId,
+  wardNo,
+  wardId,
+  propertyNo,
+  partitionNo,
 }) => {
   const t = useTranslations('ptis');
   const locale = useLocale();
+  const router = useRouter();
+
+  const [prevData, setPrevData] = React.useState(data);
+  const [localData, setLocalData] = React.useState<BuildingPermissionData | undefined>(data);
+  const [isPending, startTransition] = React.useTransition();
   const [activeViewingGuid, setActiveViewingGuid] = React.useState<string | null>(null);
   const [viewerData, setViewerData] = React.useState<{
     isOpen: boolean;
@@ -33,9 +48,43 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
     contentType?: string;
   } | null>(null);
 
+  // Sync prop changes during render
+  if (data !== prevData) {
+    setPrevData(data);
+    setLocalData(data);
+  }
+
+  // On-demand fetch if initial data is empty or missing and propertyId is available
+  React.useEffect(() => {
+    const numericPropId = Number(propertyId);
+    if (!numericPropId || numericPropId <= 0) return;
+
+    // Check if we already have items
+    if (localData?.items && localData.items.length > 0) return;
+
+    let isSubscribed = true;
+
+    startTransition(async () => {
+      try {
+        const res = await getIndividualBuildingCertificatesAction(numericPropId);
+        if (isSubscribed && res.success && res.data) {
+          setLocalData(res.data);
+        }
+      } catch (err) {
+        if (isSubscribed) {
+          console.error('Failed to fetch building certificates on-demand:', err);
+        }
+      }
+    });
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [propertyId, localData?.items]);
+
   // Filter for items that have actual certificate data (number, date, or document) or hasCertificate=true
   const items = React.useMemo(() => {
-    return (data?.items || []).filter(Boolean).filter((item) => {
+    return (localData?.items || []).filter(Boolean).filter((item) => {
       const hasContent = !!(
         item.certificateNo?.trim() ||
         item.issueDate?.trim() ||
@@ -43,7 +92,7 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
       );
       return item.hasCertificate || hasContent;
     });
-  }, [data?.items]);
+  }, [localData?.items]);
 
   const closeViewer = React.useCallback(() => {
     if (viewerData?.url) {
@@ -60,128 +109,225 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
     };
   }, [viewerData]);
 
-  if (items.length === 0) {
+  const handleViewDocument = async (item: BuildingPermissionItem) => {
+    if (!item.documentGuid) {
+      toast.info(
+        t('building.noDocumentAttached') ||
+          'No document file attached for this certificate.'
+      );
+      return;
+    }
+
+    setActiveViewingGuid(item.documentGuid);
+    try {
+      const res = await getDocumentBlobUrl(item.documentGuid, locale);
+      const isImg = res.contentType?.toLowerCase().startsWith('image/');
+      const defaultExt = isImg
+        ? (res.contentType.toLowerCase().includes('png') ? 'png' : 'jpg')
+        : 'pdf';
+      const resolvedName = item.fileName || `${item.certificateNo || 'Document'}.${defaultExt}`;
+      setViewerData({
+        isOpen: true,
+        url: res.url,
+        name: resolvedName,
+        label: item.certificateTypeName,
+        contentType: res.contentType,
+      });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to view document');
+    } finally {
+      setActiveViewingGuid(null);
+    }
+  };
+
+  const handleEditCertificate = (item: BuildingPermissionItem) => {
+    const resolvedPropId = propertyId || (item as { propertyId?: number }).propertyId;
+    if (!resolvedPropId) {
+      toast.error('Property ID is required to edit certificates.');
+      return;
+    }
+
+    const searchParams = new URLSearchParams();
+    searchParams.set('propertyId', String(resolvedPropId));
+    if (wardNo) searchParams.set('wardNo', String(wardNo));
+    if (wardId) searchParams.set('wardId', String(wardId));
+    if (propertyNo) searchParams.set('propertyNo', String(propertyNo));
+    if (partitionNo) searchParams.set('partitionNo', String(partitionNo));
+    searchParams.set('returnTab', 'buildingpermission');
+    searchParams.set('fromFooterEdit', 'true');
+    searchParams.set('hideWing', 'true');
+
+    // Specify the exact certificate to open and edit
+    if (item.certificateTypeId) {
+      searchParams.set('certificateTypeId', String(item.certificateTypeId));
+    }
+
+    // Specify the floor scope if this certificate is floor-specific
+    if (item.propertyDetailsId) {
+      searchParams.set('activeScope', 'Floor');
+      searchParams.set('selectedFloorId', String(item.propertyDetailsId));
+      searchParams.set('activeFloorId', String(item.propertyDetailsId));
+    }
+
+    const editUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${resolvedPropId}/Building?${searchParams.toString()}`;
+    router.push(editUrl);
+  };
+
+  const formatCertificateDate = (dateStr?: string | null): string => {
+    if (!dateStr) return '-';
+    try {
+      const parsed = new Date(dateStr);
+      if (!isNaN(parsed.getTime())) {
+        return format(parsed, 'dd/MM/yyyy');
+      }
+    } catch {
+      // fallback
+    }
+    return dateStr;
+  };
+
+  if (isPending) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 text-slate-500 bg-slate-50 rounded-lg border border-dashed border-slate-300">
-        <AlertCircle className="h-7 w-7 text-slate-400 mb-1.5" />
-        <p className="text-xs font-semibold">
-          {t('noDataAvailable') || 'No attached certificates available'}
+      <div className="flex flex-col items-center justify-center p-8 text-slate-500 bg-white rounded-lg border border-slate-200">
+        <Loader2 className="h-6 w-6 text-blue-600 animate-spin mb-2" />
+        <p className="text-xs font-semibold text-slate-600">
+          {t('common.loading') || 'Loading certificates...'}
         </p>
       </div>
     );
   }
 
-  const renderCard = (item: BuildingPermissionItem) => {
-    let formattedDate = '-';
-    if (item.issueDate) {
-      try {
-        const date = new Date(item.issueDate);
-        if (!isNaN(date.getTime())) {
-          formattedDate = format(date, 'dd/MM/yyyy');
-        }
-      } catch (_) {
-        formattedDate = item.issueDate;
-      }
-    }
-
-    const scopeName = item.floorDescription
-      ? item.floorDescription
-      : item.propertyDetailsId
-        ? `Floor #${item.propertyDetailsId}`
-        : null;
-
-    const cardKey = item.propertyCertificateId
-      ? String(item.propertyCertificateId)
-      : `${item.certificateTypeId}-${item.propertyDetailsId || 'property'}`;
-
+  if (items.length === 0) {
     return (
-      <FieldShell
-        key={cardKey}
-        className="relative transition-all hover:shadow-md min-w-[200px] mt-1 mb-1 snap-start border border-blue-100 bg-blue-50/20"
-        label={<span className="font-bold text-blue-900">{item.certificateTypeName}</span>}
-      >
-        <div className="flex flex-col gap-1 p-0.5 min-w-0 mt-0.5 mb-0.5">
-          <div className="flex items-center gap-1 min-w-0 justify-start pl-1">
-            <span className="text-xs font-bold text-blue-900 shrink-0 select-none">
-              {t('fields.numberLabel') || 'No:'}
-            </span>
-            <div className="w-[70%] min-w-0 font-extrabold text-slate-900 text-xs truncate">
-              <ValueDisplay value={item.certificateNo || '-'} />
-            </div>
-          </div>
-          <div className="flex items-center min-w-0 gap-1.5 pl-1 pr-1">
-            <span className="text-xs font-bold text-blue-900 shrink-0 select-none">
-              {t('fields.dateLabel') || 'Date:'}
-            </span>
-            <div className="w-[45%] min-w-0 font-extrabold text-slate-900 text-xs shrink-0">
-              <ValueDisplay value={formattedDate} />
-            </div>
-            {scopeName && (
-              <div className="ml-auto min-w-0 truncate">
-                <span className="inline-block px-1.5 py-0.5 text-xs font-extrabold bg-blue-100 text-blue-900 rounded truncate max-w-full">
-                  {scopeName}
-                </span>
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            disabled={activeViewingGuid !== null}
-            onClick={async (e) => {
-              e.stopPropagation();
-              if (!item.documentGuid) {
-                toast.info(
-                  t('building.noDocumentAttached') ||
-                    'No document file attached for this certificate.'
-                );
-                return;
-              }
-              setActiveViewingGuid(item.documentGuid);
-              try {
-                const res = await getDocumentBlobUrl(item.documentGuid, locale);
-                const isImg = res.contentType?.toLowerCase().startsWith('image/');
-                const defaultExt = isImg
-                  ? (res.contentType.toLowerCase().includes('png') ? 'png' : 'jpg')
-                  : 'pdf';
-                const resolvedName = item.fileName || `${item.certificateNo || 'Document'}.${defaultExt}`;
-                setViewerData({
-                  isOpen: true,
-                  url: res.url,
-                  name: resolvedName,
-                  label: item.certificateTypeName,
-                  contentType: res.contentType,
-                });
-              } catch (err: unknown) {
-                toast.error(err instanceof Error ? err.message : 'Failed to view document');
-              } finally {
-                setActiveViewingGuid(null);
-              }
-            }}
-            className="absolute top-1 right-1 p-1 rounded hover:bg-blue-200 text-blue-800 transition-colors cursor-pointer flex items-center justify-center border-0 bg-transparent disabled:opacity-50"
-            title={t('actions.viewDocument') || 'View Document'}
-          >
-            {Boolean(item.documentGuid && activeViewingGuid === item.documentGuid) ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
-            ) : (
-              <Eye className="h-3.5 w-3.5 text-blue-600" />
-            )}
-          </button>
-        </div>
-      </FieldShell>
+      <div className="flex flex-col items-center justify-center p-8 text-slate-500 bg-slate-50 rounded-lg border border-dashed border-slate-300">
+        <AlertCircle className="h-8 w-8 text-slate-400 mb-2" />
+        <p className="text-xs font-semibold text-slate-600">
+          {t('building.noCertificatesAttached') ||
+            t('noDataAvailable') ||
+            'No attached certificates available for this property.'}
+        </p>
+      </div>
     );
-  };
+  }
 
   return (
     <>
-      <div
-        className={`transition-all duration-300 overflow-y-auto snap-y snap-mandatory scroll-py-1 pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-blue-200 [&::-webkit-scrollbar-thumb]:rounded-full ${
-          isExpanded ? 'max-h-[205px]' : 'max-h-[102px]'
-        }`}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-          {items.map(renderCard)}
+      <div className="w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-full text-xs table-fixed">
+            <thead>
+              <tr className="bg-[#1e3a8a] text-white border-b border-blue-700/60 font-bold uppercase tracking-wider text-[12px]">
+                <th className="py-2.5 px-4 whitespace-nowrap text-center w-[35%] min-w-[200px] border-r border-blue-700/60">
+                  {t('building.certificateName') || 'Certificate Name'}
+                </th>
+                <th className="py-2.5 px-4 whitespace-nowrap text-center w-[25%] min-w-[150px] border-r border-blue-700/60">
+                  {t('building.certificateNo') || 'Certificate No.'}
+                </th>
+                <th className="py-2.5 px-4 whitespace-nowrap text-center w-[23%] min-w-[130px] border-r border-blue-700/60">
+                  {t('building.certificateDate') || 'Certificate Date'}
+                </th>
+                <th className="py-2.5 px-4 whitespace-nowrap text-center w-[17%] min-w-[100px]">
+                  {t('building.action') || 'Action'}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 text-slate-800">
+              {items.map((item, index) => {
+                const scopeName = item.floorDescription
+                  ? item.floorDescription
+                  : item.propertyDetailsId
+                    ? `Floor #${item.propertyDetailsId}`
+                    : null;
+
+                const rowKey = item.propertyCertificateId
+                  ? String(item.propertyCertificateId)
+                  : `${item.certificateTypeId}-${item.propertyDetailsId || 'property'}-${index}`;
+
+                const hasDoc = Boolean(item.documentGuid);
+                const isViewingThis = activeViewingGuid === item.documentGuid;
+
+                return (
+                  <tr
+                    key={rowKey}
+                    className="hover:bg-blue-50/40 transition-colors duration-150"
+                  >
+                    {/* Certificate Name - centered to align with header */}
+                    <td className="py-2.5 px-4 align-middle text-center font-medium text-slate-900 border-r border-slate-200">
+                      <div className="flex items-center justify-center gap-2">
+                        <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                        <span className="font-semibold text-slate-900 text-xs">
+                          {item.certificateTypeName}
+                        </span>
+                        {scopeName ? (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800 shrink-0">
+                            {scopeName}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                            {t('building.propertyScope') || 'Property Level'}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Certificate No. - centered */}
+                    <td className="py-2.5 px-4 align-middle text-center font-semibold text-slate-800 font-mono text-xs border-r border-slate-200">
+                      {item.certificateNo || '-'}
+                    </td>
+
+                    {/* Certificate Date - centered */}
+                    <td className="py-2.5 px-4 align-middle text-center text-slate-700 font-medium text-xs border-r border-slate-200">
+                      {formatCertificateDate(item.issueDate)}
+                    </td>
+
+                    {/* Action Column: Eye button to view and Pencil button to edit */}
+                    <td className="py-2.5 px-4 align-middle text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        {/* Eye Button to View */}
+                        <button
+                          type="button"
+                          onClick={() => handleViewDocument(item)}
+                          disabled={!hasDoc || isViewingThis}
+                          className={cn(
+                            'p-1.5 rounded-md border transition-all shadow-xs inline-flex items-center justify-center cursor-pointer',
+                            hasDoc
+                              ? 'text-blue-700 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 border-blue-200 active:scale-95'
+                              : 'text-slate-300 bg-slate-50 border-slate-200 cursor-not-allowed opacity-50'
+                          )}
+                          title={
+                            hasDoc
+                              ? t('building.viewDocument') || 'View Document'
+                              : t('building.noDocumentAttached') || 'No document attached'
+                          }
+                          aria-label={t('building.viewDocument') || 'View Document'}
+                        >
+                          {isViewingThis ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                          ) : (
+                            <Eye className="w-4 h-4 text-blue-600 shrink-0" />
+                          )}
+                        </button>
+
+                        {/* Pencil Button to Edit */}
+                        <button
+                          type="button"
+                          onClick={() => handleEditCertificate(item)}
+                          className="p-1.5 rounded-md border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100 hover:border-amber-300 transition-all shadow-xs inline-flex items-center justify-center cursor-pointer active:scale-95"
+                          title={t('building.editCertificate') || 'Edit Certificate'}
+                          aria-label={t('building.editCertificate') || 'Edit Certificate'}
+                        >
+                          <Pencil className="w-4 h-4 text-amber-600 shrink-0" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
+
       {viewerData && (
         <DocumentViewerModal
           isOpen={viewerData.isOpen}

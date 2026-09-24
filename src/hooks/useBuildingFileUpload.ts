@@ -26,6 +26,7 @@ export const useBuildingFileUpload = (
             ...prev,
             [certificateTypeId]: {
                 ...prev[certificateTypeId],
+                enabled: true,
                 pendingFile: file,
                 documentGuid: "pending",
                 fileName: file.name,

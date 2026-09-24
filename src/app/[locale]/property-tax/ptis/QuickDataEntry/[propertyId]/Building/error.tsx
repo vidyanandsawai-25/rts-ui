@@ -12,7 +12,7 @@ export default function ErrorBoundary({ error, reset }: ErrorProps) {
     <ErrorPage
       error={error}
       reset={reset}
-      translationNamespace="quickDataEntry.building.errors.failedToConnect"
+      translationNamespace="common.error"
     />
   );
 }

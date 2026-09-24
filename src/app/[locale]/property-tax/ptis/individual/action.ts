@@ -16,7 +16,9 @@ import type {
   OldFloorDetailsData,
   OldTaxesData,
   MappedPropertyItem,
+  BuildingPermissionData,
 } from '@/types/ptis.types';
+import { ptisDetailsService } from '@/lib/api/ptis/tab/ptis-details';
 import { getPropertyRuleLogs } from '@/lib/api/rule-engine/property-rule-log.service';
 import { getDiscountDetails } from '@/lib/api/discount.service';
 import type { PropertyRuleLogResponse } from '@/types/rule-engine';
@@ -283,3 +285,24 @@ export async function fetchMappedOldPropertiesAction(
     };
   }
 }
+
+/**
+ * Fetches building permission certificates for an individual property grid.
+ */
+export async function getIndividualBuildingCertificatesAction(
+  propertyId: number | string
+): Promise<{ success: boolean; data?: BuildingPermissionData; error?: string }> {
+  try {
+    const numericId = Number(propertyId);
+    if (!numericId || numericId <= 0) {
+      return { success: false, error: 'Invalid property ID' };
+    }
+    return await ptisDetailsService.getBuildingPermissionDetails(numericId);
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch building certificates',
+    };
+  }
+}
+

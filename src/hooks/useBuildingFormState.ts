@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { BuildingPermissionState, PropertyCertificateWithStatusDto } from "@/types/building-permission.types";
+import { BuildingPermissionState, PropertyCertificateWithStatusDto, CertificateData } from "@/types/building-permission.types";
 import { mapApiToBuildingState, hasChangesComparedToInitial } from "@/lib/utils/building-helpers";
 
 export const useBuildingFormState = (initialData: PropertyCertificateWithStatusDto[] | null) => {
@@ -120,20 +120,81 @@ export const useBuildingFormState = (initialData: PropertyCertificateWithStatusD
     }, [activeScope, activeFloorId]);
 
     const handleToggleEnabled = useCallback((certificateTypeId: number, checked: boolean) => {
+        setBuildingPermission((prev) => {
+            const currentItem = prev[certificateTypeId] || {};
+            let prefillProps: Partial<CertificateData> = {};
+            if (checked && activeScope === 'Floor' && !currentItem.number && !currentItem.date && !currentItem.documentGuid) {
+                const propCert = propertyCertificatesState[certificateTypeId];
+                if (propCert && (propCert.number || propCert.date || propCert.documentGuid)) {
+                    prefillProps = {
+                        number: propCert.number || '',
+                        date: propCert.date || '',
+                        documentGuid: propCert.documentGuid || undefined,
+                        fileName: propCert.fileName || undefined,
+                        pendingFile: propCert.pendingFile || undefined,
+                    };
+                }
+            }
+            return {
+                ...prev,
+                [certificateTypeId]: { ...currentItem, ...prefillProps, enabled: checked },
+            };
+        });
+        clearError(certificateTypeId);
+    }, [setBuildingPermission, clearError, activeScope, propertyCertificatesState]);
+
+    const handleCopyFromPropertyCert = useCallback((certificateTypeId: number) => {
+        const propCert = propertyCertificatesState[certificateTypeId];
+        if (!propCert) return;
         setBuildingPermission((prev) => ({
             ...prev,
-            [certificateTypeId]: { ...prev[certificateTypeId], enabled: checked },
+            [certificateTypeId]: {
+                ...prev[certificateTypeId],
+                enabled: true,
+                number: propCert.number || '',
+                date: propCert.date || '',
+                documentGuid: propCert.documentGuid || undefined,
+                fileName: propCert.fileName || undefined,
+                pendingFile: propCert.pendingFile || undefined,
+            },
         }));
         clearError(certificateTypeId);
-    }, [setBuildingPermission, clearError]);
+    }, [propertyCertificatesState, setBuildingPermission, clearError]);
 
     const handleInputChange = useCallback((certificateTypeId: number, field: 'number' | 'date', value: string) => {
         setBuildingPermission((prev) => ({
             ...prev,
-            [certificateTypeId]: { ...prev[certificateTypeId], [field]: value },
+            [certificateTypeId]: { ...prev[certificateTypeId], [field]: value, enabled: true },
         }));
         clearError(certificateTypeId);
     }, [setBuildingPermission, clearError]);
+
+    const revertFloorState = useCallback((floorId?: number | null) => {
+        setFloorCertificatesCache((prev) => {
+            const next = { ...prev };
+            if (floorId !== undefined && floorId !== null) {
+                if (initialFloorStateCache[floorId]) {
+                    next[floorId] = { ...initialFloorStateCache[floorId] };
+                } else {
+                    delete next[floorId];
+                }
+            } else {
+                // Revert all floors
+                Object.keys(next).forEach((key) => {
+                    const id = Number(key);
+                    if (initialFloorStateCache[id]) {
+                        next[id] = { ...initialFloorStateCache[id] };
+                    } else {
+                        delete next[id];
+                    }
+                });
+            }
+            return next;
+        });
+        setValidationErrors({});
+        setFieldErrors({});
+        setIncompleteCertificates([]);
+    }, [initialFloorStateCache]);
 
     return {
         buildingPermission,
@@ -141,6 +202,7 @@ export const useBuildingFormState = (initialData: PropertyCertificateWithStatusD
         hasChanges,
         hasAnyUnsavedBuildingChanges,
         markCurrentStateAsSaved,
+        revertFloorState,
         validationErrors,
         setValidationErrors,
         fieldErrors,
@@ -149,6 +211,7 @@ export const useBuildingFormState = (initialData: PropertyCertificateWithStatusD
         setIncompleteCertificates,
         clearError,
         handleToggleEnabled,
+        handleCopyFromPropertyCert,
         handleInputChange,
         initialMappedState,
         propertyCertificatesState,

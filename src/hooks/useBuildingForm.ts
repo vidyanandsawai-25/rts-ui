@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useState, useEffect, useMemo, useRef, startTransition } from 'react';
 import { useParams, useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -18,11 +18,12 @@ import {
   BuildingPermissionState,
   CertificateScope
 } from "@/types/building-permission.types";
-import { mapApiToBuildingState, parseAndLocalizeBackendError, mapTypeNameToKey } from "@/lib/utils/building-helpers";
+import { mapApiToBuildingState, parseAndLocalizeBackendError, mapTypeNameToKey, hasChangesComparedToInitial } from "@/lib/utils/building-helpers";
 import { useLoading } from "@/hooks/useLoading";
 import { validateBuildingForm } from "@/lib/utils/validateBuildingForm";
 import { useBuildingFormState } from "./useBuildingFormState";
 import { useBuildingFileUpload } from "./useBuildingFileUpload";
+import type { FloorData } from "@/types/room-details.types";
 
 const getCleanGuid = (guid: string | null | undefined): string | null => {
     if (!guid) return null;
@@ -36,7 +37,8 @@ const getCleanGuid = (guid: string | null | undefined): string | null => {
 export const useBuildingForm = (
     initialData: PropertyCertificateWithStatusDto[] | null,
     initialFloorCertificates: FloorCertificatesResponseDto | null,
-    propertyId: string
+    propertyId: string,
+    initialFloorsProp?: FloorData[]
 ) => {
     const t = useTranslations("quickDataEntry");
     const params = useParams();
@@ -76,6 +78,7 @@ export const useBuildingForm = (
         setIncompleteCertificates,
         clearError,
         handleToggleEnabled,
+        handleCopyFromPropertyCert,
         handleInputChange,
         activeScope,
         setActiveScope,
@@ -83,35 +86,75 @@ export const useBuildingForm = (
         setActiveFloorId,
         floorCertificatesCache,
         setFloorCertificatesCache,
+        initialFloorStateCache,
         setInitialFloorStateCache,
+        revertFloorState,
         initialMappedState,
         propertyCertificatesState,
         hasAnyUnsavedBuildingChanges,
         markCurrentStateAsSaved
     } = useBuildingFormState(initialData);
 
-    const getCombinedFloors = useCallback((certResponse: FloorCertificatesResponseDto | null | undefined): FloorCertificateDto[] => {
-        if (!certResponse) return [];
+    const getCombinedFloors = useCallback((certResponse: FloorCertificatesResponseDto | null | undefined, fallbackFloors?: FloorData[]): FloorCertificateDto[] => {
         const list: FloorCertificateDto[] = [];
-        if (certResponse.selectedFloor) {
-            list.push(certResponse.selectedFloor);
+        if (certResponse) {
+            if (certResponse.selectedFloor) {
+                list.push(certResponse.selectedFloor);
+            }
+            if (Array.isArray(certResponse.otherFloors)) {
+                certResponse.otherFloors.forEach(f => {
+                    if (!certResponse.selectedFloor || f.propertyDetailsId !== certResponse.selectedFloor.propertyDetailsId) {
+                        list.push(f);
+                    }
+                });
+            }
         }
-        if (Array.isArray(certResponse.otherFloors)) {
-            certResponse.otherFloors.forEach(f => {
-                if (!certResponse.selectedFloor || f.propertyDetailsId !== certResponse.selectedFloor.propertyDetailsId) {
-                    list.push(f);
+        if (list.length === 0 && fallbackFloors && fallbackFloors.length > 0) {
+            fallbackFloors.forEach(f => {
+                const raw = f as unknown as Record<string, unknown>;
+                const pdId = Number(f.id ?? raw.propertyDetailsId);
+                if (pdId > 0) {
+                    list.push({
+                        propertyDetailsId: pdId,
+                        propertyId: Number(f.propertyId || raw.ownerID || raw.ownerId || 0),
+                        floorDescription: (f.floorDescription || f.floor || (typeof raw.floorName === 'string' ? raw.floorName : undefined)) || undefined,
+                        subFloorDescription: (f.subFloorDescription || f.subFloor || (typeof raw.subFloorName === 'string' ? raw.subFloorName : undefined)) || undefined,
+                        constructionTypeDescription: (f.constructionTypeDescription || f.conTyp || (typeof raw.constructionTypeName === 'string' ? raw.constructionTypeName : undefined)) || undefined,
+                        typeOfUseDescription: (f.typeOfUseDescription || f.use || (typeof raw.useName === 'string' ? raw.useName : undefined)) || undefined,
+                        subTypeOfUseDescription: (f.subTypeOfUseDescription || f.subTyp || (typeof raw.subUseName === 'string' ? raw.subUseName : undefined)) || undefined,
+                        builtupAreaSqFeet: Number(raw.builtUpArea ?? f.builtupAreaSqFt ?? 0) || undefined,
+                        carpetAreaSqFeet: Number(raw.carpetArea ?? f.areaSqFt ?? 0) || undefined,
+                        constructionYear: f.conYr ? String(f.conYr) : (raw.constructionYear ? String(raw.constructionYear) : undefined),
+                        isSelected: false,
+                        certificateApplicable: true,
+                    });
                 }
             });
         }
         return list.filter(f => {
             const floorDesc = String(f.floorDescription ?? "").trim().toLowerCase();
-            return floorDesc !== "open plot" && floorDesc !== "op";
+            const conTyp = String(f.constructionTypeDescription ?? "").trim().toLowerCase();
+            const useDesc = String(f.typeOfUseDescription ?? "").trim().toLowerCase();
+            const isOpenPlot = floorDesc === "open plot" || floorDesc === "op" || floorDesc.includes("open plot") ||
+                conTyp === "open plot" || conTyp === "op" || conTyp.includes("open plot") ||
+                useDesc.includes("खुला भूखंड") || useDesc.includes("open plot");
+            return !isOpenPlot;
         });
     }, []);
 
     const [isFloorLoading, setIsFloorLoading] = useState(false);
     const prevInitialFloorCertificatesRef = useRef<FloorCertificatesResponseDto | null>(initialFloorCertificates || null);
-    const [floors, setFloors] = useState<FloorCertificateDto[]>(() => getCombinedFloors(initialFloorCertificates));
+    const [floors, setFloors] = useState<FloorCertificateDto[]>(() => getCombinedFloors(initialFloorCertificates, initialFloorsProp));
+
+    useEffect(() => {
+        if (initialFloorCertificates && initialFloorCertificates !== prevInitialFloorCertificatesRef.current) {
+            prevInitialFloorCertificatesRef.current = initialFloorCertificates;
+            const updated = getCombinedFloors(initialFloorCertificates, initialFloorsProp);
+            startTransition(() => {
+                setFloors(updated);
+            });
+        }
+    }, [initialFloorCertificates, initialFloorsProp, getCombinedFloors]);
 
     useEffect(() => {
         const win = typeof window !== 'undefined' ? (window as unknown as { __buildingFormHasChanges?: boolean; __buildingFormIsSaving?: boolean }) : null;
@@ -154,6 +197,12 @@ export const useBuildingForm = (
             const currentFloorState = floorCertificatesCache[floorId];
             if (!currentFloorState) continue;
 
+            const initialFloorState = initialFloorStateCache[floorId] || {};
+            // Only inspect this floor if it actually has unsaved changes compared to baseline!
+            if (!hasChangesComparedToInitial(currentFloorState, initialFloorState)) {
+                continue;
+            }
+
             const selectedFloorObj = floors.find(f => f.propertyDetailsId === floorId);
             const floorName = selectedFloorObj
                 ? `${selectedFloorObj.floorDescription || ""}${selectedFloorObj.subFloorDescription ? ` - ${selectedFloorObj.subFloorDescription}` : ""}`
@@ -184,7 +233,7 @@ export const useBuildingForm = (
             }
         }
         return incompleteList;
-    }, [floorCertificatesCache, floors, t]);
+    }, [floorCertificatesCache, initialFloorStateCache, floors, t]);
 
     const incompleteFloorDetails = useMemo(() => {
         return incompleteFloors.map(inf => `${inf.floorName} (${inf.certificateNames.join(", ")})`);
@@ -199,7 +248,7 @@ export const useBuildingForm = (
             __showBuildingUnsavedChangesModal?: ((onDiscard: () => void) => void) | null;
         }) : null;
         if (win) {
-            win.__buildingFormIncompleteDetails = incompleteFloorDetails.length > 0
+            win.__buildingFormIncompleteDetails = (hasAnyUnsavedBuildingChanges && incompleteFloorDetails.length > 0)
                 ? incompleteFloorDetails
                 : null;
         }
@@ -208,8 +257,15 @@ export const useBuildingForm = (
                 win.__buildingFormIncompleteDetails = null;
             }
         };
-    }, [incompleteFloorDetails]);
-    const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+    }, [hasAnyUnsavedBuildingChanges, incompleteFloorDetails]);
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const isInitialSyncDoneRef = useRef(false);
+
+    const [selectedTypeId, setSelectedTypeId] = useState<number | null>(() => {
+        const urlCertId = searchParams?.get('certificateTypeId') || searchParams?.get('certTypeId');
+        return urlCertId && !isNaN(Number(urlCertId)) ? Number(urlCertId) : null;
+    });
 
     const firstCertTypeId = useMemo(() => {
         if (!buildingPermission || Object.keys(buildingPermission).length === 0) return null;
@@ -217,19 +273,13 @@ export const useBuildingForm = (
         return sorted.length > 0 ? sorted[0].certificateTypeId : null;
     }, [buildingPermission]);
 
-    // Sync floors state when initialFloorCertificates prop changes
-    useEffect(() => {
-        if (initialFloorCertificates && initialFloorCertificates !== prevInitialFloorCertificatesRef.current) {
-            prevInitialFloorCertificatesRef.current = initialFloorCertificates;
-            setFloors(getCombinedFloors(initialFloorCertificates));
-        }
-    }, [initialFloorCertificates, getCombinedFloors]);
-
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const isInitialSyncDoneRef = useRef(false);
-
     const selectFloorOrPropertyScope = useCallback(async (scope: 'Property' | 'Floor', floorDetailsId: number | null) => {
+        if (scope === 'Property') {
+            revertFloorState();
+        } else if (scope === 'Floor' && floorDetailsId !== null && activeFloorId !== null && activeFloorId !== floorDetailsId) {
+            revertFloorState(activeFloorId);
+        }
+
         setActiveScope(scope);
         setActiveFloorId(floorDetailsId);
         setValidationErrors({});
@@ -274,6 +324,10 @@ export const useBuildingForm = (
                     ...prev,
                     [floorDetailsId]: initialFloorState
                 }));
+                setInitialFloorStateCache(prev => ({
+                    ...prev,
+                    [floorDetailsId]: prev[floorDetailsId] || initialFloorState
+                }));
 
                 setIsFloorLoading(true);
                 try {
@@ -296,15 +350,15 @@ export const useBuildingForm = (
                 }
             }
         }
-    }, [floorCertificatesCache, initialMappedState, pathname, propertyId, searchParams, setActiveScope, setActiveFloorId, setFloorCertificatesCache, setInitialFloorStateCache, setValidationErrors, setFieldErrors, setIncompleteCertificates]);
+    }, [revertFloorState, activeFloorId, floorCertificatesCache, initialMappedState, pathname, propertyId, searchParams, setActiveScope, setActiveFloorId, setFloorCertificatesCache, setInitialFloorStateCache, setValidationErrors, setFieldErrors, setIncompleteCertificates]);
 
     const urlScope = searchParams?.get('activeScope');
-    const urlFloorId = searchParams?.get('activeFloorId') || searchParams?.get('selectedPropertyDetailsId') || searchParams?.get('floorId');
+    const urlFloorId = searchParams?.get('selectedFloorId') || searchParams?.get('activeFloorId') || searchParams?.get('selectedPropertyDetailsId') || searchParams?.get('floorId');
 
     useEffect(() => {
         if (isInitialSyncDoneRef.current) return;
 
-        if (urlScope === 'Floor' && urlFloorId) {
+        if (urlFloorId) {
             const floorIdNum = Number(urlFloorId);
             if (!isNaN(floorIdNum) && floorIdNum > 0) {
                 isInitialSyncDoneRef.current = true;
@@ -570,6 +624,10 @@ export const useBuildingForm = (
                         markCurrentStateAsSaved();
                     }
 
+                    if (activeScope === "Property") {
+                        revertFloorState();
+                    }
+
                     // Reload the floors list to update the FloorTable
                     const floorRes = await getFloorCertificatesAction(propertyId);
                     if (floorRes.success && floorRes.data) {
@@ -612,6 +670,10 @@ export const useBuildingForm = (
                     // Update baseline initial cache to clear unsaved changes flag
                     markCurrentStateAsSaved();
 
+                    if (activeScope === "Property") {
+                        revertFloorState();
+                    }
+
                     // Reload the floors list to update the FloorTable
                     const floorRes = await getFloorCertificatesAction(propertyId);
                     if (floorRes.success && floorRes.data) {
@@ -638,7 +700,7 @@ export const useBuildingForm = (
         } finally {
             stopLoading();
         }
-    }, [buildingPermission, isSaving, locale, propertyId, startLoading, stopLoading, t, setFieldErrors, setIncompleteCertificates, setValidationErrors, selectedTypeId, firstCertTypeId, activeScope, activeFloorId, floors, getCombinedFloors, router, markCurrentStateAsSaved]);
+    }, [buildingPermission, isSaving, locale, propertyId, startLoading, stopLoading, t, setFieldErrors, setIncompleteCertificates, setValidationErrors, selectedTypeId, firstCertTypeId, activeScope, activeFloorId, floors, getCombinedFloors, router, markCurrentStateAsSaved, revertFloorState]);
 
     const { handleFileUpload, handleFileDelete } = useBuildingFileUpload(
         buildingPermission,
@@ -718,6 +780,7 @@ export const useBuildingForm = (
         handleFileUpload,
         handleFileDelete,
         handleToggleEnabled,
+        handleCopyFromPropertyCert,
         handleInputChange,
         handleDeleteCertificate,
         handleSave,

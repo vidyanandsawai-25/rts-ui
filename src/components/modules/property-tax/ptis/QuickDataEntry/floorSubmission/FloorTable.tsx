@@ -192,22 +192,37 @@ const FloorTable: React.FC<FloorTableProps> = ({
 
   // Adapt the custom MasterTable columns to be compatible with FloorDetailsTable and style cells cleanly
   const adaptedColumns = React.useMemo<FloorDetailsTableColumn<FloorData>[]>(() => {
-    const buildingPermissionKeys = ['floor', 'subFloor', 'conYr', 'asstYr', 'conTyp', 'use', 'ccDate', 'ocDate'];
+    const buildingPermissionKeys = ['floor', 'use', 'conYr', 'ccDate', 'ocDate'];
     const targetCols = isBuildingPermissionView
       ? columns.filter((col) => buildingPermissionKeys.includes(col.key))
       : columns;
 
-    const baseCols: FloorDetailsTableColumn<FloorData>[] = targetCols.map((col) => ({
-      ...col,
-      sortable: true,
-      render: (row: FloorData, index: number) => {
-        const cellValue = row[col.key as keyof FloorData];
-        if (col.render) {
-          return (col.render as (val: unknown, r: FloorData, i: number) => React.ReactNode)(cellValue, row, index);
+    const baseCols: FloorDetailsTableColumn<FloorData>[] = targetCols.map((col) => {
+      let label = col.label;
+      let tooltip = col.tooltip;
+      if (isBuildingPermissionView) {
+        if (col.key === 'conYr') {
+          label = t('building.constYear') || 'CONST YEAR';
+          tooltip = label;
+        } else if (col.key === 'ocDate') {
+          label = 'OC DATE';
+          tooltip = 'OC DATE';
         }
-        return <span className="font-semibold text-slate-800 text-[12px]">{String(cellValue ?? '-')}</span>;
-      },
-    }));
+      }
+      return {
+        ...col,
+        label,
+        tooltip,
+        sortable: true,
+        render: (row: FloorData, index: number) => {
+          const cellValue = row[col.key as keyof FloorData];
+          if (col.render) {
+            return (col.render as (val: unknown, r: FloorData, i: number) => React.ReactNode)(cellValue, row, index);
+          }
+          return <span className="font-semibold text-slate-800 text-[12px]">{String(cellValue ?? '-')}</span>;
+        },
+      };
+    });
 
     // Append standard Action column at the end
     if (!viewOnly) {
@@ -425,7 +440,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
           striped={true}
           hoverable={true}
           containerClassName="border border-blue-200 shadow-md rounded-xl"
-          heightRows={4}
+          heightRows={isBuildingPermissionView ? Math.min(Math.max(filteredFloors.length, 1), 3) : 4}
           theadClassName="bg-[#1e3a8a] text-white"
           rowClassName={(row) => {
             const isSelected = selectedFloor

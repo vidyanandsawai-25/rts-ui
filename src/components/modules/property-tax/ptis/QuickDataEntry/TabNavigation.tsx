@@ -115,6 +115,7 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
       win.__buildingFormHasChanges = false;
       win.__discountFormHasChanges = false;
       win.__socialFormHasChanges = false;
+      win.__buildingFormIncompleteDetails = null;
       router.push(tabHref);
     };
 
@@ -168,6 +169,7 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
           win.__buildingFormHasChanges = false;
           win.__discountFormHasChanges = false;
           win.__socialFormHasChanges = false;
+          win.__buildingFormIncompleteDetails = null;
           router.replace(tabHref);
         }
       });

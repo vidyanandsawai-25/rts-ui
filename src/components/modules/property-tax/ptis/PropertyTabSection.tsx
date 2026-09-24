@@ -436,6 +436,11 @@ export default function PropertyTabSection({
           <Tabs.TabPanel value="buildingpermission" className="mt-0 pt-0">
             <BuildingPermissionTab
               data={buildingPermissionData}
+              propertyId={draft.propertyId ? Number(draft.propertyId) : undefined}
+              wardNo={draft.wardNo}
+              wardId={draft.wardId ? Number(draft.wardId) : undefined}
+              propertyNo={draft.propertyNo}
+              partitionNo={draft.partitionNo}
               onFieldChange={() => {}}
               readOnly={true}
               isExpanded={isBuildingPermissionExpanded}

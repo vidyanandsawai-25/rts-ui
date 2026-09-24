@@ -234,7 +234,17 @@
     }
   },
   "building": {
-    "noDocumentAttached": "No document file attached for this certificate."
+    "noDocumentAttached": "No document file attached for this certificate.",
+    "certificateName": "Certificate Name",
+    "certificateNo": "Certificate No.",
+    "certificateDate": "Certificate Date",
+    "action": "Action",
+    "view": "View",
+    "edit": "Edit",
+    "viewDocument": "View Document",
+    "editCertificate": "Edit Certificate",
+    "propertyScope": "Property Level",
+    "noCertificatesAttached": "No attached certificates available for this property."
   },
   "tabs": {
     "propertyDetails": "Property Details",

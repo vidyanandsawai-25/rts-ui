@@ -71,14 +71,27 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
             );
         }
 
+        const hasAnyData = !!(hasNumber || hasDate || hasDoc || cert.pendingFile);
+        if (hasAnyData) {
+            return (
+                <Badge
+                    variant="warning"
+                    size="sm"
+                    icon={AlertCircle}
+                    className="bg-amber-50 text-amber-700 border-amber-200"
+                >
+                    {t("building.statusIncomplete") || "Incomplete"}
+                </Badge>
+            );
+        }
+
         return (
             <Badge
-                variant="warning"
+                variant="secondary"
                 size="sm"
-                icon={AlertCircle}
-                className="bg-amber-50 text-amber-700 border-amber-200"
+                className="bg-blue-50 text-blue-700 border-blue-200 font-medium"
             >
-                {t("building.statusIncomplete")}
+                {t("building.statusNotConfigured") || "Not Configured"}
             </Badge>
         );
     };

@@ -234,7 +234,17 @@
     }
   },
   "building": {
-    "noDocumentAttached": "या प्रमाणपत्रासाठी कोणतीही दस्तऐवज फाईल जोडलेली नाही."
+    "noDocumentAttached": "या प्रमाणपत्रासाठी कोणतीही दस्तऐवज फाईल जोडलेली नाही.",
+    "certificateName": "प्रमाणपत्राचे नाव",
+    "certificateNo": "प्रमाणपत्र क्र.",
+    "certificateDate": "प्रमाणपत्र दिनांक",
+    "action": "कृती",
+    "view": "पहा",
+    "edit": "संपादित करा",
+    "viewDocument": "दस्तऐवज पहा",
+    "editCertificate": "प्रमाणपत्र संपादित करा",
+    "propertyScope": "मालमत्ता स्तर",
+    "noCertificatesAttached": "या मालमत्तेसाठी कोणतीही जोडलेली प्रमाणपत्रे उपलब्ध नाहीत."
   },
   "tabs": {
     "propertyDetails": "मालमत्ता तपशील",

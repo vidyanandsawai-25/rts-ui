@@ -263,6 +263,28 @@ export const ptisDetailsService = {
         }
       }
 
+      // Fallback: If floorIds is empty, attempt to resolve floors from /Floor/owner/${propertyId}
+      if (floorIds.length === 0) {
+        try {
+          const ownerFloorsRes = await fetchWithCertSupport<unknown>(`/Floor/owner/${propertyId}`).catch(() => null);
+          const rawOwnerFloors = ownerFloorsRes && 'success' in ownerFloorsRes && ownerFloorsRes.success ? ownerFloorsRes.data : null;
+          const ownerFloorsData = extractData(rawOwnerFloors) ?? rawOwnerFloors;
+          if (Array.isArray(ownerFloorsData)) {
+            for (const f of ownerFloorsData) {
+              const fObj = f as Record<string, unknown>;
+              const fId = Number(fObj?.id ?? fObj?.propertyDetailsId);
+              if (fId && !floorIds.includes(fId)) {
+                floorIds.push(fId);
+                const desc = String(fObj?.floorDescription ?? fObj?.floor ?? '');
+                if (desc) floorMap.set(fId, desc);
+              }
+            }
+          }
+        } catch {
+          // ignore fallback error
+        }
+      }
+
       // Concurrently fetch types-with-status for each floor to obtain full document GUIDs
       const floorTypeResponses = floorIds.length > 0
         ? await Promise.all(

@@ -165,33 +165,41 @@ export const hasChangesComparedToInitial = (
     current: BuildingPermissionState,
     initial: BuildingPermissionState
 ): boolean => {
-    const currentKeys = Object.keys(current);
-    const initialKeys = Object.keys(initial);
+    const allKeys = new Set([
+        ...Object.keys(current || {}),
+        ...Object.keys(initial || {})
+    ]);
 
-    if (currentKeys.length !== initialKeys.length) return true;
-
-    for (const key of currentKeys) {
+    for (const key of allKeys) {
         const id = Number(key);
-        const curItem = current[id];
-        const initItem = initial[id];
+        const curItem = current?.[id];
+        const initItem = initial?.[id];
 
-        if (!curItem && !initItem) continue;
-        if (!curItem || !initItem) return true;
+        const curEnabled = !!curItem?.enabled;
+        const initEnabled = !!initItem?.enabled;
 
-        if (curItem.enabled !== initItem.enabled) return true;
+        // If enabled status differs, that's definitely a change
+        if (curEnabled !== initEnabled) return true;
 
-        const curNum = (curItem.number || "").trim();
-        const initNum = (initItem.number || "").trim();
+        // If neither is enabled and neither has pending files, treat as unchanged
+        if (!curEnabled && !initEnabled) {
+            if (curItem?.pendingFile || initItem?.pendingFile) return true;
+            continue;
+        }
+
+        // Both are enabled: compare values
+        const curNum = (curItem?.number || "").trim();
+        const initNum = (initItem?.number || "").trim();
         if (curNum !== initNum) return true;
 
-        const curDate = curItem.date || "";
-        const initDate = initItem.date || "";
+        const curDate = curItem?.date || "";
+        const initDate = initItem?.date || "";
         if (curDate !== initDate) return true;
 
-        if (curItem.pendingFile) return true;
+        if (curItem?.pendingFile || initItem?.pendingFile) return true;
 
-        const initHasFile = !!(initItem.fileName || initItem.documentGuid);
-        const curHasFile = !!(curItem.fileName || curItem.documentGuid);
+        const initHasFile = !!(initItem?.fileName || initItem?.documentGuid);
+        const curHasFile = !!(curItem?.fileName || curItem?.documentGuid);
         if (initHasFile !== curHasFile) return true;
     }
     return false;

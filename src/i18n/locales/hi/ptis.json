@@ -234,7 +234,17 @@
     }
   },
   "building": {
-    "noDocumentAttached": "इस प्रमाणपत्र के लिए कोई दस्तावेज़ संलग्न नहीं है।"
+    "noDocumentAttached": "इस प्रमाणपत्र के लिए कोई दस्तावेज़ संलग्न नहीं है।",
+    "certificateName": "प्रमाणपत्र का नाम",
+    "certificateNo": "प्रमाणपत्र सं.",
+    "certificateDate": "प्रमाणपत्र दिनांक",
+    "action": "कार्रवाई",
+    "view": "देखें",
+    "edit": "संपादित करें",
+    "viewDocument": "दस्तावेज़ देखें",
+    "editCertificate": "प्रमाणपत्र संपादित करें",
+    "propertyScope": "संपत्ति स्तर",
+    "noCertificatesAttached": "इस संपत्ति के लिए कोई संलग्न प्रमाणपत्र उपलब्ध नहीं है।"
   },
   "tabs": {
     "propertyDetails": "संपत्ति विवरण",

@@ -8,14 +8,19 @@ import {
     getWingsByPropertyAction,
     getUnitsByPropertyAction,
     getCertificateTypeMasterAction,
-    getApartmentQcCertificateGridAction
+    getApartmentQcCertificateGridAction,
+    getFloorCertificatesAction,
 } from "./action";
 import {
     getFloorDataAction,
     getConstructionTypeDataAction,
     getTypeOfUseDataAction,
     getPropertyBasicDetailsAction,
+    getSubFloorDataAction,
+    getSubTypeOfUseDataAction,
+    getFloorSubmissionsByOwnerAction,
 } from '../FloorSubmission/actions';
+import { normalizeArrayResponse } from '@/lib/utils/action-response-helpers';
 import type { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResponse, SubTypeOfUseResponse } from '@/types/floor-details.types';
 import type { FloorData } from '@/types/room-details.types';
 
@@ -57,7 +62,7 @@ function BuildingFormSkeleton() {
 // 2. The Data Loader Component (Server Component)
 async function BuildingFormDataLoader({
     propertyId,
-    selectedFloorIdNum: _selectedFloorIdNum,
+    selectedFloorIdNum,
     searchCategory,
     searchSocietyId,
     searchWingDetailId,
@@ -82,7 +87,7 @@ async function BuildingFormDataLoader({
     const targetWingId = (levelParam === 'Wing' || levelParam === 'Unit') && searchWingDetailId ? Number(searchWingDetailId) : null;
     const targetSocId = searchSocietyId ? Number(searchSocietyId) : null;
 
-    // Fetch essential initial building permission, basic details, wings, units, and core lookup data concurrently
+    // Fetch essential initial building permission, basic details, wings, units, floors, and core lookup data concurrently
     const [
         response,
         floorDataResult,
@@ -92,6 +97,10 @@ async function BuildingFormDataLoader({
         unitsResult,
         certificateTypesResult,
         certificateGridResult,
+        subFloorDataResult,
+        subTypeDataResult,
+        floorSubmissionsResult,
+        floorCertificatesResult,
     ] = await Promise.all([
         (isWingWise === 'true' && searchWingDetailId)
             ? getSocietyWingTypesWithStatusAction(null, Number(searchWingDetailId))
@@ -109,6 +118,10 @@ async function BuildingFormDataLoader({
             targetWingId,
             targetSocId
         ),
+        getSubFloorDataAction(),
+        getSubTypeOfUseDataAction(),
+        getFloorSubmissionsByOwnerAction(propertyId),
+        getFloorCertificatesAction(propertyId, selectedFloorIdNum),
     ]);
 
     const resolvedPropertyTypeId = propertyBasicDetails?.propertyTypeId;
@@ -124,10 +137,13 @@ async function BuildingFormDataLoader({
     const floorData = checkResult<FloorResponse>(floorDataResult);
     const constructionTypeData = checkResult<ConstructionTypeResponse>(constructionTypeDataResult);
     const useData = checkResult<TypeOfUseApiItem>(useDataResult);
-    const subFloorData: SubFloorResponse[] = [];
-    const subTypeData: SubTypeOfUseResponse[] = [];
-    const initialFloors: FloorData[] = [];
-    const floorCertificatesResponse = { success: true, data: null };
+    const subFloorData = checkResult<SubFloorResponse>(subFloorDataResult);
+    const subTypeData = checkResult<SubTypeOfUseResponse>(subTypeDataResult);
+    const initialFloorsRaw = normalizeArrayResponse(floorSubmissionsResult);
+    const initialFloors: FloorData[] = (initialFloorsRaw || []) as FloorData[];
+    const floorCertificatesResponse = (floorCertificatesResult && typeof floorCertificatesResult === 'object' && 'data' in floorCertificatesResult)
+        ? floorCertificatesResult
+        : { success: true, data: null };
 
     // Process Wings SSR Data
     const rawWings = (wingsResult?.success && Array.isArray(wingsResult.data)) ? wingsResult.data as Record<string, unknown>[] : [];
@@ -292,7 +308,7 @@ export default async function BuildingPage({ params, searchParams }: BuildingPag
     setRequestLocale(locale);
 
     // Extract selected floor ID from URL params if coming from Floor tab or floor URL
-    const rawFloorId = sp.activeFloorId || sp.selectedPropertyDetailsId || sp.floorId;
+    const rawFloorId = sp.selectedFloorId || sp.activeFloorId || sp.selectedPropertyDetailsId || sp.floorId;
     const activeFloorId = rawFloorId ? Number(Array.isArray(rawFloorId) ? rawFloorId[0] : rawFloorId) : undefined;
     const selectedFloorIdNum = activeFloorId && !isNaN(activeFloorId) ? activeFloorId : undefined;
 

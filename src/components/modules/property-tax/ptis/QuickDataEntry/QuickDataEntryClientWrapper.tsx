@@ -320,6 +320,7 @@ function QuickDataEntryContent({
             win.__buildingFormHasChanges = false;
             win.__discountFormHasChanges = false;
             win.__socialFormHasChanges = false;
+            win.__buildingFormIncompleteDetails = null;
             doClose();
         };
 
@@ -375,6 +376,7 @@ function QuickDataEntryContent({
                     win.__buildingFormHasChanges = false;
                     win.__discountFormHasChanges = false;
                     win.__socialFormHasChanges = false;
+                    win.__buildingFormIncompleteDetails = null;
                     doClose();
                 }
             });

@@ -410,7 +410,14 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
           {isExpanded && (
             <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200">
               {activeSection === 'building' && (
-                <BuildingPermissionTab data={buildingPermissionData ?? undefined} />
+                <BuildingPermissionTab
+                  data={buildingPermissionData ?? undefined}
+                  propertyId={propertyId ? Number(propertyId) : undefined}
+                  wardNo={wardNo ?? undefined}
+                  wardId={wardId ? Number(wardId) : undefined}
+                  propertyNo={propertyNo ?? undefined}
+                  partitionNo={partitionNo ?? undefined}
+                />
               )}
 
               {activeSection === 'discount' && (

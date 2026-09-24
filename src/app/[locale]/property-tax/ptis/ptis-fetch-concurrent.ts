@@ -43,7 +43,6 @@ export async function fetchPropertyDetailsConcurrently(
   const isPropertyTab = !activeTab || activeTab === 'propertydetails';
   const isKycTab = activeTab === 'kycdetails';
   const isSocietyTab = activeTab === 'societydetails';
-  const isBuildingTab = activeTab === 'buildingpermission';
   const isDiscountTab = activeTab === 'discountdetails';
   const isOldDetailsTab = activeTab === 'olddetails';
 
@@ -129,7 +128,7 @@ export async function fetchPropertyDetailsConcurrently(
     ? fetchSocietyDetailsOnlyAction(propertyId)
     : Promise.resolve(null);
 
-  const buildingPromise = isBuildingTab
+  const buildingPromise = propertyId
     ? fetchBuildingPermissionOnlyAction(propertyId)
     : Promise.resolve(null);
 

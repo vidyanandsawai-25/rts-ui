@@ -68,6 +68,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         handleFileUpload,
         handleFileDelete,
         handleToggleEnabled,
+        handleCopyFromPropertyCert,
         handleInputChange,
         handleDeleteCertificate,
         handleSave,
@@ -82,7 +83,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         fieldErrors,
         propertyCertificatesState,
         t,
-    } = useBuildingForm(initialBuildingPermission, initialFloorCertificates || null, propertyId);
+    } = useBuildingForm(initialBuildingPermission, initialFloorCertificates || null, propertyId, initialFloors);
 
     const [isSectionSaving, setIsSectionSaving] = useState(false);
 
@@ -387,6 +388,8 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                     onInputChange={(field, val) => activeSelectedTypeId !== null && handleInputChange(activeSelectedTypeId, field, val)}
                                     onFileUpload={(file) => activeSelectedTypeId !== null && handleFileUpload(activeSelectedTypeId, file)}
                                     onFileDelete={(typeId) => handleFileDelete(typeId)}
+                                    onToggleEnabled={(checked) => activeSelectedTypeId !== null && handleToggleEnabled(activeSelectedTypeId, checked)}
+                                    onCopyFromProperty={() => activeSelectedTypeId !== null && handleCopyFromPropertyCert(activeSelectedTypeId)}
                                     validationError={activeSelectedTypeId !== null ? validationErrors[activeSelectedTypeId] : undefined}
                                     fieldErrors={activeSelectedTypeId !== null ? fieldErrors[activeSelectedTypeId] : undefined}
                                     t={t}
