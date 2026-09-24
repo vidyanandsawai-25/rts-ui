@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import type {
   OldFloorDetailsData,
   OldDetailsData,
@@ -32,8 +33,11 @@ export function useIndividualOldDetailsTab({
   oldDetailsData,
   oldTaxesData,
   mappedPropertiesData = [],
+  onPropertyMapping,
 }: UseIndividualOldDetailsTabParams): UseIndividualOldDetailsTabReturn {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const locale = useLocale();
 
   const [localShowFloor, setLocalShowFloor] = useState(false);
   const [localShowTax, setLocalShowTax] = useState(false);
@@ -122,6 +126,14 @@ export function useIndividualOldDetailsTab({
     const nextState = !effectiveShowMap;
     setLocalShowMap(nextState);
     setShowOldMapInfo?.(nextState);
+
+    if (nextState) {
+      setLocalShowFloor(false);
+      setShowOldFloorInfo?.(false);
+      setLocalShowTax(false);
+      setShowOldTaxInfo?.(false);
+    }
+
     if (nextState && currentMapped.length === 0) {
       await runOnDemandFetch(
         resolvedPropertyId,
@@ -137,12 +149,27 @@ export function useIndividualOldDetailsTab({
         'Failed to load mapped properties'
       );
     }
-  }, [effectiveShowMap, setShowOldMapInfo, currentMapped.length, resolvedPropertyId]);
+  }, [
+    effectiveShowMap,
+    setShowOldMapInfo,
+    setShowOldFloorInfo,
+    setShowOldTaxInfo,
+    currentMapped.length,
+    resolvedPropertyId,
+  ]);
 
   const handleToggleFloorDetails = useCallback(async () => {
     const nextState = !effectiveShowFloor;
     setLocalShowFloor(nextState);
     setShowOldFloorInfo?.(nextState);
+
+    if (nextState) {
+      setLocalShowMap(false);
+      setShowOldMapInfo?.(false);
+      setLocalShowTax(false);
+      setShowOldTaxInfo?.(false);
+    }
+
     if (nextState && currentFloors.length === 0) {
       await runOnDemandFetch(
         resolvedPropertyId,
@@ -158,12 +185,27 @@ export function useIndividualOldDetailsTab({
         'Failed to load old floor details'
       );
     }
-  }, [effectiveShowFloor, setShowOldFloorInfo, currentFloors.length, resolvedPropertyId]);
+  }, [
+    effectiveShowFloor,
+    setShowOldFloorInfo,
+    setShowOldMapInfo,
+    setShowOldTaxInfo,
+    currentFloors.length,
+    resolvedPropertyId,
+  ]);
 
   const handleToggleOldTax = useCallback(async () => {
     const nextState = !effectiveShowTax;
     setLocalShowTax(nextState);
     setShowOldTaxInfo?.(nextState);
+
+    if (nextState) {
+      setLocalShowMap(false);
+      setShowOldMapInfo?.(false);
+      setLocalShowFloor(false);
+      setShowOldFloorInfo?.(false);
+    }
+
     if (nextState && !currentTaxes) {
       await runOnDemandFetch(
         resolvedPropertyId,
@@ -179,7 +221,44 @@ export function useIndividualOldDetailsTab({
         'Failed to load old taxes details'
       );
     }
-  }, [effectiveShowTax, setShowOldTaxInfo, currentTaxes, resolvedPropertyId]);
+  }, [
+    effectiveShowTax,
+    setShowOldTaxInfo,
+    setShowOldMapInfo,
+    setShowOldFloorInfo,
+    currentTaxes,
+    resolvedPropertyId,
+  ]);
+
+  const handleNavigatePropertyMapping = useCallback(() => {
+    if (onPropertyMapping) {
+      onPropertyMapping();
+      return;
+    }
+
+    const currentWardNo = searchParams?.get('wardNo') || '';
+    const currentPropertyNo = searchParams?.get('propertyNo') || '';
+    const currentPartitionNo = searchParams?.get('partitionNo') || '';
+    const currentWardId = searchParams?.get('wardId') || '';
+
+    const params = new URLSearchParams({
+      propertyId: String(resolvedPropertyId || ''),
+      wardNo: String(currentWardNo),
+      propertyNo: String(currentPropertyNo),
+      partitionNo: String(currentPartitionNo),
+      wardId: String(currentWardId),
+      propNo: String(currentDetails?.oldPropertyNo || ''),
+      zone: String(currentDetails?.oldZoneName || ''),
+      ward: String(currentDetails?.oldWardNo || ''),
+      area: String(currentDetails?.oldPlotArea || ''),
+      tax: String(currentDetails?.oldTotalTax || ''),
+      rv: String(currentDetails?.oldRV || ''),
+      cv: String(currentDetails?.oldCV || ''),
+      floors: String(currentDetails?.oldConstructionArea || ''),
+    }).toString();
+
+    router.push(`/${locale}/property-tax/property-mapping?${params}`);
+  }, [onPropertyMapping, router, locale, searchParams, resolvedPropertyId, currentDetails]);
 
   return {
     effectiveShowFloor,
@@ -195,6 +274,7 @@ export function useIndividualOldDetailsTab({
     handleToggleMapDetails,
     handleToggleFloorDetails,
     handleToggleOldTax,
+    handleNavigatePropertyMapping,
   };
 }
 

@@ -58,6 +58,8 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
   const isMainApartmentCategory = !hasPartition && (effectiveCategoryName.includes('apartment') || returnTab === 'apartment');
   const isIndividualProperty =
     returnTab === 'individual' ||
+    fromParam === 'individual' ||
+    (typeof window !== 'undefined' && sessionStorage.getItem('qde_is_individual') === 'true') ||
     effectiveCategoryName.includes('apartment/individual') ||
     effectiveCategoryName.includes('individual') ||
     effectiveCategoryName === 'individual';
@@ -175,7 +177,10 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
   };
 
   const isApartment = returnTab === 'apartment' || searchParams.get('from') === 'apartment';
-  const isIndividual = returnTab === 'individual' || searchParams.get('from') === 'individual';
+  const isIndividual =
+    returnTab === 'individual' ||
+    searchParams.get('from') === 'individual' ||
+    (typeof window !== 'undefined' && sessionStorage.getItem('qde_is_individual') === 'true');
 
   const visibleTabs = TABS.filter((tab) => {
     // Hide Property and KYC tabs ONLY if it is pure Apartment (Main Apartment without Partition)
@@ -223,6 +228,8 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
               if (propertyNo) tabParams.set('propertyNo', propertyNo);
               if (partitionNo) tabParams.set('partitionNo', partitionNo);
               if (tabReturnValue) tabParams.set('returnTab', tabReturnValue);
+              if (fromParam) tabParams.set('from', fromParam);
+              if (isIndividual && !fromParam) tabParams.set('from', 'individual');
               if (valuationTab) tabParams.set('valuationTab', valuationTab);
               if (appartmentTab) tabParams.set('appartmentTab', appartmentTab);
               if (subTab) tabParams.set('subTab', subTab);
@@ -244,6 +251,9 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
                 tabParams.set('returnTab', tabReturnValue);
               } else {
                 tabParams.delete('returnTab');
+              }
+              if (isIndividual) {
+                tabParams.set('from', 'individual');
               }
               tabQueryString = tabParams.toString();
             }

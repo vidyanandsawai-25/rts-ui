@@ -171,6 +171,12 @@ function QuickDataEntryContent({
             } else {
                 sessionStorage.removeItem('qde_is_apartment');
             }
+
+            if (returnTab === 'individual' || searchParams.get('from') === 'individual') {
+                sessionStorage.setItem('qde_is_individual', 'true');
+            } else {
+                sessionStorage.removeItem('qde_is_individual');
+            }
         }
     }, [returnTab, searchParams]);
 
@@ -228,12 +234,16 @@ function QuickDataEntryContent({
                                    (typeof window !== 'undefined' && sessionStorage.getItem('qde_is_apartment') === 'true')
                                ));
 
-            const isIndividual = returnTab === 'individual' ||
-                                 searchParams.get('from') === 'individual' ||
-                                 (!returnTab && resolvedReturnTab === 'individual');
+            const isExplicitIndividual = returnTab === 'individual' || searchParams.get('from') === 'individual';
+            const isIndividual = isExplicitIndividual ||
+                                 (!returnTab && (
+                                     resolvedReturnTab === 'individual' ||
+                                     (typeof window !== 'undefined' && sessionStorage.getItem('qde_is_individual') === 'true')
+                                 ));
 
             if (typeof window !== 'undefined') {
                 sessionStorage.removeItem('qde_is_apartment');
+                sessionStorage.removeItem('qde_is_individual');
             }
 
             const wingName = searchParams.get('wingName') || searchParams.get('wingname');
@@ -268,7 +278,23 @@ function QuickDataEntryContent({
 
                 router.push(`/${locale}/property-tax/ptis/apartment?${params.toString()}`);
             } else if (isIndividual) {
-                router.push(`/${locale}/property-tax/ptis/individual?${params}`);
+                // Clean up QDE internal and routing params
+                params.delete('from');
+                params.delete('returnTab');
+                params.delete('floorId');
+                params.delete('tab');
+                params.delete('valuationTab');
+                params.delete('appartmentTab');
+                params.delete('subTab');
+                params.delete('showDetails');
+                params.delete('parentPropertyId');
+                params.delete('fromFooterEdit');
+                params.delete('fromSocietyEdit');
+                params.delete('fromWingEdit');
+                params.delete('hideWing');
+                params.delete('hideSociety');
+
+                router.push(`/${locale}/property-tax/ptis/individual?${params.toString()}`);
             } else {
                 if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
                 if (valuationTab) params.set('valuationTab', valuationTab);

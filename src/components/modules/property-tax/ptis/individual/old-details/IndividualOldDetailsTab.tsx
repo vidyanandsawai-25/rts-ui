@@ -10,7 +10,6 @@ import type {
 import { IndividualOldTaxDetailsTable } from './IndividualOldTaxDetailsTable';
 import {
   IndividualOldFieldsGrid,
-  IndividualOldToolbar,
   IndividualOldMapDetailsTable,
   IndividualOldFloorDetailsTable,
 } from './components';
@@ -28,6 +27,7 @@ export interface IndividualOldDetailsTabProps {
   oldDetailsData?: OldDetailsData;
   oldTaxesData?: OldTaxesData | null;
   mappedPropertiesData?: MappedPropertyItem[];
+  onPropertyMapping?: () => void;
 }
 
 export const IndividualOldDetailsTab: React.FC<IndividualOldDetailsTabProps> = (props) => {
@@ -45,15 +45,14 @@ export const IndividualOldDetailsTab: React.FC<IndividualOldDetailsTabProps> = (
     handleToggleMapDetails,
     handleToggleFloorDetails,
     handleToggleOldTax,
+    handleNavigatePropertyMapping,
   } = useIndividualOldDetailsTab(props);
 
   return (
     <div className="p-0.5 space-y-2">
-      {/* 12 Old details fields in 2 perfectly balanced rows of 6 */}
-      <IndividualOldFieldsGrid currentDetails={currentDetails} />
-
-      {/* Action Toolbar */}
-      <IndividualOldToolbar
+      {/* 12 Old details fields + 4 Contextual Action Buttons in a space-saving unified card */}
+      <IndividualOldFieldsGrid
+        currentDetails={currentDetails}
         effectiveShowMap={effectiveShowMap}
         effectiveShowFloor={effectiveShowFloor}
         effectiveShowTax={effectiveShowTax}
@@ -63,6 +62,7 @@ export const IndividualOldDetailsTab: React.FC<IndividualOldDetailsTabProps> = (
         onToggleMapDetails={handleToggleMapDetails}
         onToggleFloorDetails={handleToggleFloorDetails}
         onToggleOldTax={handleToggleOldTax}
+        onNavigatePropertyMapping={handleNavigatePropertyMapping}
       />
 
       {/* Sub-tables: Dynamic Tax Details Section */}

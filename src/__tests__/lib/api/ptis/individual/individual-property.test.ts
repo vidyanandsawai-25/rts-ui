@@ -352,5 +352,80 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
       expect(resFallback?.taxZoneAndName).toBe('Zone-1 - Main');
       expect(resFallback?.societyBuildingPhotoGuid).toBe('prop-guid');
     });
+
+    it('accurately maps the updated API response payload with currentDemand, dual areas, and null occupier', () => {
+      const sampleDto: IndividualPropertyDto = {
+        propertyId: 1714469,
+        propertyNo: 'NK14-316-S7',
+        upicId: 'NK140001B316PS7',
+        ownerName: 'M/S.  SHEJPAL COMPOUND(P.O.A.H.)',
+        owner: 'M/S.  SHEJPAL COMPOUND(P.O.A.H.)',
+        propertyHolder: 'M/S.  SHEJPAL COMPOUND(P.O.A.H.)',
+        holderRegional: 'M/S.  SHEJPAL COMPOUND(P.O.A.H.)',
+        occupierName: null,
+        occupierRegional: null,
+        ownerCategory: 'Self',
+        aadharNo: null,
+        ownerTitle: 'Mr',
+        aadharWithTitle: null,
+        mobileNo: null,
+        alternateMobileNo: null,
+        emailId: null,
+        address: 'Shop No -F1-88, PURNSHANTI HEIGHTS, NEAR KADAM COMPOUND, OPP.JAYHIND CHS,BESIDES MASHANBHUMI, KHARTAN ROAD, THANE WEST.',
+        addressEnglish: null,
+        pinCode: '400601',
+        fullAddress: 'Shop No -F1-88, PURNSHANTI HEIGHTS, NEAR KADAM COMPOUND, OPP.JAYHIND CHS,BESIDES MASHANBHUMI, KHARTAN ROAD, THANE WEST. (400601)',
+        division: 'नौपाडा - कोपरी',
+        moujaName: 'Kopri',
+        surveyNo: '24',
+        taxZone: '1 - A',
+        plotNo: null,
+        plotAreaFt: null,
+        plotAreaMtr: null,
+        carpetAreaFt: 90409.28,
+        carpetAreaMtr: 8399.92,
+        builtUpAreaFt: 108491,
+        builtUpAreaMtr: 10079.52,
+        propertyDescription: 'कार्यालय',
+        individualPropertyGuid: null,
+        individualPropertyPhotoGuid: null,
+        societyBuildingPhotoGuid: null,
+        additionalRevenue: {
+          currentTax: 0,
+          retroTax: 0,
+          totalTax: 0,
+          currentDemand: 0,
+          totalDemand: 0,
+          collection: 0,
+          totalBalance: 0,
+          oldCurrentTax: 1688023,
+          differenceAmount: -1688023,
+          changePercent: -100,
+          pendingCurrent: 0,
+          pendingDemand: 0,
+        },
+      };
+
+      const mapped = mapIndividualPropertyDtoToMasterData(sampleDto);
+      expect(mapped.propertyNo).toBe('NK14-316-S7');
+      expect(mapped.taxZone).toBe('1 - A');
+      expect(mapped.occupierName).toBe('-');
+      expect(mapped.carpetAreaFtMtr).toBe('90409.28 Ft / 8399.92 Mtr');
+      expect(mapped.builtUpAreaFtMtr).toBe('108491 Ft / 10079.52 Mtr');
+      expect(mapped.performance?.thisAssessmentRevenue).toBe('-₹16,88,023');
+      expect(mapped.performance?.revenueGrowthPct).toBe('-100%');
+      expect(mapped.performance?.currentDemand).toBe('₹0');
+      expect(mapped.performance?.pendingDemand).toBe('₹0');
+      expect(mapped.performance?.isGrowthNegative).toBe(true);
+
+      const built = buildInitialIndividualMasterData({
+        resolvedPropertyId: 1714469,
+        baseData: mapped,
+        pageData: emptyPageData,
+      });
+      expect(built?.occupierName).toBe('-');
+      expect(built?.carpetAreaFtMtr).toBe('90409.28 Ft / 8399.92 Mtr');
+      expect(built?.builtUpAreaFtMtr).toBe('108491 Ft / 10079.52 Mtr');
+    });
   });
 });

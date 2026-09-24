@@ -18,6 +18,12 @@ export const IndividualOldMapDetailsTable: React.FC<IndividualOldMapDetailsTable
   isLoading = false,
 }) => {
   const t = useTranslations('ptis');
+  const tInd = useTranslations('individual');
+
+  const title =
+    (typeof tInd?.has === 'function' && tInd.has('oldDetails.oldMapDetails')
+      ? tInd('oldDetails.oldMapDetails')
+      : '') || 'Mapped Properties Details';
 
   const oldMapTableData = useMemo(() => {
     return (mappedPropertiesData || []).filter(Boolean).map((item) => {
@@ -52,7 +58,7 @@ export const IndividualOldMapDetailsTable: React.FC<IndividualOldMapDetailsTable
         <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
-              {t('fields.oldMapDetails') || 'Mapped Properties Details'}
+              {title}
             </span>
             {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" />}
           </div>

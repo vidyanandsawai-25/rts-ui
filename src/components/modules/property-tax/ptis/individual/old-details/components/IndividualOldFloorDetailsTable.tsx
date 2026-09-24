@@ -20,6 +20,12 @@ export const IndividualOldFloorDetailsTable: React.FC<IndividualOldFloorDetailsT
   isLoading = false,
 }) => {
   const t = useTranslations('ptis');
+  const tInd = useTranslations('individual');
+
+  const title =
+    (typeof tInd?.has === 'function' && tInd.has('oldDetails.oldFloorDetails')
+      ? tInd('oldDetails.oldFloorDetails')
+      : '') || 'Old Floor Details';
 
   // Fallback data for old floor details table if list is empty but summary has data
   const tableData = useMemo(() => {
@@ -66,7 +72,7 @@ export const IndividualOldFloorDetailsTable: React.FC<IndividualOldFloorDetailsT
         <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
-              {t('fields.oldFloorDetails') || 'Old Floor Details'}
+              {title}
             </span>
             {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />}
           </div>

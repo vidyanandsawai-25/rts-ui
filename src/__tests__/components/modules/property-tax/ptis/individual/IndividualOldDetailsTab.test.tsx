@@ -48,6 +48,8 @@ vi.mock('next-intl', () => ({
       'actions.hideFloorDetails': 'Hide Floor Details',
       'actions.showOldTax': 'Show Old Tax',
       'actions.hideOldTax': 'Hide Old Tax',
+      'actions.propertyMapping': 'Property Mapping',
+      'oldDetails.propertyMapping': 'Property Mapping',
       'fields.oldMapDetails': 'Mapped Properties Details',
       'fields.oldFloorDetails': 'Old Floor Details',
       'fields.oldTaxDetails': 'Old Tax Details',
@@ -190,7 +192,9 @@ describe('IndividualOldDetailsTab', () => {
     expect(screen.getByText('6800')).toBeInTheDocument();
   });
 
-  it('does NOT render any "Property Mapping" button', () => {
+  it('renders the "Property Mapping" button and handles click', () => {
+    const onPropertyMapping = vi.fn();
+
     render(
       <IndividualOldDetailsTab
         showOldFloorInfo={false}
@@ -201,24 +205,30 @@ describe('IndividualOldDetailsTab', () => {
         setShowOldMapInfo={vi.fn()}
         oldDetailsData={mockOldDetails}
         oldFloorTableData={[]}
+        onPropertyMapping={onPropertyMapping}
       />
     );
 
-    expect(screen.queryByText(/Property Mapping/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/propertyMapping/i)).not.toBeInTheDocument();
+    const mappingBtn = screen.getByRole('button', { name: /Property Mapping/i });
+    expect(mappingBtn).toBeInTheDocument();
+
+    fireEvent.click(mappingBtn);
+    expect(onPropertyMapping).toHaveBeenCalledTimes(1);
   });
 
-  it('renders action buttons and handles floor details toggle', () => {
+  it('renders action buttons and handles floor details toggle with mutual exclusivity', () => {
     const setShowOldFloorInfo = vi.fn();
+    const setShowOldTaxInfo = vi.fn();
+    const setShowOldMapInfo = vi.fn();
 
     render(
       <IndividualOldDetailsTab
         showOldFloorInfo={false}
         setShowOldFloorInfo={setShowOldFloorInfo}
         showOldTaxInfo={false}
-        setShowOldTaxInfo={vi.fn()}
-        showOldMapInfo={false}
-        setShowOldMapInfo={vi.fn()}
+        setShowOldTaxInfo={setShowOldTaxInfo}
+        showOldMapInfo={true}
+        setShowOldMapInfo={setShowOldMapInfo}
         oldDetailsData={mockOldDetails}
         oldFloorTableData={mockFloorData}
       />
@@ -229,6 +239,8 @@ describe('IndividualOldDetailsTab', () => {
 
     fireEvent.click(floorBtn);
     expect(setShowOldFloorInfo).toHaveBeenCalledWith(true);
+    expect(setShowOldMapInfo).toHaveBeenCalledWith(false);
+    expect(setShowOldTaxInfo).toHaveBeenCalledWith(false);
   });
 
   it('renders floor details table when showOldFloorInfo is true', () => {

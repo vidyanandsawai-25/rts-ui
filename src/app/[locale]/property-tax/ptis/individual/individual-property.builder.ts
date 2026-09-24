@@ -182,7 +182,7 @@ export function buildInitialIndividualMasterData(
     (baseData?.occupierName && baseData.occupierName !== '-')
       ? baseData.occupierName
       : getSafeString(kycDetails, 'occupierName') ||
-        effectiveOwnerName;
+        '-';
 
   const effectiveOccupierRegional =
     (baseData?.occupierRegional && baseData.occupierRegional !== '-')

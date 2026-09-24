@@ -103,10 +103,34 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   });
   const [isValuationLoading, setIsValuationLoading] = useState(false);
 
-  // States for Old Details collapsible sections
+  // States for Old Details collapsible sections (mutually exclusive)
   const [showOldFloorInfo, setShowOldFloorInfo] = useState(false);
   const [showOldTaxInfo, setShowOldTaxInfo] = useState(false);
   const [showOldMapInfo, setShowOldMapInfo] = useState(false);
+
+  const handleSetShowOldFloorInfo = useCallback((value: boolean) => {
+    setShowOldFloorInfo(value);
+    if (value) {
+      setShowOldTaxInfo(false);
+      setShowOldMapInfo(false);
+    }
+  }, []);
+
+  const handleSetShowOldTaxInfo = useCallback((value: boolean) => {
+    setShowOldTaxInfo(value);
+    if (value) {
+      setShowOldFloorInfo(false);
+      setShowOldMapInfo(false);
+    }
+  }, []);
+
+  const handleSetShowOldMapInfo = useCallback((value: boolean) => {
+    setShowOldMapInfo(value);
+    if (value) {
+      setShowOldFloorInfo(false);
+      setShowOldTaxInfo(false);
+    }
+  }, []);
 
   // State for Floor Details expandable section below valuation table
   const [showFloorDetails, setShowFloorDetails] = useState(false);
@@ -400,11 +424,11 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
                 <IndividualOldDetailsTab
                   propertyId={propertyId}
                   showOldFloorInfo={showOldFloorInfo}
-                  setShowOldFloorInfo={setShowOldFloorInfo}
+                  setShowOldFloorInfo={handleSetShowOldFloorInfo}
                   showOldTaxInfo={showOldTaxInfo}
-                  setShowOldTaxInfo={setShowOldTaxInfo}
+                  setShowOldTaxInfo={handleSetShowOldTaxInfo}
                   showOldMapInfo={showOldMapInfo}
-                  setShowOldMapInfo={setShowOldMapInfo}
+                  setShowOldMapInfo={handleSetShowOldMapInfo}
                   oldFloorTableData={oldFloorTableData ?? []}
                   oldDetailsData={oldDetailsData ?? undefined}
                   oldTaxesData={oldTaxesData ?? null}

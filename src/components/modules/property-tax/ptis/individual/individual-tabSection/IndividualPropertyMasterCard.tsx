@@ -80,6 +80,7 @@ export const IndividualPropertyMasterCard: React.FC<IndividualPropertyMasterCard
     params.set('propertyId', String(activePropertyId));
     if (effectiveWardNo && effectiveWardNo !== '-') params.set('wardNo', effectiveWardNo);
     params.set('returnTab', 'individual');
+    params.set('from', 'individual');
     const locale = pathname?.split('/')[1] || 'en';
     router.push(`/${locale}/property-tax/ptis/QuickDataEntry/${activePropertyId}/Property?${params.toString()}`);
   }, [onEdit, activePropertyId, searchParams, effectiveWardNo, pathname, router]);

@@ -64,5 +64,30 @@
     "buildingPermission": "इमारत अनुमति (प्रमाणपत्र और मंजूरी)",
     "discount": "छूट और सामाजिक डेटा (छूट और रियायतें)",
     "oldDetails": "पुराना विवरण (मैप की गई संपत्तियां / ऐतिहासिक डेटा)"
+  },
+  "oldDetails": {
+    "historicalRecords": "ऐतिहासिक रिकॉर्ड और विवरण",
+    "showMapDetails": "मानचित्र विवरण दिखाएं",
+    "hideMapDetails": "मानचित्र विवरण छुपाएं",
+    "showFloorDetails": "मंजिल विवरण दिखाएं",
+    "hideFloorDetails": "मंजिल विवरण छुपाएं",
+    "showOldTax": "पुराना कर दिखाएं",
+    "hideOldTax": "पुराना कर छुपाएं",
+    "propertyMapping": "संपत्ति मैपिंग",
+    "oldMapDetails": "मैप की गई संपत्ति विवरण",
+    "oldFloorDetails": "पुराने मंजिल विवरण",
+    "oldTaxDetails": "पुराने कर विवरण",
+    "oldZoneName": "पुराना ज़ोन नाम",
+    "oldWardNo": "पुराना वार्ड क्र.",
+    "oldPropertyNo": "पुराना संपत्ति क्र.",
+    "oldPartitionNo": "पुराना विभाजन क्र.",
+    "oldEGovNo": "पुराना ई-गवर्नेंस क्र.",
+    "oldPlotNo": "पुराना भूखंड क्र.",
+    "oldPlotArea": "पुराना भूखंड क्षेत्रफल (वर्ग मी.)",
+    "oldConstructionArea": "पुराना निर्माण क्षेत्रफल (वर्ग मी.)",
+    "oldALV": "पुराना ALV",
+    "oldRV": "पुराना RV",
+    "oldPropTax": "पुराना संपत्ति कर",
+    "oldTotalTax": "पुराना कुल कर"
   }
 }

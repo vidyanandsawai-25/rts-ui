@@ -49,6 +49,8 @@ export const RateableTaxTable: React.FC<RateableTaxTableProps> = ({ rateableData
           if (searchParams.wardId) params.set('wardId', String(searchParams.wardId));
           if (searchParams.propertyNo) params.set('propertyNo', String(searchParams.propertyNo));
           if (searchParams.partitionNo) params.set('partitionNo', String(searchParams.partitionNo));
+          params.set('returnTab', 'individual');
+          params.set('from', 'individual');
           return `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?${params.toString()}`;
         } : undefined}
         editTooltip={typeof rootT?.has === 'function' && rootT.has('floor.editFloor') ? rootT('floor.editFloor') : 'Edit Floor'}

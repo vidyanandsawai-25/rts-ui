@@ -64,5 +64,30 @@
     "buildingPermission": "इमारत परवानगी (प्रमाणपत्रे आणि मंजुरी)",
     "discount": "सवलत आणि सामाजिक डेटा (सवलती)",
     "oldDetails": "जुना तपशील (मॅप केलेल्या मालमत्ता / ऐतिहासिक डेटा)"
+  },
+  "oldDetails": {
+    "historicalRecords": "ऐतिहासिक नोंदी आणि तपशील",
+    "showMapDetails": "नकाशा तपशील दाखवा",
+    "hideMapDetails": "नकाशा तपशील लपवा",
+    "showFloorDetails": "मजल्याचे तपशील दाखवा",
+    "hideFloorDetails": "मजल्याचे तपशील लपवा",
+    "showOldTax": "जुना कर दाखवा",
+    "hideOldTax": "जुना कर लपवा",
+    "propertyMapping": "मालमत्ता मॅपिंग",
+    "oldMapDetails": "मॅप केलेल्या मालमत्ता तपशील",
+    "oldFloorDetails": "जुने मजला तपशील",
+    "oldTaxDetails": "जुने कर तपशील",
+    "oldZoneName": "जुने झोनचे नाव",
+    "oldWardNo": "जुना प्रभाग क्र.",
+    "oldPropertyNo": "जुना मालमत्ता क्र.",
+    "oldPartitionNo": "जुना विभाजन क्र.",
+    "oldEGovNo": "जुना ई-प्रशासन क्र.",
+    "oldPlotNo": "जुना भूखंड क्र.",
+    "oldPlotArea": "जुने भूखंड क्षेत्र (चौ. मी.)",
+    "oldConstructionArea": "जुने बांधकाम क्षेत्र (चौ. मी.)",
+    "oldALV": "जुने ALV",
+    "oldRV": "जुने RV",
+    "oldPropTax": "जुना मालमत्ता कर",
+    "oldTotalTax": "जुना एकूण कर"
   }
 }

@@ -17,6 +17,7 @@ export interface UseIndividualOldDetailsTabParams {
   oldDetailsData?: OldDetailsData;
   oldTaxesData?: OldTaxesData | null;
   mappedPropertiesData?: MappedPropertyItem[];
+  onPropertyMapping?: () => void;
 }
 
 export interface UseIndividualOldDetailsTabReturn {
@@ -33,4 +34,5 @@ export interface UseIndividualOldDetailsTabReturn {
   handleToggleMapDetails: () => void;
   handleToggleFloorDetails: () => void;
   handleToggleOldTax: () => void;
+  handleNavigatePropertyMapping: () => void;
 }

@@ -64,5 +64,30 @@
     "buildingPermission": "BUILDING PERMISSION (Certificates & Clearances)",
     "discount": "DISCOUNT & SOCIAL DATA (Discounts & Concessions)",
     "oldDetails": "OLD DETAILS (Mapped Properties / Historical Data)"
+  },
+  "oldDetails": {
+    "historicalRecords": "Historical Records & Breakdowns",
+    "showMapDetails": "Show Map Details",
+    "hideMapDetails": "Hide Map Details",
+    "showFloorDetails": "Show Floor Details",
+    "hideFloorDetails": "Hide Floor Details",
+    "showOldTax": "Show Old Tax",
+    "hideOldTax": "Hide Old Tax",
+    "propertyMapping": "Property Mapping",
+    "oldMapDetails": "Mapped Properties Details",
+    "oldFloorDetails": "Old Floor Details",
+    "oldTaxDetails": "Old Tax Details",
+    "oldZoneName": "Old Zone Name",
+    "oldWardNo": "Old Ward No",
+    "oldPropertyNo": "Old Property No",
+    "oldPartitionNo": "Old Partition No",
+    "oldEGovNo": "Old E-Governance No",
+    "oldPlotNo": "Old Plot No",
+    "oldPlotArea": "Old Plot Area (Sq. Mtr)",
+    "oldConstructionArea": "Old Construction Area (Sq. Mtr)",
+    "oldALV": "Old ALV",
+    "oldRV": "Old RV",
+    "oldPropTax": "Old Property Tax",
+    "oldTotalTax": "Old Total Tax"
   }
 }

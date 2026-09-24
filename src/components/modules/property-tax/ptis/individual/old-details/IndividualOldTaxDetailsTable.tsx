@@ -19,6 +19,12 @@ export const IndividualOldTaxDetailsTable: React.FC<IndividualOldTaxDetailsTable
   isLoading = false,
 }) => {
   const t = useTranslations('ptis');
+  const tInd = useTranslations('individual');
+
+  const title =
+    (typeof tInd?.has === 'function' && tInd.has('oldDetails.oldTaxDetails')
+      ? tInd('oldDetails.oldTaxDetails')
+      : '') || 'Old Tax Details';
 
   // Collect unique tax names (excluding 'taxtotal') to define dynamic columns
   const uniqueTaxNames = useMemo(() => {
@@ -130,7 +136,7 @@ export const IndividualOldTaxDetailsTable: React.FC<IndividualOldTaxDetailsTable
         <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
-              {t('fields.oldTaxDetails') || 'Old Tax Details'}
+              {title}
             </span>
             {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-600" />}
           </div>
