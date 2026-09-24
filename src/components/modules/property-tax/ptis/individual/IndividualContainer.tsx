@@ -1,16 +1,41 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { PropertySearchBar } from '@/components/modules/property-tax/ptis/tabs/components/PropertySearchBar';
 import { IndividualPropertyMasterCard } from './individual-tabSection/IndividualPropertyMasterCard';
+import { PtisStatusMetricsHeader } from '@/components/modules/property-tax/ptis/apartment/WorkFlow/PtisStatusMetricsHeader';
+import { IndividualFloorIntelligence } from './individual-floor/IndividualFloorIntelligence';
 import type { IndividualPropertyMasterData } from '@/types/property-tax/individual';
+import type { RateableValueResponse } from '@/types/rateableValue.types';
+import type { CapitalValueResponse } from '@/types/capitalValue.types';
+import type { DualMethodResponse } from '@/types/dualMethod.types';
+import type {
+  ApartmentQCTopSectionBelowFlexItemsDto,
+  ApartmentQCTopSectionBelowFlexResponseDto,
+  ApartmentTaxDetailsItem,
+  PtisTaxMode,
+} from '@/types/property-tax/apartment';
 import type { PtisInitialData } from '@/types/ptis.types';
+import type { PTISSearchSelectOption as SearchSelectOption } from '@/components/common/PTISSearchSelect';
+import type { PropertyComparisonResponse } from '@/types/propertyComparison.types';
 import { useIndividualPropertySearch } from '@/hooks/property-tax/individual';
+import { IndividualTaxDetailsSection } from './individual-tax-details';
 
 export interface IndividualContainerProps {
   initialData?: PtisInitialData;
   initialWardId?: number | null;
   initialPropertyMasterData?: IndividualPropertyMasterData;
+  initialQcTopSectionBelowFlex?:
+    | ApartmentQCTopSectionBelowFlexItemsDto
+    | ApartmentQCTopSectionBelowFlexResponseDto
+    | Record<string, unknown>
+    | null;
+  initialRateableData?: RateableValueResponse | null;
+  initialCapitalData?: CapitalValueResponse | null;
+  initialDualMethodData?: DualMethodResponse | null;
+  initialComparisonData?: PropertyComparisonResponse | null;
+  initialTaxDetails?: ApartmentTaxDetailsItem | null;
+  initialTaxMode?: PtisTaxMode;
   isLoading?: boolean;
 }
 
@@ -25,8 +50,17 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
   initialData = EMPTY_INITIAL_DATA,
   initialWardId = null,
   initialPropertyMasterData,
+  initialQcTopSectionBelowFlex,
+  initialRateableData = null,
+  initialCapitalData = null,
+  initialDualMethodData = null,
+  initialComparisonData = null,
+  initialTaxDetails = null,
+  initialTaxMode = 'rateable',
   isLoading = false,
 }) => {
+  const [currentTaxMode, setCurrentTaxMode] = useState<PtisTaxMode>(initialTaxMode || 'rateable');
+
   const search = useIndividualPropertySearch(
     initialData,
     initialWardId,
@@ -35,19 +69,30 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
   const { draft, isSearching, propertyId } = search;
 
   const resolvedUpicId =
-    initialPropertyMasterData?.upic && initialPropertyMasterData.upic !== '-'
+    (initialPropertyMasterData?.upic && initialPropertyMasterData.upic !== '-')
       ? initialPropertyMasterData.upic
       : initialData?.propertyDetails?.upicId || initialData?.tabHeaderInfo?.upicId || '';
 
   const resolvedOwnerName =
-    initialPropertyMasterData?.ownerName && initialPropertyMasterData.ownerName !== '-'
+    (initialPropertyMasterData?.ownerName && initialPropertyMasterData.ownerName !== '-')
       ? initialPropertyMasterData.ownerName
       : initialData?.kycDetails?.propertyHolderName || initialData?.tabHeaderInfo?.ownerName || '';
 
   const resolvedDescription =
-    initialPropertyMasterData?.propertyDescription && initialPropertyMasterData.propertyDescription !== '-'
+    (initialPropertyMasterData?.propertyDescription && initialPropertyMasterData.propertyDescription !== '-')
       ? initialPropertyMasterData.propertyDescription
       : initialData?.propertyDetails?.propertyDescription || initialData?.tabHeaderInfo?.description || '';
+
+  const fallbackPropId = (initialData?.propertyDetails as { propertyId?: number | string })?.propertyId;
+  const resolvedEffectivePropertyId = Number(
+    propertyId || initialPropertyMasterData?.propertyId || initialData?.tabHeaderInfo?.propertyId || fallbackPropId
+  ) || null;
+
+  const resolvedWardId = draft.wardId
+    ? String(draft.wardId)
+    : initialWardId
+    ? String(initialWardId)
+    : String(initialData?.wardOptions?.find((w: SearchSelectOption) => w.label === draft.wardNo)?.value || '') || null;
 
   return (
     <div className="w-full flex flex-col bg-slate-100 min-h-screen text-zinc-900 select-none pb-16 font-sans">
@@ -93,8 +138,53 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
       <div className="px-3 pt-2">
         <IndividualPropertyMasterCard
           data={initialPropertyMasterData}
-          propertyId={propertyId ? Number(propertyId) : undefined}
+          propertyId={resolvedEffectivePropertyId ?? undefined}
           wardNo={draft.wardNo}
+          isLoading={isSearching || isLoading}
+        />
+      </div>
+
+      {/* 3. STATUS METRICS HEADER (DOWNSIDE THE TAB SECTION) */}
+      <div className="px-3 pt-2">
+        <PtisStatusMetricsHeader
+          propertyId={resolvedEffectivePropertyId}
+          initialData={initialQcTopSectionBelowFlex}
+          isLoading={isSearching || isLoading}
+        />
+      </div>
+
+      {/* 4. FLOOR DETAILS INTELLIGENCE (TOP NAV & COMPARISON TABLE) */}
+      <div className="px-3 pt-2">
+        <IndividualFloorIntelligence
+          propertyId={resolvedEffectivePropertyId}
+          wardNo={draft.wardNo}
+          wardId={draft.wardId ? Number(draft.wardId) : null}
+          propertyNo={draft.propertyNo}
+          partitionNo={draft.partitionNo}
+          rateableData={initialRateableData}
+          capitalData={initialCapitalData}
+          dualMethodData={initialDualMethodData}
+          comparisonData={initialComparisonData}
+          taxMode={currentTaxMode}
+          onTaxModeChange={setCurrentTaxMode}
+          buildingPermissionData={initialData?.buildingPermission ?? undefined}
+          discountData={initialData?.discountDetails ?? undefined}
+          oldDetailsData={initialData?.oldDetails ?? undefined}
+          oldFloorTableData={initialData?.oldFloorTableData ?? []}
+          oldTaxesData={initialData?.oldTaxesData ?? null}
+          mappedPropertiesData={initialData?.mappedPropertiesData ?? []}
+          isLoading={isSearching || isLoading}
+        />
+      </div>
+
+      {/* 5. TAX DETAILS TABLE (FROM APARTMENT TO INDIVIDUAL) */}
+      <div className="px-3 pt-2">
+        <IndividualTaxDetailsSection
+          propertyId={propertyId}
+          wardId={resolvedWardId}
+          propertyNo={draft.propertyNo || null}
+          taxMode={currentTaxMode}
+          taxDetails={initialTaxDetails}
           isLoading={isSearching || isLoading}
         />
       </div>

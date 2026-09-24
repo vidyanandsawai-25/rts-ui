@@ -124,4 +124,29 @@ describe('usePropertySearch category routing', () => {
     expect(navigatedUrl).toContain('propertyNo=116');
     expect(navigatedUrl).toContain('wardId=6887');
   });
+
+  it('stays on /property-tax/ptis/individual when searching on the individual screen', async () => {
+    mockPathname = '/en/property-tax/ptis/individual';
+    const { result } = renderHook(() => usePropertySearch());
+
+    await act(async () => {
+      await result.current.handleSearchProperty({
+        wardNo: 'MM1',
+        propertyNo: '85',
+        partitionNo: '',
+        wardId: 6896,
+        propertyId: '1488616',
+        category: 2,
+        categoryLabel: 'Individual',
+      });
+    });
+
+    expect(mockReplace).toHaveBeenCalled();
+    const navigatedUrl = mockReplace.mock.calls[0][0];
+    expect(navigatedUrl).toContain('/en/property-tax/ptis/individual');
+    expect(navigatedUrl).toContain('wardNo=MM1');
+    expect(navigatedUrl).toContain('propertyNo=85');
+    expect(navigatedUrl).toContain('propertyId=1488616');
+  });
 });
+

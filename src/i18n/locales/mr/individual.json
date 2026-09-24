@@ -22,7 +22,8 @@
     "aadharTitle": "आधार / शीर्षक",
     "mobileNo": "मोबाईल क्र.",
     "emailId": "ईमेल आयडी",
-    "societyAddress": "सोसायटीचा पत्ता",
+    "address": "पत्ता",
+    "societyAddress": "पत्ता",
     "plotAreaFtMtr": "प्लॉट क्षेत्रफळ (फूट/मी)",
     "carpetAreaFtMtr": "कार्पेट क्षेत्रफळ (फूट/मी)",
     "builtUpAreaFtMtr": "निर्मित क्षेत्रफळ (फूट/मी)"
@@ -32,5 +33,36 @@
     "viewPhoto": "मालमत्तेचे छायाचित्र पाहण्यासाठी क्लिक करा",
     "propertyPhoto": "मालमत्ता छायाचित्र",
     "propertyDocument": "मालमत्ता दस्तऐवज"
+  },
+  "floor": {
+    "floorDetails": "मजला तपशील"
+  },
+  "summaryCards": {
+    "changesOfUse": "वापरातील बदल",
+    "old": "जुने:",
+    "new": "नवीन:",
+    "rv": "आरव्ही:",
+    "cv": "सीव्ही:",
+    "retained": "राखून ठेवलेले:",
+    "rvCvm": "आरव्ही / सीव्हीएम",
+    "beneficial": "फायदेशीर",
+    "capitalValue": "भांडवली मूल्य (CV)",
+    "rateableValue": "योग्य मूल्य (RV)",
+    "rvVsCv": "RV विरुद्ध CV",
+    "taxCurrent": "कर (चालू)",
+    "taxRetained": "कर (राखून ठेवलेला)",
+    "changed": "बदलले",
+    "updated": "{count} अद्यतनित",
+    "cvm": "सीव्हीएम"
+  },
+  "modes": {
+    "modeCv": "मोड: भांडवली मूल्य (CV)",
+    "modeDual": "मोड: दुहेरी पद्धत (RV + CVM)",
+    "modeRv": "मोड: योग्य मूल्य (RV)"
+  },
+  "sections": {
+    "buildingPermission": "इमारत परवानगी (प्रमाणपत्रे आणि मंजुरी)",
+    "discount": "सवलत आणि सामाजिक डेटा (सवलती)",
+    "oldDetails": "जुना तपशील (मॅप केलेल्या मालमत्ता / ऐतिहासिक डेटा)"
   }
 }

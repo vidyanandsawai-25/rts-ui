@@ -22,7 +22,8 @@
     "aadharTitle": "Aadhar / Title",
     "mobileNo": "Mobile No.",
     "emailId": "Email ID",
-    "societyAddress": "Society Address",
+    "address": "Address",
+    "societyAddress": "Address",
     "plotAreaFtMtr": "Plot Area (Ft/Mtr)",
     "carpetAreaFtMtr": "Carpet Area (Ft/Mtr)",
     "builtUpAreaFtMtr": "Built-Up Area (Ft/Mtr)"
@@ -32,5 +33,36 @@
     "viewPhoto": "Click to view property photo",
     "propertyPhoto": "Property Photo",
     "propertyDocument": "Property Document"
+  },
+  "floor": {
+    "floorDetails": "Floor Details"
+  },
+  "summaryCards": {
+    "changesOfUse": "CHANGES OF USE",
+    "old": "OLD:",
+    "new": "NEW:",
+    "rv": "RV:",
+    "cv": "CV:",
+    "retained": "RETAINED:",
+    "rvCvm": "RV / CVM",
+    "beneficial": "Beneficial",
+    "capitalValue": "CAPITAL VALUE (CV)",
+    "rateableValue": "RATEABLE VALUE (RV)",
+    "rvVsCv": "RV vs CV",
+    "taxCurrent": "TAX (CURRENT)",
+    "taxRetained": "TAX (RETAINED)",
+    "changed": "Changed",
+    "updated": "{count} Updated",
+    "cvm": "CVM"
+  },
+  "modes": {
+    "modeCv": "Mode: Capital Value (CV)",
+    "modeDual": "Mode: Dual Method (RV + CVM)",
+    "modeRv": "Mode: Rateable Value (RV)"
+  },
+  "sections": {
+    "buildingPermission": "BUILDING PERMISSION (Certificates & Clearances)",
+    "discount": "DISCOUNT & SOCIAL DATA (Discounts & Concessions)",
+    "oldDetails": "OLD DETAILS (Mapped Properties / Historical Data)"
   }
 }

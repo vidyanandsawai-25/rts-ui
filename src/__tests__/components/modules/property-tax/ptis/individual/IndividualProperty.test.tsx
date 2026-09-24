@@ -236,6 +236,37 @@ describe('Individual Property - Components & Hook', () => {
       expect(screen.getByTestId('mock-property-search-bar')).toBeInTheDocument();
       expect(screen.getByText('Search Bar Owner: Amitabh Bachchan')).toBeInTheDocument();
     });
+
+    it('renders container with status metrics header below tab section', () => {
+      const mockInitial: PtisInitialData = {
+        wardOptions: [{ label: 'Ward 1', value: '1' }],
+        propertyOptions: [],
+        rawPropertyData: [],
+      };
+      const mockBelowFlex = {
+        propertyId: 501,
+        workflowStages: [
+          { stageId: 1, stageName: 'GIS Verified', isCompleted: true },
+          { stageId: 2, stageName: 'Assessment', isCompleted: true },
+        ],
+        certificateTypes: [
+          { certificateTypeId: 1, certificateTypeName: 'Fire NOC', isIssued: false },
+        ],
+      };
+      render(
+        <IndividualContainer
+          initialData={mockInitial}
+          initialWardId={1}
+          initialPropertyMasterData={mockData}
+          initialQcTopSectionBelowFlex={mockBelowFlex}
+        />
+      );
+      expect(screen.getByTitle('Scroll Left')).toBeInTheDocument();
+      expect(screen.getByTitle('Scroll Right')).toBeInTheDocument();
+      expect(screen.getByText('GIS Verified')).toBeInTheDocument();
+      expect(screen.getByText('Assessment')).toBeInTheDocument();
+      expect(screen.getByText('Fire NOC')).toBeInTheDocument();
+    });
   });
 
   // ==========================================

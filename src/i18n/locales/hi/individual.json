@@ -22,7 +22,8 @@
     "aadharTitle": "आधार / शीर्षक",
     "mobileNo": "मोबाइल नं.",
     "emailId": "ईमेल आईडी",
-    "societyAddress": "सोसायटी का पता",
+    "address": "पता",
+    "societyAddress": "पता",
     "plotAreaFtMtr": "भूखंड क्षेत्रफल (फिट/मी)",
     "carpetAreaFtMtr": "कार्पेट क्षेत्रफल (फिट/मी)",
     "builtUpAreaFtMtr": "निर्मित क्षेत्रफल (फिट/मी)"
@@ -32,5 +33,36 @@
     "viewPhoto": "संपत्ति फोटो देखने के लिए क्लिक करें",
     "propertyPhoto": "संपत्ति फोटो",
     "propertyDocument": "संपत्ति दस्तावेज़"
+  },
+  "floor": {
+    "floorDetails": "मंजिल विवरण"
+  },
+  "summaryCards": {
+    "changesOfUse": "उपयोग में परिवर्तन",
+    "old": "पुराना:",
+    "new": "नया:",
+    "rv": "आरवी:",
+    "cv": "सीवी:",
+    "retained": "बरकरार:",
+    "rvCvm": "आरवी / सीवीएम",
+    "beneficial": "लाभकारी",
+    "capitalValue": "पूंजीगत मूल्य (CV)",
+    "rateableValue": "करयोग्य मूल्य (RV)",
+    "rvVsCv": "RV बनाम CV",
+    "taxCurrent": "कर (वर्तमान)",
+    "taxRetained": "कर (बरकरार)",
+    "changed": "परिवर्तित",
+    "updated": "{count} अपडेट किया गया",
+    "cvm": "सीवीएम"
+  },
+  "modes": {
+    "modeCv": "मोड: पूंजीगत मूल्य (CV)",
+    "modeDual": "मोड: दोहरी विधि (RV + CVM)",
+    "modeRv": "मोड: करयोग्य मूल्य (RV)"
+  },
+  "sections": {
+    "buildingPermission": "इमारत अनुमति (प्रमाणपत्र और मंजूरी)",
+    "discount": "छूट और सामाजिक डेटा (छूट और रियायतें)",
+    "oldDetails": "पुराना विवरण (मैप की गई संपत्तियां / ऐतिहासिक डेटा)"
   }
 }
