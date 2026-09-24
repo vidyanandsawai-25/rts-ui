@@ -77,7 +77,12 @@
       "change": "Change Details"
     },
     "properties": {
-      "multipleLinkedInstruction": "Multiple properties are linked to this mobile number. Please select the property you want to continue with from the list below."
+      "multipleLinkedInstruction": "Multiple properties are linked to this mobile number. Please select the property you want to continue with from the list below.",
+      "verifiedMultipleLinkedInstruction": "Your mobile number is verified. Select one or more linked properties to continue. The first selected property will be your active property.",
+      "singlePropertyRedirect": "One linked property found. Taking you to your dashboard...",
+      "selectAtLeastOne": "Select at least one property to continue.",
+      "continueSelected": "Continue with Selected Properties",
+      "completeFailed": "Unable to complete property selection. Please try again."
     },
     "messages": {
       "invalidPhone": "Please enter a valid 10-digit phone number.",

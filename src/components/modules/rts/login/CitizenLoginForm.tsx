@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition, useEffect } from 'react';
+import React, { useState, useTransition, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Input, Button, ValidationMessage, Card, CardHeader, CardContent } from '@/components/common';
@@ -8,6 +8,7 @@ import {
   sendCitizenOtpAction,
   searchCitizenPropertiesAction,
   verifyCitizenOtpAction,
+  completeCitizenPropertySelectionAction,
   fetchNodesAction,
   fetchSectorsAction
 } from '@/app/[locale]/service/login/actions';
@@ -16,7 +17,7 @@ import { LoginFormCouncilLogo } from '../../login/LoginFormCouncilLogo';
 import { ArrowLeft, Landmark, Building2, CheckCircle2 } from 'lucide-react';
 
 type LoginMethod = 'mobile' | 'upic' | 'property';
-type LoginStep = 'phone' | 'properties' | 'otp';
+type LoginStep = 'phone' | 'properties' | 'otp' | 'verified-properties';
 
 interface CitizenLoginFormProps {
   locale: string;
@@ -57,6 +58,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
   // Multiple Properties Selection States
   const [propertiesList, setPropertiesList] = useState<CitizenProperty[]>([]);
   const [selectedOwnerId, setSelectedOwnerId] = useState<number | null>(null);
+  const [selectedOwnerIds, setSelectedOwnerIds] = useState<number[]>([]);
   const [resolvedMobile, setResolvedMobile] = useState<string>('');
 
   // Dropdown options & loading states for property login
@@ -71,6 +73,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
   const [maskedPhone, setMaskedPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const hasStartedSinglePropertyRedirect = useRef(false);
 
   // Fetch nodes on mount
   useEffect(() => {
@@ -154,6 +157,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
     setOtp('');
     setPropertiesList([]);
     setSelectedOwnerId(null);
+    setSelectedOwnerIds([]);
     setResolvedMobile('');
     setStep('phone');
     setError(null);
@@ -183,6 +187,35 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
 
     startTransition(async () => {
       try {
+        if (method === 'mobile') {
+          const otpRes = await sendCitizenOtpAction(
+            'mobile',
+            { mobile },
+            externalServiceId ?? undefined,
+            undefined,
+            true
+          );
+
+          if (!otpRes.success) {
+            setError(otpRes.error || t('messages.sendOtpFailed'));
+            return;
+          }
+
+          if (otpRes.propertySelectionRequired) {
+            const linkedProperties = otpRes.properties || [];
+            setPropertiesList(linkedProperties);
+            setSelectedOwnerIds(linkedProperties.length === 1 ? [linkedProperties[0].ownerId] : []);
+            setInfo(linkedProperties.length === 1 ? t('properties.singlePropertyRedirect') : null);
+            setStep('verified-properties');
+            return;
+          }
+
+          setMaskedPhone(otpRes.maskedPhone || '');
+          setStep('otp');
+          setInfo(t('messages.otpSent'));
+          return;
+        }
+
         const searchRes = await searchCitizenPropertiesAction(
           method,
           {
@@ -337,8 +370,20 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
 
     startTransition(async () => {
       try {
-        const res = await verifyCitizenOtpAction(otp, externalServiceId ?? undefined);
+        const res = await verifyCitizenOtpAction(
+          otp,
+          externalServiceId ?? undefined,
+          method === 'mobile'
+        );
         if (res.success) {
+          if (res.propertySelectionRequired) {
+            const linkedProperties = res.properties || [];
+            setPropertiesList(linkedProperties);
+            setSelectedOwnerIds(linkedProperties.length === 1 ? [linkedProperties[0].ownerId] : []);
+            setInfo(linkedProperties.length === 1 ? t('properties.singlePropertyRedirect') : null);
+            setStep('verified-properties');
+            return;
+          }
           setInfo(t('messages.loginSuccess'));
           if (res.externalDestination) {
             window.location.href = res.externalDestination;
@@ -410,6 +455,74 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
     setInfo(null);
   };
 
+  const toggleSelectedProperty = (ownerId: number) => {
+    setSelectedOwnerIds((currentOwnerIds) =>
+      currentOwnerIds.includes(ownerId)
+        ? currentOwnerIds.filter((id) => id !== ownerId)
+        : [...currentOwnerIds, ownerId]
+    );
+  };
+
+  const completeSelectedProperties = async (ownerIds: number[]) => {
+    try {
+      const res = await completeCitizenPropertySelectionAction(
+        ownerIds,
+        externalServiceId ?? undefined
+      );
+        if (!res.success) {
+          setError(res.error || t('properties.completeFailed'));
+          return;
+        }
+
+        setInfo(t('messages.loginSuccess'));
+        if (res.externalDestination) {
+          window.location.href = res.externalDestination;
+          return;
+        }
+
+        let targetUrl = redirectUrl || `/${locale}/service/dashboard`;
+        if (externalServiceId) {
+          const errorCode = res.serviceRedirectError || 'service-unavailable';
+          targetUrl = `/${locale}/service/dashboard?serviceRedirectError=${encodeURIComponent(errorCode)}`;
+        }
+        window.location.href = targetUrl;
+    } catch (err: any) {
+      console.error('Error completing property selection:', err);
+      setError(err?.message || t('properties.completeFailed'));
+    }
+  };
+
+  const handleContinueWithSelectedProperties = () => {
+    if (selectedOwnerIds.length === 0) {
+      setError(t('properties.selectAtLeastOne'));
+      return;
+    }
+
+    setError(null);
+    setInfo(null);
+    startTransition(() => {
+      void completeSelectedProperties(selectedOwnerIds);
+    });
+  };
+
+  useEffect(() => {
+    if (step !== 'verified-properties' || propertiesList.length !== 1) {
+      hasStartedSinglePropertyRedirect.current = false;
+      return;
+    }
+    if (hasStartedSinglePropertyRedirect.current) return;
+
+    hasStartedSinglePropertyRedirect.current = true;
+    const ownerId = propertiesList[0].ownerId;
+    const redirectTimer = window.setTimeout(() => {
+      startTransition(() => {
+        void completeSelectedProperties([ownerId]);
+      });
+    }, 600);
+
+    return () => window.clearTimeout(redirectTimer);
+  }, [propertiesList, startTransition, step]);
+
   const selectedProperty = propertiesList.find((p) => p.ownerId === selectedOwnerId);
 
   return (
@@ -452,7 +565,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
             <div className="pt-1 text-sm font-bold uppercase tracking-[0.2em] text-cyan-600">
               {step === 'phone'
                 ? t('phone.welcome')
-                : step === 'properties'
+                : step === 'properties' || step === 'verified-properties'
                 ? (locale === 'mr' ? 'मालमत्ता निवडा' : locale === 'hi' ? 'संपत्ति चुनें' : 'Select Property')
                 : t('otp.enterOtp')}
             </div>
@@ -546,7 +659,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
               </div>
             )}
 
-            {step === 'properties' && (
+            {(step === 'properties' || step === 'verified-properties') && (
               <div className="space-y-4">
                 <div className="bg-cyan-500/10 border-l-4 border-cyan-500 rounded-r-md py-2 px-3">
                   <div className="flex items-center justify-between">
@@ -555,15 +668,20 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                   </div>
                   {propertiesList.length > 1 && (
                     <p className="mt-1 text-[11px] font-medium leading-5 text-cyan-800" aria-live="polite">
-                      {t('properties.multipleLinkedInstruction')}
+                      {step === 'verified-properties'
+                        ? t('properties.verifiedMultipleLinkedInstruction')
+                        : t('properties.multipleLinkedInstruction')}
                     </p>
                   )}
                 </div>
                 <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 -mr-1">
                   {propertiesList.map((prop) => {
-                    const isSelected = selectedOwnerId === prop.ownerId;
+                    const isMultiSelect = step === 'verified-properties';
+                    const isSelected = isMultiSelect
+                      ? selectedOwnerIds.includes(prop.ownerId)
+                      : selectedOwnerId === prop.ownerId;
                     return (
-                      <div key={prop.ownerId} onClick={() => setSelectedOwnerId(prop.ownerId)} className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-3 ${isSelected ? 'border-cyan-600 bg-cyan-50/70 ring-2 ring-cyan-500 shadow-md' : 'border-gray-200 bg-white hover:border-cyan-300 hover:shadow-sm'}`}>
+                      <div key={prop.ownerId} onClick={() => isMultiSelect ? toggleSelectedProperty(prop.ownerId) : setSelectedOwnerId(prop.ownerId)} className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-3 ${isSelected ? 'border-cyan-600 bg-cyan-50/70 ring-2 ring-cyan-500 shadow-md' : 'border-gray-200 bg-white hover:border-cyan-300 hover:shadow-sm'}`}>
                         <div className="space-y-1 min-w-0 flex-1">
                           <p className="text-sm font-bold text-gray-900 truncate">{prop.ownerNameMarathi || 'नागरिक'}</p>
                           <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-600 font-semibold">
@@ -573,7 +691,7 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                           {prop.propertyDescription && <p className="text-[11px] text-gray-500 truncate">{prop.propertyDescription}</p>}
                         </div>
                         <div className="pt-0.5 shrink-0">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-cyan-600 bg-cyan-600 text-white' : 'border-gray-300 bg-white'}`}>
+                          <div className={`w-5 h-5 ${isMultiSelect ? 'rounded-md' : 'rounded-full'} border-2 flex items-center justify-center transition-all ${isSelected ? 'border-cyan-600 bg-cyan-600 text-white' : 'border-gray-300 bg-white'}`}>
                             {isSelected && <CheckCircle2 className="w-4 h-4 text-white" />}
                           </div>
                         </div>
@@ -582,8 +700,8 @@ export function CitizenLoginForm({ locale, ulbData }: CitizenLoginFormProps) {
                   })}
                 </div>
                 <div className="space-y-2 pt-2">
-                  <Button type="button" onClick={handleProceedWithSelectedProperty} className="w-full h-11 sm:h-12 bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg text-base rounded-md transition-colors font-semibold cursor-pointer" isLoading={isPending}>
-                    {t('phone.sendOtp')}
+                  <Button type="button" onClick={step === 'verified-properties' ? handleContinueWithSelectedProperties : handleProceedWithSelectedProperty} className="w-full h-11 sm:h-12 bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg text-base rounded-md transition-colors font-semibold cursor-pointer" isLoading={isPending}>
+                    {step === 'verified-properties' ? t('properties.continueSelected') : t('phone.sendOtp')}
                   </Button>
                   <button type="button" onClick={() => setStep('phone')} disabled={isPending} className="w-full text-center text-xs sm:text-sm font-semibold text-gray-600 hover:text-cyan-700 hover:underline pt-1 cursor-pointer">
                     ← {locale === 'mr' ? 'मोबाईल / तपशील बदला' : 'Change Number / Details'}

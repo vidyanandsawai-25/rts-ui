@@ -28,13 +28,16 @@ export type CitizenLoginActionResult = {
   };
   externalDestination?: string | null;
   serviceRedirectError?: string | null;
+  propertySelectionRequired?: boolean;
+  properties?: CitizenProperty[];
 };
 
 async function establishCitizenSession(
   mobile: string,
   c: any,
   fallbackProfile?: { name?: string; upicId?: string; propertyNo?: string; ownerId?: number },
-  externalServiceId?: string
+  externalServiceId?: string,
+  selectedProperties?: CitizenProperty[]
 ): Promise<CitizenLoginActionResult> {
   const selectedOwnerIdStr = c.get('rts_selected_owner_id')?.value;
   const targetOwnerId = selectedOwnerIdStr ? Number(selectedOwnerIdStr) : (fallbackProfile?.ownerId || 0);
@@ -48,10 +51,12 @@ async function establishCitizenSession(
     ownerId: targetOwnerId,
   };
 
-  let properties: CitizenProperty[] = [];
+  let properties: CitizenProperty[] = selectedProperties ?? [];
 
   try {
-    properties = await fetchCitizenPropertiesFromApi('MobileNo', mobile);
+    if (properties.length === 0) {
+      properties = await fetchCitizenPropertiesFromApi('MobileNo', mobile);
+    }
     if (properties.length > 0) {
       const selected = (targetOwnerId > 0 ? properties.find((p) => p.ownerId === targetOwnerId) : null) || properties[0];
       citizenProfile = {
@@ -122,6 +127,7 @@ async function establishCitizenSession(
   c.delete('rts_otp_code');
   c.delete('rts_otp_expires_at');
   c.delete('rts_selected_owner_id');
+  c.delete('rts_verified_login_mobile');
 
   const requestedServiceId = Number(externalServiceId);
   if (!Number.isInteger(requestedServiceId) || requestedServiceId <= 0) {
@@ -203,7 +209,8 @@ export async function sendCitizenOtpAction(
   method: 'mobile' | 'upic' | 'property',
   payload: { mobile?: string; upicId?: string; propertyNo?: string },
   _externalServiceId?: string,
-  selectedOwnerId?: number
+  selectedOwnerId?: number,
+  deferMobilePropertySelection = false
 ): Promise<CitizenLoginActionResult> {
   let searchValue = '';
   let searchType: 'MobileNo' | 'UpicId' | 'PropertyNo' = 'MobileNo';
@@ -257,8 +264,23 @@ export async function sendCitizenOtpAction(
     const resp = await requestOtp(mobile);
     const c = await cookies();
 
-    // If directLogin is true (SMS Gateway or OTP Template disabled in DB), automatically establish session
+    // Direct-login environments still use property selection for mobile login.
     if (resp.directLogin) {
+      if (method === 'mobile' && deferMobilePropertySelection) {
+        c.set('rts_verified_login_mobile', mobile, {
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: false,
+          path: '/',
+          maxAge: 10 * 60,
+        });
+        return {
+          success: true,
+          directLogin: false,
+          propertySelectionRequired: true,
+          properties,
+        };
+      }
       if (selectedOwnerId) {
         c.set('rts_selected_owner_id', String(selectedOwnerId), { httpOnly: true, sameSite: 'lax', path: '/' });
       }
@@ -303,7 +325,11 @@ export async function sendCitizenOtpAction(
   }
 }
 
-export async function verifyCitizenOtpAction(otp: string, externalServiceId?: string): Promise<CitizenLoginActionResult> {
+export async function verifyCitizenOtpAction(
+  otp: string,
+  externalServiceId?: string,
+  deferMobilePropertySelection = false
+): Promise<CitizenLoginActionResult> {
   if (!/^\d{6}$/.test(otp)) {
     return { success: false, error: 'Please enter a valid 6-digit OTP.' };
   }
@@ -326,7 +352,79 @@ export async function verifyCitizenOtpAction(otp: string, externalServiceId?: st
     return { success: false, error: 'Invalid OTP. Please try again.' };
   }
 
+  if (deferMobilePropertySelection) {
+    const properties = await fetchCitizenPropertiesFromApi('MobileNo', mobile);
+    if (properties.length === 0) {
+      return { success: false, error: 'No properties are linked to this mobile number.' };
+    }
+
+    c.set('rts_verified_login_mobile', mobile, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      path: '/',
+      maxAge: 10 * 60,
+    });
+    c.delete('rts_otp_txn');
+    c.delete('rts_otp_code');
+    c.delete('rts_otp_expires_at');
+
+    return { success: true, propertySelectionRequired: true, properties };
+  }
+
   return await establishCitizenSession(mobile, c, undefined, externalServiceId);
+}
+
+export async function completeCitizenPropertySelectionAction(
+  ownerIds: number[],
+  externalServiceId?: string
+): Promise<CitizenLoginActionResult> {
+  const uniqueOwnerIds = [...new Set(ownerIds.filter((ownerId) => Number.isInteger(ownerId) && ownerId > 0))];
+  if (uniqueOwnerIds.length === 0) {
+    return { success: false, error: 'Please select at least one property.' };
+  }
+
+  const c = await cookies();
+  const mobile = c.get('rts_verified_login_mobile')?.value;
+  if (!mobile) {
+    return { success: false, error: 'Verification session expired. Please verify your mobile number again.' };
+  }
+
+  try {
+    const linkedProperties = await fetchCitizenPropertiesFromApi('MobileNo', mobile);
+    const selectedProperties = uniqueOwnerIds
+      .map((ownerId) => linkedProperties.find((property) => property.ownerId === ownerId))
+      .filter((property): property is CitizenProperty => Boolean(property));
+
+    if (selectedProperties.length !== uniqueOwnerIds.length) {
+      return { success: false, error: 'One or more selected properties are no longer linked to this mobile number.' };
+    }
+
+    const primaryProperty = selectedProperties[0];
+    c.set('rts_selected_owner_id', String(primaryProperty.ownerId), {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      path: '/',
+      maxAge: 24 * 60 * 60,
+    });
+
+    return await establishCitizenSession(
+      mobile,
+      c,
+      {
+        name: primaryProperty.ownerNameMarathi || 'नागरिक',
+        upicId: primaryProperty.upicNo,
+        propertyNo: primaryProperty.propertyNo,
+        ownerId: primaryProperty.ownerId,
+      },
+      externalServiceId,
+      selectedProperties
+    );
+  } catch (error) {
+    console.error('Failed to complete citizen property selection:', error);
+    return { success: false, error: 'Unable to complete property selection. Please try again.' };
+  }
 }
 
 export async function logoutCitizenAction() {
@@ -350,6 +448,7 @@ export async function logoutCitizenAction() {
   c.delete('rts_otp_code');
   c.delete('rts_otp_expires_at');
   c.delete('rts_selected_owner_id');
+  c.delete('rts_verified_login_mobile');
 
   return { success: true };
 }
