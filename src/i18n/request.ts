@@ -101,6 +101,8 @@ export default getRequestConfig(async ({ locale }) => {
     retrospectiveRuleLibraryMessages,
     taxZoningRangeMessages,
     aliasMasterMessages,
+    billingFrequencyMasterMessages,
+    billingPeriodMasterMessages,
     connectionTypeMasterMessages,
     tapSizeMasterMessages,
     assetWeightageMasterMessages,
@@ -255,6 +257,8 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/retrospectiveRuleLibrary.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxZoningRange.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/aliasMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/billingFrequencyMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/billingPeriodMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/connectionTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/tapSizeMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetWeightageMaster.json`).catch(() => ({})).then((m) => m.default || m),
@@ -357,6 +361,10 @@ export default getRequestConfig(async ({ locale }) => {
       retrospectiveRuleLibrary: retrospectiveRuleLibraryMessages,
       taxZoningRange: taxZoningRangeMessages?.taxZoningRange || taxZoningRangeMessages,
       aliasMaster: aliasMasterMessages,
+      billingFrequencyMaster:
+        billingFrequencyMasterMessages?.billingFrequencyMaster || billingFrequencyMasterMessages,
+      billingPeriodMaster:
+        billingPeriodMasterMessages?.billingPeriodMaster || billingPeriodMasterMessages,
       connectionTypeMaster: connectionTypeMasterMessages?.connectionTypeMaster || connectionTypeMasterMessages,
       tapSizeMaster: tapSizeMasterMessages?.tapSizeMaster || tapSizeMasterMessages,
       assetWeightageMaster:

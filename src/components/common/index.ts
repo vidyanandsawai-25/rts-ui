@@ -15,8 +15,8 @@ export type { CollapsibleSectionHeaderProps } from './CollapsibleSectionHeader';
 export { Button } from './ActionButton';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './ActionButton';
 
-export { ToggleSwitch } from './ToggleSwitch';
-export type { ToggleSwitchProps } from './ToggleSwitch';
+export { ToggleSwitch, FormStatusToggle } from './ToggleSwitch';
+export type { ToggleSwitchProps, FormStatusToggleProps } from './ToggleSwitch';
 
 export {
   AddButton,
