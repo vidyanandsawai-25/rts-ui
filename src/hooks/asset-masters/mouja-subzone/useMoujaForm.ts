@@ -139,10 +139,7 @@ export function useMoujaForm({
         return;
       }
 
-      toast.success(result.message || (isEdit
-        ? t("success.moujaUpdated")
-        : t("success.moujaCreated")
-      ));
+      toast.success(isEdit ? t("success.moujaUpdated") : t("success.moujaCreated"));
 
       onSuccess();
       closeAndRoute();

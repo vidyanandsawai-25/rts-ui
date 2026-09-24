@@ -1,0 +1,146 @@
+import React from "react";
+import type { Column } from "@/components/common/MasterTable";
+import type { AssetDocumentDefinition } from "@/types/asset-masters/asset-document-definition.types";
+import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
+import { StatusBadge } from "@/components/common/StatusBadge";
+
+function SortableHeader({
+  label,
+  columnKey,
+  sortBy,
+  sortOrder,
+  onSort,
+  tCommon,
+}: {
+  label: string;
+  columnKey: string;
+  sortBy?: string;
+  sortOrder?: string;
+  onSort: (key: string) => void;
+  tCommon: (key: string) => string;
+}): React.ReactElement {
+  const isActive = sortBy === columnKey;
+  const isAsc = isActive && sortOrder === "asc";
+  const isDesc = isActive && sortOrder === "desc";
+
+  const renderSortButton = () => {
+    if (isAsc) {
+      return (
+        <SortAscButton
+          onClick={() => onSort(columnKey)}
+          aria-label={`${tCommon("table.sort.verb")} ${label} ${tCommon("table.sort.ascending")}`}
+        />
+      );
+    }
+    if (isDesc) {
+      return (
+        <SortDescButton
+          onClick={() => onSort(columnKey)}
+          aria-label={`${tCommon("table.sort.verb")} ${label} ${tCommon("table.sort.descending")}`}
+        />
+      );
+    }
+    return (
+      <SortDefaultButton
+        onClick={() => onSort(columnKey)}
+        aria-label={`${tCommon("table.sort.by")} ${label}`}
+      />
+    );
+  };
+
+  return (
+    <div className="flex items-center gap-1 justify-center w-full">
+      <span>{label}</span>
+      {renderSortButton()}
+    </div>
+  );
+}
+
+export function getAssetDocumentDefinitionColumns(
+  t: (key: string) => string,
+  tCommon: (key: string) => string,
+  sortBy?: string,
+  sortOrder?: string,
+  onSort?: (key: string) => void
+): Column<AssetDocumentDefinition>[] {
+  const sortableColumns = ["documentCode", "documentName", "displayOrder"];
+
+  const createSortableLabel = (label: string, key: string) => {
+    if (onSort && sortableColumns.includes(key)) {
+      return (
+        <SortableHeader
+          label={label}
+          columnKey={key}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={onSort}
+          tCommon={(k) => tCommon(k)}
+        />
+      );
+    }
+    return label;
+  };
+
+  return [
+    {
+      key: "documentCode",
+      label: createSortableLabel(t("list.table.documentCode"), "documentCode"),
+      width: "20%",
+      align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
+      render: (value) => (typeof value === "string" ? value : ""),
+    },
+    {
+      key: "documentName",
+      label: createSortableLabel(t("list.table.documentName"), "documentName"),
+      width: "20%",
+      align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
+      render: (value) => (typeof value === "string" ? value : ""),
+    },
+    {
+      key: "description",
+      label: t("list.table.description"),
+      width: "25%",
+      align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
+      render: (value) => (typeof value === "string" && value ? value : "-"),
+    },
+    {
+      key: "displayOrder",
+      label: createSortableLabel(t("list.table.displayOrder"), "displayOrder"),
+      width: "10%",
+      align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
+      render: (value) => (value != null ? String(value) : "-"),
+    },
+    {
+      key: "isRequired",
+      label: t("list.table.isRequired"),
+      width: "12%",
+      align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
+      render: (value) => (
+        <StatusBadge
+          value={Boolean(value)}
+          activeLabel={t("yes")}
+          inactiveLabel={t("no")}
+        />
+      ),
+    },
+    {
+      key: "isActive",
+      label: t("list.table.status"),
+      width: "13%",
+      align: "center",
+      headerClassName: "break-words [word-break:break-word]",
+      cellClassName: "break-words [word-break:break-word]",
+      isStatus: true,
+    },
+  ];
+}

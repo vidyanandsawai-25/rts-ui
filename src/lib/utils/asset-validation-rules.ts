@@ -165,4 +165,12 @@ export const isAllZeros = (value: string): boolean => {
 
 // Apartment QC Basic Information form validation 
 export const OWNERNAME_REGEX =
-  /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;
+  /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;
+
+/* ================= OPTIONS COMMA SEPARATED VALIDATION ================= */
+// Allows Unicode letters, marks, numbers, spaces, and optional space after commas.
+// Rejects consecutive spaces and trailing commas.
+export const OPTIONS_COMMA_SEPARATED_REGEX =
+  /^(?!.* {2})[\p{L}\p{M}\p{N}]+(?: [\p{L}\p{M}\p{N}]+)*(?:, ?[\p{L}\p{M}\p{N}]+(?: [\p{L}\p{M}\p{N}]+)*)*$/u;
+export const OPTIONS_COMMA_SEPARATED_SANITIZE =
+  /[^\p{L}\p{M}\p{N} ,]/gu;

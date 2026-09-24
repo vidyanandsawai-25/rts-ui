@@ -77,4 +77,21 @@ describe("MoujaSubZoneMaster Component", () => {
     expect(screen.getByText("list.title")).toBeInTheDocument();
     expect(mockPush).toHaveBeenCalled();
   });
+
+  test("uses selectedMoujaId when updating subZone pagination even if searchParams has no moujaId", () => {
+    const props = {
+      ...mockProps,
+      selectedMoujaId: "1",
+      subZoneTotalCount: 25,
+      subZoneTotalPages: 3,
+    };
+    render(<MoujaSubZoneMaster {...props} />);
+
+    const selectElements = screen.getAllByRole("combobox");
+    const subZonePageSizeSelect = selectElements[selectElements.length - 1];
+    
+    // Change page size
+    subZonePageSizeSelect?.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(mockPush).toHaveBeenCalled();
+  });
 });

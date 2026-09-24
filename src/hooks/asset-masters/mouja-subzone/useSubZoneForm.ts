@@ -108,7 +108,7 @@ export function useSubZoneForm({ id, initialData, selectedMoujaId, onSuccess = (
         toast.error(mapApiError(res));
         return;
       }
-      toast.success(res.message || (isEdit ? t("success.subZoneUpdated") : t("success.subZoneCreated")));
+      toast.success(isEdit ? t("success.subZoneUpdated") : t("success.subZoneCreated"));
       onSuccess();
       closeAndRoute();
     } finally {

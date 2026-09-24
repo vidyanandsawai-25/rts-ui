@@ -24,7 +24,7 @@ export function useMoujaSubZoneMasterState({
   const tCommon = useTranslations("common");
   const [, startTransition] = useTransition();
 
-  const { urlMoujaSearch, urlSubZoneSearch, pushUrl } = useMoujaSubZoneUrl();
+  const { urlMoujaSearch, urlSubZoneSearch, pushUrl } = useMoujaSubZoneUrl(selectedMoujaId);
 
 
   const [moujaSearch, setMoujaSearchState] = useState(urlMoujaSearch);
