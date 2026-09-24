@@ -689,6 +689,18 @@ export default function RtsApplicationDashboard({
           </span>
         ),
       },
+      {
+        key: 'expectedSlaDays',
+        label: t('applicationDashboard.table.slaDays'),
+        align: 'center',
+        render: (_value, row) => (
+          <span className="inline-flex min-w-8 justify-center rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
+            {Number.isFinite(row.expectedSlaDays)
+              ? `${numberFormatter.format(row.expectedSlaDays)} Days`
+              : t('applicationDashboard.table.na')}
+          </span>
+        ),
+      },
       // {
       //   key: 'currentStageName',
       //   label: t('applicationDashboard.table.stage'),
@@ -701,6 +713,7 @@ export default function RtsApplicationDashboard({
 
       {
         key: 'remarks',
+        align: 'center',
         label: t('applicationDashboard.table.remarks'),
         render: (_value, row) => (
           <span

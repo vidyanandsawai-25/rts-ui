@@ -378,7 +378,9 @@
     "propertyNumber": "संपत्ति क्र.:",
     "active": "सक्रिय",
     "trackingSearchHelpTitle": "खोज कैसे करें",
-    "trackingSearchHelp": "संबंधित सभी आवेदनों को देखने के लिए यूपीआईसी आईडी दर्ज करें, या किसी विशेष आवेदन को खोजने के लिए आवेदन क्रमांक दर्ज करें।"
+    "trackingSearchHelp": "संबंधित सभी आवेदनों को देखने के लिए यूपीआईसी आईडी दर्ज करें, या किसी विशेष आवेदन को खोजने के लिए आवेदन क्रमांक दर्ज करें।",
+    "trackingApplicationNotFound": "आवेदन नहीं मिला।",
+    "trackingSearchFailed": "आवेदन खोजने में समस्या हुई। कृपया पुनः प्रयास करें।"
   },
   "misDashboard": {
     "applicationShare": "आवेदन हिस्सेदारी",
@@ -539,6 +541,7 @@
       "remarks": "टिप्पणियाँ",
       "currentStatus": "वर्तमान स्थिति",
       "expectedSla": "अपेक्षित SLA",
+      "slaDays": "SLA दिन",
       "remainingDays": "शेष दिन",
       "daysRemainingOverdue": "शेष दिन / अतिदेय",
       "dueDays": "देय दिन",

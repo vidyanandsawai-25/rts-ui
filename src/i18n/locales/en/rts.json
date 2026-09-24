@@ -378,7 +378,9 @@
     "propertyNumber": "Property No:",
     "active": "Active",
     "trackingSearchHelpTitle": "How to search",
-    "trackingSearchHelp": "Enter a UPIC ID to view linked applications, or an application number to find one specific application."
+    "trackingSearchHelp": "Enter a UPIC ID to view linked applications, or an application number to find one specific application.",
+    "trackingApplicationNotFound": "Unable to find the application.",
+    "trackingSearchFailed": "There was a problem searching for the application. Please try again."
   },
   "misDashboard": {
     "applicationShare": "Application Share",
@@ -539,6 +541,7 @@
       "remarks": "Remarks",
       "currentStatus": "Current Status",
       "expectedSla": "Expected SLA",
+      "slaDays": "SLA Days",
       "remainingDays": "Remaining Days",
       "daysRemainingOverdue": "Days Remaining / Overdue",
       "dueDays": "Due Days",

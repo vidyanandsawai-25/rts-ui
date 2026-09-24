@@ -378,7 +378,9 @@
     "propertyNumber": "मालमत्ता क्र.:",
     "active": "सक्रिय",
     "trackingSearchHelpTitle": "शोध कसा करावा",
-    "trackingSearchHelp": "संबंधित सर्व अर्ज पाहण्यासाठी यूपीआयसी आयडी टाका किंवा विशिष्ट अर्ज शोधण्यासाठी अर्ज क्रमांक टाका।"
+    "trackingSearchHelp": "संबंधित सर्व अर्ज पाहण्यासाठी यूपीआयसी आयडी टाका किंवा विशिष्ट अर्ज शोधण्यासाठी अर्ज क्रमांक टाका।",
+    "trackingApplicationNotFound": "अर्ज सापडला नाही.",
+    "trackingSearchFailed": "अर्ज शोधताना समस्या आली. कृपया पुन्हा प्रयत्न करा."
   },
   "misDashboard": {
     "applicationShare": "अर्जाचा वाटा",
@@ -542,6 +544,7 @@
       "remarks": "शेरा",
       "currentStatus": "सध्याची स्थिती",
       "expectedSla": "अपेक्षित SLA",
+      "slaDays": "SLA दिवस",
       "remainingDays": "उर्वरित दिवस",
       "daysRemainingOverdue": "उर्वरित दिवस / मुदतबाह्य",
       "dueDays": "देय दिवस",

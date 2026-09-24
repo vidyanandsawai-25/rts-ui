@@ -404,44 +404,63 @@ export async function getCitizenMisApplications(): Promise<RtsMisDashboardUserAp
  * Looks up UPIC-linked applications first, then retries as an application number
  * when the UPIC search has no matching rows or the backend rejects it.
  */
+export type CitizenApplicationSearchResult = {
+  success: boolean;
+  items: RtsMisDashboardUserApplicationItem[];
+  reason?: 'not-found' | 'failed';
+};
+
 export async function searchCitizenMisApplicationsAction(
   value: string
-): Promise<{ success: boolean; items: RtsMisDashboardUserApplicationItem[]; error?: string }> {
+): Promise<CitizenApplicationSearchResult> {
   const normalizedValue = value.trim();
   if (!normalizedValue) {
     return {
       success: false,
       items: [],
-      error: 'Please enter a UPIC ID or application number.',
+      reason: 'not-found',
     };
   }
 
+  let hasSuccessfulLookup = false;
+  let hasRequestFailure = false;
+
+  // 1. Try external live API (onesolutionakola.tabamc.in) by UPIC ID.
   try {
-    // 1. Try external live API (onesolutionakola.tabamc.in) by UPIC ID
     const upicResponse = await getRtsCitizenDashboardData({
       UpicId: normalizedValue,
       pageNumber: 1,
       pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
-    }).catch(() => null);
+    });
 
-    if (
-      upicResponse?.status &&
-      (upicResponse.data?.result?.length ?? 0) > 0
-    ) {
-      return { success: true, items: upicResponse.data.result ?? [] };
+    if (upicResponse.status) {
+      hasSuccessfulLookup = true;
+    } else {
+      hasRequestFailure = true;
     }
 
-    // 2. Try external live API (onesolutionakola.tabamc.in) by ApplicationNo
+    if (upicResponse.status && (upicResponse.data?.result?.length ?? 0) > 0) {
+      return { success: true, items: upicResponse.data.result ?? [] };
+    }
+  } catch {
+    hasRequestFailure = true;
+  }
+
+  // 2. Try external live API (onesolutionakola.tabamc.in) by ApplicationNo.
+  try {
     const applicationResponse = await getRtsCitizenDashboardData({
       ApplicationNo: normalizedValue,
       pageNumber: 1,
       pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
-    }).catch(() => null);
+    });
 
-    if (
-      applicationResponse?.status &&
-      (applicationResponse.data?.result?.length ?? 0) > 0
-    ) {
+    if (applicationResponse.status) {
+      hasSuccessfulLookup = true;
+    } else {
+      hasRequestFailure = true;
+    }
+
+    if (applicationResponse.status && (applicationResponse.data?.result?.length ?? 0) > 0) {
       const rawItems = applicationResponse.data?.result ?? [];
       const exactMatch = rawItems.filter(
         (item) => item.applicationNo?.trim().toLowerCase() === normalizedValue.toLowerCase()
@@ -456,97 +475,94 @@ export async function searchCitizenMisApplicationsAction(
         return { success: true, items: partialMatch };
       }
     }
+  } catch {
+    hasRequestFailure = true;
+  }
 
-    // 3. Fallback: Search local RTS-API database (for newly created / local applications)
-    try {
+  // 3. Fallback: Search local RTS-API database (for newly created / local applications).
+  try {
+    const { getApprovalApplicationsPaged } = await import(
+      "@/lib/api/rts/rts-application-approval.service"
+    );
+    const localResponse = await getApprovalApplicationsPaged({
+      applicationNo: normalizedValue,
+    });
+    hasSuccessfulLookup = true;
+
+    if (localResponse.applications && localResponse.applications.length > 0) {
+      const exactLocal = localResponse.applications.filter(
+        (app) => app.applicationNo?.trim().toLowerCase() === normalizedValue.toLowerCase()
+      );
+      const filteredLocal = exactLocal.length > 0 ? exactLocal : localResponse.applications;
+
+      const localMappedItems: RtsMisDashboardUserApplicationItem[] =
+        filteredLocal.map((app) => ({
+          applicationNo: app.applicationNo,
+          serviceName: app.serviceName || "",
+          propertyNo: null,
+          upicId: null,
+          status: app.applicationStatus || "Submitted",
+          submittedDate: app.createdDate ? new Date(app.createdDate).toISOString().split('T')[0] : "",
+          sla: Number(app.sla) || 0,
+        }));
+      return { success: true, items: localMappedItems };
+    }
+  } catch (localErr) {
+    hasRequestFailure = true;
+    console.warn("Local RTS-API tracking lookup fallback error:", localErr);
+  }
+
+  // 4. Fallback: Search by Receipt No (e.g. REC/RTS/20260820/020027).
+  try {
+    const { getPaymentReceiptByNo } = await import("@/lib/api/rts/rtspayment.service");
+    const receipt = await getPaymentReceiptByNo(normalizedValue);
+    hasSuccessfulLookup = true;
+    if (receipt && receipt.applicationNo) {
       const { getApprovalApplicationsPaged } = await import(
         "@/lib/api/rts/rts-application-approval.service"
       );
-      const localResponse = await getApprovalApplicationsPaged({
-        applicationNo: normalizedValue,
+      const appRes = await getApprovalApplicationsPaged({
+        applicationNo: receipt.applicationNo,
       });
-
-      if (localResponse.applications && localResponse.applications.length > 0) {
-        const exactLocal = localResponse.applications.filter(
-          (app) => app.applicationNo?.trim().toLowerCase() === normalizedValue.toLowerCase()
-        );
-        const filteredLocal = exactLocal.length > 0 ? exactLocal : localResponse.applications;
-
-        const localMappedItems: RtsMisDashboardUserApplicationItem[] =
-          filteredLocal.map((app) => ({
-            applicationNo: app.applicationNo,
-            serviceName: app.serviceName || "",
-            propertyNo: null,
-            upicId: null,
-            status: app.applicationStatus || "Submitted",
-            submittedDate: app.createdDate ? new Date(app.createdDate).toISOString().split('T')[0] : "",
-            sla: Number(app.sla) || 0,
-          }));
-        return { success: true, items: localMappedItems };
-      }
-    } catch (localErr) {
-      console.warn("Local RTS-API tracking lookup fallback error:", localErr);
-    }
-
-    // 4. Fallback: Search by Receipt No (e.g. REC/RTS/20260820/020027)
-    try {
-      const { getPaymentReceiptByNo } = await import("@/lib/api/rts/rtspayment.service");
-      const receipt = await getPaymentReceiptByNo(normalizedValue);
-      if (receipt && receipt.applicationNo) {
-        const { getApprovalApplicationsPaged } = await import(
-          "@/lib/api/rts/rts-application-approval.service"
-        );
-        const appRes = await getApprovalApplicationsPaged({
+      if (appRes.applications && appRes.applications.length > 0) {
+        const mapped: RtsMisDashboardUserApplicationItem[] = appRes.applications.map((app) => ({
+          applicationNo: app.applicationNo,
+          serviceName: app.serviceName || receipt.serviceName || "",
+          serviceNameLocal: receipt.serviceNameLocal,
+          propertyNo: null,
+          upicId: null,
+          status: app.applicationStatus || "Fee Paid",
+          submittedDate: app.createdDate ? new Date(app.createdDate).toISOString().split('T')[0] : "",
+          sla: Number(app.sla) || 0,
+        }));
+        return { success: true, items: mapped };
+      } else {
+        const fallbackItem: RtsMisDashboardUserApplicationItem = {
           applicationNo: receipt.applicationNo,
-        });
-        if (appRes.applications && appRes.applications.length > 0) {
-          const mapped: RtsMisDashboardUserApplicationItem[] = appRes.applications.map((app) => ({
-            applicationNo: app.applicationNo,
-            serviceName: app.serviceName || receipt.serviceName || "",
-            serviceNameLocal: receipt.serviceNameLocal,
-            propertyNo: null,
-            upicId: null,
-            status: app.applicationStatus || "Fee Paid",
-            submittedDate: app.createdDate ? new Date(app.createdDate).toISOString().split('T')[0] : "",
-            sla: Number(app.sla) || 0,
-          }));
-          return { success: true, items: mapped };
-        } else {
-          const fallbackItem: RtsMisDashboardUserApplicationItem = {
-            applicationNo: receipt.applicationNo,
-            serviceName: receipt.serviceName || "",
-            serviceNameLocal: receipt.serviceNameLocal,
-            propertyNo: null,
-            upicId: null,
-            status: "Fee Paid",
-            submittedDate: receipt.paymentDate ? new Date(receipt.paymentDate).toISOString().split('T')[0] : "",
-            sla: 0,
-          };
-          return {
-            success: true,
-            items: [fallbackItem],
-          };
-        }
+          serviceName: receipt.serviceName || "",
+          serviceNameLocal: receipt.serviceNameLocal,
+          propertyNo: null,
+          upicId: null,
+          status: "Fee Paid",
+          submittedDate: receipt.paymentDate ? new Date(receipt.paymentDate).toISOString().split('T')[0] : "",
+          sla: 0,
+        };
+        return {
+          success: true,
+          items: [fallbackItem],
+        };
       }
-    } catch (rcpErr) {
-      console.warn("Receipt lookup fallback error:", rcpErr);
     }
-
-    return {
-      success: false,
-      items: [],
-      error:
-        applicationResponse?.message ||
-        'Unable to find an application for this value.',
-    };
-  } catch (error) {
-    console.error('Failed to load citizen MIS applications:', error);
-    return {
-      success: false,
-      items: [],
-      error: 'Unable to find applications for this value.',
-    };
+  } catch (rcpErr) {
+    hasRequestFailure = true;
+    console.warn("Receipt lookup fallback error:", rcpErr);
   }
+
+  return {
+    success: false,
+    items: [],
+    reason: hasSuccessfulLookup ? 'not-found' : hasRequestFailure ? 'failed' : 'not-found',
+  };
 }
 
 export type ServiceReceivingOfficer = {

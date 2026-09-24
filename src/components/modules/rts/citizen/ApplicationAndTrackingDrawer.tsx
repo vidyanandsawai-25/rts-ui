@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -52,8 +52,6 @@ const COPY = {
   searchPlaceholder: "UPIC ID किंवा अर्ज क्रमांक प्रविष्ट करा / Enter UPIC or Application No",
   searchButton: "शोधा / Search",
   enterSearchValue: "कृपया UPIC ID किंवा अर्ज क्रमांक प्रविष्ट करा. / Please enter a UPIC ID or application number.",
-  noApplication: "कोणतेही अर्ज आढळले नाहीत. / No applications found for this value.",
-  unableToLoadApplications: "अर्जांची माहिती लोड करता आली नाही. / Unable to load applications.",
   unableToLoad: "अर्जाचा तपशील लोड करता आला नाही. / Unable to load application details.",
   loading: "शोधत आहे... / Loading applications...",
   loadingDetails: "तपशील लोड करत आहे... / Loading application details...",
@@ -215,6 +213,13 @@ export default function ApplicationAndTrackingDrawer({
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [showResubmitModal, setShowResubmitModal] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
+  const getSearchErrorMessage = useCallback(
+    (result?: { reason?: 'not-found' | 'failed' } | null) =>
+      result?.reason === 'failed'
+        ? t('trackingSearchFailed')
+        : t('trackingApplicationNotFound'),
+    [t]
+  );
 
   useEffect(() => {
     if (open) {
@@ -233,6 +238,8 @@ export default function ApplicationAndTrackingDrawer({
                 if (searchRes?.success && searchRes.items.length > 0) {
                   setApplications(searchRes.items);
                   void selectApplication(searchRes.items[0]);
+                } else {
+                  setError(getSearchErrorMessage(searchRes));
                 }
               }
             } else {
@@ -242,11 +249,11 @@ export default function ApplicationAndTrackingDrawer({
                 setApplications(response.items);
                 void selectApplication(response.items[0]);
               } else {
-                setError(COPY.noApplication);
+                setError(getSearchErrorMessage(response));
               }
             }
           } catch {
-            setError(COPY.unableToLoadApplications);
+            setError(t('trackingSearchFailed'));
           } finally {
             setLoading(false);
           }
@@ -275,10 +282,10 @@ export default function ApplicationAndTrackingDrawer({
                   void selectApplication(response.items[0]);
                 }
               } else if (!res.data) {
-                setError(COPY.noApplication);
+                setError(getSearchErrorMessage(response));
               }
             } catch {
-              setError(COPY.unableToLoadApplications);
+              setError(t('trackingSearchFailed'));
             } finally {
               setLoading(false);
             }
@@ -288,7 +295,7 @@ export default function ApplicationAndTrackingDrawer({
             try {
               const response = await searchCitizenMisApplicationsAction(val);
               if (!response || !response.success || response.items.length === 0) {
-                setError(COPY.noApplication);
+                setError(getSearchErrorMessage(response));
                 return;
               }
               setApplications(response.items);
@@ -303,7 +310,7 @@ export default function ApplicationAndTrackingDrawer({
                 }
               }
             } catch {
-              setError(COPY.unableToLoadApplications);
+              setError(t('trackingSearchFailed'));
             } finally {
               setLoading(false);
             }
@@ -311,7 +318,7 @@ export default function ApplicationAndTrackingDrawer({
         }
       }
     }
-  }, [open, initialSearchValue, initialReceiptValue]);
+  }, [open, initialSearchValue, initialReceiptValue, getSearchErrorMessage, t]);
 
   const searchApplications = async () => {
     const normalizedSearchValue = searchValue.trim();
@@ -330,16 +337,16 @@ export default function ApplicationAndTrackingDrawer({
     try {
       const response = await searchCitizenMisApplicationsAction(normalizedSearchValue);
       if (!response) {
-        setError(COPY.noApplication);
+        setError(getSearchErrorMessage());
         return;
       }
       if (!response.success) {
-        setError(response.error || COPY.noApplication);
+        setError(getSearchErrorMessage(response));
         return;
       }
       setApplications(response.items);
       if (response.items.length === 0) {
-        setError(COPY.noApplication);
+        setError(getSearchErrorMessage(response));
       } else if (response.items.length === 1) {
         void selectApplication(response.items[0]);
       } else {
@@ -351,7 +358,7 @@ export default function ApplicationAndTrackingDrawer({
         }
       }
     } catch {
-      setError(COPY.unableToLoadApplications);
+      setError(t('trackingSearchFailed'));
     } finally {
       setLoading(false);
     }
