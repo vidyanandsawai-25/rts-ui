@@ -122,11 +122,14 @@ export async function getCertificateTypeMasterAction(): Promise<ApiResponse<unkn
   }
 }
 
-export async function getWingsByPropertyAction(propertyId: string): Promise<ApiResponse<unknown[]>> {
+export async function getWingsByPropertyAction(
+  propertyId: string,
+  societyId?: number | string | null
+): Promise<ApiResponse<unknown[]>> {
   try {
-    return await getWingsByProperty(propertyId);
+    return await getWingsByProperty(propertyId, societyId);
   } catch (error: unknown) {
-    logger.error("getWingsByPropertyAction failed", { propertyId, error: error as Error });
+    logger.error("getWingsByPropertyAction failed", { propertyId, societyId, error: error as Error });
     return handleActionError(error, "building.errors.notFound", undefined, "quickDataEntry", cleanBuildingApiError);
   }
 }
@@ -482,6 +485,8 @@ export async function postApartmentQcCertificateRecordAction(
       }
     }
 
+    const effectiveFileName = attachedFile ? attachedFile.name : (payload.fileName || undefined);
+
     const baseRecordPayload: Omit<ApartmentQcCertificateRecordPayload, 'level'> = {
       certificateTypeId: payload.certificateTypeId,
       certificateNo: certNo,
@@ -490,7 +495,7 @@ export async function postApartmentQcCertificateRecordAction(
       ...(validSocietyDetailId ? { societyId: validSocietyDetailId, societyDetailId: validSocietyDetailId } : {}),
       ...(resolvedDocGuid ? { documentGuid: resolvedDocGuid, existingDocumentGuid: resolvedDocGuid } : {}),
       ...(payload.propertyCertificateId ? { propertyCertificateId: payload.propertyCertificateId } : {}),
-      ...(payload.fileName && !isFileModified ? { fileName: payload.fileName } : {}),
+      ...(effectiveFileName ? { fileName: effectiveFileName } : {}),
       isFileModified,
       hasDocument: !isFileModified && Boolean(resolvedDocGuid),
     };

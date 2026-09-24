@@ -34,6 +34,9 @@ export interface UseCertificateModalStateProps {
   initialLevel?: ApplicationLevel;
   initialWingDetailId?: number | null;
   initialCertificateTypeId?: number;
+  initialCertificateNumber?: string | null;
+  initialPropertyCertificateId?: number | null;
+  initialUnitNo?: string | null;
   initialData?: CertificateData | null;
 }
 
@@ -47,6 +50,9 @@ export function useCertificateModalState({
   initialLevel = 'Apartment',
   initialWingDetailId = null,
   initialCertificateTypeId = 3,
+  initialCertificateNumber = null,
+  initialPropertyCertificateId = null,
+  initialUnitNo = null,
   initialData = null,
 }: UseCertificateModalStateProps) {
   const [level, setLevel] = useState<ApplicationLevel>(initialLevel);
@@ -73,6 +79,11 @@ export function useCertificateModalState({
     }
     return resolvedWings.length > 0 ? resolvedWings[0].wingDetailId : null;
   });
+
+  // Certificate selection state
+  const [selectedTypeId, setSelectedTypeId] = useState<number>(
+    initialCertificateTypeId || (resolvedCertificateTypes[0]?.certificateTypeId ?? 3)
+  );
 
   const [unitSearchQuery, setUnitSearchQuery] = useState('');
   const [wingFilter, setWingFilterRaw] = useState<string>(() => {
@@ -110,10 +121,83 @@ export function useCertificateModalState({
     initialUnits.forEach((u) => {
       if (u.isSelected) set.add(u.propertyDetailsId);
     });
+    if (initialUnitNo && initialLevel === 'Unit') {
+      const tokens = initialUnitNo
+        .split(/[,\s]+/)
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean);
+      initialUnits.forEach((u) => {
+        const uNum = (u.unitNo || '').trim().toLowerCase();
+        if (tokens.includes(uNum)) {
+          set.add(u.propertyDetailsId);
+        }
+      });
+    }
     return set;
   });
 
   const gridRecords = useMemo<CertificateItem[]>(() => flattenCertificateRecords(gridItems), [gridItems]);
+
+  // Auto-select exact certificate, wing, and units when opening from Building Permission Edit button
+  const [initialCertApplied, setInitialCertApplied] = useState(false);
+  if (!initialCertApplied && (initialCertificateNumber || initialPropertyCertificateId || initialUnitNo)) {
+    const allCerts = gridRecords.length > 0 ? gridRecords : (gridItems ? flattenCertificateRecords(gridItems) : []);
+    const targetCertId = initialPropertyCertificateId ? Number(initialPropertyCertificateId) : null;
+    const targetCertNum = (initialCertificateNumber || '').trim().toLowerCase();
+    const targetUnitTokens = (initialUnitNo || '')
+      .split(/[,\s]+/)
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+
+    const matchedCert = allCerts.find((c) => {
+      if (targetCertId && c.propertyCertificateId === targetCertId) return true;
+      if (targetCertNum && c.certificateNumber && c.certificateNumber.trim().toLowerCase() === targetCertNum) return true;
+      return false;
+    });
+
+    if (matchedCert) {
+      setInitialCertApplied(true);
+      if (matchedCert.certificateTypeId && matchedCert.certificateTypeId !== selectedTypeId) {
+        setSelectedTypeId(matchedCert.certificateTypeId);
+      }
+      if (matchedCert.wingDetailId && matchedCert.wingDetailId !== selectedWingDetailId) {
+        setSelectedWingDetailId(matchedCert.wingDetailId);
+        setWingFilterRaw(String(matchedCert.wingDetailId));
+      }
+      if (level === 'Unit') {
+        const matchingUnitIds = new Set<number>();
+        resolvedUnits.forEach((u) => {
+          const uNum = (u.unitNo || '').trim().toLowerCase();
+          const pId = u.propertyId;
+          const pdId = u.propertyDetailsId;
+          const matchesByNumber =
+            matchedCert.coveredUnitNumbers?.some((n) => n.trim().toLowerCase() === uNum) ||
+            targetUnitTokens.includes(uNum);
+          const matchesById =
+            (pId != null && matchedCert.coveredPropertyIds?.includes(pId)) ||
+            (pdId != null && matchedCert.coveredPropertyIds?.includes(pdId));
+          if (matchesByNumber || matchesById) {
+            matchingUnitIds.add(u.propertyDetailsId);
+          }
+        });
+        if (matchingUnitIds.size > 0) {
+          setSelectedUnitIds(matchingUnitIds);
+        }
+      }
+    } else if (level === 'Unit' && targetUnitTokens.length > 0 && resolvedUnits.length > 0) {
+      const matchingUnitIds = new Set<number>();
+      resolvedUnits.forEach((u) => {
+        const uNum = (u.unitNo || '').trim().toLowerCase();
+        if (targetUnitTokens.includes(uNum)) {
+          matchingUnitIds.add(u.propertyDetailsId);
+        }
+      });
+      if (matchingUnitIds.size > 0) {
+        setInitialCertApplied(true);
+        setSelectedUnitIds(matchingUnitIds);
+      }
+    }
+  }
 
   // Resolve targetWingDetailId dynamically based on level, active wing filter, selected unit, or explicit wing selection
   const targetWingDetailId = useMemo(() => {
@@ -163,13 +247,19 @@ export function useCertificateModalState({
     let targetWingId: number | string | null = null;
     let targetSocId: number | string | null = null;
 
-    if (level === 'Apartment') {
-      targetSocId = societyId ?? null;
-    } else if (level === 'Wing') {
+    if (societyId && Number(societyId) > 0) {
+      targetSocId = Number(societyId);
       targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
-    } else if (level === 'Unit') {
       targetPropId = null;
-      targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+    } else {
+      if (level === 'Apartment') {
+        targetSocId = societyId ?? null;
+      } else if (level === 'Wing') {
+        targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+      } else if (level === 'Unit') {
+        targetPropId = null;
+        targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+      }
     }
 
     if (!targetPropId && !targetWingId && !targetSocId) return;
@@ -180,7 +270,7 @@ export function useCertificateModalState({
     }
 
     // Only refetch if gridItems is not already populated from SSR
-    if (gridItemsRef.current && (level === 'Apartment' && targetSocId === societyId)) {
+    if (gridItemsRef.current && (targetSocId === societyId || (level === 'Apartment' && targetSocId === societyId))) {
       lastFetchedKeyRef.current = requestKey;
       return;
     }
@@ -223,6 +313,7 @@ export function useCertificateModalState({
     wingName: String(u.wingName || u.WingName || 'Wing'),
     floorName: String(u.floorName || u.FloorName || u.floor || '1st Floor'),
     useName: String(u.useName || u.UseName || u.use || 'Residential'),
+    constructionYear: String(u.constructionYear || u.ConstructionYear || u.conYr || '').trim() || undefined,
     isSelected: false,
   });
 
@@ -282,13 +373,13 @@ export function useCertificateModalState({
       setSelectedWingDetailId(wingDetailIdParam);
     }
 
-    // Pre-set lastFetchedKeyRef to prevent the grid-sync useEffect from re-fetching
-    const preemptKey = `${level}_${null}_${wingDetailIdParam}_${null}`;
+    const targetSocIdParam = societyId ? Number(societyId) : null;
+    const preemptKey = `${level}_${null}_${wingDetailIdParam}_${targetSocIdParam}`;
     lastFetchedKeyRef.current = preemptKey;
 
     // Fetch all units in the wing (large page size) and certificate grid in parallel
     const unitsPromise = getUnitsByPropertyAction(propertyId, wingDetailIdParam, 1, 200);
-    const gridPromise = getApartmentQcCertificateGridAction(null, wingDetailIdParam, null);
+    const gridPromise = getApartmentQcCertificateGridAction(null, wingDetailIdParam, targetSocIdParam);
 
     Promise.all([unitsPromise, gridPromise]).then(([unitsRes, gridRes]) => {
       // Process units
@@ -312,14 +403,10 @@ export function useCertificateModalState({
       }
       setIsLoadingGridRecords(false);
     });
-  }, [propertyId, resolvedWings, gridItems, level, naturalUnitSort]);
+  }, [propertyId, resolvedWings, gridItems, level, naturalUnitSort, societyId]);
 
 
 
-  // Certificate selection state
-  const [selectedTypeId, setSelectedTypeId] = useState<number>(
-    initialCertificateTypeId || (resolvedCertificateTypes[0]?.certificateTypeId ?? 3)
-  );
 
   // Document form fields
   const [certificateDate, setCertificateDate] = useState<string>(initialData?.date || '');
@@ -409,13 +496,19 @@ export function useCertificateModalState({
     let targetWingId: number | string | null = null;
     let targetSocId: number | string | null = null;
 
-    if (level === 'Apartment') {
-      targetSocId = societyId ?? null;
-    } else if (level === 'Wing') {
+    if (societyId && Number(societyId) > 0) {
+      targetSocId = Number(societyId);
       targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
-    } else if (level === 'Unit') {
       targetPropId = null;
-      targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+    } else {
+      if (level === 'Apartment') {
+        targetSocId = societyId ?? null;
+      } else if (level === 'Wing') {
+        targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+      } else if (level === 'Unit') {
+        targetPropId = null;
+        targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+      }
     }
 
     if (!targetPropId && !targetWingId && !targetSocId) return null;

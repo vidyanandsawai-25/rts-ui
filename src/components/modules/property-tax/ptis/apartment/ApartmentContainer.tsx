@@ -38,11 +38,14 @@ export interface ApartmentContainerProps {
   | Record<string, unknown>
   | null;
   initialApartmentTaxDetails?: ApartmentTaxDetailsItem | null;
+  initialCertificateGrid?: unknown;
+  initialMasterTypes?: unknown[] | null;
 }
 
 export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
   copy, initialData, initialWardId, rawData,
   initialPropertyMasterData, initialQcTopSectionBelowFlex, initialApartmentTaxDetails,
+  initialCertificateGrid, initialMasterTypes,
 }) => {
   const routeParams = useParams();
   const locale = (routeParams?.locale as string) || defaultLocale;
@@ -171,6 +174,7 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
         <ApartmentWingIntelligence
           data={rawData} propertyId={propertyId} selectedWingId={activeWingId} selectedWingDetailId={activeWingDetailId} selectedSocietyDetailId={activeSocietyDetailId} selectedWingName={activeWingName} selectedFloor={apt.filters.floor}
           buildingPermissionData={initialData?.buildingPermission} discountData={initialData?.discountDetails} taxMode={actions.taxMode} onTaxModeChange={actions.setTaxMode} isLoading={isSearching}
+          rawGridData={initialCertificateGrid} masterTypes={initialMasterTypes}
           onWingSelect={(wMId, wDId, sId, wName) => {
             const updated = { ...apt.filters, wingId: wMId, wingDetailId: wDId, societyId: sId ?? null, wingName: wName ?? null, floor: null, pageNumber: 1, pageSize: 100 };
             handleWingSearch(updated);

@@ -25,7 +25,7 @@ import { DocumentAttachment } from './DocumentAttachment';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { validateDocumentNumber, validateDocumentDate } from '@/lib/validation/building/validation-rules';
+import { validateDocumentNumber, validateDocumentDate, parseDateString } from '@/lib/validation/building/validation-rules';
 import { useCertificateModalState } from '@/hooks/useCertificateModalState';
 import { resolveUnitCertificateStatus, type UnitCertificateStatusType, type UnitStatusResolution } from '@/lib/utils/certificate-grid-mapper';
 import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
@@ -97,6 +97,7 @@ export interface BuildingPermissionSectionProps {
     societyDetailId?: number | null;
   }) => Promise<{ success?: boolean; message?: string } | boolean | void> | void;
   isSaving?: boolean;
+  propertyConstructionYear?: string | number | null;
 }
 
 export function BuildingPermissionSection({
@@ -110,6 +111,7 @@ export function BuildingPermissionSection({
   initialLevel = 'Apartment',
   initialCertificateTypeId = 3,
   initialData = null,
+  propertyConstructionYear,
   onSave,
   onDelete,
   onDeleteRecord,
@@ -133,11 +135,12 @@ export function BuildingPermissionSection({
     : rawCat;
 
   const effectiveCategoryName = (displayCategory || rawCat).toLowerCase();
-  const isApartmentIndividual =
+  const hasValidSociety = Boolean(societyId && Number(societyId) > 0);
+  const isApartmentIndividual = !hasValidSociety && (
     hasPartition ||
     effectiveCategoryName.includes('apartment/individual') ||
-    effectiveCategoryName.includes('individual') ||
-    (effectiveCategoryName.includes('apartment') && hasPartition);
+    effectiveCategoryName.includes('individual')
+  );
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showActiveFirst, setShowActiveFirst] = useState(false);
@@ -148,10 +151,32 @@ export function BuildingPermissionSection({
 
   const isWingWise = searchParams?.get('isWingWise') === 'true';
 
-  const effectiveInitialLevel = isWingWise && initialLevel === 'Apartment' ? 'Wing' : initialLevel;
+  const urlLevel = searchParams?.get('level') as ApplicationLevel | null;
+  const effectiveInitialLevel =
+    urlLevel === 'Apartment' || urlLevel === 'Wing' || urlLevel === 'Unit'
+      ? urlLevel
+      : isWingWise && initialLevel === 'Apartment'
+      ? 'Wing'
+      : initialLevel;
 
   const urlWingDetailId = searchParams?.get('wingDetailId');
   const initialWingDetailId = urlWingDetailId ? Number(urlWingDetailId) : null;
+
+  const urlCertTypeId = searchParams?.get('certificateTypeId') || searchParams?.get('certTypeId');
+  const urlCertTypeCode = searchParams?.get('certificateTypeCode') || searchParams?.get('certType');
+  let resolvedCertTypeId = initialCertificateTypeId;
+  if (urlCertTypeId && !isNaN(Number(urlCertTypeId))) {
+    resolvedCertTypeId = Number(urlCertTypeId);
+  } else if (urlCertTypeCode) {
+    const matched = certificateTypes.find(
+      (ct) => ct.certificateTypeCode.toLowerCase() === urlCertTypeCode.toLowerCase()
+    );
+    if (matched) resolvedCertTypeId = matched.certificateTypeId;
+  }
+
+  const urlCertNumber = searchParams?.get('certificateNumber') || searchParams?.get('permitNo');
+  const urlPropertyCertId = searchParams?.get('propertyCertificateId');
+  const urlUnitNo = searchParams?.get('unitNo');
 
   const {
     level,
@@ -202,7 +227,10 @@ export function BuildingPermissionSection({
     initialCertificateGrid,
     initialLevel: isApartmentIndividual ? 'Unit' : effectiveInitialLevel,
     initialWingDetailId,
-    initialCertificateTypeId,
+    initialCertificateTypeId: resolvedCertTypeId,
+    initialCertificateNumber: urlCertNumber || undefined,
+    initialPropertyCertificateId: urlPropertyCertId ? Number(urlPropertyCertId) : undefined,
+    initialUnitNo: urlUnitNo || undefined,
     initialData,
   });
 
@@ -224,6 +252,7 @@ export function BuildingPermissionSection({
     wing?: string;
     unit?: string;
   }>({});
+  const [uploadedFileNamesMap, setUploadedFileNamesMap] = useState<Record<number, string>>({});
 
   const handleSelectCertificate = (typeId: number) => {
     setSelectedTypeId(typeId);
@@ -237,6 +266,61 @@ export function BuildingPermissionSection({
       setSelectedTypeId(typeId);
     }
   };
+
+  const effectiveConstructionYear = useMemo<number | null>(() => {
+    // 1. If at Unit Level and units are selected
+    if (level === 'Unit' && selectedUnitIds.size > 0) {
+      const selectedYears: number[] = [];
+      selectedUnitIds.forEach((id) => {
+        const u = units.find((unit) => unit.propertyDetailsId === id || unit.propertyId === id)
+          || filteredUnits.find((unit) => unit.propertyDetailsId === id || unit.propertyId === id);
+        if (u?.constructionYear) {
+          const parsed = parseInt(String(u.constructionYear), 10);
+          if (!isNaN(parsed) && parsed > 1800 && parsed < 2200) {
+            selectedYears.push(parsed);
+          }
+        }
+      });
+      if (selectedYears.length > 0) {
+        return Math.max(...selectedYears);
+      }
+    }
+
+    // 2. If at Wing Level and a wing is selected
+    if (level === 'Wing' && selectedWingDetailId) {
+      const wingYears: number[] = [];
+      units.forEach((u) => {
+        if (u.wingDetailId === selectedWingDetailId && u.constructionYear) {
+          const parsed = parseInt(String(u.constructionYear), 10);
+          if (!isNaN(parsed) && parsed > 1800 && parsed < 2200) {
+            wingYears.push(parsed);
+          }
+        }
+      });
+      if (wingYears.length > 0) {
+        return Math.min(...wingYears);
+      }
+    }
+
+    // 3. Fallback to propertyConstructionYear
+    if (propertyConstructionYear) {
+      const parsed = parseInt(String(propertyConstructionYear), 10);
+      if (!isNaN(parsed) && parsed > 1800 && parsed < 2200) {
+        return parsed;
+      }
+    }
+
+    // 4. Fallback to earliest construction year among all units
+    const allUnitYears = units
+      .map((u) => (u.constructionYear ? parseInt(String(u.constructionYear), 10) : null))
+      .filter((y): y is number => y !== null && !isNaN(y) && y > 1800 && y < 2200);
+
+    if (allUnitYears.length > 0) {
+      return Math.min(...allUnitYears);
+    }
+
+    return null;
+  }, [level, selectedUnitIds, units, filteredUnits, selectedWingDetailId, propertyConstructionYear]);
 
   const handleSaveClick = async () => {
     const errors: {
@@ -264,6 +348,12 @@ export function BuildingPermissionSection({
       const dateError = validateDocumentDate(certificateDate);
       if (dateError) {
         errors.certificateDate = t(dateError.key) || 'Invalid issue date.';
+      } else if (effectiveConstructionYear) {
+        const certDate = parseDateString(certificateDate);
+        if (certDate && certDate.getFullYear() < effectiveConstructionYear) {
+          errors.certificateDate = t('validation.dateBeforeConstructionYear', { year: effectiveConstructionYear })
+            || `Date must be greater than or equal to construction year (${effectiveConstructionYear})`;
+        }
       }
     }
 
@@ -326,6 +416,10 @@ export function BuildingPermissionSection({
       }
     }
 
+    if (isNewFileAttached && attachedFiles[0]?.name) {
+      resolvedFileName = attachedFiles[0].name;
+    }
+
     const hasDoc = Boolean(resolvedDocGuid || activeCertificate?.hasDocument || hasExistingDocument);
 
     setFieldErrors({});
@@ -354,6 +448,9 @@ export function BuildingPermissionSection({
 
       const isSuccess = result !== false && (typeof result !== 'object' || result === null || (result as { success?: boolean }).success !== false);
       if (isSuccess) {
+        if (isNewFileAttached && attachedFiles[0]?.name && selectedTypeId) {
+          setUploadedFileNamesMap((prev) => ({ ...prev, [selectedTypeId]: attachedFiles[0].name }));
+        }
         setAttachedFiles([]);
         await refetchGrid();
       } else if (result && typeof result === 'object' && (result as { success?: boolean }).success === false) {
@@ -1246,13 +1343,16 @@ export function BuildingPermissionSection({
                     : (activeCertificate?.documentGuid || (level === 'Apartment' ? initialData?.documentGuid : undefined))
               }
               fileName={
-                attachedFiles[0]?.name ||
                 (removedAttachmentTypeIds.has(selectedTypeId)
                   ? undefined
-                  : (activeCertificate?.fileName || (level === 'Apartment' ? initialData?.fileName : undefined))) ||
-                activeCertificate?.certificateNumber ||
-                activeCertificateType?.certificateTypeName ||
-                'Certificate Document'
+                  : (attachedFiles[0]?.name ||
+                     activeCertificate?.fileName ||
+                     existingFileName ||
+                     (selectedTypeId ? uploadedFileNamesMap[selectedTypeId] : undefined) ||
+                     (level === 'Apartment' ? initialData?.fileName : undefined))) ||
+                (activeCertificateType?.certificateTypeName
+                  ? `${activeCertificateType.certificateTypeName} Attachment`
+                  : 'Certificate Document')
               }
               hasDocumentBinding={
                 !removedAttachmentTypeIds.has(selectedTypeId) &&
@@ -1263,6 +1363,9 @@ export function BuildingPermissionSection({
               documentError={fieldErrors.document}
               onFileUpload={(file) => {
                 setAttachedFiles([file]);
+                if (selectedTypeId) {
+                  setUploadedFileNamesMap((prev) => ({ ...prev, [selectedTypeId]: file.name }));
+                }
                 setRemovedAttachmentTypeIds((prev) => {
                   const next = new Set(prev);
                   next.delete(selectedTypeId);
@@ -1276,6 +1379,13 @@ export function BuildingPermissionSection({
               onFileDelete={() => {
                 setAttachedFiles([]);
                 setRemovedAttachmentTypeIds((prev) => new Set(prev).add(selectedTypeId));
+                if (selectedTypeId) {
+                  setUploadedFileNamesMap((prev) => {
+                    const next = { ...prev };
+                    delete next[selectedTypeId];
+                    return next;
+                  });
+                }
               }}
               t={(key) => t(key)}
               label={activeCertificateType?.certificateTypeName}
@@ -1307,9 +1417,23 @@ export function BuildingPermissionSection({
                 required
                 disabled={!isApartmentIndividual && level === 'Unit' && selectedUnitIds.size === 0}
                 value={certificateDate}
+                min={effectiveConstructionYear ? `${effectiveConstructionYear}-01-01` : undefined}
+                max={new Date().toISOString().split('T')[0]}
                 onChange={(e) => {
                   setCertificateDate(e.target.value);
                   if (fieldErrors.certificateDate) setFieldErrors((prev) => ({ ...prev, certificateDate: undefined }));
+                }}
+                onBlur={() => {
+                  if (certificateDate && effectiveConstructionYear) {
+                    const certDate = parseDateString(certificateDate);
+                    if (certDate && certDate.getFullYear() < effectiveConstructionYear) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        certificateDate: t('validation.dateBeforeConstructionYear', { year: effectiveConstructionYear })
+                          || `Date must be greater than or equal to construction year (${effectiveConstructionYear})`,
+                      }));
+                    }
+                  }
                 }}
                 className={cn("text-xs text-slate-800 bg-slate-50/30", fieldErrors.certificateDate && "border-red-500 focus:ring-red-500")}
               />

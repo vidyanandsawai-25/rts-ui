@@ -72,6 +72,7 @@ export interface UnitSelectionItem {
     useId?: number;
     useName: string;
     isSelected: boolean;
+    constructionYear?: string | number;
 }
 
 export interface CertificateTypeMasterOption {
@@ -240,6 +241,7 @@ export interface BuildingFormProps {
     initialUnits?: UnitSelectionItem[];
     initialCertificateTypes?: CertificateTypeMasterOption[];
     initialCertificateGrid?: unknown;
+    propertyConstructionYear?: string | number | null;
 }
 
 export interface CreateCertificateRecordResponseDto {

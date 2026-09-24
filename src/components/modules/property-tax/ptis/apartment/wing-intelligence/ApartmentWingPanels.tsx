@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import BuildingPermissionTab from '@/components/modules/property-tax/ptis/tabs/BuildingPermissionTab';
 import DiscountDataTab from '@/components/modules/property-tax/ptis/tabs/DiscountDataTab';
 import { OldDetailsPanel } from '../old-details/OldDetailsPanel';
+import { BuildingPermissionRecords } from '../building-permission/BuildingPermissionRecords';
 import type { BuildingPermissionData, DiscountData } from '@/types/ptis.types';
 import { WingIntelligenceTopNavSection } from './ApartmentWingTopNav';
 import { useTranslations } from 'next-intl';
@@ -14,8 +14,14 @@ export interface WingIntelligencePanelsProps {
   isExpanded: boolean;
   onToggleExpand: () => void;
   buildingPermissionData?: BuildingPermissionData | null;
+  rawGridData?: unknown;
+  masterTypes?: unknown[] | null;
+  initialCertificateType?: string | null;
   discountData?: DiscountData | null;
   propertyId?: number | string | null;
+  wardId?: string | number | null;
+  wardNo?: string | null;
+  propertyNo?: string | null;
   wingDetailsId?: number | null;
   societyDetailId?: number | null;
   wingName?: string | null;
@@ -27,8 +33,14 @@ export const ApartmentWingPanels: React.FC<WingIntelligencePanelsProps> = ({
   isExpanded,
   onToggleExpand,
   buildingPermissionData,
+  rawGridData,
+  masterTypes,
+  initialCertificateType,
   discountData,
   propertyId,
+  wardId,
+  wardNo,
+  propertyNo,
   wingDetailsId,
   societyDetailId,
   wingName,
@@ -36,13 +48,35 @@ export const ApartmentWingPanels: React.FC<WingIntelligencePanelsProps> = ({
 }) => {
   const tPanels = useTranslations('ptisRedesign.panels');
   const titles = {
-    building: tPanels('building') || 'BUILDING PERMISSION (Certificates & Clearances)',
+    building: tPanels('building') || 'BUILDING PERMISSION RECORDS',
     discount: tPanels('discount') || 'DISCOUNT & SOCIAL DATA (Discounts & Concessions)',
     oldDetails: tPanels('oldDetails') || 'OLD DETAILS (Mapped Properties Society / Wing Wise)',
   };
 
   const title = titles[activeSection as 'building' | 'discount' | 'oldDetails'];
   if (!title) return null;
+
+  if (activeSection === 'building') {
+    return (
+      <div className="pt-1">
+        <BuildingPermissionRecords
+          buildingPermissionData={buildingPermissionData}
+          rawGridData={rawGridData}
+          masterTypes={masterTypes}
+          initialCertificateType={initialCertificateType}
+          isExpanded={isExpanded}
+          onToggleExpand={onToggleExpand}
+          propertyId={propertyId}
+          wardId={wardId}
+          wardNo={wardNo}
+          propertyNo={propertyNo}
+          societyDetailId={societyDetailId}
+          wingDetailsId={wingDetailsId}
+          wingName={wingName}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="pt-1">
@@ -60,12 +94,6 @@ export const ApartmentWingPanels: React.FC<WingIntelligencePanelsProps> = ({
 
       {isExpanded && (
         <>
-          {activeSection === 'building' && (
-            <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200">
-              <BuildingPermissionTab data={buildingPermissionData ?? undefined} />
-            </div>
-          )}
-
           {activeSection === 'discount' && (
             <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200">
               <DiscountDataTab

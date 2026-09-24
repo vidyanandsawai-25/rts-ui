@@ -256,7 +256,7 @@
     }
   },
   "panels": {
-    "building": "इमारत परवानगी (प्रमाणपत्रे आणि मंजुरी)",
+    "building": "इमारत परवानगी नोंदी",
     "discount": "सवलत आणि सामाजिक डेटा (सवलती)",
     "oldDetails": "जुने तपशील (मॅप केलेल्या मालमत्ता संस्था / विंग नुसार)"
   },
@@ -342,6 +342,54 @@
       "waterTax": "पाणी कर",
       "conservancyTax": "सफाई कर",
       "streetTax": "रस्ता कर"
+    }
+  },
+  "buildingPermission": {
+    "title": "इमारत परवानगी नोंदी",
+    "columns": {
+      "certificate": "प्रमाणपत्र",
+      "certificateType": "प्रमाणपत्र",
+      "certificateNumber": "प्रमाणपत्र क्रमांक",
+      "permitNoPlan": "प्रमाणपत्र क्रमांक",
+      "issueDate": "जारी केल्याची तारीख",
+      "sanctionDate": "जारी केल्याची तारीख",
+      "approvedFloors": "मंजूर मजले",
+      "sanctionedArea": "मंजूर क्षेत्रफळ",
+      "status": "स्थिती",
+      "action": "कृती"
+    },
+    "statuses": {
+      "sanctioned": "मंजूर",
+      "revised": "सुधारित",
+      "commenced": "सुरू झाले",
+      "approved": "स्वीकृत",
+      "pending": "प्रलंबित",
+      "taxApplied": "कर लागू",
+      "applied": "लागू"
+    },
+    "actions": {
+      "edit": "इमारत परवानगी संपादित करा",
+      "viewDocument": "दस्तऐवज पहा"
+    },
+    "loading": "इमारत परवानगी लोड होत आहे...",
+    "noDataAvailable": "कोणतेही इमारत परवानगी किंवा प्रमाणपत्र नोंद उपलब्ध नाही",
+    "noDataDescription": "या अपार्टमेंट किंवा विंगसाठी अद्याप कोणतीही नोंद केलेली नाही. आपण क्विक डेटा एंट्रीद्वारे इमारत परवानगी जोडू शकता आणि प्रमाणपत्रे अपलोड करू शकता.",
+    "addPermission": "इमारत परवानगी जोडा",
+    "noDocumentAttached": "या परवानगीसाठी कोणतेही दस्तऐवज जोडलेले नाही",
+    "viewDocumentError": "दस्तऐवज पाहण्यात अयशस्वी",
+    "filters": "फिल्टर",
+    "scope": "व्याप्ती",
+    "allCertificates": "सर्व प्रमाणपत्रे",
+    "allCertificateTypes": "सर्व प्रमाणपत्रे",
+    "selectCertificateType": "प्रमाणपत्र निवडा",
+    "clearFilter": "फिल्टर काढा",
+    "noRecordsForFilter": "या प्रमाणपत्रासाठी कोणतीही नोंद आढळली नाही",
+    "levels": {
+      "allLevels": "सर्व व्याप्ती",
+      "apartment": "अपार्टमेंट स्तर",
+      "wing": "विंग स्तर",
+      "unit": "युनिट स्तर",
+      "floor": "मजला स्तर"
     }
   }
 }

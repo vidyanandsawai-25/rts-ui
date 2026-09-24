@@ -30,6 +30,7 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
     url: string;
     name: string;
     label?: string;
+    contentType?: string;
   } | null>(null);
 
   // Filter for items that have actual certificate data (number, date, or document) or hasCertificate=true
@@ -138,11 +139,17 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
               setActiveViewingGuid(item.documentGuid);
               try {
                 const res = await getDocumentBlobUrl(item.documentGuid, locale);
+                const isImg = res.contentType?.toLowerCase().startsWith('image/');
+                const defaultExt = isImg
+                  ? (res.contentType.toLowerCase().includes('png') ? 'png' : 'jpg')
+                  : 'pdf';
+                const resolvedName = item.fileName || `${item.certificateNo || 'Document'}.${defaultExt}`;
                 setViewerData({
                   isOpen: true,
                   url: res.url,
-                  name: item.fileName || 'Document',
+                  name: resolvedName,
                   label: item.certificateTypeName,
+                  contentType: res.contentType,
                 });
               } catch (err: unknown) {
                 toast.error(err instanceof Error ? err.message : 'Failed to view document');
@@ -182,6 +189,7 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
           fileUrl={viewerData.url}
           fileName={viewerData.name}
           label={viewerData.label}
+          contentType={viewerData.contentType}
         />
       )}
     </>

@@ -29,11 +29,14 @@ export interface ApartmentWingIntelligenceProps {
   onTaxModeChange?: (mode: PtisTaxMode) => void;
   onWingSelect?: (wingMasterId: number | null, wingDetailId: number | null, societyId?: number | null, wingName?: string | null, wingNo?: string | null) => void;
   isLoading?: boolean;
+  rawGridData?: unknown;
+  masterTypes?: unknown[] | null;
 }
 
 export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps> = ({
   data, propertyId, selectedWingId, selectedWingDetailId, selectedSocietyDetailId, selectedWingName, selectedFloor,
   buildingPermissionData, discountData, taxMode, onTaxModeChange, onWingSelect, isLoading = false,
+  rawGridData, masterTypes,
 }) => {
   const [activeSection, setActiveSection] = useState<WingIntelligenceTopNavSection | null>('wing');
   const [isExpanded, setIsExpanded] = useState(true);
@@ -187,10 +190,15 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
           buildingPermissionData={buildingPermissionData}
           discountData={discountData}
           propertyId={propertyId}
-          wingDetailsId={activeWingDetailId}
+          wardId={data?.wardId}
+          wardNo={data?.wardNo}
+          propertyNo={data?.propertyNo}
+          wingDetailsId={activeSection === 'building' ? undefined : activeWingDetailId}
           societyDetailId={activeSocietyDetailId}
           wingName={activeWingName}
           selectedFloor={selectedFloor}
+          rawGridData={rawGridData}
+          masterTypes={masterTypes}
         />
       )}
 

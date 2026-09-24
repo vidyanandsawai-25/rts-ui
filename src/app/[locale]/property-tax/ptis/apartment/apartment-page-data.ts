@@ -22,6 +22,8 @@ import { DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
 import { getPhotosBySocietyAction, getSocietyPhotoTypesWithStatusAction } from '@/app/[locale]/property-tax/ptis/SocietyPhoto.action';
 import type { PropertyPhotoDto, PropertyPhotoTypeWithStatusDto, SocietyPhotoTypeWithStatusDto } from '@/types/photoplan.types';
 import { buildInitialPropertyMasterData, PtisPageData } from './apartment-master-builder';
+import { fetchApartmentQcCertificateGrid } from '@/lib/api/ptis/apartment/apartment-qc-top-section.service';
+import { getCertificateTypeMaster } from '@/lib/api/building.service';
 
 export interface LoadedApartmentPageData {
   wardNo: string;
@@ -49,6 +51,8 @@ export interface LoadedApartmentPageData {
   isApartmentSocietyProperty: boolean;
   societyLatitude?: number;
   societyLongitude?: number;
+  initialCertificateGrid?: unknown;
+  initialMasterTypes?: unknown[] | null;
 }
 
 export async function loadApartmentPageData(
@@ -262,6 +266,25 @@ export async function loadApartmentPageData(
 
   const isApartmentSocietyProperty = isMainProp || currentCategoryId === 0 || String(currentCategoryName).toLowerCase() === 'apartment society property';
 
+  const [certGridRes, masterTypesRes] = await Promise.all([
+    (currentSocietyDetailId || (finalWardId && propertyNo) || resolvedPropertyId)
+      ? fetchApartmentQcCertificateGrid({
+          societyId: currentSocietyDetailId,
+          // Only pass wingDetailsId when no societyId (matches client-side behavior)
+          wingDetailsId: currentSocietyDetailId ? undefined : undefined,
+          ward: finalWardId || undefined,
+          propertyNo: propertyNo || undefined,
+          // Do NOT pass propertyId when societyId is available — society-level certificates
+          // have PropertyId=NULL in the DB, so filtering by propertyId would exclude them.
+          propertyId: currentSocietyDetailId ? undefined : (resolvedPropertyId || undefined),
+        }).catch(() => null)
+      : Promise.resolve(null),
+    getCertificateTypeMaster().catch(() => null),
+  ]);
+
+  const initialCertificateGrid = (certGridRes?.success && certGridRes.data) ? certGridRes.data : null;
+  const initialMasterTypes = (masterTypesRes?.success && Array.isArray(masterTypesRes.data)) ? masterTypesRes.data : null;
+
   return {
     wardNo,
     wardId,
@@ -284,5 +307,7 @@ export async function loadApartmentPageData(
     isApartmentSocietyProperty,
     societyLatitude: pageData.societyLatitude,
     societyLongitude: pageData.societyLongitude,
+    initialCertificateGrid,
+    initialMasterTypes,
   };
 }

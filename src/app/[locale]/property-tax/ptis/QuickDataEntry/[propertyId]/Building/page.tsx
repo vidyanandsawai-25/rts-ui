@@ -80,7 +80,7 @@ async function BuildingFormDataLoader({
 }) {
     const targetPropId = null;
     const targetWingId = (levelParam === 'Wing' || levelParam === 'Unit') && searchWingDetailId ? Number(searchWingDetailId) : null;
-    const targetSocId = (levelParam === 'Apartment' || !levelParam) && searchSocietyId ? Number(searchSocietyId) : null;
+    const targetSocId = searchSocietyId ? Number(searchSocietyId) : null;
 
     // Fetch essential initial building permission, basic details, wings, units, and core lookup data concurrently
     const [
@@ -101,7 +101,7 @@ async function BuildingFormDataLoader({
         getFloorDataAction(),
         getConstructionTypeDataAction(),
         getPropertyBasicDetailsAction(propertyId),
-        getWingsByPropertyAction(propertyId),
+        getWingsByPropertyAction(propertyId, searchSocietyId),
         getUnitsByPropertyAction(propertyId, targetWingId, 1, 200),
         getCertificateTypeMasterAction(),
         getApartmentQcCertificateGridAction(
@@ -152,6 +152,7 @@ async function BuildingFormDataLoader({
         wingName: String(u.wingName || u.WingName || 'Wing'),
         floorName: String(u.floorName || u.FloorName || u.floor || '1st Floor'),
         useName: String(u.useName || u.UseName || u.use || 'Residential'),
+        constructionYear: String(u.constructionYear || u.ConstructionYear || u.conYr || '').trim() || undefined,
         isSelected: false,
     })).sort((a, b) => (a.unitNo || '').localeCompare(b.unitNo || '', undefined, { numeric: true, sensitivity: 'base' }));
 
@@ -279,6 +280,7 @@ async function BuildingFormDataLoader({
             initialUnits={initialUnits}
             initialCertificateTypes={initialCertificateTypes}
             initialCertificateGrid={initialCertificateGrid}
+            propertyConstructionYear={propertyBasicDetails?.constructionYear || null}
         />
     );
 }

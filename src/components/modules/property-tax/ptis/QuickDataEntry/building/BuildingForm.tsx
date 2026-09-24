@@ -8,7 +8,7 @@ import { useBuildingForm } from "@/hooks/useBuildingForm";
 import { BuildingPermissionSection } from "./BuildingPermissionSection";
 import { BuildingSidebar } from "./BuildingSidebar";
 import { BuildingDetailPane } from "./BuildingDetailPane";
-import type { WingOption, UnitSelectionItem } from "@/types/building-permission.types";
+import type { WingOption, UnitSelectionItem, ApplicationLevel } from "@/types/building-permission.types";
 
 import { toast } from "sonner";
 import { useLocale } from "next-intl";
@@ -35,6 +35,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
     initialUnits = [],
     initialCertificateTypes = [],
     initialCertificateGrid = null,
+    propertyConstructionYear,
 }) => {
     const router = useRouter();
     const locale = useLocale();
@@ -121,6 +122,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                 floorName: String(floorName),
                 useName: String(useName),
                 isSelected: false,
+                constructionYear: (f as unknown as { constructionYear?: string | number }).constructionYear,
             };
         });
     }, [initialFloors]);
@@ -168,6 +170,29 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         return null;
     }, [activeScope, activeSelectedTypeId, propertyCertificatesState]);
 
+    const urlLevel = searchParams.get('level') as ApplicationLevel | null;
+    const urlCertTypeId = searchParams.get('certificateTypeId') || searchParams.get('certTypeId');
+    const urlCertTypeCode = searchParams.get('certificateTypeCode') || searchParams.get('certType');
+
+    let effectiveCertTypeId = activeSelectedTypeId || 3;
+    if (urlCertTypeId && !isNaN(Number(urlCertTypeId))) {
+        effectiveCertTypeId = Number(urlCertTypeId);
+    } else if (urlCertTypeCode) {
+        const matched = initialCertificateTypes.find(
+            (ct) => ct.certificateTypeCode?.toLowerCase() === urlCertTypeCode.toLowerCase()
+        );
+        if (matched?.certificateTypeId) {
+            effectiveCertTypeId = matched.certificateTypeId;
+        }
+    }
+
+    const effectiveLevel: ApplicationLevel =
+        urlLevel === 'Apartment' || urlLevel === 'Wing' || urlLevel === 'Unit'
+            ? urlLevel
+            : activeScope === 'Floor'
+            ? 'Unit'
+            : 'Apartment';
+
     return (
         <Tabs defaultValue="building" className="flex-1 flex flex-col min-h-0 h-full lg:h-[calc(100vh-125px)] max-h-[calc(100vh-125px)] overflow-hidden">
             <Tabs.TabPanel value="building" className="mt-0 p-0 flex-1 flex flex-col min-h-0 h-full overflow-hidden">
@@ -179,10 +204,11 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                         units={initialUnits.length > 0 ? initialUnits : unitOptions}
                         certificateTypes={initialCertificateTypes}
                         initialCertificateGrid={initialCertificateGrid}
-                        initialLevel={activeScope === "Floor" ? "Unit" : "Apartment"}
-                        initialCertificateTypeId={activeSelectedTypeId || 3}
+                        initialLevel={effectiveLevel}
+                        initialCertificateTypeId={effectiveCertTypeId}
                         initialData={selectedCert}
                         isSaving={isSaving || isSectionSaving}
+                        propertyConstructionYear={propertyConstructionYear}
                         onDelete={(certTypeId) => handleDeleteCertificate(certTypeId)}
                         onDeleteRecord={async (params) => {
                             setIsSectionSaving(true);
@@ -273,7 +299,9 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                         payloadObj.documentGuid = payload.documentGuid;
                                         payloadObj.existingDocumentGuid = payload.documentGuid;
                                     }
-                                    if (payload.fileName) {
+                                    if (hasNewFile && payload.attachedFiles[0]) {
+                                        payloadObj.fileName = payload.attachedFiles[0].name;
+                                    } else if (payload.fileName) {
                                         payloadObj.fileName = payload.fileName;
                                     }
                                     if (payload.propertyCertificateId) {

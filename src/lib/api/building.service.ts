@@ -112,9 +112,16 @@ export async function getCertificateTypeMaster(): Promise<ApiResponse<unknown[]>
 }
 
 // 2b. GET - Load Wings dynamically by propertyId
-export async function getWingsByProperty(propertyId: string): Promise<ApiResponse<unknown[]>> {
+export async function getWingsByProperty(
+    propertyId: string,
+    societyId?: number | string | null
+): Promise<ApiResponse<unknown[]>> {
     try {
-        const response = await apiClient.get<BackendApiResponseWrapper<unknown[]>>(`/property-certificates/wings/${propertyId}`);
+        let url = `/property-certificates/wings/${encodeURIComponent(propertyId)}`;
+        if (societyId && String(societyId).trim() !== '') {
+            url += `?societyId=${encodeURIComponent(String(societyId))}`;
+        }
+        const response = await apiClient.get<BackendApiResponseWrapper<unknown[]>>(url);
         if (response.success && response.data) {
             const rawData = response.data as unknown as Record<string, unknown>;
             const items = Array.isArray(rawData.items)

@@ -28,6 +28,7 @@ vi.mock('next-intl', () => ({
       'common.saveChanges': 'Save Changes',
       'common.edit': 'Edit Unit Certificate',
       'common.actions': 'ACTION',
+      'validation.dateBeforeConstructionYear': 'Date must be greater than or equal to construction year (2020)',
     }[key] || key),
   useLocale: () => 'en',
 }));
@@ -377,5 +378,60 @@ describe('BuildingPermissionSection - SELECT UNITS safeguards', () => {
     expect(payload.attachedFiles.length).toBe(1);
     expect(payload.attachedFiles[0].name).toBe('new-cert.pdf');
     expect(payload.isFileModified).toBe(true);
+  });
+
+  it('shows validation error when certificate date is before construction year', async () => {
+    const handleSaveMock = vi.fn();
+    const unitsWithConstYear: UnitSelectionItem[] = [
+      {
+        propertyDetailsId: 101,
+        propertyId: 201,
+        unitNo: 'A8',
+        wingName: 'Wing A',
+        floorName: '1st Floor',
+        useName: 'Residential',
+        wingDetailId: 10,
+        isSelected: false,
+        constructionYear: '2020',
+      },
+    ];
+
+    render(
+      <BuildingPermissionSection
+        propertyId="100"
+        societyId={1}
+        wings={mockWings}
+        units={unitsWithConstYear}
+        certificateTypes={mockCertificateTypes}
+        initialCertificateGrid={mockCertificateGrid}
+        initialLevel="Unit"
+        initialCertificateTypeId={3}
+        propertyConstructionYear="2020"
+        onSave={handleSaveMock}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('A8')).toBeInTheDocument();
+    });
+
+    // 1. Select unit A8 to edit
+    const editButtons = screen.getAllByTitle('Edit Unit Certificate');
+    fireEvent.click(editButtons[0]);
+
+    // 2. Change certificate date to year 2018 (before construction year 2020)
+    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+    expect(dateInput).not.toBeNull();
+    fireEvent.change(dateInput, { target: { value: '2018-05-15' } });
+
+    // 3. Click Save Changes
+    const saveButton = screen.getByRole('button', { name: /save changes/i });
+    fireEvent.click(saveButton);
+
+    // 4. Save should be blocked and validation message should appear
+    await waitFor(() => {
+      expect(handleSaveMock).not.toHaveBeenCalled();
+      expect(screen.getAllByText(/Date must be greater than or equal to construction year/i).length).toBeGreaterThan(0);
+    });
   });
 });

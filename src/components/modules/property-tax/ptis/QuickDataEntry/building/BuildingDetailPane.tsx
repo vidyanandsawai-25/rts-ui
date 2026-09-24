@@ -100,6 +100,26 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }, []);
 
+    const minDate = React.useMemo(() => {
+        let targetConstructionYear: number | null = null;
+        if (activeScope === 'Floor' && activeFloorId !== undefined && activeFloorId !== null) {
+            const activeFloor = floors.find(f => f.propertyDetailsId === activeFloorId);
+            if (activeFloor?.constructionYear) {
+                targetConstructionYear = parseInt(activeFloor.constructionYear, 10);
+            }
+        } else {
+            if (floors && floors.length > 0) {
+                const years = floors
+                    .map(f => f.constructionYear ? parseInt(f.constructionYear, 10) : null)
+                    .filter((y): y is number => y !== null && !isNaN(y));
+                if (years.length > 0) {
+                    targetConstructionYear = Math.min(...years);
+                }
+            }
+        }
+        return (targetConstructionYear && !isNaN(targetConstructionYear)) ? `${targetConstructionYear}-01-01` : undefined;
+    }, [activeScope, activeFloorId, floors]);
+
     const lengthRule = React.useMemo(() => {
         return getCertificateLengthRule(data?.certificateTypeName || undefined);
     }, [data?.certificateTypeName]);
@@ -372,6 +392,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                                 <Label className="text-sm font-bold text-blue-800">{t("building.certificateDate", { name: displayName || "Document" })}<span className="text-red-500 ml-0.5">*</span></Label>
                                 <Input
                                     type="date"
+                                    min={minDate}
                                     max={maxDate}
                                     value={displayData.date}
                                     onChange={(e) => {

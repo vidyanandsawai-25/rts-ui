@@ -3,11 +3,14 @@
 import {
   fetchApartmentQcTopSection,
   patchApartmentQcTopSection,
+  fetchApartmentQcCertificateGrid,
   type ApartmentQcTopSectionDto,
   type UpdateApartmentQcTopSectionPayload,
+  type FetchApartmentQcCertificateGridParams,
 } from './apartment-qc-top-section.service';
 import { mapApartmentQcTopSectionToPropertyMasterData } from './apartment-qc-top-section.mapper';
 import { getPropertySocietyDetails } from '@/lib/api/property-society.service';
+import { getCertificateTypeMaster } from '@/lib/api/building.service';
 import type { PropertyMasterData } from '@/types/property-tax/apartment';
 import { syncSocietyAndKycDetails } from './apartment-qc-top-section.sync';
 
@@ -95,4 +98,23 @@ export async function updateApartmentQcTopSectionAction(
   }
 
   return patchRes;
+}
+
+export async function getApartmentQcCertificateGridAction(
+  params: FetchApartmentQcCertificateGridParams | number | string
+): Promise<{ success: boolean; data?: unknown; error?: string }> {
+  return await fetchApartmentQcCertificateGrid(params);
+}
+
+export async function getPropertyCertificateTypeMasterAction(): Promise<{
+  success: boolean;
+  data?: unknown[];
+  error?: string;
+}> {
+  const res = await getCertificateTypeMaster();
+  return {
+    success: res.success,
+    data: res.data,
+    error: res.message || res.error,
+  };
 }

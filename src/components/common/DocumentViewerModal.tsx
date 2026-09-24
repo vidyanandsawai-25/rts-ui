@@ -15,6 +15,7 @@ export interface DocumentViewerModalProps {
   wardNo?: string;
   propertyNo?: string;
   partitionNo?: string;
+  contentType?: string;
 }
 
 /**
@@ -31,6 +32,7 @@ export function DocumentViewerModal({
   wardNo,
   propertyNo,
   partitionNo,
+  contentType,
 }: DocumentViewerModalProps) {
   const t = useTranslations("quickDataEntry");
   const searchParams = useSearchParams();
@@ -52,13 +54,15 @@ export function DocumentViewerModal({
 
   // Fast-path synchronous guess for initial render / SSR
   const getInitialGuess = useCallback(() => {
+    if (contentType) {
+      const lowerCt = contentType.toLowerCase();
+      if (lowerCt.includes("pdf")) return "pdf";
+      if (lowerCt.startsWith("image/")) return "image";
+    }
     if (!fileUrl) return null;
     const lowerUrl = fileUrl.toLowerCase();
     const lowerName = fileName.toLowerCase();
     
-    if (lowerUrl.includes(".pdf") || lowerUrl.startsWith("data:application/pdf") || lowerName.endsWith(".pdf")) {
-      return "pdf";
-    }
     if (
       lowerUrl.startsWith("data:image/") ||
       lowerName.endsWith(".png") ||
@@ -70,8 +74,13 @@ export function DocumentViewerModal({
     ) {
       return "image";
     }
+
+    if (lowerUrl.includes(".pdf") || lowerUrl.startsWith("data:application/pdf") || lowerName.endsWith(".pdf")) {
+      return "pdf";
+    }
+
     return null;
-  }, [fileUrl, fileName]);
+  }, [fileUrl, fileName, contentType]);
 
   const initialGuess = getInitialGuess();
   const isDetecting = detectedType === null && initialGuess === null;
@@ -91,11 +100,29 @@ export function DocumentViewerModal({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDetectedType(null);
     if (!fileUrl) return;
+
+    if (contentType) {
+      const lowerCt = contentType.toLowerCase();
+      if (lowerCt.includes("pdf")) {
+        setDetectedType("pdf");
+        return;
+      }
+      if (lowerCt.startsWith("image/")) {
+        setDetectedType("image");
+        return;
+      }
+    }
     
     const initial = getInitialGuess();
     if (initial) {
       setDetectedType(initial);
-      return;
+      // Skip async inspection if non-blob URL has explicit PDF or image extension, or is data: URI
+      if (
+        fileUrl.startsWith("data:") ||
+        (!fileUrl.startsWith("blob:") && (fileUrl.toLowerCase().includes(".pdf") || fileUrl.toLowerCase().match(/\.(png|jpe?g|gif|webp|svg)/i)))
+      ) {
+        return;
+      }
     }
     
     let active = true;
@@ -114,7 +141,7 @@ export function DocumentViewerModal({
             if (active) setDetectedType("image");
             return;
           }
-          if (active) setDetectedType("unsupported");
+          if (active && !initial) setDetectedType("unsupported");
           return;
         }
         
@@ -134,16 +161,16 @@ export function DocumentViewerModal({
             ) {
               setDetectedType("image");
             } else {
-              setDetectedType("unsupported");
+              setDetectedType(initial || "unsupported");
             }
           } else {
-            setDetectedType("unsupported");
+            setDetectedType(initial || "unsupported");
           }
         };
         reader.readAsArrayBuffer(blob.slice(0, 4));
       } catch (_err) {
         if (active) {
-          setDetectedType("unsupported");
+          setDetectedType(initial || "unsupported");
         }
       }
     };
@@ -152,7 +179,7 @@ export function DocumentViewerModal({
     return () => {
       active = false;
     };
-  }, [fileUrl, fileName, getInitialGuess]);
+  }, [fileUrl, fileName, contentType, getInitialGuess]);
 
   useEffect(() => {
     if (!isOpen) return;

@@ -256,7 +256,7 @@
     }
   },
   "panels": {
-    "building": "BUILDING PERMISSION (Certificates & Clearances)",
+    "building": "BUILDING PERMISSION RECORDS",
     "discount": "DISCOUNT & SOCIAL DATA (Discounts & Concessions)",
     "oldDetails": "OLD DETAILS (Mapped Properties Society / Wing Wise)"
   },
@@ -342,6 +342,54 @@
       "waterTax": "Water Tax",
       "conservancyTax": "Conservancy Tax",
       "streetTax": "Street Tax"
+    }
+  },
+  "buildingPermission": {
+    "title": "BUILDING PERMISSION RECORDS",
+    "columns": {
+      "certificate": "CERTIFICATE",
+      "certificateType": "CERTIFICATE",
+      "certificateNumber": "CERTIFICATE NUMBER",
+      "permitNoPlan": "CERTIFICATE NUMBER",
+      "issueDate": "ISSUE DATE",
+      "sanctionDate": "ISSUE DATE",
+      "approvedFloors": "APPROVED FLOORS",
+      "sanctionedArea": "SANCTIONED AREA",
+      "status": "STATUS",
+      "action": "ACTION"
+    },
+    "statuses": {
+      "sanctioned": "Sanctioned",
+      "revised": "Revised",
+      "commenced": "Commenced",
+      "approved": "Approved",
+      "pending": "Pending",
+      "taxApplied": "Tax Applied",
+      "applied": "Applied"
+    },
+    "actions": {
+      "edit": "Edit Building Permission",
+      "viewDocument": "View Document"
+    },
+    "loading": "Loading building permissions...",
+    "noDataAvailable": "No building permission or certificate records available",
+    "noDataDescription": "No records have been filed yet for this apartment or wing. You can add building permissions and upload certificates through Quick Data Entry.",
+    "addPermission": "Add Building Permission",
+    "noDocumentAttached": "No document attached for this permit",
+    "viewDocumentError": "Failed to view document",
+    "filters": "Filters",
+    "scope": "Scope",
+    "allCertificates": "All Certificates",
+    "allCertificateTypes": "All Certificates",
+    "selectCertificateType": "Select Certificate",
+    "clearFilter": "Clear Filter",
+    "noRecordsForFilter": "No records found for this certificate",
+    "levels": {
+      "allLevels": "All Scopes",
+      "apartment": "Apartment Level",
+      "wing": "Wing Level",
+      "unit": "Unit Level",
+      "floor": "Floor Level"
     }
   }
 }

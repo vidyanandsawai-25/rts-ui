@@ -256,7 +256,7 @@
     }
   },
   "panels": {
-    "building": "भवन अनुमति (प्रमाणपत्र एवं स्वीकृतियां)",
+    "building": "भवन अनुमति रिकॉर्ड",
     "discount": "छूट एवं सामाजिक डेटा (छूट एवं रियायतें)",
     "oldDetails": "पुराने विवरण (मैप की गई संपत्तियां सोसायटी / विंग वार)"
   },
@@ -342,6 +342,54 @@
       "waterTax": "जल कर",
       "conservancyTax": "सफाई कर",
       "streetTax": "सड़क कर"
+    }
+  },
+  "buildingPermission": {
+    "title": "भवन अनुमति रिकॉर्ड",
+    "columns": {
+      "certificate": "प्रमाणपत्र",
+      "certificateType": "प्रमाणपत्र",
+      "certificateNumber": "प्रमाणपत्र संख्या",
+      "permitNoPlan": "प्रमाणपत्र संख्या",
+      "issueDate": "जारी करने की तिथि",
+      "sanctionDate": "जारी करने की तिथि",
+      "approvedFloors": "स्वीकृत मंजिलें",
+      "sanctionedArea": "स्वीकृत क्षेत्रफल",
+      "status": "स्थिति",
+      "action": "कार्रवाई"
+    },
+    "statuses": {
+      "sanctioned": "मंजूर",
+      "revised": "संशोधित",
+      "commenced": "शुरू हुआ",
+      "approved": "स्वीकृत",
+      "pending": "लंबित",
+      "taxApplied": "कर लागू",
+      "applied": "लागू"
+    },
+    "actions": {
+      "edit": "भवन अनुमति संपादित करें",
+      "viewDocument": "दस्तावेज़ देखें"
+    },
+    "loading": "भवन अनुमतियाँ लोड हो रही हैं...",
+    "noDataAvailable": "कोई भवन अनुमति या प्रमाणपत्र रिकॉर्ड उपलब्ध नहीं है",
+    "noDataDescription": "इस अपार्टमेंट या विंग के लिए अभी तक कोई रिकॉर्ड दर्ज नहीं किया गया है। आप त्वरित डेटा प्रविष्टि के माध्यम से भवन अनुमतियाँ जोड़ सकते हैं और प्रमाणपत्र अपलोड कर सकते हैं।",
+    "addPermission": "भवन अनुमति जोड़ें",
+    "noDocumentAttached": "इस परमिट के लिए कोई दस्तावेज़ संलग्न नहीं है",
+    "viewDocumentError": "दस्तावेज़ देखने में विफल",
+    "filters": "फ़िल्टर",
+    "scope": "दायरा",
+    "allCertificates": "सभी प्रमाणपत्र",
+    "allCertificateTypes": "सभी प्रमाणपत्र",
+    "selectCertificateType": "प्रमाणपत्र चुनें",
+    "clearFilter": "फ़िल्टर हटाएं",
+    "noRecordsForFilter": "इस प्रमाणपत्र के लिए कोई रिकॉर्ड नहीं मिला",
+    "levels": {
+      "allLevels": "सभी दायरे",
+      "apartment": "अपार्टमेंट स्तर",
+      "wing": "विंग स्तर",
+      "unit": "यूनिट स्तर",
+      "floor": "मंजिल स्तर"
     }
   }
 }

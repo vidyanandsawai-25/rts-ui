@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
+import { parseDateString } from '@/lib/validation/building/validation-rules';
 import {
   useCertificateModalState,
 } from '@/hooks/useCertificateModalState';
@@ -49,6 +50,7 @@ export interface EditCertificateRecordModalProps {
   initialCertificateTypeId?: number;
   initialData?: CertificateData | null;
   isLoading?: boolean;
+  propertyConstructionYear?: string | number | null;
 }
 
 const BADGE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -73,6 +75,7 @@ export function EditCertificateRecordModal({
   initialCertificateTypeId = 3,
   initialData = null,
   isLoading = false,
+  propertyConstructionYear,
 }: EditCertificateRecordModalProps): React.ReactElement | null {
   const t = useTranslations('quickDataEntry');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -114,8 +117,6 @@ export function EditCertificateRecordModal({
     initialData,
   });
 
-  if (!open) return null;
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -127,8 +128,69 @@ export function EditCertificateRecordModal({
     setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const [dateError, setDateError] = React.useState<string | null>(null);
+
+  const effectiveConstructionYear = React.useMemo<number | null>(() => {
+    if (level === 'Unit' && selectedUnitIds.size > 0) {
+      const selectedYears: number[] = [];
+      selectedUnitIds.forEach((id) => {
+        const u = units.find((unit) => unit.propertyDetailsId === id || unit.propertyId === id);
+        if (u?.constructionYear) {
+          const parsed = parseInt(String(u.constructionYear), 10);
+          if (!isNaN(parsed) && parsed > 1800 && parsed < 2200) {
+            selectedYears.push(parsed);
+          }
+        }
+      });
+      if (selectedYears.length > 0) {
+        return Math.max(...selectedYears);
+      }
+    }
+
+    if (level === 'Wing' && selectedWingDetailId) {
+      const wingYears: number[] = [];
+      units.forEach((u) => {
+        if (u.wingDetailId === selectedWingDetailId && u.constructionYear) {
+          const parsed = parseInt(String(u.constructionYear), 10);
+          if (!isNaN(parsed) && parsed > 1800 && parsed < 2200) {
+            wingYears.push(parsed);
+          }
+        }
+      });
+      if (wingYears.length > 0) {
+        return Math.min(...wingYears);
+      }
+    }
+
+    if (propertyConstructionYear) {
+      const parsed = parseInt(String(propertyConstructionYear), 10);
+      if (!isNaN(parsed) && parsed > 1800 && parsed < 2200) {
+        return parsed;
+      }
+    }
+
+    const allUnitYears = units
+      .map((u) => (u.constructionYear ? parseInt(String(u.constructionYear), 10) : null))
+      .filter((y): y is number => y !== null && !isNaN(y) && y > 1800 && y < 2200);
+
+    if (allUnitYears.length > 0) {
+      return Math.min(...allUnitYears);
+    }
+
+    return null;
+  }, [level, selectedUnitIds, units, selectedWingDetailId, propertyConstructionYear]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (certificateDate && effectiveConstructionYear) {
+      const certDate = parseDateString(certificateDate);
+      if (certDate && certDate.getFullYear() < effectiveConstructionYear) {
+        setDateError(t('validation.dateBeforeConstructionYear', { year: effectiveConstructionYear })
+          || `Date must be greater than or equal to construction year (${effectiveConstructionYear})`);
+        return;
+      }
+    }
+    setDateError(null);
     onSave({
       level,
       selectedWingDetailId,
@@ -147,6 +209,8 @@ export function EditCertificateRecordModal({
     text: 'text-blue-700',
     border: 'border-blue-200',
   };
+
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
@@ -465,10 +529,20 @@ export function EditCertificateRecordModal({
                     <div className="relative">
                       <input
                         type="date"
+                        min={effectiveConstructionYear ? `${effectiveConstructionYear}-01-01` : undefined}
+                        max={new Date().toISOString().split('T')[0]}
                         value={certificateDate}
-                        onChange={(e) => setCertificateDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        onChange={(e) => {
+                          setCertificateDate(e.target.value);
+                          if (dateError) setDateError(null);
+                        }}
+                        className={`w-full px-3 py-2 border rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 ${
+                          dateError ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-indigo-500'
+                        }`}
                       />
+                      {dateError && (
+                        <p className="text-[11px] text-red-600 mt-1">{dateError}</p>
+                      )}
                     </div>
                   </div>
 

@@ -55,7 +55,7 @@ const ICON_KEYWORD_RULES: ReadonlyArray<readonly [readonly string[], React.React
   [['water'], <Droplet key="water" className={ICON_SIZE_CLASS} />],
   [['fire', 'noc'], <ShieldCheck key="fire" className={ICON_SIZE_CLASS} />],
   [['trade', 'license'], <Building key="trade" className={ICON_SIZE_CLASS} />],
-  [['bpms', 'link'], <Link key="bpms" className={ICON_SIZE_CLASS} />],
+  [['permission', 'link'], <Link key="permission" className={ICON_SIZE_CLASS} />],
 ] as const;
 
 /** Optimized helper function to return contextual Lucide icons based on stage/certificate name */

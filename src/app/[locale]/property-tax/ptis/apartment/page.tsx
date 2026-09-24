@@ -108,6 +108,8 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
             initialPropertyMasterData={data.initialPropertyMasterData}
             initialQcTopSectionBelowFlex={data.initialQcTopSectionBelowFlex}
             initialApartmentTaxDetails={data.initialApartmentTaxDetails}
+            initialCertificateGrid={data.initialCertificateGrid}
+            initialMasterTypes={data.initialMasterTypes}
           />
         </PtisLayoutWrapper>
 
