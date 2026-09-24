@@ -1,7 +1,7 @@
 /**
  * i18n Request Configuration
  * Server-side locale detection and message loading
- * Force reload: 2
+ * Force reload: 3
  */
 
 import { getRequestConfig } from 'next-intl/server';
@@ -101,6 +101,8 @@ export default getRequestConfig(async ({ locale }) => {
     retrospectiveRuleLibraryMessages,
     taxZoningRangeMessages,
     aliasMasterMessages,
+    connectionTypeMasterMessages,
+    tapSizeMasterMessages,
     assetWeightageMasterMessages,
     assetAssessmentYearRangeMessages,
     geographyTypeMasterMessages,
@@ -253,6 +255,8 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/retrospectiveRuleLibrary.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxZoningRange.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/aliasMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/connectionTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/tapSizeMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetWeightageMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetAssessmentYearRange.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/geographyTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
@@ -353,6 +357,8 @@ export default getRequestConfig(async ({ locale }) => {
       retrospectiveRuleLibrary: retrospectiveRuleLibraryMessages,
       taxZoningRange: taxZoningRangeMessages?.taxZoningRange || taxZoningRangeMessages,
       aliasMaster: aliasMasterMessages,
+      connectionTypeMaster: connectionTypeMasterMessages?.connectionTypeMaster || connectionTypeMasterMessages,
+      tapSizeMaster: tapSizeMasterMessages?.tapSizeMaster || tapSizeMasterMessages,
       assetWeightageMaster:
         assetWeightageMasterMessages?.assetWeightageMaster || assetWeightageMasterMessages,
       assetAssessmentYearRange:
