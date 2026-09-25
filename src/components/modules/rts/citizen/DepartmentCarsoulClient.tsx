@@ -325,7 +325,7 @@ export default function DepartmentCarsoulClient({
           icon={LayoutDashboard}
         />
 
-        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3 lx:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3 xl:grid-cols-5">
           <div className="relative flex items-center gap-4 rounded-xl bg-white px-4 py-3 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l-xl" />
             <div className="flex-1 min-w-0">

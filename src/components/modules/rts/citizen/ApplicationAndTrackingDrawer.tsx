@@ -23,6 +23,7 @@ import {
 } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import {
   searchCitizenMisApplicationsAction,
+  resolveCitizenResubmitNavigationAction,
 } from "@/app/[locale]/service/dashboard/actions";
 import {
   getPaymentStatusAction,
@@ -32,11 +33,11 @@ import {
 import { PaymentCheckoutModal } from "./PaymentCheckoutModal";
 import { PaymentReceiptModal } from "./PaymentReceiptModal";
 import PrintableCertificateModal from "./PrintableCertificateModal";
-import CitizenResubmitDrawer from "./CitizenResubmitDrawer";
 import type { PaymentReceiptResult, PaymentStatusResult } from "@/lib/api/rts/rtspayment.service";
 import type { RtsApplicationApprovalStage } from "@/types/rts/application-approval.types";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
 import { CreditCard, Receipt, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type ApplicationAndTrackingDrawerProps = {
   open: boolean;
@@ -199,6 +200,7 @@ export default function ApplicationAndTrackingDrawer({
   initialSearchValue,
   initialReceiptValue,
 }: ApplicationAndTrackingDrawerProps) {
+  const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("rts.citizenHeader");
   const tDashboard = useTranslations("rts.citizenDashboard");
@@ -211,7 +213,7 @@ export default function ApplicationAndTrackingDrawer({
   const [paymentInfo, setPaymentInfo] = useState<PaymentStatusResult | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
-  const [showResubmitModal, setShowResubmitModal] = useState(false);
+  const [isOpeningResubmit, setIsOpeningResubmit] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
   const getSearchErrorMessage = useCallback(
     (result?: { reason?: 'not-found' | 'failed' } | null) =>
@@ -391,6 +393,46 @@ export default function ApplicationAndTrackingDrawer({
       setError(COPY.unableToLoad);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenResubmit = async () => {
+    if (!selectedApplication || isOpeningResubmit) return;
+
+    setIsOpeningResubmit(true);
+    try {
+      const result = await resolveCitizenResubmitNavigationAction(selectedApplication.applicationNo);
+      if (!result.success) {
+        if (result.errorCode === 'login-required') {
+          const serviceId = detail?.serviceId ?? 0;
+          const departmentId = detail?.departmentId ?? 0;
+          const applicationId = detail?.verification?.applicationId
+            || Number.parseInt(selectedApplication.applicationNo.replace(/\D/g, ''), 10);
+
+          if (
+            Number.isInteger(serviceId) && serviceId > 0 &&
+            Number.isInteger(departmentId) && departmentId > 0 &&
+            Number.isInteger(applicationId) && applicationId > 0
+          ) {
+            const resubmitUrl = `/${locale}/service/${serviceId}?deptId=${departmentId}&applicationNo=${encodeURIComponent(selectedApplication.applicationNo)}&applicationId=${applicationId}&mode=resubmit`;
+            router.push(`/${locale}/service/login?redirect=${encodeURIComponent(resubmitUrl)}`);
+            return;
+          }
+        }
+
+        console.error('Unable to resolve citizen correction form:', result.error);
+        setError(tDashboard('resubmitUnavailable'));
+        return;
+      }
+
+      router.push(
+        `/${locale}/service/${result.serviceId}?deptId=${result.departmentId}&applicationNo=${encodeURIComponent(result.applicationNo)}&applicationId=${result.applicationId}&mode=resubmit`
+      );
+    } catch (resubmitError) {
+      console.error('Failed to open citizen correction form:', resubmitError);
+      setError(tDashboard('resubmitUnavailable'));
+    } finally {
+      setIsOpeningResubmit(false);
     }
   };
 
@@ -708,9 +750,8 @@ export default function ApplicationAndTrackingDrawer({
                         <div className="mt-3">
                           <button
                             type="button"
-                            onClick={() => {
-                              setShowResubmitModal(true);
-                            }}
+                            onClick={() => void handleOpenResubmit()}
+                            disabled={isOpeningResubmit}
                             className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 rounded-lg shadow-md shadow-orange-600/20 transition-all cursor-pointer"
                           >
                             <RotateCcw className="w-3.5 h-3.5" />
@@ -831,24 +872,6 @@ export default function ApplicationAndTrackingDrawer({
           applicationNo={selectedApplication.applicationNo}
           certificateType={detail?.certificateType}
           isManualCertificate={detail?.certificateType === 2}
-        />
-      )}
-
-      {showResubmitModal && selectedApplication && (
-        <CitizenResubmitDrawer
-          isOpen={showResubmitModal}
-          onClose={() => setShowResubmitModal(false)}
-          applicationId={detail?.verification?.applicationId || parseInt(selectedApplication.applicationNo.replace(/\D/g, ""), 10) || 0}
-          applicationNo={selectedApplication.applicationNo}
-          serviceId={detail?.serviceId || detail?.verification?.serviceId || (selectedApplication as any)?.serviceId || (selectedApplication as any)?.govtServiceCode}
-          serviceName={selectedApplication.serviceName}
-          officerRemark={detail?.remark || stages.find((stage) => stage.remark)?.remark || ""}
-          answerGroups={detail?.answerGroups || []}
-          documents={detail?.documents || []}
-          onSuccess={() => {
-            setShowResubmitModal(false);
-            void selectApplication(selectedApplication);
-          }}
         />
       )}
 

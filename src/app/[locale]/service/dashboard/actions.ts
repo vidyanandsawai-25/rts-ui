@@ -215,6 +215,7 @@ export type CitizenResubmitNavigationResult =
   | {
       success: false;
       error: string;
+      errorCode?: 'login-required';
     };
 
 /** Resolves full-form resubmit routing without changing the MIS dashboard model. */
@@ -229,13 +230,21 @@ export async function resolveCitizenResubmitNavigationAction(
   try {
     const profileCookie = (await cookies()).get("rts_citizen_profile")?.value;
     if (!profileCookie) {
-      return { success: false, error: "Citizen session is unavailable." };
+      return {
+        success: false,
+        error: "Citizen session is unavailable.",
+        errorCode: 'login-required',
+      };
     }
 
     const profile = JSON.parse(profileCookie) as CitizenProfileCookie;
     const upicId = profile.upicId?.trim();
     if (!upicId) {
-      return { success: false, error: "Citizen profile is incomplete." };
+      return {
+        success: false,
+        error: "Citizen profile is incomplete.",
+        errorCode: 'login-required',
+      };
     }
 
     const citizenResponse = await getRtsCitizenDashboardData({
