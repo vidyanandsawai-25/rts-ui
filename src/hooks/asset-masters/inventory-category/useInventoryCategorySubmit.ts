@@ -42,6 +42,7 @@ export function useInventoryCategorySubmit({
       code: true,
       name: true,
       depreciationRate: true,
+      displayOrder: true,
       description: true,
     });
 
@@ -63,9 +64,11 @@ export function useInventoryCategorySubmit({
 
     try {
       const fd = new FormData();
+      fd.append("group", formData.group);
       fd.append("code", formData.code);
       fd.append("name", formData.name);
       fd.append("depreciationRate", formData.depreciationRate || "");
+      fd.append("displayOrder", formData.displayOrder || "");
       fd.append("description", formData.description);
       fd.append("isActive", String(formData.isActive));
       fd.append("locale", locale);
@@ -86,8 +89,12 @@ export function useInventoryCategorySubmit({
 
       if (res && !res.ok) {
         toast.error(mapInventoryCategoryApiError(res, t, tCommon));
-        if (res.error === "duplicate") {
-          const dupMsg = t("validation.duplicateRecord") || t("errors.duplicateRecord") || "Already exists";
+        const dupMsg = t("validation.duplicateRecord") || t("errors.duplicateRecord") || "Already exists";
+        if (res.error === "duplicate_code") {
+          setErrors({ code: dupMsg });
+        } else if (res.error === "duplicate_name") {
+          setErrors({ name: dupMsg });
+        } else if (res.error === "duplicate") {
           setErrors({
             code: dupMsg,
             name: dupMsg,

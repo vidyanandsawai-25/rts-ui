@@ -20,19 +20,28 @@ export async function saveInventoryCategoryAction(id: string, formData: FormData
     }
     const isEdit = !!id;
 
-    const rawGroupId = Number(formData.get("group"));
+    const rawGroupId = Number(formData.get("group") || formData.get("assetCategoryId"));
     if (!Number.isFinite(rawGroupId) || rawGroupId <= 0) {
       return { ok: false, error: "invalid_assetCategoryId" };
     }
     const assetCategoryId = rawGroupId;
 
+    const rawDisplayOrder = formData.get("displayOrder");
+    if (rawDisplayOrder === null || rawDisplayOrder === undefined || String(rawDisplayOrder).trim() === "") {
+      return { ok: false, error: "Display order is required", field: "displayOrder" };
+    }
+    const displayOrder = Number(rawDisplayOrder);
+    if (!Number.isInteger(displayOrder) || displayOrder < 0) {
+      return { ok: false, error: "Display order must be a valid integer", field: "displayOrder" };
+    }
+
     const record = {
       typeCode: formData.get("code") as string,
       typeName: formData.get("name") as string,
       assetCategoryId,
-      depreciationRate: Number(formData.get("depreciationRate") || 0.1),
+      depreciationRate: Number(formData.get("depreciationRate") || 0),
+      displayOrder,
       description: formData.get("description") as string,
-      displayOrder: Number(formData.get("displayOrder") || 1),
       isActive: formData.get("isActive") === "true",
       updatedBy: userId,
     };
@@ -50,9 +59,16 @@ export async function saveInventoryCategoryAction(id: string, formData: FormData
 
     return { ok: true, mode: isEdit ? "update" : "create" };
   } catch (error: unknown) {
-    const rawMessage = error instanceof ApiError ? (error.error || error.responseText) : error instanceof Error ? error.message : String(error);
+    const rawMessage = error instanceof ApiError ? (error.error || error.responseText || error.message) : error instanceof Error ? error.message : String(error);
     const errMessage = deduplicateErrorMessage(cleanErrorMessage(rawMessage, "Failed to save inventory category"));
-    if (errMessage.toLowerCase().includes("duplicate")) {
+    const lower = (rawMessage + " " + errMessage).toLowerCase();
+    if (lower.includes("typename") || lower.includes("type_name") || lower.includes("name_duplicate")) {
+      return { ok: false, error: "duplicate_name" };
+    }
+    if (lower.includes("typecode") || lower.includes("type_code") || lower.includes("code_duplicate")) {
+      return { ok: false, error: "duplicate_code" };
+    }
+    if (lower.includes("duplicate") || lower.includes("already exists")) {
       return { ok: false, error: "duplicate" };
     }
     return { ok: false, error: errMessage };
@@ -92,11 +108,29 @@ export async function getInventoryCategoryByIdAction(id: string | number) {
       name: rawRecord.typeName || "",
       group: String(rawRecord.assetCategoryId || (rawRecord as unknown as Record<string, unknown>).categoryId || ""),
       description: rawRecord.description || "",
-      depreciationRate: rawRecord.depreciationRate ? String(rawRecord.depreciationRate) : "",
+      depreciationRate: rawRecord.depreciationRate !== undefined && rawRecord.depreciationRate !== null ? String(rawRecord.depreciationRate) : "",
+      displayOrder: rawRecord.displayOrder !== undefined && rawRecord.displayOrder !== null ? String(rawRecord.displayOrder) : "",
       isActive: rawRecord.isActive ?? true,
     };
   } catch (error) {
     logger.error("Failed to fetch inventory category by ID", { id: String(id) }, error);
     return null;
+  }
+}
+
+export async function getAssetCategoriesForInventoryAction() {
+  try {
+    const records = await inventoryCategoryService.getAssetCategoriesForDropdown();
+    return {
+      success: true,
+      data: records.map((r) => ({
+        id: String(r.id),
+        name: String(r.categoryName || ""),
+        status: (r.isActive === false) ? "Inactive" : "Active",
+      })),
+    };
+  } catch (error) {
+    logger.error("Failed to fetch asset categories for inventory category dropdown", {}, error);
+    return { success: false, data: [] };
   }
 }

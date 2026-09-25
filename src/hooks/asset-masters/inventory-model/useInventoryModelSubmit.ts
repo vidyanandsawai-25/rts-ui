@@ -40,6 +40,7 @@ export function useInventoryModelSubmit({
     setTouched({
       name: true,
       group: true,
+      displayOrder: true,
       description: true,
     });
 
@@ -54,6 +55,7 @@ export function useInventoryModelSubmit({
       const fd = new FormData();
       fd.append("name", formData.name);
       fd.append("group", formData.group || "");
+      fd.append("displayOrder", String(formData.displayOrder ?? ""));
       fd.append("description", formData.description);
       fd.append("isActive", String(formData.isActive));
       fd.append("locale", locale);

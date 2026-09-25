@@ -35,6 +35,7 @@ vi.mock("@/components/modules/assets/configuration/master-data/inventory-categor
       <input data-testid="group-input" name="group" value={formData.group} onChange={onChange} />
       <input data-testid="name-input" name="name" value={formData.name} onChange={onChange} />
       <input data-testid="rate-input" name="depreciationRate" value={formData.depreciationRate} onChange={onChange} />
+      <input data-testid="order-input" name="displayOrder" value={formData.displayOrder} onChange={onChange} />
     </div>
   ),
 }));
@@ -60,6 +61,7 @@ describe("InventoryCategoryForm", () => {
     fireEvent.change(screen.getByTestId("group-input"), { target: { name: "group", value: "G1" } });
     fireEvent.change(screen.getByTestId("code-input"), { target: { name: "code", value: "TYPE1" } });
     fireEvent.change(screen.getByTestId("name-input"), { target: { name: "name", value: "Type Name" } });
+    fireEvent.change(screen.getByTestId("order-input"), { target: { name: "displayOrder", value: "1" } });
 
     fireEvent.submit(screen.getByTestId("drawer-content").querySelector("form")!);
 
@@ -77,6 +79,7 @@ describe("InventoryCategoryForm", () => {
     fireEvent.change(screen.getByTestId("code-input"), { target: { name: "code", value: "TYPE1" } });
     fireEvent.change(screen.getByTestId("name-input"), { target: { name: "name", value: "Type Name" } });
     fireEvent.change(screen.getByTestId("rate-input"), { target: { name: "depreciationRate", value: "0.15" } });
+    fireEvent.change(screen.getByTestId("order-input"), { target: { name: "displayOrder", value: "1" } });
 
     fireEvent.submit(screen.getByTestId("drawer-content").querySelector("form")!);
 

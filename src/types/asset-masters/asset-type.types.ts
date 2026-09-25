@@ -9,6 +9,7 @@ export interface AssetTypeFormModel {
   id?: string;
   code: string;
   name: string;
+  typeNameLocal: string;
   group: string;
   allowUnitRegistration: boolean;
   allowRoomRegistration: boolean;
@@ -24,6 +25,8 @@ export interface AssetTypeApiRecord {
   id: number;
   /** Human-readable name for the type */
   typeName: string;
+  /** Local language name for the type */
+  typeNameLocal?: string;
   /** Alphanumeric code identifier */
   typeCode: string;
   /** Reference ID to the parent Asset Category */
@@ -47,6 +50,7 @@ export interface AssetType {
   id: number;
   typeCode: string;
   typeName: string;
+  typeNameLocal?: string;
   categoryId: number;
   categoryName: string;
   description: string;

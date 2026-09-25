@@ -41,6 +41,7 @@ export function useAssetTypeSubmit({
     setTouched({
       code: true,
       name: true,
+      typeNameLocal: true,
       group: true,
       description: true,
       registrationType: true,
@@ -66,6 +67,7 @@ export function useAssetTypeSubmit({
       const fd = new FormData();
       fd.append("code", formData.code);
       fd.append("name", formData.name);
+      fd.append("typeNameLocal", formData.typeNameLocal || "");
       fd.append("group", formData.group || "");
       fd.append("description", formData.description || "");
       fd.append("allowUnitRegistration", String(formData.allowUnitRegistration));

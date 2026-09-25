@@ -3,8 +3,8 @@ import { cleanErrorMessage } from "@/lib/utils/api-error-handler";
 import {
   CODE_REGEX,
   CODE_SANITIZE,
-  ASSET_MASTER_NAME_REGEX,
-  ASSET_MASTER_NAME_SANITIZE,
+  NAME_ONLY_REGEX,
+  NAME_ONLY_SANITIZE,
   ASSET_MASTER_TEXT_SANITIZE,
   DESCRIPTION_REGEX,
 } from "@/lib/utils/asset-validation-rules";
@@ -13,6 +13,7 @@ import type { AssetTypeFormModel } from "@/types/asset-masters/asset-type.types"
 
 export const CODE_MAX = 15;
 export const NAME_MAX = 50;
+export const TYPENAME_LOCAL_MAX = 200;
 export const DESCRIPTION_MAX = 500;
 
 export const sanitizeFieldValue = (name: string, value: string): string => {
@@ -22,8 +23,13 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
     if (sanitizedValue.length > DESCRIPTION_MAX) {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
+  } else if (name === "typeNameLocal") {
+    sanitizedValue = value.replace(ASSET_MASTER_TEXT_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    if (sanitizedValue.length > TYPENAME_LOCAL_MAX) {
+      sanitizedValue = sanitizedValue.substring(0, TYPENAME_LOCAL_MAX);
+    }
   } else if (name === "name") {
-    sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -62,7 +68,14 @@ export const validateAssetTypeForm = (
       if (!str) return safeT('nameRequired');
       if (str.length > NAME_MAX) return safeT('nameMaxLength', { count: NAME_MAX });
       if (/^0+$/.test(str)) return safeT('nameAllZeros');
-      if (!ASSET_MASTER_NAME_REGEX.test(str)) return safeT('nameFormat');
+      if (!NAME_ONLY_REGEX.test(str)) return safeT('nameFormat');
+      return undefined;
+    },
+    typeNameLocal: (val: unknown) => {
+      const str = String(val ?? '').trim();
+      if (!str) return undefined;
+      if (str.length > TYPENAME_LOCAL_MAX) return safeT('typeNameLocalMaxLength', { count: TYPENAME_LOCAL_MAX });
+      if (/^0+$/.test(str)) return safeT('typeNameLocalAllZeros');
       return undefined;
     },
     registrationType: (val: unknown) => {

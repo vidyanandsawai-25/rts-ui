@@ -83,6 +83,7 @@ export const createSafeMasterTranslator = (t: SafeTranslatorFn | unknown) => {
     if (k.includes("required")) {
       if (k.includes("code") || k.includes("subtypecode")) return "Code is required";
       if (k.includes("name") || k.includes("subtypename") || k.includes("conditionname") || k.includes("model")) return "Name is required";
+      if (k.includes("valuationtype") || k.includes("valuation")) return "Valuation Type is required";
       if (k.includes("category")) return "Category selection is required";
       if (k.includes("type") || k.includes("conditiontype")) return "Type selection is required";
       if (k.includes("group") || k.includes("item")) return "Item selection is required";
@@ -118,6 +119,10 @@ export const createSafeMasterTranslator = (t: SafeTranslatorFn | unknown) => {
         return "Only letters, numbers, hyphens, and underscores allowed";
       }
       return "Only letters (any language), numbers, spaces, and basic punctuation allowed (,./-()).";
+    }
+
+    if (k.includes("valuation") && (k.includes("format") || k.includes("invalid") || k.includes("chars"))) {
+      return "Only alphanumeric, spaces, underscore and hyphen allowed";
     }
 
     if (k.includes("invalid") || k.includes("range")) {

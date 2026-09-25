@@ -2,8 +2,8 @@ import { validateForm } from "@/lib/utils/validation";
 import {
   CODE_REGEX,
   CODE_SANITIZE,
-  ASSET_MASTER_NAME_REGEX,
-  ASSET_MASTER_NAME_SANITIZE,
+  NAME_ONLY_REGEX,
+  NAME_ONLY_SANITIZE,
   ASSET_MASTER_TEXT_SANITIZE,
   DESCRIPTION_REGEX,
 } from "@/lib/utils/asset-validation-rules";
@@ -12,7 +12,7 @@ import type { InventoryCategoryFormModel } from "@/types/asset-masters/inventory
 
 export const CODE_MAX = 15;
 export const NAME_MAX = 50;
-export const DESCRIPTION_MAX = 500;
+export const DESCRIPTION_MAX = 200;
 
 export const sanitizeFieldValue = (name: string, value: string): string => {
   let sanitizedValue = value;
@@ -22,7 +22,7 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
   } else if (name === "name") {
-    sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -36,6 +36,11 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
     const parts = sanitizedValue.split(".");
     if (parts.length > 2) {
       sanitizedValue = parts[0] + "." + parts.slice(1).join("");
+    }
+  } else if (name === "displayOrder") {
+    sanitizedValue = value.replace(/[^0-9]/g, "");
+    if (sanitizedValue.length > 5) {
+      sanitizedValue = sanitizedValue.substring(0, 5);
     }
   }
   return sanitizedValue;
@@ -67,7 +72,7 @@ export const validateInventoryCategoryForm = (
       if (!str) return safeT('nameRequired');
       if (str.length > NAME_MAX) return safeT('nameMaxLength', { count: NAME_MAX });
       if (/^0+$/.test(str)) return safeT('nameAllZeros');
-      if (!ASSET_MASTER_NAME_REGEX.test(str)) return safeT('nameFormat');
+      if (!NAME_ONLY_REGEX.test(str)) return safeT('nameFormat');
       return undefined;
     },
     depreciationRate: (val: unknown) => {
@@ -77,6 +82,15 @@ export const validateInventoryCategoryForm = (
       const num = Number(val);
       if (isNaN(num) || num < 0 || num > 1) {
         return safeT('depreciationRateRange') || safeT('depreciationRateInvalid');
+      }
+      return undefined;
+    },
+    displayOrder: (val: unknown) => {
+      const str = String(val ?? '').trim();
+      if (!str) return safeT('displayOrderRequired');
+      const num = Number(str);
+      if (isNaN(num) || num < 0 || !Number.isInteger(num)) {
+        return safeT('displayOrderInvalid') || "Display order must be a valid integer";
       }
       return undefined;
     },
@@ -117,7 +131,7 @@ export const mapInventoryCategoryApiError = (
     return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
   }
 
-  if (result.error === "duplicate" || rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
+  if (result.error === "duplicate" || result.error === "duplicate_name" || result.error === "duplicate_code" || rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
     return t("validation.duplicateRecord") || t("validation.duplicateError") || t("errors.duplicateRecord") || "Record already exists.";
   }
 

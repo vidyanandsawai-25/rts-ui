@@ -13,6 +13,7 @@ export function useInventoryModelForm(
       name: "",
       group: "",
       description: "",
+      displayOrder: "",
       isActive: true,
     }
   );

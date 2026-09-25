@@ -6,6 +6,7 @@ import { ValidationMessage } from "@/components/common/ValidationMessage";
 import { TextArea } from "@/components/common/Textarea";
 
 import type { InventoryNameFormFieldsSectionProps } from "@/types/asset-masters/inventory-name.types";
+import { DESCRIPTION_MAX } from "@/hooks/asset-masters/inventory-name/validation";
 
 interface ExtendedFormFieldsSectionProps extends InventoryNameFormFieldsSectionProps {
   codeRef?: React.RefObject<HTMLInputElement | null>;
@@ -73,6 +74,24 @@ export function FormFieldsSection({
       </div>
 
       <div>
+        <Input
+          name="displayOrder"
+          label={t("configuration.masterData.form.labels.displayOrder")}
+          required
+          type="number"
+          min={1}
+          max={99999}
+          value={formData.displayOrder !== undefined ? String(formData.displayOrder) : ""}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("configuration.masterData.form.placeholders.displayOrder")}
+          error={showError("displayOrder") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.displayOrder} visible={showError("displayOrder")} />
+      </div>
+
+      <div>
         <TextArea
           name="description"
           label={t("configuration.masterData.form.labels.description")}
@@ -81,7 +100,7 @@ export function FormFieldsSection({
           onChange={onChange}
           onBlur={onBlur}
           placeholder={t("configuration.masterData.form.placeholders.description")}
-          maxLength={500}
+          maxLength={DESCRIPTION_MAX}
           error={showError("description") ? true : false}
           className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />

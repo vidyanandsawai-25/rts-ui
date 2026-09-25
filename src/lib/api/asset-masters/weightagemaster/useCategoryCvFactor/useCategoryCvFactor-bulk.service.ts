@@ -28,7 +28,7 @@ export async function bulkCreateUseFactorCVMaster(
 
     const requestPayload = payload.map((item) => ({
       isActive: item.isActive,
-      createdBy: item.createdBy ?? 1,
+      createdBy: item.createdBy,
       typeOfUseId: item.typeOfUseId,
       subTypeOfUseId: item.subTypeOfUseId,
       factor: Number(item.factor),
@@ -74,7 +74,7 @@ export async function bulkUpdateUseFactorCVMaster(
       id: item.id,
       data: {
         isActive: item.data.isActive,
-        updatedBy: item.data.updatedBy ?? 1,
+        updatedBy: item.data.updatedBy,
         typeOfUseId: item.data.typeOfUseId,
         subTypeOfUseId: item.data.subTypeOfUseId,
         factor: Number(item.data.factor),

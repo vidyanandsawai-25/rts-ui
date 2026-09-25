@@ -2,6 +2,7 @@ import React from "react";
 import type { Column } from "@/components/common/MasterTable";
 import type { AssetGrievanceRemark } from "@/types/asset-masters/asset-grievance-remark.types";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
+import { TruncatedText } from "@/components/common/TruncatedText";
 
 function SortableHeader({
   label,
@@ -94,8 +95,8 @@ export function getAssetGrievanceRemarkColumns(
       width: "30%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (typeof value === "string" ? value : ""),
+      cellClassName: "break-all [word-break:break-all]",
+      render: (value) => <TruncatedText text={typeof value === "string" ? value : ""} maxLength={30} />,
     },
     {
       key: "description",
@@ -103,8 +104,8 @@ export function getAssetGrievanceRemarkColumns(
       width: "30%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (typeof value === "string" ? value : "-"),
+      cellClassName: "break-all [word-break:break-all]",
+      render: (value) => <TruncatedText text={typeof value === "string" && value ? value : "-"} maxLength={30} />,
     },
     {
       key: "grievanceCategoryName",
@@ -112,8 +113,8 @@ export function getAssetGrievanceRemarkColumns(
       width: "20%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (typeof value === "string" ? value : "-"),
+      cellClassName: "break-all [word-break:break-all]",
+      render: (value) => <TruncatedText text={typeof value === "string" && value ? value : "-"} maxLength={25} />,
     },
     {
       key: "isActive",
@@ -121,7 +122,7 @@ export function getAssetGrievanceRemarkColumns(
       width: "10%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words [word-break:break-word]",
+      cellClassName: "whitespace-nowrap",
       isStatus: true,
     },
   ];

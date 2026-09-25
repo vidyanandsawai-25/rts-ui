@@ -173,4 +173,27 @@ describe('inventoryCategoryService', () => {
       await expect(inventoryCategoryService.delete(12)).rejects.toThrow(ApiError);
     });
   });
+
+  describe('getAssetCategoriesForDropdown', () => {
+    it('correctly parses isActive strings and numbers', async () => {
+      const mockItems = [
+        { id: 1, categoryName: 'Cat 1', isActive: 'false' },
+        { id: 2, categoryName: 'Cat 2', isActive: 'true' },
+        { id: 3, categoryName: 'Cat 3', isActive: 1 },
+        { id: 4, categoryName: 'Cat 4', isActive: 0 },
+        { id: 5, categoryName: 'Cat 5' },
+      ];
+      vi.mocked(apiClient.get).mockResolvedValue({ success: true, data: mockItems });
+
+      const result = await inventoryCategoryService.getAssetCategoriesForDropdown();
+
+      expect(result).toEqual([
+        { id: 1, categoryName: 'Cat 1', categoryCode: undefined, isActive: false },
+        { id: 2, categoryName: 'Cat 2', categoryCode: undefined, isActive: true },
+        { id: 3, categoryName: 'Cat 3', categoryCode: undefined, isActive: true },
+        { id: 4, categoryName: 'Cat 4', categoryCode: undefined, isActive: false },
+        { id: 5, categoryName: 'Cat 5', categoryCode: undefined, isActive: true },
+      ]);
+    });
+  });
 });

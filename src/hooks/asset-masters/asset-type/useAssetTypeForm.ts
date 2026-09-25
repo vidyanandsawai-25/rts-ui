@@ -30,6 +30,7 @@ export function useAssetTypeForm({ initialData, groups }: UseAssetTypeFormProps)
       id: undefined,
       code: "",
       name: "",
+      typeNameLocal: "",
       group: "",
       allowUnitRegistration: false,
       allowRoomRegistration: false,

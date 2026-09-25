@@ -51,6 +51,7 @@ describe('assetTypeService', () => {
         id: 1,
         typeCode: 'AT01',
         typeName: 'Building',
+        typeNameLocal: '',
         categoryId: 10,
         categoryName: '',
         isActive: true,

@@ -2,7 +2,7 @@
   "configuration": {
     "header": {
       "title": "Configuration Master",
-      "subtitle": "Centralized Master Data Management System",
+      "subtitle": "Asset and Inventory Condition Management",
       "totalMasters": "Total Masters"
     },
     "tabs": {
@@ -53,6 +53,9 @@
           "update": "Update",
           "cancel": "Cancel"
         },
+        "validation": {
+          "duplicateRecord": "This record already exists. Please check and try again."
+        },
         "errors": {
           "fillRequired": "Please fill in all required fields.",
           "conditionTypeRequired": "Condition Category is required.",
@@ -66,6 +69,7 @@
           "conditionFactorInvalid": "Condition factor must be a valid number.",
           "conditionFactorRange": "Condition factor must be between 0 and 1.",
           "displayOrderRequired": "Display order is required.",
+          "displayOrderInvalid": "Display order must be an integer greater than or equal to 1.",
           "apiActionsNotConfigured": "API actions are not configured.",
           "saveFailed": "Failed to save record",
           "deleteFailed": "Failed to delete record",
@@ -108,6 +112,6 @@
     "inventory-category-master": "Inventory Category",
     "inventory-model-master": "Inventory Model",
     "inventory-name-master": "Inventory Item Name",
-    "inventory-condition-master": "Inventory Condition"
+    "inventory-condition-master": "Asset Condition Master"
   }
 }

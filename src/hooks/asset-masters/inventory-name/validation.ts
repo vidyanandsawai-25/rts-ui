@@ -2,8 +2,8 @@ import { validateForm } from "@/lib/utils/validation";
 import {
   CODE_REGEX,
   CODE_SANITIZE,
-  ASSET_MASTER_NAME_REGEX,
-  ASSET_MASTER_NAME_SANITIZE,
+  NAME_ONLY_REGEX,
+  NAME_ONLY_SANITIZE,
   ASSET_MASTER_TEXT_SANITIZE,
   DESCRIPTION_REGEX,
 } from "@/lib/utils/asset-validation-rules";
@@ -12,7 +12,7 @@ import type { InventoryNameFormModel } from "@/types/asset-masters/inventory-nam
 
 export const CODE_MAX = 15;
 export const NAME_MAX = 50;
-export const DESCRIPTION_MAX = 500;
+export const DESCRIPTION_MAX = 200;
 
 export const sanitizeFieldValue = (name: string, value: string): string => {
   let sanitizedValue = value;
@@ -22,7 +22,7 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
   } else if (name === "subTypeName") {
-    sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -63,7 +63,7 @@ export const validateInventoryNameForm = (
       if (!str) return safeT('nameRequired');
       if (str.length > NAME_MAX) return safeT('subTypeNameMaxLength', { count: NAME_MAX });
       if (/^0+$/.test(str)) return safeT('subTypeNameAllZeros');
-      if (!ASSET_MASTER_NAME_REGEX.test(str)) return safeT('subTypeNameFormat');
+      if (!NAME_ONLY_REGEX.test(str)) return safeT('subTypeNameFormat');
       return undefined;
     },
     description: (val: unknown) => {
@@ -72,6 +72,19 @@ export const validateInventoryNameForm = (
       if (str.length > DESCRIPTION_MAX) return safeT('descriptionMaxLength', { count: DESCRIPTION_MAX });
       if (/^0+$/.test(str)) return safeT('descriptionAllZeros');
       if (!DESCRIPTION_REGEX.test(str)) return safeT('descriptionFormat');
+      return undefined;
+    },
+    displayOrder: (val: unknown) => {
+      if (val === null || val === undefined || val === "" || String(val).trim() === "") {
+        return safeT('displayOrderRequired');
+      }
+      const numVal = Number(val);
+      if (isNaN(numVal) || !Number.isInteger(numVal) || numVal <= 0) {
+        return safeT('displayOrderRequired');
+      }
+      if (numVal > 99999) {
+        return safeT('displayOrderMaxLimit') || "Display order cannot exceed 99999";
+      }
       return undefined;
     },
     isActive: (val: unknown) => {

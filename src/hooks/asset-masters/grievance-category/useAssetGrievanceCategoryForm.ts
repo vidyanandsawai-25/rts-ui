@@ -160,7 +160,8 @@ export function useAssetGrievanceCategoryForm({
         toast.error(mapGrievanceCategoryApiError(res, t, tCommon));
         return;
       }
-      toast.success(res.message || t(isEdit ? "master.toast.updateSuccess" : "master.toast.createSuccess"));
+      const successMessage = t(isEdit ? "master.toast.updateSuccess" : "master.toast.createSuccess");
+      toast.success(successMessage || res.message);
       onSuccess();
       closeAndRoute();
     } finally {

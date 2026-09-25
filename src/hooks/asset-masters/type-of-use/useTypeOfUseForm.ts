@@ -173,10 +173,10 @@ export function useTypeOfUseForm({
         return;
       }
 
-      toast.success(result.message || (isEdit
+      const successMessage = isEdit
         ? t("messages.typeUpdated", { default: "Type updated successfully" })
-        : t("messages.typeCreated", { default: "Type created successfully" })
-      ));
+        : t("messages.typeCreated", { default: "Type created successfully" });
+      toast.success(successMessage || result.message);
       onSuccess();
       closeAndRoute(formData.typeOfUseGroupId);
     } finally {

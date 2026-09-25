@@ -14,6 +14,7 @@ interface UseInventoryConditionSubmitProps {
   setTouched: (touched: Record<string, boolean>) => void;
   setSubmittedOnce?: (submitted: boolean) => void;
   setOpen: (open: boolean) => void;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   tCommon: (key: string) => string;
 }
 
@@ -26,6 +27,7 @@ export function useInventoryConditionSubmit({
   setTouched,
   setSubmittedOnce,
   setOpen,
+  t,
   tCommon,
 }: UseInventoryConditionSubmitProps) {
   const router = useRouter();
@@ -36,10 +38,13 @@ export function useInventoryConditionSubmit({
     if (setSubmittedOnce) setSubmittedOnce(true);
 
     setTouched({
+      conditionCategory: true,
       conditionType: true,
+      categoryId: true,
       inventoryItemCategoryId: true,
       conditionName: true,
       conditionFactor: true,
+      displayOrder: true,
       description: true,
     });
 
@@ -47,7 +52,7 @@ export function useInventoryConditionSubmit({
     setErrors(v);
 
     if (Object.keys(v).length) {
-      toast.error(tCommon("errors.validationError") || "errors.validationError");
+      toast.error(tCommon("errors.validationError") || "Please fix validation errors");
       return;
     }
 
@@ -69,7 +74,7 @@ export function useInventoryConditionSubmit({
         router.refresh();
         return;
       } else {
-        toast.error(mapInventoryConditionApiError(res, (k) => k, tCommon));
+        toast.error(mapInventoryConditionApiError(res, t, tCommon));
       }
     } catch (error: unknown) {
       toast.error((error as Error)?.message ?? tCommon("errors.generic"));
@@ -80,4 +85,3 @@ export function useInventoryConditionSubmit({
 
   return { handleSubmit, isSubmitting };
 }
-

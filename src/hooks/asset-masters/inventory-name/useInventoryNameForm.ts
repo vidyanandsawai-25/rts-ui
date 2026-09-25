@@ -14,6 +14,7 @@ export function useInventoryNameForm(
       subTypeCode: "",
       subTypeName: "",
       description: "",
+      displayOrder: "",
       isActive: true,
     }
   );

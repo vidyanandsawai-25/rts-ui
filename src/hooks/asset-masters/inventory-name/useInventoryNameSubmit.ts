@@ -14,6 +14,7 @@ interface UseInventoryNameSubmitProps {
   setTouched: (touched: Record<string, boolean>) => void;
   setSubmittedOnce?: (submitted: boolean) => void;
   setOpen: (open: boolean) => void;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   tCommon: (key: string) => string;
 }
 
@@ -26,6 +27,7 @@ export function useInventoryNameSubmit({
   setTouched,
   setSubmittedOnce,
   setOpen,
+  t,
   tCommon,
 }: UseInventoryNameSubmitProps) {
   const router = useRouter();
@@ -39,6 +41,7 @@ export function useInventoryNameSubmit({
       inventoryItemCategoryId: true,
       subTypeCode: true,
       subTypeName: true,
+      displayOrder: true,
       description: true,
     });
 
@@ -68,7 +71,7 @@ export function useInventoryNameSubmit({
         router.refresh();
         return;
       } else {
-        toast.error(mapInventoryNameApiError(res, (k) => k, tCommon));
+        toast.error(mapInventoryNameApiError(res, t, tCommon));
       }
     } catch (error: unknown) {
       toast.error((error as Error)?.message ?? tCommon("errors.generic"));

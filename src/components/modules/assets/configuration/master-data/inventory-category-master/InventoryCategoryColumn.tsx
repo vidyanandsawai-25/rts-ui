@@ -4,6 +4,7 @@ import React from "react";
 import { Badge } from "@/components/common/Badge";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
+import { TruncatedText } from "@/components/common/TruncatedText";
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import type { Column } from "@/components/common/MasterTable";
 import type { MasterDataRecord } from "@/types/asset-masters/master-data.types";
@@ -93,8 +94,8 @@ export function getInventoryCategoryColumns(
       width: "15%",
       label: createSortableLabel(t("labels.code"), "typeCode"),
       render: (_, r) => (
-        <Badge variant="secondary" size="sm">
-          {String((r as Record<string, unknown>).code || (r as Record<string, unknown>).typeCode || "")}
+        <Badge variant="secondary" size="sm" className="break-all max-w-[120px]">
+          <TruncatedText text={String((r as Record<string, unknown>).code || (r as Record<string, unknown>).typeCode || "")} maxLength={15} />
         </Badge>
       ),
     },
@@ -103,38 +104,39 @@ export function getInventoryCategoryColumns(
       width: "25%",
       label: createSortableLabel(t("labels.name"), "typeName"),
       render: (_, r) => (
-        <div>
-          <div className="font-semibold text-sm text-slate-800">{r.name}</div>
-          <div className="text-xs text-slate-500 line-clamp-1">
-            {r.description}
+        <div className="max-w-[280px]">
+          <div className="font-semibold text-sm text-slate-800 break-words">
+            <TruncatedText text={r.name} maxLength={50} />
+          </div>
+          <div className="text-xs text-slate-500 break-all mt-0.5">
+            <TruncatedText text={r.description} maxLength={100} />
           </div>
         </div>
       ),
     },
     {
       key: "assetCategoryName",
-      width: "20%",
-      label: createSortableLabel(
+      width: "18%",
+      label: (
         getSafeMessage(t, "labels.assetCategory") ||
         getSafeMessage(t, "labels.category") ||
         getSafeMessage(t, "labels.group") ||
-        "Asset Category",
-        "assetCategoryName"
+        "Asset Category"
       ),
       render: (_, r) => {
         const catName = (r as Record<string, unknown>).assetCategoryName as string | undefined;
         const catId = (r as Record<string, unknown>).assetCategoryId as number | undefined;
         return (
-          <div className="text-sm font-medium text-slate-700">
-            {catName || (catId ? `Category #${catId}` : "-")}
+          <div className="text-sm font-medium text-slate-700 break-words">
+            <TruncatedText text={catName || (catId ? `Category #${catId}` : "-")} maxLength={40} />
           </div>
         );
       },
     },
     {
       key: "depreciationRate",
-      width: "15%",
-      label: createSortableLabel(t("labels.depreciationRate"), "depreciationRate", "center"),
+      width: "14%",
+      label: t("labels.depreciationRate"),
       align: "center",
       render: (_, r) => (
         <div className="text-sm font-medium text-slate-700 text-center">
@@ -143,9 +145,24 @@ export function getInventoryCategoryColumns(
       ),
     },
     {
+      key: "displayOrder",
+      width: "13%",
+      label: createSortableLabel(
+        getSafeMessage(t, "labels.displayOrder") || "Display Order",
+        "displayOrder",
+        "center"
+      ),
+      align: "center",
+      render: (_, r) => (
+        <div className="text-sm font-medium text-slate-700 text-center">
+          {r.displayOrder !== undefined && r.displayOrder !== null ? r.displayOrder : "-"}
+        </div>
+      ),
+    },
+    {
       key: "status",
       width: "15%",
-      label: createSortableLabel(t("labels.status"), "isActive"),
+      label: t("labels.status"),
       render: (_, r) => <StatusBadge value={r.status} />,
     },
   ];

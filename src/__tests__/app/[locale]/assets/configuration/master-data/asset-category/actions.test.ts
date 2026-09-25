@@ -63,6 +63,7 @@ describe("AssetCategory Server Actions", () => {
       const formData = new FormData();
       formData.append("code", "CAT2");
       formData.append("name", "Category 2");
+      formData.append("valuationType", "Cost");
       formData.append("isActive", "true");
 
       const result = await saveAssetCategoryAction("10", formData);
@@ -72,9 +73,23 @@ describe("AssetCategory Server Actions", () => {
       expect(revalidatePath).toHaveBeenCalled();
     });
 
+    it("rejects invalid valuationType format", async () => {
+      const formData = new FormData();
+      formData.append("code", "CAT1");
+      formData.append("name", "Category 1");
+      formData.append("valuationType", "<script>");
+      const result = await saveAssetCategoryAction("", formData);
+      expect(result.ok).toBe(false);
+      expect(result.error).toContain("Invalid characters in valuation type");
+      expect(result.field).toBe("valuationType");
+    });
+
     it("handles errors gracefully", async () => {
       vi.mocked(assetCategoryService.create).mockRejectedValue(new Error("Database error"));
       const formData = new FormData();
+      formData.append("code", "CAT1");
+      formData.append("name", "Category 1");
+      formData.append("valuationType", "Cost");
       const result = await saveAssetCategoryAction("", formData);
       expect(result.ok).toBe(false);
       expect(result.error).toContain("Database error");

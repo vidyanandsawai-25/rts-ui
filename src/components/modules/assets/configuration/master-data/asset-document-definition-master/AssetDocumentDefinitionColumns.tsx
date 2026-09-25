@@ -87,8 +87,8 @@ export function getAssetDocumentDefinitionColumns(
       label: createSortableLabel(t("list.table.documentCode"), "documentCode"),
       width: "20%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
@@ -96,8 +96,8 @@ export function getAssetDocumentDefinitionColumns(
       label: createSortableLabel(t("list.table.documentName"), "documentName"),
       width: "20%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
@@ -105,8 +105,8 @@ export function getAssetDocumentDefinitionColumns(
       label: t("list.table.description"),
       width: "25%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" && value ? value : "-"),
     },
     {
@@ -114,8 +114,8 @@ export function getAssetDocumentDefinitionColumns(
       label: createSortableLabel(t("list.table.displayOrder"), "displayOrder"),
       width: "10%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (value != null ? String(value) : "-"),
     },
     {
@@ -123,8 +123,8 @@ export function getAssetDocumentDefinitionColumns(
       label: t("list.table.isRequired"),
       width: "12%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (
         <StatusBadge
           value={Boolean(value)}
@@ -138,8 +138,8 @@ export function getAssetDocumentDefinitionColumns(
       label: t("list.table.status"),
       width: "13%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       isStatus: true,
     },
   ];

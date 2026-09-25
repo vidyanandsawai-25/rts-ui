@@ -133,7 +133,8 @@ export function useAssetPhotoForm({
         toast.error(mapAssetPhotoApiError(res, t, tCommon));
         return;
       }
-      toast.success(res.message || t(isEdit ? "success.updated" : "success.created", { code: formData.photoTypeCode }));
+      const successMessage = t(isEdit ? "success.updated" : "success.created", { code: formData.photoTypeCode });
+      toast.success(successMessage || res.message);
       onSuccess();
       closeAndRoute();
     } finally {

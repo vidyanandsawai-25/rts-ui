@@ -19,6 +19,7 @@ export type InventoryNameFormModel = {
   subTypeCode: string;
   subTypeName: string;
   description: string;
+  displayOrder?: number | string;
   isActive: boolean;
   updatedBy?: number;
 }

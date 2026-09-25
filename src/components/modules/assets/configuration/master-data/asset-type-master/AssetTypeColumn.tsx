@@ -4,6 +4,7 @@ import React from "react";
 import { Badge } from "@/components/common/Badge";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
+import { TruncatedText } from "@/components/common/TruncatedText";
 import type { Column } from "@/components/common/MasterTable";
 import type { MasterDataRecord } from "@/types/asset-masters/master-data.types";
 
@@ -70,7 +71,7 @@ export function getAssetTypeColumns(
   sortOrder?: string,
   onSort?: (field: string) => void
 ): Column<MasterDataRecord>[] {
-  const sortableColumns = ["typeCode", "typeName", "description"];
+  const sortableColumns = ["typeCode", "typeName", "typeNameLocal", "description"];
 
   const createSortableLabel = (label: string, key: string) => {
     if (onSort && sortableColumns.includes(key)) {
@@ -91,7 +92,7 @@ export function getAssetTypeColumns(
   return [
     {
       key: "id",
-      width: "15%",
+      width: "12%",
       label: createSortableLabel(t("labels.code"), "typeCode"),
       render: (_, r) => (
         <Badge variant="secondary" size="sm">
@@ -101,25 +102,59 @@ export function getAssetTypeColumns(
     },
     {
       key: "name",
-      width: "28%",
+      width: "18%",
       label: createSortableLabel(t("labels.name"), "typeName"),
       render: (_, r) => (
-        <div className="font-semibold text-sm text-slate-800">{r.name}</div>
-      ),
-    },
-    {
-      key: "description",
-      width: "37%",
-      label: createSortableLabel(t("labels.description"), "description"),
-      render: (_, r) => (
-        <div className="text-xs text-slate-600 line-clamp-2">
-          {r.description || "-"}
+        <div className="font-semibold text-sm text-slate-800">
+          <TruncatedText text={r.name} maxLength={22} />
         </div>
       ),
     },
     {
-      key: "status",
+      key: "typeNameLocal",
       width: "15%",
+      label: createSortableLabel(t("labels.typeNameLocal"), "typeNameLocal"),
+      render: (_, r) => (
+        <div className="text-sm text-slate-700">
+          <TruncatedText text={(r as Record<string, unknown>).typeNameLocal as string} maxLength={22} />
+        </div>
+      ),
+    },
+    {
+      key: "allowUnitRegistration",
+      width: "14%",
+      label: t("labels.unitRegistration"),
+      render: (_, r) => (
+        <Badge variant={(r as Record<string, unknown>).allowUnitRegistration ? "success" : "secondary"} size="sm">
+          {(r as Record<string, unknown>).allowUnitRegistration ? t("labels.yes") : t("labels.no")}
+        </Badge>
+      ),
+    },
+    {
+      key: "allowRoomRegistration",
+      width: "14%",
+      label: t("labels.roomRegistration"),
+      render: (_, r) => (
+        <Badge variant={(r as Record<string, unknown>).allowRoomRegistration ? "success" : "secondary"} size="sm">
+          {(r as Record<string, unknown>).allowRoomRegistration ? t("labels.yes") : t("labels.no")}
+        </Badge>
+      ),
+    },
+    {
+      key: "description",
+      width: "17%",
+      label: createSortableLabel(t("labels.description"), "description"),
+      render: (_, r) => (
+        <TruncatedText
+          text={r.description}
+          maxLength={25}
+          className="text-xs text-slate-600"
+        />
+      ),
+    },
+    {
+      key: "status",
+      width: "10%",
       label: t("labels.status"),
       isStatus: true,
       render: (_, r) => <StatusBadge value={r.status} />,

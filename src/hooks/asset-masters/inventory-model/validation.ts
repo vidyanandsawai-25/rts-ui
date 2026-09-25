@@ -1,7 +1,7 @@
 import { validateForm } from "@/lib/utils/validation";
 import {
-  ASSET_MASTER_NAME_REGEX,
-  ASSET_MASTER_NAME_SANITIZE,
+  NAME_ONLY_REGEX,
+  NAME_ONLY_SANITIZE,
   ASSET_MASTER_TEXT_SANITIZE,
   DESCRIPTION_REGEX,
 } from "@/lib/utils/asset-validation-rules";
@@ -19,7 +19,7 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
   } else if (name === "name") {
-    sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -44,7 +44,7 @@ export const validateInventoryModelForm = (
       if (!str) return safeT('nameRequired');
       if (str.length > NAME_MAX) return safeT('nameMaxLength', { count: NAME_MAX });
       if (/^0+$/.test(str)) return safeT('nameAllZeros');
-      if (!ASSET_MASTER_NAME_REGEX.test(str)) return safeT('nameFormat');
+      if (!NAME_ONLY_REGEX.test(str)) return safeT('nameFormat');
       return undefined;
     },
     description: (val: unknown) => {
@@ -53,6 +53,19 @@ export const validateInventoryModelForm = (
       if (str.length > DESCRIPTION_MAX) return safeT('descriptionMaxLength', { count: DESCRIPTION_MAX });
       if (/^0+$/.test(str)) return safeT('descriptionAllZeros');
       if (!DESCRIPTION_REGEX.test(str)) return safeT('descriptionFormat');
+      return undefined;
+    },
+    displayOrder: (val: unknown) => {
+      if (val === null || val === undefined || val === "" || String(val).trim() === "") {
+        return safeT('displayOrderRequired');
+      }
+      const numVal = Number(val);
+      if (isNaN(numVal) || !Number.isInteger(numVal) || numVal <= 0) {
+        return safeT('displayOrderRequired');
+      }
+      if (numVal > 99999) {
+        return safeT('displayOrderMaxLimit') || "Display order cannot exceed 99999";
+      }
       return undefined;
     },
     isActive: (val: unknown) => {

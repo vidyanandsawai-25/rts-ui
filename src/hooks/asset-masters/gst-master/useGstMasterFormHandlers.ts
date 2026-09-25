@@ -2,10 +2,12 @@
 
 import React, { useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { GstMasterFormModel } from "@/types/asset-masters/gst-master.types";
 import { saveGstMaster } from "@/app/[locale]/assets/configuration/master-data/gst-master/action";
 import { CODE_SANITIZE, ASSET_MASTER_NAME_SANITIZE } from "@/lib/utils/asset-validation-rules";
+import { getGstMasterErrorMessage, parseGstMasterApiErrors } from "./error-mapping";
 
 interface UseGstMasterFormHandlersProps {
   formData: GstMasterFormModel;
@@ -40,6 +42,7 @@ export function useGstMasterFormHandlers({
   initialFormData,
 }: UseGstMasterFormHandlersProps) {
   const router = useRouter();
+  const tCommon = useTranslations("common");
   const [, startTransition] = useTransition();
 
   const handleClose = useCallback(() => {
@@ -124,17 +127,31 @@ export function useGstMasterFormHandlers({
         return;
       }
 
-      if (res?.error === "duplicate") {
-        toast.error(t("form.messages.duplicate"));
-        return;
+      const { fieldErrors, globalMessage } = parseGstMasterApiErrors(
+        res?.message || res?.error,
+        res?.statusCode,
+        t,
+        tCommon
+      );
+
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors((prev) => ({ ...prev, ...fieldErrors }));
+        setTouched((prev) => {
+          const nextTouched = { ...prev };
+          for (const key of Object.keys(fieldErrors)) {
+            nextTouched[key] = true;
+          }
+          return nextTouched;
+        });
       }
-      toast.error(res?.message || res?.error || t("form.messages.error"));
+
+      toast.error(globalMessage);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("form.messages.error"));
+      toast.error(getGstMasterErrorMessage(err instanceof Error ? err.message : undefined, undefined, t, tCommon));
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, isEdit, locale, t, validate, setErrors, setSubmittedOnce, setIsSubmitting, setOpen, router]);
+  }, [formData, isEdit, locale, t, tCommon, validate, setErrors, setTouched, setSubmittedOnce, setIsSubmitting, setOpen, router]);
 
   return {
     handleChange,

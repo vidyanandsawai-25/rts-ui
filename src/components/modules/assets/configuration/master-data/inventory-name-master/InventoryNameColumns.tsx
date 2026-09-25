@@ -2,6 +2,7 @@ import React from "react";
 import type { Column } from "@/components/common/MasterTable";
 import type { InventoryName, InventoryNameCategory } from "@/types/asset-masters/inventory-name.types";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
+import { TruncatedText } from "@/components/common/TruncatedText";
 
 function SortableHeader({
   label,
@@ -67,7 +68,7 @@ export function getInventoryNameColumns(
   onSort?: (key: string) => void,
   categories?: InventoryNameCategory[]
 ): Column<InventoryName>[] {
-  const sortableColumns = ["subTypeCode", "subTypeName"];
+  const sortableColumns = ["subTypeCode", "subTypeName", "isActive"];
 
   const createSortableLabel = (label: string, key: string, justify: "start" | "center" | "end" = "start") => {
     if (onSort && sortableColumns.includes(key)) {
@@ -111,8 +112,8 @@ export function getInventoryNameColumns(
       label: t("configuration.masterData.form.labels.description"),
       width: "25%",
       render: (value) => (
-        <div className="text-sm text-slate-600 line-clamp-2 break-all whitespace-normal">
-          {typeof value === "string" && value ? value : "-"}
+        <div className="text-sm text-slate-600 break-all whitespace-normal">
+          <TruncatedText text={typeof value === "string" && value ? value : "-"} maxLength={100} />
         </div>
       ),
     },
@@ -127,8 +128,19 @@ export function getInventoryNameColumns(
       },
     },
     {
+      key: "displayOrder",
+      label: t("configuration.masterData.form.labels.displayOrder"),
+      width: "10%",
+      align: "center",
+      render: (value) => (
+        <div className="text-sm font-medium text-slate-700 text-center">
+          {value !== undefined && value !== null ? String(value) : "-"}
+        </div>
+      ),
+    },
+    {
       key: "isActive",
-      label: t("configuration.masterData.form.labels.status"),
+      label: createSortableLabel(t("configuration.masterData.form.labels.status"), "isActive"),
       width: "10%",
       isStatus: true,
     },

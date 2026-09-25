@@ -132,10 +132,10 @@ export function useDesignationForm({
         return;
       }
 
-      toast.success(result.message || (isEdit
+      const successMessage = isEdit
         ? t("success.updated", { code: formData.designationCode })
-        : t("success.created", { code: formData.designationCode })
-      ));
+        : t("success.created", { code: formData.designationCode });
+      toast.success(successMessage || result.message);
 
       onSuccess();
       closeAndRoute();

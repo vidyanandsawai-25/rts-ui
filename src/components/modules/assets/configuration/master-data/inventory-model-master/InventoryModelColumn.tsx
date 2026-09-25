@@ -69,8 +69,10 @@ export function getInventoryModelColumns(
   sortOrder?: SortDirection,
   onSort?: (field: string) => void
 ): Column<MasterDataRecord>[] {
+  const sortableColumns = ["modelName", "isActive"];
+
   const createSortableLabel = (label: string, key: string, justify: "start" | "center" | "end" = "start") => {
-    if (onSort) {
+    if (onSort && sortableColumns.includes(key)) {
       return (
         <SortableHeader
           label={label}
@@ -103,6 +105,17 @@ export function getInventoryModelColumns(
       render: (_, r) => (
         <div className="text-sm text-slate-600 line-clamp-2 break-all whitespace-normal">
           {r.description || "-"}
+        </div>
+      ),
+    },
+    {
+      key: "displayOrder",
+      width: "15%",
+      label: t("labels.displayOrder"),
+      align: "center",
+      render: (_, r) => (
+        <div className="text-sm font-medium text-slate-700 text-center">
+          {r.displayOrder !== undefined && r.displayOrder !== null ? r.displayOrder : "-"}
         </div>
       ),
     },

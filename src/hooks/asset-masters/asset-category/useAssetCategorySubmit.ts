@@ -42,6 +42,7 @@ export function useAssetCategorySubmit({
       code: true,
       name: true,
       description: true,
+      valuationType: true,
     });
 
     const v = validate(formData);
@@ -91,10 +92,18 @@ export function useAssetCategorySubmit({
       if (res && !res.ok) {
         toast.error(mapAssetCategoryApiError(res, t, tCommon));
         if (res.error === "duplicate") {
-          setErrors({
-            code: t("validation.duplicateRecord") || "Already exists",
-            name: t("validation.duplicateRecord") || "Already exists",
-          });
+          const dupMsg = t("validation.duplicateRecord") || "Already exists";
+          const field = (res as { field?: string }).field;
+          if (field === "code") {
+            setErrors({ code: dupMsg });
+          } else if (field === "name") {
+            setErrors({ name: dupMsg });
+          } else {
+            setErrors({
+              code: dupMsg,
+              name: dupMsg,
+            });
+          }
         }
         return;
       }

@@ -39,6 +39,7 @@ export function AssetGrievanceCategoryFormFields({
         value={formData.grievanceTypeCode}
         onChange={handleChange}
         onBlur={handleBlur}
+        maxLength={20}
         fullWidth
         className="text-gray-700"
       />
@@ -55,6 +56,7 @@ export function AssetGrievanceCategoryFormFields({
         value={formData.grievanceTypeName}
         onChange={handleChange}
         onBlur={handleBlur}
+        maxLength={50}
         fullWidth
         className="text-gray-700"
       />
@@ -71,6 +73,7 @@ export function AssetGrievanceCategoryFormFields({
         value={formData.grievanceTypeNameLocal ?? ""}
         onChange={handleChange}
         onBlur={handleBlur}
+        maxLength={50}
         fullWidth
         className="text-gray-700"
       />
@@ -92,6 +95,7 @@ export function AssetGrievanceCategoryFormFields({
         value={formData.codeFormat}
         onChange={handleChange}
         onBlur={handleBlur}
+        maxLength={50}
         fullWidth
         className="text-gray-700"
       />
@@ -145,6 +149,7 @@ export function AssetGrievanceCategoryFormFields({
         value={formData.targetTableName ?? ""}
         onChange={handleChange}
         onBlur={handleBlur}
+        maxLength={100}
         fullWidth
         className="text-gray-700"
       />
@@ -186,6 +191,7 @@ export function AssetGrievanceCategoryFormFields({
         value={formData.description ?? ""}
         onChange={handleChange}
         onBlur={handleBlur}
+        maxLength={200}
         className="text-gray-700"
       />
       <ValidationMessage

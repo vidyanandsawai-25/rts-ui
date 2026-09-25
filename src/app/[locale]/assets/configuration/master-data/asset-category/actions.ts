@@ -20,25 +20,43 @@ export async function saveAssetCategoryAction(id: string, formData: FormData) {
     const isEdit = !!id;
 
     const record = {
-      categoryCode: formData.get("code") as string,
-      categoryName: formData.get("name") as string,
-      description: formData.get("description") as string,
+      categoryCode: (formData.get("code") as string)?.trim() || "",
+      categoryName: (formData.get("name") as string)?.trim() || "",
+      description: (formData.get("description") as string)?.trim() || "",
       isMovable: formData.get("isMovable") === "true",
       hasFloorDetails: formData.get("hasFloorDetails") === "true",
       hasInventory: formData.get("hasInventory") === "true",
       isInventoryMandatory: formData.get("isInventoryMandatory") === "true",
       hasLegalCompliance: formData.get("hasLegalCompliance") === "true",
-      valuationType: formData.get("valuationType") as string,
+      valuationType: (formData.get("valuationType") as string)?.trim() || "",
       isActive: formData.get("isActive") === "true",
       status: (formData.get("isActive") === "true") ? "Active" : "Inactive"
     };
+
+    if (!record.categoryCode) {
+      return { ok: false, error: "Category code is required", field: "code" };
+    }
+    if (!record.categoryName) {
+      return { ok: false, error: "Category name is required", field: "name" };
+    }
+    if (!record.valuationType) {
+      return { ok: false, error: "Valuation type is required", field: "valuationType" };
+    }
+    if (record.categoryCode.length > 20) {
+      return { ok: false, error: "Category code cannot exceed 20 characters", field: "code" };
+    }
+    if (record.valuationType.length > 20) {
+      return { ok: false, error: "Valuation type cannot exceed 20 characters", field: "valuationType" };
+    }
+    if (!/^[A-Z0-9 \-_]+$/i.test(record.valuationType)) {
+      return { ok: false, error: "Invalid characters in valuation type", field: "valuationType" };
+    }
 
     if (isEdit) {
       await assetCategoryService.update(id, { ...record, id: Number(id), updatedBy: userId });
     } else {
       await assetCategoryService.create({ ...record, createdBy: userId });
     }
-
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/assets/configuration/master-data/asset-category`, "page");
@@ -50,7 +68,13 @@ export async function saveAssetCategoryAction(id: string, formData: FormData) {
       ? (error.responseText || error.message)
       : (error instanceof Error ? error.message : String(error));
     if (rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
-      return { ok: false, error: "duplicate" };
+      const isCodeDup = rawMsg.includes("CategoryCode") || rawMsg.toLowerCase().includes("categorycode");
+      const isNameDup = rawMsg.includes("CategoryName") || rawMsg.toLowerCase().includes("categoryname");
+      const field = (isCodeDup && !isNameDup) ? "code" : (isNameDup && !isCodeDup ? "name" : "both");
+      return { ok: false, error: "duplicate", field, message: rawMsg };
+    }
+    if (rawMsg.includes("ValuationType_MaxLengthExceeded_20") || (rawMsg.toLowerCase().includes("valuationtype") && rawMsg.toLowerCase().includes("maxlength"))) {
+      return { ok: false, error: "Valuation type cannot exceed 20 characters", field: "valuationType" };
     }
     return { ok: false, error: cleanErrorMessage(rawMsg, "Failed to save asset category") };
   }

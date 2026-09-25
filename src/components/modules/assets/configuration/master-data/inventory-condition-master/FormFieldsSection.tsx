@@ -5,10 +5,12 @@ import { Select } from "@/components/common/select";
 import { ValidationMessage } from "@/components/common/ValidationMessage";
 import { TextArea } from "@/components/common/Textarea";
 
+import { useTranslations } from "next-intl";
+
 import type { InventoryConditionFormFieldsSectionProps } from "@/types/asset-masters/inventory-condition.types";
 
 interface ExtendedFormFieldsSectionProps extends InventoryConditionFormFieldsSectionProps {
-  conditionTypeOptions: { label: string; value: string }[];
+  conditionTypeOptions?: { label: string; value: string }[];
   nameRef?: React.RefObject<HTMLInputElement | null>;
 }
 
@@ -21,10 +23,17 @@ export function FormFieldsSection({
   onSelectChange,
   t,
   categoryOptions,
-  conditionTypeOptions,
+  conditionTypeOptions = [
+    { label: "Asset", value: "Asset" },
+    { label: "Inventory", value: "Inventory" },
+  ],
   isLoadingCategories,
   nameRef,
 }: ExtendedFormFieldsSectionProps) {
+  const tCommon = useTranslations("common");
+  const currentCategoryType = formData.conditionCategory || formData.conditionType || "";
+  const currentCategoryId = formData.categoryId || formData.inventoryItemCategoryId || "";
+
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       {/* Condition Category Type: Asset or Inventory */}
@@ -34,34 +43,34 @@ export function FormFieldsSection({
         </Label>
         <Select
           options={conditionTypeOptions}
-          value={formData.conditionType ?? ""}
-          onChange={(_, v) => onSelectChange("conditionType", String(v))}
+          value={currentCategoryType}
+          onChange={(_, v) => onSelectChange("conditionCategory", String(v))}
           placeholder={t("configuration.masterData.form.placeholders.conditionType")}
-          error={showError("conditionType") ? " " : undefined}
+          error={(showError("conditionCategory") || showError("conditionType")) ? " " : undefined}
           className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />
-        <ValidationMessage message={errors.conditionType} visible={showError("conditionType")} />
+        <ValidationMessage message={errors.conditionCategory || errors.conditionType} visible={showError("conditionCategory") || showError("conditionType")} />
       </div>
 
-      {/* Category dropdown — populated based on selected conditionType */}
+      {/* Category dropdown — populated based on selected conditionCategory */}
       <div className="space-y-1">
         <Label className="block text-sm font-medium text-slate-700">
           {t("configuration.masterData.form.labels.category")} <span className="text-red-500">*</span>
         </Label>
         <Select
           options={categoryOptions}
-          value={String(formData.inventoryItemCategoryId ?? "")}
-          onChange={(_, v) => onSelectChange("inventoryItemCategoryId", String(v))}
+          value={String(currentCategoryId || "")}
+          onChange={(_, v) => onSelectChange("categoryId", String(v))}
           placeholder={
             isLoadingCategories
-              ? "Loading..."
+              ? tCommon("actions.loading")
               : t("configuration.masterData.form.placeholders.category")
           }
-          error={showError("inventoryItemCategoryId") ? " " : undefined}
+          error={(showError("categoryId") || showError("inventoryItemCategoryId")) ? " " : undefined}
           className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-          disabled={isLoadingCategories || !formData.conditionType}
+          disabled={isLoadingCategories || !currentCategoryType}
         />
-        <ValidationMessage message={errors.inventoryItemCategoryId} visible={showError("inventoryItemCategoryId")} />
+        <ValidationMessage message={errors.categoryId || errors.inventoryItemCategoryId} visible={showError("categoryId") || showError("inventoryItemCategoryId")} />
       </div>
 
       <div>
@@ -106,11 +115,33 @@ export function FormFieldsSection({
       </div>
 
       <div>
+        <Input
+          name="displayOrder"
+          label={t("configuration.masterData.form.labels.displayOrder")}
+          type="number"
+          min={1}
+          step={1}
+          value={formData.displayOrder ?? ""}
+          onChange={onChange}
+          onKeyDown={(e) => {
+            if (e.key === "-" || e.key === "e" || e.key === ".") {
+              e.preventDefault();
+            }
+          }}
+          onBlur={onBlur}
+          placeholder={t("configuration.masterData.form.placeholders.displayOrder")}
+          error={showError("displayOrder") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.displayOrder} visible={showError("displayOrder")} />
+      </div>
+
+      <div>
         <TextArea
           name="description"
           label={t("configuration.masterData.form.labels.description")}
           rows={4}
-          value={formData.description}
+          value={formData.description ?? ""}
           onChange={onChange}
           onBlur={onBlur}
           placeholder={t("configuration.masterData.form.placeholders.description")}
@@ -123,4 +154,3 @@ export function FormFieldsSection({
     </div>
   );
 }
-

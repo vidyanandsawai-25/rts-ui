@@ -4,6 +4,7 @@ import React from "react";
 import { Badge } from "@/components/common/Badge";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
+import { TruncatedText } from "@/components/common/TruncatedText";
 import type { Column } from "@/components/common/MasterTable";
 import type { AssetCategoryTableRow } from "@/types/asset-masters/asset-category.types";
 
@@ -70,7 +71,7 @@ export function getAssetCategoryColumns(
   sortOrder?: string,
   onSort?: (field: string) => void
 ): Column<AssetCategoryTableRow>[] {
-  const sortableColumns = ["categoryCode", "categoryName"];
+  const sortableColumns = ["categoryCode", "categoryName", "description"];
 
   const createSortableLabel = (label: string, key: string) => {
     if (onSort && sortableColumns.includes(key)) {
@@ -101,20 +102,29 @@ export function getAssetCategoryColumns(
     },
     {
       key: "categoryName",
-      width: "40%",
+      width: "25%",
       label: createSortableLabel(t("labels.name"), "categoryName"),
       render: (_, r) => (
-        <div>
-          <div className="font-semibold text-sm text-slate-800">{r.categoryName}</div>
-          <div className="text-xs text-slate-500 line-clamp-1">
-            {r.description}
-          </div>
-        </div>
+        <span className="font-semibold text-sm text-slate-800">
+          {r.categoryName}
+        </span>
+      ),
+    },
+    {
+      key: "description",
+      width: "25%",
+      label: createSortableLabel(t("labels.description"), "description"),
+      render: (_, r) => (
+        <TruncatedText
+          text={r.description}
+          maxLength={30}
+          className="text-sm text-slate-600"
+        />
       ),
     },
     {
       key: "valuationType",
-      width: "20%",
+      width: "15%",
       label: t("labels.valuationType"),
       render: (_, r) => (
         <span className="text-sm text-slate-700 font-medium">
@@ -124,7 +134,7 @@ export function getAssetCategoryColumns(
     },
     {
       key: "status",
-      width: "15%",
+      width: "12%",
       label: t("labels.status"),
       isStatus: true,
       render: (_, r) => <StatusBadge value={r.status as string} />,

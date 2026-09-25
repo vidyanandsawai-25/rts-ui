@@ -148,10 +148,10 @@ export function useGroupForm({
         return;
       }
 
-      toast.success(result.message || (isEdit
+      const successMessage = isEdit
         ? t("messages.groupUpdated", { default: "Group updated successfully" })
-        : t("messages.groupCreated", { default: "Group created successfully" })
-      ));
+        : t("messages.groupCreated", { default: "Group created successfully" });
+      toast.success(successMessage || result.message);
       onSuccess();
       closeAndRoute();
     } finally {

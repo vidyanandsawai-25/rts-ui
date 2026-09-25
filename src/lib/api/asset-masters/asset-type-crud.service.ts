@@ -43,6 +43,7 @@ export const assetTypeService = {
       id: Number(item.id ?? 0),
       typeCode: String(item.typeCode ?? ""),
       typeName: String(item.typeName ?? ""),
+      typeNameLocal: String(item.typeNameLocal ?? item.TypeNameLocal ?? ""),
       categoryId: Number(item.categoryId ?? 0),
       categoryName: String(item.categoryName ?? ""),
       isActive: Boolean(item.isActive),

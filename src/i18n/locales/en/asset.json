@@ -257,6 +257,7 @@
         "labels": {
           "code": "Code",
           "name": "Name",
+          "typeNameLocal": "Local Name",
           "category": "Asset Category",
           "description": "Description",
           "status": "Status",
@@ -276,11 +277,14 @@
           "photoTypeName": "Photo Type Name",
           "registrationType": "Registration Type",
           "unitRegistration": "Unit Registration",
-          "roomRegistration": "Room Registration"
+          "roomRegistration": "Room Registration",
+          "yes": "Yes",
+          "no": "No"
         },
         "placeholders": {
           "code": "Enter code",
           "name": "Enter name",
+          "typeNameLocal": "Enter local name",
           "category": "Select category",
           "description": "Enter description",
           "valuationType": "e.g. BUILDING, LAND, etc.",
@@ -333,6 +337,7 @@
           "descriptionTooLong": "Description must not exceed 500 characters",
           "descInvalidChars": "Invalid characters in description (Only alphanumeric, spaces, underscore and hyphen allowed)",
           "valuationTypeInvalidChars": "Invalid characters in valuation type (Only alphanumeric, spaces, underscore and hyphen allowed)",
+          "valuationTypeRequired": "Valuation Type is required",
           "codeFormat": "Invalid characters in code (Only alphanumeric, underscore and hyphen allowed)",
           "duplicateCode": "This code already exists",
           "noSpecialCharacters": "Invalid characters in input",
@@ -386,7 +391,7 @@
     "ownership-type-master": "Ownership Type",
     "owning-department-master": "Owning Department",
     "inventory-name-master": "Inventory Item Name",
-    "inventory-condition-master": "Inventory Condition",
+    "inventory-condition-master": "Asset Condition Master",
     "gst-master": "GST Master",
     "penalty-rule-master": "Penalty Rule Master",
     "room-type-master": "Room Type Master",

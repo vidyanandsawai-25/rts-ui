@@ -22,6 +22,7 @@ export async function saveAssetTypeAction(id: string, formData: FormData) {
     const record = {
       typeCode: formData.get("code") as string,
       typeName: formData.get("name") as string,
+      typeNameLocal: formData.get("typeNameLocal") as string || "",
       categoryId: Number(formData.get("group")),
       assetCategoryId: Number(formData.get("group")),
       codeFormat: "ALPHANUMERIC",

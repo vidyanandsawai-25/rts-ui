@@ -2,7 +2,7 @@
   "configuration": {
     "header": {
       "title": "Configuration Master",
-      "subtitle": "केंद्रीकृत मास्टर डेटा व्यवस्थापन प्रणाली",
+      "subtitle": "मालमत्ता आणि इन्व्हेंटरी स्थिती व्यवस्थापन",
       "totalMasters": "Total Masters"
     },
     "tabs": {
@@ -53,6 +53,9 @@
           "update": "अद्यतनित करा",
           "cancel": "रद्द करा"
         },
+        "validation": {
+          "duplicateRecord": "हा रेकॉर्ड आधीपासून अस्तित्वात आहे. कृपया तपासा आणि पुन्हा प्रयत्न करा."
+        },
         "errors": {
           "fillRequired": "कृपया सर्व आवश्यक फील्ड भरा.",
           "conditionTypeRequired": "स्थिती श्रेणी आवश्यक आहे.",
@@ -65,6 +68,7 @@
           "conditionFactorInvalid": "स्थिती घटक वैध क्रमांक असणे आवश्यक आहे.",
           "conditionFactorRange": "स्थिती घटक 0 आणि 1 च्या दरम्यान असणे आवश्यक आहे.",
           "displayOrderRequired": "प्रदर्शन क्रम आवश्यक आहे.",
+          "displayOrderInvalid": "प्रदर्शन क्रम 1 किंवा त्याहून मोठा पूर्णांक असणे आवश्यक आहे.",
           "apiActionsNotConfigured": "API क्रिया संरचीत नाहीत.",
           "saveFailed": "रेकॉर्ड जतन करता आले नाही.",
           "deleteFailed": "रेकॉर्ड हटवता आले नाही.",
@@ -115,6 +119,6 @@
     "inventory-category-master": "इन्व्हेंटरी श्रेणी",
     "inventory-model-master": "इन्व्हेंटरी मॉडेल",
     "inventory-name-master": "इन्व्हेंटरी आयटमचे नाव",
-    "inventory-condition-master": "इन्व्हेंटरी स्थिती"
+    "inventory-condition-master": "मालमत्ता स्थिती मास्टर"
   }
 }

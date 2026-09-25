@@ -122,7 +122,8 @@ export function useAssetRoomForm({
         toast.error(mapAssetRoomApiError(res, t, tCommon));
         return;
       }
-      toast.success(res.message || t(isEdit ? "success.updated" : "success.created", { code: formData.roomTypeCode }));
+      const successMessage = t(isEdit ? "success.updated" : "success.created", { code: formData.roomTypeCode });
+      toast.success(successMessage || res.message);
       onSuccess();
       closeAndRoute();
     } finally {

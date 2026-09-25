@@ -257,6 +257,7 @@
         "labels": {
           "code": "कोड",
           "name": "नाम",
+          "typeNameLocal": "स्थानीय नाम",
           "category": "एसेट श्रेणी",
           "description": "विवरण",
           "status": "स्थिति",
@@ -276,11 +277,14 @@
           "photoTypeName": "फोटो प्रकार नाम",
           "registrationType": "पंजीकरण का प्रकार",
           "unitRegistration": "इकाई पंजीकरण",
-          "roomRegistration": "कमरा पंजीकरण"
+          "roomRegistration": "कमरा पंजीकरण",
+          "yes": "हाँ",
+          "no": "नहीं"
         },
         "placeholders": {
           "code": "कोड दर्ज करें",
           "name": "नाम दर्ज करें",
+          "typeNameLocal": "स्थानीय नाम दर्ज करें",
           "category": "श्रेणी चुनें",
           "description": "विवरण दर्ज करें",
           "valuationType": "उदा. BUILDING, LAND, आदि",
@@ -333,6 +337,7 @@
           "descriptionTooLong": "विवरण 500 वर्णों से अधिक नहीं होना चाहिए",
           "descInvalidChars": "विवरण में अमान्य वर्ण (केवल अल्फ़ान्यूमेरिक, स्पेस, अंडरस्कोर और हाइफ़न की अनुमति है)",
           "valuationTypeInvalidChars": "मूल्यांकन प्रकार में अमान्य वर्ण (केवल अल्फ़ान्यूमेरिक, स्पेस, अंडरस्कोर और हाइफ़न की अनुमति है)",
+          "valuationTypeRequired": "मूल्यांकन प्रकार आवश्यक है",
           "codeFormat": "कोड में अमान्य वर्ण (केवल अल्फ़ान्यूमेरिक, अंडरस्कोर और हाइफ़न की अनुमति है)",
           "duplicateCode": "यह कोड पहले से मौजूद है",
           "noSpecialCharacters": "इनपुट में अमान्य वर्ण",
@@ -386,7 +391,7 @@
     "ownership-type-master": "स्वामित्व प्रकार",
     "owning-department-master": "स्वामित्व विभाग",
     "inventory-name-master": "इन्वेंटरी आइटम का नाम",
-    "inventory-condition-master": "इन्वेंटरी स्थिति",
+    "inventory-condition-master": "एसेट स्थिति मास्टर",
     "gst-master": "जीएसटी मास्टर",
     "penalty-rule-master": "जुर्माना नियम मास्टर",
     "room-type-master": "कमरा प्रकार मास्टर",

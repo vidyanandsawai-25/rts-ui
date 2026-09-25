@@ -142,6 +142,7 @@ export interface InventoryModelFormModel {
   name: string;
   group: string;
   description: string;
+  displayOrder?: number | string;
   isActive: boolean;
 }
 

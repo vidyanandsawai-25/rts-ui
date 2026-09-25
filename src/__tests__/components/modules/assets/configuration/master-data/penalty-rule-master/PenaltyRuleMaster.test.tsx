@@ -141,7 +141,7 @@ describe("PenaltyRuleMaster List Component", () => {
 
   test("triggers confirmation dialog on Delete click and displays error message from backend when deletion fails", async () => {
     const { deletePenaltyRuleAction } = await import("@/app/[locale]/assets/configuration/master-data/penalty-rule-master/action");
-    const errorMessage = "Cannot delete Penalty Rule as it is linked to active lease agreements.";
+    const errorMessage = "Cannot delete Penalty Rule as it is linked to active lease agreements";
     vi.mocked(deletePenaltyRuleAction).mockResolvedValue({ success: false, message: errorMessage });
 
     render(

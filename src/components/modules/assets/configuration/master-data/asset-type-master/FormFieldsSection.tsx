@@ -73,6 +73,21 @@ export function FormFieldsSection({
         <ValidationMessage message={errors.name} visible={showError("name")} />
       </div>
 
+      <div>
+        <Input
+          name="typeNameLocal"
+          label={t("labels.typeNameLocal")}
+          value={formData.typeNameLocal || ""}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("placeholders.typeNameLocal")}
+          maxLength={200}
+          error={showError("typeNameLocal") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.typeNameLocal} visible={showError("typeNameLocal")} />
+      </div>
+
       <div className="space-y-3">
         <Label className="block text-sm font-medium text-slate-700">
           {t("labels.registrationType")} <span className="text-red-500">*</span>

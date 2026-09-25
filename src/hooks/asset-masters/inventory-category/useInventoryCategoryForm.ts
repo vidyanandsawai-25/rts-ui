@@ -15,6 +15,7 @@ export function useInventoryCategoryForm(
       name: "",
       group: "",
       depreciationRate: "",
+      displayOrder: "",
       description: "",
       isActive: true,
     }

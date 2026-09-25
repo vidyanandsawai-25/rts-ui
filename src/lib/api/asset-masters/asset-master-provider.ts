@@ -31,6 +31,7 @@ function mapMasterResponse(res: { items?: unknown[]; totalCount?: number; totalP
         name: String(nameVal ?? ""),
         assetCategoryId: item.assetCategoryId as number | undefined ?? item["AssetCategoryId"] as number | undefined,
         assetCategoryName: (item.assetCategoryName ?? item["AssetCategoryName"]) ? String(item.assetCategoryName ?? item["AssetCategoryName"]) : undefined,
+        displayOrder: (item.displayOrder ?? item["DisplayOrder"]) !== undefined ? Number(item.displayOrder ?? item["DisplayOrder"]) : undefined,
         description: (item.description ?? item["Description"]) ? String(item.description ?? item["Description"]) : undefined,
         status: (String(item.status ?? "").toLowerCase() === "inactive" || 
                  item.isActive === false || String(item.isActive).toLowerCase() === "false" || 

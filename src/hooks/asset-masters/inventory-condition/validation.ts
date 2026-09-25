@@ -29,6 +29,8 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
     if (parts.length > 2) {
       sanitizedValue = parts[0] + "." + parts.slice(1).join("");
     }
+  } else if (name === "displayOrder") {
+    sanitizedValue = value.replace(/[^0-9]/g, "");
   }
   return sanitizedValue;
 };
@@ -41,15 +43,30 @@ export const validateInventoryConditionForm = (
   const safeT = createSafeMasterTranslator(t);
 
   const schema = {
-    conditionType: (val: unknown) => {
-      if (!val || String(val).trim() === "") {
+    conditionCategory: (val: unknown) => {
+      const categoryType = val || data.conditionType;
+      if (!categoryType || String(categoryType).trim() === "") {
         return safeT('conditionTypeRequired');
       }
       return undefined;
     },
+    conditionType: (val: unknown) => {
+      const categoryType = val || data.conditionCategory;
+      if (!categoryType || String(categoryType).trim() === "") {
+        return safeT('conditionTypeRequired');
+      }
+      return undefined;
+    },
+    categoryId: (val: unknown) => {
+      const num = Number(val || data.inventoryItemCategoryId);
+      if (!num || isNaN(num) || num <= 0) {
+        return safeT('categoryRequired');
+      }
+      return undefined;
+    },
     inventoryItemCategoryId: (val: unknown) => {
-      const num = Number(val);
-      if (!val || isNaN(num) || num <= 0) {
+      const num = Number(val || data.categoryId);
+      if (!num || isNaN(num) || num <= 0) {
         return safeT('categoryRequired');
       }
       return undefined;
@@ -72,6 +89,14 @@ export const validateInventoryConditionForm = (
       }
       return undefined;
     },
+    displayOrder: (val: unknown) => {
+      if (val === null || val === undefined || val === "") return undefined;
+      const num = Number(val);
+      if (isNaN(num) || num < 1 || !Number.isInteger(num)) {
+        return safeT('displayOrderInvalid');
+      }
+      return undefined;
+    },
     description: (val: unknown) => {
       const str = String(val ?? '').trim();
       if (!str) return undefined;
@@ -89,6 +114,110 @@ export const validateInventoryConditionForm = (
   };
   return validateForm(data, schema);
 };
+
+export interface ServerValidationResult {
+  isValid: boolean;
+  errors: Record<string, string>;
+  sanitizedDto?: {
+    conditionCategory: "Asset" | "Inventory";
+    categoryId: number;
+    conditionName: string;
+    description: string | null;
+    conditionFactor: number;
+    displayOrder: number;
+    isActive: boolean;
+  };
+}
+
+export function validateInventoryConditionServerInput(
+  formData: InventoryConditionFormModel,
+  isEdit = false
+): ServerValidationResult {
+  const errors: Record<string, string> = {};
+
+  const categoryType = (formData.conditionCategory || formData.conditionType) as string | undefined;
+  if (!categoryType || (categoryType !== "Asset" && categoryType !== "Inventory")) {
+    errors.conditionCategory = "Condition category must be either 'Asset' or 'Inventory'.";
+  }
+
+  const rawCatId = formData.categoryId ?? formData.inventoryItemCategoryId;
+  const numCatId = typeof rawCatId === "number" ? rawCatId : Number(String(rawCatId ?? "").trim());
+  if (!Number.isInteger(numCatId) || numCatId <= 0) {
+    errors.categoryId = "Valid category is required.";
+  }
+
+  const conditionName = String(formData.conditionName ?? "").trim();
+  if (!conditionName) {
+    errors.conditionName = "Condition name is required.";
+  } else if (conditionName.length > NAME_MAX) {
+    errors.conditionName = `Condition name cannot exceed ${NAME_MAX} characters.`;
+  } else if (/^0+$/.test(conditionName)) {
+    errors.conditionName = "Condition name cannot be all zeros.";
+  } else if (!ASSET_MASTER_NAME_REGEX.test(conditionName)) {
+    errors.conditionName = "Condition name contains invalid characters.";
+  }
+
+  const rawFactor = formData.conditionFactor;
+  let conditionFactor = 0;
+  if (rawFactor === null || rawFactor === undefined || rawFactor === "" || String(rawFactor).trim() === "") {
+    errors.conditionFactor = "Condition factor is required.";
+  } else {
+    const numFactor = typeof rawFactor === "number" ? rawFactor : Number(rawFactor);
+    if (!Number.isFinite(numFactor) || numFactor < 0 || numFactor > 1) {
+      errors.conditionFactor = "Condition factor must be a number between 0 and 1.";
+    } else {
+      conditionFactor = numFactor;
+    }
+  }
+
+  let displayOrder = 1;
+  const rawOrder = formData.displayOrder;
+  if (rawOrder !== null && rawOrder !== undefined && rawOrder !== "" && String(rawOrder).trim() !== "") {
+    const numOrder = typeof rawOrder === "number" ? rawOrder : Number(rawOrder);
+    if (!Number.isFinite(numOrder) || numOrder < 1 || !Number.isInteger(numOrder)) {
+      errors.displayOrder = "Display order must be an integer greater than or equal to 1.";
+    } else {
+      displayOrder = numOrder;
+    }
+  }
+
+  const rawDesc = String(formData.description ?? "").trim();
+  let description: string | null = null;
+  if (rawDesc) {
+    if (rawDesc.length > DESCRIPTION_MAX) {
+      errors.description = `Description cannot exceed ${DESCRIPTION_MAX} characters.`;
+    } else if (/^0+$/.test(rawDesc)) {
+      errors.description = "Description cannot be all zeros.";
+    } else if (!DESCRIPTION_REGEX.test(rawDesc)) {
+      errors.description = "Description contains invalid characters.";
+    } else {
+      description = rawDesc;
+    }
+  }
+
+  const isActive = Boolean(formData.isActive);
+  if (!isEdit && !isActive) {
+    errors.isActive = "New records must be active.";
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return { isValid: false, errors };
+  }
+
+  return {
+    isValid: true,
+    errors: {},
+    sanitizedDto: {
+      conditionCategory: categoryType as "Asset" | "Inventory",
+      categoryId: numCatId,
+      conditionName,
+      description,
+      conditionFactor,
+      displayOrder,
+      isActive,
+    },
+  };
+}
 
 export const mapInventoryConditionApiError = (
   result: { statusCode?: number; message?: string; error?: string; success?: boolean },

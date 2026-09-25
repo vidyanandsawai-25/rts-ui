@@ -33,8 +33,8 @@ export default function AssetTypeMaster({
 
 
   const searchParams = useSearchParams();
-  const sortBy = searchParams.get("sortBy") || "typeName";
-  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || "asc";
+  const sortBy = searchParams.get("sortBy") || undefined;
+  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || undefined;
 
   const handleSort = useCallback((field: string) => {
     const newOrder = sortBy === field && sortOrder === "asc" ? "desc" : "asc";

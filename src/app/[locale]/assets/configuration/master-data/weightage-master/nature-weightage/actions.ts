@@ -107,7 +107,10 @@ export async function updateNatureFactorCVMasterAction(
     }
 
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const updatePayload = {
       ...payload,
       updatedBy: userId
@@ -148,7 +151,10 @@ export async function createNatureFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const createPayload = {
       ...payload,
       createdBy: userId
@@ -193,7 +199,10 @@ export async function bulkCreateNatureFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const bulkCreatePayload = payload.map(item => ({
       ...item,
       createdBy: userId
@@ -238,7 +247,10 @@ export async function bulkUpdateNatureFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const bulkUpdatePayload = payload.map(item => ({
       ...item,
       data: {

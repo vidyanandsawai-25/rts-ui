@@ -88,8 +88,8 @@ export function getAssetFieldDefinitionColumns(
       label: createSortableLabel(t("list.table.fieldCode"), "fieldCode"),
       width: "15%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
@@ -97,8 +97,8 @@ export function getAssetFieldDefinitionColumns(
       label: createSortableLabel(t("list.table.fieldName"), "fieldName"),
       width: "15%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
@@ -106,8 +106,8 @@ export function getAssetFieldDefinitionColumns(
       label: t("list.table.fieldLabel"),
       width: "15%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
@@ -115,8 +115,8 @@ export function getAssetFieldDefinitionColumns(
       label: t("list.table.fieldType"),
       width: "10%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
@@ -124,8 +124,8 @@ export function getAssetFieldDefinitionColumns(
       label: t("list.table.fieldGroup"),
       width: "15%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" && value ? value : "-"),
     },
     {
@@ -133,8 +133,8 @@ export function getAssetFieldDefinitionColumns(
       label: t("list.table.displayOrder"),
       width: "10%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (value != null ? String(value) : "-"),
     },
     {
@@ -142,8 +142,8 @@ export function getAssetFieldDefinitionColumns(
       label: t("list.table.isRequired"),
       width: "10%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (
         <StatusBadge
           value={Boolean(value)}
@@ -157,8 +157,8 @@ export function getAssetFieldDefinitionColumns(
       label: t("list.table.viewOptions") || "View Options",
       width: "10%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (_value, row) => {
         const isOptionType = ["radio", "checkbox", "select"].includes(row.fieldType);
         const hasOptions = Boolean(row.optionsJson && row.optionsJson.trim() !== "");
@@ -178,8 +178,8 @@ export function getAssetFieldDefinitionColumns(
       label: t("list.table.status"),
       width: "10%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       isStatus: true,
     },
   ];

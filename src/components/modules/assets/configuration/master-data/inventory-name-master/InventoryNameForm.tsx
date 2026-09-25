@@ -83,6 +83,7 @@ export function InventoryNameForm({ id, initialData, categories }: InventoryName
     setTouched,
     setSubmittedOnce,
     setOpen,
+    t,
     tCommon,
   });
 

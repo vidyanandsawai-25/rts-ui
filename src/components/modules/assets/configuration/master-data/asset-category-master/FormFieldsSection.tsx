@@ -4,6 +4,12 @@ import { Checkbox } from "@/components/common/checkbox";
 import { Input } from "@/components/common/Input";
 import { TextArea } from "@/components/common/Textarea";
 import { ValidationMessage } from "@/components/common/ValidationMessage";
+import {
+  CODE_MAX,
+  NAME_MAX,
+  DESCRIPTION_MAX,
+  VALUATION_TYPE_MAX,
+} from "@/hooks/asset-masters/asset-category/validation";
 import type { FormFieldsSectionProps } from "@/types/asset-masters/asset-category.types";
 
 interface ExtendedFormFieldsSectionProps extends FormFieldsSectionProps {
@@ -34,7 +40,7 @@ export function FormFieldsSection({
           onChange={onChange}
           onBlur={onBlur}
           disabled={isPending}
-          maxLength={15}
+          maxLength={CODE_MAX}
           error={showError("code") ? " " : undefined}
           className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />
@@ -51,7 +57,7 @@ export function FormFieldsSection({
           onChange={onChange}
           onBlur={onBlur}
           disabled={isPending}
-          maxLength={50}
+          maxLength={NAME_MAX}
           error={showError("name") ? " " : undefined}
           className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />
@@ -68,7 +74,7 @@ export function FormFieldsSection({
           onChange={onChange}
           onBlur={onBlur}
           disabled={isPending}
-          maxLength={500}
+          maxLength={DESCRIPTION_MAX}
           error={showError("description") ? true : false}
           className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />
@@ -106,20 +112,22 @@ export function FormFieldsSection({
           </div>
         </div>
 
-        <Input
-          name="valuationType"
-          label={t("labels.valuationType")}
-          value={formData.valuationType || ""}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            const val = e.target.value.toUpperCase().replace(/[^A-Z0-9 \-_]/g, "");
-            const event = { ...e, target: { ...e.target, name: "valuationType", value: val } } as React.ChangeEvent<HTMLInputElement>;
-            onChange(event);
-          }}
-          disabled={isPending}
-          placeholder={t("placeholders.valuationType")}
-          maxLength={50}
-          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-        />
+        <div>
+          <Input
+            name="valuationType"
+            label={t("labels.valuationType")}
+            required
+            value={formData.valuationType || ""}
+            onChange={onChange}
+            onBlur={onBlur}
+            disabled={isPending}
+            placeholder={t("placeholders.valuationType")}
+            maxLength={VALUATION_TYPE_MAX}
+            error={showError("valuationType") ? " " : undefined}
+            className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+          />
+          <ValidationMessage message={errors.valuationType} visible={showError("valuationType")} />
+        </div>
       </div>
     </div>
   );

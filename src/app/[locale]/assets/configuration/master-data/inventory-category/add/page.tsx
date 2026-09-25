@@ -1,7 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { InventoryCategoryForm } from "@/components/modules/assets/configuration/master-data/inventory-category-master";
-import { getAssetMasterDataProvider } from "@/lib/api/asset-masters/asset-master-provider";
-import { MASTER_IDS } from "@/types/asset-masters/master-data.types";
+import { getAssetCategoriesForInventoryAction } from "../actions";
 
 export default async function AddPage({
   params,
@@ -11,22 +10,16 @@ export default async function AddPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const categoriesResult = await getAssetMasterDataProvider(
-    MASTER_IDS.CATEGORY,
-    "all",
-    1,
-    1000,
-    ""
-  );
+  const categoriesResult = await getAssetCategoriesForInventoryAction();
 
   const groups = categoriesResult.success && categoriesResult.data
-    ? (categoriesResult.data.records
-      ?.filter((r: Record<string, unknown>) => r.status === "Active")
-      .map((r: Record<string, unknown>) => ({
+    ? categoriesResult.data
+      .filter((r) => r.status === "Active")
+      .map((r) => ({
         id: String(r.id),
-        name: String(r.name ?? ""),
+        name: String(r.name),
         status: "Active",
-      })) || [])
+      }))
     : [];
 
   return (

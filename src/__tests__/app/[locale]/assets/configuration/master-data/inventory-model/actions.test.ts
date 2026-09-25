@@ -43,6 +43,7 @@ describe('InventoryModel Server Actions', () => {
       formData.append('code', 'CODE1');
       formData.append('name', 'Name 1');
       formData.append('group', '1');
+      formData.append('displayOrder', '1');
       formData.append('isActive', 'true');
 
       const result = await saveInventoryModelAction('', formData);
@@ -58,6 +59,7 @@ describe('InventoryModel Server Actions', () => {
       formData.append('code', 'CODE2');
       formData.append('name', 'Name 2');
       formData.append('group', '1');
+      formData.append('displayOrder', '2');
       formData.append('isActive', 'true');
 
       const result = await saveInventoryModelAction('10', formData);
@@ -67,9 +69,22 @@ describe('InventoryModel Server Actions', () => {
       expect(revalidatePath).toHaveBeenCalled();
     });
 
+    it('rejects invalid displayOrder', async () => {
+      const formData = new FormData();
+      formData.append('name', 'Name 1');
+      formData.append('group', '1');
+      formData.append('displayOrder', '-5');
+
+      const result = await saveInventoryModelAction('', formData);
+      expect(result.ok).toBe(false);
+      expect(result.error).toBe('Invalid display order');
+    });
+
     it('handles errors gracefully', async () => {
       vi.mocked(inventoryModelService.create).mockRejectedValue(new Error('Database error'));
       const formData = new FormData();
+      formData.append('group', '1');
+      formData.append('displayOrder', '1');
       const result = await saveInventoryModelAction('', formData);
       expect(result.ok).toBe(false);
       expect(result.error).toBeDefined();

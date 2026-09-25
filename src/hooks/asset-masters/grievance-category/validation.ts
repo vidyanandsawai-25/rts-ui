@@ -14,12 +14,12 @@ import {
 import { AssetGrievanceCategoryFormModel } from "@/types/asset-masters/asset-grievance-category.types";
 import { mapSharedApiError } from "@/lib/utils/asset-utils/shared-error-mapping";
 
-export const CODE_MAX = 50;
-export const NAME_MAX = 200;
-export const LOCAL_NAME_MAX = 200;
-export const TARGET_TABLE_MAX = 200;
-export const CODE_FORMAT_MAX = 100;
-export const DESCRIPTION_MAX = 500;
+export const CODE_MAX = 20;
+export const NAME_MAX = 50;
+export const LOCAL_NAME_MAX = 50;
+export const TARGET_TABLE_MAX = 100;
+export const CODE_FORMAT_MAX = 50;
+export const DESCRIPTION_MAX = 200;
 
 export const CODE_FORMAT_REGEX = /^[A-Za-z0-9\-/_.{}#]+$/;
 export const TARGET_TABLE_REGEX = /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$/;

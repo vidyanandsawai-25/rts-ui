@@ -1,6 +1,6 @@
 import React from "react";
 import type { Column } from "@/components/common/MasterTable";
-import type { InventoryCondition, InventoryConditionCategory } from "@/types/asset-masters/inventory-condition.types";
+import type { InventoryCondition } from "@/types/asset-masters/inventory-condition.types";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
 
 function SortableHeader({
@@ -64,8 +64,7 @@ export function getInventoryConditionColumns(
   tCommon: (key: string) => string,
   sortBy?: string,
   sortOrder?: string,
-  onSort?: (key: string) => void,
-  categories?: InventoryConditionCategory[]
+  onSort?: (key: string) => void
 ): Column<InventoryCondition>[] {
   const sortableColumns = ["conditionName"];
 
@@ -86,40 +85,26 @@ export function getInventoryConditionColumns(
     return label;
   };
 
-  const categoryMap = new Map<number, string>();
-  if (categories) {
-    categories.forEach((cat) => {
-      categoryMap.set(cat.id, cat.categoryName);
-    });
-  }
-
   return [
     {
-      key: "conditionType",
+      key: "conditionCategory",
       label: t("configuration.masterData.form.labels.conditionType"),
-      width: "15%",
-      render: (value) => <div className="text-sm text-slate-600">{typeof value === "string" ? value : "-"}</div>,
+      width: "18%",
+      render: (value, row) => {
+        const catType = (value || row.conditionType || "-") as string;
+        return <div className="text-sm font-medium text-slate-700">{catType}</div>;
+      },
     },
     {
       key: "conditionName",
       label: createSortableLabel(t("configuration.masterData.form.labels.name"), "conditionName"),
-      width: "15%",
+      width: "22%",
       render: (value) => <div className="font-semibold text-sm text-slate-800 break-all whitespace-normal">{typeof value === "string" ? value : ""}</div>,
-    },
-    {
-      key: "description",
-      label: t("configuration.masterData.form.labels.description"),
-      width: "25%",
-      render: (value) => (
-        <div className="text-sm text-slate-600 line-clamp-2 break-all whitespace-normal">
-          {typeof value === "string" ? value : "-"}
-        </div>
-      ),
     },
     {
       key: "conditionFactor",
       label: t("configuration.masterData.form.labels.conditionFactor"),
-      width: "10%",
+      width: "12%",
       render: (value) => (
         <div className="text-sm text-slate-600 font-medium">
           {value !== undefined && value !== null && value !== "" ? String(value) : "-"}
@@ -127,14 +112,24 @@ export function getInventoryConditionColumns(
       ),
     },
     {
-      key: "inventoryItemCategoryId",
-      label: t("configuration.masterData.form.labels.category"),
-      width: "25%",
-      render: (value) => {
-        if (value === null || value === undefined) return "-";
-        const categoryId = typeof value === "number" ? value : Number(value);
-        return <span className="text-sm text-slate-600">{categoryMap.get(categoryId) || "-"}</span>;
-      },
+      key: "displayOrder",
+      label: t("configuration.masterData.form.labels.displayOrder"),
+      width: "12%",
+      render: (value) => (
+        <div className="text-sm text-slate-600">
+          {value !== undefined && value !== null && value !== "" ? String(value) : "-"}
+        </div>
+      ),
+    },
+    {
+      key: "description",
+      label: t("configuration.masterData.form.labels.description"),
+      width: "26%",
+      render: (value) => (
+        <div className="text-sm text-slate-600 line-clamp-2 break-all whitespace-normal">
+          {typeof value === "string" ? value : "-"}
+        </div>
+      ),
     },
     {
       key: "isActive",

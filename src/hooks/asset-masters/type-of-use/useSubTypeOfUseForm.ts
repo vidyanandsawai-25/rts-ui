@@ -164,10 +164,10 @@ export function useSubTypeOfUseForm({
         return;
       }
 
-      toast.success(result.message || (isEdit
+      const successMessage = isEdit
         ? t("messages.subTypeUpdated", { default: "Sub-Type updated successfully" })
-        : t("messages.subTypeCreated", { default: "Sub-Type created successfully" })
-      ));
+        : t("messages.subTypeCreated", { default: "Sub-Type created successfully" });
+      toast.success(successMessage || result.message);
       onSuccess();
       closeAndRoute();
     } finally {

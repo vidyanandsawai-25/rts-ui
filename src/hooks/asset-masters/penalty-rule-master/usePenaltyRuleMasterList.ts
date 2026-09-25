@@ -8,6 +8,7 @@ import { useToast } from "@/components/common";
 import { getPenaltyRuleMasterColumns } from "@/components/modules/assets/configuration/master-data/penalty-rule-master/PenaltyRuleMasterColumns";
 import { deletePenaltyRuleAction } from "@/app/[locale]/assets/configuration/master-data/penalty-rule-master/action";
 import { usePenaltyRuleMasterSearch } from "@/hooks/asset-masters/penalty-rule-master/usePenaltyRuleMasterSearch";
+import { getPenaltyRuleErrorMessage } from "@/hooks/asset-masters/penalty-rule-master/error-mapping";
 import type { PenaltyRuleProps, PenaltyRule } from "@/types/asset-masters/penalty-rule-master.types";
 
 export function usePenaltyRuleMasterList({
@@ -140,7 +141,8 @@ export function usePenaltyRuleMasterList({
             toast.success(t("form.messages.deleteSuccess"));
             startTransition(() => router.refresh());
           } else {
-            toast.error(res?.message || tCommon("errors.deleteError"));
+            const errorMsg = getPenaltyRuleErrorMessage(res?.message, res?.statusCode, t, tCommon);
+            toast.error(errorMsg || tCommon("errors.deleteError"));
           }
         },
       });

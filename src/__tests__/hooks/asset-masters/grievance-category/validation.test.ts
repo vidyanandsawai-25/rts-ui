@@ -28,8 +28,8 @@ describe('validateGrievanceCategoryForm', () => {
     expect(errors.grievanceTypeCode).toBe('form.errors.typeCodeReq');
   });
 
-  test('grievanceTypeCode max length check (50)', () => {
-    const longCode = 'a'.repeat(51);
+  test('grievanceTypeCode max length check (20)', () => {
+    const longCode = 'a'.repeat(21);
     const errors = validateGrievanceCategoryForm({ ...baseModel, grievanceTypeCode: longCode }, t, false);
     expect(errors.grievanceTypeCode).toBe('form.errors.typeCodeMaxLength');
   });
@@ -44,8 +44,8 @@ describe('validateGrievanceCategoryForm', () => {
     expect(errors.grievanceTypeName).toBe('form.errors.typeNameReq');
   });
 
-  test('grievanceTypeName max length check (200)', () => {
-    const longName = 'a'.repeat(201);
+  test('grievanceTypeName max length check (100)', () => {
+    const longName = 'a'.repeat(101);
     const errors = validateGrievanceCategoryForm({ ...baseModel, grievanceTypeName: longName }, t, false);
     expect(errors.grievanceTypeName).toBe('form.errors.typeNameMaxLength');
   });

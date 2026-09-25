@@ -46,7 +46,8 @@
       "descriptionMaxLength": "Description cannot exceed {count} characters",
       "mandatoryNotice": "Fields marked with <b>*</b> are mandatory",
       "fixErrors": "Please fix the errors in the form",
-      "invalidFormat": "Invalid format"
+      "invalidFormat": "Invalid format",
+      "departmentNameDuplicate": "Owning department name already exists"
     },
     "messages": {
       "createSuccess": "Owning department created successfully",
@@ -56,6 +57,11 @@
       "deleteConfirm": "Are you sure you want to delete this owning department?",
       "duplicate": "This record already exists"
     }
+  },
+  "apiErrors": {
+    "OwningDepartment_Duplicate": "Owning department name already exists",
+    "duplicateRecord": "This owning department name already exists",
+    "inUse": "Cannot delete this owning department as it is referenced in other records."
   },
   "error": {
     "title": "Failed to load owning department data",

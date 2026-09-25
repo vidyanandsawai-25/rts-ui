@@ -40,15 +40,17 @@ export default async function EditPage({ params }: PageProps) {
     const allowUnit = rawRecord.allowUnitRegistration;
     const allowRoom = rawRecord.allowRoomRegistration;
 
+    const rawRecordObj = rawRecord as unknown as Record<string, unknown>;
     initialData = {
       id: String(rawRecord.id),
-      code: rawRecord.typeCode || "",
-      name: rawRecord.typeName || "",
-      group: String((rawRecord as unknown as Record<string, unknown>).assetCategoryId || rawRecord.categoryId || ""),
-      allowUnitRegistration: allowUnit === true || String(allowUnit).toLowerCase() === "true" || (allowUnit as unknown) === 1 || (rawRecord as unknown as Record<string, unknown>).isUnitRegistration === true,
-      allowRoomRegistration: allowRoom === true || String(allowRoom).toLowerCase() === "true" || (allowRoom as unknown) === 1 || (rawRecord as unknown as Record<string, unknown>).isRoomRegistration === true,
-      description: rawRecord.description || "",
-      isActive: rawRecord.isActive ?? true,
+      code: rawRecord.typeCode || (rawRecordObj.TypeCode as string) || "",
+      name: rawRecord.typeName || (rawRecordObj.TypeName as string) || "",
+      typeNameLocal: rawRecord.typeNameLocal || (rawRecordObj.TypeNameLocal as string) || (rawRecordObj.typeName_local as string) || "",
+      group: String(rawRecordObj.assetCategoryId || rawRecordObj.AssetCategoryId || rawRecord.categoryId || rawRecordObj.CategoryId || ""),
+      allowUnitRegistration: allowUnit === true || String(allowUnit).toLowerCase() === "true" || (allowUnit as unknown) === 1 || rawRecordObj.isUnitRegistration === true,
+      allowRoomRegistration: allowRoom === true || String(allowRoom).toLowerCase() === "true" || (allowRoom as unknown) === 1 || rawRecordObj.isRoomRegistration === true,
+      description: rawRecord.description || (rawRecordObj.Description as string) || "",
+      isActive: rawRecord.isActive ?? (rawRecordObj.IsActive as boolean) ?? true,
     };
   } catch (_error) {
     // Should not happen if data mapping is safe, error logged in action otherwise

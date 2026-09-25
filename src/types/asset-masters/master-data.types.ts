@@ -34,6 +34,7 @@ export type MasterDataRecord = {
   id: string;
   backendId?: string | number;
   name: string;
+  typeNameLocal?: string;
   description?: string;
   group?: string;
   status: MasterDataStatus;

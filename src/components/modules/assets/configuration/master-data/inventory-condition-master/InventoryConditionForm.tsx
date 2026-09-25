@@ -24,7 +24,7 @@ import { validateInventoryConditionForm } from "@/hooks/asset-masters/inventory-
 import { useInventoryConditionSubmit } from "@/hooks/asset-masters/inventory-condition/useInventoryConditionSubmit";
 import { useInventoryConditionForm } from "@/hooks/asset-masters/inventory-condition/useInventoryConditionForm";
 
-export function InventoryConditionForm({ id, initialData, inventoryCategories, assetCategories }: InventoryConditionFormProps) {
+export function InventoryConditionForm({ id, initialData, inventoryCategories = [], assetCategories = [] }: InventoryConditionFormProps) {
   const router = useRouter();
   const isEdit = id != null;
 
@@ -72,13 +72,14 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories, a
     setTouched,
   } = useInventoryConditionForm(initialData, validate);
 
-  // Build category options based on selected conditionType
+  // Build category options based on selected conditionCategory
   const categoryOptions = useMemo(() => {
-    if (formData.conditionType === "Asset") {
+    const selectedCategory = formData.conditionCategory || formData.conditionType;
+    if (selectedCategory === "Asset") {
       return (assetCategories || []).map((g: AssetConditionCategory) => ({ label: g.categoryName, value: String(g.id) }));
     }
     return (inventoryCategories || []).map((g: InventoryConditionCategory) => ({ label: g.categoryName, value: String(g.id) }));
-  }, [formData.conditionType, inventoryCategories, assetCategories]);
+  }, [formData.conditionCategory, formData.conditionType, inventoryCategories, assetCategories]);
 
   const conditionTypeOptions = useMemo(() => [
     { label: "Asset", value: "Asset" },
@@ -96,6 +97,7 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories, a
     setTouched,
     setSubmittedOnce,
     setOpen,
+    t,
     tCommon,
   });
 
@@ -183,7 +185,7 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories, a
         <FormFieldsSection
           nameRef={nameRef}
           formData={formData}
-          errors={errors}
+          errors={errors as Record<string, string>}
           showError={showError}
           onChange={handleChange}
           onBlur={handleBlur}
@@ -201,5 +203,3 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories, a
     </Drawer>
   );
 }
-
-

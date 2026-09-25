@@ -118,7 +118,8 @@ export function useAssetGrievanceRemarkForm({
         toast.error(mapGrievanceRemarkApiError(res, t, tCommon));
         return;
       }
-      toast.success(res.message || t(isEdit ? "messages.updateSuccess" : "messages.addSuccess"));
+      const successMessage = t(isEdit ? "messages.updateSuccess" : "messages.addSuccess");
+      toast.success(successMessage || res.message);
       onSuccess();
       closeAndRoute();
     } finally {

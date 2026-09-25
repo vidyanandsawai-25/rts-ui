@@ -2,10 +2,12 @@
 
 import React, { useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { PenaltyRuleFormModel } from "@/types/asset-masters/penalty-rule-master.types";
 import { savePenaltyRule } from "@/app/[locale]/assets/configuration/master-data/penalty-rule-master/action";
 import { CODE_SANITIZE, ASSET_MASTER_NAME_SANITIZE } from "@/lib/utils/asset-validation-rules";
+import { getPenaltyRuleErrorMessage, parsePenaltyRuleApiErrors } from "./error-mapping";
 
 interface UsePenaltyRuleFormHandlersProps {
   formData: PenaltyRuleFormModel;
@@ -37,6 +39,7 @@ export function usePenaltyRuleFormHandlers({
   initialFormData,
 }: UsePenaltyRuleFormHandlersProps) {
   const router = useRouter();
+  const tCommon = useTranslations("common");
   const [, startTransition] = useTransition();
 
   const handleClose = useCallback(() => {
@@ -129,17 +132,31 @@ export function usePenaltyRuleFormHandlers({
         return;
       }
 
-      if (res?.error === "duplicate") {
-        toast.error(t("form.messages.duplicate"));
-        return;
+      const { fieldErrors, globalMessage } = parsePenaltyRuleApiErrors(
+        res?.message || res?.error,
+        res?.statusCode,
+        t,
+        tCommon
+      );
+
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors((prev) => ({ ...prev, ...fieldErrors }));
+        setTouched((prev) => {
+          const nextTouched = { ...prev };
+          for (const key of Object.keys(fieldErrors)) {
+            nextTouched[key] = true;
+          }
+          return nextTouched;
+        });
       }
-      toast.error(res?.message || res?.error || t("form.messages.error"));
+
+      toast.error(globalMessage);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("form.messages.error"));
+      toast.error(getPenaltyRuleErrorMessage(err instanceof Error ? err.message : undefined, undefined, t, tCommon));
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, isEdit, locale, t, validate, setErrors, setSubmittedOnce, setIsSubmitting, setOpen, router]);
+  }, [formData, isEdit, locale, t, tCommon, validate, setErrors, setTouched, setSubmittedOnce, setIsSubmitting, setOpen, router]);
 
   return {
     handleChange,

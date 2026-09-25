@@ -51,6 +51,9 @@
           "update": "Update",
           "cancel": "Cancel"
         },
+        "validation": {
+          "duplicateRecord": "This record already exists. Please check and try again."
+        },
         "errors": {
           "fillRequired": "Please fill in all required fields.",
           "codeRequired": "Code is required.",

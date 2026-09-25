@@ -33,6 +33,7 @@ export const inventoryCategoryService = {
       if (params?.TypeCode) q.set('TypeCode', params.TypeCode);
       if (params?.TypeName) q.set('TypeName', params.TypeName);
       q.set('MarkedForDeletion', String(params?.MarkedForDeletion ?? false));
+      if (params?.IsActive !== undefined) q.set('IsActive', String(params.IsActive));
       if (params?.SortBy) q.set('SortBy', params.SortBy);
       if (params?.SortOrder) q.set('SortOrder', params.SortOrder);
 
@@ -116,5 +117,40 @@ export const inventoryCategoryService = {
       () => apiClient.delete<void>(`/InventoryItemCategory/${id}`),
       'Delete inventory category failed'
     ) as Promise<void>;
+  },
+
+  /**
+   * Fetches Asset Categories for the Inventory Category dropdown using specific parameters.
+   * Calls /AssetCategory?IsActive=true&HasInventory=true&PageSize=-1
+   */
+  async getAssetCategoriesForDropdown(): Promise<Array<{ id: number; categoryName: string; categoryCode?: string; isActive?: boolean }>> {
+    const res = await apiClient.get<unknown>('/AssetCategory?IsActive=true&HasInventory=true&PageSize=-1');
+
+    if (!res.success || !res.data) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch asset categories for inventory category dropdown",
+        "Fetch asset categories for inventory category failed"
+      );
+    }
+
+    const rawData = res.data;
+    const items: unknown[] = Array.isArray(rawData)
+      ? rawData
+      : (rawData && typeof rawData === 'object' && 'items' in rawData && Array.isArray((rawData as Record<string, unknown>).items))
+        ? (rawData as Record<string, unknown>).items as unknown[]
+        : [];
+
+    const validItems = (items as Record<string, unknown>[]).filter((item) => {
+      const isDeleted = item.markedForDeletion === true || item.markedForDeletion === 1 || String(item.markedForDeletion).toLowerCase() === 'true';
+      return !isDeleted;
+    });
+
+    return validItems.map((item) => ({
+      id: Number(item.id ?? 0),
+      categoryName: String(item.categoryName ?? item.name ?? ""),
+      categoryCode: item.categoryCode ? String(item.categoryCode) : undefined,
+      isActive: item.isActive === undefined ? true : item.isActive === true || item.isActive === 1 || String(item.isActive).toLowerCase() === 'true',
+    }));
   },
 };

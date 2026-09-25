@@ -257,6 +257,7 @@
         "labels": {
           "code": "कोड",
           "name": "नाव",
+          "typeNameLocal": "स्थानिक नाव",
           "category": "मालमत्ता श्रेणी",
           "description": "वर्णन",
           "status": "स्थिती",
@@ -276,11 +277,14 @@
           "photoTypeName": "फोटो प्रकार नाव",
           "registrationType": "नोंदणी प्रकार",
           "unitRegistration": "युनिट नोंदणी",
-          "roomRegistration": "खोली नोंदणी"
+          "roomRegistration": "खोली नोंदणी",
+          "yes": "होय",
+          "no": "नाही"
         },
         "placeholders": {
           "code": "कोड प्रविष्ट करा",
           "name": "नाव प्रविष्ट करा",
+          "typeNameLocal": "स्थानिक नाव प्रविष्ट करा",
           "category": "श्रेणी निवडा",
           "description": "वर्णन प्रविष्ट करा",
           "valuationType": "उदा. BUILDING, LAND, इ.",
@@ -333,6 +337,7 @@
           "descriptionTooLong": "वर्णन ५०० वर्णांपेक्षा जास्त नसावे",
           "descInvalidChars": "वर्णनात अवैध वर्ण (केवळ अल्फान्यूमेरिक, स्पेस, अंडरस्कोर आणि हायफनला परवानगी आहे)",
           "valuationTypeInvalidChars": "मूल्यांकन प्रकारात अवैध वर्ण (केवळ अल्फान्यूमेरिक, स्पेस, अंडरस्कोर आणि हायफनला परवानगी आहे)",
+          "valuationTypeRequired": "मूल्यांकन प्रकार आवश्यक आहे",
           "codeFormat": "कोडमध्ये अवैध वर्ण (केवळ अल्फान्यूमेरिक, अंडरस्कोर आणि हायफनला परवानगी आहे)",
           "duplicateCode": "हा कोड आधीपासून अस्तित्वात आहे",
           "noSpecialCharacters": "इनपुटमध्ये अवैध वर्ण",
@@ -386,7 +391,7 @@
     "ownership-type-master": "मालकी प्रकार",
     "owning-department-master": "मालकी विभाग",
     "inventory-name-master": "इन्व्हेंटरी आयटमचे नाव",
-    "inventory-condition-master": "इन्व्हेंटरी स्थिती",
+    "inventory-condition-master": "मालमत्ता स्थिती मास्टर",
     "gst-master": "जीएसटी मास्टर",
     "penalty-rule-master": "दंड नियम मास्टर",
     "room-type-master": "खोली प्रकार मास्टर",

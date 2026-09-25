@@ -78,7 +78,9 @@
       "gracePeriodLimitInvalid": "Grace period days cannot exceed 100",
       "fixErrors": "Please fix validation errors",
       "mandatoryNotice": "Fields marked with <b>*</b> are mandatory",
-      "invalidFormat": "Invalid format"
+      "invalidFormat": "Invalid format",
+      "penaltyCodeDuplicate": "Penalty code already exists",
+      "penaltyNameDuplicate": "Penalty name already exists"
     },
     "messages": {
       "createSuccess": "Penalty rule created successfully",
@@ -87,6 +89,11 @@
       "error": "Unable to save penalty rule",
       "duplicate": "This record already exists"
     }
+  },
+  "apiErrors": {
+    "Penaltyrule_Code_Duplicate": "Penalty Rule Code already exists",
+    "duplicateRecord": "This penalty rule code already exists",
+    "inUse": "Cannot delete this penalty rule as it is referenced in other records."
   },
   "deleteConfirm": "Are you sure you want to delete this penalty rule record?",
   "error": {
