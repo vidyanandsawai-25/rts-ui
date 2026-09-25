@@ -3,7 +3,7 @@
 import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { getLoggedInUserId } from "@/lib/utils/cookie.server";
-import { getTapSizePaged, deleteTapSize, createTapSize, updateTapSize, getTapSizeById } from "@/lib/api/waterBill/tapSizeMaster.service";
+import { getTapSizePaged, deleteTapSize, createTapSize, updateTapSize, getTapSizeById } from "@/lib/api/water-bill/tapSizeMaster.service";
 import type { TapSize, PagedResponse } from "@/types/waterBill/tapSizeMaster.types";
 
 export async function getTapSizePagedAction(

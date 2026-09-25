@@ -1,16 +1,12 @@
-import { TapSizeMaster } from "@/components/modules/water-bill/tap-size-master";
-import { TapSizeForm } from "@/components/modules/water-bill/tap-size-master/TapSizeForm";
-import { getTapSizePagedAction } from "../actions";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function AddTapSizePage() {
-  const result = await getTapSizePagedAction(1, 10);
-
-  return (
-    <>
-      <TapSizeMaster data={result} />
-      <TapSizeForm id={null} initialData={undefined} />
-    </>
-  );
+export default async function AddTapSizeRedirect({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/water-bill/water-connection-master/tap-size/add`);
 }

@@ -17,7 +17,9 @@
       "tapStatus": "नळ स्थिती",
       "tapType": "नळ प्रकार",
       "tapSize": "नळ आकार",
-      "waterRate": "जल दर"
+      "waterRate": "जल दर",
+      "connectionType": "जोडणी प्रकार",
+      "connectionCategory": "जोडणी श्रेणी"
     },
     "tapStatus": {
       "title": "नळ स्थिती मास्टर",

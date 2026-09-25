@@ -1,5 +1,5 @@
 import { LoadingPage } from "@/components/common";
 
-export default function Loading() {
+export default function AddConnectionTypeLoading() {
   return <LoadingPage translationNamespace="connectionTypeMaster.loading" />;
 }

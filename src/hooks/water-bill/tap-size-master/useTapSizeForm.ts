@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { TapSizeFormModel, TapSize } from "@/types/waterBill/tapSizeMaster.types";
-import { formatNominalSize, parseNominalSizeFromTapSize } from "@/lib/api/waterBill/tapSizeMaster.utils";
+import { formatNominalSize, parseNominalSizeFromTapSize } from "@/lib/utils/water-bill/tapSizeMaster.utils";
 import {
   createTapSizeAction,
   updateTapSizeAction,
@@ -12,11 +12,14 @@ import {
 export function useTapSizeForm(id: number | null, initialData?: TapSize) {
   const router = useRouter();
   const locale = useLocale();
+  const pathname = usePathname() || "";
+  const isUnified = pathname.includes("/water-bill/water-connection-master/tap-size");
+  const listUrl = isUnified
+    ? `/${locale}/water-bill/water-connection-master/tap-size`
+    : `/${locale}/water-bill/tap-size-master`;
   const t = useTranslations("tapSizeMaster.tapSize");
   const tCommon = useTranslations("common");
   const isEdit = Boolean(id);
-
-  const listUrl = `/${locale}/water-bill/tap-size-master`;
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);

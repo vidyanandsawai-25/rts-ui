@@ -1,30 +1,24 @@
-import { ConnectionTypeMaster } from "@/components/modules/water-bill/connection-type-master";
-import { getConnectionTypePagedAction } from "./actions";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic"; // dynamic since we need query params parsing if we pass them, though we can just fetch on page load
+export const dynamic = "force-dynamic";
 
 interface PageProps {
-  readonly searchParams: Promise<{
-    q?: string;
-    page?: string;
-    pageSize?: string;
-    status?: string;
-  }>;
+  readonly params: Promise<{ locale: string }>;
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function ConnectionTypeMasterPage({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const pageNumber = Number(params?.page) || 1;
-  const pageSize = Number(params?.pageSize) || 10;
-  const searchTerm = params?.q || "";
-  const statusFilter = params?.status || "all";
-
-  const initialData = await getConnectionTypePagedAction(
-    pageNumber,
-    pageSize,
-    searchTerm,
-    statusFilter
-  );
-
-  return <ConnectionTypeMaster data={initialData} />;
+export default async function ConnectionTypeMasterPage({
+  params,
+  searchParams,
+}: PageProps) {
+  const { locale } = await params;
+  const sp = await searchParams;
+  const qParams = new URLSearchParams();
+  for (const [key, val] of Object.entries(sp || {})) {
+    if (typeof val === "string") {
+      qParams.set(key, val);
+    }
+  }
+  const query = qParams.toString();
+  redirect(`/${locale}/water-bill/water-connection-master/connection-type${query ? `?${query}` : ""}`);
 }

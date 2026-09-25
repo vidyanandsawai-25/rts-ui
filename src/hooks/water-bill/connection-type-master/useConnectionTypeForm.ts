@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { ConnectionTypeFormModel, ConnectionType } from "@/types/waterBill/connectionTypeMaster.types";
@@ -11,11 +11,14 @@ import {
 export function useConnectionTypeForm(id: number | null, initialData?: ConnectionType) {
   const router = useRouter();
   const locale = useLocale();
+  const pathname = usePathname() || "";
+  const isUnified = pathname.includes("/water-bill/water-connection-master/connection-type");
+  const listUrl = isUnified
+    ? `/${locale}/water-bill/water-connection-master/connection-type`
+    : `/${locale}/water-bill/connection-type-master`;
   const t = useTranslations("connectionTypeMaster.connectionType");
   const tCommon = useTranslations("common");
   const isEdit = Boolean(id);
-
-  const listUrl = `/${locale}/water-bill/connection-type-master`;
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);

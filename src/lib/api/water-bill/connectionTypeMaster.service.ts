@@ -1,23 +1,23 @@
 import type {
-  TapSize,
+  ConnectionType,
   PagedResponse,
-} from "@/types/waterBill/tapSizeMaster.types";
+} from "@/types/waterBill/connectionTypeMaster.types";
 import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
 import {
-  isTapSizeShape,
-  normalizeTapSize,
+  isConnectionTypeShape,
+  normalizeConnectionType,
   extractRawItems,
-  filterTapSizes,
+  filterConnectionTypes,
   createPayload,
-} from "./tapSizeMaster.utils";
+} from "@/lib/utils/water-bill/connectionTypeMaster.utils";
 
-export async function getTapSizePaged(
+export async function getConnectionTypePaged(
   pageNumber: number,
   pageSize: number,
   searchTerm?: string,
   statusFilter?: string
-): Promise<PagedResponse<TapSize>> {
+): Promise<PagedResponse<ConnectionType>> {
   const params = new URLSearchParams({
     PageNumber: String(pageNumber),
     PageSize: String(pageSize),
@@ -27,25 +27,25 @@ export async function getTapSizePaged(
   else if (statusFilter === "inactive") params.append("IsActive", "false");
 
   const response = await apiClient.get<Record<string, unknown>>(
-    `/TapSizeMaster?${params.toString()}`
+    `/ConnectionTypeMaster?${params.toString()}`
   );
   if (!response.success) {
-    throw new ApiError(response.statusCode ?? 500, response.error || "", "getTapSizePaged");
+    throw new ApiError(response.statusCode ?? 500, response.error || "", "getConnectionTypePaged");
   }
   if (!response.data) {
-    throw new ApiError(500, "", "getTapSizePaged");
+    throw new ApiError(500, "", "getConnectionTypePaged");
   }
 
   const rawData = response.data;
   const rawItems = extractRawItems(rawData);
 
   let items = rawItems
-    .filter(isTapSizeShape)
-    .map((item) => normalizeTapSize(item as Record<string, unknown>));
+    .filter(isConnectionTypeShape)
+    .map((item) => normalizeConnectionType(item as Record<string, unknown>));
   let totalCount = Number(rawData?.totalCount ?? rawData?.TotalCount ?? items.length);
   let totalPages = Number(rawData?.totalPages ?? rawData?.TotalPages ?? (Math.ceil(totalCount / pageSize) || 1));
 
-  const filtered = filterTapSizes(items, searchTerm, statusFilter);
+  const filtered = filterConnectionTypes(items, searchTerm, statusFilter);
   if (filtered.length < items.length) {
     items = filtered;
     totalCount = items.length;
@@ -63,79 +63,77 @@ export async function getTapSizePaged(
   };
 }
 
-export async function getTapSizeById(id: number): Promise<TapSize> {
+export async function getConnectionTypeById(id: number): Promise<ConnectionType> {
   const response = await apiClient.get<Record<string, unknown>>(
-    `/TapSizeMaster/${encodeURIComponent(String(id))}`
+    `/ConnectionTypeMaster/${encodeURIComponent(String(id))}`
   );
   if (!response.success || !response.data) {
-    throw new ApiError(response.statusCode ?? 500, response.error || "", "getTapSizeById");
+    throw new ApiError(response.statusCode ?? 500, response.error || "", "getConnectionTypeById");
   }
   const raw = (response.data?.data ?? response.data?.items ?? response.data?.item ?? response.data) as Record<string, unknown>;
-  return normalizeTapSize(raw);
+  return normalizeConnectionType(raw);
 }
 
-export async function deleteTapSize(id: number, _userId?: number): Promise<void> {
+export async function deleteConnectionType(id: number, _userId?: number): Promise<void> {
   let response = await apiClient.delete(
-    `/TapSizeMaster/${encodeURIComponent(String(id))}/purge`
+    `/ConnectionTypeMaster/${encodeURIComponent(String(id))}/purge`
   );
   if (!response.success) {
     response = await apiClient.delete(
-      `/TapSizeMaster/${encodeURIComponent(String(id))}`
+      `/ConnectionTypeMaster/${encodeURIComponent(String(id))}`
     );
   }
   if (!response.success) {
-    throw new ApiError(response.statusCode ?? 500, response.error || "", "deleteTapSize");
+    throw new ApiError(response.statusCode ?? 500, response.error || "", "deleteConnectionType");
   }
 }
 
-export async function createTapSize(
-  data: { tapSizeCode?: string; tapSize: string; nominalSizeValue?: number | string | null; sizeUnit?: string | null; isActive: boolean },
+export async function createConnectionType(
+  data: { connectionTypeCode?: string; connectionType: string; description?: string | null; isActive: boolean },
   userId?: number
-): Promise<TapSize> {
+): Promise<ConnectionType> {
   const { code, payload } = createPayload(data, userId);
 
-  const response = await apiClient.post<Record<string, unknown>>("/TapSizeMaster", payload);
+  const response = await apiClient.post<Record<string, unknown>>("/ConnectionTypeMaster", payload);
   if (!response.success) {
-    throw new ApiError(response.statusCode ?? 500, response.error || "", "createTapSize");
+    throw new ApiError(response.statusCode ?? 500, response.error || "", "createConnectionType");
   }
   if (!response.data) {
     return {
       id: 0,
-      tapSizeCode: code,
-      tapSize: data.tapSize,
-      nominalSizeValue: data.nominalSizeValue ? Number(data.nominalSizeValue) : null,
-      sizeUnit: data.sizeUnit ?? "",
+      connectionTypeCode: code,
+      connectionType: data.connectionType,
+      description: data.description ?? "",
       isActive: data.isActive,
     };
   }
   const raw = (response.data?.items ?? response.data?.data ?? response.data) as Record<string, unknown>;
-  return normalizeTapSize(raw);
+  return normalizeConnectionType(raw);
 }
 
-export async function updateTapSize(
+export async function updateConnectionType(
   id: number,
-  data: { tapSizeCode?: string; tapSize: string; nominalSizeValue?: number | string | null; sizeUnit?: string | null; isActive: boolean },
+  data: { connectionTypeCode?: string; connectionType: string; description?: string | null; isActive: boolean },
   userId?: number
-): Promise<TapSize> {
+): Promise<ConnectionType> {
   const { code, payload } = createPayload(data, userId, id);
 
   const response = await apiClient.put<Record<string, unknown>>(
-    `/TapSizeMaster/${encodeURIComponent(String(id))}`,
+    `/ConnectionTypeMaster/${encodeURIComponent(String(id))}`,
     payload
   );
   if (!response.success) {
-    throw new ApiError(response.statusCode ?? 500, response.error || "", "updateTapSize");
+    throw new ApiError(response.statusCode ?? 500, response.error || "", "updateConnectionType");
   }
   if (!response.data) {
     return {
       id,
-      tapSizeCode: code,
-      tapSize: data.tapSize,
-      nominalSizeValue: data.nominalSizeValue ? Number(data.nominalSizeValue) : null,
-      sizeUnit: data.sizeUnit ?? "",
+      connectionTypeCode: code,
+      connectionType: data.connectionType,
+      description: data.description ?? "",
       isActive: data.isActive,
     };
   }
   const raw = (response.data?.items ?? response.data?.data ?? response.data) as Record<string, unknown>;
-  return normalizeTapSize(raw);
+  return normalizeConnectionType(raw);
 }

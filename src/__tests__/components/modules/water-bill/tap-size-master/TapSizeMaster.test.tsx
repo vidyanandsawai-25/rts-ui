@@ -92,11 +92,9 @@ describe("TapSizeMaster Component", () => {
     vi.clearAllMocks();
   });
 
-  it("renders page title, description, search bar, status filter, and add button", () => {
+  it("renders search bar, status filter, and add button", () => {
     renderComponent();
 
-    expect(screen.getByText("Tap Size Master")).toBeInTheDocument();
-    expect(screen.getByText("Manage tap sizes and descriptions")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Search tap sizes...")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Add Tap Size/i })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /all records/i })).toBeInTheDocument();

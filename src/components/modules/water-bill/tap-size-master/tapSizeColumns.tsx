@@ -1,6 +1,6 @@
 import type { Column } from "@/components/common/MasterTable";
 import type { TapSize } from "@/types/waterBill/tapSizeMaster.types";
-import { formatNominalSize } from "@/lib/api/waterBill/tapSizeMaster.utils";
+import { formatNominalSize } from "@/lib/utils/water-bill/tapSizeMaster.utils";
 
 export function getTapSizeColumns(
   t: (key: string) => string

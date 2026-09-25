@@ -147,13 +147,12 @@ describe("ConnectionTypeMaster Component", () => {
     vi.clearAllMocks();
   });
 
-  it("renders page title, description, search bar, status filter, and add button", () => {
+  it("renders search bar, status filter, and add button", () => {
     renderComponent();
 
-    expect(screen.getByText("Connection Type Master")).toBeInTheDocument();
-    expect(screen.getByText("Manage connection types and descriptions")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Search connection types...")).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /all records/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add Connection Type/i })).toBeInTheDocument();
   });
 
   it("renders table columns and data rows accurately", () => {

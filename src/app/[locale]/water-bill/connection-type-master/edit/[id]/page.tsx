@@ -1,33 +1,12 @@
-import { notFound } from "next/navigation";
-import {
-  getConnectionTypeByIdAction,
-  getConnectionTypePagedAction,
-} from "@/app/[locale]/water-bill/connection-type-master/actions";
-import { ConnectionTypeMaster } from "@/components/modules/water-bill/connection-type-master";
-import { ConnectionTypeForm } from "@/components/modules/water-bill/connection-type-master/ConnectionTypeForm";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditConnectionTypePage({
+export default async function EditConnectionTypeRedirect({
   params,
-}: Readonly<{ params: Promise<{ id: string }> }>) {
-  const { id } = await params;
-  const connectionTypeId = Number(id);
-  if (!Number.isFinite(connectionTypeId) || connectionTypeId <= 0) notFound();
-
-  const [result, initialData] = await Promise.all([
-    getConnectionTypePagedAction(1, 10),
-    getConnectionTypeByIdAction(connectionTypeId).catch(() => null),
-  ]);
-
-  if (!initialData) {
-    notFound();
-  }
-
-  return (
-    <>
-      <ConnectionTypeMaster data={result} />
-      <ConnectionTypeForm id={connectionTypeId} initialData={initialData} />
-    </>
-  );
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}) {
+  const { locale, id } = await params;
+  redirect(`/${locale}/water-bill/water-connection-master/connection-type/edit/${id}`);
 }

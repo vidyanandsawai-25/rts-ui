@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -11,6 +11,12 @@ export function useConnectionTypeMaster(data: PagedResponse<ConnectionType>) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const locale = useLocale();
+  const pathname = usePathname() || "";
+
+  const isUnified = pathname.includes("/water-bill/water-connection-master/connection-type");
+  const basePath = isUnified
+    ? `/${locale}/water-bill/water-connection-master/connection-type`
+    : `/${locale}/water-bill/connection-type-master`;
 
   const t = useTranslations("connectionTypeMaster.connectionType");
   const tCommon = useTranslations("common");
@@ -58,11 +64,11 @@ export function useConnectionTypeMaster(data: PagedResponse<ConnectionType>) {
       } else {
         params.delete("q");
       }
-      router.push(`/${locale}/water-bill/connection-type-master?${params.toString()}`);
+      router.push(`${basePath}?${params.toString()}`);
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [search, router, locale]);
+  }, [search, router, basePath]);
 
   const handleSearchChange = useCallback((value: string) => {
     const sanitized = value
@@ -81,8 +87,8 @@ export function useConnectionTypeMaster(data: PagedResponse<ConnectionType>) {
     } else {
       params.delete("status");
     }
-    router.push(`/${locale}/water-bill/connection-type-master?${params.toString()}`);
-  }, [router, locale]);
+    router.push(`${basePath}?${params.toString()}`);
+  }, [router, basePath]);
 
   const buildUrl = useCallback(
     (page: number, size: number, searchTerm?: string, status?: string) => {
@@ -92,9 +98,9 @@ export function useConnectionTypeMaster(data: PagedResponse<ConnectionType>) {
       if (searchTerm) params.set("q", searchTerm);
       const activeStatus = status ?? searchParamsRef.current.get("status");
       if (activeStatus && activeStatus !== "all") params.set("status", activeStatus);
-      return `/${locale}/water-bill/connection-type-master?${params.toString()}`;
+      return `${basePath}?${params.toString()}`;
     },
-    [locale]
+    [basePath]
   );
 
   const changePage = (p: number) => {
@@ -106,14 +112,14 @@ export function useConnectionTypeMaster(data: PagedResponse<ConnectionType>) {
   };
 
   const handleAdd = () => {
-    router.push(`/${locale}/water-bill/connection-type-master/add`);
+    router.push(`${basePath}/add`);
   };
 
   const handleEdit = useCallback(
     (row: ConnectionType) => {
-      router.push(`/${locale}/water-bill/connection-type-master/edit/${row.id}`);
+      router.push(`${basePath}/edit/${row.id}`);
     },
-    [router, locale]
+    [router, basePath]
   );
 
   const handleDelete = useCallback(

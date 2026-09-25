@@ -3,7 +3,7 @@
 import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { getLoggedInUserId } from "@/lib/utils/cookie.server";
-import { getConnectionTypePaged, deleteConnectionType, createConnectionType, updateConnectionType, getConnectionTypeById } from "@/lib/api/waterBill/connectionTypeMaster.service";
+import { getConnectionTypePaged, deleteConnectionType, createConnectionType, updateConnectionType, getConnectionTypeById } from "@/lib/api/water-bill/connectionTypeMaster.service";
 import type { ConnectionType, PagedResponse } from "@/types/waterBill/connectionTypeMaster.types";
 
 export async function getConnectionTypePagedAction(

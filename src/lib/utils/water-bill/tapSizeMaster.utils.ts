@@ -142,5 +142,3 @@ export {
   formatNominalSize,
   parseNominalSizeFromTapSize,
 } from "./tapSizeParser.utils";
-
-

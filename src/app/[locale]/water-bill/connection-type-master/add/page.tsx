@@ -1,16 +1,12 @@
-import { ConnectionTypeMaster } from "@/components/modules/water-bill/connection-type-master";
-import { ConnectionTypeForm } from "@/components/modules/water-bill/connection-type-master/ConnectionTypeForm";
-import { getConnectionTypePagedAction } from "../actions";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function AddConnectionTypePage() {
-  const result = await getConnectionTypePagedAction(1, 10);
-
-  return (
-    <>
-      <ConnectionTypeMaster data={result} />
-      <ConnectionTypeForm id={null} initialData={undefined} />
-    </>
-  );
+export default async function AddConnectionTypeRedirect({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/water-bill/water-connection-master/connection-type/add`);
 }

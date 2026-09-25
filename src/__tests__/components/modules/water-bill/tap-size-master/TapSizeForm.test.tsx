@@ -13,6 +13,7 @@ const mockRouterPush = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockRouterPush }),
+  usePathname: () => "/en/water-bill/tap-size-master",
 }));
 
 vi.mock("next-intl", async (importOriginal) => {

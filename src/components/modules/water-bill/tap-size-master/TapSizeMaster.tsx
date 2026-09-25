@@ -1,6 +1,5 @@
 "use client";
 
-import { PageContainer } from "@/components/common/PageContainer";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton, AddButton } from "@/components/common/ActionButtons";
 import { SearchInput } from "@/components/common/SearchInput";
@@ -44,79 +43,65 @@ export function TapSizeMaster({ data }: Readonly<TapSizeMasterProps>) {
   });
 
   return (
-    <PageContainer>
-      <div className="w-full flex flex-col gap-4">
-        {/* Header Section (Separated from table) */}
-        <div className="w-full bg-white rounded-xl shadow-sm border border-blue-200">
-          <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-[17px] font-bold text-[#1E3A8A]">
-                {t("title")}
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                {t("description")}
-              </p>
-            </div>
-            <div className="flex flex-col md:flex-row items-center gap-3">
-              <SearchInput
-                value={search}
-                onChange={handleSearchChange}
-                placeholder={t("searchPlaceholder")}
-                className="mb-0 w-full md:w-[280px] text-gray-900"
-              />
-              {/* Status Filter Dropdown */}
-              <div className="w-full md:w-36">
-                <Select
-                  value={statusFilter}
-                  onChange={(_e, val) => handleStatusFilterChange(val)}
-                  options={[
-                    { value: "all", label: t("filters.all") },
-                    { value: "active", label: t("filters.active") },
-                    { value: "inactive", label: t("filters.inactive") },
-                  ]}
-                  selectSize="sm"
-                  className="w-full"
-                  ariaLabel={t("filters.all")}
-                />
-              </div>
-              <Button 
-                variant="secondary" 
-                size="sm" 
-                icon={BookOpen} 
-                onClick={() => setIsUserManualOpen(true)}
-              >
-                {t("userManualBtn")}
-              </Button>
-              <AddButton
-                label={t("addButton")}
-                onClick={handleAdd}
+    <div className="w-full">
+      {/* Table Section */}
+      <MasterTable<TapSize>
+        columns={columns}
+        data={items}
+        loading={false}
+        headerExtra={
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full">
+            <SearchInput
+              value={search}
+              onChange={handleSearchChange}
+              placeholder={t("searchPlaceholder")}
+              className="mb-0 w-full sm:w-[280px] text-gray-900"
+            />
+            {/* Status Filter Dropdown */}
+            <div className="w-full sm:w-36">
+              <Select
+                value={statusFilter}
+                onChange={(_e, val) => handleStatusFilterChange(val)}
+                options={[
+                  { value: "all", label: t("filters.all") },
+                  { value: "active", label: t("filters.active") },
+                  { value: "inactive", label: t("filters.inactive") },
+                ]}
+                selectSize="sm"
+                className="w-full"
+                ariaLabel={t("filters.all")}
               />
             </div>
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              icon={BookOpen} 
+              onClick={() => setIsUserManualOpen(true)}
+            >
+              {t("userManualBtn")}
+            </Button>
+            <AddButton
+              label={t("addButton")}
+              onClick={handleAdd}
+            />
           </div>
-        </div>
-
-        {/* Table Section */}
-        <MasterTable<TapSize>
-          columns={columns}
-          data={items}
-          loading={false}
-          height="lg"
-          pageNumber={pageNumber}
-          pageSize={pageSize}
-          totalCount={totalCount}
-          totalPages={totalPages}
-          onPageChange={changePage}
-          onPageSizeChange={handlePageSizeChange}
-          paginationConfig={{ enabled: true, showPageSizeSelector: true }}
-          renderActions={(row) => (
-            <>
-              <EditButton onClick={() => handleEdit(row)} />
-              <DeleteButton onClick={() => handleDelete(row)} />
-            </>
-          )}
-          getRowKey={(row) => String(row.id)}
-        />
-      </div>
+        }
+        maxBodyHeightClassName="max-h-[540px]"
+        pageNumber={pageNumber}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        onPageChange={changePage}
+        onPageSizeChange={handlePageSizeChange}
+        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+        renderActions={(row) => (
+          <>
+            <EditButton onClick={() => handleEdit(row)} />
+            <DeleteButton onClick={() => handleDelete(row)} />
+          </>
+        )}
+        getRowKey={(row) => String(row.id)}
+      />
 
       <Modal
         open={isUserManualOpen}
@@ -141,6 +126,6 @@ export function TapSizeMaster({ data }: Readonly<TapSizeMasterProps>) {
           </div>
         </div>
       </Modal>
-    </PageContainer>
+    </div>
   );
 }

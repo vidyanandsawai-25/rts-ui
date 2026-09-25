@@ -17,7 +17,9 @@
       "tapStatus": "Tap Status",
       "tapType": "Tap Type",
       "tapSize": "Tap Size",
-      "waterRate": "Water Rate"
+      "waterRate": "Water Rate",
+      "connectionType": "Connection Type",
+      "connectionCategory": "Connection Category"
     },
     "tapStatus": {
       "title": "Tap Status Master",

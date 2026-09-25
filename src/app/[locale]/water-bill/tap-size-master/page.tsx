@@ -1,30 +1,24 @@
-import { TapSizeMaster } from "@/components/modules/water-bill/tap-size-master";
-import { getTapSizePagedAction } from "./actions";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  readonly searchParams: Promise<{
-    q?: string;
-    page?: string;
-    pageSize?: string;
-    status?: string;
-  }>;
+  readonly params: Promise<{ locale: string }>;
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function TapSizeMasterPage({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const pageNumber = Number(params?.page) || 1;
-  const pageSize = Number(params?.pageSize) || 10;
-  const searchTerm = params?.q || "";
-  const statusFilter = params?.status || "all";
-
-  const initialData = await getTapSizePagedAction(
-    pageNumber,
-    pageSize,
-    searchTerm,
-    statusFilter
-  );
-
-  return <TapSizeMaster data={initialData} />;
+export default async function TapSizeMasterPage({
+  params,
+  searchParams,
+}: PageProps) {
+  const { locale } = await params;
+  const sp = await searchParams;
+  const qParams = new URLSearchParams();
+  for (const [key, val] of Object.entries(sp || {})) {
+    if (typeof val === "string") {
+      qParams.set(key, val);
+    }
+  }
+  const query = qParams.toString();
+  redirect(`/${locale}/water-bill/water-connection-master/tap-size${query ? `?${query}` : ""}`);
 }

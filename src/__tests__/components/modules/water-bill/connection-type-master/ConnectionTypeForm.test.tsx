@@ -8,6 +8,7 @@ const mockRouterPush = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockRouterPush }),
+  usePathname: () => "/en/water-bill/connection-type-master",
 }));
 
 vi.mock("next-intl", async (importOriginal) => {
