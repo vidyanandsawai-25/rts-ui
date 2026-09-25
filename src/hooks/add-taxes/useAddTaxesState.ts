@@ -102,7 +102,7 @@ export function useAddTaxesState(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedScope, scopeOptions]);
 
-  const handleSelectionChange = (key: string, values: string[], labels?: string[]) => {
+  const handleSelectionChange = (key: string, values: string[], _labels?: string[]) => {
     isLocalUpdateRef.current = true;
 
     const prevKeys = Object.keys(selectionData);
@@ -133,7 +133,7 @@ export function useAddTaxesState(
 
     setSelectionData(next);
 
-    // Update URL params
+    // Clean selection query params from URL if present to keep URL clean and prevent 404/414 URI Too Long errors
     const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : searchParams.toString());
     const keyMap: Record<string, string> = {
       'zone': 'zoneid',
@@ -151,36 +151,21 @@ export function useAddTaxesState(
       'to': 'toPropertyNo'
     };
 
-    Object.values(keyMap).forEach(p => params.delete(p));
-    Object.values(labelMap).forEach(p => params.delete(p));
-
-    Object.entries(next).forEach(([k, vals]) => {
-      const lowerK = k.toLowerCase();
-      const mappedParam = Object.keys(keyMap).find(mk => lowerK.includes(mk));
-      if (mappedParam && vals && vals.length > 0) {
-        params.set(keyMap[mappedParam], vals.join(','));
-      }
-
-      const mappedLabelParam = Object.keys(labelMap).find(mk => lowerK.includes(mk));
-      if (mappedLabelParam) {
-        const paramName = labelMap[mappedLabelParam];
-        if (k === key && labels !== undefined) {
-          if (labels.length > 0) {
-            params.set(paramName, labels.join(','));
-          } else {
-            params.delete(paramName);
-          }
-        } else if (vals && vals.length > 0) {
-          params.set(paramName, vals.join(','));
-        }
+    let paramsChanged = false;
+    Object.values(keyMap).concat(Object.values(labelMap)).forEach(p => {
+      if (params.has(p)) {
+        params.delete(p);
+        paramsChanged = true;
       }
     });
 
-    const newUrl = `${pathname}?${params.toString()}`;
-    if (typeof window !== 'undefined') {
-      window.history.replaceState(null, '', newUrl);
+    if (paramsChanged) {
+      const newUrl = `${pathname}?${params.toString()}`;
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', newUrl);
+      }
+      router.replace(newUrl, { scroll: false });
     }
-    router.replace(newUrl, { scroll: false });
   };
 
   const clearSelectionData = (preventUrlUpdate = false) => {

@@ -188,14 +188,7 @@ export function useScopeSelection(
     return [];
   };
 
-  const getSelectedJoined = (substring: string, searchParamKey?: string): string => {
-    // First priority: numeric values from URL params (always reliable IDs)
-    if (searchParamKey) {
-      const sp = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : searchParams;
-      const urlVal = sp.get(searchParamKey) || sp.get(searchParamKey.toLowerCase()) || sp.get(searchParamKey.toUpperCase());
-      if (urlVal) return urlVal;
-    }
-    // Second priority: values from selectionData (may be display labels)
+  const getSelectedJoined = (substring: string): string => {
     const vals = getSelectedValues(substring);
     if (vals.length > 0) {
       const filtered = vals.filter(v => v !== 'select-all');
@@ -330,42 +323,40 @@ export function useScopeSelection(
     setIsValidated(false);
     setOverrideAlreadyTaxed(false);
     try {
-      const zoneIds = getSelectedJoined('zone', 'zoneid');
-      const wardIds = getSelectedJoined('ward', 'wardid');
-      const propertyTypeId = getSelectedJoined('property type', 'PropertyTypeId') || searchParams.get('propertyTypeId') || searchParams.get('propertytypeid') || searchParams.get('TypeOfUseGroupId');
-      const assessmentStatusIds = getSelectedJoined('assessment status', 'assessmentStatusIds');
-      const fromPropId = getSelectedJoined('from', 'fromPropertyId');
-      const toPropId = getSelectedJoined('to', 'toPropertyId');
-      const fromPropNo = (fetchedBuildings.find(b => b.value === fromPropId)?.label) || searchParams.get('fromPropertyNo') || fromPropId;
-      const toPropNo = (fetchedToBuildings.find(b => b.value === toPropId)?.label) || searchParams.get('toPropertyNo') || toPropId;
+      const zoneIds = getSelectedJoined('zone');
+      const wardIds = getSelectedJoined('ward');
+      const propertyTypeId = getSelectedJoined('property type');
+      const assessmentStatusIds = getSelectedJoined('assessment status');
+      const fromPropId = getSelectedJoined('from');
+      const toPropId = getSelectedJoined('to');
+      const fromPropNo = (fetchedBuildings.find(b => b.value === fromPropId)?.label) || fromPropId;
+      const toPropNo = (fetchedToBuildings.find(b => b.value === toPropId)?.label) || toPropId;
 
       // Validate required fields before calculating
-      const hasAnyValue = (keySubstring: string, paramKey: string): boolean => {
-        const joined = getSelectedJoined(keySubstring, paramKey);
+      const hasAnyValue = (keySubstring: string): boolean => {
+        const joined = getSelectedJoined(keySubstring);
         if (joined && joined.length > 0) return true;
         const hasSelection = Object.keys(selectionData).some(k => k.toLowerCase().includes(keySubstring) && selectionData[k] && selectionData[k].length > 0);
-        if (hasSelection) return true;
-        const spVal = searchParams.get(paramKey) || searchParams.get(paramKey.toLowerCase()) || searchParams.get(paramKey.toUpperCase());
-        return !!spVal;
+        return hasSelection;
       };
 
       let isConfigValid = false;
       if (effectiveScope === 'masterDataChange' || effectiveScope === 'all') {
         isConfigValid = true;
       } else if (selectedScope === 'zone') {
-        isConfigValid = hasAnyValue('zone', 'zoneid');
+        isConfigValid = hasAnyValue('zone');
       } else if (effectiveScope === 'ward') {
-        const zoneOk = hasAnyValue('zone', 'zoneid');
-        const wardOk = hasAnyValue('ward', 'wardid');
+        const zoneOk = hasAnyValue('zone');
+        const wardOk = hasAnyValue('ward');
         isConfigValid = zoneOk && wardOk;
       } else if (selectedScope === 'building') {
-        const hasBuilding = hasAnyValue('property no', 'propertyid') || hasAnyValue('building', 'propertyid');
-        isConfigValid = hasAnyValue('zone', 'zoneid') && hasAnyValue('ward', 'wardid') && hasBuilding;
+        const hasBuilding = hasAnyValue('property no') || hasAnyValue('building');
+        isConfigValid = hasAnyValue('zone') && hasAnyValue('ward') && hasBuilding;
       } else if (selectedScope === 'property') {
-        const hasProp = hasAnyValue('property no', 'propertyid') || hasAnyValue('building', 'propertyid') || hasAnyValue('search', 'searchText');
+        const hasProp = hasAnyValue('property no') || hasAnyValue('building') || hasAnyValue('search');
         isConfigValid = hasProp;
       } else if (selectedScope === 'range') {
-        isConfigValid = hasAnyValue('ward', 'wardid') && hasAnyValue('from', 'fromPropertyNo') && hasAnyValue('to', 'toPropertyNo');
+        isConfigValid = hasAnyValue('ward') && hasAnyValue('from') && hasAnyValue('to');
       }
 
       if (!isConfigValid) {
@@ -1161,15 +1152,15 @@ export function useScopeSelection(
       }
 
       if ((hasBuildings || hasFrom) && fetchedBuildings.length === 0 && !isFetchingBuildings) {
-        const zoneIds = getSelectedJoined('zone', 'zoneid');
-        const wardIds = getSelectedJoined('ward', 'wardid');
+        const zoneIds = getSelectedJoined('zone');
+        const wardIds = getSelectedJoined('ward');
         if (wardIds) {
           void fetchBuildings(zoneIds ? zoneIds.split(',') : null, wardIds.split(','));
         }
       }
 
       if (hasTo && fetchedToBuildings.length === 0 && !isFetchingToBuildings) {
-        const wardIds = getSelectedJoined('ward', 'wardid');
+        const wardIds = getSelectedJoined('ward');
         const fromKey = Object.keys(selectionData).find(k => k.toLowerCase().includes('from'));
         const fromVal = fromKey ? selectionData[fromKey]?.[0] : undefined;
         if (wardIds && fromVal) {
