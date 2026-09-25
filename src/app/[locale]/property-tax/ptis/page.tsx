@@ -143,14 +143,18 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     currentCategoryId === 0 ||
     String(currentCategoryName).toLowerCase() === 'apartment society property';
 
-  if (resolvedPropertyId && isApartmentSocietyProperty) {
+  if (resolvedPropertyId) {
     const redirectParams = new URLSearchParams();
     if (resolvedSearchParams) {
       Object.entries(resolvedSearchParams).forEach(([k, v]) => {
         if (typeof v === 'string') redirectParams.set(k, v);
       });
     }
-    redirect(`/${locale}/property-tax/ptis/apartment?${redirectParams.toString()}`);
+    if (isApartmentSocietyProperty) {
+      redirect(`/${locale}/property-tax/ptis/apartment?${redirectParams.toString()}`);
+    } else {
+      redirect(`/${locale}/property-tax/ptis/individual?${redirectParams.toString()}`);
+    }
   }
 
   return (

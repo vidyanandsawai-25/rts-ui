@@ -19,7 +19,8 @@
     "surveyNo": "Survey No.",
     "taxZone": "Tax Zone",
     "plotNo": "Plot No.",
-    "aadharTitle": "Aadhar / Title",
+    "aadhar": "Aadhar",
+    "aadharTitle": "Aadhar",
     "mobileNo": "Mobile No.",
     "emailId": "Email ID",
     "address": "Address",
@@ -38,6 +39,8 @@
     "floorDetails": "Floor Details"
   },
   "summaryCards": {
+    "alv": "ALV",
+    "area": "AREA",
     "changesOfUse": "CHANGES OF USE",
     "old": "OLD:",
     "new": "NEW:",

@@ -164,15 +164,15 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
 
         const res = mapIndividualPropertyDtoToMasterData(mockDto);
         expect(res.propertyId).toBe(101);
-        expect(res.aadharWithTitle).toBe('5856 7591 4738 / Mr');
+        expect(res.aadharWithTitle).toBe('5856 7591 4738');
         expect(res.plotAreaFtMtr).toBe('1200 Ft / 111.48 Mtr');
         expect(res.societyBuildingPhotoGuid).toBe('photo-guid-123');
         expect(res.imageUrl).toBe('https://test.docs.com/view/photo-guid-123');
       });
 
-      it('formats aadhar and title across variations', () => {
+      it('formats aadhar across variations without title', () => {
         expect(mapIndividualPropertyDtoToMasterData({ aadharNo: '123456789012' }).aadharWithTitle).toBe('1234 5678 9012');
-        expect(mapIndividualPropertyDtoToMasterData({ ownerTitle: 'Mrs' }).aadharWithTitle).toBe('Mrs');
+        expect(mapIndividualPropertyDtoToMasterData({ ownerTitle: 'Mrs' }).aadharWithTitle).toBe('-');
         expect(mapIndividualPropertyDtoToMasterData({}).aadharWithTitle).toBe('-');
       });
 

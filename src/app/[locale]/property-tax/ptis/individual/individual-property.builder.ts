@@ -274,16 +274,7 @@ export function buildInitialIndividualMasterData(
 
   const formattedAadhar = formatAadharNumber(effectiveAadharNo);
 
-  let effectiveAadharWithTitle = '';
-  if (formattedAadhar && effectiveTitle && formattedAadhar !== effectiveTitle) {
-    effectiveAadharWithTitle = `${formattedAadhar} / ${effectiveTitle}`;
-  } else if (formattedAadhar) {
-    effectiveAadharWithTitle = formattedAadhar;
-  } else if (effectiveTitle) {
-    effectiveAadharWithTitle = effectiveTitle;
-  } else {
-    effectiveAadharWithTitle = '-';
-  }
+  const effectiveAadharWithTitle = formattedAadhar || '-';
 
   // 6. Contact & Address
   const effectiveMobileNo =

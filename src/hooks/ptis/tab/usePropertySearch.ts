@@ -104,14 +104,10 @@ export function usePropertySearch() {
             searchData.categoryLabel?.toLowerCase() !== 'individual property' &&
             searchData.category !== 2);
 
-        const isIndividualScreen = pathname.includes('/property-tax/ptis/individual');
-
-        if (isIndividualScreen) {
-          targetPath = `/${locale}/property-tax/ptis/individual`;
-        } else if (isApartmentSociety) {
+        if (isApartmentSociety) {
           targetPath = `/${locale}/property-tax/ptis/apartment`;
-        } else if (searchData.category !== undefined || searchData.categoryLabel !== undefined) {
-          targetPath = `/${locale}/property-tax/ptis`;
+        } else {
+          targetPath = `/${locale}/property-tax/ptis/individual`;
         }
 
         const params: Record<string, string | null> = {

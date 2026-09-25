@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Building2, FileText } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import type { IndividualPropertyMasterData } from '@/types/property-tax/individual';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
@@ -106,20 +106,12 @@ export const IndividualPropertyMasterCard: React.FC<IndividualPropertyMasterCard
           title={photoUrl || photoGuid ? (t('photo.viewPhoto') || 'Click to view property photo') : undefined}
         >
           {photoUrl || photoGuid ? (
-            <div className="relative w-full h-full">
-              <ImageWithFallback
-                src={photoUrl}
-                documentGuid={photoGuid}
-                alt={ownerName !== '-' ? `${ownerName} ${t('photo.propertyPhoto') || 'Property Photo'}` : (t('photo.propertyPhoto') || 'Property Photo')}
-                className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-              />
-              {/* Document/Photo Overlay Icon */}
-              <div className="absolute inset-0 bg-black/15 flex items-center justify-center pointer-events-none">
-                <div className="p-1 rounded-md bg-white/70 backdrop-blur-xs text-slate-800 shadow-xs border border-white/60">
-                  <FileText className="w-5 h-5 text-slate-700" />
-                </div>
-              </div>
-            </div>
+            <ImageWithFallback
+              src={photoUrl}
+              documentGuid={photoGuid}
+              alt={ownerName !== '-' ? `${ownerName} ${t('photo.propertyPhoto') || 'Property Photo'}` : (t('photo.propertyPhoto') || 'Property Photo')}
+              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+            />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-400 p-2 text-center bg-slate-50">
               <Building2 className="w-8 h-8 text-slate-300" />

@@ -148,10 +148,7 @@ export function mapIndividualPropertyDtoToMasterData(
     undefined;
 
   const formattedAadhar = formatAadharNumber(dto.aadharNo);
-  const aadharDisplay =
-    (formattedAadhar && dto.ownerTitle && formattedAadhar !== dto.ownerTitle)
-      ? `${formattedAadhar} / ${dto.ownerTitle}`
-      : formattedAadhar || dto.ownerTitle || '-';
+  const aadharDisplay = formattedAadhar || '-';
 
   const plotAreaDisplay = formatAreaFtMtr(dto.plotAreaFt, dto.plotAreaMtr);
   const carpetAreaDisplay = formatAreaFtMtr(dto.carpetAreaFt, dto.carpetAreaMtr);

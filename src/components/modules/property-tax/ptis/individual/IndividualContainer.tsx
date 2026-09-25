@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { PropertySearchBar } from '@/components/modules/property-tax/ptis/tabs/components/PropertySearchBar';
 import { IndividualPropertyMasterCard } from './individual-tabSection/IndividualPropertyMasterCard';
 import { PtisStatusMetricsHeader } from '@/components/modules/property-tax/ptis/apartment/WorkFlow/PtisStatusMetricsHeader';
@@ -21,6 +22,8 @@ import type { PropertyComparisonResponse } from '@/types/propertyComparison.type
 import { useIndividualPropertySearch } from '@/hooks/property-tax/individual';
 import { IndividualTaxDetailsSection } from './individual-tax-details';
 
+import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+
 export interface IndividualContainerProps {
   initialData?: PtisInitialData;
   initialWardId?: number | null;
@@ -35,6 +38,8 @@ export interface IndividualContainerProps {
   initialDualMethodData?: DualMethodResponse | null;
   initialComparisonData?: PropertyComparisonResponse | null;
   initialTaxDetails?: ApartmentTaxDetailsItem | null;
+  initialRateableTaxDetails?: TaxDetailsData | null;
+  initialCapitalTaxDetails?: TaxDetailsData | null;
   initialTaxMode?: PtisTaxMode;
   isLoading?: boolean;
 }
@@ -56,10 +61,23 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
   initialDualMethodData = null,
   initialComparisonData = null,
   initialTaxDetails = null,
+  initialRateableTaxDetails = null,
+  initialCapitalTaxDetails = null,
   initialTaxMode = 'rateable',
   isLoading = false,
 }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [currentTaxMode, setCurrentTaxMode] = useState<PtisTaxMode>(initialTaxMode || 'rateable');
+
+  const handleTaxModeChange = (mode: PtisTaxMode) => {
+    setCurrentTaxMode(mode);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('valuationTab', mode);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const search = useIndividualPropertySearch(
     initialData,
@@ -165,8 +183,10 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
           capitalData={initialCapitalData}
           dualMethodData={initialDualMethodData}
           comparisonData={initialComparisonData}
+          rateableTaxDetails={initialRateableTaxDetails}
+          capitalTaxDetails={initialCapitalTaxDetails}
           taxMode={currentTaxMode}
-          onTaxModeChange={setCurrentTaxMode}
+          onTaxModeChange={handleTaxModeChange}
           buildingPermissionData={initialData?.buildingPermission ?? undefined}
           discountData={initialData?.discountDetails ?? undefined}
           oldDetailsData={initialData?.oldDetails ?? undefined}

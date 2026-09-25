@@ -55,7 +55,7 @@ describe('usePropertySearch category routing', () => {
     expect(navigatedUrl).toContain('propertyId=1487134');
   });
 
-  it('routes to /property-tax/ptis when category is 2 (individual property)', async () => {
+  it('routes to /property-tax/ptis/individual when category is 2 (individual property)', async () => {
     mockPathname = '/en/property-tax/ptis/apartment';
     const { result } = renderHook(() => usePropertySearch());
 
@@ -73,13 +73,13 @@ describe('usePropertySearch category routing', () => {
 
     expect(mockReplace).toHaveBeenCalled();
     const navigatedUrl = mockReplace.mock.calls[0][0];
-    expect(navigatedUrl).toContain('/en/property-tax/ptis');
+    expect(navigatedUrl).toContain('/en/property-tax/ptis/individual');
     expect(navigatedUrl).not.toContain('ptis/apartment');
     expect(navigatedUrl).toContain('propertyNo=101');
     expect(navigatedUrl).toContain('propertyId=1487608');
   });
 
-  it('routes to /property-tax/ptis when category is 1 (apartment society unit property)', async () => {
+  it('routes to /property-tax/ptis/individual when category is 1 (apartment society unit property)', async () => {
     mockPathname = '/en/property-tax/ptis/apartment';
     const { result } = renderHook(() => usePropertySearch());
 
@@ -97,7 +97,7 @@ describe('usePropertySearch category routing', () => {
 
     expect(mockReplace).toHaveBeenCalled();
     const navigatedUrl = mockReplace.mock.calls[0][0];
-    expect(navigatedUrl).toContain('/en/property-tax/ptis');
+    expect(navigatedUrl).toContain('/en/property-tax/ptis/individual');
     expect(navigatedUrl).not.toContain('ptis/apartment');
     expect(navigatedUrl).toContain('propertyNo=410');
     expect(navigatedUrl).toContain('partitionNo=A2');
@@ -147,6 +147,29 @@ describe('usePropertySearch category routing', () => {
     expect(navigatedUrl).toContain('wardNo=MM1');
     expect(navigatedUrl).toContain('propertyNo=85');
     expect(navigatedUrl).toContain('propertyId=1488616');
+  });
+
+  it('routes to /property-tax/ptis/apartment when searching apartment society on individual screen', async () => {
+    mockPathname = '/en/property-tax/ptis/individual';
+    const { result } = renderHook(() => usePropertySearch());
+
+    await act(async () => {
+      await result.current.handleSearchProperty({
+        wardNo: 'LS14',
+        propertyNo: '116',
+        partitionNo: '',
+        wardId: 6887,
+        propertyId: '2078892',
+        category: 0,
+        categoryLabel: 'apartment society property',
+      });
+    });
+
+    expect(mockReplace).toHaveBeenCalled();
+    const navigatedUrl = mockReplace.mock.calls[0][0];
+    expect(navigatedUrl).toContain('/en/property-tax/ptis/apartment');
+    expect(navigatedUrl).toContain('propertyNo=116');
+    expect(navigatedUrl).toContain('wardId=6887');
   });
 });
 

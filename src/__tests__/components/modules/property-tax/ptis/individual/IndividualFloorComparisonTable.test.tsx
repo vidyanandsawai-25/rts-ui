@@ -43,6 +43,9 @@ vi.mock('next-intl', () => ({
         'noCapitalRows': 'No Capital Floor Details Available',
         'floor.floorDetails': 'Floor Details',
         'changesOfUse': 'CHANGES OF USE',
+        'alv': 'ALV',
+        'area': 'AREA',
+        'tax': 'TAX',
         'old': 'OLD:',
         'new': 'NEW:',
         'rv': 'RV:',
@@ -138,6 +141,7 @@ vi.mock('@/app/[locale]/property-tax/ptis/individual/action', () => ({
   fetchIndividualCapitalValueAction: vi.fn().mockResolvedValue({ success: true, data: null }),
   fetchIndividualDualMethodAction: vi.fn().mockResolvedValue({ success: true, data: null }),
   fetchIndividualPropertyComparisonAction: vi.fn().mockResolvedValue({ success: true, data: null }),
+  getIndividualBuildingCertificatesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
 }));
 
 const mockRateableData = {

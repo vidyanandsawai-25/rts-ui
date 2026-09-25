@@ -46,7 +46,7 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
         if (typeof v === 'string') redirectParams.set(k, v);
       });
     }
-    redirect(`/${locale}/property-tax/ptis?${redirectParams.toString()}`);
+    redirect(`/${locale}/property-tax/ptis/individual?${redirectParams.toString()}`);
   }
 
   const { pageData, kycDetails, tabHeaderInfo } = {

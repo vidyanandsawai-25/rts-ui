@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
 import { IndividualFloorTopNav, type IndividualFloorTopNavSection } from './IndividualFloorTopNav';
 import { IndividualFloorSummaryCards } from './IndividualFloorSummaryCards';
@@ -14,7 +14,6 @@ import { PTIS_UI_CLASSES } from '@/components/modules/property-tax/ptis/constant
 import BuildingPermissionTab from '@/components/modules/property-tax/ptis/tabs/BuildingPermissionTab';
 import DiscountDataTab from '@/components/modules/property-tax/ptis/tabs/DiscountDataTab';
 import IndividualOldDetailsTab from '../old-details/IndividualOldDetailsTab';
-import { useParams } from 'next/navigation';
 
 import type { RateableValueResponse } from '@/types/rateableValue.types';
 import type { CapitalValueResponse } from '@/types/capitalValue.types';
@@ -29,6 +28,8 @@ import type {
 } from '@/types/ptis.types';
 import type { PtisTaxMode } from '@/types/property-tax/apartment';
 import type { PropertyComparisonResponse } from '@/types/propertyComparison.types';
+import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import TaxDetails from '../individual-tax-details/TaxDetails/TaxDetails';
 import {
   fetchIndividualRateableValueAction,
   fetchIndividualCapitalValueAction,
@@ -46,6 +47,8 @@ export interface IndividualFloorIntelligenceProps {
   capitalData?: CapitalValueResponse | null;
   dualMethodData?: DualMethodResponse | null;
   comparisonData?: PropertyComparisonResponse | null;
+  rateableTaxDetails?: TaxDetailsData | null;
+  capitalTaxDetails?: TaxDetailsData | null;
   buildingPermissionData?: BuildingPermissionData | null;
   discountData?: DiscountData | null;
   oldDetailsData?: OldDetailsData | null;
@@ -55,7 +58,14 @@ export interface IndividualFloorIntelligenceProps {
   taxMode?: PtisTaxMode;
   onTaxModeChange?: (mode: PtisTaxMode) => void;
   isLoading?: boolean;
+  locale?: string;
 }
+
+const SECTION_TITLES: Record<string, string> = {
+  building: 'BUILDING PERMISSION (Certificates & Clearances)',
+  discount: 'DISCOUNT & SOCIAL DATA (Discounts & Concessions)',
+  oldDetails: 'OLD DETAILS (Mapped Properties / Historical Data)',
+};
 
 export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligenceProps> = ({
   propertyId,
@@ -67,6 +77,8 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   capitalData,
   dualMethodData,
   comparisonData,
+  rateableTaxDetails,
+  capitalTaxDetails,
   buildingPermissionData,
   discountData,
   oldDetailsData,
@@ -76,31 +88,28 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   taxMode = 'rateable',
   onTaxModeChange,
   isLoading = false,
+  locale: propLocale,
 }) => {
   const t = useTranslations('ptis');
-  const params = useParams();
-  const currentLocale = typeof params?.locale === 'string' ? params.locale : 'en';
-  const tInd = useTranslations('individual');
+  const contextLocale = useLocale();
+  const locale = propLocale || contextLocale || 'en';
   const [activeSection, setActiveSection] = useState<IndividualFloorTopNavSection | null>('floor');
   const [isExpanded, setIsExpanded] = useState(true);
+  const [internalTaxMode, setInternalTaxMode] = useState<PtisTaxMode>(taxMode);
+  const [prevTaxModeProp, setPrevTaxModeProp] = useState(taxMode);
 
-  // Synchronize taxMode: controlled if onTaxModeChange provided, otherwise local state
-  const [uncontrolledTaxMode, setUncontrolledTaxMode] = useState<PtisTaxMode>(taxMode);
-  const currentTaxMode = onTaxModeChange ? taxMode : uncontrolledTaxMode;
+  if (taxMode !== prevTaxModeProp) {
+    setPrevTaxModeProp(taxMode);
+    setInternalTaxMode(taxMode);
+  }
+  const currentTaxMode = internalTaxMode;
 
-  const [fetchedValuation, setFetchedValuation] = useState<{
-    propId: number | string | null;
-    rateable: RateableValueResponse | null;
-    capital: CapitalValueResponse | null;
-    dual: DualMethodResponse | null;
-    comparison: PropertyComparisonResponse | null;
-  }>({
-    propId: null,
-    rateable: null,
-    capital: null,
-    dual: null,
-    comparison: null,
-  });
+  // Track property ID changes to reset fetched overrides
+  const [prevPropId, setPrevPropId] = useState(propertyId);
+  const [fetchedRateable, setFetchedRateable] = useState<RateableValueResponse | null>(null);
+  const [fetchedCapital, setFetchedCapital] = useState<CapitalValueResponse | null>(null);
+  const [fetchedDual, setFetchedDual] = useState<DualMethodResponse | null>(null);
+  const [fetchedComparison, setFetchedComparison] = useState<PropertyComparisonResponse | null>(null);
   const [isValuationLoading, setIsValuationLoading] = useState(false);
 
   // States for Old Details collapsible sections (mutually exclusive)
@@ -135,11 +144,20 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   // State for Floor Details expandable section below valuation table
   const [showFloorDetails, setShowFloorDetails] = useState(false);
 
-  const isCurrentProp = fetchedValuation.propId === propertyId;
-  const rateableState = (isCurrentProp ? fetchedValuation.rateable : null) ?? rateableData ?? null;
-  const capitalState = (isCurrentProp ? fetchedValuation.capital : null) ?? capitalData ?? null;
-  const dualState = (isCurrentProp ? fetchedValuation.dual : null) ?? dualMethodData ?? null;
-  const comparisonState = (isCurrentProp ? fetchedValuation.comparison : null) ?? comparisonData ?? null;
+  if (propertyId !== prevPropId) {
+    setPrevPropId(propertyId);
+    setFetchedRateable(null);
+    setFetchedCapital(null);
+    setFetchedDual(null);
+    setFetchedComparison(null);
+  }
+
+  const rateableState = fetchedRateable ?? rateableData ?? null;
+  const capitalState = fetchedCapital ?? capitalData ?? null;
+  const dualState = fetchedDual ?? dualMethodData ?? null;
+  const comparisonState = fetchedComparison ?? comparisonData ?? null;
+  const rateableTaxDetailsState = rateableTaxDetails ?? undefined;
+  const capitalTaxDetailsState = capitalTaxDetails ?? undefined;
 
   // Fetch valuation data dynamically based on mode
   const fetchValuationForMode = useCallback(
@@ -153,11 +171,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
         if (mode === 'capital') {
           const res = await fetchIndividualCapitalValueAction(numericId);
           if (res.success && res.data) {
-            setFetchedValuation((prev) => ({
-              ...prev,
-              propId: targetPropertyId,
-              capital: res.data ?? null,
-            }));
+            setFetchedCapital(res.data);
           }
         } else if (mode === 'dual') {
           const [dualRes, capRes, rvRes] = await Promise.all([
@@ -165,25 +179,23 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
             !capitalState ? fetchIndividualCapitalValueAction(numericId) : Promise.resolve(null),
             !rateableState ? fetchIndividualRateableValueAction(numericId) : Promise.resolve(null),
           ]);
-          setFetchedValuation((prev) => ({
-            ...prev,
-            propId: targetPropertyId,
-            dual: dualRes.success && dualRes.data ? dualRes.data : prev.propId === targetPropertyId ? prev.dual : null,
-            capital: capRes?.success && capRes.data ? capRes.data : prev.propId === targetPropertyId ? prev.capital : null,
-            rateable: rvRes?.success && rvRes.data ? rvRes.data : prev.propId === targetPropertyId ? prev.rateable : null,
-          }));
+          if (dualRes.success && dualRes.data) {
+            setFetchedDual(dualRes.data);
+          }
+          if (capRes?.success && capRes.data) {
+            setFetchedCapital(capRes.data);
+          }
+          if (rvRes?.success && rvRes.data) {
+            setFetchedRateable(rvRes.data);
+          }
         } else {
           const res = await fetchIndividualRateableValueAction(numericId);
           if (res.success && res.data) {
-            setFetchedValuation((prev) => ({
-              ...prev,
-              propId: targetPropertyId,
-              rateable: res.data ?? null,
-            }));
+            setFetchedRateable(res.data);
           }
         }
-      } catch {
-        // Valuation fetch error handled gracefully
+      } catch (err) {
+        console.error(`Failed to fetch valuation for mode ${mode}:`, err);
       } finally {
         setIsValuationLoading(false);
       }
@@ -198,27 +210,20 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
     let active = true;
 
     async function loadData() {
-      // Only fetch comparison if not already provided by SSR or state
-      if (!comparisonState) {
-        try {
-          const compRes = await fetchIndividualPropertyComparisonAction(targetId);
-          if (active && compRes.success && compRes.data) {
-            setFetchedValuation((prev) => ({
-              ...prev,
-              propId: targetId,
-              comparison: compRes.data ?? null,
-            }));
-          }
-        } catch {
-          // Handled gracefully without polluting console
+      try {
+        const compRes = await fetchIndividualPropertyComparisonAction(targetId);
+        if (active && compRes.success && compRes.data) {
+          setFetchedComparison(compRes.data);
         }
+      } catch (err) {
+        console.error('Error fetching individual comparison data:', err);
       }
 
-      if (currentTaxMode === 'capital' && !capitalState) {
+      if (currentTaxMode === 'capital' && !capitalData) {
         await fetchValuationForMode('capital', targetId);
-      } else if (currentTaxMode === 'dual' && !dualState) {
+      } else if (currentTaxMode === 'dual' && !dualMethodData) {
         await fetchValuationForMode('dual', targetId);
-      } else if (currentTaxMode === 'rateable' && !rateableState) {
+      } else if (currentTaxMode === 'rateable' && !rateableData) {
         await fetchValuationForMode('rateable', targetId);
       }
     }
@@ -228,13 +233,11 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
     return () => {
       active = false;
     };
-  }, [propertyId, currentTaxMode, capitalState, dualState, rateableState, comparisonState, fetchValuationForMode]);
+  }, [propertyId, currentTaxMode, capitalData, dualMethodData, rateableData, fetchValuationForMode]);
 
   // Tab mode switch handler
   const handleTaxModeChange = (mode: PtisTaxMode) => {
-    if (!onTaxModeChange) {
-      setUncontrolledTaxMode(mode);
-    }
+    setInternalTaxMode(mode);
     onTaxModeChange?.(mode);
 
     if (propertyId) {
@@ -257,26 +260,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
     );
   }
 
-  const getSectionTitle = (section: string) => {
-    switch (section) {
-      case 'building':
-        return tInd.has?.('sections.buildingPermission')
-          ? tInd('sections.buildingPermission')
-          : 'BUILDING PERMISSION (Certificates & Clearances)';
-      case 'discount':
-        return tInd.has?.('sections.discount')
-          ? tInd('sections.discount')
-          : 'DISCOUNT & SOCIAL DATA (Discounts & Concessions)';
-      case 'oldDetails':
-        return tInd.has?.('sections.oldDetails')
-          ? tInd('sections.oldDetails')
-          : 'OLD DETAILS (Mapped Properties / Historical Data)';
-      default:
-        return '';
-    }
-  };
-
-  const activeTitle = activeSection ? getSectionTitle(activeSection) : null;
+  const activeTitle = activeSection ? SECTION_TITLES[activeSection] : null;
 
   const searchParamsObj = {
     wardNo: wardNo || undefined,
@@ -310,7 +294,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
             <RateableTaxTable
               rateableData={rateableState}
               searchParams={searchParamsObj}
-              locale={currentLocale}
+              locale={locale}
               propertyId={propertyId ? Number(propertyId) : undefined}
             />
           )}
@@ -319,7 +303,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
             <CapitalTaxTable
               capitalData={capitalState}
               searchParams={searchParamsObj}
-              locale={currentLocale}
+              locale={locale}
               propertyId={propertyId ? Number(propertyId) : undefined}
             />
           )}
@@ -329,7 +313,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
               <div className="w-full flex flex-col gap-3 py-1">
                 <DualMethodComparisonTable
                   dualMethodData={dualState}
-                  locale={currentLocale}
+                  locale={locale}
                 />
               </div>
 
@@ -357,20 +341,34 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
                 <div className="py-2 space-y-3">
                   <DualMethodFloorDetails
                     rateableSection={
-                      <RateableTaxTable
-                        rateableData={rateableState}
-                        searchParams={searchParamsObj}
-                        locale={currentLocale}
-                        propertyId={propertyId ? Number(propertyId) : undefined}
-                      />
+                      <div className="space-y-3">
+                        <RateableTaxTable
+                          rateableData={rateableState}
+                          searchParams={searchParamsObj}
+                          locale={locale}
+                          propertyId={propertyId ? Number(propertyId) : undefined}
+                        />
+                        {rateableTaxDetailsState && (
+                          <div className="p-3 bg-white rounded-b-md border-t border-slate-200">
+                            <TaxDetails initialTaxDetails={rateableTaxDetailsState} activeTab="current" />
+                          </div>
+                        )}
+                      </div>
                     }
                     capitalSection={
-                      <CapitalTaxTable
-                        capitalData={capitalState}
-                        searchParams={searchParamsObj}
-                        locale={currentLocale}
-                        propertyId={propertyId ? Number(propertyId) : undefined}
-                      />
+                      <div className="space-y-3">
+                        <CapitalTaxTable
+                          capitalData={capitalState}
+                          searchParams={searchParamsObj}
+                          locale={locale}
+                          propertyId={propertyId ? Number(propertyId) : undefined}
+                        />
+                        {capitalTaxDetailsState && (
+                          <div className="p-3 bg-white rounded-b-md border-t border-slate-200">
+                            <TaxDetails initialTaxDetails={capitalTaxDetailsState} activeTab="current" />
+                          </div>
+                        )}
+                      </div>
                     }
                   />
                 </div>

@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { PtisLayoutWrapper } from '@/components/modules/property-tax/ptis/PtisLayoutWrapper';
 import { getMediaPanelVisibleFromCookieStore } from '@/lib/utils/cookie';
 import { BottomActionBar } from '@/components/layout/BottomActionBar';
@@ -13,13 +14,15 @@ import { propertyWorkflowStageService } from '@/lib/api/ptis/propertyWorkflowSta
 import { getApartmentQCTopSectionBelowFlex } from '@/lib/api/ptis/apartment';
 import {
   getIndividualQcTopSectionAction,
-  getIndividualTaxDetailsAction,
   fetchIndividualPropertyComparisonAction,
   getIndividualOldDetailsAction,
   getIndividualOldFloorDetailsAction,
   getIndividualOldTaxesDetailsAction,
   getIndividualMappedPropertiesAction,
+  fetchIndividualCapitalValueAction,
+  fetchIndividualRateableValueAction,
 } from './action';
+import { fetchTaxDetailsByTab, type TaxDetailsResult } from './TaxDetails/fetchTaxDetails';
 import { buildInitialIndividualMasterData } from './individual-property.builder';
 import { toSafeString } from '@/lib/utils/format';
 import { PtisInitialData } from '@/types/ptis.types';
@@ -79,6 +82,27 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
   ]);
 
   const resolvedPropertyId = isPropIdValid ? propertyIdRaw : (pageData?.resolvedPropertyId ?? undefined);
+
+  const rawCategoryId = pageData?.propertyDetailsResult?.propertyDetails?.categoryId;
+  const rawCategoryName = pageData?.tabHeaderInfo?.category ?? '';
+  const isIndividual = rawCategoryId === 2 || String(rawCategoryName).toLowerCase().includes('individual');
+  const isApartment = rawCategoryId === 1 || rawCategoryId === 0 || String(rawCategoryName).toLowerCase().includes('apartment') || (!isIndividual && Boolean(pageData?.societyDetails?.societyDetailId));
+  const isMainProp = isApartment && (!partitionNo || partitionNo === '0' || partitionNo.trim() === '' || partitionNo.trim() === '-');
+
+  const isApartmentSocietyProperty =
+    isMainProp ||
+    rawCategoryId === 0 ||
+    String(rawCategoryName).toLowerCase() === 'apartment society property';
+
+  if (resolvedPropertyId && isApartmentSocietyProperty) {
+    const redirectParams = new URLSearchParams();
+    if (resolvedSearchParams) {
+      Object.entries(resolvedSearchParams).forEach(([k, v]) => {
+        if (typeof v === 'string') redirectParams.set(k, v);
+      });
+    }
+    redirect(`/${locale}/property-tax/ptis/apartment?${redirectParams.toString()}`);
+  }
 
   let finalTopSectionRes = topSectionRes;
   let finalCurrentWorkflow = currentWorkflow;
@@ -192,13 +216,25 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
 
   const rawValuationTab = toSafeString(resolvedSearchParams?.valuationTab || resolvedSearchParams?.tab);
   const initialTaxMode = rawValuationTab === 'capital' ? 'capital' : rawValuationTab === 'dual' ? 'dual' : 'rateable';
-  const initialTaxType = initialTaxMode === 'capital' ? 'CV' : initialTaxMode === 'dual' ? 'Dual' : 'RV';
 
-  const finalWardId = pageData.resolvedWardId ? String(pageData.resolvedWardId) : wardId;
-  const initialTaxDetailsRes = finalWardId && propertyNo
-    ? await getIndividualTaxDetailsAction(finalWardId, propertyNo, initialTaxType).catch(() => null)
-    : null;
-  const initialTaxDetails = initialTaxDetailsRes?.success && initialTaxDetailsRes.items ? initialTaxDetailsRes.items : null;
+  const initialTaxDetailsRes: TaxDetailsResult = resolvedPropertyId
+    ? await fetchTaxDetailsByTab(resolvedPropertyId, initialTaxMode, true).catch(() => ({} as TaxDetailsResult))
+    : {};
+  const initialRateableTaxDetails = initialTaxDetailsRes.rateableTaxDetails;
+  const initialCapitalTaxDetails = initialTaxDetailsRes.capitalTaxDetails;
+
+  let initialRateableData = pageData.rateableResult?.success ? pageData.rateableResult.data : null;
+  let initialCapitalData = pageData.capitalResult?.success ? pageData.capitalResult.data : null;
+
+  if (resolvedPropertyId) {
+    if (initialTaxMode === 'capital' && !initialCapitalData) {
+      const capRes = await fetchIndividualCapitalValueAction(resolvedPropertyId).catch(() => null);
+      if (capRes?.success && capRes.data) initialCapitalData = capRes.data;
+    } else if (initialTaxMode === 'rateable' && !initialRateableData) {
+      const rvRes = await fetchIndividualRateableValueAction(resolvedPropertyId).catch(() => null);
+      if (rvRes?.success && rvRes.data) initialRateableData = rvRes.data;
+    }
+  }
 
   const initialComparisonRes = pageData.comparisonResult?.success
     ? pageData.comparisonResult
@@ -234,11 +270,12 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
             initialWardId={pageData.resolvedWardId ?? (wardId ? Number(wardId) : null)}
             initialPropertyMasterData={initialPropertyMasterData}
             initialQcTopSectionBelowFlex={initialQcTopSectionBelowFlex}
-            initialRateableData={pageData.rateableResult?.success ? pageData.rateableResult.data : null}
-            initialCapitalData={pageData.capitalResult?.success ? pageData.capitalResult.data : null}
+            initialRateableData={initialRateableData}
+            initialCapitalData={initialCapitalData}
             initialDualMethodData={pageData.dualSectionData?.initialDualMethodData ?? null}
             initialComparisonData={initialComparisonData}
-            initialTaxDetails={initialTaxDetails}
+            initialRateableTaxDetails={initialRateableTaxDetails}
+            initialCapitalTaxDetails={initialCapitalTaxDetails}
             initialTaxMode={initialTaxMode}
           />
         </PtisLayoutWrapper>

@@ -19,7 +19,8 @@
     "surveyNo": "सर्व्हे क्र.",
     "taxZone": "कर क्षेत्र",
     "plotNo": "प्लॉट क्र.",
-    "aadharTitle": "आधार / शीर्षक",
+    "aadhar": "आधार",
+    "aadharTitle": "आधार",
     "mobileNo": "मोबाईल क्र.",
     "emailId": "ईमेल आयडी",
     "address": "पत्ता",
@@ -38,6 +39,8 @@
     "floorDetails": "मजला तपशील"
   },
   "summaryCards": {
+    "alv": "एएलव्ही (ALV)",
+    "area": "क्षेत्रफळ",
     "changesOfUse": "वापरातील बदल",
     "old": "जुने:",
     "new": "नवीन:",

@@ -25,19 +25,24 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => {
-    const map: Record<string, string> = {
-      'header.propertyNo': 'PROPERTY NO.:',
-      'header.upicId': 'UPIC ID:',
-      'header.ownerName': 'OWNER NAME:',
-      'header.copyUpic': 'Copy UPIC',
-      'header.edit': 'Edit',
-      'header.editOwner': 'Edit Property / Owner Details',
-      'photo.noPhoto': 'No Photo',
-      'grid.owner': 'Owner',
-      'grid.propertyHolder': 'Property Holder',
+  useLocale: () => 'en',
+  useTranslations: () => {
+    const fn = (key: string) => {
+      const map: Record<string, string> = {
+        'header.propertyNo': 'PROPERTY NO.:',
+        'header.upicId': 'UPIC ID:',
+        'header.ownerName': 'OWNER NAME:',
+        'header.copyUpic': 'Copy UPIC',
+        'header.edit': 'Edit',
+        'header.editOwner': 'Edit Property / Owner Details',
+        'photo.noPhoto': 'No Photo',
+        'grid.owner': 'Owner',
+        'grid.propertyHolder': 'Property Holder',
+      };
+      return map[key] || key;
     };
-    return map[key] || key;
+    fn.has = () => true;
+    return fn;
   },
 }));
 
@@ -98,7 +103,7 @@ describe('Individual Property - Components & Hook', () => {
     aadharNo: '123456789012',
     title: 'Mr',
     ownerTitle: 'Mr',
-    aadharWithTitle: '1234 5678 9012 / Mr',
+    aadharWithTitle: '1234 5678 9012',
     mobileNo: '9820198201',
     emailId: 'ab@jalsa.com',
     societyAddress: 'Jalsa, Juhu, Mumbai',
@@ -174,7 +179,7 @@ describe('Individual Property - Components & Hook', () => {
       render(<IndividualMasterDetailsGrid data={mockData} />);
       expect(screen.getAllByText('Amitabh Bachchan').length).toBeGreaterThan(0);
       expect(screen.getByText('Jalsa, Juhu, Mumbai')).toBeInTheDocument();
-      expect(screen.getByText('1234 5678 9012 / Mr')).toBeInTheDocument();
+      expect(screen.getByText('1234 5678 9012')).toBeInTheDocument();
 
       render(<IndividualMasterDetailsGrid data={undefined} />);
       const dashes = screen.getAllByText('-');
