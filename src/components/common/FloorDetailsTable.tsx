@@ -269,7 +269,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
     if (!containerRef.current) return;
     const container = containerRef.current;
     const maxScroll = container.scrollWidth - container.clientWidth;
-    
+
     if (isScrolledRight) {
       container.scrollTo({ left: 0, behavior: 'smooth' });
       setIsScrolledRight(false);
@@ -540,7 +540,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                         )}
                       >
                         <div className="flex items-center justify-center gap-1">
-                          {expandHref ? (
+                          {(expandHref || renderExpanded) ? (
                             <button
                               onClick={(e) => {
                                 e.preventDefault();

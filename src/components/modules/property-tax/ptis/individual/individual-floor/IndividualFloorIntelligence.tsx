@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
 import { IndividualFloorTopNav, type IndividualFloorTopNavSection } from './IndividualFloorTopNav';
 import { IndividualFloorSummaryCards } from './IndividualFloorSummaryCards';
@@ -34,7 +35,6 @@ import {
   fetchIndividualRateableValueAction,
   fetchIndividualCapitalValueAction,
   fetchIndividualDualMethodAction,
-  fetchIndividualPropertyComparisonAction,
 } from '@/app/[locale]/property-tax/ptis/individual/action';
 
 export interface IndividualFloorIntelligenceProps {
@@ -203,37 +203,6 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
     [capitalState, rateableState]
   );
 
-  // Dynamically fetch comparison and valuation data when propertyId changes
-  useEffect(() => {
-    if (!propertyId) return;
-    const targetId = propertyId;
-    let active = true;
-
-    async function loadData() {
-      try {
-        const compRes = await fetchIndividualPropertyComparisonAction(targetId);
-        if (active && compRes.success && compRes.data) {
-          setFetchedComparison(compRes.data);
-        }
-      } catch (err) {
-        console.error('Error fetching individual comparison data:', err);
-      }
-
-      if (currentTaxMode === 'capital' && !capitalData) {
-        await fetchValuationForMode('capital', targetId);
-      } else if (currentTaxMode === 'dual' && !dualMethodData) {
-        await fetchValuationForMode('dual', targetId);
-      } else if (currentTaxMode === 'rateable' && !rateableData) {
-        await fetchValuationForMode('rateable', targetId);
-      }
-    }
-
-    loadData();
-
-    return () => {
-      active = false;
-    };
-  }, [propertyId, currentTaxMode, capitalData, dualMethodData, rateableData, fetchValuationForMode]);
 
   // Tab mode switch handler
   const handleTaxModeChange = (mode: PtisTaxMode) => {
@@ -251,6 +220,23 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
     }
   };
 
+  const currentSearchParams = useSearchParams();
+
+  const searchParamsObj = useMemo(() => {
+    const obj: Record<string, string | string[] | undefined> = {};
+    if (currentSearchParams) {
+      currentSearchParams.forEach((value, key) => {
+        obj[key] = value;
+      });
+    }
+    if (wardNo) obj.wardNo = wardNo;
+    if (wardId) obj.wardId = String(wardId);
+    if (propertyNo) obj.propertyNo = propertyNo;
+    if (partitionNo) obj.partitionNo = partitionNo;
+    if (propertyId) obj.propertyId = String(propertyId);
+    return obj;
+  }, [currentSearchParams, wardNo, wardId, propertyNo, partitionNo, propertyId]);
+
   if (isLoading) {
     return (
       <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-xs animate-pulse space-y-4">
@@ -261,13 +247,6 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   }
 
   const activeTitle = activeSection ? SECTION_TITLES[activeSection] : null;
-
-  const searchParamsObj = {
-    wardNo: wardNo || undefined,
-    wardId: wardId ? String(wardId) : undefined,
-    propertyNo: propertyNo || undefined,
-    partitionNo: partitionNo || undefined,
-  };
 
   return (
     <div className="bg-white p-3 rounded-xl border border-zinc-200 shadow-xs relative font-sans">

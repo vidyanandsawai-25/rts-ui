@@ -20,6 +20,8 @@ import {
   getWingWiseDetails,
   updateApartmentQcWingDetails,
   getApartmentTaxDetails,
+  getApartmentDemandDetails,
+  getApartmentYearWiseDetails,
   type UpdateApartmentQcWingDetailsPayload,
 } from '@/lib/api/ptis/apartment';
 import { getPropertyRuleLogs } from '@/lib/api/rule-engine/property-rule-log.service';
@@ -34,7 +36,7 @@ import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 import type { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 import { createLogger } from '@/lib/utils/server-logger';
-import type { ApartmentTaxDetailsResponse } from '@/types/property-tax/apartment';
+import type { ApartmentTaxDetailsResponse, ApartmentDemandDetailsResponse } from '@/types/property-tax/apartment';
 import { getMappedNewProperties, getMappedOldProperties } from '@/lib/api/property-mapping/property-mapping.service';
 import type {
   MappedNewPropertiesApiResponse,
@@ -157,6 +159,31 @@ export async function getApartmentTaxDetailsAction(
     return await getApartmentTaxDetails({ wardId, propertyNo, taxType });
   } catch (error) {
     return { success: false, message: error instanceof Error ? error.message : 'Failed to fetch tax details', items: null, totalCount: null, errors: [error instanceof Error ? error.message : 'Unknown error'], correlationId: null };
+  }
+}
+
+export async function getApartmentDemandDetailsAction(
+  wardId: string | number,
+  propertyNo: string,
+  taxType: string = 'RV'
+): Promise<ApartmentDemandDetailsResponse> {
+  try {
+    return await getApartmentDemandDetails({ wardId, propertyNo, taxType });
+  } catch (error) {
+    return { success: false, message: error instanceof Error ? error.message : 'Failed to fetch demand details', items: null, totalCount: null, errors: [error instanceof Error ? error.message : 'Unknown error'], correlationId: null };
+  }
+}
+
+export async function getApartmentYearWiseDetailsAction(
+  wardId: string | number,
+  propertyNo: string,
+  taxType: string = 'RV',
+  financeYearId: string | number
+): Promise<ApartmentDemandDetailsResponse> {
+  try {
+    return await getApartmentYearWiseDetails({ wardId, propertyNo, taxType, financeYearId });
+  } catch (error) {
+    return { success: false, message: error instanceof Error ? error.message : 'Failed to fetch year wise details', items: null, totalCount: null, errors: [error instanceof Error ? error.message : 'Unknown error'], correlationId: null };
   }
 }
 
