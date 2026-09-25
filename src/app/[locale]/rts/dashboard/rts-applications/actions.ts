@@ -948,8 +948,8 @@ async function getApprovalApplicationsWindow(
     status: filters.status,
     fromDate: toDashboardDateTime(filters.fromDate, 'start'),
     toDate: toDashboardDateTime(filters.toDate, 'end'),
-    sortBy: isFifo ? undefined : filters.sortBy ?? 'CreatedDate',
-    sortOrder: isFifo ? undefined : filters.sortOrder ?? 'asc',
+    sortBy: hasExplicitSort ? filters.sortBy : undefined,
+    sortOrder: hasExplicitSort ? filters.sortOrder : undefined,
     userId: filters.assignedUserId,
     currentUserId: filters.currentUserId,
     isFifo,
@@ -1172,7 +1172,8 @@ function mergePrioritizedDashboardRows(
   applicationDashboardRows: AdminApplicationGridRow[],
   currentUserId: number | undefined,
   sortBy: RtsApplicationsDashboardFilters['sortBy'],
-  sortOrder: RtsApplicationsDashboardFilters['sortOrder']
+  sortOrder: RtsApplicationsDashboardFilters['sortOrder'],
+  preserveSourceOrder = false
 ): AdminApplicationGridRow[] {
   const priorityApprovalRows = currentUserId == null
     ? []
@@ -1183,6 +1184,12 @@ function mergePrioritizedDashboardRows(
     ),
     ...applicationDashboardRows,
   ];
+
+  // My Applications is already filtered by the approval API; keep its active-order response
+  // unless the officer intentionally chooses a table-header sort.
+  if (preserveSourceOrder) {
+    return [...priorityApprovalRows, ...remainingRows];
+  }
 
   return [
     ...sortDashboardRows(priorityApprovalRows, sortBy, sortOrder),
@@ -1384,12 +1391,15 @@ export async function getRtsApplicationsDashboardAction(
     const cookieStore = await cookies();
     const currentUserId = getCurrentApprovalOfficerUserId(cookieStore);
     const isMyApplicationsMode = filters.myApplications === true;
+    const hasExplicitSort = Boolean(filters.sortBy || filters.sortOrder);
     const effectiveFilters: RtsApplicationsDashboardFilters = {
       ...filters,
       assignedUserId: isMyApplicationsMode
         ? currentUserId ?? undefined
         : filters.assignedUserId,
       currentUserId: isMyApplicationsMode ? undefined : currentUserId ?? undefined,
+      // Do not apply default FIFO/date ordering to the officer-only API response.
+      isFifo: isMyApplicationsMode && !hasExplicitSort ? false : filters.isFifo,
     };
     const applicationDashboardPayload: RtsApplicationDashboardRequestInput = {
       UpicId: null,
@@ -1541,7 +1551,8 @@ export async function getRtsApplicationsDashboardAction(
       reconciledRows.applicationDashboardRows,
       effectiveFilters.currentUserId,
       filters.sortBy,
-      filters.sortOrder
+      filters.sortOrder,
+      isMyApplicationsMode && !hasExplicitSort
     );
     const combinedSourceTotal = (approvalRes?.totalCount ?? approvalRows.length) + externalTotalCount;
     const totalCount = Math.max(
