@@ -5,17 +5,19 @@
     "buttons": {
       "add": "भूगोल इकाई जोड़ें",
       "edit": "संपादित करें",
-      "delete": "हटाएं"
+      "delete": "हटाएं",
+      "viewTree": "ट्री देखें"
     },
     "filters": {
       "show": "दिखाएं",
       "search": "इकाई कोड या इकाई नाम से खोजें..."
     },
     "table": {
-      "unitCode": "इकाई कोड",
-      "unitName": "इकाई नाम",
+      "unitCode": "भूगोल इकाई कोड",
+      "unitName": "भूगोल इकाई नाम",
       "geographyType": "भूगोल प्रकार",
-      "parentUnit": "मूल इकाई",
+      "parentUnit": "मूल भूगोल इकाई",
+      "searchSequence": "खोज अनुक्रम",
       "status": "स्थिति",
       "actions": "कार्रवाई"
     },
@@ -39,15 +41,15 @@
         "placeholder": "भूगोल प्रकार चुनें"
       },
       "parentUnit": {
-        "label": "मूल इकाई",
-        "placeholder": "मूल इकाई चुनें (वैकल्पिक)"
+        "label": "मूल भूगोल इकाई",
+        "placeholder": "मूल भूगोल इकाई चुनें (वैकल्पिक)"
       },
       "unitCode": {
-        "label": "इकाई कोड",
+        "label": "भूगोल इकाई कोड",
         "placeholder": "जैसे ZONE-1"
       },
       "unitName": {
-        "label": "इकाई नाम",
+        "label": "भूगोल इकाई नाम",
         "placeholder": "जैसे Zone 1"
       },
       "searchSequence": {

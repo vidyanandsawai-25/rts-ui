@@ -1,7 +1,7 @@
 "use client";
 
 import { Input, ValidationMessage } from "@/components/common";
-import { GeographyTypeFormModel } from "@/types/geographyType.types";
+import { GeographyTypeFormModel } from "@/types/water-bill/geographyType.types";
 import type React from "react";
 
 interface FormFieldsSectionProps {
@@ -64,9 +64,9 @@ export const FormFieldsSection = ({
         value={levelNoValue}
         onChange={handleChange}
         onBlur={handleBlur}
-        disabled={!isActive}
+        disabled
         fullWidth
-        className="text-gray-700"
+        className="text-gray-900"
       />
       <ValidationMessage message={errors.levelNo} visible={showError("levelNo")} />
     </div>

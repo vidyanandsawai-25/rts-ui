@@ -1,17 +1,17 @@
 "use client";
 
 import { Input, Select, ValidationMessage } from "@/components/common";
-import { GeographyUnitFormModel } from "@/types/geographyUnit.types";
-import type { GeographyType } from "@/types/geographyType.types";
-import type { GeographyUnit } from "@/types/geographyUnit.types";
+import { GeographyType } from "@/types/water-bill/geographyType.types";
+import { GeographyUnitFormModel, ParentGeographyUnitCandidate } from "@/types/water-bill/geographyUnit.types";
 import type React from "react";
 
 interface FormFieldsSectionProps {
   formData: GeographyUnitFormModel;
   searchSequenceValue: string;
   geographyTypeOptions: GeographyType[];
-  parentUnitOptions: GeographyUnit[];
+  parentUnitOptions: ParentGeographyUnitCandidate[];
   optionsLoading: boolean;
+  parentOptionsLoading?: boolean;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
   handleGeographyTypeChange: (value: string) => void;
@@ -29,6 +29,7 @@ export const FormFieldsSection = ({
   geographyTypeOptions,
   parentUnitOptions,
   optionsLoading,
+  parentOptionsLoading = false,
   handleChange,
   handleBlur,
   handleGeographyTypeChange,
@@ -60,10 +61,10 @@ export const FormFieldsSection = ({
         value={formData.parentGeographyUnitId === null ? "" : String(formData.parentGeographyUnitId)}
         onChange={(_e, value) => handleParentUnitChange(value)}
         options={parentUnitOptions.map((u) => ({
-          label: `${u.geographyUnitName} (${u.geographyTypeName})`,
+          label: `${u.geographyUnitName} (${u.geographyUnitCode})`,
           value: String(u.id),
         }))}
-        disabled={!isActive || optionsLoading}
+        disabled={!isActive || !formData.geographyTypeId || parentOptionsLoading}
       />
 
       <Input
@@ -102,7 +103,7 @@ export const FormFieldsSection = ({
         value={searchSequenceValue}
         onChange={handleChange}
         onBlur={handleBlur}
-        disabled={!isActive}
+        disabled
         fullWidth
         className="text-gray-700"
       />

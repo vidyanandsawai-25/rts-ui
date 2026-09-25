@@ -7,11 +7,13 @@ import {
   getGeographyUnitPaged,
   getGeographyUnitById,
   updateGeographyUnit,
-} from "@/lib/api/geographyunitmaster/geography-unit-crud.service";
-import { getGeographyTypePaged } from "@/lib/api/geographytypemaster/geography-type-crud.service";
+  getParentGeographyUnitCandidates,
+  getGeographyUnitHierarchyTree,
+} from "@/lib/api/water-bill/geographyunitmaster/geography-unit-crud.service";
+import { getGeographyTypePaged } from "@/lib/api/water-bill/geographytypemaster/geography-type-crud.service";
 import { ApiError } from "@/lib/utils/api";
-import { GeographyUnit, GeographyUnitFormModel } from "@/types/geographyUnit.types";
-import type { GeographyType } from "@/types/geographyType.types";
+import { GeographyUnit, GeographyUnitFormModel, ParentGeographyUnitCandidate, GeographyUnitHierarchyNode } from "@/types/water-bill/geographyUnit.types";
+import type { GeographyType } from "@/types/water-bill/geographyType.types";
 import { PagedResponse } from "@/types/common.types";
 import { cookies } from "next/headers";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
@@ -68,6 +70,19 @@ export async function fetchGeographyUnitOptionsAction(): Promise<GeographyUnit[]
     return result.items;
   } catch (error) {
     logger.error("fetchGeographyUnitOptionsAction failed", undefined, error);
+    return [];
+  }
+}
+
+/** Fetches valid parent-unit candidates for the given geography type (for the form's parent-unit dropdown). */
+export async function fetchParentUnitCandidatesAction(
+  geographyTypeId: number
+): Promise<ParentGeographyUnitCandidate[]> {
+  try {
+    if (!geographyTypeId || geographyTypeId <= 0) return [];
+    return await getParentGeographyUnitCandidates(geographyTypeId);
+  } catch (error) {
+    logger.error("fetchParentUnitCandidatesAction failed", { geographyTypeId }, error);
     return [];
   }
 }
@@ -143,6 +158,16 @@ export async function deleteGeographyUnitAction(
       return { success: false, message: error.responseText, statusCode: error.statusCode };
     }
     return { success: false, message: "Failed to delete geography unit" };
+  }
+}
+
+/** Fetches the full geography unit hierarchy as a nested tree (for the hierarchy view modal). */
+export async function fetchGeographyUnitHierarchyTreeAction(): Promise<GeographyUnitHierarchyNode[]> {
+  try {
+    return await getGeographyUnitHierarchyTree();
+  } catch (error) {
+    logger.error("fetchGeographyUnitHierarchyTreeAction failed", undefined, error);
+    return [];
   }
 }
 

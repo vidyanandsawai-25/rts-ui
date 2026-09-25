@@ -5,17 +5,19 @@
     "buttons": {
       "add": "Add Geography Unit",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "viewTree": "View Tree"
     },
     "filters": {
       "show": "Show",
       "search": "Search by Unit Code or Unit Name..."
     },
     "table": {
-      "unitCode": "Unit Code",
-      "unitName": "Unit Name",
+      "unitCode": "Geography Unit Code",
+      "unitName": "Geography Unit Name",
       "geographyType": "Geography Type",
-      "parentUnit": "Parent Unit",
+      "parentUnit": "Parent Geography Unit",
+      "searchSequence": "Search Sequence",
       "status": "Status",
       "actions": "Actions"
     },
@@ -39,15 +41,15 @@
         "placeholder": "Select geography type"
       },
       "parentUnit": {
-        "label": "Parent Unit",
+        "label": "Parent Geography Unit",
         "placeholder": "Select parent unit (optional)"
       },
       "unitCode": {
-        "label": "Unit Code",
+        "label": "Geography Unit Code",
         "placeholder": "e.g. ZONE-1"
       },
       "unitName": {
-        "label": "Unit Name",
+        "label": "Geography Unit Name",
         "placeholder": "e.g. Zone 1"
       },
       "searchSequence": {
@@ -56,10 +58,10 @@
     },
     "validation": {
       "geographyTypeRequired": "Geography type is required",
-      "unitCodeRequired": "Unit code is required",
+      "unitCodeRequired": "Geography unit code is required",
       "unitCodeMaxLength": "Maximum length is 20 characters",
       "unitCodeFormat": "Invalid format. Only English letters, numbers, and underscore are allowed.",
-      "unitNameRequired": "Unit name is required",
+      "unitNameRequired": "Geography unit name is required",
       "unitNameMaxLength": "Maximum length is 100 characters",
       "unitNameFormat": "Only letters (any language), numbers, spaces, and basic punctuation allowed (,./-()).",
       "sequenceInvalid": "Search sequence must be 0 or greater",

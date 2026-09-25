@@ -5,7 +5,8 @@
     "buttons": {
       "add": "भूगोल एकक जोडा",
       "edit": "संपादित करा",
-      "delete": "हटवा"
+      "delete": "हटवा",
+      "viewTree": "ट्री पहा"
     },
     "filters": {
       "show": "दाखवा",
@@ -16,6 +17,7 @@
       "unitName": "एकक नाव",
       "geographyType": "भूगोल प्रकार",
       "parentUnit": "मूळ एकक",
+      "searchSequence": "शोध क्रम",
       "status": "स्थिती",
       "actions": "क्रिया"
     },
@@ -39,15 +41,15 @@
         "placeholder": "भूगोल प्रकार निवडा"
       },
       "parentUnit": {
-        "label": "मूळ एकक",
-        "placeholder": "मूळ एकक निवडा (ऐच्छिक)"
+        "label": "मूळ भूगोल एकक",
+        "placeholder": "मूळ भूगोल एकक निवडा (ऐच्छिक)"
       },
       "unitCode": {
-        "label": "एकक कोड",
+        "label": "भूगोल एकक कोड",
         "placeholder": "उदा. ZONE-1"
       },
       "unitName": {
-        "label": "एकक नाव",
+        "label": "भूगोल एकक नाव",
         "placeholder": "उदा. Zone 1"
       },
       "searchSequence": {

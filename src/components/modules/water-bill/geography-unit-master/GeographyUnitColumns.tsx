@@ -1,5 +1,6 @@
 import type { Column } from "@/components/common/MasterTable";
-import type { GeographyUnit } from "@/types/geographyUnit.types";
+import { GeographyUnit } from "@/types/water-bill/geographyUnit.types";
+
 
 /**
  * Returns the table column configuration for Geography Unit Master.
@@ -13,7 +14,14 @@ export function getGeographyUnitColumns(
       key: "geographyUnitCode",
       label: t("list.table.unitCode"),
       width: "18%",
-      render: (value) => (typeof value === "string" ? value : ""),
+      render: (value) =>
+        typeof value === "string" && value ? (
+          <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border whitespace-nowrap bg-[#f3e8ff] text-purple-700 border-purple-200">
+            {value}
+          </span>
+        ) : (
+          "—"
+        ),
     },
     {
       key: "geographyUnitName",
@@ -22,10 +30,17 @@ export function getGeographyUnitColumns(
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
-      key: "geographyTypeName",
+      key: "geographyType",
       label: t("list.table.geographyType"),
       width: "18%",
-      render: (value) => (typeof value === "string" ? value : ""),
+      render: (value) =>
+        typeof value === "string" && value ? (
+          <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border whitespace-nowrap bg-[#e3f0fd] text-blue-700 border-blue-200">
+            {value}
+          </span>
+        ) : (
+          "—"
+        ),
     },
     {
       key: "parentGeographyUnitName",
@@ -33,6 +48,10 @@ export function getGeographyUnitColumns(
       width: "18%",
       render: (value) => (typeof value === "string" ? value : "—"),
     },
+    {
+      key: "searchSequence", 
+      label: t("list.table.searchSequence"), 
+      width: "18%"},
     {
       key: "isActive",
       label: t("list.table.status"),

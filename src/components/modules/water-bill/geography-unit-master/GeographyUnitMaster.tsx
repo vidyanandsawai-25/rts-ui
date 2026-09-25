@@ -3,20 +3,22 @@
 import React, { useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { MapPinned, BookOpen } from "lucide-react";
+import { MapPinned, BookOpen, Network } from "lucide-react";
 import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/common/ActionButton";
-import type { GeographyUnit, GeographyUnitProps } from "@/types/geographyUnit.types";
+import type { GeographyUnit, GeographyUnitProps } from "@/types/water-bill/geographyUnit.types";
 import { deleteGeographyUnitAction } from "@/app/[locale]/water-bill/geography-unit-master/action";
 import TableHeader from "@/components/common/TableHeader";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { PageContainer, SearchInput, Select } from "@/components/common";
+import { AddButton, PageContainer, SearchInput, Select } from "@/components/common";
 import { GeographyUserManualModal } from "../geography-shared/GeographyUserManualModal";
+import { GeographyHierarchyTreeModal } from "../geography-shared/GeographyHierarchyTreeModal";
+import { GeographyMasterTabs } from "../geography-shared/GeographyMasterTabs";
 import { getGeographyUnitColumns } from "./GeographyUnitColumns";
-import { useGeographyUnitSearch } from "@/hooks/geographyunitmaster/useGeographyUnitSearch";
-import { useGeographyUnitPagination } from "@/hooks/geographyunitmaster/useGeographyUnitPagination";
+import { useGeographyUnitSearch } from "@/hooks/water-bill/geographyunitmaster/useGeographyUnitSearch";
+import { useGeographyUnitPagination } from "@/hooks/water-bill/geographyunitmaster/useGeographyUnitPagination";
 
 /* ================= PAGE ================= */
 export function GeographyUnitMaster({
@@ -39,6 +41,12 @@ export function GeographyUnitMaster({
   const openUserManual = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("showUserManual", "true");
+    router.push(`${pathname}?${params.toString()}`);
+  }, [router, pathname, searchParams]);
+
+  const openHierarchyTree = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("showHierarchyTree", "true");
     router.push(`${pathname}?${params.toString()}`);
   }, [router, pathname, searchParams]);
 
@@ -114,31 +122,7 @@ export function GeographyUnitMaster({
           title={t("list.title")}
           subtitle={t("list.subtitle")}
           icon={MapPinned}
-          actionLabel={t("list.buttons.add")}
-          onActionClick={() => {
-            startTransition(() => {
-              router.push(`/${locale}/water-bill/geography-unit-master/add`);
-            });
-          }}
-          rightContent={
-            <div
-              className={
-                locale === "en"
-                  ? "flex items-center gap-2 w-[27rem] max-[899px]:w-full justify-end"
-                  : "flex items-center gap-2 w-full justify-end"
-              }
-            >
-              <SearchInput
-                value={search}
-                onChange={handleSearchChange}
-                placeholder={t("list.filters.search")}
-                className="mb-0 w-full text-gray-900"
-              />
-              <Button variant="secondary" size="sm" icon={BookOpen} onClick={openUserManual}>
-                {tCommon("buttons.userManual")}
-              </Button>
-            </div>
-          }
+          rightContent={<GeographyMasterTabs />}
         />
         <MasterTable<GeographyUnit>
           columns={columns}
@@ -150,6 +134,30 @@ export function GeographyUnitMaster({
           totalCount={totalCount}
           totalPages={totalPages}
           onPageChange={changePage}
+          headerExtra={
+            <div className="flex w-full flex-wrap items-center justify-end gap-2">
+              <SearchInput
+                value={search}
+                onChange={handleSearchChange}
+                placeholder={t("list.filters.search")}
+                className="mb-0 min-w-48 text-gray-900"
+              />
+              <Button variant="secondary" size="sm" icon={Network} onClick={openHierarchyTree}>
+                {t("list.buttons.viewTree")}
+              </Button>
+              <Button variant="secondary" size="sm" icon={BookOpen} onClick={openUserManual}>
+                {tCommon("buttons.userManual")}
+              </Button>
+              <AddButton
+                label={t("list.buttons.add")}
+                onClick={() => {
+                  startTransition(() => {
+                    router.push(`/${locale}/water-bill/geography-unit-master/add`);
+                  });
+                }}
+              />
+            </div>
+          }
           renderActions={(row) => (
             <>
               <EditButton aria-label={tCommon("table.actions.edit")} onClick={() => handleEdit(row)} />
@@ -184,6 +192,7 @@ export function GeographyUnitMaster({
         />
       </div>
       <GeographyUserManualModal />
+      <GeographyHierarchyTreeModal />
     </PageContainer>
   );
 }

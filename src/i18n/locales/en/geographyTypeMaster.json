@@ -12,7 +12,7 @@
       "search": "Search by Code or Geography Type..."
     },
     "table": {
-      "geographyTypeCode": "Code",
+      "geographyTypeCode": "Geography Type Code",
       "geographyType": "Geography Type",
       "levelNo": "Level No",
       "status": "Status",
@@ -34,7 +34,7 @@
     "editSubtitle": "Update geography type details",
     "fields": {
       "code": {
-        "label": "Code",
+        "label": "Geography Type Code",
         "placeholder": "e.g. ZONE"
       },
       "geographyType": {
@@ -46,7 +46,7 @@
       }
     },
     "validation": {
-      "codeRequired": "Code is required",
+      "codeRequired": "Geography Type Code is required",
       "codeMaxLength": "Maximum length is 20 characters",
       "codeFormat": "Invalid format. Only English letters, numbers, and underscore are allowed.",
       "geographyTypeRequired": "Geography type is required",

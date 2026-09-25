@@ -3,8 +3,8 @@ import {
   GeographyUnitMaster,
 } from "@/components/modules/water-bill/geography-unit-master";
 import React from "react";
-import { getGeographyUnitPaged } from "@/lib/api/geographyunitmaster/geography-unit-crud.service";
-import type { GeographyUnit } from "@/types/geographyUnit.types";
+import { getGeographyUnitPaged } from "@/lib/api/water-bill/geographyunitmaster/geography-unit-crud.service";
+import type { GeographyUnit } from "@/types/water-bill/geographyUnit.types";
 import { fetchGeographyUnitPagedServerAction } from "../action";
 
 export default async function AddPage(): Promise<React.ReactElement> {
@@ -18,7 +18,8 @@ export default async function AddPage(): Promise<React.ReactElement> {
   const initialData = {
     id: 0,
     geographyTypeId: 0,
-    geographyTypeName: "",
+    geographyTypeCode: "",
+    geographyType: "",
     parentGeographyUnitId: null,
     parentGeographyUnitName: null,
     geographyUnitCode: "",

@@ -7,13 +7,14 @@ import {
   getGeographyTypePaged,
   getGeographyTypeById,
   updateGeographyType,
-} from "@/lib/api/geographytypemaster/geography-type-crud.service";
+} from "@/lib/api/water-bill/geographytypemaster/geography-type-crud.service";
 import { ApiError } from "@/lib/utils/api";
-import { GeographyType, GeographyTypeFormModel } from "@/types/geographyType.types";
+
 import { PagedResponse } from "@/types/common.types";
 import { cookies } from "next/headers";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { createLogger } from "@/lib/utils/server-logger";
+import { GeographyType, GeographyTypeFormModel } from "@/types/water-bill/geographyType.types";
 
 const logger = createLogger("GeographyTypeMaster");
 

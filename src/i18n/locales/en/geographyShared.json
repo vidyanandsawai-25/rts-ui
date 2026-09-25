@@ -14,5 +14,20 @@
       "step3": "Each unit can optionally have a Parent Unit from a higher level — for example, \"Ward 1\" can be linked under \"Zone 1\", and \"Locality 1\" under \"Ward 1\" — building the full hierarchy."
     },
     "note": "Always create Geography Types first, then add Geography Units that reference them — units cannot be created for a type that doesn't exist yet."
+  },
+  "hierarchyTree": {
+    "title": "Geography Hierarchy Tree",
+    "subtitle": "Full breakdown of geography units from zone down to the smallest unit",
+    "loading": "Loading hierarchy tree...",
+    "empty": "No geography units found.",
+    "administrativeUnits": "Geography Units",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All",
+    "legend": {
+      "zone": "Zone",
+      "ward": "Ward",
+      "mouja": "Mouja",
+      "citySurveyNo": "City Survey No"
+    }
   }
 }

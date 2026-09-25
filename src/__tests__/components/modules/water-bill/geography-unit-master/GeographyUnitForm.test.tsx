@@ -121,24 +121,16 @@ vi.mocked(useRouter).mockImplementation(() => ({
 const mockCreate = vi.spyOn(actions, "createGeographyUnitAction").mockResolvedValue({ success: true });
 const mockUpdate = vi.spyOn(actions, "updateGeographyUnitAction").mockResolvedValue({ success: true });
 const mockFetchTypes = vi.spyOn(actions, "fetchGeographyTypeOptionsAction").mockResolvedValue([
-  { id: 1, geographyTypeCode: "ZONE", geographyType: "Zone", levelNo: 1, isActive: true, createdDate: "", updatedDate: null },
-  { id: 2, geographyTypeCode: "WARD", geographyType: "Ward", levelNo: 2, isActive: true, createdDate: "", updatedDate: null },
+  { id: 1, geographyTypeCode: "ZONE",
+    geographyType: "Zone", levelNo: 1, isActive: true, createdDate: "", updatedDate: null },
+  { id: 2, geographyTypeCode: "WARD",
+    geographyType: "Ward", levelNo: 2, isActive: true, createdDate: "", updatedDate: null },
 ]);
-const mockFetchUnits = vi.spyOn(actions, "fetchGeographyUnitOptionsAction").mockResolvedValue([
+const mockFetchCandidates = vi.spyOn(actions, "fetchParentUnitCandidatesAction").mockResolvedValue([
   {
     id: 1,
-    geographyTypeId: 1,
-    geographyTypeName: "Zone",
-    parentGeographyUnitId: null,
-    parentGeographyUnitName: null,
     geographyUnitCode: "UT",
     geographyUnitName: "Zone 1",
-    searchSequence: 1,
-    markedForDeletion: false,
-    markedForDeletionDate: null,
-    isActive: true,
-    createdDate: "",
-    updatedDate: null,
   },
 ]);
 
@@ -146,37 +138,40 @@ describe("GeographyUnitForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetchTypes.mockResolvedValue([
-      { id: 1, geographyTypeCode: "ZONE", geographyType: "Zone", levelNo: 1, isActive: true, createdDate: "", updatedDate: null },
-      { id: 2, geographyTypeCode: "WARD", geographyType: "Ward", levelNo: 2, isActive: true, createdDate: "", updatedDate: null },
+      { id: 1, geographyTypeCode: "ZONE",
+        geographyType: "Zone", levelNo: 1, isActive: true, createdDate: "", updatedDate: null },
+      { id: 2, geographyTypeCode: "WARD",
+        geographyType: "Ward", levelNo: 2, isActive: true, createdDate: "", updatedDate: null },
     ]);
-    mockFetchUnits.mockResolvedValue([
+    mockFetchCandidates.mockResolvedValue([
       {
         id: 1,
-        geographyTypeId: 1,
-        geographyTypeName: "Zone",
-        parentGeographyUnitId: null,
-        parentGeographyUnitName: null,
         geographyUnitCode: "UT",
         geographyUnitName: "Zone 1",
-        searchSequence: 1,
-        markedForDeletion: false,
-        markedForDeletionDate: null,
-        isActive: true,
-        createdDate: "",
-        updatedDate: null,
       },
     ]);
     mockCreate.mockResolvedValue({ success: true });
     mockUpdate.mockResolvedValue({ success: true });
   });
 
-  it("loads geography type and parent unit options on mount", async () => {
+  it("loads geography type options on mount", async () => {
     render(<GeographyUnitForm id={null} />);
     await waitFor(() => {
       expect(mockFetchTypes).toHaveBeenCalled();
-      expect(mockFetchUnits).toHaveBeenCalled();
     });
     expect(await screen.findByText("Zone")).toBeInTheDocument();
+  });
+
+  it("loads parent unit candidates when a geography type is selected", async () => {
+    render(<GeographyUnitForm id={null} />);
+    await screen.findByText("Zone");
+
+    const typeSelect = screen.getByLabelText("geographyUnitMaster.form.fields.geographyType.label");
+    fireEvent.change(typeSelect, { target: { value: "1" } });
+
+    await waitFor(() => {
+      expect(mockFetchCandidates).toHaveBeenCalledWith(1);
+    });
   });
 
   it("renders add form and submits successfully", async () => {
@@ -205,7 +200,8 @@ describe("GeographyUnitForm", () => {
     const initialData = {
       id: 10,
       geographyTypeId: 2,
-      geographyTypeName: "Ward",
+      geographyTypeCode: "ZONE1",
+    geographyType: "Ward",
       parentGeographyUnitId: 1,
       parentGeographyUnitName: "Zone 1",
       geographyUnitCode: "UT1",
@@ -226,42 +222,23 @@ describe("GeographyUnitForm", () => {
   });
 
   it("excludes the record itself from the parent unit options in edit mode", async () => {
-    mockFetchUnits.mockResolvedValue([
+    mockFetchCandidates.mockResolvedValue([
       {
         id: 10,
-        geographyTypeId: 2,
-        geographyTypeName: "Ward",
-        parentGeographyUnitId: null,
-        parentGeographyUnitName: null,
         geographyUnitCode: "UT1",
         geographyUnitName: "UT1",
-        searchSequence: 1,
-        markedForDeletion: false,
-        markedForDeletionDate: null,
-        isActive: true,
-        createdDate: "",
-        updatedDate: null,
       },
       {
         id: 11,
-        geographyTypeId: 2,
-        geographyTypeName: "Ward",
-        parentGeographyUnitId: null,
-        parentGeographyUnitName: null,
         geographyUnitCode: "UT2",
         geographyUnitName: "UT2",
-        searchSequence: 2,
-        markedForDeletion: false,
-        markedForDeletionDate: null,
-        isActive: true,
-        createdDate: "",
-        updatedDate: null,
       },
     ]);
     const initialData = {
       id: 10,
       geographyTypeId: 2,
-      geographyTypeName: "Ward",
+      geographyTypeCode: "ZONE1",
+    geographyType: "Ward",
       parentGeographyUnitId: null,
       parentGeographyUnitName: null,
       geographyUnitCode: "UT1",
@@ -275,11 +252,11 @@ describe("GeographyUnitForm", () => {
     };
     render(<GeographyUnitForm id={10} initialData={initialData} />);
     await waitFor(() => {
-      expect(mockFetchUnits).toHaveBeenCalled();
+      expect(mockFetchCandidates).toHaveBeenCalledWith(2);
     });
     const parentSelect = await screen.findByLabelText("geographyUnitMaster.form.fields.parentUnit.label");
-    expect(screen.queryByText("UT1 (Ward)")).not.toBeInTheDocument();
-    expect(parentSelect).toHaveTextContent("UT2 (Ward)");
+    expect(screen.queryByText("UT1 (UT1)")).not.toBeInTheDocument();
+    expect(parentSelect).toHaveTextContent("UT2 (UT2)");
   });
 
   it("shows validation error when geography type is not selected on submit", async () => {
@@ -295,7 +272,8 @@ describe("GeographyUnitForm", () => {
     const initialData = {
       id: 10,
       geographyTypeId: 2,
-      geographyTypeName: "Ward",
+      geographyTypeCode: "ZONE1",
+    geographyType: "Ward",
       parentGeographyUnitId: null,
       parentGeographyUnitName: null,
       geographyUnitCode: "UT1",

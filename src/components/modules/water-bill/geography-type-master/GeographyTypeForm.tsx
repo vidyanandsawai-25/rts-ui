@@ -6,8 +6,8 @@ import { CancelButton, SaveButton } from "@/components/common";
 import { StatusToggleSection } from "./components/StatusToggleSection";
 import { FormFieldsSection } from "./components/FormFieldsSection";
 import { ValidationSection } from "./components/ValidationSection";
-import { GeographyType } from "@/types/geographyType.types";
-import { useGeographyTypeForm } from "@/hooks/geographytypemaster/useGeographyTypeForm";
+import { useGeographyTypeForm } from "@/hooks/water-bill/geographytypemaster/useGeographyTypeForm";
+import { GeographyType } from "@/types/water-bill/geographyType.types";
 
 export interface GeographyTypeFormProps {
   id: number | null;

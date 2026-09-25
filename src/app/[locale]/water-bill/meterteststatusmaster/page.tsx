@@ -1,5 +1,5 @@
 import React from "react";
-import { MeterTestStatusMaster } from "@/components/modules/water-tax/meter-test-status-master";
+import { MeterTestStatusMaster } from "@/components/modules/water-bill/meter-test-status-master";
 import { fetchMeterTestStatusesPagedServerAction } from "./action";
 
 interface PageProps {
@@ -14,6 +14,10 @@ interface PageProps {
 
 import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 
+/** Allowed column names accepted by the server action / API */
+const ALLOWED_SORT_COLUMNS = ["meterTestStatusCode", "meterTestStatus", "isActive"] as const;
+const ALLOWED_SORT_ORDERS = ["asc", "desc"] as const;
+
 function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
   const rawPage = parseInt(raw.page ?? "", 10);
   const pageNumber = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
@@ -23,8 +27,16 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
 
   const rawSearch = raw.q?.trim();
   const searchTerm = rawSearch ? rawSearch.replace(TEXT_SANITIZE, "") || undefined : undefined;
-  const sortBy = raw.sortBy?.trim() || undefined;
-  const sortOrder = raw.sortOrder?.trim() || undefined;
+
+  const sortByRaw = raw.sortBy?.trim() ?? "";
+  const sortBy = (ALLOWED_SORT_COLUMNS as readonly string[]).includes(sortByRaw)
+    ? (sortByRaw as (typeof ALLOWED_SORT_COLUMNS)[number])
+    : undefined;
+
+  const sortOrderRaw = raw.sortOrder?.trim().toLowerCase() ?? "";
+  const sortOrder = (ALLOWED_SORT_ORDERS as readonly string[]).includes(sortOrderRaw)
+    ? (sortOrderRaw as (typeof ALLOWED_SORT_ORDERS)[number])
+    : undefined;
 
   return { pageNumber, pageSize, searchTerm, sortBy, sortOrder };
 }

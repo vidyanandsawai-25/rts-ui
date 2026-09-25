@@ -8,15 +8,16 @@ import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/common/ActionButton";
-import type { GeographyType, GeographyTypeProps } from "@/types/geographyType.types";
 import { deleteGeographyTypeAction } from "@/app/[locale]/water-bill/geography-type-master/action";
 import TableHeader from "@/components/common/TableHeader";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { PageContainer, SearchInput, Select } from "@/components/common";
+import { AddButton, PageContainer, SearchInput, Select } from "@/components/common";
 import { GeographyUserManualModal } from "../geography-shared/GeographyUserManualModal";
+import { GeographyMasterTabs } from "../geography-shared/GeographyMasterTabs";
 import { getGeographyTypeColumns } from "./GeographyTypeColumns";
-import { useGeographyTypeSearch } from "@/hooks/geographytypemaster/useGeographyTypeSearch";
-import { useGeographyTypePagination } from "@/hooks/geographytypemaster/useGeographyTypePagination";
+import { useGeographyTypeSearch } from "@/hooks/water-bill/geographytypemaster/useGeographyTypeSearch";
+import { useGeographyTypePagination } from "@/hooks/water-bill/geographytypemaster/useGeographyTypePagination";
+import { GeographyType, GeographyTypeProps } from "@/types/water-bill/geographyType.types";
 
 /* ================= PAGE ================= */
 export function GeographyTypeMaster({
@@ -114,31 +115,7 @@ export function GeographyTypeMaster({
           title={t("list.title")}
           subtitle={t("list.subtitle")}
           icon={MapPin}
-          actionLabel={t("list.buttons.add")}
-          onActionClick={() => {
-            startTransition(() => {
-              router.push(`/${locale}/water-bill/geography-type-master/add`);
-            });
-          }}
-          rightContent={
-            <div
-              className={
-                locale === "en"
-                  ? "flex items-center gap-2 w-[27rem] max-[899px]:w-full justify-end"
-                  : "flex items-center gap-2 w-full justify-end"
-              }
-            >
-              <SearchInput
-                value={search}
-                onChange={handleSearchChange}
-                placeholder={t("list.filters.search")}
-                className="mb-0 w-full text-gray-900"
-              />
-              <Button variant="secondary" size="sm" icon={BookOpen} onClick={openUserManual}>
-                {tCommon("buttons.userManual")}
-              </Button>
-            </div>
-          }
+          rightContent={<GeographyMasterTabs />}
         />
         <MasterTable<GeographyType>
           columns={columns}
@@ -150,6 +127,27 @@ export function GeographyTypeMaster({
           totalCount={totalCount}
           totalPages={totalPages}
           onPageChange={changePage}
+          headerExtra={
+            <div className="flex w-full flex-wrap items-center justify-end gap-2">
+              <SearchInput
+                value={search}
+                onChange={handleSearchChange}
+                placeholder={t("list.filters.search")}
+                className="mb-0 min-w-48 text-gray-900"
+              />
+              <Button variant="secondary" size="sm" icon={BookOpen} onClick={openUserManual}>
+                {tCommon("buttons.userManual")}
+              </Button>
+              <AddButton
+                label={t("list.buttons.add")}
+                onClick={() => {
+                  startTransition(() => {
+                    router.push(`/${locale}/water-bill/geography-type-master/add`);
+                  });
+                }}
+              />
+            </div>
+          }
           renderActions={(row) => (
             <>
               <EditButton aria-label={tCommon("table.actions.edit")} onClick={() => handleEdit(row)} />

@@ -177,6 +177,7 @@ export { FloorDetailsTable } from './FloorDetailsTable';
 export type { FloorDetailsTableColumn } from './FloorDetailsTable';
 
 export { RequiredFieldsNote } from './RequiredFieldsNote';
+export { MandatoryNote } from './MandatoryNote';
 export { StatusToggleCard } from './StatusToggleCard';
 export { WaitingWindow } from './WaitingWindow';
 export { UnauthorizedPage } from './UnauthorizedPage';

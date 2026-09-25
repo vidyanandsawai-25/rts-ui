@@ -3,7 +3,7 @@ import { GeographyTypeMaster } from "@/components/modules/water-bill/geography-t
 import { fetchGeographyTypePagedServerAction, getGeographyTypeByIdAction } from "../../action";
 import { notFound } from "next/navigation";
 import React from "react";
-import type { GeographyType } from "@/types/geographyType.types";
+import type { GeographyType } from "@/types/water-bill/geographyType.types";
 import { ApiError } from "@/lib/utils/api";
 import { createLogger } from "@/lib/utils/server-logger";
 

@@ -3,7 +3,7 @@ import { GeographyUnitMaster } from "@/components/modules/water-bill/geography-u
 import { fetchGeographyUnitPagedServerAction, getGeographyUnitByIdAction } from "../../action";
 import { notFound } from "next/navigation";
 import React from "react";
-import type { GeographyUnit } from "@/types/geographyUnit.types";
+import type { GeographyUnit } from "@/types/water-bill/geographyUnit.types";
 import { ApiError } from "@/lib/utils/api";
 import { createLogger } from "@/lib/utils/server-logger";
 

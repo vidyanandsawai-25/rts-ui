@@ -1,7 +1,9 @@
+import { cookies } from "next/headers";
 import { apiClient } from "@/services/api.service";
 import { MeterType, MeterTypeFormModel } from "@/types/water-bill/meter-type-master.types";
 import { PagedResponse } from "@/types/common.types";
 import { ApiError } from "@/lib/utils/api";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
 export async function getMeterTypesPaged(
   pageNumber: number,
@@ -48,6 +50,9 @@ export async function getMeterTypeById(id: number): Promise<MeterType | null> {
 
 export async function createMeterType(data: MeterTypeFormModel): Promise<void> {
   try {
+    const cookieStore = await cookies();
+    const userId = data.createdBy ?? getUserIdFromCookies(cookieStore) ?? 1;
+
     const codeValue = (data.meterTypeCode || data.code || "").trim().toUpperCase();
     const payload = {
       meterTypeCode: codeValue,
@@ -55,7 +60,7 @@ export async function createMeterType(data: MeterTypeFormModel): Promise<void> {
       meterType: data.meterType.trim(),
       description: data.description?.trim() || null,
       isActive: data.isActive,
-      createdBy: data.createdBy ?? 1,
+      createdBy: userId,
     };
     const response = await apiClient.post<unknown>("/MeterTypeMaster", payload);
     if (!response.success) {
@@ -69,6 +74,9 @@ export async function createMeterType(data: MeterTypeFormModel): Promise<void> {
 
 export async function updateMeterType(data: MeterTypeFormModel): Promise<void> {
   try {
+    const cookieStore = await cookies();
+    const userId = data.updatedBy ?? getUserIdFromCookies(cookieStore) ?? 1;
+
     const codeValue = (data.meterTypeCode || data.code || "").trim().toUpperCase();
     const payload = {
       meterTypeCode: codeValue,
@@ -76,7 +84,7 @@ export async function updateMeterType(data: MeterTypeFormModel): Promise<void> {
       meterType: data.meterType.trim(),
       description: data.description?.trim() || null,
       isActive: data.isActive,
-      updatedBy: data.updatedBy ?? 1,
+      updatedBy: userId,
     };
     const response = await apiClient.put<unknown>(`/MeterTypeMaster/${data.id}`, payload);
     if (!response.success) {

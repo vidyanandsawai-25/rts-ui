@@ -1,7 +1,9 @@
+import { cookies } from "next/headers";
 import { apiClient } from "@/services/api.service";
 import { ReadingSource, ReadingSourceFormModel } from "@/types/water-bill/reading-source-master.types";
 import { PagedResponse } from "@/types/common.types";
 import { ApiError } from "@/lib/utils/api";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
 export async function getReadingSourcesPaged(
   pageNumber: number,
@@ -48,13 +50,16 @@ export async function getReadingSourceById(id: number): Promise<ReadingSource | 
 
 export async function createReadingSource(data: ReadingSourceFormModel): Promise<void> {
   try {
+    const cookieStore = await cookies();
+    const userId = data.createdBy ?? getUserIdFromCookies(cookieStore) ?? 1;
+
     const codeValue = (data.readingSourceCode || data.code || "").trim().toUpperCase();
     const payload = {
       readingSourceCode: codeValue,
       code: codeValue,
       readingSource: data.readingSource.trim(),
       isActive: data.isActive,
-      createdBy: data.createdBy ?? 1,
+      createdBy: userId,
     };
     const response = await apiClient.post<unknown>("/ReadingSourceMaster", payload);
     if (!response.success) {
@@ -68,13 +73,16 @@ export async function createReadingSource(data: ReadingSourceFormModel): Promise
 
 export async function updateReadingSource(data: ReadingSourceFormModel): Promise<void> {
   try {
+    const cookieStore = await cookies();
+    const userId = data.updatedBy ?? getUserIdFromCookies(cookieStore) ?? 1;
+
     const codeValue = (data.readingSourceCode || data.code || "").trim().toUpperCase();
     const payload = {
       readingSourceCode: codeValue,
       code: codeValue,
       readingSource: data.readingSource.trim(),
       isActive: data.isActive,
-      updatedBy: data.updatedBy ?? 1,
+      updatedBy: userId,
     };
     const response = await apiClient.put<unknown>(`/ReadingSourceMaster/${data.id}`, payload);
     if (!response.success) {

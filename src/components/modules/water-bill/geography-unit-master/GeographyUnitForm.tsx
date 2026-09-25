@@ -6,8 +6,8 @@ import { CancelButton, SaveButton } from "@/components/common";
 import { StatusToggleSection } from "./components/StatusToggleSection";
 import { FormFieldsSection } from "./components/FormFieldsSection";
 import { ValidationSection } from "./components/ValidationSection";
-import { GeographyUnit } from "@/types/geographyUnit.types";
-import { useGeographyUnitForm } from "@/hooks/geographyunitmaster/useGeographyUnitForm";
+import { useGeographyUnitForm } from "@/hooks/water-bill/geographyunitmaster/useGeographyUnitForm";
+import { GeographyUnit } from "@/types/water-bill/geographyUnit.types";
 
 export interface GeographyUnitFormProps {
   id: number | null;
@@ -25,6 +25,7 @@ export default function GeographyUnitForm({ id, initialData }: GeographyUnitForm
     geographyTypeOptions,
     parentUnitOptions,
     optionsLoading,
+    parentOptionsLoading,
     handleChange,
     handleBlur,
     handleGeographyTypeChange,
@@ -91,6 +92,7 @@ export default function GeographyUnitForm({ id, initialData }: GeographyUnitForm
           geographyTypeOptions={geographyTypeOptions}
           parentUnitOptions={parentUnitOptions}
           optionsLoading={optionsLoading}
+          parentOptionsLoading={parentOptionsLoading}
           handleChange={handleChange}
           handleBlur={handleBlur}
           handleGeographyTypeChange={handleGeographyTypeChange}

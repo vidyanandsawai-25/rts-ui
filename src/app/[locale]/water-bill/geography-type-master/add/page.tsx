@@ -3,8 +3,8 @@ import {
   GeographyTypeMaster,
 } from "@/components/modules/water-bill/geography-type-master";
 import React from "react";
-import { getGeographyTypePaged } from "@/lib/api/geographytypemaster/geography-type-crud.service";
-import type { GeographyType } from "@/types/geographyType.types";
+import { getGeographyTypePaged } from "@/lib/api/water-bill/geographytypemaster/geography-type-crud.service";
+import type { GeographyType } from "@/types/water-bill/geographyType.types";
 import { fetchGeographyTypePagedServerAction } from "../action";
 
 export default async function AddPage(): Promise<React.ReactElement> {

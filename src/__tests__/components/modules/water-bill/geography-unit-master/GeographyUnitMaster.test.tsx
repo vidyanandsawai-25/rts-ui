@@ -2,7 +2,7 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import type { GeographyUnit } from "@/types/geographyUnit.types";
+import type { GeographyUnit } from "@/types/water-bill/geographyUnit.types";
 import { GeographyUnitMaster } from "@/components/modules/water-bill/geography-unit-master";
 
 vi.mock("next/navigation", () => ({
@@ -56,7 +56,7 @@ const defaultProps = {
     {
       id: 1,
       geographyTypeId: 1,
-      geographyTypeName: "Zone",
+      geographyType: "Zone",
       parentGeographyUnitId: null,
       parentGeographyUnitName: null,
       geographyUnitCode: "UT",
@@ -71,7 +71,7 @@ const defaultProps = {
     {
       id: 10,
       geographyTypeId: 2,
-      geographyTypeName: "Ward",
+      geographyType: "Ward",
       parentGeographyUnitId: 1,
       parentGeographyUnitName: "Zone Parent",
       geographyUnitCode: "UT1",
@@ -102,7 +102,7 @@ describe("GeographyUnitMaster", () => {
 
   it("renders table with data", () => {
     render(<GeographyUnitMaster {...defaultProps} />);
-    expect(screen.getByText("geographyUnitMaster.list.title")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "geographyUnitMaster.list.title" })).toBeInTheDocument();
     expect(screen.getByText("उथळसर")).toBeInTheDocument();
     expect(screen.getByText("Ward One")).toBeInTheDocument();
   });
@@ -112,6 +112,12 @@ describe("GeographyUnitMaster", () => {
     const addButton = screen.getByRole("button", { name: "geographyUnitMaster.list.buttons.add" });
     fireEvent.click(addButton);
     expect(mockRouterPush).toHaveBeenCalledWith("/en/water-bill/geography-unit-master/add");
+  });
+
+  it("navigates to the geography type master tab", () => {
+    render(<GeographyUnitMaster {...defaultProps} />);
+    fireEvent.click(screen.getByRole("tab", { name: "geographyTypeMaster.list.title" }));
+    expect(mockRouterPush).toHaveBeenCalledWith("/en/water-bill/geography-type-master");
   });
 
   it("updates URL on search via debounced router.push", () => {

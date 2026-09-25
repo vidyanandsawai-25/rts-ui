@@ -1,17 +1,19 @@
+import { render, screen } from "@testing-library/react";
 import { getGeographyUnitColumns } from "@/components/modules/water-bill/geography-unit-master/GeographyUnitColumns";
-import type { GeographyUnit } from "@/types/geographyUnit.types";
+import type { GeographyUnit } from "@/types/water-bill/geographyUnit.types";
 
 describe("getGeographyUnitColumns", () => {
   const mockT = vi.fn((key: string) => key);
 
   it("returns the correct number of columns", () => {
     const columns = getGeographyUnitColumns(mockT);
-    expect(columns).toHaveLength(5);
+    expect(columns).toHaveLength(6);
     expect(columns.map((c) => c.key)).toEqual([
       "geographyUnitCode",
       "geographyUnitName",
-      "geographyTypeName",
+      "geographyType",
       "parentGeographyUnitName",
+      "searchSequence",
       "isActive",
     ]);
   });
@@ -21,14 +23,19 @@ describe("getGeographyUnitColumns", () => {
     const dummyRow = {} as GeographyUnit;
 
     const colCode = columns.find((c) => c.key === "geographyUnitCode");
-    expect(colCode?.render?.("ZONE-1", dummyRow, 0)).toBe("ZONE-1");
-    expect(colCode?.render?.(null as unknown as string, dummyRow, 0)).toBe("");
+    const renderedCode = colCode?.render?.("ZONE-1", dummyRow, 0);
+    render(<>{renderedCode}</>);
+    expect(screen.getByText("ZONE-1")).toBeInTheDocument();
+    expect(colCode?.render?.(null as unknown as string, dummyRow, 0)).toBe("—");
 
     const colName = columns.find((c) => c.key === "geographyUnitName");
     expect(colName?.render?.("Zone 1", dummyRow, 0)).toBe("Zone 1");
 
-    const colType = columns.find((c) => c.key === "geographyTypeName");
-    expect(colType?.render?.("Zone", dummyRow, 0)).toBe("Zone");
+    const colType = columns.find((c) => c.key === "geographyType");
+    const rendered = colType?.render?.("Zone", dummyRow, 0);
+    render(<>{rendered}</>);
+    expect(screen.getByText("Zone")).toBeInTheDocument();
+    expect(colType?.render?.("", dummyRow, 0)).toBe("—");
   });
 
   it("renders a placeholder for a missing parent unit", () => {

@@ -34,7 +34,7 @@
     "editSubtitle": "भूगोल प्रकार तपशील अद्यतनित करा",
     "fields": {
       "code": {
-        "label": "कोड",
+        "label": "भूगोल प्रकार कोड",
         "placeholder": "उदा. ZONE"
       },
       "geographyType": {
@@ -46,7 +46,7 @@
       }
     },
     "validation": {
-      "codeRequired": "कोड आवश्यक आहे",
+      "codeRequired": "भूगोल प्रकार कोड आवश्यक आहे",
       "codeMaxLength": "कमाल लांबी 20 वर्ण आहे",
       "codeFormat": "अवैध स्वरूप. फक्त इंग्रजी अक्षरे, संख्या आणि अंडरस्कोअरला परवानगी आहे.",
       "geographyTypeRequired": "भूगोल प्रकार आवश्यक आहे",

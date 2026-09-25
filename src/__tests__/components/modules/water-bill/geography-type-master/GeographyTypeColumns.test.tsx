@@ -1,5 +1,6 @@
+import { render, screen } from "@testing-library/react";
 import { getGeographyTypeColumns } from "@/components/modules/water-bill/geography-type-master/GeographyTypeColumns";
-import type { GeographyType } from "@/types/geographyType.types";
+import type { GeographyType } from "@/types/water-bill/geographyType.types";
 
 describe("getGeographyTypeColumns", () => {
   const mockT = vi.fn((key: string) => key);
@@ -31,8 +32,12 @@ describe("getGeographyTypeColumns", () => {
     const dummyRow = {} as GeographyType;
 
     const colCode = columns.find((c) => c.key === "geographyTypeCode");
-    expect(colCode?.render?.("ZONE", dummyRow, 0)).toBe("ZONE");
-    expect(colCode?.render?.(null as unknown as string, dummyRow, 0)).toBe("");
+    const codeBadge = colCode?.render?.("ZONE", dummyRow, 0);
+    render(<>{codeBadge}</>);
+    expect(screen.getByText("ZONE")).toHaveClass("bg-[#e3f0fd]");
+
+    const emptyCode = colCode?.render?.(null as unknown as string, dummyRow, 0);
+    expect(emptyCode).toBe("—");
 
     const colType = columns.find((c) => c.key === "geographyType");
     expect(colType?.render?.("Zone", dummyRow, 0)).toBe("Zone");

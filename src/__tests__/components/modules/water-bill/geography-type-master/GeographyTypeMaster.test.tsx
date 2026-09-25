@@ -2,7 +2,7 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import type { GeographyType } from "@/types/geographyType.types";
+import type { GeographyType } from "@/types/water-bill/geographyType.types";
 import { GeographyTypeMaster } from "@/components/modules/water-bill/geography-type-master";
 
 vi.mock("next/navigation", () => ({
@@ -90,7 +90,7 @@ describe("GeographyTypeMaster", () => {
 
   it("renders table with data", () => {
     render(<GeographyTypeMaster {...defaultProps} />);
-    expect(screen.getByText("geographyTypeMaster.list.title")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "geographyTypeMaster.list.title" })).toBeInTheDocument();
     expect(screen.getByText("Zone")).toBeInTheDocument();
     expect(screen.getByText("Ward")).toBeInTheDocument();
   });
@@ -100,6 +100,12 @@ describe("GeographyTypeMaster", () => {
     const addButton = screen.getByRole("button", { name: "geographyTypeMaster.list.buttons.add" });
     fireEvent.click(addButton);
     expect(mockRouterPush).toHaveBeenCalledWith("/en/water-bill/geography-type-master/add");
+  });
+
+  it("navigates to the geography unit master tab", () => {
+    render(<GeographyTypeMaster {...defaultProps} />);
+    fireEvent.click(screen.getByRole("tab", { name: "geographyUnitMaster.list.title" }));
+    expect(mockRouterPush).toHaveBeenCalledWith("/en/water-bill/geography-unit-master");
   });
 
   it("updates URL on search via debounced router.push", () => {
