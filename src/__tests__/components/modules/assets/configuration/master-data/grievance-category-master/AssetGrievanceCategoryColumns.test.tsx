@@ -7,23 +7,29 @@ describe("AssetGrievanceCategoryColumns", () => {
 
   it("should return the correct column configuration", () => {
     const columns = getAssetGrievanceCategoryColumns(t, tCommon);
-    expect(columns).toHaveLength(4);
-    expect(columns[0].key).toBe("categoryName");
-    expect(columns[1].key).toBe("resolutionSlaDays");
-    expect(columns[2].key).toBe("description");
-    expect(columns[3].key).toBe("isActive");
+    expect(columns).toHaveLength(8);
+    expect(columns[0].key).toBe("grievanceTypeCode");
+    expect(columns[1].key).toBe("grievanceTypeName");
+    expect(columns[2].key).toBe("grievanceTypeNameLocal");
+    expect(columns[3].key).toBe("codeFormat");
+    expect(columns[4].key).toBe("targetTableName");
+    expect(columns[5].key).toBe("slaDays");
+    expect(columns[6].key).toBe("displaySequence");
+    expect(columns[7].key).toBe("isActive");
   });
 
-  it("should configure only categoryName and resolutionSlaDays as sortable", () => {
+  it("should configure sortable columns as SortableHeader components", () => {
     const onSortMock = vi.fn();
-    const columns = getAssetGrievanceCategoryColumns(t, tCommon, "categoryName", "asc", onSortMock);
+    const columns = getAssetGrievanceCategoryColumns(t, tCommon, "grievanceTypeCode", "asc", onSortMock);
 
-    // categoryName (index 0) and resolutionSlaDays (index 1) headers should be React objects (since they render SortableHeader)
-    expect(typeof columns[0].label).toBe("object");
-    expect(typeof columns[1].label).toBe("object");
-
-    // description (index 2) header is plain text
-    expect(typeof columns[2].label).toBe("string");
-    expect(columns[2].label).toBe("trans_list.headers.description");
+    expect(typeof columns[0].label).toBe("object"); // grievanceTypeCode - sortable
+    expect(typeof columns[1].label).toBe("object"); // grievanceTypeName - sortable
+    expect(typeof columns[2].label).toBe("object"); // grievanceTypeNameLocal - sortable
+    // codeFormat is not sortable in backend query parameters
+    expect(typeof columns[3].label).toBe("string"); // codeFormat - not sortable
+    expect(typeof columns[4].label).toBe("object"); // targetTableName - sortable
+    expect(typeof columns[5].label).toBe("object"); // slaDays - sortable
+    expect(typeof columns[6].label).toBe("object"); // displaySequence - sortable
+    expect(typeof columns[7].label).toBe("object"); // isActive - sortable
   });
 });

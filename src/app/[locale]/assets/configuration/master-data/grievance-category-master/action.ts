@@ -10,11 +10,16 @@ import {
   updateAssetGrievanceCategory
 } from "@/lib/api/asset-masters/asset-grievance-category-crud.service";
 import { ApiError } from "@/lib/utils/api";
-import { AssetGrievanceCategory, AssetGrievanceCategoryFormModel } from "@/types/asset-masters/asset-grievance-category.types";
-import { PagedResponse } from "@/types/common.types";
+import {
+  AssetGrievanceCategory,
+  AssetGrievanceCategoryFormModel,
+  ALLOWED_SORT_COLUMNS,
+} from "@/types/asset-masters/asset-grievance-category.types";
+import { PagedResponse, ActionResult } from "@/types/common.types";
 import { cookies } from "next/headers";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { createLogger } from "@/lib/utils/server-logger";
+import { validateGrievanceCategoryServerAction } from "@/hooks/asset-masters/grievance-category/validation";
 
 const logger = createLogger("GrievanceCategoryActions");
 
@@ -25,6 +30,9 @@ export async function fetchAssetGrievanceCategoryPagedServerAction(
   sortBy?: string,
   sortOrder?: string
 ): Promise<PagedResponse<AssetGrievanceCategory>> {
+  const validSortBy = sortBy && (ALLOWED_SORT_COLUMNS as readonly string[]).includes(sortBy) ? sortBy : undefined;
+  const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder.toLowerCase() : undefined;
+
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
@@ -44,26 +52,40 @@ export async function fetchAssetGrievanceCategoryPagedServerAction(
       throw new ApiError(400, "Invalid pagination parameters", "Validation failed");
     }
 
-    const allowedSortColumns = ["categoryName", "resolutionSlaDays"];
-    const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
-    const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder.toLowerCase() : undefined;
-
     return await getAssetGrievanceCategoryPaged(pageNumber, pageSize, searchTerm, validSortBy, validSortOrder);
   } catch (error: unknown) {
-    logger.error("Failed to fetch asset grievance categories paged", { pageNumber, pageSize, searchTerm, sortBy, sortOrder }, error);
+    logger.error("Failed to fetch asset grievance categories paged", {
+      pageNumber,
+      pageSize,
+      hasSearch: Boolean(searchTerm),
+      searchLength: searchTerm ? searchTerm.length : 0,
+      sortBy: validSortBy,
+      sortOrder: validSortOrder,
+    }, error);
     throw error;
   }
 }
 
 export async function createAssetGrievanceCategoryAction(
   data: AssetGrievanceCategoryFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<ActionResult<string>> {
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
       return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
+
+    const validation = validateGrievanceCategoryServerAction(data, false);
+    if (!validation.isValid) {
+      return {
+        success: false,
+        message: Object.values(validation.errors)[0] || "Validation failed",
+        statusCode: 400,
+        validationErrors: validation.errors as Record<string, string>,
+      };
+    }
+
     const msg = await createAssetGrievanceCategory({ ...data, createdBy: userId });
 
     for (const locale of locales) {
@@ -71,6 +93,11 @@ export async function createAssetGrievanceCategoryAction(
     }
     return { success: true, message: msg };
   } catch (error: unknown) {
+    logger.error(
+      "Failed to create asset grievance category",
+      { operation: "create", entity: "asset-grievance-category" },
+      error
+    );
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -87,13 +114,28 @@ export async function createAssetGrievanceCategoryAction(
 
 export async function updateAssetGrievanceCategoryAction(
   data: AssetGrievanceCategoryFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<ActionResult<string>> {
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
       return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
+
+    if (!data.id || data.id <= 0) {
+      return { success: false, message: "Valid Asset Grievance Category ID is required", statusCode: 400 };
+    }
+
+    const validation = validateGrievanceCategoryServerAction(data, true);
+    if (!validation.isValid) {
+      return {
+        success: false,
+        message: Object.values(validation.errors)[0] || "Validation failed",
+        statusCode: 400,
+        validationErrors: validation.errors as Record<string, string>,
+      };
+    }
+
     const msg = await updateAssetGrievanceCategory({ ...data, updatedBy: userId });
 
     for (const locale of locales) {
@@ -101,6 +143,11 @@ export async function updateAssetGrievanceCategoryAction(
     }
     return { success: true, message: msg };
   } catch (error: unknown) {
+    logger.error(
+      "Failed to update asset grievance category",
+      { operation: "update", entity: "asset-grievance-category", id: data.id },
+      error
+    );
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -117,7 +164,7 @@ export async function updateAssetGrievanceCategoryAction(
 
 export async function deleteAssetGrievanceCategoryAction(
   formData: FormData
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<ActionResult<void>> {
   const cookieStore = await cookies();
   const userId = getUserIdFromCookies(cookieStore);
   if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
@@ -144,6 +191,7 @@ export async function deleteAssetGrievanceCategoryAction(
       message: "Asset grievance category deleted successfully",
     };
   } catch (error) {
+    logger.error("Failed to delete asset grievance category", { numericId }, error);
     if (error instanceof ApiError) {
       return {
         success: false,

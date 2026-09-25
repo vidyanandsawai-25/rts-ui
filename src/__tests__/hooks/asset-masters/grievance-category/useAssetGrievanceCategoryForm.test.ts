@@ -46,9 +46,15 @@ describe("useAssetGrievanceCategoryForm", () => {
 
     expect(result.current.formData).toEqual({
       id: undefined,
-      categoryName: "",
+      grievanceTypeCode: "",
+      grievanceTypeName: "",
+      grievanceTypeNameLocal: "",
+      codeFormat: "",
+      targetTableName: "",
+      requiresFieldCorrection: false,
+      slaDays: null,
+      displaySequence: null,   // null sentinel — must be explicitly entered
       description: "",
-      resolutionSlaDays: NaN,
       isActive: true,
     });
     expect(result.current.isEdit).toBe(false);
@@ -57,9 +63,15 @@ describe("useAssetGrievanceCategoryForm", () => {
   it("should initialize with provided initialData when editing", () => {
     const initialData = {
       id: 5,
-      categoryName: "Water Issue",
+      grievanceTypeCode: "GRV_WATER",
+      grievanceTypeName: "Water Issue",
+      grievanceTypeNameLocal: "पाणी समस्या",
+      codeFormat: "WTR-{SEQ}",
+      targetTableName: "tbl_water",
+      requiresFieldCorrection: true,
+      slaDays: 3,
+      displaySequence: 1,
       description: "Leakage issues",
-      resolutionSlaDays: 3,
       isActive: false,
       markedForDeletion: false,
       createdDate: "2026-08-05T00:00:00Z",
@@ -69,9 +81,15 @@ describe("useAssetGrievanceCategoryForm", () => {
 
     expect(result.current.formData).toEqual({
       id: 5,
-      categoryName: "Water Issue",
+      grievanceTypeCode: "GRV_WATER",
+      grievanceTypeName: "Water Issue",
+      grievanceTypeNameLocal: "पाणी समस्या",
+      codeFormat: "WTR-{SEQ}",
+      targetTableName: "tbl_water",
+      requiresFieldCorrection: true,
+      slaDays: 3,
+      displaySequence: 1,
       description: "Leakage issues",
-      resolutionSlaDays: 3,
       isActive: false,
     });
     expect(result.current.isEdit).toBe(true);
@@ -83,11 +101,11 @@ describe("useAssetGrievanceCategoryForm", () => {
 
     act(() => {
       result.current.handleChange({
-        target: { name: "categoryName", value: "New Category" },
+        target: { name: "grievanceTypeName", value: "New Category" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
 
-    expect(result.current.formData.categoryName).toBe("New Category");
+    expect(result.current.formData.grievanceTypeName).toBe("New Category");
   });
 
   it("should toggle isActive state when handleToggleStatus is called", () => {
@@ -99,5 +117,27 @@ describe("useAssetGrievanceCategoryForm", () => {
 
     expect(result.current.isActive).toBe(false);
     expect(result.current.formData.isActive).toBe(false);
+  });
+
+  it("should keep null sentinel when displaySequence is cleared so required error fires", () => {
+    const { result } = renderHook(() => useAssetGrievanceCategoryForm(defaultProps));
+
+    // type a value first
+    act(() => {
+      result.current.handleChange({
+        target: { name: "displaySequence", value: "3" },
+      } as React.ChangeEvent<HTMLInputElement>);
+    });
+    expect(result.current.formData.displaySequence).toBe(3);
+
+    // then clear it
+    act(() => {
+      result.current.handleChange({
+        target: { name: "displaySequence", value: "" },
+      } as React.ChangeEvent<HTMLInputElement>);
+    });
+    // sentinel must be null, not 0, so the required validator will fire
+    expect(result.current.formData.displaySequence).toBeNull();
+    expect(result.current.displaySequenceValue).toBe("");
   });
 });

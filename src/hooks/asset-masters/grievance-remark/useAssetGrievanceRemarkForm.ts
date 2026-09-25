@@ -13,6 +13,7 @@ import {
   sanitizeRemarkField,
   validateGrievanceRemarkForm,
   mapGrievanceRemarkApiError,
+  translateRemarkValidationError,
 } from "./validation";
 
 interface UseAssetGrievanceRemarkFormProps {
@@ -102,6 +103,18 @@ export function useAssetGrievanceRemarkForm({
     try {
       const res = isEdit ? await updateAssetGrievanceRemarkAction(formData) : await createAssetGrievanceRemarkAction(formData);
       if (!res.success) {
+        if (res.validationErrors && Object.keys(res.validationErrors).length > 0) {
+          const fieldErrors: Partial<Record<keyof AssetGrievanceRemarkFormModel, string>> = {};
+          for (const [key, val] of Object.entries(res.validationErrors)) {
+            const rawError = Array.isArray(val) ? val[0] : val;
+            fieldErrors[key as keyof AssetGrievanceRemarkFormModel] = translateRemarkValidationError(rawError, t);
+          }
+          setErrors(prev => ({ ...prev, ...fieldErrors }));
+          // Show the first translated field error in the toast so the user sees
+          // a localized message instead of the raw form.errors.* key
+          toast.error(Object.values(fieldErrors)[0] ?? mapGrievanceRemarkApiError(res, t, tCommon));
+          return;
+        }
         toast.error(mapGrievanceRemarkApiError(res, t, tCommon));
         return;
       }

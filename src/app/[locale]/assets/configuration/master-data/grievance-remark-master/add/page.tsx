@@ -8,7 +8,10 @@ export default async function AddPage(): Promise<React.ReactElement> {
     <AssetGrievanceRemarkForm
       id={null}
       initialData={undefined}
-      categories={categories.map(c => ({ id: c.id, categoryName: c.categoryName }))}
+      categories={categories.map((c) => ({
+        id: c.id,
+        grievanceTypeName: c.grievanceTypeName,
+      }))}
     />
   );
 }

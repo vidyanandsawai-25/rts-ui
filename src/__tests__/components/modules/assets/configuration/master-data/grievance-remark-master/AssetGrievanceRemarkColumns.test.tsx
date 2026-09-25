@@ -8,9 +8,9 @@ describe("AssetGrievanceRemarkColumns", () => {
   it("should return correct columns with remark and grievanceCategoryName mapping", () => {
     const columns = getAssetGrievanceRemarkColumns(t, tCommon);
     expect(columns).toHaveLength(4);
-    expect(columns[0].key).toBe("grievanceCategoryName");
-    expect(columns[1].key).toBe("remark");
-    expect(columns[2].key).toBe("description");
+    expect(columns[0].key).toBe("remark");
+    expect(columns[1].key).toBe("description");
+    expect(columns[2].key).toBe("grievanceCategoryName");
     expect(columns[3].key).toBe("isActive");
   });
 
@@ -18,11 +18,11 @@ describe("AssetGrievanceRemarkColumns", () => {
     const onSortMock = vi.fn();
     const columns = getAssetGrievanceRemarkColumns(t, tCommon, "grievanceCategoryId", "desc", onSortMock);
 
-    // remark and grievanceCategoryName should have sortable headers (React objects)
+    // remark (index 0) and grievanceCategoryName (index 2) should have sortable headers (React objects)
     expect(typeof columns[0].label).toBe("object");
-    expect(typeof columns[1].label).toBe("object");
+    expect(typeof columns[2].label).toBe("object");
 
-    // description should be static text
-    expect(typeof columns[2].label).toBe("string");
+    // description (index 1) should be static text
+    expect(typeof columns[1].label).toBe("string");
   });
 });

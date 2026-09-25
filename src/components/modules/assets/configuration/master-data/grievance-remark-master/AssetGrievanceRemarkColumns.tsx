@@ -48,8 +48,8 @@ function SortableHeader({
   };
 
   return (
-    <div className="flex items-center gap-1 justify-center w-full">
-      <span>{label}</span>
+    <div className="inline-flex items-center gap-1 justify-center w-full whitespace-nowrap">
+      <span className="whitespace-nowrap">{label}</span>
       {renderSortButton()}
     </div>
   );
@@ -89,20 +89,11 @@ export function getAssetGrievanceRemarkColumns(
 
   return [
     {
-      key: "grievanceCategoryName",
-      label: createSortableLabel(t("table.columns.remarkType"), "grievanceCategoryName"),
-      width: "25%",
-      align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (typeof value === "string" ? value : "-"),
-    },
-    {
       key: "remark",
       label: createSortableLabel(t("table.columns.remark"), "remark"),
-      width: "35%",
+      width: "30%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
       cellClassName: "break-words [word-break:break-word]",
       render: (value) => (typeof value === "string" ? value : ""),
     },
@@ -111,7 +102,16 @@ export function getAssetGrievanceRemarkColumns(
       label: t("form.description") || "Description",
       width: "30%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words [word-break:break-word]",
+      render: (value) => (typeof value === "string" ? value : "-"),
+    },
+    {
+      key: "grievanceCategoryName",
+      label: createSortableLabel(t("table.columns.remarkType"), "grievanceCategoryName"),
+      width: "20%",
+      align: "center",
+      headerClassName: "whitespace-nowrap",
       cellClassName: "break-words [word-break:break-word]",
       render: (value) => (typeof value === "string" ? value : "-"),
     },
@@ -120,7 +120,7 @@ export function getAssetGrievanceRemarkColumns(
       label: t("table.columns.status"),
       width: "10%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
       cellClassName: "break-words [word-break:break-word]",
       isStatus: true,
     },

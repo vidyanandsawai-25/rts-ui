@@ -20,6 +20,7 @@ export default function AssetGrievanceCategoryForm({
   const {
     formData,
     slaValue,
+    displaySequenceValue,
     errors,
     isSubmitting,
     isActive,
@@ -28,6 +29,7 @@ export default function AssetGrievanceCategoryForm({
     handleBlur,
     handleSubmit,
     handleToggleStatus,
+    handleToggleFieldCorrection,
     handleCancel,
     showError,
     t,
@@ -39,15 +41,15 @@ export default function AssetGrievanceCategoryForm({
   });
 
   const statusToggleRef = useRef<HTMLButtonElement>(null);
-  const categoryNameRef = useRef<HTMLInputElement>(null);
+  const firstInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const timeoutId = setTimeout(() => {
       if (isEdit && statusToggleRef.current) {
         statusToggleRef.current.focus();
-      } else if (!isEdit && categoryNameRef.current) {
-        categoryNameRef.current.focus();
+      } else if (!isEdit && firstInputRef.current) {
+        firstInputRef.current.focus();
       }
     }, 150);
     return () => clearTimeout(timeoutId);
@@ -135,14 +137,17 @@ export default function AssetGrievanceCategoryForm({
         )}
 
         <AssetGrievanceCategoryFormFields
-          categoryNameRef={categoryNameRef}
+          firstInputRef={firstInputRef}
           formData={formData}
           slaValue={slaValue}
+          displaySequenceValue={displaySequenceValue}
           errors={errors}
           showError={showError}
           handleChange={handleChange}
           handleBlur={handleBlur}
+          handleToggleFieldCorrection={handleToggleFieldCorrection}
           t={t}
+          tCommon={tCommon}
         />
 
         <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">

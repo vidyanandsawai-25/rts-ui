@@ -5,13 +5,16 @@ import { AlertCircle, CheckCircle2, X, Info } from "lucide-react";
 import { Drawer, CancelButton, SaveButton, ToggleSwitch, ValidationMessage } from "@/components/common";
 import { cn } from "@/lib/utils/cn";
 import { AssetGrievanceRemarkFormFields } from "./AssetGrievanceRemarkFormFields";
-import type { AssetGrievanceRemark } from "@/types/asset-masters/asset-grievance-remark.types";
+import type {
+  AssetGrievanceRemark,
+  AssetGrievanceRemarkCategoryOption,
+} from "@/types/asset-masters/asset-grievance-remark.types";
 import { useAssetGrievanceRemarkForm } from "@/hooks/asset-masters/grievance-remark/useAssetGrievanceRemarkForm";
 
 export interface AssetGrievanceRemarkFormProps {
   id: number | null;
   initialData?: AssetGrievanceRemark;
-  categories: { id: number; categoryName: string }[];
+  categories: AssetGrievanceRemarkCategoryOption[];
 }
 
 export default function AssetGrievanceRemarkForm({
@@ -43,7 +46,10 @@ export default function AssetGrievanceRemarkForm({
   const statusToggleRef = useRef<HTMLButtonElement>(null);
   const remarkRef = useRef<HTMLInputElement>(null);
 
-  const categoryOptions = categories.map((c) => ({ label: c.categoryName, value: String(c.id) }));
+  const categoryOptions = categories.map((c) => ({
+    label: c.grievanceTypeName,
+    value: String(c.id),
+  }));
 
   useEffect(() => {
     if (!open) return;

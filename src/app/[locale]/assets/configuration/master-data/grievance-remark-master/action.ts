@@ -12,10 +12,11 @@ import {
 import { getAssetGrievanceCategories } from "@/lib/api/asset-masters/asset-grievance-category-crud.service";
 import { ApiError } from "@/lib/utils/api";
 import { AssetGrievanceRemark, AssetGrievanceRemarkFormModel } from "@/types/asset-masters/asset-grievance-remark.types";
-import { PagedResponse } from "@/types/common.types";
+import { PagedResponse, ActionResult } from "@/types/common.types";
 import { cookies } from "next/headers";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { createLogger } from "@/lib/utils/server-logger";
+import { validateGrievanceRemarkServerAction } from "@/hooks/asset-masters/grievance-remark/validation";
 
 const logger = createLogger("GrievanceRemarkActions");
 
@@ -26,6 +27,10 @@ export async function fetchAssetGrievanceRemarkPagedServerAction(
   sortBy?: string,
   sortOrder?: string
 ): Promise<PagedResponse<AssetGrievanceRemark>> {
+  const allowedSortColumns = ["remark", "grievanceCategoryId"];
+  const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
+  const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder.toLowerCase() : undefined;
+
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
@@ -45,26 +50,40 @@ export async function fetchAssetGrievanceRemarkPagedServerAction(
       throw new ApiError(400, "Invalid pagination parameters", "Validation failed");
     }
 
-    const allowedSortColumns = ["remark", "grievanceCategoryId"];
-    const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
-    const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder.toLowerCase() : undefined;
-
     return await getAssetGrievanceRemarkPaged(pageNumber, pageSize, searchTerm, validSortBy, validSortOrder);
   } catch (error: unknown) {
-    logger.error("Failed to fetch asset grievance remarks paged", { pageNumber, pageSize, searchTerm, sortBy, sortOrder }, error);
+    logger.error("Failed to fetch asset grievance remarks paged", {
+      pageNumber,
+      pageSize,
+      hasSearch: Boolean(searchTerm),
+      searchLength: searchTerm ? searchTerm.length : 0,
+      sortBy: validSortBy,
+      sortOrder: validSortOrder,
+    }, error);
     throw error;
   }
 }
 
 export async function createAssetGrievanceRemarkAction(
   data: AssetGrievanceRemarkFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<ActionResult<string>> {
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
       return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
+
+    const validation = validateGrievanceRemarkServerAction(data, false);
+    if (!validation.isValid) {
+      return {
+        success: false,
+        message: Object.values(validation.errors)[0] || "Validation failed",
+        statusCode: 400,
+        validationErrors: validation.errors as Record<string, string>,
+      };
+    }
+
     const msg = await createAssetGrievanceRemark({ ...data, createdBy: userId });
 
     for (const locale of locales) {
@@ -72,6 +91,11 @@ export async function createAssetGrievanceRemarkAction(
     }
     return { success: true, message: msg };
   } catch (error: unknown) {
+    logger.error(
+      "Failed to create asset grievance remark",
+      { operation: "create", entity: "asset-grievance-remark" },
+      error
+    );
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -88,13 +112,28 @@ export async function createAssetGrievanceRemarkAction(
 
 export async function updateAssetGrievanceRemarkAction(
   data: AssetGrievanceRemarkFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<ActionResult<string>> {
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
     if (!userId) {
       return { success: false, message: "you are unauthorized", statusCode: 401 };
     }
+
+    if (!data.id || data.id <= 0) {
+      return { success: false, message: "Valid Asset Grievance Remark ID is required", statusCode: 400 };
+    }
+
+    const validation = validateGrievanceRemarkServerAction(data, true);
+    if (!validation.isValid) {
+      return {
+        success: false,
+        message: Object.values(validation.errors)[0] || "Validation failed",
+        statusCode: 400,
+        validationErrors: validation.errors as Record<string, string>,
+      };
+    }
+
     const msg = await updateAssetGrievanceRemark({ ...data, updatedBy: userId });
 
     for (const locale of locales) {
@@ -102,6 +141,11 @@ export async function updateAssetGrievanceRemarkAction(
     }
     return { success: true, message: msg };
   } catch (error: unknown) {
+    logger.error(
+      "Failed to update asset grievance remark",
+      { operation: "update", entity: "asset-grievance-remark", id: data.id },
+      error
+    );
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -118,7 +162,7 @@ export async function updateAssetGrievanceRemarkAction(
 
 export async function deleteAssetGrievanceRemarkAction(
   formData: FormData
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<ActionResult<void>> {
   const cookieStore = await cookies();
   const userId = getUserIdFromCookies(cookieStore);
   if (!userId) return { success: false, message: "you are unauthorized", statusCode: 401 };
@@ -145,6 +189,7 @@ export async function deleteAssetGrievanceRemarkAction(
       message: "Asset grievance remark deleted successfully",
     };
   } catch (error) {
+    logger.error("Failed to delete asset grievance remark", { numericId }, error);
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -185,6 +230,11 @@ export async function getAssetGrievanceRemarkByIdAction(
 
 export async function getGrievanceCategoriesAction() {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      throw new ApiError(401, "you are unauthorized", "Unauthorized");
+    }
     return await getAssetGrievanceCategories();
   } catch (error) {
     logger.error("Failed to fetch active grievance categories", {}, error);

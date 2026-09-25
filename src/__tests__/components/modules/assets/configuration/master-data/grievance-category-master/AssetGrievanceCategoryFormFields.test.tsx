@@ -6,36 +6,62 @@ import { AssetGrievanceCategoryFormFields } from "@/components/modules/assets/co
 describe("AssetGrievanceCategoryFormFields", () => {
   const t = (key: string) => {
     const labels: Record<string, string> = {
+      "form.fields.typeCode": "Grievance Type Code",
+      "form.fields.typeCodePlaceholder": "Enter type code",
       "form.fields.name": "Category Name",
       "form.fields.namePlaceholder": "Enter name",
+      "form.fields.nameLocal": "Local Name",
+      "form.fields.nameLocalPlaceholder": "Enter local name",
+      "form.fields.codeFormat": "Code Format",
+      "form.fields.codeFormatPlaceholder": "Enter code format",
       "form.fields.sla": "SLA Days",
       "form.fields.slaPlaceholder": "Enter SLA",
+      "form.fields.displaySequence": "Display Sequence",
+      "form.fields.displaySequencePlaceholder": "Enter display sequence",
+      "form.fields.targetTableName": "Target Table",
+      "form.fields.targetTableNamePlaceholder": "Enter target table",
+      "form.fields.requiresFieldCorrection": "Requires Field Correction",
+      "form.fields.requiresFieldCorrectionDesc": "Check if correction required",
       "form.fields.description": "Description",
       "form.fields.descPlaceholder": "Enter description",
     };
     return labels[key] ?? key;
   };
 
+  const tCommon = (key: string) => key;
+
   const defaultProps = {
-    categoryNameRef: React.createRef<HTMLInputElement>(),
+    firstInputRef: React.createRef<HTMLInputElement>(),
     formData: {
-      categoryName: "",
+      grievanceTypeCode: "",
+      grievanceTypeName: "",
+      grievanceTypeNameLocal: "",
+      codeFormat: "",
+      slaDays: null,
+      displaySequence: 0,
+      targetTableName: "",
+      requiresFieldCorrection: false,
       description: "",
-      resolutionSlaDays: NaN,
       isActive: true,
     },
     slaValue: "",
+    displaySequenceValue: "0",
     errors: {},
     showError: () => false,
     handleChange: vi.fn(),
     handleBlur: vi.fn(),
+    handleToggleFieldCorrection: vi.fn(),
     t,
+    tCommon,
   };
 
   it("renders labels and placeholders correctly", () => {
     render(<AssetGrievanceCategoryFormFields {...defaultProps} />);
+    expect(screen.getByPlaceholderText("Enter type code")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Enter name")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Enter code format")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Enter SLA")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Enter display sequence")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Enter description")).toBeInTheDocument();
   });
 
@@ -43,17 +69,23 @@ describe("AssetGrievanceCategoryFormFields", () => {
     render(
       <AssetGrievanceCategoryFormFields
         {...defaultProps}
-        errors={{ categoryName: "Name is required" }}
-        showError={(field) => field === "categoryName"}
+        errors={{ grievanceTypeCode: "Type Code is required" }}
+        showError={(field) => field === "grievanceTypeCode"}
       />
     );
-    expect(screen.getByText("Name is required")).toBeInTheDocument();
+    expect(screen.getByText("Type Code is required")).toBeInTheDocument();
   });
 
   it("calls handleChange on input edit", () => {
     render(<AssetGrievanceCategoryFormFields {...defaultProps} />);
-    const nameInput = screen.getByPlaceholderText("Enter name");
-    fireEvent.change(nameInput, { target: { value: "Category A" } });
+    const input = screen.getByPlaceholderText("Enter type code");
+    fireEvent.change(input, { target: { value: "GRV_CODE" } });
     expect(defaultProps.handleChange).toHaveBeenCalled();
+  });
+
+  it("renders field-correction switch with accessible name", () => {
+    render(<AssetGrievanceCategoryFormFields {...defaultProps} />);
+    const switchElement = screen.getByRole("switch", { name: "Requires Field Correction" });
+    expect(switchElement).toBeInTheDocument();
   });
 });

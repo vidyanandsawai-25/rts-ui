@@ -98,9 +98,9 @@ export function AssetGrievanceCategoryMaster({
   const handleDelete = useCallback((row: AssetGrievanceCategory) => {
     confirm({
       variant: "delete",
-      title: `${t("list.headers.name")}: ${row.categoryName}`,
+      title: `${t("list.headers.name")}: ${row.grievanceTypeName}`,
       description: `${t("master.deleteConfirm")}`,
-      meta: { name: row.categoryName },
+      meta: { name: row.grievanceTypeName },
       onConfirm: async () => {
         const fd = new FormData();
         fd.append("id", String(row.id));
@@ -139,6 +139,7 @@ export function AssetGrievanceCategoryMaster({
         />
         <MasterTable<AssetGrievanceCategory>
           theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+          tableClassName="table-fixed"
           footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
           columns={columns}
           data={data}
