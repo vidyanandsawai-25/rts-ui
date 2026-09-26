@@ -33,6 +33,7 @@
           "name": "नाव",
           "conditionType": "स्थिती श्रेणी",
           "category": "श्रेणी",
+          "categoryName": "श्रेणीचे नाव",
           "description": "वर्णन",
           "conditionFactor": "स्थिती घटक",
           "displayOrder": "प्रदर्शन क्रम",

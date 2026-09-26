@@ -29,6 +29,7 @@ export async function saveAssetTypeAction(id: string, formData: FormData) {
       description: formData.get("description") as string,
       allowUnitRegistration: formData.get("allowUnitRegistration") === "true",
       allowRoomRegistration: formData.get("allowRoomRegistration") === "true",
+      isSubUnit: formData.get("isSubUnit") === "true",
       isActive: formData.get("isActive") === "true",
       status: (formData.get("isActive") === "true") ? "Active" : "Inactive"
     };
@@ -51,6 +52,9 @@ export async function saveAssetTypeAction(id: string, formData: FormData) {
       : (error instanceof Error ? error.message : String(error));
     if (rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
       return { ok: false, error: "duplicate" };
+    }
+    if (rawMsg.toLowerCase().includes("assettype_typenamelocal_invalid")) {
+      return { ok: false, error: "AssetType_TypeNameLocal_Invalid", field: "typeNameLocal" };
     }
     return { ok: false, error: cleanErrorMessage(rawMsg, "Failed to save asset type") };
   }

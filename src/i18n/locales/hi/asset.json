@@ -259,6 +259,7 @@
           "name": "नाम",
           "typeNameLocal": "स्थानीय नाम",
           "category": "एसेट श्रेणी",
+          "categoryName": "श्रेणी का नाम",
           "description": "विवरण",
           "status": "स्थिति",
           "active": "सक्रिय",
@@ -278,6 +279,8 @@
           "registrationType": "पंजीकरण का प्रकार",
           "unitRegistration": "इकाई पंजीकरण",
           "roomRegistration": "कमरा पंजीकरण",
+          "isSubUnit": "उप-इकाई है",
+          "isSubUnitDescription": "यदि यह एसेट प्रकार उप-इकाइयों के लिए है तो चुनें",
           "yes": "हाँ",
           "no": "नहीं"
         },
@@ -311,7 +314,8 @@
           "fixErrors": "कृपया सबमिट करने से पहले सभी सत्यापन त्रुटियों को ठीक करें",
           "duplicateRecord": "यह रिकॉर्ड पहले से मौजूद है",
           "duplicateError": "एक डुप्लिकेट रिकॉर्ड मिला",
-          "registrationTypeRequired": "पंजीकरण का प्रकार आवश्यक है"
+          "registrationTypeRequired": "पंजीकरण का प्रकार आवश्यक है",
+          "typeNameLocalInvalid": "स्थानीय नाम अमान्य है"
         },
         "messages": {
           "createSuccess": "रिकॉर्ड सफलतापूर्वक बनाया गया",

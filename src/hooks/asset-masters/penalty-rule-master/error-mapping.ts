@@ -36,11 +36,13 @@ export function getPenaltyRuleErrorMessage(
 
   const lowerMsg = rawMsg.toLowerCase();
 
+  // 2. Duplicate detection (penaltyrule_code_duplicate, penaltyrule_name_duplicate, "already exist", "duplicate", or HTTP 409)
   if (
     lowerMsg.includes("duplicate") ||
     lowerMsg.includes("already exist") ||
     lowerMsg.includes("already exists") ||
     lowerMsg.includes("penaltyrule_code_duplicate") ||
+    lowerMsg.includes("penaltyrule_name_duplicate") ||
     statusCode === 409
   ) {
     try {
@@ -79,7 +81,7 @@ export interface PenaltyRuleApiErrorResult {
 }
 
 /**
- * Parses backend API errors and returns both specific field-level errors (e.g. penaltyCode) and global toast message.
+ * Parses backend API errors and returns both specific field-level errors (e.g. penaltyCode, penaltyName) and global toast message.
  */
 export function parsePenaltyRuleApiErrors(
   message: string | undefined,
@@ -99,7 +101,7 @@ export function parsePenaltyRuleApiErrors(
         for (const [key, errVal] of Object.entries(parsed.errors)) {
           const lowerKey = key.toLowerCase();
           const errTextLower = (Array.isArray(errVal) ? String(errVal[0] || "") : String(errVal || "")).toLowerCase();
-          const isDup = errTextLower.includes("duplicate") || errTextLower.includes("already exist") || errTextLower.includes("already exists") || errTextLower.includes("penaltyrule_code_duplicate") || statusCode === 409;
+          const isDup = errTextLower.includes("duplicate") || errTextLower.includes("already exist") || errTextLower.includes("already exists") || errTextLower.includes("penaltyrule_code_duplicate") || errTextLower.includes("penaltyrule_name_duplicate") || statusCode === 409;
           const localizedErr = isDup ? getDuplicateErrorMessageForPenaltyField(lowerKey, t) : globalMessage;
 
           if (lowerKey.includes("code") || lowerKey === "penaltycode") {
@@ -132,12 +134,18 @@ export function parsePenaltyRuleApiErrors(
       lowerMsg.includes("duplicate") ||
       lowerMsg.includes("already exist") ||
       lowerMsg.includes("already exists") ||
-      lowerMsg.includes("penaltyrule_code_duplicate")
+      lowerMsg.includes("penaltyrule_code_duplicate") ||
+      lowerMsg.includes("penaltyrule_name_duplicate")
     ) {
-      if (lowerMsg.includes("name") || lowerMsg.includes("penaltyname")) {
+      if (lowerMsg.includes("code") || lowerMsg.includes("penaltycode")) {
+        fieldErrors.penaltyCode = getDuplicateErrorMessageForPenaltyField("penaltycode", t);
+      } else if (lowerMsg.includes("name") || lowerMsg.includes("penaltyname") || lowerMsg.includes("description")) {
         fieldErrors.penaltyName = getDuplicateErrorMessageForPenaltyField("penaltyname", t);
       } else {
-        fieldErrors.penaltyCode = getDuplicateErrorMessageForPenaltyField("penaltycode", t);
+        // Generic duplicate message (e.g. "This record already exists"):
+        // Assign to penaltyName because when user retains existing name and submits a new code,
+        // penaltyName is the conflicting existing field.
+        fieldErrors.penaltyName = getDuplicateErrorMessageForPenaltyField("penaltyname", t);
       }
     }
   }

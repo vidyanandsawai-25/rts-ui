@@ -31,6 +31,7 @@
     "duplicateRecord": "Record already exists",
     "A record with the same details already exists": "A record with the same details already exists.",
     "AssetTypeOfUse_TypeOfUseCode_Duplicate": "Type of Use Code already exists",
+    "AssetTypeOfUse_Description_Duplicate": "Type of Use Name already exists",
     "AssetTypeOfUse_TypeOfUseCode_MaxLength": "Type of Use Code maximum length is 10 characters",
     "AssetSubTypeOfUse_Description_Duplicate": "Sub-Type Description already exists",
     "AssetTypeOfUseGroup_GroupCode_Duplicate": "Group Code already exists",

@@ -32,8 +32,8 @@ export default function InventoryModelMaster({
   const base = `/${locale}/assets/configuration/master-data/inventory-model`;
 
   const searchParams = useSearchParams();
-  const sortBy = searchParams.get("sortBy") || "modelName";
-  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || "asc";
+  const sortBy = searchParams.get("sortBy") || undefined;
+  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || undefined;
 
   const handleSort = useCallback((field: string) => {
     const newOrder = sortBy === field && sortOrder === "asc" ? "desc" : "asc";

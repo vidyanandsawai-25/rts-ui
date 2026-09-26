@@ -25,21 +25,6 @@ export function FormFieldsSection({
 }: ExtendedFormFieldsSectionProps) {
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
-      <div className="space-y-1">
-        <Label className="block text-sm font-medium text-slate-700">
-          {t("configuration.masterData.form.labels.category")} <span className="text-red-500">*</span>
-        </Label>
-        <Select
-          options={categoryOptions}
-          value={String(formData.inventoryItemCategoryId ?? "")}
-          onChange={(_, v) => onSelectChange("inventoryItemCategoryId", String(v))}
-          placeholder={t("configuration.masterData.form.placeholders.category")}
-          error={showError("inventoryItemCategoryId") ? " " : undefined}
-          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-        />
-        <ValidationMessage message={errors.inventoryItemCategoryId} visible={showError("inventoryItemCategoryId")} />
-      </div>
-
       <div>
         <Input
           ref={codeRef}
@@ -55,6 +40,21 @@ export function FormFieldsSection({
           className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />
         <ValidationMessage message={errors.subTypeCode} visible={showError("subTypeCode")} />
+      </div>
+
+      <div className="space-y-1">
+        <Label className="block text-sm font-medium text-slate-700">
+          {t("configuration.masterData.form.labels.category")} <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          options={categoryOptions}
+          value={String(formData.inventoryItemCategoryId ?? "")}
+          onChange={(_, v) => onSelectChange("inventoryItemCategoryId", String(v))}
+          placeholder={t("configuration.masterData.form.placeholders.category")}
+          error={showError("inventoryItemCategoryId") ? " " : undefined}
+          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.inventoryItemCategoryId} visible={showError("inventoryItemCategoryId")} />
       </div>
 
       <div>

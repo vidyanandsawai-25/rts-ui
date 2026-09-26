@@ -122,7 +122,7 @@ export async function saveGstMaster(id: string, formData: FormData) {
     if (error instanceof ApiError) {
       const msg = error.responseText || error.error || error.message;
       const lower = msg.toLowerCase();
-      const isDup = error.statusCode === 409 || lower.includes("duplicate") || lower.includes("already exist") || lower.includes("gst_taxcode_duplicate");
+      const isDup = error.statusCode === 409 || lower.includes("duplicate") || lower.includes("already exist") || lower.includes("gst_taxcode_duplicate") || lower.includes("gst_taxname_duplicate");
       return {
         ok: false,
         error: isDup ? "duplicate" : "api_error",

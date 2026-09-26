@@ -37,12 +37,13 @@ export function getGstMasterErrorMessage(
 
   const lowerMsg = rawMsg.toLowerCase();
 
-  // 2. Duplicate detection (GST_TaxCode_Duplicate, "already exist", "duplicate", or HTTP 409)
+  // 2. Duplicate detection (GST_TaxCode_Duplicate, GST_TaxName_Duplicate, "already exist", "duplicate", or HTTP 409)
   if (
     lowerMsg.includes("duplicate") ||
     lowerMsg.includes("already exist") ||
     lowerMsg.includes("already exists") ||
     lowerMsg.includes("gst_taxcode_duplicate") ||
+    lowerMsg.includes("gst_taxname_duplicate") ||
     statusCode === 409
   ) {
     try {
@@ -82,7 +83,7 @@ export interface GstMasterApiErrorResult {
 }
 
 /**
- * Parses backend API errors and returns both specific field-level errors (e.g. taxCode) and global toast message.
+ * Parses backend API errors and returns both specific field-level errors (e.g. taxCode, taxName) and global toast message.
  */
 export function parseGstMasterApiErrors(
   message: string | undefined,
@@ -102,7 +103,7 @@ export function parseGstMasterApiErrors(
         for (const [key, errVal] of Object.entries(parsed.errors)) {
           const lowerKey = key.toLowerCase();
           const errTextLower = (Array.isArray(errVal) ? String(errVal[0] || "") : String(errVal || "")).toLowerCase();
-          const isDup = errTextLower.includes("duplicate") || errTextLower.includes("already exist") || errTextLower.includes("already exists") || errTextLower.includes("gst_taxcode_duplicate") || statusCode === 409;
+          const isDup = errTextLower.includes("duplicate") || errTextLower.includes("already exist") || errTextLower.includes("already exists") || errTextLower.includes("gst_taxcode_duplicate") || errTextLower.includes("gst_taxname_duplicate") || statusCode === 409;
           const localizedErr = isDup ? getDuplicateErrorMessageForField(lowerKey, t) : globalMessage;
 
           if (lowerKey.includes("code") || lowerKey === "taxcode") {
@@ -131,13 +132,18 @@ export function parseGstMasterApiErrors(
       lowerMsg.includes("duplicate") ||
       lowerMsg.includes("already exist") ||
       lowerMsg.includes("already exists") ||
-      lowerMsg.includes("gst_taxcode_duplicate")
+      lowerMsg.includes("gst_taxcode_duplicate") ||
+      lowerMsg.includes("gst_taxname_duplicate")
     ) {
-      if (lowerMsg.includes("name") || lowerMsg.includes("taxname")) {
+      if (lowerMsg.includes("code") || lowerMsg.includes("taxcode")) {
+        fieldErrors.taxCode = getDuplicateErrorMessageForField("taxcode", t);
+      } else if (lowerMsg.includes("name") || lowerMsg.includes("taxname") || lowerMsg.includes("description")) {
         fieldErrors.taxName = getDuplicateErrorMessageForField("taxname", t);
       } else {
-        // Default duplicate field for GST Master
-        fieldErrors.taxCode = getDuplicateErrorMessageForField("taxcode", t);
+        // Generic duplicate message (e.g. "This record already exists"):
+        // Assign to taxName because when user retains existing name and submits a new code,
+        // taxName is the conflicting existing field.
+        fieldErrors.taxName = getDuplicateErrorMessageForField("taxname", t);
       }
     }
   }

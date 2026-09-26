@@ -37,7 +37,8 @@ export const sanitizeCategoryField = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, CODE_MAX);
     }
   } else if (name === "grievanceTypeName") {
-    sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    // Category Name is English-only; regional characters belong in Local Name.
+    sanitizedValue = value.replace(/[^A-Za-z0-9 _-]/g, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -79,7 +80,7 @@ export const validateGrievanceCategoryForm = (
       const str = String(val ?? "").trim();
       if (!str) return t("form.errors.typeNameReq");
       if (str.length > NAME_MAX) return t("form.errors.typeNameMaxLength");
-      if (isAllZeros(str) || !ASSET_MASTER_NAME_REGEX.test(str)) return t("form.errors.invalidFormat");
+      if (isAllZeros(str) || !/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/.test(str)) return t("form.errors.invalidFormat");
       return undefined;
     },
     grievanceTypeNameLocal: (val: unknown) => {

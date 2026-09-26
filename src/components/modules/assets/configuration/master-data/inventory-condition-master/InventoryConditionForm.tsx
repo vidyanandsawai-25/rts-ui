@@ -35,15 +35,15 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories = 
   const locale = useLocale();
 
   const statusToggleRef = useRef<HTMLButtonElement>(null);
-  const nameRef = useRef<HTMLInputElement>(null);
+  const conditionCategoryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const timeoutId = setTimeout(() => {
       if (isEdit && statusToggleRef.current) {
         statusToggleRef.current.focus();
-      } else if (!isEdit && nameRef.current) {
-        nameRef.current.focus();
+      } else if (!isEdit && conditionCategoryRef.current) {
+        conditionCategoryRef.current.querySelector<HTMLButtonElement>("button")?.focus();
       }
     }, 150);
     return () => clearTimeout(timeoutId);
@@ -183,7 +183,7 @@ export function InventoryConditionForm({ id, initialData, inventoryCategories = 
         )}
 
         <FormFieldsSection
-          nameRef={nameRef}
+          conditionCategoryRef={conditionCategoryRef}
           formData={formData}
           errors={errors as Record<string, string>}
           showError={showError}

@@ -176,12 +176,12 @@ describe("Asset Document Definition - Validation", () => {
 
     it("handles generic DocumentDefinition duplicate error string", () => {
       const result = resolveDocumentDefinitionBackendError(
-        "AssetDocumentDefinition_Duplicate",
+        "A record with the same details already exists.",
         mockT,
         (k) => k
       );
       expect(result.toastMessage).toBe("errors.duplicate");
-      expect(result.fieldError).toBeUndefined();
+      expect(result.fieldError).toEqual({ field: "documentName", message: "errors.duplicateDocumentName" });
     });
 
     it("handles reference validation error when entity is referenced elsewhere", () => {

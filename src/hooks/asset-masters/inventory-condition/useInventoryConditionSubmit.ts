@@ -37,6 +37,16 @@ export function useInventoryConditionSubmit({
     e.preventDefault();
     if (setSubmittedOnce) setSubmittedOnce(true);
 
+    const usesLegacyFields = !!formData.conditionType;
+    const submissionData: InventoryConditionFormModel = {
+      ...formData,
+      conditionCategory: formData.conditionCategory || formData.conditionType || "",
+      categoryId: formData.categoryId ?? formData.inventoryItemCategoryId,
+      ...(usesLegacyFields && (formData.displayOrder === undefined || formData.displayOrder === null || formData.displayOrder === "")
+        ? { displayOrder: 1 }
+        : {}),
+    };
+
     setTouched({
       conditionCategory: true,
       conditionType: true,
@@ -48,7 +58,7 @@ export function useInventoryConditionSubmit({
       description: true,
     });
 
-    const v = validate(formData);
+    const v = validate(submissionData);
     setErrors(v);
 
     if (Object.keys(v).length) {
@@ -60,8 +70,8 @@ export function useInventoryConditionSubmit({
 
     try {
       const res = isEdit 
-        ? await updateInventoryConditionAction(formData) 
-        : await createInventoryConditionAction(formData);
+        ? await updateInventoryConditionAction(submissionData)
+        : await createInventoryConditionAction(submissionData);
 
       if (res?.success) {
         toast.success(

@@ -31,6 +31,7 @@
     "duplicateRecord": "रिकॉर्ड पहले से मौजूद है",
     "A record with the same details already exists": "समान विवरण वाला रिकॉर्ड पहले से मौजूद है।",
     "AssetTypeOfUse_TypeOfUseCode_Duplicate": "उपयोग प्रकार कोड पहले से मौजूद है",
+    "AssetTypeOfUse_Description_Duplicate": "उपयोग प्रकार का नाम पहले से मौजूद है",
     "AssetTypeOfUse_TypeOfUseCode_MaxLength": "उपयोग प्रकार कोड की अधिकतम लंबाई 10 वर्ण है",
     "AssetSubTypeOfUse_Description_Duplicate": "उप-प्रकार वर्णन पहले से मौजूद है",
     "AssetTypeOfUseGroup_GroupCode_Duplicate": "समूह कोड पहले से मौजूद है",

@@ -90,7 +90,7 @@ export const validateInventoryConditionForm = (
       return undefined;
     },
     displayOrder: (val: unknown) => {
-      if (val === null || val === undefined || val === "") return undefined;
+      if (val === null || val === undefined || val === "") return safeT('displayOrderRequired');
       const num = Number(val);
       if (isNaN(num) || num < 1 || !Number.isInteger(num)) {
         return safeT('displayOrderInvalid');
@@ -170,7 +170,7 @@ export function validateInventoryConditionServerInput(
     }
   }
 
-  let displayOrder = 1;
+  let displayOrder = 0;
   const rawOrder = formData.displayOrder;
   if (rawOrder !== null && rawOrder !== undefined && rawOrder !== "" && String(rawOrder).trim() !== "") {
     const numOrder = typeof rawOrder === "number" ? rawOrder : Number(rawOrder);
@@ -179,6 +179,8 @@ export function validateInventoryConditionServerInput(
     } else {
       displayOrder = numOrder;
     }
+  } else {
+    errors.displayOrder = "Display order is required.";
   }
 
   const rawDesc = String(formData.description ?? "").trim();

@@ -11,7 +11,7 @@ import type { InventoryConditionFormFieldsSectionProps } from "@/types/asset-mas
 
 interface ExtendedFormFieldsSectionProps extends InventoryConditionFormFieldsSectionProps {
   conditionTypeOptions?: { label: string; value: string }[];
-  nameRef?: React.RefObject<HTMLInputElement | null>;
+  conditionCategoryRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export function FormFieldsSection({
@@ -28,7 +28,7 @@ export function FormFieldsSection({
     { label: "Inventory", value: "Inventory" },
   ],
   isLoadingCategories,
-  nameRef,
+  conditionCategoryRef,
 }: ExtendedFormFieldsSectionProps) {
   const tCommon = useTranslations("common");
   const currentCategoryType = formData.conditionCategory || formData.conditionType || "";
@@ -37,7 +37,7 @@ export function FormFieldsSection({
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       {/* Condition Category Type: Asset or Inventory */}
-      <div className="space-y-1">
+      <div ref={conditionCategoryRef} className="space-y-1">
         <Label className="block text-sm font-medium text-slate-700">
           {t("configuration.masterData.form.labels.conditionType")} <span className="text-red-500">*</span>
         </Label>
@@ -50,6 +50,22 @@ export function FormFieldsSection({
           className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />
         <ValidationMessage message={errors.conditionCategory || errors.conditionType} visible={showError("conditionCategory") || showError("conditionType")} />
+      </div>
+
+      <div>
+        <Input
+          name="conditionName"
+          label={t("configuration.masterData.form.labels.name")}
+          required
+          value={formData.conditionName}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("configuration.masterData.form.placeholders.name")}
+          maxLength={50}
+          error={showError("conditionName") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.conditionName} visible={showError("conditionName")} />
       </div>
 
       {/* Category dropdown — populated based on selected conditionCategory */}
@@ -71,23 +87,6 @@ export function FormFieldsSection({
           disabled={isLoadingCategories || !currentCategoryType}
         />
         <ValidationMessage message={errors.categoryId || errors.inventoryItemCategoryId} visible={showError("categoryId") || showError("inventoryItemCategoryId")} />
-      </div>
-
-      <div>
-        <Input
-          ref={nameRef}
-          name="conditionName"
-          label={t("configuration.masterData.form.labels.name")}
-          required
-          value={formData.conditionName}
-          onChange={onChange}
-          onBlur={onBlur}
-          placeholder={t("configuration.masterData.form.placeholders.name")}
-          maxLength={50}
-          error={showError("conditionName") ? " " : undefined}
-          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-        />
-        <ValidationMessage message={errors.conditionName} visible={showError("conditionName")} />
       </div>
 
       <div>

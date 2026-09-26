@@ -33,6 +33,7 @@
           "name": "Name",
           "conditionType": "Condition Category",
           "category": "Category",
+          "categoryName": "Category Name",
           "description": "Description",
           "conditionFactor": "Condition Factor",
           "displayOrder": "Display Order",

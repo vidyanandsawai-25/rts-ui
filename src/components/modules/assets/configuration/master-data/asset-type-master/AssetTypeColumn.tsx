@@ -57,7 +57,7 @@ function SortableHeader({
   };
 
   return (
-    <div className="flex items-center gap-1 justify-start w-full">
+    <div className="flex items-center gap-1 justify-center w-full">
       <span>{label}</span>
       {renderSortButton()}
     </div>
@@ -93,6 +93,7 @@ export function getAssetTypeColumns(
     {
       key: "id",
       width: "12%",
+      align: "center",
       label: createSortableLabel(t("labels.code"), "typeCode"),
       render: (_, r) => (
         <Badge variant="secondary" size="sm">
@@ -103,6 +104,7 @@ export function getAssetTypeColumns(
     {
       key: "name",
       width: "18%",
+      align: "center",
       label: createSortableLabel(t("labels.name"), "typeName"),
       render: (_, r) => (
         <div className="font-semibold text-sm text-slate-800">
@@ -111,8 +113,20 @@ export function getAssetTypeColumns(
       ),
     },
     {
+      key: "description",
+      width: "16%",
+      align: "center",
+      label: createSortableLabel(t("labels.description"), "description"),
+      render: (_, r) => (
+        <div className="text-sm text-slate-700">
+          <TruncatedText text={r.description} maxLength={22} />
+        </div>
+      ),
+    },
+    {
       key: "typeNameLocal",
       width: "15%",
+      align: "center",
       label: createSortableLabel(t("labels.typeNameLocal"), "typeNameLocal"),
       render: (_, r) => (
         <div className="text-sm text-slate-700">
@@ -123,6 +137,7 @@ export function getAssetTypeColumns(
     {
       key: "allowUnitRegistration",
       width: "14%",
+      align: "center",
       label: t("labels.unitRegistration"),
       render: (_, r) => (
         <Badge variant={(r as Record<string, unknown>).allowUnitRegistration ? "success" : "secondary"} size="sm">
@@ -133,6 +148,7 @@ export function getAssetTypeColumns(
     {
       key: "allowRoomRegistration",
       width: "14%",
+      align: "center",
       label: t("labels.roomRegistration"),
       render: (_, r) => (
         <Badge variant={(r as Record<string, unknown>).allowRoomRegistration ? "success" : "secondary"} size="sm">
@@ -141,20 +157,31 @@ export function getAssetTypeColumns(
       ),
     },
     {
-      key: "description",
-      width: "17%",
-      label: createSortableLabel(t("labels.description"), "description"),
+      key: "isSubUnit",
+      width: "12%",
+      align: "center",
+      label: t("labels.isSubUnit"),
       render: (_, r) => (
-        <TruncatedText
-          text={r.description}
-          maxLength={25}
-          className="text-xs text-slate-600"
-        />
+        <Badge variant={(r as Record<string, unknown>).isSubUnit ? "success" : "secondary"} size="sm">
+          {(r as Record<string, unknown>).isSubUnit ? t("labels.yes") : t("labels.no")}
+        </Badge>
+      ),
+    },
+    {
+      key: "categoryName",
+      width: "17%",
+      align: "center",
+      label: t("labels.categoryName"),
+      render: (_, r) => (
+        <div className="text-sm text-slate-700">
+          <TruncatedText text={String((r as Record<string, unknown>).categoryName || "-")} maxLength={25} />
+        </div>
       ),
     },
     {
       key: "status",
       width: "10%",
+      align: "center",
       label: t("labels.status"),
       isStatus: true,
       render: (_, r) => <StatusBadge value={r.status} />,

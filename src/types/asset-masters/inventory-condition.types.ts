@@ -9,6 +9,7 @@ export interface InventoryCondition {
   id: number;
   conditionCategory: ConditionCategoryType;
   categoryId: number;
+  categoryName?: string;
   conditionName: string;
   description?: string | null;
   conditionFactor: number;

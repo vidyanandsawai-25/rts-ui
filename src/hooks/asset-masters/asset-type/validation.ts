@@ -3,8 +3,6 @@ import { cleanErrorMessage } from "@/lib/utils/api-error-handler";
 import {
   CODE_REGEX,
   CODE_SANITIZE,
-  NAME_ONLY_REGEX,
-  NAME_ONLY_SANITIZE,
   ASSET_MASTER_TEXT_SANITIZE,
   DESCRIPTION_REGEX,
 } from "@/lib/utils/asset-validation-rules";
@@ -29,7 +27,8 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, TYPENAME_LOCAL_MAX);
     }
   } else if (name === "name") {
-    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    // Asset Type Name is English-only; keep ASCII letters and spaces only.
+    sanitizedValue = value.replace(/[^A-Za-z ]/g, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -68,7 +67,7 @@ export const validateAssetTypeForm = (
       if (!str) return safeT('nameRequired');
       if (str.length > NAME_MAX) return safeT('nameMaxLength', { count: NAME_MAX });
       if (/^0+$/.test(str)) return safeT('nameAllZeros');
-      if (!NAME_ONLY_REGEX.test(str)) return safeT('nameFormat');
+      if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(str)) return safeT('nameFormat');
       return undefined;
     },
     typeNameLocal: (val: unknown) => {

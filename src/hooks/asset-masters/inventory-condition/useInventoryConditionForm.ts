@@ -19,7 +19,7 @@ export function useInventoryConditionForm(
         inventoryItemCategoryId: catId,
         conditionName: initialData.conditionName || "",
         conditionFactor: initialData.conditionFactor ?? "",
-        displayOrder: initialData.displayOrder ?? 1,
+        displayOrder: initialData.displayOrder ?? "",
         description: initialData.description || "",
         isActive: initialData.isActive ?? true,
       };
@@ -32,7 +32,7 @@ export function useInventoryConditionForm(
       conditionType: "",
       conditionName: "",
       conditionFactor: "",
-      displayOrder: 1,
+      displayOrder: "",
       description: "",
       isActive: true,
     };

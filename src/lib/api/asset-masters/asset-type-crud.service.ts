@@ -45,7 +45,7 @@ export const assetTypeService = {
       typeName: String(item.typeName ?? ""),
       typeNameLocal: String(item.typeNameLocal ?? item.TypeNameLocal ?? ""),
       categoryId: Number(item.categoryId ?? 0),
-      categoryName: String(item.categoryName ?? ""),
+      categoryName: String(item.categoryName ?? item.assetCategoryName ?? ""),
       isActive: Boolean(item.isActive),
       createdDate: String(item.createdDate ?? ""),
       updatedDate: item.updatedDate ? String(item.updatedDate) : null,
@@ -57,6 +57,14 @@ export const assetTypeService = {
       group: String(item.categoryId || ""),
       allowRoomRegistration: item.allowRoomRegistration,
       allowUnitRegistration: item.allowUnitRegistration,
+      ...(item.isSubUnit !== undefined && item.isSubUnit !== null
+        ? {
+            isSubUnit:
+              item.isSubUnit === true ||
+              item.isSubUnit === 1 ||
+              String(item.isSubUnit).toLowerCase() === "true",
+          }
+        : {}),
     })) as AssetType[];
 
     const removedCount = items.length - validItems.length;

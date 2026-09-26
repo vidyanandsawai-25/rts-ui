@@ -22,6 +22,7 @@ export default function AssetTypeForm({ initialData, groups }: AssetTypeFormProp
     handleChange,
     handleSelectChange,
     handleRadioChange,
+    handleToggleSubUnit,
     handleBlur,
     handleToggleStatus,
     handleSubmit,
@@ -135,6 +136,7 @@ export default function AssetTypeForm({ initialData, groups }: AssetTypeFormProp
           onBlur={handleBlur}
           onSelectChange={handleSelectChange}
           onRadioChange={handleRadioChange}
+          onToggleSubUnit={handleToggleSubUnit}
           t={t}
           categoryOptions={categoryOptions}
         />

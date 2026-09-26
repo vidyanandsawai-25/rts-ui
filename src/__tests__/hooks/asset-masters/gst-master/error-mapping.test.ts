@@ -94,8 +94,15 @@ describe("GST Master parseGstMasterApiErrors", () => {
     expect(result.fieldErrors.taxName).toBe("Tax name already exists");
   });
 
-  it("should fallback taxCode field error when HTTP status is 409 Conflict without field key in JSON", () => {
-    const result = parseGstMasterApiErrors("Conflict", 409, mockT, mockTCommon);
+  it("should fallback taxName field error when generic duplicate message 'This record already exists' or 409 is returned", () => {
+    const result = parseGstMasterApiErrors("This record already exists", 409, mockT, mockTCommon);
+    expect(result.fieldErrors.taxName).toBe("Tax name already exists");
+    expect(result.fieldErrors.taxCode).toBeUndefined();
+  });
+
+  it("should map taxCode field error when message explicitly mentions code", () => {
+    const result = parseGstMasterApiErrors("Tax code GST_01 already exists", 400, mockT, mockTCommon);
     expect(result.fieldErrors.taxCode).toBe("Tax code already exists");
+    expect(result.fieldErrors.taxName).toBeUndefined();
   });
 });

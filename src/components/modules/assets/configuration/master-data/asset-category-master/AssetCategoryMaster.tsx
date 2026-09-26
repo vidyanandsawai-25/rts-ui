@@ -32,8 +32,9 @@ export default function AssetCategoryMaster({
   const base = `/${locale}/assets/configuration/master-data/asset-category`;
 
   const searchParams = useSearchParams();
-  const sortBy = searchParams.get("sortBy") || "categoryName";
-  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || "asc";
+  // Keep all sortable columns in their neutral state until the user clicks a sort arrow.
+  const sortBy = searchParams.get("sortBy") || "";
+  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || "";
 
   const handleSort = useCallback((field: string) => {
     const newOrder = sortBy === field && sortOrder === "asc" ? "desc" : "asc";

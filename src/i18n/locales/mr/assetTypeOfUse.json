@@ -31,6 +31,7 @@
     "duplicateRecord": "रेकॉर्ड आधीपासून अस्तित्वात आहे",
     "A record with the same details already exists": "समान तपशीलांचे रेकॉर्ड आधीपासूनच अस्तित्वात आहे.",
     "AssetTypeOfUse_TypeOfUseCode_Duplicate": "वापर प्रकार कोड आधीपासूनच अस्तित्वात आहे",
+    "AssetTypeOfUse_Description_Duplicate": "वापर प्रकाराचे नाव आधीपासूनच अस्तित्वात आहे",
     "AssetTypeOfUse_TypeOfUseCode_MaxLength": "वापर प्रकार कोडची कमाल लांबी १० अक्षरे आहे",
     "AssetSubTypeOfUse_Description_Duplicate": "उप-प्रकार वर्णन आधीपासूनच अस्तित्वात आहे",
     "AssetTypeOfUseGroup_GroupCode_Duplicate": "गट कोड आधीपासूनच अस्तित्वात आहे",

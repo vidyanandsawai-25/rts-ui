@@ -125,7 +125,7 @@ export function resolveDocumentDefinitionBackendError(
     clean === "AssetDocumentDefinition_DocumentCode_Duplicate" ||
     lower.includes("documentcode_duplicate") ||
     lower.includes("document_code_duplicate") ||
-    (lower.includes("document") && lower.includes("code") && (lower.includes("duplicate") || lower.includes("already exists")));
+    (lower.includes("code") && (lower.includes("duplicate") || lower.includes("already exists")));
 
   if (isDocumentCodeDuplicate) {
     const msg = t("errors.duplicateDocumentCode");
@@ -136,7 +136,7 @@ export function resolveDocumentDefinitionBackendError(
     clean === "AssetDocumentDefinition_DocumentName_Duplicate" ||
     lower.includes("documentname_duplicate") ||
     lower.includes("document_name_duplicate") ||
-    (lower.includes("document") && lower.includes("name") && (lower.includes("duplicate") || lower.includes("already exists")));
+    (lower.includes("name") && (lower.includes("duplicate") || lower.includes("already exists")));
 
   if (isDocumentNameDuplicate) {
     const msg = t("errors.duplicateDocumentName");
@@ -162,10 +162,12 @@ export function resolveDocumentDefinitionBackendError(
   if (
     clean === "AssetDocumentDefinition_Duplicate" ||
     lower.includes("assetdocumentdefinition_duplicate") ||
-    (lower.includes("document") && lower.includes("duplicate"))
+    lower.includes("already exists") ||
+    lower.includes("duplicate")
   ) {
-    const msg = t("errors.duplicate");
-    return { toastMessage: msg };
+    const toastMsg = t("errors.duplicate");
+    const fieldMsg = t("errors.duplicateDocumentName");
+    return { toastMessage: toastMsg, fieldError: { field: "documentName", message: fieldMsg } };
   }
 
   return { toastMessage: translateBackendMessage(clean, tCommon) };

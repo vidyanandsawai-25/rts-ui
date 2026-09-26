@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveAssetTypeAction } from "@/app/[locale]/assets/configuration/master-data/asset-type/actions";
@@ -11,8 +11,8 @@ interface UseAssetTypeSubmitProps {
   locale: string;
   formData: AssetTypeFormModel;
   validate: (data: AssetTypeFormModel) => Partial<Record<keyof AssetTypeFormModel & "registrationType", string>>;
-  setErrors: (errors: Record<string, string>) => void;
-  setTouched: (touched: Record<string, boolean>) => void;
+  setErrors: Dispatch<SetStateAction<Record<string, string>>>;
+  setTouched: Dispatch<SetStateAction<Record<string, boolean>>>;
   setSubmittedOnce: (submitted: boolean) => void;
   setOpen: (open: boolean) => void;
   t: (key: string) => string;
@@ -72,6 +72,7 @@ export function useAssetTypeSubmit({
       fd.append("description", formData.description || "");
       fd.append("allowUnitRegistration", String(formData.allowUnitRegistration));
       fd.append("allowRoomRegistration", String(formData.allowRoomRegistration));
+      fd.append("isSubUnit", String(formData.isSubUnit));
       fd.append("isActive", String(formData.isActive));
       fd.append("locale", locale);
 
@@ -90,6 +91,14 @@ export function useAssetTypeSubmit({
       }
 
       if (res && !res.ok) {
+        if (res.field === "typeNameLocal") {
+          setTouched((prev) => ({ ...prev, typeNameLocal: true }));
+          setErrors((prev) => ({
+            ...prev,
+            typeNameLocal: t("validation.typeNameLocalInvalid") || "AssetType_TypeNameLocal_Invalid",
+          }));
+          return;
+        }
         toast.error(mapAssetTypeApiError(res, t, tCommon));
         if (res.error === "duplicate") {
           setErrors({

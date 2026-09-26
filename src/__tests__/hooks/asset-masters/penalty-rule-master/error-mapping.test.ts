@@ -81,9 +81,16 @@ describe("Penalty Rule Master parsePenaltyRuleApiErrors", () => {
     expect(result.fieldErrors.penaltyName).toBe("Penalty name already exists");
   });
 
-  it("should fallback penaltyCode field error when HTTP status is 409 Conflict without field key in JSON", () => {
-    const result = parsePenaltyRuleApiErrors("Conflict", 409, mockT, mockTCommon);
+  it("should fallback penaltyName field error when generic duplicate message 'This record already exists' or 409 is returned", () => {
+    const result = parsePenaltyRuleApiErrors("This record already exists", 409, mockT, mockTCommon);
+    expect(result.fieldErrors.penaltyName).toBe("Penalty name already exists");
+    expect(result.fieldErrors.penaltyCode).toBeUndefined();
+  });
+
+  it("should map penaltyCode field error when message explicitly mentions code", () => {
+    const result = parsePenaltyRuleApiErrors("Penalty code LATE_01 already exists", 400, mockT, mockTCommon);
     expect(result.fieldErrors.penaltyCode).toBe("Penalty code already exists");
+    expect(result.fieldErrors.penaltyName).toBeUndefined();
   });
 
   it("should parse fieldErrors for penaltyValue, calculationType, and gracePeriodDays correctly", () => {

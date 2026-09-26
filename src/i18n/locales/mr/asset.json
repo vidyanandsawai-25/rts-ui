@@ -259,6 +259,7 @@
           "name": "नाव",
           "typeNameLocal": "स्थानिक नाव",
           "category": "मालमत्ता श्रेणी",
+          "categoryName": "श्रेणीचे नाव",
           "description": "वर्णन",
           "status": "स्थिती",
           "active": "सक्रिय",
@@ -278,6 +279,8 @@
           "registrationType": "नोंदणी प्रकार",
           "unitRegistration": "युनिट नोंदणी",
           "roomRegistration": "खोली नोंदणी",
+          "isSubUnit": "उप-युनिट आहे",
+          "isSubUnitDescription": "हा मालमत्तेचा प्रकार उप-युनिटसाठी असल्यास नोंद करा.",
           "yes": "होय",
           "no": "नाही"
         },
@@ -311,7 +314,8 @@
           "fixErrors": "कृपया सबमिट करण्यापूर्वी सर्व प्रमाणीकरण त्रुटी दूर करा",
           "duplicateRecord": "हा रेकॉर्ड आधीपासून अस्तित्वात आहे",
           "duplicateError": "डुप्लिकेट रेकॉर्ड सापडला",
-          "registrationTypeRequired": "नोंदणी प्रकार आवश्यक आहे"
+          "registrationTypeRequired": "नोंदणी प्रकार आवश्यक आहे",
+          "typeNameLocalInvalid": "स्थानिक नाव अमान्य आहे"
         },
         "messages": {
           "createSuccess": "नोंद यशस्वीरित्या तयार केली",

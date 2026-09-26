@@ -45,6 +45,7 @@ export type MasterDataRecord = {
   departmentName?: string;
   assetCategoryId?: number;
   assetCategoryName?: string;
+  categoryName?: string;
   isMovable?: boolean;
   hasFloorDetails?: boolean;
   hasInventory?: boolean;
@@ -53,6 +54,7 @@ export type MasterDataRecord = {
   valuationType?: string;
   allowUnitRegistration?: boolean;
   allowRoomRegistration?: boolean;
+  isSubUnit?: boolean;
   taxPercentage?: number;
   effectiveFromDate?: string;
   effectiveToDate?: string | null;

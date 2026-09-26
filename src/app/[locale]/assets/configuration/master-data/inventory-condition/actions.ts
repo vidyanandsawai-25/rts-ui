@@ -22,6 +22,18 @@ import type { InventoryCategoryItem } from '@/types/asset-masters/inventory-cate
 
 const logger = createLogger('InventoryConditionActions');
 
+function normalizeInventoryConditionFormData(formData: InventoryConditionFormModel): InventoryConditionFormModel {
+  const usesLegacyFields = !!formData.conditionType;
+  return {
+    ...formData,
+    conditionCategory: formData.conditionCategory || formData.conditionType || "",
+    categoryId: formData.categoryId ?? formData.inventoryItemCategoryId,
+    ...(usesLegacyFields && (formData.displayOrder === undefined || formData.displayOrder === null || formData.displayOrder === '')
+      ? { displayOrder: 1 }
+      : {}),
+  };
+}
+
 export async function fetchInventoryConditionPagedServerAction(
   pageNumber: number,
   pageSize: number,
@@ -79,7 +91,7 @@ export async function createInventoryConditionAction(formData: InventoryConditio
       return { success: false, statusCode: 401, error: 'Unauthorized' };
     }
 
-    const validation = validateInventoryConditionServerInput(formData, false);
+    const validation = validateInventoryConditionServerInput(normalizeInventoryConditionFormData(formData), false);
     if (!validation.isValid || !validation.sanitizedDto) {
       return {
         success: false,
@@ -118,7 +130,7 @@ export async function updateInventoryConditionAction(formData: InventoryConditio
       return { success: false, statusCode: 401, error: 'Unauthorized' };
     }
 
-    const validation = validateInventoryConditionServerInput(formData, true);
+    const validation = validateInventoryConditionServerInput(normalizeInventoryConditionFormData(formData), true);
     if (!validation.isValid || !validation.sanitizedDto) {
       return {
         success: false,

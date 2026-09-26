@@ -169,6 +169,26 @@ export function useTypeOfUseForm({
         : await createAssetTypeOfUseAction(formData);
 
       if (!result.success) {
+        const apiErrorText = [
+          result.message ?? "",
+          ...Object.values(result.validationErrors ?? {}).map((value) =>
+            Array.isArray(value) ? value.join(" ") : value
+          ),
+        ].join(" ");
+        const duplicateName =
+          /AssetTypeOfUse_Description_Duplicate/i.test(apiErrorText) ||
+          (result.statusCode === 409 &&
+            /same details already exists|already exists/i.test(apiErrorText));
+
+        if (duplicateName) {
+          const nameError = t("apiErrors.AssetTypeOfUse_Description_Duplicate", {
+            default: "Type of Use Name already exists",
+          });
+          setErrors((previous) => ({ ...previous, description: nameError }));
+          setTouched((previous) => ({ ...previous, description: true }));
+          return;
+        }
+
         toast.error(mapApiError(result));
         return;
       }

@@ -49,6 +49,7 @@ export default async function EditPage({ params }: PageProps) {
       group: String(rawRecordObj.assetCategoryId || rawRecordObj.AssetCategoryId || rawRecord.categoryId || rawRecordObj.CategoryId || ""),
       allowUnitRegistration: allowUnit === true || String(allowUnit).toLowerCase() === "true" || (allowUnit as unknown) === 1 || rawRecordObj.isUnitRegistration === true,
       allowRoomRegistration: allowRoom === true || String(allowRoom).toLowerCase() === "true" || (allowRoom as unknown) === 1 || rawRecordObj.isRoomRegistration === true,
+      isSubUnit: rawRecord.isSubUnit === true || String(rawRecord.isSubUnit).toLowerCase() === "true" || rawRecordObj.IsSubUnit === true,
       description: rawRecord.description || (rawRecordObj.Description as string) || "",
       isActive: rawRecord.isActive ?? (rawRecordObj.IsActive as boolean) ?? true,
     };

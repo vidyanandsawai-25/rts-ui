@@ -13,6 +13,7 @@ export interface AssetTypeFormModel {
   group: string;
   allowUnitRegistration: boolean;
   allowRoomRegistration: boolean;
+  isSubUnit: boolean;
   description: string;
   isActive: boolean;
 }
@@ -32,6 +33,7 @@ export interface AssetTypeApiRecord {
   /** Reference ID to the parent Asset Category */
   categoryId: number;
   categoryName?: string;
+  assetCategoryName?: string;
   description: string;
   /** Determines if the type is currently available for selection */
   isActive: boolean;
@@ -41,6 +43,7 @@ export interface AssetTypeApiRecord {
   codeFormat?: string;
   allowUnitRegistration?: boolean;
   allowRoomRegistration?: boolean;
+  isSubUnit?: boolean;
 }
 
 /**
@@ -57,6 +60,7 @@ export interface AssetType {
   isActive: boolean;
   allowUnitRegistration: boolean;
   allowRoomRegistration: boolean;
+  isSubUnit: boolean;
   createdDate: string;
   updatedDate: string | null;
 }
@@ -103,6 +107,7 @@ export interface FormFieldsSectionProps {
   onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSelectChange: (name: string, value: string) => void;
   onRadioChange: (value: string) => void;
+  onToggleSubUnit: (checked: boolean) => void;
   t: (key: string) => string;
   categoryOptions: { label: string; value: string }[];
 }

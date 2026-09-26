@@ -38,8 +38,8 @@ export default async function Page({ params, searchParams }: PageProps): Promise
     pageNumber,
     pageSize,
     searchTerm || "",
-    sortBy || "modelName",
-    sortOrder || "asc"
+    sortBy || "",
+    (sortOrder || "asc") as "asc" | "desc"
   );
 
   if (!result.success) {

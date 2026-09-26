@@ -292,12 +292,12 @@ describe("Asset Field Definition - Validation", () => {
 
     it("handles generic FieldDefinition duplicate error string", () => {
       const result = resolveFieldDefinitionBackendError(
-        "AssetFieldDefinition_Duplicate",
+        "A record with the same details already exists.",
         mockT,
         (k) => k
       );
       expect(result.toastMessage).toBe("errors.duplicate");
-      expect(result.fieldError).toBeUndefined();
+      expect(result.fieldError).toEqual({ field: "fieldName", message: "errors.duplicateFieldName" });
     });
 
     it("handles reference validation error when entity is referenced elsewhere", () => {

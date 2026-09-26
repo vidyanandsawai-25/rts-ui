@@ -179,7 +179,7 @@ export function resolveFieldDefinitionBackendError(
     clean === "AssetFieldDefinition_FieldCode_Duplicate" ||
     lower.includes("fieldcode_duplicate") ||
     lower.includes("field_code_duplicate") ||
-    (lower.includes("field") && lower.includes("code") && (lower.includes("duplicate") || lower.includes("already exists")));
+    (lower.includes("code") && (lower.includes("duplicate") || lower.includes("already exists")));
 
   if (isFieldCodeDuplicate) {
     const msg = t("errors.duplicateFieldCode");
@@ -190,7 +190,7 @@ export function resolveFieldDefinitionBackendError(
     clean === "AssetFieldDefinition_FieldName_Duplicate" ||
     lower.includes("fieldname_duplicate") ||
     lower.includes("field_name_duplicate") ||
-    (lower.includes("field") && lower.includes("name") && (lower.includes("duplicate") || lower.includes("already exists")));
+    (lower.includes("name") && (lower.includes("duplicate") || lower.includes("already exists")));
 
   if (isFieldNameDuplicate) {
     const msg = t("errors.duplicateFieldName");
@@ -200,10 +200,12 @@ export function resolveFieldDefinitionBackendError(
   if (
     clean === "AssetFieldDefinition_Duplicate" ||
     lower.includes("assetfielddefinition_duplicate") ||
-    (lower.includes("field") && lower.includes("duplicate"))
+    lower.includes("already exists") ||
+    lower.includes("duplicate")
   ) {
-    const msg = t("errors.duplicate");
-    return { toastMessage: msg };
+    const toastMsg = t("errors.duplicate");
+    const fieldMsg = t("errors.duplicateFieldName");
+    return { toastMessage: toastMsg, fieldError: { field: "fieldName", message: fieldMsg } };
   }
 
   return { toastMessage: translateBackendMessage(clean, tCommon) };

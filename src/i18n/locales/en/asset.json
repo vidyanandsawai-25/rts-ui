@@ -259,6 +259,7 @@
           "name": "Name",
           "typeNameLocal": "Local Name",
           "category": "Asset Category",
+          "categoryName": "Category Name",
           "description": "Description",
           "status": "Status",
           "active": "Active",
@@ -278,6 +279,8 @@
           "registrationType": "Registration Type",
           "unitRegistration": "Unit Registration",
           "roomRegistration": "Room Registration",
+          "isSubUnit": "Is Sub Unit",
+          "isSubUnitDescription": "Mark if this asset type is for sub-units",
           "yes": "Yes",
           "no": "No"
         },
@@ -311,7 +314,8 @@
           "fixErrors": "Please fix all validation errors before submitting",
           "duplicateRecord": "This record already exists",
           "duplicateError": "A duplicate record was found",
-          "registrationTypeRequired": "Registration Type is required"
+          "registrationTypeRequired": "Registration Type is required",
+          "typeNameLocalInvalid": "Invalid local name"
         },
         "messages": {
           "createSuccess": "Record created successfully",

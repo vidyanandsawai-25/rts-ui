@@ -66,7 +66,7 @@ export function getInventoryConditionColumns(
   sortOrder?: string,
   onSort?: (key: string) => void
 ): Column<InventoryCondition>[] {
-  const sortableColumns = ["conditionName"];
+  const sortableColumns = ["conditionCategory", "categoryId", "conditionName", "displayOrder"];
 
   const createSortableLabel = (label: string, key: string, justify: "start" | "center" | "end" = "start") => {
     if (onSort && sortableColumns.includes(key)) {
@@ -88,35 +88,46 @@ export function getInventoryConditionColumns(
   return [
     {
       key: "conditionCategory",
-      label: t("configuration.masterData.form.labels.conditionType"),
+      label: createSortableLabel(t("configuration.masterData.form.labels.conditionType"), "conditionCategory", "center"),
       width: "18%",
+      align: "center",
       render: (value, row) => {
         const catType = (value || row.conditionType || "-") as string;
         return <div className="text-sm font-medium text-slate-700">{catType}</div>;
       },
     },
     {
+      key: "categoryName",
+      label: createSortableLabel(t("configuration.masterData.form.labels.categoryName"), "categoryId", "center"),
+      width: "18%",
+      align: "center",
+      render: (value) => <div className="text-sm font-medium text-slate-700">{typeof value === "string" && value ? value : "-"}</div>,
+    },
+    {
       key: "conditionName",
-      label: createSortableLabel(t("configuration.masterData.form.labels.name"), "conditionName"),
+      label: createSortableLabel(t("configuration.masterData.form.labels.name"), "conditionName", "center"),
       width: "22%",
+      align: "center",
       render: (value) => <div className="font-semibold text-sm text-slate-800 break-all whitespace-normal">{typeof value === "string" ? value : ""}</div>,
     },
     {
-      key: "conditionFactor",
-      label: t("configuration.masterData.form.labels.conditionFactor"),
+      key: "displayOrder",
+      label: createSortableLabel(t("configuration.masterData.form.labels.displayOrder"), "displayOrder", "center"),
       width: "12%",
+      align: "center",
       render: (value) => (
-        <div className="text-sm text-slate-600 font-medium">
+        <div className="text-sm text-slate-600">
           {value !== undefined && value !== null && value !== "" ? String(value) : "-"}
         </div>
       ),
     },
     {
-      key: "displayOrder",
-      label: t("configuration.masterData.form.labels.displayOrder"),
+      key: "conditionFactor",
+      label: t("configuration.masterData.form.labels.conditionFactor"),
       width: "12%",
+      align: "center",
       render: (value) => (
-        <div className="text-sm text-slate-600">
+        <div className="text-sm text-slate-600 font-medium">
           {value !== undefined && value !== null && value !== "" ? String(value) : "-"}
         </div>
       ),
@@ -125,6 +136,7 @@ export function getInventoryConditionColumns(
       key: "description",
       label: t("configuration.masterData.form.labels.description"),
       width: "26%",
+      align: "center",
       render: (value) => (
         <div className="text-sm text-slate-600 line-clamp-2 break-all whitespace-normal">
           {typeof value === "string" ? value : "-"}
@@ -135,6 +147,7 @@ export function getInventoryConditionColumns(
       key: "isActive",
       label: t("configuration.masterData.form.labels.status"),
       width: "10%",
+      align: "center",
       isStatus: true,
     },
   ];
