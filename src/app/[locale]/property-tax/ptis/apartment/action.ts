@@ -17,6 +17,7 @@ import {
   getApartmentPropertyTaxDetailsRv,
   getApartmentPropertyTaxDetailsCv,
   getApartmentQCTopSectionBelowFlex,
+  type ApartmentQCTopSectionBelowFlexParams,
   getWingWiseDetails,
   updateApartmentQcWingDetails,
   getApartmentTaxDetails,
@@ -75,8 +76,10 @@ export async function fetchApartmentPropertyTaxDetailsCvAction(propertyId: numbe
   }
 }
 
-export async function fetchApartmentQCTopSectionBelowFlexAction(propertyId: number): Promise<ApartmentQCTopSectionBelowFlexResponseDto> {
-  return await getApartmentQCTopSectionBelowFlex(propertyId);
+export async function fetchApartmentQCTopSectionBelowFlexAction(
+  propertyIdOrParams: number | string | ApartmentQCTopSectionBelowFlexParams
+): Promise<ApartmentQCTopSectionBelowFlexResponseDto> {
+  return await getApartmentQCTopSectionBelowFlex(propertyIdOrParams);
 }
 
 export async function saveSurveyUnitAction(unit: AssessmentUnit): Promise<ApiResponse<AssessmentUnit>> {

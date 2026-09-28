@@ -102,9 +102,14 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
       : initialData?.propertyDetails?.propertyDescription || initialData?.tabHeaderInfo?.description || '';
 
   const fallbackPropId = (initialData?.propertyDetails as { propertyId?: number | string })?.propertyId;
-  const resolvedEffectivePropertyId = Number(
-    propertyId || initialPropertyMasterData?.propertyId || initialData?.tabHeaderInfo?.propertyId || fallbackPropId
-  ) || null;
+  const isDraftMatchingInitial = !draft.propertyNo || draft.propertyNo === initialPropertyMasterData?.propertyNo || draft.propertyNo === initialData?.propertyDetails?.propertyNo;
+
+  const resolvedEffectivePropertyId = draft.propertyId
+    ? Number(draft.propertyId)
+    : Number(
+        propertyId ||
+        (isDraftMatchingInitial ? (initialPropertyMasterData?.propertyId || initialData?.tabHeaderInfo?.propertyId || fallbackPropId) : null)
+      ) || null;
 
   const resolvedWardId = draft.wardId
     ? String(draft.wardId)
@@ -166,6 +171,10 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
       <div className="px-3 pt-2">
         <PtisStatusMetricsHeader
           propertyId={resolvedEffectivePropertyId}
+          wardId={resolvedWardId}
+          propertyNo={draft.propertyNo}
+          partitionNo={draft.partitionNo}
+          upic={resolvedUpicId || null}
           initialData={initialQcTopSectionBelowFlex}
           isLoading={isSearching || isLoading}
         />

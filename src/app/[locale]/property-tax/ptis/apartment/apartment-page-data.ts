@@ -88,7 +88,14 @@ export async function loadApartmentPageData(
     propertyWorkflowStageService.getWorkflowStages(),
     isPropIdValid ? propertyWorkflowStageService.getCurrentWorkflowDetail(propertyIdRaw) : Promise.resolve(null),
     isPropIdValid ? getApartmentQcTopSectionAction(propertyIdRaw) : Promise.resolve(null),
-    isPropIdValid ? getApartmentQCTopSectionBelowFlex(propertyIdRaw) : Promise.resolve(null),
+    (isPropIdValid || (wardId && propertyNo))
+      ? getApartmentQCTopSectionBelowFlex({
+          propertyId: isPropIdValid ? propertyIdRaw : undefined,
+          ward: wardId || undefined,
+          propertyNo: propertyNo || undefined,
+          partitionNo: partitionNo || undefined,
+        })
+      : Promise.resolve(null),
     wardId && propertyNo ? getWingWiseDetails(wardId, propertyNo).catch(() => null) : Promise.resolve(null),
     wardId && propertyNo ? getApartmentTaxDetails({ wardId, propertyNo, taxType: initialTaxType }).catch(() => null) : Promise.resolve(null),
   ]);
@@ -102,13 +109,20 @@ export async function loadApartmentPageData(
 
   const [lateTopSectionRes, lateBelowFlexRes, lateWingWiseRes, lateTaxDetailsRes] = await Promise.all([
     !earlyTopSectionRes && resolvedPropertyId ? getApartmentQcTopSectionAction(resolvedPropertyId) : Promise.resolve(null),
-    !earlyBelowFlexRes && resolvedPropertyId ? getApartmentQCTopSectionBelowFlex(resolvedPropertyId) : Promise.resolve(null),
+    (!earlyBelowFlexRes?.success) && (resolvedPropertyId || (finalWardId && propertyNo))
+      ? getApartmentQCTopSectionBelowFlex({
+          propertyId: resolvedPropertyId || undefined,
+          ward: finalWardId || undefined,
+          propertyNo: propertyNo || undefined,
+          partitionNo: partitionNo || undefined,
+        })
+      : Promise.resolve(null),
     !earlyWingWiseRes && finalWardId && propertyNo ? getWingWiseDetails(finalWardId, propertyNo).catch(() => null) : Promise.resolve(null),
     !earlyTaxDetailsRes && finalWardId && propertyNo ? getApartmentTaxDetails({ wardId: finalWardId, propertyNo, taxType: initialTaxType }).catch(() => null) : Promise.resolve(null),
   ]);
 
   const topSectionRes = earlyTopSectionRes || lateTopSectionRes;
-  const belowFlexRes = earlyBelowFlexRes || lateBelowFlexRes;
+  const belowFlexRes = (earlyBelowFlexRes?.success ? earlyBelowFlexRes : lateBelowFlexRes) || earlyBelowFlexRes || lateBelowFlexRes;
   const wingWiseRes = earlyWingWiseRes || lateWingWiseRes;
   const taxDetailsRes = earlyTaxDetailsRes || lateTaxDetailsRes;
 
@@ -126,7 +140,7 @@ export async function loadApartmentPageData(
   const initialApartmentTaxDetails = (finalTaxDetailsRes?.success && finalTaxDetailsRes.items) ? finalTaxDetailsRes.items : null;
   const initialQcTopSectionBelowFlex = (belowFlexRes?.success && (belowFlexRes.items || belowFlexRes.data))
     ? ((belowFlexRes.items ?? belowFlexRes.data) ?? null)
-    : null;
+    : ((belowFlexRes?.items || belowFlexRes?.data) ?? null);
 
   const initialData: PtisInitialData = {
     propertyDetails: pageData.propertyDetailsResult?.propertyDetails || null,

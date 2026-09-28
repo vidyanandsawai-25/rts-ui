@@ -74,7 +74,14 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
     propertyWorkflowStageService.getWorkflowStages().catch(() => null),
     isPropIdValid ? propertyWorkflowStageService.getCurrentWorkflowDetail(propertyIdRaw).catch(() => null) : Promise.resolve(null),
     isPropIdValid ? getIndividualQcTopSectionAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
-    isPropIdValid ? getApartmentQCTopSectionBelowFlex(propertyIdRaw).catch(() => null) : Promise.resolve(null),
+    (isPropIdValid || (wardId && propertyNo))
+      ? getApartmentQCTopSectionBelowFlex({
+          propertyId: isPropIdValid ? propertyIdRaw : undefined,
+          ward: wardId || undefined,
+          propertyNo: propertyNo || undefined,
+          partitionNo: partitionNo || undefined,
+        }).catch(() => null)
+      : Promise.resolve(null),
     isPropIdValid ? getIndividualOldDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
     isPropIdValid ? getIndividualOldFloorDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
     isPropIdValid ? getIndividualOldTaxesDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
@@ -130,7 +137,14 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
     ] = await Promise.all([
       needsTopSection ? getIndividualQcTopSectionAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
       needsWorkflow ? propertyWorkflowStageService.getCurrentWorkflowDetail(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
-      needsBelowFlex ? getApartmentQCTopSectionBelowFlex(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
+      needsBelowFlex && (resolvedPropertyId || (wardId && propertyNo))
+        ? getApartmentQCTopSectionBelowFlex({
+            propertyId: resolvedPropertyId || undefined,
+            ward: (pageData?.resolvedWardId?.toString() || wardId) || undefined,
+            propertyNo: propertyNo || undefined,
+            partitionNo: partitionNo || undefined,
+          }).catch(() => null)
+        : Promise.resolve(null),
       needsOldDetails ? getIndividualOldDetailsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
       (!finalOldFloorRes?.success) ? getIndividualOldFloorDetailsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
       (!finalOldTaxesRes?.success) ? getIndividualOldTaxesDetailsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
@@ -148,7 +162,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
 
   const initialQcTopSectionBelowFlex = (finalBelowFlexRes?.success && (finalBelowFlexRes.items || finalBelowFlexRes.data))
     ? ((finalBelowFlexRes.items ?? finalBelowFlexRes.data) ?? null)
-    : null;
+    : ((finalBelowFlexRes?.items || finalBelowFlexRes?.data) ?? null);
 
   const workflowStages = workflowStagesResult?.success && workflowStagesResult.data ? workflowStagesResult.data : [];
   const currentWorkflowStageId = finalCurrentWorkflow?.success ? finalCurrentWorkflow.data?.workflowStageId : undefined;
