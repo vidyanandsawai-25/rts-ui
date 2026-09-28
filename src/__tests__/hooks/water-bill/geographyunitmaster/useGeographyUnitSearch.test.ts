@@ -67,7 +67,7 @@ describe("useGeographyUnitSearch", () => {
         pageSize: 10,
         locale: "en",
         basePath: "/water-bill/geography-unit-master",
-        includePaginationParams: false,
+        includePaginationParams: true,
       })
     );
   });

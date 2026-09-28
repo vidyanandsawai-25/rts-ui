@@ -30,7 +30,7 @@ export function useGeographyTypeSearch({
     locale,
     basePath: '/water-bill/geography-type-master',
     startTransition,
-    includePaginationParams: false,
+    includePaginationParams: true,
   });
 
   const handleSearchChange = (value: string) => {

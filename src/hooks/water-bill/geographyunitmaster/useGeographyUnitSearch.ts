@@ -30,7 +30,7 @@ export function useGeographyUnitSearch({
     locale,
     basePath: '/water-bill/geography-unit-master',
     startTransition,
-    includePaginationParams: false,
+    includePaginationParams: true,
   });
 
   const handleSearchChange = (value: string) => {

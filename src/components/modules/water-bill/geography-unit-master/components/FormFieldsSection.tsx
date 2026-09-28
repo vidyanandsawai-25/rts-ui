@@ -1,6 +1,6 @@
 "use client";
 
-import { Input, Select, ValidationMessage } from "@/components/common";
+import { Input, SearchSelect, ValidationMessage } from "@/components/common";
 import { GeographyType } from "@/types/water-bill/geographyType.types";
 import { GeographyUnitFormModel, ParentGeographyUnitCandidate } from "@/types/water-bill/geographyUnit.types";
 import type React from "react";
@@ -41,29 +41,33 @@ export const FormFieldsSection = ({
 }: FormFieldsSectionProps) => {
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
-      <Select
+      <SearchSelect
+        name="geographyTypeId"
         label={t("form.fields.geographyType.label")}
         required
         placeholder={t("form.fields.geographyType.placeholder")}
         value={formData.geographyTypeId === "" ? "" : String(formData.geographyTypeId)}
-        onChange={(_e, value) => handleGeographyTypeChange(value)}
+        onChange={(_name, value) => handleGeographyTypeChange(value)}
         options={geographyTypeOptions.map((gt) => ({
           label: gt.geographyType,
           value: String(gt.id),
         }))}
+        isLoading={optionsLoading}
         disabled={!isActive || optionsLoading}
       />
       <ValidationMessage message={errors.geographyTypeId} visible={showError("geographyTypeId")} />
 
-      <Select
+      <SearchSelect
+        name="parentGeographyUnitId"
         label={t("form.fields.parentUnit.label")}
         placeholder={t("form.fields.parentUnit.placeholder")}
         value={formData.parentGeographyUnitId === null ? "" : String(formData.parentGeographyUnitId)}
-        onChange={(_e, value) => handleParentUnitChange(value)}
+        onChange={(_name, value) => handleParentUnitChange(value)}
         options={parentUnitOptions.map((u) => ({
           label: `${u.geographyUnitName} (${u.geographyUnitCode})`,
           value: String(u.id),
         }))}
+        isLoading={parentOptionsLoading}
         disabled={!isActive || !formData.geographyTypeId || parentOptionsLoading}
       />
 

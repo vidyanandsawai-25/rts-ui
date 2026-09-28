@@ -84,6 +84,35 @@ vi.mock("@/components/common", () => ({
       ))}
     </select>
   ),
+  SearchSelect: ({
+    label,
+    value,
+    onChange,
+    name,
+    options,
+    disabled,
+  }: {
+    label?: string;
+    value?: string;
+    onChange?: (name: string, value: string) => void;
+    name?: string;
+    options: MockSelectOption[];
+    disabled?: boolean;
+  }) => (
+    <select
+      aria-label={label}
+      value={value ?? ""}
+      disabled={disabled}
+      onChange={(e) => onChange?.(name || "", e.target.value)}
+    >
+      <option value="" />
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  ),
   ValidationMessage: ({ message, visible }: { message?: string; visible?: boolean }) =>
     visible && message ? <div>{message}</div> : null,
   CancelButton: ({

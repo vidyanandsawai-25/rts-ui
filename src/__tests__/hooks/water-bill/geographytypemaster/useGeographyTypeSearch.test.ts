@@ -67,7 +67,7 @@ describe("useGeographyTypeSearch", () => {
         pageSize: 10,
         locale: "en",
         basePath: "/water-bill/geography-type-master",
-        includePaginationParams: false,
+        includePaginationParams: true,
       })
     );
   });
