@@ -12,6 +12,7 @@
       "billingFrequency": "Billing Frequency",
       "code": "Billing Frequency Code",
       "periodsPerYear": "Periods Per Year",
+      "sequenceNo": "Sequence No.",
       "description": "Description",
       "status": "Status",
       "isActive": "Active",
@@ -27,6 +28,7 @@
       "enabled": "Enabled",
       "disabled": "Disabled",
       "saveRecord": "Save record",
+      "updateRecord": "Update record",
       "billingFrequency": {
         "label": "Billing Frequency",
         "placeholder": "e.g., Monthly"
@@ -38,6 +40,10 @@
       "periodsPerYear": {
         "label": "Periods Per Year",
         "placeholder": "e.g., 12"
+      },
+      "sequenceNo": {
+        "label": "Sequence No.",
+        "placeholder": "e.g., 1"
       },
       "description": {
         "label": "Description",
@@ -53,6 +59,10 @@
       "codeRequired": "Billing Frequency Code is required",
       "codeLength": "Billing Frequency Code cannot exceed {count} characters",
       "periodsPerYearRequired": "Periods Per Year must be a valid number greater than 0",
+      "duplicateBillingFrequency": "This Billing Frequency already exists.",
+      "duplicatePeriodsPerYear": "This Periods Per Year already exists.",
+      "duplicateEntry": "This Billing Frequency or Periods Per Year already exists.",
+      "descriptionRequired": "Description is required",
       "descriptionLength": "Description cannot exceed {count} characters",
       "validationFailed": "Validation failed. Please correct the errors"
     },
@@ -89,6 +99,25 @@
     "loading": {
       "message": "Loading Billing Frequencies...",
       "description": "Please wait while we fetch the billing frequency data"
+    },
+    "billingConfiguration": {
+      "title": "Billing Configuration",
+      "subtitle": "Manage billing periods and billing frequencies for property tax billing cycle.",
+      "tabs": {
+        "billingFrequencies": "Billing Frequencies",
+        "billingPeriods": "Billing Periods"
+      },
+      "loading": {
+        "message": "Loading Billing Configuration...",
+        "description": "Please wait while we fetch the billing configuration data"
+      },
+      "error": {
+        "title": "Failed to connect server. Please try again later.",
+        "description": "We encountered an error while loading the billing configuration. Please try again.",
+        "tryAgain": "Try Again",
+        "goHome": "Go to Home",
+        "errorId": "Error ID: {id}"
+      }
     }
   }
 }

@@ -17,6 +17,9 @@
       "billGenerationDate": "बिल निर्मिती तारीख",
       "dueDate": "देय तारीख",
       "graceDays": "सवलतीचे दिवस",
+      "currentPenalty": "चालू दंड",
+      "pendingPenalty": "प्रलंबित दंड",
+      "to": "ते",
       "sequenceNo": "अनुक्रम क्रमांक",
       "currentPenaltyStartDate": "सध्याचा दंड सुरू",
       "currentPenaltyEndDate": "सध्याचा दंड समाप्ती",
@@ -37,6 +40,7 @@
       "enabled": "सक्षम",
       "disabled": "अक्षम",
       "saveRecord": "नोंद जतन करा",
+      "updateRecord": "नोंद अद्यतनित करा",
       "periodCode": {
         "label": "कालावधी कोड",
         "placeholder": "उदा., 2026-Q1"
@@ -81,7 +85,8 @@
       },
       "activeStatusTitle": "स्थिती",
       "activeStatusOn": "सक्रिय - बिलिंग कालावधी सक्षम आहे",
-      "activeStatusOff": "निष्क्रिय - बिलिंग कालावधी अक्षम आहे"
+      "activeStatusOff": "निष्क्रिय - बिलिंग कालावधी अक्षम आहे",
+      "creatingPeriodStatus": "कालावधी {current} / {total} तयार करत आहे (यानंतर {remaining} शिल्लक)"
     },
     "validation": {
       "billingPeriodCodeRequired": "कालावधी कोड आवश्यक आहे",
@@ -93,6 +98,18 @@
       "periodToDateRequired": "समाप्ती तारीख आवश्यक आहे",
       "periodToDateInvalid": "समाप्ती तारीख वैध तारीख नाही",
       "periodToDateAfterFromDate": "समाप्ती तारीख सुरू तारखेनंतर असणे आवश्यक आहे",
+      "billGenerationNotBeforePeriodTo": "बिल निर्मिती तारीख समाप्ती तारखेच्या आधी असू शकत नाही",
+      "billGenerationNotAfterDueDate": "बिल निर्मिती तारीख देय तारखेनंतर असू शकत नाही",
+      "dueDateAfterPeriodTo": "देय तारीख समाप्ती तारखेच्या आधी असू शकत नाही",
+      "dueDateMaxOneMonth": "देय तारीख समाप्ती तारखेपासून एका महिन्याच्या आत असणे आवश्यक आहे",
+      "currentPenaltyStartAfterDueDate": "चालू दंड सुरू तारीख देय तारखेनंतर असणे आवश्यक आहे",
+      "currentPenaltyEndAfterStart": "चालू दंड समाप्ती तारीख चालू दंड सुरू तारखेच्या आधी असू शकत नाही",
+      "pendingPenaltyStartNotBeforeCurrentPenaltyEnd": "प्रलंबित दंड सुरू तारीख चालू दंड समाप्ती तारखेच्या आधी असू शकत नाही",
+      "pendingPenaltyEndAfterStart": "प्रलंबित दंड समाप्ती तारीख प्रलंबित दंड सुरू तारखेच्या आधी असू शकत नाही",
+      "graceDaysMismatch": "सवलतीचे दिवस आणि देय तारीख जुळत नाहीत",
+      "graceDaysPositive": "सवलतीचे दिवस सकारात्मक संख्या असणे आवश्यक आहे",
+      "graceDaysMax": "सवलतीचे दिवस {count} पेक्षा जास्त असू शकत नाहीत",
+      "maxPeriodsReached": "निवडलेल्या आर्थिक वर्षासाठी या बिलिंग वारंवारतेचे सर्व {count} कालावधी आधीच तयार केले गेले आहेत.",
       "validationFailed": "प्रमाणीकरण अयशस्वी. कृपया त्रुटी सुधारा"
     },
     "errors": {

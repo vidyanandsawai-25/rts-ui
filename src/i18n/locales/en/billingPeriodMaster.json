@@ -17,7 +17,10 @@
       "billGenerationDate": "Bill Generation Date",
       "dueDate": "Due Date",
       "graceDays": "Grace Days",
-      "sequenceNo": "Sequence No",
+      "currentPenalty": "Current Penalty",
+      "pendingPenalty": "Pending Penalty",
+      "to": "to",
+      "sequenceNo": "Sequence No.",
       "currentPenaltyStartDate": "Current Penalty Start",
       "currentPenaltyEndDate": "Current Penalty End",
       "pendingPenaltyStartDate": "Pending Penalty Start",
@@ -37,12 +40,13 @@
       "enabled": "Enabled",
       "disabled": "Disabled",
       "saveRecord": "Save record",
+      "updateRecord": "Update record",
       "periodCode": {
         "label": "Period Code",
         "placeholder": "e.g., 2026-Q1"
       },
       "sequenceNo": {
-        "label": "Sequence No",
+        "label": "Sequence No.",
         "placeholder": "e.g., 1"
       },
       "financialYear": {
@@ -81,7 +85,8 @@
       },
       "activeStatusTitle": "Status",
       "activeStatusOn": "Active - Billing period is enabled",
-      "activeStatusOff": "Inactive - Billing period is disabled"
+      "activeStatusOff": "Inactive - Billing period is disabled",
+      "creatingPeriodStatus": "Creating Period {current} of {total} ({remaining} remaining after this)"
     },
     "validation": {
       "billingPeriodCodeRequired": "Period Code is required",
@@ -93,6 +98,18 @@
       "periodToDateRequired": "Period To Date is required",
       "periodToDateInvalid": "Period To Date is not a valid date",
       "periodToDateAfterFromDate": "Period To Date must be after Period From Date",
+      "billGenerationNotBeforePeriodTo": "Bill Generation Date cannot be before Period To Date",
+      "billGenerationNotAfterDueDate": "Bill Generation Date cannot be after Due Date",
+      "dueDateAfterPeriodTo": "Due Date cannot be before Period To Date",
+      "dueDateMaxOneMonth": "Due Date must be within one month of Period To Date",
+      "currentPenaltyStartAfterDueDate": "Current Penalty Start Date must be after Due Date",
+      "currentPenaltyEndAfterStart": "Current Penalty End Date cannot be before Current Penalty Start Date",
+      "pendingPenaltyStartNotBeforeCurrentPenaltyEnd": "Pending Penalty Start Date cannot be before Current Penalty End Date",
+      "pendingPenaltyEndAfterStart": "Pending Penalty End Date cannot be before Pending Penalty Start Date",
+      "graceDaysMismatch": "Grace Days mismatch with Due Date",
+      "graceDaysPositive": "Grace Days must be a positive number",
+      "graceDaysMax": "Grace Days cannot exceed {count}",
+      "maxPeriodsReached": "All {count} periods for this billing frequency have already been created for the selected financial year.",
       "validationFailed": "Validation failed. Please correct the errors"
     },
     "errors": {
