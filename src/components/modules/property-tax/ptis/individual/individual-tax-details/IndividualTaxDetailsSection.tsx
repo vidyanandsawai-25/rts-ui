@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { ApartmentTaxDetailsItem } from '@/types/property-tax/apartment';
 import type { PtisTaxMode } from '@/types/property-tax/apartment';
 import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
-import { getIndividualTaxDetailsAction } from '@/app/[locale]/property-tax/ptis/individual/action';
-import { getRateableTaxDetails, getCapitalTaxDetails } from '@/app/[locale]/property-tax/ptis/TaxDetails/action';
 import { convertApartmentTaxDetailsToTaxDetailsData } from './individual-tax-details.utils';
 import TaxDetails from './TaxDetails/TaxDetails';
 
 export interface IndividualTaxDetailsSectionProps {
   taxDetails?: ApartmentTaxDetailsItem | null;
+  rateableTaxDetails?: TaxDetailsData | null;
+  capitalTaxDetails?: TaxDetailsData | null;
   wardId?: string | number | null;
   propertyNo?: string | null;
   propertyId?: string | number | null;
@@ -21,17 +21,14 @@ export interface IndividualTaxDetailsSectionProps {
 
 export function IndividualTaxDetailsSection({
   taxDetails,
-  wardId,
-  propertyNo,
-  propertyId,
+  rateableTaxDetails,
+  capitalTaxDetails,
   taxMode = 'rateable',
   isLoading = false,
 }: IndividualTaxDetailsSectionProps) {
   const tTax = useTranslations('appartmentQC.taxDetails');
   const tInd = useTranslations('individual');
   const [activeTab, setActiveTab] = useState<'current' | 'pending'>('current');
-  const [fetchedTaxDetailsData, setFetchedTaxDetailsData] = useState<TaxDetailsData | null>(null);
-  const [detailsData, setDetailsData] = useState<ApartmentTaxDetailsItem | null>(null);
 
   const currentTaxType = useMemo(() => {
     if (taxMode === 'capital') return 'CV';
@@ -39,80 +36,21 @@ export function IndividualTaxDetailsSection({
     return 'RV';
   }, [taxMode]);
 
-  // If taxDetails is provided by SSR, initialize with its key so we don't duplicate fetch on mount
-  const initialKey = taxDetails
-    ? (propertyId ? `PROP_${propertyId}_${currentTaxType}` : `WARD_${wardId}_${propertyNo}_${currentTaxType}`)
-    : '';
-  const lastFetchedRef = useRef<string>(initialKey);
-
-  useEffect(() => {
-    const cleanPropId = propertyId != null ? String(propertyId).trim() : '';
-    const cleanWardId = wardId != null ? String(wardId).trim() : '';
-    const cleanPropNo = propertyNo != null ? String(propertyNo).trim() : '';
-
-    if (!cleanPropId && (!cleanWardId || !cleanPropNo)) {
-      return;
+  const activeTaxDetailsData = useMemo(() => {
+    if (currentTaxType === 'CV') {
+      return capitalTaxDetails || null;
     }
+    return rateableTaxDetails || null;
+  }, [currentTaxType, capitalTaxDetails, rateableTaxDetails]);
 
-    const fetchKey = cleanPropId
-      ? `PROP_${cleanPropId}_${currentTaxType}`
-      : `WARD_${cleanWardId}_${cleanPropNo}_${currentTaxType}`;
-
-    if (lastFetchedRef.current === fetchKey) {
-      return;
-    }
-    lastFetchedRef.current = fetchKey;
-
-    let active = true;
-
-    async function loadTaxDetails() {
-      try {
-        if (cleanPropId) {
-          const action = currentTaxType === 'CV' ? getCapitalTaxDetails : getRateableTaxDetails;
-          const res = await action(cleanPropId);
-          if (active) {
-            if (res && res.success && res.data) {
-              setFetchedTaxDetailsData(res.data);
-              setDetailsData(null);
-            } else {
-              setFetchedTaxDetailsData(null);
-            }
-          }
-        } else {
-          const res = await getIndividualTaxDetailsAction(cleanWardId, cleanPropNo, currentTaxType);
-          if (active) {
-            if (res && res.success && res.items) {
-              setDetailsData(res.items);
-              setFetchedTaxDetailsData(null);
-            } else {
-              setDetailsData(null);
-            }
-          }
-        }
-      } catch {
-        if (active) {
-          setFetchedTaxDetailsData(null);
-          setDetailsData(null);
-        }
-      }
-    }
-
-    loadTaxDetails();
-
-    return () => {
-      active = false;
-    };
-  }, [propertyId, wardId, propertyNo, currentTaxType]);
-
-  const activeData = detailsData || taxDetails || null;
-  const arrearsCount = activeData?.arrears?.length || 0;
+  const arrearsCount = taxDetails?.arrears?.length || 0;
 
   const initialTaxDetailsData = useMemo(() => {
-    if (fetchedTaxDetailsData) {
-      return fetchedTaxDetailsData;
+    if (activeTaxDetailsData) {
+      return activeTaxDetailsData;
     }
-    return convertApartmentTaxDetailsToTaxDetailsData(activeData);
-  }, [fetchedTaxDetailsData, activeData]);
+    return convertApartmentTaxDetailsToTaxDetailsData(taxDetails);
+  }, [activeTaxDetailsData, taxDetails]);
 
   if (isLoading) {
     return (

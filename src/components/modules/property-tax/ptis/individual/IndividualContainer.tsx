@@ -209,11 +209,13 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
       {/* 5. TAX DETAILS TABLE (FROM APARTMENT TO INDIVIDUAL) */}
       <div className="px-3 pt-2">
         <IndividualTaxDetailsSection
-          propertyId={propertyId}
+          propertyId={resolvedEffectivePropertyId}
           wardId={resolvedWardId}
           propertyNo={draft.propertyNo || null}
           taxMode={currentTaxMode}
           taxDetails={initialTaxDetails}
+          rateableTaxDetails={initialRateableTaxDetails}
+          capitalTaxDetails={initialCapitalTaxDetails}
           isLoading={isSearching || isLoading}
         />
       </div>

@@ -44,7 +44,9 @@ const RuleRateCell = ({ val, row, t }: { val: unknown; row: TaxCalculationItem; 
     };
   }, [isOpen]);
 
-  const hasBreakdown = Boolean(row.typeOfUseTaxPercentages && row.typeOfUseTaxPercentages.length > 0);
+  const hasPercentagesBreakdown = Boolean(row.typeOfUseTaxPercentages && row.typeOfUseTaxPercentages.length > 0);
+  const hasSlabBreakdown = Boolean(row.slabDetails && row.slabDetails.length > 0);
+  const hasBreakdown = hasPercentagesBreakdown || hasSlabBreakdown;
 
   let mainDisplay = '—';
   if (val !== null && val !== undefined) {
@@ -87,32 +89,54 @@ const RuleRateCell = ({ val, row, t }: { val: unknown; row: TaxCalculationItem; 
             <span className="font-extrabold text-xs text-slate-800 truncate max-w-[170px]" title={row.taxName}>
               {row.taxName} {t('breakdown') || 'Breakdown'}
             </span>
-            <span className="text-[11px] font-black text-blue-600 bg-blue-50/90 px-2.5 py-1 rounded-full border border-blue-100 shrink-0">
-              {t('avg') || 'Avg'}: {avgVal}
-            </span>
+            {!hasSlabBreakdown && (
+              <span className="text-[11px] font-black text-blue-600 bg-blue-50/90 px-2.5 py-1 rounded-full border border-blue-100 shrink-0">
+                {t('avg') || 'Avg'}: {avgVal}
+              </span>
+            )}
           </div>
 
           {/* List of breakdown cards */}
           <div className="space-y-2.5 max-h-60 overflow-y-auto pr-0.5">
-            {row.typeOfUseTaxPercentages?.map((item, idx) => (
-              <div
-                key={item.typeOfUseId ?? idx}
-                className="bg-slate-50/90 border border-slate-100/90 p-3 rounded-2xl flex items-center justify-between gap-3"
-              >
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-bold text-slate-800 truncate" title={item.description}>
-                    {item.description}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-1">
-                    {t('type') || 'TYPE'}: {item.type}
-                    {item.baseType ? ` • ${t('base')?.toUpperCase() || 'BASE'}: ${item.baseType}` : ''}
-                  </span>
-                </div>
-                <div className="bg-white border border-slate-200/80 px-3 py-1.5 rounded-xl text-xs font-black text-slate-800 shadow-2xs shrink-0">
-                  {formatNumberTwoDecimals(item.taxPercentage)}%
-                </div>
-              </div>
-            ))}
+            {hasPercentagesBreakdown
+              ? row.typeOfUseTaxPercentages?.map((item, idx) => (
+                  <div
+                    key={item.typeOfUseId ?? idx}
+                    className="bg-slate-50/90 border border-slate-100/90 p-3 rounded-2xl flex items-center justify-between gap-3"
+                  >
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-bold text-slate-800 truncate" title={item.description}>
+                        {item.description}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-1">
+                        {t('type') || 'TYPE'}: {item.type}
+                        {item.baseType ? ` • ${t('base')?.toUpperCase() || 'BASE'}: ${item.baseType}` : ''}
+                      </span>
+                    </div>
+                    <div className="bg-white border border-slate-200/80 px-3 py-1.5 rounded-xl text-xs font-black text-slate-800 shadow-2xs shrink-0">
+                      {formatNumberTwoDecimals(item.taxPercentage)}%
+                    </div>
+                  </div>
+                ))
+              : row.slabDetails?.map((slab, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-slate-50/90 border border-slate-100/90 p-3 rounded-2xl flex items-center justify-between gap-3"
+                  >
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-bold text-slate-800 truncate">
+                        {formatNumberTwoDecimals(slab.minAmount)} - {formatNumberTwoDecimals(slab.maxAmount)}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-1">
+                        {t('type') || 'TYPE'}: {slab.type}
+                        {slab.baseType ? ` • ${t('base')?.toUpperCase() || 'BASE'}: ${slab.baseType}` : ''}
+                      </span>
+                    </div>
+                    <div className="bg-white border border-slate-200/80 px-3 py-1.5 rounded-xl text-xs font-black text-slate-800 shadow-2xs shrink-0">
+                      {formatNumberTwoDecimals(slab.rate)}%
+                    </div>
+                  </div>
+                ))}
           </div>
         </div>
       )}
@@ -127,16 +151,16 @@ export const getColumns = (
     {
       key: 'taxName' as keyof TaxCalculationItem,
       label: t('taxHead')?.toUpperCase() || 'TAX HEAD',
-      width: '25%',
-      cellClassName: 'py-3 px-4',
+      width: '22%',
+      cellClassName: 'py-3 px-3',
       render: (_val: unknown, row: TaxCalculationItem) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 border border-slate-200">
             {getTaxIcon(row.taxName)}
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-slate-800 text-sm">{row.taxName}</span>
-            <span className="text-xs text-slate-400 truncate max-w-[200px]">{row.descriptions || '—'}</span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-bold text-slate-800 text-sm truncate">{row.taxName}</span>
+            <span className="text-xs text-slate-400 truncate max-w-[180px]">{row.descriptions || '—'}</span>
           </div>
         </div>
       ),
@@ -144,8 +168,9 @@ export const getColumns = (
     {
       key: 'types' as keyof TaxCalculationItem,
       label: t('applicableTo') || 'APPLICABLE TO',
-      width: '15%',
-      cellClassName: 'py-3 px-4 text-xs text-slate-500 font-medium text-center',
+      width: '13%',
+      headerClassName: 'text-center',
+      cellClassName: 'py-3 px-2 text-xs text-slate-500 font-medium text-center',
       render: (val: unknown) => {
         const types = val as string;
         if (!types) return '—';
@@ -158,36 +183,40 @@ export const getColumns = (
     {
       key: 'baseTypes' as keyof TaxCalculationItem,
       label: t('method') || 'METHOD',
-      width: '10%',
-      cellClassName: 'py-3 px-4 text-xs text-slate-500 font-medium text-center',
+      width: '9%',
+      headerClassName: 'text-center',
+      cellClassName: 'py-3 px-2 text-xs text-slate-500 font-medium text-center',
       render: (val: unknown, row: TaxCalculationItem) => (val as string) || row.resultModes || '—'
     },
     {
       key: 'averageTaxPercentage' as keyof TaxCalculationItem,
       label: t('ruleRate') || 'RULE / RATE',
-      width: '15%',
-      cellClassName: 'py-3 px-4 text-xs text-slate-500 font-medium text-center',
+      width: '13%',
+      headerClassName: 'text-center',
+      cellClassName: 'py-3 px-2 text-xs text-slate-500 font-medium text-center',
       render: (val: unknown, row: TaxCalculationItem) => <RuleRateCell val={val} row={row} t={t} />
     },
     {
       key: 'calculationMode' as keyof TaxCalculationItem,
       label: t('calculation') || 'CALCULATION',
       width: '15%',
-      cellClassName: 'py-3 px-4 text-xs text-slate-500 font-medium',
+      headerClassName: 'text-center',
+      cellClassName: 'py-3 px-2 text-xs text-slate-500 font-medium text-center',
       render: (val: unknown) => (val as string) || '—'
     },
     {
       key: 'isActive' as keyof TaxCalculationItem,
       label: t('statusOnOff') || 'STATUS ON / OFF',
-      width: '10%',
+      width: '14%',
       align: 'center' as const,
-      cellClassName: 'py-3 px-4 text-center',
+      headerClassName: 'text-center',
+      cellClassName: 'py-3 px-2 text-center',
       render: (_val: unknown, row: TaxCalculationItem) => {
         const isEffectiveActive = Boolean(row.isApplicable && row.isActive);
         return (
-          <div className="flex items-center gap-2 justify-center">
+          <div className="flex items-center gap-1.5 justify-center">
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${isEffectiveActive
+              className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${isEffectiveActive
                   ? 'bg-emerald-50 text-emerald-600'
                   : 'bg-slate-100 text-slate-400'
                 }`}
@@ -207,9 +236,10 @@ export const getColumns = (
     {
       key: 'taxAmount' as keyof TaxCalculationItem,
       label: t('amount') || 'AMOUNT',
-      width: '10%',
+      width: '14%',
       align: 'center' as const,
-      cellClassName: 'py-3 px-4 font-bold text-slate-800 text-sm whitespace-nowrap',
+      headerClassName: 'text-center',
+      cellClassName: 'py-3 px-3 font-bold text-slate-800 text-sm whitespace-nowrap text-center',
       render: (val: unknown) => `${t('currencySymbol')} ${(val as number)?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || '0.00'}`
     }
   ];

@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IndividualTaxDetailsSection } from '@/components/modules/property-tax/ptis/individual/individual-tax-details/IndividualTaxDetailsSection';
 import type { ApartmentTaxDetailsItem } from '@/types/property-tax/apartment';
@@ -10,12 +10,6 @@ vi.mock('next-intl', () => ({
     if (key === 'arrearsTab') return 'Arrears';
     return key;
   },
-}));
-
-const mockGetIndividualTaxDetailsAction = vi.fn();
-
-vi.mock('@/app/[locale]/property-tax/ptis/individual/action', () => ({
-  getIndividualTaxDetailsAction: (...args: unknown[]) => mockGetIndividualTaxDetailsAction(...args),
 }));
 
 const mockTaxDetails: ApartmentTaxDetailsItem = {
@@ -138,25 +132,17 @@ describe('IndividualTaxDetailsSection', () => {
     expect(screen.getByText('Tax Details (Dual)')).toBeInTheDocument();
   });
 
-  it('fetches tax details dynamically when wardId and propertyNo are provided', async () => {
-    mockGetIndividualTaxDetailsAction.mockResolvedValueOnce({
-      success: true,
-      items: mockTaxDetails,
-    });
-
+  it('renders tax details when taxDetails prop is provided with wardId and propertyNo', () => {
     render(
       <IndividualTaxDetailsSection
         wardId="101"
         propertyNo="PROP-001"
+        taxDetails={mockTaxDetails}
         taxMode="rateable"
       />
     );
 
-    expect(mockGetIndividualTaxDetailsAction).toHaveBeenCalledWith('101', 'PROP-001', 'RV');
-
-    await waitFor(() => {
-      expect(screen.getByText('General Tax')).toBeInTheDocument();
-      expect(screen.getByText('12,500')).toBeInTheDocument();
-    });
+    expect(screen.getByText('General Tax')).toBeInTheDocument();
+    expect(screen.getByText('12,500')).toBeInTheDocument();
   });
 });

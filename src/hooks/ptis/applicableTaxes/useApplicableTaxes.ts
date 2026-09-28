@@ -80,7 +80,11 @@ export function useApplicableTaxes({
   const showInactiveParam = searchParams.get('showInactive');
   const showInactive = showInactiveParam === 'true';
 
-  const items = useMemo(() => taxApplicabilityPagedResponse?.taxCalculations || [], [taxApplicabilityPagedResponse]);
+  const items = useMemo(
+    () => taxApplicabilityPagedResponse?.taxCalculations || [],
+    [taxApplicabilityPagedResponse]
+  );
+
   const summary = useMemo(() => taxApplicabilityPagedResponse?.summary || {
     totalTax: 0, residentialRV: 0, commercialRV: 0, area: 0, toilets: 0
   }, [taxApplicabilityPagedResponse]);
@@ -195,7 +199,6 @@ export function useApplicableTaxes({
     pageSize,
     totalPages,
     totalCount,
-
     setPageNumber,
     paginatedData,
     filteredTaxes,
