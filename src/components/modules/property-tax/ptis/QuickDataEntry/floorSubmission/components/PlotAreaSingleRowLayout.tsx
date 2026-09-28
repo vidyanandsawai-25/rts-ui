@@ -69,27 +69,27 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
   }, [handleOpenDropdown, handleOpenPlotCategoryFocus]);
 
   return (
-    <div className="bg-[#f8fafc] border border-slate-200 rounded-2xl p-2 sm:p-2.5 flex flex-row items-center justify-between gap-2 shadow-sm w-full relative z-20">
+    <div className="bg-[#f8fafc] border border-slate-200 rounded-2xl p-2 sm:px-2.5 sm:py-2 flex flex-row items-center justify-between gap-1.5 shadow-sm w-full relative z-20">
       {/* Left side: Icon & Title info */}
-      <div className="flex items-center gap-2 shrink-0">
-        <div className="flex items-center justify-center bg-blue-600 text-white p-2 rounded-xl shadow-md shadow-blue-200/50">
+      <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center justify-center bg-blue-600 text-white p-1.5 rounded-lg shadow-sm shadow-blue-200/50">
           {isLoading ? (
-            <Loader2 className="h-4.5 w-4.5 stroke-[2] animate-spin" />
+            <Loader2 className="h-4 w-4 stroke-[2] animate-spin" />
           ) : (
-            <Calculator className="h-4.5 w-4.5 stroke-[2]" />
+            <Calculator className="h-4 w-4 stroke-[2]" />
           )}
         </div>
         <div>
-          <h4 className="text-xs font-bold text-slate-800 tracking-wide uppercase leading-tight whitespace-nowrap">
+          <h4 className="text-[11px] sm:text-xs font-bold text-slate-800 tracking-wide uppercase leading-tight whitespace-nowrap">
             {getTranslation('floor.totalPlotArea', 'Total Plot Area')}
           </h4>
         </div>
       </div>
 
       {/* Right side: Input controls strictly in ONE single row */}
-      <div className="flex flex-row items-center gap-2 shrink-0 flex-nowrap">
+      <div className="flex flex-row items-center gap-1.5 shrink-0 flex-nowrap">
         {/* Length Input */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5">
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
             {getTranslation('floor.lengthShort', 'Length')}
           </span>
@@ -102,15 +102,15 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
             allowedPattern={/^[0-9.]$/}
             disabled={isLoading}
             onChange={(val) => handleInputChange(val, setLength)}
-            className="w-14 h-8 text-center text-xs font-semibold"
+            className="w-12 h-8 text-center text-xs font-semibold"
           />
         </div>
 
         {/* Multiplier sign */}
-        <span className="text-slate-400 font-semibold text-xs self-end mb-2">×</span>
+        <span className="text-slate-400 font-semibold text-xs self-end mb-1.5">×</span>
 
         {/* Width Input */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5">
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
             {getTranslation('floor.widthShort', 'Width')}
           </span>
@@ -122,35 +122,35 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
             allowedPattern={/^[0-9.]$/}
             disabled={isLoading}
             onChange={(val) => handleInputChange(val, setWidth)}
-            className="w-14 h-8 text-center text-xs font-semibold"
+            className="w-12 h-8 text-center text-xs font-semibold"
           />
         </div>
 
         {/* Vertical Divider 1 */}
-        <div className="h-7 w-[1px] bg-slate-200 mx-0.5 shrink-0 self-end mb-0.5" />
+        <div className="h-6 w-[1px] bg-slate-200 shrink-0 self-end mb-1" />
 
         {/* Calculated Area Box */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5">
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
             {getTranslation('floor.area', 'Area')}
           </span>
-          <div className="flex items-center gap-1 bg-[#f0f7ff] border border-blue-100 rounded-lg px-2 h-8 text-[11px] font-semibold shrink-0 whitespace-nowrap">
+          <div className="flex items-center gap-1 bg-[#f0f7ff] border border-blue-100 rounded-lg px-1.5 h-8 text-[11px] font-semibold shrink-0 whitespace-nowrap">
             <div className="p-0.5 text-blue-600 bg-white border border-blue-200 rounded">
               <Maximize2 className="h-3 w-3 stroke-[2.5]" />
             </div>
             <span className="text-emerald-600 font-bold">{totalSqM} {getTranslation('floor.sqM', 'm²')}</span>
-            <span className="text-slate-300 font-light mx-1">/</span>
+            <span className="text-slate-300 font-light mx-0.5">/</span>
             <span className="text-blue-600 font-bold">{totalSqFt} {getTranslation('floor.sqFt', 'Sq Ft')}</span>
           </div>
         </div>
 
         {/* Vertical Divider 2 */}
         {selectedFloorType === 'OpenPlot' && (
-          <div className="h-7 w-[1px] bg-slate-200 mx-0.5 shrink-0 self-end mb-0.5" />
+          <div className="h-6 w-[1px] bg-slate-200 shrink-0 self-end mb-1" />
         )}
 
         {/* Open Plot Category Dropdown */}
-        <div className="flex flex-col gap-1" onFocusCapture={onOpenPlotCategoryFocusHandler}>
+        <div className="flex flex-col gap-0.5" onFocusCapture={onOpenPlotCategoryFocusHandler}>
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
             {categoryCode}
           </span>
@@ -184,13 +184,13 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
                 onChangeOpenPlotCategory?.(null);
               }
             }}
-            className="h-8 text-xs font-bold text-slate-700 w-[150px]"
+            className="h-8 text-xs font-bold text-slate-700 w-[130px]"
           />
         </div>
 
         {/* Vertical Divider 3 */}
         {selectedFloorType !== undefined && onChangeFloorType && (
-          <div className="h-7 w-[1px] bg-slate-200 mx-0.5 shrink-0 self-end mb-0.5" />
+          <div className="h-6 w-[1px] bg-slate-200 shrink-0 self-end mb-1" />
         )}
 
         {/* Update Area Button */}
@@ -198,7 +198,7 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
           type="button"
           onClick={handleApply}
           disabled={isButtonDisabled}
-          className="h-8 px-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm shrink-0 active:scale-[0.98] flex items-center gap-1.5 whitespace-nowrap self-end"
+          className="h-8 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm shrink-0 active:scale-[0.98] flex items-center gap-1 whitespace-nowrap self-end"
         >
           <RotateCw className={isLoading ? 'h-3.5 w-3.5 animate-spin' : 'h-3.5 w-3.5'} />
           {buttonText || getTranslation('floor.applyArea', 'Update Area')}
@@ -206,7 +206,7 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
 
         {/* Used Plot Area Dropdown */}
         {selectedFloorType !== undefined && onChangeFloorType && (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-0.5">
             <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
               {getTranslation('floor.usedPlotArea', 'Used Plot Area')}
             </span>
@@ -220,7 +220,7 @@ export const PlotAreaSingleRowLayout: React.FC<PlotAreaSingleRowLayoutProps> = (
               ].filter(opt => !isPlotCategory || opt.value !== 'Construction')}
               value={selectedFloorType}
               onChange={(_name, val) => onChangeFloorType(val as 'Construction' | 'OpenPlot')}
-              className="h-8 text-xs font-bold text-slate-700 w-[115px]"
+              className="h-8 text-xs font-bold text-slate-700 w-[110px]"
               onKeyDown={(e) => {
                 if (e.key === 'Tab' && !e.shiftKey) {
                   e.preventDefault();

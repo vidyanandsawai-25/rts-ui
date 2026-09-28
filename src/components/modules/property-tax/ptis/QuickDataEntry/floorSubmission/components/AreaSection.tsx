@@ -29,7 +29,7 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
   const content = (
     <>
       {/* Rooms */}
-      {!isOpenPlot && !isUtility && (
+      {!isOpenPlot && (
         <FieldWrapper
           label={t('floor.rooms')}
           htmlFor="floor-rooms"
@@ -49,7 +49,7 @@ export const AreaSection: React.FC<AreaSectionProps & { selectedFloorType?: 'Con
             maxLength={2}
             value={String(editingFloorForm.rooms || '')}
             placeholder="0"
-            disabled={!editingFloorForm.use}
+            disabled={!editingFloorForm.use || isUtility}
             onChange={(cleaned) => {
               setEditingFloorForm({
                 ...editingFloorForm,
