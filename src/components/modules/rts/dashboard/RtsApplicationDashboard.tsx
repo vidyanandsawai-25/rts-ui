@@ -694,7 +694,7 @@ export default function RtsApplicationDashboard({
         label: t('applicationDashboard.table.slaDays'),
         align: 'center',
         render: (_value, row) => (
-          <span className="inline-flex min-w-8 justify-center rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
+          <span className="inline-flex min-w-[72px] items-center justify-center whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
             {Number.isFinite(row.expectedSlaDays)
               ? t('applicationDashboard.units.days', {
                   value: numberFormatter.format(row.expectedSlaDays),

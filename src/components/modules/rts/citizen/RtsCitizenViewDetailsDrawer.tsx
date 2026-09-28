@@ -300,7 +300,7 @@ export default function RtsCitizenViewDetailsDrawer({
         {isLoadingDetails ? (
           <div className="p-8 text-center text-xs font-medium text-slate-400">{t("loadingApplicationDetails")}</div>
         ) : (
-          <div className="space-y-5 p-5">
+          <div className="space-y-2 p-3">
             <section className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4.5">
               <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-800">{t("applicationSummary")}</h4>
               <div className="grid grid-cols-2 gap-3.5 text-xs font-bold text-slate-700">
