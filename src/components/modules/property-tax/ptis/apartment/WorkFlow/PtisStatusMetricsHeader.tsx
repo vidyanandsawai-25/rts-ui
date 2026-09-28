@@ -14,13 +14,8 @@ export type { PtisStatusBadgeItem };
 export { DEFAULT_STATUS_BADGES };
 
 export interface PtisStatusMetricsHeaderProps {
+  /** Resolved propertyId — API only fires when this is a valid positive number */
   propertyId?: number | string | null;
-  wardId?: number | string | null;
-  propertyNo?: string | null;
-  partitionNo?: string | null;
-  wingDetailsId?: number | string | null;
-  societyId?: number | string | null;
-  upic?: string | null;
   badges?: PtisStatusBadgeItem[];
   initialData?: ApartmentQCTopSectionBelowFlexResponseDto | ApartmentQCTopSectionBelowFlexItemsDto | Record<string, unknown> | null;
   isLoading?: boolean;
@@ -28,31 +23,21 @@ export interface PtisStatusMetricsHeaderProps {
 
 export const PtisStatusMetricsHeader: React.FC<PtisStatusMetricsHeaderProps> = ({
   propertyId,
-  wardId,
-  propertyNo,
-  partitionNo,
-  wingDetailsId,
-  societyId,
-  upic,
   badges: initialBadges,
   initialData,
   isLoading = false,
 }) => {
   const { badges, scrollContainerRef, handleScroll, isLoading: hookLoading } = useApartmentStatusMetrics({
     propertyId,
-    wardId,
-    propertyNo,
-    partitionNo,
-    wingDetailsId,
-    societyId,
-    upic,
     badges: initialBadges,
     initialData,
   });
 
   const [selectedBadge, setSelectedBadge] = useState<PtisStatusBadgeItem | null>(null);
 
-  const showSkeleton = (isLoading || hookLoading) && badges.length === 0;
+  // Show skeleton when parent is searching (isLoading) — clears old badges during page transition
+  // For hook's own loading (hookLoading), only show skeleton if no badges yet
+  const showSkeleton = isLoading || (hookLoading && badges.length === 0);
 
   return (
     <>

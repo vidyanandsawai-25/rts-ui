@@ -165,11 +165,7 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
 
       <div className="px-3 pt-2">
         <PtisStatusMetricsHeader
-          propertyId={draft.propertyId ? Number(draft.propertyId) : (propertyId ?? (urlState.propertyId ? Number(urlState.propertyId) : (initialData?.tabHeaderInfo?.propertyId ? Number(initialData.tabHeaderInfo.propertyId) : null)))}
-          wardId={draft.wardId ?? urlState.wardId ?? initialWardId}
-          propertyNo={draft.propertyNo ?? urlState.propertyNo ?? null}
-          partitionNo={draft.partitionNo ?? urlState.partitionNo ?? null}
-          upic={initialData?.propertyDetails?.upicId || initialData?.tabHeaderInfo?.upicId || null}
+          propertyId={urlState.propertyId ? Number(urlState.propertyId) : null}
           initialData={initialQcTopSectionBelowFlex}
           isLoading={isSearching}
         />

@@ -12,48 +12,33 @@ import {
 } from '@/types/property-tax/apartment';
 
 export interface UseApartmentStatusMetricsParams {
+  /** The resolved propertyId — only fetches when this is a valid positive number */
   propertyId?: number | string | null;
-  wardId?: number | string | null;
-  propertyNo?: string | null;
-  partitionNo?: string | null;
-  wingDetailsId?: number | string | null;
-  societyId?: number | string | null;
-  upic?: string | null;
   badges?: PtisStatusBadgeItem[];
   initialData?: ApartmentQCTopSectionBelowFlexResponseDto | ApartmentQCTopSectionBelowFlexItemsDto | Record<string, unknown> | null;
 }
 
 export function useApartmentStatusMetrics({
   propertyId,
-  wardId,
-  propertyNo,
-  partitionNo,
-  wingDetailsId,
-  societyId,
-  upic,
   badges: initialBadges,
   initialData,
 }: UseApartmentStatusMetricsParams) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Parse propertyId into a valid positive number or null
   const parsedPropId = useMemo<number | null>(() => {
     if (propertyId === null || propertyId === undefined || propertyId === '') return null;
     const n = Number(propertyId);
     return Number.isFinite(n) && n > 0 ? n : null;
   }, [propertyId]);
 
-  const cleanWardId = wardId !== null && wardId !== undefined ? String(wardId).trim() : '';
-  const cleanPropertyNo = propertyNo ? String(propertyNo).trim() : '';
-  const cleanPartitionNo = partitionNo ? String(partitionNo).trim() : '';
-  const cleanUpic = upic ? String(upic).trim() : '';
-
+  // Build a unique fetch key — ONLY based on propertyId
   const fetchKey = useMemo(() => {
     if (parsedPropId) return `prop-${parsedPropId}`;
-    if (cleanWardId && cleanPropertyNo) return `ward-${cleanWardId}-prop-${cleanPropertyNo}${cleanPartitionNo ? `-part-${cleanPartitionNo}` : ''}`;
-    if (cleanUpic) return `upic-${cleanUpic}`;
     return null;
-  }, [parsedPropId, cleanWardId, cleanPropertyNo, cleanPartitionNo, cleanUpic]);
+  }, [parsedPropId]);
 
+  // Use SSR badges if available on initial mount
   const ssrBadges = useMemo<PtisStatusBadgeItem[]>(() => {
     if (initialBadges && initialBadges.length > 0) return initialBadges;
     if (initialData) return buildBadgesFromPayload(initialData);
@@ -68,25 +53,25 @@ export function useApartmentStatusMetrics({
   const [error, setError] = useState<string | null>(null);
 
   const isInitialProperty = fetchKey === initialKey;
-  const badges = fetchedBadges ?? (isInitialProperty ? ssrBadges : []);
 
+  // If no valid propertyId → no badges to show (prevents stale SSR data after ward change)
+  const badges = !parsedPropId
+    ? []
+    : fetchedBadges ?? (isInitialProperty ? ssrBadges : []);
+
+  /**
+   * Fetch metrics from the API using ONLY propertyId.
+   * This will NOT be called if propertyId is not available.
+   */
   const fetchMetrics = useCallback(() => {
-    if (!parsedPropId && !cleanPropertyNo && !cleanUpic) {
+    if (!parsedPropId) {
       return;
     }
 
     setIsLoading(true);
     setError(null);
 
-    fetchApartmentQCTopSectionBelowFlexAction({
-      propertyId: parsedPropId ?? undefined,
-      ward: cleanWardId || undefined,
-      propertyNo: cleanPropertyNo || undefined,
-      partitionNo: cleanPartitionNo || undefined,
-      wingDetailsId: wingDetailsId ?? undefined,
-      societyId: societyId ?? undefined,
-      upic: cleanUpic || undefined,
-    })
+    fetchApartmentQCTopSectionBelowFlexAction(parsedPropId)
       .then((response) => {
         setIsLoading(false);
         const payloadCandidate = response?.items || response?.data || response;
@@ -105,9 +90,10 @@ export function useApartmentStatusMetrics({
         setIsLoading(false);
         setError(err instanceof Error ? err.message : 'Failed to fetch workflow metrics');
       });
-  }, [parsedPropId, cleanWardId, cleanPropertyNo, cleanPartitionNo, cleanUpic, wingDetailsId, societyId]);
+  }, [parsedPropId]);
 
   useEffect(() => {
+    // No propertyId available — do not call API
     if (!fetchKey) return;
 
     // If SSR already provided badges for the initial key on mount, keep them
@@ -116,7 +102,7 @@ export function useApartmentStatusMetrics({
       return;
     }
 
-    // Trigger auto-call if key has changed or if initial fetch was not yet done
+    // Trigger API call only when propertyId changes
     if (lastFetchedKeyRef.current !== fetchKey) {
       lastFetchedKeyRef.current = fetchKey;
       setFetchedBadges(null);

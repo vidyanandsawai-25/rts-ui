@@ -170,11 +170,7 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
       {/* 3. STATUS METRICS HEADER (DOWNSIDE THE TAB SECTION) */}
       <div className="px-3 pt-2">
         <PtisStatusMetricsHeader
-          propertyId={resolvedEffectivePropertyId}
-          wardId={resolvedWardId}
-          propertyNo={draft.propertyNo}
-          partitionNo={draft.partitionNo}
-          upic={resolvedUpicId || null}
+          propertyId={searchParams.get('propertyId') ? Number(searchParams.get('propertyId')) : null}
           initialData={initialQcTopSectionBelowFlex}
           isLoading={isSearching || isLoading}
         />
