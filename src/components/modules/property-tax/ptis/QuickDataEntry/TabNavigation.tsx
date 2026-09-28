@@ -102,11 +102,11 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
 
   const handleTabClick = (tabHref: string) => {
     const win = typeof window !== 'undefined' ? (window as unknown as {
-        __buildingFormHasChanges?: boolean;
-        __discountFormHasChanges?: boolean;
-        __socialFormHasChanges?: boolean;
-        __buildingFormIncompleteDetails?: string[] | null;
-        __showBuildingUnsavedChangesModal?: ((onDiscard: () => void) => void) | null;
+      __buildingFormHasChanges?: boolean;
+      __discountFormHasChanges?: boolean;
+      __socialFormHasChanges?: boolean;
+      __buildingFormIncompleteDetails?: string[] | null;
+      __showBuildingUnsavedChangesModal?: ((onDiscard: () => void) => void) | null;
     }) : {} as Record<string, never>;
     const hasBuildingChanges = !!win.__buildingFormHasChanges;
     const hasDiscountChanges = !!win.__discountFormHasChanges || !!win.__socialFormHasChanges;
@@ -125,26 +125,26 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
     }
 
     if (hasBuildingChanges || hasDiscountChanges) {
-      const title = hasBuildingChanges 
-          ? (t('building.unsavedChangesTitle') || 'Unsaved Changes')
-          : (t('discount.unsavedChangesTitle') || 'Unsaved Changes');
+      const title = hasBuildingChanges
+        ? (t('building.unsavedChangesTitle') || 'Unsaved Changes')
+        : (t('discount.unsavedChangesTitle') || 'Unsaved Changes');
 
       let description = hasBuildingChanges
-          ? (t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?')
-          : (t('discount.unsavedChangesDesc') || 'You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?');
+        ? (t('building.unsavedChangesDesc') || 'You have unsaved changes in the Building Permission tab. Do you want to discard them, or continue editing?')
+        : (t('discount.unsavedChangesDesc') || 'You have unsaved changes in the Discount & Social Data tab. Do you want to discard them, or continue editing?');
 
       if (hasBuildingChanges && win.__buildingFormIncompleteDetails && Array.isArray(win.__buildingFormIncompleteDetails)) {
-          const incompleteMsg = t('building.incompleteFloorsWarning') || 'The following floor(s) have incomplete certificate information:';
-          description = `${description}\n\n⚠️ ${incompleteMsg}\n• ${win.__buildingFormIncompleteDetails.join('\n• ')}`;
+        const incompleteMsg = t('building.incompleteFloorsWarning') || 'The following floor(s) have incomplete certificate information:';
+        description = `${description}\n\n⚠️ ${incompleteMsg}\n• ${win.__buildingFormIncompleteDetails.join('\n• ')}`;
       }
 
       const continueButton = hasBuildingChanges
-          ? (t('building.continueButton') || 'Continue Editing')
-          : (t('discount.continueButton') || 'Continue Editing');
+        ? (t('building.continueButton') || 'Continue Editing')
+        : (t('discount.continueButton') || 'Continue Editing');
 
       const discardButton = hasBuildingChanges
-          ? (t('building.discardConfirmButton') || 'Discard Changes')
-          : (t('discount.discardConfirmButton') || 'Discard Changes');
+        ? (t('building.discardConfirmButton') || 'Discard Changes')
+        : (t('discount.discardConfirmButton') || 'Discard Changes');
 
       confirm({
         variant: 'warning',
@@ -217,8 +217,8 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
             const tabReturnValue = isApartment
               ? 'apartment'
               : isIndividual
-              ? 'individual'
-              : (RETURN_TAB_BY_QDE_HREF[tab.href] || returnTab);
+                ? 'individual'
+                : (RETURN_TAB_BY_QDE_HREF[tab.href] || returnTab);
 
             // For FloorSubmission tab: exclude propertyId if we have search params
             // to let the page resolve authoritative ID from backend
@@ -270,8 +270,8 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
             const isOldDetailsTab = tab.href === 'OldDetails/old-taxation';
             const isActive = isOldDetailsTab
               ? pathname === tabPath ||
-                pathname === oldDetailsSectionPath ||
-                pathname.startsWith(`${oldDetailsSectionPath}/`)
+              pathname === oldDetailsSectionPath ||
+              pathname.startsWith(`${oldDetailsSectionPath}/`)
               : activeSegment === tab.href || pathname === tabPath;
 
             const Icon = tab.icon;
@@ -290,7 +290,7 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
                 className={[
                   'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md cursor-pointer text-left focus:outline-none whitespace-nowrap justify-center',
                   isActive
-                    ? `bg-linear-to-br ${gradientClass} text-white shadow-lg`
+                    ? `bg-gradient-to-br ${gradientClass} text-white shadow-lg`
                     : 'bg-white text-gray-600 border-gray-300 hover:bg-slate-50',
                 ].join(' ')}
               >

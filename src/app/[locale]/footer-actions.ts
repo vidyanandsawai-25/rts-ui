@@ -35,7 +35,7 @@ export interface FooterActionPayload {
   wingName?: string;
   isRedesign?: boolean;
 }
- 
+
 const ptisEditRedirectSchema = z.object({
   propertyId: z.coerce.number().positive(),
   locale: z.enum(['en', 'hi', 'mr']).default('en'),
@@ -191,11 +191,14 @@ export async function handleFooterAction(
         handleExpand('capitalExpand', capitalExpand);
         handleExpand('dualExpand', dualExpand);
 
-        const activeTabKey = tab || 'propertydetails';
-        const resolvedTabKey = (activeTabKey === 'societydetails' || activeTabKey === 'wingdetails') 
-          ? 'propertydetails' 
+        const activeTabKey = tab || (isApartment ? 'buildingpermission' : 'propertydetails');
+        let resolvedTabKey = (activeTabKey === 'societydetails' || activeTabKey === 'wingdetails')
+          ? 'propertydetails'
           : activeTabKey;
-        const config = MAIN_TO_QDE_MAP[resolvedTabKey] || MAIN_TO_QDE_MAP.propertydetails;
+        if (isApartment && (resolvedTabKey === 'propertydetails' || resolvedTabKey === 'wingintelligence')) {
+          resolvedTabKey = 'buildingpermission';
+        }
+        const config = MAIN_TO_QDE_MAP[resolvedTabKey] || (isApartment ? MAIN_TO_QDE_MAP.buildingpermission : MAIN_TO_QDE_MAP.propertydetails);
 
         params.set('propertyId', String(propertyId));
         params.set('returnTab', isApartment ? 'apartment' : config.mainTabId);
