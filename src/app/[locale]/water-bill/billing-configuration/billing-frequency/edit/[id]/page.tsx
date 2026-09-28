@@ -37,8 +37,8 @@ export default async function EditBillingFrequencyPage({ params, searchParams }:
       locale={locale}
       drawer="edit"
       initialEditingData={editingData}
-      initialSortBy={pageParams.sortBy ?? 'sequenceNo'}
-      initialSortOrder={pageParams.sortOrder ?? 'asc'}
+      initialSortBy={pageParams.sortBy}
+      initialSortOrder={pageParams.sortOrder}
       initialSearchTerm={pageParams.searchTerm}
       createAction={createBillingFrequencyAction}
       updateAction={updateBillingFrequencyAction}

@@ -41,7 +41,25 @@ export function useBillingPeriodMaster({
   const [sortBy, setSortBy] = useState<string | undefined>(initialSortBy);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(initialSortOrder);
 
-  const records = useMemo(() => pagedData?.items ?? initialData ?? [], [pagedData, initialData]);
+  const records = useMemo(() => {
+    const rawItems = pagedData?.items ?? initialData ?? [];
+    const items = [...rawItems];
+    if (sortBy) {
+      items.sort((a, b) => {
+        const valA = a[sortBy as keyof BillingPeriodMasterType];
+        const valB = b[sortBy as keyof BillingPeriodMasterType];
+        if (typeof valA === "number" && typeof valB === "number") {
+          return sortOrder === "desc" ? valB - valA : valA - valB;
+        }
+        return sortOrder === "desc"
+          ? String(valB ?? "").localeCompare(String(valA ?? ""), undefined, { numeric: true })
+          : String(valA ?? "").localeCompare(String(valB ?? ""), undefined, { numeric: true });
+      });
+    } else {
+      items.sort((a, b) => (a.sequenceNo ?? 0) - (b.sequenceNo ?? 0));
+    }
+    return items;
+  }, [pagedData, initialData, sortBy, sortOrder]);
   const pageNumber = pagedData?.pageNumber ?? 1;
   const pageSize = pagedData?.pageSize ?? 10;
   const totalCount = pagedData?.totalCount ?? records.length;

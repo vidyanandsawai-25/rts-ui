@@ -19,10 +19,11 @@ export function validateBillingFrequencyInput(
   const errors: Record<string, string[]> = {};
 
   // 1. Billing Frequency validation
-  if (!input.billingFrequency || !input.billingFrequency.trim()) {
+  const freqTrimmed = (input.billingFrequency || "").trim();
+  if (!freqTrimmed) {
     errors.billingFrequency = [t("validation.billingFrequencyRequired")];
-  } else if (input.billingFrequency.trim().length > 100) {
-    errors.billingFrequency = [t("validation.billingFrequencyLength", { count: 100 })];
+  } else if (freqTrimmed.length > 50) {
+    errors.billingFrequency = [t("validation.billingFrequencyLength", { count: 50 })];
   }
 
   // 2. Periods Per Year validation
@@ -30,15 +31,16 @@ export function validateBillingFrequencyInput(
     ? input.periodsPerYear
     : parseInt(String(input.periodsPerYear || ""), 10);
 
-  if (isNaN(periods) || periods < 1) {
+  if (isNaN(periods) || periods < 1 || periods > 12) {
     errors.periodsPerYear = [t("validation.periodsPerYearRequired")];
   }
 
   // 3. Description validation
-  if (!input.description || !input.description.trim()) {
+  const descTrimmed = (input.description || "").trim();
+  if (!descTrimmed) {
     errors.description = [t("validation.descriptionRequired")];
-  } else if (input.description.length > 300) {
-    errors.description = [t("validation.descriptionLength", { count: 300 })];
+  } else if (descTrimmed.length > 250) {
+    errors.description = [t("validation.descriptionLength", { count: 250 })];
   }
 
   // 4. Duplicate validation

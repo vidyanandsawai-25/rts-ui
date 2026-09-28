@@ -181,17 +181,19 @@ export async function getBillingFrequencyDropdownOptions(): Promise<DropdownOpti
   try {
     const response = await apiClient.get<BillingFrequencyMasterPagedResponse>("/BillingFrequencyMaster?PageSize=100");
     if (response.success && response.data?.items) {
-      return response.data.items.map((bf) => ({
-        value: String(bf.id),
-        label: bf.billingFrequency || bf.billingFrequencyCode || String(bf.id),
-        data: {
-          periodsPerYear: Number(bf.periodsPerYear) || 1,
-          billingFrequencyCode: bf.billingFrequencyCode,
-          code: bf.billingFrequencyCode,
-          sequenceNo: bf.sequenceNo,
-          billingFrequency: bf.billingFrequency,
-        },
-      }));
+      return [...response.data.items]
+        .sort((a, b) => (a.sequenceNo ?? 0) - (b.sequenceNo ?? 0))
+        .map((bf) => ({
+          value: String(bf.id),
+          label: bf.billingFrequency || bf.billingFrequencyCode || String(bf.id),
+          data: {
+            periodsPerYear: Number(bf.periodsPerYear) || 1,
+            billingFrequencyCode: bf.billingFrequencyCode,
+            code: bf.billingFrequencyCode,
+            sequenceNo: bf.sequenceNo,
+            billingFrequency: bf.billingFrequency,
+          },
+        }));
     }
     return [];
   } catch {

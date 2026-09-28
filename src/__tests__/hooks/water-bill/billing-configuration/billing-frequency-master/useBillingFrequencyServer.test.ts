@@ -55,17 +55,43 @@ describe("useBillingFrequencyServer - Unit Tests", () => {
       expect(result.errors.periodsPerYear).toContain("validation.periodsPerYearRequired");
     });
 
-    it("should fail validation when description is missing or empty", () => {
+    it("should fail validation when billingFrequency exceeds 50 characters", () => {
       const input: BillingFrequencyInput = {
         billingFrequencyCode: "MONTHLY",
-        billingFrequency: "Monthly",
+        billingFrequency: "A".repeat(51),
         periodsPerYear: 12,
-        description: "   ",
+        description: "Valid description",
       };
 
       const result = validateBillingFrequencyInput(input, mockT);
       expect(result.isValid).toBe(false);
-      expect(result.errors.description).toContain("validation.descriptionRequired");
+      expect(result.errors.billingFrequency).toContain("validation.billingFrequencyLength_50");
+    });
+
+    it("should fail validation when periodsPerYear is greater than 12", () => {
+      const input: BillingFrequencyInput = {
+        billingFrequencyCode: "MONTHLY",
+        billingFrequency: "Monthly",
+        periodsPerYear: 13,
+        description: "Valid description",
+      };
+
+      const result = validateBillingFrequencyInput(input, mockT);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.periodsPerYear).toContain("validation.periodsPerYearRequired");
+    });
+
+    it("should fail validation when description exceeds 250 characters", () => {
+      const input: BillingFrequencyInput = {
+        billingFrequencyCode: "MONTHLY",
+        billingFrequency: "Monthly",
+        periodsPerYear: 12,
+        description: "A".repeat(251),
+      };
+
+      const result = validateBillingFrequencyInput(input, mockT);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.description).toContain("validation.descriptionLength_250");
     });
 
     it("should detect duplicate billing frequency name or periodsPerYear", () => {

@@ -27,8 +27,8 @@ export default async function BillingFrequencyMasterPage({ params, searchParams 
       locale={locale}
       drawer={null}
       initialEditingData={null}
-      initialSortBy={pageParams.sortBy ?? 'sequenceNo'}
-      initialSortOrder={pageParams.sortOrder ?? 'asc'}
+      initialSortBy={pageParams.sortBy}
+      initialSortOrder={pageParams.sortOrder}
       initialSearchTerm={pageParams.searchTerm}
       createAction={createBillingFrequencyAction}
       updateAction={updateBillingFrequencyAction}

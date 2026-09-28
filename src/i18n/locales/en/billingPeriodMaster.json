@@ -3,7 +3,7 @@
     "moduleTitle": "Billing Period Master",
     "title": "Billing Periods",
     "subtitle": "Operational bill cycle calendar including generation, due dates, grace and penalty windows.",
-    "searchPlaceholder": "Search records by Billing Frequency...",
+    "searchPlaceholder": "Search by Billing Frequency...",
     "addTitle": "Add Billing Period",
     "editTitle": "Edit Billing Period",
     "addSubtitle": "Create a new billing period record",

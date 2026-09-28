@@ -92,6 +92,14 @@ export const LETTERS_ONLY_SANITIZE = /[^\p{L}\p{M}]/gu;
 // Check if text contains at least one letter (supports English, Marathi, Hindi, and all Unicode scripts)
 export const HAS_LETTER_REGEX = /\p{L}/u;
 
+/* ================= BILLING FREQUENCY VALIDATION ================= */
+// Billing Frequency: Allow letters, spaces, and hyphens only (supports multilingual scripts)
+export const LETTERS_SPACES_HYPHENS_REGEX = /^[\p{L}\p{M}\s\-]+$/u;
+export const LETTERS_SPACES_HYPHENS_SANITIZE = /[^\p{L}\p{M}\s\-]/gu;
+
+// Periods Per Year: Positive whole numbers only, from 1 to 12
+export const PERIODS_PER_YEAR_REGEX = /^(?:[1-9]|1[0-2])$/;
+
 /* ================= SOCIETY VALIDATION ================= */
 export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
 // Sanitize pattern for person names: removes anything not letter/mark/space/period/comma/apostrophe/hyphen

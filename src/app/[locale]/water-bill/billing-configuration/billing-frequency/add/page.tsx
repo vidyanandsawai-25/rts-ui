@@ -22,8 +22,8 @@ export default async function AddBillingFrequencyPage({ params, searchParams }: 
       locale={locale}
       drawer="add"
       initialEditingData={null}
-      initialSortBy={pageParams.sortBy ?? 'sequenceNo'}
-      initialSortOrder={pageParams.sortOrder ?? 'asc'}
+      initialSortBy={pageParams.sortBy}
+      initialSortOrder={pageParams.sortOrder}
       initialSearchTerm={pageParams.searchTerm}
       createAction={createBillingFrequencyAction}
       updateAction={updateBillingFrequencyAction}

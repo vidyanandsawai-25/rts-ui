@@ -13,14 +13,18 @@ import {
   ValidationMessage,
   FormStatusToggle,
 } from "@/components/common";
+import {
+  LETTERS_SPACES_HYPHENS_SANITIZE,
+  DESCRIPTION_SANITIZE,
+} from "@/lib/utils/validation-rules";
 import type {
   CreateBillingFrequencyMasterDto,
   BillingFrequencyInput,
   BillingFrequencyFormProps,
 } from "@/types/water-bill/billing-configuration/billingFrequencyMaster.types";
 
-const MAX_BILLING_FREQUENCY = 100;
-const MAX_DESCRIPTION = 300;
+const MAX_BILLING_FREQUENCY = 50;
+const MAX_DESCRIPTION = 250;
 
 export function BillingFrequencyForm({
   open,
@@ -49,20 +53,22 @@ export function BillingFrequencyForm({
     (data: BillingFrequencyInput) => {
       const errs: Partial<Record<keyof BillingFrequencyInput, string>> = {};
 
-      if (!data.billingFrequency.trim()) {
+      const freqTrimmed = (data.billingFrequency || "").trim();
+      if (!freqTrimmed) {
         errs.billingFrequency = t("validation.billingFrequencyRequired");
-      } else if (data.billingFrequency.trim().length > MAX_BILLING_FREQUENCY) {
+      } else if (freqTrimmed.length > MAX_BILLING_FREQUENCY) {
         errs.billingFrequency = t("validation.billingFrequencyLength", { count: MAX_BILLING_FREQUENCY });
       }
 
       const periods = typeof data.periodsPerYear === "number" ? data.periodsPerYear : parseInt(String(data.periodsPerYear), 10);
-      if (isNaN(periods) || periods < 1) {
+      if (isNaN(periods) || periods < 1 || periods > 12) {
         errs.periodsPerYear = t("validation.periodsPerYearRequired");
       }
 
-      if (!data.description || !data.description.trim()) {
+      const descTrimmed = (data.description || "").trim();
+      if (!descTrimmed) {
         errs.description = t("validation.descriptionRequired");
-      } else if (data.description.length > MAX_DESCRIPTION) {
+      } else if (descTrimmed.length > MAX_DESCRIPTION) {
         errs.description = t("validation.descriptionLength", { count: MAX_DESCRIPTION });
       }
 
@@ -186,11 +192,12 @@ export function BillingFrequencyForm({
           <div className="space-y-1 md:col-span-2">
             <Input
               required
+              maxLength={MAX_BILLING_FREQUENCY}
               label={t("form.billingFrequency.label")}
               placeholder={t("form.billingFrequency.placeholder")}
               value={formData.billingFrequency}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                const val = e.target.value;
+                const val = e.target.value.replace(LETTERS_SPACES_HYPHENS_SANITIZE, "").slice(0, MAX_BILLING_FREQUENCY);
                 setFormData((prev) => ({
                   ...prev,
                   billingFrequency: val,
@@ -209,12 +216,20 @@ export function BillingFrequencyForm({
               required
               type="number"
               min={1}
+              max={12}
+              step={1}
               label={t("form.periodsPerYear.label")}
               placeholder={t("form.periodsPerYear.placeholder")}
               value={formData.periodsPerYear}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleChange("periodsPerYear", e.target.value === "" ? "" : Number(e.target.value))
-              }
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (["e", "E", "+", "-", "."].includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 2);
+                handleChange("periodsPerYear", digitsOnly === "" ? "" : Number(digitsOnly));
+              }}
               onBlur={() => handleBlur("periodsPerYear")}
               className={showError("periodsPerYear") ? "!border-red-500 focus:!ring-red-500" : ""}
             />
@@ -227,12 +242,19 @@ export function BillingFrequencyForm({
               <Input
                 type="number"
                 min={1}
+                step={1}
                 label={t("form.sequenceNo.label")}
                 placeholder={t("form.sequenceNo.placeholder")}
                 value={formData.sequenceNo}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleChange("sequenceNo", e.target.value === "" ? "" : Number(e.target.value))
-                }
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (["e", "E", "+", "-", "."].includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const digitsOnly = e.target.value.replace(/\D/g, "");
+                  handleChange("sequenceNo", digitsOnly === "" ? "" : Number(digitsOnly));
+                }}
                 onBlur={() => handleBlur("sequenceNo")}
               />
             </div>
@@ -242,11 +264,15 @@ export function BillingFrequencyForm({
           <div className="space-y-1 md:col-span-2">
             <TextArea
               required
+              maxLength={MAX_DESCRIPTION}
               label={t("form.description.label")}
               placeholder={t("form.description.placeholder")}
               rows={3}
               value={formData.description}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange("description", e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                const val = e.target.value.replace(DESCRIPTION_SANITIZE, "").slice(0, MAX_DESCRIPTION);
+                handleChange("description", val);
+              }}
               onBlur={() => handleBlur("description")}
               error={showError("description")}
             />
