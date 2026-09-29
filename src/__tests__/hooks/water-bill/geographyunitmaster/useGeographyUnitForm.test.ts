@@ -159,7 +159,7 @@ describe("useGeographyUnitForm", () => {
 
     act(() => {
       result.current.handleChange({
-        target: { name: "geographyUnitCode", value: "NEWCODE" },
+        target: { name: "geographyUnitCode", value: "newcode" },
       } as unknown as React.ChangeEvent<HTMLInputElement>);
     });
 

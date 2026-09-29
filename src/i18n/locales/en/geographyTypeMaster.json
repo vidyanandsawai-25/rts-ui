@@ -48,7 +48,7 @@
     "validation": {
       "codeRequired": "Geography Type Code is required",
       "codeMaxLength": "Maximum length is 20 characters",
-      "codeFormat": "Invalid format. Only English letters, numbers, and underscore are allowed.",
+      "codeFormat": "Use only English letters, numbers, and underscores (_). The code cannot start or end with an underscore.",
       "geographyTypeRequired": "Geography type is required",
       "geographyTypeMaxLength": "Maximum length is 100 characters",
       "geographyTypeFormat": "Only letters (any language), numbers, spaces, and basic punctuation allowed (,./-()).",

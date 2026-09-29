@@ -60,7 +60,7 @@
       "geographyTypeRequired": "Geography type is required",
       "unitCodeRequired": "Geography unit code is required",
       "unitCodeMaxLength": "Maximum length is 20 characters",
-      "unitCodeFormat": "Invalid format. Only English letters, numbers, and underscore are allowed.",
+      "unitCodeFormat": "Use only English letters, numbers, and underscores (_). The code cannot start or end with an underscore.",
       "unitNameRequired": "Geography unit name is required",
       "unitNameMaxLength": "Maximum length is 100 characters",
       "unitNameFormat": "Only letters (any language), numbers, spaces, and basic punctuation allowed (,./-()).",

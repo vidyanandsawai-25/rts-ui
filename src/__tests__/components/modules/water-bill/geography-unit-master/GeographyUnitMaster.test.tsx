@@ -117,7 +117,7 @@ describe("GeographyUnitMaster", () => {
   it("navigates to the geography type master tab", () => {
     render(<GeographyUnitMaster {...defaultProps} />);
     fireEvent.click(screen.getByRole("tab", { name: "geographyTypeMaster.list.title" }));
-    expect(mockRouterPush).toHaveBeenCalledWith("/en/water-bill/geography-type-master");
+    expect(mockRouterPush).toHaveBeenCalledWith("/en/water-bill/geography-type-master?page=1&pageSize=10");
   });
 
   it("updates URL on search via debounced router.push", () => {

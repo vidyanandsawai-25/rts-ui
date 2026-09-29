@@ -93,6 +93,7 @@ export function useGeographyTypeForm({
       if (sanitizedValue.length > CODE_MAX) {
         sanitizedValue = sanitizedValue.substring(0, CODE_MAX);
       }
+      sanitizedValue = sanitizedValue.toUpperCase();
     }
 
     if (name === "levelNo") {

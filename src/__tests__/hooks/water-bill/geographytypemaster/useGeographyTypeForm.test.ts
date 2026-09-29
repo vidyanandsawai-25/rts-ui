@@ -87,7 +87,7 @@ describe("useGeographyTypeForm", () => {
 
     act(() => {
       result.current.handleChange({
-        target: { name: "geographyTypeCode", value: "NEWCODE" },
+        target: { name: "geographyTypeCode", value: "newcode" },
       } as unknown as React.ChangeEvent<HTMLInputElement>);
     });
 

@@ -36,7 +36,7 @@ export function GeographyMasterTabs() {
         },
       ]}
       onChange={(value) => {
-        router.push(`/${locale}/water-bill/${value}`);
+        router.push(`/${locale}/water-bill/${value}?page=1&pageSize=10`);
       }}
     />
   );

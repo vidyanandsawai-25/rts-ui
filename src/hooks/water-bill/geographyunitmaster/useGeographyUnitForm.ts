@@ -148,6 +148,7 @@ export function useGeographyUnitForm({
       if (sanitizedValue.length > UNIT_CODE_MAX) {
         sanitizedValue = sanitizedValue.substring(0, UNIT_CODE_MAX);
       }
+      sanitizedValue = sanitizedValue.toUpperCase();
     }
 
     if (name === "searchSequence") {

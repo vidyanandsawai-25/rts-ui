@@ -58,7 +58,7 @@
       "billingFrequencyLength": "Billing Frequency cannot exceed {count} characters",
       "codeRequired": "Billing Frequency Code is required",
       "codeLength": "Billing Frequency Code cannot exceed {count} characters",
-      "periodsPerYearRequired": "Periods Per Year must be a valid number greater than 0",
+      "periodsPerYearRequired": "Periods Per Year must be a valid number greater than 0 and less than or equal to 12",
       "duplicateBillingFrequency": "This Billing Frequency already exists.",
       "duplicatePeriodsPerYear": "This Periods Per Year already exists.",
       "duplicateEntry": "This Billing Frequency or Periods Per Year already exists.",

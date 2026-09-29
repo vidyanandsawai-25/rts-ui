@@ -51,7 +51,7 @@ export function BillingPeriodMaster(props: BillingPeriodMasterProps) {
           columns={columns}
           data={records}
           loading={isPending}
-          maxBodyHeightClassName="h-[calc(100vh-408px)] min-h-[300px]"
+          maxBodyHeightClassName="h-auto"
           getRowKey={(row) => String(row.id)}
           pageNumber={pageNumber}
           pageSize={pageSize}
