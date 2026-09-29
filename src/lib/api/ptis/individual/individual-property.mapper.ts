@@ -30,16 +30,16 @@ function formatAreaFtMtr(ft?: number | string | null, mtr?: number | string | nu
   const hasMtr = mtr !== null && mtr !== undefined && mtr !== '' && mtr !== 0 && mtr !== '0';
 
   if (hasFt && hasMtr) {
-    return `${ft} Ft / ${mtr} Mtr`;
+    return `${ft} sqft / ${mtr} sq mtr`;
   }
   if (hasFt) {
-    return `${ft} Ft`;
+    return `${ft} sqft`;
   }
   if (hasMtr) {
-    return `${mtr} Mtr`;
+    return `${mtr} sq mtr`;
   }
   if (mtr === 0 || mtr === '0') {
-    return '0 Mtr';
+    return '0 sq mtr';
   }
   return '-';
 }
@@ -88,7 +88,7 @@ export function mapIndividualPerformanceData(
     totalDemand: formatIndianCurrency(rev.totalDemand),
     currentDemand: formatIndianCurrency(rev.currentDemand ?? rev.currentTax),
     pendingDemand: formatIndianCurrency(rev.pendingDemand ?? rev.pendingCurrent ?? rev.retroTax),
-    collectionPercent: `${rev.collectionPercentage != null ? rev.collectionPercentage : (rev.totalDemand && rev.totalDemand > 0 && rev.collection ? Math.round((rev.collection / rev.totalDemand) * 100) : 0)}%`,
+    collectionPercent: `${rev.collectionPercentage != null ? rev.collectionPercentage : rev.totalDemand && rev.totalDemand > 0 && rev.collection ? Math.round((rev.collection / rev.totalDemand) * 100) : 0}%`,
     collectionAmount: formatIndianCurrency(rev.collection),
     totalBalance: formatIndianCurrency(rev.totalBalance),
     differenceAmount: formatIndianCurrency(diffAmount),
@@ -187,7 +187,7 @@ export function mapIndividualPropertyDtoToMasterData(
     carpetAreaFtMtr: carpetAreaDisplay,
     builtUpAreaFtMtr: builtUpAreaDisplay,
     status: 'ACTIVE PROPERTY',
-    category: dto.ownerCategory || '-',
+    category: dto.category || dto.categoryName || 'Individual',
     propertyDescription: dto.propertyDescription || '-',
     propertyDescriptionRegional: dto.propertyDescription || '-',
     societyBuildingPhotoGuid: photoGuid,

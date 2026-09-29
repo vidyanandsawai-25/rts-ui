@@ -39,27 +39,27 @@ vi.mock('next-intl', () => ({
         'comparisonTable.cvTaxes': 'CV Taxes',
         'comparisonTable.retainTaxes': 'Retained Taxes',
         'comparisonTable.total': 'Total',
-        'noRateableRows': 'No Floor Details Available',
-        'noCapitalRows': 'No Capital Floor Details Available',
+        noRateableRows: 'No Floor Details Available',
+        noCapitalRows: 'No Capital Floor Details Available',
         'floor.floorDetails': 'Floor Details',
-        'changesOfUse': 'CHANGES OF USE',
-        'alv': 'ALV',
-        'area': 'AREA',
-        'tax': 'TAX',
-        'old': 'OLD:',
-        'new': 'NEW:',
-        'rv': 'RV:',
-        'cv': 'CV:',
-        'retained': 'RETAINED:',
-        'rvCvm': 'RV / CVM',
-        'beneficial': 'Beneficial',
-        'capitalValue': 'CAPITAL VALUE (CV)',
-        'rateableValue': 'RATEABLE VALUE (RV)',
-        'rvVsCv': 'RV vs CV',
-        'taxCurrent': 'TAX (CURRENT)',
-        'taxRetained': 'TAX (RETAINED)',
-        'changed': 'Changed',
-        'cvm': 'CVM',
+        changesOfUse: 'CHANGES OF USE',
+        alv: 'ALV',
+        area: 'AREA',
+        tax: 'TAX',
+        old: 'OLD:',
+        new: 'NEW:',
+        rv: 'RV:',
+        cv: 'CV:',
+        retained: 'RETAINED:',
+        rvCvm: 'RV / CVM',
+        beneficial: 'Beneficial',
+        capitalValue: 'CAPITAL VALUE (CV)',
+        rateableValue: 'RATEABLE VALUE (RV)',
+        rvVsCv: 'RV vs CV',
+        taxCurrent: 'TAX (CURRENT)',
+        taxRetained: 'TAX (RETAINED)',
+        changed: 'Changed',
+        cvm: 'CVM',
       };
       if (key === 'updated') return `${(opts as { count?: number })?.count ?? 0} Updated`;
       return map[key] || opts?.defaultValue || key;
@@ -97,12 +97,7 @@ describe('IndividualFloorTopNav', () => {
   it('triggers onToggleSection when a left nav button is clicked', () => {
     const onToggleSection = vi.fn();
 
-    render(
-      <IndividualFloorTopNav
-        activeSection="floor"
-        onToggleSection={onToggleSection}
-      />
-    );
+    render(<IndividualFloorTopNav activeSection="floor" onToggleSection={onToggleSection} />);
 
     fireEvent.click(screen.getByText('Building Permission'));
     expect(onToggleSection).toHaveBeenCalledWith('building');
@@ -273,6 +268,20 @@ describe('IndividualFloorIntelligence', () => {
 
     fireEvent.click(screen.getByText('Building Permission'));
     expect(screen.getByText('BUILDING PERMISSION (Certificates & Clearances)')).toBeInTheDocument();
+  });
+
+  it('keeps floor details open when clicking floor details button while already active', () => {
+    render(
+      <IndividualFloorIntelligence propertyId={123} wardNo="MM11" rateableData={mockRateableData} />
+    );
+
+    expect(screen.getAllByText('Ground Floor').length).toBeGreaterThanOrEqual(1);
+
+    // Click Floor Details button when already open
+    fireEvent.click(screen.getByText('Floor Details'));
+
+    // Should remain open and visible
+    expect(screen.getAllByText('Ground Floor').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders the 4 summary comparison cards with dynamic values when data is passed', () => {

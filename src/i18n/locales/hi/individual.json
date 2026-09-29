@@ -14,6 +14,7 @@
     "occupierName": "अधिभोगी का नाम",
     "occupierRegional": "अधिभोगी (क्षेत्रीय)",
     "ownerCategory": "मालिक श्रेणी",
+    "propertyCategory": "संपत्ति श्रेणी",
     "division": "विभाग",
     "moujaName": "मौजा का नाम",
     "surveyNo": "सर्वे नं.",
@@ -25,9 +26,9 @@
     "emailId": "ईमेल आईडी",
     "address": "पता",
     "societyAddress": "पता",
-    "plotAreaFtMtr": "भूखंड क्षेत्रफल (फिट/मी)",
-    "carpetAreaFtMtr": "कार्पेट क्षेत्रफल (फिट/मी)",
-    "builtUpAreaFtMtr": "निर्मित क्षेत्रफल (फिट/मी)"
+    "plotAreaFtMtr": "भूखंड क्षेत्रफल (वर्ग फीट/वर्ग मी)",
+    "carpetAreaFtMtr": "कार्पेट क्षेत्रफल (वर्ग फीट/वर्ग मी)",
+    "builtUpAreaFtMtr": "निर्मित क्षेत्रफल (वर्ग फीट/वर्ग मी)"
   },
   "photo": {
     "noPhoto": "फोटो नहीं",

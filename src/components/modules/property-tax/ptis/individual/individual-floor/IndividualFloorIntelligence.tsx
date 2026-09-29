@@ -109,7 +109,9 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   const [fetchedRateable, setFetchedRateable] = useState<RateableValueResponse | null>(null);
   const [fetchedCapital, setFetchedCapital] = useState<CapitalValueResponse | null>(null);
   const [fetchedDual, setFetchedDual] = useState<DualMethodResponse | null>(null);
-  const [fetchedComparison, setFetchedComparison] = useState<PropertyComparisonResponse | null>(null);
+  const [fetchedComparison, setFetchedComparison] = useState<PropertyComparisonResponse | null>(
+    null
+  );
   const [isValuationLoading, setIsValuationLoading] = useState(false);
 
   // States for Old Details collapsible sections (mutually exclusive)
@@ -203,7 +205,6 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
     [capitalState, rateableState]
   );
 
-
   // Tab mode switch handler
   const handleTaxModeChange = (mode: PtisTaxMode) => {
     setInternalTaxMode(mode);
@@ -254,6 +255,11 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
       <IndividualFloorTopNav
         activeSection={activeSection}
         onToggleSection={(section) => {
+          if (section === 'floor') {
+            setActiveSection('floor');
+            setIsExpanded(true);
+            return;
+          }
           if (activeSection === section) {
             setIsExpanded((prev) => !prev);
           } else {
@@ -267,7 +273,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
       />
 
       {/* 2. Floor Details Section by Valuation Mode (Rateable, Capital, Dual Method) */}
-      {activeSection === 'floor' && isExpanded && (
+      {activeSection === 'floor' && (
         <>
           {currentTaxMode === 'rateable' && (
             <RateableTaxTable
@@ -290,10 +296,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
           {currentTaxMode === 'dual' && (
             <>
               <div className="w-full flex flex-col gap-3 py-1">
-                <DualMethodComparisonTable
-                  dualMethodData={dualState}
-                  locale={locale}
-                />
+                <DualMethodComparisonTable dualMethodData={dualState} locale={locale} />
               </div>
 
               {/* Centered Show/Hide Floor Details Button (Dual Method Only) */}
@@ -305,11 +308,13 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
                 >
                   {showFloorDetails ? (
                     <>
-                      {t('actions.hideFloorDetails')} <ChevronUp className="h-4 w-4 text-indigo-600" />
+                      {t('actions.hideFloorDetails')}{' '}
+                      <ChevronUp className="h-4 w-4 text-indigo-600" />
                     </>
                   ) : (
                     <>
-                      {t('actions.showFloorDetails')} <ChevronDown className="h-4 w-4 text-indigo-600" />
+                      {t('actions.showFloorDetails')}{' '}
+                      <ChevronDown className="h-4 w-4 text-indigo-600" />
                     </>
                   )}
                 </button>
@@ -329,7 +334,10 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
                         />
                         {rateableTaxDetailsState && (
                           <div className="p-3 bg-white rounded-b-md border-t border-slate-200">
-                            <TaxDetails initialTaxDetails={rateableTaxDetailsState} activeTab="current" />
+                            <TaxDetails
+                              initialTaxDetails={rateableTaxDetailsState}
+                              activeTab="current"
+                            />
                           </div>
                         )}
                       </div>
@@ -344,7 +352,10 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
                         />
                         {capitalTaxDetailsState && (
                           <div className="p-3 bg-white rounded-b-md border-t border-slate-200">
-                            <TaxDetails initialTaxDetails={capitalTaxDetailsState} activeTab="current" />
+                            <TaxDetails
+                              initialTaxDetails={capitalTaxDetailsState}
+                              activeTab="current"
+                            />
                           </div>
                         )}
                       </div>
@@ -378,9 +389,17 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
               {activeTitle}
             </h2>
             {isExpanded ? (
-              <ChevronDown size={16} strokeWidth={3} className="text-slate-400 group-hover:text-slate-600" />
+              <ChevronDown
+                size={16}
+                strokeWidth={3}
+                className="text-slate-400 group-hover:text-slate-600"
+              />
             ) : (
-              <ChevronRight size={16} strokeWidth={3} className="text-slate-400 group-hover:text-slate-600" />
+              <ChevronRight
+                size={16}
+                strokeWidth={3}
+                className="text-slate-400 group-hover:text-slate-600"
+              />
             )}
           </div>
 

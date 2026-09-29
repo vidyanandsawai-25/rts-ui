@@ -165,14 +165,18 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
         const res = mapIndividualPropertyDtoToMasterData(mockDto);
         expect(res.propertyId).toBe(101);
         expect(res.aadharWithTitle).toBe('5856 7591 4738');
-        expect(res.plotAreaFtMtr).toBe('1200 Ft / 111.48 Mtr');
+        expect(res.plotAreaFtMtr).toBe('1200 sqft / 111.48 sq mtr');
         expect(res.societyBuildingPhotoGuid).toBe('photo-guid-123');
         expect(res.imageUrl).toBe('https://test.docs.com/view/photo-guid-123');
       });
 
       it('formats aadhar across variations without title', () => {
-        expect(mapIndividualPropertyDtoToMasterData({ aadharNo: '123456789012' }).aadharWithTitle).toBe('1234 5678 9012');
-        expect(mapIndividualPropertyDtoToMasterData({ ownerTitle: 'Mrs' }).aadharWithTitle).toBe('-');
+        expect(
+          mapIndividualPropertyDtoToMasterData({ aadharNo: '123456789012' }).aadharWithTitle
+        ).toBe('1234 5678 9012');
+        expect(mapIndividualPropertyDtoToMasterData({ ownerTitle: 'Mrs' }).aadharWithTitle).toBe(
+          '-'
+        );
         expect(mapIndividualPropertyDtoToMasterData({}).aadharWithTitle).toBe('-');
       });
 
@@ -183,9 +187,15 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
         });
         expect(resPhoto.societyBuildingPhotoGuid).toBe('photo-2');
 
-        expect(mapIndividualPropertyDtoToMasterData({ plotAreaFt: 500 }).plotAreaFtMtr).toBe('500 Ft');
-        expect(mapIndividualPropertyDtoToMasterData({ carpetAreaMtr: 45 }).carpetAreaFtMtr).toBe('45 Mtr');
-        expect(mapIndividualPropertyDtoToMasterData({ builtUpAreaMtr: 0 }).builtUpAreaFtMtr).toBe('0 Mtr');
+        expect(mapIndividualPropertyDtoToMasterData({ plotAreaFt: 500 }).plotAreaFtMtr).toBe(
+          '500 sqft'
+        );
+        expect(mapIndividualPropertyDtoToMasterData({ carpetAreaMtr: 45 }).carpetAreaFtMtr).toBe(
+          '45 sq mtr'
+        );
+        expect(mapIndividualPropertyDtoToMasterData({ builtUpAreaMtr: 0 }).builtUpAreaFtMtr).toBe(
+          '0 sq mtr'
+        );
         expect(mapIndividualPropertyDtoToMasterData({}).plotAreaFtMtr).toBe('-');
       });
     });
@@ -255,7 +265,9 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
       expect(resSuccess.data?.ownerName).toBe('Sunil');
 
       // Fallback to apartment service
-      vi.spyOn(individualService, 'fetchIndividualQcTopSection').mockResolvedValueOnce({ success: false });
+      vi.spyOn(individualService, 'fetchIndividualQcTopSection').mockResolvedValueOnce({
+        success: false,
+      });
       vi.mocked(apartmentService.fetchApartmentQcTopSection).mockResolvedValueOnce({
         success: true,
         data: { propertyOverview: { propertyId: '502' } } as unknown as ApartmentQcTopSectionDto,
@@ -265,8 +277,12 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
       expect(resFallback.success).toBe(true);
 
       // Complete failure
-      vi.spyOn(individualService, 'fetchIndividualQcTopSection').mockResolvedValueOnce({ success: false });
-      vi.mocked(apartmentService.fetchApartmentQcTopSection).mockResolvedValueOnce({ success: false });
+      vi.spyOn(individualService, 'fetchIndividualQcTopSection').mockResolvedValueOnce({
+        success: false,
+      });
+      vi.mocked(apartmentService.fetchApartmentQcTopSection).mockResolvedValueOnce({
+        success: false,
+      });
       vi.mocked(propertySocietyService.getPropertySocietyDetails).mockResolvedValueOnce(null);
       const resFail = await getIndividualQcTopSectionAction(503);
       expect(resFail.success).toBe(false);
@@ -276,12 +292,16 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
       const resNoId = await patchIndividualPropertyAction('', {});
       expect(resNoId.success).toBe(false);
 
-      vi.spyOn(individualService, 'patchIndividualProperty').mockResolvedValueOnce({ success: true });
+      vi.spyOn(individualService, 'patchIndividualProperty').mockResolvedValueOnce({
+        success: true,
+      });
       const resSuccess = await patchIndividualPropertyAction(601, {}, 'en');
       expect(resSuccess.success).toBe(true);
       expect(revalidatePath).toHaveBeenCalledWith('/en/property-tax/ptis/individual', 'page');
 
-      vi.spyOn(individualService, 'patchIndividualProperty').mockRejectedValueOnce(new Error('Crash'));
+      vi.spyOn(individualService, 'patchIndividualProperty').mockRejectedValueOnce(
+        new Error('Crash')
+      );
       const resCrash = await patchIndividualPropertyAction(602, {});
       expect(resCrash.success).toBe(false);
     });
@@ -348,7 +368,7 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
       });
       expect(resFallback?.propertyId).toBe(202);
       expect(resFallback?.ownerName).toBe('KYC Holder');
-      expect(resFallback?.plotAreaFtMtr).toBe('1500 sq.ft');
+      expect(resFallback?.plotAreaFtMtr).toBe('1500 sqft');
       expect(resFallback?.taxZoneAndName).toBe('Zone-1 - Main');
       expect(resFallback?.societyBuildingPhotoGuid).toBe('prop-guid');
     });
@@ -371,10 +391,12 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
         mobileNo: null,
         alternateMobileNo: null,
         emailId: null,
-        address: 'Shop No -F1-88, PURNSHANTI HEIGHTS, NEAR KADAM COMPOUND, OPP.JAYHIND CHS,BESIDES MASHANBHUMI, KHARTAN ROAD, THANE WEST.',
+        address:
+          'Shop No -F1-88, PURNSHANTI HEIGHTS, NEAR KADAM COMPOUND, OPP.JAYHIND CHS,BESIDES MASHANBHUMI, KHARTAN ROAD, THANE WEST.',
         addressEnglish: null,
         pinCode: '400601',
-        fullAddress: 'Shop No -F1-88, PURNSHANTI HEIGHTS, NEAR KADAM COMPOUND, OPP.JAYHIND CHS,BESIDES MASHANBHUMI, KHARTAN ROAD, THANE WEST. (400601)',
+        fullAddress:
+          'Shop No -F1-88, PURNSHANTI HEIGHTS, NEAR KADAM COMPOUND, OPP.JAYHIND CHS,BESIDES MASHANBHUMI, KHARTAN ROAD, THANE WEST. (400601)',
         division: 'नौपाडा - कोपरी',
         moujaName: 'Kopri',
         surveyNo: '24',
@@ -410,8 +432,8 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
       expect(mapped.propertyNo).toBe('NK14-316-S7');
       expect(mapped.taxZone).toBe('1 - A');
       expect(mapped.occupierName).toBe('-');
-      expect(mapped.carpetAreaFtMtr).toBe('90409.28 Ft / 8399.92 Mtr');
-      expect(mapped.builtUpAreaFtMtr).toBe('108491 Ft / 10079.52 Mtr');
+      expect(mapped.carpetAreaFtMtr).toBe('90409.28 sqft / 8399.92 sq mtr');
+      expect(mapped.builtUpAreaFtMtr).toBe('108491 sqft / 10079.52 sq mtr');
       expect(mapped.performance?.thisAssessmentRevenue).toBe('-₹16,88,023');
       expect(mapped.performance?.revenueGrowthPct).toBe('-100%');
       expect(mapped.performance?.currentDemand).toBe('₹0');
@@ -424,8 +446,8 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
         pageData: emptyPageData,
       });
       expect(built?.occupierName).toBe('-');
-      expect(built?.carpetAreaFtMtr).toBe('90409.28 Ft / 8399.92 Mtr');
-      expect(built?.builtUpAreaFtMtr).toBe('108491 Ft / 10079.52 Mtr');
+      expect(built?.carpetAreaFtMtr).toBe('90409.28 sqft / 8399.92 sq mtr');
+      expect(built?.builtUpAreaFtMtr).toBe('108491 sqft / 10079.52 sq mtr');
     });
   });
 });

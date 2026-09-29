@@ -35,6 +35,8 @@ export interface IndividualPropertyDto {
   occupierName?: string | null;
   occupierRegional?: string | null;
   ownerCategory?: string | null;
+  category?: string | null;
+  categoryName?: string | null;
   aadharNo?: string | null;
   ownerTitle?: string | null;
   aadharWithTitle?: string | null;

@@ -14,6 +14,7 @@
     "occupierName": "Occupier Name",
     "occupierRegional": "Occupier (Regional)",
     "ownerCategory": "Owner Category",
+    "propertyCategory": "Property Category",
     "division": "Division",
     "moujaName": "Mouja Name",
     "surveyNo": "Survey No.",
@@ -25,9 +26,9 @@
     "emailId": "Email ID",
     "address": "Address",
     "societyAddress": "Address",
-    "plotAreaFtMtr": "Plot Area (Ft/Mtr)",
-    "carpetAreaFtMtr": "Carpet Area (Ft/Mtr)",
-    "builtUpAreaFtMtr": "Built-Up Area (Ft/Mtr)"
+    "plotAreaFtMtr": "Plot Area (sqft/sq mtr)",
+    "carpetAreaFtMtr": "Carpet Area (sqft/sq mtr)",
+    "builtUpAreaFtMtr": "Built-Up Area (sqft/sq mtr)"
   },
   "photo": {
     "noPhoto": "No Photo",

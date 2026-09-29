@@ -1,6 +1,9 @@
 import 'server-only';
 
-import type { IndividualPropertyMasterData, IndividualPerformanceData } from '@/types/property-tax/individual';
+import type {
+  IndividualPropertyMasterData,
+  IndividualPerformanceData,
+} from '@/types/property-tax/individual';
 import type { fetchPtisPageData } from '@/app/[locale]/property-tax/ptis/ptis-fetch.service';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 import { formatAadharNumber } from '@/lib/utils/format';
@@ -65,7 +68,7 @@ function resolvePropertyPhoto(pageData: PtisPageData): { guid?: string; url?: st
     photoList[0];
 
   let guid = photoObj?.documentGuid ? String(photoObj.documentGuid) : undefined;
-  let url = guid ? getViewDocumentUrl(guid) : (photoObj?.viewUrl || undefined);
+  let url = guid ? getViewDocumentUrl(guid) : photoObj?.viewUrl || undefined;
 
   if (!guid && !url) {
     const slotObj =
@@ -75,8 +78,7 @@ function resolvePropertyPhoto(pageData: PtisPageData): { guid?: string; url?: st
           (s.photoTypeCode?.toUpperCase().includes('PROPERTY') ||
             s.photoTypeName?.toLowerCase().includes('property') ||
             s.photoTypeCode?.toUpperCase().includes('FRONT'))
-      ) ||
-      slotList.find((s) => s.hasPhoto);
+      ) || slotList.find((s) => s.hasPhoto);
 
     if (slotObj) {
       if (slotObj.documentGuid) {
@@ -120,32 +122,31 @@ export function buildInitialIndividualMasterData(
   const { resolvedPropertyId, baseData, pageData, wardNo, propertyNo } = params;
   if (!resolvedPropertyId && !baseData) return undefined;
 
-  const { propertyDetailsResult, societyDetails, kycDetails, tabHeaderInfo, rawPropertyData } = pageData;
+  const { propertyDetailsResult, societyDetails, kycDetails, tabHeaderInfo, rawPropertyData } =
+    pageData;
   const propDetails = propertyDetailsResult?.propertyDetails;
 
   const { guid: photoGuid, url: photoUrl } = resolvePropertyPhoto(pageData);
 
   // 1. Identifiers
   const effectiveWardNo =
-    (baseData?.wardNo && baseData.wardNo !== '-')
+    baseData?.wardNo && baseData.wardNo !== '-'
       ? baseData.wardNo
-      : (wardNo && wardNo !== '-')
-      ? wardNo
-      : getSafeString(propDetails, 'wardNo') ||
-        getSafeString(tabHeaderInfo, 'oldWardNo') ||
-        '-';
+      : wardNo && wardNo !== '-'
+        ? wardNo
+        : getSafeString(propDetails, 'wardNo') || getSafeString(tabHeaderInfo, 'oldWardNo') || '-';
 
   const effectivePropNo =
-    (baseData?.propertyNo && baseData.propertyNo !== '-')
+    baseData?.propertyNo && baseData.propertyNo !== '-'
       ? baseData.propertyNo
-      : (propertyNo && propertyNo !== '-')
-      ? propertyNo
-      : getSafeString(propDetails, 'propertyNo') ||
-        getSafeString(tabHeaderInfo, 'oldPropertyNo') ||
-        '-';
+      : propertyNo && propertyNo !== '-'
+        ? propertyNo
+        : getSafeString(propDetails, 'propertyNo') ||
+          getSafeString(tabHeaderInfo, 'oldPropertyNo') ||
+          '-';
 
   const effectiveUpic =
-    (baseData?.upic && baseData.upic !== '-')
+    baseData?.upic && baseData.upic !== '-'
       ? baseData.upic
       : getSafeString(tabHeaderInfo, 'upicId') ||
         getSafeString(propDetails, 'upicId') ||
@@ -154,7 +155,7 @@ export function buildInitialIndividualMasterData(
 
   // 2. Ownership & Occupancy
   const effectiveOwnerName =
-    (baseData?.ownerName && baseData.ownerName !== '-')
+    baseData?.ownerName && baseData.ownerName !== '-'
       ? baseData.ownerName
       : getSafeString(kycDetails, 'propertyHolderName') ||
         getSafeString(tabHeaderInfo, 'ownerName') ||
@@ -162,50 +163,47 @@ export function buildInitialIndividualMasterData(
         '-';
 
   const effectiveOwner =
-    (baseData?.owner && baseData.owner !== '-')
-      ? baseData.owner
-      : effectiveOwnerName;
+    baseData?.owner && baseData.owner !== '-' ? baseData.owner : effectiveOwnerName;
 
   const effectivePropertyHolder =
-    (baseData?.propertyHolder && baseData.propertyHolder !== '-')
+    baseData?.propertyHolder && baseData.propertyHolder !== '-'
       ? baseData.propertyHolder
-      : getSafeString(kycDetails, 'propertyHolderName') ||
-        effectiveOwnerName;
+      : getSafeString(kycDetails, 'propertyHolderName') || effectiveOwnerName;
 
   const effectiveHolderRegional =
-    (baseData?.holderRegional && baseData.holderRegional !== '-')
+    baseData?.holderRegional && baseData.holderRegional !== '-'
       ? baseData.holderRegional
-      : getSafeString(kycDetails, 'propertyHolderNameMarathi') ||
-        '-';
+      : getSafeString(kycDetails, 'propertyHolderNameMarathi') || '-';
 
   const effectiveOccupierName =
-    (baseData?.occupierName && baseData.occupierName !== '-')
+    baseData?.occupierName && baseData.occupierName !== '-'
       ? baseData.occupierName
-      : getSafeString(kycDetails, 'occupierName') ||
-        '-';
+      : getSafeString(kycDetails, 'occupierName') || '-';
 
   const effectiveOccupierRegional =
-    (baseData?.occupierRegional && baseData.occupierRegional !== '-')
+    baseData?.occupierRegional && baseData.occupierRegional !== '-'
       ? baseData.occupierRegional
-      : getSafeString(kycDetails, 'occupierNameMarathi') ||
-        '-';
+      : getSafeString(kycDetails, 'occupierNameMarathi') || '-';
 
   // 3. Category & Description
   const effectiveCategory =
-    (baseData?.category && baseData.category !== '-')
+    baseData?.category && baseData.category !== '-' && baseData.category !== baseData.ownerCategory
       ? baseData.category
       : getSafeString(tabHeaderInfo, 'category') ||
         getSafeString(propDetails, 'categoryName') ||
-        '-';
+        getSafeString(propDetails, 'category') ||
+        getSafeString(rawPropertyData?.[0], 'categoryLabel') ||
+        getSafeString(rawPropertyData?.[0], 'category') ||
+        (baseData?.category && baseData.category !== '-' ? baseData.category : 'Individual');
 
   const effectiveOwnerCategory =
-    (baseData?.ownerCategory && baseData.ownerCategory !== '-')
+    baseData?.ownerCategory && baseData.ownerCategory !== '-'
       ? baseData.ownerCategory
       : getSafeString(kycDetails, 'ownerCategory') ||
         (effectiveCategory !== '-' ? effectiveCategory : '-');
 
   const effectiveDescRegional =
-    (baseData?.propertyDescriptionRegional && baseData.propertyDescriptionRegional !== '-')
+    baseData?.propertyDescriptionRegional && baseData.propertyDescriptionRegional !== '-'
       ? baseData.propertyDescriptionRegional
       : getSafeString(propDetails, 'propertyDescriptionRegional') ||
         getSafeString(propDetails, 'propertyDescription') ||
@@ -214,7 +212,7 @@ export function buildInitialIndividualMasterData(
 
   // 4. Geographical & Cadastral
   const effectiveDivision =
-    (baseData?.division && baseData.division !== '-')
+    baseData?.division && baseData.division !== '-'
       ? baseData.division
       : getSafeString(propDetails, 'division') ||
         getSafeString(propDetails, 'divisionName') ||
@@ -222,55 +220,44 @@ export function buildInitialIndividualMasterData(
         '-';
 
   const effectiveMoujaName =
-    (baseData?.moujaName && baseData.moujaName !== '-')
+    baseData?.moujaName && baseData.moujaName !== '-'
       ? baseData.moujaName
-      : getSafeString(propDetails, 'moujaName') ||
-        getSafeString(tabHeaderInfo, 'moujaName') ||
-        '-';
+      : getSafeString(propDetails, 'moujaName') || getSafeString(tabHeaderInfo, 'moujaName') || '-';
 
   const rawTaxZone = getSafeString(propDetails, 'taxZone');
   const rawTaxZoneName = getSafeString(propDetails, 'taxZoneName');
   const effectiveTaxZoneAndName =
-    (baseData?.taxZoneAndName && baseData.taxZoneAndName !== '-')
+    baseData?.taxZoneAndName && baseData.taxZoneAndName !== '-'
       ? baseData.taxZoneAndName
-      : (rawTaxZone && rawTaxZoneName)
-      ? `${rawTaxZone} - ${rawTaxZoneName}`
-      : rawTaxZone || '-';
+      : rawTaxZone && rawTaxZoneName
+        ? `${rawTaxZone} - ${rawTaxZoneName}`
+        : rawTaxZone || '-';
 
   const effectiveTaxZone =
-    (baseData?.taxZone && baseData.taxZone !== '-')
-      ? baseData.taxZone
-      : rawTaxZone || '-';
+    baseData?.taxZone && baseData.taxZone !== '-' ? baseData.taxZone : rawTaxZone || '-';
 
   const effectiveSurveyNo =
-    (baseData?.surveyNo && baseData.surveyNo !== '-')
+    baseData?.surveyNo && baseData.surveyNo !== '-'
       ? baseData.surveyNo
-      : getSafeString(propDetails, 'surveyNo') ||
-        getSafeString(tabHeaderInfo, 'surveyNo') ||
-        '-';
+      : getSafeString(propDetails, 'surveyNo') || getSafeString(tabHeaderInfo, 'surveyNo') || '-';
 
   const effectivePlotNo =
-    (baseData?.plotNo && baseData.plotNo !== '-')
+    baseData?.plotNo && baseData.plotNo !== '-'
       ? baseData.plotNo
-      : getSafeString(propDetails, 'plotNo') ||
-        getSafeString(tabHeaderInfo, 'plotNo') ||
-        '-';
+      : getSafeString(propDetails, 'plotNo') || getSafeString(tabHeaderInfo, 'plotNo') || '-';
 
   // 5. Aadhar & Title Normalization
   const effectiveAadharNo =
-    (baseData?.aadharNo && baseData.aadharNo !== '')
+    baseData?.aadharNo && baseData.aadharNo !== ''
       ? baseData.aadharNo
-      : getSafeString(kycDetails, 'aadharNo') ||
-        '';
+      : getSafeString(kycDetails, 'aadharNo') || '';
 
   const effectiveTitle =
-    (baseData?.title && baseData.title !== '')
+    baseData?.title && baseData.title !== ''
       ? baseData.title
-      : (baseData?.ownerTitle && baseData.ownerTitle !== '')
-      ? baseData.ownerTitle
-      : getSafeString(kycDetails, 'title') ||
-        getSafeString(kycDetails, 'ownerTitle') ||
-        '';
+      : baseData?.ownerTitle && baseData.ownerTitle !== ''
+        ? baseData.ownerTitle
+        : getSafeString(kycDetails, 'title') || getSafeString(kycDetails, 'ownerTitle') || '';
 
   const formattedAadhar = formatAadharNumber(effectiveAadharNo);
 
@@ -278,51 +265,50 @@ export function buildInitialIndividualMasterData(
 
   // 6. Contact & Address
   const effectiveMobileNo =
-    (baseData?.mobileNo && baseData.mobileNo !== '-')
+    baseData?.mobileNo && baseData.mobileNo !== '-'
       ? baseData.mobileNo
       : getSafeString(kycDetails, 'mobileNo') ||
         getSafeString(kycDetails, 'alternateMobileNo') ||
         '-';
 
   const effectiveEmailId =
-    (baseData?.emailId && baseData.emailId !== '-')
+    baseData?.emailId && baseData.emailId !== '-'
       ? baseData.emailId
-      : getSafeString(kycDetails, 'emailId') ||
-        '-';
+      : getSafeString(kycDetails, 'emailId') || '-';
 
   const effectiveAddress =
-    (baseData?.societyAddress && baseData.societyAddress !== '-')
+    baseData?.societyAddress && baseData.societyAddress !== '-'
       ? baseData.societyAddress
-      : (baseData?.address && baseData.address !== '-')
-      ? baseData.address
-      : getSafeString(kycDetails, 'address') ||
-        getSafeString(societyDetails, 'societyAddress') ||
-        '-';
+      : baseData?.address && baseData.address !== '-'
+        ? baseData.address
+        : getSafeString(kycDetails, 'address') ||
+          getSafeString(societyDetails, 'societyAddress') ||
+          '-';
 
   // 7. Area Dimensions
   const rawPlotAreaStr = getSafeString(propDetails, 'plotArea') || '';
   const effectivePlotArea =
-    (baseData?.plotAreaFtMtr && baseData.plotAreaFtMtr !== '-')
+    baseData?.plotAreaFtMtr && baseData.plotAreaFtMtr !== '-'
       ? baseData.plotAreaFtMtr
-      : (rawPlotAreaStr !== '' && rawPlotAreaStr !== '0')
-      ? `${rawPlotAreaStr} sq.ft`
-      : '-';
+      : rawPlotAreaStr !== '' && rawPlotAreaStr !== '0'
+        ? `${rawPlotAreaStr} sqft`
+        : '-';
 
   const rawCarpet = getSafeString(propDetails, 'carpetArea') || '';
   const effectiveCarpetArea =
-    (baseData?.carpetAreaFtMtr && baseData.carpetAreaFtMtr !== '-')
+    baseData?.carpetAreaFtMtr && baseData.carpetAreaFtMtr !== '-'
       ? baseData.carpetAreaFtMtr
       : rawCarpet !== ''
-      ? `${rawCarpet} sq.ft`
-      : '-';
+        ? `${rawCarpet} sqft`
+        : '-';
 
   const rawBuiltUp = getSafeString(propDetails, 'builtUpArea') || '';
   const effectiveBuiltUpArea =
-    (baseData?.builtUpAreaFtMtr && baseData.builtUpAreaFtMtr !== '-')
+    baseData?.builtUpAreaFtMtr && baseData.builtUpAreaFtMtr !== '-'
       ? baseData.builtUpAreaFtMtr
       : rawBuiltUp !== ''
-      ? `${rawBuiltUp} sq.ft`
-      : '-';
+        ? `${rawBuiltUp} sqft`
+        : '-';
 
   const perf = baseData?.performance || DEFAULT_PERFORMANCE;
 

@@ -14,6 +14,7 @@
     "occupierName": "भोगवटादाराचे नाव",
     "occupierRegional": "भोगवटादार (प्रादेशिक)",
     "ownerCategory": "मालक वर्गवारी",
+    "propertyCategory": "मालमत्ता वर्गवारी",
     "division": "विभाग",
     "moujaName": "मौजेचे नाव",
     "surveyNo": "सर्व्हे क्र.",
@@ -25,9 +26,9 @@
     "emailId": "ईमेल आयडी",
     "address": "पत्ता",
     "societyAddress": "पत्ता",
-    "plotAreaFtMtr": "प्लॉट क्षेत्रफळ (फूट/मी)",
-    "carpetAreaFtMtr": "कार्पेट क्षेत्रफळ (फूट/मी)",
-    "builtUpAreaFtMtr": "निर्मित क्षेत्रफळ (फूट/मी)"
+    "plotAreaFtMtr": "प्लॉट क्षेत्रफळ (चौ.फूट/चौ.मी)",
+    "carpetAreaFtMtr": "कार्पेट क्षेत्रफळ (चौ.फूट/चौ.मी)",
+    "builtUpAreaFtMtr": "निर्मित क्षेत्रफळ (चौ.फूट/चौ.मी)"
   },
   "photo": {
     "noPhoto": "छायाचित्र नाही",
