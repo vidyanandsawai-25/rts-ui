@@ -212,6 +212,11 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
           taxDetails={initialTaxDetails}
           rateableTaxDetails={initialRateableTaxDetails}
           capitalTaxDetails={initialCapitalTaxDetails}
+          rateableData={initialRateableData}
+          capitalData={initialCapitalData}
+          dualMethodData={initialDualMethodData}
+          comparisonData={initialComparisonData}
+          oldDetailsData={initialData?.oldDetails ?? undefined}
           isLoading={isSearching || isLoading}
         />
       </div>

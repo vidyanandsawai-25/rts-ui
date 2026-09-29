@@ -5,13 +5,24 @@ import { useTranslations } from 'next-intl';
 import type { ApartmentTaxDetailsItem } from '@/types/property-tax/apartment';
 import type { PtisTaxMode } from '@/types/property-tax/apartment';
 import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import type { RateableValueResponse } from '@/types/rateableValue.types';
+import type { CapitalValueResponse } from '@/types/capitalValue.types';
+import type { DualMethodResponse } from '@/types/dualMethod.types';
+import type { OldDetailsData } from '@/types/ptis.types';
+import type { PropertyComparisonResponse } from '@/types/propertyComparison.types';
 import { convertApartmentTaxDetailsToTaxDetailsData } from './individual-tax-details.utils';
 import TaxDetails from './TaxDetails/TaxDetails';
+import { IndividualFloorSummaryCards } from '../individual-floor/IndividualFloorSummaryCards';
 
 export interface IndividualTaxDetailsSectionProps {
   taxDetails?: ApartmentTaxDetailsItem | null;
   rateableTaxDetails?: TaxDetailsData | null;
   capitalTaxDetails?: TaxDetailsData | null;
+  rateableData?: RateableValueResponse | null;
+  capitalData?: CapitalValueResponse | null;
+  dualMethodData?: DualMethodResponse | null;
+  comparisonData?: PropertyComparisonResponse | null;
+  oldDetailsData?: OldDetailsData | null;
   wardId?: string | number | null;
   propertyNo?: string | null;
   propertyId?: string | number | null;
@@ -23,6 +34,11 @@ export function IndividualTaxDetailsSection({
   taxDetails,
   rateableTaxDetails,
   capitalTaxDetails,
+  rateableData,
+  capitalData,
+  dualMethodData,
+  comparisonData,
+  oldDetailsData,
   taxMode = 'rateable',
   isLoading = false,
 }: IndividualTaxDetailsSectionProps) {
@@ -70,10 +86,10 @@ export function IndividualTaxDetailsSection({
 
   return (
     <div className="w-full bg-white border border-slate-200 rounded-lg shadow-2xs overflow-hidden font-sans select-none relative">
-      {/* Top Header bar with Tabs & Valuation Mode Badge */}
-      <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-zinc-50 border-b border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 bg-slate-200/70 p-1 rounded-lg">
+      {/* Top Header bar with Tabs, Mode Badge & Inline Summary Cards */}
+      <div className="px-3 py-1 bg-gradient-to-r from-slate-50 to-zinc-50 border-b border-slate-200 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0 py-0.5">
+          <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg">
             <button
               type="button"
               onClick={() => setActiveTab('current')}
@@ -100,9 +116,21 @@ export function IndividualTaxDetailsSection({
               )}
             </button>
           </div>
-          <span className="text-[11px] font-bold px-2.5 py-1 bg-blue-50 text-[#0047cc] border border-blue-200 rounded-md">
+          <span className="text-[11px] font-bold px-2.5 py-1 bg-blue-50 text-[#0047cc] border border-blue-200 rounded-md shrink-0">
             {modeBadgeText}
           </span>
+        </div>
+
+        {/* 5 Summary Cards Inline Right */}
+        <div className="flex-1 w-full xl:max-w-[1050px] min-w-0">
+          <IndividualFloorSummaryCards
+            rateableData={rateableData}
+            capitalData={capitalData}
+            dualMethodData={dualMethodData}
+            comparisonData={comparisonData}
+            oldDetailsData={oldDetailsData}
+            taxMode={taxMode}
+          />
         </div>
       </div>
 

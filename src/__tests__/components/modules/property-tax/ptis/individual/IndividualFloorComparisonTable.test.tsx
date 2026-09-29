@@ -270,21 +270,7 @@ describe('IndividualFloorIntelligence', () => {
     expect(screen.getByText('BUILDING PERMISSION (Certificates & Clearances)')).toBeInTheDocument();
   });
 
-  it('keeps floor details open when clicking floor details button while already active', () => {
-    render(
-      <IndividualFloorIntelligence propertyId={123} wardNo="MM11" rateableData={mockRateableData} />
-    );
-
-    expect(screen.getAllByText('Ground Floor').length).toBeGreaterThanOrEqual(1);
-
-    // Click Floor Details button when already open
-    fireEvent.click(screen.getByText('Floor Details'));
-
-    // Should remain open and visible
-    expect(screen.getAllByText('Ground Floor').length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('renders the 4 summary comparison cards with dynamic values when data is passed', () => {
+  it('renders floor details section correctly in rateable mode when data is passed', () => {
     render(
       <IndividualFloorIntelligence
         propertyId={123}
@@ -294,14 +280,8 @@ describe('IndividualFloorIntelligence', () => {
       />
     );
 
-    expect(screen.getByText('CHANGES OF USE')).toBeInTheDocument();
-    expect(screen.getAllByText('Residential').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('व्यावसायिक').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('2 Updated')).toBeInTheDocument();
-
-    expect(screen.getAllByText('ALV').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('₹18,00,000')).toBeInTheDocument();
-    expect(screen.getByText('₹20,50,000')).toBeInTheDocument();
+    expect(screen.getAllByText('Ground Floor').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('First Floor').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders summary cards and table correctly for capital valuation mode', () => {
@@ -318,7 +298,7 @@ describe('IndividualFloorIntelligence', () => {
     expect(screen.getAllByText('Commercial').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders summary cards and dual table correctly for dual valuation mode', () => {
+  it('renders dual table correctly for dual valuation mode', () => {
     render(
       <IndividualFloorIntelligence
         propertyId={123}
@@ -331,7 +311,6 @@ describe('IndividualFloorIntelligence', () => {
       />
     );
 
-    expect(screen.getByText('RV vs CV')).toBeInTheDocument();
-    expect(screen.getByText('TAX (RETAINED)')).toBeInTheDocument();
+    expect(screen.getAllByText('Dual Method View (RV + CVM)').length).toBeGreaterThanOrEqual(1);
   });
 });

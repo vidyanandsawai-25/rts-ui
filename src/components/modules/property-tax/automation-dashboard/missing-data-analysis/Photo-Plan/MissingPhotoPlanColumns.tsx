@@ -4,7 +4,9 @@ import { MissingPhotoPlanZone } from '@/types/automation-dashboard/missing-data-
 
 export const getMissingPhotoPlanColumns = (
   t: (key: string) => string,
-  numberLocale: string
+  numberLocale: string,
+  onDownloadRow?: (zone: MissingPhotoPlanZone) => void,
+  onViewDetails?: (zone: MissingPhotoPlanZone) => void
 ): Column<Record<string, unknown>>[] => [
   {
     key: 'zoneName',
@@ -79,21 +81,30 @@ export const getMissingPhotoPlanColumns = (
     label: t('columns.action'),
     align: 'right',
     cellClassName: 'py-3.5 px-4 text-right',
-    render: () => (
-      <div className="flex items-center justify-end gap-2">
-        <button
-          title={t('actions.downloadReport')}
-          className="p-1.5 rounded-full border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer"
-        >
-          <Download className="w-3.5 h-3.5" />
-        </button>
-        <button
-          title={t('actions.viewDetails')}
-          className="p-1.5 rounded-full border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer"
-        >
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    )
+    render: (_, row) => {
+      const zone = row as unknown as MissingPhotoPlanZone;
+      return (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            title={t('actions.downloadReport')}
+            aria-label={t('actions.downloadReport')}
+            onClick={() => onDownloadRow?.(zone)}
+            className="p-1.5 rounded-full border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            title={t('actions.viewDetails')}
+            aria-label={t('actions.viewDetails')}
+            onClick={() => onViewDetails?.(zone)}
+            className="p-1.5 rounded-full border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer"
+          >
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      );
+    }
   }
 ];

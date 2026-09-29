@@ -27,7 +27,11 @@
     "fetchPropertyAssessmentStatus": "मालमत्ता मूल्यांकन स्थिती तपशील आणण्यात अयशस्वी.",
     "fetchZones": "झोन डेटा आणण्यात अयशस्वी.",
     "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रॅकिंग स्टेटस आणण्यात अयशस्वी.",
-    "sendToApprove": "मंजुरीसाठी पाठवण्यात अयशस्वी."
+    "sendToApprove": "मंजुरीसाठी पाठवण्यात अयशस्वी.",
+    "fetchMissingMobileNo": "गहाळ मोबाईल नंबर डेटा आणण्यात अयशस्वी.",
+    "fetchMissingPhotoPlan": "गहाळ फोटो प्लॅन डेटा आणण्यात अयशस्वी.",
+    "fetchMissingOwnerName": "गहाळ मालकाचे नाव डेटा आणण्यात अयशस्वी.",
+    "fetchMissingAddress": "गहाळ पत्ता डेटा आणण्यात अयशस्वी."
   },
   "summaryCards": {
     "metrics": {
@@ -511,6 +515,54 @@
       "photoMissing": "फोटो गहाळ",
       "planMissing": "प्लॅन गहाळ",
       "totalMissing": "एकूण गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingMobileNo": {
+    "mobileNoMissing": "मोबाईल क्र. गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "mobileNoMissing": "मोबाईल क्र. गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingOwnerName": {
+    "ownerNameMissing": "मालकाचे नाव गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "ownerNameMissing": "मालकाचे नाव गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingAddress": {
+    "addressMissing": "पत्ता गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "addressMissing": "पत्ता गहाळ",
       "action": "कृती"
     },
     "actions": {

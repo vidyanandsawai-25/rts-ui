@@ -27,7 +27,11 @@
     "fetchPropertyAssessmentStatus": "संपत्ति मूल्यांकन स्थिति विवरण प्राप्त करने में विफल।",
     "fetchZones": "जोन डेटा प्राप्त करने में विफल।",
     "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रैकिंग स्टेटस प्राप्त करने में विफल।",
-    "sendToApprove": "स्वीकृति के लिए भेजने में विफल।"
+    "sendToApprove": "स्वीकृति के लिए भेजने में विफल।",
+    "fetchMissingMobileNo": "अनुपलब्ध मोबाइल नंबर डेटा लाने में विफल।",
+    "fetchMissingPhotoPlan": "अनुपलब्ध फोटो प्लान डेटा लाने में विफल।",
+    "fetchMissingOwnerName": "अनुपलब्ध मालिक का नाम डेटा लाने में विफल।",
+    "fetchMissingAddress": "अनुपलब्ध पता डेटा लाने में विफल।"
   },
   "summaryCards": {
     "metrics": {
@@ -511,6 +515,54 @@
       "photoMissing": "फोटो अनुपलब्ध",
       "planMissing": "प्लान अनुपलब्ध",
       "totalMissing": "कुल अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingMobileNo": {
+    "mobileNoMissing": "मोबाइल नंबर अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "mobileNoMissing": "मोबाइल नंबर अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingOwnerName": {
+    "ownerNameMissing": "मालिक का नाम अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "ownerNameMissing": "मालिक का नाम अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingAddress": {
+    "addressMissing": "पता अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "addressMissing": "पता अनुपलब्ध",
       "action": "कार्रवाई"
     },
     "actions": {

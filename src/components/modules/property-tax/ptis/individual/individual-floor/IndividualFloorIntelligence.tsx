@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
 import { IndividualFloorTopNav, type IndividualFloorTopNavSection } from './IndividualFloorTopNav';
-import { IndividualFloorSummaryCards } from './IndividualFloorSummaryCards';
 import { RateableTaxTable } from './rateable/components/RateableTaxTable';
 import { CapitalTaxTable } from './capital/components/CapitalTaxTable';
 import { DualMethodComparisonTable } from './dualmethod/components/ComparisonTable';
@@ -76,7 +75,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   rateableData,
   capitalData,
   dualMethodData,
-  comparisonData,
+  comparisonData: _comparisonData,
   rateableTaxDetails,
   capitalTaxDetails,
   buildingPermissionData,
@@ -109,9 +108,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   const [fetchedRateable, setFetchedRateable] = useState<RateableValueResponse | null>(null);
   const [fetchedCapital, setFetchedCapital] = useState<CapitalValueResponse | null>(null);
   const [fetchedDual, setFetchedDual] = useState<DualMethodResponse | null>(null);
-  const [fetchedComparison, setFetchedComparison] = useState<PropertyComparisonResponse | null>(
-    null
-  );
+  const [_fetchedComparison, setFetchedComparison] = useState<PropertyComparisonResponse | null>(null);
   const [isValuationLoading, setIsValuationLoading] = useState(false);
 
   // States for Old Details collapsible sections (mutually exclusive)
@@ -157,7 +154,6 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   const rateableState = fetchedRateable ?? rateableData ?? null;
   const capitalState = fetchedCapital ?? capitalData ?? null;
   const dualState = fetchedDual ?? dualMethodData ?? null;
-  const comparisonState = fetchedComparison ?? comparisonData ?? null;
   const rateableTaxDetailsState = rateableTaxDetails ?? undefined;
   const capitalTaxDetailsState = capitalTaxDetails ?? undefined;
 
@@ -365,16 +361,6 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
               )}
             </>
           )}
-
-          {/* 4 Summary Cards Downside the Table */}
-          <IndividualFloorSummaryCards
-            rateableData={rateableState}
-            capitalData={capitalState}
-            dualMethodData={dualState}
-            comparisonData={comparisonState}
-            oldDetailsData={oldDetailsData}
-            taxMode={currentTaxMode}
-          />
         </>
       )}
 

@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Home, Building2, UserCheck, Percent, BarChart3, TrendingUp, Scale, ShieldCheck, Maximize2 } from 'lucide-react';
+import { Home, Building2, UserCheck, Percent, BarChart3, TrendingUp, Scale, ShieldCheck, Scaling, Ruler } from 'lucide-react';
 import type { RateableValueResponse } from '@/types/rateableValue.types';
 import type { CapitalValueResponse, CapitalValueItem } from '@/types/capitalValue.types';
 import type { DualMethodResponse } from '@/types/dualMethod.types';
@@ -197,160 +197,161 @@ export const IndividualFloorSummaryCards: React.FC<IndividualFloorSummaryCardsPr
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 my-2 select-none">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 my-0 select-none w-full items-stretch">
       {/* Card 1: AREA */}
-      <div className="bg-white rounded-xl border border-blue-400 border-t-[3.5px] border-t-blue-700 p-2 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
-        <div className="flex items-center justify-between gap-1 mb-1">
-          <span className="text-[11px] font-black text-blue-900 tracking-wider uppercase">
+      <div className="bg-white rounded-lg border border-blue-400 border-t-[2.5px] border-t-blue-700 p-2 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between min-w-0 w-full h-full">
+        <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0">
+          <span className="text-[10px] font-black text-blue-900 tracking-wider uppercase truncate">
             {t('area')}
           </span>
-          <Maximize2 className="w-3.5 h-3.5 text-blue-600" />
+          <Ruler className="w-3 h-3 text-blue-600 shrink-0" />
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg border border-blue-300 bg-blue-50/80 flex items-center justify-center shrink-0">
-            <Maximize2 className="w-3 h-3 text-blue-600" />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-6 h-6 rounded-md border border-blue-300 bg-blue-50/80 flex items-center justify-center shrink-0">
+            <Scaling className="w-3 h-3 text-blue-600" />
           </div>
 
-          <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-[10px] font-bold text-slate-500 truncate">
+          <div className="flex flex-col min-w-0 leading-none space-y-0.5">
+            <span className="text-[9.5px] font-bold text-slate-500 truncate">
               {t('old')} <span className="font-extrabold text-slate-800">{oldArea > 0 ? `${oldArea} ${areaUnit}` : '-'}</span>
             </span>
-            <span className="text-[10px] font-bold text-slate-500 truncate">
+            <span className="text-[9.5px] font-bold text-slate-500 truncate">
               {t('new')} <span className="font-black text-slate-900">{newArea > 0 ? `${newArea} ${areaUnit}` : '-'}</span>
             </span>
             <div className="pt-0.5">
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none">
-                <TrendingUp className="w-2.5 h-2.5 text-emerald-600" />
-                <span>{changeArea !== 0 ? `↑ ${changeArea > 0 ? '+' : ''}${changeArea.toFixed(2)} ${areaUnit}` : '-'}</span>
+              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none max-w-full truncate">
+                <TrendingUp className="w-2 h-2 text-emerald-600 shrink-0" />
+                <span className="truncate">{changeArea !== 0 ? `↑ ${changeArea > 0 ? '+' : ''}${changeArea.toFixed(2)} ${areaUnit}` : '-'}</span>
               </span>
             </div>
           </div>
         </div>
       </div>
-      {/* Card 1: CHANGES OF USE */}
-      <div className="bg-white rounded-xl border border-blue-400 border-t-[3.5px] border-t-blue-700 p-2.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
-        <div className="flex items-center justify-between gap-1 mb-1.5">
-          <span className="text-[11px] font-black text-blue-900 tracking-wider uppercase">
+
+      {/* Card 2: CHANGES OF USE */}
+      <div className="bg-white rounded-lg border border-blue-400 border-t-[2.5px] border-t-blue-700 p-2 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between min-w-0 w-full h-full">
+        <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0">
+          <span className="text-[10px] font-black text-blue-900 tracking-wider uppercase truncate">
             {t('changesOfUse')}
           </span>
-          <Home className="w-3.5 h-3.5 text-amber-700/80" />
+          <Home className="w-3 h-3 text-amber-700/80 shrink-0" />
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg border border-emerald-300 bg-emerald-50/80 flex items-center justify-center shrink-0">
-            <Home className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-6 h-6 rounded-md border border-emerald-300 bg-emerald-50/80 flex items-center justify-center shrink-0">
+            <Home className="w-3 h-3 text-emerald-600" />
           </div>
 
-          <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-[10.5px] font-bold text-slate-500 truncate">
-              {t('old')}: <span className="font-extrabold text-slate-800">{oldUse}</span>
+          <div className="flex flex-col min-w-0 leading-none space-y-0.5">
+            <span className="text-[9.5px] font-bold text-slate-500 truncate">
+              {t('old')} <span className="font-extrabold text-slate-800">{oldUse}</span>
             </span>
-            <span className="text-[10.5px] font-bold text-slate-500 truncate">
-              {t('new')}: <span className="font-black text-slate-900">{newUse}</span>
+            <span className="text-[9.5px] font-bold text-slate-500 truncate">
+              {t('new')} <span className="font-black text-slate-900">{newUse}</span>
             </span>
-            <div className="pt-1">
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none">
-                <Home className="w-2.5 h-2.5 text-emerald-600" />
-                <span>{hasChangedUse ? t('changed') : t('updated', { count: updatedCount })}</span>
+            <div className="pt-0.5">
+              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none max-w-full truncate">
+                <Home className="w-2 h-2 text-emerald-600 shrink-0" />
+                <span className="truncate">{hasChangedUse ? t('changed') : t('updated', { count: updatedCount })}</span>
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Card 2: ALV */}
-      <div className="bg-white rounded-xl border border-blue-400 border-t-[3.5px] border-t-blue-700 p-2.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
-        <div className="flex items-center justify-between gap-1 mb-1.5">
-          <span className="text-[11px] font-black text-blue-900 tracking-wider uppercase">
+      {/* Card 3: ALV */}
+      <div className="bg-white rounded-lg border border-blue-400 border-t-[2.5px] border-t-blue-700 p-2 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between min-w-0 w-full h-full">
+        <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0">
+          <span className="text-[10px] font-black text-blue-900 tracking-wider uppercase truncate">
             {t('alv')}
           </span>
-          <Building2 className="w-3.5 h-3.5 text-amber-600" />
+          <Building2 className="w-3 h-3 text-amber-600 shrink-0" />
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg border border-emerald-300 bg-emerald-50/80 flex items-center justify-center shrink-0">
-            <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-6 h-6 rounded-md border border-emerald-300 bg-emerald-50/80 flex items-center justify-center shrink-0">
+            <Building2 className="w-3 h-3 text-emerald-600" />
           </div>
 
-          <div className="flex flex-col min-w-0 leading-tight">
-            <span className="text-[10.5px] font-bold text-slate-500 truncate">
-              {t('old')}: <span className="font-extrabold text-slate-800">{formatRupee(oldAlv, hasCompAlv || Boolean(oldDetailsData?.oldALV))}</span>
+          <div className="flex flex-col min-w-0 leading-none space-y-0.5">
+            <span className="text-[9.5px] font-bold text-slate-500 truncate">
+              {t('old')} <span className="font-extrabold text-slate-800">{formatRupee(oldAlv, hasCompAlv || Boolean(oldDetailsData?.oldALV))}</span>
             </span>
-            <span className="text-[10.5px] font-bold text-slate-500 truncate">
-              {t('new')}: <span className="font-black text-slate-900">{isCapitalMode ? '-' : formatRupee(newAlv, hasCompAlv || Boolean(newAlv > 0 || rateableData != null))}</span>
+            <span className="text-[9.5px] font-bold text-slate-500 truncate">
+              {t('new')} <span className="font-black text-slate-900">{isCapitalMode ? '-' : formatRupee(newAlv, hasCompAlv || Boolean(newAlv > 0 || rateableData != null))}</span>
             </span>
-            <div className="pt-1">
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none">
-                <BarChart3 className="w-2.5 h-2.5 text-emerald-600" />
-                <span>{isCapitalMode ? t('cvm') : formattedAlvDelta}</span>
+            <div className="pt-0.5">
+              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none max-w-full truncate">
+                <BarChart3 className="w-2 h-2 text-emerald-600 shrink-0" />
+                <span className="truncate">{isCapitalMode ? t('cvm') : formattedAlvDelta}</span>
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Card 3: RATEABLE / CAPITAL / DUAL */}
-      <div className="bg-white rounded-xl border border-blue-400 border-t-[3.5px] border-t-blue-700 p-2.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
-        <div className="flex items-center justify-between gap-1 mb-1.5">
-          <span className="text-[11px] font-black text-blue-900 tracking-wider uppercase">
-            {isCapitalMode ? t('capitalValue') : isDualMode ? t('rvVsCv') : `${t('rateableValue')} (RV)`}
+      {/* Card 4: RATEABLE / CAPITAL / DUAL */}
+      <div className="bg-white rounded-lg border border-blue-400 border-t-[2.5px] border-t-blue-700 p-2 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between min-w-0 w-full h-full">
+        <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0">
+          <span className="text-[10px] font-black text-blue-900 tracking-wider uppercase truncate">
+            {isCapitalMode ? t('capitalValue') : isDualMode ? t('rvVsCv') : t('rateableValue')}
           </span>
           {isDualMode ? (
-            <Scale className="w-3.5 h-3.5 text-purple-600" />
+            <Scale className="w-3 h-3 text-purple-600 shrink-0" />
           ) : (
-            <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
+            <TrendingUp className="w-3 h-3 text-blue-500 shrink-0" />
           )}
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg border border-emerald-300 bg-emerald-50/80 flex items-center justify-center shrink-0">
-            <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-6 h-6 rounded-md border border-emerald-300 bg-emerald-50/80 flex items-center justify-center shrink-0">
+            <UserCheck className="w-3 h-3 text-emerald-600" />
           </div>
 
-          <div className="flex flex-col min-w-0 leading-tight">
+          <div className="flex flex-col min-w-0 leading-none space-y-0.5">
             {isDualMode ? (
               <>
-                <span className="text-[10.5px] font-bold text-slate-500 truncate">
-                  {t('rv')}: <span className="font-extrabold text-slate-800">{formatRupee(compRv?.new ?? dualMethodData?.totalRv ?? rateableData?.totalRateableValue ?? sumRateableRv, hasCompRv || Boolean(dualMethodData?.totalRv || rateableData != null))}</span>
+                <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                  {t('rv')} <span className="font-extrabold text-slate-800">{formatRupee(compRv?.new ?? dualMethodData?.totalRv ?? rateableData?.totalRateableValue ?? sumRateableRv, hasCompRv || Boolean(dualMethodData?.totalRv || rateableData != null))}</span>
                 </span>
-                <span className="text-[10.5px] font-bold text-slate-500 truncate">
-                  {t('cv')}: <span className="font-black text-purple-900">{formatRupee(compCv?.new ?? dualMethodData?.totalCv ?? totalCapitalValue, hasCompCv || Boolean(dualMethodData?.totalCv || capitalData != null))}</span>
+                <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                  {t('cv')} <span className="font-black text-purple-900">{formatRupee(compCv?.new ?? dualMethodData?.totalCv ?? totalCapitalValue, hasCompCv || Boolean(dualMethodData?.totalCv || capitalData != null))}</span>
                 </span>
-                <div className="pt-1">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-purple-100/70 text-purple-700 border border-purple-300/80 leading-none">
-                    <Scale className="w-2.5 h-2.5 text-purple-600" />
-                    <span>{t('rvCvm')}</span>
+                <div className="pt-0.5">
+                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-purple-100/70 text-purple-700 border border-purple-300/80 leading-none max-w-full truncate">
+                    <Scale className="w-2 h-2 text-purple-600 shrink-0" />
+                    <span className="truncate">{t('rvCvm')}</span>
                   </span>
                 </div>
               </>
             ) : isCapitalMode ? (
               <>
-                <span className="text-[10.5px] font-bold text-slate-500 truncate">
-                  {t('old')}: <span className="font-extrabold text-slate-800">{formatRupee(oldCv, hasCompCv || Boolean(oldDetailsData?.oldCV))}</span>
+                <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                  {t('old')} <span className="font-extrabold text-slate-800">{formatRupee(oldCv, hasCompCv || Boolean(oldDetailsData?.oldCV))}</span>
                 </span>
-                <span className="text-[10.5px] font-bold text-slate-500 truncate">
-                  {t('new')}: <span className="font-black text-slate-900">{formatRupee(newCv, hasCompCv || Boolean(capitalData != null || totalCapitalValue > 0))}</span>
+                <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                  {t('new')} <span className="font-black text-slate-900">{formatRupee(newCv, hasCompCv || Boolean(capitalData != null || totalCapitalValue > 0))}</span>
                 </span>
-                <div className="pt-1">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none">
-                    <BarChart3 className="w-2.5 h-2.5 text-emerald-600" />
-                    <span>{formattedCvDelta}</span>
+                <div className="pt-0.5">
+                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none max-w-full truncate">
+                    <BarChart3 className="w-2 h-2 text-emerald-600 shrink-0" />
+                    <span className="truncate">{formattedCvDelta}</span>
                   </span>
                 </div>
               </>
             ) : (
               <>
-                <span className="text-[10.5px] font-bold text-slate-500 truncate">
-                  {t('old')}: <span className="font-extrabold text-slate-800">{formatRupee(oldRv, hasCompRv || Boolean(oldDetailsData?.oldRV))}</span>
+                <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                  {t('old')} <span className="font-extrabold text-slate-800">{formatRupee(oldRv, hasCompRv || Boolean(oldDetailsData?.oldRV))}</span>
                 </span>
-                <span className="text-[10.5px] font-bold text-slate-500 truncate">
-                  {t('new')}: <span className="font-black text-slate-900">{formatRupee(newRv, hasCompRv || Boolean(rateableData != null || newRv > 0))}</span>
+                <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                  {t('new')} <span className="font-black text-slate-900">{formatRupee(newRv, hasCompRv || Boolean(rateableData != null || newRv > 0))}</span>
                 </span>
-                <div className="pt-1">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none">
-                    <TrendingUp className="w-2.5 h-2.5 text-emerald-600" />
-                    <span>{formattedRvDelta}</span>
+                <div className="pt-0.5">
+                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none max-w-full truncate">
+                    <TrendingUp className="w-2 h-2 text-emerald-600 shrink-0" />
+                    <span className="truncate">{formattedRvDelta}</span>
                   </span>
                 </div>
               </>
@@ -359,52 +360,52 @@ export const IndividualFloorSummaryCards: React.FC<IndividualFloorSummaryCardsPr
         </div>
       </div>
 
-      {/* Card 4: TAX (CURRENT / RETAINED) */}
-      <div className="bg-white rounded-xl border border-blue-400 border-t-[3.5px] border-t-blue-700 p-2.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
-        <div className="flex items-center justify-between gap-1 mb-1.5">
-          <span className="text-[11px] font-black text-blue-900 tracking-wider uppercase">
-            {isDualMode ? t('taxRetained') : `${t('taxCurrent')} (CURRENT)`}
+      {/* Card 5: TAX (CURRENT / RETAINED) */}
+      <div className="bg-white rounded-lg border border-blue-400 border-t-[2.5px] border-t-blue-700 p-2 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between min-w-0 w-full h-full">
+        <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0">
+          <span className="text-[10px] font-black text-blue-900 tracking-wider uppercase truncate">
+            {isDualMode ? t('taxRetained') : t('taxCurrent')}
           </span>
           {isDualMode ? (
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
           ) : (
-            <BarChart3 className="w-3.5 h-3.5 text-pink-500" />
+            <BarChart3 className="w-3 h-3 text-pink-500 shrink-0" />
           )}
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg border border-emerald-300 bg-emerald-50/80 flex items-center justify-center shrink-0">
-            <Percent className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-6 h-6 rounded-md border border-emerald-300 bg-emerald-50/80 flex items-center justify-center shrink-0">
+            <Percent className="w-3 h-3 text-emerald-600" />
           </div>
 
-          <div className="flex flex-col min-w-0 leading-tight">
+          <div className="flex flex-col min-w-0 leading-none space-y-0.5">
             {isDualMode ? (
               <>
-                <span className="text-[10.5px] font-bold text-slate-500 truncate">
-                  {t('old')}: <span className="font-extrabold text-slate-800">{formatRupee(compTax?.old ?? dualMethodData?.oldTaxesTotal ?? oldTax, hasCompTax || Boolean(dualMethodData?.oldTaxesTotal || oldTax))}</span>
+                <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                  {t('old')} <span className="font-extrabold text-slate-800">{formatRupee(compTax?.old ?? dualMethodData?.oldTaxesTotal ?? oldTax, hasCompTax || Boolean(dualMethodData?.oldTaxesTotal || oldTax))}</span>
                 </span>
-                <span className="text-[10.5px] font-bold text-slate-500 truncate">
-                  {t('retained')}: <span className="font-black text-rose-700">{formatRupee(compTax?.new ?? dualMethodData?.retainTaxesTotal ?? rateableData?.totalTax ?? sumRateableTax, hasCompTax || Boolean(dualMethodData?.retainTaxesTotal || rateableData != null))}</span>
+                <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                  {t('retained')} <span className="font-black text-rose-700">{formatRupee(compTax?.new ?? dualMethodData?.retainTaxesTotal ?? rateableData?.totalTax ?? sumRateableTax, hasCompTax || Boolean(dualMethodData?.retainTaxesTotal || rateableData != null))}</span>
                 </span>
-                <div className="pt-1">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none">
-                    <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
-                    <span>{t('beneficial')}</span>
+                <div className="pt-0.5">
+                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none max-w-full truncate">
+                    <ShieldCheck className="w-2 h-2 text-emerald-600 shrink-0" />
+                    <span className="truncate">{t('beneficial')}</span>
                   </span>
                 </div>
               </>
             ) : (
               <>
-                <span className="text-[10.5px] font-bold text-slate-500 truncate">
-                  {t('old')}: <span className="font-extrabold text-slate-800">{formatRupee(oldTax, hasCompTax || Boolean(oldDetailsData?.oldTotalTax))}</span>
+                <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                  {t('old')} <span className="font-extrabold text-slate-800">{formatRupee(oldTax, hasCompTax || Boolean(oldDetailsData?.oldTotalTax))}</span>
                 </span>
-                <span className="text-[10.5px] font-bold text-slate-500 truncate">
-                  {t('new')}: <span className="font-black text-slate-900">{formatRupee(newTax, hasCompTax || Boolean(newTax > 0 || (isCapitalMode ? capitalData != null : rateableData != null)))}</span>
+                <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                  {t('new')} <span className="font-black text-slate-900">{formatRupee(newTax, hasCompTax || Boolean(newTax > 0 || (isCapitalMode ? capitalData != null : rateableData != null)))}</span>
                 </span>
-                <div className="pt-1">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none">
-                    <BarChart3 className="w-2.5 h-2.5 text-emerald-600" />
-                    <span>{formattedTaxDelta}</span>
+                <div className="pt-0.5">
+                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none max-w-full truncate">
+                    <BarChart3 className="w-2 h-2 text-emerald-600 shrink-0" />
+                    <span className="truncate">{formattedTaxDelta}</span>
                   </span>
                 </div>
               </>
@@ -412,7 +413,6 @@ export const IndividualFloorSummaryCards: React.FC<IndividualFloorSummaryCardsPr
           </div>
         </div>
       </div>
-
     </div>
   );
 };

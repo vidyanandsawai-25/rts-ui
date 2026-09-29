@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Layers, FileText, LayoutGrid, Search, Download } from 'lucide-react';
+import { Layers, FileText, LayoutGrid, Download } from 'lucide-react';
 import { MissingPhotoPlanItem, MissingPhotoPlanZone } from '@/types/automation-dashboard/missing-data-analysis/photo-plan/missing-photo-plan.type';
 import { AutomationTable, Column } from '@/components/common/AutomationTable';
+import { Button } from '@/components/common/ActionButton';
+import { SearchInput } from '@/components/common/SearchInput';
+import { exportTableData } from '@/lib/utils/automation-dashboard/export';
+import { getNumberLocale } from '@/lib/utils/format';
 import { getMissingPhotoPlanColumns } from './MissingPhotoPlanColumns';
 
 interface Props {
@@ -16,7 +20,7 @@ export default function MissingPhotoPlanDetails({ serverData }: Props) {
   const locale = useLocale();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const numberLocale = locale === 'mr' ? 'mr-IN' : locale === 'hi' ? 'hi-IN' : 'en-IN';
+  const numberLocale = getNumberLocale(locale);
 
   const totalGapFields = serverData?.totalGapFields ?? 0;
   const totalPhotoMissing = serverData?.totalPhotoMissing ?? 0;
@@ -34,10 +38,38 @@ export default function MissingPhotoPlanDetails({ serverData }: Props) {
     );
   }, [zones, searchTerm]);
 
-  const columns: Column<Record<string, unknown>>[] = useMemo(
-    () => getMissingPhotoPlanColumns(t, numberLocale),
+  const handleViewDetails = useCallback((zone: MissingPhotoPlanZone) => {
+    if (zone.zoneNo) {
+      setSearchTerm(zone.zoneNo);
+    }
+  }, []);
+
+  const handleDownloadRow = useCallback(
+    (zone: MissingPhotoPlanZone) => {
+      const cols = getMissingPhotoPlanColumns(t, numberLocale);
+      exportTableData({
+        fileName: `Missing_Photo_Plan_Zone_${zone.zoneNo || zone.zoneId}`,
+        reportTitle: `${t('totalGapFields')} - ${zone.zoneNo} ${zone.zoneName ?? ''}`,
+        columns: cols,
+        data: [zone as unknown as Record<string, unknown>],
+      });
+    },
     [t, numberLocale]
   );
+
+  const columns: Column<Record<string, unknown>>[] = useMemo(
+    () => getMissingPhotoPlanColumns(t, numberLocale, handleDownloadRow, handleViewDetails),
+    [t, numberLocale, handleDownloadRow, handleViewDetails]
+  );
+
+  const handleExportAll = useCallback(() => {
+    exportTableData({
+      fileName: 'Missing_Photo_Plan_Analysis_Report',
+      reportTitle: t('totalGapFields'),
+      columns,
+      data: zones as unknown as Record<string, unknown>[],
+    });
+  }, [zones, columns, t]);
 
   const tableData = useMemo(() => {
     return filteredZones.map((z) => ({ ...z })) as unknown as Record<string, unknown>[];
@@ -101,22 +133,23 @@ export default function MissingPhotoPlanDetails({ serverData }: Props) {
 
         <div className="flex items-center gap-3">
           {/* Search Input */}
-          <div className="relative flex items-center w-full sm:w-64">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
-            <input
-              type="text"
-              placeholder={t('searchZonePlaceholder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-            />
-          </div>
+          <SearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder={t('searchZonePlaceholder')}
+            className="mb-0 w-full sm:w-64"
+          />
 
           {/* Export Button */}
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-xs transition-all whitespace-nowrap">
-            <Download className="w-4 h-4" />
-            <span>{t('exportAll')}</span>
-          </button>
+          <Button
+            variant="primary"
+            icon={Download}
+            iconPosition="left"
+            onClick={handleExportAll}
+            className="rounded-xl font-bold text-xs uppercase tracking-wider whitespace-nowrap cursor-pointer px-4 py-2"
+          >
+            {t('exportAll')}
+          </Button>
         </div>
       </div>
 

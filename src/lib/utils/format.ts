@@ -273,3 +273,9 @@ export function formatReassessmentTaxCurrency(value: number, compareWith?: numbe
 export function formatReassessmentNumber(value: number): string {
   return value.toLocaleString('en-IN');
 }
+
+export function getNumberLocale(locale?: string): string {
+  if (locale === 'mr') return 'mr-IN';
+  if (locale === 'hi') return 'hi-IN';
+  return 'en-IN';
+}
