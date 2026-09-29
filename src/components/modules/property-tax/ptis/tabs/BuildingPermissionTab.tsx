@@ -8,7 +8,6 @@ import { AlertCircle, Eye, Pencil, Loader2, FileText } from 'lucide-react';
 import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
 import { DocumentViewerModal } from '@/components/common';
 import { toast } from 'sonner';
-import { getIndividualBuildingCertificatesAction } from '@/app/[locale]/property-tax/ptis/individual/action';
 import type { BuildingPermissionData, BuildingPermissionItem } from '@/types/ptis.types';
 import { cn } from '@/lib/utils/cn';
 
@@ -36,10 +35,7 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
   const locale = useLocale();
   const router = useRouter();
 
-  const [prevData, setPrevData] = React.useState(data);
-  const [localData, setLocalData] = React.useState<BuildingPermissionData | undefined>(data);
-  const [isPending, startTransition] = React.useTransition();
-  const [activeViewingGuid, setActiveViewingGuid] = React.useState<string | null>(null);
+  const [activeViewingKey, setActiveViewingKey] = React.useState<string | null>(null);
   const [viewerData, setViewerData] = React.useState<{
     isOpen: boolean;
     url: string;
@@ -48,43 +44,9 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
     contentType?: string;
   } | null>(null);
 
-  // Sync prop changes during render
-  if (data !== prevData) {
-    setPrevData(data);
-    setLocalData(data);
-  }
-
-  // On-demand fetch if initial data is empty or missing and propertyId is available
-  React.useEffect(() => {
-    const numericPropId = Number(propertyId);
-    if (!numericPropId || numericPropId <= 0) return;
-
-    // Check if we already have items
-    if (localData?.items && localData.items.length > 0) return;
-
-    let isSubscribed = true;
-
-    startTransition(async () => {
-      try {
-        const res = await getIndividualBuildingCertificatesAction(numericPropId);
-        if (isSubscribed && res.success && res.data) {
-          setLocalData(res.data);
-        }
-      } catch (err) {
-        if (isSubscribed) {
-          console.error('Failed to fetch building certificates on-demand:', err);
-        }
-      }
-    });
-
-    return () => {
-      isSubscribed = false;
-    };
-  }, [propertyId, localData?.items]);
-
   // Filter for items that have actual certificate data (number, date, or document) or hasCertificate=true
   const items = React.useMemo(() => {
-    return (localData?.items || []).filter(Boolean).filter((item) => {
+    return (data?.items || []).filter(Boolean).filter((item) => {
       const hasContent = !!(
         item.certificateNo?.trim() ||
         item.issueDate?.trim() ||
@@ -92,7 +54,7 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
       );
       return item.hasCertificate || hasContent;
     });
-  }, [localData?.items]);
+  }, [data?.items]);
 
   const closeViewer = React.useCallback(() => {
     if (viewerData?.url) {
@@ -109,7 +71,7 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
     };
   }, [viewerData]);
 
-  const handleViewDocument = async (item: BuildingPermissionItem) => {
+  const handleViewDocument = async (item: BuildingPermissionItem, rowKey: string) => {
     if (!item.documentGuid) {
       toast.info(
         t('building.noDocumentAttached') ||
@@ -118,7 +80,7 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
       return;
     }
 
-    setActiveViewingGuid(item.documentGuid);
+    setActiveViewingKey(rowKey);
     try {
       const res = await getDocumentBlobUrl(item.documentGuid, locale);
       const isImg = res.contentType?.toLowerCase().startsWith('image/');
@@ -136,7 +98,7 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to view document');
     } finally {
-      setActiveViewingGuid(null);
+      setActiveViewingKey(null);
     }
   };
 
@@ -186,17 +148,6 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
     return dateStr;
   };
 
-  if (isPending) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-slate-500 bg-white rounded-lg border border-slate-200">
-        <Loader2 className="h-6 w-6 text-blue-600 animate-spin mb-2" />
-        <p className="text-xs font-semibold text-slate-600">
-          {t('common.loading') || 'Loading certificates...'}
-        </p>
-      </div>
-    );
-  }
-
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-slate-500 bg-slate-50 rounded-lg border border-dashed border-slate-300">
@@ -244,7 +195,7 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
                   : `${item.certificateTypeId}-${item.propertyDetailsId || 'property'}-${index}`;
 
                 const hasDoc = Boolean(item.documentGuid);
-                const isViewingThis = activeViewingGuid === item.documentGuid;
+                const isViewingThis = activeViewingKey === rowKey;
 
                 return (
                   <tr
@@ -286,8 +237,8 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
                         {/* Eye Button to View */}
                         <button
                           type="button"
-                          onClick={() => handleViewDocument(item)}
-                          disabled={!hasDoc || isViewingThis}
+                          onClick={() => handleViewDocument(item, rowKey)}
+                          disabled={!hasDoc || activeViewingKey !== null}
                           className={cn(
                             'p-1.5 rounded-md border transition-all shadow-xs inline-flex items-center justify-center cursor-pointer',
                             hasDoc

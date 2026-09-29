@@ -15,6 +15,7 @@ export const useSocialFormState = (
             masterAttributes.forEach(attr => {
                 if (!flatData[attr.id]) {
                     const isBitType = attr.dataType.toUpperCase() === "BIT";
+                    const isRootAttr = attr.parentAttributeId === null || attr.parentAttributeId === undefined;
                     flatData[attr.id] = {
                         id: null,
                         socialAttributeId: attr.id,
@@ -23,7 +24,7 @@ export const useSocialFormState = (
                         dataType: attr.dataType,
                         parentAttributeId: attr.parentAttributeId,
                         isRequiredWhenParentTrue: attr.isRequiredWhenParentTrue,
-                        bitValue: isBitType ? false : null,
+                        bitValue: (isBitType || isRootAttr) ? false : null,
                         intValue: null,
                         decimalValue: null,
                         textValue: null,
@@ -44,7 +45,7 @@ export const useSocialFormState = (
         return flatData;
     }, [initialSocialData, masterAttributes]);
 
-    const initialFlatData = useMemo(() => buildInitialData(), [buildInitialData]);
+    const [savedFlatData, setSavedFlatData] = useState<Record<number, FlatSocialAttributeState>>(() => buildInitialData());
 
     const [formState, setFormState] = useState<{
         data: Record<number, FlatSocialAttributeState>;
@@ -55,20 +56,84 @@ export const useSocialFormState = (
     }));
 
     const hasChanges = useMemo(() => {
-        return hasSocialChangesComparedToInitial(formState.data, initialFlatData);
-    }, [formState.data, initialFlatData]);
+        return hasSocialChangesComparedToInitial(formState.data, savedFlatData);
+    }, [formState.data, savedFlatData]);
 
     const [prevInitialSocialData, setPrevInitialSocialData] = useState(initialSocialData);
 
     if (initialSocialData && initialSocialData !== prevInitialSocialData) {
         setPrevInitialSocialData(initialSocialData);
+        const nextInitial = buildInitialData();
+        setSavedFlatData(nextInitial);
         if (!hasChanges) {
             setFormState({
-                data: buildInitialData(),
+                data: nextInitial,
                 errors: {}
             });
         }
     }
+
+    const resetWithFreshData = useCallback((freshData: PropertySocialInfoResponseDto) => {
+        const flatData = flattenAttributes(freshData?.socialAttributes || []);
+        if (masterAttributes && masterAttributes.length > 0) {
+            masterAttributes.forEach(attr => {
+                if (!flatData[attr.id]) {
+                    const isBitType = attr.dataType.toUpperCase() === "BIT";
+                    const isRootAttr = attr.parentAttributeId === null || attr.parentAttributeId === undefined;
+                    flatData[attr.id] = {
+                        id: null,
+                        socialAttributeId: attr.id,
+                        socialAttributeCode: attr.socialAttributeCode,
+                        socialAttributeName: attr.socialAttributeName,
+                        dataType: attr.dataType,
+                        parentAttributeId: attr.parentAttributeId,
+                        isRequiredWhenParentTrue: attr.isRequiredWhenParentTrue,
+                        bitValue: (isBitType || isRootAttr) ? false : null,
+                        intValue: null,
+                        decimalValue: null,
+                        textValue: null,
+                        dateValue: null,
+                        documentBindingId: null,
+                        remark: null,
+                        isUploading: false,
+                        isPhotoRequired: attr.isPhotoRequired,
+                        isDocumentRequired: attr.isDocumentRequired,
+                        documentGuid: null,
+                        documentUrl: null,
+                        photoBindingId: null,
+                        photoGuid: null
+                    };
+                }
+            });
+        }
+        setSavedFlatData(flatData);
+        setFormState({
+            data: flatData,
+            errors: {}
+        });
+        setPrevInitialSocialData(freshData);
+    }, [masterAttributes]);
+
+    const clearPendingFiles = useCallback(() => {
+        setFormState((prev) => {
+            const nextData = { ...prev.data };
+            Object.keys(nextData).forEach((k) => {
+                const id = Number(k);
+                const item = nextData[id];
+                if (item && (item.pendingFile || item.documentGuid === "pending")) {
+                    nextData[id] = {
+                        ...item,
+                        pendingFile: undefined,
+                        documentGuid: item.documentGuid === "pending" ? null : item.documentGuid,
+                    };
+                }
+            });
+            return {
+                ...prev,
+                data: nextData
+            };
+        });
+    }, []);
 
     const handleInputChange = useCallback((
         attributeId: number,
@@ -80,7 +145,8 @@ export const useSocialFormState = (
             const currentAttr = nextData[attributeId];
             if (!currentAttr) return prev;
 
-            nextData[attributeId] = { ...currentAttr, [field]: value };
+            const isOverridden = currentAttr.isInherited ? true : currentAttr.isOverridden;
+            nextData[attributeId] = { ...currentAttr, [field]: value, isOverridden };
             
             const nextErrors = { ...prev.errors };
             delete nextErrors[attributeId];
@@ -98,7 +164,8 @@ export const useSocialFormState = (
             const currentAttr = nextData[attributeId];
             if (!currentAttr) return prev;
 
-            nextData[attributeId] = { ...currentAttr, bitValue: checked };
+            const isOverridden = currentAttr.isInherited ? true : currentAttr.isOverridden;
+            nextData[attributeId] = { ...currentAttr, bitValue: checked, isOverridden };
             
             const nextErrors = { ...prev.errors };
             delete nextErrors[attributeId];
@@ -123,8 +190,10 @@ export const useSocialFormState = (
         validationErrors: formState.errors,
         setFormState,
         hasChanges,
-        initialFlatData,
+        initialFlatData: savedFlatData,
         handleInputChange,
-        handleToggleEnabled
+        handleToggleEnabled,
+        resetWithFreshData,
+        clearPendingFiles
     };
 };

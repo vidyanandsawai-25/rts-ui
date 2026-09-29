@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Info } from "lucide-react";
 import { Label, TextArea, SaveButton } from "@/components/common";
 import { FlatSocialAttributeState, getLocalizedName } from "@/lib/utils/social-details";
 import { SocialAttributeHierarchyDto } from "@/types/property-social-details.types";
@@ -32,6 +32,7 @@ interface SocialDetailPaneProps {
     isSaving?: boolean;
     hasChanges?: boolean;
     onSave?: () => void;
+    isDeleteDisabled?: boolean;
 }
 
 export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
@@ -48,6 +49,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     isSaving = false,
     hasChanges = false,
     onSave,
+    isDeleteDisabled = false,
 }) => {
     const { confirm } = useConfirm();
 
@@ -186,23 +188,40 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
 
     return (
         <div
-            className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
+            className={`flex flex-col flex-1 h-full min-h-0 border rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative ${
                 isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
             }`}
         >
-            <div className="space-y-5 overflow-y-auto pr-1">
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1">
                 {isDisabled && <DisabledBanner t={t as (key: string) => string} />}
 
-                <div className="pb-3 border-b border-blue-50">
-                    <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
+                {data.isInherited && (
+                    <div className={`flex items-center gap-2 px-3 py-2 mb-2 rounded-lg border ${
+                        data.isOverridden
+                            ? "bg-amber-50 border-amber-200 text-amber-800"
+                            : "bg-indigo-50 border-indigo-200 text-indigo-800"
+                    }`}>
+                        <Info size={16} className={data.isOverridden ? "text-amber-600 shrink-0" : "text-indigo-600 shrink-0"} />
+                        <span className="text-xs font-semibold">
+                            {data.isOverridden
+                                ? (t("discount.overridePendingNote") || "You have modified this inherited attribute. Saving will create an override record exclusively for this level.")
+                                : ((data.inheritedFrom || '').toUpperCase() === 'APARTMENT' || (data.inheritedFrom || '').toUpperCase() === 'SOCIETY' || (data.entityType || '').toUpperCase() === 'S')
+                                    ? (t("discount.inheritedFromApartmentNote") || "This social attribute is inherited from Apartment level. Modifying details or toggling it off will create an override.")
+                                    : (t("discount.inheritedFromWingNote") || "This social attribute is inherited from Wing level. Modifying details or toggling it off will create an override.")}
+                        </span>
+                    </div>
+                )}
+
+                <div className="pb-2 border-b border-blue-50">
+                    <span className="text-[11px] font-bold tracking-wider text-blue-500 uppercase block mb-0.5">
                         {t("discount.editingDiscount") || "Social Attribute Details"}
                     </span>
-                    <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
+                    <h4 className="text-base font-bold text-blue-900 leading-tight">{displayName}</h4>
                 </div>
 
                 {/* Root value input if applicable */}
                 {showValueInput && (
-                    <div className="flex flex-col gap-1.5 w-full">
+                    <div className="flex flex-col gap-1 w-full">
                         <span className="text-xs font-bold text-slate-600">
                             {displayName}
                             {isValueRequired && <span className="text-red-500 ml-0.5">*</span>}
@@ -222,8 +241,8 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
 
                 {/* Children attributes if any */}
                 {hierarchyData.children && hierarchyData.children.length > 0 && (
-                    <div className="p-3 bg-slate-50/50 border border-slate-100 rounded-xl space-y-3">
-                        <h5 className="text-xs font-bold text-slate-700 border-b border-slate-200/60 pb-1 mb-2">
+                    <div className="p-2 bg-slate-50/50 border border-slate-100 rounded-lg space-y-2">
+                        <h5 className="text-xs font-bold text-slate-700 border-b border-slate-200/60 pb-1 mb-1.5">
                             {t("discount.complexFieldsTitle") || "Detailed Attributes"}
                         </h5>
                         <NestedAttributes
@@ -237,7 +256,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                 )}
 
                 {/* Photo Upload Dropzone */}
-                <div className="space-y-1.5 w-full">
+                <div className="space-y-1 w-full">
                     <Label className="text-sm font-bold text-blue-800">
                         {t("discount.uploadDocument") || "Photo Attachment"}
                         {isPhotoRequired && <span className="text-red-500 ml-0.5">*</span>}
@@ -263,7 +282,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                 </div>
 
                 {/* Remark Textarea */}
-                <div className="space-y-1.5 w-full">
+                <div className="space-y-1 w-full">
                     <div className="flex items-center justify-between">
                         <Label className="text-sm font-bold text-blue-800">
                             {t("discount.remark") || "Remark"}
@@ -299,7 +318,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                 </div>
             </div>
 
-            <div className="pt-2.5 border-t border-blue-50 mt-3 flex items-center justify-between gap-4">
+            <div className="pt-2 border-t border-blue-100 mt-1 flex items-center justify-between gap-2 shrink-0 bg-white z-10">
                 <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
                     <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
@@ -307,10 +326,10 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDisabled && (
+                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDisabled && !isDeleteDisabled && (
                         <button
                             type="button"
-                            disabled={isDisabled || isSaving}
+                            disabled={isDisabled || isSaving || isDeleteDisabled}
                             onClick={handleDeleteSocialDetailWithConfirm}
                             className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
                         >

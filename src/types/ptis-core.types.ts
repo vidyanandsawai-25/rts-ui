@@ -153,6 +153,15 @@ export interface PropertySocialDetailItem {
   documentGuid?: string | null;
   percentage?: number | null;
   amount?: number | null;
+  level?: string;
+  wingDetailId?: number | null;
+  societyDetailId?: number | null;
+  wingName?: string | null;
+  unitNo?: string | null;
+  partitionNo?: string | null;
+  applicableToLabel?: string;
+  entityType?: string | null;
+  inheritedFrom?: string | null;
 }
 
 export interface DiscountData {

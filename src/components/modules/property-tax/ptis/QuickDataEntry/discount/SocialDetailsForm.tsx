@@ -2,22 +2,22 @@
 
 import React, { useTransition } from "react";
 import { useSocialDetailsForm } from "@/hooks/useSocialDetailsForm";
-import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
+import { PropertySocialInfoResponseDto, PropertySocialDetailsDto } from "@/types/property-social-details.types";
 import { useDiscountLevelState } from "@/hooks/useDiscountLevelState";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { SocialSidebar } from "./SocialSidebar";
 import { SocialDetailPane } from "./SocialDetailPane";
 import { SocialValidationErrorBanner } from "./SocialValidationErrorBanner";
+import { UnitSelectionPanel } from "./UnitSelectionPanel";
 import { getLocalizedName } from "@/lib/utils/social-details";
-import { useConfirm } from "@/components/common/ConfirmProvider";
 import { SocialAttributeHierarchyDto } from "@/types/property-social-details.types";
 
-import { Button, Label, Badge, SearchInput, Select, MasterTable, Checkbox } from "@/components/common";
-import type { Column } from "@/components/common";
+import { Button, Label } from "@/components/common";
 import { cn } from "@/lib/utils/cn";
 import { SocialAttribute } from "@/types/social-attribute.types";
 import { Loader2 } from "lucide-react";
+import { useConfirm } from "@/components/common/ConfirmProvider";
 
 export interface UnitRow extends Record<string, unknown> {
     propertyDetailsId: number;
@@ -28,23 +28,6 @@ export interface UnitRow extends Record<string, unknown> {
     useName: string;
 }
 
-const checkIfSocialAttributeActiveInInitial = (
-    attributes: SocialAttributeHierarchyDto[] | undefined,
-    targetId: number
-): boolean => {
-    if (!attributes) return false;
-    for (const attr of attributes) {
-        if (attr.id === targetId) {
-            return typeof attr.propertySocialDetailId === "number" && attr.propertySocialDetailId > 0 && attr.bitValue === true;
-        }
-        if (attr.children && attr.children.length > 0) {
-            const found = checkIfSocialAttributeActiveInInitial(attr.children, targetId);
-            if (found) return true;
-        }
-    }
-    return false;
-};
-
 interface SocialDetailsFormProps {
     initialSocialData: PropertySocialInfoResponseDto | null;
     propertyId: string;
@@ -53,6 +36,7 @@ interface SocialDetailsFormProps {
     societyDetailId?: number;
     socialMasterAttributes?: SocialAttribute[];
     isWingLoading?: boolean;
+    savedPropertyDetails?: PropertySocialDetailsDto[];
 }
 
 export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
@@ -62,24 +46,25 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
     isSociety,
     societyDetailId: propSocietyDetailId,
     socialMasterAttributes = [],
-    isWingLoading = false
+    isWingLoading = false,
+    savedPropertyDetails = []
 }) => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const t = useTranslations("quickDataEntry");
     const [isWingPending, startWingTransition] = useTransition();
+    const { confirm } = useConfirm();
 
-    const updateUrl = (params: URLSearchParams) => {
+    const updateUrl = React.useCallback((params: URLSearchParams) => {
         const nextUrl = `${pathname}?${params.toString()}`;
         startWingTransition(() => {
             router.push(nextUrl, { scroll: false });
         });
-    };
+    }, [pathname, router]);
     const isLoadingWing = isWingLoading || isWingPending;
     const societyDetailId = searchParams.get('societyDetailId') || (propSocietyDetailId ? String(propSocietyDetailId) : null);
     const wingDetailId = searchParams.get('wingDetailId');
-    const { confirm } = useConfirm();
     const {
         socialData,
         isSaving,
@@ -92,8 +77,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         handlePhotoUpload,
         handlePhotoDelete,
         handleDeleteSocialDetail,
-        handleSave,
-        revertSocialAttribute
+        handleSave
     } = useSocialDetailsForm(initialSocialData, propertyId, socialMasterAttributes, {
         level: levelState?.level,
         societyDetailId,
@@ -106,9 +90,17 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         totalUnitCount: levelState ? levelState.filteredUnits.length : undefined
     });
 
-    const [selectedId, setSelectedId] = React.useState<number | null>(null);
+    const [selectedId, setSelectedId] = React.useState<number | null>(() => {
+        if (typeof window !== "undefined") {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramId = urlParams.get("socialAttributeId");
+            if (paramId && !isNaN(Number(paramId))) return Number(paramId);
+        }
+        return searchParams.get("socialAttributeId") ? Number(searchParams.get("socialAttributeId")) : null;
+    });
     const [searchTerm, setSearchTerm] = React.useState("");
     const [showActiveFirst, setShowActiveFirst] = React.useState(false);
+    const [deleteSelectionCount, setDeleteSelectionCount] = React.useState(0);
 
     const buildHierarchyFromMaster = React.useCallback((rootId: number) => {
         const flatSource = socialMasterAttributes.length > 0
@@ -198,40 +190,42 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
     }, [filteredAttributes, selectedId]);
 
     const handleSelectAttribute = React.useCallback((id: number) => {
-        if (activeSelectedId !== null && activeSelectedId !== id) {
-            revertSocialAttribute(activeSelectedId);
-        }
         setSelectedId(id);
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("socialAttributeId", id.toString());
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    }, [activeSelectedId, revertSocialAttribute, searchParams, pathname, router]);
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            params.set("socialAttributeId", id.toString());
+            window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+        }
+    }, [pathname]);
 
     const handleToggleEnabledWrapped = React.useCallback((id: number, checked: boolean) => {
-        const item = socialData[id];
-        const existsAndActiveInDb = checkIfSocialAttributeActiveInInitial(initialSocialData?.socialAttributes, id);
+        const updateState = () => {
+            setSelectedId(id);
+            if (typeof window !== "undefined") {
+                const params = new URLSearchParams(window.location.search);
+                params.set("socialAttributeId", id.toString());
+                window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+            }
+        };
 
-        if (!checked && existsAndActiveInDb) {
-            const displayName = getLocalizedName(item.socialAttributeCode, item.socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2]);
+        const isSaved = (socialData[id]?.id ?? 0) > 0 || (socialData[id]?.documentBindingId ?? 0) > 0;
+        if (!checked && isSaved) {
             confirm({
-                title: t("discount.confirmDeleteAttributeTitle") || "Delete Social Detail & Data",
-                description: `${t("discount.confirmToggleOffWarning") || "You have active details:"}\n${displayName}\n\n${t("discount.confirmDeleteAttributeDesc") || "Are you sure you want to delete this social detail and all its associated data?"}`,
+                title: t("discount.confirmDeleteAttributeTitle") || "Delete Social Data",
+                description: `${t("discount.confirmToggleOffWarning") || "You have an active social data with details:"}\n${socialData[id].socialAttributeName || ''}\n\n${t("discount.confirmDeleteAttributeDesc") || "Are you sure you want to delete this social data?"}`,
                 confirmText: t("discount.confirmDeleteAttributeOk") || "Yes, Delete",
                 cancelText: t("discount.confirmDeleteAttributeCancel") || "No, Cancel",
                 variant: "delete",
-                onConfirm: async () => {
-                    await handleDeleteSocialDetail(id);
-                    handleSelectAttribute(id);
-                },
-                onCancel: () => {
-                    // Leaves toggle state active/unchanged
+                onConfirm: () => {
+                    handleDeleteSocialDetail(id);
+                    updateState();
                 }
             });
         } else {
             handleToggleEnabled(id, checked);
-            handleSelectAttribute(id);
+            updateState();
         }
-    }, [handleToggleEnabled, socialData, handleDeleteSocialDetail, confirm, t, initialSocialData?.socialAttributes, handleSelectAttribute]);
+    }, [handleToggleEnabled, handleDeleteSocialDetail, pathname, socialData, confirm, t]);
 
     const selectedAttribute = activeSelectedId !== null ? socialData[activeSelectedId] : null;
 
@@ -286,71 +280,24 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         return incompleteAttributes.filter(d => socialData[d.id]?.bitValue === true);
     }, [incompleteAttributes, socialData]);
 
-    const unitTableColumns = React.useMemo<Column<UnitRow>[]>(() => {
-        if (!levelState) return [];
-        return [
-            {
-                key: 'propertyDetailsId',
-                label: (
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                            checked={levelState.isAllUnitsSelected}
-                            onCheckedChange={levelState.toggleAllUnits}
-                        />
-                    </div>
-                ),
-                width: '40px',
-                align: 'center',
-                render: (_, row) => (
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                            checked={levelState.selectedUnitIds.has((row.propertyId ?? row.propertyDetailsId) as number)}
-                            onCheckedChange={() => levelState.toggleUnitSelection((row.propertyId ?? row.propertyDetailsId) as number)}
-                        />
-                    </div>
-                ),
-            },
-            {
-                key: 'unitNo',
-                label: 'UNIT',
-                render: (val) => <span className="font-bold text-blue-900">{String(val || '')}</span>,
-            },
-            {
-                key: 'wingName',
-                label: 'WING',
-                render: (val) => <span className="font-semibold text-slate-700">{String(val || '')}</span>,
-            },
-            {
-                key: 'floorName',
-                label: 'FLOOR',
-                render: (val) => <span className="text-slate-600">{String(val || '')}</span>,
-            },
-            {
-                key: 'useName',
-                label: 'USE',
-                render: (val) => (
-                    <Badge variant="secondary" size="sm" className="bg-blue-100 text-blue-800 font-semibold">
-                        {String(val || 'Residential')}
-                    </Badge>
-                ),
-            },
-        ];
-    }, [levelState]);
+    const handleEditUnit = React.useCallback((_row: unknown) => {
+        if (activeSelectedId !== null) {
+            handleSelectAttribute(activeSelectedId);
+        }
+    }, [activeSelectedId, handleSelectAttribute]);
 
-    const unitTableData = React.useMemo<UnitRow[]>(() => {
-        if (!levelState) return [];
-        return levelState.filteredUnits.map((u) => ({
-            propertyDetailsId: u.propertyDetailsId,
-            propertyId: u.propertyId,
-            unitNo: u.unitNo,
-            wingName: u.wingName,
-            floorName: u.floorName,
-            useName: u.useName || 'Residential',
-        }));
-    }, [levelState]);
+    const handleUnitUrlUpdate = React.useCallback((params: URLSearchParams) => {
+        updateUrl(params);
+    }, [updateUrl]);
+
+    const activeAttributeDisplayName = selectedAttribute
+        ? getLocalizedName(selectedAttribute.socialAttributeCode, selectedAttribute.socialAttributeName, t)
+        : (activeSelectedId !== null && socialData[activeSelectedId]
+            ? getLocalizedName(socialData[activeSelectedId].socialAttributeCode, socialData[activeSelectedId].socialAttributeName, t)
+            : undefined);
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-blue-100 flex flex-col flex-1 min-h-0 overflow-hidden relative p-2.5 md:p-3 w-full h-full">
+        <div className="bg-white rounded-xl shadow-sm border border-blue-100 flex flex-col flex-1 min-h-0 overflow-hidden relative p-1.5 md:p-2 w-full h-full">
             {/* Validation Error Banner */}
             {activeIncompleteAttributes.length > 0 && (
                 <SocialValidationErrorBanner
@@ -364,7 +311,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
 
             <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:overflow-hidden">
                 {/* Left Sidebar */}
-                <div className="lg:col-span-5 xl:col-span-4 h-auto lg:h-full lg:overflow-hidden">
+                <div className="lg:col-span-4 xl:col-span-3 h-auto lg:h-full lg:overflow-hidden">
                     <SocialSidebar
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
@@ -376,6 +323,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                         onSelect={handleSelectAttribute}
                         onToggleEnabled={handleToggleEnabledWrapped}
                         validationErrors={validationErrors}
+                        level={levelState?.level}
                         t={t as unknown as {
                             (key: string, values?: Record<string, string | number | Date>): string;
                             has?: (key: string) => boolean;
@@ -384,7 +332,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 </div>
 
                 {/* Right Detail Pane */}
-                <div className="relative lg:col-span-7 xl:col-span-8 h-auto lg:h-full lg:overflow-y-auto pr-1 flex flex-col gap-3">
+                <div className="relative lg:col-span-8 xl:col-span-9 h-full flex flex-col gap-2 overflow-hidden">
                     {/* Loading Overlay */}
                     {isLoadingWing && (
                         <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center rounded-xl">
@@ -394,8 +342,10 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                             </div>
                         </div>
                     )}
-                    {isSociety && levelState && (levelState.level === 'Wing' || levelState.level === 'Unit') && (
-                        <div className="flex-shrink-0 space-y-2 bg-slate-50/60 p-3 rounded-xl border border-slate-200">
+
+
+                    {isSociety && levelState && levelState.level === 'Wing' && (
+                        <div className="flex-shrink-0 space-y-1.5 bg-slate-50/60 p-2.5 rounded-lg border border-slate-200">
                             <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
                                 {t('building.selectWing') || 'SELECT WING'}
                             </Label>
@@ -416,15 +366,19 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
 
                                                     const params = new URLSearchParams(searchParams.toString());
                                                     params.set("wingDetailId", wing.wingDetailId.toString());
+                                                    params.delete("unitPropertyId");
                                                     updateUrl(params);
                                                 }}
                                                 className={cn(
-                                                    'px-4 font-semibold rounded-lg transition-all cursor-pointer border',
+                                                    'px-4 font-semibold rounded-lg transition-all cursor-pointer border flex items-center gap-1.5',
                                                     isSelected
                                                         ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs'
                                                         : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                                                 )}
                                             >
+                                                {isLoadingWing && isSelected && (
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                                                )}
                                                 {wing.wingName}
                                             </Button>
                                         );
@@ -439,90 +393,20 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                     )}
 
                     {isSociety && levelState && levelState.level === 'Unit' && (
-                        <div className="flex-shrink-0 space-y-2 bg-slate-50/60 p-3 rounded-xl border border-slate-200">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                                    {t('building.selectUnits') || 'SELECT UNITS'}
-                                </Label>
-                                <Badge variant="secondary" size="sm" className="bg-white text-slate-600 font-semibold border border-slate-200">
-                                    {t('building.unitsSelected', { count: levelState.selectedUnitIds.size }) || `${levelState.selectedUnitIds.size} ${levelState.selectedUnitIds.size === 1 ? 'unit' : 'units'} selected`}
-                                </Badge>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                                <div className="relative sm:col-span-1">
-                                    <SearchInput
-                                        placeholder={t('building.searchUnitPlaceholder') || 'Search unit...'}
-                                        value={levelState.unitSearchQuery}
-                                        onChange={levelState.setUnitSearchQuery}
-                                        className="w-full mb-0 text-xs"
-                                    />
-                                </div>
-                                <Select
-                                    options={levelState.wings.map((w) => ({ label: w.wingName, value: String(w.wingDetailId) }))}
-                                    value={levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : ''}
-                                    onChange={(_, val) => {
-                                        const params = new URLSearchParams(searchParams.toString());
-                                        if (val === 'all') {
-                                            levelState.setSelectedWingDetailId(null);
-                                            params.delete("wingDetailId");
-                                        } else {
-                                            const nextWingDetailId = Number(val);
-                                            levelState.setSelectedWingDetailId(nextWingDetailId);
-                                            params.set("wingDetailId", String(nextWingDetailId));
-                                        }
-                                        updateUrl(params);
-                                    }}
-                                    selectSize="sm"
-                                    className="text-xs"
-                                />
-                                <Select
-                                    options={[
-                                        { label: t('building.allFloors') || 'All Floors', value: 'all' },
-                                        ...levelState.availableFloors.map((fl) => ({ label: fl, value: fl })),
-                                    ]}
-                                    value={levelState.floorFilter}
-                                    onChange={(_, val) => levelState.setFloorFilter(val)}
-                                    selectSize="sm"
-                                    className="text-xs"
-                                />
-                                <Select
-                                    options={[
-                                        { label: t('building.allUses') || 'All Uses', value: 'all' },
-                                        ...levelState.availableUses.map((us) => ({ label: us, value: us })),
-                                    ]}
-                                    value={levelState.useFilter}
-                                    onChange={(_, val) => levelState.setUseFilter(val)}
-                                    selectSize="sm"
-                                    className="text-xs"
-                                />
-                            </div>
-
-                            <MasterTable<UnitRow>
-                                columns={unitTableColumns}
-                                data={unitTableData}
-                                isPagination={false}
-                                emptyText={t('building.noUnitsMatch') || 'No units match the selected filters'}
-                                maxBodyHeightClassName="max-h-48"
-                                onScroll={(e) => {
-                                    const target = e.currentTarget;
-                                    if (target.scrollTop + target.clientHeight >= target.scrollHeight - 30) {
-                                        levelState.loadNextUnitsPage();
-                                    }
-                                }}
-                                getRowKey={(row) => (row.propertyId ?? row.propertyDetailsId) as number}
-                                onRowClick={(row) => levelState.toggleUnitSelection((row.propertyId ?? row.propertyDetailsId) as number)}
-                                rowClassName={(row) =>
-                                    levelState.selectedUnitIds.has((row.propertyId ?? row.propertyDetailsId) as number) ? 'bg-blue-50/60' : ''
-                                }
-                            />
-                            {levelState.isLoadingMoreUnits && (
-                                <div className="py-1.5 text-center text-xs text-blue-600 font-medium flex items-center justify-center gap-2 bg-blue-50/40 rounded-lg">
-                                    <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                    <span>{t('building.loadingNextUnits') || 'Loading next 10 units...'}</span>
-                                </div>
-                            )}
-                        </div>
+                        <UnitSelectionPanel
+                            levelState={levelState}
+                            t={t as unknown as (key: string, values?: Record<string, string | number | Date>) => string}
+                            savedPropertyDetails={savedPropertyDetails.length > 0 ? savedPropertyDetails : (initialSocialData?.socialAttributes || [])}
+                            activeSelectedId={activeSelectedId}
+                            activeAttributeName={activeAttributeDisplayName}
+                            onEditUnit={handleEditUnit}
+                            onUrlUpdate={handleUnitUrlUpdate}
+                            showActions={true}
+                            propertyId={propertyId}
+                            societyDetailId={societyDetailId ? Number(societyDetailId) : (propSocietyDetailId ? Number(propSocietyDetailId) : undefined)}
+                            wingDetailId={levelState.selectedWingDetailId}
+                            onDeleteSelectionChange={(selectedIds) => setDeleteSelectionCount(selectedIds.size)}
+                        />
                     )}
 
                     <SocialDetailPane
@@ -546,6 +430,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                             (key: string, values?: Record<string, string | number | Date>): string;
                             has?: (key: string) => boolean;
                         }}
+                        isDeleteDisabled={levelState?.level === 'Unit' && deleteSelectionCount > 0}
                     />
                 </div>
             </div>

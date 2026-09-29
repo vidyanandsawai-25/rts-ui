@@ -81,7 +81,7 @@ export const BuildingPermissionRecords: React.FC<BuildingPermissionRecordsProps>
   const isExpanded = propIsExpanded !== undefined ? propIsExpanded : internalExpanded;
   const toggleExpand = propOnToggleExpand || (() => setInternalExpanded((prev) => !prev));
 
-  const [activeViewingGuid, setActiveViewingGuid] = useState<string | null>(null);
+  const [activeViewingKey, setActiveViewingKey] = useState<string | null>(null);
   const [viewerData, setViewerData] = useState<{
     isOpen: boolean;
     url: string;
@@ -387,14 +387,15 @@ export const BuildingPermissionRecords: React.FC<BuildingPermissionRecordsProps>
   );
 
   const handleViewDocument = useCallback(
-    async (record: BuildingPermissionRecord) => {
+    async (record: BuildingPermissionRecord, rowKey?: string) => {
       if (!record.documentGuid) {
         // Navigate to edit page to view or upload
         handleEditRecord(record);
         return;
       }
 
-      setActiveViewingGuid(record.documentGuid);
+      const key = rowKey || String(record.id || `${record.permitNo}-${record.certificateTypeId}`);
+      setActiveViewingKey(key);
       try {
         const res = await getDocumentBlobUrl(record.documentGuid, locale);
         const isImg = res.contentType?.toLowerCase().startsWith('image/');
@@ -416,7 +417,7 @@ export const BuildingPermissionRecords: React.FC<BuildingPermissionRecordsProps>
             : t('buildingPermission.viewDocumentError') || 'Failed to view document'
         );
       } finally {
-        setActiveViewingGuid(null);
+        setActiveViewingKey(null);
       }
     },
     [locale, handleEditRecord, t]
@@ -710,96 +711,103 @@ export const BuildingPermissionRecords: React.FC<BuildingPermissionRecordsProps>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
-              {displayedRows.map((row) => (
-                <tr key={String(row.id)} className="hover:bg-slate-50/60 transition-colors">
-                  {/* Certificate */}
-                  <td className="py-2 px-3 whitespace-nowrap">
-                    <div className="flex flex-col gap-0.5 items-start">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-bold text-xs text-slate-900">
-                          {row.certificateTypeName || row.certificateTypeCode || t('buildingPermission.columns.certificate') || 'Certificate'}
-                        </span>
-                        {row.certificateTypeCode && row.certificateTypeName && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
-                            {row.certificateTypeCode}
+              {displayedRows.map((row, index) => {
+                const rowKey = String(
+                  row.id || `cert-${row.certificateTypeId || 0}-${row.permitNo}-${index}`
+                );
+                const isViewingThis = activeViewingKey === rowKey;
+
+                return (
+                  <tr key={rowKey} className="hover:bg-slate-50/60 transition-colors">
+                    {/* Certificate */}
+                    <td className="py-2 px-3 whitespace-nowrap">
+                      <div className="flex flex-col gap-0.5 items-start">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-xs text-slate-900">
+                            {row.certificateTypeName || row.certificateTypeCode || t('buildingPermission.columns.certificate') || 'Certificate'}
                           </span>
-                        )}
-                        {row.taxApplied && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
-                            {t('buildingPermission.statuses.taxApplied') || 'Tax Applied'}
-                          </span>
-                        )}
+                          {row.certificateTypeCode && row.certificateTypeName && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                              {row.certificateTypeCode}
+                            </span>
+                          )}
+                          {row.taxApplied && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
+                              {t('buildingPermission.statuses.taxApplied') || 'Tax Applied'}
+                            </span>
+                          )}
+                        </div>
+                        {renderLevelBadge(row)}
                       </div>
-                      {renderLevelBadge(row)}
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Certificate Number */}
-                  <td className="py-2 px-3 whitespace-nowrap">
-                    <button
-                      type="button"
-                      disabled={activeViewingGuid === row.documentGuid}
-                      onClick={() => handleViewDocument(row)}
-                      className="font-bold text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-50 text-left bg-transparent border-0 p-0"
-                      title={
-                        row.documentGuid
-                          ? t('buildingPermission.actions.viewDocument') || 'View Document'
-                          : t('buildingPermission.actions.edit') || 'Edit Building Permission'
-                      }
-                    >
-                      {activeViewingGuid === row.documentGuid ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
-                      ) : (
-                        <FileText className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                      )}
-                      <span>{row.permitNo}</span>
-                    </button>
-                  </td>
-
-                  {/* Issue Date */}
-                  <td className="py-2 px-3 whitespace-nowrap text-slate-700 font-medium text-xs">
-                    {row.sanctionDate}
-                  </td>
-
-                  {/* Action */}
-                  <td className="py-2 px-3 whitespace-nowrap text-center">
-                    <div className="inline-flex items-center justify-center gap-1.5">
+                    {/* Certificate Number */}
+                    <td className="py-2 px-3 whitespace-nowrap">
                       <button
                         type="button"
-                        disabled={!row.documentGuid || activeViewingGuid === row.documentGuid}
-                        onClick={() => handleViewDocument(row)}
-                        className={cn(
-                          'p-1.5 rounded-md transition-colors inline-flex items-center justify-center border-0 bg-transparent',
-                          row.documentGuid
-                            ? 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 cursor-pointer'
-                            : 'text-slate-300 opacity-40 cursor-not-allowed'
-                        )}
+                        disabled={isViewingThis}
+                        onClick={() => handleViewDocument(row, rowKey)}
+                        className="font-bold text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-50 text-left bg-transparent border-0 p-0"
                         title={
                           row.documentGuid
                             ? t('buildingPermission.actions.viewDocument') || 'View Document'
-                            : t('buildingPermission.noDocumentAttached') || 'No document attached'
+                            : t('buildingPermission.actions.edit') || 'Edit Building Permission'
                         }
-                        aria-label={`View document ${row.permitNo}`}
                       >
-                        {activeViewingGuid === row.documentGuid ? (
-                          <Loader2 className="w-4.5 h-4.5 animate-spin text-emerald-600" />
+                        {isViewingThis ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
                         ) : (
-                          <Eye className="w-4.5 h-4.5" />
+                          <FileText className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                         )}
+                        <span>{row.permitNo}</span>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleEditRecord(row)}
-                        className="p-1.5 rounded-md text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors cursor-pointer inline-flex items-center justify-center border-0 bg-transparent"
-                        title={t('buildingPermission.actions.edit') || 'Edit Building Permission'}
-                        aria-label={`Edit ${row.permitNo}`}
-                      >
-                        <Pencil className="w-4.5 h-4.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+
+                    {/* Issue Date */}
+                    <td className="py-2 px-3 whitespace-nowrap text-slate-700 font-medium text-xs">
+                      {row.sanctionDate}
+                    </td>
+
+                    {/* Action */}
+                    <td className="py-2 px-3 whitespace-nowrap text-center">
+                      <div className="inline-flex items-center justify-center gap-1.5">
+                        <button
+                          type="button"
+                          disabled={!row.documentGuid || isViewingThis}
+                          onClick={() => handleViewDocument(row, rowKey)}
+                          className={cn(
+                            'p-1.5 rounded-md transition-colors inline-flex items-center justify-center border-0 bg-transparent',
+                            row.documentGuid
+                              ? 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 cursor-pointer'
+                              : 'text-slate-300 opacity-40 cursor-not-allowed'
+                          )}
+                          title={
+                            row.documentGuid
+                              ? t('buildingPermission.actions.viewDocument') || 'View Document'
+                              : t('buildingPermission.noDocumentAttached') || 'No document attached'
+                          }
+                          aria-label={`View document ${row.permitNo}`}
+                        >
+                          {isViewingThis ? (
+                            <Loader2 className="w-4.5 h-4.5 animate-spin text-emerald-600" />
+                          ) : (
+                            <Eye className="w-4.5 h-4.5" />
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleEditRecord(row)}
+                          className="p-1.5 rounded-md text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors cursor-pointer inline-flex items-center justify-center border-0 bg-transparent"
+                          title={t('buildingPermission.actions.edit') || 'Edit Building Permission'}
+                          aria-label={`Edit ${row.permitNo}`}
+                        >
+                          <Pencil className="w-4.5 h-4.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

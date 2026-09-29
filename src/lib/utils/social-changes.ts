@@ -17,6 +17,7 @@ export function hasSocialChangesComparedToInitial(
         const initItem = initial[key];
         if (!initItem) return true;
 
+        if (currItem.isOverridden) return true;
         if ((currItem.bitValue ?? false) !== (initItem.bitValue ?? false)) return true;
 
         const currInt = currItem.intValue === "" || currItem.intValue === undefined ? null : currItem.intValue;

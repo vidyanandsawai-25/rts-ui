@@ -450,6 +450,7 @@ export default function PropertyTabSection({
             <DiscountDataTab
               propertyId={draft.propertyId ? Number(draft.propertyId) : undefined}
               initialData={discountDetails}
+              initialSocialData={initialData?.socialDetails}
               readOnly={true}
             />
           </Tabs.TabPanel>

@@ -171,8 +171,12 @@ export async function deleteDiscountDoc(documentGuid: string): Promise<ApiRespon
 /**
  * Get wings for a given property
  */
-export async function getDiscountWings(propertyId: string): Promise<WingOption[]> {
-    const response = await apiClient.get<BackendApiResponseWrapper<WingOption[]>>(`/property-certificates/wings/${propertyId}`);
+export async function getDiscountWings(propertyId: string, societyId?: number | string | null): Promise<WingOption[]> {
+    let url = `/property-certificates/wings/${encodeURIComponent(propertyId)}`;
+    if (societyId && String(societyId).trim() !== '') {
+        url += `?societyId=${encodeURIComponent(String(societyId))}`;
+    }
+    const response = await apiClient.get<BackendApiResponseWrapper<WingOption[]>>(url);
     const t = await getTranslations("quickDataEntry");
     const responseData = handleApiResponse(response, t("building.errors.notFound") || "Failed to fetch wings");
     return Array.isArray(responseData.items) ? responseData.items : (Array.isArray(responseData) ? responseData as WingOption[] : []);

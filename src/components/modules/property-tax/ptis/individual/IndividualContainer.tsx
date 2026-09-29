@@ -42,6 +42,9 @@ export interface IndividualContainerProps {
   initialCapitalTaxDetails?: TaxDetailsData | null;
   initialTaxMode?: PtisTaxMode;
   isLoading?: boolean;
+  societyDetailId?: number | string | null;
+  wingDetailId?: number | string | null;
+  wingName?: string | null;
 }
 
 const EMPTY_INITIAL_DATA: PtisInitialData = {
@@ -65,6 +68,9 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
   initialCapitalTaxDetails = null,
   initialTaxMode = 'rateable',
   isLoading = false,
+  societyDetailId: propSocietyDetailId = null,
+  wingDetailId: propWingDetailId = null,
+  wingName: propWingName = null,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -116,6 +122,22 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
     : initialWardId
     ? String(initialWardId)
     : String(initialData?.wardOptions?.find((w: SearchSelectOption) => w.label === draft.wardNo)?.value || '') || null;
+
+  const resolvedSocietyDetailId: string | number | null =
+    propSocietyDetailId ??
+    (searchParams?.get('societyDetailId') ? Number(searchParams.get('societyDetailId')) : null) ??
+    (searchParams?.get('societyId') ? Number(searchParams.get('societyId')) : null) ??
+    (initialData?.societyDetails?.societyDetailId ? Number(initialData.societyDetails.societyDetailId) : null);
+
+  const resolvedWingDetailId: string | number | null =
+    propWingDetailId ??
+    (searchParams?.get('wingDetailId') ? Number(searchParams.get('wingDetailId')) : null) ??
+    (searchParams?.get('wingId') ? Number(searchParams.get('wingId')) : null);
+
+  const resolvedWingName: string | null =
+    propWingName ??
+    searchParams?.get('wingName') ??
+    null;
 
   return (
     <div className="w-full flex flex-col bg-slate-100 min-h-screen text-zinc-900 select-none pb-16 font-sans">
@@ -184,6 +206,10 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
           wardId={draft.wardId ? Number(draft.wardId) : null}
           propertyNo={draft.propertyNo}
           partitionNo={draft.partitionNo}
+          societyDetailId={resolvedSocietyDetailId}
+          wingDetailsId={resolvedWingDetailId}
+          wingName={resolvedWingName}
+          isApartmentScreen={false}
           rateableData={initialRateableData}
           capitalData={initialCapitalData}
           dualMethodData={initialDualMethodData}
@@ -194,6 +220,7 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
           onTaxModeChange={handleTaxModeChange}
           buildingPermissionData={initialData?.buildingPermission ?? undefined}
           discountData={initialData?.discountDetails ?? undefined}
+          socialData={initialData?.socialDetails ?? undefined}
           oldDetailsData={initialData?.oldDetails ?? undefined}
           oldFloorTableData={initialData?.oldFloorTableData ?? []}
           oldTaxesData={initialData?.oldTaxesData ?? null}

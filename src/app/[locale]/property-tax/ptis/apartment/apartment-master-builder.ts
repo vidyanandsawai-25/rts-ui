@@ -19,71 +19,25 @@ export interface BuildMasterDataParams {
   initialApartmentTaxDetails?: unknown;
 }
 
+function isSocietyPhoto(code?: string, name?: string): boolean {
+  const c = (code || '').toUpperCase();
+  const n = (name || '').toUpperCase();
+  return c.includes('SOCIETY') || n.includes('SOCIETY') || c.includes('BUILDING') || n.includes('BUILDING');
+}
+
 function resolveSocietyPhoto(pageData: PtisPageData): { guid?: string; url?: string } {
   const { initialPhotos, initialPhotoSlots } = pageData;
+  const photoList = (initialPhotos as Array<{ photoTypeCode?: string; photoTypeName?: string; documentGuid?: string | number; viewUrl?: string }> | undefined) || [];
+  const slotList = (initialPhotoSlots as Array<{ hasPhoto?: boolean; photoTypeCode?: string; photoTypeName?: string; documentGuid?: string | number; viewUrl?: string }> | undefined) || [];
 
-  const isSocietyPlace = (code?: string, name?: string) => {
-    const cUpper = code?.toUpperCase() || '';
-    const nLower = name?.toLowerCase() || '';
-    if (
-      cUpper.includes('BOARD') ||
-      nLower.includes('board') ||
-      cUpper.includes('SIGN') ||
-      nLower.includes('sign') ||
-      cUpper.includes('WING') ||
-      nLower.includes('wing')
-    ) {
-      return false;
-    }
-    return (
-      cUpper === 'SOCIETY_PLACE' ||
-      cUpper === 'SOCIETY_PLACE_PHOTO' ||
-      nLower.includes('society place') ||
-      cUpper === 'SOCIETY' ||
-      cUpper === 'SOCIETY_PHOTO' ||
-      cUpper === 'SOCIETY_BUILDING' ||
-      nLower === 'society photo'
-    );
-  };
+  const societyPhoto =
+    photoList.find((p) => isSocietyPhoto(p.photoTypeCode, p.photoTypeName)) ||
+    slotList.find((s) => Boolean(s.hasPhoto) && isSocietyPhoto(s.photoTypeCode, s.photoTypeName)) ||
+    photoList[0] ||
+    slotList.find((s) => Boolean(s.hasPhoto));
 
-  const societyPhotoObj =
-    initialPhotos?.find(
-      (p: { photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
-        p.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE' ||
-        p.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE_PHOTO' ||
-        p.photoTypeName?.toLowerCase().includes('society place')
-    ) ||
-    initialPhotos?.find(
-      (p: { photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
-        isSocietyPlace(p.photoTypeCode, p.photoTypeName) || p.photoTypeId === 5
-    );
-
-  let guid = societyPhotoObj?.documentGuid ? String(societyPhotoObj.documentGuid) : undefined;
-  let url = guid ? getViewDocumentUrl(guid) : (societyPhotoObj?.viewUrl || undefined);
-
-  if (!guid && !url) {
-    const slotObj =
-      initialPhotoSlots?.find(
-        (s: { hasPhoto?: boolean; photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
-          Boolean(s.hasPhoto) &&
-          (s.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE' ||
-            s.photoTypeCode?.toUpperCase() === 'SOCIETY_PLACE_PHOTO' ||
-            s.photoTypeName?.toLowerCase().includes('society place'))
-      ) ||
-      initialPhotoSlots?.find(
-        (s: { hasPhoto?: boolean; photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
-          Boolean(s.hasPhoto) && isSocietyPlace(s.photoTypeCode, s.photoTypeName)
-      );
-
-    if (slotObj) {
-      if (slotObj.documentGuid) {
-        guid = String(slotObj.documentGuid);
-        url = getViewDocumentUrl(String(slotObj.documentGuid));
-      } else if (slotObj.viewUrl) {
-        url = slotObj.viewUrl;
-      }
-    }
-  }
+  const guid = societyPhoto?.documentGuid ? String(societyPhoto.documentGuid) : undefined;
+  const url = guid ? getViewDocumentUrl(guid) : societyPhoto?.viewUrl || undefined;
   return { guid, url };
 }
 
@@ -102,6 +56,9 @@ export function buildInitialPropertyMasterData(
   const firstWingRaw = rawData?.wings?.[0] as unknown as Record<string, unknown> | undefined;
 
   const { guid: photoGuid, url: photoUrl } = resolveSocietyPhoto(pageData);
+  const hasPhotosList = Array.isArray(pageData.initialPhotos) || Array.isArray(pageData.initialPhotoSlots);
+  const effectivePhotoGuid = photoGuid || (!hasPhotosList ? baseData?.societyBuildingPhotoGuid : undefined);
+  const effectivePhotoUrl = photoUrl || (!hasPhotosList ? baseData?.imageUrl : undefined);
 
   const effectiveWardNo = (baseData?.wardNo && baseData.wardNo !== '-')
     ? baseData.wardNo
@@ -210,8 +167,8 @@ export function buildInitialPropertyMasterData(
     oldBuiltUpAreaFtMtr: baseData?.oldBuiltUpAreaFtMtr,
     totalFloors: effectiveTotalFloors,
     totalPropertiesResCommAmen: effectiveTotalProperties,
-    societyBuildingPhotoGuid: baseData?.societyBuildingPhotoGuid || photoGuid,
-    imageUrl: baseData?.imageUrl || photoUrl,
+    societyBuildingPhotoGuid: effectivePhotoGuid,
+    imageUrl: effectivePhotoUrl,
     propertyDescriptionRegional: effectiveDescRegional,
     latitude: baseData?.latitude ?? (rawSoc?.latitude as string | number | null | undefined) ?? pageData?.latitude,
     longitude: baseData?.longitude ?? (rawSoc?.longitude as string | number | null | undefined) ?? pageData?.longitude,

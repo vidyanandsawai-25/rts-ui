@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AlertCircle, Trash2 } from "lucide-react";
+import { AlertCircle, Trash2, Info } from "lucide-react";
 import { Label, TextArea, SaveButton } from "@/components/common";
 import { DiscountAttributeState } from "@/types/discount.types";
 import { DocumentAttachment } from "../building/DocumentAttachment";
@@ -19,6 +19,7 @@ interface DiscountDetailPaneProps {
     isSaving?: boolean;
     hasChanges?: boolean;
     onSave?: () => void;
+    isDeleteDisabled?: boolean;
     t: {
         (key: string, values?: Record<string, string | number | Date>): string;
         has?: (key: string) => boolean;
@@ -35,6 +36,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     isSaving = false,
     hasChanges = false,
     onSave,
+    isDeleteDisabled = false,
     t,
 }) => {
     const { confirm } = useConfirm();
@@ -174,11 +176,11 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
 
     return (
         <div
-            className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
+            className={`flex flex-col flex-1 h-full min-h-0 border rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative ${
                 isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
             }`}
         >
-            <div className="space-y-5 overflow-y-auto pr-1">
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1">
                 {isDisabled && (
                     <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-amber-50 border border-amber-200 rounded-lg">
                         <AlertCircle size={16} className="text-amber-600 flex-shrink-0" />
@@ -187,11 +189,27 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         </span>
                     </div>
                 )}
-                <div className="pb-3 border-b border-blue-50">
-                    <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
+                {data.isInherited && (
+                    <div className={`flex items-center gap-2 px-3 py-2 mb-2 rounded-lg border ${
+                        data.isOverridden
+                            ? "bg-amber-50 border-amber-200 text-amber-800"
+                            : "bg-indigo-50 border-indigo-200 text-indigo-800"
+                    }`}>
+                        <Info size={16} className={data.isOverridden ? "text-amber-600 shrink-0" : "text-indigo-600 shrink-0"} />
+                        <span className="text-xs font-semibold">
+                            {data.isOverridden
+                                ? (t("discount.overridePendingNote") || "You have modified this inherited attribute. Saving will create an override record exclusively for this level.")
+                                : ((data.inheritedFrom || '').toUpperCase() === 'APARTMENT' || (data.inheritedFrom || '').toUpperCase() === 'SOCIETY' || (data.entityType || '').toUpperCase() === 'S')
+                                    ? (t("discount.inheritedFromApartmentNote") || "This discount is inherited from Apartment level. Modifying details or toggling it off will create an override.")
+                                    : (t("discount.inheritedFromWingNote") || "This discount is inherited from Wing level. Modifying details or toggling it off will create an override.")}
+                        </span>
+                    </div>
+                )}
+                <div className="pb-2 border-b border-blue-50">
+                    <span className="text-[11px] font-bold tracking-wider text-blue-500 uppercase block mb-0.5">
                         {t("discount.editingDiscount") || "Discount Details"}
                     </span>
-                    <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
+                    <h4 className="text-base font-bold text-blue-900 leading-tight">{displayName}</h4>
                 </div>
 
                 {showValueInput && (
@@ -206,7 +224,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     />
                 )}
 
-                <div className="space-y-1.5 w-full">
+                <div className="space-y-1 w-full">
                     <Label className="text-sm font-bold text-blue-800">
                         {t("discount.uploadDocument") || "Document Attachment"}
                         {data.isDocumentRequired === true && <span className="text-red-500 ml-0.5">*</span>}
@@ -228,7 +246,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     />
                 </div>
 
-                <div className="space-y-1.5 w-full">
+                <div className="space-y-1 w-full">
                     <div className="flex items-center justify-between">
                         <Label className="text-sm font-bold text-blue-800">
                             {hasRemark ? t("discount.remark") : "Remark"}
@@ -266,7 +284,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                 </div>
             </div>
 
-            <div className="pt-2.5 border-t border-blue-50 mt-3 flex items-center justify-between gap-4">
+            <div className="pt-2 border-t border-blue-100 mt-1 flex items-center justify-between gap-2 shrink-0 bg-white z-10">
                 <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
                     <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
@@ -274,10 +292,10 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                    {onDeleteDiscount && isDiscountFilled && isUpdateCase && !isDisabled && (
+                    {onDeleteDiscount && isDiscountFilled && isUpdateCase && !isDisabled && !isDeleteDisabled && (
                         <button
                             type="button"
-                            disabled={isDisabled || isSaving}
+                            disabled={isDisabled || isSaving || isDeleteDisabled}
                             onClick={handleDeleteDiscountWithConfirm}
                             className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
                         >

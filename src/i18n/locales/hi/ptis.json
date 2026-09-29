@@ -4,6 +4,7 @@
   },
   "title": "संपत्ति कर मूल्यांकन",
   "subtitle": "संपत्ति की जानकारी का व्यापक प्रबंधन करें",
+  "partitionNo": "विभाजन क्र.",
   "media": {
     "checkingDetails": "संपत्ति के विवरण की जांच हो रही है...",
     "preparingDrawingTool": "ड्राइंग टूल तैयार किया जा रहा है...",
@@ -252,7 +253,8 @@
     "societyDetails": "सोसायटी विवरण",
     "buildingPermission": "भवन अनुमति",
     "discountData": "छूट और सामाजिक डेटा",
-    "discount": "सवलत डेटा",
+    "all": "सभी डेटा",
+    "discount": "छूट डेटा",
     "social": "सामाजिक डेटा",
     "oldDetails": "पुराने विवरण",
     "rateable": "कर निर्धार्य मूल्य",

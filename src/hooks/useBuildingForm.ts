@@ -448,7 +448,7 @@ export const useBuildingForm = (
             const { isValid, errors, incompleteCertificates: invalidCerts, fieldErrors: fErrors } = validateBuildingForm(
                 buildingPermission,
                 (key, params) => {
-                    if (key.startsWith("building.")) {
+                    if (key.startsWith("building.") || key.startsWith("common.")) {
                         return t(key, params);
                     }
                     return t(`common.${key}`, params);
@@ -735,7 +735,7 @@ export const useBuildingForm = (
             }
 
             // Clear local state and disable toggle
-            handleFileDelete(certificateTypeId);
+            handleFileDelete(certificateTypeId, { silent: true });
             handleInputChange(certificateTypeId, 'number', '');
             handleInputChange(certificateTypeId, 'date', '');
             handleToggleEnabled(certificateTypeId, false);
@@ -744,16 +744,19 @@ export const useBuildingForm = (
             toast.success(t("building.deleteSuccess") || "Certificate and data deleted successfully!");
 
             if (isSavedOnBackend) {
-                // Reload certificates to sync state
+                // Reload certificates and floors to sync state in parallel
                 const reloadScope = activeScope === "Floor" && activeFloorId !== null ? activeFloorId : undefined;
-                const reloadResponse = await getBuildingPermissionsAction(propertyId, reloadScope);
+                
+                const [reloadResponse, floorRes] = await Promise.all([
+                    getBuildingPermissionsAction(propertyId, reloadScope),
+                    getFloorCertificatesAction(propertyId)
+                ]);
+
                 if (reloadResponse.success && reloadResponse.data) {
                     const updatedState = mapApiToBuildingState(reloadResponse.data);
                     markCurrentStateAsSaved(updatedState);
                 }
 
-                // Reload floors
-                const floorRes = await getFloorCertificatesAction(propertyId);
                 if (floorRes.success && floorRes.data) {
                     setFloors(getCombinedFloors(floorRes.data));
                 }

@@ -486,6 +486,7 @@ export interface PtisInitialData {
   showOldTaxInfo?: boolean;
   showOldMapInfo?: boolean;
   discountDetails?: DiscountData;
+  socialDetails?: DiscountData;
   tabHeaderInfo?: TabHeaderInfoData | null;
   mappedPropertiesData?: MappedPropertyItem[];
 }

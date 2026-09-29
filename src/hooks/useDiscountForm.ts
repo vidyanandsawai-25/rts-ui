@@ -36,9 +36,9 @@ export const useDiscountForm = (
     const params = useParams();
     const locale = params.locale as string;
     const router = useRouter();
-    const [discountData, setDiscountData] = useState<DiscountState>(() => mapApiToDiscountState(initialDiscountData, masterAttributes));
+    const [discountData, setDiscountData] = useState<DiscountState>(() => mapApiToDiscountState(initialDiscountData, masterAttributes, options?.level));
 
-    const initialMappedState = useMemo(() => mapApiToDiscountState(initialDiscountData, masterAttributes), [initialDiscountData, masterAttributes]);
+    const initialMappedState = useMemo(() => mapApiToDiscountState(initialDiscountData, masterAttributes, options?.level), [initialDiscountData, masterAttributes, options?.level]);
 
     const hasChanges = useMemo(() => {
         return hasDiscountChangesComparedToInitial(discountData, initialMappedState);
@@ -74,12 +74,14 @@ export const useDiscountForm = (
             const item = prev[id];
             if (!item) return prev;
             const isBitType = item.dataType?.toUpperCase() === "BIT";
+            const isOverridden = item.isInherited ? true : item.isOverridden;
             return {
                 ...prev,
                 [id]: {
                     ...item,
                     enabled: checked,
-                    bitValue: isBitType ? checked : item.bitValue
+                    bitValue: isBitType ? checked : item.bitValue,
+                    isOverridden
                 }
             };
         });
@@ -87,7 +89,19 @@ export const useDiscountForm = (
     }, [clearError]);
 
     const handleInputChange = useCallback((id: number, field: "intValue" | "decimalValue" | "textValue" | "dateValue" | "remark", value: string) => {
-        setDiscountData((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
+        setDiscountData((prev) => {
+            const item = prev[id];
+            if (!item) return prev;
+            const isOverridden = item.isInherited ? true : item.isOverridden;
+            return {
+                ...prev,
+                [id]: {
+                    ...item,
+                    [field]: value,
+                    isOverridden
+                }
+            };
+        });
         clearError(id);
     }, [clearError]);
 
@@ -99,7 +113,18 @@ export const useDiscountForm = (
         setDiscountData(prev => {
             const item = prev[id];
             if (!item) return prev;
-            return { ...prev, [id]: { ...item, pendingFile: file, documentGuid: "pending", fileName: file.name, documentUrl: undefined } };
+            const isOverridden = item.isInherited ? true : item.isOverridden;
+            return {
+                ...prev,
+                [id]: {
+                    ...item,
+                    pendingFile: file,
+                    documentGuid: "pending",
+                    fileName: file.name,
+                    documentUrl: undefined,
+                    isOverridden
+                }
+            };
         });
         clearError(id);
     }, [t, clearError]);
@@ -108,6 +133,7 @@ export const useDiscountForm = (
         setDiscountData(prev => {
             const item = prev[id];
             if (!item) return prev;
+            const isOverridden = item.isInherited ? true : item.isOverridden;
             return {
                 ...prev,
                 [id]: {
@@ -117,6 +143,7 @@ export const useDiscountForm = (
                     documentBindingId: null,
                     documentUrl: null,
                     fileName: undefined,
+                    isOverridden
                 }
             };
         });
@@ -143,17 +170,20 @@ export const useDiscountForm = (
                 };
 
                 if (currentLevel === 'Apartment') {
-                    // Apartment Level: societyDetailId, socialAttributeId, documentBindingId (propertyId not passed or 0/null)
-                    if (socId !== undefined) hierarchyParams.societyDetailId = socId;
+                    // Apartment Level: societyDetailsId, socialAttributeId, documentBindingId (propertyId not passed or 0/null)
+                    hierarchyParams.entityType = 'S';
+                    if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
                     if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
                 } else if (currentLevel === 'Wing') {
                     // Wing Level: societyDetailsId, wingDetailId, socialAttributeId, documentBindingId (propertyId not passed or 0/null)
+                    hierarchyParams.entityType = 'W';
                     if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
                     if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
                     if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
                 } else if (currentLevel === 'Unit') {
-                    // Unit Level: 2 cases
-                    if (socId !== undefined) hierarchyParams.societyDetailId = socId;
+                    // Unit Level
+                    hierarchyParams.entityType = 'P';
+                    if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
                     if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
 
                     const selectedIds = options?.propertyIds
@@ -165,11 +195,11 @@ export const useDiscountForm = (
                         : false;
 
                     if (isAllUnits) {
-                        // Case 2 (All units): socialAttributeId, societyDetailId, wingDetailId, documentBindingId, propertyIds
+                        // Case 2 (All units): socialAttributeId, societyDetailsId, wingDetailId, documentBindingId, propertyIds
                         if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
                         if (selectedIds.length > 0) hierarchyParams.propertyIds = selectedIds;
                     } else {
-                        // Case 1 (Specific units): societyDetailId, wingDetailId, socialAttributeId, propertyIds
+                        // Case 1 (Specific units): societyDetailsId, wingDetailId, socialAttributeId, propertyIds
                         if (selectedIds.length > 0) {
                             hierarchyParams.propertyIds = selectedIds;
                         } else if (propertyId && !isNaN(Number(propertyId))) {
@@ -177,6 +207,7 @@ export const useDiscountForm = (
                         }
                     }
                 } else {
+                    hierarchyParams.entityType = 'P';
                     if (propertyId && !isNaN(Number(propertyId))) {
                         hierarchyParams.propertyId = Number(propertyId);
                     }
@@ -254,6 +285,8 @@ export const useDiscountForm = (
             if (options?.wingDetailId) formData.append("wingDetailId", options.wingDetailId);
             if (options?.propertyIds) formData.append("propertyIds", options.propertyIds);
             if (options?.isSociety !== undefined) formData.append("isSociety", String(options.isSociety));
+            if (options?.selectedUnitCount !== undefined) formData.append("selectedUnitCount", String(options.selectedUnitCount));
+            if (options?.totalUnitCount !== undefined) formData.append("totalUnitCount", String(options.totalUnitCount));
 
             // Append pending files
             Object.values(discountData).forEach(item => {
@@ -264,7 +297,30 @@ export const useDiscountForm = (
 
             const response = await updateDiscountDetailsAction(locale, propertyId, formData);
             if (response.success) {
+                if (response.data) {
+                    const freshMapped = mapApiToDiscountState(response.data, masterAttributes, options?.level);
+                    setDiscountData(freshMapped);
+                    setPrevInitialDiscountData(response.data);
+                } else {
+                    // Fallback: clear pendingFile on all attributes and reset temporary 'pending' documentGuid
+                    setDiscountData(prev => {
+                        const next = { ...prev };
+                        Object.keys(next).forEach(k => {
+                            const id = Number(k);
+                            if (next[id]) {
+                                next[id] = {
+                                    ...next[id],
+                                    pendingFile: undefined,
+                                    documentGuid: next[id].documentGuid === "pending" ? null : next[id].documentGuid,
+                                };
+                            }
+                        });
+                        return next;
+                    });
+                }
+
                 toast.success(t("discount.saveSuccess") || "Discount details saved successfully!");
+                router.refresh();
                 return { success: true, isValid: true };
             }
             toast.error(response.error || t("discount.saveError") || "Failed to save");

@@ -13,7 +13,19 @@ import type { PropertySocialDetailsDto } from "@/types/property-social-details.t
 export const dynamic = 'force-dynamic';
 interface PageProps {
     params: Promise<{ locale: string; propertyId: string }>;
-    searchParams: Promise<{ view?: string; propertyCategory?: string; category?: string; societyDetailId?: string; societyId?: string; wingDetailId?: string | string[]; level?: string; socialAttributeId?: string; isWingWise?: string }>;
+    searchParams: Promise<{
+        view?: string;
+        propertyCategory?: string;
+        category?: string;
+        societyDetailId?: string;
+        societyId?: string;
+        wingDetailId?: string | string[];
+        level?: string;
+        socialAttributeId?: string;
+        isWingWise?: string;
+        unitPropertyId?: string;
+        propertyId?: string;
+    }>;
 }
 
 export default async function DiscountFormPage({ params, searchParams }: PageProps) {
@@ -56,7 +68,9 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
     let mappedWings: WingOption[] = [];
     let mappedUnits: UnitSelectionItem[] = [];
     let savedDetails: PropertySocialDetailsDto[] = [];
+    let allAppliedDetails: PropertySocialDetailsDto[] = [];
     let finalWingDetailId: number | null = null;
+    let targetUnitPropId: number | undefined;
     const level = sp.level || (isWingWise ? 'Wing' : 'Apartment');
 
     if (isSociety) {
@@ -65,7 +79,7 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
         const searchWingDetailId = Array.isArray(rawWingDetailId) ? rawWingDetailId[0] : rawWingDetailId;
         const parsedWingDetailId = searchWingDetailId ? Number(searchWingDetailId) : null;
 
-        const wingsResponse = await getDiscountWingsAction(propertyId);
+        const wingsResponse = await getDiscountWingsAction(propertyId, searchSocietyId ? Number(searchSocietyId) : undefined);
         mappedWings = wingsResponse?.success && Array.isArray(wingsResponse?.data) ? wingsResponse.data : [];
 
         if (!searchSocietyId && mappedWings.length > 0) {
@@ -80,49 +94,114 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
         if (!finalWingDetailId && mappedWings.length > 0) {
             finalWingDetailId = mappedWings[0].wingDetailId;
         }
-        const isDiscountTab = activeTab === 'discount';
-        const searchSocialAttributeId = sp.socialAttributeId ? Number(sp.socialAttributeId) : undefined;
 
-        const [masterRes, unitsResponse, savedDetailsResponse] = await Promise.all([
-            getSocialAttributeMasterAction(isDiscountTab),
-            getDiscountUnitsAction(propertyId, finalWingDetailId, 1, 10),
-            searchSocietyId
-                ? (level === 'Apartment'
-                    ? getPropertySocialDetailsByFiltersAction(searchSocialAttributeId, Number(searchSocietyId))
-                    : getPropertySocialDetailsByFiltersAction(searchSocialAttributeId, Number(searchSocietyId), finalWingDetailId || undefined))
-                : Promise.resolve({ success: true, data: [] })
+        targetUnitPropId = sp.unitPropertyId
+            ? Number(sp.unitPropertyId)
+            : (level === 'Unit' && sp.propertyId && sp.propertyId !== String(searchSocietyId) ? Number(sp.propertyId) : undefined);
+
+        const socIdNum = searchSocietyId ? Number(searchSocietyId) : undefined;
+
+        // Fetch master attributes, units, and hierarchical levels in parallel
+        const [masterRes, unitsResponse, apartmentDetailsRes, wingDetailsRes, unitDetailsRes] = await Promise.all([
+            getSocialAttributeMasterAction(),
+            getDiscountUnitsAction(propertyId, finalWingDetailId,1,1000),
+            socIdNum
+                ? getPropertySocialDetailsByFiltersAction(undefined, socIdNum)
+                : Promise.resolve({ success: true, data: [] as PropertySocialDetailsDto[] }),
+            (socIdNum && finalWingDetailId && (level === 'Wing' || level === 'Unit'))
+                ? getPropertySocialDetailsByFiltersAction(undefined, socIdNum, finalWingDetailId)
+                : Promise.resolve({ success: true, data: [] as PropertySocialDetailsDto[] }),
+            (socIdNum && targetUnitPropId && level === 'Unit')
+                ? getPropertySocialDetailsByFiltersAction(undefined, socIdNum, finalWingDetailId || undefined, targetUnitPropId)
+                : Promise.resolve({ success: true, data: [] as PropertySocialDetailsDto[] })
         ]);
+
         socialAttributeMaster = masterRes;
-
-        savedDetails = savedDetailsResponse?.success && Array.isArray(savedDetailsResponse.data)
-            ? savedDetailsResponse.data
-            : [];
-
         mappedUnits = unitsResponse?.success && unitsResponse?.data?.items && Array.isArray(unitsResponse.data.items) ? unitsResponse.data.items : [];
+
+        // Hierarchical top-down merge: Apartment -> Wing -> Unit
+        const mergedDetailsMap = new Map<number, PropertySocialDetailsDto>();
+
+        // 1. Apartment level attributes (baseline)
+        const apartmentItems = (apartmentDetailsRes?.success && Array.isArray(apartmentDetailsRes.data)) ? apartmentDetailsRes.data : [];
+        const wingItems = (wingDetailsRes?.success && Array.isArray(wingDetailsRes.data)) ? wingDetailsRes.data : [];
+        const unitItems = (unitDetailsRes?.success && Array.isArray(unitDetailsRes.data)) ? unitDetailsRes.data : [];
+
+        apartmentItems.forEach(item => {
+            mergedDetailsMap.set(item.socialAttributeId, {
+                ...item,
+                entityType: item.entityType || 'S',
+                inheritanceLevel: level === 'Apartment' ? 'Self' : 'Apartment',
+                inheritedFrom: level === 'Apartment' ? null : 'Apartment',
+            });
+        });
+
+        // 2. Wing level overrides (applied when level === 'Wing' or level === 'Unit')
+        if (level === 'Wing' || level === 'Unit') {
+            wingItems.forEach(item => {
+                const isWingEntity = item.entityType === 'W' || (item.wingDetailId && !item.propertyId);
+                if (isWingEntity) {
+                    mergedDetailsMap.set(item.socialAttributeId, {
+                        ...item,
+                        entityType: 'W',
+                        inheritanceLevel: level === 'Wing' ? 'Self' : 'Wing',
+                        inheritedFrom: level === 'Wing' ? null : 'Wing',
+                    });
+                }
+            });
+        }
+
+        // 3. Unit level overrides (applied when level === 'Unit')
+        if (level === 'Unit') {
+            unitItems.forEach(item => {
+                const isUnitEntity = item.entityType === 'P' || (item.propertyId && item.propertyId > 0);
+                if (isUnitEntity) {
+                    mergedDetailsMap.set(item.socialAttributeId, {
+                        ...item,
+                        entityType: 'P',
+                        inheritanceLevel: 'Self',
+                        inheritedFrom: null,
+                    });
+                }
+            });
+        }
+
+        savedDetails = Array.from(mergedDetailsMap.values());
+
+        const allAppliedMap = new Map<string, PropertySocialDetailsDto>();
+        [...apartmentItems, ...wingItems, ...unitItems].forEach(item => {
+            const key = item.id ? `id-${item.id}` : `${item.socialAttributeId}-${item.entityType}-${item.wingDetailId ?? '0'}-${item.propertyId ?? '0'}`;
+            allAppliedMap.set(key, item);
+        });
+        allAppliedDetails = Array.from(allAppliedMap.values());
 
         // dataType and the document/photo flags only exist on the master list.
         const masterById = new Map((masterRes.data || []).map(a => [a.id, a]));
 
-        // Filter saved details so discount tab gets discount attributes and social tab gets social attributes
-        const filteredSavedDetails = savedDetails.filter(item => {
+        // Filter saved details so discount tab strictly gets discount attributes and social tab strictly gets social attributes
+        const discountSavedDetails = savedDetails.filter(item => {
             const master = masterById.get(item.socialAttributeId);
-            if (!master) return true; // Keep if not in master list
-            return isDiscountTab ? master.isDiscountApplicable === true : master.isDiscountApplicable === false;
+            return master?.isDiscountApplicable === true;
         });
 
-        const mappedAttributes = filteredSavedDetails.map(item => {
+        const socialSavedDetails = savedDetails.filter(item => {
+            const master = masterById.get(item.socialAttributeId);
+            return master && master.isDiscountApplicable === false;
+        });
+
+        const mapToItem = (item: PropertySocialDetailsDto, isDiscount: boolean) => {
             const master = masterById.get(item.socialAttributeId);
             return {
                 id: item.socialAttributeId,
                 socialAttributeCode: item.socialAttributeCode || master?.socialAttributeCode || '',
-                socialAttributeName: item.socialAttributeName || master?.socialAttributeName || '',
+                socialAttributeName: item.socialAttributeName || master?.socialAttributeName || (item.socialAttributeCode ? item.socialAttributeCode : `Attribute #${item.socialAttributeId}`),
                 dataType: master?.dataType || 'BIT',
                 unit: master?.unit,
                 displayOrder: master?.displayOrder,
                 isPhotoRequired: master?.isPhotoRequired,
                 isDocumentRequired: master?.isDocumentRequired,
                 isActive: master?.isActive,
-                isDiscountApplicable: master?.isDiscountApplicable ?? isDiscountTab,
+                isDiscountApplicable: master?.isDiscountApplicable ?? isDiscount,
                 propertySocialDetailId: item.id,
                 bitValue: item.bitValue,
                 intValue: item.intValue,
@@ -131,88 +210,54 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
                 dateValue: item.dateValue,
                 documentBindingId: item.documentBindingId,
                 documentGuid: item.documentGuid,
+                documentUrl: item.documentUrl || (item.documentGuid ? `/api/documents/${item.documentGuid}/view` : undefined),
+                fileName: item.fileName,
                 photoGuid: item.photoGuid,
                 photoBindingId: item.photoBindingId,
-                remark: item.remark
+                remark: item.remark,
+                entityType: item.entityType,
+                inheritedFrom: item.inheritedFrom,
+                inheritanceLevel: item.inheritanceLevel,
             };
-        });
+        };
 
-        if (isDiscountTab) {
-            discountResponse = {
+        discountResponse = {
+            success: true,
+            data: {
+                propertyId: Number(propertyId),
+                discountAttributes: discountSavedDetails.map(item => mapToItem(item, true))
+            }
+        };
+
+        socialResponse = {
+            success: true,
+            data: {
                 success: true,
-                data: {
+                message: "Success",
+                items: {
                     propertyId: Number(propertyId),
-                    discountAttributes: mappedAttributes.map(attr => ({
-                        id: attr.id,
-                        socialAttributeCode: attr.socialAttributeCode,
-                        socialAttributeName: attr.socialAttributeName,
-                        dataType: attr.dataType,
-                        unit: attr.unit,
-                        displayOrder: attr.displayOrder,
-                        isDiscountApplicable: attr.isDiscountApplicable,
-                        propertySocialDetailId: attr.propertySocialDetailId,
-                        bitValue: attr.bitValue,
-                        intValue: attr.intValue,
-                        decimalValue: attr.decimalValue,
-                        textValue: attr.textValue,
-                        dateValue: attr.dateValue,
-                        documentBindingId: attr.documentBindingId,
-                        documentGuid: attr.documentGuid,
-                        remark: attr.remark,
-                        isPhotoRequired: attr.isPhotoRequired,
-                        isDocumentRequired: attr.isDocumentRequired,
-                        isActive: attr.isActive,
+                    societyDetailId: socIdNum,
+                    wingDetailId: finalWingDetailId,
+                    socialAttributes: socialSavedDetails.map(item => ({
+                        ...mapToItem(item, false),
+                        parentAttributeId: null,
+                        isRequiredWhenParentTrue: false,
+                        photoTypeId: null,
+                        children: []
                     }))
                 }
-            };
-        } else {
-            socialResponse = {
-                success: true,
-                data: {
-                    success: true,
-                    message: "Success",
-                    items: {
-                        propertyId: Number(propertyId),
-                        socialAttributes: mappedAttributes.map(attr => ({
-                            id: attr.id,
-                            socialAttributeCode: attr.socialAttributeCode,
-                            socialAttributeName: attr.socialAttributeName,
-                            dataType: attr.dataType,
-                            unit: attr.unit,
-                            displayOrder: attr.displayOrder,
-                            parentAttributeId: null,
-                            isRequiredWhenParentTrue: false,
-                            isDiscountApplicable: attr.isDiscountApplicable,
-                            propertySocialDetailId: attr.propertySocialDetailId,
-                            bitValue: attr.bitValue,
-                            intValue: attr.intValue,
-                            decimalValue: attr.decimalValue,
-                            textValue: attr.textValue,
-                            dateValue: attr.dateValue,
-                            documentBindingId: attr.documentBindingId,
-                            remark: attr.remark,
-                            photoTypeId: null,
-                            isPhotoRequired: attr.isPhotoRequired,
-                            isDocumentRequired: attr.isDocumentRequired,
-                            isActive: attr.isActive,
-                            documentGuid: attr.documentGuid,
-                            photoBindingId: attr.photoBindingId,
-                            photoGuid: attr.photoGuid,
-                            children: []
-                        }))
-                    }
-                }
-            };
-        }
+            }
+        };
     } else {
-        // For individuals, only call the details API. The details API already provides the complete schema.
-        const [discountRes, socialRes] = await Promise.all([
-            activeTab === "discount" ? getDiscountDetailsAction(propertyId) : Promise.resolve({ data: null }),
-            activeTab === "social" ? getPropertySocialInfoAction(propertyId) : Promise.resolve({ data: { items: null } })
+        // For individuals, fetch details and master attributes in parallel
+        const [discountRes, socialRes, masterRes] = await Promise.all([
+            getDiscountDetailsAction(propertyId),
+            getPropertySocialInfoAction(propertyId),
+            getSocialAttributeMasterAction()
         ]);
-        discountResponse = discountRes as typeof discountResponse;
-        socialResponse = socialRes as typeof socialResponse;
-        socialAttributeMaster = { success: true, data: [] };
+        discountResponse = discountRes as unknown as typeof discountResponse;
+        socialResponse = socialRes as unknown as typeof socialResponse;
+        socialAttributeMaster = masterRes;
     }
 
     const initialDiscountData = discountResponse.data ?? null;
@@ -225,7 +270,7 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
 
     return (
         <DiscountFormview
-            key={`${propertyId}-${activeTab}-${level}-${finalWingDetailId ?? 'na'}`}
+            key={`${propertyId}-${activeTab}-${level}-${finalWingDetailId ?? 'na'}-${targetUnitPropId ?? 'all'}`}
             initialDiscountData={initialDiscountData}
             initialSocialData={initialSocialData}
             propertyId={propertyId}
@@ -235,7 +280,7 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
             socialMasterAttributes={socialMasterAttributes}
             wings={mappedWings}
             units={mappedUnits}
-            savedPropertyDetails={savedDetails}
+            savedPropertyDetails={allAppliedDetails.length > 0 ? allAppliedDetails : savedDetails}
         />
     );
 }

@@ -308,7 +308,10 @@ export const ptisDetailsService = {
         .filter((item) => item.certificates.length > 0);
 
       if (!propertyData && !floorData) {
-        return { success: false, error: 'Building permission details not found' };
+        return {
+          success: true,
+          data: { items: [] },
+        };
       }
 
       return {

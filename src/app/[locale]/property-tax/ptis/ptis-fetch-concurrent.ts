@@ -7,6 +7,7 @@ import {
   fetchOldFloorDetailsAction,
   fetchOldTaxesDetailsAction,
   fetchDiscountDetailsOnlyAction,
+  fetchSocialDetailsOnlyAction,
   fetchBuildingPermissionOnlyAction,
   fetchPropertyRuleLogsAction,
   fetchMappedPropertiesAction,
@@ -144,9 +145,15 @@ export async function fetchPropertyDetailsConcurrently(
     ? fetchOldTaxesDetailsAction(propertyId)
     : Promise.resolve(null);
 
-  const discountPromise = isDiscountTab
-    ? fetchDiscountDetailsOnlyAction(propertyId)
-    : Promise.resolve(null);
+  const discountPromise =
+    isDiscountTab || valuationTab === 'apartment' || activeTab === 'discount'
+      ? fetchDiscountDetailsOnlyAction(propertyId)
+      : Promise.resolve(null);
+
+  const socialPromise =
+    isDiscountTab || valuationTab === 'apartment' || activeTab === 'discount'
+      ? fetchSocialDetailsOnlyAction(propertyId)
+      : Promise.resolve(null);
 
   const headerInfoPromise = propertyId
     ? fetchTabHeaderInfoAction(propertyId).catch(() => null)
@@ -193,6 +200,7 @@ export async function fetchPropertyDetailsConcurrently(
     oldFloorPromise,
     oldTaxesPromise,
     discountPromise,
+    socialPromise,
     photoSlotsPromise,
     photosPromise,
     dualMethodPromise,

@@ -43,8 +43,14 @@ function getSafeString(obj: unknown, key: string): string | undefined {
   return undefined;
 }
 
+function isPropertyFrontPhoto(code?: string, name?: string): boolean {
+  const c = (code || '').toUpperCase();
+  const n = (name || '').toUpperCase();
+  return c.includes('FRONT') || c.includes('PROPERTY') || n.includes('FRONT') || n.includes('PROPERTY');
+}
+
 /**
- * Resolves the primary photo document GUID and URL from PTIS page data.
+ * Resolves the primary photo document GUID and URL dynamically from PTIS page data.
  */
 function resolvePropertyPhoto(pageData: PtisPageData): { guid?: string; url?: string } {
   const { initialPhotos, initialPhotoSlots } = pageData;
@@ -52,43 +58,14 @@ function resolvePropertyPhoto(pageData: PtisPageData): { guid?: string; url?: st
   const slotList = (initialPhotoSlots as PhotoItemLike[] | undefined) || [];
 
   const photoObj =
-    photoList.find(
-      (p) =>
-        p.photoTypeCode?.toUpperCase() === 'PROPERTY_PHOTO' ||
-        p.photoTypeCode?.toUpperCase() === 'FRONT' ||
-        p.photoTypeCode?.toUpperCase() === 'BUILDING_PHOTO' ||
-        p.photoTypeName?.toLowerCase().includes('property') ||
-        p.photoTypeName?.toLowerCase().includes('front')
-    ) ||
-    photoList.find(
-      (p) =>
-        p.photoTypeCode?.toUpperCase() === 'SOCIETY' ||
-        p.photoTypeName?.toLowerCase().includes('society')
-    ) ||
-    photoList[0];
+    photoList.find((p) => isPropertyFrontPhoto(p.photoTypeCode, p.photoTypeName)) ||
+    slotList.find((s) => Boolean(s.hasPhoto) && isPropertyFrontPhoto(s.photoTypeCode, s.photoTypeName)) ||
+    photoList[0] ||
+    slotList.find((s) => Boolean(s.hasPhoto));
 
-  let guid = photoObj?.documentGuid ? String(photoObj.documentGuid) : undefined;
-  let url = guid ? getViewDocumentUrl(guid) : photoObj?.viewUrl || undefined;
+  const guid = photoObj?.documentGuid ? String(photoObj.documentGuid) : undefined;
+  const url = guid ? getViewDocumentUrl(guid) : photoObj?.viewUrl || undefined;
 
-  if (!guid && !url) {
-    const slotObj =
-      slotList.find(
-        (s) =>
-          s.hasPhoto &&
-          (s.photoTypeCode?.toUpperCase().includes('PROPERTY') ||
-            s.photoTypeName?.toLowerCase().includes('property') ||
-            s.photoTypeCode?.toUpperCase().includes('FRONT'))
-      ) || slotList.find((s) => s.hasPhoto);
-
-    if (slotObj) {
-      if (slotObj.documentGuid) {
-        guid = String(slotObj.documentGuid);
-        url = getViewDocumentUrl(String(slotObj.documentGuid));
-      } else if (slotObj.viewUrl) {
-        url = slotObj.viewUrl;
-      }
-    }
-  }
   return { guid, url };
 }
 
@@ -316,6 +293,10 @@ export function buildInitialIndividualMasterData(
 
   const perf = baseData?.performance || DEFAULT_PERFORMANCE;
 
+  const hasPhotosList = Array.isArray(pageData.initialPhotos) || Array.isArray(pageData.initialPhotoSlots);
+  const effectivePhotoGuid = photoGuid || (!hasPhotosList ? baseData?.societyBuildingPhotoGuid : undefined);
+  const effectivePhotoUrl = photoUrl || (!hasPhotosList ? baseData?.imageUrl : undefined);
+
   return {
     ...(baseData || {}),
     propertyId: resolvedPropertyId ?? baseData?.propertyId ?? undefined,
@@ -347,8 +328,8 @@ export function buildInitialIndividualMasterData(
     plotAreaFtMtr: effectivePlotArea,
     carpetAreaFtMtr: effectiveCarpetArea,
     builtUpAreaFtMtr: effectiveBuiltUpArea,
-    societyBuildingPhotoGuid: baseData?.societyBuildingPhotoGuid || photoGuid,
-    imageUrl: baseData?.imageUrl || photoUrl,
+    societyBuildingPhotoGuid: effectivePhotoGuid,
+    imageUrl: effectivePhotoUrl,
     propertyDescription: effectiveDescRegional,
     propertyDescriptionRegional: effectiveDescRegional,
     performance: perf,

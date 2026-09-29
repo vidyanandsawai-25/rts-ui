@@ -66,7 +66,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     criticalError, resolvedPropertyId, resolvedWardId,
     propertyDetailsResult, rawPropertyData, propertyOptions, wardOptions,
     kycDetails, societyDetails, buildingPermission, oldDetails, oldFloorTableData,
-    oldTaxesData, discountDetails, apartmentData, rateableResult, capitalResult, comparisonResult,
+    oldTaxesData, discountDetails, socialDetails, apartmentData, rateableResult, capitalResult, comparisonResult,
     dualSectionData, initialPhotoSlots, initialPhotos, showFloorParam,
     showOldTaxParam, showMapDetailsParam, showDetailsParam, rateableTaxDetails, capitalTaxDetails,
     rateableTaxError, capitalTaxError, activeTab, hasAppliedRules,
@@ -88,7 +88,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     kycDetails, societyDetails, buildingPermission, wardOptions,
     propertyOptions, rawPropertyData, oldDetails, oldFloorTableData,
     showOldFloorInfo: showFloorParam, oldTaxesData,
-    showOldTaxInfo: showOldTaxParam, showOldMapInfo: showMapDetailsParam, discountDetails, tabHeaderInfo,
+    showOldTaxInfo: showOldTaxParam, showOldMapInfo: showMapDetailsParam, discountDetails, socialDetails, tabHeaderInfo,
     mappedPropertiesData,
   };
   const footerActions = buildFooterActions();

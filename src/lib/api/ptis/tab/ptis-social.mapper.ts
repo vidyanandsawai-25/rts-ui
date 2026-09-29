@@ -74,6 +74,31 @@ export const ptisSocialMapper = {
         documentGuid: item.documentGuid ? String(item.documentGuid) : null,
         percentage: item.percentage != null ? Number(item.percentage) : null,
         amount: item.amount != null ? Number(item.amount) : null,
+        level: item.level
+          ? String(item.level)
+          : item.Level
+            ? String(item.Level)
+            : item.levelName
+              ? String(item.levelName)
+              : item.wingDetailId || item.WingDetailId
+                ? 'Wing'
+                : item.societyDetailId || item.SocietyDetailId
+                  ? 'Apartment'
+                  : undefined,
+        wingDetailId: item.wingDetailId != null
+          ? Number(item.wingDetailId)
+          : item.WingDetailId != null
+            ? Number(item.WingDetailId)
+            : null,
+        societyDetailId: item.societyDetailId != null
+          ? Number(item.societyDetailId)
+          : item.SocietyDetailId != null
+            ? Number(item.SocietyDetailId)
+            : null,
+        wingName: item.wingName ? String(item.wingName) : item.WingName ? String(item.WingName) : null,
+        unitNo: item.unitNo ? String(item.unitNo) : item.UnitNo ? String(item.UnitNo) : null,
+        partitionNo: item.partitionNo ? String(item.partitionNo) : item.PartitionNo ? String(item.PartitionNo) : null,
+        applicableToLabel: item.applicableToLabel ? String(item.applicableToLabel) : undefined,
       })),
     };
   },
@@ -94,6 +119,8 @@ export const ptisSocialMapper = {
       isActive?: boolean;
       isDiscountApplicable?: boolean;
       documentGuid?: string | null;
+      percentage?: number | string | null;
+      amount?: number | string | null;
       children?: RawSocialAttribute[];
     }
 
@@ -144,6 +171,25 @@ export const ptisSocialMapper = {
           updatedDate: null,
           isDiscountApplicable: attr.isDiscountApplicable === true,
           documentGuid: attr.documentGuid ? String(attr.documentGuid) : null,
+          percentage: attr.percentage != null ? Number(attr.percentage) : null,
+          amount: attr.amount != null ? Number(attr.amount) : null,
+          level: (attr as Record<string, unknown>).level
+            ? String((attr as Record<string, unknown>).level)
+            : (attr as Record<string, unknown>).wingDetailId
+              ? 'Wing'
+              : (attr as Record<string, unknown>).societyDetailId
+                ? 'Apartment'
+                : undefined,
+          wingDetailId: (attr as Record<string, unknown>).wingDetailId != null
+            ? Number((attr as Record<string, unknown>).wingDetailId)
+            : null,
+          societyDetailId: (attr as Record<string, unknown>).societyDetailId != null
+            ? Number((attr as Record<string, unknown>).societyDetailId)
+            : null,
+          wingName: (attr as Record<string, unknown>).wingName ? String((attr as Record<string, unknown>).wingName) : null,
+          unitNo: (attr as Record<string, unknown>).unitNo ? String((attr as Record<string, unknown>).unitNo) : null,
+          partitionNo: (attr as Record<string, unknown>).partitionNo ? String((attr as Record<string, unknown>).partitionNo) : (attr as Record<string, unknown>).PartitionNo ? String((attr as Record<string, unknown>).PartitionNo) : null,
+          applicableToLabel: (attr as Record<string, unknown>).applicableToLabel ? String((attr as Record<string, unknown>).applicableToLabel) : undefined,
         });
         if (Array.isArray(attr.children) && attr.children.length > 0) {
           traverse(attr.children);

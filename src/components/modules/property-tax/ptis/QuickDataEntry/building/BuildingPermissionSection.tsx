@@ -261,10 +261,169 @@ export function BuildingPermissionSection({
   };
 
   const handleToggleEnabled = (typeId: number, checked: boolean) => {
-    setEnabledStateMap((prev) => ({ ...prev, [typeId]: checked }));
     if (checked) {
-      setSelectedTypeId(typeId);
+      setEnabledStateMap((prev) => ({ ...prev, [typeId]: checked }));
+      handleSelectCertificate(typeId);
+      return;
     }
+
+    let hasData = false;
+    let docGuid: string | undefined;
+    let certId: number | undefined;
+    let certNum = '';
+    let fileName = '';
+    let issueDt = '';
+
+    const isSelected = selectedTypeId === typeId;
+
+    if (level === 'Unit' && selectedUnitIds.size > 0) {
+      const firstSelectedId = Array.from(selectedUnitIds)[0];
+      const matchedUnit = filteredUnits.find(u => u.propertyDetailsId === firstSelectedId) || units.find(u => u.propertyDetailsId === firstSelectedId);
+      if (matchedUnit) {
+        const stat = resolveUnitCertificateStatus(gridItems, typeId, matchedUnit, societyId ? Number(societyId) : undefined);
+        if (stat.certificate?.propertyCertificateId || stat.certificate?.documentGuid || (isSelected && (attachedFiles.length > 0 || certificateNumber || certificateDate))) {
+          hasData = true;
+          docGuid = stat.certificate?.documentGuid || undefined;
+          certId = stat.certificate?.propertyCertificateId || undefined;
+          certNum = isSelected && certificateNumber ? certificateNumber : (stat.certificate?.certificateNumber || '');
+          fileName = isSelected && attachedFiles.length > 0 ? attachedFiles[0].name : (stat.certificate?.fileName || '');
+          issueDt = isSelected && certificateDate ? certificateDate : (stat.certificate?.certificateDate || '');
+        }
+      }
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let recs: any[] = [];
+      if (level === 'Apartment') {
+        recs = gridItems?.societyCertificates || [];
+      } else if (level === 'Wing') {
+        recs = (gridItems?.wingCertificates || []).filter(r => !selectedWingDetailId || r.wingDetailId === selectedWingDetailId);
+      } else {
+        recs = gridItems?.unitCertificates || [];
+      }
+      const gridMatch = recs?.find((r) => r.certificateTypeId === typeId);
+      
+      const hasInitialData = isSelected && (level === 'Apartment' || isApartmentIndividual) && !!(
+        (initialData?.documentGuid && initialData.documentGuid !== 'null' && initialData.documentGuid !== 'undefined') ||
+        (initialData?.number && initialData.number.trim() !== '') ||
+        (initialData?.date && initialData.date.trim() !== '')
+      );
+      const hasPendingFormData = isSelected && (attachedFiles.length > 0 || certificateNumber || certificateDate);
+
+      if (gridMatch?.propertyCertificateId || gridMatch?.documentGuid || hasInitialData || hasPendingFormData) {
+        hasData = true;
+        docGuid = gridMatch?.documentGuid || ((level === 'Apartment' || isApartmentIndividual) && isSelected ? initialData?.documentGuid : undefined) || undefined;
+        certId = gridMatch?.propertyCertificateId || ((level === 'Apartment' || isApartmentIndividual) && isSelected ? initialData?.propertyCertificateId : undefined) || undefined;
+        certNum = isSelected && certificateNumber ? certificateNumber : (gridMatch?.certificateNumber || ((level === 'Apartment' || isApartmentIndividual) && isSelected ? initialData?.number : '') || '');
+        fileName = isSelected && attachedFiles.length > 0 ? attachedFiles[0].name : (gridMatch?.fileName || ((level === 'Apartment' || isApartmentIndividual) && isSelected ? initialData?.fileName : '') || '');
+        issueDt = isSelected && certificateDate ? certificateDate : (gridMatch?.certificateDate || ((level === 'Apartment' || isApartmentIndividual) && isSelected ? initialData?.date : '') || '');
+      }
+    }
+
+    if (!hasData) {
+      setEnabledStateMap((prev) => ({ ...prev, [typeId]: false }));
+      if (isSelected) {
+        setCertificateNumber('');
+        setCertificateDate('');
+        setAttachedFiles([]);
+        setFieldErrors({});
+      }
+      return;
+    }
+
+    const typeObj = certificateTypes.find(c => c.certificateTypeId === typeId);
+    const certTypeName = typeObj?.certificateTypeName || 'Certificate';
+    if (issueDt && issueDt.includes('T')) {
+      issueDt = issueDt.split('T')[0];
+    }
+
+    const detailsLines: string[] = [];
+    if (level === 'Unit') {
+      const unitLabel = selectedUnitNamesSummary || 'Selected Unit';
+      detailsLines.push(`Unit: ${unitLabel}`);
+    } else if (level === 'Wing') {
+      const selectedWing = activeWings.find((w) => w.wingDetailId === selectedWingDetailId);
+      detailsLines.push(`Wing: ${selectedWing?.wingName || selectedWingDetailId || ''}`);
+    } else if (level === 'Apartment') {
+      detailsLines.push(`Scope: Apartment Level`);
+    }
+
+    detailsLines.push(`Certificate: ${certTypeName}`);
+    if (certNum) {
+      detailsLines.push(`Cert No: #${certNum}`);
+    }
+    if (issueDt) {
+      detailsLines.push(`Date: ${issueDt}`);
+    }
+    if (fileName) {
+      detailsLines.push(`Document: ${fileName}`);
+    }
+
+    if (!docGuid && !certId) {
+      if (selectedTypeId === typeId) {
+         setCertificateNumber('');
+         setCertificateDate('');
+         setAttachedFiles([]);
+         setFieldErrors({});
+      }
+      setEnabledStateMap((prev) => ({ ...prev, [typeId]: false }));
+      return;
+    }
+
+    const descriptionText = `${t('building.confirmToggleOffWarning') || 'You have an attached certificate with details:'}\n\n${detailsLines.map((l) => `• ${l}`).join('\n')}\n\n${t('building.confirmDeleteCertificateDesc') || 'Are you sure you want to delete this certificate and all its associated data?'}`;
+
+    confirm({
+      variant: 'warning',
+      size: 'lg',
+      title: t('building.confirmDeleteCertificateTitle') || 'Delete Certificate & Data',
+      description: descriptionText,
+      confirmText: t('building.confirmDeleteCertificateOk') || 'Yes, Delete',
+      cancelText: t('building.confirmDeleteCertificateCancel') || 'No, Cancel',
+      onConfirm: async () => {
+
+
+        setIsDeletingRecord(true);
+        setActionError(null);
+
+        const resolvedSelectedPropertyIds = Array.from(selectedUnitIds).map((id) => {
+          const matched = filteredUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id)
+            || units.find((u) => u.propertyDetailsId === id || u.propertyId === id);
+          return matched?.propertyId || id;
+        });
+
+        try {
+          if (onDeleteRecord) {
+            const res = await onDeleteRecord({
+              certificateTypeId: typeId,
+              documentGuid: docGuid,
+              propertyCertificateId: certId,
+              level,
+              selectedWingDetailId,
+              selectedUnitIds: resolvedSelectedPropertyIds,
+              societyDetailId: societyId ? Number(societyId) : null,
+            });
+            if (res && typeof res === 'object' && (res as { success?: boolean }).success === false) {
+              setActionError((res as { message?: string; error?: string }).error || (res as { message?: string; error?: string }).message || t('building.deleteError') || 'Failed to delete certificate');
+              return;
+            }
+          } else if (onDelete) {
+            onDelete(typeId);
+          }
+          if (selectedTypeId === typeId) {
+             setCertificateNumber('');
+             setCertificateDate('');
+             setAttachedFiles([]);
+             setFieldErrors({});
+          }
+          setEnabledStateMap((prev) => ({ ...prev, [typeId]: false }));
+          refetchGrid();
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : (t('building.deleteError') || 'Failed to delete certificate');
+          setActionError(msg);
+        } finally {
+          setIsDeletingRecord(false);
+        }
+      },
+    });
   };
 
   const effectiveConstructionYear = useMemo<number | null>(() => {
@@ -712,6 +871,20 @@ export function BuildingPermissionSection({
     return false;
   })();
 
+  const isCertificateFilled = useMemo(() => {
+    const hasFileActual = attachedFiles.length > 0 || 
+      (!removedAttachmentTypeIds.has(selectedTypeId) && 
+        Boolean(
+          activeCertificate?.hasDocument || 
+          (activeCertificate?.documentGuid && activeCertificate.documentGuid !== 'null') || 
+          existingDocumentGuid
+        )
+      );
+    const hasNumber = Boolean(certificateNumber?.trim());
+    const hasDate = Boolean(certificateDate?.trim());
+    return hasFileActual && hasNumber && hasDate;
+  }, [attachedFiles, removedAttachmentTypeIds, selectedTypeId, activeCertificate, existingDocumentGuid, certificateNumber, certificateDate]);
+
   const appliedUnitsCount = (() => {
     let count = 0;
     unitStatusMap.forEach((stat) => {
@@ -795,7 +968,7 @@ export function BuildingPermissionSection({
             >
               <Checkbox
                 disabled={isDirectApplied}
-                checked={selectedUnitIds.has(row.propertyDetailsId as number)}
+                checked={isDirectApplied || selectedUnitIds.has(row.propertyDetailsId as number)}
                 className={cn(isDirectApplied && "opacity-50 cursor-not-allowed")}
                 onCheckedChange={() => {
                   if (isDirectApplied) return;
@@ -955,7 +1128,7 @@ export function BuildingPermissionSection({
 
 
   return (
-    <div className="relative flex-1 flex flex-col min-h-0 h-full overflow-hidden p-3 gap-3">
+    <div className="relative flex-1 flex flex-col min-h-0 h-full overflow-hidden p-2 sm:p-2.5 gap-2">
       {isSaving && (
         <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-50 flex items-center justify-center rounded-xl shadow-lg">
           <div className="flex items-center gap-3 px-5 py-3 bg-slate-900/90 text-white rounded-xl shadow-2xl text-sm font-semibold animate-pulse">
@@ -1049,7 +1222,7 @@ export function BuildingPermissionSection({
       </div>
 
       {/* Scope Guidance Helper Banner */}
-      {!isApartmentIndividual && (
+      {!isApartmentIndividual && level !== 'Unit' && (
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border bg-slate-50/80 border-slate-200/80 shadow-2xs flex-shrink-0">
           {level === 'Apartment' && (
             <>
@@ -1064,14 +1237,6 @@ export function BuildingPermissionSection({
               <Home className="w-4 h-4 text-sky-600 shrink-0" />
               <span className="text-slate-700">
                 <strong className="text-sky-900">{t('building.wingLevel') || 'Wing Scope'}:</strong> {t('building.wingScopeHint') || 'Certificates and files configured here apply to all units in the selected wing.'}
-              </span>
-            </>
-          )}
-          {level === 'Unit' && (
-            <>
-              <Store className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="text-slate-700">
-                <strong className="text-emerald-900">{t('building.unitLevel') || 'Unit Scope'}:</strong> {t('building.unitScopeHint') || 'Click on specific units in the table below to configure or attach their individual certificate documents.'}
               </span>
             </>
           )}
@@ -1097,7 +1262,7 @@ export function BuildingPermissionSection({
         </div>
 
         {/* Right Detail Pane */}
-        <div className="relative lg:col-span-8 xl:col-span-9 flex flex-col h-full min-h-0 bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto space-y-4 shadow-xs">
+        <div className="relative lg:col-span-8 xl:col-span-9 flex flex-col h-full min-h-0 bg-white border border-slate-200 rounded-xl p-3 overflow-y-auto space-y-2.5 shadow-xs">
           {isLoadingGridRecords && (
             <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center rounded-xl">
               <div className="flex items-center gap-2 px-3 py-2 bg-slate-800/80 text-white rounded-lg shadow-md text-xs font-medium animate-pulse">
@@ -1106,17 +1271,9 @@ export function BuildingPermissionSection({
               </div>
             </div>
           )}
-          <div className="border-b border-slate-100 pb-2">
-            <h3 className="text-base font-bold text-blue-900">
-              {activeCertificateType?.certificateTypeName || 'Certificate'}
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {t('building.subtitle') || 'Add the date, reference number and supporting files.'}
-            </p>
-          </div>
 
           {!isApartmentIndividual && level === 'Wing' && (
-            <div className={cn("space-y-2 p-3 rounded-xl border transition-all", fieldErrors.wing ? "bg-red-50/20 border-red-300" : "bg-slate-50/60 border-slate-200")}>
+            <div className={cn("space-y-1.5 p-2.5 rounded-lg border transition-all", fieldErrors.wing ? "bg-red-50/20 border-red-300" : "bg-slate-50/60 border-slate-200")}>
               <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
                 {t('building.selectWing') || 'SELECT WING'}
               </Label>
@@ -1163,7 +1320,7 @@ export function BuildingPermissionSection({
           )}
 
           {!isApartmentIndividual && level === 'Unit' && (
-            <div className={cn("space-y-2.5 p-3.5 rounded-xl border transition-all", fieldErrors.unit ? "bg-red-50/20 border-red-300" : "bg-slate-50/70 border-slate-200")}>
+            <div className={cn("space-y-2 p-2.5 rounded-xl border transition-all", fieldErrors.unit ? "bg-red-50/20 border-red-300" : "bg-slate-50/70 border-slate-200")}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -1254,7 +1411,7 @@ export function BuildingPermissionSection({
                 data={unitTableData}
                 isPagination={false}
                 emptyText={t('building.noUnitsMatch') || 'No units match the selected filters'}
-                maxBodyHeightClassName="max-h-48"
+                maxBodyHeightClassName="max-h-36 sm:max-h-40"
                 onScroll={(e) => {
                   const target = e.currentTarget;
                   if (target.scrollTop + target.clientHeight >= target.scrollHeight - 30) {
@@ -1294,14 +1451,14 @@ export function BuildingPermissionSection({
           {/* Unit Scope Target Banner */}
           {!isApartmentIndividual && level === 'Unit' && (
             selectedUnitIds.size === 0 ? (
-              <div className="flex items-center gap-2.5 p-3 bg-amber-50/90 border border-amber-300/80 rounded-xl text-xs text-amber-900 shadow-2xs">
+              <div className="flex items-center gap-2 p-2 bg-amber-50/90 border border-amber-300/80 rounded-lg text-xs text-amber-900 shadow-2xs">
                 <Info className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
                   <strong>{t('building.noUnitsSelectedTitle') || 'No units selected'}:</strong> {t('building.noUnitsSelectedHint') || 'Please click on one or more units in the table above to configure or attach their certificate documents.'}
                 </span>
               </div>
             ) : (
-              <div className="flex items-center justify-between p-2.5 bg-blue-50/80 border border-blue-200 rounded-xl text-xs shadow-2xs">
+              <div className="flex items-center justify-between p-2 bg-blue-50/80 border border-blue-200 rounded-lg text-xs shadow-2xs">
                 <div className="flex items-center gap-2 text-blue-900 font-semibold">
                   <Store className="w-4 h-4 text-blue-600 shrink-0" />
                   <span>
@@ -1486,7 +1643,7 @@ export function BuildingPermissionSection({
         ) : <div />}
         <SaveButton
           onClick={handleSaveClick}
-          disabled={isSaving || isDeletingRecord || !isDirty}
+          disabled={isSaving || isDeletingRecord || !isDirty || !isCertificateFilled}
           isLoading={isSaving}
           label={t('common.saveChanges') || 'Save Changes'}
         />

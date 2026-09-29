@@ -22,7 +22,7 @@ export interface ConfirmOptions {
   variant?: ConfirmVariant;
   size?: ConfirmSize;
   title?: string;
-  description?: string;
+  description?: React.ReactNode;
   confirmText?: string;
   cancelText?: string;
   meta?: ConfirmMeta;
@@ -269,11 +269,12 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
   const sizeClass = sizeClassMap[computed.size] || sizeClassMap.md;
 
   // Parse structured description details if present
-  const descParts = (computed.description || "").split("\n\n");
-  const hasBulletDetails = descParts.length > 1 && descParts.slice(1).some((p) => p.includes("•"));
-  const introText = descParts[0];
-  const detailItems = hasBulletDetails
-    ? descParts.slice(1).join("\n\n").split("\n").filter((l) => l.trim().length > 0)
+  const isStringDesc = typeof computed.description === "string";
+  const descParts: string[] = isStringDesc ? (computed.description as string).split("\n\n") : [];
+  const hasBulletDetails = descParts.length > 1 && descParts.slice(1).some((p: string) => p.includes("•"));
+  const introText = descParts[0] || "";
+  const detailItems: string[] = hasBulletDetails
+    ? descParts.slice(1).join("\n\n").split("\n").filter((l: string) => l.trim().length > 0)
     : [];
 
   return (
@@ -316,7 +317,12 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
                   <h3 className="mt-4 text-xl sm:text-2xl font-bold text-gray-900 leading-tight">{computed.title}</h3>
 
                   <div className="mt-3 flex-1 overflow-y-auto w-full max-h-[260px] px-2 text-center scrollbar-thin">
-                    {hasBulletDetails ? (
+                    {!isStringDesc ? (
+                      <div className="w-full text-center max-w-[460px] mx-auto">
+                        {computed.description}
+                        {renderRecordMeta(computed.meta)}
+                      </div>
+                    ) : hasBulletDetails ? (
                       <div className="w-full text-center space-y-2.5">
                         <p className="text-sm font-semibold text-gray-800">{introText}</p>
                         <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-3 text-left space-y-1.5 shadow-2xs font-medium">

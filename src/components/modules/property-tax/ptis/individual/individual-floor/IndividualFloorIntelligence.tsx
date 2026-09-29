@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
 import { IndividualFloorTopNav, type IndividualFloorTopNavSection } from './IndividualFloorTopNav';
 import { RateableTaxTable } from './rateable/components/RateableTaxTable';
@@ -42,6 +42,11 @@ export interface IndividualFloorIntelligenceProps {
   wardId?: number | string | null;
   propertyNo?: string | null;
   partitionNo?: string | null;
+  societyDetailId?: number | string | null;
+  wingDetailsId?: number | string | null;
+  wingName?: string | null;
+  selectedFloor?: string | null;
+  isApartmentScreen?: boolean;
   rateableData?: RateableValueResponse | null;
   capitalData?: CapitalValueResponse | null;
   dualMethodData?: DualMethodResponse | null;
@@ -50,6 +55,7 @@ export interface IndividualFloorIntelligenceProps {
   capitalTaxDetails?: TaxDetailsData | null;
   buildingPermissionData?: BuildingPermissionData | null;
   discountData?: DiscountData | null;
+  socialData?: DiscountData | null;
   oldDetailsData?: OldDetailsData | null;
   oldFloorTableData?: OldFloorDetailsData[] | null;
   oldTaxesData?: OldTaxesData | null;
@@ -72,6 +78,11 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   wardId,
   propertyNo,
   partitionNo,
+  societyDetailId,
+  wingDetailsId,
+  wingName,
+  selectedFloor,
+  isApartmentScreen: propIsApartmentScreen,
   rateableData,
   capitalData,
   dualMethodData,
@@ -80,6 +91,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   capitalTaxDetails,
   buildingPermissionData,
   discountData,
+  socialData,
   oldDetailsData,
   oldFloorTableData,
   oldTaxesData,
@@ -92,7 +104,19 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   const t = useTranslations('ptis');
   const contextLocale = useLocale();
   const locale = propLocale || contextLocale || 'en';
-  const [activeSection, setActiveSection] = useState<IndividualFloorTopNavSection | null>('floor');
+  const router = useRouter();
+  const pathname = usePathname();
+  const currentSearchParams = useSearchParams();
+
+  const initialSectionFromUrl = useMemo<IndividualFloorTopNavSection | null>(() => {
+    const rawTab = currentSearchParams?.get('tab')?.toLowerCase();
+    if (rawTab === 'discount' || rawTab === 'discountdetails') return 'discount';
+    if (rawTab === 'building' || rawTab === 'buildingpermission') return 'building';
+    if (rawTab === 'olddetails' || rawTab === 'old') return 'oldDetails';
+    return 'floor';
+  }, [currentSearchParams]);
+
+  const [activeSection, setActiveSection] = useState<IndividualFloorTopNavSection | null>(initialSectionFromUrl);
   const [isExpanded, setIsExpanded] = useState(true);
   const [internalTaxMode, setInternalTaxMode] = useState<PtisTaxMode>(taxMode);
   const [prevTaxModeProp, setPrevTaxModeProp] = useState(taxMode);
@@ -217,8 +241,6 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
     }
   };
 
-  const currentSearchParams = useSearchParams();
-
   const searchParamsObj = useMemo(() => {
     const obj: Record<string, string | string[] | undefined> = {};
     if (currentSearchParams) {
@@ -233,6 +255,11 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
     if (propertyId) obj.propertyId = String(propertyId);
     return obj;
   }, [currentSearchParams, wardNo, wardId, propertyNo, partitionNo, propertyId]);
+
+  const effectiveSocietyDetailId = societyDetailId ?? (searchParamsObj.societyDetailId ? Number(searchParamsObj.societyDetailId) : null);
+  const effectiveWingDetailId = wingDetailsId ?? (searchParamsObj.wingDetailId ? Number(searchParamsObj.wingDetailId) : null);
+  const effectiveWingName = wingName ?? (searchParamsObj.wingName as string | null);
+  const isApartmentScreen = propIsApartmentScreen ?? false;
 
   if (isLoading) {
     return (
@@ -261,6 +288,9 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
           } else {
             setActiveSection(section);
             setIsExpanded(true);
+            const params = new URLSearchParams(currentSearchParams ? currentSearchParams.toString() : '');
+            params.set('tab', section === 'oldDetails' ? 'olddetails' : section);
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
           }
         }}
         taxMode={currentTaxMode}
@@ -365,68 +395,73 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
       )}
 
       {/* 3. Building Permission, Discount, or Old Details Tabs */}
-      {activeSection && activeSection !== 'floor' && activeTitle && (
-        <div className="pt-1">
-          <div
-            className="flex items-center gap-1.5 cursor-pointer select-none group pb-2"
-            onClick={() => setIsExpanded((prev) => !prev)}
-          >
-            <h2 className="text-[13px] font-black text-slate-900 uppercase tracking-wide">
-              {activeTitle}
-            </h2>
-            {isExpanded ? (
-              <ChevronDown
-                size={16}
-                strokeWidth={3}
-                className="text-slate-400 group-hover:text-slate-600"
-              />
-            ) : (
-              <ChevronRight
-                size={16}
-                strokeWidth={3}
-                className="text-slate-400 group-hover:text-slate-600"
-              />
-            )}
+      {activeSection && activeSection !== 'floor' && (
+        activeSection === 'discount' ? (
+          <div className="pt-1">
+            <DiscountDataTab
+              isExpanded={isExpanded}
+              onToggleExpand={() => setIsExpanded((prev) => !prev)}
+              propertyId={propertyId ? Number(propertyId) : undefined}
+              initialData={discountData ?? undefined}
+              initialSocialData={socialData ?? undefined}
+              wardId={wardId}
+              wardNo={wardNo}
+              propertyNo={propertyNo}
+              societyDetailId={effectiveSocietyDetailId ? Number(effectiveSocietyDetailId) : undefined}
+              wingDetailsId={effectiveWingDetailId ? Number(effectiveWingDetailId) : undefined}
+              wingName={effectiveWingName}
+              selectedFloor={selectedFloor}
+              isApartmentScreen={isApartmentScreen}
+            />
           </div>
-
-          {isExpanded && (
-            <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200">
-              {activeSection === 'building' && (
-                <BuildingPermissionTab
-                  data={buildingPermissionData ?? undefined}
-                  propertyId={propertyId ? Number(propertyId) : undefined}
-                  wardNo={wardNo ?? undefined}
-                  wardId={wardId ? Number(wardId) : undefined}
-                  propertyNo={propertyNo ?? undefined}
-                  partitionNo={partitionNo ?? undefined}
-                />
-              )}
-
-              {activeSection === 'discount' && (
-                <DiscountDataTab
-                  propertyId={propertyId ? Number(propertyId) : undefined}
-                  initialData={discountData ?? undefined}
-                />
-              )}
-
-              {activeSection === 'oldDetails' && (
-                <IndividualOldDetailsTab
-                  propertyId={propertyId}
-                  showOldFloorInfo={showOldFloorInfo}
-                  setShowOldFloorInfo={handleSetShowOldFloorInfo}
-                  showOldTaxInfo={showOldTaxInfo}
-                  setShowOldTaxInfo={handleSetShowOldTaxInfo}
-                  showOldMapInfo={showOldMapInfo}
-                  setShowOldMapInfo={handleSetShowOldMapInfo}
-                  oldFloorTableData={oldFloorTableData ?? []}
-                  oldDetailsData={oldDetailsData ?? undefined}
-                  oldTaxesData={oldTaxesData ?? null}
-                  mappedPropertiesData={mappedPropertiesData ?? []}
-                />
+        ) : activeTitle ? (
+          <div className="pt-1">
+            <div
+              className="flex items-center gap-1.5 cursor-pointer select-none group pb-2"
+              onClick={() => setIsExpanded((prev) => !prev)}
+            >
+              <h2 className="text-[13px] font-black text-slate-900 uppercase tracking-wide">
+                {activeTitle}
+              </h2>
+              {isExpanded ? (
+                <ChevronDown size={16} strokeWidth={3} className="text-slate-400 group-hover:text-slate-600" />
+              ) : (
+                <ChevronRight size={16} strokeWidth={3} className="text-slate-400 group-hover:text-slate-600" />
               )}
             </div>
-          )}
-        </div>
+
+            {isExpanded && (
+              <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200">
+                {activeSection === 'building' && (
+                  <BuildingPermissionTab
+                    data={buildingPermissionData ?? undefined}
+                    propertyId={propertyId ? Number(propertyId) : undefined}
+                    wardNo={wardNo ?? undefined}
+                    wardId={wardId ? Number(wardId) : undefined}
+                    propertyNo={propertyNo ?? undefined}
+                    partitionNo={partitionNo ?? undefined}
+                  />
+                )}
+
+                {activeSection === 'oldDetails' && (
+                  <IndividualOldDetailsTab
+                    propertyId={propertyId}
+                    showOldFloorInfo={showOldFloorInfo}
+                    setShowOldFloorInfo={handleSetShowOldFloorInfo}
+                    showOldTaxInfo={showOldTaxInfo}
+                    setShowOldTaxInfo={handleSetShowOldTaxInfo}
+                    showOldMapInfo={showOldMapInfo}
+                    setShowOldMapInfo={handleSetShowOldMapInfo}
+                    oldFloorTableData={oldFloorTableData ?? []}
+                    oldDetailsData={oldDetailsData ?? undefined}
+                    oldTaxesData={oldTaxesData ?? null}
+                    mappedPropertiesData={mappedPropertiesData ?? []}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        ) : null
       )}
     </div>
   );

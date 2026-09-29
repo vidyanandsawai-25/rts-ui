@@ -13,7 +13,8 @@ import { SocialAttribute } from "@/types/social-attribute.types";
  */
 export const mapApiToDiscountState = (
     data: PropertyDiscountInfoResponseDto | null,
-    masterAttributes?: SocialAttribute[]
+    masterAttributes?: SocialAttribute[],
+    currentLevel?: 'Apartment' | 'Wing' | 'Unit'
 ): DiscountState => {
     const state: DiscountState = {} as DiscountState;
 
@@ -32,6 +33,7 @@ export const mapApiToDiscountState = (
                 isDocumentRequired: attr.isDocumentRequired,
                 isActive: attr.isActive,
                 propertySocialDetailId: null,
+                entityType: currentLevel === 'Apartment' ? 'S' : currentLevel === 'Wing' ? 'W' : 'P',
                 bitValue: isBitType ? false : null,
                 intValue: null,
                 decimalValue: null,
@@ -51,15 +53,29 @@ export const mapApiToDiscountState = (
         data.discountAttributes.forEach((attr) => {
             const isBitType = attr.dataType.toUpperCase() === "BIT";
             const bitValue = attr.bitValue ?? false;
-            
-            state[attr.id] = {
-                ...state[attr.id], // preserve master data fields if they exist
-                ...attr,
-                dataType: attr.dataType,
-                intValue: attr.intValue ?? null,
-                decimalValue: attr.decimalValue ?? null,
-                bitValue: bitValue,
-                enabled: isBitType
+            const docGuid = attr.documentGuid || null;
+            const docUrl = attr.documentUrl || (docGuid ? `/api/documents/${docGuid}/view` : null);
+            const fileName = attr.fileName || undefined;
+
+            const inheritedFromUpper = (attr.inheritedFrom || '').toUpperCase();
+            const entityTypeUpper = (attr.entityType || '').toUpperCase();
+            const inheritanceLevelUpper = (attr.inheritanceLevel || '').toUpperCase();
+
+            const isFromApartment = inheritanceLevelUpper === 'APARTMENT' || inheritedFromUpper === 'APARTMENT' || inheritedFromUpper === 'SOCIETY' || entityTypeUpper === 'S';
+            const isFromWing = inheritanceLevelUpper === 'WING' || inheritedFromUpper === 'WING' || entityTypeUpper === 'W';
+            const isInherited = (currentLevel === 'Wing' && isFromApartment) ||
+                                (currentLevel === 'Unit' && (isFromApartment || isFromWing));
+
+            const resolvedInheritanceLevel: 'Self' | 'Wing' | 'Apartment' = 
+                isInherited
+                    ? (isFromWing && currentLevel === 'Unit' ? 'Wing' : 'Apartment')
+                    : 'Self';
+            const resolvedInheritedFrom: string | null = isInherited ? resolvedInheritanceLevel : null;
+
+            const effectiveBitValue = isInherited ? true : bitValue;
+            const effectiveEnabled = isInherited
+                ? true
+                : (isBitType
                     ? bitValue
                     : (attr.bitValue != null 
                         ? bitValue 
@@ -68,8 +84,25 @@ export const mapApiToDiscountState = (
                             (attr.decimalValue !== null && attr.decimalValue !== 0) || 
                             attr.textValue !== null || 
                             attr.dateValue !== null
-                        )),
+                        )));
+            
+            state[attr.id] = {
+                ...state[attr.id], // preserve master data fields if they exist
+                ...attr,
+                dataType: attr.dataType,
+                intValue: attr.intValue ?? null,
+                decimalValue: attr.decimalValue ?? null,
+                bitValue: effectiveBitValue,
+                enabled: effectiveEnabled,
                 dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
+                documentGuid: docGuid,
+                documentUrl: docUrl,
+                fileName: fileName,
+                entityType: attr.entityType || (currentLevel === 'Apartment' ? 'S' : currentLevel === 'Wing' ? 'W' : 'P'),
+                isInherited: isInherited,
+                inheritedFrom: resolvedInheritedFrom,
+                inheritanceLevel: resolvedInheritanceLevel,
+                isOverridden: false,
                 isUploading: false,
             };
         });
@@ -85,16 +118,16 @@ export const mapDiscountStateToApi = (state: DiscountState): DiscountAttributeIt
     const discountAttributes: DiscountAttributeItemDto[] = [];
 
     Object.values(state).forEach((item) => {
-        // Include only discount-applicable items that are either:
-        // 1. Currently enabled (need to be saved/updated), OR
-        // 2. Previously saved (have propertySocialDetailId) — may need status toggled off
-        // Skip never-saved disabled items (propertySocialDetailId is null + bitValue false)
-        // as the backend cannot process upserts for non-existent disabled records.
-        const hasBeenSaved = item.propertySocialDetailId != null;
+        // If an item is inherited and NOT overridden, do not send it — it is dynamically inherited top-down!
+        if (item.isInherited && !item.isOverridden) {
+            return;
+        }
+
         const isBitType = item.dataType.toUpperCase() === "BIT";
         const enabled = isBitType ? (item.bitValue ?? false) : item.enabled;
+        const hasBeenSavedAtThisLevel = !item.isInherited && item.propertySocialDetailId != null;
 
-        if (item.id && item.isDiscountApplicable && (enabled || hasBeenSaved)) {
+        if (item.id && item.isDiscountApplicable && (enabled || hasBeenSavedAtThisLevel || item.isOverridden)) {
             
             // Format numeric values safely
             let intValue = null;
@@ -112,9 +145,13 @@ export const mapDiscountStateToApi = (state: DiscountState): DiscountAttributeIt
             const textValue = enabled ? (item.textValue || null) : null;
             const dateValue = enabled ? (item.dateValue ? new Date(item.dateValue).toISOString() : null) : null;
 
+            // When creating an override for an inherited attribute, never pass the parent's database ID!
+            const targetDetailId = (item.isInherited || item.isOverridden) ? null : (item.propertySocialDetailId ?? null);
+
             discountAttributes.push({
-                propertySocialDetailId: item.propertySocialDetailId ?? null,
+                propertySocialDetailId: targetDetailId,
                 socialAttributeId: item.id,
+                dataType: item.dataType,
                 bitValue: enabled,
                 intValue,
                 decimalValue,
@@ -122,7 +159,10 @@ export const mapDiscountStateToApi = (state: DiscountState): DiscountAttributeIt
                 dateValue,
                 documentBindingId: enabled ? (item.documentBindingId ?? null) : null,
                 remark: enabled ? (item.remark || null) : null,
-                isActive: true
+                isActive: true,
+                entityType: item.entityType || (item.inheritanceLevel === 'Apartment' ? 'S' : item.inheritanceLevel === 'Wing' ? 'W' : 'P'),
+                inheritedFrom: item.inheritedFrom,
+                inheritanceLevel: item.inheritanceLevel,
             });
         }
     });
@@ -185,6 +225,7 @@ export const hasDiscountChangesComparedToInitial = (
         const initItem = initial[key];
         if (!initItem) return true;
 
+        if (currItem.isOverridden) return true;
         if ((currItem.enabled ?? false) !== (initItem.enabled ?? false)) return true;
         if ((currItem.bitValue ?? false) !== (initItem.bitValue ?? false)) return true;
 

@@ -12,6 +12,7 @@ export interface UseDiscountLevelStateProps {
   propertyId?: string;
   initialLevel?: ApplicationLevel;
   initialWingDetailId?: number | null;
+  initialUnitPropertyId?: number | null;
   isSociety?: boolean;
   wings?: WingOption[];
   units?: UnitSelectionItem[];
@@ -22,10 +23,11 @@ export function useDiscountLevelState({
   propertyId: _propertyId,
   initialLevel = 'Apartment',
   initialWingDetailId = null,
+  initialUnitPropertyId = null,
   isSociety: _isSociety = false,
   wings = [],
   units = [],
-  savedPropertyDetails = []
+  savedPropertyDetails: _savedPropertyDetails = []
 }: UseDiscountLevelStateProps) {
   const [level, setLevel] = useState<ApplicationLevel>(initialLevel);
   const dynamicWings = useMemo(() => (Array.isArray(wings) ? wings : []), [wings]);
@@ -58,23 +60,12 @@ export function useDiscountLevelState({
     // API filtering removed per user request
   }, []);
 
-  // Selected unit IDs (for Unit level) - initialized by matching unit propertyId with savedPropertyIds
+  // Selected unit IDs (for Unit level)
   const [selectedUnitIds, setSelectedUnitIds] = useState<Set<number>>(() => {
-    const savedPropertyIds = new Set<number>(
-      savedPropertyDetails
-        .map((item) => item.propertyId)
-        .filter((id): id is number => typeof id === 'number' && id > 0)
-    );
-
-    const initial = new Set<number>();
-    dynamicUnits.forEach((u) => {
-      const unitPropId = (u.propertyId ?? u.propertyDetailsId) as number;
-      const isMatched = unitPropId ? savedPropertyIds.has(unitPropId) : false;
-      if (isMatched || u.isSelected) {
-        if (unitPropId) initial.add(unitPropId);
-      }
-    });
-    return initial;
+    if (initialUnitPropertyId && initialUnitPropertyId > 0) {
+      return new Set<number>([initialUnitPropertyId]);
+    }
+    return new Set<number>();
   });
 
   // Unique floors and uses for filter dropdowns — derived from ALL loaded units, not filtered

@@ -155,37 +155,49 @@ export function mapSocialStateToApi(
     const socialAttributeIdsToRemove: number[] = [];
 
     Object.values(socialData).forEach((attr) => {
-        const isEnabled = isAttributeEnabled(attr, socialData);
-        const init = initialFlatData[attr.socialAttributeId];
-        const existingId = attr.id ?? init?.id ?? null;
-        const isBitType = attr.dataType.toUpperCase() === "BIT";
-        const isRootAttr = attr.parentAttributeId === null || attr.parentAttributeId === undefined;
-
-        // If not enabled and never saved in the database, do nothing
-        if (!isEnabled && !existingId) {
+        // If an item is inherited and NOT overridden, do not send it — it is dynamically inherited top-down!
+        if (attr.isInherited && !attr.isOverridden) {
             return;
         }
 
-        const apiBitValue = (isBitType || isRootAttr)
-            ? (isEnabled ? (attr.bitValue ?? false) : false)
-            : null;
+        const isEnabled = isAttributeEnabled(attr, socialData);
+        const init = initialFlatData[attr.socialAttributeId];
+        const hasDbRecord = !attr.isInherited && (
+            (typeof attr.id === "number" && attr.id > 0) ||
+            (typeof init?.id === "number" && init.id > 0)
+        );
+        const existingId = (attr.isInherited || attr.isOverridden) ? null : (attr.id ?? init?.id ?? null);
+        const isBitType = attr.dataType.toUpperCase() === "BIT";
+        const isRootAttr = attr.parentAttributeId === null || attr.parentAttributeId === undefined;
 
-        const apiIntValue = isEnabled && attr.intValue !== null && attr.intValue !== undefined && String(attr.intValue) !== "" 
+        // If toggled off or not enabled:
+        if (!isEnabled) {
+            // If it had a database record at this level, mark for removal
+            if (hasDbRecord && existingId) {
+                socialAttributeIdsToRemove.push(attr.socialAttributeId);
+            }
+            // NEVER send inactive/disabled attributes without a database record to the API!
+            return;
+        }
+
+        const apiBitValue = (isBitType || isRootAttr) ? true : null;
+
+        const apiIntValue = attr.intValue !== null && attr.intValue !== undefined && String(attr.intValue) !== "" 
             ? Number(attr.intValue) 
             : null;
 
-        const apiDecimalValue = isEnabled && attr.decimalValue !== null && attr.decimalValue !== undefined && String(attr.decimalValue) !== "" 
+        const apiDecimalValue = attr.decimalValue !== null && attr.decimalValue !== undefined && String(attr.decimalValue) !== "" 
             ? Number(attr.decimalValue) 
             : null;
 
-        const apiTextValue = isEnabled ? attr.textValue : null;
-        const apiDateValue = isEnabled ? attr.dateValue : null;
-        const apiDocumentBindingId = isEnabled
-            ? (typeof attr.documentBindingId === "number" && attr.documentBindingId > 0 ? attr.documentBindingId : null)
+        const apiTextValue = attr.textValue || null;
+        const apiDateValue = attr.dateValue || null;
+        const apiDocumentBindingId = (typeof attr.documentBindingId === "number" && attr.documentBindingId > 0)
+            ? attr.documentBindingId
             : null;
-        const apiRemark = isEnabled ? attr.remark : null;
+        const apiRemark = attr.remark || null;
 
-        const isDirty = !init ||
+        const isDirty = attr.isOverridden || !init ||
             ((isBitType || isRootAttr) ? apiBitValue !== init.bitValue : false) ||
             apiIntValue !== init.intValue ||
             apiDecimalValue !== init.decimalValue ||
@@ -206,11 +218,16 @@ export function mapSocialStateToApi(
                 dateValue: apiDateValue,
                 documentBindingId: apiDocumentBindingId,
                 remark: apiRemark,
-                isActive: true
+                isActive: true,
+                entityType: attr.entityType,
+                inheritedFrom: attr.inheritedFrom,
+                inheritanceLevel: attr.inheritanceLevel,
             };
 
-            if (existingId != null && existingId > 0) {
-                payloadItem.id = existingId;
+            // When creating an override for an inherited attribute, never pass the parent's database ID!
+            const targetDetailId = (attr.isInherited || attr.isOverridden) ? null : existingId;
+            if (targetDetailId != null && targetDetailId > 0) {
+                payloadItem.id = targetDetailId;
             }
 
             socialAttributes.push(payloadItem);

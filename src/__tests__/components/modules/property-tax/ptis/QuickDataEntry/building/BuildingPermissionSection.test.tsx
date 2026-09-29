@@ -211,10 +211,11 @@ describe('BuildingPermissionSection - SELECT UNITS safeguards', () => {
       fireEvent.click(a8Row);
     }
 
-    // A8 should not be selected
+    // A8 should remain disabled and checked (applied state)
     const checkboxes = screen.getAllByRole('checkbox');
     const a8Checkbox = checkboxes[1];
-    expect(a8Checkbox).not.toBeChecked();
+    expect(a8Checkbox).toBeDisabled();
+    expect(a8Checkbox).toBeChecked();
 
     // Now click A9 which has no certificate
     const a9Row = screen.getByText('A9').closest('tr');
@@ -251,8 +252,9 @@ describe('BuildingPermissionSection - SELECT UNITS safeguards', () => {
 
     fireEvent.click(headerCheckbox);
 
-    // A8 (existing certificate) should remain unchecked
-    expect(a8Checkbox).not.toBeChecked();
+    // A8 (existing certificate) should remain disabled and checked
+    expect(a8Checkbox).toBeDisabled();
+    expect(a8Checkbox).toBeChecked();
     // A9 (no certificate) should be checked
     expect(a9Checkbox).toBeChecked();
   });

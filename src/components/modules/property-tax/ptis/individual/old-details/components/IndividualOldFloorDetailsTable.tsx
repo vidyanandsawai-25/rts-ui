@@ -85,12 +85,8 @@ export const IndividualOldFloorDetailsTable: React.FC<IndividualOldFloorDetailsT
         {isLoading ? (
           <div className="flex items-center justify-center py-8 gap-2 text-xs font-medium text-slate-500">
             <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
-            <span>
-              {
-                // eslint-disable-next-line i18next/no-literal-string
-                'Loading historical floor details...'
-              }
-            </span>
+            {/* eslint-disable-next-line i18next/no-literal-string */}
+            <span>Loading historical floor details...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">

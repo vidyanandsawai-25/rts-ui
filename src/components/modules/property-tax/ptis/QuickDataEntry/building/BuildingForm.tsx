@@ -16,6 +16,7 @@ import {
     postApartmentQcCertificateRecordAction, 
     deletePropertyCertificateRecordAction 
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Building/action";
+import { useConfirm } from '@/components/common/ConfirmProvider';
 
 
 const BuildingForm: React.FC<BuildingFormProps> = ({
@@ -42,6 +43,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
     const searchParams = useSearchParams();
     const [searchTerm, setSearchTerm] = useState("");
     const [showActiveFirst, setShowActiveFirst] = useState(false);
+    const { confirm } = useConfirm();
 
     useEffect(() => {
         const handleCompleted = (e: Event) => {
@@ -86,6 +88,72 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
     } = useBuildingForm(initialBuildingPermission, initialFloorCertificates || null, propertyId, initialFloors);
 
     const [isSectionSaving, setIsSectionSaving] = useState(false);
+
+    const handleToggleWithConfirm = (typeId: number, checked: boolean) => {
+        if (checked) {
+            handleToggleEnabled(typeId, true);
+            return;
+        }
+
+        const cert = buildingPermission[typeId];
+        const hasData = cert && (
+            !!cert.propertyCertificateId ||
+            !!cert.documentGuid ||
+            !!cert.number ||
+            !!cert.date ||
+            !!cert.pendingFile
+        );
+        
+        if (!hasData) {
+            handleToggleEnabled(typeId, false);
+            return;
+        }
+
+        const typeObj = initialCertificateTypes.find(c => c.certificateTypeId === typeId);
+        const certTypeName = typeObj?.certificateTypeName || 'Certificate';
+        
+        const detailsLines: string[] = [];
+        if (activeScope === 'Floor') {
+             detailsLines.push(`Scope: Floor Level`);
+        } else {
+             detailsLines.push(`Scope: Property Level`);
+        }
+        detailsLines.push(`Certificate: ${certTypeName}`);
+        if (cert.number) detailsLines.push(`Cert No: #${cert.number}`);
+        if (cert.date) {
+            const displayDate = cert.date.includes('T') ? cert.date.split('T')[0] : cert.date;
+            detailsLines.push(`Date: ${displayDate}`);
+        }
+        if (cert.fileName) detailsLines.push(`Document: ${cert.fileName}`);
+        else if (cert.pendingFile) detailsLines.push(`Document: ${cert.pendingFile.name}`);
+
+        const descriptionText = `${t('building.confirmToggleOffWarning') || 'You have an attached certificate with details:'}\n\n${detailsLines.map(l => `• ${l}`).join('\n')}\n\n${t('building.confirmDeleteCertificateDesc') || 'Are you sure you want to delete this certificate and all its associated data?'}`;
+
+        confirm({
+            variant: 'warning',
+            size: 'lg',
+            title: t('building.confirmDeleteCertificateTitle') || 'Delete Certificate & Data',
+            description: descriptionText,
+            confirmText: t('building.confirmDeleteCertificateOk') || 'Yes, Delete',
+            cancelText: t('building.confirmDeleteCertificateCancel') || 'No, Cancel',
+            onConfirm: async () => {
+                if (!cert.propertyCertificateId && !cert.documentGuid) {
+                    handleToggleEnabled(typeId, false);
+                    handleInputChange(typeId, 'number', '');
+                    handleInputChange(typeId, 'date', '');
+                    handleFileDelete(typeId);
+                    return;
+                }
+                
+                setIsSectionSaving(true);
+                try {
+                    await handleDeleteCertificate(typeId);
+                } finally {
+                    setIsSectionSaving(false);
+                }
+            }
+        });
+    };
 
     const wingOptions: WingOption[] = useMemo(() => {
         const map = new Map<string, WingOption>();
@@ -222,7 +290,6 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                 });
                                 if (res.success) {
                                     toast.success(res.message || t("building.deleteSuccess") || "Certificate deleted successfully!");
-                                    router.refresh();
                                 } else {
                                     toast.error(res.error || res.message || "Failed to delete certificate.");
                                 }
@@ -374,7 +441,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                     certificates={filteredCertificates}
                                     selectedTypeId={selectedTypeId}
                                     onSelect={setSelectedTypeId}
-                                    onToggleEnabled={handleToggleEnabled}
+                                    onToggleEnabled={handleToggleWithConfirm}
                                     validationErrors={validationErrors}
                                     t={t}
                                 />
@@ -388,7 +455,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                     onInputChange={(field, val) => activeSelectedTypeId !== null && handleInputChange(activeSelectedTypeId, field, val)}
                                     onFileUpload={(file) => activeSelectedTypeId !== null && handleFileUpload(activeSelectedTypeId, file)}
                                     onFileDelete={(typeId) => handleFileDelete(typeId)}
-                                    onToggleEnabled={(checked) => activeSelectedTypeId !== null && handleToggleEnabled(activeSelectedTypeId, checked)}
+                                    onToggleEnabled={(checked) => activeSelectedTypeId !== null && handleToggleWithConfirm(activeSelectedTypeId, checked)}
                                     onCopyFromProperty={() => activeSelectedTypeId !== null && handleCopyFromPropertyCert(activeSelectedTypeId)}
                                     validationError={activeSelectedTypeId !== null ? validationErrors[activeSelectedTypeId] : undefined}
                                     fieldErrors={activeSelectedTypeId !== null ? fieldErrors[activeSelectedTypeId] : undefined}

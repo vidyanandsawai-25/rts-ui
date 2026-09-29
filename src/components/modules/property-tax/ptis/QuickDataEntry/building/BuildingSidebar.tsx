@@ -175,7 +175,10 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
                                     <div onClick={(e) => e.stopPropagation()} className="cursor-pointer">
                                         <ToggleSwitch
                                             checked={cert.enabled}
-                                            onChange={(checked) => onToggleEnabled(cert.certificateTypeId, checked)}
+                                            onChange={(checked) => {
+                                                onSelect(cert.certificateTypeId);
+                                                onToggleEnabled(cert.certificateTypeId, checked);
+                                            }}
                                             showPopup={false}
                                         />
                                     </div>

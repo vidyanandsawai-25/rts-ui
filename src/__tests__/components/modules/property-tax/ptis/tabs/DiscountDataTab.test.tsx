@@ -14,10 +14,41 @@ vi.mock('next-intl', () => ({
       'fields.value': 'Value',
       'fields.yes': 'Yes',
       'fields.no': 'No',
+      'fields.applied': 'Applied',
+      applied: 'Applied',
+      index: '#',
+      discountAttribute: 'DISCOUNT ATTRIBUTE',
+      socialAttribute: 'SOCIAL ATTRIBUTE',
+      status: 'STATUS',
+      value: 'VALUE',
+      document: 'DOCUMENT',
+      remark: 'REMARK',
+      activeAndUploaded: 'Active & Uploaded',
+      active: 'Active',
+      disabled: 'Disabled',
+      viewFile: 'View File',
+      noDocument: 'No Document',
+      noData: 'No discount or social details configured yet.',
+      amount: 'AMOUNT',
+      percentage: 'PERCENTAGE',
+      'buildingPermission.levels.all': 'All',
+      'buildingPermission.levels.allLevels': 'All Scopes',
+      'buildingPermission.levels.apartment': 'Apartment Level',
+      'buildingPermission.levels.wing': 'Wing Level',
+      'buildingPermission.levels.unit': 'Unit Level',
+      'buildingPermission.clearFilter': 'Clear Filter',
+      'actions.viewDocument': 'View Document',
+      partitionNo: 'Partition No',
     };
     return translations[key] || key;
   },
   useLocale: () => 'en',
+}));
+
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+  useParams: () => ({ locale: 'en' }),
 }));
 
 // Mock FieldShell component
@@ -30,8 +61,20 @@ vi.mock('@/components/common/FieldShell', () => ({
   ),
 }));
 
+vi.mock('@/lib/utils/document-client-utils', () => ({
+  getDocumentBlobUrl: vi.fn(() => new Promise(() => {})), // Returns pending promise for testing loading state
+}));
+
 // Mock server actions
 vi.mock('@/app/[locale]/property-tax/ptis/ptis-detail-actions', () => ({
+  fetchDiscountDetailsOnlyAction: vi.fn(() =>
+    Promise.resolve({
+      success: true,
+      data: {
+        items: [],
+      },
+    })
+  ),
   fetchSocialDetailsOnlyAction: vi.fn(() =>
     Promise.resolve({
       success: true,
@@ -60,6 +103,16 @@ vi.mock('@/app/[locale]/property-tax/ptis/ptis-detail-actions', () => ({
   ),
 }));
 
+vi.mock('@/app/[locale]/property-tax/ptis/apartment/action', () => ({
+  fetchApartmentSocialAndDiscountDetailsAction: vi.fn(() =>
+    Promise.resolve({
+      success: true,
+      discountData: { items: [] },
+      socialData: { items: [] },
+    })
+  ),
+}));
+
 describe('DiscountDataTab', () => {
   it('should render fallback when items is empty', () => {
     const mockData: DiscountData = { items: [] };
@@ -71,7 +124,7 @@ describe('DiscountDataTab', () => {
     const mockData: DiscountData = {
       items: [
         {
-          id: 1,
+          id: 0,
           propertyId: 549442,
           socialAttributeId: 1,
           bitValue: null,
@@ -97,7 +150,7 @@ describe('DiscountDataTab', () => {
     const mockData: DiscountData = {
       items: [
         {
-          id: 5,
+          id: 0,
           propertyId: 549442,
           socialAttributeId: 5,
           bitValue: false,
@@ -120,7 +173,7 @@ describe('DiscountDataTab', () => {
     expect(screen.getByText('No data available')).toBeInTheDocument();
   });
 
-  it('should display item when isActive is false but at least one value field is present', () => {
+  it('should filter out items when isActive is false even if a value field is present', () => {
     const mockData: DiscountData = {
       items: [
         {
@@ -135,7 +188,7 @@ describe('DiscountDataTab', () => {
           documentBindingId: null,
           remark: null,
           socialAttributeCode: 'TEST_INACTIVE_WITH_VAL',
-          socialAttributeName: 'Show even if inactive',
+          socialAttributeName: 'Should be hidden when inactive',
           isActive: false,
           createdDate: '',
           updatedDate: null,
@@ -143,11 +196,8 @@ describe('DiscountDataTab', () => {
       ] as PropertySocialDetailItem[],
     };
     render(<DiscountDataTab initialData={mockData} />);
-    expect(screen.getByText('Show even if inactive')).toBeInTheDocument();
-    expect(screen.getByRole('switch')).toBeInTheDocument();
-    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
-    expect(screen.queryByText('Status')).not.toBeInTheDocument();
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByText('Should be hidden when inactive')).not.toBeInTheDocument();
+    expect(screen.getByText('No data available')).toBeInTheDocument();
   });
 
   it('should display intValue when both bitValue and intValue are present', () => {
@@ -182,9 +232,7 @@ describe('DiscountDataTab', () => {
     // Verify display value (should be 3 instead of Yes)
     expect(screen.getByText('3')).toBeInTheDocument();
 
-    // Verify percentage and amount are displayed side-by-side
-    expect(screen.getByText('fields.percentage')).toBeInTheDocument();
-    expect(screen.getByText('fields.amount')).toBeInTheDocument();
+    // Verify percentage and amount are displayed in their columns
     expect(screen.getByText('10%')).toBeInTheDocument();
     expect(screen.getByText('500')).toBeInTheDocument();
   });
@@ -245,17 +293,14 @@ describe('DiscountDataTab', () => {
     fireEvent.click(screen.getByText('tabs.social'));
 
     expect(screen.getByText('Club House Available')).toBeInTheDocument();
-    expect(screen.getByRole('switch')).toBeInTheDocument();
-    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
-    expect(screen.queryByText('Status')).not.toBeInTheDocument();
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByText('Applied')).toBeInTheDocument();
   });
 
   it('should filter out items when all value fields are null even if isActive is true', () => {
     const mockData: DiscountData = {
       items: [
         {
-          id: 3030,
+          id: 0,
           propertyId: 549442,
           socialAttributeId: 39,
           bitValue: null,
@@ -281,20 +326,490 @@ describe('DiscountDataTab', () => {
     expect(screen.getByText('No data available')).toBeInTheDocument();
   });
 
-  it('should fetch social details dynamically when social sub-tab is clicked and socialItems is empty', async () => {
-    const mockData: DiscountData = { items: [] };
+  it('should display social details when social sub-tab is clicked', () => {
+    const mockDiscountData: DiscountData = { items: [] };
+    const mockSocialData: DiscountData = {
+      items: [
+        {
+          id: 4001,
+          propertyId: 549442,
+          socialAttributeId: 45,
+          bitValue: true,
+          intValue: null,
+          decimalValue: null,
+          textValue: null,
+          dateValue: null,
+          documentBindingId: null,
+          remark: null,
+          socialAttributeCode: 'DYNAMIC_SOCIAL',
+          socialAttributeName: 'Dynamic Social Field',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+        } as PropertySocialDetailItem,
+      ],
+    };
 
-    render(<DiscountDataTab propertyId={549442} initialData={mockData} />);
+    render(
+      <DiscountDataTab
+        propertyId={549442}
+        initialData={mockDiscountData}
+        initialSocialData={mockSocialData}
+      />
+    );
 
-    // Click on social tab to trigger fetching
+    // Click on social tab to switch
     fireEvent.click(screen.getByText('tabs.social'));
 
-    // Wait for the dynamic card to appear
-    const dynamicCardLabel = await screen.findByText('Dynamic Social Field');
-    expect(dynamicCardLabel).toBeInTheDocument();
-    expect(screen.getByRole('switch')).toBeInTheDocument();
-    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
-    expect(screen.queryByText('Status')).not.toBeInTheDocument();
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    // Verify social field appears
+    expect(screen.getByText('Dynamic Social Field')).toBeInTheDocument();
+    expect(screen.getByText('Applied')).toBeInTheDocument();
+
+    // Verify Amount and Percentage columns are not displayed in Social Data tab
+    expect(screen.queryByText('AMOUNT')).not.toBeInTheDocument();
+    expect(screen.queryByText('PERCENTAGE')).not.toBeInTheDocument();
+  });
+
+  it('should render table headers and 2 tabs in the right corner', () => {
+    const mockData: DiscountData = {
+      items: [
+        {
+          id: 101,
+          propertyId: 549442,
+          socialAttributeId: 26,
+          bitValue: true,
+          intValue: null,
+          decimalValue: null,
+          textValue: null,
+          dateValue: null,
+          documentBindingId: 24312,
+          documentGuid: 'test-guid-123',
+          remark: 'STP Plant operational',
+          socialAttributeCode: 'STP',
+          socialAttributeName: 'Sewage Treatment Plant',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+          level: 'Apartment',
+        } as PropertySocialDetailItem,
+      ],
+    };
+
+    render(
+      <DiscountDataTab
+        propertyId={549442}
+        initialData={mockData}
+        wardNo="LS14"
+        propertyNo="116"
+        societyDetailId={1507857}
+      />
+    );
+
+    // Verify 2 tabs in right corner
+    expect(screen.getByText('tabs.discount')).toBeInTheDocument();
+    expect(screen.getByText('tabs.social')).toBeInTheDocument();
+
+    // Verify table headers
+    expect(screen.getByText('DISCOUNT ATTRIBUTE')).toBeInTheDocument();
+    expect(screen.getByText('AMOUNT')).toBeInTheDocument();
+    expect(screen.getByText('PERCENTAGE')).toBeInTheDocument();
+    expect(screen.getByText('VALUE')).toBeInTheDocument();
+    expect(screen.getByText('REMARK')).toBeInTheDocument();
+    expect(screen.getByText('action')).toBeInTheDocument();
+
+    // Verify row data
+    expect(screen.getByText('Sewage Treatment Plant')).toBeInTheDocument();
+    expect(screen.getByText('Applied')).toBeInTheDocument();
+    expect(screen.getByText('STP Plant operational')).toBeInTheDocument();
+  });
+
+  it('should not render search bar or add/edit buttons', () => {
+    const mockData: DiscountData = {
+      items: [
+        {
+          id: 101,
+          propertyId: 549442,
+          socialAttributeId: 26,
+          bitValue: true,
+          intValue: null,
+          decimalValue: null,
+          textValue: null,
+          dateValue: null,
+          documentBindingId: null,
+          remark: null,
+          socialAttributeCode: 'STP',
+          socialAttributeName: 'Sewage Treatment Plant',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+        } as PropertySocialDetailItem,
+      ],
+    };
+
+    render(
+      <DiscountDataTab
+        propertyId={549442}
+        initialData={mockData}
+        wardNo="LS14"
+        propertyNo="116"
+        societyDetailId={1507857}
+      />
+    );
+
+    expect(screen.queryByPlaceholderText(/search/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/add \/ edit/i)).not.toBeInTheDocument();
+    // Top edit button has <span>actions.edit</span>, row edit buttons only have title
+    expect(screen.queryByText('actions.edit')).not.toBeInTheDocument();
+  });
+
+  it('should render scope filter pills instead of top edit button on apartment screen', () => {
+    const mockData: DiscountData = {
+      items: [
+        {
+          id: 101,
+          propertyId: 0,
+          socialAttributeId: 26,
+          bitValue: true,
+          intValue: null,
+          decimalValue: null,
+          textValue: null,
+          dateValue: null,
+          documentBindingId: null,
+          remark: null,
+          socialAttributeCode: 'STP',
+          socialAttributeName: 'Sewage Treatment Plant',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+          entityType: 'S',
+          societyDetailId: 1507857,
+        } as PropertySocialDetailItem,
+        {
+          id: 102,
+          propertyId: 0,
+          socialAttributeId: 27,
+          bitValue: true,
+          intValue: null,
+          decimalValue: null,
+          textValue: null,
+          dateValue: null,
+          documentBindingId: null,
+          remark: null,
+          socialAttributeCode: 'SOLAR',
+          socialAttributeName: 'Solar Panel',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+          entityType: 'W',
+          wingDetailId: 1530993,
+          societyDetailId: 1507857,
+        } as PropertySocialDetailItem,
+      ],
+    };
+
+    render(
+      <DiscountDataTab
+        propertyId={549442}
+        initialData={mockData}
+        wardNo="LS14"
+        propertyNo="116"
+        societyDetailId={1507857}
+        isApartmentScreen={true}
+      />
+    );
+
+    // Verify scope filters exist including All
+    expect(screen.getByText(/\(2\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Apartment Level \(1\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Wing Level \(1\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Unit Level \(0\)/)).toBeInTheDocument();
+
+    // By default All is selected -> both Sewage Treatment Plant and Solar Panel are visible
+    expect(screen.getByText('Sewage Treatment Plant')).toBeInTheDocument();
+    expect(screen.getByText('Solar Panel')).toBeInTheDocument();
+    expect(screen.getAllByTitle('actions.edit').length).toBe(2);
+
+    // Clicking Apartment Level filters to apartment items only
+    fireEvent.click(screen.getByText(/Apartment Level \(1\)/));
+    expect(screen.getByText('Sewage Treatment Plant')).toBeInTheDocument();
+    expect(screen.queryByText('Solar Panel')).not.toBeInTheDocument();
+    expect(screen.getByTitle('actions.edit')).toBeInTheDocument();
+
+    // Test filtering by Wing Level
+    fireEvent.click(screen.getByText(/Wing Level \(1\)/));
+    expect(screen.getByText('Solar Panel')).toBeInTheDocument();
+    expect(screen.queryByText('Sewage Treatment Plant')).not.toBeInTheDocument();
+
+    // Test filtering by Unit Level (0 records)
+    fireEvent.click(screen.getByText(/Unit Level \(0\)/));
+    expect(screen.getByText('No data available')).toBeInTheDocument();
+
+    // Switching back to Apartment Level restores apartment items
+    fireEvent.click(screen.getByText(/Apartment Level \(1\)/));
+    expect(screen.getByText('Sewage Treatment Plant')).toBeInTheDocument();
+    expect(screen.queryByText('Solar Panel')).not.toBeInTheDocument();
+  });
+
+  it('should render Amount and Percentage columns before Value column with values and fallback', () => {
+    const mockData: DiscountData = {
+      items: [
+        {
+          id: 501,
+          propertyId: 549442,
+          socialAttributeId: 51,
+          bitValue: true,
+          intValue: null,
+          decimalValue: null,
+          textValue: null,
+          dateValue: null,
+          documentBindingId: null,
+          remark: '50% concession',
+          socialAttributeCode: 'CONCESSION_50',
+          socialAttributeName: 'Senior Citizen Concession',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+          percentage: 50,
+          amount: 2500,
+        } as PropertySocialDetailItem,
+        {
+          id: 502,
+          propertyId: 549442,
+          socialAttributeId: 52,
+          bitValue: true,
+          intValue: null,
+          decimalValue: null,
+          textValue: null,
+          dateValue: null,
+          documentBindingId: null,
+          remark: null,
+          socialAttributeCode: 'SOLAR_DISCOUNT',
+          socialAttributeName: 'Solar Discount',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+          percentage: null,
+          amount: null,
+        } as PropertySocialDetailItem,
+      ],
+    };
+
+    render(<DiscountDataTab initialData={mockData} />);
+
+    // Check table headers order
+    const headers = screen.getAllByRole('columnheader').map((th) => th.textContent?.trim());
+    expect(headers).toEqual(['DISCOUNT ATTRIBUTE', 'AMOUNT', 'PERCENTAGE', 'VALUE', 'REMARK', 'action']);
+
+    // Row 1 has amount and percentage
+    expect(screen.getByText('2500')).toBeInTheDocument();
+    expect(screen.getByText('50%')).toBeInTheDocument();
+
+    // Both rows display their values
+    expect(screen.getByText('Senior Citizen Concession')).toBeInTheDocument();
+    expect(screen.getByText('Solar Discount')).toBeInTheDocument();
+  });
+
+  it('should render edit button on non-apartment screen and navigate to QDE', () => {
+    const mockData: DiscountData = {
+      items: [
+        {
+          id: 101,
+          propertyId: 549442,
+          socialAttributeId: 26,
+          bitValue: true,
+          intValue: null,
+          decimalValue: null,
+          textValue: null,
+          dateValue: null,
+          documentBindingId: null,
+          remark: null,
+          socialAttributeCode: 'STP',
+          socialAttributeName: 'Sewage Treatment Plant',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+        } as PropertySocialDetailItem,
+      ],
+    };
+
+    render(
+      <DiscountDataTab
+        propertyId={549442}
+        initialData={mockData}
+        wardNo="LS14"
+        propertyNo="116"
+        isApartmentScreen={false}
+      />
+    );
+
+    const editBtns = screen.getAllByTitle('actions.edit');
+    expect(editBtns[0]).toBeInTheDocument();
+    fireEvent.click(editBtns[0]);
+
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining('/en/property-tax/ptis/QuickDataEntry/549442/Discount?')
+    );
+  });
+
+  it('should display level counts for Apartment, Wing, and Unit and filter rows when level pills are clicked', () => {
+    const mockData: DiscountData = {
+      items: [
+        {
+          id: 2748554,
+          propertyId: 0,
+          socialAttributeId: 26,
+          bitValue: true,
+          socialAttributeCode: 'STP',
+          socialAttributeName: 'Sewage Treatment Plant',
+          entityType: 'S',
+          societyDetailId: 1507857,
+          remark: 'Apartment',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+        } as PropertySocialDetailItem,
+        {
+          id: 2748555,
+          propertyId: 0,
+          socialAttributeId: 26,
+          bitValue: true,
+          socialAttributeCode: 'STP',
+          socialAttributeName: 'Sewage Treatment Plant',
+          entityType: 'W',
+          wingDetailId: 1530993,
+          societyDetailId: 1507857,
+          wingName: 'BWING',
+          remark: 'BWING',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+        } as PropertySocialDetailItem,
+        {
+          id: 2748556,
+          propertyId: 2079050,
+          socialAttributeId: 26,
+          bitValue: true,
+          socialAttributeCode: 'STP',
+          socialAttributeName: 'Sewage Treatment Plant',
+          entityType: 'P',
+          wingDetailId: 1530993,
+          societyDetailId: 1507857,
+          wingName: 'BWING',
+          unitNo: 'B10',
+          remark: 'BWING-B10',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+        } as PropertySocialDetailItem,
+      ],
+    };
+
+    render(
+      <DiscountDataTab
+        propertyId={0}
+        initialData={mockData}
+        societyDetailId={1507857}
+        isApartmentScreen={true}
+      />
+    );
+
+    // Verify level buttons show counts for all 4 filter buttons
+    expect(screen.getByText(/\(3\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Apartment Level \(1\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Wing Level \(1\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Unit Level \(1\)/)).toBeInTheDocument();
+
+    // Default selected level is All -> all rows visible
+    expect(screen.getByText('Apartment')).toBeInTheDocument();
+    expect(screen.getAllByText('BWING').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('BWING-B10')).toBeInTheDocument();
+
+    // Click Apartment Level pill
+    fireEvent.click(screen.getByText(/Apartment Level \(1\)/));
+    expect(screen.getByText('Apartment')).toBeInTheDocument();
+    expect(screen.queryByText('BWING')).not.toBeInTheDocument();
+    expect(screen.queryByText('BWING-B10')).not.toBeInTheDocument();
+
+    // Click Wing Level pill
+    fireEvent.click(screen.getByText(/Wing Level \(1\)/));
+    expect(screen.getAllByText('BWING').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText('BWING-B10')).not.toBeInTheDocument();
+
+    // Click Unit Level pill
+    fireEvent.click(screen.getByText(/Unit Level \(1\)/));
+    expect(screen.getByText('BWING-B10')).toBeInTheDocument();
+    expect(screen.getByText(/Partition No\.? B10/)).toBeInTheDocument();
+    expect(screen.queryByText('Apartment')).not.toBeInTheDocument();
+
+    // Click Edit pencil on the Unit row -> verify QDE params include unitPropertyId and wingDetailId
+    const editBtn = screen.getByTitle('actions.edit');
+    fireEvent.click(editBtn);
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining('level=unit')
+    );
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining('unitPropertyId=2079050')
+    );
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining('wingDetailId=1530993')
+    );
+  });
+
+  it('should only show loading spinner on the clicked row when multiple rows share the same documentGuid', () => {
+    const mockData: DiscountData = {
+      items: [
+        {
+          id: 101,
+          propertyId: 2001,
+          socialAttributeId: 26,
+          bitValue: true,
+          socialAttributeCode: 'STP',
+          socialAttributeName: 'Sewage Treatment Plant',
+          documentGuid: 'shared-bulk-guid-999',
+          entityType: 'P',
+          unitNo: '101',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+        } as PropertySocialDetailItem,
+        {
+          id: 102,
+          propertyId: 2002,
+          socialAttributeId: 26,
+          bitValue: true,
+          socialAttributeCode: 'STP',
+          socialAttributeName: 'Sewage Treatment Plant',
+          documentGuid: 'shared-bulk-guid-999',
+          entityType: 'P',
+          unitNo: '102',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+        } as PropertySocialDetailItem,
+      ],
+    };
+
+    render(
+      <DiscountDataTab
+        propertyId={0}
+        initialData={mockData}
+        societyDetailId={1507857}
+        isApartmentScreen={true}
+      />
+    );
+
+    const viewButtons = screen.getAllByTitle('View File');
+    expect(viewButtons.length).toBe(2);
+
+    // Click the first eye view button
+    fireEvent.click(viewButtons[0]);
+
+    // The first button should now contain the animate-spin loader
+    expect(viewButtons[0].querySelector('.animate-spin')).toBeInTheDocument();
+
+    // The second button should NOT have the animate-spin loader
+    expect(viewButtons[1].querySelector('.animate-spin')).not.toBeInTheDocument();
   });
 });
+
+

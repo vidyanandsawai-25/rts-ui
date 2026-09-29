@@ -72,7 +72,7 @@ describe('useDiscountForm', () => {
     });
 
     expect(deletePropertySocialDetailsByHierarchyAction).toHaveBeenCalledWith(
-      { socialAttributeId: 1, documentBindingId: 100 },
+      { socialAttributeId: 1, documentBindingId: 100, entityType: "S" },
       "123",
       "en"
     );

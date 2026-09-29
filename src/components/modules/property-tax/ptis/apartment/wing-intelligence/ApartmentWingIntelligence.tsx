@@ -25,6 +25,7 @@ export interface ApartmentWingIntelligenceProps {
   selectedFloor?: string | null;
   buildingPermissionData?: BuildingPermissionData | null;
   discountData?: DiscountData | null;
+  socialData?: DiscountData | null;
   taxMode?: PtisTaxMode;
   onTaxModeChange?: (mode: PtisTaxMode) => void;
   onWingSelect?: (wingMasterId: number | null, wingDetailId: number | null, societyId?: number | null, wingName?: string | null, wingNo?: string | null) => void;
@@ -35,7 +36,7 @@ export interface ApartmentWingIntelligenceProps {
 
 export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps> = ({
   data, propertyId, selectedWingId, selectedWingDetailId, selectedSocietyDetailId, selectedWingName, selectedFloor,
-  buildingPermissionData, discountData, taxMode, onTaxModeChange, onWingSelect, isLoading = false,
+  buildingPermissionData, discountData, socialData, taxMode, onTaxModeChange, onWingSelect, isLoading = false,
   rawGridData, masterTypes,
 }) => {
   const [activeSection, setActiveSection] = useState<WingIntelligenceTopNavSection | null>('wing');
@@ -189,6 +190,7 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
           onToggleExpand={() => setIsExpanded((prev) => !prev)}
           buildingPermissionData={buildingPermissionData}
           discountData={discountData}
+          socialData={socialData}
           propertyId={propertyId}
           wardId={data?.wardId}
           wardNo={data?.wardNo}

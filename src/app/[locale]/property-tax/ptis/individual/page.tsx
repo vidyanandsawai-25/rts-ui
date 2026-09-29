@@ -21,6 +21,7 @@ import {
   getIndividualMappedPropertiesAction,
   fetchIndividualCapitalValueAction,
   fetchIndividualRateableValueAction,
+  fetchIndividualSocialAndDiscountDetailsAction,
 } from './action';
 import { fetchTaxDetailsByTab, type TaxDetailsResult } from './TaxDetails/fetchTaxDetails';
 import { buildInitialIndividualMasterData } from './individual-property.builder';
@@ -166,6 +167,38 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
 
   const workflowStages = workflowStagesResult?.success && workflowStagesResult.data ? workflowStagesResult.data : [];
   const currentWorkflowStageId = finalCurrentWorkflow?.success ? finalCurrentWorkflow.data?.workflowStageId : undefined;
+  const societyDetailIdRaw = resolvedSearchParams?.societyDetailId || resolvedSearchParams?.societyId;
+  const resolvedSocietyDetailId = societyDetailIdRaw
+    ? parseInt(societyDetailIdRaw as string, 10)
+    : (pageData?.societyDetails?.societyDetailId ?? undefined);
+
+  const wingDetailIdRaw = resolvedSearchParams?.wingDetailId || resolvedSearchParams?.wingId;
+  const resolvedWingDetailId = wingDetailIdRaw
+    ? parseInt(wingDetailIdRaw as string, 10)
+    : (pageData?.propertyDetailsResult?.propertyDetails?.wingDetailId ?? undefined);
+
+  const resolvedWingName =
+    toSafeString(resolvedSearchParams?.wingName) ||
+    pageData?.propertyDetailsResult?.propertyDetails?.wingName ||
+    undefined;
+
+  let initialDiscountData = pageData.discountDetails ?? undefined;
+  let initialSocialData = pageData.socialDetails ?? undefined;
+
+  const hasDiscountItems = Boolean(initialDiscountData?.items && initialDiscountData.items.length > 0);
+  const hasSocialItems = Boolean(initialSocialData?.items && initialSocialData.items.length > 0);
+
+  if (resolvedPropertyId && (!hasDiscountItems && !hasSocialItems)) {
+    const discountRes = await fetchIndividualSocialAndDiscountDetailsAction(
+      resolvedPropertyId,
+      resolvedSocietyDetailId,
+      resolvedWingDetailId
+    ).catch(() => null);
+    if (discountRes?.success) {
+      if (discountRes.discountData) initialDiscountData = discountRes.discountData;
+      if (discountRes.socialData) initialSocialData = discountRes.socialData;
+    }
+  }
 
   const initialData: PtisInitialData = {
     propertyDetails: pageData.propertyDetailsResult?.propertyDetails || undefined,
@@ -187,7 +220,8 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
       : (Array.isArray(pageData.oldTaxesData) ? null : (pageData.oldTaxesData ?? null)),
     showOldTaxInfo: pageData.showOldTaxParam,
     showOldMapInfo: pageData.showMapDetailsParam,
-    discountDetails: pageData.discountDetails ?? undefined,
+    discountDetails: initialDiscountData,
+    socialDetails: initialSocialData,
     tabHeaderInfo: pageData.tabHeaderInfo,
     mappedPropertiesData: (finalMappedPropsRes?.success && Array.isArray(finalMappedPropsRes.data) && finalMappedPropsRes.data.length > 0)
       ? finalMappedPropsRes.data
@@ -291,6 +325,9 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
             initialRateableTaxDetails={initialRateableTaxDetails}
             initialCapitalTaxDetails={initialCapitalTaxDetails}
             initialTaxMode={initialTaxMode}
+            societyDetailId={resolvedSocietyDetailId}
+            wingDetailId={resolvedWingDetailId}
+            wingName={resolvedWingName}
           />
         </PtisLayoutWrapper>
 

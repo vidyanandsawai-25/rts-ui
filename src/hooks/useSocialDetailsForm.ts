@@ -45,7 +45,8 @@ export const useSocialDetailsForm = (
 
     const {
         socialData, validationErrors, setFormState,
-        hasChanges, initialFlatData, handleInputChange, handleToggleEnabled
+        hasChanges, initialFlatData, handleInputChange, handleToggleEnabled,
+        resetWithFreshData, clearPendingFiles
     } = useSocialFormState(initialSocialData, masterAttributes);
 
     const { handlePhotoUpload, handlePhotoDelete } = useSocialPhotoUpload(
@@ -124,6 +125,8 @@ export const useSocialDetailsForm = (
                         if (options?.wingDetailId) formData.append("wingDetailId", options.wingDetailId);
                         if (options?.propertyIds) formData.append("propertyIds", options.propertyIds);
                         if (options?.isSociety !== undefined) formData.append("isSociety", String(options.isSociety));
+                        if (options?.selectedUnitCount !== undefined) formData.append("selectedUnitCount", String(options.selectedUnitCount));
+                        if (options?.totalUnitCount !== undefined) formData.append("totalUnitCount", String(options.totalUnitCount));
 
                         // Append pending files
                         Object.values(socialData).forEach(item => {
@@ -134,6 +137,11 @@ export const useSocialDetailsForm = (
 
                         const response = await upsertPropertySocialInfoAction(locale, propertyId, formData);
                         if (response.success) {
+                            if (response.data) {
+                                resetWithFreshData(response.data);
+                            } else {
+                                clearPendingFiles();
+                            }
                             toast.success(response.message || t("discount.socialConfirm.saveSuccess") || "Saved successfully!");
                             router.refresh();
                             resolve({ success: true, isValid: true });
@@ -170,17 +178,20 @@ export const useSocialDetailsForm = (
                 };
 
                 if (currentLevel === 'Apartment') {
-                    // Apartment Level: societyDetailId, socialAttributeId, documentBindingId
-                    if (socId !== undefined) hierarchyParams.societyDetailId = socId;
+                    // Apartment Level: societyDetailsId, socialAttributeId, documentBindingId
+                    hierarchyParams.entityType = 'S';
+                    if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
                     if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
                 } else if (currentLevel === 'Wing') {
                     // Wing Level: societyDetailsId, wingDetailId, socialAttributeId, documentBindingId
+                    hierarchyParams.entityType = 'W';
                     if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
                     if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
                     if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
                 } else if (currentLevel === 'Unit') {
-                    // Unit Level: 2 cases
-                    if (socId !== undefined) hierarchyParams.societyDetailId = socId;
+                    // Unit Level
+                    hierarchyParams.entityType = 'P';
+                    if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
                     if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
 
                     const selectedIds = options?.propertyIds
@@ -192,11 +203,11 @@ export const useSocialDetailsForm = (
                         : false;
 
                     if (isAllUnits) {
-                        // Case 2 (All units): socialAttributeId, societyDetailId, wingDetailId, documentBindingId, propertyIds
+                        // When all units in wing: entityType W can delete wing level or propertyIds for all
                         if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
                         if (selectedIds.length > 0) hierarchyParams.propertyIds = selectedIds;
                     } else {
-                        // Case 1 (Specific units): societyDetailId, wingDetailId, socialAttributeId, propertyIds
+                        // Specific units: propertyIds
                         if (selectedIds.length > 0) {
                             hierarchyParams.propertyIds = selectedIds;
                         } else if (propertyId && !isNaN(Number(propertyId))) {
@@ -204,6 +215,7 @@ export const useSocialDetailsForm = (
                         }
                     }
                 } else {
+                    hierarchyParams.entityType = 'P';
                     if (propertyId && !isNaN(Number(propertyId))) {
                         hierarchyParams.propertyId = Number(propertyId);
                     }

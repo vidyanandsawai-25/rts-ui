@@ -4,6 +4,7 @@
   },
   "title": "मालमत्ता कर मूल्यांकन",
   "subtitle": "मालमत्तेची माहिती सर्वसमावेशक व्यवस्थापित करा",
+  "partitionNo": "विभाजन क्र.",
   "media": {
     "checkingDetails": "मालमत्ता तपशील तपासत आहे...",
     "preparingDrawingTool": "ड्रॉईंग टूल तयार करत आहे...",
@@ -252,6 +253,7 @@
     "societyDetails": "सोसायटी तपशील",
     "buildingPermission": "इमारत परवानगी",
     "discountData": "सूट आणि सामाजिक डेटा",
+    "all": "सर्व डेटा",
     "discount": "सवलत डेटा",
     "social": "सामाजिक डेटा",
     "oldDetails": "जुने तपशील",

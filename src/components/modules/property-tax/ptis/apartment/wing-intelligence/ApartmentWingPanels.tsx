@@ -18,6 +18,7 @@ export interface WingIntelligencePanelsProps {
   masterTypes?: unknown[] | null;
   initialCertificateType?: string | null;
   discountData?: DiscountData | null;
+  socialData?: DiscountData | null;
   propertyId?: number | string | null;
   wardId?: string | number | null;
   wardNo?: string | null;
@@ -37,6 +38,7 @@ export const ApartmentWingPanels: React.FC<WingIntelligencePanelsProps> = ({
   masterTypes,
   initialCertificateType,
   discountData,
+  socialData,
   propertyId,
   wardId,
   wardNo,
@@ -78,6 +80,28 @@ export const ApartmentWingPanels: React.FC<WingIntelligencePanelsProps> = ({
     );
   }
 
+  if (activeSection === 'discount') {
+    return (
+      <div className="pt-1">
+        <DiscountDataTab
+          isExpanded={isExpanded}
+          onToggleExpand={onToggleExpand}
+          propertyId={typeof propertyId === 'number' ? propertyId : propertyId ? Number(propertyId) : undefined}
+          initialData={discountData ?? undefined}
+          initialSocialData={socialData ?? undefined}
+          wardId={wardId}
+          wardNo={wardNo}
+          propertyNo={propertyNo}
+          societyDetailId={societyDetailId}
+          wingDetailsId={wingDetailsId}
+          wingName={wingName}
+          selectedFloor={selectedFloor}
+          isApartmentScreen={true}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="pt-1">
       <div
@@ -94,15 +118,6 @@ export const ApartmentWingPanels: React.FC<WingIntelligencePanelsProps> = ({
 
       {isExpanded && (
         <>
-          {activeSection === 'discount' && (
-            <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200">
-              <DiscountDataTab
-                propertyId={typeof propertyId === 'number' ? propertyId : propertyId ? Number(propertyId) : undefined}
-                initialData={discountData ?? undefined}
-              />
-            </div>
-          )}
-
           {activeSection === 'oldDetails' && (
             <OldDetailsPanel
               wingDetailsId={wingDetailsId}

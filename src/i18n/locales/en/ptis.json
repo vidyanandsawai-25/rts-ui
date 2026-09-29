@@ -4,6 +4,7 @@
   },
   "title": "Property Tax Information System",
   "subtitle": "Manage property tax records and assessments",
+  "partitionNo": "Partition No.",
   "media": {
     "checkingDetails": "Checking property details...",
     "preparingDrawingTool": "Preparing drawing tool...",
@@ -252,6 +253,7 @@
     "societyDetails": "Society Details",
     "buildingPermission": "Building Permission",
     "discountData": "Discount & Social Data",
+    "all": "All Data",
     "discount": "Discount Data",
     "social": "Social Data",
     "oldDetails": "Old Details",

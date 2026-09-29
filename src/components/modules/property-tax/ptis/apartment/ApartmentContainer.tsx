@@ -62,7 +62,15 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
   const firstWing = useMemo(() => wingsList?.[0] || null, [wingsList]);
   const activeWingId = apt.filters.wingId ?? null;
   const activeWingDetailId = apt.filters.wingDetailId ?? null;
-  const activeSocietyDetailId = apt.filters.societyId ?? initialData?.societyDetails?.societyDetailId ?? rawData?.societyId ?? null;
+  const activeSocietyDetailId =
+    apt.filters.societyId ??
+    initialData?.societyDetails?.societyDetailId ??
+    rawData?.societyId ??
+    rawData?.wings?.find((w) => w.societyDetailId || w.societyId)?.societyDetailId ??
+    rawData?.wings?.find((w) => w.societyDetailId || w.societyId)?.societyId ??
+    (apt.allSurveyUnits?.[0] as unknown as { societyId?: number })?.societyId ??
+    (apt.surveyUnits?.[0] as unknown as { societyId?: number })?.societyId ??
+    null;
   const activeWingName = apt.filters.wingName ?? (activeWingDetailId ? wingsList.find((w) => w.wingDetailId === activeWingDetailId)?.wingName : null) ?? null;
 
   const { setWingParams } = useWingUrlParams();
@@ -174,7 +182,7 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
       <div className="px-3 pt-2">
         <ApartmentWingIntelligence
           data={rawData} propertyId={propertyId} selectedWingId={activeWingId} selectedWingDetailId={activeWingDetailId} selectedSocietyDetailId={activeSocietyDetailId} selectedWingName={activeWingName} selectedFloor={apt.filters.floor}
-          buildingPermissionData={initialData?.buildingPermission} discountData={initialData?.discountDetails} taxMode={actions.taxMode} onTaxModeChange={actions.setTaxMode} isLoading={isSearching}
+          buildingPermissionData={initialData?.buildingPermission} discountData={initialData?.discountDetails} socialData={initialData?.socialDetails} taxMode={actions.taxMode} onTaxModeChange={actions.setTaxMode} isLoading={isSearching}
           rawGridData={initialCertificateGrid} masterTypes={initialMasterTypes}
           onWingSelect={(wMId, wDId, sId, wName) => {
             const updated = { ...apt.filters, wingId: wMId, wingDetailId: wDId, societyId: sId ?? null, wingName: wName ?? null, floor: null, pageNumber: 1, pageSize: 100 };

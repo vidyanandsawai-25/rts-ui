@@ -44,7 +44,7 @@ describe("social-details.validation", () => {
             dataType: "INT",
             parentAttributeId: null,
             isRequiredWhenParentTrue: false,
-            bitValue: null,
+            bitValue: true,
             intValue: null,
             decimalValue: null,
             textValue: null,

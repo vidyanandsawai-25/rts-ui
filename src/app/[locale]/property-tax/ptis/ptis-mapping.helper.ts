@@ -48,6 +48,7 @@ type ConcurrentResultsTuple = [
   ActionResult<OldFloorDetailsData[]> | null,
   ActionResult<OldTaxesData[]> | null,
   ActionResult<DiscountData> | null,
+  ActionResult<DiscountData> | null,
   ActionResult<PropertyPhotoTypeWithStatusDto[]> | null,
   ActionResult<PropertyPhotoDto[]> | null,
   ActionResult<DualMethodResponse> | null,
@@ -102,11 +103,11 @@ export async function mapPtisFetchResults({
   societyLatitude?: number;
   societyLongitude?: number;
 }) {
-  const results = detailResults.length > 0 ? detailResults : Array(19).fill(null);
+  const results = detailResults.length > 0 ? detailResults : Array(20).fill(null);
   const [
     aptData, rateableRes, capitalRes, kycResult, societyResult,
     buildingPermissionResult, oldDetailsResult, oldFloorResult, oldTaxesResult,
-    discountResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes,
+    discountResult, socialResult, photoSlotsRes, photosRes, dualResult, taxDetailsRes, ruleLogsRes,
     waybackReleasesRes, tabHeaderInfoResult, mappedPropertiesResult, comparisonResult
   ] = results as unknown as ConcurrentResultsTuple;
 
@@ -135,6 +136,10 @@ export async function mapPtisFetchResults({
 
   const discountDetails = discountResult?.success && discountResult.data
     ? { ...defaultDiscountData, ...discountResult.data }
+    : defaultDiscountData;
+
+  const socialDetails = socialResult?.success && socialResult.data
+    ? { ...defaultDiscountData, ...socialResult.data }
     : defaultDiscountData;
 
   const initialPhotoSlots = photoSlotsRes?.success && Array.isArray(photoSlotsRes.data)
@@ -465,6 +470,7 @@ export async function mapPtisFetchResults({
     oldFloorTableData,
     oldTaxesData,
     discountDetails,
+    socialDetails,
     apartmentData,
     rateableResult,
     capitalResult,

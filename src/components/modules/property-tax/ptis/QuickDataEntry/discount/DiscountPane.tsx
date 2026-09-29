@@ -1,18 +1,17 @@
-import React, { useMemo, useState, useTransition, useCallback } from "react";
+import React, { useTransition, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useLocale } from "next-intl";
-import { toast } from "sonner";
-import { Button, Label, Badge, SearchInput, Select, MasterTable, Checkbox, DocumentViewerModal } from '@/components/common';
-import type { Column } from '@/components/common';
+import { Button, Label } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 import { ValidationErrorBanner } from "./ValidationErrorBanner";
 import { DiscountSidebar } from "./DiscountSidebar";
 import { DiscountDetailPane } from "./DiscountDetailPane";
+import { UnitSelectionPanel } from "./UnitSelectionPanel";
 import { DiscountAttributeState, DiscountState } from "@/types/discount.types";
 import { useDiscountLevelState } from "@/hooks/useDiscountLevelState";
-import { Loader2, Eye, Pencil } from "lucide-react";
-import { getDocumentBlobUrl } from "@/lib/utils/document-client-utils";
+import { Loader2 } from "lucide-react";
 import { PropertySocialDetailsDto } from "@/types/property-social-details.types";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+import { getLocalizedName } from "@/lib/utils/social-details";
 
 interface DiscountPaneProps {
     discountData: DiscountState;
@@ -44,6 +43,8 @@ interface DiscountPaneProps {
     isSociety?: boolean;
     isWingLoading?: boolean;
     savedPropertyDetails?: PropertySocialDetailsDto[];
+    propertyId?: string;
+    societyDetailId?: number;
 }
 
 export interface UnitRow extends Record<string, unknown> {
@@ -81,175 +82,44 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
     t,
     levelState,
     isSociety = false,
-    isWingLoading = false
+    isWingLoading = false,
+    propertyId,
+    societyDetailId,
 }) => {
-    const locale = useLocale();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [isWingPending, startWingTransition] = useTransition();
-    const [viewerModalData, setViewerModalData] = useState<{ isOpen: boolean; fileUrl: string; fileName: string } | null>(null);
+    const { confirm } = useConfirm();
+    const [deleteSelectionCount, setDeleteSelectionCount] = React.useState(0);
 
-    const updateUrl = (params: URLSearchParams) => {
+    const updateUrl = useCallback((params: URLSearchParams) => {
         const nextUrl = `${pathname}?${params.toString()}`;
         startWingTransition(() => {
             router.push(nextUrl, { scroll: false });
         });
-    };
+    }, [pathname, router]);
     const isLoadingWing = isWingLoading || isWingPending;
 
-    const handleViewUnitDocument = useCallback(async (row: UnitRow, uploadedItem?: PropertySocialDetailsDto) => {
-        if (!uploadedItem?.documentGuid) {
-            toast.info(t("building.noDocumentAttached") || "No document file attached for this unit.");
-            return;
-        }
-        try {
-            const { url } = await getDocumentBlobUrl(uploadedItem.documentGuid, locale);
-            setViewerModalData({
-                isOpen: true,
-                fileUrl: url,
-                fileName: uploadedItem.socialAttributeName || `Unit_${row.unitNo}_Document`,
-            });
-        } catch (error: unknown) {
-            toast.error(error instanceof Error ? error.message : "Failed to view document");
-        }
-    }, [locale, t]);
-
-    const handleEditUnit = useCallback((row: UnitRow) => {
-        const unitPropId = (row.propertyId ?? row.propertyDetailsId) as number;
-        if (levelState && !levelState.selectedUnitIds.has(unitPropId)) {
-            levelState.toggleUnitSelection(unitPropId);
-        }
+    const handleEditUnit = useCallback((_row: unknown) => {
         if (activeSelectedId !== null) {
             setSelectedId(activeSelectedId);
         }
-    }, [levelState, activeSelectedId, setSelectedId]);
+    }, [activeSelectedId, setSelectedId]);
 
-    const unitTableColumns = useMemo<Column<UnitRow>[]>(() => {
-        if (!levelState) return [];
+    const handleUnitUrlUpdate = useCallback((params: URLSearchParams) => {
+        updateUrl(params);
+    }, [updateUrl]);
 
-        const uploadedUnitsMap = new Map<number, PropertySocialDetailsDto>();
-        if (savedPropertyDetails && activeSelectedId) {
-            savedPropertyDetails.forEach((item) => {
-                if (item.socialAttributeId === activeSelectedId && item.propertyId && (item.documentGuid || item.documentBindingId)) {
-                    uploadedUnitsMap.set(item.propertyId, item);
-                }
-            });
-        }
+    const activeAttributeDisplayName = selectedDiscount
+        ? getLocalizedName(selectedDiscount.socialAttributeCode, selectedDiscount.socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2])
+        : (activeSelectedId !== null && discountData[activeSelectedId]
+            ? getLocalizedName(discountData[activeSelectedId].socialAttributeCode, discountData[activeSelectedId].socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2])
+            : undefined);
 
-        return [
-            {
-                key: 'propertyDetailsId',
-                label: (
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                            checked={levelState.isAllUnitsSelected}
-                            onCheckedChange={levelState.toggleAllUnits}
-                        />
-                    </div>
-                ),
-                width: '40px',
-                align: 'center',
-                render: (_, row) => {
-                    const unitPropId = (row.propertyId ?? row.propertyDetailsId) as number;
-                    const uploadedItem = uploadedUnitsMap.get(unitPropId);
-                    const hasUploadedDoc = !!uploadedItem;
-                    const isSelected = levelState.selectedUnitIds.has(unitPropId) || hasUploadedDoc;
-
-                    return (
-                        <div onClick={(e) => e.stopPropagation()}>
-                            <Checkbox
-                                checked={isSelected}
-                                disabled={hasUploadedDoc}
-                                onCheckedChange={() => {
-                                    if (!hasUploadedDoc) {
-                                        levelState.toggleUnitSelection(unitPropId);
-                                    }
-                                }}
-                            />
-                        </div>
-                    );
-                },
-            },
-            {
-                key: 'unitNo',
-                label: 'UNIT',
-                render: (val) => <span className="font-bold text-blue-900">{String(val || '')}</span>,
-            },
-            {
-                key: 'wingName',
-                label: 'WING',
-                render: (val) => <span className="font-semibold text-slate-700">{String(val || '')}</span>,
-            },
-            {
-                key: 'floorName',
-                label: 'FLOOR',
-                render: (val) => <span className="text-slate-600">{String(val || '')}</span>,
-            },
-            {
-                key: 'useName',
-                label: 'USE',
-                render: (val) => (
-                    <Badge variant="secondary" size="sm" className="bg-blue-100 text-blue-800 font-semibold">
-                        {String(val || 'Residential')}
-                    </Badge>
-                ),
-            },
-            {
-                key: 'action',
-                label: 'Action',
-                width: '90px',
-                align: 'center',
-                render: (_, row) => {
-                    const unitPropId = (row.propertyId ?? row.propertyDetailsId) as number;
-                    const uploadedItem = uploadedUnitsMap.get(unitPropId);
-                    const hasUploadedDoc = !!uploadedItem;
-
-                    return (
-                        <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                            <button
-                                type="button"
-                                onClick={() => handleEditUnit(row)}
-                                className="p-1 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 transition-colors cursor-pointer"
-                                title="Edit"
-                            >
-                                <Pencil className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleViewUnitDocument(row, uploadedItem)}
-                                disabled={!hasUploadedDoc}
-                                className={cn(
-                                    "p-1 rounded-md border transition-colors cursor-pointer",
-                                    hasUploadedDoc
-                                        ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border-emerald-200"
-                                        : "bg-slate-50 text-slate-300 border-slate-200 cursor-not-allowed"
-                                )}
-                                title="View"
-                            >
-                                <Eye className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-                    );
-                },
-            },
-        ];
-    }, [levelState, savedPropertyDetails, activeSelectedId, handleEditUnit, handleViewUnitDocument]);
-
-    const unitTableData = useMemo<UnitRow[]>(() => {
-        if (!levelState) return [];
-        return levelState.filteredUnits.map((u) => ({
-            propertyDetailsId: u.propertyDetailsId,
-            propertyId: u.propertyId,
-            unitNo: u.unitNo,
-            wingName: u.wingName,
-            floorName: u.floorName,
-            useName: u.useName || 'Residential',
-        }));
-    }, [levelState]);
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-blue-100 flex flex-col flex-1 min-h-0 overflow-hidden relative p-2.5 md:p-3 w-full h-full">
+        <div className="bg-white rounded-xl shadow-sm border border-blue-100 flex flex-col flex-1 min-h-0 overflow-hidden relative p-1.5 md:p-2 w-full h-full">
             {/* Validation Error Banner */}
             {incompleteDiscounts.filter(d => {
                 const item = discountData[d.id];
@@ -269,7 +139,7 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
 
             <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:overflow-hidden">
                 {/* Left Sidebar */}
-                <div className="lg:col-span-5 xl:col-span-4 h-auto lg:h-full lg:overflow-hidden">
+                <div className="lg:col-span-4 xl:col-span-3 h-auto lg:h-full lg:overflow-hidden">
                     <DiscountSidebar
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
@@ -278,14 +148,33 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                         discounts={filteredDiscounts}
                         selectedId={activeSelectedId}
                         onSelect={setSelectedId}
-                        onToggleEnabled={handleToggleEnabled}
+                        onToggleEnabled={(id, checked) => {
+                            const isSaved = (discountData[id]?.propertySocialDetailId ?? 0) > 0 || (discountData[id]?.documentBindingId ?? 0) > 0;
+                            if (!checked && isSaved) {
+                                confirm({
+                                    title: t("discount.confirmDeleteDiscountTitle") || "Delete Discount & Data",
+                                    description: `${t("discount.confirmToggleOffWarning") || "You have an active discount with details:"}\n${discountData[id].socialAttributeName || ''}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`,
+                                    confirmText: t("discount.confirmDeleteDiscountOk") || "Yes, Delete",
+                                    cancelText: t("discount.confirmDeleteDiscountCancel") || "No, Cancel",
+                                    variant: "delete",
+                                    onConfirm: () => {
+                                        handleDeleteDiscount(id);
+                                        setSelectedId(id);
+                                    }
+                                });
+                            } else {
+                                handleToggleEnabled(id, checked);
+                                setSelectedId(id);
+                            }
+                        }}
                         validationErrors={validationErrors}
+                        level={levelState?.level}
                         t={t}
                     />
                 </div>
 
                 {/* Right Detail Pane */}
-                <div className="relative lg:col-span-7 xl:col-span-8 h-auto lg:h-full lg:overflow-y-auto pr-1 flex flex-col gap-3">
+                <div className="relative lg:col-span-8 xl:col-span-9 h-full flex flex-col gap-2 overflow-hidden">
                     {/* Loading Overlay */}
                     {isLoadingWing && (
                         <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center rounded-xl">
@@ -295,8 +184,10 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                             </div>
                         </div>
                     )}
-                    {isSociety && levelState && (levelState.level === 'Wing' || levelState.level === 'Unit') && (
-                        <div className="flex-shrink-0 space-y-2 bg-slate-50/60 p-3 rounded-xl border border-slate-200">
+
+
+                    {isSociety && levelState && levelState.level === 'Wing' && (
+                        <div className="flex-shrink-0 space-y-1.5 bg-slate-50/60 p-2.5 rounded-lg border border-slate-200">
                             <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
                                 {t('building.selectWing') || 'SELECT WING'}
                             </Label>
@@ -317,15 +208,19 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
 
                                                     const params = new URLSearchParams(searchParams.toString());
                                                     params.set("wingDetailId", String(wing.wingDetailId));
+                                                    params.delete("unitPropertyId");
                                                     updateUrl(params);
                                                 }}
                                                 className={cn(
-                                                    'px-4 font-semibold rounded-lg transition-all cursor-pointer border',
+                                                    'px-4 font-semibold rounded-lg transition-all cursor-pointer border flex items-center gap-1.5',
                                                     isSelected
                                                         ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs'
                                                         : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                                                 )}
                                             >
+                                                {isLoadingWing && isSelected && (
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                                                )}
                                                 {wing.wingName}
                                             </Button>
                                         );
@@ -340,90 +235,20 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                     )}
 
                     {isSociety && levelState && levelState.level === 'Unit' && (
-                        <div className="flex-shrink-0 space-y-2 bg-slate-50/60 p-3 rounded-xl border border-slate-200">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                                    {t('building.selectUnits') || 'SELECT UNITS'}
-                                </Label>
-                                <Badge variant="secondary" size="sm" className="bg-white text-slate-600 font-semibold border border-slate-200">
-                                    {t('building.unitsSelected', { count: levelState.selectedUnitsCount }) || `${levelState.selectedUnitsCount} ${levelState.selectedUnitsCount === 1 ? 'unit' : 'units'} selected`}
-                                </Badge>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                                <div className="relative sm:col-span-1">
-                                    <SearchInput
-                                        placeholder={t('building.searchUnitPlaceholder') || 'Search unit...'}
-                                        value={levelState.unitSearchQuery}
-                                        onChange={levelState.setUnitSearchQuery}
-                                        className="w-full mb-0 text-xs"
-                                    />
-                                </div>
-                                <Select
-                                    options={levelState.wings.map((w) => ({ label: w.wingName, value: String(w.wingDetailId) }))}
-                                    value={levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : ''}
-                                    onChange={(_, val) => {
-                                        const params = new URLSearchParams(searchParams.toString());
-                                        if (val === 'all') {
-                                            levelState.setSelectedWingDetailId(null);
-                                            params.delete("wingDetailId");
-                                        } else {
-                                            const nextWingDetailId = Number(val);
-                                            levelState.setSelectedWingDetailId(nextWingDetailId);
-                                            params.set("wingDetailId", String(nextWingDetailId));
-                                        }
-                                        updateUrl(params);
-                                    }}
-                                    selectSize="sm"
-                                    className="text-xs"
-                                />
-                                <Select
-                                    options={[
-                                        { label: t('building.allFloors') || 'All Floors', value: 'all' },
-                                        ...levelState.availableFloors.map((fl) => ({ label: fl, value: fl })),
-                                    ]}
-                                    value={levelState.floorFilter}
-                                    onChange={(_, val) => levelState.setFloorFilter(val)}
-                                    selectSize="sm"
-                                    className="text-xs"
-                                />
-                                <Select
-                                    options={[
-                                        { label: t('building.allUses') || 'All Uses', value: 'all' },
-                                        ...levelState.availableUses.map((us) => ({ label: us, value: us })),
-                                    ]}
-                                    value={levelState.useFilter}
-                                    onChange={(_, val) => levelState.setUseFilter(val)}
-                                    selectSize="sm"
-                                    className="text-xs"
-                                />
-                            </div>
-
-                            <MasterTable<UnitRow>
-                                columns={unitTableColumns}
-                                data={unitTableData}
-                                isPagination={false}
-                                emptyText={t('building.noUnitsMatch') || 'No units match the selected filters'}
-                                maxBodyHeightClassName="max-h-48"
-                                onScroll={(e) => {
-                                    const target = e.currentTarget;
-                                    if (target.scrollTop + target.clientHeight >= target.scrollHeight - 30) {
-                                        levelState.loadNextUnitsPage();
-                                    }
-                                }}
-                                getRowKey={(row) => (row.propertyId ?? row.propertyDetailsId) as number}
-                                onRowClick={(row) => levelState.toggleUnitSelection((row.propertyId ?? row.propertyDetailsId) as number)}
-                                rowClassName={(row) =>
-                                    levelState.selectedUnitIds.has((row.propertyId ?? row.propertyDetailsId) as number) ? 'bg-blue-50/60' : ''
-                                }
-                            />
-                            {levelState.isLoadingMoreUnits && (
-                                <div className="py-1.5 text-center text-xs text-blue-600 font-medium flex items-center justify-center gap-2 bg-blue-50/40 rounded-lg">
-                                    <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                    <span>{t('building.loadingNextUnits') || 'Loading next 10 units...'}</span>
-                                </div>
-                            )}
-                        </div>
+                        <UnitSelectionPanel
+                            levelState={levelState}
+                            t={t}
+                            savedPropertyDetails={savedPropertyDetails}
+                            activeSelectedId={activeSelectedId}
+                            activeAttributeName={activeAttributeDisplayName}
+                            onEditUnit={handleEditUnit}
+                            onUrlUpdate={handleUnitUrlUpdate}
+                            showActions={true}
+                            propertyId={propertyId}
+                            societyDetailId={societyDetailId}
+                            wingDetailId={levelState.selectedWingDetailId}
+                            onDeleteSelectionChange={(selectedIds) => setDeleteSelectionCount(selectedIds.size)}
+                        />
                     )}
 
                     <DiscountDetailPane
@@ -453,17 +278,10 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                         onSave={onSave}
                         validationError={activeSelectedId !== null ? validationErrors[activeSelectedId] : undefined}
                         t={t}
+                        isDeleteDisabled={levelState?.level === 'Unit' && deleteSelectionCount > 0}
                     />
                 </div>
             </div>
-            {viewerModalData?.isOpen && (
-                <DocumentViewerModal
-                    isOpen={viewerModalData.isOpen}
-                    onClose={() => setViewerModalData(null)}
-                    fileUrl={viewerModalData.fileUrl}
-                    fileName={viewerModalData.fileName}
-                />
-            )}
         </div>
     );
 };

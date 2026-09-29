@@ -71,12 +71,8 @@ export const IndividualOldMapDetailsTable: React.FC<IndividualOldMapDetailsTable
         {isLoading ? (
           <div className="flex items-center justify-center py-8 gap-2 text-xs font-medium text-slate-500">
             <Loader2 className="w-4 h-4 animate-spin text-teal-600" />
-            <span>
-              {
-                // eslint-disable-next-line i18next/no-literal-string
-                'Loading mapped properties...'
-              }
-            </span>
+            {/* eslint-disable-next-line i18next/no-literal-string */}
+            <span>Loading mapped properties...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">

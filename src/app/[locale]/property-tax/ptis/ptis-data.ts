@@ -20,6 +20,7 @@ import { PTIS_TABS, PtisTabId } from '@/types/ptis.types';
 
 /** Validate and coerce a raw tab param into a typed PtisTabId. */
 export const toValidTab = (value: unknown): PtisTabId => {
+  if (value === 'discount') return 'discountdetails';
   return typeof value === 'string' && (PTIS_TABS as readonly string[]).includes(value)
     ? (value as PtisTabId)
     : 'propertydetails';

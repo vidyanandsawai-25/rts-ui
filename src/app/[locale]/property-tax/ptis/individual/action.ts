@@ -52,12 +52,13 @@ import type { ActionResult } from '@/types/common.types';
 
 import { getPropertyComparisonAction } from '@/app/[locale]/property-tax/ptis/PropertyComparison.action';
 import type { PropertyComparisonResponse } from '@/types/propertyComparison.types';
+import { createLogger } from '@/lib/utils/server-logger';
+import { normalizeToItem, isConfigured } from '@/lib/utils/ptis/social-details';
+
+const logger = createLogger('IndividualActions');
 
 // Re-export core individual property actions
-export {
-  getIndividualQcTopSectionAction,
-  patchIndividualPropertyAction,
-};
+export { getIndividualQcTopSectionAction, patchIndividualPropertyAction };
 
 /**
  * Fetches basic old details for an individual property.
@@ -186,9 +187,7 @@ export async function fetchDiscountDetailsAction(
 /**
  * Fetches rateable and capital tax details for an individual property.
  */
-export async function fetchUnitTaxDetailsAction(
-  propertyId: number | string
-): Promise<{
+export async function fetchUnitTaxDetailsAction(propertyId: number | string): Promise<{
   success: boolean;
   rateable?: TaxDetailsData;
   capital?: TaxDetailsData;
@@ -286,6 +285,11 @@ export async function fetchMappedOldPropertiesAction(
   }
 }
 
+import { fetchApartmentSocialAndDiscountDetailsAction } from '@/app/[locale]/property-tax/ptis/apartment/action';
+import { getPropertySocialDetailsByFilters } from '@/lib/api/property-social-details.service';
+import { getSocialAttributes } from '@/lib/api/social-attribute-master/social-attribute-crud.service';
+import type { DiscountData, PropertySocialDetailItem } from '@/types/ptis.types';
+
 /**
  * Fetches building permission certificates for an individual property grid.
  */
@@ -306,3 +310,89 @@ export async function getIndividualBuildingCertificatesAction(
   }
 }
 
+/**
+ * Fetches discount and social details for an individual property or its parent society.
+ */
+export async function fetchIndividualSocialAndDiscountDetailsAction(
+  propertyId: number,
+  societyDetailId?: number | null,
+  wingDetailId?: number | null
+): Promise<{
+  success: boolean;
+  discountData?: DiscountData;
+  socialData?: DiscountData;
+  error?: string;
+}> {
+  try {
+    const socIdNum = societyDetailId ? Number(societyDetailId) : 0;
+    if (socIdNum > 0) {
+      return await fetchApartmentSocialAndDiscountDetailsAction(socIdNum, propertyId);
+    }
+
+    if (!propertyId || propertyId <= 0) {
+      return { success: false, error: 'Invalid property ID' };
+    }
+
+    const [propSocialRes, socialMasterRes] = await Promise.all([
+      getPropertySocialDetailsByFilters(
+        undefined,
+        undefined,
+        wingDetailId || undefined,
+        propertyId,
+        undefined,
+        true
+      ).catch(() => null),
+      getSocialAttributes().catch(() => null),
+    ]);
+
+    const masterById = new Map((socialMasterRes || []).map((m) => [m.id, m]));
+    const rawItems = propSocialRes || [];
+    const discountItems: PropertySocialDetailItem[] = [];
+    const socialItems: PropertySocialDetailItem[] = [];
+
+    for (const item of rawItems) {
+      const master = masterById.get(item.socialAttributeId);
+      const mappedItem = normalizeToItem(item, master, {
+        resolvedPropertyId: propertyId,
+        wingDetailId,
+      });
+
+      if (!isConfigured(mappedItem)) continue;
+
+      if (master?.isDiscountApplicable === true) {
+        discountItems.push(mappedItem);
+      } else if (master && master.isDiscountApplicable === false) {
+        socialItems.push(mappedItem);
+      }
+    }
+
+    if (discountItems.length === 0 && socialItems.length === 0) {
+      const [legacyDiscount, legacySocial] = await Promise.all([
+        ptisDetailsService.getDiscountDetails(propertyId).catch(() => null),
+        ptisDetailsService.getSocialDetails(propertyId).catch(() => null),
+      ]);
+      return {
+        success: true,
+        discountData: legacyDiscount?.data || { items: [] },
+        socialData: legacySocial?.data || { items: [] },
+      };
+    }
+
+    return {
+      success: true,
+      discountData: { items: discountItems },
+      socialData: { items: socialItems },
+    };
+  } catch (error) {
+    logger.error('fetchIndividualSocialAndDiscountDetailsAction failed', {
+      propertyId,
+      societyDetailId,
+      wingDetailId,
+      error: error as Error,
+    });
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch discount/social details',
+    };
+  }
+}

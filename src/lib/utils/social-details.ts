@@ -25,6 +25,11 @@ export interface FlatSocialAttributeState {
     photoBindingId?: number | null;
     photoGuid?: string | null;
     pendingFile?: File;
+    entityType?: string | null;
+    inheritedFrom?: string | null;
+    inheritanceLevel?: 'Self' | 'Wing' | 'Apartment' | string | null;
+    isInherited?: boolean;
+    isOverridden?: boolean;
 }
 
 const normalizePositiveId = (value: number | null | undefined): number | null => {
@@ -53,6 +58,15 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
                 initialBitValue = hasValue;
             }
 
+            const isInherited = Boolean(
+                attr.inheritanceLevel === "Apartment" || 
+                attr.inheritanceLevel === "Wing" || 
+                attr.inheritedFrom === "Apartment" || 
+                attr.inheritedFrom === "Wing"
+            );
+            const resolvedInheritanceLevel = attr.inheritanceLevel ?? (attr.inheritedFrom ? attr.inheritedFrom : (attr.propertySocialDetailId ? "Self" : null));
+            const resolvedInheritedFrom = attr.inheritedFrom ?? (isInherited ? attr.inheritanceLevel : null);
+
             map[attr.id] = {
                 id: attr.propertySocialDetailId ?? null,
                 socialAttributeId: attr.id,
@@ -74,7 +88,12 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
                 documentGuid: attr.documentGuid ?? attr.photoGuid ?? null,
                 documentUrl: (attr.documentGuid ?? attr.photoGuid) ? `/api/documents/${encodeURIComponent(attr.documentGuid ?? attr.photoGuid ?? "")}/view` : null,
                 photoBindingId: normalizePositiveId(attr.photoBindingId),
-                photoGuid: attr.photoGuid ?? null
+                photoGuid: attr.photoGuid ?? null,
+                entityType: attr.entityType ?? null,
+                inheritedFrom: resolvedInheritedFrom ?? null,
+                inheritanceLevel: resolvedInheritanceLevel ?? null,
+                isInherited: isInherited,
+                isOverridden: false,
             };
             if (attr.children && attr.children.length > 0) {
                 traverse(attr.children, attr.id);
@@ -92,21 +111,8 @@ export function isAttributeEnabled(
     attr: FlatSocialAttributeState,
     currentData: Record<number, FlatSocialAttributeState>
 ): boolean {
-    const code = (attr.socialAttributeCode || "").toUpperCase();
-    const isSpecialToggle = 
-        code === "ROAD_WIDTH" || 
-        code.includes("WATER_CONN") || 
-        code.includes("TREE");
-
-    if (isSpecialToggle && attr.bitValue === false) {
-        return false;
-    }
-
     if (!attr.parentAttributeId) {
-        if (attr.dataType.toUpperCase() === "BIT") {
-            return attr.bitValue === true;
-        }
-        return true;
+        return attr.bitValue === true;
     }
     const parent = currentData[attr.parentAttributeId];
     if (!parent) return false;
