@@ -194,4 +194,8 @@ export { TimePicker } from './TimePicker';
 export type { TimePickerProps } from './TimePicker';
 export { LanguageDropdown } from './LanguageDropdown';
 export { BackgroundCalculationToast } from './BackgroundCalculationToast';
+export { GisRealDocumentModal } from './GisRealDocumentModal';
+export type { GisRealDocumentModalProps } from './GisRealDocumentModal';
+export { GisLegacyDocumentModal } from './GisLegacyDocumentModal';
+export type { GisLegacyDocumentModalProps } from './GisLegacyDocumentModal';
 

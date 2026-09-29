@@ -6,6 +6,8 @@
   "subtitle": "Manage property tax records and assessments",
   "partitionNo": "Partition No.",
   "media": {
+    "noImagePresent": "No image present",
+    "imageLoadFailed": "Image failed to load",
     "checkingDetails": "Checking property details...",
     "preparingDrawingTool": "Preparing drawing tool...",
     "redirectingDrawingTool": "Redirecting to drawing tool...",

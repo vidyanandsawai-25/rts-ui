@@ -6,6 +6,8 @@
   "subtitle": "मालमत्तेची माहिती सर्वसमावेशक व्यवस्थापित करा",
   "partitionNo": "विभाजन क्र.",
   "media": {
+    "noImagePresent": "कोणतीही प्रतिमा उपलब्ध नाही",
+    "imageLoadFailed": "प्रतिमा लोड करण्यात अयशस्वी",
     "checkingDetails": "मालमत्ता तपशील तपासत आहे...",
     "preparingDrawingTool": "ड्रॉईंग टूल तयार करत आहे...",
     "redirectingDrawingTool": "ड्रॉईंग टूलकडे पुनर्निर्देशित करत आहे...",

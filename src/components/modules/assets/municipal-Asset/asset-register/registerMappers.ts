@@ -1,7 +1,7 @@
 import { AssetRegisterRow } from '@/types/asset/asset-register/municipal-asset-register.types';
 import type { AssetRegisterApiRecord } from '@/types/asset/asset-register/municipal-asset-service.types';
-import type { AssetRegisterSubUnitItem } from '@/lib/api/asset/asset-register/municipal-asset-register.server.service';
-import type { PropertyPhotoDto } from '@/types/asset/asset-register/media.types';
+import type { AssetRegisterSubUnitItem } from '@/lib/api/asset/asset-register/municipal-asset-register.service';
+import type { PropertyPhotoDto, GroupedAssetPhotos } from '@/types/asset/asset-register/media.types';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 
 export function formatDate(value?: string) {
@@ -107,24 +107,6 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
     totalSubUnits: record.totalSubUnits != null ? Number(record.totalSubUnits) : 0,
   };
 }
-
-type GroupedAssetPhotos = {
-  photoTypes?: Array<{
-    photos?: Array<{
-      photoId?: number;
-      propertyPhotoId?: number;
-      assetId?: number;
-      propertyId?: number;
-      photoTypeId?: number;
-      photoTypeCode?: string;
-      photoTypeName?: string;
-      displayOrder?: number;
-      remarks?: string;
-      viewUrl?: string;
-      documentGuid?: string;
-    }>;
-  }>;
-};
 
 export function mapGroupedAssetPhotosToPanelPhotos(data?: GroupedAssetPhotos | null): PropertyPhotoDto[] {
   const photoTypes = data?.photoTypes || [];

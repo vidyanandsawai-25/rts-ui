@@ -1,16 +1,8 @@
 import { Building2Icon, Coins, CheckCircle2 } from 'lucide-react';
-import { CardContent } from '@/components/common';
-import type { AssetRegisterHeaderSummaryProps } from '@/types/asset/asset-register/municipal-asset-register.types';
+import { Card, CardContent } from '@/components/common';
+import type { AssetRegisterHeaderSummaryProps, CenteredSummaryCardProps } from '@/types/asset/asset-register/municipal-asset-register.types';
 import { cn } from '@/lib/utils/cn';
 import { formatIndianCurrencyAbbreviated } from '@/lib/utils/asset-utils/currency-format';
-
-interface CenteredSummaryCardProps {
-  label: string;
-  value: string | number;
-  icon?: React.ReactNode;
-  iconBg?: string;
-  valueColor?: string;
-}
 
 function CenteredSummaryCard({
   label,
@@ -20,7 +12,7 @@ function CenteredSummaryCard({
   valueColor = "text-slate-900",
 }: CenteredSummaryCardProps) {
   return (
-    <div className="relative flex items-center justify-center text-center rounded-md bg-white px-4 py-2.5 border border-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+    <Card className="relative flex items-center justify-center text-center rounded-md bg-white px-4 py-2.5 border border-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
       {/* Accent bar */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#1A86E8] rounded-l-md" />
 
@@ -34,7 +26,7 @@ function CenteredSummaryCard({
         <span className="text-sm font-semibold text-slate-600">{label}:</span>
         <span className={cn("text-sm font-bold", valueColor)}>{value}</span>
       </div>
-    </div>
+    </Card>
   );
 }
 

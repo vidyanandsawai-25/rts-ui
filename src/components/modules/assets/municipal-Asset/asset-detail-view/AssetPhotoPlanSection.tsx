@@ -6,6 +6,7 @@ import React from 'react';
 import { SectionCard } from './SectionCard';
 import { Map } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { Button } from '@/components/common';
 
 // TODO: Do NOT delete this import, it will be added back in the future.
 // import { PhotoPlanDrawer } from '../municipal-Asset/NewAddNewAsset/basic-Info/media/PhotoPlanDrawer';
@@ -26,7 +27,6 @@ type PhotoCategory = {
   hasPhoto: boolean;
   photoCount: number;
 };
-import { Button } from '@/components/common';
 
 export function AssetPhotoPlanSection({ data, copy }: AssetPhotoPlanSectionProps): React.ReactElement {
   const t = useTranslations('asset-detail');
@@ -134,15 +134,13 @@ export function AssetPhotoPlanSection({ data, copy }: AssetPhotoPlanSectionProps
               }
 
               return (
-                <button
+                <Button
                   key={plan.id}
                   type="button"
-                  // onClick={() => {
-                  //   setClickedCategoryId(plan.id);
-                  //   setIsDrawerOpen(true);
-                  // }}
-                  className="w-full h-40 bg-slate-50 rounded-lg border border-slate-200 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:border-blue-400 hover:shadow-sm transition-all group"
+                  variant="ghost"
+                  className="w-full h-40 bg-slate-50 rounded-lg border border-slate-200 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:border-blue-400 hover:shadow-sm transition-all group p-0"
                   aria-label={`View ${localizedLabel}`}
+                  title={localizedLabel}
                 >
                   {/* Title */}
                   <div className="absolute top-2 left-0 right-0 text-center px-1 z-10 drop-shadow-md bg-white/70 backdrop-blur-sm mx-2 rounded py-0.5 border border-white/50 flex flex-col items-center justify-center">
@@ -157,7 +155,7 @@ export function AssetPhotoPlanSection({ data, copy }: AssetPhotoPlanSectionProps
                     alt={localizedLabel}
                     fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity bg-white"
                   />
-                </button>
+                </Button>
               );
             })}
           </div>

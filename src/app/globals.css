@@ -622,3 +622,170 @@ div[role="dialog"] [role="combobox"]:focus {
 .ios-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: rgba(100, 116, 139, 0.8) !important;
 }
+
+/* ==========================================================================
+   GIS Map Viewer & Sidebar Styles
+   ========================================================================== */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.custom-scrollbar-mini::-webkit-scrollbar {
+  width: 3px;
+}
+.custom-scrollbar-mini::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar-mini::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.leaflet-container {
+  background: transparent !important;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.leaflet-container:focus {
+  outline: none !important;
+  border: none !important;
+}
+.leaflet-grab {
+  cursor: default !important;
+}
+.leaflet-dragging .leaflet-grab {
+  cursor: move !important;
+}
+
+.cluster-marker {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: rgba(37, 99, 235, 0.9);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+@keyframes blink-blue {
+  0% { fill-opacity: 0.4; stroke-opacity: 0.6; }
+  50% { fill-opacity: 0.9; stroke-opacity: 1; }
+  100% { fill-opacity: 0.4; stroke-opacity: 0.6; }
+}
+.selected-property-blink {
+  animation: blink-blue 1s infinite ease-in-out;
+}
+
+@keyframes polygon-breathing {
+  0% {
+    fill-opacity: 0.35;
+    stroke-opacity: 0.7;
+    stroke-width: 3.5px;
+    filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.4));
+  }
+  50% {
+    fill-opacity: 0.75;
+    stroke-opacity: 1;
+    stroke-width: 6.5px;
+    filter: drop-shadow(0 0 14px rgba(37, 99, 235, 0.95)) drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
+  }
+  100% {
+    fill-opacity: 0.35;
+    stroke-opacity: 0.7;
+    stroke-width: 3.5px;
+    filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.4));
+  }
+}
+.breathing-polygon-highlight {
+  animation: polygon-breathing 2s ease-in-out infinite !important;
+  transform-origin: center center;
+  transition: all 0.3s ease;
+}
+
+.zone-label-tooltip {
+  background: transparent !important; 
+  border: none !important; 
+  box-shadow: none !important;
+  color: white !important; 
+  font-weight: 900 !important; 
+  font-size: 15px !important;
+  text-transform: uppercase; 
+  text-shadow: 
+      -1.5px -1.5px 0 #000, 
+       1.5px -1.5px 0 #000, 
+      -1.5px 1.5px 0 #000, 
+       1.5px 1.5px 0 #000, 
+       0px 2px 6px rgba(0,0,0,1) !important;
+  pointer-events: none !important; 
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+.zone-label-tooltip::before {
+  display: none !important;
+}
+
+.ward-label-tooltip {
+  background: transparent !important; 
+  border: none !important; 
+  box-shadow: none !important;
+  color: #ffffff !important; 
+  font-weight: 800 !important; 
+  font-size: 11px !important;
+  text-shadow: 
+      -1px -1px 0 #000, 
+       1px -1px 0 #000, 
+      -1px 1px 0 #000, 
+       1px 1px 0 #000, 
+       0px 2px 4px rgba(0,0,0,0.9) !important;
+  pointer-events: none !important; 
+  white-space: nowrap;
+}
+.ward-label-tooltip::before {
+  display: none !important;
+}
+
+.custom-property-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  overflow: hidden !important;
+  max-height: none !important;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+.custom-property-popup .leaflet-popup-content {
+  margin: 0 !important;
+  width: 380px !important;
+  max-height: none !important;
+  overflow: hidden !important;
+}
+.custom-property-popup .leaflet-popup-close-button { 
+  color: white !important;
+  top: 8px !important;
+  right: 8px !important; 
+  z-index: 10;
+  font-weight: bold;
+  background: rgba(0,0,0,0.2); 
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+  text-decoration: none; 
+  text-align: center;
+  line-height: 24px;
+  padding: 0 !important; 
+}

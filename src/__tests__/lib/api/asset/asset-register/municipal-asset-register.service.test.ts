@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { apiClient } from '@/services/api.service';
-import { municipalAssetRegisterServerService } from '@/lib/api/asset/asset-register/municipal-asset-register.server.service';
+import { municipalAssetRegisterServerService } from '@/lib/api/asset/asset-register/municipal-asset-register.service';
 
 vi.mock('@/services/api.service', () => ({
   apiClient: {

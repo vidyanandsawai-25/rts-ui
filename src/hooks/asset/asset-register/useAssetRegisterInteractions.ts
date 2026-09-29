@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import type { AssetRegisterRow } from '@/types/asset/asset-register/municipal-asset-register.types';
 import type { PropertyPhotoDto } from '@/types/asset/asset-register/media.types';
 import { fetchGroupedAssetPhotosAction, fetchSubUnitsByAsset } from '@/app/[locale]/assets/municipal-Asset/asset-register/[categoryId]/action';
-import type { AssetRegisterSubUnitItem } from '@/lib/api/asset/asset-register/municipal-asset-register.server.service';
+import type { AssetRegisterSubUnitItem } from '@/lib/api/asset/asset-register/municipal-asset-register.service';
 import { mapExpandedSubUnitItems, mapGroupedAssetPhotosToPanelPhotos } from '@/components/modules/assets/municipal-Asset/asset-register/registerMappers';
 
 type ExpandedSubUnit = AssetRegisterSubUnitItem & { isSubUnit?: boolean; parentId?: number };

@@ -6,6 +6,8 @@
   "subtitle": "संपत्ति की जानकारी का व्यापक प्रबंधन करें",
   "partitionNo": "विभाजन क्र.",
   "media": {
+    "noImagePresent": "कोई छवि मौजूद नहीं है",
+    "imageLoadFailed": "छवि लोड करने में विफल",
     "checkingDetails": "संपत्ति के विवरण की जांच हो रही है...",
     "preparingDrawingTool": "ड्राइंग टूल तैयार किया जा रहा है...",
     "redirectingDrawingTool": "ड्राइंग टूल पर पुनः निर्देशित किया जा रहा है...",

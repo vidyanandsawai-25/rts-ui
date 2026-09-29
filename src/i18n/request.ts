@@ -12,8 +12,9 @@ const validateLocale = (locale: string | undefined): Locale => {
   return locale && locales.includes(locale as Locale) ? (locale as Locale) : defaultLocale;
 };
 
-export default getRequestConfig(async ({ locale }) => {
-  const validatedLocale = validateLocale(locale);
+export default getRequestConfig(async ({ requestLocale }) => {
+  const resolvedLocale = await requestLocale;
+  const validatedLocale = validateLocale(resolvedLocale);
 
   // Load all translation files
   const [
@@ -101,6 +102,7 @@ export default getRequestConfig(async ({ locale }) => {
     retrospectiveRuleLibraryMessages,
     taxZoningRangeMessages,
     aliasMasterMessages,
+    assetGisMessages,
     connectionTypeMasterMessages,
     connectionCategoryMasterMessages,
     billingFrequencyMasterMessages,
@@ -262,6 +264,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/retrospectiveRuleLibrary.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxZoningRange.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/aliasMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetGis.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/connectionTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/connectionCategoryMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/billingFrequencyMaster.json`).catch(() => ({})).then((m) => m.default || m),
@@ -371,6 +374,8 @@ export default getRequestConfig(async ({ locale }) => {
       retrospectiveRuleLibrary: retrospectiveRuleLibraryMessages,
       taxZoningRange: taxZoningRangeMessages?.taxZoningRange || taxZoningRangeMessages,
       aliasMaster: aliasMasterMessages,
+      assetGis: assetGisMessages?.assetGis || assetGisMessages,
+      gis: assetGisMessages?.assetGis || assetGisMessages,
       connectionTypeMaster: connectionTypeMasterMessages?.connectionTypeMaster || connectionTypeMasterMessages,
       connectionCategoryMaster: connectionCategoryMasterMessages?.connectionCategoryMaster || connectionCategoryMasterMessages,
       billingFrequencyMaster:

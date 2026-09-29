@@ -7,49 +7,15 @@ import type {
   Ward,
   Zone,
 } from '@/types/asset/asset-register/municipal-asset-service.types';
+import type {
+  PagedApiResponse,
+  WrappedItemsResponse,
+  AssetRegisterSubUnitItem,
+} from '@/types/asset-types/asset-register.types';
 import type { PropertyPhotoGalleryDto } from '@/types/asset/asset-register/media.types';
 import type { ApiResponse } from '@/types/common.types';
 
-type PagedApiResponse<T> = {
-  items?: T[];
-  totalCount?: number;
-  totalPurchaseValue?: number;
-  totalMarketValue?: number;
-  totalDepreciation?: number;
-  netBookValue?: number;
-  totalCapitalValue?: number;
-  activeAssetsCount?: number;
-};
-
-type WrappedItemsResponse<T> = {
-  success?: boolean;
-  message?: string;
-  items?: T;
-  errors?: unknown;
-  correlationId?: string | null;
-};
-
-export type AssetRegisterSubUnitItem = {
-  id: number;
-  assetNo?: string;
-  assetName?: string;
-  status?: string;
-  occupancy?: string;
-  builtUpAreaSqMeter?: number | null;
-  carpetAreaSqMeter?: number | null;
-  capitalValue?: number | null;
-  lastCVDate?: string | null;
-  assetLife?: number | null;
-  names?: {
-    category?: string | null;
-    type?: string | null;
-    useType?: string | null;
-    subUseType?: string | null;
-    zone?: string | null;
-    ward?: string | null;
-    mouja?: string | null;
-  };
-};
+export type { AssetRegisterSubUnitItem };
 
 function unwrapItems<T>(data: { items?: T[] } | undefined): T[] {
   return Array.isArray(data?.items) ? data.items : [];

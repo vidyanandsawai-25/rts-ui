@@ -3,13 +3,7 @@
 import React from 'react';
 import { Building, Building2, School, Hospital, Briefcase, Trees, Trophy, Droplets, Route, Landmark, Map, BookOpen, Truck, Construction } from 'lucide-react';
 import { MultiSelectWithIcons, IconOption } from '@/components/common';
-
-interface AssetTypeFilterProps {
-  assetTypeId: string;
-  assetTypeOptions: Array<{ label: string, value: string }>;
-  handleAssetTypeChange: (selected: string[]) => void;
-  placeholder?: string;
-}
+import type { AssetTypeFilterProps } from '@/types/asset/asset-register/municipal-asset-register.types';
 
 function getAssetTypeIcon(label: string) {
   const lower = label.toLowerCase();

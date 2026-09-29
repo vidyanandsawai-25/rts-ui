@@ -1,6 +1,6 @@
 "use server";
 
-import { municipalAssetRegisterServerService } from "@/lib/api/asset/asset-register/municipal-asset-register.server.service";
+import { municipalAssetRegisterServerService } from "@/lib/api/asset/asset-register/municipal-asset-register.service";
 import type { AssetRegisterPageResult } from "@/types/asset/asset-register/municipal-asset-service.types";
 import type { ApiResponse } from "@/types/common.types";
 import type { PropertyPhotoGalleryDto } from "@/types/asset/asset-register/media.types";

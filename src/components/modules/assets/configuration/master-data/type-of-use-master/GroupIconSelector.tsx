@@ -66,19 +66,21 @@ export function GroupIconSelector({
               const isSelected = getIconKey(value) === option.value;
               return (
                 <li key={option.value}>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => {
                       onChange(name, option.value);
                       setIsOpen(false);
                     }}
-                    className={`flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-blue-50 focus:outline-none focus:bg-blue-50 ${
+                    className={`flex w-full items-center justify-start gap-3 px-4 py-2 text-left transition-colors hover:bg-blue-50 focus:outline-none focus:bg-blue-50 h-auto border-0 ${
                       isSelected ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-800"
                     }`}
                   >
                     <OptionIcon size={18} className={isSelected ? "text-blue-600" : "text-gray-600"} />
                     <span>{option.label}</span>
-                  </button>
+                  </Button>
                 </li>
               );
             })}

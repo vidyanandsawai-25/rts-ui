@@ -148,3 +148,18 @@ export interface AssetRegisterControlsProps {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+export interface CenteredSummaryCardProps {
+  label: string;
+  value: string | number;
+  icon?: React.ReactNode;
+  iconBg?: string;
+  valueColor?: string;
+}
+
+export interface AssetTypeFilterProps {
+  assetTypeId: string;
+  assetTypeOptions: Array<{ label: string; value: string }>;
+  handleAssetTypeChange: (selected: string[]) => void;
+  placeholder?: string;
+}

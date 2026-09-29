@@ -72,3 +72,25 @@ export interface ImageHoverPreviewProps {
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }
+
+export interface GroupedAssetPhotoItem {
+  photoId?: number;
+  propertyPhotoId?: number;
+  assetId?: number;
+  propertyId?: number;
+  photoTypeId?: number;
+  photoTypeCode?: string;
+  photoTypeName?: string;
+  displayOrder?: number;
+  remarks?: string;
+  viewUrl?: string;
+  documentGuid?: string;
+}
+
+export interface GroupedAssetPhotoType {
+  photos?: GroupedAssetPhotoItem[];
+}
+
+export interface GroupedAssetPhotos {
+  photoTypes?: GroupedAssetPhotoType[];
+}
