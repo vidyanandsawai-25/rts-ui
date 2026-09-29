@@ -132,7 +132,12 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({
           {isLoadingSocial ? (
             <div className={`flex flex-col items-center justify-center ${fallbackHeight}`}>
               <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
-              <p className="text-xs font-semibold text-slate-400">Loading social data...</p>
+              <p className="text-xs font-semibold text-slate-400">
+                {
+                  // eslint-disable-next-line i18next/no-literal-string
+                  'Loading social data...'
+                }
+              </p>
             </div>
           ) : activeItems.length === 0 ? (
             <div

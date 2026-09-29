@@ -324,7 +324,12 @@ export function ApartmentQCMasterTable<T extends Record<string, unknown>>({
                   <td colSpan={columns.length} className="py-10 text-center text-slate-500">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-slate-600"></div>
-                      <span>Loading...</span>
+                      <span>
+                        {
+                          // eslint-disable-next-line i18next/no-literal-string
+                          'Loading...'
+                        }
+                      </span>
                     </div>
                   </td>
                 </tr>

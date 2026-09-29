@@ -102,7 +102,14 @@ export default function RateSectionWards({
             />
             <span className="text-sm font-medium text-gray-700 group-hover:text-purple-700 transition-colors flex items-center gap-2 flex-1">
               {t('wardList.selectAll')}
-              {selectAllLoading && <span className="text-xs text-gray-500">(Loading...)</span>}
+              {selectAllLoading && (
+                <span className="text-xs text-gray-500">
+                  {
+                    // eslint-disable-next-line i18next/no-literal-string
+                    '(Loading...)'
+                  }
+                </span>
+              )}
             </span>
           </label>
         )}

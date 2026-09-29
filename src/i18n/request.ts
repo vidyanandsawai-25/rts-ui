@@ -114,6 +114,7 @@ export default getRequestConfig(async ({ locale }) => {
     meterTestStatusMasterMessages,
     meterTypeMasterMessages,
     readingSourceMasterMessages,
+    assetDetailNewMessages,
     assetFieldDefinitionMessages,
     assetDocumentDefinitionMessages,
   ] = await Promise.all([
@@ -273,6 +274,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/meterTestStatusMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/meterTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/readingSourceMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/asset-detail.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetFieldDefinition.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetDocumentDefinition.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
@@ -384,6 +386,7 @@ export default getRequestConfig(async ({ locale }) => {
       meterTestStatusMaster: meterTestStatusMasterMessages,
       meterTypeMaster: meterTypeMasterMessages,
       readingSourceMaster: readingSourceMasterMessages,
+      'asset-detail': assetDetailNewMessages,
       assetFieldDefinition: assetFieldDefinitionMessages,
       assetDocumentDefinition: assetDocumentDefinitionMessages,
     },

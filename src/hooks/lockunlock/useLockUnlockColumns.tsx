@@ -147,7 +147,12 @@ export function useLockUnlockColumns({
                   content={hiddenNames.join(", ")}
                 >
                   <span className="text-blue-600 font-semibold cursor-pointer hover:underline inline-block">
-                    +{hiddenNames.length} more...
+                    +
+                    {hiddenNames.length}
+                    {
+                      // eslint-disable-next-line i18next/no-literal-string
+                      ' more...'
+                    }
                   </span>
                 </Tooltip>
               </>

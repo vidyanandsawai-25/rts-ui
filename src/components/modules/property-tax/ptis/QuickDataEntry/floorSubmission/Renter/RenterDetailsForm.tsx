@@ -28,7 +28,10 @@ const RentManagementCard = dynamic(
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
           <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400">
-            Loading rent engine...
+            {
+              // eslint-disable-next-line i18next/no-literal-string
+              'Loading rent engine...'
+            }
           </span>
         </div>
       </div>
