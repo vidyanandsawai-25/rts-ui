@@ -13,9 +13,9 @@ export function useConnectionTypeMaster(data: PagedResponse<ConnectionType>) {
   const locale = useLocale();
   const pathname = usePathname() || "";
 
-  const isUnified = pathname.includes("/water-bill/water-connection-master/connection-type");
+  const isUnified = pathname.includes("/water-bill/connection-type-master/connection-type");
   const basePath = isUnified
-    ? `/${locale}/water-bill/water-connection-master/connection-type`
+    ? `/${locale}/water-bill/connection-type-master/connection-type`
     : `/${locale}/water-bill/connection-type-master`;
 
   const t = useTranslations("connectionTypeMaster.connectionType");

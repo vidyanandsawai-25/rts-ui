@@ -33,7 +33,7 @@
       },
       "tapSize": {
         "label": "Tap Size",
-        "placeholder": "e.g., 1/2 Inch"
+        "placeholder": "e.g., 1/2"
       },
       "nominalSizeValue": {
         "label": "Nominal Size Value",
@@ -56,6 +56,7 @@
       "tapSizeCodeLength": "Code cannot exceed 30 characters",
       "tapSizeRequired": "Tap Size is required",
       "tapSizeLength": "Tap Size cannot exceed 100 characters",
+      "tapSizeInvalid": "Invalid tap size format (e.g. 1/2 or 1)",
       "nominalSizeValueRequired": "Nominal Size Value is required",
       "nominalSizeValueInvalid": "Must be a valid number",
       "sizeUnitRequired": "Size Unit is required",

@@ -242,7 +242,7 @@ describe("ConnectionTypeForm Component", () => {
     );
 
     const codeInput = screen.getByDisplayValue("RES");
-    fireEvent.change(codeInput, { target: { value: "RES-NEW" } });
+    fireEvent.change(codeInput, { target: { value: "RESNEW" } });
 
     const typeInput = screen.getByDisplayValue("Residential");
     fireEvent.change(typeInput, { target: { value: "Residential VIP" } });
@@ -254,7 +254,7 @@ describe("ConnectionTypeForm Component", () => {
       expect(mockUpdateAction).toHaveBeenCalledWith(
         1,
         expect.objectContaining({
-          connectionTypeCode: "RES-NEW",
+          connectionTypeCode: "RESNEW",
           connectionType: "Residential VIP",
           description: "Standard",
           isActive: true,

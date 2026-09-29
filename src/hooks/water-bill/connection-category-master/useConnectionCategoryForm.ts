@@ -7,6 +7,7 @@ import type {
   ConnectionCategory,
   BillingFrequencyOption,
 } from "@/types/waterBill/connectionCategoryMaster.types";
+import { ALPHANUMERIC_WITH_SPACES_SANITIZE } from "@/lib/utils/validation-rules";
 import {
   createConnectionCategoryAction,
   updateConnectionCategoryAction,
@@ -27,9 +28,9 @@ export function useConnectionCategoryForm(
   const router = useRouter();
   const locale = useLocale();
   const pathname = usePathname() || "";
-  const isUnified = pathname.includes("/water-bill/water-connection-master/connection-category");
+  const isUnified = pathname.includes("/water-bill/connection-type-master/connection-category");
   const listUrl = isUnified
-    ? `/${locale}/water-bill/water-connection-master/connection-category`
+    ? `/${locale}/water-bill/connection-type-master/connection-category`
     : `/${locale}/water-bill/connection-category-master`;
   const t = useTranslations("connectionCategoryMaster.connectionCategory");
   const tCommon = useTranslations("common");
@@ -64,10 +65,18 @@ export function useConnectionCategoryForm(
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
   const handleChange = (field: keyof ConnectionCategoryFormModel, value: unknown) => {
+    let sanitizedValue = value;
+    if (typeof value === "string") {
+      sanitizedValue = value
+        .normalize("NFC")
+        .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
+        .replace(/\s{2,}/g, " ");
+    }
+
     setFormData((prev) => {
-      const updated = { ...prev, [field]: value };
+      const updated = { ...prev, [field]: sanitizedValue };
       if (field === "isMetered") {
-        const isMeteredBool = Boolean(value);
+        const isMeteredBool = Boolean(sanitizedValue);
         if (isMeteredBool && (NON_METERED_BILLING_METHODS as readonly string[]).includes(prev.billingMethod)) {
           updated.billingMethod = "Metered";
         } else if (!isMeteredBool && (METERED_BILLING_METHODS as readonly string[]).includes(prev.billingMethod)) {

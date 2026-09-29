@@ -8,5 +8,5 @@ export default async function AddConnectionCategoryRedirect({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect(`/${locale}/water-bill/water-connection-master/connection-category/add`);
+  redirect(`/${locale}/water-bill/connection-type-master/connection-category/add`);
 }

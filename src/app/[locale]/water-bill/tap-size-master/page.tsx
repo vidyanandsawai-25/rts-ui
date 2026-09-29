@@ -20,5 +20,5 @@ export default async function TapSizeMasterPage({
     }
   }
   const query = qParams.toString();
-  redirect(`/${locale}/water-bill/water-connection-master/tap-size${query ? `?${query}` : ""}`);
+  redirect(`/${locale}/water-bill/connection-type-master/tap-size${query ? `?${query}` : ""}`);
 }

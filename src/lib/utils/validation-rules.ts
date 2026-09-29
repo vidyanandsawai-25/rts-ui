@@ -208,3 +208,9 @@ export const isAllZeros = (value: string): boolean => {
 // Apartment QC Basic Information form validation 
 export const OWNERNAME_REGEX =
    /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;
+
+/* ================= TAP SIZE VALIDATION ================= */
+// Restrict to digits (0-9) and forward slash (/)
+export const TAP_SIZE_SANITIZE = /[^0-9/]/g;
+// Validate fraction (e.g. 1/2) or whole number (e.g. 1), prevent just "/" or "/6"
+export const TAP_SIZE_REGEX = /^\d+(?:\/\d+)?$/;

@@ -46,7 +46,7 @@ describe("useTapSizeForm Hook", () => {
     });
   });
 
-  it("initializes edit form with formatted initial values", () => {
+  it("initializes edit form with formatted initial values, stripping non-digits from tapSize", () => {
     const initialData = {
       id: 1,
       tapSizeCode: "TAP01",
@@ -59,73 +59,58 @@ describe("useTapSizeForm Hook", () => {
 
     expect(result.current.isEdit).toBe(true);
     expect(result.current.formData.tapSizeCode).toBe("TAP01");
-    expect(result.current.formData.tapSize).toBe("3/4 Inch");
+    // " Inch" is stripped out by initialTapSize sanitization
+    expect(result.current.formData.tapSize).toBe("3/4");
     expect(result.current.formData.nominalSizeValue).toBe("0.75");
     expect(result.current.formData.sizeUnit).toBe("Inch");
   });
 
-  it("validates all 4 required fields when values are empty", () => {
+  it("validates required fields when values are empty", () => {
     const { result } = renderHook(() => useTapSizeForm(null));
 
+    // nominalSizeValue is disabled and auto-calculated, so it's not checked here
     expect(result.current.errors.tapSizeCode).toBeDefined();
     expect(result.current.errors.tapSize).toBeDefined();
-    expect(result.current.errors.nominalSizeValue).toBeDefined();
     expect(result.current.errors.sizeUnit).toBeDefined();
   });
 
-  it("auto-populates nominalSizeValue and sizeUnit when tapSize is entered", () => {
+  it("auto-populates nominalSizeValue when tapSize is entered", () => {
     const { result } = renderHook(() => useTapSizeForm(null));
 
     act(() => {
-      result.current.handleChange("tapSize", "1/2 Inch");
+      result.current.handleChange("tapSize", "1/2");
     });
 
-    expect(result.current.formData.tapSize).toBe("1/2 Inch");
+    expect(result.current.formData.tapSize).toBe("1/2");
     expect(result.current.formData.nominalSizeValue).toBe("0.5");
-    expect(result.current.formData.sizeUnit).toBe("Inch");
   });
 
-  it("does not overwrite manually edited nominalSizeValue on subsequent tapSize changes", () => {
+  it("always overwrites nominalSizeValue on subsequent tapSize changes because it is read-only", () => {
     const { result } = renderHook(() => useTapSizeForm(null));
 
     act(() => {
-      result.current.handleChange("nominalSizeValue", "0.6");
+      result.current.handleChange("tapSize", "3/4");
     });
-
-    act(() => {
-      result.current.handleChange("tapSize", "3/4 Inch");
-    });
-
-    // nominalSizeValue should remain 0.6 because user edited it manually
-    expect(result.current.formData.nominalSizeValue).toBe("0.6");
-  });
-
-  it("formats nominalSizeValue on blur (e.g. 0.750 -> 0.75)", () => {
-    const { result } = renderHook(() => useTapSizeForm(null));
-
-    act(() => {
-      result.current.handleChange("nominalSizeValue", "0.750");
-    });
-
-    act(() => {
-      result.current.handleBlur("nominalSizeValue");
-    });
-
     expect(result.current.formData.nominalSizeValue).toBe("0.75");
+
+    act(() => {
+      result.current.handleChange("tapSize", "1");
+    });
+    // nominalSizeValue should become 1
+    expect(result.current.formData.nominalSizeValue).toBe("1");
   });
 
   it("submits create form and redirects on success", async () => {
     vi.mocked(actions.createTapSizeAction).mockResolvedValueOnce({
       success: true,
-      data: { id: 10, tapSizeCode: "TAP10", tapSize: "1 Inch", isActive: true },
+      data: { id: 10, tapSizeCode: "TAP10", tapSize: "1", isActive: true },
     });
 
     const { result } = renderHook(() => useTapSizeForm(null));
 
     act(() => {
       result.current.handleChange("tapSizeCode", "TAP10");
-      result.current.handleChange("tapSize", "1 Inch");
-      result.current.handleChange("nominalSizeValue", "1");
+      result.current.handleChange("tapSize", "1");
       result.current.handleChange("sizeUnit", "Inch");
     });
 
@@ -136,8 +121,8 @@ describe("useTapSizeForm Hook", () => {
     expect(actions.createTapSizeAction).toHaveBeenCalledWith(
       expect.objectContaining({
         tapSizeCode: "TAP10",
-        tapSize: "1 Inch",
-        nominalSizeValue: "1",
+        tapSize: "1",
+        nominalSizeValue: "1", // auto-populated
         sizeUnit: "Inch",
         isActive: true,
       })
@@ -149,7 +134,7 @@ describe("useTapSizeForm Hook", () => {
   it("submits update form and redirects on success", async () => {
     vi.mocked(actions.updateTapSizeAction).mockResolvedValueOnce({
       success: true,
-      data: { id: 5, tapSizeCode: "TAP05", tapSize: "2 Inch", isActive: true },
+      data: { id: 5, tapSizeCode: "TAP05", tapSize: "2", isActive: true },
     });
 
     const { result } = renderHook(() =>
@@ -167,7 +152,7 @@ describe("useTapSizeForm Hook", () => {
       await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
     });
 
-    expect(actions.updateTapSizeAction).toHaveBeenCalledWith(5, expect.objectContaining({ tapSizeCode: "TAP05" }));
+    expect(actions.updateTapSizeAction).toHaveBeenCalledWith(5, expect.objectContaining({ tapSizeCode: "TAP05", tapSize: "2" }));
     expect(toast.success).toHaveBeenCalled();
     expect(mockRouterPush).toHaveBeenCalledWith("/en/water-bill/tap-size-master");
   });

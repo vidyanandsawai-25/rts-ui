@@ -162,6 +162,7 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
             <Input
               label={t("form.nominalSizeValue.label")}
               required
+              disabled
               id="nominal-size-value"
               type="number"
               step="0.01"

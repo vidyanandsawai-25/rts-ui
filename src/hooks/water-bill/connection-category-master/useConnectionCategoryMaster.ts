@@ -13,9 +13,9 @@ export function useConnectionCategoryMaster(data: PagedResponse<ConnectionCatego
   const locale = useLocale();
   const pathname = usePathname() || "";
 
-  const isUnified = pathname.includes("/water-bill/water-connection-master/connection-category");
+  const isUnified = pathname.includes("/water-bill/connection-type-master/connection-category");
   const basePath = isUnified
-    ? `/${locale}/water-bill/water-connection-master/connection-category`
+    ? `/${locale}/water-bill/connection-type-master/connection-category`
     : `/${locale}/water-bill/connection-category-master`;
 
   const t = useTranslations("connectionCategoryMaster.connectionCategory");

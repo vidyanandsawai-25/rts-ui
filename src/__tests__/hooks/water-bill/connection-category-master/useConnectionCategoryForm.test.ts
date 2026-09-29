@@ -64,6 +64,16 @@ describe("useConnectionCategoryForm", () => {
     expect(result.current.formData.connectionCategory).toBe("Regular Metered");
   });
 
+  it("sanitizes string fields on change", () => {
+    const { result } = renderHook(() => useConnectionCategoryForm(null));
+    act(() => {
+      // Input with special characters
+      result.current.handleChange("connectionCategory", "Regu!@#lar Metered$%");
+    });
+    // Should strip out special chars
+    expect(result.current.formData.connectionCategory).toBe("Regular Metered");
+  });
+
   it("switches billing method when isMetered toggle changes", () => {
     const { result } = renderHook(() => useConnectionCategoryForm(null));
     act(() => {
@@ -93,7 +103,7 @@ describe("useConnectionCategoryForm", () => {
     const { result } = renderHook(() => useConnectionCategoryForm(null));
 
     act(() => {
-      result.current.handleChange("connectionCategoryCode", "NEW_CAT");
+      result.current.handleChange("connectionCategoryCode", "NEWCAT");
       result.current.handleChange("connectionCategory", "New Category");
       result.current.handleChange("billingFrequencyId", 2);
     });
@@ -105,7 +115,7 @@ describe("useConnectionCategoryForm", () => {
 
     expect(mockCreateAction).toHaveBeenCalledWith(
       expect.objectContaining({
-        connectionCategoryCode: "NEW_CAT",
+        connectionCategoryCode: "NEWCAT",
         connectionCategory: "New Category",
         billingFrequencyId: 2,
       })

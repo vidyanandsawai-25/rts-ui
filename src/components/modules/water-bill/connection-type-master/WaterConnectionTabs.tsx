@@ -12,7 +12,7 @@ export function WaterConnectionTabs() {
   const locale = useLocale();
   const t = useTranslations("waterConnectionMaster");
 
-  const base = `/${locale}/water-bill/water-connection-master`;
+  const base = `/${locale}/water-bill/connection-type-master`;
 
   const activeTab: TabKey = pathname?.includes("/tap-size")
     ? "tap-size"
@@ -32,13 +32,13 @@ export function WaterConnectionTabs() {
           content: null,
         },
         {
-          value: "tap-size",
-          label: t("tabs.tapSize") || "Tap Size",
+          value: "connection-category",
+          label: t("tabs.connectionCategory") || "Connection Category",
           content: null,
         },
         {
-          value: "connection-category",
-          label: t("tabs.connectionCategory") || "Connection Category",
+          value: "tap-size",
+          label: t("tabs.tapSize") || "Tap Size",
           content: null,
         },
       ]}

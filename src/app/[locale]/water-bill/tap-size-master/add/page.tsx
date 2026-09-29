@@ -8,5 +8,5 @@ export default async function AddTapSizeRedirect({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect(`/${locale}/water-bill/water-connection-master/tap-size/add`);
+  redirect(`/${locale}/water-bill/connection-type-master/tap-size/add`);
 }

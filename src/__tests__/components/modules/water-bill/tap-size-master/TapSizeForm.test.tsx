@@ -69,7 +69,6 @@ describe("TapSizeForm Component", () => {
     await waitFor(() => {
       expect(screen.getByText("Tap Size Code is required")).toBeInTheDocument();
       expect(screen.getByText("Tap Size is required")).toBeInTheDocument();
-      expect(screen.getByText("Nominal Size Value is required")).toBeInTheDocument();
       expect(screen.getByText("Size Unit is required")).toBeInTheDocument();
     });
   });
@@ -113,7 +112,7 @@ describe("TapSizeForm Component", () => {
       expect(mockCreateAction).toHaveBeenCalledWith(
         expect.objectContaining({
           tapSizeCode: "TAP01",
-          tapSize: "1/2 Inch",
+          tapSize: "1/2",
           nominalSizeValue: "0.5",
           sizeUnit: "Inch",
           isActive: true,

@@ -3,6 +3,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { ConnectionTypeFormModel, ConnectionType } from "@/types/waterBill/connectionTypeMaster.types";
+import { ALPHANUMERIC_WITH_SPACES_SANITIZE } from "@/lib/utils/validation-rules";
 import {
   createConnectionTypeAction,
   updateConnectionTypeAction,
@@ -12,9 +13,9 @@ export function useConnectionTypeForm(id: number | null, initialData?: Connectio
   const router = useRouter();
   const locale = useLocale();
   const pathname = usePathname() || "";
-  const isUnified = pathname.includes("/water-bill/water-connection-master/connection-type");
+  const isUnified = pathname.includes("/water-bill/connection-type-master/connection-type");
   const listUrl = isUnified
-    ? `/${locale}/water-bill/water-connection-master/connection-type`
+    ? `/${locale}/water-bill/connection-type-master/connection-type`
     : `/${locale}/water-bill/connection-type-master`;
   const t = useTranslations("connectionTypeMaster.connectionType");
   const tCommon = useTranslations("common");
@@ -62,7 +63,14 @@ export function useConnectionTypeForm(id: number | null, initialData?: Connectio
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
   const handleChange = (field: keyof ConnectionTypeFormModel, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    let sanitizedValue = value;
+    if (typeof value === "string") {
+      sanitizedValue = value
+        .normalize("NFC")
+        .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
+        .replace(/\s{2,}/g, " ");
+    }
+    setFormData((prev) => ({ ...prev, [field]: sanitizedValue }));
   };
 
   const handleBlur = (field: keyof ConnectionTypeFormModel) => {

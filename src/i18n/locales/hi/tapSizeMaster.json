@@ -33,7 +33,7 @@
       },
       "tapSize": {
         "label": "टैप साइज",
-        "placeholder": "उदा., 1/2 Inch"
+        "placeholder": "उदा., 1/2"
       },
       "nominalSizeValue": {
         "label": "अंकित आकार मूल्य",
@@ -56,6 +56,7 @@
       "tapSizeCodeLength": "कोड 30 अक्षरों से अधिक नहीं हो सकता",
       "tapSizeRequired": "टैप साइज आवश्यक है",
       "tapSizeLength": "टैप साइज 100 अक्षरों से अधिक नहीं हो सकता",
+      "tapSizeInvalid": "अमान्य टैप साइज प्रारूप (उदा., 1/2 या 1)",
       "nominalSizeValueRequired": "अंकित आकार मूल्य आवश्यक है",
       "nominalSizeValueInvalid": "मान्य संख्या होनी चाहिए",
       "sizeUnitRequired": "आकार इकाई आवश्यक है",

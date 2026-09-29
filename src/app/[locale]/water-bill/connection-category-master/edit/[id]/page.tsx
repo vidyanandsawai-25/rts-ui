@@ -8,5 +8,5 @@ export default async function EditConnectionCategoryRedirect({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
-  redirect(`/${locale}/water-bill/water-connection-master/connection-category/edit/${id}`);
+  redirect(`/${locale}/water-bill/connection-type-master/connection-category/edit/${id}`);
 }

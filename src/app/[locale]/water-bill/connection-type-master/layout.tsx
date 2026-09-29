@@ -1,11 +1,11 @@
 import { PageContainer } from "@/components/common/PageContainer";
-import { WaterConnectionHeader } from "@/components/modules/water-bill/water-connection-master";
+import { WaterConnectionHeader } from "@/components/modules/water-bill/connection-type-master";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-export default function WaterConnectionMasterLayout({
+export default function ConnectionTypeMasterLayout({
   children,
 }: Readonly<LayoutProps>) {
   return (

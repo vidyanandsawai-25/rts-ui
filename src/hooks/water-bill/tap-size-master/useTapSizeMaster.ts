@@ -13,9 +13,9 @@ export function useTapSizeMaster(data: PagedResponse<TapSize>) {
   const locale = useLocale();
   const pathname = usePathname() || "";
 
-  const isUnified = pathname.includes("/water-bill/water-connection-master/tap-size");
+  const isUnified = pathname.includes("/water-bill/connection-type-master/tap-size");
   const basePath = isUnified
-    ? `/${locale}/water-bill/water-connection-master/tap-size`
+    ? `/${locale}/water-bill/connection-type-master/tap-size`
     : `/${locale}/water-bill/tap-size-master`;
 
   const t = useTranslations("tapSizeMaster.tapSize");

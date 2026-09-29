@@ -20,5 +20,5 @@ export default async function ConnectionCategoryMasterPage({
     }
   }
   const query = qParams.toString();
-  redirect(`/${locale}/water-bill/water-connection-master/connection-category${query ? `?${query}` : ""}`);
+  redirect(`/${locale}/water-bill/connection-type-master/connection-category${query ? `?${query}` : ""}`);
 }

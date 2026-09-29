@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { TapSizeFormModel, TapSize } from "@/types/waterBill/tapSizeMaster.types";
 import { formatNominalSize, parseNominalSizeFromTapSize } from "@/lib/utils/water-bill/tapSizeMaster.utils";
+import { ALPHANUMERIC_WITH_SPACES_SANITIZE, TAP_SIZE_SANITIZE, TAP_SIZE_REGEX } from "@/lib/utils/validation-rules";
 import {
   createTapSizeAction,
   updateTapSizeAction,
@@ -13,9 +14,9 @@ export function useTapSizeForm(id: number | null, initialData?: TapSize) {
   const router = useRouter();
   const locale = useLocale();
   const pathname = usePathname() || "";
-  const isUnified = pathname.includes("/water-bill/water-connection-master/tap-size");
+  const isUnified = pathname.includes("/water-bill/connection-type-master/tap-size");
   const listUrl = isUnified
-    ? `/${locale}/water-bill/water-connection-master/tap-size`
+    ? `/${locale}/water-bill/connection-type-master/tap-size`
     : `/${locale}/water-bill/tap-size-master`;
   const t = useTranslations("tapSizeMaster.tapSize");
   const tCommon = useTranslations("common");
@@ -25,9 +26,12 @@ export function useTapSizeForm(id: number | null, initialData?: TapSize) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
 
+  // For edit mode, clean up old data that might have had "Inch" in the tapSize string
+  const initialTapSize = (initialData?.tapSize ?? "").replace(TAP_SIZE_SANITIZE, "");
+
   const [formData, setFormData] = useState<TapSizeFormModel>({
     tapSizeCode: initialData?.tapSizeCode ?? "",
-    tapSize: initialData?.tapSize ?? "",
+    tapSize: initialTapSize,
     nominalSizeValue:
       initialData?.nominalSizeValue != null
         ? formatNominalSize(initialData.nominalSizeValue, "")
@@ -37,7 +41,6 @@ export function useTapSizeForm(id: number | null, initialData?: TapSize) {
   });
   
   const [touched, setTouched] = useState<Partial<Record<keyof TapSizeFormModel, boolean>>>({});
-  const isNominalUserEdited = useRef(Boolean(initialData?.nominalSizeValue));
   const isUnitUserEdited = useRef(Boolean(initialData?.sizeUnit));
 
   const validate = useCallback(
@@ -52,12 +55,12 @@ export function useTapSizeForm(id: number | null, initialData?: TapSize) {
         errs.tapSize = t("validation.tapSizeRequired");
       } else if (data.tapSize.length > 100) {
         errs.tapSize = t("validation.tapSizeLength");
+      } else if (!TAP_SIZE_REGEX.test(data.tapSize.trim())) {
+        errs.tapSize = t("validation.tapSizeInvalid");
       }
-      if (data.nominalSizeValue === "" || data.nominalSizeValue === null || data.nominalSizeValue === undefined) {
-        errs.nominalSizeValue = t("validation.nominalSizeValueRequired");
-      } else if (isNaN(Number(data.nominalSizeValue))) {
-        errs.nominalSizeValue = t("validation.nominalSizeValueInvalid");
-      }
+      
+      // Removed nominalSizeValue validation since it's disabled/auto-calculated
+
       if (!data.sizeUnit?.trim()) {
         errs.sizeUnit = t("validation.sizeUnitRequired");
       } else if (data.sizeUnit.length > 20) {
@@ -74,35 +77,45 @@ export function useTapSizeForm(id: number | null, initialData?: TapSize) {
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
   const handleChange = (field: keyof TapSizeFormModel, value: string | number | boolean) => {
+    let sanitizedValue = value;
+    if (typeof value === "string") {
+      if (field === "tapSize") {
+        sanitizedValue = value.replace(TAP_SIZE_SANITIZE, "");
+      } else {
+        sanitizedValue = value
+          .normalize("NFC")
+          .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
+          .replace(/\s{2,}/g, " ");
+      }
+    }
+
     if (field === "tapSize") {
-      const strVal = String(value);
+      const strVal = String(sanitizedValue);
       const parsed = parseNominalSizeFromTapSize(strVal);
 
       setFormData((prev) => ({
         ...prev,
         tapSize: strVal,
-        ...(!isNominalUserEdited.current && parsed.nominalSizeValue !== undefined
+        ...(parsed.nominalSizeValue !== undefined
           ? { nominalSizeValue: parsed.nominalSizeValue }
-          : {}),
+          : { nominalSizeValue: "" }),
         ...(!isUnitUserEdited.current && parsed.sizeUnit ? { sizeUnit: parsed.sizeUnit } : {}),
       }));
       return;
     }
 
-    if (field === "nominalSizeValue") {
-      isNominalUserEdited.current = value !== "";
-    } else if (field === "sizeUnit") {
-      isUnitUserEdited.current = value !== "";
+    if (field === "sizeUnit") {
+      isUnitUserEdited.current = sanitizedValue !== "";
     }
 
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: sanitizedValue }));
   };
 
   const handleBlur = (field: keyof TapSizeFormModel) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
     if (field === "tapSize") {
       const parsed = parseNominalSizeFromTapSize(formData.tapSize);
-      if (!isNominalUserEdited.current && parsed.nominalSizeValue !== undefined) {
+      if (parsed.nominalSizeValue !== undefined) {
         setFormData((prev) => ({ ...prev, nominalSizeValue: parsed.nominalSizeValue! }));
       }
       if (!isUnitUserEdited.current && parsed.sizeUnit) {

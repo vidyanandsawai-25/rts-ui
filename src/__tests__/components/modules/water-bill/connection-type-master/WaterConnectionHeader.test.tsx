@@ -1,9 +1,10 @@
 import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
-import { WaterConnectionHeader } from "@/components/modules/water-bill/water-connection-master/WaterConnectionHeader";
+import { WaterConnectionHeader } from "@/components/modules/water-bill/connection-type-master/WaterConnectionHeader";
 
-let currentPathname = "/en/water-bill/water-connection-master/connection-type";
+let currentPathname = "/en/water-bill/connection-type-master/connection-type";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -58,11 +59,11 @@ function renderHeader() {
 describe("WaterConnectionHeader Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    currentPathname = "/en/water-bill/water-connection-master/connection-type";
+    currentPathname = "/en/water-bill/connection-type-master/connection-type";
   });
 
   it("renders Connection Type title and description for connection-type route", () => {
-    currentPathname = "/en/water-bill/water-connection-master/connection-type";
+    currentPathname = "/en/water-bill/connection-type-master/connection-type";
     renderHeader();
 
     expect(screen.getByText("Connection Type Master")).toBeInTheDocument();
@@ -70,7 +71,7 @@ describe("WaterConnectionHeader Component", () => {
   });
 
   it("renders Tap Size title and description for tap-size route", () => {
-    currentPathname = "/en/water-bill/water-connection-master/tap-size";
+    currentPathname = "/en/water-bill/connection-type-master/tap-size";
     renderHeader();
 
     expect(screen.getByText("Tap Size Master")).toBeInTheDocument();
@@ -78,7 +79,7 @@ describe("WaterConnectionHeader Component", () => {
   });
 
   it("renders Connection Category title and description for connection-category route", () => {
-    currentPathname = "/en/water-bill/water-connection-master/connection-category";
+    currentPathname = "/en/water-bill/connection-type-master/connection-category";
     renderHeader();
 
     expect(screen.getByText("Connection Category Master")).toBeInTheDocument();
