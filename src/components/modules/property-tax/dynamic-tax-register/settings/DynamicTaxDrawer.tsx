@@ -131,12 +131,14 @@ export default function DynamicTaxDrawer(props: DynamicTaxDrawerProps) {
           isNew={nav.isNew}
           savingSettings={general.savingSettings}
           handleClose={nav.handleClose}
+          rawClose={nav.rawClose}
           handleSaveSettings={handleSaveAll}
           selectedCategory={general.selectedCategory}
           routeBase={nav.routeBase}
           numericId={nav.numericId}
           startTransition={nav.startTransition}
           router={nav.router}
+          rawRouter={nav.rawRouter}
         />
       }
     >

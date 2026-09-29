@@ -39,25 +39,32 @@ export interface DynamicTaxDrawerFooterProps {
   isNew: boolean;
   savingSettings: boolean;
   handleClose: () => void;
+  rawClose?: () => void;
   handleSaveSettings: () => Promise<{ ok: boolean; newTaxId?: number }>;
   selectedCategory: RuleCategory;
   routeBase: string;
   numericId: number;
   startTransition: (fn: () => void) => void;
   router: { push: (href: string) => void };
+  rawRouter?: { push: (href: string) => void };
 }
 
 export function DynamicTaxDrawerFooter({
   isNew,
   savingSettings,
   handleClose,
+  rawClose,
   handleSaveSettings,
   selectedCategory,
   routeBase,
   startTransition,
   router,
+  rawRouter,
 }: DynamicTaxDrawerFooterProps) {
   const t = useTranslations('dynamicTaxRegister');
+  const closeFn = rawClose ?? handleClose;
+  const navRouter = rawRouter ?? router;
+
   return (
     <div className="w-full flex items-center justify-between">
       <span className="text-[11px] text-slate-400 font-medium">
@@ -74,12 +81,12 @@ export function DynamicTaxDrawerFooter({
             if (!result.ok) return;
             if (isNew && result.newTaxId) {
               startTransition(() =>
-                router.push(
+                navRouter.push(
                   `${routeBase}/add/${result.newTaxId}?tab=config&category=${encodeURIComponent(selectedCategory)}`
                 )
               );
             } else {
-              handleClose();
+              closeFn();
             }
           }}
           className="shadow-md active:scale-95 transition-all"
@@ -88,3 +95,4 @@ export function DynamicTaxDrawerFooter({
     </div>
   );
 }
+
