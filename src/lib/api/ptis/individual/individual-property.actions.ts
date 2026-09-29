@@ -105,7 +105,7 @@ export async function patchIndividualPropertyAction(
   propertyId: number | string,
   payload: IndividualPatchPayload,
   locale?: string
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<{ success: boolean; message?: string; data?: unknown; error?: string }> {
   try {
     if (!propertyId) {
       return { success: false, error: 'Property identifier is required' };
@@ -125,6 +125,7 @@ export async function patchIndividualPropertyAction(
     return {
       success: true,
       message: 'Property details updated successfully',
+      data: res.data,
     };
   } catch (error) {
     return {

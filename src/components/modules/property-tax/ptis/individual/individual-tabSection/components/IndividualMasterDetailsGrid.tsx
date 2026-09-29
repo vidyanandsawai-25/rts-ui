@@ -16,7 +16,7 @@ export interface IndividualMasterDetailsGridProps {
  */
 export const IndividualMasterDetailsGrid: React.FC<IndividualMasterDetailsGridProps> = memo(({ data }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.3fr] xl:grid-cols-[1.1fr_1.1fr_1.4fr] gap-x-3 lg:gap-x-4 gap-y-1 text-[12px] pt-0.5 min-w-0">
+    <div className="grid grid-cols-1 md:grid-cols-[1.25fr_0.8fr_1.35fr] xl:grid-cols-[1.25fr_0.75fr_1.4fr] gap-x-3.5 lg:gap-x-4 gap-y-1 text-[12px] pt-0.5 min-w-0">
       {/* COLUMN 1: Owner & Holder Details */}
       <IndividualMasterOwnerColumn data={data} />
 

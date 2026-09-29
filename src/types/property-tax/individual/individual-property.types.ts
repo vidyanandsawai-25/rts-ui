@@ -29,14 +29,17 @@ export interface IndividualPropertyDto {
   propertyNo?: string | null;
   upicId?: string | null;
   ownerName?: string | null;
+  ownerNameRegional?: string | null;
   owner?: string | null;
   propertyHolder?: string | null;
   holderRegional?: string | null;
   occupierName?: string | null;
+  occupierNameRegional?: string | null;
   occupierRegional?: string | null;
   ownerCategory?: string | null;
   category?: string | null;
   categoryName?: string | null;
+  propertyCategory?: string | null;
   aadharNo?: string | null;
   ownerTitle?: string | null;
   aadharWithTitle?: string | null;
@@ -45,19 +48,37 @@ export interface IndividualPropertyDto {
   emailId?: string | null;
   address?: string | null;
   addressEnglish?: string | null;
+  addressRegional?: string | null;
   pinCode?: string | null;
   fullAddress?: string | null;
   division?: string | null;
   moujaName?: string | null;
   surveyNo?: string | null;
   taxZone?: string | null;
+  taxZoneNo?: string | null;
+  subZoneNo?: string | null;
+  subZone?: string | null;
+  rateSectionName?: string | null;
   plotNo?: string | null;
+  flatOrShopNo?: string | null;
+  flatOrShopName?: string | null;
+  flatOrShopNameEnglish?: string | null;
+  shopName?: string | null;
+  shopNameRegional?: string | null;
   plotAreaFt?: number | string | null;
   plotAreaMtr?: number | string | null;
   carpetAreaFt?: number | string | null;
   carpetAreaMtr?: number | string | null;
+  carpetAreasqFt?: number | string | null;
+  carpetAreasqMtr?: number | string | null;
   builtUpAreaFt?: number | string | null;
   builtUpAreaMtr?: number | string | null;
+  builtUpAreasqFt?: number | string | null;
+  builtUpAreasqMtr?: number | string | null;
+  oldCarpetAreaSqFeet?: number | string | null;
+  oldCarpetAreaSqMeter?: number | string | null;
+  oldBuiltupAreaSqFeet?: number | string | null;
+  oldBuiltupAreaSqMeter?: number | string | null;
   propertyDescription?: string | null;
   individualPropertyGuid?: string | null;
   individualPropertyPhotoGuid?: string | null;
@@ -106,6 +127,7 @@ export interface IndividualPropertyMasterData {
   societyName?: string;
   ownerName?: string;
   ownerNameEnglish?: string;
+  ownerNameRegional?: string;
   landOwnerName?: string;
   owner?: string;
   propertyHolder?: string;
@@ -113,14 +135,23 @@ export interface IndividualPropertyMasterData {
   occupierName?: string;
   occupierNameEnglish?: string;
   occupierRegional?: string;
+  occupierNameRegional?: string;
   ownerCategory?: string;
   division?: string;
   moujaName?: string;
   surveyNo?: string;
   taxZone?: string;
+  taxZoneNo?: string;
+  subZoneNo?: string;
+  subZone?: string;
+  rateSectionName?: string;
   taxZoneAndName?: string;
   subZoneCsnNo?: string;
   plotNo?: string;
+  flatOrShopNo?: string;
+  flatOrShopName?: string;
+  shopName?: string;
+  shopNameRegional?: string;
   aadharNo?: string;
   title?: string;
   ownerTitle?: string;
@@ -132,13 +163,18 @@ export interface IndividualPropertyMasterData {
   societyEmail?: string;
   societyAddress?: string;
   address?: string;
+  addressEnglish?: string;
+  addressRegional?: string;
   plotArea?: string;
   plotAreaFtMtr?: string;
   carpetAreaFtMtr?: string;
   builtUpAreaFtMtr?: string;
   carpetBuiltUpArea?: string;
+  oldCarpetAreaFtMtr?: string;
+  oldBuiltUpAreaFtMtr?: string;
   status?: string;
   category?: string;
+  propertyCategory?: string;
   categoryId?: number | null;
   propertyTypeId?: number | null;
   propertyDescription?: string;
@@ -155,10 +191,12 @@ export interface IndividualPropertyMasterData {
 
 export interface IndividualPatchPayload {
   ownerName?: string | null;
+  ownerNameRegional?: string | null;
   ownerNameEnglish?: string | null;
   ownerTitle?: string | null;
   ownerTitleEnglish?: string | null;
   occupierName?: string | null;
+  occupierNameRegional?: string | null;
   occupierNameEnglish?: string | null;
   occupierTitle?: string | null;
   occupierTitleEnglish?: string | null;
@@ -168,12 +206,55 @@ export interface IndividualPatchPayload {
   alternateMobileNo?: string | null;
   emailId?: string | null;
   address?: string | null;
+  addressRegional?: string | null;
   addressEnglish?: string | null;
   pinCode?: string | null;
   moujaId?: number | null;
   taxZoneId?: number | null;
   surveyNo?: string | null;
   plotNo?: string | null;
+  flatOrShopNo?: string | null;
+  flatOrShopName?: string | null;
+  flatOrShopNameEnglish?: string | null;
   categoryId?: number | null;
   propertyTypeId?: number | null;
 }
+
+export interface IndividualPatchResponseDto {
+  ownerName?: string | null;
+  ownerNameRegional?: string | null;
+  ownerNameEnglish?: string | null;
+  ownerTitle?: string | null;
+  ownerTitleEnglish?: string | null;
+  occupierName?: string | null;
+  occupierNameRegional?: string | null;
+  occupierNameEnglish?: string | null;
+  occupierTitle?: string | null;
+  occupierTitleEnglish?: string | null;
+  ownerTypeId?: number | null;
+  aadharNo?: string | null;
+  mobileNo?: string | null;
+  alternateMobileNo?: string | null;
+  emailId?: string | null;
+  address?: string | null;
+  addressRegional?: string | null;
+  addressEnglish?: string | null;
+  pinCode?: string | null;
+  moujaId?: number | null;
+  taxZoneId?: number | null;
+  surveyNo?: string | null;
+  plotNo?: string | null;
+  flatOrShopNo?: string | null;
+  flatOrShopName?: string | null;
+  flatOrShopNameEnglish?: string | null;
+  categoryId?: number | null;
+  propertyTypeId?: number | null;
+}
+
+export interface IndividualPatchApiResponse {
+  success: boolean;
+  message?: string;
+  items?: IndividualPatchResponseDto | null;
+  errors?: unknown;
+}
+

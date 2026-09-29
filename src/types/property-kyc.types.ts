@@ -11,13 +11,16 @@ export interface KycDetails {
   ownerType: string | null;
   ownerTitle: string | null;
   ownerName: string | null;
+  ownerNameRegional?: string | null;
   ownerTitleEnglish: string | null;
   ownerNameEnglish: string | null;
   occupierTitle: string | null;
   occupierName: string | null;
+  occupierNameRegional?: string | null;
   occupierTitleEnglish: string | null;
   occupierNameEnglish: string | null;
   address: string | null;
+  addressRegional?: string | null;
   location: string | null;
   addressEnglish: string | null;
   locationEnglish: string | null;

@@ -107,7 +107,7 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
           <div className="flex flex-col justify-between pr-1 min-w-0 hover:bg-amber-200/30 rounded-xs px-0.5 transition-colors duration-150">
             <span className="text-[8px] font-bold text-amber-800/90 leading-tight">{t('stats.current') || 'Current'}</span>
             <span
-              className="text-[10px] font-black text-slate-900 leading-tight truncate"
+              className="text-[9.5px] font-black text-slate-900 leading-tight tracking-tight truncate"
               title={performance?.currentDemand || performance?.currentTax || '-'}
             >
               {performance?.currentDemand || performance?.currentTax || '-'}
@@ -118,7 +118,7 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
           <div className="flex flex-col justify-between pl-1 min-w-0 hover:bg-amber-200/30 rounded-xs px-0.5 transition-colors duration-150">
             <span className="text-[8px] font-bold text-amber-800/90 leading-tight">{t('stats.pending') || 'Pending'}</span>
             <span
-              className="text-[10px] font-black text-slate-900 leading-tight truncate"
+              className="text-[9.5px] font-black text-slate-900 leading-tight tracking-tight truncate"
               title={performance?.pendingDemand || performance?.retroTax || '-'}
             >
               {performance?.pendingDemand || performance?.retroTax || '-'}

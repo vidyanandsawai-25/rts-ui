@@ -150,29 +150,68 @@ export function mapIndividualPropertyDtoToMasterData(
   const formattedAadhar = formatAadharNumber(dto.aadharNo);
   const aadharDisplay = formattedAadhar || '-';
 
+  // Area Dimensions: support both new (*sqFt, *sqMtr) and legacy (*Ft, *Mtr) API keys
   const plotAreaDisplay = formatAreaFtMtr(dto.plotAreaFt, dto.plotAreaMtr);
-  const carpetAreaDisplay = formatAreaFtMtr(dto.carpetAreaFt, dto.carpetAreaMtr);
-  const builtUpAreaDisplay = formatAreaFtMtr(dto.builtUpAreaFt, dto.builtUpAreaMtr);
+  const carpetFt = dto.carpetAreasqFt ?? dto.carpetAreaFt;
+  const carpetMtr = dto.carpetAreasqMtr ?? dto.carpetAreaMtr;
+  const carpetAreaDisplay = formatAreaFtMtr(carpetFt, carpetMtr);
+
+  const builtUpFt = dto.builtUpAreasqFt ?? dto.builtUpAreaFt;
+  const builtUpMtr = dto.builtUpAreasqMtr ?? dto.builtUpAreaMtr;
+  const builtUpAreaDisplay = formatAreaFtMtr(builtUpFt, builtUpMtr);
+
+  // Previous assessment area dimensions for comparison/context
+  const oldCarpetDisplay = formatAreaFtMtr(dto.oldCarpetAreaSqFeet, dto.oldCarpetAreaSqMeter);
+  const oldBuiltUpDisplay = formatAreaFtMtr(dto.oldBuiltupAreaSqFeet, dto.oldBuiltupAreaSqMeter);
+
+  // Owner & Occupier Regional Support
+  const effectiveOwner = dto.ownerName || dto.owner || dto.propertyHolder || '-';
+  const effectiveHolderRegional =
+    dto.ownerNameRegional || dto.holderRegional || dto.ownerName || '-';
+  const effectiveOccupierRegional =
+    dto.occupierNameRegional || dto.occupierRegional || '-';
+
+  // Tax Zone & Rate Section synthesis
+  const zoneParts = [
+    dto.taxZoneNo ? `Zone ${dto.taxZoneNo}` : '',
+    dto.subZoneNo ? `Sub-Zone ${dto.subZoneNo}` : '',
+    dto.rateSectionName ? dto.rateSectionName : '',
+  ].filter(Boolean);
+  const synthesizedTaxZone = zoneParts.length > 0 ? zoneParts.join(' - ') : (dto.taxZone || '-');
+
+  // Address: English & Regional breakdown
+  const addressEnglish = dto.addressEnglish || undefined;
+  const addressRegional = dto.addressRegional || dto.fullAddress || dto.address || undefined;
+  const effectiveAddress = dto.addressEnglish || dto.addressRegional || dto.fullAddress || dto.address || '-';
 
   return {
     propertyId: dto.propertyId ?? undefined,
     propertyNo: dto.propertyNo || '-',
     upic: dto.upicId || '-',
-    ownerName: dto.ownerName || dto.owner || dto.propertyHolder || '-',
-    owner: dto.owner || dto.ownerName || '-',
-    propertyHolder: dto.propertyHolder || dto.ownerName || '-',
-    holderRegional: dto.holderRegional || dto.ownerName || '-',
+    ownerName: effectiveOwner,
+    owner: effectiveOwner,
+    propertyHolder: dto.propertyHolder || effectiveOwner,
+    holderRegional: effectiveHolderRegional,
+    ownerNameRegional: dto.ownerNameRegional || dto.holderRegional || undefined,
     occupierName: dto.occupierName || '-',
     occupierNameEnglish: dto.occupierName || '-',
-    occupierRegional: dto.occupierRegional || '-',
+    occupierRegional: effectiveOccupierRegional,
+    occupierNameRegional: dto.occupierNameRegional || dto.occupierRegional || undefined,
     ownerCategory: dto.ownerCategory || '-',
     division: dto.division || '-',
     moujaName: dto.moujaName || '-',
     surveyNo: dto.surveyNo || '-',
-    taxZone: dto.taxZone || '-',
-    taxZoneAndName: dto.taxZone || '-',
+    taxZone: synthesizedTaxZone,
+    taxZoneNo: dto.taxZoneNo || undefined,
+    subZoneNo: dto.subZoneNo || dto.subZone || undefined,
+    subZone: dto.subZoneNo || dto.subZone || undefined,
+    rateSectionName: dto.rateSectionName || undefined,
+    taxZoneAndName: synthesizedTaxZone,
     subZoneCsnNo: dto.surveyNo || '-',
     plotNo: dto.plotNo || '-',
+    flatOrShopNo: dto.flatOrShopNo || undefined,
+    flatOrShopName: dto.flatOrShopName || dto.flatOrShopNameEnglish || dto.shopName || undefined,
+    shopName: dto.shopName || dto.flatOrShopName || dto.flatOrShopNameEnglish || undefined,
     aadharNo: dto.aadharNo || '',
     title: dto.ownerTitle || '',
     ownerTitle: dto.ownerTitle || '',
@@ -181,13 +220,17 @@ export function mapIndividualPropertyDtoToMasterData(
     altMobileNo: dto.alternateMobileNo || '-',
     alternateMobileNo: dto.alternateMobileNo || '-',
     emailId: dto.emailId || '-',
-    societyAddress: dto.fullAddress || dto.address || dto.addressEnglish || '-',
-    address: dto.fullAddress || dto.address || dto.addressEnglish || '-',
+    societyAddress: addressRegional || effectiveAddress,
+    address: effectiveAddress,
+    addressEnglish: addressEnglish,
+    addressRegional: addressRegional,
     plotAreaFtMtr: plotAreaDisplay,
     carpetAreaFtMtr: carpetAreaDisplay,
     builtUpAreaFtMtr: builtUpAreaDisplay,
+    oldCarpetAreaFtMtr: oldCarpetDisplay !== '-' ? oldCarpetDisplay : undefined,
+    oldBuiltUpAreaFtMtr: oldBuiltUpDisplay !== '-' ? oldBuiltUpDisplay : undefined,
     status: 'ACTIVE PROPERTY',
-    category: dto.category || dto.categoryName || 'Individual',
+    category: dto.propertyCategory || dto.category || dto.categoryName || 'Individual',
     propertyDescription: dto.propertyDescription || '-',
     propertyDescriptionRegional: dto.propertyDescription || '-',
     societyBuildingPhotoGuid: photoGuid,

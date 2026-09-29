@@ -23,12 +23,18 @@
     "aadhar": "आधार",
     "aadharTitle": "आधार",
     "mobileNo": "मोबाईल क्र.",
+    "altMobileNo": "पर्यायी मोबाईल क्र.",
     "emailId": "ईमेल आयडी",
     "address": "पत्ता",
+    "propertyDescription": "मालमत्ता प्रकार",
     "societyAddress": "पत्ता",
     "plotAreaFtMtr": "प्लॉट क्षेत्रफळ (चौ.फूट/चौ.मी)",
     "carpetAreaFtMtr": "कार्पेट क्षेत्रफळ (चौ.फूट/चौ.मी)",
-    "builtUpAreaFtMtr": "निर्मित क्षेत्रफळ (चौ.फूट/चौ.मी)"
+    "builtUpAreaFtMtr": "निर्मित क्षेत्रफळ (चौ.फूट/चौ.मी)",
+    "subZoneNo": "उप-झोन क्र.",
+    "shopName": "दुकानाचे नाव",
+    "oldBadge": "(Old: {value})",
+    "oldAssessment": "मागील मूल्यांकन: {value}"
   },
   "photo": {
     "noPhoto": "छायाचित्र नाही",

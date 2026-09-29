@@ -23,12 +23,18 @@
     "aadhar": "आधार",
     "aadharTitle": "आधार",
     "mobileNo": "मोबाइल नं.",
+    "altMobileNo": "वैकल्पिक मोबाइल नं.",
     "emailId": "ईमेल आईडी",
     "address": "पता",
+    "propertyDescription": "संपत्ति प्रकार",
     "societyAddress": "पता",
     "plotAreaFtMtr": "भूखंड क्षेत्रफल (वर्ग फीट/वर्ग मी)",
     "carpetAreaFtMtr": "कार्पेट क्षेत्रफल (वर्ग फीट/वर्ग मी)",
-    "builtUpAreaFtMtr": "निर्मित क्षेत्रफल (वर्ग फीट/वर्ग मी)"
+    "builtUpAreaFtMtr": "निर्मित क्षेत्रफल (वर्ग फीट/वर्ग मी)",
+    "subZoneNo": "उप-ज़ोन क्रमांक",
+    "shopName": "दुकान का नाम",
+    "oldBadge": "(Old: {value})",
+    "oldAssessment": "पिछला मूल्यांकन: {value}"
   },
   "photo": {
     "noPhoto": "फोटो नहीं",

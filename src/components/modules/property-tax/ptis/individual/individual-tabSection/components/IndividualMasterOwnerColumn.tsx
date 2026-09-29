@@ -30,7 +30,7 @@ export const IndividualMasterOwnerColumn: React.FC<IndividualMasterOwnerColumnPr
       <PropertyMasterInfoRow
         icon={User}
         label={t('grid.holderRegional') || 'Holder (Regional)'}
-        value={data?.holderRegional || '-'}
+        value={data?.ownerNameRegional || data?.holderRegional || '-'}
         minWidth="min-w-[125px]"
       />
       <PropertyMasterInfoRow
@@ -42,13 +42,19 @@ export const IndividualMasterOwnerColumn: React.FC<IndividualMasterOwnerColumnPr
       <PropertyMasterInfoRow
         icon={User}
         label={t('grid.occupierRegional') || 'Occupier (Regional)'}
-        value={data?.occupierRegional || '-'}
+        value={data?.occupierNameRegional || data?.occupierRegional || '-'}
         minWidth="min-w-[125px]"
       />
       <PropertyMasterInfoRow
         icon={Tag}
         label={t('grid.ownerCategory') || 'Owner Category'}
         value={data?.ownerCategory || '-'}
+        minWidth="min-w-[125px]"
+      />
+      <PropertyMasterInfoRow
+        icon={Tag}
+        label={t('grid.propertyCategory') || 'Property Category'}
+        value={(data?.category || data?.propertyCategory || '-') as string}
         minWidth="min-w-[125px]"
       />
     </div>

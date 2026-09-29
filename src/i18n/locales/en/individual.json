@@ -23,12 +23,18 @@
     "aadhar": "Aadhar",
     "aadharTitle": "Aadhar",
     "mobileNo": "Mobile No.",
+    "altMobileNo": "Alt Mobile No.",
     "emailId": "Email ID",
     "address": "Address",
+    "propertyDescription": "Property Type",
     "societyAddress": "Address",
     "plotAreaFtMtr": "Plot Area (sqft/sq mtr)",
     "carpetAreaFtMtr": "Carpet Area (sqft/sq mtr)",
-    "builtUpAreaFtMtr": "Built-Up Area (sqft/sq mtr)"
+    "builtUpAreaFtMtr": "Built-Up Area (sqft/sq mtr)",
+    "subZoneNo": "Sub Zone No.",
+    "shopName": "Shop Name",
+    "oldBadge": "(Old: {value})",
+    "oldAssessment": "Previous Assessment: {value}"
   },
   "photo": {
     "noPhoto": "No Photo",

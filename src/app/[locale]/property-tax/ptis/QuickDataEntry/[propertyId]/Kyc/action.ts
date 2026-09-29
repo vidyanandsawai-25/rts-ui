@@ -122,10 +122,12 @@ export async function updatePropertyKycAction(
       // Fallback: try dedicated PATCH /Property/{propertyId}/individual
       const patchRes = await patchIndividualProperty(propertyId, {
         ownerName: payload.ownerName,
+        ownerNameRegional: payload.ownerNameRegional,
         ownerNameEnglish: payload.ownerNameEnglish,
         ownerTitle: payload.ownerTitle,
         ownerTitleEnglish: payload.ownerTitleEnglish,
         occupierName: payload.occupierName,
+        occupierNameRegional: payload.occupierNameRegional,
         occupierNameEnglish: payload.occupierNameEnglish,
         occupierTitle: payload.occupierTitle,
         occupierTitleEnglish: payload.occupierTitleEnglish,
@@ -135,8 +137,12 @@ export async function updatePropertyKycAction(
         alternateMobileNo: payload.alternateMobileNo,
         emailId: payload.emailId,
         address: payload.address,
+        addressRegional: payload.addressRegional,
         addressEnglish: payload.addressEnglish,
         pinCode: payload.pinCode,
+        flatOrShopNo: payload.flatOrShopNo,
+        flatOrShopName: payload.flatOrShopName,
+        flatOrShopNameEnglish: payload.flatOrShopNameEnglish,
       });
 
       if (patchRes.success) {
@@ -162,10 +168,12 @@ export async function updatePropertyKycAction(
       try {
         const patchRes = await patchIndividualProperty(propertyId, {
           ownerName: payload.ownerName,
+          ownerNameRegional: payload.ownerNameRegional,
           ownerNameEnglish: payload.ownerNameEnglish,
           ownerTitle: payload.ownerTitle,
           ownerTitleEnglish: payload.ownerTitleEnglish,
           occupierName: payload.occupierName,
+          occupierNameRegional: payload.occupierNameRegional,
           occupierNameEnglish: payload.occupierNameEnglish,
           occupierTitle: payload.occupierTitle,
           occupierTitleEnglish: payload.occupierTitleEnglish,
@@ -175,8 +183,12 @@ export async function updatePropertyKycAction(
           alternateMobileNo: payload.alternateMobileNo,
           emailId: payload.emailId,
           address: payload.address,
+          addressRegional: payload.addressRegional,
           addressEnglish: payload.addressEnglish,
           pinCode: payload.pinCode,
+          flatOrShopNo: payload.flatOrShopNo,
+          flatOrShopName: payload.flatOrShopName,
+          flatOrShopNameEnglish: payload.flatOrShopNameEnglish,
         });
 
         if (patchRes.success) {

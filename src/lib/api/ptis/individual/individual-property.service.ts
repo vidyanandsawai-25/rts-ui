@@ -3,6 +3,8 @@ import type {
   IndividualPropertyDto,
   IndividualPropertyApiResponse,
   IndividualPatchPayload,
+  IndividualPatchResponseDto,
+  IndividualPatchApiResponse,
 } from '@/types/property-tax/individual';
 
 export async function fetchIndividualQcTopSection(
@@ -51,10 +53,10 @@ export async function fetchIndividualQcTopSection(
 export async function patchIndividualProperty(
   propertyId: number | string,
   payload: IndividualPatchPayload
-): Promise<{ success: boolean; data?: unknown; error?: string }> {
+): Promise<{ success: boolean; data?: IndividualPatchResponseDto | unknown; error?: string }> {
   try {
     const endpoint = `/Property/${encodeURIComponent(propertyId)}/individual`;
-    const response = await apiClient.patch<{ success?: boolean; message?: string; items?: unknown }>(
+    const response = await apiClient.patch<IndividualPatchApiResponse>(
       endpoint,
       payload
     );
@@ -62,13 +64,13 @@ export async function patchIndividualProperty(
     if (response.success && response.data?.success !== false) {
       return {
         success: true,
-        data: response.data,
+        data: response.data?.items ?? response.data,
       };
     }
 
     // Fallback: try root /Property/{id} endpoint if specific individual patch not found
     const rootEndpoint = `/Property/${encodeURIComponent(propertyId)}`;
-    const rootResponse = await apiClient.patch<{ success?: boolean; message?: string; items?: unknown }>(
+    const rootResponse = await apiClient.patch<IndividualPatchApiResponse>(
       rootEndpoint,
       payload
     );
@@ -76,7 +78,7 @@ export async function patchIndividualProperty(
     if (rootResponse.success && rootResponse.data?.success !== false) {
       return {
         success: true,
-        data: rootResponse.data,
+        data: rootResponse.data?.items ?? rootResponse.data,
       };
     }
 

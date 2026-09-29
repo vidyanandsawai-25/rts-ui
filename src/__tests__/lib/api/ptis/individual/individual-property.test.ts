@@ -198,6 +198,63 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
         );
         expect(mapIndividualPropertyDtoToMasterData({}).plotAreaFtMtr).toBe('-');
       });
+
+      it('maps new individual API payload with regional names, synthesized tax zone, and new area keys correctly', () => {
+        const newApiDto: IndividualPropertyDto = {
+          propertyId: 1428629,
+          propertyNo: 'MM11-20',
+          upicId: 'MM30001B20P',
+          ownerName: 'T.M.C. FARHANA ATIK SAYYAD FARHANA ATIK SAYYAD',
+          ownerNameRegional: 'T.M.C. FARHANA ATIK SAYYAD / LAND OWNER :NEETA',
+          occupierName: 'Ashwin Deshmukh',
+          occupierNameRegional: 'अश्विन देशमुख',
+          ownerCategory: 'Self',
+          aadharNo: '585675914738',
+          ownerTitle: 'Mr',
+          mobileNo: '9421237190',
+          alternateMobileNo: '+918625085936',
+          emailId: 'deshmukhashwin33@gmail.com',
+          addressEnglish: 'GAIMUKH RETIBANDAR G.B. ROAD THANE.',
+          addressRegional: 'BHAWANI APT., 2ND FLOOR DR. MOOSE ROAD',
+          pinCode: '400607',
+          division: 'माजिवडा मानपाडा',
+          moujaName: 'Kopri',
+          surveyNo: '24',
+          taxZoneNo: '1',
+          subZoneNo: null,
+          rateSectionName: 'KOLSHET',
+          plotNo: '1230',
+          plotAreaFt: 43701.84,
+          plotAreaMtr: 4060,
+          carpetAreasqFt: 22873.5,
+          carpetAreasqMtr: 2125,
+          builtUpAreasqFt: 27448.2,
+          builtUpAreasqMtr: 2550,
+          oldCarpetAreaSqFeet: 99.75,
+          oldCarpetAreaSqMeter: 9.27,
+          oldBuiltupAreaSqFeet: 119.7,
+          oldBuiltupAreaSqMeter: 11.12,
+          propertyCategory: 'Individual',
+          propertyDescription: 'निवासी',
+        };
+
+        const res = mapIndividualPropertyDtoToMasterData(newApiDto);
+        expect(res.propertyNo).toBe('MM11-20');
+        expect(res.upic).toBe('MM30001B20P');
+        expect(res.ownerNameRegional).toBe('T.M.C. FARHANA ATIK SAYYAD / LAND OWNER :NEETA');
+        expect(res.holderRegional).toBe('T.M.C. FARHANA ATIK SAYYAD / LAND OWNER :NEETA');
+        expect(res.occupierRegional).toBe('अश्विन देशमुख');
+        expect(res.occupierNameRegional).toBe('अश्विन देशमुख');
+        expect(res.taxZone).toBe('Zone 1 - KOLSHET');
+        expect(res.taxZoneAndName).toBe('Zone 1 - KOLSHET');
+        expect(res.carpetAreaFtMtr).toBe('22873.5 sqft / 2125 sq mtr');
+        expect(res.builtUpAreaFtMtr).toBe('27448.2 sqft / 2550 sq mtr');
+        expect(res.oldCarpetAreaFtMtr).toBe('99.75 sqft / 9.27 sq mtr');
+        expect(res.oldBuiltUpAreaFtMtr).toBe('119.7 sqft / 11.12 sq mtr');
+        expect(res.category).toBe('Individual');
+        expect(res.addressEnglish).toBe('GAIMUKH RETIBANDAR G.B. ROAD THANE.');
+        expect(res.addressRegional).toBe('BHAWANI APT., 2ND FLOOR DR. MOOSE ROAD');
+      });
     });
   });
 
@@ -245,6 +302,62 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
       vi.mocked(apiClient.patch).mockRejectedValueOnce(new Error('Patch error'));
       const res3 = await patchIndividualProperty(203, {});
       expect(res3.success).toBe(false);
+    });
+
+    it('patchIndividualProperty sends all contract fields including regional and unit/shop fields', async () => {
+      vi.mocked(apiClient.patch).mockResolvedValueOnce({
+        success: true,
+        data: {
+          items: {
+            ownerName: 'Test Owner',
+            ownerNameRegional: 'टेस्ट मालक',
+            occupierNameRegional: 'टेस्ट भोगवटादार',
+            addressRegional: 'टेस्ट पत्ता',
+            flatOrShopNo: 'Shop-101',
+            flatOrShopName: 'Ganpati Traders',
+            flatOrShopNameEnglish: 'Ganpati Traders',
+            categoryId: 1,
+            propertyTypeId: 2,
+          },
+        },
+      });
+
+      const payload = {
+        ownerName: 'Test Owner',
+        ownerNameRegional: 'टेस्ट मालक',
+        ownerNameEnglish: 'Test Owner',
+        ownerTitle: 'Mr.',
+        ownerTitleEnglish: 'Mr.',
+        occupierName: 'Occupier Name',
+        occupierNameRegional: 'टेस्ट भोगवटादार',
+        occupierNameEnglish: 'Occupier Name',
+        occupierTitle: 'Mr.',
+        occupierTitleEnglish: 'Mr.',
+        ownerTypeId: 1,
+        aadharNo: '123456789012',
+        mobileNo: '9876543210',
+        alternateMobileNo: '9876543211',
+        emailId: 'test@example.com',
+        address: 'Main St',
+        addressRegional: 'टेस्ट पत्ता',
+        addressEnglish: 'Main St',
+        pinCode: '411001',
+        moujaId: 10,
+        taxZoneId: 5,
+        surveyNo: '12/3',
+        plotNo: '45',
+        flatOrShopNo: 'Shop-101',
+        flatOrShopName: 'Ganpati Traders',
+        flatOrShopNameEnglish: 'Ganpati Traders',
+        categoryId: 1,
+        propertyTypeId: 2,
+      };
+
+      const res = await patchIndividualProperty(205, payload);
+      expect(res.success).toBe(true);
+      expect(apiClient.patch).toHaveBeenCalledWith('/Property/205/individual', payload);
+      expect((res.data as Record<string, unknown>)?.ownerNameRegional).toBe('टेस्ट मालक');
+      expect((res.data as Record<string, unknown>)?.flatOrShopName).toBe('Ganpati Traders');
     });
   });
 

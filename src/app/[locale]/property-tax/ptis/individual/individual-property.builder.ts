@@ -171,9 +171,11 @@ export function buildInitialIndividualMasterData(
       : getSafeString(kycDetails, 'propertyHolderName') || effectiveOwnerName;
 
   const effectiveHolderRegional =
-    baseData?.holderRegional && baseData.holderRegional !== '-'
-      ? baseData.holderRegional
-      : getSafeString(kycDetails, 'propertyHolderNameMarathi') || '-';
+    baseData?.ownerNameRegional && baseData.ownerNameRegional !== '-'
+      ? baseData.ownerNameRegional
+      : baseData?.holderRegional && baseData.holderRegional !== '-'
+        ? baseData.holderRegional
+        : getSafeString(kycDetails, 'propertyHolderNameMarathi') || '-';
 
   const effectiveOccupierName =
     baseData?.occupierName && baseData.occupierName !== '-'
@@ -181,9 +183,11 @@ export function buildInitialIndividualMasterData(
       : getSafeString(kycDetails, 'occupierName') || '-';
 
   const effectiveOccupierRegional =
-    baseData?.occupierRegional && baseData.occupierRegional !== '-'
-      ? baseData.occupierRegional
-      : getSafeString(kycDetails, 'occupierNameMarathi') || '-';
+    baseData?.occupierNameRegional && baseData.occupierNameRegional !== '-'
+      ? baseData.occupierNameRegional
+      : baseData?.occupierRegional && baseData.occupierRegional !== '-'
+        ? baseData.occupierRegional
+        : getSafeString(kycDetails, 'occupierNameMarathi') || '-';
 
   // 3. Category & Description
   const effectiveCategory =

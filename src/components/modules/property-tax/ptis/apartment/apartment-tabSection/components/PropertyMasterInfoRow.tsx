@@ -28,9 +28,9 @@ export const PropertyMasterInfoRow: React.FC<PropertyMasterInfoRowProps> = ({
   if (isMultiline) {
     return (
       <div className="flex items-start gap-1.5 min-w-0">
-        <div className={`flex items-start gap-1 text-slate-600 font-semibold shrink-0 ${minWidth} pt-[1px]`}>
-          <Icon className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-[2px]" />
-          <div className="flex flex-col leading-tight text-left min-w-0">{label}</div>
+        <div className={`flex items-start gap-1 text-slate-600 font-semibold shrink-0 ${minWidth}`}>
+          <Icon className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-[1.5px]" />
+          <div className="flex flex-col leading-[17px] text-left min-w-0 pt-[0.5px]">{label}</div>
         </div>
         <div className="flex-1 min-w-0">
           {hasLongText ? (
@@ -39,7 +39,7 @@ export const PropertyMasterInfoRow: React.FC<PropertyMasterInfoRowProps> = ({
               placement="top"
             >
               <div
-                className="font-bold text-[#1d4ed8] text-left text-[12px] leading-[18px] break-words cursor-pointer hover:underline line-clamp-2"
+                className="font-bold text-[#1d4ed8] text-left text-[12px] leading-[16px] pt-[0.5px] break-words cursor-pointer hover:underline line-clamp-2"
                 title={displayValue}
               >
                 {displayValue}
@@ -47,7 +47,7 @@ export const PropertyMasterInfoRow: React.FC<PropertyMasterInfoRowProps> = ({
             </Tooltip>
           ) : (
             <div
-              className="font-bold text-[#1d4ed8] text-left text-[12px] leading-[18px] break-words"
+              className="font-bold text-[#1d4ed8] text-left text-[12px] leading-[16px] pt-[0.5px] break-words"
               title={isString ? displayValue : undefined}
             >
               {displayValue}
@@ -59,10 +59,10 @@ export const PropertyMasterInfoRow: React.FC<PropertyMasterInfoRowProps> = ({
   }
 
   return (
-    <div className="flex items-start gap-1.5 min-w-0">
-      <div className={`flex items-start gap-1 text-slate-600 font-semibold shrink-0 ${minWidth}`}>
-        <Icon className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-[2px]" />
-        <div className="flex flex-col leading-tight text-left min-w-0">{label}</div>
+    <div className="flex items-center gap-1.5 min-w-0">
+      <div className={`flex items-center gap-1 text-slate-600 font-semibold shrink-0 ${minWidth}`}>
+        <Icon className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+        <div className="flex flex-col leading-[17px] text-left min-w-0 pt-[0.5px]">{label}</div>
       </div>
       <div className="flex-1 min-w-0">
         {hasLongText ? (
@@ -71,14 +71,14 @@ export const PropertyMasterInfoRow: React.FC<PropertyMasterInfoRowProps> = ({
             placement="top"
           >
             <div
-              className={`${valueClassName} leading-tight mt-[1px] cursor-pointer hover:underline`}
+              className={`${valueClassName} leading-[17px] pt-[1.5px] pb-[0.5px] cursor-pointer hover:underline`}
               title={displayValue}
             >
               {displayValue}
             </div>
           </Tooltip>
         ) : (
-          <div className={`${valueClassName} leading-tight mt-[1px]`} title={isString ? displayValue : undefined}>
+          <div className={`${valueClassName} leading-[17px] pt-[1.5px] pb-[0.5px]`} title={isString ? displayValue : undefined}>
             {displayValue}
           </div>
         )}

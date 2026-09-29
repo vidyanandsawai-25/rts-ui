@@ -159,6 +159,7 @@ export const updatePropertyBasicDetailsAction = async (
         propertyTypeId: payload.propertyTypeId,
         surveyNo: payload.surveyNo,
         plotNo: payload.plotNo,
+        flatOrShopNo: payload.flatOrShopNo,
       });
 
       if (patchRes.success) {
@@ -182,6 +183,7 @@ export const updatePropertyBasicDetailsAction = async (
           propertyTypeId: payload.propertyTypeId,
           surveyNo: payload.surveyNo,
           plotNo: payload.plotNo,
+          flatOrShopNo: payload.flatOrShopNo,
         });
         if (patchRes.success) {
           if (shouldRevalidate) {
