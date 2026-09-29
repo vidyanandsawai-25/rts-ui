@@ -117,6 +117,7 @@ export default getRequestConfig(async ({ locale }) => {
     assetDetailNewMessages,
     assetFieldDefinitionMessages,
     assetDocumentDefinitionMessages,
+    subAssetDetailMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -277,6 +278,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/asset-detail.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetFieldDefinition.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetDocumentDefinition.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/subAssetDetail.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -389,6 +391,7 @@ export default getRequestConfig(async ({ locale }) => {
       'asset-detail': assetDetailNewMessages,
       assetFieldDefinition: assetFieldDefinitionMessages,
       assetDocumentDefinition: assetDocumentDefinitionMessages,
+      subAssetDetail: subAssetDetailMessages,
     },
   };
 });
