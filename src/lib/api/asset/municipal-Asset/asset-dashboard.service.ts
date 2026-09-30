@@ -7,6 +7,7 @@ import type {
   AssetCategory,
   AssetType,
   AssetTypeDetailsResponse,
+  AssetCategoryTypeStatsResponseDto,
 } from '@/types/asset/municipal-Asset/municipal-asset.types';
 
 /** Build URL with optional query params, omitting null/undefined values */
@@ -81,6 +82,29 @@ export async function getMunicipalAssetTypes(): Promise<AssetType[]> {
     console.error('getMunicipalAssetTypes failed:', err);
     return [];
   }
+}
+
+/** GET /AssetDashboard/assets-by-type/details?assetCategoryId={categoryId} */
+export async function getAssetCategoryTypeDetails(
+  assetCategoryId: number
+): Promise<AssetCategoryTypeStatsResponseDto> {
+  const url = buildUrl('/AssetDashboard/assets-by-type/details', { assetCategoryId });
+  const response = await apiClient.get<AssetCategoryTypeStatsResponseDto>(url, { cache: 'no-store' });
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || 'Failed to fetch asset category type details',
+      'Fetch asset category type details failed'
+    );
+  }
+  const rawData: unknown = response.data;
+  if (rawData && typeof rawData === 'object' && 'types' in rawData) {
+    return rawData as AssetCategoryTypeStatsResponseDto;
+  }
+  if (rawData && typeof rawData === 'object' && 'data' in rawData) {
+    return (rawData as Record<string, unknown>).data as AssetCategoryTypeStatsResponseDto;
+  }
+  return response.data;
 }
 
 /** GET /AssetDashboard/assets-by-type/details */

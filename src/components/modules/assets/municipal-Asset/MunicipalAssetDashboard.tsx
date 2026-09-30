@@ -1,24 +1,32 @@
 'use client';
 
-import { useEffect, useTransition } from 'react';
+import { useEffect, useState, useCallback, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { AddButton, Card, CardContent, CardHeader, CardTitle } from '@/components/common';
+import { AddButton, Card, CardContent, CardHeader, CardTitle, LoadingPage } from '@/components/common';
 import { Building2 } from 'lucide-react';
 import { AssetCategoryCard } from './AssetCategoryCard';
 import { getCategoryMeta, themes } from './dashboardHelpers';
 import { AssetTypeDetailsDrawer } from './AssetTypeDetailsDrawer';
-import type { MunicipalAssetDashboardProps, AssetType } from '@/types/asset/municipal-Asset/municipal-asset.types';
+import type {
+  MunicipalAssetDashboardProps,
+  AssetType,
+  AssetCategory,
+  AssetCategoryTypeStatsResponseDto,
+} from '@/types/asset/municipal-Asset/municipal-asset.types';
 import { useMunicipalAssetDashboard } from '@/hooks/asset/municipal-Asset/useMunicipalAssetDashboard';
 import { useLocaleRouter } from '@/hooks/asset/municipal-Asset/useLocaleRouter';
 import { MUNICIPAL_ASSET_ROUTES } from '@/lib/routes/municipal-asset.routes';
+import { fetchAssetCategoryTypeDetails } from '@/app/[locale]/assets/municipal-Asset/actions';
 
 export default function MunicipalAssetDashboard({
   initialStats = null,
   masterCategories = [],
   masterTypes = [],
   selectedAssetType: serverSelectedType = null,
+  selectedCategory: serverSelectedCategory = null,
   initialDrawerData = null,
+  initialCategoryDrawerData = null,
   activeDrawerPage = 1,
 }: MunicipalAssetDashboardProps) {
   const router = useRouter();
@@ -28,9 +36,38 @@ export default function MunicipalAssetDashboard({
   const [isPending, startTransition] = useTransition();
   const t = useTranslations('municipalAsset.dashboard');
 
+  // Active selection for drawer (initialized from SSR props)
+  const [activeCategory, setActiveCategory] = useState<AssetCategory | null>(serverSelectedCategory);
+  const [activeType, setActiveType] = useState<AssetType | null>(serverSelectedType);
+  const [isOpeningDrawer, setIsOpeningDrawer] = useState<boolean>(false);
+  const [categoryDataMap, setCategoryDataMap] = useState<Record<number, AssetCategoryTypeStatsResponseDto>>(() => {
+    if (serverSelectedCategory && initialCategoryDrawerData) {
+      return { [serverSelectedCategory.id]: initialCategoryDrawerData };
+    }
+    return {};
+  });
+
+  // Adjust state during render if server props change (supports direct URL navigation / SSR)
+  const [prevServerCategory, setPrevServerCategory] = useState(serverSelectedCategory);
+  const [prevServerType, setPrevServerType] = useState(serverSelectedType);
+
+  if (serverSelectedCategory !== prevServerCategory) {
+    setPrevServerCategory(serverSelectedCategory);
+    setActiveCategory(serverSelectedCategory);
+    if (serverSelectedCategory && initialCategoryDrawerData) {
+      setCategoryDataMap((prev) => ({
+        ...prev,
+        [serverSelectedCategory.id]: initialCategoryDrawerData,
+      }));
+    }
+  }
+
+  if (serverSelectedType !== prevServerType) {
+    setPrevServerType(serverSelectedType);
+    setActiveType(serverSelectedType);
+  }
+
   // Force an RSC fetch request to appear in the Network tab on load.
-  // Uses startTransition (same pattern as asset masters) so the refresh
-  // does not block concurrent React rendering.
   useEffect(() => {
     startTransition(() => router.refresh());
   }, [router]);
@@ -47,32 +84,94 @@ export default function MunicipalAssetDashboard({
     push(MUNICIPAL_ASSET_ROUTES.assetRegister(categoryId));
   };
 
-  const handleSelectType = (type: AssetType) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('assetTypeId', String(type.id));
-    params.delete('drawerPage');
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`);
-    });
-  };
+  // Open asset type drawer via Server Transition
+  const handleSelectType = useCallback(
+    (type: AssetType) => {
+      setActiveType(type);
+      setActiveCategory(null);
+      setIsOpeningDrawer(true);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('assetTypeId', String(type.id));
+      params.delete('assetCategoryId');
+      params.delete('categoryId');
+      params.delete('drawerPage');
+      startTransition(() => {
+        router.push(`${pathname}?${params.toString()}`);
+      });
+    },
+    [pathname, router, searchParams]
+  );
 
-  const handleCloseDrawer = () => {
+  // Industry Standard: Fetch category details via dedicated Server Action with LoadingPage
+  const handleSelectCategoryAssetTypes = useCallback(
+    async (category: AssetCategory) => {
+      // 1. If already cached, open drawer immediately (0ms)
+      if (categoryDataMap[category.id]) {
+        setActiveCategory(category);
+        setActiveType(null);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('assetCategoryId', String(category.id));
+        params.delete('assetTypeId');
+        params.delete('drawerPage');
+        window.history.replaceState(null, '', `${pathname}?${params.toString()}`);
+        return;
+      }
+
+      // 2. Show application standard LoadingPage while fetching via Server Action
+      setIsOpeningDrawer(true);
+      try {
+        const res = await fetchAssetCategoryTypeDetails(category.id);
+        if (res.success && res.data) {
+          setCategoryDataMap((prev) => ({
+            ...prev,
+            [category.id]: res.data as AssetCategoryTypeStatsResponseDto,
+          }));
+          setActiveCategory(category);
+          setActiveType(null);
+          const params = new URLSearchParams(searchParams.toString());
+          params.set('assetCategoryId', String(category.id));
+          params.delete('assetTypeId');
+          params.delete('drawerPage');
+          window.history.replaceState(null, '', `${pathname}?${params.toString()}`);
+        }
+      } catch {
+        // Silently handled without console noise
+      } finally {
+        setIsOpeningDrawer(false);
+      }
+    },
+    [categoryDataMap, pathname, searchParams]
+  );
+
+  // Close drawer locally and clean up URL without triggering unnecessary server re-fetches
+  const handleCloseDrawer = useCallback(() => {
+    setActiveCategory(null);
+    setActiveType(null);
+    setIsOpeningDrawer(false);
     const params = new URLSearchParams(searchParams.toString());
     params.delete('assetTypeId');
+    params.delete('assetCategoryId');
+    params.delete('categoryId');
     params.delete('drawerPage');
     const query = params.toString();
-    startTransition(() => {
-      router.push(query ? `${pathname}?${query}` : pathname);
-    });
-  };
+    window.history.replaceState(null, '', query ? `${pathname}?${query}` : pathname);
+  }, [pathname, searchParams]);
 
-  const handleDrawerPageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('drawerPage', String(newPage));
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`);
-    });
-  };
+  const handleDrawerPageChange = useCallback(
+    (newPage: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('drawerPage', String(newPage));
+      startTransition(() => {
+        router.push(`${pathname}?${params.toString()}`);
+      });
+    },
+    [pathname, router, searchParams]
+  );
+
+  // Show standard application loading page when opening drawer
+  if (isOpeningDrawer || (isPending && !activeCategory && !!activeType)) {
+    return <LoadingPage translationNamespace="municipalAsset.loading" />;
+  }
 
   return (
     <div className="space-y-6 pb-4">
@@ -167,6 +266,7 @@ export default function MunicipalAssetDashboard({
                   }
                   onSelectCategory={() => handleSelectCategory(category.id)}
                   onSelectType={(type) => handleSelectType(type)}
+                  onSelectCategoryAssetTypes={(cat) => handleSelectCategoryAssetTypes(cat)}
                 />
               );
             })}
@@ -175,12 +275,15 @@ export default function MunicipalAssetDashboard({
       </div>
 
       <AssetTypeDetailsDrawer
-        isOpen={!!serverSelectedType}
+        isOpen={!!activeType || !!activeCategory}
         onClose={handleCloseDrawer}
-        assetType={serverSelectedType}
+        assetType={activeType}
+        category={activeCategory}
+        categoryDetailsData={activeCategory ? (categoryDataMap[activeCategory.id] ?? null) : null}
         data={initialDrawerData}
-        loading={isPending}
+        loading={isPending && !activeCategory}
         pageNumber={activeDrawerPage}
+        pageSize={10}
         onPageChange={handleDrawerPageChange}
       />
     </div>

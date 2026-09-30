@@ -3,11 +3,13 @@ import {
   getMunicipalAssetCategories,
   getMunicipalAssetTypes,
   getAssetsByTypeDetails,
+  getAssetCategoryTypeDetails,
 } from '@/lib/api/asset/municipal-Asset/asset-dashboard.service';
 import MunicipalAssetDashboard from '@/components/modules/assets/municipal-Asset/MunicipalAssetDashboard';
+import { LoadingPage } from '@/components/common';
 import { Suspense } from 'react';
 import type { RawSearchParams } from '@/lib/utils/sanitize-params';
-import type { AssetType, DashboardStatsResponse } from '@/types/asset/municipal-Asset/municipal-asset.types';
+import type { AssetCategory, AssetType, DashboardStatsResponse } from '@/types/asset/municipal-Asset/municipal-asset.types';
 
 // Force dynamic rendering for this page — ensures every request fetches fresh
 // data from the API rather than using a cached RSC response.
@@ -15,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<RawSearchParams & { assetTypeId?: string; drawerPage?: string }>;
+  searchParams: Promise<RawSearchParams & { assetTypeId?: string; assetCategoryId?: string; categoryId?: string; drawerPage?: string }>;
 }
 
 export default async function MunicipalAssetPage({ params, searchParams }: PageProps) {
@@ -27,38 +29,35 @@ export default async function MunicipalAssetPage({ params, searchParams }: PageP
 
   const rawAssetTypeId = sParams?.assetTypeId;
   const assetTypeId = rawAssetTypeId ? Number(rawAssetTypeId) : null;
+  const rawCategoryId = sParams?.assetCategoryId ?? sParams?.categoryId;
+  const categoryId = rawCategoryId ? Number(rawCategoryId) : null;
   const rawDrawerPage = sParams?.drawerPage;
   const drawerPage = rawDrawerPage ? Number(rawDrawerPage) : 1;
 
   // Fetch stats, master lists, and optional drawer details in parallel using dedicated municipal asset service
-  const [initialStats, masterCategories, masterTypes, drawerRes] = await Promise.all([
-    getMunicipalDashboardStats().catch((err) => {
-      console.error('Stats fetch failed:', err);
-      return null;
-    }),
-    getMunicipalAssetCategories().catch((err) => {
-      console.error('Categories fetch failed:', err);
-      return [];
-    }),
-    getMunicipalAssetTypes().catch((err) => {
-      console.error('Types fetch failed:', err);
-      return [];
-    }),
+  const [initialStats, masterCategories, masterTypes, drawerRes, categoryDrawerRes] = await Promise.all([
+    getMunicipalDashboardStats(),
+    getMunicipalAssetCategories(),
+    getMunicipalAssetTypes(),
     assetTypeId && !isNaN(assetTypeId)
-      ? getAssetsByTypeDetails(assetTypeId, drawerPage, 10)
-          .then((data) => ({ success: true as const, data }))
-          .catch((err) => {
-            console.error('Drawer assets fetch failed:', err);
-            return null;
-          })
+      ? getAssetsByTypeDetails(assetTypeId, drawerPage, 10).then((data) => ({ success: true as const, data }))
+      : Promise.resolve(null),
+    categoryId && !isNaN(categoryId)
+      ? getAssetCategoryTypeDetails(categoryId).then((data) => ({ success: true as const, data }))
       : Promise.resolve(null),
   ]);
 
   const initialDrawerData = drawerRes?.success ? drawerRes.data : null;
+  const initialCategoryDrawerData = categoryDrawerRes?.success ? categoryDrawerRes.data : null;
 
   const selectedAssetType =
     assetTypeId && !isNaN(assetTypeId)
       ? masterTypes.find((t) => t.id === assetTypeId) ?? ({ id: assetTypeId, typeName: 'Asset Details' } as AssetType)
+      : null;
+
+  const selectedCategory =
+    categoryId && !isNaN(categoryId)
+      ? masterCategories.find((c) => c.id === categoryId) ?? ({ id: categoryId, categoryName: 'Category Details' } as AssetCategory)
       : null;
 
   return (
@@ -71,18 +70,16 @@ export default async function MunicipalAssetPage({ params, searchParams }: PageP
             streaming is handled by loading.tsx.
           */}
           <Suspense
-            fallback={
-              <div className="flex items-center justify-center p-12">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-              </div>
-            }
+            fallback={<LoadingPage translationNamespace="municipalAsset.loading" />}
           >
             <MunicipalAssetDashboard
               initialStats={initialStats as DashboardStatsResponse | null}
               masterCategories={masterCategories}
               masterTypes={masterTypes}
               selectedAssetType={selectedAssetType}
+              selectedCategory={selectedCategory}
               initialDrawerData={initialDrawerData}
+              initialCategoryDrawerData={initialCategoryDrawerData}
               activeDrawerPage={drawerPage}
             />
           </Suspense>
@@ -91,3 +88,4 @@ export default async function MunicipalAssetPage({ params, searchParams }: PageP
     </div>
   );
 }
+
