@@ -126,7 +126,7 @@ describe('mapApartmentQcTopSectionToPropertyMasterData - Additional Revenue', ()
     const result = mapApartmentQcTopSectionToPropertyMasterData(mockDto);
 
     expect(result.carpetAreaFtMtr).toBe('2,325.02 sq.ft / 216 sq.m');
-    expect(result.builtUpAreaFtMtr).toBe('2,790.03 sq.ft / 259.2 sq.m');
+    expect(result.builtUpAreaFtMtr).toBe('2,790.03 sq.ft / 259.20 sq.m');
     expect(result.oldCarpetAreaFtMtr).toBe('8,638.33 sq.ft / 802.53 sq.m');
     expect(result.oldBuiltUpAreaFtMtr).toBe('10,366 sq.ft / 963.03 sq.m');
     expect(result.oldCarpetBuiltUp).toBe('8,638.33 / 10,366 sq.ft (802.53 / 963.03 sq.m)');

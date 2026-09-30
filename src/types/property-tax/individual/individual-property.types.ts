@@ -29,6 +29,7 @@ export interface IndividualPropertyDto {
   propertyNo?: string | null;
   upicId?: string | null;
   ownerName?: string | null;
+  ownerNameEnglish?: string | null;
   ownerNameRegional?: string | null;
   owner?: string | null;
   propertyHolder?: string | null;

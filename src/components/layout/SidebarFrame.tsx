@@ -108,7 +108,7 @@ export function SidebarFrame({ closeMenuLabel, openMenuLabel = 'Open menu', chil
                 : 'bg-white border-gray-200 text-gray-800'
           }
           ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          ${collapsed ? 'w-16' : 'w-64 sidebar-expanded-aside'}
+          ${collapsed ? 'w-16' : 'w-72 sidebar-expanded-aside'}
         `}
       >
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">

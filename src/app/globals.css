@@ -97,7 +97,7 @@ body {
 }
 
 body.sidebar-expanded {
-  --sidebar-width: 256px;
+  --sidebar-width: 288px;
 }
 
 /* Sidebar collapsed state overrides */

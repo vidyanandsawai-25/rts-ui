@@ -20,6 +20,9 @@ vi.mock('next-intl', () => ({
       'kyc.title': 'Owner & Contact Information',
       'kyc.ownerType': 'Owner Category',
       'kyc.titleLabel': 'Title',
+      'kyc.ownerName': 'Owner Name',
+      'kyc.ownerNameRegional': 'Owner Name (Regional)',
+      'kyc.ownerNameEnglish': 'Owner Name (English)',
       'kyc.propertyHolderName': 'Property Holder Name',
       'kyc.propertyHolderNameMarathi': 'Property Holder Name (Regional)',
       'kyc.propertyHolderNameEnglish': 'Property Holder Name (English)',
@@ -173,7 +176,7 @@ describe('KycFormView', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText(/Property Holder Name \(Regional\)/i);
+    const nameInput = screen.getByLabelText(/Owner Name \(Regional\)|Property Holder Name \(Regional\)/i);
     fireEvent.change(nameInput, { target: { value: 'John Smith' } });
 
     const submitBtn = getSaveButton();
@@ -191,7 +194,7 @@ describe('KycFormView', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText(/Property Holder Name \(Regional\)/i);
+    const nameInput = screen.getByLabelText(/Owner Name \(Regional\)|Property Holder Name \(Regional\)/i);
     fireEvent.change(nameInput, { target: { value: 'John Smith' } });
 
     const submitBtn = getSaveButton();
@@ -225,7 +228,7 @@ describe('KycFormView', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText(/Property Holder Name \(Regional\)/i);
+    const nameInput = screen.getByLabelText(/Owner Name \(Regional\)|Property Holder Name \(Regional\)/i);
     fireEvent.change(nameInput, { target: { value: 'John Smith' } });
 
     const submitBtn = getSaveButton();

@@ -9,6 +9,7 @@
   },
   "grid": {
     "owner": "मालक",
+    "ownerRegional": "मालक (प्रादेशिक)",
     "propertyHolder": "मालमत्ता धारक",
     "holderRegional": "धारक (प्रादेशिक)",
     "occupierName": "भोगवटादाराचे नाव",

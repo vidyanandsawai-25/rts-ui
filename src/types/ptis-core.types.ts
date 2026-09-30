@@ -25,6 +25,9 @@ export interface PropertyDetailsData {
 export interface KYCDetailsData {
   ownerType: string;
   title: string;
+  ownerName?: string;
+  ownerNameEnglish?: string;
+  ownerNameRegional?: string;
   propertyHolderName: string;
   propertyHolderNameMarathi: string;
   propertyHolderNameEnglish?: string;

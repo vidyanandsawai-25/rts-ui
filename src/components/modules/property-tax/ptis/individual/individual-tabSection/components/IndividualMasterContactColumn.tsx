@@ -10,6 +10,14 @@ export interface IndividualMasterContactColumnProps {
   data?: IndividualPropertyMasterData;
 }
 
+function sanitizeAreaString(val?: string | null): string {
+  if (!val || val === '-') return '-';
+  return val.replace(/(\d+\.\d{3,})/g, (match) => {
+    const num = parseFloat(match);
+    return isNaN(num) ? match : num.toFixed(2);
+  });
+}
+
 export const IndividualMasterContactColumn: React.FC<IndividualMasterContactColumnProps> = memo(
   ({ data }) => {
     const t = useTranslations('individual');
@@ -29,8 +37,8 @@ export const IndividualMasterContactColumn: React.FC<IndividualMasterContactColu
     }, [data?.addressEnglish, data?.addressRegional, data?.address, data?.societyAddress]);
 
     const carpetAreaNode = useMemo(() => {
-      const current = data?.carpetAreaFtMtr || '-';
-      const old = data?.oldCarpetAreaFtMtr;
+      const current = sanitizeAreaString(data?.carpetAreaFtMtr);
+      const old = sanitizeAreaString(data?.oldCarpetAreaFtMtr);
       if (old && old !== '-' && old !== current) {
         return (
           <div className="flex items-center gap-1.5 flex-wrap min-w-0">
@@ -48,8 +56,8 @@ export const IndividualMasterContactColumn: React.FC<IndividualMasterContactColu
     }, [data?.carpetAreaFtMtr, data?.oldCarpetAreaFtMtr, t]);
 
     const builtUpAreaNode = useMemo(() => {
-      const current = data?.builtUpAreaFtMtr || '-';
-      const old = data?.oldBuiltUpAreaFtMtr;
+      const current = sanitizeAreaString(data?.builtUpAreaFtMtr);
+      const old = sanitizeAreaString(data?.oldBuiltUpAreaFtMtr);
       if (old && old !== '-' && old !== current) {
         return (
           <div className="flex items-center gap-1.5 flex-wrap min-w-0">
@@ -103,7 +111,7 @@ export const IndividualMasterContactColumn: React.FC<IndividualMasterContactColu
         <PropertyMasterInfoRow
           icon={Paperclip}
           label={t('grid.plotAreaFtMtr') || 'Plot Area (sqft/sq mtr)'}
-          value={data?.plotAreaFtMtr || '-'}
+          value={sanitizeAreaString(data?.plotAreaFtMtr)}
           minWidth="min-w-[155px]"
         />
         <PropertyMasterInfoRow

@@ -243,12 +243,17 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
   const propDetails = propertyDetailsResult?.propertyDetails;
 
   const ownerName =
-    initialPropertyMasterData?.ownerName && initialPropertyMasterData.ownerName !== '-'
-      ? initialPropertyMasterData.ownerName
-      : kycDetails?.propertyHolderName ||
-        kycDetails?.propertyHolderNameEnglish ||
-        tabHeaderInfo?.ownerName ||
-        '';
+    initialPropertyMasterData?.ownerNameEnglish && initialPropertyMasterData.ownerNameEnglish !== '-'
+      ? initialPropertyMasterData.ownerNameEnglish
+      : initialPropertyMasterData?.ownerName && initialPropertyMasterData.ownerName !== '-'
+        ? initialPropertyMasterData.ownerName
+        : kycDetails?.ownerNameEnglish ||
+          kycDetails?.propertyHolderNameEnglish ||
+          tabHeaderInfo?.ownerName ||
+          propDetails?.ownerName ||
+          kycDetails?.ownerName ||
+          kycDetails?.propertyHolderName ||
+          '-';
 
   const propertyDescription =
     initialPropertyMasterData?.propertyDescription && initialPropertyMasterData.propertyDescription !== '-'

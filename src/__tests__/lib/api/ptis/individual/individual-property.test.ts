@@ -170,6 +170,20 @@ describe('Individual Property - API, Mapper, Actions & Builder', () => {
         expect(res.imageUrl).toBe('https://test.docs.com/view/photo-guid-123');
       });
 
+      it('rounds floating-point area dimensions to at most 2 decimal places', () => {
+        const res = mapIndividualPropertyDtoToMasterData({
+          plotAreaFt: 17222.399999999998,
+          plotAreaMtr: 1600,
+          carpetAreasqFt: 6286.18,
+          carpetAreasqMtr: 584,
+          builtUpAreasqFt: 7543.41,
+          builtUpAreasqMtr: 700.8,
+        });
+        expect(res.plotAreaFtMtr).toBe('17222.4 sqft / 1600 sq mtr');
+        expect(res.carpetAreaFtMtr).toBe('6286.18 sqft / 584 sq mtr');
+        expect(res.builtUpAreaFtMtr).toBe('7543.41 sqft / 700.8 sq mtr');
+      });
+
       it('formats aadhar across variations without title', () => {
         expect(
           mapIndividualPropertyDtoToMasterData({ aadharNo: '123456789012' }).aadharWithTitle

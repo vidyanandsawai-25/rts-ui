@@ -131,28 +131,51 @@ export function buildInitialIndividualMasterData(
         '-';
 
   // 2. Ownership & Occupancy
-  const effectiveOwnerName =
-    baseData?.ownerName && baseData.ownerName !== '-'
-      ? baseData.ownerName
-      : getSafeString(kycDetails, 'propertyHolderName') ||
-        getSafeString(tabHeaderInfo, 'ownerName') ||
-        getSafeString(propDetails, 'ownerName') ||
-        '-';
+  const isDevanagari = (val?: string | null) => Boolean(val && /[\u0900-\u097F]/.test(val));
 
-  const effectiveOwner =
-    baseData?.owner && baseData.owner !== '-' ? baseData.owner : effectiveOwnerName;
-
-  const effectivePropertyHolder =
-    baseData?.propertyHolder && baseData.propertyHolder !== '-'
-      ? baseData.propertyHolder
-      : getSafeString(kycDetails, 'propertyHolderName') || effectiveOwnerName;
-
+  // Regional Owner Name: for Tabsection Owner and Holder Regional
   const effectiveHolderRegional =
     baseData?.ownerNameRegional && baseData.ownerNameRegional !== '-'
       ? baseData.ownerNameRegional
       : baseData?.holderRegional && baseData.holderRegional !== '-'
         ? baseData.holderRegional
-        : getSafeString(kycDetails, 'propertyHolderNameMarathi') || '-';
+        : getSafeString(kycDetails, 'ownerName') ||
+          getSafeString(kycDetails, 'ownerNameRegional') ||
+          getSafeString(kycDetails, 'propertyHolderNameMarathi') ||
+          (baseData?.ownerName && baseData.ownerName !== '-' && isDevanagari(baseData.ownerName)
+            ? baseData.ownerName
+            : '') ||
+          '-';
+
+  // English Owner Name: for Top Header "OWNER NAME:"
+  const effectiveOwnerNameEnglish =
+    baseData?.ownerNameEnglish && baseData.ownerNameEnglish !== '-'
+      ? baseData.ownerNameEnglish
+      : getSafeString(kycDetails, 'ownerNameEnglish') ||
+        getSafeString(kycDetails, 'propertyHolderNameEnglish') ||
+        getSafeString(kycDetails, 'propertyHolderName') ||
+        (baseData?.ownerName && baseData.ownerName !== '-' && !isDevanagari(baseData.ownerName)
+          ? baseData.ownerName
+          : '') ||
+        getSafeString(tabHeaderInfo, 'ownerName') ||
+        getSafeString(propDetails, 'ownerName') ||
+        (baseData?.ownerName && baseData.ownerName !== '-' ? baseData.ownerName : '') ||
+        (effectiveHolderRegional !== '-' ? effectiveHolderRegional : '-');
+
+  // For the red-highlighted "Owner" row in tabsection: prefer regional name, fallback to English
+  const effectiveOwner =
+    effectiveHolderRegional !== '-'
+      ? effectiveHolderRegional
+      : baseData?.owner && baseData.owner !== '-'
+        ? baseData.owner
+        : effectiveOwnerNameEnglish;
+
+  const effectivePropertyHolder =
+    baseData?.propertyHolder && baseData.propertyHolder !== '-'
+      ? baseData.propertyHolder
+      : effectiveOwnerNameEnglish !== '-'
+        ? effectiveOwnerNameEnglish
+        : effectiveHolderRegional;
 
   const effectiveOccupierName =
     baseData?.occupierName && baseData.occupierName !== '-'
@@ -302,7 +325,9 @@ export function buildInitialIndividualMasterData(
     propertyId: resolvedPropertyId ?? baseData?.propertyId ?? undefined,
     propertyNo: effectivePropNo,
     upic: effectiveUpic,
-    ownerName: effectiveOwnerName,
+    ownerName: effectiveOwnerNameEnglish,
+    ownerNameEnglish: effectiveOwnerNameEnglish !== '-' ? effectiveOwnerNameEnglish : undefined,
+    ownerNameRegional: effectiveHolderRegional !== '-' ? effectiveHolderRegional : undefined,
     owner: effectiveOwner,
     propertyHolder: effectivePropertyHolder,
     holderRegional: effectiveHolderRegional,

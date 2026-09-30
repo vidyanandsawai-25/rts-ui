@@ -142,32 +142,37 @@ export function mapApartmentQcTopSectionToPropertyMasterData(
 
   const plotAreaFt = toPositiveNumberOrNull(info?.plotAreaFt ?? rawInfo?.plotAreaFt);
   const plotAreaMtr = toPositiveNumberOrNull(info?.plotAreaMtr ?? rawInfo?.plotAreaMtr);
+  const formatAreaNum = (val: number): string =>
+    Number.isInteger(val)
+      ? val.toLocaleString('en-IN')
+      : val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   const plotArea = (plotAreaFt != null && plotAreaMtr != null)
-    ? `${plotAreaFt.toLocaleString('en-IN')} sq.ft / ${plotAreaMtr.toLocaleString('en-IN')} sq.m`
+    ? `${formatAreaNum(plotAreaFt)} sq.ft / ${formatAreaNum(plotAreaMtr)} sq.m`
     : plotAreaFt != null
-    ? `${plotAreaFt.toLocaleString('en-IN')} sq.ft`
+    ? `${formatAreaNum(plotAreaFt)} sq.ft`
     : plotAreaMtr != null
-    ? `${plotAreaMtr.toLocaleString('en-IN')} sq.m`
+    ? `${formatAreaNum(plotAreaMtr)} sq.m`
     : '-';
 
   const carpetAreaFt = toPositiveNumberOrNull(info?.carpetAreaFt ?? rawInfo?.carpetAreaFt ?? rawOverview?.carpetAreaFt ?? rawDto?.carpetAreaFt);
   const carpetAreaMtr = toPositiveNumberOrNull(info?.carpetAreaMtr ?? rawInfo?.carpetAreaMtr ?? rawOverview?.carpetAreaMtr ?? rawDto?.carpetAreaMtr);
   const carpetAreaFtMtr = (carpetAreaFt != null && carpetAreaMtr != null)
-    ? `${carpetAreaFt.toLocaleString('en-IN')} sq.ft / ${carpetAreaMtr.toLocaleString('en-IN')} sq.m`
+    ? `${formatAreaNum(carpetAreaFt)} sq.ft / ${formatAreaNum(carpetAreaMtr)} sq.m`
     : carpetAreaFt != null
-    ? `${carpetAreaFt.toLocaleString('en-IN')} sq.ft`
+    ? `${formatAreaNum(carpetAreaFt)} sq.ft`
     : carpetAreaMtr != null
-    ? `${carpetAreaMtr.toLocaleString('en-IN')} sq.m`
+    ? `${formatAreaNum(carpetAreaMtr)} sq.m`
     : undefined;
 
   const builtUpAreaFt = toPositiveNumberOrNull(info?.builtUpAreaFt ?? rawInfo?.builtUpAreaFt ?? rawOverview?.builtUpAreaFt ?? rawDto?.builtUpAreaFt);
   const builtUpAreaMtr = toPositiveNumberOrNull(info?.builtUpAreaMtr ?? rawInfo?.builtUpAreaMtr ?? rawOverview?.builtUpAreaMtr ?? rawDto?.builtUpAreaMtr);
   const builtUpAreaFtMtr = (builtUpAreaFt != null && builtUpAreaMtr != null)
-    ? `${builtUpAreaFt.toLocaleString('en-IN')} sq.ft / ${builtUpAreaMtr.toLocaleString('en-IN')} sq.m`
+    ? `${formatAreaNum(builtUpAreaFt)} sq.ft / ${formatAreaNum(builtUpAreaMtr)} sq.m`
     : builtUpAreaFt != null
-    ? `${builtUpAreaFt.toLocaleString('en-IN')} sq.ft`
+    ? `${formatAreaNum(builtUpAreaFt)} sq.ft`
     : builtUpAreaMtr != null
-    ? `${builtUpAreaMtr.toLocaleString('en-IN')} sq.m`
+    ? `${formatAreaNum(builtUpAreaMtr)} sq.m`
     : undefined;
 
   const hasFt = carpetAreaFt != null && builtUpAreaFt != null;

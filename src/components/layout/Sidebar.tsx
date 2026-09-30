@@ -122,11 +122,13 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
   }, [menuItems, deptContext]);
 
   const brandTitle = deptContext.departmentName || t('sidebar.brandTitle');
-  const brandSubtitle = deptContext.departmentName
-    ? deptContext.departmentName.toLowerCase().includes('department')
-      ? deptContext.departmentName
-      : `${deptContext.departmentName} Department`
-    : t('sidebar.brandSubtitle');
+  const brandSubtitle = deptContext.isConfigurationSettings
+    ? 'System Administration'
+    : deptContext.departmentName
+      ? deptContext.departmentName.toLowerCase().includes('department')
+        ? deptContext.departmentName
+        : `${deptContext.departmentName} Department`
+      : t('sidebar.brandSubtitle');
 
   const allPaths: string[] = [];
   filteredMenuItems.forEach((item) => {
@@ -160,7 +162,7 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
   return (
     <SidebarFrame openMenuLabel={t('sidebar.openMenu')} closeMenuLabel={t('sidebar.closeMenu')}>
       <div
-        className={`p-4 flex items-center gap-3 border-b transition-all duration-300 ease-in-out sidebar-brand-row ${
+        className={`px-3.5 py-4 flex items-center gap-2.5 border-b transition-all duration-300 ease-in-out sidebar-brand-row ${
           isDarkTheme ? 'border-slate-800 bg-[#0B132B]' : 'border-gray-100 bg-white/50'
         }`}
       >
@@ -171,14 +173,16 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
             className: 'h-6 w-6 text-white',
           })}
         </div>
-        <div className="sidebar-expandable-label flex flex-col transition-all duration-300 ease-in-out overflow-hidden min-w-0">
+        <div className="sidebar-expandable-label flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-hidden min-w-0">
           <span
-            className={`text-[17px] font-bold leading-tight whitespace-nowrap ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}
+            className={`text-[16px] font-bold leading-tight truncate ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}
+            title={brandTitle}
           >
             {brandTitle}
           </span>
           <span
-            className={`text-[12px] font-medium whitespace-nowrap ${isDarkTheme ? 'text-slate-400' : 'text-gray-500'}`}
+            className={`text-[12px] font-medium leading-normal truncate ${isDarkTheme ? 'text-slate-400' : 'text-gray-500'}`}
+            title={brandSubtitle}
           >
             {brandSubtitle}
           </span>
@@ -226,7 +230,9 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
                     <IconComponent
                       className={`h-6 w-6 shrink-0 ${
                         hasActiveChild
-                          ? 'text-white'
+                          ? isDarkTheme
+                            ? 'text-white'
+                            : 'text-[#4b70a6]'
                           : isDarkTheme
                             ? 'text-slate-400'
                             : 'text-gray-500'
@@ -234,15 +240,20 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
                     />
                     <div className="sidebar-expandable-label flex-1 min-w-0 transition-all duration-300 ease-in-out overflow-hidden">
                       <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <span className="block whitespace-nowrap text-[15px] font-medium leading-tight">
+                        <div className="min-w-0 flex-1">
+                          <span
+                            className="block whitespace-nowrap text-[15px] font-medium leading-tight truncate"
+                            title={item.name}
+                          >
                             {item.name}
                           </span>
                           {item.nameHi && item.nameHi !== item.name && (
                             <span
                               className={`block whitespace-nowrap text-[11px] ${
                                 hasActiveChild
-                                  ? 'text-white/80'
+                                  ? isDarkTheme
+                                    ? 'text-white/80'
+                                    : 'text-[#4b70a6]/80'
                                   : isDarkTheme
                                     ? 'text-slate-400'
                                     : 'text-gray-400'
@@ -253,12 +264,28 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
                           )}
                         </div>
                         <span
-                          className={`${isDarkTheme ? 'text-slate-400' : 'text-gray-400'} shrink-0 group-open/sub:hidden`}
+                          className={`${
+                            hasActiveChild
+                              ? isDarkTheme
+                                ? 'text-white/80'
+                                : 'text-[#4b70a6]'
+                              : isDarkTheme
+                                ? 'text-slate-400'
+                                : 'text-gray-400'
+                          } shrink-0 group-open/sub:hidden`}
                         >
                           <ChevronRight size={14} />
                         </span>
                         <span
-                          className={`${isDarkTheme ? 'text-slate-400' : 'text-gray-400'} shrink-0 hidden group-open/sub:inline`}
+                          className={`${
+                            hasActiveChild
+                              ? isDarkTheme
+                                ? 'text-white/80'
+                                : 'text-[#4b70a6]'
+                              : isDarkTheme
+                                ? 'text-slate-400'
+                                : 'text-gray-400'
+                          } shrink-0 hidden group-open/sub:inline`}
                         >
                           <ChevronDown size={14} />
                         </span>
@@ -316,8 +343,11 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
                   <IconComponent
                     className={`h-6 w-6 shrink-0 ${active ? 'text-white' : isDarkTheme ? 'text-slate-400' : 'text-gray-500'}`}
                   />
-                  <div className="sidebar-expandable-label transition-all duration-300 ease-in-out overflow-hidden min-w-0">
-                    <span className="block whitespace-nowrap text-[15px] font-medium leading-tight">
+                  <div className="sidebar-expandable-label flex-1 min-w-0 transition-all duration-300 ease-in-out overflow-hidden">
+                    <span
+                      className="block whitespace-nowrap text-[15px] font-medium leading-tight truncate"
+                      title={item.name}
+                    >
                       {item.name}
                     </span>
                     {item.nameHi && item.nameHi !== item.name && (

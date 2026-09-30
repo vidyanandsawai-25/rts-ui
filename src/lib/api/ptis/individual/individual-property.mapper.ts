@@ -23,20 +23,37 @@ export function formatIndianCurrency(val: unknown): string {
 }
 
 /**
+ * Helper to ensure an area value has at most 2 decimal digits, eliminating floating point inaccuracies.
+ */
+function formatTwoDecimals(val?: number | string | null): string {
+  if (val === null || val === undefined || val === '') return '';
+  const str = String(val).trim();
+  const num = typeof val === 'number' ? val : parseFloat(str.replace(/,/g, ''));
+  if (isNaN(num)) return str;
+
+  // Round to at most 2 decimal places
+  const rounded = Math.round(num * 100) / 100;
+  return String(rounded);
+}
+
+/**
  * Format area string from Feet and Meter values
  */
 function formatAreaFtMtr(ft?: number | string | null, mtr?: number | string | null): string {
   const hasFt = ft !== null && ft !== undefined && ft !== '' && ft !== 0 && ft !== '0';
   const hasMtr = mtr !== null && mtr !== undefined && mtr !== '' && mtr !== 0 && mtr !== '0';
 
+  const formattedFt = hasFt ? formatTwoDecimals(ft) : '';
+  const formattedMtr = hasMtr ? formatTwoDecimals(mtr) : '';
+
   if (hasFt && hasMtr) {
-    return `${ft} sqft / ${mtr} sq mtr`;
+    return `${formattedFt} sqft / ${formattedMtr} sq mtr`;
   }
   if (hasFt) {
-    return `${ft} sqft`;
+    return `${formattedFt} sqft`;
   }
   if (hasMtr) {
-    return `${mtr} sq mtr`;
+    return `${formattedMtr} sq mtr`;
   }
   if (mtr === 0 || mtr === '0') {
     return '0 sq mtr';
@@ -165,9 +182,29 @@ export function mapIndividualPropertyDtoToMasterData(
   const oldBuiltUpDisplay = formatAreaFtMtr(dto.oldBuiltupAreaSqFeet, dto.oldBuiltupAreaSqMeter);
 
   // Owner & Occupier Regional Support
-  const effectiveOwner = dto.ownerName || dto.owner || dto.propertyHolder || '-';
+  const isDevanagari = (val?: string | null) => Boolean(val && /[\u0900-\u097F]/.test(val));
+
+  const effectiveOwnerEnglish =
+    dto.ownerNameEnglish ||
+    (!isDevanagari(dto.ownerName) ? dto.ownerName : '') ||
+    (!isDevanagari(dto.owner) ? dto.owner : '') ||
+    (!isDevanagari(dto.propertyHolder) ? dto.propertyHolder : '') ||
+    dto.ownerName ||
+    dto.owner ||
+    dto.propertyHolder ||
+    '-';
+
   const effectiveHolderRegional =
-    dto.ownerNameRegional || dto.holderRegional || dto.ownerName || '-';
+    dto.ownerNameRegional ||
+    dto.holderRegional ||
+    (isDevanagari(dto.ownerName) ? dto.ownerName : '') ||
+    (isDevanagari(dto.owner) ? dto.owner : '') ||
+    (isDevanagari(dto.propertyHolder) ? dto.propertyHolder : '') ||
+    '-';
+
+  // For the tab section "Owner" field: show regional owner name if available, else English
+  const effectiveOwner =
+    effectiveHolderRegional !== '-' ? effectiveHolderRegional : effectiveOwnerEnglish;
   const effectiveOccupierRegional =
     dto.occupierNameRegional || dto.occupierRegional || '-';
 
@@ -188,11 +225,12 @@ export function mapIndividualPropertyDtoToMasterData(
     propertyId: dto.propertyId ?? undefined,
     propertyNo: dto.propertyNo || '-',
     upic: dto.upicId || '-',
-    ownerName: effectiveOwner,
+    ownerName: effectiveOwnerEnglish !== '-' ? effectiveOwnerEnglish : effectiveOwner,
+    ownerNameEnglish: effectiveOwnerEnglish !== '-' ? effectiveOwnerEnglish : undefined,
+    ownerNameRegional: effectiveHolderRegional !== '-' ? effectiveHolderRegional : undefined,
     owner: effectiveOwner,
-    propertyHolder: dto.propertyHolder || effectiveOwner,
+    propertyHolder: dto.propertyHolder || effectiveOwnerEnglish,
     holderRegional: effectiveHolderRegional,
-    ownerNameRegional: dto.ownerNameRegional || dto.holderRegional || undefined,
     occupierName: dto.occupierName || '-',
     occupierNameEnglish: dto.occupierName || '-',
     occupierRegional: effectiveOccupierRegional,

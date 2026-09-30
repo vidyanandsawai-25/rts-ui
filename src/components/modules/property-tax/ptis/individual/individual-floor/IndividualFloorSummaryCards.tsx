@@ -214,10 +214,10 @@ export const IndividualFloorSummaryCards: React.FC<IndividualFloorSummaryCardsPr
 
           <div className="flex flex-col min-w-0 leading-none space-y-0.5">
             <span className="text-[9.5px] font-bold text-slate-500 truncate">
-              {t('old')} <span className="font-extrabold text-slate-800">{oldArea > 0 ? `${oldArea} ${areaUnit}` : '-'}</span>
+              {t('old')} <span className="font-extrabold text-slate-800">{oldArea > 0 ? `${Number(oldArea).toFixed(2)} ${areaUnit}` : '-'}</span>
             </span>
             <span className="text-[9.5px] font-bold text-slate-500 truncate">
-              {t('new')} <span className="font-black text-slate-900">{newArea > 0 ? `${newArea} ${areaUnit}` : '-'}</span>
+              {t('new')} <span className="font-black text-slate-900">{newArea > 0 ? `${Number(newArea).toFixed(2)} ${areaUnit}` : '-'}</span>
             </span>
             <div className="pt-0.5">
               <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none max-w-full truncate">

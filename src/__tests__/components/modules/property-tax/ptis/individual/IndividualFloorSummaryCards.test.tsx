@@ -175,8 +175,8 @@ describe('IndividualFloorSummaryCards', () => {
       />
     );
 
-    expect(screen.getByText('100 sq.ft')).toBeInTheDocument();
-    expect(screen.getByText('120 sq.ft')).toBeInTheDocument();
+    expect(screen.getByText('100.00 sq.ft')).toBeInTheDocument();
+    expect(screen.getByText('120.00 sq.ft')).toBeInTheDocument();
     expect(screen.getByText('↑ +20.00 sq.ft')).toBeInTheDocument();
     expect(screen.getByText('Changed')).toBeInTheDocument();
   });

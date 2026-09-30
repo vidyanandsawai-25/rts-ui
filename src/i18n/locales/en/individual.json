@@ -9,6 +9,7 @@
   },
   "grid": {
     "owner": "Owner",
+    "ownerRegional": "Owner (Regional)",
     "propertyHolder": "Property Holder",
     "holderRegional": "Holder (Regional)",
     "occupierName": "Occupier Name",
