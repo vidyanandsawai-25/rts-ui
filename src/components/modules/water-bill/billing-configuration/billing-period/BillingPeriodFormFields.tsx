@@ -7,7 +7,6 @@ import type {
 } from "@/types/water-bill/billing-configuration/billingPeriodMaster.types";
 import {
   useBillingPeriodFormFields,
-  addDays,
   MAX_GRACE_DAYS,
 } from "@/hooks/water-bill/billing-configuration/billing-period-master/useBillingPeriodFormFields";
 import { BillingPeriodPenaltyFields } from "./BillingPeriodPenaltyFields";
@@ -155,8 +154,8 @@ export function BillingPeriodFormFields({
             type="date"
             label={t("form.billGenerationDate.label")}
             value={formData.billGenerationDate ?? ""}
-            min={formData.periodToDate ? String(formData.periodToDate).split("T")[0] : "1900-01-01"}
-            max={formData.dueDate ? String(formData.dueDate).split("T")[0] : "2099-12-31"}
+            min="1900-01-01"
+            max="2099-12-31"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               handleChange("billGenerationDate", e.target.value)
             }
@@ -176,12 +175,8 @@ export function BillingPeriodFormFields({
             type="date"
             label={t("form.dueDate.label")}
             value={formData.dueDate ?? ""}
-            min={formData.periodToDate ? String(formData.periodToDate) : "1900-01-01"}
-            max={
-              formData.periodToDate
-                ? addDays(String(formData.periodToDate), MAX_GRACE_DAYS)
-                : "2099-12-31"
-            }
+            min="1900-01-01"
+            max="2099-12-31"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               handleDueDateChange(e.target.value)
             }

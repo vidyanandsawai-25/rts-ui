@@ -1,5 +1,3 @@
-import { useTranslations } from "next-intl";
-import { useToast } from "@/components/common";
 import type { BillingPeriodInput } from "@/types/water-bill/billing-configuration/billingPeriodMaster.types";
 import { addDays } from "../../../../lib/utils/water-bill/billing-configuration/billingPeriodCalculation.utils";
 
@@ -10,19 +8,17 @@ interface UseBillingPeriodPenaltyHandlersParams {
 }
 
 export function useBillingPeriodPenaltyHandlers({
-  formData,
+  formData: _formData,
   handleChange,
   handleUpdate,
 }: UseBillingPeriodPenaltyHandlersParams) {
-  const t = useTranslations("billingPeriodMaster");
-  const { error } = useToast();
-
   const handleCurrentPenaltyStartChange = (val: string) => {
-    if (val && formData.dueDate && val < formData.dueDate) {
-      error(t("validation.currentPenaltyStartAfterDueDate"));
+    if (!val) {
+      handleChange("currentPenaltyStartDate", "");
       return;
     }
-    handleChange("currentPenaltyStartDate", val);
+    const cleanDate = val.split("T")[0];
+    handleChange("currentPenaltyStartDate", cleanDate);
   };
 
   const handleCurrentPenaltyEndChange = (val: string) => {
@@ -31,10 +27,6 @@ export function useBillingPeriodPenaltyHandlers({
       return;
     }
     const cleanDate = val.split("T")[0];
-    if (formData.currentPenaltyStartDate && cleanDate < formData.currentPenaltyStartDate) {
-      error(t("validation.currentPenaltyEndAfterStart"));
-      return;
-    }
     const pendingStart = addDays(cleanDate, 1);
     handleUpdate({
       currentPenaltyEndDate: cleanDate,
@@ -48,13 +40,6 @@ export function useBillingPeriodPenaltyHandlers({
       return;
     }
     const cleanDate = val.split("T")[0];
-    if (formData.currentPenaltyEndDate && cleanDate <= formData.currentPenaltyEndDate) {
-      error(t("validation.pendingPenaltyStartNotBeforeCurrentPenaltyEnd"));
-      return;
-    }
-    if (formData.pendingPenaltyEndDate && cleanDate > formData.pendingPenaltyEndDate) {
-      error(t("validation.pendingPenaltyEndAfterStart"));
-    }
     handleChange("pendingPenaltyStartDate", cleanDate);
   };
 
@@ -64,9 +49,6 @@ export function useBillingPeriodPenaltyHandlers({
       return;
     }
     const cleanDate = val.split("T")[0];
-    if (formData.pendingPenaltyStartDate && cleanDate < formData.pendingPenaltyStartDate) {
-      error(t("validation.pendingPenaltyEndAfterStart"));
-    }
     handleChange("pendingPenaltyEndDate", cleanDate);
   };
 

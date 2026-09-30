@@ -1,7 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Input, ValidationMessage } from "@/components/common";
 import type { BillingPeriodInput } from "@/types/water-bill/billing-configuration/billingPeriodMaster.types";
-import { addDays } from "@/lib/utils/water-bill/billing-configuration/billingPeriodCalculation.utils";
 
 interface BillingPeriodPenaltyFieldsProps {
   formData: BillingPeriodInput;
@@ -38,7 +37,7 @@ export function BillingPeriodPenaltyFields({
           type="date"
           label={t("table.currentPenaltyStartDate")}
           value={formData.currentPenaltyStartDate ?? ""}
-          min={formData.dueDate ? String(formData.dueDate) : "1900-01-01"}
+          min="1900-01-01"
           max="2099-12-31"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             handleCurrentPenaltyStartChange(e.target.value)
@@ -58,11 +57,7 @@ export function BillingPeriodPenaltyFields({
           type="date"
           label={t("table.currentPenaltyEndDate")}
           value={formData.currentPenaltyEndDate ?? ""}
-          min={
-            formData.currentPenaltyStartDate
-              ? String(formData.currentPenaltyStartDate)
-              : "1900-01-01"
-          }
+          min="1900-01-01"
           max="2099-12-31"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             handleCurrentPenaltyEndChange(e.target.value)
@@ -82,11 +77,7 @@ export function BillingPeriodPenaltyFields({
           type="date"
           label={t("table.pendingPenaltyStartDate")}
           value={formData.pendingPenaltyStartDate ?? ""}
-          min={
-            formData.currentPenaltyEndDate
-              ? addDays(String(formData.currentPenaltyEndDate), 1)
-              : "1900-01-01"
-          }
+          min="1900-01-01"
           max="2099-12-31"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             handlePendingPenaltyStartChange(e.target.value)
@@ -106,11 +97,7 @@ export function BillingPeriodPenaltyFields({
           type="date"
           label={t("table.pendingPenaltyEndDate")}
           value={formData.pendingPenaltyEndDate ?? ""}
-          min={
-            formData.pendingPenaltyStartDate
-              ? String(formData.pendingPenaltyStartDate)
-              : "1900-01-01"
-          }
+          min="1900-01-01"
           max="2099-12-31"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             handlePendingPenaltyEndChange

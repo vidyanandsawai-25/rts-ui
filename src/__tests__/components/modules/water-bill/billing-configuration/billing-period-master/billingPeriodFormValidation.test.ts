@@ -40,6 +40,7 @@ describe("billingPeriodFormValidation", () => {
     expect(errors.billingFrequencyId).toBe("validation.billingFrequencyRequired");
     expect(errors.periodFromDate).toBe("validation.periodFromDateRequired");
     expect(errors.periodToDate).toBe("validation.periodToDateRequired");
+    expect(errors.dueDate).toBe("validation.dueDateRequired");
   });
 
   it("validates Due Date and Grace Days within 31 days", () => {
@@ -88,5 +89,37 @@ describe("billingPeriodFormValidation", () => {
     expect(errors.pendingPenaltyStartDate).toBe(
       "validation.pendingPenaltyStartNotBeforeCurrentPenaltyEnd"
     );
+  });
+
+  it("shows validation message on currentPenaltyStartDate when currentPenaltyStartDate is changed to be after end date", () => {
+    const errors = validateBillingPeriodFormData(
+      {
+        ...validForm,
+        dueDate: "2026-04-30",
+        currentPenaltyStartDate: "2026-06-01", // After End Date
+        currentPenaltyEndDate: "2026-05-01",
+      },
+      t,
+      "currentPenaltyStartDate"
+    );
+
+    expect(errors.currentPenaltyStartDate).toBe("validation.currentPenaltyStartNotAfterEnd");
+    expect(errors.currentPenaltyEndDate).toBeUndefined();
+  });
+
+  it("shows validation message on currentPenaltyEndDate when currentPenaltyEndDate is changed to be before start date", () => {
+    const errors = validateBillingPeriodFormData(
+      {
+        ...validForm,
+        dueDate: "2026-04-30",
+        currentPenaltyStartDate: "2026-05-01",
+        currentPenaltyEndDate: "2026-04-20", // Before Start Date
+      },
+      t,
+      "currentPenaltyEndDate"
+    );
+
+    expect(errors.currentPenaltyEndDate).toBe("validation.currentPenaltyEndAfterStart");
+    expect(errors.currentPenaltyStartDate).toBeUndefined();
   });
 });

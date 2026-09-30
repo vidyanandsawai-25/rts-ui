@@ -81,9 +81,16 @@ export function BillingPeriodForm({
   const existingCount = matchingPeriods.length;
   const isMaxLimitReached = !isEdit && periodsPerYear > 0 && existingCount >= periodsPerYear;
 
+  const [lastModifiedField, setLastModifiedField] = useState<keyof BillingPeriodInput | null>(null);
+
   const validate = useCallback(
-    (data: BillingPeriodInput) => validateBillingPeriodFormData(data, t),
-    [t]
+    (data: BillingPeriodInput, fieldModified?: keyof BillingPeriodInput | null) =>
+      validateBillingPeriodFormData(
+        data,
+        t,
+        fieldModified !== undefined ? fieldModified : lastModifiedField
+      ),
+    [t, lastModifiedField]
   );
 
   const errors = validate(formData);
@@ -92,11 +99,23 @@ export function BillingPeriodForm({
     Boolean(
       (submittedOnce ||
         touched[field] ||
+        lastModifiedField === field ||
         (formData[field] !== undefined && formData[field] !== "" && formData[field] !== null)) &&
         errors[field]
     );
 
   const handleUpdate = (updates: Partial<BillingPeriodInput>) => {
+    if ("currentPenaltyEndDate" in updates) {
+      setLastModifiedField("currentPenaltyEndDate");
+    } else if ("dueDate" in updates) {
+      setLastModifiedField("dueDate");
+    } else if ("graceDays" in updates) {
+      setLastModifiedField("graceDays");
+    } else if ("financialYearId" in updates) {
+      setLastModifiedField("financialYearId");
+    } else if ("billingFrequencyId" in updates) {
+      setLastModifiedField("billingFrequencyId");
+    }
     setFormData((prev) => ({ ...prev, ...updates }));
   };
 
@@ -104,6 +123,7 @@ export function BillingPeriodForm({
     field: keyof BillingPeriodInput,
     value: string | number | boolean
   ) => {
+    setLastModifiedField(field);
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -115,7 +135,8 @@ export function BillingPeriodForm({
     e.preventDefault();
     if (isMaxLimitReached) return;
     setSubmittedOnce(true);
-    if (Object.keys(validate(formData)).length > 0) return;
+    setLastModifiedField(null);
+    if (Object.keys(validate(formData, null)).length > 0) return;
 
     const toIsoOrNull = (dateStr?: string | null) =>
       dateStr && dateStr.trim() ? new Date(dateStr).toISOString() : null;

@@ -42,11 +42,11 @@ describe("useBillingPeriodPenaltyHandlers", () => {
       })
     );
 
-    // Invalid start date before due date
+    // Date before due date allows date change freely (validation is handled by form validation)
     act(() => {
       result.current.handleCurrentPenaltyStartChange("2026-04-20");
     });
-    expect(mockToastError).toHaveBeenCalledWith("validation.currentPenaltyStartAfterDueDate");
+    expect(handleChange).toHaveBeenCalledWith("currentPenaltyStartDate", "2026-04-20");
 
     // Valid start date
     act(() => {

@@ -1,5 +1,4 @@
-import { useTranslations } from "next-intl";
-import { useToast } from "@/components/common";
+
 import type {
   BillingPeriodInput,
   BillingPeriodMaster,
@@ -44,8 +43,7 @@ export function useBillingPeriodFormFields({
   handleChange,
   handleUpdate,
 }: UseBillingPeriodFormFieldsParams) {
-  const t = useTranslations("billingPeriodMaster");
-  const { error } = useToast();
+
 
   const penaltyHandlers = useBillingPeriodPenaltyHandlers({
     formData,
@@ -182,13 +180,7 @@ export function useBillingPeriodFormFields({
       return;
     }
     const cleanDate = val.split("T")[0];
-    if (formData.periodToDate && cleanDate < formData.periodToDate) {
-      error(t("validation.dueDateAfterPeriodTo"));
-    }
     const grace = formData.periodToDate ? diffDays(formData.periodToDate, cleanDate) : 0;
-    if (formData.periodToDate && grace > MAX_GRACE_DAYS) {
-      error(t("validation.dueDateMaxOneMonth"));
-    }
     handleUpdate({
       dueDate: cleanDate,
       graceDays: grace,
@@ -205,16 +197,8 @@ export function useBillingPeriodFormFields({
     }
     const num = Number(val);
     if (isNaN(num)) return;
-    if (num < 0) {
-      error(t("validation.graceDaysPositive"));
-      return;
-    }
-    if (num > MAX_GRACE_DAYS) {
-      error(t("validation.graceDaysMax", { count: MAX_GRACE_DAYS }));
-      return;
-    }
     const due =
-      formData.periodToDate
+      formData.periodToDate && num >= 0
         ? num === 0
           ? formData.periodToDate
           : addDays(formData.periodToDate, num)

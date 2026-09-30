@@ -6,7 +6,8 @@ import { diffDays } from "@/lib/utils/water-bill/billing-configuration/billingPe
 
 export function validateBillingPeriodFormData(
   data: BillingPeriodInput,
-  t: BillingPeriodTranslator
+  t: BillingPeriodTranslator,
+  lastModifiedField?: keyof BillingPeriodInput | null
 ): Partial<Record<keyof BillingPeriodInput, string>> {
   const errs: Partial<Record<keyof BillingPeriodInput, string>> = {};
 
@@ -30,25 +31,30 @@ export function validateBillingPeriodFormData(
     errs.periodToDate = t("validation.periodToDateAfterFromDate");
   }
 
+  if (!data.dueDate) {
+    errs.dueDate = t("validation.dueDateRequired");
+  } else if (data.periodToDate) {
+    if (data.dueDate < data.periodToDate) {
+      errs.dueDate = t("validation.dueDateAfterPeriodTo");
+    }
+    const expectedGraceDays = diffDays(data.periodToDate, data.dueDate);
+    if (expectedGraceDays > 31) {
+      errs.dueDate = errs.dueDate || t("validation.dueDateMaxOneMonth");
+    }
+    const graceDays =
+      typeof data.graceDays === "number"
+        ? data.graceDays
+        : parseInt(String(data.graceDays || "0"), 10);
+    if (graceDays !== expectedGraceDays && data.dueDate >= data.periodToDate) {
+      errs.graceDays = t("validation.graceDaysMismatch");
+    }
+  }
+
   if (data.periodToDate) {
     const graceDays =
       typeof data.graceDays === "number"
         ? data.graceDays
         : parseInt(String(data.graceDays || "0"), 10);
-
-    if (data.dueDate) {
-      if (data.dueDate < data.periodToDate) {
-        errs.dueDate = t("validation.dueDateAfterPeriodTo");
-      }
-      const expectedGraceDays = diffDays(data.periodToDate, data.dueDate);
-      if (expectedGraceDays > 31) {
-        errs.dueDate = errs.dueDate || t("validation.dueDateMaxOneMonth");
-      }
-      if (graceDays !== expectedGraceDays && data.dueDate >= data.periodToDate) {
-        errs.graceDays = t("validation.graceDaysMismatch");
-      }
-    }
-
     if (graceDays < 0) {
       errs.graceDays = errs.graceDays || t("validation.graceDaysPositive");
     } else if (graceDays > 31) {
@@ -84,7 +90,18 @@ export function validateBillingPeriodFormData(
     const penaltyEnd = new Date(data.currentPenaltyEndDate);
     const penaltyStart = new Date(data.currentPenaltyStartDate);
     if (!isNaN(penaltyEnd.getTime()) && !isNaN(penaltyStart.getTime()) && penaltyEnd < penaltyStart) {
-      errs.currentPenaltyEndDate = t("validation.currentPenaltyEndAfterStart");
+      if (lastModifiedField === "currentPenaltyStartDate") {
+        if (!errs.currentPenaltyStartDate) {
+          errs.currentPenaltyStartDate = t("validation.currentPenaltyStartNotAfterEnd");
+        }
+      } else if (lastModifiedField === "currentPenaltyEndDate") {
+        errs.currentPenaltyEndDate = t("validation.currentPenaltyEndAfterStart");
+      } else {
+        if (!errs.currentPenaltyStartDate) {
+          errs.currentPenaltyStartDate = t("validation.currentPenaltyStartNotAfterEnd");
+        }
+        errs.currentPenaltyEndDate = t("validation.currentPenaltyEndAfterStart");
+      }
     }
   }
 
@@ -100,7 +117,18 @@ export function validateBillingPeriodFormData(
     const penaltyEnd = new Date(data.pendingPenaltyEndDate);
     const penaltyStart = new Date(data.pendingPenaltyStartDate);
     if (!isNaN(penaltyEnd.getTime()) && !isNaN(penaltyStart.getTime()) && penaltyEnd < penaltyStart) {
-      errs.pendingPenaltyEndDate = t("validation.pendingPenaltyEndAfterStart");
+      if (lastModifiedField === "pendingPenaltyStartDate") {
+        if (!errs.pendingPenaltyStartDate) {
+          errs.pendingPenaltyStartDate = t("validation.pendingPenaltyStartNotAfterEnd");
+        }
+      } else if (lastModifiedField === "pendingPenaltyEndDate") {
+        errs.pendingPenaltyEndDate = t("validation.pendingPenaltyEndAfterStart");
+      } else {
+        if (!errs.pendingPenaltyStartDate) {
+          errs.pendingPenaltyStartDate = t("validation.pendingPenaltyStartNotAfterEnd");
+        }
+        errs.pendingPenaltyEndDate = t("validation.pendingPenaltyEndAfterStart");
+      }
     }
   }
   return errs;
