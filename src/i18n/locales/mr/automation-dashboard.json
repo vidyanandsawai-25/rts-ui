@@ -31,7 +31,10 @@
     "fetchMissingMobileNo": "गहाळ मोबाईल नंबर डेटा आणण्यात अयशस्वी.",
     "fetchMissingPhotoPlan": "गहाळ फोटो प्लॅन डेटा आणण्यात अयशस्वी.",
     "fetchMissingOwnerName": "गहाळ मालकाचे नाव डेटा आणण्यात अयशस्वी.",
-    "fetchMissingAddress": "गहाळ पत्ता डेटा आणण्यात अयशस्वी."
+    "fetchMissingAddress": "गहाळ पत्ता डेटा आणण्यात अयशस्वी.",
+    "fetchMissingOccupierName": "गहाळ भोगवटादाराचे नाव डेटा आणण्यात अयशस्वी.",
+    "fetchMissingShopName": "गहाळ दुकानाचे नाव डेटा आणण्यात अयशस्वी.",
+    "fetchMissingRegisteredProperty": "गहाळ नोंदणीकृत मालमत्ता डेटा आणण्यात अयशस्वी."
   },
   "summaryCards": {
     "metrics": {
@@ -563,6 +566,58 @@
     "columns": {
       "municipalZone": "नगरपालिका झोन",
       "addressMissing": "पत्ता गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingOccupierName": {
+    "occupierNameMissing": "भोगवटादाराचे नाव गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "occupierNameMissing": "भोगवटादाराचे नाव गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingShopName": {
+    "shopNameMissing": "दुकानाचे नाव गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "shopNameMissing": "दुकानाचे नाव गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "registeredProperty": {
+    "totalOldPropertyCount": "एकूण जुनी मालमत्ता संख्या",
+    "mergeOldPropertyCount": "मर्ज केलेली जुनी मालमत्ता संख्या",
+    "missingOldPropertyCount": "गहाळ जुनी मालमत्ता संख्या",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "totalOldPropertyCount": "एकूण जुनी मालमत्ता संख्या",
+      "mergeOldPropertyCount": "मर्ज केलेली जुनी मालमत्ता संख्या",
+      "missingOldPropertyCount": "गहाळ जुनी मालमत्ता संख्या",
       "action": "कृती"
     },
     "actions": {

@@ -115,7 +115,7 @@ const MISSING_DATA_TABS = [
     labelKey: 'tabs.registeredPropertyData',
     defaultLabel: 'Registered Property Data',
     icon: FileSpreadsheet,
-    path: 'registered-property-data',
+    path: 'registered-property',
     colors: {
       text: 'text-teal-600',
       bgSolid: 'bg-teal-600',

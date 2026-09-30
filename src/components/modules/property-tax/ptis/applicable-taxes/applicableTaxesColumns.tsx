@@ -151,10 +151,10 @@ export const getColumns = (
     {
       key: 'taxName' as keyof TaxCalculationItem,
       label: t('taxHead')?.toUpperCase() || 'TAX HEAD',
-      width: '22%',
+      width: '23%',
       cellClassName: 'py-3 px-3',
       render: (_val: unknown, row: TaxCalculationItem) => (
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 border border-slate-200">
             {getTaxIcon(row.taxName)}
           </div>
@@ -168,7 +168,7 @@ export const getColumns = (
     {
       key: 'types' as keyof TaxCalculationItem,
       label: t('applicableTo') || 'APPLICABLE TO',
-      width: '13%',
+      width: '12%',
       headerClassName: 'text-center',
       cellClassName: 'py-3 px-2 text-xs text-slate-500 font-medium text-center',
       render: (val: unknown) => {
@@ -183,7 +183,7 @@ export const getColumns = (
     {
       key: 'baseTypes' as keyof TaxCalculationItem,
       label: t('method') || 'METHOD',
-      width: '9%',
+      width: '8%',
       headerClassName: 'text-center',
       cellClassName: 'py-3 px-2 text-xs text-slate-500 font-medium text-center',
       render: (val: unknown, row: TaxCalculationItem) => (val as string) || row.resultModes || '—'
@@ -191,7 +191,7 @@ export const getColumns = (
     {
       key: 'averageTaxPercentage' as keyof TaxCalculationItem,
       label: t('ruleRate') || 'RULE / RATE',
-      width: '13%',
+      width: '11%',
       headerClassName: 'text-center',
       cellClassName: 'py-3 px-2 text-xs text-slate-500 font-medium text-center',
       render: (val: unknown, row: TaxCalculationItem) => <RuleRateCell val={val} row={row} t={t} />
@@ -199,7 +199,7 @@ export const getColumns = (
     {
       key: 'calculationMode' as keyof TaxCalculationItem,
       label: t('calculation') || 'CALCULATION',
-      width: '15%',
+      width: '13%',
       headerClassName: 'text-center',
       cellClassName: 'py-3 px-2 text-xs text-slate-500 font-medium text-center',
       render: (val: unknown) => (val as string) || '—'
@@ -207,7 +207,7 @@ export const getColumns = (
     {
       key: 'isActive' as keyof TaxCalculationItem,
       label: t('statusOnOff') || 'STATUS ON / OFF',
-      width: '14%',
+      width: '12%',
       align: 'center' as const,
       headerClassName: 'text-center',
       cellClassName: 'py-3 px-2 text-center',
@@ -236,10 +236,10 @@ export const getColumns = (
     {
       key: 'taxAmount' as keyof TaxCalculationItem,
       label: t('amount') || 'AMOUNT',
-      width: '14%',
+      width: '12%',
       align: 'center' as const,
       headerClassName: 'text-center',
-      cellClassName: 'py-3 px-3 font-bold text-slate-800 text-sm whitespace-nowrap text-center',
+      cellClassName: 'py-3 px-3 font-bold text-slate-800 text-[13px] whitespace-nowrap text-center',
       render: (val: unknown) => `${t('currencySymbol')} ${(val as number)?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || '0.00'}`
     }
   ];

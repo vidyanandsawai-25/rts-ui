@@ -31,7 +31,10 @@
     "fetchMissingMobileNo": "Failed to fetch missing mobile number data.",
     "fetchMissingPhotoPlan": "Failed to fetch missing photo plan data.",
     "fetchMissingOwnerName": "Failed to fetch missing owner name data.",
-    "fetchMissingAddress": "Failed to fetch missing address data."
+    "fetchMissingAddress": "Failed to fetch missing address data.",
+    "fetchMissingOccupierName": "Failed to fetch missing occupier name data.",
+    "fetchMissingShopName": "Failed to fetch missing shop name data.",
+    "fetchMissingRegisteredProperty": "Failed to fetch missing registered property data."
   },
   "summaryCards": {
     "metrics": {
@@ -563,6 +566,58 @@
     "columns": {
       "municipalZone": "MUNICIPAL ZONE",
       "addressMissing": "ADDRESS MISSING",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "missingOccupierName": {
+    "occupierNameMissing": "OCCUPIER NAME MISSING",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "occupierNameMissing": "OCCUPIER NAME MISSING",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "missingShopName": {
+    "shopNameMissing": "SHOP NAME MISSING",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "shopNameMissing": "SHOP NAME MISSING",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "registeredProperty": {
+    "totalOldPropertyCount": "TOTAL OLD PROPERTY COUNT",
+    "mergeOldPropertyCount": "MERGE OLD PROPERTY COUNT",
+    "missingOldPropertyCount": "MISSING OLD PROPERTY COUNT",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "totalOldPropertyCount": "TOTAL OLD PROPERTY COUNT",
+      "mergeOldPropertyCount": "MERGE OLD PROPERTY COUNT",
+      "missingOldPropertyCount": "MISSING OLD PROPERTY COUNT",
       "action": "ACTION"
     },
     "actions": {

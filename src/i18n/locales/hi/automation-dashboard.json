@@ -31,7 +31,10 @@
     "fetchMissingMobileNo": "अनुपलब्ध मोबाइल नंबर डेटा लाने में विफल।",
     "fetchMissingPhotoPlan": "अनुपलब्ध फोटो प्लान डेटा लाने में विफल।",
     "fetchMissingOwnerName": "अनुपलब्ध मालिक का नाम डेटा लाने में विफल।",
-    "fetchMissingAddress": "अनुपलब्ध पता डेटा लाने में विफल।"
+    "fetchMissingAddress": "अनुपलब्ध पता डेटा लाने में विफल।",
+    "fetchMissingOccupierName": "अनुपलब्ध कब्जाभोगी का नाम डेटा लाने में विफल।",
+    "fetchMissingShopName": "अनुपलब्ध दुकान का नाम डेटा लाने में विफल।",
+    "fetchMissingRegisteredProperty": "अनुपलब्ध पंजीकृत संपत्ति डेटा लाने में विफल।"
   },
   "summaryCards": {
     "metrics": {
@@ -563,6 +566,58 @@
     "columns": {
       "municipalZone": "नगर पालिका ज़ोन",
       "addressMissing": "पता अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingOccupierName": {
+    "occupierNameMissing": "कब्जेदार का नाम अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "occupierNameMissing": "कब्जेदार का नाम अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingShopName": {
+    "shopNameMissing": "दुकान का नाम अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "shopNameMissing": "दुकान का नाम अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "registeredProperty": {
+    "totalOldPropertyCount": "कुल पुरानी संपत्ति संख्या",
+    "mergeOldPropertyCount": "मर्ज की गई पुरानी संपत्ति संख्या",
+    "missingOldPropertyCount": "अनुपलब्ध पुरानी संपत्ति संख्या",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "totalOldPropertyCount": "कुल पुरानी संपत्ति संख्या",
+      "mergeOldPropertyCount": "मर्ज की गई पुरानी संपत्ति संख्या",
+      "missingOldPropertyCount": "अनुपलब्ध पुरानी संपत्ति संख्या",
       "action": "कार्रवाई"
     },
     "actions": {

@@ -34,9 +34,9 @@ export const TaxesTableTemplate = ({
       onPageChange={onPageChange}
       paginationConfig={{ enabled: false, showPageSizeSelector: false }}
       maxBodyHeightClassName="max-h-[calc(100vh-350px)]"
-      tableClassName="w-full text-left border-collapse"
+      tableClassName="w-full table-fixed text-left border-collapse"
       theadClassName="bg-blue-50 border-b border-blue-100 [&_th]:!text-slate-500 [&_th]:!text-[10px] [&_th]:!font-bold [&_th]:!uppercase [&_th]:!tracking-wider [&_th]:!py-3 [&_th]:!px-4"
-      containerClassName="w-full h-full"
+      containerClassName="w-full h-full overflow-x-hidden"
       rowClassName={() => "border-b border-slate-100 hover:bg-slate-50/50 transition-colors"}
     />
   );

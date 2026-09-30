@@ -51,12 +51,12 @@ export const getMissingOwnerNameColumns = (
   {
     key: 'action',
     label: t('columns.action'),
-    align: 'right',
-    cellClassName: 'py-3.5 px-4 text-right',
+    align: 'center',
+    cellClassName: 'py-3.5 px-4 text-center',
     render: (_, row) => {
       const zone = row as unknown as MissingOwnerNameZone;
       return (
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-center gap-2">
           <button
             type="button"
             title={t('actions.downloadReport')}
