@@ -1,0 +1,307 @@
+{
+  "stepper": {
+    "editingAsset": "मालमत्ता #{assetNo} संपादित करत आहे",
+    "steps": {
+      "basicInfo": {
+        "title": "मूलभूत माहिती",
+        "subtitle": "मालमत्ता प्रोफाइल"
+      },
+      "location": {
+        "title": "स्थान आणि मालकी",
+        "subtitle": "नकाशा, जमीन आणि हक्क"
+      },
+      "inventory": {
+        "title": "मालमत्ता आणि सुविधा",
+        "subtitle": "उपकरणे आणि इतर मालमत्ता"
+      },
+      "review": {
+        "title": "पुनरावलोकन आणि सबमिट करा",
+        "subtitle": "पडताळणी करा आणि सबमिट करा"
+      }
+    }
+  },
+  "assetDetails": {
+    "title": "मालमत्ता तपशील",
+    "category": "मालमत्ता वर्गवारी",
+    "type": "मालमत्ता प्रकार",
+    "zone": "झोन",
+    "selectZone": "झोन निवडा",
+    "ward": "प्रभाग",
+    "selectWard": "प्रभाग निवडा",
+    "propertyNo": "मालमत्ता क्रमांक",
+    "partitionNo": "विभाजन क्रमांक",
+    "upicId": "यूपीआयसी आयडी",
+    "mouja": "मौजा",
+    "selectMouja": "मौजा निवडा",
+    "subzone": "उप-झोन",
+    "selectSubzone": "उप-झोन निवडा",
+    "csnNo": "सीएसएन क्रमांक",
+    "plotLength": "प्लॉट लांबी (चौ. मी.)",
+    "plotWidth": "प्लॉट रुंदी (चौ. मी.)",
+    "totalPlotArea": "एकूण प्लॉट क्षेत्रफळ (चौ. मी.)",
+    "plotNumber": "प्लॉट क्रमांक",
+    "ptaxId": "पी-टॅक्स आयडी",
+    "enterPtaxId": "पी-टॅक्स आयडी प्रविष्ट करा",
+    "mpmsNo": "एमसीएमएस क्रमांक",
+    "enterMpmsNo": "एमसीएमएस क्रमांक प्रविष्ट करा",
+    "condition": "मालमत्ता स्थिती",
+    "selectCondition": "स्थिती निवडा",
+    "encroachmentStatus": "अतिक्रमण स्थिती",
+    "selectEncroachmentStatus": "अतिक्रमण स्थिती निवडा",
+    "conditions": {
+      "good": "चांगली",
+      "average": "मध्यम",
+      "poor": "खराब"
+    },
+    "encroachments": {
+      "clean": "स्वच्छ",
+      "partiallyEncroached": "अंशतः अतिक्रमित",
+      "fullyEncroached": "पूर्णपणे अतिक्रमित"
+    }
+  },
+  "kycDetails": {
+    "title": "केवायसी तपशील",
+    "assetName": "मालमत्तेचे नाव",
+    "enterAssetName": "मालमत्तेचे नाव प्रविष्ट करा",
+    "assetRegionalName": "मालमत्तेचे स्थानिक नाव",
+    "enterRegionalName": "स्थानिक नाव प्रविष्ट करा",
+    "owningDepartment": "मालकी विभाग",
+    "selectOwningDepartment": "मालकी विभाग निवडा",
+    "ownershipType": "मालकी प्रकार",
+    "selectOwnershipType": "मालकी प्रकार निवडा",
+    "ownershipOptions": {
+      "municipal": "महानगरपालिका",
+      "leased": "भाडेतत्त्वावर",
+      "private": "खाजगी"
+    },
+    "inChargeName": "प्रभारी व्यक्तीचे नाव",
+    "enterInChargeName": "प्रभारी व्यक्तीचे नाव प्रविष्ट करा",
+    "inChargeRegionalName": "प्रभारी व्यक्तीचे स्थानिक नाव",
+    "designation": "पदनाम",
+    "selectDesignation": "पदनाम निवडा",
+    "contactNumber": "संपर्क क्रमांक",
+    "email": "ईमेल",
+    "enterEmail": "ईमेल प्रविष्ट करा",
+    "pinCode": "पिन कोड",
+    "fullAddress": "पूर्ण पत्ता",
+    "enterFullAddress": "पूर्ण पत्ता प्रविष्ट करा",
+    "regionalAddress": "स्थानिक पत्ता",
+    "enterRegionalAddress": "स्थानिक पत्ता प्रविष्ट करा"
+  },
+  "additionalDetails": {
+    "title": "अतिरिक्त तपशील",
+    "loadingFields": "फील्ड लोड होत आहेत..."
+  },
+  "assetMedia": {
+    "title": "मालमत्ता मीडिया",
+    "assetPhoto": "मालमत्ता फोटो",
+    "upload": "अपलोड करा",
+    "noImageUploaded": "कोणतीही प्रतिमा अपलोड केलेली नाही. अपलोड करण्यासाठी क्लिक करा.",
+    "assetPhotoPlan": "मालमत्ता फोटो प्लॅन",
+    "uploadPlan": "प्लॅन अपलोड करा",
+    "noPlanUploaded": "कोणताही प्लॅन अपलोड केलेला नाही. अपलोड करण्यासाठी क्लिक करा."
+  },
+  "summaryCards": {
+    "totalFloors": "एकूण मजले",
+    "totalRoomsUnits": "एकूण खोल्या / युनिट्स",
+    "totalCarpetArea": "एकूण चटई क्षेत्र",
+    "totalBuiltupArea": "एकूण बांधकाम क्षेत्र",
+    "capitalValue": "भांडवली मूल्य",
+    "sqm": "चौ.मी.",
+    "cr": "कोटी",
+    "lakh": "लाख"
+  },
+  "footer": {
+    "previous": "मागे",
+    "cancel": "रद्द करा",
+    "saveAsDraft": "मसुदा म्हणून जतन करा",
+    "saveAndNext": "जतन करा आणि पुढे जा",
+    "saving": "जतन करत आहे...",
+    "updating": "अद्यतनित करत आहे..."
+  },
+  "drawer": {
+    "title": "नवीन मालमत्ता जोडा",
+    "subtitle": "नोंदणी पद्धत निवडा",
+    "close": "बंद करा",
+    "startRegistration": "नोंदणी सुरू करा",
+    "continue": "पुढे जा",
+    "select": "निवडा...",
+    "newRegisterTitle": "नवीन नोंदणी",
+    "newRegisterSubtitle": "नवीन मालमत्ता नोंदणी करा",
+    "existingAssetTitle": "विद्यमान मालमत्ता वापरा",
+    "existingAssetSubtitle": "झोन, प्रभाग आणि कोडद्वारे मालमत्ता शोधा",
+    "selectCategoryAndType": "मालमत्ता वर्गवारी आणि प्रकार निवडा",
+    "category": "मालमत्ता वर्गवारी",
+    "selectCategory": "वर्गवारी निवडा…",
+    "type": "मालमत्ता प्रकार",
+    "selectType": "प्रकार निवडा…",
+    "selectCategoryFirst": "प्रथम वर्गवारी निवडा",
+    "zone": "झोन",
+    "selectZone": "झोन निवडा…",
+    "ward": "प्रभाग",
+    "selectWard": "प्रभाग निवडा…",
+    "disabledSelectWard": "प्रथम झोन निवडा",
+    "searchCode": "मालमत्ता कोड / नाव शोधा",
+    "searchPlaceholder": "मालमत्ता कोड किंवा नाव प्रविष्ट करा…",
+    "disabledSearch": "प्रथम झोन आणि प्रभाग निवडा",
+    "stepZone": "झोन निवडा",
+    "stepWard": "प्रभाग निवडा",
+    "stepSearch": "मालमत्ता कोड शोधा",
+    "loadingCategories": "वर्गवारी लोड होत आहे…",
+    "loadingWizard": "विझार्ड लोड होत आहे...",
+    "loadingOpening": "नोंदणी उघडत आहे",
+    "searchingAssets": "मालमत्ता शोधत आहे…",
+    "resultsSummary": "\"{term}\" साठी {count} पैकी {total} निकाल",
+    "noAssetsTitle": "कोणतीही मालमत्ता आढळली नाही",
+    "noAssetsSubtitle": "या झोन आणि प्रभागात \"{term}\" साठी कोणताही जुळणारा निकाल नाही",
+    "refinePrompt": "अधिक पाहण्यासाठी शोध सुधारा"
+  },
+  "loading": {
+    "opening": "नोंदणी उघडत आहे",
+    "wizard": "विझार्ड लोड होत आहे...",
+    "categories": "वर्गवारी लोड होत आहे…",
+    "searching": "मालमत्ता शोधत आहे…",
+    "details": "तपशील लोड होत आहेत..."
+  },
+  "buttons": {
+    "cancel": "रद्द करा",
+    "close": "बंद करा",
+    "startRegistration": "नोंदणी सुरू करा",
+    "continue": "पुढे जा",
+    "select": "निवडा..."
+  },
+  "modes": {
+    "new": {
+      "title": "नवीन नोंदणी",
+      "subtitle": "नवीन मालमत्ता नोंदणी करा"
+    },
+    "existing": {
+      "title": "विद्यमान मालमत्ता वापरा",
+      "subtitle": "झोन, प्रभाग आणि कोडद्वारे मालमत्ता शोधा"
+    }
+  },
+  "sections": {
+    "newAsset": {
+      "title": "मालमत्ता वर्गवारी आणि प्रकार निवडा"
+    }
+  },
+  "fields": {
+    "category": {
+      "label": "मालमत्ता वर्गवारी",
+      "placeholder": "वर्गवारी निवडा…"
+    },
+    "type": {
+      "label": "मालमत्ता प्रकार",
+      "placeholder": "प्रकार निवडा…",
+      "disabledPlaceholder": "प्रथम वर्गवारी निवडा"
+    },
+    "zone": {
+      "label": "झोन",
+      "placeholder": "झोन निवडा…"
+    },
+    "ward": {
+      "label": "प्रभाग",
+      "placeholder": "प्रभाग निवडा…",
+      "disabledPlaceholder": "प्रथम झोन निवडा"
+    },
+    "search": {
+      "label": "मालमत्ता कोड / नाव शोधा",
+      "placeholder": "मालमत्ता कोड किंवा नाव प्रविष्ट करा…",
+      "disabledPlaceholder": "प्रथम झोन आणि प्रभाग निवडा"
+    }
+  },
+  "steps": {
+    "zone": "झोन निवडा",
+    "ward": "प्रभाग निवडा",
+    "search": "मालमत्ता कोड शोधा"
+  },
+  "search": {
+    "resultsSummary": "\"{term}\" साठी {count} पैकी {total} निकाल",
+    "refinePrompt": "अधिक पाहण्यासाठी शोध सुधारा",
+    "noAssetsTitle": "कोणतीही मालमत्ता आढळली नाही",
+    "noAssetsSubtitle": "या झोन आणि प्रभागात \"{term}\" साठी कोणताही जुळणारा निकाल नाही"
+  },
+  "placeholders": {
+    "selectField": "{field} निवडा",
+    "enterField": "{field} प्रविष्ट करा"
+  },
+  "movableParent": {
+    "title": "मूळ मालमत्ता / स्थान निवड",
+    "searchTitle": "मूळ इमारत / जमीन मालमत्ता शोधा *",
+    "searchPlaceholder": "नाव, सीएसएन क्रमांक किंवा मालमत्ता कोड प्रविष्ट करा...",
+    "searchPrompt": "जंगम मालमत्ता आधीच नोंदणीकृत इमारत किंवा जमिनीशी संबंधित असणे आवश्यक आहे. नाव, सीएसएन क्रमांक किंवा मालमत्ता कोड प्रविष्ट करून शोधा.",
+    "parentAsset": "मूळ मालमत्ता",
+    "noAddress": "कोणताही पत्ता नमूद केलेला नाही.",
+    "deselectParent": "मूळ मालमत्ता निवड रद्द करा",
+    "floorLevel": "मजला / स्तर",
+    "loadingLevels": "स्तर लोड होत आहेत...",
+    "selectFloor": "मजला निवडा...",
+    "subUnitFlatOffice": "उप-युनिट / फ्लॅट / कार्यालय",
+    "loadingUnits": "युनिट्स लोड होत आहेत...",
+    "selectUnit": "युनिट निवडा...",
+    "specificRoom": "विशिष्ट खोली / कक्ष / डेस्क क्रमांक"
+  },
+  "dynamicFields": {
+    "selectField": "{field} निवडा",
+    "enterField": "{field} प्रविष्ट करा"
+  },
+  "successModal": {
+    "title": "मालमत्ता यशस्वीरित्या जोडली गेली!",
+    "subtitle": "आपली मालमत्ता प्रणालीमध्ये नोंदणीकृत झाली आहे",
+    "assetName": "मालमत्तेचे नाव",
+    "assetNo": "मालमत्ता क्रमांक",
+    "note": "मालमत्ता महानगरपालिका मालमत्ता व्यवस्थापन प्रणालीमध्ये यशस्वीरित्या जोडली गेली आहे. आपण आता मुख्य डॅशबोर्डवरून ही मालमत्ता पाहू शकता, संपादित करू शकता किंवा व्यवस्थापित करू शकता.",
+    "autoClosing": "{count} सेकंदात आपोआप बंद होत आहे...",
+    "close": "बंद करा",
+    "goToDashboard": "डॅशबोर्डवर जा",
+    "viewList": "यादी पहा",
+    "createAnother": "आणखी एक तयार करा"
+  },
+  "notifications": {
+    "assetIdNotFound": "मालमत्ता आयडी आढळला नाही.",
+    "finalSubmitFailed": "अंतिम सबमिशन अयशस्वी झाले.",
+    "unexpectedSubmitError": "अंतिम सबमिशन दरम्यान अनपेक्षित त्रुटी आली.",
+    "readyToRegister": "नोंदणीसाठी सज्ज: {category} ({type})",
+    "selectZoneAndWard": "विद्यमान मालमत्ता शोधण्यासाठी कृपया प्रभाग आणि वॉर्ड निवडा",
+    "typeSearchTerm": "शोधण्यासाठी किमान २ अक्षरे टाईप करा",
+    "assetSelected": "मालमत्ता निवडली. पुढे जाण्यासाठी सुरू ठेवा वर क्लिक करा."
+  },
+  "wizard": {
+    "assetNameLabel": "मालमत्तेचे नाव",
+    "successModal": {
+      "successTitle": "मालमत्ता यशस्वीरित्या जोडली गेली!",
+      "successSubtitle": "आपली मालमत्ता प्रणालीमध्ये नोंदणीकृत झाली आहे",
+      "successNote": "मालमत्ता महानगरपालिका मालमत्ता व्यवस्थापन प्रणालीमध्ये यशस्वीरित्या जोडली गेली आहे. आपण आता मुख्य डॅशबोर्डवरून ही मालमत्ता पाहू शकता, संपादित करू शकता किंवा व्यवस्थापित करू शकता.",
+      "updateTitle": "मालमत्ता यशस्वीरित्या अद्यतनित केली गेली!",
+      "updateSubtitle": "आपले मालमत्ता तपशील प्रणालीमध्ये अद्यतनित केले गेले आहेत",
+      "updateNote": "मालमत्ता महानगरपालिका मालमत्ता व्यवस्थापन प्रणालीमध्ये यशस्वीरित्या अद्यतनित केली गेली आहे.",
+      "autoCloseText": "५ सेकंदात डॅशबोर्डवर पुनर्निर्देशित करत आहे..."
+    },
+    "dashboardRedirect": "डॅशबोर्डवर जा",
+    "assetNoLabel": "मालमत्ता कोड",
+    "close": "बंद करा"
+  },
+  "basicInfo": {
+    "propertyDetails": {
+      "assetCategory": "मालमत्ता वर्गवारी",
+      "assetType": "मालमत्ता प्रकार"
+    },
+    "parentSelection": {
+      "title": "मूळ मालमत्ता / स्थान निवड",
+      "searchParentTitle": "मूळ इमारत / जमीन मालमत्ता शोधा *",
+      "searchPlaceholder": "नाव, सीएसएन क्रमांक किंवा मालमत्ता कोड प्रविष्ट करा...",
+      "parentSearchPlaceholder": "नाव, सीएसएन क्रमांक किंवा मालमत्ता कोड प्रविष्ट करा...",
+      "movableSearchPrompt": "जंगम मालमत्ता आधीच नोंदणीकृत इमारत किंवा जमिनीशी संबंधित असणे आवश्यक आहे. नाव, सीएसएन क्रमांक किंवा मालमत्ता कोड प्रविष्ट करून शोधा.",
+      "parentAsset": "मूळ मालमत्ता",
+      "noAddress": "कोणताही पत्ता नमूद केलेला नाही.",
+      "deselectParent": "मूळ मालमत्ता निवड रद्द करा",
+      "floorLevel": "मजला / स्तर",
+      "loadingLevels": "स्तर लोड होत आहेत...",
+      "selectFloor": "मजला निवडा...",
+      "subUnitFlatOffice": "उप-युनिट / फ्लॅट / कार्यालय",
+      "loadingUnits": "युनिट्स लोड होत आहेत...",
+      "selectUnit": "युनिट निवडा...",
+      "specificRoom": "विशिष्ट खोली / कक्ष / डेस्क क्रमांक"
+    }
+  }
+}

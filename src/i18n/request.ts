@@ -121,6 +121,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     assetDetailNewMessages,
     assetFieldDefinitionMessages,
     assetDocumentDefinitionMessages,
+    newAddNewAssetMessages,
     subAssetDetailMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -285,6 +286,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     import(`./locales/${validatedLocale}/asset-detail.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetFieldDefinition.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetDocumentDefinition.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/newAddNewAsset.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/subAssetDetail.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
@@ -402,6 +404,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
       'asset-detail': assetDetailNewMessages,
       assetFieldDefinition: assetFieldDefinitionMessages,
       assetDocumentDefinition: assetDocumentDefinitionMessages,
+      newAddNewAsset: newAddNewAssetMessages,
+      addAssetForm: newAddNewAssetMessages,
       subAssetDetail: subAssetDetailMessages,
     },
   };

@@ -1,0 +1,307 @@
+{
+  "stepper": {
+    "editingAsset": "संपत्ति #{assetNo} संपादित की जा रही है",
+    "steps": {
+      "basicInfo": {
+        "title": "मूल जानकारी",
+        "subtitle": "संपत्ति प्रोफ़ाइल"
+      },
+      "location": {
+        "title": "स्थान और स्वामित्व",
+        "subtitle": "मानचित्र, भूमि और शीर्षक"
+      },
+      "inventory": {
+        "title": "संपत्ति और सुविधाएं",
+        "subtitle": "उपकरण और अन्य संपत्तियां"
+      },
+      "review": {
+        "title": "समीक्षा और सबमिट करें",
+        "subtitle": "सत्यापित करें और सबमिट करें"
+      }
+    }
+  },
+  "assetDetails": {
+    "title": "संपत्ति विवरण",
+    "category": "संपत्ति श्रेणी",
+    "type": "संपत्ति का प्रकार",
+    "zone": "जोन",
+    "selectZone": "जोन चुनें",
+    "ward": "वार्ड",
+    "selectWard": "वार्ड चुनें",
+    "propertyNo": "संपत्ति संख्या",
+    "partitionNo": "विभाजन संख्या",
+    "upicId": "यूपीआईसी आईडी",
+    "mouja": "मौजा",
+    "selectMouja": "मौजा चुनें",
+    "subzone": "उप-जोन",
+    "selectSubzone": "उप-जोन चुनें",
+    "csnNo": "सीएसएन संख्या",
+    "plotLength": "प्लॉट लंबाई (वर्ग मीटर)",
+    "plotWidth": "प्लॉट चौड़ाई (वर्ग मीटर)",
+    "totalPlotArea": "कुल प्लॉट क्षेत्रफल (वर्ग मीटर)",
+    "plotNumber": "प्लॉट संख्या",
+    "ptaxId": "पी-टैक्स आईडी",
+    "enterPtaxId": "पी-टैक्स आईडी दर्ज करें",
+    "mpmsNo": "एमसीएमएस संख्या",
+    "enterMpmsNo": "एमसीएमएस संख्या दर्ज करें",
+    "condition": "संपत्ति की स्थिति",
+    "selectCondition": "स्थिति चुनें",
+    "encroachmentStatus": "अतिक्रमण स्थिति",
+    "selectEncroachmentStatus": "अतिक्रमण स्थिति चुनें",
+    "conditions": {
+      "good": "अच्छी",
+      "average": "औसत",
+      "poor": "खराब"
+    },
+    "encroachments": {
+      "clean": "स्वच्छ",
+      "partiallyEncroached": "आंशिक रूप से अतिक्रमित",
+      "fullyEncroached": "पूर्ण रूप से अतिक्रमित"
+    }
+  },
+  "kycDetails": {
+    "title": "केवाईसी विवरण",
+    "assetName": "संपत्ति का नाम",
+    "enterAssetName": "संपत्ति का नाम दर्ज करें",
+    "assetRegionalName": "संपत्ति का क्षेत्रीय नाम",
+    "enterRegionalName": "क्षेत्रीय नाम दर्ज करें",
+    "owningDepartment": "स्वामित्व विभाग",
+    "selectOwningDepartment": "स्वामित्व विभाग चुनें",
+    "ownershipType": "स्वामित्व प्रकार",
+    "selectOwnershipType": "स्वामित्व प्रकार चुनें",
+    "ownershipOptions": {
+      "municipal": "नगरपालिका",
+      "leased": "पट्टे पर",
+      "private": "निजी"
+    },
+    "inChargeName": "प्रभारी का नाम",
+    "enterInChargeName": "प्रभारी का नाम दर्ज करें",
+    "inChargeRegionalName": "प्रभारी का क्षेत्रीय नाम",
+    "designation": "पदनाम",
+    "selectDesignation": "पदनाम चुनें",
+    "contactNumber": "संपर्क नंबर",
+    "email": "ईमेल",
+    "enterEmail": "ईमेल दर्ज करें",
+    "pinCode": "पिन कोड",
+    "fullAddress": "पूरा पता",
+    "enterFullAddress": "पूरा पता दर्ज करें",
+    "regionalAddress": "क्षेत्रीय पता",
+    "enterRegionalAddress": "क्षेत्रीय पता दर्ज करें"
+  },
+  "additionalDetails": {
+    "title": "अतिरिक्त विवरण",
+    "loadingFields": "फ़ील्ड लोड हो रहे हैं..."
+  },
+  "assetMedia": {
+    "title": "संपत्ति मीडिया",
+    "assetPhoto": "संपत्ति फोटो",
+    "upload": "अपलोड करें",
+    "noImageUploaded": "कोई छवि अपलोड नहीं की गई। अपलोड करने के लिए क्लिक करें।",
+    "assetPhotoPlan": "संपत्ति फोटो प्लान",
+    "uploadPlan": "प्लान अपलोड करें",
+    "noPlanUploaded": "कोई प्लान अपलोड नहीं किया गया। अपलोड करने के लिए क्लिक करें।"
+  },
+  "summaryCards": {
+    "totalFloors": "कुल मंजिलें",
+    "totalRoomsUnits": "कुल कमरे / इकाइयां",
+    "totalCarpetArea": "कुल कारपेट क्षेत्रफल",
+    "totalBuiltupArea": "कुल निर्मित क्षेत्रफल",
+    "capitalValue": "पूंजीगत मूल्य",
+    "sqm": "वर्ग मीटर",
+    "cr": "करोड़",
+    "lakh": "लाख"
+  },
+  "footer": {
+    "previous": "पिछला",
+    "cancel": "रद्द करें",
+    "saveAsDraft": "ड्राफ्ट के रूप में सहेजें",
+    "saveAndNext": "सहेजें और आगे बढ़ें",
+    "saving": "सहेजा जा रहा है...",
+    "updating": "अपडेट किया जा रहा है..."
+  },
+  "drawer": {
+    "title": "नई संपत्ति जोड़ें",
+    "subtitle": "पंजीकरण विधि चुनें",
+    "close": "बंद करें",
+    "startRegistration": "पंजीकरण शुरू करें",
+    "continue": "जारी रखें",
+    "select": "चुनें...",
+    "newRegisterTitle": "नया पंजीकरण",
+    "newRegisterSubtitle": "एक नई संपत्ति पंजीकृत करें",
+    "existingAssetTitle": "मौजूदा संपत्ति का उपयोग करें",
+    "existingAssetSubtitle": "जोन, वार्ड और कोड द्वारा संपत्ति खोजें",
+    "selectCategoryAndType": "संपत्ति श्रेणी और प्रकार चुनें",
+    "category": "संपत्ति श्रेणी",
+    "selectCategory": "श्रेणी चुनें…",
+    "type": "संपत्ति का प्रकार",
+    "selectType": "प्रकार चुनें…",
+    "selectCategoryFirst": "पहले श्रेणी चुनें",
+    "zone": "जोन",
+    "selectZone": "जोन चुनें…",
+    "ward": "वार्ड",
+    "selectWard": "वार्ड चुनें…",
+    "disabledSelectWard": "पहले जोन चुनें",
+    "searchCode": "संपत्ति कोड / नाम खोजें",
+    "searchPlaceholder": "संपत्ति कोड या नाम टाइप करें…",
+    "disabledSearch": "पहले जोन और वार्ड चुनें",
+    "stepZone": "जोन चुनें",
+    "stepWard": "वार्ड चुनें",
+    "stepSearch": "संपत्ति कोड खोजें",
+    "loadingCategories": "श्रेणियां लोड हो रही हैं…",
+    "loadingWizard": "विज़ार्ड लोड हो रहा है...",
+    "loadingOpening": "पंजीकरण खोला जा रहा है",
+    "searchingAssets": "संपत्तियों की खोज की जा रही है…",
+    "resultsSummary": "\"{term}\" के लिए {count} में से {total} परिणाम",
+    "noAssetsTitle": "कोई संपत्ति नहीं मिली",
+    "noAssetsSubtitle": "इस जोन और वार्ड में \"{term}\" के लिए कोई मेल नहीं",
+    "refinePrompt": "अधिक देखने के लिए खोज को परिष्कृत करें"
+  },
+  "loading": {
+    "opening": "पंजीकरण खोला जा रहा है",
+    "wizard": "विज़ार्ड लोड हो रहा है...",
+    "categories": "श्रेणियां लोड हो रही हैं…",
+    "searching": "संपत्तियों की खोज की जा रही है…",
+    "details": "विवरण लोड हो रहा है..."
+  },
+  "buttons": {
+    "cancel": "रद्द करें",
+    "close": "बंद करें",
+    "startRegistration": "पंजीकरण शुरू करें",
+    "continue": "जारी रखें",
+    "select": "चुनें..."
+  },
+  "modes": {
+    "new": {
+      "title": "नया पंजीकरण",
+      "subtitle": "एक नई संपत्ति पंजीकृत करें"
+    },
+    "existing": {
+      "title": "मौजूदा संपत्ति का उपयोग करें",
+      "subtitle": "जोन, वार्ड और कोड द्वारा संपत्ति खोजें"
+    }
+  },
+  "sections": {
+    "newAsset": {
+      "title": "संपत्ति की श्रेणी और प्रकार चुनें"
+    }
+  },
+  "fields": {
+    "category": {
+      "label": "संपत्ति की श्रेणी",
+      "placeholder": "श्रेणी चुनें…"
+    },
+    "type": {
+      "label": "संपत्ति का प्रकार",
+      "placeholder": "प्रकार चुनें…",
+      "disabledPlaceholder": "पहले श्रेणी चुनें"
+    },
+    "zone": {
+      "label": "जोन",
+      "placeholder": "जोन चुनें…"
+    },
+    "ward": {
+      "label": "वार्ड",
+      "placeholder": "वार्ड चुनें…",
+      "disabledPlaceholder": "पहले जोन चुनें"
+    },
+    "search": {
+      "label": "संपत्ति कोड / नाम खोजें",
+      "placeholder": "संपत्ति कोड या नाम टाइप करें…",
+      "disabledPlaceholder": "पहले जोन और वार्ड चुनें"
+    }
+  },
+  "steps": {
+    "zone": "जोन चुनें",
+    "ward": "वार्ड चुनें",
+    "search": "संपत्ति कोड खोजें"
+  },
+  "search": {
+    "resultsSummary": "\"{term}\" के लिए {count} में से {total} परिणाम",
+    "refinePrompt": "अधिक देखने के लिए खोज को परिष्कृत करें",
+    "noAssetsTitle": "कोई संपत्ति नहीं मिली",
+    "noAssetsSubtitle": "इस जोन और वार्ड में \"{term}\" के लिए कोई मेल नहीं"
+  },
+  "placeholders": {
+    "selectField": "{field} चुनें",
+    "enterField": "{field} दर्ज करें"
+  },
+  "movableParent": {
+    "title": "मूल संपत्ति / स्थान चयन",
+    "searchTitle": "मूल भवन / भूमि संपत्ति खोजें *",
+    "searchPlaceholder": "नाम, सीएसएन संख्या या संपत्ति कोड टाइप करें...",
+    "searchPrompt": "चल संपत्तियां पहले से पंजीकृत भवन या भूमि से संबंधित होनी चाहिए। नाम, सीएसएन संख्या, या संपत्ति कोड टाइप करके खोजें।",
+    "parentAsset": "मूल संपत्ति",
+    "noAddress": "कोई पता निर्दिष्ट नहीं है।",
+    "deselectParent": "मूल संपत्ति का चयन रद्द करें",
+    "floorLevel": "मंजिल / स्तर",
+    "loadingLevels": "स्तर लोड हो रहे हैं...",
+    "selectFloor": "मंजिल चुनें...",
+    "subUnitFlatOffice": "उप-इकाई / फ्लैट / कार्यालय",
+    "loadingUnits": "इकाइयां लोड हो रही हैं...",
+    "selectUnit": "इकाई चुनें...",
+    "specificRoom": "विशिष्ट कमरा / कक्ष / डेस्क संख्या"
+  },
+  "dynamicFields": {
+    "selectField": "{field} चुनें",
+    "enterField": "{field} दर्ज करें"
+  },
+  "successModal": {
+    "title": "संपत्ति सफलतापूर्वक जोड़ी गई!",
+    "subtitle": "आपकी संपत्ति प्रणाली में पंजीकृत हो गई है",
+    "assetName": "संपत्ति का नाम",
+    "assetNo": "संपत्ति संख्या",
+    "note": "संपत्ति को नगर निगम संपत्ति प्रबंधन प्रणाली में सफलतापूर्वक जोड़ दिया गया है। अब आप मुख्य डैशबोर्ड से इस संपत्ति को देख, संपादित या प्रबंधित कर सकते हैं।",
+    "autoClosing": "{count} सेकंड में स्वतः बंद हो रहा है...",
+    "close": "बंद करें",
+    "goToDashboard": "डैशबोर्ड पर जाएं",
+    "viewList": "सूची देखें",
+    "createAnother": "एक और बनाएं"
+  },
+  "notifications": {
+    "assetIdNotFound": "संपत्ति आईडी नहीं मिली।",
+    "finalSubmitFailed": "अंतिम सबमिशन विफल रहा।",
+    "unexpectedSubmitError": "अंतिम सबमिशन के दौरान एक अप्रत्याशित त्रुटि हुई।",
+    "readyToRegister": "पंजीकरण के लिए तैयार: {category} ({type})",
+    "selectZoneAndWard": "मौजूदा संपत्तियों को खोजने के लिए कृपया ज़ोन और वार्ड चुनें",
+    "typeSearchTerm": "खोजने के लिए कम से कम 2 अक्षर टाइप करें",
+    "assetSelected": "संपत्ति चुनी गई। आगे बढ़ने के लिए जारी रखें पर क्लिक करें।"
+  },
+  "wizard": {
+    "assetNameLabel": "संपत्ति का नाम",
+    "successModal": {
+      "successTitle": "संपत्ति सफलतापूर्वक जोड़ी गई!",
+      "successSubtitle": "आपकी संपत्ति प्रणाली में पंजीकृत हो गई है",
+      "successNote": "संपत्ति को नगर निगम संपत्ति प्रबंधन प्रणाली में सफलतापूर्वक जोड़ दिया गया है। अब आप मुख्य डैशबोर्ड से इस संपत्ति को देख, संपादित या प्रबंधित कर सकते हैं।",
+      "updateTitle": "संपत्ति सफलतापूर्वक अपडेट की गई!",
+      "updateSubtitle": "आपके संपत्ति विवरण प्रणाली में अपडेट कर दिए गए हैं",
+      "updateNote": "संपत्ति को नगर निगम संपत्ति प्रबंधन प्रणाली में सफलतापूर्वक अपडेट कर दिया गया है।",
+      "autoCloseText": "5 सेकंड में डैशबोर्ड पर पुनः निर्देशित किया जा रहा है..."
+    },
+    "dashboardRedirect": "डैशबोर्ड पर जाएं",
+    "assetNoLabel": "संपत्ति कोड",
+    "close": "बंद करें"
+  },
+  "basicInfo": {
+    "propertyDetails": {
+      "assetCategory": "संपत्ति श्रेणी",
+      "assetType": "संपत्ति का प्रकार"
+    },
+    "parentSelection": {
+      "title": "मूल संपत्ति / स्थान चयन",
+      "searchParentTitle": "मूल भवन / भूमि संपत्ति खोजें *",
+      "searchPlaceholder": "नाम, सीएसएन संख्या या संपत्ति कोड टाइप करें...",
+      "parentSearchPlaceholder": "नाम, सीएसएन संख्या या संपत्ति कोड टाइप करें...",
+      "movableSearchPrompt": "चल संपत्तियां पहले से पंजीकृत भवन या भूमि से संबंधित होनी चाहिए। नाम, सीएसएन संख्या, या संपत्ति कोड टाइप करके खोजें।",
+      "parentAsset": "मूल संपत्ति",
+      "noAddress": "कोई पता निर्दिष्ट नहीं है।",
+      "deselectParent": "मूल संपत्ति का चयन रद्द करें",
+      "floorLevel": "मंजिल / स्तर",
+      "loadingLevels": "स्तर लोड हो रहे हैं...",
+      "selectFloor": "मंजिल चुनें...",
+      "subUnitFlatOffice": "उप-इकाई / फ्लैट / कार्यालय",
+      "loadingUnits": "इकाइयां लोड हो रही हैं...",
+      "selectUnit": "इकाई चुनें...",
+      "specificRoom": "विशिष्ट कमरा / कक्ष / डेस्क संख्या"
+    }
+  }
+}

@@ -1,0 +1,307 @@
+{
+  "stepper": {
+    "editingAsset": "Editing Asset #{assetNo}",
+    "steps": {
+      "basicInfo": {
+        "title": "Basic Information",
+        "subtitle": "Asset Profile"
+      },
+      "location": {
+        "title": "Location & Ownership",
+        "subtitle": "Map, Land & Title"
+      },
+      "inventory": {
+        "title": "Assets & Facilities",
+        "subtitle": "Equipment & Other Assets"
+      },
+      "review": {
+        "title": "Review & Submit",
+        "subtitle": "Verify & Submit"
+      }
+    }
+  },
+  "assetDetails": {
+    "title": "Asset Details",
+    "category": "Asset Category",
+    "type": "Asset Type",
+    "zone": "Zone",
+    "selectZone": "Select Zone",
+    "ward": "Ward",
+    "selectWard": "Select Ward",
+    "propertyNo": "Property No",
+    "partitionNo": "Partition No.",
+    "upicId": "UPIC ID",
+    "mouja": "Mouja",
+    "selectMouja": "Select Mouja",
+    "subzone": "Subzone",
+    "selectSubzone": "Select Subzone",
+    "csnNo": "CSN No.",
+    "plotLength": "Plot Length (Sq. Mtr)",
+    "plotWidth": "Plot Width (Sq. Mtr)",
+    "totalPlotArea": "Total Plot Area (Sq. Mtr)",
+    "plotNumber": "Plot Number",
+    "ptaxId": "PTax ID",
+    "enterPtaxId": "Enter PTax ID",
+    "mpmsNo": "MPMS No.",
+    "enterMpmsNo": "Enter MPMS No.",
+    "condition": "Asset Condition",
+    "selectCondition": "Select Condition",
+    "encroachmentStatus": "Encroachment Status",
+    "selectEncroachmentStatus": "Select Encroachment Status",
+    "conditions": {
+      "good": "Good",
+      "average": "Average",
+      "poor": "Poor"
+    },
+    "encroachments": {
+      "clean": "Clean",
+      "partiallyEncroached": "Partially Encroached",
+      "fullyEncroached": "Fully Encroached"
+    }
+  },
+  "kycDetails": {
+    "title": "KYC Details",
+    "assetName": "Asset Name",
+    "enterAssetName": "Enter Asset Name",
+    "assetRegionalName": "Asset Regional Name",
+    "enterRegionalName": "Enter Regional Name",
+    "owningDepartment": "Owning Department",
+    "selectOwningDepartment": "Select Owning Department",
+    "ownershipType": "Ownership Type",
+    "selectOwnershipType": "Select Ownership Type",
+    "ownershipOptions": {
+      "municipal": "Municipal",
+      "leased": "Leased",
+      "private": "Private"
+    },
+    "inChargeName": "In-Charge Name",
+    "enterInChargeName": "Enter In-Charge Name",
+    "inChargeRegionalName": "In-Charge Regional Name",
+    "designation": "Designation",
+    "selectDesignation": "Select Designation",
+    "contactNumber": "Contact Number",
+    "email": "Email",
+    "enterEmail": "Enter Email",
+    "pinCode": "Pin Code",
+    "fullAddress": "Full Address",
+    "enterFullAddress": "Enter Full Address",
+    "regionalAddress": "Regional Address",
+    "enterRegionalAddress": "Enter Regional Address"
+  },
+  "additionalDetails": {
+    "title": "Additional details",
+    "loadingFields": "Loading fields..."
+  },
+  "assetMedia": {
+    "title": "Asset Media",
+    "assetPhoto": "Asset Photo",
+    "upload": "Upload",
+    "noImageUploaded": "No image uploaded. Click to upload.",
+    "assetPhotoPlan": "Asset Photo Plan",
+    "uploadPlan": "Upload Plan",
+    "noPlanUploaded": "No plan uploaded. Click to upload."
+  },
+  "summaryCards": {
+    "totalFloors": "Total Floors",
+    "totalRoomsUnits": "Total Rooms / Units",
+    "totalCarpetArea": "Total Carpet Area",
+    "totalBuiltupArea": "Total Built-up Area",
+    "capitalValue": "Capital Value",
+    "sqm": "Sq.m.",
+    "cr": "Cr",
+    "lakh": "L"
+  },
+  "footer": {
+    "previous": "Previous",
+    "cancel": "Cancel",
+    "saveAsDraft": "Save as Draft",
+    "saveAndNext": "Save & Next",
+    "saving": "Saving...",
+    "updating": "Updating..."
+  },
+  "drawer": {
+    "title": "Add New Asset",
+    "subtitle": "Choose registration method",
+    "close": "Close",
+    "startRegistration": "Start Registration",
+    "continue": "Continue",
+    "select": "Select...",
+    "newRegisterTitle": "New Register",
+    "newRegisterSubtitle": "Register a brand-new asset",
+    "existingAssetTitle": "Use Existing Asset",
+    "existingAssetSubtitle": "Find asset by zone, ward & code",
+    "selectCategoryAndType": "Select Asset Category & Type",
+    "category": "Asset Category",
+    "selectCategory": "Select category…",
+    "type": "Asset Type",
+    "selectType": "Select type…",
+    "selectCategoryFirst": "Select category first",
+    "zone": "Zone",
+    "selectZone": "Select zone…",
+    "ward": "Ward",
+    "selectWard": "Select ward…",
+    "disabledSelectWard": "Select zone first",
+    "searchCode": "Search Asset Code / Name",
+    "searchPlaceholder": "Type asset code or name…",
+    "disabledSearch": "Select zone & ward first",
+    "stepZone": "Select Zone",
+    "stepWard": "Select Ward",
+    "stepSearch": "Search Asset Code",
+    "loadingCategories": "Loading categories…",
+    "loadingWizard": "Loading Wizard...",
+    "loadingOpening": "Opening Registration",
+    "searchingAssets": "Searching assets…",
+    "resultsSummary": "{count} of {total} results for \"{term}\"",
+    "noAssetsTitle": "No assets found",
+    "noAssetsSubtitle": "No match for \"{term}\" in this zone & ward",
+    "refinePrompt": "Refine search to see more"
+  },
+  "loading": {
+    "opening": "Opening Registration",
+    "wizard": "Loading Wizard...",
+    "categories": "Loading categories…",
+    "searching": "Searching assets…",
+    "details": "Loading details..."
+  },
+  "buttons": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "startRegistration": "Start Registration",
+    "continue": "Continue",
+    "select": "Select..."
+  },
+  "modes": {
+    "new": {
+      "title": "New Register",
+      "subtitle": "Register a brand-new asset"
+    },
+    "existing": {
+      "title": "Use Existing Asset",
+      "subtitle": "Find asset by zone, ward & code"
+    }
+  },
+  "sections": {
+    "newAsset": {
+      "title": "Select Asset Category & Type"
+    }
+  },
+  "fields": {
+    "category": {
+      "label": "Asset Category",
+      "placeholder": "Select category…"
+    },
+    "type": {
+      "label": "Asset Type",
+      "placeholder": "Select type…",
+      "disabledPlaceholder": "Select category first"
+    },
+    "zone": {
+      "label": "Zone",
+      "placeholder": "Select zone…"
+    },
+    "ward": {
+      "label": "Ward",
+      "placeholder": "Select ward…",
+      "disabledPlaceholder": "Select zone first"
+    },
+    "search": {
+      "label": "Search Asset Code / Name",
+      "placeholder": "Type asset code or name…",
+      "disabledPlaceholder": "Select zone & ward first"
+    }
+  },
+  "steps": {
+    "zone": "Select Zone",
+    "ward": "Select Ward",
+    "search": "Search Asset Code"
+  },
+  "search": {
+    "resultsSummary": "{count} of {total} results for \"{term}\"",
+    "refinePrompt": "Refine search to see more",
+    "noAssetsTitle": "No assets found",
+    "noAssetsSubtitle": "No match for \"{term}\" in this zone & ward"
+  },
+  "placeholders": {
+    "selectField": "Select {field}",
+    "enterField": "Enter {field}"
+  },
+  "movableParent": {
+    "title": "Parent Property / Location Selection",
+    "searchTitle": "Search Parent Building / Land Property *",
+    "searchPlaceholder": "Type name, CSN No or asset code...",
+    "searchPrompt": "Movable assets must belong to an already registered building or land. Search by typing name, CSN No, or asset code.",
+    "parentAsset": "Parent Asset",
+    "noAddress": "No address specified.",
+    "deselectParent": "De-select Parent Asset",
+    "floorLevel": "Floor / Level",
+    "loadingLevels": "Loading levels...",
+    "selectFloor": "Select floor...",
+    "subUnitFlatOffice": "Sub-Unit / Flat / Office",
+    "loadingUnits": "Loading units...",
+    "selectUnit": "Select unit...",
+    "specificRoom": "Specific Room / Chamber / Desk No."
+  },
+  "dynamicFields": {
+    "selectField": "Select {field}",
+    "enterField": "Enter {field}"
+  },
+  "successModal": {
+    "title": "Asset Successfully Added!",
+    "subtitle": "Your asset has been registered in the system",
+    "assetName": "Asset Name",
+    "assetNo": "Asset No",
+    "note": "The asset has been successfully added to the Municipal Corporation Estate Management System. You can now view, edit, or manage this asset from the main dashboard.",
+    "autoClosing": "Auto-closing in {count} seconds...",
+    "close": "Close",
+    "goToDashboard": "Go to Dashboard",
+    "viewList": "View List",
+    "createAnother": "Create Another"
+  },
+  "notifications": {
+    "assetIdNotFound": "Asset ID not found.",
+    "finalSubmitFailed": "Final submission failed.",
+    "unexpectedSubmitError": "An unexpected error occurred during final submission.",
+    "readyToRegister": "Ready to register: {category} ({type})",
+    "selectZoneAndWard": "Please select a zone and ward to search existing assets",
+    "typeSearchTerm": "Type at least 2 characters to search",
+    "assetSelected": "Asset selected. Click Continue to proceed."
+  },
+  "wizard": {
+    "assetNameLabel": "Asset Name",
+    "successModal": {
+      "successTitle": "Asset Successfully Registered!",
+      "successSubtitle": "Your asset has been registered in the system",
+      "successNote": "The asset has been successfully registered in the Municipal Corporation Estate Management System. You can now view and manage it from your dashboard.",
+      "updateTitle": "Asset Successfully Updated!",
+      "updateSubtitle": "Your asset details have been updated in the system",
+      "updateNote": "The asset has been successfully updated in the Municipal Corporation Estate Management System. You can now view and manage it from the Asset Register.",
+      "autoCloseText": "Redirecting to dashboard in 5 seconds..."
+    },
+    "dashboardRedirect": "Go to Dashboard",
+    "assetNoLabel": "Asset Code",
+    "close": "Close"
+  },
+  "basicInfo": {
+    "propertyDetails": {
+      "assetCategory": "Asset Category",
+      "assetType": "Asset Type"
+    },
+    "parentSelection": {
+      "title": "Parent Property / Location Selection",
+      "searchParentTitle": "Search Parent Building / Land Property *",
+      "searchPlaceholder": "Type name, CSN No or asset code...",
+      "parentSearchPlaceholder": "Type name, CSN No or asset code...",
+      "movableSearchPrompt": "Movable assets must belong to an already registered building or land. Search by typing name, CSN No, or asset code.",
+      "parentAsset": "Parent Asset",
+      "noAddress": "No address specified.",
+      "deselectParent": "De-select Parent Asset",
+      "floorLevel": "Floor / Level",
+      "loadingLevels": "Loading levels...",
+      "selectFloor": "Select floor...",
+      "subUnitFlatOffice": "Sub-Unit / Flat / Office",
+      "loadingUnits": "Loading units...",
+      "selectUnit": "Select unit...",
+      "specificRoom": "Specific Room / Chamber / Desk No."
+    }
+  }
+}

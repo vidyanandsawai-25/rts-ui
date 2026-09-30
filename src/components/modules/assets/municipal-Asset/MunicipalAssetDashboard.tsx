@@ -19,6 +19,8 @@ import { useLocaleRouter } from '@/hooks/asset/municipal-Asset/useLocaleRouter';
 import { MUNICIPAL_ASSET_ROUTES } from '@/lib/routes/municipal-asset.routes';
 import { fetchAssetCategoryTypeDetails } from '@/app/[locale]/assets/municipal-Asset/actions';
 
+import { AddAssetDrawer } from './NewAddNewAsset/drawer/AddAssetDrawer';
+
 export default function MunicipalAssetDashboard({
   initialStats = null,
   masterCategories = [],
@@ -40,6 +42,7 @@ export default function MunicipalAssetDashboard({
   const [activeCategory, setActiveCategory] = useState<AssetCategory | null>(serverSelectedCategory);
   const [activeType, setActiveType] = useState<AssetType | null>(serverSelectedType);
   const [isOpeningDrawer, setIsOpeningDrawer] = useState<boolean>(false);
+  const [isAddAssetOpen, setIsAddAssetOpen] = useState<boolean>(false);
   const [categoryDataMap, setCategoryDataMap] = useState<Record<number, AssetCategoryTypeStatsResponseDto>>(() => {
     if (serverSelectedCategory && initialCategoryDrawerData) {
       return { [serverSelectedCategory.id]: initialCategoryDrawerData };
@@ -221,7 +224,7 @@ export default function MunicipalAssetDashboard({
               </div>
               <AddButton
                 label={t('addNewAsset')}
-                onClick={() => push(MUNICIPAL_ASSET_ROUTES.addNewAsset())}
+                onClick={() => setIsAddAssetOpen(true)}
                 className="h-auto rounded-lg border-0 bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-1.5 text-[11px] font-bold text-white shadow-md transition-all hover:opacity-95 hover:shadow-lg"
               />
             </div>
@@ -285,6 +288,13 @@ export default function MunicipalAssetDashboard({
         pageNumber={activeDrawerPage}
         pageSize={10}
         onPageChange={handleDrawerPageChange}
+      />
+
+      <AddAssetDrawer
+        open={isAddAssetOpen}
+        onClose={() => setIsAddAssetOpen(false)}
+        initialCategories={masterCategories}
+        initialTypes={masterTypes}
       />
     </div>
   );

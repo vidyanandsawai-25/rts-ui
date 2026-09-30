@@ -17,5 +17,5 @@ export const MUNICIPAL_ASSET_ROUTES = {
   /**
    * Page for registering a brand-new asset.
    */
-  addNewAsset: () => `/assets/municipal-Asset/add-New-Asset`,
+  addNewAsset: () => `/assets/municipal-Asset/new-add-new-asset`,
 } as const;
