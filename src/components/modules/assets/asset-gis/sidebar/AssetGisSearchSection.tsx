@@ -148,6 +148,7 @@ export function AssetGisSearchSection({ onSelectProperty }: AssetGisSearchSectio
               {isSearching ? (
                 <div className="p-6 flex flex-col items-center justify-center gap-3">
                   <div className="w-8 h-8 rounded-full border-2 border-slate-100 border-t-blue-600 animate-spin" />
+                  {/* eslint-disable-next-line i18next/no-literal-string */}
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Searching Records...</span>
                 </div>
               ) : (

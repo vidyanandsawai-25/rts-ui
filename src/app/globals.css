@@ -15,6 +15,7 @@
   --animate-loader-scale: loader-scale 1s ease-in-out infinite;
   --animate-bounce-subtle: bounce-subtle 3s ease-in-out infinite;
   --animate-pulse-slow: pulse-slow 4s ease-in-out infinite;
+  --animate-slide-in-left: slide-in-left 0.7s ease-out forwards;
 }
 
 @keyframes loader-scale {
@@ -53,6 +54,17 @@
   50% {
     opacity: 0.95;
     transform: scale(1.02);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 

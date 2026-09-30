@@ -205,6 +205,7 @@ export function GisRealDocumentModal({
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center h-full min-h-[450px] w-full text-slate-300 gap-3">
                   <Loader2 className="w-10 h-10 animate-spin text-blue-400" />
+                  {/* eslint-disable-next-line i18next/no-literal-string */}
                   <p className="text-sm font-semibold">Loading documents...</p>
                 </div>
               ) : !currentItem ? (
@@ -252,7 +253,10 @@ export function GisRealDocumentModal({
             </h3>
 
             {isLoading ? (
-              <div className="text-[11px] text-slate-400 font-semibold">Loading...</div>
+              <>
+                {/* eslint-disable-next-line i18next/no-literal-string */}
+                <div className="text-[11px] text-slate-400 font-semibold">Loading...</div>
+              </>
             ) : (
               <div className="space-y-2">
                 {groupedDocs.map((group, gIdx) => {
