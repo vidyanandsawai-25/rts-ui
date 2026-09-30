@@ -2,22 +2,14 @@ import { pdf, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/re
 import { ExportConfig, ExportHeaderCell } from '@/types/automation-dashboard/export.type';
 import { formatCellValue } from './helpers';
 
-// Register a font that supports a wider range of characters (like Devanagari/Marathi and special symbols)
-Font.register({
-    family: 'NotoSans',
-    fonts: [
-        { src: 'https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf' },
-        { src: 'https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Bold.ttf', fontWeight: 'bold' },
-        { src: 'https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Italic.ttf', fontStyle: 'italic' },
-        { src: 'https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-BoldItalic.ttf', fontWeight: 'bold', fontStyle: 'italic' }
-    ]
-});
-
+// Register local Devanagari font (supports English, Hindi, and Marathi)
 Font.register({
     family: 'NotoSansDevanagari',
     fonts: [
-        { src: 'https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSansDevanagari/NotoSansDevanagari-Regular.ttf' },
-        { src: 'https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSansDevanagari/NotoSansDevanagari-Bold.ttf', fontWeight: 'bold' }
+        { src: '/fonts/NotoSansDevanagari-Regular.ttf' },
+        { src: '/fonts/NotoSansDevanagari-Bold.ttf', fontWeight: 'bold' },
+        { src: '/fonts/NotoSansDevanagari-Regular.ttf', fontStyle: 'italic' },
+        { src: '/fonts/NotoSansDevanagari-Bold.ttf', fontWeight: 'bold', fontStyle: 'italic' }
     ]
 });
 
@@ -25,7 +17,7 @@ Font.register({
 const styles = StyleSheet.create({
     page: {
         padding: 30,
-        fontFamily: 'NotoSans', // Use NotoSans by default
+        fontFamily: 'NotoSansDevanagari', // Use NotoSansDevanagari to support English, Hindi, and Marathi
         fontSize: 8,
     },
     header: {
@@ -36,12 +28,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 5,
-        fontFamily: 'NotoSansDevanagari', // Use Devanagari for title in case of Marathi
+        fontFamily: 'NotoSansDevanagari', // Use Devanagari for title in case of Marathi/Hindi
     },
     subtitle: {
         fontSize: 10,
         color: '#4B5563',
-        fontStyle: 'italic',
+        fontFamily: 'NotoSansDevanagari',
     },
     table: {
         width: '100%',
@@ -64,6 +56,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         justifyContent: 'center',
         fontWeight: 'bold',
+        fontFamily: 'NotoSansDevanagari',
     },
     tableCell: {
         borderStyle: 'solid',
@@ -160,8 +153,8 @@ const TableDocument = <T,>({ config }: { config: ExportConfig<T> }) => {
         <Document>
             <Page size="A4" orientation={pdfOrientation} style={styles.page}>
                 <View style={styles.header}>
-                    {reportTitle && <Text style={styles.title}>{reportTitle}</Text>}
-                    {reportSubtitle && <Text style={styles.subtitle}>{reportSubtitle}</Text>}
+                    {reportTitle ? <Text style={styles.title}>{String(reportTitle)}</Text> : null}
+                    {reportSubtitle ? <Text style={styles.subtitle}>{String(reportSubtitle)}</Text> : null}
                 </View>
 
                 <View style={styles.table}>
@@ -181,7 +174,7 @@ const TableDocument = <T,>({ config }: { config: ExportConfig<T> }) => {
                                         ]}
                                     >
                                         <Text style={{ color: cell.textColor || '#111827' }}>
-                                            {cell.title}
+                                            {String(cell.title || '')}
                                         </Text>
                                     </View>
                                 ))}
@@ -199,7 +192,7 @@ const TableDocument = <T,>({ config }: { config: ExportConfig<T> }) => {
                                             { width: `${widthPct}%`, backgroundColor: '#4F46E5' }
                                         ]}
                                     >
-                                        <Text style={{ color: '#FFFFFF' }}>{col.header}</Text>
+                                        <Text style={{ color: '#FFFFFF' }}>{String(col.header || '')}</Text>
                                     </View>
                                 );
                             })}
@@ -211,9 +204,11 @@ const TableDocument = <T,>({ config }: { config: ExportConfig<T> }) => {
                         <View key={rowIndex} style={[styles.tableRow, rowIndex % 2 !== 0 ? { backgroundColor: '#F9FAFB' } : {}]}>
                             {columns.map((col, colIndex) => {
                                 const widthPct = ((col.width || 100) / totalWidth) * 100;
+                                const val = formatCellValue(item, col, rowIndex);
+                                const textVal = val === null || val === undefined ? '' : String(val);
                                 return (
                                     <View key={colIndex} style={[styles.tableCell, { width: `${widthPct}%` }]}>
-                                        <Text>{formatCellValue(item, col, rowIndex)}</Text>
+                                        <Text>{textVal}</Text>
                                     </View>
                                 );
                             })}
