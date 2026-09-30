@@ -137,12 +137,12 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
   }
 
   return (
-    <div className="flex flex-col xl:flex-row items-stretch gap-2 font-sans text-slate-800">
+    <div className="flex flex-col lg:flex-row items-stretch gap-2 font-sans text-slate-800">
       {/* 1. LEFT / CENTER: MAIN PROPERTY MASTER CARD */}
       <div className="flex-1 bg-white rounded-xl border border-slate-200/90 shadow-2xs px-2 pt-1.5 pb-2 flex flex-col sm:flex-row items-stretch gap-2 min-w-0">
         {/* Building Photo Thumbnail */}
         <div
-          className={`relative w-full sm:w-[120px] xl:w-[125px] h-[155px] sm:h-auto rounded-lg overflow-hidden border border-slate-200/80 bg-slate-100 shrink-0 flex items-center justify-center group ${
+          className={`relative w-full sm:w-[105px] lg:w-[110px] xl:w-[125px] h-[155px] sm:h-auto rounded-lg overflow-hidden border border-slate-200/80 bg-slate-100 shrink-0 flex items-center justify-center group ${
             photoUrl || photoGuid ? 'cursor-pointer hover:border-blue-400' : ''
           }`}
           onClick={() => {

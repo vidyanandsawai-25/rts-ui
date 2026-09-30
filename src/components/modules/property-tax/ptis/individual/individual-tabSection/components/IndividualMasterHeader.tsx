@@ -29,20 +29,20 @@ export const IndividualMasterHeader: React.FC<IndividualMasterHeaderProps> = mem
   };
 
   return (
-    <div className="flex items-center justify-between gap-x-3 gap-y-0.5 border-b border-slate-100 pb-1 min-w-0">
-      <div className="flex items-center gap-x-4 gap-y-1 text-xs sm:text-[13px] min-w-0 overflow-hidden flex-wrap">
+    <div className="flex items-center justify-between gap-x-2 xl:gap-x-3 gap-y-0.5 border-b border-slate-100 pb-1 min-w-0">
+      <div className="flex items-center gap-x-2.5 xl:gap-x-4 gap-y-1 text-xs xl:text-[13px] min-w-0 flex-1 flex-wrap sm:flex-nowrap">
         {/* PROPERTY NO */}
         <div className="flex items-center gap-1 shrink-0">
           <span className="text-slate-400 font-bold text-xs">#</span>
           <span className="text-slate-600 font-bold text-xs">{t('header.propertyNo') || 'PROPERTY NO.:'}</span>
-          <span className="font-black text-red-500 text-[13px] tracking-tight">{propertyNo}</span>
+          <span className="font-black text-red-500 text-[12px] xl:text-[13px] tracking-tight">{propertyNo}</span>
         </div>
 
         {/* UPIC ID */}
         <div className="flex items-center gap-1 shrink-0">
           <span className="text-blue-500 font-bold text-xs">#</span>
           <span className="text-slate-600 font-bold text-xs">{t('header.upicId') || 'UPIC ID:'}</span>
-          <span className="font-black text-red-500 text-[13px] tracking-tight">{upicId}</span>
+          <span className="font-black text-red-500 text-[12px] xl:text-[13px] tracking-tight">{upicId}</span>
           {upicId !== '-' && (
             <button
               type="button"
@@ -56,8 +56,8 @@ export const IndividualMasterHeader: React.FC<IndividualMasterHeaderProps> = mem
         </div>
 
         {/* OWNER NAME */}
-        <div className="flex items-center gap-1 min-w-0 max-w-[260px] sm:max-w-[360px] lg:max-w-[480px]">
-          <User className="w-4 h-4 text-slate-400 shrink-0" />
+        <div className="flex items-center gap-1 min-w-0 flex-1 max-w-[280px] lg:max-w-[380px] xl:max-w-[480px]">
+          <User className="w-3.5 h-3.5 xl:w-4 xl:h-4 text-slate-400 shrink-0" />
           <span className="text-slate-600 font-bold text-xs shrink-0">{t('header.ownerName') || 'OWNER NAME:'}</span>
           {ownerName && ownerName !== '-' ? (
             <Tooltip
@@ -65,12 +65,12 @@ export const IndividualMasterHeader: React.FC<IndividualMasterHeaderProps> = mem
               placement="bottom"
               className="bg-slate-900 text-white border-slate-700 max-w-[360px] px-2.5 py-1 text-left"
             >
-              <span className="font-black text-red-500 text-[13px] tracking-tight truncate cursor-default" title={ownerName}>
+              <span className="font-black text-red-500 text-[12.5px] xl:text-[13px] tracking-tight truncate cursor-default" title={ownerName}>
                 {ownerName}
               </span>
             </Tooltip>
           ) : (
-            <span className="font-black text-red-500 text-[13px] tracking-tight truncate" title={ownerName}>
+            <span className="font-black text-red-500 text-[12.5px] xl:text-[13px] tracking-tight truncate" title={ownerName}>
               {ownerName}
             </span>
           )}
@@ -81,7 +81,7 @@ export const IndividualMasterHeader: React.FC<IndividualMasterHeaderProps> = mem
       <button
         type="button"
         onClick={onEdit}
-        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 transition-all shrink-0 cursor-pointer text-[11px] font-bold shadow-2xs active:scale-95"
+        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 transition-all shrink-0 cursor-pointer text-[11px] font-bold shadow-2xs active:scale-95 ml-1"
         title={t('header.editOwner') || 'Edit Property / Owner Details'}
       >
         <Pencil className="w-3 h-3 text-blue-600" />

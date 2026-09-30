@@ -46,18 +46,18 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
   }, [performance]);
 
   return (
-    <div className="w-full xl:w-[330px] bg-white rounded-xl border border-slate-200/90 px-2 pt-1.5 pb-2 shadow-2xs shrink-0 flex flex-col justify-between gap-1.5">
+    <div className="w-full lg:w-[280px] xl:w-[310px] 2xl:w-[330px] bg-white rounded-xl border border-slate-200/90 px-2 pt-1.5 pb-2 shadow-2xs shrink-0 flex flex-col justify-between gap-1.5">
       {/* Top: Header Row with DESC */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-1 gap-2">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-1 gap-1.5">
         <div className="flex items-center gap-1.5 shrink-0">
-          <TrendingUp className="w-5 h-5 text-slate-900" />
-          <span className="text-[15px] font-black text-slate-900 tracking-tight whitespace-nowrap">
+          <TrendingUp className="w-4 h-4 xl:w-5 xl:h-5 text-slate-900" />
+          <span className="text-[13px] xl:text-[15px] font-black text-slate-900 tracking-tight whitespace-nowrap">
             {t('revenueCard.addRevenue') || 'ADD. REVENUE'}
           </span>
         </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-[10px] font-bold text-slate-600 tracking-tight">{t('revenueCard.desc') || 'DESC:'}</span>
-          <span className="inline-flex items-center justify-center px-2 py-0.5 rounded border border-red-500 bg-red-50/40 text-red-600 font-bold text-[11px] leading-normal tracking-tight whitespace-nowrap">
+        <div className="flex items-center gap-1 shrink-0">
+          <span className="text-[9px] xl:text-[10px] font-bold text-slate-600 tracking-tight">{t('revenueCard.desc') || 'DESC:'}</span>
+          <span className="inline-flex items-center justify-center px-1.5 xl:px-2 py-0.5 rounded border border-red-500 bg-red-50/40 text-red-600 font-bold text-[10px] xl:text-[11px] leading-normal tracking-tight whitespace-nowrap">
             {descriptionRegional || '-'}
           </span>
         </div>
@@ -65,7 +65,7 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
 
       {/* Middle: 3D Mascot Avatar + Amount & Growth Pill */}
       <div className="flex items-center justify-between px-1 py-0.5">
-        <AnimatedMascot className="w-20 h-20" size={80} mood={mascotMood} />
+        <AnimatedMascot className="w-16 h-16 xl:w-20 xl:h-20 shrink-0" size={72} mood={mascotMood} />
         <div
           className="flex flex-col items-end"
           title={
@@ -76,12 +76,12 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
               : undefined
           }
         >
-          <span className="text-2xl font-black text-slate-900 leading-none tracking-tight">
+          <span className="text-xl xl:text-2xl font-black text-slate-900 leading-none tracking-tight">
             {performance?.thisAssessmentRevenue || '₹0'}
           </span>
           {performance?.revenueGrowthPct ? (
             <span
-              className={`text-[13px] font-extrabold tracking-tight mt-1 ${
+              className={`text-xs xl:text-[13px] font-extrabold tracking-tight mt-0.5 xl:mt-1 ${
                 performance?.isGrowthNegative ? 'text-rose-600' : 'text-emerald-600'
               }`}
             >

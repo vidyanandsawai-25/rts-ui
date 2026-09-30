@@ -58,66 +58,66 @@ export const PropertyMasterDetailsGrid: React.FC<PropertyMasterDetailsGridProps>
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[0.85fr_1.25fr_1.9fr] xl:grid-cols-[0.8fr_1.2fr_2.0fr] gap-x-3.5 lg:gap-x-5 h-full flex-1 text-[12px] pt-1 min-w-0">
+    <div className="grid grid-cols-1 md:grid-cols-[1fr_1.1fr_1.45fr] lg:grid-cols-[0.95fr_1.15fr_1.55fr] xl:grid-cols-[0.9fr_1.2fr_1.7fr] gap-x-2.5 lg:gap-x-3.5 xl:gap-x-4.5 h-full flex-1 text-[11px] sm:text-[11.5px] xl:text-[12px] pt-0.5 xl:pt-1 min-w-0">
       {/* SECTION 1: General & Location Info */}
-      <div className="flex flex-col justify-between md:border-r md:border-slate-100 md:pr-3 min-w-0 overflow-hidden gap-y-1.5">
-        <PropertyMasterInfoRow icon={MapPin} label={t('grid.division') || 'Division:'} value={data?.division} minWidth="min-w-[125px]" />
-        <PropertyMasterInfoRow icon={Tag} label={t('grid.category') || 'Category:'} value={data?.category} minWidth="min-w-[125px]" />
+      <div className="flex flex-col justify-between md:border-r md:border-slate-100 md:pr-2.5 lg:md:pr-3 min-w-0 overflow-hidden gap-y-1 xl:gap-y-1.5">
+        <PropertyMasterInfoRow icon={MapPin} label={t('grid.division') || 'Division:'} value={data?.division} minWidth="min-w-[90px] lg:min-w-[100px] xl:min-w-[115px]" />
+        <PropertyMasterInfoRow icon={Tag} label={t('grid.category') || 'Category:'} value={data?.category} minWidth="min-w-[90px] lg:min-w-[100px] xl:min-w-[115px]" />
         <PropertyMasterInfoRow
           icon={FileSpreadsheet}
           label={t('grid.taxZoneAndName') || 'Tax Zone & Name:'}
           value={data?.taxZoneAndName || data?.taxZone}
-          minWidth="min-w-[125px]"
+          minWidth="min-w-[90px] lg:min-w-[100px] xl:min-w-[115px]"
         />
-        <PropertyMasterInfoRow icon={Crosshair} label={t('grid.subZoneCsn') || 'Sub Zone & CSN:'} value={data?.subZoneCsnNo} minWidth="min-w-[125px]" />
-        <PropertyMasterInfoRow icon={Grid} label={t('grid.plotNo') || 'Plot No.:'} value={data?.plotNo} minWidth="min-w-[125px]" />
+        <PropertyMasterInfoRow icon={Crosshair} label={t('grid.subZoneCsn') || 'Sub Zone & CSN:'} value={data?.subZoneCsnNo} minWidth="min-w-[90px] lg:min-w-[100px] xl:min-w-[115px]" />
+        <PropertyMasterInfoRow icon={Grid} label={t('grid.plotNo') || 'Plot No.:'} value={data?.plotNo} minWidth="min-w-[90px] lg:min-w-[100px] xl:min-w-[115px]" />
         <PropertyMasterInfoRow
           icon={User}
           label={t('grid.landOwnerName') || 'Land Owner Name:'}
           value={data?.landOwnerName || data?.owner}
-          minWidth="min-w-[130px]"
+          minWidth="min-w-[100px] lg:min-w-[110px] xl:min-w-[125px]"
         />
       </div>
 
       {/* SECTION 2: Ownership & Management */}
-      <div className="flex flex-col justify-between md:border-r md:border-slate-100 md:pr-3 min-w-0 overflow-hidden gap-y-1.5">
-        <PropertyMasterInfoRow icon={Building2} label={t('grid.builderName') || 'Builder Name:'} value={data?.builderName} minWidth="min-w-[130px]" />
-        <PropertyMasterInfoRow icon={Mail} label={t('grid.societyEmail') || 'Society Email:'} value={data?.societyEmail} minWidth="min-w-[130px]" />
-        <PropertyMasterInfoRow icon={User} label={t('grid.secretaryName') || 'Secretary Name:'} value={data?.secretaryName} minWidth="min-w-[130px]" />
+      <div className="flex flex-col justify-between md:border-r md:border-slate-100 md:pr-2.5 lg:md:pr-3 min-w-0 overflow-hidden gap-y-1 xl:gap-y-1.5">
+        <PropertyMasterInfoRow icon={Building2} label={t('grid.builderName') || 'Builder Name:'} value={data?.builderName} minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]" />
+        <PropertyMasterInfoRow icon={Mail} label={t('grid.societyEmail') || 'Society Email:'} value={data?.societyEmail} minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]" />
+        <PropertyMasterInfoRow icon={User} label={t('grid.secretaryName') || 'Secretary Name:'} value={data?.secretaryName} minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]" />
         <PropertyMasterInfoRow
           icon={Phone}
           label={t('grid.secretaryMobile') || 'Secretary Mobile:'}
           value={data?.secretaryMobileNo}
-          minWidth="min-w-[130px]"
+          minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
         />
-        <PropertyMasterInfoRow icon={Mail} label={t('grid.secretaryEmail') || 'Secretary Email:'} value={data?.secretaryEmail} minWidth="min-w-[130px]" />
-        <PropertyMasterInfoRow icon={User} label={t('grid.managerNameEnglish') || 'Manager Name (Eng):'} value={data?.managerNameEnglish || data?.managerName} minWidth="min-w-[130px]" />
+        <PropertyMasterInfoRow icon={Mail} label={t('grid.secretaryEmail') || 'Secretary Email:'} value={data?.secretaryEmail} minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]" />
+        <PropertyMasterInfoRow icon={User} label={t('grid.managerNameEnglish') || 'Manager Name (Eng):'} value={data?.managerNameEnglish || data?.managerName} minWidth="min-w-[105px] lg:min-w-[115px] xl:min-w-[125px]" />
       </div>
 
       {/* SECTION 3: Society Address & Property Metrics */}
-      <div className="flex flex-col justify-between min-w-0 overflow-hidden gap-y-1.5">
+      <div className="flex flex-col justify-between min-w-0 overflow-hidden gap-y-1 xl:gap-y-1.5">
         <PropertyMasterInfoRow
           icon={Home}
           label={t('grid.address') || 'Address:'}
           value={data?.societyAddress || data?.address}
-          minWidth="min-w-[130px]"
+          minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
           isMultiline
         />
         <PropertyMasterInfoRow
           icon={Maximize2}
           label={t('grid.carpetArea') || 'Carpet Area:'}
           value={renderAreaRow(data?.carpetAreaFtMtr, data?.oldCarpetAreaFtMtr, data?.carpetBuiltUpArea)}
-          minWidth="min-w-[130px]"
+          minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
           isMultiline
         />
         <PropertyMasterInfoRow
           icon={Building2}
           label={t('grid.builtUpArea') || 'Built-up Area:'}
           value={renderAreaRow(data?.builtUpAreaFtMtr, data?.oldBuiltUpAreaFtMtr, data?.oldCarpetBuiltUp)}
-          minWidth="min-w-[130px]"
+          minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
           isMultiline
         />
-        <PropertyMasterInfoRow icon={Layers} label={t('grid.totalFloors') || 'Total Floors:'} value={data?.totalFloors} minWidth="min-w-[130px]" />
+        <PropertyMasterInfoRow icon={Layers} label={t('grid.totalFloors') || 'Total Floors:'} value={data?.totalFloors} minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]" />
         <PropertyMasterInfoRow
           icon={Clock}
           label={
@@ -127,7 +127,7 @@ export const PropertyMasterDetailsGrid: React.FC<PropertyMasterDetailsGridProps>
             </div>
           }
           value={data?.totalPropertiesResCommAmen}
-          minWidth="min-w-[130px]"
+          minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
         />
       </div>
     </div>

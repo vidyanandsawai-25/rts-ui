@@ -5,11 +5,11 @@ import { Building2 } from 'lucide-react';
 
 export const PropertyMasterCardSkeleton: React.FC = () => {
   return (
-    <div className="flex flex-col xl:flex-row items-stretch gap-2 font-sans select-none animate-pulse">
+    <div className="flex flex-col lg:flex-row items-stretch gap-2 font-sans select-none animate-pulse">
       {/* 1. LEFT / CENTER: MAIN PROPERTY MASTER SKELETON */}
       <div className="flex-1 bg-white rounded-xl border border-slate-200/90 shadow-2xs px-2 pt-1.5 pb-2 flex flex-col sm:flex-row items-stretch gap-2 min-w-0">
         {/* Photo Box Skeleton */}
-        <div className="w-full sm:w-[120px] xl:w-[125px] h-[155px] sm:h-auto min-h-[140px] rounded-lg border border-slate-200/80 bg-slate-100 shrink-0 flex flex-col items-center justify-center gap-1.5 p-2">
+        <div className="w-full sm:w-[105px] lg:w-[110px] xl:w-[125px] h-[155px] sm:h-auto min-h-[140px] rounded-lg border border-slate-200/80 bg-slate-100 shrink-0 flex flex-col items-center justify-center gap-1.5 p-2">
           <Building2 className="w-8 h-8 text-slate-300 animate-pulse" />
           <div className="h-2 w-12 bg-slate-200 rounded" />
         </div>
@@ -43,7 +43,7 @@ export const PropertyMasterCardSkeleton: React.FC = () => {
       </div>
 
       {/* 2. RIGHT: REVENUE & TAX METRICS SKELETON */}
-      <div className="w-full xl:w-[280px] bg-white rounded-xl border border-slate-200/90 shadow-2xs p-2.5 shrink-0 flex flex-col justify-between gap-2">
+      <div className="w-full lg:w-[280px] xl:w-[310px] 2xl:w-[330px] bg-white rounded-xl border border-slate-200/90 shadow-2xs p-2 xl:p-2.5 shrink-0 flex flex-col justify-between gap-2">
         <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
           <div className="h-4 w-28 bg-blue-100/70 rounded" />
           <div className="h-4 w-12 bg-slate-200 rounded-full" />

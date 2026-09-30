@@ -44,43 +44,43 @@ export const IndividualMasterOwnerColumn: React.FC<IndividualMasterOwnerColumnPr
         icon={User}
         label={t('grid.ownerRegional') || 'Owner (Regional)'}
         value={data?.ownerNameRegional || data?.holderRegional || '-'}
-        minWidth="min-w-[125px]"
+        minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
       />
       <PropertyMasterInfoRow
         icon={User}
         label={t('grid.occupierName') || 'Occupier Name'}
         value={data?.occupierName || '-'}
-        minWidth="min-w-[125px]"
+        minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
       />
       <PropertyMasterInfoRow
         icon={User}
         label={t('grid.occupierRegional') || 'Occupier (Regional)'}
         value={data?.occupierNameRegional || data?.occupierRegional || '-'}
-        minWidth="min-w-[125px]"
+        minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
       />
       <PropertyMasterInfoRow
         icon={Tag}
         label={t('grid.ownerCategory') || 'Owner Category'}
         value={data?.ownerCategory || '-'}
-        minWidth="min-w-[125px]"
+        minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
       />
       <PropertyMasterInfoRow
         icon={Tag}
         label={t('grid.propertyCategory') || 'Property Category'}
         value={(data?.category || data?.propertyCategory || '-') as string}
-        minWidth="min-w-[125px]"
+        minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
       />
       <PropertyMasterInfoRow
         icon={Store}
         label={t('grid.shopName') || 'Shop Name'}
         value={shopNameDisplay}
-        minWidth="min-w-[125px]"
+        minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
       />
       <PropertyMasterInfoRow
         icon={Hash}
         label={t('grid.aadhar') || t('grid.aadharTitle') || 'Aadhar'}
         value={aadharValue}
-        minWidth="min-w-[125px]"
+        minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
       />
     </div>
   );

@@ -15,21 +15,19 @@ export const IndividualMasterPropertyColumn: React.FC<IndividualMasterPropertyCo
     const t = useTranslations('individual');
 
     const taxZoneDisplay = useMemo(() => {
-      if (data?.taxZoneAndName && data.taxZoneAndName !== '-') {
-        return data.taxZoneAndName;
+      const zoneNo = data?.taxZoneNo?.trim();
+      if (zoneNo && zoneNo !== '-') {
+        return zoneNo.replace(/^zone\s*[-_]?\s*/i, '') || zoneNo;
       }
-      if (data?.taxZone && data.taxZone !== '-') {
-        return data.taxZone;
-      }
-      if (data?.taxZoneNo || data?.rateSectionName) {
-        const parts = [
-          data.taxZoneNo ? `Zone ${data.taxZoneNo}` : '',
-          data.rateSectionName ? data.rateSectionName : '',
-        ].filter(Boolean);
-        return parts.length > 0 ? parts.join(' - ') : '-';
+      const rawZone = data?.taxZone?.trim();
+      if (rawZone && rawZone !== '-') {
+        const pureZone = rawZone.split(' - ')[0]?.trim();
+        if (pureZone) {
+          return pureZone.replace(/^zone\s*[-_]?\s*/i, '') || pureZone;
+        }
       }
       return '-';
-    }, [data?.taxZoneAndName, data?.taxZone, data?.taxZoneNo, data?.rateSectionName]);
+    }, [data?.taxZone, data?.taxZoneNo]);
 
     const plotOrUnitDisplay = useMemo(() => {
       if (data?.flatOrShopNo && data?.plotNo && data.plotNo !== '-') {
@@ -49,37 +47,37 @@ export const IndividualMasterPropertyColumn: React.FC<IndividualMasterPropertyCo
           icon={MapPin}
           label={t('grid.division') || 'Division'}
           value={data?.division || '-'}
-          minWidth="min-w-[115px]"
+          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
         />
         <PropertyMasterInfoRow
           icon={Compass}
           label={t('grid.subZoneNo') || 'Sub Zone No.'}
           value={subZoneDisplay}
-          minWidth="min-w-[115px]"
+          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
         />
         <PropertyMasterInfoRow
           icon={Landmark}
           label={t('grid.moujaName') || 'Mouja Name'}
           value={data?.moujaName || '-'}
-          minWidth="min-w-[115px]"
+          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
         />
         <PropertyMasterInfoRow
           icon={Crosshair}
           label={t('grid.surveyNo') || 'Survey No.'}
           value={data?.surveyNo || '-'}
-          minWidth="min-w-[115px]"
+          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
         />
         <PropertyMasterInfoRow
           icon={FileSpreadsheet}
           label={t('grid.taxZone') || 'Tax Zone'}
           value={taxZoneDisplay}
-          minWidth="min-w-[115px]"
+          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
         />
         <PropertyMasterInfoRow
           icon={Grid}
           label={t('grid.plotNo') || 'Plot No.'}
           value={plotOrUnitDisplay}
-          minWidth="min-w-[115px]"
+          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
         />
       </div>
     );
