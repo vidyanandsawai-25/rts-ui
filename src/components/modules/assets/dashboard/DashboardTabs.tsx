@@ -3,11 +3,12 @@
 import { Tabs } from '@/components/common';
 import { BarChart3, DollarSign } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 export function DashboardTabs() {
   const router = useRouter();
   const pathname = usePathname();
+  const locale = useLocale();
   const t = useTranslations('assetmasterdashboard');
 
   const activeTab = pathname.includes('/revenue-dashboard')
@@ -15,7 +16,7 @@ export function DashboardTabs() {
     : 'master-dashboard';
 
   const onTabChange = (value: string | number) => {
-    router.push(pathname.replace(/\/assets\/dashboard(?:\/[^/]+)?\/?$/, `/assets/dashboard/${value}`));
+    router.push(`/${locale}/assets/dashboard/${value}`);
   };
 
   return (
