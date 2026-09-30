@@ -5,6 +5,7 @@ import { COLUMN_WIDTHS } from '../../RoomTableConfig';
 import { useConfirm } from '@/components/common';
 import { RoomFormData } from '@/types/common-details.types';
 import { OffsetData } from '@/types/offset-details.types';
+import { isRecordOpenPlot } from '@/hooks/ptis/floorSubmission/useFloorAreaValidation';
 
 interface OffsetOuterFieldsProps {
   formData: RoomFormData;
@@ -42,16 +43,7 @@ export const OffsetOuterFields: React.FC<OffsetOuterFieldsProps & { floorData?: 
 }) => {
   const { confirm } = useConfirm();
 
-  const isOpenSpace =
-    floorData?.selectedFloorType === 'OpenPlot' ||
-    floorData?.isOpenPlot === true ||
-    String(floorData?.floorId) === '77' ||
-    String(floorData?.conTyp || '').toLowerCase().includes('open plot') ||
-    String(floorData?.constructionType || '').toLowerCase().includes('open plot') ||
-    String(floorData?.floor || '').toLowerCase().includes('open plot') ||
-    String(floorData?.floorDescription || '').toLowerCase().includes('open plot') ||
-    String(floorData?.floor || '').toLowerCase().includes('open space') ||
-    String(floorData?.floorDescription || '').toLowerCase().includes('open space');
+  const isOpenSpace = isRecordOpenPlot(floorData);
 
   return (
     <>

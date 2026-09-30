@@ -22,6 +22,7 @@ import {
   filterOpenPlotCategories,
   isOpenPlotCodeTaxable,
 } from '@/lib/utils/floorSubmission/openplot-category';
+import { findOpenPlotFloorItem, findOpenPlotConstructionTypeItem } from '@/lib/utils/floorSubmission/floor-resolvers';
 
 const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   const {
@@ -86,8 +87,10 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     return floors.find(
       (f: FloorData) =>
         f.isOpenPlot === true ||
-        String(f.floorId) === '77' ||
-        String(f.floor) === '77'
+        String(f.selectedFloorType).toLowerCase() === 'openplot' ||
+        String((f as any).floorCode || (f as any).code || '').toLowerCase() === 'op' ||
+        String(f.conTyp || (f as any).constructionCode || '').toLowerCase() === 'op' ||
+        String(f.floor || '').toLowerCase().includes('open plot')
     ) as FloorData | undefined;
   }, [localFloors, props.initialFloors]);
 
@@ -362,6 +365,12 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
                   const propId = Number(props.initialPropertyID || props.initialPropertyData?.propertyId || 0);
 
+                  const openPlotFloor = findOpenPlotFloorItem(props.floorData);
+                  const openPlotCon = findOpenPlotConstructionTypeItem(props.constructionTypeData);
+
+                  const dynamicFloorId = openPlotFloor ? Number(openPlotFloor.floorId ?? (openPlotFloor as Record<string, unknown>).id) : undefined;
+                  const dynamicConTypeId = openPlotCon ? Number(openPlotCon.constructionTypeId ?? openPlotCon.id) : undefined;
+
                   const completePayload = {
                     ...(props.initialPropertyData || {}),
                     propertyId: propId,
@@ -369,8 +378,10 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
                     propertyDetailsId: openPlotRecord?.id || 0,
                     isOpenPlot: true,
                     selectedFloorType: 'OpenPlot',
-                    floorId: 77,
-                    constructionTypeId: 11,
+                    ...(dynamicFloorId ? { floorId: dynamicFloorId } : {}),
+                    ...(dynamicConTypeId ? { constructionTypeId: dynamicConTypeId } : {}),
+                    floorDescription: openPlotFloor?.description || 'Open Plot',
+                    constructionTypeDescription: openPlotCon?.description || 'Open Plot',
                     typeOfUseId: selectedOpenPlotCategory?.id,
                     typeOfUseDescription: selectedOpenPlotCategory?.description || '',
                     selectedOpenPlotCategory: selectedOpenPlotCategory,

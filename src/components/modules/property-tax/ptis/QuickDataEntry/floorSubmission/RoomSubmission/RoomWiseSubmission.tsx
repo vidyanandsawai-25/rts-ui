@@ -24,6 +24,8 @@ import { isRoomComplete } from "@/lib/utils/RoomSubmission/room-validation.utils
 import { focusFieldOrFallback } from "@/lib/utils/floorSubmission/focus-helpers";
 import { checkIsUtilityCategory } from "@/lib/utils/floorSubmission/floor-utility-checks";
 
+import { isRecordOpenPlot } from "@/hooks/ptis/floorSubmission/useFloorAreaValidation";
+
 export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
   externalAreaUnit?: "sq.m" | "sq.ft";
   onExternalToggleUnit?: () => void;
@@ -31,12 +33,7 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
   const { isOpen, onClose, displayMode = 'modal' } = props;
 
   const isUtilityCategory = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId) || 
-    props.floorData?.isOpenPlot === true || 
-    props.floorData?.selectedFloorType === 'OpenPlot' ||
-    String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
-    String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
-    String(props.floorData?.floor || '').toLowerCase().includes('open plot') ||
-    String(props.floorData?.floorDescription || '').toLowerCase().includes('open plot');
+    isRecordOpenPlot(props.floorData);
 
   let lastFilledRoomIndex = -1;
   if (Array.isArray(props.existingRooms)) {

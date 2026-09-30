@@ -58,3 +58,42 @@ export const resolveIdFromDescription = (
       (found as Record<string, unknown>).id || (found as Record<string, unknown>).ID || 0
   );
 };
+
+/**
+ * Finds the Open Plot master floor record from floor lookup list
+ */
+export const findOpenPlotFloorItem = (lookup?: unknown[]): Record<string, unknown> | undefined => {
+  if (!lookup || !Array.isArray(lookup)) return undefined;
+  return lookup.find((f) => {
+    const item = f as Record<string, unknown>;
+    const code = String(item.floorCode || item.code || '').toLowerCase().trim();
+    const desc = String(item.description || '').toLowerCase().trim();
+    return code === 'op' || desc.includes('open plot') || desc.includes('खुला भूखंड') || desc.includes('खुली जागा');
+  }) as Record<string, unknown> | undefined;
+};
+
+/**
+ * Finds the Open Plot construction type record from construction lookup list
+ */
+export const findOpenPlotConstructionTypeItem = (lookup?: unknown[]): Record<string, unknown> | undefined => {
+  if (!lookup || !Array.isArray(lookup)) return undefined;
+  return lookup.find((c) => {
+    const item = c as Record<string, unknown>;
+    const code = String(item.constructionCode || item.code || '').toLowerCase().trim();
+    const desc = String(item.description || '').toLowerCase().trim();
+    return code === 'op' || desc.includes('open plot') || desc.includes('खुला भूखंड') || desc.includes('खुली जागा');
+  }) as Record<string, unknown> | undefined;
+};
+
+/**
+ * Finds the Open Plot type of use record from use lookup list
+ */
+export const findOpenPlotTypeOfUseItem = (lookup?: unknown[]): Record<string, unknown> | undefined => {
+  if (!lookup || !Array.isArray(lookup)) return undefined;
+  return lookup.find((u) => {
+    const item = u as Record<string, unknown>;
+    const code = String(item.typeOfUseCode || item.code || '').toLowerCase().trim();
+    const desc = String(item.description || '').toLowerCase().trim();
+    return code === 'op' || desc.includes('open plot') || desc.includes('खुला भूखंड') || desc.includes('खुली जागा');
+  }) as Record<string, unknown> | undefined;
+};

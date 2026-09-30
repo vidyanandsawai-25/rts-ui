@@ -137,8 +137,8 @@ export default async function FloorSubmissionPage({
         initialFloorsRaw,
         _initialPlotAreaResult,
     ] = await Promise.all([
-        (shouldLoadAll || asString(sp.loadFloor) === 'true') ? getFloorDataAction() : Promise.resolve([]),
-        (shouldLoadAll || asString(sp.loadConstruction) === 'true') ? getConstructionTypeDataAction() : Promise.resolve([]),
+        getFloorDataAction(),
+        getConstructionTypeDataAction(),
         getTypeOfUseDataAction(resolvedPropertyTypeId),
         getOpenPlotCategoryDataAction(resolvedPropertyTypeId),
         (shouldLoadAll || asString(sp.loadSubFloor) === 'true') ? getSubFloorDataAction() : Promise.resolve([]),

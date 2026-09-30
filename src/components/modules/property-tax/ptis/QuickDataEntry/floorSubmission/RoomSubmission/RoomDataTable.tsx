@@ -10,6 +10,8 @@ import { OffsetData } from "@/types/offset-details.types";
 import { COLUMN_WIDTHS } from "./RoomTableConfig";
 import { cn } from "@/lib/utils/cn";
 
+import { isRecordOpenPlot } from "@/hooks/ptis/floorSubmission/useFloorAreaValidation";
+
 
 export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: boolean }> = (props) => {
     const {
@@ -27,14 +29,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
         floorData,
     } = props;
 
-    const isOpenSpaceSection =
-        floorData?.selectedFloorType === 'OpenPlot' ||
-        floorData?.isOpenPlot === true ||
-        String(floorData?.floorId) === '77' ||
-        String(floorData?.conTyp || '').toLowerCase().includes('open plot') ||
-        String(floorData?.constructionType || '').toLowerCase().includes('open plot') ||
-        String(floorData?.floor || '').toLowerCase().includes('open plot') ||
-        String(floorData?.floorDescription || '').toLowerCase().includes('open plot');
+    const isOpenSpaceSection = isRecordOpenPlot(floorData);
 
     const t = useTranslations("quickDataEntry");
 

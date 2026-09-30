@@ -29,10 +29,7 @@ const RentManagementCard = dynamic(
           <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
           {/* eslint-disable-next-line i18next/no-literal-string */}
           <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400">
-            {
-              // eslint-disable-next-line i18next/no-literal-string
-              'Loading rent engine...'
-            }
+            Loading rent engine...
           </span>
         </div>
       </div>
@@ -121,8 +118,10 @@ export const RenterDetailsForm = memo(
       const isPlot =
         drawerParam === 'OpenPlot' ||
         (initialData as any)?.isOpenPlot === true ||
-        String((initialData as any)?.floorId) === '77' ||
-        String((initialData as any)?.floor) === '77';
+        String((initialData as any)?.selectedFloorType).toLowerCase() === 'openplot' ||
+        String((initialData as any)?.floorCode || '').toLowerCase() === 'op' ||
+        String((initialData as any)?.conTyp || '').toLowerCase() === 'op' ||
+        String((initialData as any)?.floor || '').toLowerCase().includes('open plot');
 
       const redirectParams = new URLSearchParams();
       if (resolvedWardNo) redirectParams.set('wardNo', resolvedWardNo);
@@ -160,8 +159,10 @@ export const RenterDetailsForm = memo(
       const isPlot =
         drawerParam === 'OpenPlot' ||
         (initialData as any)?.isOpenPlot === true ||
-        String((initialData as any)?.floorId) === '77' ||
-        String((initialData as any)?.floor) === '77';
+        String((initialData as any)?.selectedFloorType).toLowerCase() === 'openplot' ||
+        String((initialData as any)?.floorCode || '').toLowerCase() === 'op' ||
+        String((initialData as any)?.conTyp || '').toLowerCase() === 'op' ||
+        String((initialData as any)?.floor || '').toLowerCase().includes('open plot');
 
       const redirectParams = new URLSearchParams();
       if (resolvedWardNo) redirectParams.set('wardNo', resolvedWardNo);

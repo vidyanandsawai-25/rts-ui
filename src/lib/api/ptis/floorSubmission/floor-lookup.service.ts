@@ -14,12 +14,46 @@ import {
 import { TypeOfUseApiItem } from "@/types/property-basic-details.types";
 import { RoomTypeResponse } from "@/types/room-details.types";
 
+const lookupCache = new Map<string, { data: unknown; timestamp: number }>();
+const inFlightRequests = new Map<string, Promise<unknown>>();
+const LOOKUP_CACHE_TTL = 300000; // 5 minutes
+
+export function clearFloorLookupCache(): void {
+    lookupCache.clear();
+    inFlightRequests.clear();
+}
+
+async function getCachedOrFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+    const cached = lookupCache.get(key);
+    if (cached && (Date.now() - cached.timestamp < LOOKUP_CACHE_TTL)) {
+        return cached.data as T;
+    }
+    const inFlight = inFlightRequests.get(key);
+    if (inFlight) {
+        return inFlight as Promise<T>;
+    }
+    const fetchPromise = fetcher()
+        .then((data) => {
+            lookupCache.set(key, { data, timestamp: Date.now() });
+            inFlightRequests.delete(key);
+            return data;
+        })
+        .catch((err) => {
+            inFlightRequests.delete(key);
+            throw err;
+        });
+    inFlightRequests.set(key, fetchPromise);
+    return fetchPromise;
+}
+
 /**
  * Fetches floor type data from API
  * @returns Promise<FloorResponse[]>
  */
 export async function getFloorData(): Promise<FloorResponse[]> {
-    return fetchItems<FloorResponse>("/Floor?pageNumber=1&pageSize=-1", "Failed to fetch floors");
+    return getCachedOrFetch('Floor', () =>
+        fetchItems<FloorResponse>("/Floor?pageNumber=1&pageSize=-1", "Failed to fetch floors")
+    );
 }
 
 /**
@@ -43,7 +77,9 @@ export async function getFloorOptions(): Promise<string[]> {
  * @returns Promise<ConstructionTypeResponse[]>
  */
 export async function getConstructionTypeData(): Promise<ConstructionTypeResponse[]> {
-    return fetchItems<ConstructionTypeResponse>("/ConstructionType?pageNumber=1&pageSize=-1", "Failed to fetch construction types");
+    return getCachedOrFetch('ConstructionType', () =>
+        fetchItems<ConstructionTypeResponse>("/ConstructionType?pageNumber=1&pageSize=-1", "Failed to fetch construction types")
+    );
 }
 
 /**
@@ -66,34 +102,39 @@ export async function getConstructionTypeOptions(): Promise<string[]> {
  * Fetches type of use data from API
  */
 export async function getTypeOfUseData(propertyTypeId?: string | number): Promise<TypeOfUseApiItem[]> {
-    if (propertyTypeId && propertyTypeId !== 'undefined' && propertyTypeId !== 'null' && Number(propertyTypeId) > 0) {
-        const rawItems = await fetchItems<TypeOfUseApiItem & { id?: string | number; ID?: string | number }>(`/TypeOfUseByPropertyType/${propertyTypeId}`, "Failed to fetch types of use by property type");
+    const cacheKey = `TypeOfUse-${propertyTypeId ?? 'ALL'}`;
+    return getCachedOrFetch(cacheKey, async () => {
+        if (propertyTypeId && propertyTypeId !== 'undefined' && propertyTypeId !== 'null' && Number(propertyTypeId) > 0) {
+            const rawItems = await fetchItems<TypeOfUseApiItem & { id?: string | number; ID?: string | number }>(`/TypeOfUseByPropertyType/${propertyTypeId}`, "Failed to fetch types of use by property type");
+            return rawItems.map(item => ({
+                ...item,
+                typeOfUseId: item.typeOfUseId || Number(item.id || item.ID || 0),
+                typeOfUseCategoryId: item.typeOfUseCategoryId !== undefined ? item.typeOfUseCategoryId : null
+            }));
+        }
+        const rawItems = await fetchItems<TypeOfUseApiItem>("/TypeOfUse?pageNumber=1&pageSize=-1", "Failed to fetch types of use");
         return rawItems.map(item => ({
             ...item,
-            typeOfUseId: item.typeOfUseId || Number(item.id || item.ID || 0),
             typeOfUseCategoryId: item.typeOfUseCategoryId !== undefined ? item.typeOfUseCategoryId : null
         }));
-    }
-    const rawItems = await fetchItems<TypeOfUseApiItem>("/TypeOfUse?pageNumber=1&pageSize=-1", "Failed to fetch types of use");
-    return rawItems.map(item => ({
-        ...item,
-        typeOfUseCategoryId: item.typeOfUseCategoryId !== undefined ? item.typeOfUseCategoryId : null
-    }));
+    });
 }
 
 /**
  * Fetches Open Plot Category data from API (/TypeOfUse?TypeOfUseCategoryId=4)
  */
 export async function getOpenPlotCategoryData(): Promise<TypeOfUseApiItem[]> {
-    const rawItems = await fetchItems<TypeOfUseApiItem & { id?: string | number; ID?: string | number }>(
-        "/TypeOfUse?TypeOfUseCategoryId=4&pageNumber=1&pageSize=-1",
-        "Failed to fetch open plot categories"
-    );
-    return rawItems.map(item => ({
-        ...item,
-        typeOfUseId: item.typeOfUseId || Number(item.id || item.ID || 0),
-        typeOfUseCategoryId: item.typeOfUseCategoryId !== undefined && item.typeOfUseCategoryId !== null ? item.typeOfUseCategoryId : 4
-    }));
+    return getCachedOrFetch('OpenPlotCategory', async () => {
+        const rawItems = await fetchItems<TypeOfUseApiItem & { id?: string | number; ID?: string | number }>(
+            "/TypeOfUse?TypeOfUseCategoryId=4&pageNumber=1&pageSize=-1",
+            "Failed to fetch open plot categories"
+        );
+        return rawItems.map(item => ({
+            ...item,
+            typeOfUseId: item.typeOfUseId || Number(item.id || item.ID || 0),
+            typeOfUseCategoryId: item.typeOfUseCategoryId !== undefined && item.typeOfUseCategoryId !== null ? item.typeOfUseCategoryId : 4
+        }));
+    });
 }
 
 /**
@@ -115,12 +156,15 @@ export async function getTypeOfUseOptions(): Promise<string[]> {
  * Fetches sub-type of use data, optionally filtered by typeOfUseId
  */
 export async function getSubTypeOfUseData(typeOfUseId?: string): Promise<SubTypeOfUseResponse[]> {
-    const params = new URLSearchParams({ pageNumber: "1", pageSize: "-1" });
-    if (typeOfUseId && typeOfUseId !== 'undefined' && typeOfUseId !== 'null') {
-        const isLikelyDescription = /[\u0900-\u097F\s]/.test(typeOfUseId);
-        if (!isLikelyDescription) params.append("typeOfUseId", typeOfUseId);
-    }
-    return fetchItems<SubTypeOfUseResponse>(`/SubTypeOfUse?${params.toString()}`, "Failed to fetch sub-types of use");
+    const cacheKey = `SubTypeOfUse-${typeOfUseId ?? 'ALL'}`;
+    return getCachedOrFetch(cacheKey, async () => {
+        const params = new URLSearchParams({ pageNumber: "1", pageSize: "-1" });
+        if (typeOfUseId && typeOfUseId !== 'undefined' && typeOfUseId !== 'null') {
+            const isLikelyDescription = /[\u0900-\u097F\s]/.test(typeOfUseId);
+            if (!isLikelyDescription) params.append("typeOfUseId", typeOfUseId);
+        }
+        return fetchItems<SubTypeOfUseResponse>(`/SubTypeOfUse?${params.toString()}`, "Failed to fetch sub-types of use");
+    });
 }
 
 /**
@@ -138,7 +182,9 @@ export async function getSubTypeOfUseOptions(typeOfUseID?: string): Promise<stri
  * Fetches sub-floor data
  */
 export async function getSubFloorData(): Promise<SubFloorResponse[]> {
-    return fetchItems<SubFloorResponse>("/SubFloor?pageNumber=1&pageSize=-1", "Failed to fetch sub-floors");
+    return getCachedOrFetch('SubFloor', () =>
+        fetchItems<SubFloorResponse>("/SubFloor?pageNumber=1&pageSize=-1", "Failed to fetch sub-floors")
+    );
 }
 
 /**
@@ -161,7 +207,9 @@ export async function getSubFloorOptions(): Promise<string[]> {
  * @returns Promise<RoomTypeResponse[]>
  */
 export async function getRoomTypeData(): Promise<RoomTypeResponse[]> {
-    return fetchItems<RoomTypeResponse>("/RoomTypeMaster?pageNumber=1&pageSize=-1", "Failed to fetch room types");
+    return getCachedOrFetch('RoomType', () =>
+        fetchItems<RoomTypeResponse>("/RoomTypeMaster?pageNumber=1&pageSize=-1", "Failed to fetch room types")
+    );
 }
 
 /**

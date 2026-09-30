@@ -157,9 +157,9 @@ const FloorTable: React.FC<FloorTableProps> = ({
     let totalBuiltupArea = 0;
 
     (filteredFloors || []).forEach((floor) => {
-      // Exclude property master plot header record (floorId 77 if carpetArea === plotAreaSqM)
+      // Exclude property master plot header record if carpetArea === plotAreaSqM
       if (
-        (String(floor.floorId) === '77' || String(floor.floor) === '77' || floor.isOpenPlot === true) &&
+        (floor.isOpenPlot === true || floor.selectedFloorType === 'OpenPlot' || String(floor.floor || '').toLowerCase().includes('open plot')) &&
         Number(floor.carpetAreaSqMeter || floor.builtupAreaSqMeter || 0) === plotAreaSqM &&
         plotAreaSqM > 0
       ) {

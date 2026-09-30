@@ -18,7 +18,12 @@ import {
   getUseDescription,
   getSubTypeDescription,
 } from './floor-descriptions';
-import { resolveIdFromDescription } from './floor-resolvers';
+import {
+  resolveIdFromDescription,
+  findOpenPlotFloorItem,
+  findOpenPlotConstructionTypeItem,
+  findOpenPlotTypeOfUseItem,
+} from './floor-resolvers';
 import { mapRoomDataToApi } from './room-mappers';
 import { mapRenterPayloadFields } from '@/lib/utils/renter/renter-payload-mapper';
 import { checkIsUtilityCategory } from './floor-utility-checks';
@@ -71,16 +76,23 @@ export const mapFormToPayload = (params: {
         Number(formData.typeOfUseCategoryId) === 3;
   const isUtility = checkIsUtilityCategory(formData.typeOfUseCategoryId);
 
-  // Resolve IDs primarily from explicit ID fields, fallback to resolving from descriptions
-  const floorId =
+  // Resolve IDs primarily from explicit ID fields, fallback to resolving from descriptions or codes
+  let floorId =
     Number(formData.floorId) ||
     resolveIdFromDescription(formData.floor, floorLookup, 'floorId', 'floorCode');
+
+  if (!floorId && (isOpenSpace || selectedFloorType === 'OpenPlot' || formData.isOpenPlot)) {
+    const opFloor = findOpenPlotFloorItem(floorLookup);
+    if (opFloor) {
+      floorId = Number(opFloor.floorId ?? (opFloor as Record<string, unknown>).id ?? 0);
+    }
+  }
 
   const subFloorId =
     Number(formData.subFloorId) ||
     resolveIdFromDescription(formData.subFloor, subFloorLookup, 'subFloorId', 'subFloorCode');
 
-  const conTypId =
+  let conTypId =
     Number(formData.constructionTypeId) ||
     resolveIdFromDescription(
       formData.conTyp,
@@ -89,9 +101,23 @@ export const mapFormToPayload = (params: {
       'constructionCode'
     );
 
-  const useId =
+  if (!conTypId && (isOpenSpace || selectedFloorType === 'OpenPlot' || formData.isOpenPlot)) {
+    const opCon = findOpenPlotConstructionTypeItem(constructionLookup);
+    if (opCon) {
+      conTypId = Number(opCon.constructionTypeId ?? opCon.id ?? 0);
+    }
+  }
+
+  let useId =
     Number(formData.typeOfUseId) ||
     resolveIdFromDescription(formData.use, useLookup, 'typeOfUseId', 'typeOfUseCode');
+
+  if (!useId && (isOpenSpace || selectedFloorType === 'OpenPlot' || formData.isOpenPlot)) {
+    const opUse = findOpenPlotTypeOfUseItem(useLookup);
+    if (opUse) {
+      useId = Number(opUse.typeOfUseId ?? opUse.id ?? 0);
+    }
+  }
 
   const subTypId =
     Number(formData.subTypeOfUseId) ||

@@ -213,7 +213,15 @@ export function validateFloorConstructionYearSequence(
     // Exclude Open Plot / Open Space records from floor elevation sequence checking if marked as such
     const validElevationFloors = propFloors.filter((f) => {
       const fData = f as FloorData;
-      if (fData.isOpenPlot === true || String(fData.isOpenPlot) === 'true' || String(fData.floorId) === '77') {
+      if (
+        fData.isOpenPlot === true ||
+        String(fData.isOpenPlot) === 'true' ||
+        String(fData.selectedFloorType).toLowerCase() === 'openplot' ||
+        String(fData.floor || '').toLowerCase().includes('open plot') ||
+        String(fData.floor || '').toLowerCase() === 'op' ||
+        String(fData.conTyp || '').toLowerCase() === 'op' ||
+        String(fData.conTyp || '').toLowerCase().includes('open plot')
+      ) {
         return false;
       }
       return true;
@@ -317,10 +325,18 @@ export function validateFloorNumberSequence(
 
   // 2. Validate each Property ID independently
   propertyGroups.forEach((propFloors, propertyId) => {
-    // Exclude Open Plot / Open Space records (floorId 77 or isOpenPlot === true)
+    // Exclude Open Plot / Open Space records
     const elevationFloors = propFloors.filter((f) => {
       const fData = f as FloorData;
-      if (fData.isOpenPlot === true || String(fData.isOpenPlot) === 'true' || String(fData.floorId) === '77') {
+      if (
+        fData.isOpenPlot === true ||
+        String(fData.isOpenPlot) === 'true' ||
+        String(fData.selectedFloorType).toLowerCase() === 'openplot' ||
+        String(fData.floor || '').toLowerCase().includes('open plot') ||
+        String(fData.floor || '').toLowerCase() === 'op' ||
+        String(fData.conTyp || '').toLowerCase() === 'op' ||
+        String(fData.conTyp || '').toLowerCase().includes('open plot')
+      ) {
         return false;
       }
       return true;
