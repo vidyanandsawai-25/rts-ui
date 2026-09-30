@@ -38,6 +38,7 @@ export const mockMessages = {
         nominalSizeValue: { label: "Nominal Size Value", placeholder: "e.g., 0.5 or 15" },
         sizeUnit: { label: "Size Unit", placeholder: "e.g., Inch or mm" },
         activeStatusTitle: "Active Status",
+        tapStatusTitle: "Tap Status",
         activeStatusOn: "Active - Tap size is enabled",
         activeStatusOff: "Inactive - Tap size is disabled",
       },

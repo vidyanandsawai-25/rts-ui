@@ -16,7 +16,7 @@ import { useConnectionCategoryMaster } from "@/hooks/water-bill/connection-categ
 export function ConnectionCategoryMaster({ data }: Readonly<ConnectionCategoryMasterProps>) {
   const [isUserManualOpen, setIsUserManualOpen] = useState(false);
   const {
-    t, items, pageNumber, pageSize, totalCount, totalPages,
+    t, items, isPending, pageNumber, pageSize, totalCount, totalPages,
     search, handleSearchChange,
     statusFilter, handleStatusFilterChange,
     meteredFilter, handleMeteredFilterChange,
@@ -38,7 +38,7 @@ export function ConnectionCategoryMaster({ data }: Readonly<ConnectionCategoryMa
       <MasterTable<ConnectionCategory>
         columns={columns}
         data={items}
-        loading={false}
+        loading={isPending}
         headerExtra={
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full">
             <SearchInput

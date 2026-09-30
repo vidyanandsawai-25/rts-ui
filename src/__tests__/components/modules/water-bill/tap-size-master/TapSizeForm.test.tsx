@@ -34,6 +34,7 @@ vi.mock("sonner", () => ({
 vi.mock("@/app/[locale]/water-bill/tap-size-master/actions", () => ({
   createTapSizeAction: vi.fn(),
   updateTapSizeAction: vi.fn(),
+  getTapSizePagedAction: vi.fn().mockResolvedValue({ items: [] }),
 }));
 
 const mockCreateAction = vi.mocked(createTapSizeAction);

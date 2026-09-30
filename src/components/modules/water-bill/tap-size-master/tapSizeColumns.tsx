@@ -38,6 +38,7 @@ export function getTapSizeColumns(
       align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",
+      render: (val) => val ? String(val) : "_",
     },
     {
       key: "isActive",

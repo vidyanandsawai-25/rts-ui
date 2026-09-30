@@ -98,7 +98,9 @@
       "createError": "Failed to create connection category",
       "updateError": "Failed to update connection category",
       "deleteError": "Failed to delete connection category",
-      "duplicateError": "A record with the same details already exists."
+      "duplicateError": "A record with the same details already exists.",
+      "duplicateCodeError": "Connection Category Code already exists.",
+      "duplicateComboError": "A record with this Connection Category and Billing Frequency combination already exists."
     },
     "drawer": {
       "addTitle": "Add Connection Category",

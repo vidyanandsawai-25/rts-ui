@@ -11,6 +11,7 @@ import { ALPHANUMERIC_WITH_SPACES_SANITIZE } from "@/lib/utils/validation-rules"
 import {
   createConnectionCategoryAction,
   updateConnectionCategoryAction,
+  getConnectionCategoryPagedAction
 } from "@/app/[locale]/water-bill/connection-category-master/actions";
 import {
   METERED_BILLING_METHODS,
@@ -106,9 +107,26 @@ export function useConnectionCategoryForm(
     setIsSubmitting(true);
     try {
       const code = (formData.connectionCategoryCode || "").trim().toUpperCase().slice(0, 30);
+      const categoryName = formData.connectionCategory.trim();
+
+      const allRecords = await getConnectionCategoryPagedAction(1, 10000);
+      const isCodeDup = allRecords.items.some(x => x.connectionCategoryCode?.trim().toLowerCase() === code.toLowerCase() && x.id !== id);
+      const isComboDup = allRecords.items.some(x => 
+        x.connectionCategory.trim().toLowerCase() === categoryName.toLowerCase() && 
+        x.billingFrequencyId === formData.billingFrequencyId && 
+        x.id !== id
+      );
+
+      if (isCodeDup || isComboDup) {
+        if (isCodeDup) toast.error(t("messages.duplicateCodeError") || "Connection Category Code already exists.");
+        if (isComboDup) toast.error(t("messages.duplicateComboError") || "A record with this Connection Category and Billing Frequency combination already exists.");
+        setIsSubmitting(false);
+        return;
+      }
+
       const submitData = {
         connectionCategoryCode: code,
-        connectionCategory: formData.connectionCategory.trim(),
+        connectionCategory: categoryName,
         billingFrequencyId: formData.billingFrequencyId,
         isMetered: formData.isMetered,
         billingMethod: formData.billingMethod.trim(),

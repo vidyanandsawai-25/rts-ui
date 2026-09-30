@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ export function useTapSizeMaster(data: PagedResponse<TapSize>) {
   const searchParams = useSearchParams();
   const locale = useLocale();
   const pathname = usePathname() || "";
+  const [isPending, startTransition] = useTransition();
 
   const isUnified = pathname.includes("/water-bill/connection-type-master/tap-size");
   const basePath = isUnified
@@ -64,7 +65,9 @@ export function useTapSizeMaster(data: PagedResponse<TapSize>) {
       } else {
         params.delete("q");
       }
-      router.push(`${basePath}?${params.toString()}`);
+      startTransition(() => {
+        router.push(`${basePath}?${params.toString()}`);
+      });
     }, 400);
 
     return () => clearTimeout(timer);
@@ -87,7 +90,9 @@ export function useTapSizeMaster(data: PagedResponse<TapSize>) {
     } else {
       params.delete("status");
     }
-    router.push(`${basePath}?${params.toString()}`);
+    startTransition(() => {
+      router.push(`${basePath}?${params.toString()}`);
+    });
   }, [router, basePath]);
 
   const buildUrl = useCallback(
@@ -104,11 +109,15 @@ export function useTapSizeMaster(data: PagedResponse<TapSize>) {
   );
 
   const changePage = (p: number) => {
-    router.push(buildUrl(p, pageSize, search, statusFilter));
+    startTransition(() => {
+      router.push(buildUrl(p, pageSize, search, statusFilter));
+    });
   };
 
   const handlePageSizeChange = (size: number) => {
-    router.push(buildUrl(1, size, search, statusFilter));
+    startTransition(() => {
+      router.push(buildUrl(1, size, search, statusFilter));
+    });
   };
 
   const handleAdd = () => {
@@ -149,6 +158,7 @@ export function useTapSizeMaster(data: PagedResponse<TapSize>) {
     t,
     tCommon,
     items,
+    isPending,
     pageNumber,
     pageSize,
     totalCount,

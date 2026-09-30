@@ -29,6 +29,7 @@ vi.mock("sonner", () => ({
 vi.mock("@/app/[locale]/water-bill/connection-type-master/actions", () => ({
   createConnectionTypeAction: vi.fn(),
   updateConnectionTypeAction: vi.fn(),
+  getConnectionTypePagedAction: vi.fn().mockResolvedValue({ items: [] }),
 }));
 
 import {
@@ -64,6 +65,8 @@ const mockMessages = {
         isActive: {
           label: "Active Status",
         },
+        activeStatusTitle: "Active Status",
+        connectionStatusTitle: "Connection Status",
         activeStatusOn: "Active - Connection is enabled",
         activeStatusOff: "Inactive - Connection is disabled",
       },
@@ -71,7 +74,9 @@ const mockMessages = {
         connectionTypeCodeRequired: "Connection Type Code is required",
         connectionTypeCodeLength: "Code cannot exceed 30 characters",
         connectionTypeRequired: "Connection Type is required",
+        connectionTypeLength: "Connection Type cannot exceed 100 characters",
         descriptionRequired: "Description is required",
+        descriptionLength: "Description cannot exceed 300 characters",
       },
       messages: {
         createSuccess: "Connection Type created successfully",
@@ -79,6 +84,8 @@ const mockMessages = {
         createError: "Failed to create connection type",
         updateError: "Failed to update connection type",
         duplicateError: "A record with the same details already exists.",
+        duplicateCodeError: "Connection Type Code already exists.",
+        duplicateNameError: "Connection Type already exists.",
       },
     },
   },
@@ -90,6 +97,9 @@ const mockMessages = {
     },
     note: {
       mandatory: "Indicates mandatory fields",
+    },
+    errors: {
+      generic: "An error occurred",
     },
   },
 };
@@ -150,7 +160,6 @@ describe("ConnectionTypeForm Component", () => {
     await waitFor(() => {
       expect(screen.getByText("Connection Type Code is required")).toBeInTheDocument();
       expect(screen.getByText("Connection Type is required")).toBeInTheDocument();
-      expect(screen.getByText("Description is required")).toBeInTheDocument();
     });
   });
 

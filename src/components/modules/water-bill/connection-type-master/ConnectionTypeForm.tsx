@@ -161,7 +161,6 @@ export function ConnectionTypeForm({ id, initialData }: Readonly<ConnectionTypeF
           <div>
             <Input
               label={t("form.description.label") || "Description"}
-              required
               id="description"
               maxLength={300}
               value={formData.description}

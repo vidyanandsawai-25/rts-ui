@@ -21,6 +21,7 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/app/[locale]/water-bill/connection-category-master/actions", () => ({
   createConnectionCategoryAction: vi.fn(),
   updateConnectionCategoryAction: vi.fn(),
+  getConnectionCategoryPagedAction: vi.fn().mockResolvedValue({ items: [] }),
 }));
 
 import {

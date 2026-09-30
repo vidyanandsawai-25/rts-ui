@@ -24,6 +24,7 @@ export function ConnectionTypeMaster({ data }: Readonly<ConnectionTypeMasterProp
     totalCount,
     totalPages,
     search,
+    isPending,
     handleSearchChange,
     statusFilter,
     handleStatusFilterChange,
@@ -48,7 +49,7 @@ export function ConnectionTypeMaster({ data }: Readonly<ConnectionTypeMasterProp
       <MasterTable<ConnectionType>
         columns={columns}
         data={items}
-        loading={false}
+        loading={isPending}
         headerExtra={
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full">
             <SearchInput

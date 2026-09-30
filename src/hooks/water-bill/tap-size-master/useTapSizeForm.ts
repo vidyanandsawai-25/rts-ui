@@ -8,6 +8,7 @@ import { ALPHANUMERIC_WITH_SPACES_SANITIZE, TAP_SIZE_SANITIZE, TAP_SIZE_REGEX } 
 import {
   createTapSizeAction,
   updateTapSizeAction,
+  getTapSizePagedAction
 } from "@/app/[locale]/water-bill/tap-size-master/actions";
 
 export function useTapSizeForm(id: number | null, initialData?: TapSize) {
@@ -149,10 +150,22 @@ export function useTapSizeForm(id: number | null, initialData?: TapSize) {
     setIsSubmitting(true);
     try {
       const code = (formData.tapSizeCode || "").trim().toUpperCase().slice(0, 30);
+      const tapSizeName = formData.tapSize.trim();
+
+      const allRecords = await getTapSizePagedAction(1, 10000);
+      const isCodeDup = allRecords.items.some(x => x.tapSizeCode?.trim().toLowerCase() === code.toLowerCase() && x.id !== id);
+      const isNameDup = allRecords.items.some(x => x.tapSize.trim().toLowerCase() === tapSizeName.toLowerCase() && x.id !== id);
+
+      if (isCodeDup || isNameDup) {
+        if (isCodeDup) toast.error(t("messages.duplicateCodeError") || "Tap Size Code already exists.");
+        if (isNameDup) toast.error(t("messages.duplicateNameError") || "Tap Size already exists.");
+        setIsSubmitting(false);
+        return;
+      }
 
       const submitData = {
         tapSizeCode: code,
-        tapSize: formData.tapSize.trim(),
+        tapSize: tapSizeName,
         nominalSizeValue: formData.nominalSizeValue,
         sizeUnit: formData.sizeUnit?.trim() || null,
         isActive: formData.isActive,

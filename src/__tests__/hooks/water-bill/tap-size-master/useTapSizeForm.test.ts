@@ -26,6 +26,7 @@ vi.mock("sonner", () => ({
 vi.mock("@/app/[locale]/water-bill/tap-size-master/actions", () => ({
   createTapSizeAction: vi.fn(),
   updateTapSizeAction: vi.fn(),
+  getTapSizePagedAction: vi.fn(),
 }));
 
 describe("useTapSizeForm Hook", () => {
@@ -101,6 +102,15 @@ describe("useTapSizeForm Hook", () => {
   });
 
   it("submits create form and redirects on success", async () => {
+    vi.mocked(actions.getTapSizePagedAction).mockResolvedValueOnce({
+      items: [],
+      pageNumber: 1,
+      pageSize: 10,
+      totalCount: 0,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false,
+    });
     vi.mocked(actions.createTapSizeAction).mockResolvedValueOnce({
       success: true,
       data: { id: 10, tapSizeCode: "TAP10", tapSize: "1", isActive: true },
@@ -132,6 +142,15 @@ describe("useTapSizeForm Hook", () => {
   });
 
   it("submits update form and redirects on success", async () => {
+    vi.mocked(actions.getTapSizePagedAction).mockResolvedValueOnce({
+      items: [],
+      pageNumber: 1,
+      pageSize: 10,
+      totalCount: 0,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false,
+    });
     vi.mocked(actions.updateTapSizeAction).mockResolvedValueOnce({
       success: true,
       data: { id: 5, tapSizeCode: "TAP05", tapSize: "2", isActive: true },
@@ -155,5 +174,59 @@ describe("useTapSizeForm Hook", () => {
     expect(actions.updateTapSizeAction).toHaveBeenCalledWith(5, expect.objectContaining({ tapSizeCode: "TAP05", tapSize: "2" }));
     expect(toast.success).toHaveBeenCalled();
     expect(mockRouterPush).toHaveBeenCalledWith("/en/water-bill/tap-size-master");
+  });
+
+  it("prevents submission if tap size code is duplicated", async () => {
+    vi.mocked(actions.getTapSizePagedAction).mockResolvedValueOnce({
+      items: [{ id: 99, tapSizeCode: "TAP10", tapSize: "2", isActive: true, nominalSizeValue: 2, sizeUnit: "Inch" }],
+      pageNumber: 1,
+      pageSize: 10,
+      totalCount: 1,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    });
+
+    const { result } = renderHook(() => useTapSizeForm(null));
+
+    act(() => {
+      result.current.handleChange("tapSizeCode", "TAP10");
+      result.current.handleChange("tapSize", "1");
+      result.current.handleChange("sizeUnit", "Inch");
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(actions.createTapSizeAction).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("messages.duplicateCodeError"));
+  });
+
+  it("prevents submission if tap size name is duplicated", async () => {
+    vi.mocked(actions.getTapSizePagedAction).mockResolvedValueOnce({
+      items: [{ id: 99, tapSizeCode: "TAP99", tapSize: "1", isActive: true, nominalSizeValue: 1, sizeUnit: "Inch" }],
+      pageNumber: 1,
+      pageSize: 10,
+      totalCount: 1,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    });
+
+    const { result } = renderHook(() => useTapSizeForm(null));
+
+    act(() => {
+      result.current.handleChange("tapSizeCode", "TAP10");
+      result.current.handleChange("tapSize", "1");
+      result.current.handleChange("sizeUnit", "Inch");
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(actions.createTapSizeAction).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("messages.duplicateNameError"));
   });
 });

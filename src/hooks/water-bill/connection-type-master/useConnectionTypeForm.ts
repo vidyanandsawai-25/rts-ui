@@ -7,6 +7,7 @@ import { ALPHANUMERIC_WITH_SPACES_SANITIZE } from "@/lib/utils/validation-rules"
 import {
   createConnectionTypeAction,
   updateConnectionTypeAction,
+  getConnectionTypePagedAction
 } from "@/app/[locale]/water-bill/connection-type-master/actions";
 
 export function useConnectionTypeForm(id: number | null, initialData?: ConnectionType) {
@@ -47,9 +48,7 @@ export function useConnectionTypeForm(id: number | null, initialData?: Connectio
       } else if (data.connectionType.length > 100) {
         errs.connectionType = t("validation.connectionTypeLength") || "Connection Type cannot exceed 100 characters";
       }
-      if (!data.description.trim()) {
-        errs.description = t("validation.descriptionRequired");
-      } else if (data.description.length > 300) {
+      if (data.description.trim() && data.description.length > 300) {
         errs.description = t("validation.descriptionLength") || "Description cannot exceed 300 characters";
       }
       return errs;
@@ -92,10 +91,22 @@ export function useConnectionTypeForm(id: number | null, initialData?: Connectio
     setIsSubmitting(true);
     try {
       const code = (formData.connectionTypeCode || "").trim().toUpperCase().slice(0, 30);
+      const typeName = formData.connectionType.trim();
+
+      const allRecords = await getConnectionTypePagedAction(1, 10000);
+      const isCodeDup = allRecords.items.some(x => x.connectionTypeCode?.trim().toLowerCase() === code.toLowerCase() && x.id !== id);
+      const isNameDup = allRecords.items.some(x => x.connectionType.trim().toLowerCase() === typeName.toLowerCase() && x.id !== id);
+
+      if (isCodeDup || isNameDup) {
+        if (isCodeDup) toast.error(t("messages.duplicateCodeError") || "Connection Type Code already exists.");
+        if (isNameDup) toast.error(t("messages.duplicateNameError") || "Connection Type already exists.");
+        setIsSubmitting(false);
+        return;
+      }
 
       const submitData = {
         connectionTypeCode: code,
-        connectionType: formData.connectionType.trim(),
+        connectionType: typeName,
         description: formData.description.trim(),
         isActive: formData.isActive,
       };

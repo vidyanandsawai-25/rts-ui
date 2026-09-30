@@ -24,6 +24,7 @@ export function TapSizeMaster({ data }: Readonly<TapSizeMasterProps>) {
     totalCount,
     totalPages,
     search,
+    isPending,
     handleSearchChange,
     statusFilter,
     handleStatusFilterChange,
@@ -48,7 +49,7 @@ export function TapSizeMaster({ data }: Readonly<TapSizeMasterProps>) {
       <MasterTable<TapSize>
         columns={columns}
         data={items}
-        loading={false}
+        loading={isPending}
         headerExtra={
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full">
             <SearchInput

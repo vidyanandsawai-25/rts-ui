@@ -27,6 +27,7 @@ vi.mock("sonner", () => ({
 vi.mock("@/app/[locale]/water-bill/connection-type-master/actions", () => ({
   createConnectionTypeAction: vi.fn(),
   updateConnectionTypeAction: vi.fn(),
+  getConnectionTypePagedAction: vi.fn().mockResolvedValue({ items: [] }),
 }));
 
 const mockInitialData: ConnectionType = {
@@ -68,7 +69,6 @@ describe("useConnectionTypeForm Hook", () => {
 
     expect(result.current.errors.connectionTypeCode).toBeDefined();
     expect(result.current.errors.connectionType).toBeDefined();
-    expect(result.current.errors.description).toBeDefined();
   });
 
   it("sanitizes input on change", () => {

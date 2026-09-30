@@ -73,7 +73,9 @@
       "createError": "Failed to create tap size",
       "updateError": "Failed to update tap size",
       "deleteError": "Failed to delete tap size",
-      "duplicateError": "A record with the same details already exists."
+      "duplicateError": "A record with the same details already exists.",
+      "duplicateCodeError": "Tap Size Code already exists.",
+      "duplicateNameError": "Tap Size already exists."
     },
     "drawer": {
       "addTitle": "Add Tap Size",

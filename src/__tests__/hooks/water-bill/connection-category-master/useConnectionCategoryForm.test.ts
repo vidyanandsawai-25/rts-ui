@@ -23,11 +23,13 @@ vi.mock("sonner", () => ({
 vi.mock("@/app/[locale]/water-bill/connection-category-master/actions", () => ({
   createConnectionCategoryAction: vi.fn(),
   updateConnectionCategoryAction: vi.fn(),
+  getConnectionCategoryPagedAction: vi.fn(),
 }));
 
 import {
   createConnectionCategoryAction,
   updateConnectionCategoryAction,
+  getConnectionCategoryPagedAction
 } from "@/app/[locale]/water-bill/connection-category-master/actions";
 
 const mockCreateAction = vi.mocked(createConnectionCategoryAction);
@@ -99,6 +101,15 @@ describe("useConnectionCategoryForm", () => {
   });
 
   it("submits create form successfully", async () => {
+    vi.mocked(getConnectionCategoryPagedAction).mockResolvedValueOnce({
+      items: [],
+      pageNumber: 1,
+      pageSize: 10,
+      totalCount: 0,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false,
+    });
     mockCreateAction.mockResolvedValueOnce({ success: true, data: mockInitialData });
     const { result } = renderHook(() => useConnectionCategoryForm(null));
 
@@ -124,6 +135,15 @@ describe("useConnectionCategoryForm", () => {
   });
 
   it("submits edit form successfully", async () => {
+    vi.mocked(getConnectionCategoryPagedAction).mockResolvedValueOnce({
+      items: [],
+      pageNumber: 1,
+      pageSize: 10,
+      totalCount: 0,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false,
+    });
     mockUpdateAction.mockResolvedValueOnce({ success: true, data: mockInitialData });
     const { result } = renderHook(() => useConnectionCategoryForm(5, mockInitialData));
 
@@ -140,5 +160,59 @@ describe("useConnectionCategoryForm", () => {
       })
     );
     expect(toast.success).toHaveBeenCalled();
+  });
+
+  it("prevents submission if connection category code is duplicated", async () => {
+    vi.mocked(getConnectionCategoryPagedAction).mockResolvedValueOnce({
+      items: [{ id: 99, connectionCategoryCode: "NEWCAT", connectionCategory: "Other", billingFrequencyId: 1, isMetered: true, billingMethod: "Metered", isActive: true, description: "" }],
+      pageNumber: 1,
+      pageSize: 10,
+      totalCount: 1,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    });
+
+    const { result } = renderHook(() => useConnectionCategoryForm(null));
+
+    act(() => {
+      result.current.handleChange("connectionCategoryCode", "NEWCAT");
+      result.current.handleChange("connectionCategory", "New Category");
+      result.current.handleChange("billingFrequencyId", 2);
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(mockCreateAction).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("messages.duplicateCodeError"));
+  });
+
+  it("prevents submission if category and billing frequency combination is duplicated", async () => {
+    vi.mocked(getConnectionCategoryPagedAction).mockResolvedValueOnce({
+      items: [{ id: 99, connectionCategoryCode: "OTHER", connectionCategory: "New Category", billingFrequencyId: 2, isMetered: true, billingMethod: "Metered", isActive: true, description: "" }],
+      pageNumber: 1,
+      pageSize: 10,
+      totalCount: 1,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false,
+    });
+
+    const { result } = renderHook(() => useConnectionCategoryForm(null));
+
+    act(() => {
+      result.current.handleChange("connectionCategoryCode", "NEWCAT");
+      result.current.handleChange("connectionCategory", "New Category");
+      result.current.handleChange("billingFrequencyId", 2);
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(mockCreateAction).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("messages.duplicateComboError"));
   });
 });

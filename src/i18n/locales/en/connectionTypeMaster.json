@@ -65,7 +65,9 @@
       "createError": "Failed to create connection type",
       "updateError": "Failed to update connection type",
       "deleteError": "Failed to delete connection type",
-      "duplicateError": "A record with the same details already exists."
+      "duplicateError": "A record with the same details already exists.",
+      "duplicateCodeError": "Connection Type Code already exists.",
+      "duplicateNameError": "Connection Type already exists."
     },
     "drawer": {
       "addTitle": "Add Connection Type",

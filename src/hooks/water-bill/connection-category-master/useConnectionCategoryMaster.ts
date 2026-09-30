@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ export function useConnectionCategoryMaster(data: PagedResponse<ConnectionCatego
   const searchParams = useSearchParams();
   const locale = useLocale();
   const pathname = usePathname() || "";
+  const [isPending, startTransition] = useTransition();
 
   const isUnified = pathname.includes("/water-bill/connection-type-master/connection-category");
   const basePath = isUnified
@@ -67,7 +68,9 @@ export function useConnectionCategoryMaster(data: PagedResponse<ConnectionCatego
       params.set("page", "1");
       if (search.trim()) params.set("q", search.trim());
       else params.delete("q");
-      router.push(`${basePath}?${params.toString()}`);
+      startTransition(() => {
+        router.push(`${basePath}?${params.toString()}`);
+      });
     }, 400);
     return () => clearTimeout(timer);
   }, [search, router, basePath]);
@@ -83,7 +86,9 @@ export function useConnectionCategoryMaster(data: PagedResponse<ConnectionCatego
     params.set("page", "1");
     if (status && status !== "all") params.set("status", status);
     else params.delete("status");
-    router.push(`${basePath}?${params.toString()}`);
+    startTransition(() => {
+      router.push(`${basePath}?${params.toString()}`);
+    });
   }, [router, basePath]);
 
   const handleMeteredFilterChange = useCallback((metered: string) => {
@@ -92,7 +97,9 @@ export function useConnectionCategoryMaster(data: PagedResponse<ConnectionCatego
     params.set("page", "1");
     if (metered && metered !== "all") params.set("metered", metered);
     else params.delete("metered");
-    router.push(`${basePath}?${params.toString()}`);
+    startTransition(() => {
+      router.push(`${basePath}?${params.toString()}`);
+    });
   }, [router, basePath]);
 
   const buildUrl = useCallback(
@@ -110,8 +117,16 @@ export function useConnectionCategoryMaster(data: PagedResponse<ConnectionCatego
     [basePath]
   );
 
-  const changePage = (p: number) => router.push(buildUrl(p, pageSize, search, statusFilter, meteredFilter));
-  const handlePageSizeChange = (size: number) => router.push(buildUrl(1, size, search, statusFilter, meteredFilter));
+  const changePage = (p: number) => {
+    startTransition(() => {
+      router.push(buildUrl(p, pageSize, search, statusFilter, meteredFilter));
+    });
+  };
+  const handlePageSizeChange = (size: number) => {
+    startTransition(() => {
+      router.push(buildUrl(1, size, search, statusFilter, meteredFilter));
+    });
+  };
   const handleAdd = () => router.push(`${basePath}/add`);
   const handleEdit = useCallback((row: ConnectionCategory) => {
     router.push(`${basePath}/edit/${row.id}`);
@@ -135,7 +150,7 @@ export function useConnectionCategoryMaster(data: PagedResponse<ConnectionCatego
   const end = Math.min(start + pageSize - 1, totalCount);
 
   return {
-    t, tCommon, items, pageNumber, pageSize, totalCount, totalPages,
+    t, tCommon, items, isPending, pageNumber, pageSize, totalCount, totalPages,
     search, currentSearchTerm, handleSearchChange,
     statusFilter, handleStatusFilterChange,
     meteredFilter, handleMeteredFilterChange,
