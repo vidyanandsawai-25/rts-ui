@@ -13,14 +13,6 @@ import {
 import { PageContainer } from '@/components/common/PageContainer';
 import { floorNeedsLookupLabels } from '@/lib/utils/renter/renter-form-mapper';
 
-import { cache } from 'react';
-
-const getCachedFloorData = cache(() => getFloorDataAction());
-const getCachedConstructionData = cache(() => getConstructionTypeDataAction());
-const getCachedTypeOfUseData = cache(() => getTypeOfUseDataAction());
-const getCachedSubTypeOfUseData = cache(() => getSubTypeOfUseDataAction());
-const getCachedSubFloorData = cache(() => getSubFloorDataAction());
-
 interface RenterDetailsPageProps {
     params: Promise<{ locale: string; propertyId: string }>;
     searchParams: Promise<{ [key: string]: string | undefined }>;
@@ -62,11 +54,11 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
             : Promise.resolve(null),
         ...(needsLookups
             ? [
-                getCachedFloorData(),
-                getCachedConstructionData(),
-                getCachedTypeOfUseData(),
-                getCachedSubTypeOfUseData(),
-                getCachedSubFloorData(),
+                getFloorDataAction(),
+                getConstructionTypeDataAction(),
+                getTypeOfUseDataAction(),
+                getSubTypeOfUseDataAction(),
+                getSubFloorDataAction(),
             ]
             : []),
     ]);

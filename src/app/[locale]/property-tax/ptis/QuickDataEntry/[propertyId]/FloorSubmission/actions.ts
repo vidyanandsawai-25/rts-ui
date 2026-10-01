@@ -43,20 +43,11 @@ export type { SelectableProperty } from '@/types/floor-details.types';
 
 export type QuickDataEntryPayload = Record<string, unknown>;
 
-const sameAsCache = new Map<string, { data: SelectableProperty[]; timestamp: number }>();
-const SAME_AS_CACHE_TTL = 30000; // 30 seconds
-
 export async function clearDataEntrySameAsCache(): Promise<void> {
-    sameAsCache.clear();
+    // No-op: in-memory cache removed to ensure data freshness and serverless compatibility
 }
 
 export async function fetchDataEntrySameAsAction(wardId: number, propertyNo?: string, _categoryName?: string): Promise<SelectableProperty[]> {
-    const cacheKey = propertyNo ? `${wardId}-${propertyNo}` : `${wardId}-ALL`;
-    const cached = sameAsCache.get(cacheKey);
-    if (cached && cached.data && cached.data.length > 0 && (Date.now() - cached.timestamp < SAME_AS_CACHE_TTL)) {
-        return cached.data;
-    }
-
     try {
         const params = new URLSearchParams();
         params.set('WardId', String(wardId));
@@ -122,9 +113,6 @@ export async function fetchDataEntrySameAsAction(wardId: number, propertyNo?: st
                 parkingBuiltupAreaSqMeter: extended.parkingBuiltupAreaSqMeter ?? null,
             };
         });
-        if (results.length > 0) {
-            sameAsCache.set(cacheKey, { data: results, timestamp: Date.now() });
-        }
         return results;
     } catch (_error) {
         return [];
