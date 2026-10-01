@@ -95,7 +95,7 @@ function PtisLayoutWrapperContent({
   const { waybackReleases } = useWaybackReleases(isPanelVisible || isDrawerOpen);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 w-full items-start overflow-x-clip relative">
+    <div className="flex flex-col lg:flex-row gap-2 lg:gap-3 w-full items-start overflow-x-clip relative">
       <MediaPanelToggle />
 
       {/* Main Content Area */}

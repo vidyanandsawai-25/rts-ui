@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, X, Image as ImageIcon } from 'lucide-react';
 import { useMediaDrawerState } from '@/hooks/ptis/photoplan/useMediaDrawerState';
 import { useSearchParams } from 'next/navigation';
 import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
@@ -875,7 +875,23 @@ function PropertyMediaPanel({
       {isPanelLoading ? (
         <PropertyMediaPanelSkeleton />
       ) : (
-        <div className="h-auto lg:h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 relative">
+        <div className="h-auto lg:h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 relative overflow-hidden">
+          {/* Panel Header with Title and Close Button */}
+          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/50 shrink-0 select-none">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+              <ImageIcon className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+              <span>{t('media.mediaGallery') || 'Photo Plan'}</span>
+            </div>
+            <button
+              type="button"
+              onClick={togglePanel}
+              className="p-1 rounded-md hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+              title="Close panel"
+              aria-label="Close photo plan panel"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
           <PropertyMediaPanelContent
             categories={categories}
             t={t}

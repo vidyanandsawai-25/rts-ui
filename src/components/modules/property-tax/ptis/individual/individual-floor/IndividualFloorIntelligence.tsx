@@ -70,6 +70,8 @@ export interface IndividualFloorIntelligenceProps {
   onDualMethodDataLoaded?: (data: DualMethodResponse) => void;
   isLoading?: boolean;
   locale?: string;
+  onOpenAppliedRules?: () => void;
+  hasAppliedRules?: boolean;
 }
 
 const SECTION_TITLES: Record<string, string> = {
@@ -109,6 +111,8 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   onDualMethodDataLoaded,
   isLoading = false,
   locale: propLocale,
+  onOpenAppliedRules,
+  hasAppliedRules,
 }) => {
   const t = useTranslations('ptis');
   const contextLocale = useLocale();
@@ -411,6 +415,8 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
         taxMode={currentTaxMode}
         onTaxModeChange={handleTaxModeChange}
         isLoadingValuation={isValuationLoading}
+        onOpenAppliedRules={onOpenAppliedRules}
+        hasAppliedRules={hasAppliedRules}
       />
 
       {/* 2. Floor Details Section by Valuation Mode (Rateable, Capital, Dual Method) */}

@@ -341,6 +341,9 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
             societyDetailId={resolvedSocietyDetailId}
             wingDetailId={resolvedWingDetailId}
             wingName={resolvedWingName}
+            hasAppliedRules={pageData.hasAppliedRules}
+            appliedRules={pageData.appliedRulesList}
+            locale={locale}
           />
         </PtisLayoutWrapper>
 

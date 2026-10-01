@@ -5,6 +5,7 @@ import { IndividualMasterHeader } from '@/components/modules/property-tax/ptis/i
 import { IndividualMasterDetailsGrid } from '@/components/modules/property-tax/ptis/individual/individual-tabSection/components/IndividualMasterDetailsGrid';
 import { IndividualPropertyMasterCard } from '@/components/modules/property-tax/ptis/individual/individual-tabSection/IndividualPropertyMasterCard';
 import { IndividualContainer } from '@/components/modules/property-tax/ptis/individual/IndividualContainer';
+import { IndividualFloorTopNav } from '@/components/modules/property-tax/ptis/individual/individual-floor/IndividualFloorTopNav';
 import { useIndividualPropertySearch } from '@/hooks/property-tax/individual/useIndividualPropertySearch';
 import type { IndividualPropertyMasterData } from '@/types/property-tax/individual';
 import type { PtisInitialData } from '@/types/ptis.types';
@@ -38,6 +39,7 @@ vi.mock('next-intl', () => ({
         'photo.noPhoto': 'No Photo',
         'grid.owner': 'Owner',
         'grid.propertyHolder': 'Property Holder',
+        'appliedRules.buttonLabel': 'Applied Rules',
       };
       return map[key] || key;
     };
@@ -271,6 +273,43 @@ describe('Individual Property - Components & Hook', () => {
       expect(screen.getByText('GIS Verified')).toBeInTheDocument();
       expect(screen.getByText('Assessment')).toBeInTheDocument();
       expect(screen.getByText('Fire NOC')).toBeInTheDocument();
+    });
+
+    it('renders container with applied rules button in floor top nav', () => {
+      const mockInitial: PtisInitialData = {
+        wardOptions: [{ label: 'Ward 1', value: '1' }],
+        propertyOptions: [],
+        rawPropertyData: [],
+      };
+      render(
+        <IndividualContainer
+          initialData={mockInitial}
+          initialWardId={1}
+          initialPropertyMasterData={mockData}
+          hasAppliedRules={true}
+        />
+      );
+      expect(screen.getByRole('button', { name: /applied rules/i })).toBeInTheDocument();
+    });
+  });
+
+  // ==========================================
+  // 5. TOP NAV TESTS
+  // ==========================================
+  describe('IndividualFloorTopNav', () => {
+    it('renders Applied Rules button and fires onOpenAppliedRules callback', () => {
+      const onOpenMock = vi.fn();
+      render(
+        <IndividualFloorTopNav
+          activeSection="floor"
+          onToggleSection={vi.fn()}
+          onOpenAppliedRules={onOpenMock}
+        />
+      );
+      const appliedRulesBtn = screen.getByRole('button', { name: /applied rules/i });
+      expect(appliedRulesBtn).toBeInTheDocument();
+      fireEvent.click(appliedRulesBtn);
+      expect(onOpenMock).toHaveBeenCalledTimes(1);
     });
   });
 

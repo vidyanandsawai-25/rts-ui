@@ -34,9 +34,9 @@ export const AreaDetailsFields = ({
     };
 
     return (
-        <div className={`col-span-12 grid grid-cols-1 ${!isPlotCategory ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-x-4 gap-y-3`}>
+        <>
             {/* Plot Area */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 col-span-12 sm:col-span-6 md:col-span-4 min-w-0">
                 <Label htmlFor="pd-plotarea" className="text-xs font-semibold text-gray-700">
                     {t('property.plotAreaWithUnit')}
                 </Label>
@@ -57,7 +57,7 @@ export const AreaDetailsFields = ({
             {!isPlotCategory && (
                 <>
                     {/* Total Carpet Area */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 col-span-12 sm:col-span-6 md:col-span-4 min-w-0">
                         <Label htmlFor="pd-carpetarea" className="text-xs font-semibold text-gray-700">
                             {t('property.totalCarpetAreaWithUnit')}
                         </Label>
@@ -75,7 +75,7 @@ export const AreaDetailsFields = ({
                     </div>
 
                     {/* Buildup Area */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 col-span-12 sm:col-span-6 md:col-span-4 min-w-0">
                         <Label htmlFor="pd-builduparea" className="text-xs font-semibold text-gray-700">
                             {t('property.buildupAreaWithUnit')}
                         </Label>
@@ -93,9 +93,9 @@ export const AreaDetailsFields = ({
                     </div>
 
                     {/* Old Carpet Area */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 col-span-12 sm:col-span-6 md:col-span-4 min-w-0">
                         <Label htmlFor="pd-oldcarpetarea" className="text-xs font-semibold text-gray-700">
-                            {t('property.oldCarpetAreaWithUnit') || 'Old Carpet Area (Sq.Ft/Sq.Mtr)'}
+                            {t('property.oldCarpetAreaWithUnit') || 'Old Carpet Area (sq.ft / sq.m)'}
                         </Label>
                         <Tooltip content={oldCarpetAreaVal} placement="top">
                             <Input
@@ -111,9 +111,9 @@ export const AreaDetailsFields = ({
                     </div>
 
                     {/* Old Buildup Area */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 col-span-12 sm:col-span-6 md:col-span-4 min-w-0">
                         <Label htmlFor="pd-oldbuilduparea" className="text-xs font-semibold text-gray-700">
-                            {t('property.oldBuildupAreaWithUnit') || 'Old Buildup Area (Sq.Ft/Sq.Mtr)'}
+                            {t('property.oldBuildupAreaWithUnit') || 'Old Buildup Area (sq.ft / sq.m)'}
                         </Label>
                         <Tooltip content={oldBuildupAreaVal} placement="top">
                             <Input
@@ -135,6 +135,6 @@ export const AreaDetailsFields = ({
             <input type="hidden" name="totalCarpetAreaSqMeter" value={propertyData?.totalCarpetAreaSqMeter != null ? Number(propertyData.totalCarpetAreaSqMeter).toFixed(2) : ''} />
             <input type="hidden" name="totalBuiltupAreaSqFeet" value={propertyData?.totalBuiltupAreaSqFeet != null ? Number(propertyData.totalBuiltupAreaSqFeet).toFixed(2) : ''} />
             <input type="hidden" name="totalBuiltupAreaSqMeter" value={propertyData?.totalBuiltupAreaSqMeter != null ? Number(propertyData.totalBuiltupAreaSqMeter).toFixed(2) : ''} />
-        </div>
+        </>
     );
 };

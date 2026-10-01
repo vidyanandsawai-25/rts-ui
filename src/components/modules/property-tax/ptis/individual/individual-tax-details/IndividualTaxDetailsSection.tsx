@@ -87,8 +87,8 @@ export function IndividualTaxDetailsSection({
   return (
     <div className="w-full bg-white border border-slate-200 rounded-lg shadow-2xs overflow-hidden font-sans select-none relative">
       {/* Top Header bar with Tabs, Mode Badge & Inline Summary Cards */}
-      <div className="px-3 py-1 bg-gradient-to-r from-slate-50 to-zinc-50 border-b border-slate-200 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-2.5">
-        <div className="flex items-center gap-2.5 shrink-0 py-0.5">
+      <div className="px-3 py-1.5 bg-gradient-to-r from-slate-50 to-zinc-50 border-b border-slate-200 flex flex-col 2xl:flex-row items-stretch 2xl:items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0 py-0.5 flex-wrap">
           <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-lg">
             <button
               type="button"
@@ -122,7 +122,7 @@ export function IndividualTaxDetailsSection({
         </div>
 
         {/* 5 Summary Cards Inline Right */}
-        <div className="flex-1 w-full xl:max-w-[1050px] min-w-0">
+        <div className="flex-1 w-full min-w-0">
           <IndividualFloorSummaryCards
             rateableData={rateableData}
             capitalData={capitalData}
