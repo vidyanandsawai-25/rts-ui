@@ -8,6 +8,7 @@ export interface Option {
   label: string;
   value: string;
   disabled?: boolean;
+  icon?: React.ReactNode;
 }
 
 export interface SelectProps {
@@ -157,6 +158,9 @@ export function Select({
   };
 
   const selectedLabel = options.find((opt) => opt.value === internalValue)?.label;
+  const selectedOption = options.find(
+    (opt) => opt.value === internalValue
+  );
 
   const sizeClasses = {
     sm: 'h-8 px-3 text-sm',
@@ -259,14 +263,23 @@ export function Select({
           open && highlightedIndex >= 0 ? `${optionIdPrefix}-${highlightedIndex}` : undefined
         }
       >
-        <span
-          className={cn(
-            'truncate text-left flex-1 text-sm',
-            !selectedLabel ? 'text-gray-400' : (disabled ? 'text-gray-500' : 'text-gray-800')
-          )}
-        >
-          {selectedLabel || placeholder}
-        </span>
+        <div className="flex min-w-0 flex-1 items-center">
+          {
+            selectedOption?.icon && (
+              <span className="mr-2 flex-shrink-0">
+                {selectedOption.icon}
+              </span>
+            )
+          }
+          <span
+            className={cn(
+              'truncate text-left flex-1 text-sm',
+              !selectedLabel ? 'text-gray-400' : (disabled ? 'text-gray-500' : 'text-gray-800')
+            )}
+          >
+            {selectedLabel || placeholder}
+          </span>
+        </div>
 
         <ChevronDownIcon className="ml-2 w-4 h-4 text-gray-400" />
       </button>
@@ -301,7 +314,14 @@ export function Select({
               role="option"
               tabIndex={-1}
             >
-              {opt.label}
+              <div className="flex items-center gap-2">
+                {opt.icon && (
+                  <span className="inline-flex shrink-0 items-center">
+                    {opt.icon}
+                  </span>
+                )}
+                <span>{opt.label}</span>
+              </div>
             </li>
           ))}
         </ul>

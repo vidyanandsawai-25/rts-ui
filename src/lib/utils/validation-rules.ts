@@ -214,3 +214,16 @@ export const OWNERNAME_REGEX =
 export const TAP_SIZE_SANITIZE = /[^0-9/]/g;
 // Validate fraction (e.g. 1/2) or whole number (e.g. 1), prevent just "/" or "/6"
 export const TAP_SIZE_REGEX = /^\d+(?:\/\d+)?$/;
+
+/* ================= UPLOAD COUNT VALIDATION ================= */
+// Positive integer with no leading zero (1 to 200000)
+export const UPLOAD_COUNT_REGEX = /^[1-9][0-9]*$/;
+export const UPLOAD_COUNT_SANITIZE = /[^0-9]/g;
+export const UPLOAD_COUNT_MIN = 1;
+export const UPLOAD_COUNT_MAX = 200000;
+
+export const sanitizeUploadCount = (value: string, max: number = UPLOAD_COUNT_MAX): string => {
+  const digitsOnly = value.replace(UPLOAD_COUNT_SANITIZE, '').replace(/^0+/, '');
+  const maxDigits = String(max).length;
+  return digitsOnly.slice(0, maxDigits);
+};

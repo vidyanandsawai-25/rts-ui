@@ -42,6 +42,7 @@ interface MultiSelectProps {
   name?: string;
   error?: boolean;
   onOpen?: () => void;
+  showSelectAll?: boolean;
 }
 
 /**
@@ -74,6 +75,7 @@ export function MultiSelect({
   name,
   error = false,
   onOpen,
+  showSelectAll = true,
 }: MultiSelectProps) {
   const tCommon = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
@@ -354,39 +356,40 @@ export function MultiSelect({
             />
           </div>
 
-           {/* Select All Option */}
-          <div className="border-b border-gray-200 bg-gray-50 shrink-0">
-            <div
-              className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 cursor-pointer"
-              tabIndex={0}
-              ref={el => { optionsRefs.current.selectAll = el; }}
-              onFocus={() => setFocusedIndex(-1)}
-              onClick={handleSelectAll}
-              onKeyDown={e => {
-                if (e.key === "Enter" || e.key === " ") {
-                  handleSelectAll();
-                  e.preventDefault();
-                } else if (e.key === "ArrowDown") {
-                  if (filteredOptions.length > 0) {
-                    optionsRefs.current.items[0]?.focus();
-                    setFocusedIndex(0);
+          {/* Select All Option */}
+          {showSelectAll && (
+            <div className="border-b border-gray-200 bg-gray-50 shrink-0">
+              <div
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 cursor-pointer"
+                tabIndex={0}
+                ref={el => { optionsRefs.current.selectAll = el; }}
+                onFocus={() => setFocusedIndex(-1)}
+                onClick={handleSelectAll}
+                onKeyDown={e => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    handleSelectAll();
+                    e.preventDefault();
+                  } else if (e.key === "ArrowDown") {
+                    if (filteredOptions.length > 0) {
+                      optionsRefs.current.items[0]?.focus();
+                      setFocusedIndex(0);
+                    }
+                    e.preventDefault();
+                  } else if (e.key === "ArrowUp") {
+                    if (filteredOptions.length > 0) {
+                      optionsRefs.current.items[filteredOptions.length - 1]?.focus();
+                      setFocusedIndex(filteredOptions.length - 1);
+                    }
+                    e.preventDefault();
+                  } else if (e.key === "Escape") {
+                    closeDropdown();
+                    e.preventDefault();
                   }
-                  e.preventDefault();
-                } else if (e.key === "ArrowUp") {
-                  if (filteredOptions.length > 0) {
-                    optionsRefs.current.items[filteredOptions.length - 1]?.focus();
-                    setFocusedIndex(filteredOptions.length - 1);
-                  }
-                  e.preventDefault();
-                } else if (e.key === "Escape") {
-                  closeDropdown();
-                  e.preventDefault();
-                }
-              }}
-              aria-selected={isAllSelected}
-              aria-label={tCommon("multiSelect.selectAll")}
-            >
-              <input
+                }}
+                aria-selected={isAllSelected}
+                aria-label={tCommon("multiSelect.selectAll")}
+              >
+                <input
                   type="checkbox"
                   checked={isAllSelected}
                   onChange={handleSelectAll}
@@ -396,8 +399,9 @@ export function MultiSelect({
                   aria-hidden="true"
                 />
                 <span className="text-sm font-medium text-gray-700">{tCommon("multiSelect.selectAll")}</span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Options List */}
           <div

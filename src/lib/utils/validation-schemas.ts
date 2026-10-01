@@ -26,6 +26,9 @@ import {
   MOBILE_10_REGEX,
   YEAR_REGEX,
   PINCODE_6_REGEX,
+  UPLOAD_COUNT_REGEX,
+  UPLOAD_COUNT_MIN,
+  UPLOAD_COUNT_MAX,
 } from './validation-rules';
 import { validateForm } from './validation-helpers';
 import { DateUtils } from './date-helpers';
@@ -263,6 +266,55 @@ export const commonValidations = {
         if (!PINCODE_6_REGEX.test(strVal)) {
           return t(key);
         }
+        return undefined;
+      },
+
+  /**
+   * Upload count validation (only positive whole numbers between min and max, no leading zeros)
+   * Disallows alphabets, negative numbers, decimals, special characters, and numbers starting with 0.
+   *
+   * @param t - Translation function
+   * @param min - Minimum allowed value (default 1)
+   * @param max - Maximum allowed value (default 200000)
+   * @param messageKeys - Custom translation keys for errors
+   */
+  uploadCount:
+    (
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      min: number = UPLOAD_COUNT_MIN,
+      max: number = UPLOAD_COUNT_MAX,
+      messageKeys?: {
+        required?: string;
+        format?: string;
+        min?: string;
+        max?: string;
+      }
+    ): Validator =>
+      (fieldValue: unknown) => {
+        const strVal = String(fieldValue ?? '').trim();
+
+        const keys = {
+          required: messageKeys?.required || 'uploadDownloadDrawer.validation.uploadCountRequired',
+          format: messageKeys?.format || 'uploadDownloadDrawer.validation.uploadCountNumeric',
+          min: messageKeys?.min || 'uploadDownloadDrawer.validation.uploadCountMin',
+          max: messageKeys?.max || 'uploadDownloadDrawer.validation.uploadCountMax',
+        };
+
+        if (!strVal) return t(keys.required);
+
+        // Check if contains non-digits or starts with 0
+        if (!UPLOAD_COUNT_REGEX.test(strVal)) {
+          return t(keys.format);
+        }
+
+        const numVal = Number(strVal);
+        if (!Number.isFinite(numVal) || numVal < min) {
+          return t(keys.min, { min });
+        }
+        if (numVal > max) {
+          return t(keys.max, { max });
+        }
+
         return undefined;
       },
 };

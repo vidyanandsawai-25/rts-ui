@@ -8,10 +8,13 @@ interface SearchInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  inputClassName?: string;
   showClear?: boolean;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   onEnter?: () => void;
   tabIndex?: number;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
+
 }
 
 export function SearchInput({
@@ -19,10 +22,12 @@ export function SearchInput({
   onChange,
   placeholder = "Search...",
   className,
+  inputClassName,
   showClear = true,
   onKeyDown,
   onEnter,
   tabIndex,
+  inputRef
 }: SearchInputProps) {
   return (
     <div className={cn("relative mb-4 w-[300px]", className)}>
@@ -34,6 +39,7 @@ export function SearchInput({
       {/* INPUT */}
       <input
         type="text"
+        ref={inputRef}
         value={value}
         placeholder={placeholder}
         autoComplete="off"
@@ -45,12 +51,13 @@ export function SearchInput({
           onKeyDown?.(e);
         }}
         tabIndex={tabIndex}
-        className="
-          w-full rounded-lg border border-gray-300 text-gray-800 placeholder:text-gray-400
+        className={cn(`
+          w-full rounded-lg border border-gray-300 text-gray-800
           bg-white py-2 pl-10 pr-9 text-sm
           focus:border-blue-500 focus:ring-2 focus:ring-blue-200
           outline-none transition
-        "
+          `, inputClassName
+        )}
       />
 
       {/* CLEAR BUTTON */}
