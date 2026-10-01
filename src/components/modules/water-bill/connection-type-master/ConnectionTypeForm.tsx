@@ -1,13 +1,12 @@
 "use client";
 
-import { Droplets } from "lucide-react";
+import { Network } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton } from "@/components/common/ActionButtons";
 import { Input } from "@/components/common/Input";
+import { TextArea } from "@/components/common/Textarea";
 import { ValidationMessage } from "@/components/common/ValidationMessage";
-import { ToggleSwitch } from "@/components/common/ToggleSwitch";
-import { cn } from "@/lib/utils/cn";
-import { CheckCircle2, X } from "lucide-react";
+import { FormStatusToggle } from "@/components/common";
 import { MandatoryFieldsNotice } from "./MandatoryFieldsNotice";
 import { useConnectionTypeForm } from "@/hooks/water-bill/connection-type-master";
 import type { ConnectionType } from "@/types/waterBill/connectionTypeMaster.types";
@@ -40,7 +39,7 @@ export function ConnectionTypeForm({ id, initialData }: Readonly<ConnectionTypeF
       title={
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center bg-linear-to-br from-blue-500 to-blue-600 rounded-lg text-white">
-            <Droplets size={20} />
+            <Network size={20} />
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
@@ -60,7 +59,7 @@ export function ConnectionTypeForm({ id, initialData }: Readonly<ConnectionTypeF
             disabled={isSubmitting}
           />
           <SaveButton
-            label={isEdit ? tCommon("buttons.edit") : tCommon("buttons.save")}
+            label={isEdit ? tCommon("buttons.update") : tCommon("buttons.save")}
             type="submit"
             form="connection-type-form"
             isLoading={isSubmitting}
@@ -75,55 +74,21 @@ export function ConnectionTypeForm({ id, initialData }: Readonly<ConnectionTypeF
         noValidate
       >
         <div className="space-y-4">
-          <div className="rounded-xl border border-[#DCEAFF] bg-white p-4">
-            <div
-              className={cn(
-                "rounded-xl p-3 flex items-center justify-between",
-                formData.isActive
-                  ? "border border-blue-200 bg-[#F0F6FF]"
-                  : "border border-gray-200 bg-gray-50"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "h-9 w-9 flex items-center justify-center rounded-full",
-                    formData.isActive
-                      ? "bg-green-100 text-green-600"
-                      : "bg-gray-200 text-gray-900"
-                  )}
-                >
-                  {formData.isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
-                </div>
-                <div>
-                  <div className="font-medium text-gray-900">
-                    {t("form.connectionStatusTitle") || "Connection Status"}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {formData.isActive 
-                      ? t("form.activeStatusOn") || "Active - Connection is enabled"
-                      : t("form.activeStatusOff") || "Inactive - Connection is disabled"}
-                  </div>
-                </div>
-              </div>
-              <ToggleSwitch
-                checked={formData.isActive}
-                onChange={(checked) => handleChange("isActive", checked)}
-                showPopup={false}
-              />
-            </div>
-            <ValidationMessage
-              message={errors.isActive}
-              visible={!!errors.isActive}
-            />
-          </div>
+          <FormStatusToggle
+            isEdit={isEdit}
+            isActive={Boolean(formData.isActive)}
+            onChange={(val) => handleChange("isActive", val)}
+            isSubmitting={isSubmitting}
+            statusLabel={formData.isActive ? tCommon("status.active") : tCommon("status.inactive")}
+            description={formData.isActive ? (t("form.activeStatusOn") || "Active - Connection is enabled") : (t("form.activeStatusOff") || "Inactive - Connection is disabled")}
+          />
 
           <div>
             <Input
               label={t("form.connectionTypeCode.label") || "Connection Type Code"}
               required
               id="connection-type-code"
-              maxLength={30}
+              maxLength={20}
               value={formData.connectionTypeCode ?? ""}
               onChange={(e) => handleChange("connectionTypeCode", e.target.value.toUpperCase())}
               onBlur={() => handleBlur("connectionTypeCode")}
@@ -143,7 +108,7 @@ export function ConnectionTypeForm({ id, initialData }: Readonly<ConnectionTypeF
               label={t("form.connectionType.label") || "Connection Type"}
               required
               id="connection-type"
-              maxLength={100}
+              maxLength={50}
               value={formData.connectionType}
               onChange={(e) => handleChange("connectionType", e.target.value)}
               onBlur={() => handleBlur("connectionType")}
@@ -159,10 +124,11 @@ export function ConnectionTypeForm({ id, initialData }: Readonly<ConnectionTypeF
           </div>
 
           <div>
-            <Input
+            <TextArea
               label={t("form.description.label") || "Description"}
               id="description"
               maxLength={300}
+              rows={3}
               value={formData.description}
               onChange={(e) => handleChange("description", e.target.value)}
               onBlur={() => handleBlur("description")}

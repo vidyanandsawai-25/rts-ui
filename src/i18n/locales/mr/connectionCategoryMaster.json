@@ -78,14 +78,19 @@
     },
     "validation": {
       "connectionCategoryCodeRequired": "जोडणी वर्ग कोड आवश्यक आहे",
-      "connectionCategoryCodeLength": "कोड 30 वर्णांपेक्षा जास्त असू शकत नाही",
+      "connectionCategoryCodeLength": "कोड 20 वर्णांपेक्षा जास्त असू शकत नाही",
       "connectionCategoryRequired": "जोडणी वर्ग आवश्यक आहे",
-      "connectionCategoryLength": "वर्गाचे नाव 150 वर्णांपेक्षा जास्त असू शकत नाही",
+      "connectionCategoryLength": "वर्गाचे नाव 50 वर्णांपेक्षा जास्त असू शकत नाही",
       "billingFrequencyRequired": "कृपया बिलिंग वारंवारता निवडा",
       "billingMethodRequired": "बिलिंग पद्धत आवश्यक आहे",
       "billingMethodInvalid": "निवडलेली बिलिंग पद्धत मीटर स्थितीशी सुसंगत नाही",
       "descriptionRequired": "वर्णन आवश्यक आहे",
-      "descriptionLength": "वर्णन 300 वर्णांपेक्षा जास्त असू शकत नाही"
+      "descriptionLength": "वर्णन 300 वर्णांपेक्षा जास्त असू शकत नाही",
+      "descriptionFormat": "केवळ अक्षरे (कोणतीही भाषा), संख्या, मोकळी जागा आणि मूलभूत विरामचिन्हे (,./-()) ला परवानगी आहे.",
+      "codeFormat": "केवळ इंग्रजी अक्षरे, संख्या आणि अंडरस्कोर (_) वापरा. कोड अंडरस्कोरने सुरू किंवा समाप्त होऊ शकत नाही.",
+      "connectionCategoryFormat": "केवळ अक्षरे आणि मोकळ्या जागेची परवानगी आहे.",
+      "codeNumbersOnlyNotAllowed": "कृपया किमान एक अक्षर असलेला वैध कोड प्रविष्ट करा.",
+      "connectionCategoryNumbersOnlyNotAllowed": "कृपया किमान एक अक्षर असलेला वैध जोडणी वर्ग प्रविष्ट करा."
     },
     "confirm": {
       "deleteTitle": "जोडणी वर्ग हटवा",

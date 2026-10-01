@@ -7,7 +7,8 @@ import type {
   ConnectionCategory,
   BillingFrequencyOption,
 } from "@/types/waterBill/connectionCategoryMaster.types";
-import { ALPHANUMERIC_WITH_SPACES_SANITIZE } from "@/lib/utils/validation-rules";
+import { ALPHANUMERIC_WITH_SPACES_SANITIZE, NAME_ONLY_SANITIZE } from "@/lib/utils/validation-rules";
+import { CODE_SANITIZE, DESCRIPTION_SANITIZE, HAS_LETTER_REGEX } from "@/lib/utils/validation";
 import {
   createConnectionCategoryAction,
   updateConnectionCategoryAction,
@@ -65,13 +66,27 @@ export function useConnectionCategoryForm(
   const showError = (field: keyof ConnectionCategoryFormModel) =>
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
-  const handleChange = (field: keyof ConnectionCategoryFormModel, value: unknown) => {
-    let sanitizedValue = value;
+  const handleChange = (field: keyof ConnectionCategoryFormModel, value: string | boolean | number | null) => {
+    let sanitizedValue: string | boolean | number | null = value;
     if (typeof value === "string") {
-      sanitizedValue = value
-        .normalize("NFC")
-        .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
-        .replace(/\s{2,}/g, " ");
+      if (field === "connectionCategoryCode") {
+        sanitizedValue = value.replace(CODE_SANITIZE, "").toUpperCase();
+        if (sanitizedValue.length > 20) {
+          sanitizedValue = sanitizedValue.substring(0, 20);
+        }
+      } else if (field === "connectionCategory") {
+        sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "");
+        if (sanitizedValue.length > 50) {
+          sanitizedValue = sanitizedValue.substring(0, 50);
+        }
+      } else if (field === "description") {
+        sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").replace(/\s{2,}/g, " ");
+      } else {
+        sanitizedValue = value
+          .normalize("NFC")
+          .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
+          .replace(/\s{2,}/g, " ");
+      }
     }
 
     setFormData((prev) => {
@@ -103,6 +118,16 @@ export function useConnectionCategoryForm(
     setSubmittedOnce(true);
     const validationErrs = validate(formData);
     if (Object.keys(validationErrs).length > 0) return;
+
+    if (!HAS_LETTER_REGEX.test(formData.connectionCategoryCode || "")) {
+      toast.error(t("validation.codeNumbersOnlyNotAllowed") || "Code cannot contain only numbers or special characters");
+      return;
+    }
+
+    if (!HAS_LETTER_REGEX.test(formData.connectionCategory || "")) {
+      toast.error(t("validation.connectionCategoryNumbersOnlyNotAllowed") || "Connection Category cannot contain only numbers or special characters");
+      return;
+    }
 
     setIsSubmitting(true);
     try {

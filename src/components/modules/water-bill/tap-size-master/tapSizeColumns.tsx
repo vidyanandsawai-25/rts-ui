@@ -13,6 +13,14 @@ export function getTapSizeColumns(
       align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center font-medium",
+      render: (value) =>
+        typeof value === "string" && value ? (
+          <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border whitespace-nowrap bg-[#e3f0fd] text-blue-700 border-blue-200">
+            {value}
+          </span>
+        ) : (
+          "—"
+        ),
     },
     {
       key: "tapSize",

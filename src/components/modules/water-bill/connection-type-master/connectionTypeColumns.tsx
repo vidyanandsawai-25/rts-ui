@@ -1,3 +1,4 @@
+import { TruncatedText } from "@/components/common";
 import type { Column } from "@/components/common/MasterTable";
 import type { ConnectionType } from "@/types/waterBill/connectionTypeMaster.types";
 
@@ -12,6 +13,14 @@ export function getConnectionTypeColumns(
       align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center font-medium",
+      render: (value) =>
+        typeof value === "string" && value ? (
+          <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border whitespace-nowrap bg-[#e3f0fd] text-blue-700 border-blue-200">
+            {value}
+          </span>
+        ) : (
+          "—"
+        ),
     },
     {
       key: "connectionType",
@@ -28,7 +37,7 @@ export function getConnectionTypeColumns(
       align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",
-      render: (val) => val ? String(val) : "_",
+      render: (val) => val ? <TruncatedText text={String(val)} maxLength={50} className="!cursor-default" /> : "_",
     },
     {
       key: "isActive",

@@ -48,11 +48,16 @@
     },
     "validation": {
       "connectionTypeCodeRequired": "कनेक्शन प्रकार कोड आवश्यक है",
-      "connectionTypeCodeLength": "कोड 30 वर्णों से अधिक नहीं हो सकता",
+      "connectionTypeCodeLength": "कोड 20 वर्णों से अधिक नहीं हो सकता",
       "connectionTypeRequired": "कनेक्शन प्रकार आवश्यक है",
-      "connectionTypeLength": "कनेक्शन प्रकार 100 वर्णों से अधिक नहीं हो सकता",
+      "connectionTypeLength": "कनेक्शन प्रकार 50 वर्णों से अधिक नहीं हो सकता",
       "descriptionRequired": "विवरण आवश्यक है",
-      "descriptionLength": "विवरण 300 वर्णों से अधिक नहीं हो सकता"
+      "descriptionLength": "विवरण 300 वर्णों से अधिक नहीं हो सकता",
+      "descriptionFormat": "केवल अक्षर (किसी भी भाषा), संख्या, रिक्त स्थान और बुनियादी विराम चिह्न (,./-()) की अनुमति है।",
+      "codeFormat": "केवल अंग्रेजी अक्षरों, संख्याओं और अंडरस्कोर (_) का उपयोग करें। कोड अंडरस्कोर से शुरू या समाप्त नहीं हो सकता।",
+      "connectionTypeFormat": "केवल अक्षरों और रिक्त स्थान की अनुमति है।",
+      "codeNumbersOnlyNotAllowed": "कृपया कम से कम एक वर्णमाला वाला वैध कोड दर्ज करें।",
+      "connectionTypeNumbersOnlyNotAllowed": "कृपया कम से कम एक वर्णमाला वाला वैध कनेक्शन प्रकार दर्ज करें।"
     },
     "confirm": {
       "deleteTitle": "कनेक्शन प्रकार हटाएं",

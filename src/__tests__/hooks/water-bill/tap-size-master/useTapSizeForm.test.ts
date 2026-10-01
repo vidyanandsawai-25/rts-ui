@@ -42,7 +42,7 @@ describe("useTapSizeForm Hook", () => {
       tapSizeCode: "",
       tapSize: "",
       nominalSizeValue: "",
-      sizeUnit: "",
+      sizeUnit: "Inch",
       isActive: true,
     });
   });
@@ -68,6 +68,11 @@ describe("useTapSizeForm Hook", () => {
 
   it("validates required fields when values are empty", () => {
     const { result } = renderHook(() => useTapSizeForm(null));
+
+    act(() => {
+      // Clear sizeUnit to test its required validation
+      result.current.handleChange("sizeUnit", "");
+    });
 
     // nominalSizeValue is disabled and auto-calculated, so it's not checked here
     expect(result.current.errors.tapSizeCode).toBeDefined();

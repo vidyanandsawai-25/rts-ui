@@ -71,7 +71,7 @@ export const mockMessages = {
     buttons: {
       cancel: "Cancel",
       save: "Save",
-      edit: "Update",
+      update: "Update",
     },
     note: {
       mandatory: "Indicates mandatory fields",

@@ -70,11 +70,11 @@ describe("TapSizeForm Component", () => {
     await waitFor(() => {
       expect(screen.getByText("Tap Size Code is required")).toBeInTheDocument();
       expect(screen.getByText("Tap Size is required")).toBeInTheDocument();
-      expect(screen.getByText("Size Unit is required")).toBeInTheDocument();
+      // sizeUnit defaults to "Inch", so it's not empty
     });
   });
 
-  it("auto-populates nominalSizeValue and sizeUnit when tapSize is typed", async () => {
+  it("auto-populates nominalSizeValue when tapSize is typed", async () => {
     render(
       <NextIntlClientProvider locale="en" messages={mockMessages}>
         <TapSizeForm id={null} />
@@ -82,13 +82,10 @@ describe("TapSizeForm Component", () => {
     );
 
     const sizeInput = screen.getByPlaceholderText("e.g., 1/2 Inch or 15 mm");
-    fireEvent.change(sizeInput, { target: { value: "3/4 Inch" } });
+    fireEvent.change(sizeInput, { target: { value: "3/4" } });
 
     const nominalInput = screen.getByPlaceholderText("e.g., 0.5 or 15") as HTMLInputElement;
-    const unitInput = screen.getByPlaceholderText("e.g., Inch or mm") as HTMLInputElement;
-
     expect(nominalInput.value).toBe("0.75");
-    expect(unitInput.value).toBe("Inch");
   });
 
   it("creates a tap size and redirects on valid submit", async () => {

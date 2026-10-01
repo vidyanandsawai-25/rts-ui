@@ -53,14 +53,18 @@
     },
     "validation": {
       "tapSizeCodeRequired": "Tap Size Code is required",
-      "tapSizeCodeLength": "Code cannot exceed 30 characters",
+      "tapSizeCodeLength": "Code cannot exceed 20 characters",
+      "codeFormat": "Use only letters, numbers, underscores (_), and dots (.). Cannot start/end with or have consecutive special characters.",
       "tapSizeRequired": "Tap Size is required",
-      "tapSizeLength": "Tap Size cannot exceed 100 characters",
+      "tapSizeLength": "Tap Size cannot exceed 5 characters",
       "tapSizeInvalid": "Invalid tap size format (e.g. 1/2 or 1)",
+      "tapSizeFormat": "Use only letters, numbers, spaces, underscores (_), and dots (.). Cannot start/end with or have consecutive special characters.",
       "nominalSizeValueRequired": "Nominal Size Value is required",
       "nominalSizeValueInvalid": "Must be a valid number",
       "sizeUnitRequired": "Size Unit is required",
-      "sizeUnitLength": "Size Unit cannot exceed 20 characters"
+      "sizeUnitLength": "Size Unit cannot exceed 20 characters",
+      "descriptionLength": "Description cannot exceed 300 characters",
+      "descriptionFormat": "Only letters, numbers, spaces, and basic punctuation allowed (,./-())."
     },
     "confirm": {
       "deleteTitle": "Delete Tap Size",

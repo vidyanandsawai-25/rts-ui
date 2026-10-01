@@ -1,4 +1,5 @@
 import type { ConnectionCategoryFormModel } from "@/types/waterBill/connectionCategoryMaster.types";
+import { CODE_REGEX, DESCRIPTION_REGEX, NAME_ONLY_STRICT_REGEX } from "@/lib/utils/validation-rules";
 
 export const METERED_BILLING_METHODS = ["Metered", "Slab", "Telescopic", "Hybrid"] as const;
 export const NON_METERED_BILLING_METHODS = ["Flat", "Fixed", "Annual"] as const;
@@ -11,14 +12,18 @@ export function validateConnectionCategoryForm(
 
   if (!data.connectionCategoryCode?.trim()) {
     errs.connectionCategoryCode = t("validation.connectionCategoryCodeRequired") || "Connection Category Code is required";
-  } else if (data.connectionCategoryCode.trim().length > 30) {
-    errs.connectionCategoryCode = t("validation.connectionCategoryCodeLength") || "Code cannot exceed 30 characters";
+  } else if (data.connectionCategoryCode.trim().length > 20) {
+    errs.connectionCategoryCode = t("validation.connectionCategoryCodeLength") || "Code cannot exceed 20 characters";
+  } else if (!CODE_REGEX.test(data.connectionCategoryCode)) {
+    errs.connectionCategoryCode = t("validation.codeFormat") || "Use only English letters, numbers, and underscores (_). The code cannot start or end with an underscore.";
   }
 
   if (!data.connectionCategory?.trim()) {
     errs.connectionCategory = t("validation.connectionCategoryRequired") || "Connection Category is required";
-  } else if (data.connectionCategory.length > 150) {
-    errs.connectionCategory = t("validation.connectionCategoryLength") || "Category name cannot exceed 150 characters";
+  } else if (data.connectionCategory.length > 50) {
+    errs.connectionCategory = t("validation.connectionCategoryLength") || "Category name cannot exceed 50 characters";
+  } else if (!NAME_ONLY_STRICT_REGEX.test(data.connectionCategory)) {
+    errs.connectionCategory = t("validation.connectionCategoryFormat") || "Only letters and spaces are allowed.";
   }
 
   if (data.billingFrequencyId === null || data.billingFrequencyId === undefined) {
@@ -33,8 +38,12 @@ export function validateConnectionCategoryForm(
     errs.billingMethod = t("validation.billingMethodInvalid") || "Selected billing method is not valid for non-metered connections";
   }
 
-  if (data.description && data.description.length > 300) {
-    errs.description = t("validation.descriptionLength") || "Description cannot exceed 300 characters";
+  if (data.description?.trim()) {
+    if (data.description.length > 300) {
+      errs.description = t("validation.descriptionLength") || "Description cannot exceed 300 characters";
+    } else if (!DESCRIPTION_REGEX.test(data.description)) {
+      errs.description = t("validation.descriptionFormat") || "Only letters, numbers, spaces, and basic punctuation allowed (,./-()).";
+    }
   }
 
   return errs;

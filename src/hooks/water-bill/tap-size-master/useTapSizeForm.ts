@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { TapSizeFormModel, TapSize } from "@/types/waterBill/tapSizeMaster.types";
 import { formatNominalSize, parseNominalSizeFromTapSize } from "@/lib/utils/water-bill/tapSizeMaster.utils";
-import { ALPHANUMERIC_WITH_SPACES_SANITIZE, TAP_SIZE_SANITIZE, TAP_SIZE_REGEX } from "@/lib/utils/validation-rules";
+import { TAP_SIZE_CODE_SANITIZE, TAP_SIZE_CODE_REGEX, TAP_SIZE_SANITIZE, TAP_SIZE_REGEX } from "@/lib/utils/validation-rules";
 import {
   createTapSizeAction,
   updateTapSizeAction,
@@ -37,7 +37,7 @@ export function useTapSizeForm(id: number | null, initialData?: TapSize) {
       initialData?.nominalSizeValue != null
         ? formatNominalSize(initialData.nominalSizeValue, "")
         : "",
-    sizeUnit: initialData?.sizeUnit ?? "",
+    sizeUnit: initialData?.sizeUnit || "Inch",
     isActive: initialData?.isActive ?? true,
   });
   
@@ -49,14 +49,16 @@ export function useTapSizeForm(id: number | null, initialData?: TapSize) {
       const errs: Partial<Record<keyof TapSizeFormModel, string>> = {};
       if (!data.tapSizeCode?.trim()) {
         errs.tapSizeCode = t("validation.tapSizeCodeRequired");
-      } else if (data.tapSizeCode.trim().length > 30) {
+      } else if (data.tapSizeCode.trim().length > 20) {
         errs.tapSizeCode = t("validation.tapSizeCodeLength");
+      } else if (!TAP_SIZE_CODE_REGEX.test(data.tapSizeCode)) {
+        errs.tapSizeCode = t("validation.codeFormat");
       }
       if (!data.tapSize?.trim()) {
         errs.tapSize = t("validation.tapSizeRequired");
-      } else if (data.tapSize.length > 100) {
+      } else if (data.tapSize.trim().length > 5) {
         errs.tapSize = t("validation.tapSizeLength");
-      } else if (!TAP_SIZE_REGEX.test(data.tapSize.trim())) {
+      } else if (!TAP_SIZE_REGEX.test(data.tapSize)) {
         errs.tapSize = t("validation.tapSizeInvalid");
       }
       
@@ -80,13 +82,13 @@ export function useTapSizeForm(id: number | null, initialData?: TapSize) {
   const handleChange = (field: keyof TapSizeFormModel, value: string | number | boolean) => {
     let sanitizedValue = value;
     if (typeof value === "string") {
-      if (field === "tapSize") {
-        sanitizedValue = value.replace(TAP_SIZE_SANITIZE, "");
+      if (field === "tapSizeCode") {
+        sanitizedValue = value.replace(TAP_SIZE_CODE_SANITIZE, "").toUpperCase();
+      } else if (field === "tapSize") {
+        sanitizedValue = value.replace(TAP_SIZE_SANITIZE, "").replace(/\s{2,}/g, " ");
       } else {
-        sanitizedValue = value
-          .normalize("NFC")
-          .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
-          .replace(/\s{2,}/g, " ");
+        // Only sizeUnit and description (if added later) fall here
+        sanitizedValue = value.normalize("NFC").replace(/\s{2,}/g, " ");
       }
     }
 

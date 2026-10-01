@@ -66,7 +66,7 @@ const mockMessages = {
     },
   },
   common: {
-    buttons: { save: "Save", edit: "Save Changes", cancel: "Cancel" },
+    buttons: { save: "Save", update: "Save Changes", cancel: "Cancel" },
     note: { mandatory: "* Indicates mandatory fields" },
     errors: { generic: "An error occurred" },
   },

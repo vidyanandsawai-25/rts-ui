@@ -78,6 +78,7 @@ export const SEARCH_ALPHANUMERIC_SANITIZE = /[^A-Za-z0-9\s+\-]/g;
 // Name fields: Unicode letters and spaces only. No numbers, no special characters.
 export const NAME_ONLY_REGEX = /^[\p{L}\p{M}\s]+$/u;
 export const NAME_ONLY_SANITIZE = /[^\p{L}\p{M}\s]/gu;
+export const NAME_ONLY_STRICT_REGEX = /^(?!.*?\s{2})[\p{L}\p{M}][\p{L}\p{M}\s]*$/u;
 
 /* ================= ALPHANUMERIC WITH SPACES VALIDATION ================= */
 // Generic alphanumeric with separators: Unicode letters, marks, numbers, dots, and whitespace separators.
@@ -210,6 +211,9 @@ export const OWNERNAME_REGEX =
    /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;
 
 /* ================= TAP SIZE VALIDATION ================= */
+export const TAP_SIZE_CODE_SANITIZE = /[^A-Za-z0-9._]/g;
+export const TAP_SIZE_CODE_REGEX = /^(?!.*[._]{2})[A-Za-z0-9](?:[A-Za-z0-9._]*[A-Za-z0-9])?$/;
+
 // Restrict to digits (0-9) and forward slash (/)
 export const TAP_SIZE_SANITIZE = /[^0-9/]/g;
 // Validate fraction (e.g. 1/2) or whole number (e.g. 1), prevent just "/" or "/6"

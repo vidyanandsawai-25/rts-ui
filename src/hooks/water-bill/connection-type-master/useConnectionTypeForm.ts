@@ -3,7 +3,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { ConnectionTypeFormModel, ConnectionType } from "@/types/waterBill/connectionTypeMaster.types";
-import { ALPHANUMERIC_WITH_SPACES_SANITIZE } from "@/lib/utils/validation-rules";
+import { ALPHANUMERIC_WITH_SPACES_SANITIZE, CODE_REGEX, DESCRIPTION_REGEX, NAME_ONLY_SANITIZE, NAME_ONLY_STRICT_REGEX } from "@/lib/utils/validation-rules";
+import { CODE_SANITIZE, DESCRIPTION_SANITIZE, HAS_LETTER_REGEX } from "@/lib/utils/validation";
 import {
   createConnectionTypeAction,
   updateConnectionTypeAction,
@@ -40,16 +41,25 @@ export function useConnectionTypeForm(id: number | null, initialData?: Connectio
       const errs: Partial<Record<keyof ConnectionTypeFormModel, string>> = {};
       if (!data.connectionTypeCode?.trim()) {
         errs.connectionTypeCode = t("validation.connectionTypeCodeRequired") || "Connection Type Code is required";
-      } else if (data.connectionTypeCode.trim().length > 30) {
-        errs.connectionTypeCode = t("validation.connectionTypeCodeLength") || "Code cannot exceed 30 characters";
+      } else if (data.connectionTypeCode.trim().length > 20) {
+        errs.connectionTypeCode = t("validation.connectionTypeCodeLength") || "Code cannot exceed 20 characters";
+      } else if (!CODE_REGEX.test(data.connectionTypeCode)) {
+        errs.connectionTypeCode = t("validation.codeFormat") || "Use only English letters, numbers, and underscores (_). The code cannot start or end with an underscore.";
       }
-      if (!data.connectionType.trim()) {
+
+      if (!data.connectionType?.trim()) {
         errs.connectionType = t("validation.connectionTypeRequired");
-      } else if (data.connectionType.length > 100) {
-        errs.connectionType = t("validation.connectionTypeLength") || "Connection Type cannot exceed 100 characters";
+      } else if (data.connectionType.length > 50) {
+        errs.connectionType = t("validation.connectionTypeLength") || "Connection Type cannot exceed 50 characters";
+      } else if (!NAME_ONLY_STRICT_REGEX.test(data.connectionType)) {
+        errs.connectionType = t("validation.connectionTypeFormat") || "Only letters and spaces are allowed.";
       }
-      if (data.description.trim() && data.description.length > 300) {
-        errs.description = t("validation.descriptionLength") || "Description cannot exceed 300 characters";
+      if (data.description.trim()) {
+        if (data.description.length > 300) {
+          errs.description = t("validation.descriptionLength") || "Description cannot exceed 300 characters";
+        } else if (!DESCRIPTION_REGEX.test(data.description)) {
+          errs.description = t("validation.descriptionFormat") || "Only letters, numbers, spaces, and basic punctuation allowed (,./-()).";
+        }
       }
       return errs;
     },
@@ -64,10 +74,24 @@ export function useConnectionTypeForm(id: number | null, initialData?: Connectio
   const handleChange = (field: keyof ConnectionTypeFormModel, value: string | boolean) => {
     let sanitizedValue = value;
     if (typeof value === "string") {
-      sanitizedValue = value
-        .normalize("NFC")
-        .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
-        .replace(/\s{2,}/g, " ");
+      if (field === "connectionTypeCode") {
+        sanitizedValue = value.replace(CODE_SANITIZE, "").toUpperCase();
+        if (sanitizedValue.length > 20) {
+          sanitizedValue = sanitizedValue.substring(0, 20);
+        }
+      } else if (field === "connectionType") {
+        sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "");
+        if (sanitizedValue.length > 50) {
+          sanitizedValue = sanitizedValue.substring(0, 50);
+        }
+      } else if (field === "description") {
+        sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").replace(/\s{2,}/g, " ");
+      } else {
+        sanitizedValue = value
+          .normalize("NFC")
+          .replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "")
+          .replace(/\s{2,}/g, " ");
+      }
     }
     setFormData((prev) => ({ ...prev, [field]: sanitizedValue }));
   };
@@ -87,6 +111,16 @@ export function useConnectionTypeForm(id: number | null, initialData?: Connectio
     setSubmittedOnce(true);
     const validationErrs = validate(formData);
     if (Object.keys(validationErrs).length > 0) return;
+
+    if (!HAS_LETTER_REGEX.test(formData.connectionTypeCode || "")) {
+      toast.error(t("validation.codeNumbersOnlyNotAllowed") || "Code cannot contain only numbers or special characters");
+      return;
+    }
+
+    if (!HAS_LETTER_REGEX.test(formData.connectionType || "")) {
+      toast.error(t("validation.connectionTypeNumbersOnlyNotAllowed") || "Connection Type cannot contain only numbers or special characters");
+      return;
+    }
 
     setIsSubmitting(true);
     try {

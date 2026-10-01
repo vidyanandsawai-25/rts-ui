@@ -78,14 +78,19 @@
     },
     "validation": {
       "connectionCategoryCodeRequired": "Connection Category Code is required",
-      "connectionCategoryCodeLength": "Code cannot exceed 30 characters",
+      "connectionCategoryCodeLength": "Code cannot exceed 20 characters",
       "connectionCategoryRequired": "Connection Category is required",
-      "connectionCategoryLength": "Category name cannot exceed 150 characters",
+      "connectionCategoryLength": "Category name cannot exceed 50 characters",
       "billingFrequencyRequired": "Please select a billing frequency",
       "billingMethodRequired": "Billing Method is required",
       "billingMethodInvalid": "Selected billing method is inconsistent with metered status",
       "descriptionRequired": "Description is required",
-      "descriptionLength": "Description cannot exceed 300 characters"
+      "descriptionLength": "Description cannot exceed 300 characters",
+      "descriptionFormat": "Only letters, numbers, spaces, and basic punctuation allowed (,./-()).",
+      "codeFormat": "Use only English letters, numbers, and underscores (_). The code cannot start or end with an underscore.",
+      "connectionCategoryFormat": "Only letters and spaces are allowed.",
+      "codeNumbersOnlyNotAllowed": "Please enter a valid code containing at least one alphabet.",
+      "connectionCategoryNumbersOnlyNotAllowed": "Please enter a valid connection category containing at least one alphabet."
     },
     "confirm": {
       "deleteTitle": "Delete Connection Category",

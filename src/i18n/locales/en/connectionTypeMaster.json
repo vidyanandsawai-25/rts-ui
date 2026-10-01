@@ -48,11 +48,15 @@
     },
     "validation": {
       "connectionTypeCodeRequired": "Connection Type Code is required",
-      "connectionTypeCodeLength": "Code cannot exceed 30 characters",
+      "connectionTypeCodeLength": "Code cannot exceed 20 characters",
       "connectionTypeRequired": "Connection Type is required",
-      "connectionTypeLength": "Connection Type cannot exceed 100 characters",
+      "connectionTypeLength": "Connection Type cannot exceed 50 characters",
       "descriptionRequired": "Description is required",
-      "descriptionLength": "Description cannot exceed 300 characters"
+      "descriptionLength": "Description cannot exceed 300 characters",
+      "codeFormat": "Use only English letters, numbers, and underscores (_). The code cannot start or end with an underscore.",
+      "connectionTypeFormat": "Only letters and spaces are allowed.",
+      "codeNumbersOnlyNotAllowed": "Please enter a valid code containing at least one alphabet.",
+      "connectionTypeNumbersOnlyNotAllowed": "Please enter a valid connection type containing at least one alphabet."
     },
     "confirm": {
       "deleteTitle": "Delete Connection Type",

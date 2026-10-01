@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { Droplets } from "lucide-react";
+import { Layers } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton } from "@/components/common/ActionButtons";
 import { Input } from "@/components/common/Input";
+import { TextArea } from "@/components/common/Textarea";
 import { Select } from "@/components/common/select";
 import { ValidationMessage } from "@/components/common/ValidationMessage";
-import { CategoryStatusCard } from "./CategoryStatusCard";
+import { FormStatusToggle } from "@/components/common";
 import { MeteredStatusCard } from "./MeteredStatusCard";
 import { MandatoryFieldsNotice } from "./MandatoryFieldsNotice";
 import { useConnectionCategoryForm } from "@/hooks/water-bill/connection-category-master";
@@ -43,7 +44,7 @@ export function ConnectionCategoryForm({ id, initialData, billingFrequencies = [
       title={
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center bg-linear-to-br from-blue-500 to-blue-600 rounded-lg text-white">
-            <Droplets size={20} />
+            <Layers size={20} />
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">{isEdit ? t("drawer.editTitle") : t("drawer.addTitle")}</div>
@@ -54,26 +55,26 @@ export function ConnectionCategoryForm({ id, initialData, billingFrequencies = [
       footer={
         <>
           <CancelButton label={tCommon("buttons.cancel")} onClick={handleClose} disabled={isSubmitting} />
-          <SaveButton label={isEdit ? tCommon("buttons.edit") : tCommon("buttons.save")} type="submit" form="connection-category-form" isLoading={isSubmitting} />
+          <SaveButton label={isEdit ? tCommon("buttons.update") : tCommon("buttons.save")} type="submit" form="connection-category-form" isLoading={isSubmitting} />
         </>
       }
     >
       <form id="connection-category-form" onSubmit={handleSubmit} className="space-y-5 bg-[#F8FAFF] p-5" noValidate>
         <div className="space-y-4">
-          <CategoryStatusCard
-            isActive={formData.isActive}
-            onChange={(checked) => handleChange("isActive", checked)}
-            title={t("form.activeStatusTitle") || "Category Status"}
-            onLabel={t("form.activeStatusOn") || "Active - Category is enabled"}
-            offLabel={t("form.activeStatusOff") || "Inactive - Category is disabled"}
-            error={errors.isActive}
+          <FormStatusToggle
+            isEdit={isEdit}
+            isActive={Boolean(formData.isActive)}
+            onChange={(val) => handleChange("isActive", val)}
+            isSubmitting={isSubmitting}
+            statusLabel={formData.isActive ? tCommon("status.active") : tCommon("status.inactive")}
+            description={formData.isActive ? (t("form.activeStatusOn") || "Active - Category is enabled") : (t("form.activeStatusOff") || "Inactive - Category is disabled")}
           />
           <div>
             <Input
               label={t("form.connectionCategoryCode.label") || "Connection Category Code"}
               required
               id="connection-category-code"
-              maxLength={30}
+              maxLength={20}
               value={formData.connectionCategoryCode ?? ""}
               onChange={(e) => handleChange("connectionCategoryCode", e.target.value.toUpperCase())}
               onBlur={() => handleBlur("connectionCategoryCode")}
@@ -88,7 +89,7 @@ export function ConnectionCategoryForm({ id, initialData, billingFrequencies = [
               label={t("form.connectionCategory.label") || "Connection Category"}
               required
               id="connection-category"
-              maxLength={150}
+              maxLength={50}
               value={formData.connectionCategory}
               onChange={(e) => handleChange("connectionCategory", e.target.value)}
               onBlur={() => handleBlur("connectionCategory")}
@@ -128,10 +129,11 @@ export function ConnectionCategoryForm({ id, initialData, billingFrequencies = [
             />
           </div>
           <div>
-            <Input
+            <TextArea
               label={t("form.description.label") || "Description"}
               id="description"
               maxLength={300}
+              rows={3}
               value={formData.description}
               onChange={(e) => handleChange("description", e.target.value)}
               onBlur={() => handleBlur("description")}
