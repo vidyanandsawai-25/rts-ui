@@ -139,6 +139,7 @@ export function PhotoPlanViewer({
                 documentGuid={currentImage?.documentGuid}
                 alt={currentImage?.title || ''}
                 rotation={0}
+                hideSkeleton={isReplacing || isDeleting}
               />
               {(isReplacing || isDeleting) && (
                 <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] z-30 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200 select-none">

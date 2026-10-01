@@ -56,30 +56,24 @@ export function ErrorPage({
   const getCleanedMessage = () => {
     if (!error?.message) return t('description');
 
-    let cleanMsg = error.message;
+    // In production, Next.js masks server component errors with digest / internal URLs
+    if (error.digest && process.env.NODE_ENV === 'production') {
+      return t('description');
+    }
+
+    let cleanMsg = error.message.trim();
     if (cleanMsg.includes(':')) {
       const parts = cleanMsg.split(':');
       cleanMsg = parts.slice(1).join(':').trim();
     }
 
-    const lower = cleanMsg.toLowerCase();
-    if (
-      lower.includes('timeout') ||
-      lower.includes('fetch failed') ||
-      lower.includes('failed to fetch') ||
-      lower.includes('network error') ||
-      lower.includes('econnrefused') ||
-      lower.includes('something went wrong') ||
-      lower.includes('unexpected error') ||
-      lower.includes('internal server error') ||
-      lower.includes('failed to load') ||
-      lower.includes('unknown error') ||
-      lower.includes('error occurred') ||
-      lower.includes('कुछ गलत') ||
-      lower.includes('काहीतरी चूक')
-    ) {
+    // Dynamic pattern identifying internal framework noise, URLs, stack traces, network codes, or minified links
+    const TECHNICAL_ERROR_PATTERN = /(?:https?:\/\/|\/\/|react\.dev|webpack|digest|econnrefused|failed to fetch|fetch failed|timeout|internal server error|something went wrong|unexpected error|unknown error|कुछ गलत|काहीतरी चूक)/i;
+
+    if (!cleanMsg || TECHNICAL_ERROR_PATTERN.test(cleanMsg) || /^[/{<[]/.test(cleanMsg)) {
       return t('description');
     }
+
     return cleanMsg;
   };
 

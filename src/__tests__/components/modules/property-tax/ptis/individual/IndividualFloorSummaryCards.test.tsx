@@ -112,7 +112,11 @@ const mockComparisonData = {
 } as unknown as PropertyComparisonResponse;
 
 describe('IndividualFloorSummaryCards', () => {
-  it('renders summary cards with default rateable valuation mode', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders summary cards with default rateable valuation mode including ALV', () => {
     render(
       <IndividualFloorSummaryCards
         rateableData={mockRateableData}
@@ -133,7 +137,7 @@ describe('IndividualFloorSummaryCards', () => {
     expect(screen.getByText('2 Updated')).toBeInTheDocument();
   });
 
-  it('renders summary cards with capital valuation mode', () => {
+  it('hides ALV card when taxMode is capital valuation mode', () => {
     render(
       <IndividualFloorSummaryCards
         taxMode="capital"
@@ -142,10 +146,14 @@ describe('IndividualFloorSummaryCards', () => {
       />
     );
 
+    expect(screen.getByText('AREA')).toBeInTheDocument();
+    expect(screen.getByText('CHANGES OF USE')).toBeInTheDocument();
+    expect(screen.queryByText('ALV')).not.toBeInTheDocument();
     expect(screen.getByText('CAPITAL VALUE (CV)')).toBeInTheDocument();
+    expect(screen.getByText('TAX (CURRENT)')).toBeInTheDocument();
+
     expect(screen.getByText('₹55,00,000')).toBeInTheDocument();
     expect(screen.getByText('₹32,500')).toBeInTheDocument();
-    expect(screen.getByText('CVM')).toBeInTheDocument();
   });
 
   it('renders summary cards with dual method mode', () => {
@@ -159,6 +167,7 @@ describe('IndividualFloorSummaryCards', () => {
       />
     );
 
+    expect(screen.getByText('ALV')).toBeInTheDocument();
     expect(screen.getByText('RV vs CV')).toBeInTheDocument();
     expect(screen.getByText('TAX (RETAINED)')).toBeInTheDocument();
     expect(screen.getByText('RV / CVM')).toBeInTheDocument();

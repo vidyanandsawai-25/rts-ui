@@ -1,4 +1,7 @@
+import 'server-only';
+
 import { getAppConfig } from '@/config/app.config';
+import { apiClient } from '@/services/api.service';
 import { serverFetch } from '@/lib/utils/server-fetch';
 import { getAuthHeaders } from '@/lib/utils/server-auth-headers';
 import { buildDocumentUploadFormData } from '@/lib/utils/document-utils';
@@ -36,85 +39,69 @@ export async function uploadDocument(file: File, params?: DocumentUploadParams):
 }
 
 export async function deleteDocument(documentGuid: string): Promise<ApiResponse<void>> {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/documents/${encodeURIComponent(documentGuid)}`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'DELETE', headers, cache: 'no-store' });
-  if (!response.ok) {
-    const text = await response.text();
-    return { success: false, error: text || `Delete failed with status ${response.status}`, statusCode: response.status };
-  }
-  return { success: true };
+  return apiClient.delete<void>(`/documents/${encodeURIComponent(documentGuid)}`);
 }
 
 export async function getDocumentDetails(documentGuid: string): Promise<ApiResponse<DocumentDto>> {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/documents/${encodeURIComponent(documentGuid)}`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'GET', headers, cache: 'no-store' });
-  if (!response.ok) return { success: false, error: `Failed with status ${response.status}`, statusCode: response.status };
-  const data = await response.json();
-  const unwrapped = (data && typeof data === 'object' && ('items' in data || 'data' in data))
-    ? ((data as Record<string, unknown>).items ?? (data as Record<string, unknown>).data ?? data)
-    : data;
-  return { success: true, data: unwrapped as DocumentDto };
+  const response = await apiClient.get<DocumentDto | { items?: DocumentDto; data?: DocumentDto }>(
+    `/documents/${encodeURIComponent(documentGuid)}`,
+    { cache: 'no-store' }
+  );
+  if (!response.success) return { success: false, error: response.error, statusCode: response.statusCode };
+  const rawData = response.data;
+  const unwrapped = (rawData && typeof rawData === 'object' && ('items' in rawData || 'data' in rawData))
+    ? ((rawData as Record<string, unknown>).items ?? (rawData as Record<string, unknown>).data ?? rawData)
+    : rawData;
+  return { success: true, data: unwrapped as DocumentDto, statusCode: response.statusCode };
 }
 
 export async function getDocumentByBinding(bindingId: number): Promise<ApiResponse<DocumentDto>> {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/documents/by-binding/${bindingId}`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'GET', headers, cache: 'no-store' });
-  if (!response.ok) return { success: false, error: `Failed with status ${response.status}`, statusCode: response.status };
-  const data = await response.json();
-  const unwrapped = (data && typeof data === 'object' && ('items' in data || 'data' in data))
-    ? ((data as Record<string, unknown>).items ?? (data as Record<string, unknown>).data ?? data)
-    : data;
-  return { success: true, data: unwrapped as DocumentDto };
+  const response = await apiClient.get<DocumentDto | { items?: DocumentDto; data?: DocumentDto }>(
+    `/documents/by-binding/${bindingId}`,
+    { cache: 'no-store' }
+  );
+  if (!response.success) return { success: false, error: response.error, statusCode: response.statusCode };
+  const rawData = response.data;
+  const unwrapped = (rawData && typeof rawData === 'object' && ('items' in rawData || 'data' in rawData))
+    ? ((rawData as Record<string, unknown>).items ?? (rawData as Record<string, unknown>).data ?? rawData)
+    : rawData;
+  return { success: true, data: unwrapped as DocumentDto, statusCode: response.statusCode };
 }
 
 export async function getDocumentByReference(params: DocumentReferenceQuery): Promise<ApiResponse<DocumentDto>> {
-  const baseUrl = getBaseUrl();
   const query = new URLSearchParams({
     departmentId: String(params.departmentId),
     moduleId: String(params.moduleId),
     referenceTableName: params.referenceTableName,
     referenceTableId: String(params.referenceTableId),
   }).toString();
-  const url = `${baseUrl}/documents/by-reference?${query}`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'GET', headers, cache: 'no-store' });
-  if (!response.ok) return { success: false, error: `Failed with status ${response.status}`, statusCode: response.status };
-  const data = await response.json();
-  const unwrapped = (data && typeof data === 'object' && ('items' in data || 'data' in data))
-    ? ((data as Record<string, unknown>).items ?? (data as Record<string, unknown>).data ?? data)
-    : data;
-  return { success: true, data: unwrapped as DocumentDto };
+  const response = await apiClient.get<DocumentDto | { items?: DocumentDto; data?: DocumentDto }>(
+    `/documents/by-reference?${query}`,
+    { cache: 'no-store' }
+  );
+  if (!response.success) return { success: false, error: response.error, statusCode: response.statusCode };
+  const rawData = response.data;
+  const unwrapped = (rawData && typeof rawData === 'object' && ('items' in rawData || 'data' in rawData))
+    ? ((rawData as Record<string, unknown>).items ?? (rawData as Record<string, unknown>).data ?? rawData)
+    : rawData;
+  return { success: true, data: unwrapped as DocumentDto, statusCode: response.statusCode };
 }
 
 export async function getDocumentMetadata(documentGuid: string): Promise<ApiResponse<DocumentMetadataDto>> {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/documents/${encodeURIComponent(documentGuid)}/metadata`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'GET', headers, cache: 'no-store' });
-  if (!response.ok) return { success: false, error: `Failed with status ${response.status}`, statusCode: response.status };
-  const data = await response.json();
-  const unwrapped = (data && typeof data === 'object' && ('items' in data || 'data' in data))
-    ? ((data as Record<string, unknown>).items ?? (data as Record<string, unknown>).data ?? data)
-    : data;
-  return { success: true, data: unwrapped as DocumentMetadataDto };
+  const response = await apiClient.get<DocumentMetadataDto | { items?: DocumentMetadataDto; data?: DocumentMetadataDto }>(
+    `/documents/${encodeURIComponent(documentGuid)}/metadata`,
+    { cache: 'no-store' }
+  );
+  if (!response.success) return { success: false, error: response.error, statusCode: response.statusCode };
+  const rawData = response.data;
+  const unwrapped = (rawData && typeof rawData === 'object' && ('items' in rawData || 'data' in rawData))
+    ? ((rawData as Record<string, unknown>).items ?? (rawData as Record<string, unknown>).data ?? rawData)
+    : rawData;
+  return { success: true, data: unwrapped as DocumentMetadataDto, statusCode: response.statusCode };
 }
 
 export async function updateBindingReference(bindingId: number, refTableId: number): Promise<ApiResponse<void>> {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/documents/binding/${bindingId}/reference/${refTableId}`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'PUT', headers, cache: 'no-store' });
-  if (!response.ok) {
-    const text = await response.text();
-    return { success: false, error: text || `Failed with status ${response.status}`, statusCode: response.status };
-  }
-  return { success: true };
+  return apiClient.put<void>(`/documents/binding/${bindingId}/reference/${refTableId}`);
 }
 
 export async function getDocument(documentGuid: string, action: 'view' | 'download') {

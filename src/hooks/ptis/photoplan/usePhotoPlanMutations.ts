@@ -59,21 +59,33 @@ export function usePhotoPlanMutations({
     else { setSelectedImageIndex?.(idx); setViewMode?.(mode); }
   }, [setViewerIndexAndMode, setSelectedImageIndex, setViewMode]);
 
-  const refreshAfterMediaMutation = useCallback((photoTypeCode?: string, categoryName?: string) => {
-    if (typeof window === 'undefined') return;
-    propertyMediaCache.invalidateProperty(propertyId, societyId);
-    window.dispatchEvent(
-      new CustomEvent('ptis:media-updated', {
-        detail: {
-          propertyId,
-          societyDetailId: societyId,
-          societyId,
-          photoTypeCode,
-          category: categoryName,
-        },
-      })
-    );
-  }, [propertyId, societyId]);
+  const refreshAfterMediaMutation = useCallback(
+    (
+      photoTypeCode?: string,
+      categoryName?: string,
+      isDeleted?: boolean,
+      newPrimaryDocGuid?: string,
+      newPrimaryPhotoUrl?: string
+    ) => {
+      if (typeof window === 'undefined') return;
+      propertyMediaCache.invalidateProperty(propertyId, societyId);
+      window.dispatchEvent(
+        new CustomEvent('ptis:media-updated', {
+          detail: {
+            propertyId,
+            societyDetailId: societyId,
+            societyId,
+            photoTypeCode,
+            category: categoryName,
+            isDeleted: Boolean(isDeleted),
+            documentGuid: isDeleted ? null : (newPrimaryDocGuid || undefined),
+            photoUrl: isDeleted ? null : (newPrimaryPhotoUrl || undefined),
+          },
+        })
+      );
+    },
+    [propertyId, societyId]
+  );
 
   const activeCategory = categories[selectedCategoryIndex];
 

@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Home, Building2, UserCheck, Percent, BarChart3, TrendingUp, Scale, ShieldCheck, Scaling, Ruler } from 'lucide-react';
+import { cn } from '@/lib/utils/cn';
 import type { RateableValueResponse } from '@/types/rateableValue.types';
 import type { CapitalValueResponse, CapitalValueItem } from '@/types/capitalValue.types';
 import type { DualMethodResponse } from '@/types/dualMethod.types';
@@ -17,6 +18,7 @@ export interface IndividualFloorSummaryCardsProps {
   comparisonData?: PropertyComparisonResponse | null;
   oldDetailsData?: OldDetailsData | null;
   taxMode?: PtisTaxMode;
+  className?: string;
 }
 
 export const IndividualFloorSummaryCards: React.FC<IndividualFloorSummaryCardsProps> = ({
@@ -26,6 +28,7 @@ export const IndividualFloorSummaryCards: React.FC<IndividualFloorSummaryCardsPr
   comparisonData,
   oldDetailsData,
   taxMode = 'rateable',
+  className,
 }) => {
   const isCapitalMode = taxMode === 'capital';
   const isDualMode = taxMode === 'dual';
@@ -197,7 +200,13 @@ export const IndividualFloorSummaryCards: React.FC<IndividualFloorSummaryCardsPr
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 my-0 select-none w-full items-stretch">
+    <div
+      className={cn(
+        'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 my-0 select-none w-full items-stretch',
+        isCapitalMode ? 'lg:grid-cols-4' : 'lg:grid-cols-5',
+        className
+      )}
+    >
       {/* Card 1: AREA */}
       <div className="bg-white rounded-lg border border-blue-400 border-t-[2.5px] border-t-blue-700 p-2 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between min-w-0 w-full h-full">
         <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0">
@@ -260,36 +269,38 @@ export const IndividualFloorSummaryCards: React.FC<IndividualFloorSummaryCardsPr
         </div>
       </div>
 
-      {/* Card 3: ALV */}
-      <div className="bg-white rounded-lg border border-blue-400 border-t-[2.5px] border-t-blue-700 p-2 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between min-w-0 w-full h-full">
-        <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0">
-          <span className="text-[10px] font-black text-blue-900 tracking-wider uppercase truncate">
-            {t('alv')}
-          </span>
-          <Building2 className="w-3 h-3 text-amber-600 shrink-0" />
-        </div>
-
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-6 h-6 rounded-md border border-emerald-300 bg-emerald-50/80 flex items-center justify-center shrink-0">
-            <Building2 className="w-3 h-3 text-emerald-600" />
+      {/* Card 3: ALV (Hidden on Capital Value Method) */}
+      {!isCapitalMode && (
+        <div className="bg-white rounded-lg border border-blue-400 border-t-[2.5px] border-t-blue-700 p-2 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between min-w-0 w-full h-full">
+          <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0">
+            <span className="text-[10px] font-black text-blue-900 tracking-wider uppercase truncate">
+              {t('alv')}
+            </span>
+            <Building2 className="w-3 h-3 text-amber-600 shrink-0" />
           </div>
 
-          <div className="flex flex-col min-w-0 leading-none space-y-0.5">
-            <span className="text-[9.5px] font-bold text-slate-500 truncate">
-              {t('old')} <span className="font-extrabold text-slate-800">{formatRupee(oldAlv, hasCompAlv || Boolean(oldDetailsData?.oldALV))}</span>
-            </span>
-            <span className="text-[9.5px] font-bold text-slate-500 truncate">
-              {t('new')} <span className="font-black text-slate-900">{isCapitalMode ? '-' : formatRupee(newAlv, hasCompAlv || Boolean(newAlv > 0 || rateableData != null))}</span>
-            </span>
-            <div className="pt-0.5">
-              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none max-w-full truncate">
-                <BarChart3 className="w-2 h-2 text-emerald-600 shrink-0" />
-                <span className="truncate">{isCapitalMode ? t('cvm') : formattedAlvDelta}</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-6 h-6 rounded-md border border-emerald-300 bg-emerald-50/80 flex items-center justify-center shrink-0">
+              <Building2 className="w-3 h-3 text-emerald-600" />
+            </div>
+
+            <div className="flex flex-col min-w-0 leading-none space-y-0.5">
+              <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                {t('old')} <span className="font-extrabold text-slate-800">{formatRupee(oldAlv, hasCompAlv || Boolean(oldDetailsData?.oldALV))}</span>
               </span>
+              <span className="text-[9.5px] font-bold text-slate-500 truncate">
+                {t('new')} <span className="font-black text-slate-900">{formatRupee(newAlv, hasCompAlv || Boolean(newAlv > 0 || rateableData != null))}</span>
+              </span>
+              <div className="pt-0.5">
+                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8.5px] font-extrabold bg-emerald-100/70 text-emerald-700 border border-emerald-300/80 leading-none max-w-full truncate">
+                  <BarChart3 className="w-2 h-2 text-emerald-600 shrink-0" />
+                  <span className="truncate">{formattedAlvDelta}</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Card 4: RATEABLE / CAPITAL / DUAL */}
       <div className="bg-white rounded-lg border border-blue-400 border-t-[2.5px] border-t-blue-700 p-2 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between min-w-0 w-full h-full">

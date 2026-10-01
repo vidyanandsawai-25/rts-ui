@@ -10,6 +10,7 @@ import { useConfirm } from '@/components/common';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import { type WaybackRelease, WAYBACK_STATIC_TILE_URL, DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
 import { latLngToTile, extractCoordinates } from '@/lib/utils/coordinate-utils';
+import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 import { PhotoPlanDrawer } from './PhotoPlanDrawer';
 import { PropertyMediaPanelContent } from './PropertyMediaPanelContent';
 import { PropertyMediaPanelSkeleton } from './PropertyMediaPanelSkeleton';
@@ -306,6 +307,17 @@ function PropertyMediaPanel({
     prevPropertyIdRef.current = effectiveId;
   }, [effectiveId, isDrawerOpen, closeDrawer]);
 
+  const [deletedDocGuids, setDeletedDocGuids] = useState<Set<string>>(() => new Set());
+
+  const effectiveSocietyBuildingPhotoGuid =
+    societyBuildingPhotoGuid && !deletedDocGuids.has(societyBuildingPhotoGuid)
+      ? societyBuildingPhotoGuid
+      : undefined;
+  const effectiveSocietyPhotoUrl =
+    effectiveSocietyBuildingPhotoGuid
+      ? (societyPhotoUrl || getViewDocumentUrl(effectiveSocietyBuildingPhotoGuid))
+      : undefined;
+
   const {
     hoverPreview,
     resetHoverPreview,
@@ -349,8 +361,8 @@ function PropertyMediaPanel({
     partitionNo: effectivePartitionNo,
     entityType: resolvedEntityType,
     isAmenity: isAmenityFlag,
-    societyPhotoFallbackGuid: societyBuildingPhotoGuid,
-    societyPhotoFallbackUrl: societyPhotoUrl,
+    societyPhotoFallbackGuid: effectiveSocietyBuildingPhotoGuid,
+    societyPhotoFallbackUrl: effectiveSocietyPhotoUrl,
     societyLatitude,
     societyLongitude,
     isQuickDataEntry,
@@ -386,9 +398,24 @@ function PropertyMediaPanel({
     if (typeof window === 'undefined') return;
 
     const handleMediaUpdated = async (event: Event) => {
-      const customEvent = event as CustomEvent<{ propertyId?: number }>;
+      const customEvent = event as CustomEvent<{
+        propertyId?: number;
+        isDeleted?: boolean;
+        deleted?: boolean;
+        documentGuid?: string | null;
+        photoTypeCode?: string;
+      }>;
       const updatedPropId = customEvent.detail?.propertyId;
       if (updatedPropId && effectiveId && updatedPropId !== effectiveId) return;
+
+      if (customEvent.detail?.isDeleted || customEvent.detail?.deleted) {
+        if (customEvent.detail?.documentGuid) {
+          setDeletedDocGuids((prev) => new Set([...prev, customEvent.detail!.documentGuid!]));
+        }
+        if (societyBuildingPhotoGuid && customEvent.detail?.photoTypeCode?.toUpperCase().includes('SOCIETY')) {
+          setDeletedDocGuids((prev) => new Set([...prev, societyBuildingPhotoGuid]));
+        }
+      }
 
       if (effectiveId && effectiveId > 0) {
         try {
@@ -417,8 +444,9 @@ function PropertyMediaPanel({
           const sRes = slotsRes as { success: boolean; data?: PropertyPhotoTypeWithStatusDto[] };
           const pRes = photosRes as { success: boolean; data?: PropertyPhotoDto[] };
 
+          let fetchedPhotos: PropertyPhotoDto[] = [];
           if (pRes?.success && Array.isArray(pRes.data)) {
-            const fetchedPhotos = [...pRes.data];
+            fetchedPhotos = [...pRes.data];
             const wPhotosRes = wingPhotosRes as { success: boolean; data?: Record<string, unknown>[] } | undefined;
             if (wPhotosRes?.success && Array.isArray(wPhotosRes.data)) {
               const mappedWingPhotos = wPhotosRes.data.map((wp: Record<string, unknown>) => ({
@@ -551,6 +579,35 @@ function PropertyMediaPanel({
                 }
               });
             }
+
+            // Sync slot hasPhoto with fetchedPhotos to avoid stale status when photos are deleted
+            fetchedSlots.forEach((slot, idx) => {
+              const matchingPhotos = fetchedPhotos.filter(
+                (p) =>
+                  (p.photoTypeId && slot.photoTypeId && Number(p.photoTypeId) === Number(slot.photoTypeId)) ||
+                  (p.photoTypeCode && slot.photoTypeCode && p.photoTypeCode.toUpperCase() === slot.photoTypeCode.toUpperCase())
+              );
+              if (matchingPhotos.length === 0) {
+                fetchedSlots[idx] = {
+                  ...slot,
+                  hasPhoto: false,
+                  photoCount: 0,
+                  documentGuid: undefined,
+                  viewUrl: undefined,
+                  propertyPhotoId: undefined,
+                };
+              } else {
+                fetchedSlots[idx] = {
+                  ...slot,
+                  hasPhoto: true,
+                  photoCount: matchingPhotos.length,
+                  documentGuid: matchingPhotos[0].documentGuid || slot.documentGuid,
+                  viewUrl: matchingPhotos[0].viewUrl || slot.viewUrl,
+                  propertyPhotoId: matchingPhotos[0].propertyPhotoId || slot.propertyPhotoId,
+                };
+              }
+            });
+
             onPhotoSlotsChange?.(fetchedSlots);
           }
         } catch {
@@ -561,25 +618,33 @@ function PropertyMediaPanel({
 
     window.addEventListener('ptis:media-updated', handleMediaUpdated);
     return () => window.removeEventListener('ptis:media-updated', handleMediaUpdated);
-  }, [effectiveId, effectiveWingDetailId, resolvedSocietyDetailId, setPhotos, onPhotosChange, onPhotoSlotsChange]);
+  }, [effectiveId, effectiveWingDetailId, resolvedSocietyDetailId, setPhotos, onPhotosChange, onPhotoSlotsChange, societyBuildingPhotoGuid]);
 
-  // Keep PropertyMasterCard thumbnail synchronized with the loaded society / property photo
+  // Keep PropertyMasterCard / IndividualPropertyMasterCard thumbnail synchronized with the loaded society / property front photo
   useEffect(() => {
     // In apartment society view (main property), only sync when society photo is available.
-    // When viewing an individual unit, sync the unit's property photo.
-    const photoToSync = effectiveIsMainProperty ? societyPhoto : (propertyPhoto || societyPhoto);
-    const syncCategory = effectiveIsMainProperty ? 'Society Place Photo' : (propertyPhotoCategory?.photoTypeName || 'Property Front Photo');
-    const syncCode = effectiveIsMainProperty ? (societyPhotoCategory?.photoTypeCode || 'SOCIETY_PLACE') : (propertyPhotoCategory?.photoTypeCode || 'PROPERTY_FRONT');
+    // When viewing an individual property or apartment unit, sync ONLY the unit's front photo.
+    const photoToSync = effectiveIsMainProperty ? societyPhoto : propertyPhoto;
+    const syncCategory = effectiveIsMainProperty
+      ? (societyPhotoCategory?.photoTypeName || 'Society Place Photo')
+      : (propertyPhotoCategory?.photoTypeName || 'Property Front Photo');
+    const syncCode = effectiveIsMainProperty
+      ? (societyPhotoCategory?.photoTypeCode || 'SOCIETY_PLACE')
+      : (propertyPhotoCategory?.photoTypeCode || 'PROPERTY_FRONT');
 
-    if (typeof window !== 'undefined' && photoToSync && (photoToSync.documentGuid || photoToSync.src)) {
+    if (typeof window !== 'undefined') {
+      const docGuid = photoToSync?.documentGuid ? String(photoToSync.documentGuid) : undefined;
+      const pUrl = photoToSync?.src || photoToSync?.fullSrc || (docGuid ? getViewDocumentUrl(docGuid) : undefined);
+
       window.dispatchEvent(
         new CustomEvent('ptis:sync-thumbnail', {
           detail: {
             propertyId: effectiveId,
-            documentGuid: photoToSync.documentGuid,
-            photoUrl: photoToSync.src || photoToSync.fullSrc,
+            documentGuid: docGuid,
+            photoUrl: pUrl,
             category: syncCategory,
             photoTypeCode: syncCode,
+            hasPhoto: Boolean(docGuid || pUrl),
           },
         })
       );

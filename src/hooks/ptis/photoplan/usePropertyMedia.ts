@@ -19,7 +19,11 @@ import {
 import { useImageHoverPreview } from './useImageHoverPreview';
 import { type WaybackRelease, DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
 import { extractCoordinates, getSatelliteTileUrl } from '@/lib/utils/coordinate-utils';
-import { getViewDocumentUrl } from '@/lib/utils/document-utils';
+import {
+  isPropertyFrontPhoto,
+  isSocietyPhoto,
+  getSocietyPhotoPriority,
+} from '@/lib/utils/ptis-photo-match.utils';
 
 export interface UsePropertyMediaProps {
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
@@ -83,6 +87,27 @@ export function usePropertyMedia({
   const [photoSlots, setPhotoSlots] = useState<PropertyPhotoTypeWithStatusDto[]>(initialPhotoSlots);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
 
+  const [activeWingParams, setActiveWingParams] = useState<{
+    wingId: number | null;
+    wingDetailId: number | null;
+    societyId: number | null;
+    wingName?: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    const handleParamsChange = (e: Event) => {
+      const detail = (e as CustomEvent<Record<string, string | null>>).detail;
+      if (!detail) return;
+      const wId = detail.wingId ? Number(detail.wingId) : null;
+      const wdId = detail.wingDetailId ? Number(detail.wingDetailId) : null;
+      const sId = (detail.societyDetailId || detail.societyId) ? Number(detail.societyDetailId || detail.societyId) : null;
+      const wName = detail.wingName ? String(detail.wingName) : null;
+      setActiveWingParams({ wingId: wId, wingDetailId: wdId, societyId: sId, wingName: wName });
+    };
+    window.addEventListener('ptis:wing-params-changed', handleParamsChange);
+    return () => window.removeEventListener('ptis:wing-params-changed', handleParamsChange);
+  }, []);
+
   const searchParams = useSearchParams();
   const searchWingName = searchParams?.get('wingName') || searchParams?.get('wingname') || searchParams?.get('wingNo') || searchParams?.get('wingno');
   const selectedWingId = searchParams?.get('wingId');
@@ -90,32 +115,46 @@ export function usePropertyMedia({
     ? Number(searchParams?.get('wingDetailId') || searchParams?.get('wingdetailid'))
     : null;
 
+  const currentTargetWingDetailId =
+    activeWingParams?.wingDetailId !== undefined
+      ? activeWingParams.wingDetailId
+      : (propWingDetailId ?? rawWingDetailId);
+
+  const currentTargetWingId =
+    activeWingParams?.wingId !== undefined
+      ? activeWingParams.wingId
+      : (selectedWingId ? Number(selectedWingId) : null);
+
+  const currentTargetWingName =
+    activeWingParams?.wingName !== undefined
+      ? activeWingParams.wingName
+      : (propWingName ?? searchWingName);
+
   const matchedWing = useMemo(() => {
     return (_wings as { wingDetailId?: number; wingMasterId?: number; wingName?: string; wingNo?: string }[] | undefined)?.find(
       (w) =>
-        (propWingDetailId && w.wingDetailId === propWingDetailId) ||
-        (rawWingDetailId && w.wingDetailId === rawWingDetailId) ||
-        (selectedWingId && String(w.wingMasterId) === selectedWingId) ||
-        (searchWingName && (
-          (w.wingName && w.wingName.toLowerCase() === searchWingName.toLowerCase()) ||
-          (w.wingNo && w.wingNo.toLowerCase() === searchWingName.toLowerCase())
+        (currentTargetWingDetailId && w.wingDetailId === currentTargetWingDetailId) ||
+        (currentTargetWingId && w.wingMasterId === currentTargetWingId) ||
+        (currentTargetWingName && (
+          (w.wingName && w.wingName.toLowerCase() === currentTargetWingName.toLowerCase()) ||
+          (w.wingNo && w.wingNo.toLowerCase() === currentTargetWingName.toLowerCase()) ||
+          (w.wingName && w.wingName.toLowerCase() === `wing ${currentTargetWingName.toLowerCase()}`) ||
+          (w.wingName && w.wingName.toLowerCase() === `${currentTargetWingName.toLowerCase()} wing`)
         ))
     );
-  }, [_wings, selectedWingId, rawWingDetailId, propWingDetailId, searchWingName]);
+  }, [_wings, currentTargetWingDetailId, currentTargetWingId, currentTargetWingName]);
 
   const wingsList = _wings as { wingName?: string; wingNo?: string; wingDetailId?: number }[] | undefined;
   const firstWing = wingsList && wingsList.length > 0 ? wingsList[0] : undefined;
   const resolvedWingDetailId =
-    propWingDetailId ??
+    currentTargetWingDetailId ??
     matchedWing?.wingDetailId ??
-    rawWingDetailId ??
     (firstWing?.wingDetailId ?? null);
 
   const selectedWingName =
-    (propWingName && propWingName.trim()) ||
+    (currentTargetWingName && currentTargetWingName.trim()) ||
     (matchedWing?.wingName && matchedWing.wingName.trim()) ||
     (matchedWing?.wingNo ? `${matchedWing.wingNo} Wing` : '') ||
-    (searchWingName && searchWingName.trim()) ||
     (firstWing ? (firstWing.wingName || (firstWing.wingNo ? `${firstWing.wingNo} Wing` : '')) : undefined);
 
   const prevPropertyIdRef = useRef(propertyId);
@@ -293,8 +332,9 @@ export function usePropertyMedia({
           ...slot,
           hasPhoto: hasAnyPhoto,
           photoCount: catPhotos.length,
-          propertyPhotoId: firstPhoto?.propertyPhotoId,
-          viewUrl: firstPhoto?.viewUrl,
+          propertyPhotoId: hasAnyPhoto ? firstPhoto?.propertyPhotoId : undefined,
+          viewUrl: hasAnyPhoto ? firstPhoto?.viewUrl : undefined,
+          documentGuid: hasAnyPhoto ? firstPhoto?.documentGuid : undefined,
         };
       });
       setPhotoSlots(updatedSlots);
@@ -343,23 +383,9 @@ export function usePropertyMedia({
     [categories]
   );
 
-  // For propertyPhotoCategory, exclude plan categories to avoid matching PROPERTY_PLAN via includes('PROPERTY')
+  // For propertyPhotoCategory, strictly map property front photo
   const propertyPhotoCategory = useMemo(() => {
-    const planCodes = ['PROPERTY_PLAN', 'PHOTO_PLAN', 'PLAN', 'DRAW_PLAN'];
-    const amenityCodes = ['AMENITY_PHOTO', 'AMENITY'];
-    const excluded = new Set([...planCodes, ...amenityCodes]);
-
-    // Find a property photo category that is NOT a plan or amenity type
-    const match = categories.find(c => {
-      const code = c.photoTypeCode?.toUpperCase() || '';
-      if (excluded.has(code)) return false;
-      return code === 'PROPERTY_PHOTO' || code === 'PROPERTY';
-    });
-
-    if (match) return match;
-
-    // Fallback to front/building
-    return findCategory(categories, ['FRONT', 'BUILDING_PHOTO', 'BUILDING'], ['front', 'building']);
+    return categories.find((c) => isPropertyFrontPhoto(c.photoTypeCode, c.photoTypeName));
   }, [categories]);
 
   const amenityPhotoCategory = useMemo(
@@ -439,47 +465,17 @@ export function usePropertyMedia({
     });
   }, [categories, propertyPhoto, photoPlanPhoto]);
 
-  const societyPhotoCategory = useMemo(
-    () =>
-      findCategory(
-        categories,
-        ['SOCIETY_PLACE', 'SOCIETY_PLACE_PHOTO'],
-        ['society place photo', 'society place']
-      ) ||
-      findCategory(
-        categories,
-        ['SOCIETY_BUILDING', 'SOCIETY_PHOTO'],
-        ['society photo', 'society building']
-      ) ||
-      categories.find((c) => {
-        const code = c.photoTypeCode?.toUpperCase() || '';
-        const name = c.photoTypeName?.toLowerCase() || '';
-        if (code.includes('BOARD') || name.includes('board') || code.includes('SIGN') || name.includes('sign')) {
-          return false;
-        }
-        return code === 'SOCIETY' || name === 'society';
-      }),
-    [categories]
-  );
+  const societyPhotoCategory = useMemo(() => {
+    const validSocietyCats = categories.filter((c) => isSocietyPhoto(c.photoTypeCode, c.photoTypeName));
+    if (validSocietyCats.length === 0) return undefined;
+    return [...validSocietyCats].sort((a, b) => getSocietyPhotoPriority(a) - getSocietyPhotoPriority(b))[0];
+  }, [categories]);
   const societyPhoto = useMemo(() => {
     if (!isMainProperty || !societyPhotoCategory) return undefined;
     const fromCat = societyPhotoCategory?.images?.[0];
-    if (fromCat && (fromCat.src || fromCat.documentGuid)) return fromCat;
-    if (societyPhotoFallbackGuid || societyPhotoFallbackUrl) {
-      const url = societyPhotoFallbackUrl || (societyPhotoFallbackGuid ? getViewDocumentUrl(societyPhotoFallbackGuid) : '');
-      return {
-        src: url,
-        fullSrc: url,
-        alt: t('media.societyPhoto') || 'Society Photo',
-        title: t('media.societyPhoto') || 'Society Photo',
-        photoTypeId: societyPhotoCategory?.photoTypeId || 5,
-        photoTypeCode: societyPhotoCategory?.photoTypeCode || 'SOCIETY_PLACE',
-        documentGuid: societyPhotoFallbackGuid,
-        hasPhoto: true,
-      };
-    }
-    return fromCat;
-  }, [societyPhotoCategory, societyPhotoFallbackGuid, societyPhotoFallbackUrl, isMainProperty, t]);
+    if (fromCat && fromCat.hasPhoto && (fromCat.src || fromCat.documentGuid)) return fromCat;
+    return undefined;
+  }, [societyPhotoCategory, isMainProperty]);
 
   const wingPhotoCategory = useMemo(
     () => findCategory(categories, ['WING_BUILDING', 'WING_PHOTO', 'WING'], ['wing building', 'wing photo', 'wing']),

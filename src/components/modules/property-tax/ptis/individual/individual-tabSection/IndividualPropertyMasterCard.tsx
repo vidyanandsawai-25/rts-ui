@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Building2 } from 'lucide-react';
 import type { IndividualPropertyMasterData } from '@/types/property-tax/individual';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
+import { isPropertyFrontPhoto } from '@/lib/utils/ptis-photo-match.utils';
 import { DocumentViewerModal } from '@/components/common/DocumentViewerModal';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -33,32 +34,121 @@ export const IndividualPropertyMasterCard: React.FC<IndividualPropertyMasterCard
   isLoading = false,
 }) => {
   const t = useTranslations('individual');
+  const [masterData, setMasterData] = useState<IndividualPropertyMasterData | undefined>(data);
   const [isDocumentViewerOpen, setIsDocumentViewerOpen] = useState(false);
+  const [photoGuid, setPhotoGuid] = useState<string | undefined>(data?.societyBuildingPhotoGuid);
+  const [imageUrl, setImageUrl] = useState<string | undefined>(data?.imageUrl);
 
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const activePropertyId = propertyId || data?.propertyId;
+  const activePropertyId = propertyId || masterData?.propertyId || data?.propertyId;
 
   const effectiveWardNo = useMemo(() => {
     if (wardNo && wardNo !== '-') return wardNo;
+    if (masterData?.wardNo && masterData.wardNo !== '-') return masterData.wardNo;
     if (data?.wardNo && data.wardNo !== '-') return data.wardNo;
     return '-';
-  }, [wardNo, data?.wardNo]);
+  }, [wardNo, masterData?.wardNo, data?.wardNo]);
+
+  const [prevData, setPrevData] = useState(data);
+
+  if (data !== prevData) {
+    setPrevData(data);
+    setMasterData(data);
+    if (data?.propertyId !== prevData?.propertyId) {
+      setPhotoGuid(data?.societyBuildingPhotoGuid);
+      setImageUrl(data?.imageUrl);
+    }
+  }
+
+  useEffect(() => {
+    const handleTopSectionUpdated = (e: Event) => {
+      const updatedValues = (e as CustomEvent).detail?.updatedValues;
+      if (updatedValues) {
+        setMasterData((prev) => (prev ? { ...prev, ...updatedValues } : updatedValues));
+      }
+    };
+    window.addEventListener('ptis:individual-top-section-updated', handleTopSectionUpdated);
+    return () => window.removeEventListener('ptis:individual-top-section-updated', handleTopSectionUpdated);
+  }, []);
+
+  useEffect(() => {
+    const handleMediaUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const cat = customEvent.detail?.category || customEvent.detail?.photoCategory || customEvent.detail?.imageCategory;
+      const catCode = customEvent.detail?.photoTypeCode;
+
+      // Strictly filter: only accept Property Front Photo for individual/unit property master card
+      if (cat || catCode) {
+        if (!isPropertyFrontPhoto(catCode, cat)) {
+          return;
+        }
+      }
+
+      const docGuid = customEvent.detail?.documentGuid;
+      const pUrl = customEvent.detail?.photoUrl || customEvent.detail?.viewUrl;
+      const isDeleted = customEvent.detail?.isDeleted || customEvent.detail?.deleted || (!docGuid && !pUrl);
+
+      if (isDeleted || (!docGuid && !pUrl)) {
+        setPhotoGuid(undefined);
+        setImageUrl(undefined);
+        setMasterData((prev) =>
+          prev
+            ? {
+                ...prev,
+                societyBuildingPhotoGuid: undefined,
+                imageUrl: undefined,
+              }
+            : undefined
+        );
+      } else if (docGuid) {
+        const resolvedGuid = String(docGuid);
+        const resolvedUrl = pUrl || getViewDocumentUrl(resolvedGuid);
+        setPhotoGuid(resolvedGuid);
+        setImageUrl(resolvedUrl);
+        setMasterData((prev) =>
+          prev
+            ? {
+                ...prev,
+                societyBuildingPhotoGuid: resolvedGuid,
+                imageUrl: resolvedUrl,
+              }
+            : undefined
+        );
+      } else if (pUrl) {
+        setPhotoGuid(undefined);
+        setImageUrl(pUrl);
+        setMasterData((prev) =>
+          prev
+            ? {
+                ...prev,
+                societyBuildingPhotoGuid: undefined,
+                imageUrl: pUrl,
+              }
+            : undefined
+        );
+      }
+    };
+    window.addEventListener('ptis:sync-thumbnail', handleMediaUpdated);
+    window.addEventListener('ptis:media-updated', handleMediaUpdated);
+    return () => {
+      window.removeEventListener('ptis:sync-thumbnail', handleMediaUpdated);
+      window.removeEventListener('ptis:media-updated', handleMediaUpdated);
+    };
+  }, []);
 
   const currentData = useMemo<IndividualPropertyMasterData>(() => {
     const merged: IndividualPropertyMasterData = {
-      ...(data || {}),
+      ...(masterData || data || {}),
     };
     if (effectiveWardNo && effectiveWardNo !== '-' && merged.wardNo !== effectiveWardNo) {
       merged.wardNo = effectiveWardNo;
     }
     return merged;
-  }, [data, effectiveWardNo]);
+  }, [masterData, data, effectiveWardNo]);
 
-  const photoGuid = currentData?.societyBuildingPhotoGuid;
-  const imageUrl = currentData?.imageUrl;
   const photoUrl = imageUrl || (photoGuid ? getViewDocumentUrl(photoGuid) : '');
 
   const rawPropNo = currentData?.propertyNo || '-';

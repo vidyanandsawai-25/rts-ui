@@ -71,7 +71,7 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
     vi.clearAllMocks();
   });
 
-  it('renders "Wing B" on wing card when wingName="B" is selected without uploaded photo', () => {
+  it('renders "Wing B Photo" on wing card when wingName="B" is selected without uploaded photo', () => {
     render(
       <PropertyMediaPanelContent
         {...defaultProps}
@@ -80,10 +80,10 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
       />
     );
 
-    expect(screen.getByText('Wing B')).toBeInTheDocument();
+    expect(screen.getByText('Wing B Photo')).toBeInTheDocument();
   });
 
-  it('renders "Wing B" when wingName="Wing B" is passed', () => {
+  it('renders "Wing B Photo" when wingName="Wing B" is passed', () => {
     render(
       <PropertyMediaPanelContent
         {...defaultProps}
@@ -92,7 +92,7 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
       />
     );
 
-    expect(screen.getByText('Wing B')).toBeInTheDocument();
+    expect(screen.getByText('Wing B Photo')).toBeInTheDocument();
   });
 
   it('passes formatted wing title to handleImageHover on mouse enter', () => {
@@ -106,12 +106,12 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
       />
     );
 
-    const wingLabel = screen.getByText('Wing B');
+    const wingLabel = screen.getByText('Wing B Photo');
     // Find the card container
     const card = wingLabel.closest('div[class*="cursor-pointer"]');
     if (card) {
       fireEvent.mouseEnter(card);
-      expect(handleHover).toHaveBeenCalledWith('', 'Wing B');
+      expect(handleHover).toHaveBeenCalledWith('', 'Wing B Photo');
     }
   });
 
@@ -138,7 +138,7 @@ describe('PropertyMediaPanelContent - Wing Name Display', () => {
     );
 
     expect(screen.getByText('Society Photo')).toBeInTheDocument();
-    expect(screen.getByText('Wing Gana')).toBeInTheDocument();
+    expect(screen.getByText('Wing Gana Photo')).toBeInTheDocument();
   });
 
   it('renders dynamic slots in quick data entry mode and triggers openDrawer on card click', () => {

@@ -14,10 +14,12 @@ export const AreaDetailsFields = ({
     propertyData,
     isPlotCategory = false,
 }: AreaDetailsFieldsProps) => {
-    const formatAreaValue = (sqFeet: number | null | undefined, sqMeter: number | null | undefined) => {
+    const formatAreaValue = (sqFeet: number | string | null | undefined, sqMeter: number | string | null | undefined) => {
         if (sqFeet == null && sqMeter == null) return '';
-        const feetStr = sqFeet != null ? Number(sqFeet).toFixed(2) : '0.00';
-        const meterStr = sqMeter != null ? Number(sqMeter).toFixed(2) : '0.00';
+        const feetNum = Number(sqFeet);
+        const meterNum = Number(sqMeter);
+        const feetStr = sqFeet != null && !isNaN(feetNum) ? feetNum.toFixed(2) : '0.00';
+        const meterStr = sqMeter != null && !isNaN(meterNum) ? meterNum.toFixed(2) : '0.00';
         return `${feetStr} / ${meterStr}`;
     };
 

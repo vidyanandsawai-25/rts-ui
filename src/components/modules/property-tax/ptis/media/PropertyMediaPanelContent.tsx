@@ -61,7 +61,7 @@ export function PropertyMediaPanelContent({
   openDrawer,
   handleImageHover,
   handleImageLeave,
-  cancelImageLeave: _cancelImageLeave,
+  cancelImageLeave,
   hoverPreview,
   propertyPhoto,
   propertyPhotoCategory,
@@ -103,6 +103,8 @@ export function PropertyMediaPanelContent({
           src={hoverPreview?.src ?? ''}
           title={hoverPreview?.title ?? ''}
           visible={hoverPreview !== null}
+          onMouseEnter={cancelImageLeave}
+          onMouseLeave={handleImageLeave}
         />
         <div className="flex-1 min-h-0 h-full overflow-y-auto p-2 flex flex-col gap-2 scrollbar-thin">
           {categories.map((cat, idx) => {
@@ -139,7 +141,7 @@ export function PropertyMediaPanelContent({
   const hasPropertySlot = categories.some((c) => !c.isCustom && (c.photoTypeCode?.startsWith('PROPERTY_') || c.photoTypeCode === 'FRONT'));
 
   const wingCardLabel = formatWingCardLabel(
-    t('media.wingPhoto') || 'Wing Photo',
+    wingPhotoCategory?.photoTypeName || t('media.wingPhoto') || 'Wing Photo',
     wingName
   );
 
@@ -169,6 +171,8 @@ export function PropertyMediaPanelContent({
         fallbackSrc={hoverPreview?.fallbackSrc}
         fallbackSrc2={hoverPreview?.fallbackSrc2}
         visible={hoverPreview !== null}
+        onMouseEnter={cancelImageLeave}
+        onMouseLeave={handleImageLeave}
       />
 
       <div className="flex-1 min-h-0 h-full overflow-y-auto p-2 flex flex-col sm:grid sm:grid-cols-3 lg:flex lg:flex-col gap-2 scrollbar-thin">

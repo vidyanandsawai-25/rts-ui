@@ -266,10 +266,10 @@ describe('IndividualTaxDetailsSection', () => {
     );
 
     expect(screen.getByText('CHANGES OF USE')).toBeInTheDocument();
+    expect(screen.queryByText('ALV')).not.toBeInTheDocument();
     expect(screen.getByText('CAPITAL VALUE (CV)')).toBeInTheDocument();
     expect(screen.getByText('₹55,00,000')).toBeInTheDocument();
     expect(screen.getByText('₹32,500')).toBeInTheDocument();
-    expect(screen.getByText('CVM')).toBeInTheDocument();
   });
 
   it('renders summary cards with dual method data in dual mode', () => {

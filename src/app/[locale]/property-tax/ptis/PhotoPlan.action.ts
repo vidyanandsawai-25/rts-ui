@@ -186,19 +186,20 @@ export async function deletePropertyPhotoAction(
 ): Promise<ActionResult<object>> {
   const t = await getTranslations({ locale: locale || 'en', namespace: 'ptis' });
   try {
-    if (!documentGuid) {
+    if (!documentGuid || typeof documentGuid !== 'string' || !documentGuid.trim()) {
       return { success: false, error: t('media.propertyPhotoIdRequired') || 'Valid Document GUID is required' };
     }
 
-    const result = await deleteDocument(documentGuid);
+    const cleanGuid = documentGuid.trim();
+    const result = await deleteDocument(cleanGuid);
 
-    if (result.success) {
+    if (result.success || result.statusCode === 404) {
       return { success: true, data: {}, message: t('media.photoDeletedSuccess') || 'Photo deleted successfully' };
     }
     if (result.statusCode === 403) {
       return { success: false, error: t('media.deletePermissionDenied') || 'You do not have permission to delete this photo' };
     }
-    return { success: false, error: result.error || t('media.failedToDelete') || 'Delete failed' };
+    return { success: false, error: result.error || t('media.failedToDelete') || 'Failed to delete photo' };
   } catch (error) {
     return {
       success: false,

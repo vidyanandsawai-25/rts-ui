@@ -141,6 +141,8 @@
     "existingPlanEditConfirm": "इस संपत्ति का पहले से एक प्लान है। क्या आप प्लान को संपादित करना चाहते हैं?",
     "photoDeletedSuccess": "फ़ोटो सफलतापूर्वक हटा दिया गया।",
     "failedToDelete": "फ़ोटो हटाने में विफल।",
+    "deletePermissionDenied": "आपके पास इस फ़ोटो को हटाने की अनुमति नहीं है।",
+    "unexpectedError": "एक अप्रत्याशित त्रुटि उत्पन्न हुई।",
     "photoReplacedSuccess": "फ़ोटो सफलतापूर्वक बदल दिया गया।",
     "failedToReplace": "फ़ोटो बदलने में विफल।",
     "fileRequired": "फ़ोटो फ़ाइल आवश्यक है।",

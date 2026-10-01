@@ -15,9 +15,10 @@ interface MainImageViewerProps {
   documentGuid?: string;
   alt: string;
   rotation: number;
+  hideSkeleton?: boolean;
 }
 
-export function MainImageViewer({ src, documentGuid, alt, rotation }: MainImageViewerProps): React.ReactElement {
+export function MainImageViewer({ src, documentGuid, alt, rotation, hideSkeleton = false }: MainImageViewerProps): React.ReactElement {
   const t = useTranslations('ptis');
   const [resolvedSrc, setResolvedSrc] = useState<string>('');
   const [hasError, setHasError] = useState(false);
@@ -103,8 +104,9 @@ export function MainImageViewer({ src, documentGuid, alt, rotation }: MainImageV
       style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
       className="relative flex items-center justify-center w-full h-full overflow-hidden select-none"
     >
+      {isLoading && !hasError && !hideSkeleton && !effectiveSrc && <ImageLoadingSkeleton />}
+
       <div style={rotateStyle} className="relative flex items-center justify-center w-full h-full pointer-events-none">
-        {isLoading && <ImageLoadingSkeleton />}
         {!hasError && effectiveSrc && (() => {
           const isTest = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
           const isDataOrBlob = effectiveSrc.startsWith('data:') || effectiveSrc.startsWith('blob:');

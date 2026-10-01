@@ -5,7 +5,6 @@ import type {
   WingWiseDetailsItems,
 } from '@/types/property-tax/apartment';
 import type { fetchPtisPageData } from '@/app/[locale]/property-tax/ptis/ptis-fetch.service';
-import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 
 export type PtisPageData = Awaited<ReturnType<typeof fetchPtisPageData>>;
 
@@ -19,27 +18,7 @@ export interface BuildMasterDataParams {
   initialApartmentTaxDetails?: unknown;
 }
 
-function isSocietyPhoto(code?: string, name?: string): boolean {
-  const c = (code || '').toUpperCase();
-  const n = (name || '').toUpperCase();
-  return c.includes('SOCIETY') || n.includes('SOCIETY') || c.includes('BUILDING') || n.includes('BUILDING');
-}
-
-function resolveSocietyPhoto(pageData: PtisPageData): { guid?: string; url?: string } {
-  const { initialPhotos, initialPhotoSlots } = pageData;
-  const photoList = (initialPhotos as Array<{ photoTypeCode?: string; photoTypeName?: string; documentGuid?: string | number; viewUrl?: string }> | undefined) || [];
-  const slotList = (initialPhotoSlots as Array<{ hasPhoto?: boolean; photoTypeCode?: string; photoTypeName?: string; documentGuid?: string | number; viewUrl?: string }> | undefined) || [];
-
-  const societyPhoto =
-    photoList.find((p) => isSocietyPhoto(p.photoTypeCode, p.photoTypeName)) ||
-    slotList.find((s) => Boolean(s.hasPhoto) && isSocietyPhoto(s.photoTypeCode, s.photoTypeName)) ||
-    photoList[0] ||
-    slotList.find((s) => Boolean(s.hasPhoto));
-
-  const guid = societyPhoto?.documentGuid ? String(societyPhoto.documentGuid) : undefined;
-  const url = guid ? getViewDocumentUrl(guid) : societyPhoto?.viewUrl || undefined;
-  return { guid, url };
-}
+import { resolveSocietyPhoto } from '@/lib/utils/ptis-photo-match.utils';
 
 export function buildInitialPropertyMasterData(
   params: BuildMasterDataParams
@@ -55,7 +34,10 @@ export function buildInitialPropertyMasterData(
   const rawTabHeader = tabHeaderInfo as unknown as Record<string, unknown>;
   const firstWingRaw = rawData?.wings?.[0] as unknown as Record<string, unknown> | undefined;
 
-  const { guid: photoGuid, url: photoUrl } = resolveSocietyPhoto(pageData);
+  const { guid: photoGuid, url: photoUrl } = resolveSocietyPhoto(
+    pageData.initialPhotos,
+    pageData.initialPhotoSlots
+  );
   const hasPhotosList = Array.isArray(pageData.initialPhotos) || Array.isArray(pageData.initialPhotoSlots);
   const effectivePhotoGuid = photoGuid || (!hasPhotosList ? baseData?.societyBuildingPhotoGuid : undefined);
   const effectivePhotoUrl = photoUrl || (!hasPhotosList ? baseData?.imageUrl : undefined);

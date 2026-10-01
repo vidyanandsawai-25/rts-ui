@@ -264,29 +264,25 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
     }
   }, [propertyId]);
 
-  useEffect(() => {
-    if (!areCategoriesEqual(categories, prevCategories)) {
-      Promise.resolve().then(() => {
-        const merged = mergeCategories(cachedCategories, categories);
-        const prevActiveCat = prevCategories[selectedCategoryIndex];
-        const nextActiveCat = merged[selectedCategoryIndex];
-        const prevCount = prevActiveCat?.images?.length ?? 0;
-        const nextCount = nextActiveCat?.images?.length ?? 0;
+  if (!areCategoriesEqual(categories, prevCategories)) {
+    const merged = mergeCategories(cachedCategories, categories);
+    const prevActiveCat = prevCategories[selectedCategoryIndex];
+    const nextActiveCat = merged[selectedCategoryIndex];
+    const prevCount = prevActiveCat?.images?.length ?? 0;
+    const nextCount = nextActiveCat?.images?.length ?? 0;
 
-        setPrevCategories(categories);
-        setCachedCategories(merged);
+    setPrevCategories(categories);
+    setCachedCategories(merged);
 
-        if (nextCount > prevCount && nextCount > 0) {
-          setSelectedImageIndexState(nextCount - 1);
-          setViewModeState('viewer');
-        } else if (selectedImageIndex !== null && nextCount > 0 && selectedImageIndex >= nextCount) {
-          setSelectedImageIndexState(nextCount - 1);
-        } else if (nextCount === 0) {
-          setSelectedImageIndexState(null);
-        }
-      });
+    if (nextCount > prevCount && nextCount > 0) {
+      setSelectedImageIndexState(nextCount - 1);
+      setViewModeState('viewer');
+    } else if (selectedImageIndex !== null && nextCount > 0 && selectedImageIndex >= nextCount) {
+      setSelectedImageIndexState(nextCount - 1);
+    } else if (nextCount === 0) {
+      setSelectedImageIndexState(null);
     }
-  }, [categories, prevCategories, cachedCategories, selectedCategoryIndex, selectedImageIndex]);
+  }
 
   const updateUrlParams = useCallback((newParams: Record<string, string | null>) => {
     if (typeof window === 'undefined') return;
@@ -326,28 +322,24 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
   }, [setSelectedImageIndexState, setViewModeState, selectedCategoryIndex, updateUrlParams]);
 
   const [prevInitialCategoryIndex, setPrevInitialCategoryIndex] = useState(initialCategoryIndex);
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (initialCategoryIndex !== prevInitialCategoryIndex) {
-      setPrevInitialCategoryIndex(initialCategoryIndex);
-      setSelectedCategoryIndexState(initialCategoryIndex);
-      const targetCat = categories[initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0];
-      const hasImages = targetCat?.images && targetCat.images.length > 0;
-      let targetIdx: number | null = hasImages ? targetCat.images.length - 1 : null;
-      let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION' ? (hasImages ? 'compare' : 'grid') : (hasImages ? 'viewer' : 'grid');
-      const selParam = typeof window !== 'undefined'
-        ? (new URLSearchParams(window.location.search).get('selectedImageIndex') ?? searchParams.get('selectedImageIndex'))
-        : searchParams.get('selectedImageIndex');
-      if (selParam !== null && !isNaN(parseInt(selParam, 10))) targetIdx = parseInt(selParam, 10);
-      const modeParam = typeof window !== 'undefined'
-        ? (new URLSearchParams(window.location.search).get('viewMode') ?? searchParams.get('viewMode'))
-        : searchParams.get('viewMode');
-      if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
-      setSelectedImageIndexState(targetIdx);
-      setViewModeState(targetMode);
-    }
-  }, [initialCategoryIndex, prevInitialCategoryIndex, categories, searchParams]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+  if (initialCategoryIndex !== prevInitialCategoryIndex) {
+    setPrevInitialCategoryIndex(initialCategoryIndex);
+    setSelectedCategoryIndexState(initialCategoryIndex);
+    const targetCat = categories[initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0];
+    const hasImages = targetCat?.images && targetCat.images.length > 0;
+    let targetIdx: number | null = hasImages ? targetCat.images.length - 1 : null;
+    let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION' ? (hasImages ? 'compare' : 'grid') : (hasImages ? 'viewer' : 'grid');
+    const selParam = typeof window !== 'undefined'
+      ? (new URLSearchParams(window.location.search).get('selectedImageIndex') ?? searchParams.get('selectedImageIndex'))
+      : searchParams.get('selectedImageIndex');
+    if (selParam !== null && !isNaN(parseInt(selParam, 10))) targetIdx = parseInt(selParam, 10);
+    const modeParam = typeof window !== 'undefined'
+      ? (new URLSearchParams(window.location.search).get('viewMode') ?? searchParams.get('viewMode'))
+      : searchParams.get('viewMode');
+    if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
+    setSelectedImageIndexState(targetIdx);
+    setViewModeState(targetMode);
+  }
 
   useEffect(() => {
     updateUrlParams({

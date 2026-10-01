@@ -5,8 +5,8 @@ import type {
   IndividualPerformanceData,
 } from '@/types/property-tax/individual';
 import type { fetchPtisPageData } from '@/app/[locale]/property-tax/ptis/ptis-fetch.service';
-import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 import { formatAadharNumber } from '@/lib/utils/format';
+import { resolvePropertyFrontPhoto } from '@/lib/utils/ptis-photo-match.utils';
 
 export type PtisPageData = Awaited<ReturnType<typeof fetchPtisPageData>>;
 
@@ -16,15 +16,6 @@ export interface BuildIndividualMasterDataParams {
   pageData: PtisPageData;
   wardNo?: string;
   propertyNo?: string;
-}
-
-interface PhotoItemLike {
-  photoTypeCode?: string;
-  photoTypeName?: string;
-  photoTypeId?: number;
-  documentGuid?: string | number;
-  viewUrl?: string;
-  hasPhoto?: boolean;
 }
 
 /**
@@ -41,32 +32,6 @@ function getSafeString(obj: unknown, key: string): string | undefined {
     return String(val);
   }
   return undefined;
-}
-
-function isPropertyFrontPhoto(code?: string, name?: string): boolean {
-  const c = (code || '').toUpperCase();
-  const n = (name || '').toUpperCase();
-  return c.includes('FRONT') || c.includes('PROPERTY') || n.includes('FRONT') || n.includes('PROPERTY');
-}
-
-/**
- * Resolves the primary photo document GUID and URL dynamically from PTIS page data.
- */
-function resolvePropertyPhoto(pageData: PtisPageData): { guid?: string; url?: string } {
-  const { initialPhotos, initialPhotoSlots } = pageData;
-  const photoList = (initialPhotos as PhotoItemLike[] | undefined) || [];
-  const slotList = (initialPhotoSlots as PhotoItemLike[] | undefined) || [];
-
-  const photoObj =
-    photoList.find((p) => isPropertyFrontPhoto(p.photoTypeCode, p.photoTypeName)) ||
-    slotList.find((s) => Boolean(s.hasPhoto) && isPropertyFrontPhoto(s.photoTypeCode, s.photoTypeName)) ||
-    photoList[0] ||
-    slotList.find((s) => Boolean(s.hasPhoto));
-
-  const guid = photoObj?.documentGuid ? String(photoObj.documentGuid) : undefined;
-  const url = guid ? getViewDocumentUrl(guid) : photoObj?.viewUrl || undefined;
-
-  return { guid, url };
 }
 
 const DEFAULT_PERFORMANCE: IndividualPerformanceData = {
@@ -103,7 +68,10 @@ export function buildInitialIndividualMasterData(
     pageData;
   const propDetails = propertyDetailsResult?.propertyDetails;
 
-  const { guid: photoGuid, url: photoUrl } = resolvePropertyPhoto(pageData);
+  const { guid: photoGuid, url: photoUrl } = resolvePropertyFrontPhoto(
+    pageData.initialPhotos,
+    pageData.initialPhotoSlots
+  );
 
   // 1. Identifiers
   const effectiveWardNo =

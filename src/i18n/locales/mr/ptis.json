@@ -141,6 +141,8 @@
     "existingPlanEditConfirm": "या मालमत्तेचा आधीच नकाशा आहे. तुम्हाला नकाशा संपादित करायचा आहे का?",
     "photoDeletedSuccess": "फोटो यशस्वीरीत्या हटवला.",
     "failedToDelete": "फोटो हटवण्यात अपयशी.",
+    "deletePermissionDenied": "आपल्याकडे हा फोटो हटवण्याची परवानगी नाही.",
+    "unexpectedError": "एक अनपेक्षित त्रुटी आली.",
     "photoReplacedSuccess": "फोटो यशस्वीरीत्या बदलला.",
     "failedToReplace": "फोटो बदलण्यात अपयशी.",
     "fileRequired": "फोटो फाईल आवश्यक आहे.",

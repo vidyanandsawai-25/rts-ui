@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface HoverPreviewData {
   src: string;
@@ -38,9 +38,11 @@ export function useImageHoverPreview() {
   const handleImageLeave = useCallback(() => {
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
     }
-    setHoverPreview(null);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoverPreview(null);
+      hoverTimeoutRef.current = null;
+    }, 250);
   }, []);
 
   const cancelImageLeave = useCallback(() => {
@@ -56,6 +58,14 @@ export function useImageHoverPreview() {
       hoverTimeoutRef.current = null;
     }
     setHoverPreview(null);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
   }, []);
 
   return {

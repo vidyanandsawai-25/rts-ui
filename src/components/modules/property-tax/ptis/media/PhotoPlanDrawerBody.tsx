@@ -128,7 +128,7 @@ export function PhotoPlanDrawerBody({
 
   return (
     <div className="relative flex flex-col xl:flex-row h-[calc(100vh-56px)] bg-slate-50 overflow-hidden photo-plan-drawer-content w-full">
-      {isUploading && (
+      {isUploading && viewMode !== 'viewer' && (
         <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-50 flex items-center justify-center animate-in fade-in duration-200">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
         </div>

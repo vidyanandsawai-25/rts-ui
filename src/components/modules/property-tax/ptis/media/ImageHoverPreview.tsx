@@ -21,6 +21,8 @@ export function ImageHoverPreview({
   src2,
   title,
   visible,
+  onMouseEnter,
+  onMouseLeave,
   beforeLabel,
   afterLabel,
   fallbackSrc,
@@ -32,21 +34,49 @@ export function ImageHoverPreview({
   const dragStartRef = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Reset zoom and pan during rendering when displayed images change
+  const [prevSrcKey, setPrevSrcKey] = useState(`${src}_${src2 || ''}`);
+  const currentSrcKey = `${src}_${src2 || ''}`;
+  if (prevSrcKey !== currentSrcKey) {
+    setPrevSrcKey(currentSrcKey);
+    setZoomScale(1);
+    setPanOffset({ x: 0, y: 0 });
+    setIsDragging(false);
+  }
 
-
-  // Handle mouse up globally to prevent drag getting stuck if user releases mouse outside
+  // Global mousemove and mouseup listeners while dragging
   useEffect(() => {
     if (!isDragging) return;
+
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const contentWidth = rect.width;
+      const contentHeight = rect.height;
+
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+
+      const maxOffsetPrevX = ((zoomScale - 1) * contentWidth) / 2;
+      const maxOffsetPrevY = ((zoomScale - 1) * contentHeight) / 2;
+
+      const constrainedX = Math.max(-maxOffsetPrevX, Math.min(maxOffsetPrevX, dx));
+      const constrainedY = Math.max(-maxOffsetPrevY, Math.min(maxOffsetPrevY, dy));
+
+      setPanOffset({ x: constrainedX, y: constrainedY });
+    };
 
     const handleGlobalMouseUp = () => {
       setIsDragging(false);
     };
 
+    window.addEventListener('mousemove', handleGlobalMouseMove);
     window.addEventListener('mouseup', handleGlobalMouseUp);
     return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
       window.removeEventListener('mouseup', handleGlobalMouseUp);
     };
-  }, [isDragging]);
+  }, [isDragging, zoomScale]);
 
   // Handle wheel events to allow zoom and prevent default page scroll
   useEffect(() => {
@@ -89,30 +119,6 @@ export function ImageHoverPreview({
     };
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || zoomScale <= 1 || !containerRef.current) return;
-
-    const rect = containerRef.current.getBoundingClientRect();
-    const contentWidth = rect.width - 16;
-    const contentHeight = rect.height;
-
-    const dx = e.clientX - dragStartRef.current.x;
-    const dy = e.clientY - dragStartRef.current.y;
-
-    // Constrain offset so the image doesn't pan past its borders
-    const maxOffsetPrevX = ((zoomScale - 1) * contentWidth) / 2;
-    const maxOffsetPrevY = ((zoomScale - 1) * contentHeight) / 2;
-
-    const constrainedX = Math.max(-maxOffsetPrevX, Math.min(maxOffsetPrevX, dx));
-    const constrainedY = Math.max(-maxOffsetPrevY, Math.min(maxOffsetPrevY, dy));
-
-    setPanOffset({ x: constrainedX, y: constrainedY });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
   const handleZoomIn = (e: React.MouseEvent) => {
     e.stopPropagation();
     setZoomScale((prev) => Math.min(prev + 0.5, 4));
@@ -150,18 +156,21 @@ export function ImageHoverPreview({
     <div
       ref={containerRef}
       onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       className="
         hidden lg:block
         absolute right-full top-0 bottom-0 pr-3 z-50
-        w-[496px] max-h-[calc(100vh-140px)] pointer-events-none
+        w-[496px] max-h-[calc(100vh-140px)] pointer-events-auto
         animate-in fade-in slide-in-from-right-3 duration-200
       "
     >
       <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl border-[3px] border-blue-600 bg-slate-950 relative select-none flex flex-col">
         {/* Floating Control Toolbar */}
-        <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 bg-black/75 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/20 shadow-lg text-white">
+        <div
+          onMouseDown={(e) => e.stopPropagation()}
+          className="absolute top-3 right-3 z-20 flex items-center gap-1.5 bg-black/75 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/20 shadow-lg text-white"
+        >
           <span className="text-[11px] font-bold text-slate-200 px-1 select-none">
             {Math.round(zoomScale * 100)}%
           </span>

@@ -141,6 +141,8 @@
     "existingPlanEditConfirm": "This property already has a plan. Do you want to edit the plan?",
     "photoDeletedSuccess": "Photo deleted successfully.",
     "failedToDelete": "Failed to delete photo.",
+    "deletePermissionDenied": "You do not have permission to delete this photo.",
+    "unexpectedError": "An unexpected error occurred.",
     "photoReplacedSuccess": "Photo replaced successfully.",
     "failedToReplace": "Failed to replace photo.",
     "fileRequired": "Photo file is required.",

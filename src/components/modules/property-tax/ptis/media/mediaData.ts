@@ -95,23 +95,43 @@ export function findCategory(categories: PhotoCategory[], codeKeywords: string[]
 }
 
 export function formatWingCardLabel(baseLabel: string, wingName?: string | null): string {
+  if (!baseLabel) return baseLabel || '';
   if (!wingName || !wingName.trim()) return baseLabel;
-  const trimmed = wingName.trim();
-  const cleanWing = trimmed.replace(/^(?:wing|विंग|विग)\s+/gi, '').replace(/\s+(?:wing|विंग|विग)$/gi, '').trim() || trimmed;
 
-  if (baseLabel.toLowerCase().includes(cleanWing.toLowerCase())) {
+  const trimmed = wingName.trim();
+  const cleanWing = trimmed
+    .replace(/^(?:wing|विंग|विग)\s+/gi, '')
+    .replace(/\s+(?:wing|विंग|विग)$/gi, '')
+    .trim() || trimmed;
+
+  if (!cleanWing) return baseLabel;
+
+  // Escape special regex characters in cleanWing
+  const escapedWing = cleanWing.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // Check if cleanWing is already present as a distinct word in baseLabel
+  const wordBoundaryRegex = new RegExp(`(?:^|[\\s_\\-–—/\\\\(\\[{])${escapedWing}(?:$|[\\s_\\-–—/\\\\)\\]}])`, 'i');
+  if (wordBoundaryRegex.test(baseLabel)) {
     return baseLabel;
   }
 
-  // Dynamic regex matching generic wing/photo terms across scripts
-  const isGenericWing = /^(?:wing|photo|picture|विंग|विग|फोटो|फ़ोटो|\s)+$/i.test(baseLabel.trim());
+  const isDevanagari = /[\u0900-\u097F]/.test(baseLabel);
 
-  if (isGenericWing) {
-    const isDevanagari = /[\u0900-\u097F]/.test(baseLabel);
+  // If baseLabel starts with "Wing " or "विंग " or "विग "
+  if (/^(?:wing)\s+/i.test(baseLabel)) {
+    return baseLabel.replace(/^(?:wing)\s+/i, `Wing ${cleanWing} `).trim();
+  }
+  if (/^(?:विंग|विग)\s+/i.test(baseLabel)) {
+    return baseLabel.replace(/^(?:विंग|विग)\s+/i, `विंग ${cleanWing} `).trim();
+  }
+
+  // If baseLabel is just "Wing" or "विंग" or generic wing photo terms
+  if (/^(?:wing|विंग|विग)$/i.test(baseLabel.trim())) {
     return isDevanagari ? `विंग ${cleanWing}` : `Wing ${cleanWing}`;
   }
 
-  return baseLabel;
+  // Prepend Wing {cleanWing}
+  return isDevanagari ? `विंग ${cleanWing} ${baseLabel}` : `Wing ${cleanWing} ${baseLabel}`;
 }
 
 export function mapSlotsToCategories(
@@ -239,7 +259,8 @@ export function mapSlotsToCategories(
         s.photoTypeCode?.toUpperCase().includes('SIGN') ||
         s.photoTypeName?.toLowerCase().includes('sign')
       );
-      if (!matchingPhoto && isPrimarySocietySlot && (societyPhotoFallbackGuid || societyPhotoFallbackUrl)) {
+      const isFullyLoaded = fullyLoadedIds?.has(s.photoTypeId);
+      if (!matchingPhoto && isPrimarySocietySlot && s.hasPhoto && !isFullyLoaded && uploadedPhotos.length === 0 && (societyPhotoFallbackGuid || societyPhotoFallbackUrl)) {
         hasPhoto = true;
         documentGuid = societyPhotoFallbackGuid || documentGuid;
         viewUrl = societyPhotoFallbackUrl || (societyPhotoFallbackGuid ? getViewDocumentUrl(societyPhotoFallbackGuid) : viewUrl);
@@ -266,7 +287,13 @@ export function mapSlotsToCategories(
       viewUrl = undefined;
       propertyPhotoId = undefined;
     } else if (!isPlanCat) {
-      // For non-plan slots, keep slot's initial values
+      // For non-plan slots without matching photo: if slot is explicitly marked hasPhoto=false, or uploadedPhotos is populated/loaded, or category is fully loaded, clear values
+      if (!s.hasPhoto || (fullyLoadedIds && fullyLoadedIds.has(s.photoTypeId)) || (uploadedPhotos.length > 0 && !hasPhoto)) {
+        hasPhoto = false;
+        documentGuid = undefined;
+        viewUrl = undefined;
+        propertyPhotoId = undefined;
+      }
     } else {
       // For plan slots without a matching uploaded plan, clear default fallback photo values to avoid fallback bleeding
       hasPhoto = false;
@@ -556,33 +583,28 @@ export function mapSlotsToCategories(
       .map(p => mapPropertyPhotoToAdditionalImage(p, cat.photoTypeName));
 
     const isFullyLoaded = fullyLoadedIds?.has(cat.photoTypeId);
-    const isPrimarySocietySlot = isSocietyCat && !Boolean(
-      cat.photoTypeCode?.toUpperCase().includes('BOARD') ||
-      cat.photoTypeName?.toLowerCase().includes('board') ||
-      cat.photoTypeCode?.toUpperCase().includes('SIGN') ||
-      cat.photoTypeName?.toLowerCase().includes('sign')
-    );
-    const hasSocietyFallback = isPrimarySocietySlot && Boolean(societyPhotoFallbackGuid || societyPhotoFallbackUrl);
 
-    if (catPhotos.length === 0 && !isFullyLoaded && (cat.hasPhoto || hasSocietyFallback) && (cat.viewUrl || cat.documentGuid || hasSocietyFallback)) {
+    if (catPhotos.length === 0 && !isFullyLoaded && cat.hasPhoto && (cat.viewUrl || cat.documentGuid)) {
       const isPlanCat = isPhotoPlanCat(cat);
       const isPlanSlot = isPlanCat || cat.photoTypeCode?.toUpperCase().includes('PLAN');
       if (!isPlanSlot) {
-        const effectiveGuid = cat.documentGuid || (isPrimarySocietySlot ? societyPhotoFallbackGuid : undefined);
-        const effectiveViewUrl = cat.viewUrl || (isPrimarySocietySlot ? societyPhotoFallbackUrl : undefined) || (effectiveGuid ? getViewDocumentUrl(effectiveGuid) : undefined);
+        const effectiveGuid = cat.documentGuid;
+        const effectiveViewUrl = cat.viewUrl || (effectiveGuid ? getViewDocumentUrl(effectiveGuid) : undefined);
         const resolvedUrl = effectiveGuid ? getViewDocumentUrl(effectiveGuid) : effectiveViewUrl;
-        catPhotos = [{
-          src: resolvedUrl || '',
-          fullSrc: resolvedUrl || '',
-          alt: cat.photoTypeName,
-          title: cat.photoTypeName,
-          photoTypeId: cat.photoTypeId,
-          photoTypeCode: cat.photoTypeCode,
-          propertyPhotoId: cat.propertyPhotoId,
-          hasPhoto: true,
-          documentGuid: effectiveGuid?.toString(),
-          downloadUrl: effectiveGuid ? getDownloadDocumentUrl(effectiveGuid.toString()) : (effectiveViewUrl ? effectiveViewUrl.replace('/view', '/download') : undefined),
-        }];
+        if (resolvedUrl || effectiveGuid) {
+          catPhotos = [{
+            src: resolvedUrl || '',
+            fullSrc: resolvedUrl || '',
+            alt: cat.photoTypeName,
+            title: cat.photoTypeName,
+            photoTypeId: cat.photoTypeId,
+            photoTypeCode: cat.photoTypeCode,
+            propertyPhotoId: cat.propertyPhotoId,
+            hasPhoto: true,
+            documentGuid: effectiveGuid?.toString(),
+            downloadUrl: effectiveGuid ? getDownloadDocumentUrl(effectiveGuid.toString()) : (effectiveViewUrl ? effectiveViewUrl.replace('/view', '/download') : undefined),
+          }];
+        }
       }
     }
 

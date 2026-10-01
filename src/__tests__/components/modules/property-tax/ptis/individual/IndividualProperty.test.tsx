@@ -221,6 +221,71 @@ describe('Individual Property - Components & Hook', () => {
       rerender(<IndividualPropertyMasterCard data={{ ...mockData, ownerName: 'Abhishek Bachchan' }} />);
       expect(screen.getAllByText('Abhishek Bachchan').length).toBeGreaterThan(0);
     });
+
+    it('synchronizes and clears photo thumbnail in real-time when photo is uploaded or deleted', async () => {
+      const dataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      render(
+        <IndividualPropertyMasterCard data={{ ...mockData, imageUrl: dataUri }} />
+      );
+      expect(await screen.findByAltText(/photo\.propertyPhoto|Property Photo/i)).toBeInTheDocument();
+
+      // Simulate photo deletion event from photo plan section
+      act(() => {
+        window.dispatchEvent(
+          new CustomEvent('ptis:sync-thumbnail', {
+            detail: {
+              propertyId: 501,
+              documentGuid: undefined,
+              photoUrl: undefined,
+              photoTypeCode: 'PROPERTY_FRONT',
+              category: 'Property Front Photo',
+              hasPhoto: false,
+            },
+          })
+        );
+      });
+
+      // After deletion, the thumbnail image should be replaced with "No Photo" fallback
+      expect(screen.queryByAltText(/photo\.propertyPhoto|Property Photo/i)).toBeNull();
+      expect(screen.getByText(/photo\.noPhoto|No Photo/i)).toBeInTheDocument();
+
+      // Simulate photo re-upload event
+      act(() => {
+        window.dispatchEvent(
+          new CustomEvent('ptis:sync-thumbnail', {
+            detail: {
+              propertyId: 501,
+              documentGuid: 'new-front-guid',
+              photoUrl: dataUri,
+              photoTypeCode: 'PROPERTY_FRONT',
+              category: 'Property Front Photo',
+              hasPhoto: true,
+            },
+          })
+        );
+      });
+
+      expect(await screen.findByAltText(/photo\.propertyPhoto|Property Photo/i)).toBeInTheDocument();
+
+      // Simulate media update for non-front photo (e.g. PHOTO_PLAN) - should not overwrite front photo
+      act(() => {
+        window.dispatchEvent(
+          new CustomEvent('ptis:media-updated', {
+            detail: {
+              propertyId: 501,
+              documentGuid: 'plan-guid',
+              photoUrl: 'https://test.docs.com/view/plan-guid',
+              photoTypeCode: 'PHOTO_PLAN',
+              category: 'Photo Plan',
+            },
+          })
+        );
+      });
+
+      // Front photo remains intact
+      const photoImg = await screen.findByAltText(/photo\.propertyPhoto|Property Photo/i);
+      expect(photoImg).toHaveAttribute('src', dataUri);
+    });
   });
 
   // ==========================================

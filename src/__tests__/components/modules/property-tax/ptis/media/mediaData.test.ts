@@ -6,26 +6,28 @@ describe('mediaData - formatWingCardLabel', () => {
     vi.clearAllMocks();
   });
 
-  it('formats simple wing letter as Wing [name]', () => {
-    expect(formatWingCardLabel('Wing Photo', 'B')).toBe('Wing B');
-    expect(formatWingCardLabel('Wing Photo', 'A')).toBe('Wing Asha' === 'Wing Asha' ? 'Wing A' : 'Wing A');
+  it('formats simple wing letter dynamically inside wing label', () => {
+    expect(formatWingCardLabel('Wing Photo', 'B')).toBe('Wing B Photo');
+    expect(formatWingCardLabel('Wing Photo', 'A')).toBe('Wing A Photo');
+    expect(formatWingCardLabel('Wing', 'B')).toBe('Wing B');
   });
 
   it('normalizes wing names that already include "Wing" prefix or suffix', () => {
-    expect(formatWingCardLabel('Wing Photo', 'Wing B')).toBe('Wing B');
-    expect(formatWingCardLabel('Wing Photo', 'B Wing')).toBe('Wing B');
-    expect(formatWingCardLabel('Wing Photo', 'Gana')).toBe('Wing Gana');
+    expect(formatWingCardLabel('Wing Photo', 'Wing B')).toBe('Wing B Photo');
+    expect(formatWingCardLabel('Wing Photo', 'B Wing')).toBe('Wing B Photo');
+    expect(formatWingCardLabel('Wing Photo', 'Gana')).toBe('Wing Gana Photo');
   });
 
   it('works with localized labels (Marathi and Hindi)', () => {
-    expect(formatWingCardLabel('विंग फोटो', 'B')).toBe('विंग B');
-    expect(formatWingCardLabel('विंग फोटो', 'Wing A')).toBe('विंग A');
+    expect(formatWingCardLabel('विंग फोटो', 'B')).toBe('विंग B फोटो');
+    expect(formatWingCardLabel('विंग फोटो', 'Wing A')).toBe('विंग A फोटो');
+    expect(formatWingCardLabel('विंग', 'B')).toBe('विंग B');
   });
 
   it('preserves named society wings (e.g. Ganga, Tulsi, Gana)', () => {
-    expect(formatWingCardLabel('Wing Photo', 'Ganga')).toBe('Wing Ganga');
-    expect(formatWingCardLabel('Wing Photo', 'Ganga Wing')).toBe('Wing Ganga');
-    expect(formatWingCardLabel('Wing Photo', 'Gana')).toBe('Wing Gana');
+    expect(formatWingCardLabel('Wing Photo', 'Ganga')).toBe('Wing Ganga Photo');
+    expect(formatWingCardLabel('Wing Photo', 'Ganga Wing')).toBe('Wing Ganga Photo');
+    expect(formatWingCardLabel('Wing Photo', 'Gana')).toBe('Wing Gana Photo');
   });
 
   it('returns base label unchanged if wingName is empty or undefined', () => {
@@ -35,16 +37,16 @@ describe('mediaData - formatWingCardLabel', () => {
     expect(formatWingCardLabel('Wing Photo', '   ')).toBe('Wing Photo');
   });
 
-  it('preserves specific wing slot names without collapsing them to Wing [name]', () => {
-    expect(formatWingCardLabel('Wing Building Photo', 'Asha')).toBe('Wing Building Photo');
-    expect(formatWingCardLabel('Wing Place Photo', 'Asha')).toBe('Wing Place Photo');
-    expect(formatWingCardLabel('Wing Board Photo', 'Asha')).toBe('Wing Board Photo');
-    expect(formatWingCardLabel('Wing Sign Board Photo', 'Asha')).toBe('Wing Sign Board Photo');
+  it('correctly injects wing name into specific wing slot labels without collapsing them', () => {
+    expect(formatWingCardLabel('Wing Building Photo', 'Asha')).toBe('Wing Asha Building Photo');
+    expect(formatWingCardLabel('Wing Place Photo', 'Asha')).toBe('Wing Asha Place Photo');
+    expect(formatWingCardLabel('Wing Board Photo', 'Asha')).toBe('Wing Asha Board Photo');
+    expect(formatWingCardLabel('Wing Sign Board Photo', 'Asha')).toBe('Wing Asha Sign Board Photo');
 
-    expect(formatWingCardLabel('विंग इमारत फोटो', 'Asha')).toBe('विंग इमारत फोटो');
-    expect(formatWingCardLabel('विंग ठिकाणाचा फोटो', 'Asha')).toBe('विंग ठिकाणाचा फोटो');
-    expect(formatWingCardLabel('विंग पाटीचा फोटो', 'Asha')).toBe('विंग पाटीचा फोटो');
-    expect(formatWingCardLabel('विंग नामफलक फोटो', 'Asha')).toBe('विंग नामफलक फोटो');
+    expect(formatWingCardLabel('विंग इमारत फोटो', 'Asha')).toBe('विंग Asha इमारत फोटो');
+    expect(formatWingCardLabel('विंग ठिकाणाचा फोटो', 'Asha')).toBe('विंग Asha ठिकाणाचा फोटो');
+    expect(formatWingCardLabel('विंग पाटीचा फोटो', 'Asha')).toBe('विंग Asha पाटीचा फोटो');
+    expect(formatWingCardLabel('विंग नामफलक फोटो', 'Asha')).toBe('विंग Asha नामफलक फोटो');
   });
 });
 
@@ -66,7 +68,7 @@ describe('mediaData - mapSlotsToCategories with wingName', () => {
     },
   ];
 
-  it('includes selected wing name in wing category photoTypeName as Wing [name]', () => {
+  it('includes selected wing name in wing category photoTypeName as Wing [name] Photo', () => {
     const categories = mapSlotsToCategories(
       mockSlots,
       [],
@@ -77,7 +79,7 @@ describe('mediaData - mapSlotsToCategories with wingName', () => {
 
     const wingCat = categories.find((c) => c.photoTypeCode === 'WING_BUILDING');
     expect(wingCat).toBeDefined();
-    expect(wingCat?.photoTypeName).toBe('Wing B');
+    expect(wingCat?.photoTypeName).toBe('Wing B Photo');
   });
 
   it('formats wing name when passed as "Wing B"', () => {
@@ -91,7 +93,7 @@ describe('mediaData - mapSlotsToCategories with wingName', () => {
 
     const wingCat = categories.find((c) => c.photoTypeCode === 'WING_BUILDING');
     expect(wingCat).toBeDefined();
-    expect(wingCat?.photoTypeName).toBe('Wing B');
+    expect(wingCat?.photoTypeName).toBe('Wing B Photo');
   });
 
   it('preserves distinct photoTypeName for all wing scope slots in drawer without duplicate names', () => {
@@ -118,10 +120,10 @@ describe('mediaData - mapSlotsToCategories with wingName', () => {
     const wingBoard = categories.find((c) => c.photoTypeCode === 'WING_BOARD');
     const wingSignBoard = categories.find((c) => c.photoTypeCode === 'WING_SIGN_BOARD');
 
-    expect(wingBuilding?.photoTypeName).toBe('Wing Building Photo');
-    expect(wingPlace?.photoTypeName).toBe('Wing Place Photo');
-    expect(wingBoard?.photoTypeName).toBe('Wing Board Photo');
-    expect(wingSignBoard?.photoTypeName).toBe('Wing Sign Board Photo');
+    expect(wingBuilding?.photoTypeName).toBe('Wing Asha Building Photo');
+    expect(wingPlace?.photoTypeName).toBe('Wing Asha Place Photo');
+    expect(wingBoard?.photoTypeName).toBe('Wing Asha Board Photo');
+    expect(wingSignBoard?.photoTypeName).toBe('Wing Asha Sign Board Photo');
 
     // Ensure all 4 slots have unique, non-identical names
     const names = [wingBuilding?.photoTypeName, wingPlace?.photoTypeName, wingBoard?.photoTypeName, wingSignBoard?.photoTypeName];
@@ -311,6 +313,37 @@ describe('mediaData - mapSlotsToCategories in QuickDataEntry mode', () => {
     expect(signBoardCat?.hasPhoto).toBe(false);
     expect(signBoardCat?.images).toHaveLength(0);
   });
+
+  it('does not resurrect fallback photo when photo has been deleted (uploadedPhotos is empty and slot hasPhoto is false)', () => {
+    const societySlots = [
+      { photoTypeId: 5, photoTypeCode: 'SOCIETY_PLACE', photoTypeName: 'Society Place Photo', photoScope: 'SOCIETY', displayOrder: 1, hasPhoto: false, photoCount: 0 },
+      { photoTypeId: 6, photoTypeCode: 'SOCIETY_BOARD', photoTypeName: 'Society Board Photo', photoScope: 'SOCIETY', displayOrder: 2, hasPhoto: false, photoCount: 0 },
+    ];
+
+    const categories = mapSlotsToCategories(
+      societySlots,
+      [], // uploadedPhotos is empty after deletion
+      new Set([5, 6]), // fully loaded
+      undefined,
+      undefined,
+      null,
+      true, // isMainProperty
+      1,
+      null,
+      'S',
+      false,
+      'old-deleted-guid-123', // societyPhotoFallbackGuid
+      undefined,
+      false
+    );
+
+    const placeCat = categories.find((c) => c.photoTypeId === 5);
+    expect(placeCat).toBeDefined();
+    expect(placeCat?.hasPhoto).toBe(false);
+    expect(placeCat?.images).toHaveLength(0);
+    expect(placeCat?.photoCount).toBe(0);
+  });
 });
+
 
 

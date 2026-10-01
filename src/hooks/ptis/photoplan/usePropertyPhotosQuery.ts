@@ -484,24 +484,27 @@ export function usePropertyPhotosQuery(
             });
           }
 
-          // Retain existing society photos across wing transitions so society photos are never lost
+          // Retain existing society photos across wing transitions only during cold mount
           const isSocietyPhoto = (p: PropertyPhotoDto) => Boolean(
             p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
             p.photoTypeName?.toLowerCase().includes('society')
           );
-          const existingSocPhotos = initialPhotos.filter(isSocietyPhoto);
-          existingSocPhotos.forEach(ep => {
-            const alreadyExists = fetchedPhotos.some(fp => 
-              (fp.documentGuid && ep.documentGuid && fp.documentGuid === ep.documentGuid) ||
-              (fp.propertyPhotoId && ep.propertyPhotoId && fp.propertyPhotoId === ep.propertyPhotoId)
-            );
-            if (!alreadyExists) {
-              fetchedPhotos.push(ep);
-            }
-          });
 
-          // Inject fallback society photo if provided and not yet in fetchedPhotos
-          if (societyPhotoFallbackGuid || societyPhotoFallbackUrl) {
+          if (!hasLoadedDataRef.current && initialPhotos.length > 0) {
+            const existingSocPhotos = initialPhotos.filter(isSocietyPhoto);
+            existingSocPhotos.forEach(ep => {
+              const alreadyExists = fetchedPhotos.some(fp => 
+                (fp.documentGuid && ep.documentGuid && fp.documentGuid === ep.documentGuid) ||
+                (fp.propertyPhotoId && ep.propertyPhotoId && fp.propertyPhotoId === ep.propertyPhotoId)
+              );
+              if (!alreadyExists) {
+                fetchedPhotos.push(ep);
+              }
+            });
+          }
+
+          // Inject fallback society photo only on initial cold mount if no photos exist
+          if (!hasLoadedDataRef.current && (societyPhotoFallbackGuid || societyPhotoFallbackUrl)) {
             const hasSoc = fetchedPhotos.some(isSocietyPhoto);
             if (!hasSoc) {
               const resolvedFallbackUrl = societyPhotoFallbackUrl || (societyPhotoFallbackGuid ? getViewDocumentUrl(societyPhotoFallbackGuid) : undefined);
@@ -520,21 +523,37 @@ export function usePropertyPhotosQuery(
             }
           }
 
-          // For each society photo, mark its matching society slot as hasPhoto: true
-          fetchedPhotos.filter(isSocietyPhoto).forEach((sp) => {
-            const idx = slots.findIndex(
-              (s) =>
-                (s.photoTypeId && sp.photoTypeId && Number(s.photoTypeId) === Number(sp.photoTypeId)) ||
-                (s.photoTypeCode && sp.photoTypeCode && s.photoTypeCode.toUpperCase() === sp.photoTypeCode.toUpperCase())
+          // Update society slot photo status according to whether matching photo exists
+          const socPhotos = fetchedPhotos.filter(isSocietyPhoto);
+          slots.forEach((slot, idx) => {
+            const isSocSlot = Boolean(
+              slot.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
+              slot.photoTypeName?.toLowerCase().includes('society')
             );
-            if (idx !== -1) {
-              slots[idx] = {
-                ...slots[idx],
-                hasPhoto: true,
-                documentGuid: sp.documentGuid || slots[idx].documentGuid,
-                viewUrl: sp.viewUrl || slots[idx].viewUrl,
-                propertyPhotoId: sp.propertyPhotoId || slots[idx].propertyPhotoId,
-              };
+            if (isSocSlot) {
+              const matchingSoc = socPhotos.find(
+                (sp) =>
+                  (sp.photoTypeId && slot.photoTypeId && Number(sp.photoTypeId) === Number(slot.photoTypeId)) ||
+                  (sp.photoTypeCode && slot.photoTypeCode && sp.photoTypeCode.toUpperCase() === slot.photoTypeCode.toUpperCase())
+              );
+              if (matchingSoc) {
+                slots[idx] = {
+                  ...slot,
+                  hasPhoto: true,
+                  documentGuid: matchingSoc.documentGuid || slot.documentGuid,
+                  viewUrl: matchingSoc.viewUrl || slot.viewUrl,
+                  propertyPhotoId: matchingSoc.propertyPhotoId || slot.propertyPhotoId,
+                };
+              } else if (hasLoadedDataRef.current) {
+                slots[idx] = {
+                  ...slot,
+                  hasPhoto: false,
+                  photoCount: 0,
+                  documentGuid: undefined,
+                  viewUrl: undefined,
+                  propertyPhotoId: undefined,
+                };
+              }
             }
           });
 
@@ -760,57 +779,41 @@ export function usePropertyPhotosQuery(
         });
       }
 
-      // Retain existing society photos across wing transitions
+      // Update society slots based on newly fetched photos
       const isSocietyPhoto = (p: PropertyPhotoDto) => Boolean(
         p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
         p.photoTypeName?.toLowerCase().includes('society')
       );
-      const existingSocPhotos = [...photos, ...initialPhotos].filter(isSocietyPhoto);
-      existingSocPhotos.forEach(ep => {
-        const alreadyExists = fetchedPhotos.some(fp => 
-          (fp.documentGuid && ep.documentGuid && fp.documentGuid === ep.documentGuid) ||
-          (fp.propertyPhotoId && ep.propertyPhotoId && fp.propertyPhotoId === ep.propertyPhotoId)
+      const socPhotos = fetchedPhotos.filter(isSocietyPhoto);
+      fetchedSlots.forEach((slot, idx) => {
+        const isSocSlot = Boolean(
+          slot.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
+          slot.photoTypeName?.toLowerCase().includes('society')
         );
-        if (!alreadyExists) {
-          fetchedPhotos.push(ep);
-        }
-      });
-
-      // Inject fallback society photo if provided and not yet in fetchedPhotos
-      if (societyPhotoFallbackGuid || societyPhotoFallbackUrl) {
-        const hasSoc = fetchedPhotos.some(isSocietyPhoto);
-        if (!hasSoc) {
-          const resolvedFallbackUrl = societyPhotoFallbackUrl || (societyPhotoFallbackGuid ? getViewDocumentUrl(societyPhotoFallbackGuid) : undefined);
-          fetchedPhotos.push({
-            propertyPhotoId: 0,
-            propertyId: propertyId || 0,
-            photoTypeId: 5,
-            photoTypeCode: 'SOCIETY_PLACE',
-            photoTypeName: 'Society Place Photo',
-            displayOrder: 1,
-            documentGuid: societyPhotoFallbackGuid,
-            viewUrl: resolvedFallbackUrl,
-            downloadUrl: societyPhotoFallbackGuid ? getDownloadDocumentUrl(societyPhotoFallbackGuid) : undefined,
-            societyDetailId: targetSocietyId || undefined,
-          });
-        }
-      }
-
-      // For each society photo, mark its matching society slot as hasPhoto: true
-      fetchedPhotos.filter(isSocietyPhoto).forEach((sp) => {
-        const idx = fetchedSlots.findIndex(
-          (s) =>
-            (s.photoTypeId && sp.photoTypeId && Number(s.photoTypeId) === Number(sp.photoTypeId)) ||
-            (s.photoTypeCode && sp.photoTypeCode && s.photoTypeCode.toUpperCase() === sp.photoTypeCode.toUpperCase())
-        );
-        if (idx !== -1) {
-          fetchedSlots[idx] = {
-            ...fetchedSlots[idx],
-            hasPhoto: true,
-            documentGuid: sp.documentGuid || fetchedSlots[idx].documentGuid,
-            viewUrl: sp.viewUrl || fetchedSlots[idx].viewUrl,
-            propertyPhotoId: sp.propertyPhotoId || fetchedSlots[idx].propertyPhotoId,
-          };
+        if (isSocSlot) {
+          const matchingSoc = socPhotos.find(
+            (sp) =>
+              (sp.photoTypeId && slot.photoTypeId && Number(sp.photoTypeId) === Number(slot.photoTypeId)) ||
+              (sp.photoTypeCode && slot.photoTypeCode && sp.photoTypeCode.toUpperCase() === slot.photoTypeCode.toUpperCase())
+          );
+          if (matchingSoc) {
+            fetchedSlots[idx] = {
+              ...slot,
+              hasPhoto: true,
+              documentGuid: matchingSoc.documentGuid || slot.documentGuid,
+              viewUrl: matchingSoc.viewUrl || slot.viewUrl,
+              propertyPhotoId: matchingSoc.propertyPhotoId || slot.propertyPhotoId,
+            };
+          } else {
+            fetchedSlots[idx] = {
+              ...slot,
+              hasPhoto: false,
+              photoCount: 0,
+              documentGuid: undefined,
+              viewUrl: undefined,
+              propertyPhotoId: undefined,
+            };
+          }
         }
       });
 
@@ -829,7 +832,7 @@ export function usePropertyPhotosQuery(
       hasLoadedDataRef.current = true;
       setLoading(false);
     }
-  }, [propertyId, targetWingId, targetSocietyId, cacheKey, societyPhotoFallbackGuid, societyPhotoFallbackUrl, photos, initialPhotos]);
+  }, [propertyId, targetWingId, targetSocietyId, cacheKey]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

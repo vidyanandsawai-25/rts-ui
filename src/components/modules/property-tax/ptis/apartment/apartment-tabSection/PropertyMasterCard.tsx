@@ -6,6 +6,7 @@ import { Building2 } from 'lucide-react';
 import type { PropertyMasterData } from '@/types/property-tax/apartment';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
+import { isSocietyPhoto } from '@/lib/utils/ptis-photo-match.utils';
 import { DocumentViewerModal } from '@/components/common/DocumentViewerModal';
 import { PropertyMasterHeader } from './components/PropertyMasterHeader';
 import { PropertyMasterDetailsGrid } from './components/PropertyMasterDetailsGrid';
@@ -81,12 +82,16 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
     router.push(`/${locale}/property-tax/ptis/QuickDataEntry/${activePropertyId}/Society?${params.toString()}`);
   };
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  const [prevData, setPrevData] = useState(data);
+
+  if (data !== prevData) {
+    setPrevData(data);
     setMasterData(data);
-    setPhotoGuid(data?.societyBuildingPhotoGuid);
-    setImageUrl(data?.imageUrl);
-  }, [data]);
+    if (data?.propertyId !== prevData?.propertyId) {
+      setPhotoGuid(data?.societyBuildingPhotoGuid);
+      setImageUrl(data?.imageUrl);
+    }
+  }
 
   useEffect(() => {
     const handleTopSectionUpdated = (e: Event) => {
@@ -103,25 +108,55 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
       const cat = customEvent.detail?.category || customEvent.detail?.photoCategory || customEvent.detail?.imageCategory;
       const catCode = customEvent.detail?.photoTypeCode;
 
-      // Only allow Society Place Photo to update the main society photo placeholder
+      // Only allow Society Photos to update the main society photo placeholder
       if (cat || catCode) {
-        const isSocietyPlace =
-          cat === 'Society Place Photo' ||
-          (typeof cat === 'string' && cat.toLowerCase().includes('society place')) ||
-          catCode === 'SOCIETY_PLACE' ||
-          catCode === 'SOCIETY_PLACE_PHOTO';
-        if (!isSocietyPlace) {
+        if (!isSocietyPhoto(catCode, cat)) {
           return;
         }
       }
 
       const docGuid = customEvent.detail?.documentGuid;
       const pUrl = customEvent.detail?.photoUrl || customEvent.detail?.viewUrl;
-      if (docGuid) {
-        setPhotoGuid(docGuid);
-        setImageUrl(pUrl || getViewDocumentUrl(docGuid));
+      const isDeleted = customEvent.detail?.isDeleted || customEvent.detail?.deleted || (!docGuid && !pUrl);
+
+      if (isDeleted || (!docGuid && !pUrl)) {
+        setPhotoGuid(undefined);
+        setImageUrl(undefined);
+        setMasterData((prev) =>
+          prev
+            ? {
+                ...prev,
+                societyBuildingPhotoGuid: undefined,
+                imageUrl: undefined,
+              }
+            : undefined
+        );
+      } else if (docGuid) {
+        const resolvedGuid = String(docGuid);
+        const resolvedUrl = pUrl || getViewDocumentUrl(resolvedGuid);
+        setPhotoGuid(resolvedGuid);
+        setImageUrl(resolvedUrl);
+        setMasterData((prev) =>
+          prev
+            ? {
+                ...prev,
+                societyBuildingPhotoGuid: resolvedGuid,
+                imageUrl: resolvedUrl,
+              }
+            : undefined
+        );
       } else if (pUrl) {
+        setPhotoGuid(undefined);
         setImageUrl(pUrl);
+        setMasterData((prev) =>
+          prev
+            ? {
+                ...prev,
+                societyBuildingPhotoGuid: undefined,
+                imageUrl: pUrl,
+              }
+            : undefined
+        );
       }
     };
     window.addEventListener('ptis:sync-thumbnail', handleMediaUpdated);
