@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { AlertCircle, Loader2, Building2, Layers, ArrowLeft, Copy } from "lucide-react";
-import { Input, ValidationMessage, Label, Button, DeleteButton, SaveButton } from "@/components/common";
+import { AlertCircle, Loader2, Building2, Layers, ArrowLeft } from "lucide-react";
+import { Input, ValidationMessage, Label, DeleteButton, SaveButton } from "@/components/common";
 import { CertificateData, FloorCertificateDto } from "@/types/building-permission.types";
 import { mapTypeNameToKey } from "@/lib/utils/building-helpers";
 import { DocumentAttachment } from "./DocumentAttachment";
@@ -51,7 +51,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     onFileUpload,
     onFileDelete,
     onToggleEnabled: _onToggleEnabled,
-    onCopyFromProperty,
+    onCopyFromProperty: _onCopyFromProperty,
     validationError,
     fieldErrors,
     t,
@@ -88,13 +88,23 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
 
     const displayData = React.useMemo(() => {
         if (activeScope === "Floor" && data && !data.enabled && propertyWideCert) {
-            return {
-                ...data,
-                number: propertyWideCert.number || "",
-                date: propertyWideCert.date || "",
-                documentGuid: propertyWideCert.documentGuid || "",
-                fileName: propertyWideCert.fileName || "",
-            };
+            const hasFloorData = Boolean(
+                data.number?.trim() ||
+                data.date?.trim() ||
+                data.documentGuid ||
+                data.propertyCertificateId ||
+                data.pendingFile ||
+                data.fileName
+            );
+            if (!hasFloorData) {
+                return {
+                    ...data,
+                    number: propertyWideCert.number || "",
+                    date: propertyWideCert.date || "",
+                    documentGuid: propertyWideCert.documentGuid || "",
+                    fileName: propertyWideCert.fileName || "",
+                };
+            }
         }
         return data;
     }, [activeScope, data, propertyWideCert]);
@@ -330,29 +340,17 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                             </span>
                         </div>
 
-                        {activeScope === "Floor" && (
+                        {activeScope === "Floor" && onScopeChange && (
                             <div className="flex items-center gap-2 shrink-0">
-                                {propertyWideCert && (propertyWideCert.number || propertyWideCert.documentGuid) && onCopyFromProperty && (
-                                    <button
-                                        type="button"
-                                        onClick={onCopyFromProperty}
-                                        className="whitespace-nowrap shrink-0 inline-flex flex-row items-center gap-1.5 text-xs font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-50 px-2.5 py-1 rounded-lg cursor-pointer shadow-2xs transition-colors"
-                                    >
-                                        <Copy className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                                        <span>{t("building.copyFromPropertyBtn") || "Copy from Property"}</span>
-                                    </button>
-                                )}
-                                {onScopeChange && (
-                                    <button
-                                        type="button"
-                                        disabled={isSaving}
-                                        onClick={() => !isSaving && onScopeChange("Property", null)}
-                                        className="whitespace-nowrap shrink-0 inline-flex flex-row items-center gap-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-50 hover:text-blue-800 shadow-2xs h-8 px-3 rounded-lg cursor-pointer transition-colors"
-                                    >
-                                        <ArrowLeft className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                                        <span>{t("building.clearSelection") || "Back to Entire Property"}</span>
-                                    </button>
-                                )}
+                                <button
+                                    type="button"
+                                    disabled={isSaving}
+                                    onClick={() => !isSaving && onScopeChange("Property", null)}
+                                    className="whitespace-nowrap shrink-0 inline-flex flex-row items-center gap-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-50 hover:text-blue-800 shadow-2xs h-8 px-3 rounded-lg cursor-pointer transition-colors"
+                                >
+                                    <ArrowLeft className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                    <span>{t("building.clearSelection") || "Back to Entire Property"}</span>
+                                </button>
                             </div>
                         )}
                     </div>
@@ -449,19 +447,6 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                                         : (t("building.propertyDetailsDesc") || "These certificate details apply to the entire property (all constructed floors).")}
                                 </p>
                             </div>
-
-                            {activeScope === "Floor" && propertyWideCert && (propertyWideCert.number || propertyWideCert.documentGuid) && onCopyFromProperty && (
-                                <Button
-                                    type="button"
-                                    size="xs"
-                                    variant="secondary"
-                                    onClick={onCopyFromProperty}
-                                    className="whitespace-nowrap shrink-0 inline-flex items-center gap-1 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 cursor-pointer shadow-2xs"
-                                >
-                                    <Copy className="w-3 h-3 text-blue-600 shrink-0" />
-                                    <span className="whitespace-nowrap">{t("building.copyFromPropertyBtn") || "Copy from Property Certificate"}</span>
-                                </Button>
-                            )}
                         </div>
 
                         {/* Document Attachment Section */}

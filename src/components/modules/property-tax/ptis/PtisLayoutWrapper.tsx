@@ -69,15 +69,28 @@ function PtisLayoutWrapperContent({
   const { isPanelVisible } = useMediaPanel();
   const searchParams = useSearchParams();
   const isDrawerOpen = searchParams?.get('drawer') === 'photo-plan';
+  const searchPropertyIdStr = searchParams?.get('propertyId') || searchParams?.get('propertyid');
+  const urlPropertyId = searchPropertyIdStr ? Number(searchPropertyIdStr) : undefined;
+
+  const isNavigatingToNewProperty = Boolean(
+    urlPropertyId && propertyId && urlPropertyId !== propertyId
+  );
+
+  const effectivePropertyId = isNavigatingToNewProperty ? urlPropertyId : propertyId;
+  const effectiveInitialSlots = isNavigatingToNewProperty ? [] : initialPhotoSlots;
+  const effectiveInitialPhotos = isNavigatingToNewProperty ? [] : initialPhotos;
+
   const { loading, photoSlots, photos, setPhotoSlots, setPhotos } = usePropertyPhotosQuery(
-    propertyId,
+    effectivePropertyId,
     isPanelVisible,
     isDrawerOpen,
-    initialPhotoSlots,
-    initialPhotos,
-    societyDetailId,
+    effectiveInitialSlots,
+    effectiveInitialPhotos,
+    isMainProperty ? societyDetailId : undefined,
     societyBuildingPhotoGuid,
-    societyPhotoUrl
+    societyPhotoUrl,
+    isMainProperty ? undefined : null,
+    isMainProperty
   );
   const { waybackReleases } = useWaybackReleases(isPanelVisible || isDrawerOpen);
 
@@ -107,7 +120,7 @@ function PtisLayoutWrapperContent({
             propertyHolderName={propertyHolderName}
             propertyHolderNameMarathi={propertyHolderNameMarathi}
             isQCApproved={isQCApproved}
-            propertyId={propertyId}
+            propertyId={effectivePropertyId}
             isMainProperty={isMainProperty}
             categoryId={categoryId}
             propertyTypeId={propertyTypeId}
@@ -116,7 +129,7 @@ function PtisLayoutWrapperContent({
             societyDetailId={societyDetailId}
             initialPhotoSlots={photoSlots}
             initialPhotos={photos}
-            loading={loading}
+            loading={loading || isNavigatingToNewProperty}
             initialLatitude={initialLatitude}
             initialLongitude={initialLongitude}
             initialWaybackReleases={waybackReleases.length > 0 ? waybackReleases : initialWaybackReleases}

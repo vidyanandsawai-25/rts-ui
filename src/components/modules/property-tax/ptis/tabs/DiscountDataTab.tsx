@@ -364,35 +364,51 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({
     [t, discountConfiguredItems.length, socialConfiguredItems.length]
   );
 
-  const levelFilterItems = useMemo(
-    () => [
+  const hasSocDetail = Boolean(societyDetailId && Number(societyDetailId) > 0);
+  const hasWingDetail = Boolean(wingDetailsId && Number(wingDetailsId) > 0);
+
+  const levelFilterItems = useMemo(() => {
+    const items: Array<{
+      key: 'All' | 'Apartment' | 'Wing' | 'Unit';
+      label: string;
+      count: number;
+      icon: typeof Layers;
+    }> = [
       {
-        key: 'All' as const,
+        key: 'All',
         label: tRedesign?.('buildingPermission.levels.all') || t('tabs.all') || 'All',
         count: levelCounts.all,
         icon: Layers,
       },
-      {
+    ];
+
+    if (hasSocDetail || levelCounts.apartment > 0) {
+      items.push({
         key: 'Apartment' as const,
         label: tRedesign?.('buildingPermission.levels.apartment') || 'Apartment Level',
         count: levelCounts.apartment,
         icon: Building2,
-      },
-      {
+      });
+    }
+
+    if (hasWingDetail || levelCounts.wing > 0 || (hasSocDetail && isApartmentScreen)) {
+      items.push({
         key: 'Wing' as const,
         label: tRedesign?.('buildingPermission.levels.wing') || 'Wing Level',
         count: levelCounts.wing,
         icon: Home,
-      },
-      {
-        key: 'Unit' as const,
-        label: tRedesign?.('buildingPermission.levels.unit') || 'Unit Level',
-        count: levelCounts.unit,
-        icon: Store,
-      },
-    ],
-    [tRedesign, t, levelCounts]
-  );
+      });
+    }
+
+    items.push({
+      key: 'Unit' as const,
+      label: tRedesign?.('buildingPermission.levels.unit') || 'Unit Level',
+      count: levelCounts.unit,
+      icon: Store,
+    });
+
+    return items;
+  }, [tRedesign, t, levelCounts, hasSocDetail, hasWingDetail, isApartmentScreen]);
 
   return (
     <div className={cn('space-y-2', className)}>

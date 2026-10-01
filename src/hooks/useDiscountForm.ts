@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
 import {
@@ -35,7 +35,6 @@ export const useDiscountForm = (
     const [incompleteDiscounts, setIncompleteDiscounts] = useState<{ id: number; name: string }[]>([]);
     const params = useParams();
     const locale = params.locale as string;
-    const router = useRouter();
     const [discountData, setDiscountData] = useState<DiscountState>(() => mapApiToDiscountState(initialDiscountData, masterAttributes, options?.level));
 
     const initialMappedState = useMemo(() => mapApiToDiscountState(initialDiscountData, masterAttributes, options?.level), [initialDiscountData, masterAttributes, options?.level]);
@@ -160,7 +159,7 @@ export const useDiscountForm = (
         startLoading();
         try {
             if (isSavedOnBackend) {
-                const currentLevel = options?.level || 'Apartment';
+                const isSocietyMode = options?.isSociety === true && !!options?.societyDetailId;
                 const socId = options?.societyDetailId ? Number(options.societyDetailId) : undefined;
                 const wingId = options?.wingDetailId ? Number(options.wingDetailId) : undefined;
                 const docBindingId = activeItem.documentBindingId ?? undefined;
@@ -169,18 +168,26 @@ export const useDiscountForm = (
                     socialAttributeId: id,
                 };
 
-                if (currentLevel === 'Apartment') {
+                if (!isSocietyMode) {
+                    // Individual Property
+                    hierarchyParams.entityType = 'P';
+                    if (propertyId && !isNaN(Number(propertyId))) {
+                        hierarchyParams.propertyId = Number(propertyId);
+                        hierarchyParams.propertyIds = [Number(propertyId)];
+                    }
+                    if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
+                } else if (options?.level === 'Apartment') {
                     // Apartment Level: societyDetailsId, socialAttributeId, documentBindingId (propertyId not passed or 0/null)
                     hierarchyParams.entityType = 'S';
                     if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
                     if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
-                } else if (currentLevel === 'Wing') {
+                } else if (options?.level === 'Wing') {
                     // Wing Level: societyDetailsId, wingDetailId, socialAttributeId, documentBindingId (propertyId not passed or 0/null)
                     hierarchyParams.entityType = 'W';
                     if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
                     if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
                     if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
-                } else if (currentLevel === 'Unit') {
+                } else if (options?.level === 'Unit') {
                     // Unit Level
                     hierarchyParams.entityType = 'P';
                     if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
@@ -204,12 +211,14 @@ export const useDiscountForm = (
                             hierarchyParams.propertyIds = selectedIds;
                         } else if (propertyId && !isNaN(Number(propertyId))) {
                             hierarchyParams.propertyIds = [Number(propertyId)];
+                            hierarchyParams.propertyId = Number(propertyId);
                         }
                     }
                 } else {
                     hierarchyParams.entityType = 'P';
                     if (propertyId && !isNaN(Number(propertyId))) {
                         hierarchyParams.propertyId = Number(propertyId);
+                        hierarchyParams.propertyIds = [Number(propertyId)];
                     }
                 }
 
@@ -252,16 +261,12 @@ export const useDiscountForm = (
             clearError(id);
 
             toast.success(t("discount.deleteSuccess") || "Discount and associated data deleted successfully!");
-
-            if (isSavedOnBackend) {
-                router.refresh();
-            }
         } catch (_error) {
             toast.error("An error occurred while deleting the discount details");
         } finally {
             stopLoading();
         }
-    }, [discountData, propertyId, locale, options, clearError, startLoading, stopLoading, t, router]);
+    }, [discountData, propertyId, locale, options, clearError, startLoading, stopLoading, t]);
 
     const handleSave = async () => {
         if (isSaving) return { success: false, isValid: true };
@@ -320,7 +325,6 @@ export const useDiscountForm = (
                 }
 
                 toast.success(t("discount.saveSuccess") || "Discount details saved successfully!");
-                router.refresh();
                 return { success: true, isValid: true };
             }
             toast.error(response.error || t("discount.saveError") || "Failed to save");

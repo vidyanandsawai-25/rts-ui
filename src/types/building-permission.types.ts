@@ -226,7 +226,11 @@ export interface PropertyCertificateBulkSaveResponseDto {
 
 export interface BuildingFormProps {
     initialBuildingPermission: PropertyCertificateWithStatusDto[] | null;
+    initialFloorBuildingPermission?: PropertyCertificateWithStatusDto[] | null;
     initialFloorCertificates?: FloorCertificatesResponseDto | null;
+    initialActiveScope?: 'Property' | 'Floor';
+    initialActiveFloorId?: number | null;
+    initialSelectedTypeId?: number | null;
     propertyId: string;
     isSociety?: boolean;
     societyDetailId?: number | null;

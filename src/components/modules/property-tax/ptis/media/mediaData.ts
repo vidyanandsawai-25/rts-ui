@@ -97,12 +97,21 @@ export function findCategory(categories: PhotoCategory[], codeKeywords: string[]
 export function formatWingCardLabel(baseLabel: string, wingName?: string | null): string {
   if (!wingName || !wingName.trim()) return baseLabel;
   const trimmed = wingName.trim();
-  const cleanWing = trimmed.replace(/^(?:wing\s+)/i, '').replace(/(?:\s+wing)$/i, '').trim() || trimmed;
+  const cleanWing = trimmed.replace(/^(?:wing|विंग|विग)\s+/gi, '').replace(/\s+(?:wing|विंग|विग)$/gi, '').trim() || trimmed;
 
-  if (baseLabel.includes('विंग')) {
-    return `विंग ${cleanWing}`;
+  if (baseLabel.toLowerCase().includes(cleanWing.toLowerCase())) {
+    return baseLabel;
   }
-  return `Wing ${cleanWing}`;
+
+  // Dynamic regex matching generic wing/photo terms across scripts
+  const isGenericWing = /^(?:wing|photo|picture|विंग|विग|फोटो|फ़ोटो|\s)+$/i.test(baseLabel.trim());
+
+  if (isGenericWing) {
+    const isDevanagari = /[\u0900-\u097F]/.test(baseLabel);
+    return isDevanagari ? `विंग ${cleanWing}` : `Wing ${cleanWing}`;
+  }
+
+  return baseLabel;
 }
 
 export function mapSlotsToCategories(
@@ -304,10 +313,33 @@ export function mapSlotsToCategories(
     entityType === 'AMENITY' ||
     entityType === 'A';
 
+  const isPartitionEmptyOrMain =
+    !partitionNo ||
+    partitionNo === '0' ||
+    String(partitionNo).trim() === '' ||
+    String(partitionNo).trim() === '-';
+
+  const isSocietyMainProperty =
+    !isAmenity &&
+    (isMainProperty || isPartitionEmptyOrMain) &&
+    (categoryId === 1 || categoryId === 3 || entityType === 'S' || Boolean(societyPhotoFallbackGuid) || Boolean(societyPhotoFallbackUrl));
+
+  const isInnerSocietyWingProperty =
+    !isAmenity &&
+    !isSocietyMainProperty &&
+    !isMainProperty &&
+    categoryId !== 4 &&
+    entityType !== 'W' &&
+    (categoryId === 1 || Boolean(selectedWingDetailId) || Boolean(wingName));
+
   const isIndividual =
     !isAmenity &&
     !isMainProperty &&
-    (categoryId === 2 || (entityType === 'P' && categoryId !== 1 && categoryId !== 3 && categoryId !== 4));
+    categoryId !== 4 &&
+    entityType !== 'W' &&
+    (categoryId === 2 || (entityType === 'P' && categoryId !== 1 && categoryId !== 3 && !selectedWingDetailId));
+
+  const isUnitOrIndividual = isInnerSocietyWingProperty || isIndividual;
 
   const hasAmenitySlot = baseCats.some(
     (c) =>
@@ -378,24 +410,6 @@ export function mapSlotsToCategories(
   const isSocietyMaster =
     ((categoryId === 3 && isMainProperty) || (isMainProperty && !selectedWingDetailId && !wingName) || entityType === 'S') && !isAmenity && !isIndividual;
 
-  const isPartitionEmptyOrMain =
-    !partitionNo ||
-    partitionNo === '0' ||
-    String(partitionNo).trim() === '' ||
-    String(partitionNo).trim() === '-';
-
-  const isSocietyMainProperty =
-    !isAmenity &&
-    !isIndividual &&
-    (isMainProperty || isPartitionEmptyOrMain) &&
-    (categoryId === 1 || categoryId === 3 || entityType === 'S' || Boolean(societyPhotoFallbackGuid) || Boolean(societyPhotoFallbackUrl));
-
-  const isInnerSocietyWingProperty =
-    !isAmenity &&
-    !isIndividual &&
-    !isSocietyMainProperty &&
-    (categoryId === 1 || Boolean(selectedWingDetailId) || Boolean(wingName));
-
   const filteredCats = baseCats.filter(c => {
     const code = c.photoTypeCode?.toUpperCase() || '';
     const isPlan = isPhotoPlanCat(c);
@@ -414,7 +428,7 @@ export function mapSlotsToCategories(
       }
 
       // 1. Inner property of society wings: only load property scope slots in QDE
-      if (isInnerSocietyWingProperty) {
+      if (isInnerSocietyWingProperty || isUnitOrIndividual) {
         const scope = c.photoScope?.toUpperCase();
         if (scope) {
           return scope === 'PROPERTY' || isPlan;
@@ -447,7 +461,14 @@ export function mapSlotsToCategories(
       return false;
     }
 
+    // When an individual property is loaded: only property scope slots should be rendered (no society or wing slots)
     if (isIndividual) {
+      const isCD = code === 'CHANGE_DETECTION';
+      const isGIS = code === 'GIS' || code.includes('SATELLITE') || c.photoTypeName?.toLowerCase().includes('satellite view');
+      const scope = c.photoScope?.toUpperCase();
+      if (scope) {
+        return scope === 'PROPERTY' || isPlan || isCD || isGIS;
+      }
       const isSocietyOrWing =
         code.startsWith('SOCIETY_') ||
         code.startsWith('WING_') ||

@@ -12,6 +12,7 @@ import {
   getPropertySocialInfoFilterBy,
   upsertPropertySocialInfoFilterBy,
   createPropertySocialDetail,
+  updatePropertySocialDetail,
   createBulkPropertySocialDetail,
   getPropertySocialDetailsByFilters,
 } from '@/lib/api/property-social-details.service';
@@ -30,6 +31,7 @@ import {
   UpsertPropertySocialInfoBulkDto,
   PropertySocialDetailsDto,
   CreatePropertySocialDetailDto,
+  UpdatePropertySocialDetailDto,
   CreateBulkPropertySocialDetailDto,
 } from '@/types/property-social-details.types';
 import { cleanCommonApiError, handleActionError } from '@/lib/utils/action-error-helpers';
@@ -200,7 +202,7 @@ export async function upsertPropertySocialInfoAction(
       await deletePropertySocialDetailsByHierarchy(deleteParams);
     }
 
-    // 3. Persist social attributes using POST /PropertySocialDetails or POST /PropertySocialDetails/Bulk/by-property-ids
+    // 3. Persist social attributes using PUT /PropertySocialDetails/{id} (if updating existing) or POST /PropertySocialDetails (if new)
     for (const attr of socialAttributes) {
       const sanitizedBitValue = attr.bitValue != null ? attr.bitValue : null;
       const sanitizedIntValue =
@@ -222,6 +224,23 @@ export async function upsertPropertySocialInfoAction(
       const sanitizedRemark =
         attr.remark && attr.remark !== 'string' && attr.remark.trim() !== '' ? attr.remark : null;
 
+      const isInherited =
+        (level === 'Wing' &&
+          (attr.inheritedFrom === 'Apartment' || attr.inheritanceLevel === 'Apartment')) ||
+        (level === 'Unit' &&
+          (attr.inheritedFrom === 'Apartment' ||
+            attr.inheritedFrom === 'Wing' ||
+            attr.inheritanceLevel === 'Apartment' ||
+            attr.inheritanceLevel === 'Wing'));
+
+      const initialAttr = initialFlatData[attr.socialAttributeId];
+      const existingRecordId =
+        (attr.id && Number(attr.id) > 0 && !isInherited)
+          ? Number(attr.id)
+          : (initialAttr?.id && Number(initialAttr.id) > 0 && !isInherited)
+            ? Number(initialAttr.id)
+            : null;
+
       if (isSociety === 'true') {
         if (!payloadSocietyDetailId) {
           throw new Error(
@@ -230,71 +249,42 @@ export async function upsertPropertySocialInfoAction(
         }
 
         if (level === 'Apartment') {
-          const createDto: CreatePropertySocialDetailDto = {
-            propertyId: 0,
-            socialAttributeId: attr.socialAttributeId,
-            societyDetailId: payloadSocietyDetailId,
-            wingDetailId: null,
-            entityType: 'S',
-            bitValue: sanitizedBitValue,
-            intValue: sanitizedIntValue,
-            decimalValue: sanitizedDecimalValue,
-            textValue: sanitizedTextValue,
-            dateValue: sanitizedDateValue,
-            documentBindingId: attr.documentBindingId || null,
-            remark: sanitizedRemark,
-            createdBy: Number(userId),
-            isActive: true,
-          };
-          const res = await createPropertySocialDetail(createDto);
-          if (!res.success) {
-            return {
-              success: false,
-              error: await cleanCommonApiError(res.error, locale),
-              statusCode: res.statusCode,
-            };
-          }
-          if (attr.documentBindingId && res.data?.id) {
-            await updateBindingReference(attr.documentBindingId, res.data.id);
-          }
-        } else if (level === 'Wing' || (level === 'Unit' && isAllUnitsSelected)) {
-          // Wing Level (or when all units in wing are selected, apply single record to Wing directly)
-          const createDto: CreatePropertySocialDetailDto = {
-            propertyId: 0,
-            socialAttributeId: attr.socialAttributeId,
-            societyDetailId: payloadSocietyDetailId,
-            wingDetailId: payloadWingDetailId,
-            entityType: 'W',
-            bitValue: sanitizedBitValue,
-            intValue: sanitizedIntValue,
-            decimalValue: sanitizedDecimalValue,
-            textValue: sanitizedTextValue,
-            dateValue: sanitizedDateValue,
-            documentBindingId: attr.documentBindingId || null,
-            remark: sanitizedRemark,
-            createdBy: Number(userId),
-            isActive: true,
-          };
-          const res = await createPropertySocialDetail(createDto);
-          if (!res.success) {
-            return {
-              success: false,
-              error: await cleanCommonApiError(res.error, locale),
-              statusCode: res.statusCode,
-            };
-          }
-          if (attr.documentBindingId && res.data?.id) {
-            await updateBindingReference(attr.documentBindingId, res.data.id);
-          }
-        } else if (level === 'Unit') {
-          if (unitIds.length === 1) {
-            // Single unit selected
-            const createDto: CreatePropertySocialDetailDto = {
-              propertyId: unitIds[0],
+          if (existingRecordId && existingRecordId > 0) {
+            const updateDto: UpdatePropertySocialDetailDto = {
+              id: existingRecordId,
+              propertyId: 0,
               socialAttributeId: attr.socialAttributeId,
               societyDetailId: payloadSocietyDetailId,
-              wingDetailId: payloadWingDetailId,
-              entityType: 'P',
+              wingDetailId: null,
+              entityType: 'S',
+              bitValue: sanitizedBitValue,
+              intValue: sanitizedIntValue,
+              decimalValue: sanitizedDecimalValue,
+              textValue: sanitizedTextValue,
+              dateValue: sanitizedDateValue,
+              documentBindingId: attr.documentBindingId || null,
+              remark: sanitizedRemark,
+              updatedBy: Number(userId),
+              isActive: true,
+            };
+            const res = await updatePropertySocialDetail(existingRecordId, updateDto);
+            if (!res.success) {
+              return {
+                success: false,
+                error: await cleanCommonApiError(res.error, locale),
+                statusCode: res.statusCode,
+              };
+            }
+            if (attr.documentBindingId && existingRecordId) {
+              await updateBindingReference(attr.documentBindingId, existingRecordId);
+            }
+          } else {
+            const createDto: CreatePropertySocialDetailDto = {
+              propertyId: 0,
+              socialAttributeId: attr.socialAttributeId,
+              societyDetailId: payloadSocietyDetailId,
+              wingDetailId: null,
+              entityType: 'S',
               bitValue: sanitizedBitValue,
               intValue: sanitizedIntValue,
               decimalValue: sanitizedDecimalValue,
@@ -315,6 +305,128 @@ export async function upsertPropertySocialInfoAction(
             }
             if (attr.documentBindingId && res.data?.id) {
               await updateBindingReference(attr.documentBindingId, res.data.id);
+            }
+          }
+        } else if (level === 'Wing' || (level === 'Unit' && isAllUnitsSelected)) {
+          // Wing Level (or when all units in wing are selected, apply single record to Wing directly)
+          if (existingRecordId && existingRecordId > 0) {
+            const updateDto: UpdatePropertySocialDetailDto = {
+              id: existingRecordId,
+              propertyId: 0,
+              socialAttributeId: attr.socialAttributeId,
+              societyDetailId: payloadSocietyDetailId,
+              wingDetailId: payloadWingDetailId,
+              entityType: 'W',
+              bitValue: sanitizedBitValue,
+              intValue: sanitizedIntValue,
+              decimalValue: sanitizedDecimalValue,
+              textValue: sanitizedTextValue,
+              dateValue: sanitizedDateValue,
+              documentBindingId: attr.documentBindingId || null,
+              remark: sanitizedRemark,
+              updatedBy: Number(userId),
+              isActive: true,
+            };
+            const res = await updatePropertySocialDetail(existingRecordId, updateDto);
+            if (!res.success) {
+              return {
+                success: false,
+                error: await cleanCommonApiError(res.error, locale),
+                statusCode: res.statusCode,
+              };
+            }
+            if (attr.documentBindingId && existingRecordId) {
+              await updateBindingReference(attr.documentBindingId, existingRecordId);
+            }
+          } else {
+            const createDto: CreatePropertySocialDetailDto = {
+              propertyId: 0,
+              socialAttributeId: attr.socialAttributeId,
+              societyDetailId: payloadSocietyDetailId,
+              wingDetailId: payloadWingDetailId,
+              entityType: 'W',
+              bitValue: sanitizedBitValue,
+              intValue: sanitizedIntValue,
+              decimalValue: sanitizedDecimalValue,
+              textValue: sanitizedTextValue,
+              dateValue: sanitizedDateValue,
+              documentBindingId: attr.documentBindingId || null,
+              remark: sanitizedRemark,
+              createdBy: Number(userId),
+              isActive: true,
+            };
+            const res = await createPropertySocialDetail(createDto);
+            if (!res.success) {
+              return {
+                success: false,
+                error: await cleanCommonApiError(res.error, locale),
+                statusCode: res.statusCode,
+              };
+            }
+            if (attr.documentBindingId && res.data?.id) {
+              await updateBindingReference(attr.documentBindingId, res.data.id);
+            }
+          }
+        } else if (level === 'Unit') {
+          if (unitIds.length === 1) {
+            // Single unit selected
+            if (existingRecordId && existingRecordId > 0) {
+              const updateDto: UpdatePropertySocialDetailDto = {
+                id: existingRecordId,
+                propertyId: unitIds[0],
+                socialAttributeId: attr.socialAttributeId,
+                societyDetailId: payloadSocietyDetailId,
+                wingDetailId: payloadWingDetailId,
+                entityType: 'P',
+                bitValue: sanitizedBitValue,
+                intValue: sanitizedIntValue,
+                decimalValue: sanitizedDecimalValue,
+                textValue: sanitizedTextValue,
+                dateValue: sanitizedDateValue,
+                documentBindingId: attr.documentBindingId || null,
+                remark: sanitizedRemark,
+                updatedBy: Number(userId),
+                isActive: true,
+              };
+              const res = await updatePropertySocialDetail(existingRecordId, updateDto);
+              if (!res.success) {
+                return {
+                  success: false,
+                  error: await cleanCommonApiError(res.error, locale),
+                  statusCode: res.statusCode,
+                };
+              }
+              if (attr.documentBindingId && existingRecordId) {
+                await updateBindingReference(attr.documentBindingId, existingRecordId);
+              }
+            } else {
+              const createDto: CreatePropertySocialDetailDto = {
+                propertyId: unitIds[0],
+                socialAttributeId: attr.socialAttributeId,
+                societyDetailId: payloadSocietyDetailId,
+                wingDetailId: payloadWingDetailId,
+                entityType: 'P',
+                bitValue: sanitizedBitValue,
+                intValue: sanitizedIntValue,
+                decimalValue: sanitizedDecimalValue,
+                textValue: sanitizedTextValue,
+                dateValue: sanitizedDateValue,
+                documentBindingId: attr.documentBindingId || null,
+                remark: sanitizedRemark,
+                createdBy: Number(userId),
+                isActive: true,
+              };
+              const res = await createPropertySocialDetail(createDto);
+              if (!res.success) {
+                return {
+                  success: false,
+                  error: await cleanCommonApiError(res.error, locale),
+                  statusCode: res.statusCode,
+                };
+              }
+              if (attr.documentBindingId && res.data?.id) {
+                await updateBindingReference(attr.documentBindingId, res.data.id);
+              }
             }
           } else if (unitIds.length > 1) {
             // Multiple units selected -> POST /api/PropertySocialDetails/Bulk/by-property-ids
@@ -346,32 +458,63 @@ export async function upsertPropertySocialInfoAction(
         }
       } else {
         // Individual Property
-        const createDto: CreatePropertySocialDetailDto = {
-          propertyId: BuildingPropertyId,
-          socialAttributeId: attr.socialAttributeId,
-          societyDetailId: null,
-          wingDetailId: null,
-          entityType: 'P',
-          bitValue: sanitizedBitValue,
-          intValue: sanitizedIntValue,
-          decimalValue: sanitizedDecimalValue,
-          textValue: sanitizedTextValue,
-          dateValue: sanitizedDateValue,
-          documentBindingId: attr.documentBindingId || null,
-          remark: sanitizedRemark,
-          createdBy: Number(userId),
-          isActive: true,
-        };
-        const res = await createPropertySocialDetail(createDto);
-        if (!res.success) {
-          return {
-            success: false,
-            error: await cleanCommonApiError(res.error, locale),
-            statusCode: res.statusCode,
+        if (existingRecordId && existingRecordId > 0) {
+          const updateDto: UpdatePropertySocialDetailDto = {
+            id: existingRecordId,
+            propertyId: BuildingPropertyId,
+            socialAttributeId: attr.socialAttributeId,
+            societyDetailId: null,
+            wingDetailId: null,
+            entityType: 'P',
+            bitValue: sanitizedBitValue,
+            intValue: sanitizedIntValue,
+            decimalValue: sanitizedDecimalValue,
+            textValue: sanitizedTextValue,
+            dateValue: sanitizedDateValue,
+            documentBindingId: attr.documentBindingId || null,
+            remark: sanitizedRemark,
+            updatedBy: Number(userId),
+            isActive: true,
           };
-        }
-        if (attr.documentBindingId && res.data?.id) {
-          await updateBindingReference(attr.documentBindingId, res.data.id);
+          const res = await updatePropertySocialDetail(existingRecordId, updateDto);
+          if (!res.success) {
+            return {
+              success: false,
+              error: await cleanCommonApiError(res.error, locale),
+              statusCode: res.statusCode,
+            };
+          }
+          if (attr.documentBindingId && existingRecordId) {
+            await updateBindingReference(attr.documentBindingId, existingRecordId);
+          }
+        } else {
+          const createDto: CreatePropertySocialDetailDto = {
+            propertyId: BuildingPropertyId,
+            socialAttributeId: attr.socialAttributeId,
+            societyDetailId: null,
+            wingDetailId: null,
+            entityType: 'P',
+            bitValue: sanitizedBitValue,
+            intValue: sanitizedIntValue,
+            decimalValue: sanitizedDecimalValue,
+            textValue: sanitizedTextValue,
+            dateValue: sanitizedDateValue,
+            documentBindingId: attr.documentBindingId || null,
+            remark: sanitizedRemark,
+            createdBy: Number(userId),
+            isActive: true,
+          };
+          const res = await createPropertySocialDetail(createDto);
+          if (!res.success) {
+            return {
+              success: false,
+              error: await cleanCommonApiError(res.error, locale),
+              statusCode: res.statusCode,
+            };
+          }
+          if (attr.documentBindingId && res.data?.id) {
+            await updateBindingReference(attr.documentBindingId, res.data.id);
+          }
         }
       }
     }

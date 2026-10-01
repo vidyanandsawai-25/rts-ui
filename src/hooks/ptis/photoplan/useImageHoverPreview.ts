@@ -38,11 +38,9 @@ export function useImageHoverPreview() {
   const handleImageLeave = useCallback(() => {
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
-    }
-    hoverTimeoutRef.current = setTimeout(() => {
-      setHoverPreview(null);
       hoverTimeoutRef.current = null;
-    }, 150);
+    }
+    setHoverPreview(null);
   }, []);
 
   const cancelImageLeave = useCallback(() => {

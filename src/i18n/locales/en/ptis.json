@@ -2,6 +2,14 @@
   "floor": {
     "editFloor": "Edit Floor"
   },
+  "valuation": {
+    "loadingCapital": "Loading Capital Value Data...",
+    "loadingDual": "Loading Dual Method Valuation Data...",
+    "loadingRateable": "Loading Rateable Value Data...",
+    "loadingFloorBreakdown": "Loading Rateable & Capital Floor Details Breakdown...",
+    "loadingBuildingPermission": "Loading Building Permission Data...",
+    "loadingDiscount": "Loading Discount & Social Data..."
+  },
   "title": "Property Tax Information System",
   "subtitle": "Manage property tax records and assessments",
   "partitionNo": "Partition No.",

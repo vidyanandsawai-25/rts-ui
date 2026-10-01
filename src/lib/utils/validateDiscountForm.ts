@@ -12,7 +12,7 @@ interface ValidationResult {
     incompleteDiscounts: IncompleteDiscount[];
 }
 
-const TEXT_PATTERN = /^[a-zA-Z0-9\s\-()&'\./,]*$/;
+const TEXT_PATTERN = /^[^<>]*$/;
 const REMARK_PATTERN = /^[^<>]*$/;
 
 /**

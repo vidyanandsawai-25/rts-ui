@@ -55,7 +55,7 @@ export function PropertyPhotoViewer({
     getPhotoTitle,
     handleImageHover,
     handleImageLeave,
-    cancelImageLeave,
+    cancelImageLeave: _cancelImageLeave,
   } = usePropertyPhotoViewer({
     propertyId,
     isDrawerOpen: open,
@@ -80,8 +80,6 @@ export function PropertyPhotoViewer({
           src={hoverPreview?.src || ''}
           title={hoverPreview?.title || ''}
           visible={!!hoverPreview}
-          onMouseEnter={cancelImageLeave}
-          onMouseLeave={handleImageLeave}
         />
 
         <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-gradient-to-r from-slate-50 via-white to-slate-50 rounded-t-lg">

@@ -1,5 +1,6 @@
 import type {
   CreatePropertySocialDetailDto,
+  UpdatePropertySocialDetailDto,
   DeletePropertySocialDetailsByHierarchyParams,
   PropertySocialDetailsDto,
 } from '@/types/property-social-details.types';
@@ -373,6 +374,89 @@ export function buildCreateDto({
     remark: sanitizedRemark,
     isActive: attr.isActive ?? true,
     createdBy: userId,
+    propertyId: scope.propertyId,
+    wingDetailId: scope.wingDetailId,
+    societyDetailId: scope.societyDetailId,
+    entityType: scope.entityType,
+  };
+}
+
+/**
+ * Builds UpdatePropertySocialDetailDto with proper sanitization and type safety.
+ */
+export function buildUpdateDto({
+  id,
+  attr,
+  scope,
+  userId,
+}: {
+  id: number;
+  attr: {
+    id?: number | null;
+    socialAttributeId: number;
+    bitValue?: boolean | null;
+    intValue?: number | string | null;
+    decimalValue?: number | string | null;
+    textValue?: string | null;
+    dateValue?: string | null;
+    documentBindingId?: number | null;
+    remark?: string | null;
+    isActive?: boolean;
+    percentage?: number | null;
+    amount?: number | null;
+  };
+  scope: {
+    entityType: EntityType;
+    propertyId: number | null;
+    wingDetailId: number | null;
+    societyDetailId: number | null;
+  };
+  userId: number;
+}): UpdatePropertySocialDetailDto {
+  const sanitizedInt =
+    attr.intValue != null &&
+    String(attr.intValue).trim() !== '' &&
+    !isNaN(Number(attr.intValue))
+      ? Number(attr.intValue)
+      : null;
+
+  const sanitizedDec =
+    attr.decimalValue != null &&
+    String(attr.decimalValue).trim() !== '' &&
+    !isNaN(Number(attr.decimalValue))
+      ? Number(attr.decimalValue)
+      : null;
+
+  const rawText = attr.textValue != null ? String(attr.textValue).trim() : null;
+  const sanitizedText =
+    rawText && rawText.toLowerCase() !== 'string' && rawText !== '-'
+      ? rawText
+      : null;
+
+  const rawDate = attr.dateValue != null ? String(attr.dateValue).trim() : null;
+  const sanitizedDate =
+    rawDate && rawDate.toLowerCase() !== 'string' ? rawDate : null;
+
+  const rawRemark = attr.remark != null ? String(attr.remark).trim() : null;
+  const sanitizedRemark =
+    rawRemark &&
+    rawRemark.toLowerCase() !== 'string' &&
+    rawRemark.toLowerCase() !== 'null'
+      ? rawRemark
+      : null;
+
+  return {
+    id,
+    socialAttributeId: attr.socialAttributeId,
+    bitValue: attr.bitValue ?? null,
+    intValue: sanitizedInt,
+    decimalValue: sanitizedDec,
+    textValue: sanitizedText,
+    dateValue: sanitizedDate,
+    documentBindingId: attr.documentBindingId ? Number(attr.documentBindingId) : null,
+    remark: sanitizedRemark,
+    isActive: attr.isActive ?? true,
+    updatedBy: userId,
     propertyId: scope.propertyId,
     wingDetailId: scope.wingDetailId,
     societyDetailId: scope.societyDetailId,

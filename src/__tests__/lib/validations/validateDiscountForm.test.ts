@@ -270,7 +270,7 @@ describe("validateDiscountForm", () => {
         });
 
         it("should fail if value contains invalid characters", () => {
-            const item = createBaseAttr({ dataType: "VARCHAR", textValue: "invalid@char", documentGuid: "some-guid" });
+            const item = createBaseAttr({ dataType: "VARCHAR", textValue: "<invalid>", documentGuid: "some-guid" });
             const result = validateDiscountForm({ 1: item }, tMock);
             expect(result.isValid).toBe(false);
             expect(result.errors[1]).toBe("Contains invalid characters.");

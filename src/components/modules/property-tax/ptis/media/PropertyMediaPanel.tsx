@@ -125,7 +125,11 @@ function PropertyMediaPanel({
   const searchPropertyNo = searchParams?.get('propertyNo') || searchParams?.get('propertyno');
   const searchPartitionNo = searchParams?.get('partitionNo') || searchParams?.get('partitionno');
 
-  const effectiveId = property?.id ?? propPropertyId ?? id ?? (searchPropertyId ? Number(searchPropertyId) : 0);
+  const isNavigating = Boolean(
+    searchPropertyId && propPropertyId && Number(searchPropertyId) !== propPropertyId
+  );
+  const effectiveId = (searchPropertyId ? Number(searchPropertyId) : 0) || property?.id || propPropertyId || id || 0;
+  const isPanelLoading = loading || isNavigating;
   const effectiveWardNo = wardNo || searchWardNo || '';
   const effectivePropertyNo = propertyNo || searchPropertyNo || '';
   const effectivePartitionNo = partitionNo !== undefined && partitionNo !== null && partitionNo !== '' ? partitionNo : (searchPartitionNo || null);
@@ -372,10 +376,10 @@ function PropertyMediaPanel({
   );
 
   useEffect(() => {
-    if (loading) {
+    if (isPanelLoading) {
       resetHoverPreview();
     }
-  }, [loading, resetHoverPreview]);
+  }, [isPanelLoading, resetHoverPreview]);
 
   // Listen for media update events (e.g., photo plan uploads/changes) to refetch photos live
   useEffect(() => {
@@ -561,14 +565,11 @@ function PropertyMediaPanel({
 
   // Keep PropertyMasterCard thumbnail synchronized with the loaded society / property photo
   useEffect(() => {
-    const isApartmentSociety =
-      effectiveIsMainProperty ||
-      (effectiveWings && effectiveWings.length > 0) ||
-      Boolean(resolvedSocietyDetailId);
-
-    // In apartment society view, only sync when society photo (specifically Society Place Photo) is available.
-    // Do NOT fall back to propertyPhoto/wingPhoto which leaks wing building photos into the top background slot.
-    const photoToSync = isApartmentSociety ? societyPhoto : (societyPhoto || propertyPhoto);
+    // In apartment society view (main property), only sync when society photo is available.
+    // When viewing an individual unit, sync the unit's property photo.
+    const photoToSync = effectiveIsMainProperty ? societyPhoto : (propertyPhoto || societyPhoto);
+    const syncCategory = effectiveIsMainProperty ? 'Society Place Photo' : (propertyPhotoCategory?.photoTypeName || 'Property Front Photo');
+    const syncCode = effectiveIsMainProperty ? (societyPhotoCategory?.photoTypeCode || 'SOCIETY_PLACE') : (propertyPhotoCategory?.photoTypeCode || 'PROPERTY_FRONT');
 
     if (typeof window !== 'undefined' && photoToSync && (photoToSync.documentGuid || photoToSync.src)) {
       window.dispatchEvent(
@@ -577,13 +578,13 @@ function PropertyMediaPanel({
             propertyId: effectiveId,
             documentGuid: photoToSync.documentGuid,
             photoUrl: photoToSync.src || photoToSync.fullSrc,
-            category: 'Society Place Photo',
-            photoTypeCode: societyPhotoCategory?.photoTypeCode || 'SOCIETY_PLACE',
+            category: syncCategory,
+            photoTypeCode: syncCode,
           },
         })
       );
     }
-  }, [effectiveId, societyPhoto, propertyPhoto, effectiveIsMainProperty, effectiveWings, resolvedSocietyDetailId, societyPhotoCategory]);
+  }, [effectiveId, societyPhoto, propertyPhoto, effectiveIsMainProperty, propertyPhotoCategory, societyPhotoCategory]);
 
   const parsedCoords = React.useMemo(() => {
     return extractCoordinates([
@@ -871,7 +872,7 @@ function PropertyMediaPanel({
 
   return (
     <>
-      {loading ? (
+      {isPanelLoading ? (
         <PropertyMediaPanelSkeleton />
       ) : (
         <div className="h-auto lg:h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 relative">

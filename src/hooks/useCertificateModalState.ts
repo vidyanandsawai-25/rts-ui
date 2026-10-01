@@ -479,6 +479,20 @@ export function useCertificateModalState({
       setExistingPropertyCertificateId(activeCertificate.propertyCertificateId || null);
       setHasExistingDocument(Boolean(activeCertificate.hasDocument || activeCertificate.documentGuid));
       setAttachedFiles([]);
+    } else if (initialData && (initialData.certificateTypeId === selectedTypeId || !initialData.certificateTypeId)) {
+      setCertificateNumber(initialData.number || '');
+      const formattedDate = initialData.date
+        ? initialData.date.includes('T')
+          ? initialData.date.split('T')[0]
+          : initialData.date
+        : '';
+      setCertificateDate(formattedDate);
+      setStatus('Active');
+      setExistingDocumentGuid(initialData.documentGuid || null);
+      setExistingFileName(initialData.fileName || null);
+      setExistingPropertyCertificateId(initialData.propertyCertificateId || null);
+      setHasExistingDocument(Boolean(initialData.documentGuid));
+      setAttachedFiles([]);
     } else {
       setCertificateNumber('');
       setCertificateDate('');

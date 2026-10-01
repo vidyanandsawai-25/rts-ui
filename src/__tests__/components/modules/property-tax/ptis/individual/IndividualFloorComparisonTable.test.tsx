@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { IndividualFloorTopNav } from '@/components/modules/property-tax/ptis/individual/individual-floor/IndividualFloorTopNav';
 import { IndividualFloorIntelligence } from '@/components/modules/property-tax/ptis/individual/individual-floor/IndividualFloorIntelligence';
@@ -109,27 +109,37 @@ describe('IndividualFloorTopNav', () => {
     expect(onToggleSection).toHaveBeenCalledWith('oldDetails');
   });
 
-  it('triggers onTaxModeChange when valuation buttons are clicked', () => {
+  it('triggers onTaxModeChange and automatically selects floor tab when valuation buttons are clicked', () => {
     const onTaxModeChange = vi.fn();
+    const onToggleSection = vi.fn();
 
     render(
       <IndividualFloorTopNav
         activeSection="floor"
-        onToggleSection={vi.fn()}
+        onToggleSection={onToggleSection}
         onTaxModeChange={onTaxModeChange}
       />
     );
 
     fireEvent.click(screen.getByText('Capital Value Method (CVM)'));
     expect(onTaxModeChange).toHaveBeenCalledWith('capital');
+    expect(onToggleSection).toHaveBeenCalledWith('floor');
 
     fireEvent.click(screen.getByText('Dual Method View (RV + CVM)'));
     expect(onTaxModeChange).toHaveBeenCalledWith('dual');
+    expect(onToggleSection).toHaveBeenCalledWith('floor');
 
     fireEvent.click(screen.getByText('Rateable Value (RV)'));
     expect(onTaxModeChange).toHaveBeenCalledWith('rateable');
+    expect(onToggleSection).toHaveBeenCalledWith('floor');
   });
 });
+
+import {
+  fetchIndividualRateableValueAction,
+  fetchIndividualCapitalValueAction,
+  fetchIndividualDualMethodAction,
+} from '@/app/[locale]/property-tax/ptis/individual/action';
 
 vi.mock('@/app/[locale]/property-tax/ptis/individual/action', () => ({
   fetchIndividualRateableValueAction: vi.fn().mockResolvedValue({ success: true, data: null }),
@@ -137,6 +147,11 @@ vi.mock('@/app/[locale]/property-tax/ptis/individual/action', () => ({
   fetchIndividualDualMethodAction: vi.fn().mockResolvedValue({ success: true, data: null }),
   fetchIndividualPropertyComparisonAction: vi.fn().mockResolvedValue({ success: true, data: null }),
   getIndividualBuildingCertificatesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchIndividualSocialAndDiscountDetailsAction: vi.fn().mockResolvedValue({ success: true, data: null }),
+  getIndividualOldDetailsAction: vi.fn().mockResolvedValue({ success: true, data: null }),
+  getIndividualOldFloorDetailsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  getIndividualOldTaxesDetailsAction: vi.fn().mockResolvedValue({ success: true, data: null }),
+  getIndividualMappedPropertiesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
 }));
 
 const mockRateableData = {
@@ -263,11 +278,13 @@ describe('IndividualFloorIntelligence', () => {
     expect(screen.getByText('Floor Details')).toBeInTheDocument();
   });
 
-  it('switches to building permission section when clicked', () => {
+  it('switches to building permission section when clicked', async () => {
     render(<IndividualFloorIntelligence propertyId={123} wardNo="MM11" />);
 
     fireEvent.click(screen.getByText('Building Permission'));
-    expect(screen.getByText('BUILDING PERMISSION (Certificates & Clearances)')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('BUILDING PERMISSION (Certificates & Clearances)')).toBeInTheDocument();
+    });
   });
 
   it('renders floor details section correctly in rateable mode when data is passed', () => {
@@ -312,5 +329,117 @@ describe('IndividualFloorIntelligence', () => {
     );
 
     expect(screen.getAllByText('Dual Method View (RV + CVM)').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('automatically selects floor details tab and fetches capital value API when Capital Value button is clicked', async () => {
+    const onCapitalDataLoaded = vi.fn();
+    render(
+      <IndividualFloorIntelligence
+        propertyId={123}
+        wardNo="MM11"
+        onCapitalDataLoaded={onCapitalDataLoaded}
+      />
+    );
+
+    // Switch away to building permission
+    fireEvent.click(screen.getByText('Building Permission'));
+    await waitFor(() => {
+      expect(screen.getByText('BUILDING PERMISSION (Certificates & Clearances)')).toBeInTheDocument();
+    });
+
+    // Click Capital Value Method (CVM)
+    fireEvent.click(screen.getByText('Capital Value Method (CVM)'));
+
+    // Building permission must be closed, floor section is selected
+    expect(screen.queryByText('BUILDING PERMISSION (Certificates & Clearances)')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchIndividualCapitalValueAction).toHaveBeenCalledWith(123);
+    });
+  });
+
+  it('automatically selects floor details tab and fetches dual method API when Dual Method button is clicked', async () => {
+    const onDualMethodDataLoaded = vi.fn();
+    render(
+      <IndividualFloorIntelligence
+        propertyId={123}
+        wardNo="MM11"
+        onDualMethodDataLoaded={onDualMethodDataLoaded}
+      />
+    );
+
+    // Switch away to discount
+    fireEvent.click(screen.getByText('Discount & Social Data'));
+
+    // Click Dual Method View (RV + CVM)
+    fireEvent.click(screen.getByText('Dual Method View (RV + CVM)'));
+
+    // Floor section is selected and Dual Method API is called
+    await waitFor(() => {
+      expect(fetchIndividualDualMethodAction).toHaveBeenCalledWith(123);
+    });
+  });
+
+  it('automatically selects floor details tab and fetches rateable value API when Rateable Value button is clicked', async () => {
+    const onRateableDataLoaded = vi.fn();
+    render(
+      <IndividualFloorIntelligence
+        propertyId={123}
+        wardNo="MM11"
+        onRateableDataLoaded={onRateableDataLoaded}
+      />
+    );
+
+    // Switch away to building permission
+    fireEvent.click(screen.getByText('Building Permission'));
+    await waitFor(() => {
+      expect(screen.getByText('BUILDING PERMISSION (Certificates & Clearances)')).toBeInTheDocument();
+    });
+
+    // Click Rateable Value (RV)
+    fireEvent.click(screen.getByText('Rateable Value (RV)'));
+
+    // Building permission must be closed, floor section is selected
+    expect(screen.queryByText('BUILDING PERMISSION (Certificates & Clearances)')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchIndividualRateableValueAction).toHaveBeenCalledWith(123);
+    });
+  });
+
+  it('renders separate tables for each valuation method and not in a single merged table', () => {
+    // 1. Rateable mode: rateable rows appear
+    const { unmount: unmount1 } = render(
+      <IndividualFloorIntelligence
+        propertyId={123}
+        wardNo="MM11"
+        taxMode="rateable"
+        rateableData={mockRateableData}
+      />
+    );
+    expect(screen.getAllByText('Ground Floor').length).toBeGreaterThanOrEqual(1);
+    unmount1();
+
+    // 2. Capital mode: capital data appears
+    const { unmount: unmount2 } = render(
+      <IndividualFloorIntelligence
+        propertyId={123}
+        wardNo="MM11"
+        taxMode="capital"
+        capitalData={mockCapitalData}
+      />
+    );
+    expect(screen.getAllByText('Commercial').length).toBeGreaterThanOrEqual(1);
+    unmount2();
+
+    // 3. Dual mode: comparison table appears
+    const { unmount: unmount3 } = render(
+      <IndividualFloorIntelligence
+        propertyId={123}
+        wardNo="MM11"
+        taxMode="dual"
+        dualMethodData={mockDualMethodData}
+      />
+    );
+    expect(screen.getAllByText('Old Taxes').length).toBeGreaterThanOrEqual(1);
+    unmount3();
   });
 });

@@ -20,6 +20,7 @@ import {
   getIndividualOldTaxesDetailsAction,
   getIndividualMappedPropertiesAction,
   fetchIndividualCapitalValueAction,
+  fetchIndividualDualMethodAction,
   fetchIndividualRateableValueAction,
   fetchIndividualSocialAndDiscountDetailsAction,
 } from './action';
@@ -60,6 +61,10 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
   const rawPartitionNo = toSafeString(resolvedSearchParams.partitionNo);
   const partitionNo = rawPartitionNo === '0' ? '' : rawPartitionNo;
 
+  const rawTab = toSafeString(resolvedSearchParams?.tab).toLowerCase();
+  const isOldDetailsTab = rawTab === 'olddetails' || rawTab === 'old';
+  const isDiscountTab = rawTab === 'discount' || rawTab === 'discountdetails';
+
   const [
     pageData,
     workflowStagesResult,
@@ -83,10 +88,10 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
           partitionNo: partitionNo || undefined,
         }).catch(() => null)
       : Promise.resolve(null),
-    isPropIdValid ? getIndividualOldDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
-    isPropIdValid ? getIndividualOldFloorDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
-    isPropIdValid ? getIndividualOldTaxesDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
-    isPropIdValid ? getIndividualMappedPropertiesAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
+    isPropIdValid && isOldDetailsTab ? getIndividualOldDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
+    isPropIdValid && isOldDetailsTab ? getIndividualOldFloorDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
+    isPropIdValid && isOldDetailsTab ? getIndividualOldTaxesDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
+    isPropIdValid && isOldDetailsTab ? getIndividualMappedPropertiesAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
   ]);
 
   const resolvedPropertyId = isPropIdValid ? propertyIdRaw : (pageData?.resolvedPropertyId ?? undefined);
@@ -124,7 +129,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
   const needsTopSection = !finalTopSectionRes?.success;
   const needsWorkflow = !finalCurrentWorkflow?.success;
   const needsBelowFlex = !finalBelowFlexRes?.success;
-  const needsOldDetails = !finalOldDetailsRes?.success || !finalOldDetailsRes?.data;
+  const needsOldDetails = isOldDetailsTab && (!finalOldDetailsRes?.success || !finalOldDetailsRes?.data);
 
   if (resolvedPropertyId && (needsTopSection || needsWorkflow || needsBelowFlex || needsOldDetails)) {
     const [
@@ -147,9 +152,9 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
           }).catch(() => null)
         : Promise.resolve(null),
       needsOldDetails ? getIndividualOldDetailsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
-      (!finalOldFloorRes?.success) ? getIndividualOldFloorDetailsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
-      (!finalOldTaxesRes?.success) ? getIndividualOldTaxesDetailsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
-      (!finalMappedPropsRes?.success) ? getIndividualMappedPropertiesAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
+      (isOldDetailsTab && !finalOldFloorRes?.success) ? getIndividualOldFloorDetailsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
+      (isOldDetailsTab && !finalOldTaxesRes?.success) ? getIndividualOldTaxesDetailsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
+      (isOldDetailsTab && !finalMappedPropsRes?.success) ? getIndividualMappedPropertiesAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
     ]);
     if (lateTopSection) finalTopSectionRes = lateTopSection;
     if (lateWorkflow) finalCurrentWorkflow = lateWorkflow;
@@ -159,7 +164,6 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
     if (lateOldTaxes) finalOldTaxesRes = lateOldTaxes;
     if (lateMappedProps) finalMappedPropsRes = lateMappedProps;
   }
-
 
   const initialQcTopSectionBelowFlex = (finalBelowFlexRes?.success && (finalBelowFlexRes.items || finalBelowFlexRes.data))
     ? ((finalBelowFlexRes.items ?? finalBelowFlexRes.data) ?? null)
@@ -188,7 +192,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
   const hasDiscountItems = Boolean(initialDiscountData?.items && initialDiscountData.items.length > 0);
   const hasSocialItems = Boolean(initialSocialData?.items && initialSocialData.items.length > 0);
 
-  if (resolvedPropertyId && (!hasDiscountItems && !hasSocialItems)) {
+  if (isDiscountTab && resolvedPropertyId && (!hasDiscountItems && !hasSocialItems)) {
     const discountRes = await fetchIndividualSocialAndDiscountDetailsAction(
       resolvedPropertyId,
       resolvedSocietyDetailId,
@@ -278,6 +282,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
 
   let initialRateableData = pageData.rateableResult?.success ? pageData.rateableResult.data : null;
   let initialCapitalData = pageData.capitalResult?.success ? pageData.capitalResult.data : null;
+  let initialDualMethodData = pageData.dualSectionData?.initialDualMethodData ?? null;
 
   if (resolvedPropertyId) {
     if (initialTaxMode === 'capital' && !initialCapitalData) {
@@ -286,6 +291,9 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
     } else if (initialTaxMode === 'rateable' && !initialRateableData) {
       const rvRes = await fetchIndividualRateableValueAction(resolvedPropertyId).catch(() => null);
       if (rvRes?.success && rvRes.data) initialRateableData = rvRes.data;
+    } else if (initialTaxMode === 'dual' && !initialDualMethodData) {
+      const dualRes = await fetchIndividualDualMethodAction(resolvedPropertyId).catch(() => null);
+      if (dualRes?.success && dualRes.data) initialDualMethodData = dualRes.data;
     }
   }
 
@@ -325,7 +333,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
             initialQcTopSectionBelowFlex={initialQcTopSectionBelowFlex}
             initialRateableData={initialRateableData}
             initialCapitalData={initialCapitalData}
-            initialDualMethodData={pageData.dualSectionData?.initialDualMethodData ?? null}
+            initialDualMethodData={initialDualMethodData}
             initialComparisonData={initialComparisonData}
             initialRateableTaxDetails={initialRateableTaxDetails}
             initialCapitalTaxDetails={initialCapitalTaxDetails}

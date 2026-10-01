@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
 import { 
@@ -39,7 +39,6 @@ export const useSocialDetailsForm = (
     const t = useTranslations("quickDataEntry");
     const { isLoading: isSaving, startLoading, stopLoading } = useLoading(false);
     const params = useParams();
-    const router = useRouter();
     const locale = params.locale as string;
     const { confirm } = useConfirm();
 
@@ -143,7 +142,6 @@ export const useSocialDetailsForm = (
                                 clearPendingFiles();
                             }
                             toast.success(response.message || t("discount.socialConfirm.saveSuccess") || "Saved successfully!");
-                            router.refresh();
                             resolve({ success: true, isValid: true });
                         } else {
                             toast.error(response.error || t("discount.socialConfirm.saveError") || "Failed to save.");
@@ -168,7 +166,7 @@ export const useSocialDetailsForm = (
         startLoading();
         try {
             if (isSavedOnBackend) {
-                const currentLevel = options?.level || 'Apartment';
+                const isSocietyMode = options?.isSociety === true && !!options?.societyDetailId;
                 const socId = options?.societyDetailId ? Number(options.societyDetailId) : undefined;
                 const wingId = options?.wingDetailId ? Number(options.wingDetailId) : undefined;
                 const docBindingId = (activeItem.documentBindingId ?? activeItem.photoBindingId) ?? undefined;
@@ -177,18 +175,26 @@ export const useSocialDetailsForm = (
                     socialAttributeId: id,
                 };
 
-                if (currentLevel === 'Apartment') {
+                if (!isSocietyMode) {
+                    // Individual Property
+                    hierarchyParams.entityType = 'P';
+                    if (propertyId && !isNaN(Number(propertyId))) {
+                        hierarchyParams.propertyId = Number(propertyId);
+                        hierarchyParams.propertyIds = [Number(propertyId)];
+                    }
+                    if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
+                } else if (options?.level === 'Apartment') {
                     // Apartment Level: societyDetailsId, socialAttributeId, documentBindingId
                     hierarchyParams.entityType = 'S';
                     if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
                     if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
-                } else if (currentLevel === 'Wing') {
+                } else if (options?.level === 'Wing') {
                     // Wing Level: societyDetailsId, wingDetailId, socialAttributeId, documentBindingId
                     hierarchyParams.entityType = 'W';
                     if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
                     if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
                     if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
-                } else if (currentLevel === 'Unit') {
+                } else if (options?.level === 'Unit') {
                     // Unit Level
                     hierarchyParams.entityType = 'P';
                     if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
@@ -212,12 +218,14 @@ export const useSocialDetailsForm = (
                             hierarchyParams.propertyIds = selectedIds;
                         } else if (propertyId && !isNaN(Number(propertyId))) {
                             hierarchyParams.propertyIds = [Number(propertyId)];
+                            hierarchyParams.propertyId = Number(propertyId);
                         }
                     }
                 } else {
                     hierarchyParams.entityType = 'P';
                     if (propertyId && !isNaN(Number(propertyId))) {
                         hierarchyParams.propertyId = Number(propertyId);
+                        hierarchyParams.propertyIds = [Number(propertyId)];
                     }
                 }
 
@@ -275,16 +283,12 @@ export const useSocialDetailsForm = (
             });
 
             toast.success(t("discount.deleteSuccess") || "Social detail and associated data deleted successfully!");
-
-            if (isSavedOnBackend) {
-                router.refresh();
-            }
         } catch (_error) {
             toast.error("An error occurred while deleting the social details");
         } finally {
             stopLoading();
         }
-    }, [socialData, propertyId, locale, options, setFormState, startLoading, stopLoading, t, router]);
+    }, [socialData, propertyId, locale, options, setFormState, startLoading, stopLoading, t]);
 
     const revertSocialAttribute = useCallback((id: number) => {
         setFormState((prev) => {

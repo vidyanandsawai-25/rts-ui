@@ -21,7 +21,11 @@ import { useConfirm } from '@/components/common/ConfirmProvider';
 
 const BuildingForm: React.FC<BuildingFormProps> = ({
     initialBuildingPermission,
+    initialFloorBuildingPermission,
     initialFloorCertificates,
+    initialActiveScope,
+    initialActiveFloorId,
+    initialSelectedTypeId,
     propertyId,
     isSociety = true,
     societyDetailId,
@@ -85,7 +89,16 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         fieldErrors,
         propertyCertificatesState,
         t,
-    } = useBuildingForm(initialBuildingPermission, initialFloorCertificates || null, propertyId, initialFloors);
+    } = useBuildingForm(
+        initialBuildingPermission,
+        initialFloorCertificates || null,
+        propertyId,
+        initialFloors,
+        initialFloorBuildingPermission,
+        initialActiveScope,
+        initialActiveFloorId,
+        initialSelectedTypeId
+    );
 
     const [isSectionSaving, setIsSectionSaving] = useState(false);
 
@@ -269,6 +282,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                     <BuildingPermissionSection
                         propertyId={propertyId}
                         societyId={societyDetailId ?? null}
+                        wingDetailId={wingDetailId ?? null}
                         wings={initialWings.length > 0 ? initialWings : wingOptions}
                         units={initialUnits.length > 0 ? initialUnits : unitOptions}
                         certificateTypes={initialCertificateTypes}

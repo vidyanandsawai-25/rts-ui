@@ -104,7 +104,9 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
         // Fetch master attributes, units, and hierarchical levels in parallel
         const [masterRes, unitsResponse, apartmentDetailsRes, wingDetailsRes, unitDetailsRes] = await Promise.all([
             getSocialAttributeMasterAction(),
-            getDiscountUnitsAction(propertyId, finalWingDetailId,1,1000),
+            finalWingDetailId && finalWingDetailId > 0
+                ? getDiscountUnitsAction(propertyId, finalWingDetailId, 1, 1000)
+                : Promise.resolve({ success: true, data: { items: [], totalCount: 0 } }),
             socIdNum
                 ? getPropertySocialDetailsByFiltersAction(undefined, socIdNum)
                 : Promise.resolve({ success: true, data: [] as PropertySocialDetailsDto[] }),
@@ -240,8 +242,8 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
                     wingDetailId: finalWingDetailId,
                     socialAttributes: socialSavedDetails.map(item => ({
                         ...mapToItem(item, false),
-                        parentAttributeId: null,
-                        isRequiredWhenParentTrue: false,
+                        parentAttributeId: masterById.get(item.socialAttributeId)?.parentAttributeId ?? null,
+                        isRequiredWhenParentTrue: masterById.get(item.socialAttributeId)?.isRequiredWhenParentTrue ?? false,
                         photoTypeId: null,
                         children: []
                     }))
@@ -276,6 +278,7 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
             propertyId={propertyId}
             isSociety={isSociety}
             societyDetailId={searchSocietyId ? Number(searchSocietyId) : undefined}
+            wingDetailId={finalWingDetailId ?? undefined}
             discountMasterAttributes={discountMasterAttributes}
             socialMasterAttributes={socialMasterAttributes}
             wings={mappedWings}

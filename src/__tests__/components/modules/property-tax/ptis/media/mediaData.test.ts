@@ -34,6 +34,18 @@ describe('mediaData - formatWingCardLabel', () => {
     expect(formatWingCardLabel('Wing Photo', null)).toBe('Wing Photo');
     expect(formatWingCardLabel('Wing Photo', '   ')).toBe('Wing Photo');
   });
+
+  it('preserves specific wing slot names without collapsing them to Wing [name]', () => {
+    expect(formatWingCardLabel('Wing Building Photo', 'Asha')).toBe('Wing Building Photo');
+    expect(formatWingCardLabel('Wing Place Photo', 'Asha')).toBe('Wing Place Photo');
+    expect(formatWingCardLabel('Wing Board Photo', 'Asha')).toBe('Wing Board Photo');
+    expect(formatWingCardLabel('Wing Sign Board Photo', 'Asha')).toBe('Wing Sign Board Photo');
+
+    expect(formatWingCardLabel('विंग इमारत फोटो', 'Asha')).toBe('विंग इमारत फोटो');
+    expect(formatWingCardLabel('विंग ठिकाणाचा फोटो', 'Asha')).toBe('विंग ठिकाणाचा फोटो');
+    expect(formatWingCardLabel('विंग पाटीचा फोटो', 'Asha')).toBe('विंग पाटीचा फोटो');
+    expect(formatWingCardLabel('विंग नामफलक फोटो', 'Asha')).toBe('विंग नामफलक फोटो');
+  });
 });
 
 describe('mediaData - mapSlotsToCategories with wingName', () => {
@@ -80,6 +92,41 @@ describe('mediaData - mapSlotsToCategories with wingName', () => {
     const wingCat = categories.find((c) => c.photoTypeCode === 'WING_BUILDING');
     expect(wingCat).toBeDefined();
     expect(wingCat?.photoTypeName).toBe('Wing B');
+  });
+
+  it('preserves distinct photoTypeName for all wing scope slots in drawer without duplicate names', () => {
+    const wingScopeSlots = [
+      { photoTypeId: 8, photoTypeCode: 'WING_BUILDING', photoTypeName: 'Wing Building Photo', photoScope: 'WING', displayOrder: 1, hasPhoto: false },
+      { photoTypeId: 9, photoTypeCode: 'WING_PLACE', photoTypeName: 'Wing Place Photo', photoScope: 'WING', displayOrder: 2, hasPhoto: false },
+      { photoTypeId: 10, photoTypeCode: 'WING_BOARD', photoTypeName: 'Wing Board Photo', photoScope: 'WING', displayOrder: 3, hasPhoto: false },
+      { photoTypeId: 11, photoTypeCode: 'WING_SIGN_BOARD', photoTypeName: 'Wing Sign Board Photo', photoScope: 'WING', displayOrder: 4, hasPhoto: false },
+    ];
+
+    const categories = mapSlotsToCategories(
+      wingScopeSlots,
+      [],
+      undefined,
+      undefined,
+      'Asha',
+      1530993,
+      true, // isMainProperty
+      4     // categoryId = 4 (Wing)
+    );
+
+    const wingBuilding = categories.find((c) => c.photoTypeCode === 'WING_BUILDING');
+    const wingPlace = categories.find((c) => c.photoTypeCode === 'WING_PLACE');
+    const wingBoard = categories.find((c) => c.photoTypeCode === 'WING_BOARD');
+    const wingSignBoard = categories.find((c) => c.photoTypeCode === 'WING_SIGN_BOARD');
+
+    expect(wingBuilding?.photoTypeName).toBe('Wing Building Photo');
+    expect(wingPlace?.photoTypeName).toBe('Wing Place Photo');
+    expect(wingBoard?.photoTypeName).toBe('Wing Board Photo');
+    expect(wingSignBoard?.photoTypeName).toBe('Wing Sign Board Photo');
+
+    // Ensure all 4 slots have unique, non-identical names
+    const names = [wingBuilding?.photoTypeName, wingPlace?.photoTypeName, wingBoard?.photoTypeName, wingSignBoard?.photoTypeName];
+    const uniqueNames = new Set(names);
+    expect(uniqueNames.size).toBe(4);
   });
 });
 

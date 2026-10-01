@@ -109,8 +109,8 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
 
         const buildNode = (attributeId: number): SocialAttributeHierarchyDto | null => {
             const flatAttr = flatSource.find((attr) => attr.id === attributeId);
+            if (!flatAttr) return null;
             const state = socialData[attributeId];
-            if (!flatAttr || !state) return null;
 
             const children = flatSource
                 .filter((attr) => attr.parentAttributeId === attributeId)
@@ -127,21 +127,21 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 parentAttributeId: flatAttr.parentAttributeId,
                 isRequiredWhenParentTrue: flatAttr.isRequiredWhenParentTrue,
                 isDiscountApplicable: flatAttr.isDiscountApplicable,
-                propertySocialDetailId: state.id ?? undefined,
-                bitValue: state.bitValue,
-                intValue: state.intValue as number | null,
-                decimalValue: state.decimalValue as number | null,
-                textValue: state.textValue,
-                dateValue: state.dateValue,
-                documentBindingId: state.documentBindingId,
-                remark: state.remark,
+                propertySocialDetailId: state?.id ?? undefined,
+                bitValue: state?.bitValue ?? (flatAttr.dataType.toUpperCase() === "BIT" ? false : null),
+                intValue: (state?.intValue as number | null) ?? null,
+                decimalValue: (state?.decimalValue as number | null) ?? null,
+                textValue: state?.textValue ?? null,
+                dateValue: state?.dateValue ?? null,
+                documentBindingId: state?.documentBindingId ?? null,
+                remark: state?.remark ?? null,
                 photoTypeId: undefined,
                 isPhotoRequired: flatAttr.isPhotoRequired,
                 isDocumentRequired: flatAttr.isDocumentRequired,
                 isActive: flatAttr.isActive,
-                documentGuid: state.documentGuid ?? null,
-                photoBindingId: state.photoBindingId,
-                photoGuid: state.photoGuid,
+                documentGuid: state?.documentGuid ?? null,
+                photoBindingId: state?.photoBindingId ?? null,
+                photoGuid: state?.photoGuid ?? null,
                 children,
             };
         };
@@ -231,10 +231,10 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
 
     const selectedHierarchy = React.useMemo(() => {
         if (activeSelectedId === null) return null;
-        const initialHierarchy = initialSocialData?.socialAttributes?.find(attr => attr.id === activeSelectedId);
-        if (initialHierarchy) return initialHierarchy;
-        return buildHierarchyFromMaster(activeSelectedId);
-    }, [initialSocialData?.socialAttributes, activeSelectedId, buildHierarchyFromMaster]);
+        const masterHierarchy = buildHierarchyFromMaster(activeSelectedId);
+        if (masterHierarchy) return masterHierarchy;
+        return initialSocialData?.socialAttributes?.find(attr => attr.id === activeSelectedId) || null;
+    }, [activeSelectedId, buildHierarchyFromMaster, initialSocialData?.socialAttributes]);
 
     const handleErrorTagClick = React.useCallback((id: number) => {
         if (showActiveFirst) {
@@ -392,7 +392,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                         </div>
                     )}
 
-                    {isSociety && levelState && levelState.level === 'Unit' && (
+                    {isSociety && levelState && levelState.level === 'Unit' && Boolean(levelState.selectedWingDetailId && Number(levelState.selectedWingDetailId) > 0) && Boolean(levelState.filteredUnits && levelState.filteredUnits.length > 0) && (
                         <UnitSelectionPanel
                             levelState={levelState}
                             t={t as unknown as (key: string, values?: Record<string, string | number | Date>) => string}

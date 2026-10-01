@@ -9,7 +9,6 @@ import {
   fetchDiscountDetailsOnlyAction,
   fetchSocialDetailsOnlyAction,
   fetchBuildingPermissionOnlyAction,
-  fetchPropertyRuleLogsAction,
   fetchMappedPropertiesAction,
   fetchTabHeaderInfoAction,
 } from './ptis-detail-actions';
@@ -20,7 +19,7 @@ import { getRateableValue } from './RateableValue.action';
 import { getDualMethod } from './DualMethod.action';
 import { getPropertyComparisonAction } from './PropertyComparison.action';
 import { fetchTaxDetailsByTab } from './TaxDetails/fetchTaxDetails';
-import { fetchWaybackReleases, DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
+import { DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
 
 export async function fetchPropertyDetailsConcurrently(
   propertyId: number,
@@ -109,27 +108,18 @@ export async function fetchPropertyDetailsConcurrently(
       )
     : Promise.resolve(null);
 
-  // Chain the rule logs fetching to run only after all calculation actions resolve.
-  const ruleLogsPromise = propertyId
-    ? Promise.all([
-        rateableValuePromise.catch(() => null),
-        capitalValuePromise.catch(() => null),
-        dualMethodPromise.catch(() => null),
-        taxDetailsPromise.catch(() => null),
-      ])
-        .then(async () => {
-          return propertyId ? fetchPropertyRuleLogsAction(propertyId) : Promise.resolve(null);
-        })
-        .catch(() => null)
-    : Promise.resolve(null);
+  // Calculation rule logs fetched on-demand if needed
+  const ruleLogsPromise = Promise.resolve(null);
+
+  const isBuildingTab = activeTab === 'building' || activeTab === 'buildingpermission';
 
   const kycPromise = isKycTab ? fetchKycDetailsOnlyAction(propertyId) : Promise.resolve(null);
 
-  const societyPromise = propertyId
+  const societyPromise = isSocietyTab && propertyId
     ? fetchSocietyDetailsOnlyAction(propertyId)
     : Promise.resolve(null);
 
-  const buildingPromise = propertyId
+  const buildingPromise = isBuildingTab && propertyId
     ? fetchBuildingPermissionOnlyAction(propertyId)
     : Promise.resolve(null);
 
@@ -146,12 +136,12 @@ export async function fetchPropertyDetailsConcurrently(
     : Promise.resolve(null);
 
   const discountPromise =
-    isDiscountTab || valuationTab === 'apartment' || activeTab === 'discount'
+    isDiscountTab || activeTab === 'discount'
       ? fetchDiscountDetailsOnlyAction(propertyId)
       : Promise.resolve(null);
 
   const socialPromise =
-    isDiscountTab || valuationTab === 'apartment' || activeTab === 'discount'
+    isDiscountTab || activeTab === 'discount'
       ? fetchSocialDetailsOnlyAction(propertyId)
       : Promise.resolve(null);
 
@@ -159,10 +149,9 @@ export async function fetchPropertyDetailsConcurrently(
     ? fetchTabHeaderInfoAction(propertyId).catch(() => null)
     : Promise.resolve(null);
 
-  const mappedPropertiesPromise =
-    isPropertyTab || isOldDetailsTab
-      ? fetchMappedPropertiesAction(propertyId)
-      : Promise.resolve(null);
+  const mappedPropertiesPromise = isOldDetailsTab
+    ? fetchMappedPropertiesAction(propertyId)
+    : Promise.resolve(null);
 
   const photoSlotsPromise = propertyId ? getPhotoSlotsAction(propertyId) : Promise.resolve(null);
 
@@ -206,7 +195,7 @@ export async function fetchPropertyDetailsConcurrently(
     dualMethodPromise,
     taxDetailsPromise,
     ruleLogsPromise,
-    fetchWaybackReleases().catch(() => DEFAULT_WAYBACK_RELEASES),
+    Promise.resolve(DEFAULT_WAYBACK_RELEASES),
     headerInfoPromise,
     mappedPropertiesPromise,
     comparisonPromise,

@@ -17,6 +17,54 @@ interface BackendApiResponseWrapper<T> {
     errors?: string[];
 }
 
+function normalizePropertyCertificateWithStatus(raw: unknown): PropertyCertificateWithStatusDto | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const item = raw as Record<string, unknown>;
+    const certificateTypeId = Number(item.certificateTypeId ?? item.CertificateTypeId ?? item.id ?? item.Id ?? 0);
+    if (!certificateTypeId) return null;
+
+    const propertyCertificateId = (item.propertyCertificateId ?? item.PropertyCertificateId) != null
+        ? Number(item.propertyCertificateId ?? item.PropertyCertificateId)
+        : null;
+    const certificateNo = (item.certificateNo ?? item.CertificateNo ?? item.certificateNumber ?? item.CertificateNumber ?? item.number ?? item.Number) as string | null | undefined;
+    const issueDate = (item.issueDate ?? item.IssueDate ?? item.certificateIssueDate ?? item.CertificateIssueDate ?? item.certificateDate ?? item.CertificateDate ?? item.date ?? item.Date) as string | null | undefined;
+    const documentGuid = (item.documentGuid ?? item.DocumentGuid ?? item.guid ?? item.Guid ?? item.documentPath ?? item.DocumentPath) as string | null | undefined;
+    const fileName = (item.fileName ?? item.FileName ?? item.documentName ?? item.DocumentName ?? item.name ?? item.Name) as string | null | undefined;
+    const propertyDetailsId = (item.propertyDetailsId ?? item.PropertyDetailsId) != null
+        ? Number(item.propertyDetailsId ?? item.PropertyDetailsId)
+        : null;
+    const societyDetailId = (item.societyDetailId ?? item.SocietyDetailId) != null
+        ? Number(item.societyDetailId ?? item.SocietyDetailId)
+        : null;
+    const wingDetailId = (item.wingDetailId ?? item.WingDetailId) != null
+        ? Number(item.wingDetailId ?? item.WingDetailId)
+        : null;
+
+    const isActiveVal = item.isActive ?? item.IsActive;
+    const hasCertVal = item.hasCertificate ?? item.HasCertificate;
+    const hasAttachedData = Boolean(hasCertVal || (propertyCertificateId && propertyCertificateId > 0) || (certificateNo && String(certificateNo).trim() !== '') || (issueDate && String(issueDate).trim() !== '') || (documentGuid && String(documentGuid).trim() !== ''));
+
+    return {
+        certificateTypeId,
+        certificateTypeName: String(item.certificateTypeName ?? item.CertificateTypeName ?? ''),
+        certificateTypeCode: item.certificateTypeCode ? String(item.certificateTypeCode) : (item.CertificateTypeCode ? String(item.CertificateTypeCode) : undefined),
+        displayOrder: Number(item.displayOrder ?? item.DisplayOrder ?? 0),
+        hasCertificate: hasCertVal !== undefined ? Boolean(hasCertVal) : hasAttachedData,
+        propertyCertificateId,
+        isActive: isActiveVal !== undefined ? Boolean(isActiveVal) : hasAttachedData,
+        certificateNo: certificateNo ? String(certificateNo).trim() : null,
+        issueDate: issueDate ? String(issueDate).trim() : null,
+        documentGuid: documentGuid ? String(documentGuid).trim() : null,
+        fileName: fileName ? String(fileName).trim() : null,
+        propertyDetailsId,
+        isProtected: item.isProtected !== undefined ? Boolean(item.isProtected) : (item.IsProtected !== undefined ? Boolean(item.IsProtected) : undefined),
+        isRequired: item.isRequired !== undefined ? Boolean(item.isRequired) : (item.IsRequired !== undefined ? Boolean(item.IsRequired) : undefined),
+        entityType: item.entityType ? String(item.entityType) : (item.EntityType ? String(item.EntityType) : undefined),
+        societyDetailId,
+        wingDetailId,
+    };
+}
+
 /* ---------------- BUILDING PERMISSIONS / PROPERTY CERTIFICATES ---------------- */
 
 // 1. GET - Load all certificate types with their current status for a property
@@ -31,7 +79,10 @@ export async function getCertificateTypesWithStatus(
     
     if (response.success && response.data) {
         const raw = response.data as unknown as Record<string, unknown>;
-        const items = (raw.items ?? raw.Items ?? raw.data ?? raw) as PropertyCertificateWithStatusDto[];
+        const rawItems = (raw.items ?? raw.Items ?? raw.data ?? raw) as unknown[];
+        const items = Array.isArray(rawItems)
+            ? rawItems.map(normalizePropertyCertificateWithStatus).filter((item): item is PropertyCertificateWithStatusDto => item !== null)
+            : [];
         return {
             success: (raw.success as boolean) ?? response.data.success ?? true,
             statusCode: response.statusCode,
@@ -66,7 +117,10 @@ export async function getSocietyWingTypesWithStatus(
     
     if (response.success && response.data) {
         const raw = response.data as unknown as Record<string, unknown>;
-        const items = (raw.items ?? raw.Items ?? raw.data ?? raw) as PropertyCertificateWithStatusDto[];
+        const rawItems = (raw.items ?? raw.Items ?? raw.data ?? raw) as unknown[];
+        const items = Array.isArray(rawItems)
+            ? rawItems.map(normalizePropertyCertificateWithStatus).filter((item): item is PropertyCertificateWithStatusDto => item !== null)
+            : [];
         return {
             success: (raw.success as boolean) ?? response.data.success ?? true,
             statusCode: response.statusCode,

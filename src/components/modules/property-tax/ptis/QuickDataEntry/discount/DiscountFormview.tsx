@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useCallback, useTransition } from "react";
+import React, { useMemo, useState, useCallback, useTransition, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Tabs, Button } from "@/components/common";
 import { useTranslations } from "next-intl";
@@ -29,6 +29,7 @@ interface DiscountFormProps {
     units?: UnitSelectionItem[];
     savedPropertyDetails?: PropertySocialDetailsDto[];
     societyDetailId?: number;
+    wingDetailId?: number;
 }
 
 const DiscountFormview: React.FC<DiscountFormProps> = ({
@@ -37,6 +38,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     propertyId,
     isSociety = false,
     societyDetailId: propSocietyDetailId,
+    wingDetailId: propWingDetailId,
     discountMasterAttributes = [],
     socialMasterAttributes = [],
     wings = [],
@@ -89,15 +91,33 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     }, [searchParams, router, pathname, activeTab, confirm, t]);
     const isWingWise = searchParams.get('isWingWise') === 'true';
     const levelParam = searchParams.get('level') as "Apartment" | "Wing" | "Unit" | null;
-    const societyDetailId = searchParams.get('societyDetailId');
-    const wingDetailId = searchParams.get('wingDetailId');
-    const initialWingDetailId = wingDetailId ? Number(wingDetailId) : null;
+    const societyDetailId = searchParams.get('societyDetailId') || searchParams.get('societyId');
+    const wingDetailId = searchParams.get('wingDetailId') || searchParams.get('wingId');
+    const initialWingDetailId = wingDetailId ? Number(wingDetailId) : (propWingDetailId ?? (wings && wings.length > 0 ? wings[0].wingDetailId : null));
     const unitPropertyIdParam = searchParams.get('unitPropertyId');
     const initialUnitPropertyId = unitPropertyIdParam ? Number(unitPropertyIdParam) : null;
 
+    const effectiveSocietyDetailId = (propSocietyDetailId && Number(propSocietyDetailId) > 0 ? Number(propSocietyDetailId) : null) ?? (societyDetailId && Number(societyDetailId) > 0 ? Number(societyDetailId) : null);
+    const hasSocietyDetailId = Boolean(effectiveSocietyDetailId && effectiveSocietyDetailId > 0);
+
+    const effectiveWingDetailId = (propWingDetailId && Number(propWingDetailId) > 0 ? Number(propWingDetailId) : null) ?? (initialWingDetailId && initialWingDetailId > 0 ? initialWingDetailId : null);
+    const hasWingDetailId = Boolean(effectiveWingDetailId && effectiveWingDetailId > 0);
+
+    const showApartmentTab = hasSocietyDetailId && !isWingWise;
+    const showWingTab = hasWingDetailId;
+    const showLevelSelector = isSociety && Boolean(showApartmentTab || showWingTab);
+
+    const rawInitialLevel = levelParam || (isWingWise ? 'Wing' : 'Apartment');
+    const effectiveInitialLevel: "Apartment" | "Wing" | "Unit" =
+        rawInitialLevel === 'Apartment' && !showApartmentTab
+            ? (showWingTab ? 'Wing' : 'Unit')
+            : rawInitialLevel === 'Wing' && !showWingTab
+            ? 'Unit'
+            : rawInitialLevel;
+
     const levelState = useDiscountLevelState({
         propertyId,
-        initialLevel: levelParam || (isWingWise ? 'Wing' : 'Apartment'),
+        initialLevel: effectiveInitialLevel,
         initialWingDetailId,
         initialUnitPropertyId,
         isSociety,
@@ -117,6 +137,16 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
             router.push(`${pathname}?${params.toString()}`);
         });
     }, [levelState, searchParams, router, pathname]);
+
+    const currentLevel = levelState?.level;
+    useEffect(() => {
+        if (!currentLevel) return;
+        if (currentLevel === 'Apartment' && !showApartmentTab) {
+            handleLevelChange(showWingTab ? 'Wing' : 'Unit');
+        } else if (currentLevel === 'Wing' && !showWingTab) {
+            handleLevelChange('Unit');
+        }
+    }, [currentLevel, showApartmentTab, showWingTab, handleLevelChange]);
 
     const {
         discountData,
@@ -250,9 +280,9 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                         </Tabs.Tab>
                     </Tabs.TabList>
 
-                    {isSociety && levelState && (
+                    {showLevelSelector && (
                         <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                            {searchParams.get('isWingWise') !== 'true' && (
+                            {showApartmentTab && (
                                 <Button
                                     size="xs"
                                     variant={levelState.level === 'Apartment' ? 'primary' : 'ghost'}
@@ -268,20 +298,22 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                                     {t('building.apartmentLevel') || 'Apartment Level'}
                                 </Button>
                             )}
-                            <Button
-                                size="xs"
-                                variant={levelState.level === 'Wing' ? 'primary' : 'ghost'}
-                                icon={Home}
-                                onClick={() => handleLevelChange('Wing')}
-                                className={cn(
-                                    'font-bold cursor-pointer rounded-lg transition-all',
-                                    levelState.level === 'Wing'
-                                        ? 'bg-blue-600 text-white shadow-sm'
-                                        : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
-                                )}
-                            >
-                                {t('building.wingLevel') || 'Wing Level'}
-                            </Button>
+                            {showWingTab && (
+                                <Button
+                                    size="xs"
+                                    variant={levelState.level === 'Wing' ? 'primary' : 'ghost'}
+                                    icon={Home}
+                                    onClick={() => handleLevelChange('Wing')}
+                                    className={cn(
+                                        'font-bold cursor-pointer rounded-lg transition-all',
+                                        levelState.level === 'Wing'
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
+                                    )}
+                                >
+                                    {t('building.wingLevel') || 'Wing Level'}
+                                </Button>
+                            )}
                             <Button
                                 size="xs"
                                 variant={levelState.level === 'Unit' ? 'primary' : 'ghost'}

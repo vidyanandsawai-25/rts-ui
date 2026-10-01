@@ -77,10 +77,31 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
   const searchParams = useSearchParams();
 
   const [currentTaxMode, setCurrentTaxMode] = useState<PtisTaxMode>(initialTaxMode || 'rateable');
+  const [rateableDataState, setRateableDataState] = useState<RateableValueResponse | null>(initialRateableData);
+  const [capitalDataState, setCapitalDataState] = useState<CapitalValueResponse | null>(initialCapitalData);
+  const [dualMethodDataState, setDualMethodDataState] = useState<DualMethodResponse | null>(initialDualMethodData);
+
+  const [prevInitialRateable, setPrevInitialRateable] = useState(initialRateableData);
+  const [prevInitialCapital, setPrevInitialCapital] = useState(initialCapitalData);
+  const [prevInitialDual, setPrevInitialDual] = useState(initialDualMethodData);
+
+  if (initialRateableData !== prevInitialRateable) {
+    setPrevInitialRateable(initialRateableData);
+    setRateableDataState(initialRateableData);
+  }
+  if (initialCapitalData !== prevInitialCapital) {
+    setPrevInitialCapital(initialCapitalData);
+    setCapitalDataState(initialCapitalData);
+  }
+  if (initialDualMethodData !== prevInitialDual) {
+    setPrevInitialDual(initialDualMethodData);
+    setDualMethodDataState(initialDualMethodData);
+  }
 
   const handleTaxModeChange = (mode: PtisTaxMode) => {
     setCurrentTaxMode(mode);
     const params = new URLSearchParams(searchParams.toString());
+    params.delete('tab');
     params.set('valuationTab', mode);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
@@ -210,14 +231,17 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
           wingDetailsId={resolvedWingDetailId}
           wingName={resolvedWingName}
           isApartmentScreen={false}
-          rateableData={initialRateableData}
-          capitalData={initialCapitalData}
-          dualMethodData={initialDualMethodData}
+          rateableData={rateableDataState}
+          capitalData={capitalDataState}
+          dualMethodData={dualMethodDataState}
           comparisonData={initialComparisonData}
           rateableTaxDetails={initialRateableTaxDetails}
           capitalTaxDetails={initialCapitalTaxDetails}
           taxMode={currentTaxMode}
           onTaxModeChange={handleTaxModeChange}
+          onRateableDataLoaded={setRateableDataState}
+          onCapitalDataLoaded={setCapitalDataState}
+          onDualMethodDataLoaded={setDualMethodDataState}
           buildingPermissionData={initialData?.buildingPermission ?? undefined}
           discountData={initialData?.discountDetails ?? undefined}
           socialData={initialData?.socialDetails ?? undefined}
@@ -239,9 +263,9 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
           taxDetails={initialTaxDetails}
           rateableTaxDetails={initialRateableTaxDetails}
           capitalTaxDetails={initialCapitalTaxDetails}
-          rateableData={initialRateableData}
-          capitalData={initialCapitalData}
-          dualMethodData={initialDualMethodData}
+          rateableData={rateableDataState}
+          capitalData={capitalDataState}
+          dualMethodData={dualMethodDataState}
           comparisonData={initialComparisonData}
           oldDetailsData={initialData?.oldDetails ?? undefined}
           isLoading={isSearching || isLoading}

@@ -234,7 +234,7 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                         </div>
                     )}
 
-                    {isSociety && levelState && levelState.level === 'Unit' && (
+                    {isSociety && levelState && levelState.level === 'Unit' && Boolean(levelState.selectedWingDetailId && Number(levelState.selectedWingDetailId) > 0) && Boolean(levelState.filteredUnits && levelState.filteredUnits.length > 0) && (
                         <UnitSelectionPanel
                             levelState={levelState}
                             t={t}

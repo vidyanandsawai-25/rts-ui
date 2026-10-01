@@ -123,12 +123,22 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
     if (item.certificateTypeId) {
       searchParams.set('certificateTypeId', String(item.certificateTypeId));
     }
+    if (item.propertyCertificateId) {
+      searchParams.set('propertyCertificateId', String(item.propertyCertificateId));
+    }
+    if (item.certificateNo) {
+      searchParams.set('certificateNumber', String(item.certificateNo));
+    }
 
     // Specify the floor scope if this certificate is floor-specific
     if (item.propertyDetailsId) {
       searchParams.set('activeScope', 'Floor');
       searchParams.set('selectedFloorId', String(item.propertyDetailsId));
       searchParams.set('activeFloorId', String(item.propertyDetailsId));
+      searchParams.set('level', 'Unit');
+    } else {
+      searchParams.set('activeScope', 'Property');
+      searchParams.set('level', 'Apartment');
     }
 
     const editUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${resolvedPropId}/Building?${searchParams.toString()}`;

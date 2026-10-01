@@ -58,6 +58,7 @@ export interface BuildingPermissionSectionProps {
   propertyId: string;
   categoryName?: string;
   societyId?: number | null;
+  wingDetailId?: number | null;
   wings?: WingOption[];
   units?: UnitSelectionItem[];
   certificateTypes?: CertificateTypeMasterOption[];
@@ -104,6 +105,7 @@ export function BuildingPermissionSection({
   propertyId,
   categoryName,
   societyId,
+  wingDetailId: propWingDetailId,
   wings = [],
   units = [],
   certificateTypes = [],
@@ -124,6 +126,12 @@ export function BuildingPermissionSection({
   const locale = useLocale();
   const { confirm } = useConfirm();
 
+  const urlSocietyDetailId = searchParams.get('societyDetailId') || searchParams.get('societyId');
+  const effectiveSocietyDetailId = (societyId && Number(societyId) > 0 ? Number(societyId) : null) ?? (urlSocietyDetailId && Number(urlSocietyDetailId) > 0 ? Number(urlSocietyDetailId) : null);
+  const hasSocietyDetailId = Boolean(effectiveSocietyDetailId && effectiveSocietyDetailId > 0);
+
+  const urlWingDetailId = searchParams?.get('wingDetailId') || searchParams?.get('wingId');
+  const initialWingDetailId = (propWingDetailId && Number(propWingDetailId) > 0 ? Number(propWingDetailId) : null) ?? (urlWingDetailId ? Number(urlWingDetailId) : null);
 
   const rawCat = categoryName || searchParams.get('propertyCategory') || searchParams.get('categoryName') || '';
   const partitionNo = searchParams.get('partitionNo') || '';
@@ -135,7 +143,7 @@ export function BuildingPermissionSection({
     : rawCat;
 
   const effectiveCategoryName = (displayCategory || rawCat).toLowerCase();
-  const hasValidSociety = Boolean(societyId && Number(societyId) > 0);
+  const hasValidSociety = hasSocietyDetailId;
   const isApartmentIndividual = !hasValidSociety && (
     hasPartition ||
     effectiveCategoryName.includes('apartment/individual') ||
@@ -150,17 +158,24 @@ export function BuildingPermissionSection({
   const [actionError, setActionError] = useState<string | null>(null);
 
   const isWingWise = searchParams?.get('isWingWise') === 'true';
+  const showApartmentTab = !isWingWise;
+  const showWingTab = !isWingWise;
+  const showLevelSelector = !isApartmentIndividual;
 
   const urlLevel = searchParams?.get('level') as ApplicationLevel | null;
-  const effectiveInitialLevel =
+  const rawInitialLevel =
     urlLevel === 'Apartment' || urlLevel === 'Wing' || urlLevel === 'Unit'
       ? urlLevel
       : isWingWise && initialLevel === 'Apartment'
       ? 'Wing'
       : initialLevel;
 
-  const urlWingDetailId = searchParams?.get('wingDetailId');
-  const initialWingDetailId = urlWingDetailId ? Number(urlWingDetailId) : null;
+  const effectiveInitialLevel: ApplicationLevel =
+    rawInitialLevel === 'Apartment' && !showApartmentTab
+      ? (showWingTab ? 'Wing' : 'Unit')
+      : rawInitialLevel === 'Wing' && !showWingTab
+      ? 'Unit'
+      : rawInitialLevel;
 
   const urlCertTypeId = searchParams?.get('certificateTypeId') || searchParams?.get('certTypeId');
   const urlCertTypeCode = searchParams?.get('certificateTypeCode') || searchParams?.get('certType');
@@ -236,6 +251,14 @@ export function BuildingPermissionSection({
 
   const [statusFilter, setStatusFilter] = useState<'all' | 'direct' | 'wing' | 'apartment' | 'none'>('all');
   const [viewerData, setViewerData] = useState<{ isOpen: boolean; url: string; name: string } | null>(null);
+
+  useEffect(() => {
+    if (level === 'Apartment' && !showApartmentTab) {
+      setLevel(showWingTab ? 'Wing' : 'Unit');
+    } else if (level === 'Wing' && !showWingTab) {
+      setLevel('Unit');
+    }
+  }, [level, showApartmentTab, showWingTab, setLevel]);
 
   useEffect(() => {
     return () => {
@@ -1144,9 +1167,9 @@ export function BuildingPermissionSection({
         </h2>
 
         {/* Level Tabs using common Button component */}
-        {!isApartmentIndividual && (
+        {showLevelSelector && (
           <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
-            {!isWingWise && (
+            {showApartmentTab && (
               <Button
                 size="xs"
                 variant={level === 'Apartment' ? 'primary' : 'ghost'}
@@ -1170,27 +1193,29 @@ export function BuildingPermissionSection({
               </Button>
             )}
 
-            <Button
-              size="xs"
-              variant={level === 'Wing' ? 'primary' : 'ghost'}
-              icon={Home}
-              onClick={() => {
-                setLevel('Wing');
-                setEnabledStateMap({});
-                setRemovedAttachmentTypeIds(new Set());
-                const params = new URLSearchParams(searchParams.toString());
-                params.set('level', 'Wing');
-                window.history.replaceState(null, '', `?${params.toString()}`);
-              }}
-              className={cn(
-                'font-bold cursor-pointer rounded-lg transition-all',
-                level === 'Wing'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
-              )}
-            >
-              {t('building.wingLevel') || 'Wing Level'}
-            </Button>
+            {showWingTab && (
+              <Button
+                size="xs"
+                variant={level === 'Wing' ? 'primary' : 'ghost'}
+                icon={Home}
+                onClick={() => {
+                  setLevel('Wing');
+                  setEnabledStateMap({});
+                  setRemovedAttachmentTypeIds(new Set());
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.set('level', 'Wing');
+                  window.history.replaceState(null, '', `?${params.toString()}`);
+                }}
+                className={cn(
+                  'font-bold cursor-pointer rounded-lg transition-all',
+                  level === 'Wing'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
+                )}
+              >
+                {t('building.wingLevel') || 'Wing Level'}
+              </Button>
+            )}
 
             <Button
               size="xs"
@@ -1319,7 +1344,7 @@ export function BuildingPermissionSection({
             </div>
           )}
 
-          {!isApartmentIndividual && level === 'Unit' && (
+          {!isApartmentIndividual && level === 'Unit' && Boolean(selectedWingDetailId && Number(selectedWingDetailId) > 0) && Boolean(filteredUnits && filteredUnits.length > 0) && (
             <div className={cn("space-y-2 p-2.5 rounded-xl border transition-all", fieldErrors.unit ? "bg-red-50/20 border-red-300" : "bg-slate-50/70 border-slate-200")}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -1449,7 +1474,7 @@ export function BuildingPermissionSection({
           )}
 
           {/* Unit Scope Target Banner */}
-          {!isApartmentIndividual && level === 'Unit' && (
+          {!isApartmentIndividual && level === 'Unit' && Boolean(selectedWingDetailId && Number(selectedWingDetailId) > 0) && Boolean(filteredUnits && filteredUnits.length > 0) && (
             selectedUnitIds.size === 0 ? (
               <div className="flex items-center gap-2 p-2 bg-amber-50/90 border border-amber-300/80 rounded-lg text-xs text-amber-900 shadow-2xs">
                 <Info className="w-4 h-4 text-amber-600 shrink-0" />
@@ -1497,7 +1522,7 @@ export function BuildingPermissionSection({
                   ? undefined
                   : removedAttachmentTypeIds.has(selectedTypeId)
                     ? undefined
-                    : (activeCertificate?.documentGuid || (level === 'Apartment' ? initialData?.documentGuid : undefined))
+                    : (activeCertificate?.documentGuid || existingDocumentGuid || (initialData?.certificateTypeId === selectedTypeId ? initialData?.documentGuid : undefined))
               }
               fileName={
                 (removedAttachmentTypeIds.has(selectedTypeId)
@@ -1506,14 +1531,19 @@ export function BuildingPermissionSection({
                      activeCertificate?.fileName ||
                      existingFileName ||
                      (selectedTypeId ? uploadedFileNamesMap[selectedTypeId] : undefined) ||
-                     (level === 'Apartment' ? initialData?.fileName : undefined))) ||
+                     (initialData?.certificateTypeId === selectedTypeId ? initialData?.fileName : undefined))) ||
                 (activeCertificateType?.certificateTypeName
                   ? `${activeCertificateType.certificateTypeName} Attachment`
                   : 'Certificate Document')
               }
               hasDocumentBinding={
                 !removedAttachmentTypeIds.has(selectedTypeId) &&
-                Boolean(activeCertificate?.hasDocument || activeCertificate?.documentGuid || (level === 'Apartment' && initialData?.documentGuid))
+                Boolean(
+                  activeCertificate?.hasDocument ||
+                  activeCertificate?.documentGuid ||
+                  existingDocumentGuid ||
+                  (initialData?.certificateTypeId === selectedTypeId && initialData?.documentGuid)
+                )
               }
               isDisabled={!isApartmentIndividual && level === 'Unit' && selectedUnitIds.size === 0}
               isDocumentInvalid={!!fieldErrors.document}

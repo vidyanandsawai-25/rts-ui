@@ -61,7 +61,7 @@ export function PropertyMediaPanelContent({
   openDrawer,
   handleImageHover,
   handleImageLeave,
-  cancelImageLeave,
+  cancelImageLeave: _cancelImageLeave,
   hoverPreview,
   propertyPhoto,
   propertyPhotoCategory,
@@ -103,8 +103,6 @@ export function PropertyMediaPanelContent({
           src={hoverPreview?.src ?? ''}
           title={hoverPreview?.title ?? ''}
           visible={hoverPreview !== null}
-          onMouseEnter={cancelImageLeave}
-          onMouseLeave={handleImageLeave}
         />
         <div className="flex-1 min-h-0 h-full overflow-y-auto p-2 flex flex-col gap-2 scrollbar-thin">
           {categories.map((cat, idx) => {
@@ -135,13 +133,13 @@ export function PropertyMediaPanelContent({
     );
   }
 
-  const isSociety = !isAmenityProperty && categories.some((c) => c.photoTypeCode?.startsWith('SOCIETY_') || c.photoTypeCode?.includes('SOCIETY'));
-  const isWing = !isAmenityProperty && (Boolean(wingName) || Boolean(wingPhotoCategory) || categories.some((c) => c.photoTypeCode?.startsWith('WING_') || c.photoTypeCode?.includes('WING')));
+  const isSociety = !isAmenityProperty && (Boolean(isMainProperty) || societyPhotoCategory !== undefined) && categories.some((c) => c.photoTypeCode?.startsWith('SOCIETY_') || c.photoTypeCode?.includes('SOCIETY'));
+  const isWing = !isAmenityProperty && (Boolean(isMainProperty) || wingPhotoCategory !== undefined || Boolean(wingName)) && categories.some((c) => c.photoTypeCode?.startsWith('WING_') || c.photoTypeCode?.includes('WING'));
 
   const hasPropertySlot = categories.some((c) => !c.isCustom && (c.photoTypeCode?.startsWith('PROPERTY_') || c.photoTypeCode === 'FRONT'));
 
   const wingCardLabel = formatWingCardLabel(
-    wingPhotoCategory?.photoTypeName || wingPhoto?.title || (t('media.wingPhoto') || 'Wing Photo'),
+    t('media.wingPhoto') || 'Wing Photo',
     wingName
   );
 
@@ -171,8 +169,6 @@ export function PropertyMediaPanelContent({
         fallbackSrc={hoverPreview?.fallbackSrc}
         fallbackSrc2={hoverPreview?.fallbackSrc2}
         visible={hoverPreview !== null}
-        onMouseEnter={cancelImageLeave}
-        onMouseLeave={handleImageLeave}
       />
 
       <div className="flex-1 min-h-0 h-full overflow-y-auto p-2 flex flex-col sm:grid sm:grid-cols-3 lg:flex lg:flex-col gap-2 scrollbar-thin">

@@ -77,7 +77,7 @@ describe('useSocialDetailsForm', () => {
     });
 
     expect(deletePropertySocialDetailsByHierarchyAction).toHaveBeenCalledWith(
-      { socialAttributeId: 1, entityType: "S" },
+      { socialAttributeId: 1, entityType: "P", propertyId: 123, propertyIds: [123] },
       "123",
       "en"
     );

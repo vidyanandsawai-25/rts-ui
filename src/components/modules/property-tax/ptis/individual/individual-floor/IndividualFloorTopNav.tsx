@@ -31,6 +31,7 @@ export const IndividualFloorTopNav: React.FC<IndividualFloorTopNavProps> = ({
   const tInd = useTranslations('individual');
 
   const handleValuationChange = (mode: 'rv' | 'cvm' | 'dual') => {
+    onToggleSection('floor');
     if (mode === 'cvm') {
       onTaxModeChange?.('capital');
     } else if (mode === 'dual') {

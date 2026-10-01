@@ -90,6 +90,7 @@ async function BuildingFormDataLoader({
     // Fetch essential initial building permission, basic details, wings, units, floors, and core lookup data concurrently
     const [
         response,
+        floorBuildingPermissionsResult,
         floorDataResult,
         constructionTypeDataResult,
         propertyBasicDetails,
@@ -107,6 +108,9 @@ async function BuildingFormDataLoader({
             : (searchSocietyId)
                 ? getSocietyWingTypesWithStatusAction(Number(searchSocietyId), null)
                 : getBuildingPermissionsAction(propertyId),
+        selectedFloorIdNum
+            ? getBuildingPermissionsAction(propertyId, selectedFloorIdNum)
+            : Promise.resolve({ success: true, data: null }),
         getFloorDataAction(),
         getConstructionTypeDataAction(),
         getPropertyBasicDetailsAction(propertyId),
@@ -277,11 +281,20 @@ async function BuildingFormDataLoader({
         redirect(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building?${params.toString()}`);
     }
 
+    const rawActiveScope = rawSearchParams?.activeScope;
+    const initialActiveScope = (rawActiveScope === 'Floor' || selectedFloorIdNum) ? 'Floor' as const : 'Property' as const;
+    const rawCertTypeId = rawSearchParams?.certificateTypeId || rawSearchParams?.certTypeId;
+    const initialSelectedTypeId = rawCertTypeId ? Number(Array.isArray(rawCertTypeId) ? rawCertTypeId[0] : rawCertTypeId) : undefined;
+
     return (
         <BuildingForm
             key={propertyId}
             initialBuildingPermission={response.data || null}
+            initialFloorBuildingPermission={floorBuildingPermissionsResult?.success ? floorBuildingPermissionsResult.data : null}
             initialFloorCertificates={floorCertificatesResponse.data || null}
+            initialActiveScope={initialActiveScope}
+            initialActiveFloorId={selectedFloorIdNum ?? null}
+            initialSelectedTypeId={initialSelectedTypeId && !isNaN(initialSelectedTypeId) ? initialSelectedTypeId : null}
             propertyId={propertyId}
             isSociety={isSociety}
             societyDetailId={resolvedSocietyDetailId}

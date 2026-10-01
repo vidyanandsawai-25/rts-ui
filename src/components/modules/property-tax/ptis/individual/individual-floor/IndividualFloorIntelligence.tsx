@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { IndividualFloorTopNav, type IndividualFloorTopNavSection } from './IndividualFloorTopNav';
 import { RateableTaxTable } from './rateable/components/RateableTaxTable';
 import { CapitalTaxTable } from './capital/components/CapitalTaxTable';
@@ -34,6 +35,8 @@ import {
   fetchIndividualRateableValueAction,
   fetchIndividualCapitalValueAction,
   fetchIndividualDualMethodAction,
+  getIndividualBuildingCertificatesAction,
+  fetchIndividualSocialAndDiscountDetailsAction,
 } from '@/app/[locale]/property-tax/ptis/individual/action';
 
 export interface IndividualFloorIntelligenceProps {
@@ -62,6 +65,9 @@ export interface IndividualFloorIntelligenceProps {
   mappedPropertiesData?: MappedPropertyItem[] | null;
   taxMode?: PtisTaxMode;
   onTaxModeChange?: (mode: PtisTaxMode) => void;
+  onRateableDataLoaded?: (data: RateableValueResponse) => void;
+  onCapitalDataLoaded?: (data: CapitalValueResponse) => void;
+  onDualMethodDataLoaded?: (data: DualMethodResponse) => void;
   isLoading?: boolean;
   locale?: string;
 }
@@ -98,6 +104,9 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   mappedPropertiesData,
   taxMode = 'rateable',
   onTaxModeChange,
+  onRateableDataLoaded,
+  onCapitalDataLoaded,
+  onDualMethodDataLoaded,
   isLoading = false,
   locale: propLocale,
 }) => {
@@ -134,6 +143,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   const [fetchedDual, setFetchedDual] = useState<DualMethodResponse | null>(null);
   const [_fetchedComparison, setFetchedComparison] = useState<PropertyComparisonResponse | null>(null);
   const [isValuationLoading, setIsValuationLoading] = useState(false);
+  const [_valuationError, setValuationError] = useState<string | null>(null);
 
   // States for Old Details collapsible sections (mutually exclusive)
   const [showOldFloorInfo, setShowOldFloorInfo] = useState(false);
@@ -166,6 +176,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
 
   // State for Floor Details expandable section below valuation table
   const [showFloorDetails, setShowFloorDetails] = useState(false);
+  const [isFloorDetailsLoading, setIsFloorDetailsLoading] = useState(false);
 
   if (propertyId !== prevPropId) {
     setPrevPropId(propertyId);
@@ -173,6 +184,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
     setFetchedCapital(null);
     setFetchedDual(null);
     setFetchedComparison(null);
+    setValuationError(null);
   }
 
   const rateableState = fetchedRateable ?? rateableData ?? null;
@@ -181,63 +193,137 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   const rateableTaxDetailsState = rateableTaxDetails ?? undefined;
   const capitalTaxDetailsState = capitalTaxDetails ?? undefined;
 
+  const [fetchedBuilding, setFetchedBuilding] = useState<BuildingPermissionData | null>(null);
+  const [fetchedDiscount, setFetchedDiscount] = useState<DiscountData | null>(null);
+  const [fetchedSocial, setFetchedSocial] = useState<DiscountData | null>(null);
+  const [isLoadingSection, setIsLoadingSection] = useState(false);
+
+  const buildingDataState = fetchedBuilding ?? buildingPermissionData ?? null;
+  const discountDataState = fetchedDiscount ?? discountData ?? null;
+  const socialDataState = fetchedSocial ?? socialData ?? null;
+
+  const isFetchingRef = useRef(false);
+
   // Fetch valuation data dynamically based on mode
   const fetchValuationForMode = useCallback(
     async (mode: PtisTaxMode, targetPropertyId: number | string) => {
       const numericId = Number(targetPropertyId);
       if (!numericId || isNaN(numericId) || numericId <= 0) return;
+      if (isFetchingRef.current) return;
 
-      await Promise.resolve();
+      isFetchingRef.current = true;
       setIsValuationLoading(true);
+      setValuationError(null);
       try {
         if (mode === 'capital') {
           const res = await fetchIndividualCapitalValueAction(numericId);
           if (res.success && res.data) {
             setFetchedCapital(res.data);
+            setValuationError(null);
+            onCapitalDataLoaded?.(res.data);
+          } else {
+            setFetchedCapital(null);
+            const errMsg = res.error || res.message || 'Failed to fetch capital value data';
+            setValuationError(errMsg);
+            toast.error(errMsg);
           }
         } else if (mode === 'dual') {
-          const [dualRes, capRes, rvRes] = await Promise.all([
-            fetchIndividualDualMethodAction(numericId),
-            !capitalState ? fetchIndividualCapitalValueAction(numericId) : Promise.resolve(null),
-            !rateableState ? fetchIndividualRateableValueAction(numericId) : Promise.resolve(null),
-          ]);
+          const dualRes = await fetchIndividualDualMethodAction(numericId);
           if (dualRes.success && dualRes.data) {
             setFetchedDual(dualRes.data);
-          }
-          if (capRes?.success && capRes.data) {
-            setFetchedCapital(capRes.data);
-          }
-          if (rvRes?.success && rvRes.data) {
-            setFetchedRateable(rvRes.data);
+            setValuationError(null);
+            onDualMethodDataLoaded?.(dualRes.data);
+          } else {
+            setFetchedDual(null);
+            const errMsg = dualRes.error || dualRes.message || 'Failed to fetch dual method data';
+            setValuationError(errMsg);
+            toast.error(errMsg);
           }
         } else {
           const res = await fetchIndividualRateableValueAction(numericId);
           if (res.success && res.data) {
             setFetchedRateable(res.data);
+            setValuationError(null);
+            onRateableDataLoaded?.(res.data);
+          } else {
+            setFetchedRateable(null);
+            const errMsg = res.error || res.message || 'Failed to fetch rateable value data';
+            setValuationError(errMsg);
+            toast.error(errMsg);
           }
         }
       } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : `Failed to fetch ${mode} valuation data`;
         console.error(`Failed to fetch valuation for mode ${mode}:`, err);
+        setValuationError(errorMsg);
+        toast.error(errorMsg);
       } finally {
         setIsValuationLoading(false);
+        isFetchingRef.current = false;
       }
     },
-    [capitalState, rateableState]
+    [onCapitalDataLoaded, onDualMethodDataLoaded, onRateableDataLoaded]
   );
 
-  // Tab mode switch handler
+  // On-demand fetch for Rateable and Capital section APIs when "Show Floor Details" is expanded
+  const handleToggleShowFloorDetails = useCallback(async () => {
+    const nextState = !showFloorDetails;
+    setShowFloorDetails(nextState);
+
+    if (nextState && propertyId) {
+      const numericId = Number(propertyId);
+      if (numericId > 0) {
+        const needRateable = !rateableState;
+        const needCapital = !capitalState;
+
+        if (needRateable || needCapital) {
+          setIsFloorDetailsLoading(true);
+          try {
+            const promises: Promise<void>[] = [];
+            if (needRateable) {
+              promises.push(
+                fetchIndividualRateableValueAction(numericId).then((res) => {
+                  if (res.success && res.data) {
+                    setFetchedRateable(res.data);
+                    onRateableDataLoaded?.(res.data);
+                  } else if (res.error) {
+                    toast.error(res.error);
+                  }
+                })
+              );
+            }
+            if (needCapital) {
+              promises.push(
+                fetchIndividualCapitalValueAction(numericId).then((res) => {
+                  if (res.success && res.data) {
+                    setFetchedCapital(res.data);
+                    onCapitalDataLoaded?.(res.data);
+                  } else if (res.error) {
+                    toast.error(res.error);
+                  }
+                })
+              );
+            }
+            await Promise.all(promises);
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Failed to fetch floor details breakdown');
+          } finally {
+            setIsFloorDetailsLoading(false);
+          }
+        }
+      }
+    }
+  }, [showFloorDetails, propertyId, rateableState, capitalState, onRateableDataLoaded, onCapitalDataLoaded]);
+
+  // Tab mode switch handler — ensures Floor Details tab is active and loads data dynamically
   const handleTaxModeChange = (mode: PtisTaxMode) => {
+    setActiveSection('floor');
+    setIsExpanded(true);
     setInternalTaxMode(mode);
     onTaxModeChange?.(mode);
 
     if (propertyId) {
-      if (mode === 'capital' && !capitalState) {
-        fetchValuationForMode('capital', propertyId);
-      } else if (mode === 'dual' && !dualState) {
-        fetchValuationForMode('dual', propertyId);
-      } else if (mode === 'rateable' && !rateableState) {
-        fetchValuationForMode('rateable', propertyId);
-      }
+      fetchValuationForMode(mode, propertyId);
     }
   };
 
@@ -281,6 +367,11 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
           if (section === 'floor') {
             setActiveSection('floor');
             setIsExpanded(true);
+            const params = new URLSearchParams(currentSearchParams ? currentSearchParams.toString() : '');
+            if (params.has('tab')) {
+              params.delete('tab');
+              router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+            }
             return;
           }
           if (activeSection === section) {
@@ -291,6 +382,30 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
             const params = new URLSearchParams(currentSearchParams ? currentSearchParams.toString() : '');
             params.set('tab', section === 'oldDetails' ? 'olddetails' : section);
             router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+
+            // On-demand lazy load when user opens inactive tabs
+            if (section === 'building' && propertyId && !buildingDataState) {
+              setIsLoadingSection(true);
+              getIndividualBuildingCertificatesAction(propertyId)
+                .then((res) => {
+                  if (res.success && res.data) setFetchedBuilding(res.data);
+                })
+                .finally(() => setIsLoadingSection(false));
+            } else if (section === 'discount' && propertyId && !discountDataState && !socialDataState) {
+              setIsLoadingSection(true);
+              fetchIndividualSocialAndDiscountDetailsAction(
+                Number(propertyId),
+                effectiveSocietyDetailId ? Number(effectiveSocietyDetailId) : null,
+                effectiveWingDetailId ? Number(effectiveWingDetailId) : null
+              )
+                .then((res) => {
+                  if (res.success) {
+                    if (res.discountData) setFetchedDiscount(res.discountData);
+                    if (res.socialData) setFetchedSocial(res.socialData);
+                  }
+                })
+                .finally(() => setIsLoadingSection(false));
+            }
           }
         }}
         taxMode={currentTaxMode}
@@ -301,14 +416,27 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
       {/* 2. Floor Details Section by Valuation Mode (Rateable, Capital, Dual Method) */}
       {activeSection === 'floor' && (
         <>
-          {currentTaxMode === 'rateable' && (
-            <RateableTaxTable
-              rateableData={rateableState}
-              searchParams={searchParamsObj}
-              locale={locale}
-              propertyId={propertyId ? Number(propertyId) : undefined}
-            />
-          )}
+          {isValuationLoading ? (
+            <div className="p-8 flex flex-col items-center justify-center space-y-3 bg-white rounded-lg border border-slate-200 min-h-[220px]">
+              <Loader2 className="w-8 h-8 text-[#0047cc] animate-spin" />
+              <p className="text-xs font-bold text-slate-600 tracking-wide uppercase">
+                {currentTaxMode === 'capital'
+                  ? (t('valuation.loadingCapital') || 'Loading Capital Value Data...')
+                  : currentTaxMode === 'dual'
+                  ? (t('valuation.loadingDual') || 'Loading Dual Method Valuation Data...')
+                  : (t('valuation.loadingRateable') || 'Loading Rateable Value Data...')}
+              </p>
+            </div>
+          ) : (
+            <>
+              {currentTaxMode === 'rateable' && (
+                <RateableTaxTable
+                  rateableData={rateableState}
+                  searchParams={searchParamsObj}
+                  locale={locale}
+                  propertyId={propertyId ? Number(propertyId) : undefined}
+                />
+              )}
 
           {currentTaxMode === 'capital' && (
             <CapitalTaxTable
@@ -329,7 +457,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
               <div className="my-2 flex justify-center">
                 <button
                   type="button"
-                  onClick={() => setShowFloorDetails((prev) => !prev)}
+                  onClick={handleToggleShowFloorDetails}
                   className={PTIS_UI_CLASSES.expandButton}
                 >
                   {showFloorDetails ? (
@@ -349,46 +477,57 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
               {/* Expandable Dual Method Floor Section */}
               {showFloorDetails && (
                 <div className="py-2 space-y-3">
-                  <DualMethodFloorDetails
-                    rateableSection={
-                      <div className="space-y-3">
-                        <RateableTaxTable
-                          rateableData={rateableState}
-                          searchParams={searchParamsObj}
-                          locale={locale}
-                          propertyId={propertyId ? Number(propertyId) : undefined}
-                        />
-                        {rateableTaxDetailsState && (
-                          <div className="p-3 bg-white rounded-b-md border-t border-slate-200">
-                            <TaxDetails
-                              initialTaxDetails={rateableTaxDetailsState}
-                              activeTab="current"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    }
-                    capitalSection={
-                      <div className="space-y-3">
-                        <CapitalTaxTable
-                          capitalData={capitalState}
-                          searchParams={searchParamsObj}
-                          locale={locale}
-                          propertyId={propertyId ? Number(propertyId) : undefined}
-                        />
-                        {capitalTaxDetailsState && (
-                          <div className="p-3 bg-white rounded-b-md border-t border-slate-200">
-                            <TaxDetails
-                              initialTaxDetails={capitalTaxDetailsState}
-                              activeTab="current"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    }
-                  />
+                  {isFloorDetailsLoading ? (
+                    <div className="p-6 flex flex-col items-center justify-center space-y-2 bg-slate-50 rounded-lg border border-slate-200 min-h-[140px]">
+                      <Loader2 className="w-6 h-6 text-[#0047cc] animate-spin" />
+                      <p className="text-xs font-semibold text-slate-600">
+                        {t('valuation.loadingFloorBreakdown') || 'Loading Rateable & Capital Floor Details Breakdown...'}
+                      </p>
+                    </div>
+                  ) : (
+                    <DualMethodFloorDetails
+                      rateableSection={
+                        <div className="space-y-3">
+                          <RateableTaxTable
+                            rateableData={rateableState}
+                            searchParams={searchParamsObj}
+                            locale={locale}
+                            propertyId={propertyId ? Number(propertyId) : undefined}
+                          />
+                          {rateableTaxDetailsState && (
+                            <div className="p-3 bg-white rounded-b-md border-t border-slate-200">
+                              <TaxDetails
+                                initialTaxDetails={rateableTaxDetailsState}
+                                activeTab="current"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      }
+                      capitalSection={
+                        <div className="space-y-3">
+                          <CapitalTaxTable
+                            capitalData={capitalState}
+                            searchParams={searchParamsObj}
+                            locale={locale}
+                            propertyId={propertyId ? Number(propertyId) : undefined}
+                          />
+                          {capitalTaxDetailsState && (
+                            <div className="p-3 bg-white rounded-b-md border-t border-slate-200">
+                              <TaxDetails
+                                initialTaxDetails={capitalTaxDetailsState}
+                                activeTab="current"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      }
+                    />
+                  )}
                 </div>
               )}
+            </>
+          )}
             </>
           )}
         </>
@@ -396,14 +535,23 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
 
       {/* 3. Building Permission, Discount, or Old Details Tabs */}
       {activeSection && activeSection !== 'floor' && (
-        activeSection === 'discount' ? (
+        isLoadingSection ? (
+          <div className="p-8 flex flex-col items-center justify-center space-y-3 bg-white rounded-lg border border-slate-200 min-h-[180px]">
+            <Loader2 className="w-7 h-7 text-[#0047cc] animate-spin" />
+            <p className="text-xs font-bold text-slate-600 tracking-wide uppercase">
+              {activeSection === 'building'
+                ? (t('valuation.loadingBuildingPermission') || 'Loading Building Permission Data...')
+                : (t('valuation.loadingDiscount') || 'Loading Discount & Social Data...')}
+            </p>
+          </div>
+        ) : activeSection === 'discount' ? (
           <div className="pt-1">
             <DiscountDataTab
               isExpanded={isExpanded}
               onToggleExpand={() => setIsExpanded((prev) => !prev)}
               propertyId={propertyId ? Number(propertyId) : undefined}
-              initialData={discountData ?? undefined}
-              initialSocialData={socialData ?? undefined}
+              initialData={discountDataState ?? undefined}
+              initialSocialData={socialDataState ?? undefined}
               wardId={wardId}
               wardNo={wardNo}
               propertyNo={propertyNo}
@@ -434,7 +582,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
               <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200">
                 {activeSection === 'building' && (
                   <BuildingPermissionTab
-                    data={buildingPermissionData ?? undefined}
+                    data={buildingDataState ?? undefined}
                     propertyId={propertyId ? Number(propertyId) : undefined}
                     wardNo={wardNo ?? undefined}
                     wardId={wardId ? Number(wardId) : undefined}

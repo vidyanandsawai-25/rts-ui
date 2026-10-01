@@ -88,20 +88,20 @@ export async function getPropertySocialDetailById(id: number): Promise<ApiRespon
  */
 export async function updatePropertySocialDetail(id: number, payload: UpdatePropertySocialDetailDto): Promise<ApiResponse<PropertySocialDetailsDto>> {    
     const response = await apiClient.put<unknown>(`/PropertySocialDetails/${id}`, payload);    
-    if (!response.success || !response.data) {
+    if (!response.success) {
         return {
-            success: response.success,
+            success: false,
             statusCode: response.statusCode,
             error: response.error,
         };
     }
-    const raw = response.data as Record<string, unknown>;
+    const raw = (response.data || {}) as Record<string, unknown>;
     const itemData = (raw.items || raw.Items || raw.data || raw.Data || raw) as Record<string, unknown>;
     return {
         success: true,
         statusCode: response.statusCode,
         message: (raw.message as string) || response.message,
-        data: normalizePropertySocialDetailsDto(itemData)
+        data: itemData && typeof itemData === 'object' && Object.keys(itemData).length > 0 ? normalizePropertySocialDetailsDto(itemData) : undefined
     };
 }
 
@@ -562,8 +562,8 @@ export async function deletePropertySocialDetailsByHierarchy(
         if (params.documentBindingId !== undefined && params.documentBindingId !== null) {
             queryParams.append("documentBindingId", params.documentBindingId.toString());
         }
-        if (params.propertyId !== undefined) {
-            queryParams.append("propertyId", params.propertyId === null ? "" : params.propertyId.toString());
+        if (params.propertyId !== undefined && params.propertyId !== null) {
+            queryParams.append("propertyId", params.propertyId.toString());
         }
         if (params.propertyIds) {
             const idsStr = Array.isArray(params.propertyIds)
@@ -572,6 +572,8 @@ export async function deletePropertySocialDetailsByHierarchy(
             if (idsStr) {
                 queryParams.append("propertyIds", idsStr);
             }
+        } else if (params.propertyId !== undefined && params.propertyId !== null) {
+            queryParams.append("propertyIds", params.propertyId.toString());
         }
 
         const queryString = queryParams.toString();

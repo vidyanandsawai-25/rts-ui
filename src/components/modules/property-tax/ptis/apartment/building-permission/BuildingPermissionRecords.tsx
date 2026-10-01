@@ -589,35 +589,39 @@ export const BuildingPermissionRecords: React.FC<BuildingPermissionRecordsProps>
                     {t('buildingPermission.levels.allLevels') || t('buildingPermission.levels.all') || 'All Scopes'} ({levelCounts.all})
                   </Button>
 
-                  <Button
-                    size="xs"
-                    variant={selectedLevel.toLowerCase() === 'apartment' ? 'primary' : 'ghost'}
-                    icon={Building2}
-                    onClick={() => handleLevelSelect('Apartment')}
-                    className={cn(
-                      'font-bold cursor-pointer rounded-lg transition-all',
-                      selectedLevel.toLowerCase() === 'apartment'
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
-                    )}
-                  >
-                    {t('buildingPermission.levels.apartment') || 'Apartment Level'} ({levelCounts.apartment})
-                  </Button>
+                  {(Boolean(societyDetailId && Number(societyDetailId) > 0) || levelCounts.apartment > 0) && (
+                    <Button
+                      size="xs"
+                      variant={selectedLevel.toLowerCase() === 'apartment' ? 'primary' : 'ghost'}
+                      icon={Building2}
+                      onClick={() => handleLevelSelect('Apartment')}
+                      className={cn(
+                        'font-bold cursor-pointer rounded-lg transition-all',
+                        selectedLevel.toLowerCase() === 'apartment'
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
+                      )}
+                    >
+                      {t('buildingPermission.levels.apartment') || 'Apartment Level'} ({levelCounts.apartment})
+                    </Button>
+                  )}
 
-                  <Button
-                    size="xs"
-                    variant={selectedLevel.toLowerCase() === 'wing' ? 'primary' : 'ghost'}
-                    icon={Home}
-                    onClick={() => handleLevelSelect('Wing')}
-                    className={cn(
-                      'font-bold cursor-pointer rounded-lg transition-all',
-                      selectedLevel.toLowerCase() === 'wing'
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
-                    )}
-                  >
-                    {t('buildingPermission.levels.wing') || 'Wing Level'} ({levelCounts.wing})
-                  </Button>
+                  {(Boolean(wingDetailsId && Number(wingDetailsId) > 0) || levelCounts.wing > 0 || Boolean(societyDetailId && Number(societyDetailId) > 0)) && (
+                    <Button
+                      size="xs"
+                      variant={selectedLevel.toLowerCase() === 'wing' ? 'primary' : 'ghost'}
+                      icon={Home}
+                      onClick={() => handleLevelSelect('Wing')}
+                      className={cn(
+                        'font-bold cursor-pointer rounded-lg transition-all',
+                        selectedLevel.toLowerCase() === 'wing'
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
+                      )}
+                    >
+                      {t('buildingPermission.levels.wing') || 'Wing Level'} ({levelCounts.wing})
+                    </Button>
+                  )}
 
                   <Button
                     size="xs"

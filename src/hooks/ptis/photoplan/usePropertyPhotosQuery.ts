@@ -165,7 +165,8 @@ export function usePropertyPhotosQuery(
   societyId?: number | null,
   societyPhotoFallbackGuid?: string,
   societyPhotoFallbackUrl?: string,
-  propWingDetailId?: number | null
+  propWingDetailId?: number | null,
+  isMainProperty?: boolean
 ): UsePropertyPhotosQueryResult {
   const searchParams = useSearchParams();
   const [activeWingParams, setActiveWingParams] = useState<{
@@ -265,22 +266,9 @@ export function usePropertyPhotosQuery(
       const cached = propertyMediaCache.get(cacheKey)!;
       setPhotoSlots(cached.photoSlots);
       setPhotos(cached.photos);
-    } else if (initialPhotoSlots.length > 0 || initialPhotos.length > 0) {
+    } else {
       setPhotoSlots(initialPhotoSlots);
-      setPhotos((prevPhotos) => {
-        const isSocietyPhoto = (p: PropertyPhotoDto) => Boolean(
-          p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-          p.photoTypeName?.toLowerCase().includes('society')
-        );
-        const currentSocPhotos = prevPhotos.filter(isSocietyPhoto);
-        const mergedInitialPhotos = [...initialPhotos];
-        currentSocPhotos.forEach(sp => {
-          if (!mergedInitialPhotos.some(ip => (ip.documentGuid && ip.documentGuid === sp.documentGuid) || (ip.propertyPhotoId && ip.propertyPhotoId === sp.propertyPhotoId))) {
-            mergedInitialPhotos.push(sp);
-          }
-        });
-        return mergedInitialPhotos;
-      });
+      setPhotos(initialPhotos);
     }
   }, [propertyId, initialPhotoSlots, initialPhotos, cacheKey]);
 
@@ -300,9 +288,7 @@ export function usePropertyPhotosQuery(
     let isSubscribed = true;
 
     if (!cacheValid) {
-      if (!hasLoadedDataRef.current) {
-        setLoading(true);
-      }
+      setLoading(true);
       setError(null);
 
       const promises: Promise<unknown>[] = [
@@ -311,7 +297,7 @@ export function usePropertyPhotosQuery(
         getPropertyPhotoTypesByScopeAction('PROPERTY'),
       ];
 
-      if (targetWingId && targetWingId > 0) {
+      if (isMainProperty !== false && targetWingId && targetWingId > 0) {
         promises.push(getWingPhotoTypesWithStatusAction(targetWingId));
         promises.push(getPhotosByWingAction(targetWingId));
       } else {
@@ -319,7 +305,7 @@ export function usePropertyPhotosQuery(
         promises.push(Promise.resolve({ success: true, data: [] }));
       }
 
-      if (targetSocietyId && targetSocietyId > 0) {
+      if (isMainProperty !== false && targetSocietyId && targetSocietyId > 0) {
         promises.push(getSocietyPhotoTypesWithStatusAction(targetSocietyId));
         promises.push(getPhotosBySocietyAction(targetSocietyId));
       } else {
@@ -553,26 +539,13 @@ export function usePropertyPhotosQuery(
           });
 
           setPhotoSlots(slots);
-          setPhotos((prevPhotos) => {
-            const merged = [...fetchedPhotos];
-            const prevSoc = prevPhotos.filter(isSocietyPhoto);
-            prevSoc.forEach(ep => {
-              const alreadyExists = merged.some(fp => 
-                (fp.documentGuid && ep.documentGuid && fp.documentGuid === ep.documentGuid) ||
-                (fp.propertyPhotoId && ep.propertyPhotoId && fp.propertyPhotoId === ep.propertyPhotoId)
-              );
-              if (!alreadyExists) {
-                merged.push(ep);
-              }
-            });
-            propertyMediaCache.set(cacheKey, {
-              photoSlots: slots,
-              photos: merged,
-              timestamp: Date.now(),
-            });
-            evictOldestCacheEntry();
-            return merged;
+          setPhotos(fetchedPhotos);
+          propertyMediaCache.set(cacheKey, {
+            photoSlots: slots,
+            photos: fetchedPhotos,
+            timestamp: Date.now(),
           });
+          evictOldestCacheEntry();
         })
         .catch((err) => {
           if (isSubscribed) {
@@ -588,7 +561,7 @@ export function usePropertyPhotosQuery(
     return () => {
       isSubscribed = false;
     };
-  }, [propertyId, targetWingId, targetSocietyId, isPanelOpen, isDrawerOpen, initialPhotoSlots, initialPhotos, cacheKey, societyPhotoFallbackGuid, societyPhotoFallbackUrl]);
+  }, [propertyId, targetWingId, targetSocietyId, isPanelOpen, isDrawerOpen, initialPhotoSlots, initialPhotos, cacheKey, societyPhotoFallbackGuid, societyPhotoFallbackUrl, isMainProperty]);
 
   const refetch = useCallback(async () => {
     if (!propertyId) return;

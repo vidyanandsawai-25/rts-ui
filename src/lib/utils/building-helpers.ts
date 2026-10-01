@@ -66,18 +66,38 @@ export const mapApiToBuildingState = (
     const state: BuildingPermissionState = {};
     if (!items || !Array.isArray(items)) return state;
 
-    items.forEach((item) => {
-        state[item.certificateTypeId] = {
-            enabled: item.isActive,
-            number: sanitizeString(item.certificateNo),
-            date: formatDateForInput(item.issueDate),
-            documentGuid: sanitizeString(item.documentGuid) || undefined,
-            certificateTypeId: item.certificateTypeId,
-            propertyCertificateId: item.propertyCertificateId || null,
-            fileName: sanitizeString(item.fileName) || undefined,
-            certificateTypeName: item.certificateTypeName,
-            certificateTypeCode: item.certificateTypeCode,
-            displayOrder: item.displayOrder
+    items.forEach((rawItem) => {
+        if (!rawItem || typeof rawItem !== 'object') return;
+        const item = rawItem as unknown as Record<string, unknown>;
+        const typeId = Number(item.certificateTypeId ?? item.CertificateTypeId ?? item.id ?? item.Id ?? 0);
+        if (!typeId) return;
+
+        const certNo = sanitizeString((item.certificateNo ?? item.CertificateNo ?? item.certificateNumber ?? item.CertificateNumber ?? item.number ?? item.Number) as string);
+        const rawDate = (item.issueDate ?? item.IssueDate ?? item.certificateIssueDate ?? item.CertificateIssueDate ?? item.certificateDate ?? item.CertificateDate ?? item.date ?? item.Date) as string;
+        const issueDate = formatDateForInput(rawDate);
+        const docGuid = sanitizeString((item.documentGuid ?? item.DocumentGuid ?? item.guid ?? item.Guid ?? item.documentPath ?? item.DocumentPath) as string) || undefined;
+        const fileName = sanitizeString((item.fileName ?? item.FileName ?? item.documentName ?? item.DocumentName ?? item.name ?? item.Name) as string) || undefined;
+        const propCertId = (item.propertyCertificateId ?? item.PropertyCertificateId) != null ? Number(item.propertyCertificateId ?? item.PropertyCertificateId) : null;
+        const typeName = String(item.certificateTypeName ?? item.CertificateTypeName ?? '');
+        const typeCode = String(item.certificateTypeCode ?? item.CertificateTypeCode ?? '');
+        const displayOrder = Number(item.displayOrder ?? item.DisplayOrder ?? 0);
+
+        const isActive = item.isActive ?? item.IsActive;
+        const hasCert = item.hasCertificate ?? item.HasCertificate;
+        const hasAttachedData = Boolean(hasCert || (propCertId && propCertId > 0) || (certNo && certNo.trim() !== '') || (issueDate && issueDate.trim() !== '') || (docGuid && docGuid.trim() !== ''));
+        const isEnabled = isActive !== undefined ? Boolean(isActive) : hasAttachedData;
+
+        state[typeId] = {
+            enabled: isEnabled || hasAttachedData,
+            number: certNo,
+            date: issueDate,
+            documentGuid: docGuid,
+            certificateTypeId: typeId,
+            propertyCertificateId: propCertId,
+            fileName: fileName,
+            certificateTypeName: typeName,
+            certificateTypeCode: typeCode,
+            displayOrder: displayOrder
         };
     });
     return state;

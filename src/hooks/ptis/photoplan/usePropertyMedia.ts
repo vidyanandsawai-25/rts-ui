@@ -140,6 +140,8 @@ export function usePropertyMedia({
         setPhotos(initialPhotos);
         setPhotoSlots(initialPhotoSlots);
       }
+      prevPhotosRef.current = initialPhotos;
+      prevSlotsRef.current = initialPhotoSlots;
     }
   }, [propertyId, resolvedWingDetailId, initialPhotos, initialPhotoSlots, resetHoverPreview]);
 
@@ -460,6 +462,7 @@ export function usePropertyMedia({
     [categories]
   );
   const societyPhoto = useMemo(() => {
+    if (!isMainProperty || !societyPhotoCategory) return undefined;
     const fromCat = societyPhotoCategory?.images?.[0];
     if (fromCat && (fromCat.src || fromCat.documentGuid)) return fromCat;
     if (societyPhotoFallbackGuid || societyPhotoFallbackUrl) {
@@ -476,7 +479,7 @@ export function usePropertyMedia({
       };
     }
     return fromCat;
-  }, [societyPhotoCategory, societyPhotoFallbackGuid, societyPhotoFallbackUrl, t]);
+  }, [societyPhotoCategory, societyPhotoFallbackGuid, societyPhotoFallbackUrl, isMainProperty, t]);
 
   const wingPhotoCategory = useMemo(
     () => findCategory(categories, ['WING_BUILDING', 'WING_PHOTO', 'WING'], ['wing building', 'wing photo', 'wing']),

@@ -38,7 +38,11 @@ export const useBuildingForm = (
     initialData: PropertyCertificateWithStatusDto[] | null,
     initialFloorCertificates: FloorCertificatesResponseDto | null,
     propertyId: string,
-    initialFloorsProp?: FloorData[]
+    initialFloorsProp?: FloorData[],
+    initialFloorBuildingPermission?: PropertyCertificateWithStatusDto[] | null,
+    initialActiveScope?: 'Property' | 'Floor',
+    initialActiveFloorId?: number | null,
+    initialSelectedTypeId?: number | null
 ) => {
     const t = useTranslations("quickDataEntry");
     const params = useParams();
@@ -93,7 +97,12 @@ export const useBuildingForm = (
         propertyCertificatesState,
         hasAnyUnsavedBuildingChanges,
         markCurrentStateAsSaved
-    } = useBuildingFormState(initialData);
+    } = useBuildingFormState(
+        initialData,
+        initialFloorBuildingPermission,
+        initialActiveScope,
+        initialActiveFloorId
+    );
 
     const getCombinedFloors = useCallback((certResponse: FloorCertificatesResponseDto | null | undefined, fallbackFloors?: FloorData[]): FloorCertificateDto[] => {
         const list: FloorCertificateDto[] = [];
@@ -263,6 +272,7 @@ export const useBuildingForm = (
     const isInitialSyncDoneRef = useRef(false);
 
     const [selectedTypeId, setSelectedTypeId] = useState<number | null>(() => {
+        if (initialSelectedTypeId && !isNaN(Number(initialSelectedTypeId))) return Number(initialSelectedTypeId);
         const urlCertId = searchParams?.get('certificateTypeId') || searchParams?.get('certTypeId');
         return urlCertId && !isNaN(Number(urlCertId)) ? Number(urlCertId) : null;
     });

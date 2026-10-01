@@ -2,14 +2,19 @@ import { useState, useCallback, useMemo } from "react";
 import { BuildingPermissionState, PropertyCertificateWithStatusDto, CertificateData } from "@/types/building-permission.types";
 import { mapApiToBuildingState, hasChangesComparedToInitial } from "@/lib/utils/building-helpers";
 
-export const useBuildingFormState = (initialData: PropertyCertificateWithStatusDto[] | null) => {
+export const useBuildingFormState = (
+    initialData: PropertyCertificateWithStatusDto[] | null,
+    initialFloorBuildingPermission?: PropertyCertificateWithStatusDto[] | null,
+    initialActiveScope?: 'Property' | 'Floor',
+    initialActiveFloorId?: number | null
+) => {
     const [validationErrors, setValidationErrors] = useState<Record<number, string>>({});
     const [fieldErrors, setFieldErrors] = useState<Record<number, { number?: string; date?: string; document?: string }>>({});
     const [incompleteCertificates, setIncompleteCertificates] = useState<{ id: number; name: string }[]>([]);
 
     // Scopes: 'Property' | 'Floor'
-    const [activeScope, setActiveScope] = useState<'Property' | 'Floor'>('Property');
-    const [activeFloorId, setActiveFloorId] = useState<number | null>(null);
+    const [activeScope, setActiveScope] = useState<'Property' | 'Floor'>(initialActiveScope || 'Property');
+    const [activeFloorId, setActiveFloorId] = useState<number | null>(initialActiveFloorId ?? null);
 
     // Property-level state
     const [propertyCertificatesState, setPropertyCertificatesState] = useState<BuildingPermissionState>(() =>
@@ -25,8 +30,22 @@ export const useBuildingFormState = (initialData: PropertyCertificateWithStatusD
     }
 
     // Floor-level states
-    const [floorCertificatesCache, setFloorCertificatesCache] = useState<Record<number, BuildingPermissionState>>({});
-    const [initialFloorStateCache, setInitialFloorStateCache] = useState<Record<number, BuildingPermissionState>>({});
+    const [floorCertificatesCache, setFloorCertificatesCache] = useState<Record<number, BuildingPermissionState>>(() => {
+        if (initialActiveFloorId && initialFloorBuildingPermission && initialFloorBuildingPermission.length > 0) {
+            return {
+                [initialActiveFloorId]: mapApiToBuildingState(initialFloorBuildingPermission)
+            };
+        }
+        return {};
+    });
+    const [initialFloorStateCache, setInitialFloorStateCache] = useState<Record<number, BuildingPermissionState>>(() => {
+        if (initialActiveFloorId && initialFloorBuildingPermission && initialFloorBuildingPermission.length > 0) {
+            return {
+                [initialActiveFloorId]: mapApiToBuildingState(initialFloorBuildingPermission)
+            };
+        }
+        return {};
+    });
 
     // Active state being edited / displayed in the UI
     const buildingPermission = useMemo<BuildingPermissionState>(() => {
