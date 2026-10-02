@@ -1,6 +1,11 @@
 import type { BuildingBasicInfoFormData } from "@/types/asset/municipal-Asset/new-add-new-asset/buildBasicInfo.types";
 import type { AssetFormData } from "@/types/asset/municipal-Asset/new-add-new-asset/asset-wizard.types";
 
+const toIdString = (val: unknown): string => {
+  if (val === null || val === undefined || val === "" || val === 0 || val === "0") return "";
+  return String(val);
+};
+
 /**
  * Maps context form data to the initial state shape for useBuildingBasicInfoFormState.
  */
@@ -19,15 +24,21 @@ export function mapContextToInitialBasicInfo(
   const wid = parseFloat(widStr);
   const autoArea = len > 0 && wid > 0 ? (len * wid).toFixed(2) : "";
 
+  const zoneVal = toIdString(cData.zoneId) || toIdString(cData.zone);
+  const wardVal = toIdString(cData.wardId) || toIdString(cData.ward);
+  const moujaVal = toIdString(cData.moujaId) || toIdString(cData.mouja);
+  const subzoneVal = toIdString(cData.subZoneId) || toIdString(cData.subzone);
+  const deptVal = toIdString(cData.departmentId) || toIdString(cData.department);
+
   return {
     id: typeof cData.id === "number" ? cData.id : 0,
     assetId: typeof cData.assetId === "number" ? cData.assetId : 0,
     category: typeof cData.category === "string" ? cData.category : (typeof cData.categoryName === "string" ? cData.categoryName : ""),
     assetType: typeof cData.assetType === "string" ? cData.assetType : "",
-    zone: typeof cData.zone === "string" && cData.zone ? cData.zone : (typeof cData.zoneId === "string" ? cData.zoneId : ""),
-    subzone: typeof cData.subzone === "string" && cData.subzone ? cData.subzone : (typeof cData.subZoneId === "string" ? cData.subZoneId : ""),
-    ward: typeof cData.ward === "string" && cData.ward ? cData.ward : (typeof cData.wardId === "string" ? cData.wardId : ""),
-    mouja: typeof cData.mouja === "string" && cData.mouja ? cData.mouja : (typeof cData.moujaId === "string" ? cData.moujaId : ""),
+    zone: zoneVal,
+    subzone: subzoneVal,
+    ward: wardVal,
+    mouja: moujaVal,
     propertyNumber: typeof cData.propertyNumber === "string" ? cData.propertyNumber : "",
     surveyNumber: typeof cData.surveyNumber === "string" ? cData.surveyNumber : "",
     partitionNo: typeof cData.partitionNo === "string" ? cData.partitionNo : "",
@@ -42,7 +53,7 @@ export function mapContextToInitialBasicInfo(
         : autoArea,
     assetName: typeof cData.assetName === "string" ? cData.assetName : "",
     assetNameRegional: typeof cData.assetNameRegional === "string" ? cData.assetNameRegional : "",
-    department: typeof cData.department === "string" && cData.department ? cData.department : (typeof cData.departmentId === "string" ? cData.departmentId : ""),
+    department: deptVal,
     fullAddress: typeof cData.fullAddress === "string" ? cData.fullAddress : "",
     fullAddressRegional: typeof cData.fullAddressRegional === "string" ? cData.fullAddressRegional : "",
     locality: typeof cData.locality === "string" ? cData.locality : "",
@@ -76,11 +87,11 @@ export function mapContextToInitialBasicInfo(
     typeId: Number(cData.typeId) || 0,
     latitude: typeof cData.latitude === "string" ? cData.latitude : "",
     longitude: typeof cData.longitude === "string" ? cData.longitude : "",
-    zoneId: typeof cData.zoneId === "string" && cData.zoneId ? cData.zoneId : (typeof cData.zone === "string" ? cData.zone : ""),
-    wardId: typeof cData.wardId === "string" && cData.wardId ? cData.wardId : (typeof cData.ward === "string" ? cData.ward : ""),
-    departmentId: typeof cData.departmentId === "string" && cData.departmentId ? cData.departmentId : (typeof cData.department === "string" ? cData.department : ""),
-    moujaId: typeof cData.moujaId === "string" && cData.moujaId ? cData.moujaId : (typeof cData.mouja === "string" ? cData.mouja : ""),
-    subZoneId: typeof cData.subZoneId === "string" && cData.subZoneId ? cData.subZoneId : (typeof cData.subzone === "string" ? cData.subzone : ""),
+    zoneId: zoneVal,
+    wardId: wardVal,
+    departmentId: deptVal,
+    moujaId: moujaVal,
+    subZoneId: subzoneVal,
     status: typeof cData.status === "string" ? cData.status : "Active",
     condition: typeof cData.condition === "string" ? cData.condition : "",
     assetConditionId: typeof cData.assetConditionId === "string" || typeof cData.assetConditionId === "number" ? String(cData.assetConditionId) : "",

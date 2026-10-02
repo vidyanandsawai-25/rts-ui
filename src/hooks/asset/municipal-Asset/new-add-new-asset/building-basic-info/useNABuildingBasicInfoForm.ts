@@ -168,7 +168,17 @@ export function useNABuildingBasicInfoForm(): UseNABuildingBasicInfoFormReturn {
       const patch: Partial<BuildingBasicInfoFormData> = {};
       Object.assign(patch, { [name]: sanitizedValue });
       if (name === "zone") {
+        patch.zoneId = sanitizedValue;
         patch.ward = "";
+        patch.wardId = "";
+      } else if (name === "ward") {
+        patch.wardId = sanitizedValue;
+      } else if (name === "mouja") {
+        patch.moujaId = sanitizedValue;
+        patch.subzone = "";
+        patch.subZoneId = "";
+      } else if (name === "subzone") {
+        patch.subZoneId = sanitizedValue;
       } else if (name === "typeOfUseId") {
         patch.subTypeOfUseId = "";
       }

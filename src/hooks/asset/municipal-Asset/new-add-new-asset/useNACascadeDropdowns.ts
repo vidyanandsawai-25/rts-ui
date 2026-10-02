@@ -63,7 +63,7 @@ export function useNACascadeDropdowns({
 
       if (name === "zone") {
         activeZoneRef.current = value;
-        updateFormData({ ward: "" });
+        updateFormData({ ward: "", wardId: "" });
         if (value) {
           setIsLoadingWards(true);
           fetchWardsByZoneAction(value)
@@ -87,7 +87,7 @@ export function useNACascadeDropdowns({
         }
       } else if (name === "mouja") {
         activeMoujaRef.current = value;
-        updateFormData({ subzone: "" });
+        updateFormData({ subzone: "", subZoneId: "" });
         if (value) {
           setIsLoadingSubzones(true);
           fetchSubzonesByMoujaAction(value)

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
-import { Input, TextArea, Label } from "@/components/common";
+import { Input, TextArea, Label, Select } from "@/components/common";
 import { useDigitInputs } from "@/hooks/useDigitInputs";
 import type { NAPropertyInChargeSectionProps, BuildingBasicInfoFormData, NAFieldProps } from "@/types/asset/municipal-Asset/new-add-new-asset";
 
@@ -131,23 +131,15 @@ export function NAPropertyInChargeSection({
       {/* Row 5 — Designation + Contact Number (10 Digit Boxes) */}
       <Row>
         <Field label={t("kycDetails.designation")} error={showError("inChargeDesignation") ? errors.inChargeDesignation : undefined}>
-          <div className="relative w-full min-w-0">
-            <select
-              name="inChargeDesignation"
-              value={formData.inChargeDesignation || ""}
-              onChange={handleChange}
-              disabled={!formData.department || isLoadingDesignations}
-              className="w-full min-w-0 truncate appearance-none px-2 py-0.5 pr-7 text-[10px] font-semibold border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer h-[25px] text-slate-900 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
-            >
-              <option value="" className="text-slate-700">{isLoadingDesignations ? "Loading..." : t("kycDetails.selectDesignation")}</option>
-              {designationOptions.map((opt) => (
-                <option key={opt.value} value={opt.value} className="text-slate-900 font-semibold">{opt.label}</option>
-              ))}
-            </select>
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
-            </div>
-          </div>
+          <Select
+            name="inChargeDesignation"
+            value={formData.inChargeDesignation || ""}
+            onChange={handleChange}
+            disabled={!formData.department || isLoadingDesignations}
+            placeholder={isLoadingDesignations ? "Loading..." : t("kycDetails.selectDesignation")}
+            options={designationOptions}
+            className="!h-[25px] !min-h-[25px] border-slate-200 rounded-md bg-white [&_button]:!h-[25px] [&_button]:!min-h-[25px] [&_button]:!py-0 [&_button]:!px-2 [&_span]:!text-[10px] [&_span]:!font-semibold [&_svg]:!w-2.5 [&_svg]:!h-2.5"
+          />
         </Field>
         <Field label={t("kycDetails.contactNumber")} error={showError("inChargeMobile") ? errors.inChargeMobile : undefined}>
           {renderDigitBoxes(contactInput, "inChargeMobile", 10)}

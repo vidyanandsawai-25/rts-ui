@@ -31,27 +31,33 @@ function pick<T = string>(
 }
 
 const toStringId = (...vals: Array<number | string | undefined | null>): string =>
-  String(vals.find((v) => v !== null && v !== undefined && v !== "" && v !== 0) ?? "");
+  String(vals.find((v) => v !== null && v !== undefined && v !== "" && v !== 0 && v !== "0") ?? "");
 
 const toStringNum = (...vals: Array<number | string | undefined | null>): string =>
   String(vals.find((v) => v !== null && v !== undefined && v !== "") ?? "");
 
-const resolveEavValue = (fv: RawFieldValue): string | number | boolean | null | undefined =>
-  fv.fieldValue ?? fv.FieldValue ??
-  fv.textValue ?? fv.TextValue ??
-  fv.numberValue ?? fv.NumberValue ??
-  fv.booleanValue ?? fv.BooleanValue ??
-  fv.dateValue ?? fv.DateValue;
+const resolveEavValue = (fv: RawFieldValue): string | number | boolean | null | undefined => {
+  const raw = fv as Record<string, unknown>;
+  return fv.fieldValue ?? fv.FieldValue ??
+    (raw.value as string) ?? (raw.Value as string) ??
+    fv.textValue ?? fv.TextValue ??
+    fv.numberValue ?? fv.NumberValue ??
+    fv.booleanValue ?? fv.BooleanValue ??
+    fv.dateValue ?? fv.DateValue;
+};
 
 function buildDynamicAttrs(rawFieldValues: RawFieldValue[]): Record<string, string | number | boolean> {
   const attrs: Record<string, string | number | boolean> = {};
   for (const fv of rawFieldValues) {
-    const key = (fv.fieldName || fv.FieldName || fv.fieldCode || fv.FieldCode) as string | undefined;
+    const raw = fv as Record<string, unknown>;
+    const key = (fv.fieldName || fv.FieldName || fv.fieldCode || fv.FieldCode || raw.fieldLabel || raw.FieldLabel) as string | undefined;
     const val = resolveEavValue(fv);
-    if (key && val !== null && val !== undefined) {
-      attrs[key] = val;
-      attrs[key.toLowerCase()] = val;
-      const defId = (fv.fieldDefinitionId ?? fv.FieldDefinitionId) as number | undefined;
+    if (val !== null && val !== undefined) {
+      if (key) {
+        attrs[key] = val;
+        attrs[key.toLowerCase()] = val;
+      }
+      const defId = (fv.fieldDefinitionId ?? fv.FieldDefinitionId ?? raw.id ?? raw.Id) as number | undefined;
       if (defId) {
         attrs[`field_${defId}`] = val;
         attrs[String(defId)] = val;

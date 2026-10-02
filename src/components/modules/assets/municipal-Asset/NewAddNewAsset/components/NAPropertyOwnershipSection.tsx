@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
-import { Label, TextArea } from "@/components/common";
+import { Label, TextArea, Select } from "@/components/common";
 import type { NAPropertyOwnershipSectionProps } from "@/types/asset/municipal-Asset/new-add-new-asset";
 
 const Row = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -95,46 +95,27 @@ export function NAPropertyOwnershipSection({
       {/* Row 3 — Owning Department + Ownership Type */}
       <Row>
         <Field label={t("kycDetails.owningDepartment")} required error={showError("department") ? errors.department : undefined}>
-          <div className="relative w-full min-w-0">
-            <select
-              name="department"
-              value={formData.department || String(formData.departmentId ?? "")}
-              onChange={(e) => {
-                handleChange(e);
-                // keep departmentId in sync so buildBasicInfoPayload always has a numeric id
-                updateFormData({ departmentId: e.target.value });
-              }}
-              required
-              className="w-full min-w-0 truncate appearance-none px-2 py-0.5 pr-7 text-[10px] font-semibold border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer h-[25px] text-slate-900"
-            >
-              <option value="" className="text-slate-700">{t("kycDetails.selectOwningDepartment")}</option>
-              {deptOptions.map((opt) => (
-                <option key={opt.value} value={opt.value} className="text-slate-900 font-semibold">{opt.label}</option>
-              ))}
-            </select>
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
-            </div>
-          </div>
+          <Select
+            name="department"
+            value={formData.department || String(formData.departmentId ?? "")}
+            onChange={(e, val) => {
+              handleChange(e);
+              updateFormData({ departmentId: val });
+            }}
+            placeholder={t("kycDetails.selectOwningDepartment")}
+            options={deptOptions}
+            className="!h-[25px] !min-h-[25px] border-slate-200 rounded-md bg-white [&_button]:!h-[25px] [&_button]:!min-h-[25px] [&_button]:!py-0 [&_button]:!px-2 [&_span]:!text-[10px] [&_span]:!font-semibold [&_svg]:!w-2.5 [&_svg]:!h-2.5"
+          />
         </Field>
         <Field label={t("kycDetails.ownershipType")} required error={showError("ownershipType") ? errors.ownershipType : undefined}>
-          <div className="relative w-full min-w-0">
-            <select
-              name="ownershipType"
-              value={formData.ownershipType || ""}
-              onChange={handleChange}
-              required
-              className="w-full min-w-0 truncate appearance-none px-2 py-0.5 pr-7 text-[10px] font-semibold border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer h-[25px] text-slate-900"
-            >
-              <option value="" className="text-slate-700">{t("kycDetails.selectOwnershipType")}</option>
-              {ownershipOptions.map((opt) => (
-                <option key={opt.value} value={opt.value} className="text-slate-900 font-semibold">{opt.label}</option>
-              ))}
-            </select>
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
-            </div>
-          </div>
+          <Select
+            name="ownershipType"
+            value={formData.ownershipType || ""}
+            onChange={handleChange}
+            placeholder={t("kycDetails.selectOwnershipType")}
+            options={ownershipOptions}
+            className="!h-[25px] !min-h-[25px] border-slate-200 rounded-md bg-white [&_button]:!h-[25px] [&_button]:!min-h-[25px] [&_button]:!py-0 [&_button]:!px-2 [&_span]:!text-[10px] [&_span]:!font-semibold [&_svg]:!w-2.5 [&_svg]:!h-2.5"
+          />
         </Field>
       </Row>
     </>

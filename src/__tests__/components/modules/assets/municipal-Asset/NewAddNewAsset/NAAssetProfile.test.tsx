@@ -137,6 +137,10 @@ describe('NAAssetProfile Component', () => {
     expect(screen.getByText('Asset Condition')).toBeInTheDocument();
     expect(screen.getByText('Encroachment Status')).toBeInTheDocument();
     expect(screen.getByText('Clean')).toBeInTheDocument();
+
+    const encroachmentSelect = screen.getByRole('combobox', { name: 'Select Encroachment Status' });
+    fireEvent.click(encroachmentSelect);
+
     expect(screen.getByText('Partially Encroached')).toBeInTheDocument();
     expect(screen.getByText('Fully Encroached')).toBeInTheDocument();
   });

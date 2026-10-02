@@ -78,7 +78,25 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
   const initialStepNumber = routeStepIndex >= 0 ? routeStepIndex + 1 : 1;
 
   const [currentStep, setCurrentStep] = useState(initialStepNumber);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const resolvedAssetId = Number(
+    orchestrator.assetId ||
+      orchestrator.formData.id ||
+      orchestrator.formData.assetId ||
+      props.initialWizardData?.id ||
+      props.initialWizardData?.assetId ||
+      searchParams.get("assetId") ||
+      searchParams.get("id") ||
+      0
+  );
+  const [completedSteps, setCompletedSteps] = useState<number[]>(() => (resolvedAssetId > 0 ? [1] : []));
+
+  const [prevResolvedAssetId, setPrevResolvedAssetId] = useState(resolvedAssetId);
+  if (resolvedAssetId !== prevResolvedAssetId) {
+    setPrevResolvedAssetId(resolvedAssetId);
+    if (resolvedAssetId > 0 && !completedSteps.includes(1)) {
+      setCompletedSteps((prev) => (prev.includes(1) ? prev : [...prev, 1]));
+    }
+  }
   const [cvRollup, setCvRollup] = useState<FloorCvRollup | number | null>(null);
   const [isFinalSubmitting, setIsFinalSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState<{ assetName: string; assetCode: string } | null>(null);

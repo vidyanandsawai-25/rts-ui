@@ -36,7 +36,6 @@ import {
   resolveAssetCondition,
   resolveAssetNo,
   resolveCategoryAndType,
-  saveFieldValuesForAsset,
 } from "@/lib/utils/asset-utils/new-add-new-asset/submit/submit-asset-form.utils";
 import type {
   BuildingBasicInfoFormData,
@@ -307,13 +306,9 @@ export async function submitAssetFormService(
 
     let assetId: number | null = null;
 
-    // Save dynamic EAV field values to /AssetFieldValue if master creation succeeded
+    // Save dynamic EAV field values to /AssetMaster in master payload; extract assetId from response
     if (response.success && response.data) {
       assetId = extractAssetIdFromResponse(response.data, isUpdate, parsedId);
-
-      if (assetId) {
-        await saveFieldValuesForAsset(assetId, apiRequest);
-      }
     }
 
     // Return concise draft creation result without triggering parent route RSC revalidation

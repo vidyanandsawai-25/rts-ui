@@ -19,7 +19,7 @@ import type {
 export type { BasicInfoFilesPayload, AssetCreationResponseRecord, SubmitPhotoMetadataItem };
 
 export const parseNumericId = (val: number | string | null | undefined): number | null => {
-  if (val === null || val === undefined || String(val).trim() === "") return null;
+  if (val === null || val === undefined || String(val).trim() === "" || String(val).trim() === "0") return null;
   const parsed = Number(val);
   return !isNaN(parsed) && parsed > 0 ? parsed : null;
 };
@@ -181,7 +181,12 @@ export function buildBasicInfoPayload(
     ownershipType: formData.ownershipType || null,
     occupancyStatus: formData.occupancyStatus || (typeof formData.attributes?.occupancyStatus === "string" ? formData.attributes.occupancyStatus : null),
     assetConditionId: parseNumericId(formData.assetCondition || formData.assetConditionId || formData.condition),
-    encroachmentStatus: formData.encroachmentStatus || (typeof formData.attributes?.encroachmentStatus === "string" ? formData.attributes.encroachmentStatus : null),
+    encroachmentStatus: (formData.encroachmentStatus && formData.encroachmentStatus !== "-- Select --") 
+      ? formData.encroachmentStatus 
+      : (typeof formData.attributes?.encroachmentStatus === "string" && formData.attributes.encroachmentStatus !== "-- Select --" 
+          ? formData.attributes.encroachmentStatus 
+          : null),
+    createdBy: getDynamicUserId(formData, sessionContext?.sessionUserId),
     inChargeName: formData.inChargeName || null,
     inChargeRegionalName: formData.inChargeNameRegional || formData.inChargeRegionalName || null,
     inChargeDesignationId: parseNumericId(formData.inChargeDesignation),
@@ -198,7 +203,6 @@ export function buildBasicInfoPayload(
     mpmsNo: formData.mpmsNo || (typeof formData.attributes?.mpmsNo === "string" ? formData.attributes.mpmsNo : null) || (typeof formData.attributes?.mpms === "string" ? formData.attributes.mpms : null),
     pTaxId: formData.pTaxId || null,
     isActive: true,
-    createdBy: getDynamicUserId(formData, sessionContext?.sessionUserId),
     fieldValues: buildFieldValuesFromAttributes(formData, fieldDefs),
   };
 }

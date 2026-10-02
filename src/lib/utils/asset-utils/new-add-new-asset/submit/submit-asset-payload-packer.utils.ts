@@ -27,6 +27,16 @@ export async function buildSubmitFormPayload(
     }
   });
 
+  if (Array.isArray(apiRequest.fieldValues) && apiRequest.fieldValues.length > 0) {
+    apiRequest.fieldValues.forEach((fv, i) => {
+      if (fv.fieldDefinitionId) formDataPayload.append(`FieldValues[${i}].FieldDefinitionId`, String(fv.fieldDefinitionId));
+      if (fv.fieldName) formDataPayload.append(`FieldValues[${i}].FieldName`, String(fv.fieldName));
+      if (fv.fieldValue !== undefined && fv.fieldValue !== null) formDataPayload.append(`FieldValues[${i}].FieldValue`, String(fv.fieldValue));
+      formDataPayload.append(`FieldValues[${i}].IsActive`, String(fv.isActive !== false));
+    });
+    formDataPayload.append("FieldValuesJson", JSON.stringify(apiRequest.fieldValues));
+  }
+
   let displayOrder = 1;
   const photoMetadata: SubmitPhotoMetadataItem[] = [];
   if (basicInfoFiles?.frontPhoto) {

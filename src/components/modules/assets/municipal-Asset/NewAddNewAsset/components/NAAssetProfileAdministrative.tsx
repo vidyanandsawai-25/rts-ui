@@ -149,7 +149,7 @@ export function NAAssetProfileAdministrative({
             onChange={handleChange}
             placeholder={t("assetDetails.selectMouja")}
             options={moujaOptions}
-            className="!h-[25px] !min-h-[25px] border-slate-200 rounded-md bg-white [&_button]:!h-[25px] [&_button]:!min-h-[25px] [&_button]:!py-0 [&_button]:!px-2 [&_span]:!text-[10px] [&_span]:!font-semibold [&_svg]:!w-2.5 [&_svg]:!h-2.5"
+            className="!h-[25px] !min-h-[25px] border-slate-200 rounded-md bg-white [&_button]:!h-[25px] [&_button]:!min-h-[25px] [&_button]:!py-0 [&_button]:!px-2 [&_span]:!text-[10px] [&_span]:!font-semibold [&_svg]:!w-2.5 [&_svg]:!h-2.5 [&_ul]:!max-h-[180px] [&_ul]:!bottom-auto [&_ul]:!top-full [&_ul]:!mt-0.5 [&_ul]:!overflow-y-auto [&_ul]:!z-[9999] [&_ul]:!shadow-xl [&_li]:!py-1 [&_li]:!px-2.5 [&_li]:!text-[10px]"
           />
         </Field>
         <Field label={t("assetDetails.subzone")} error={showError("subzone") ? errors.subzone : undefined}>
@@ -160,7 +160,7 @@ export function NAAssetProfileAdministrative({
             disabled={!formData.mouja || isLoadingSubzones}
             placeholder={isLoadingSubzones ? "Loading..." : t("assetDetails.selectSubzone")}
             options={subzoneOptions}
-            className="!h-[25px] !min-h-[25px] border-slate-200 rounded-md bg-white [&_button]:!h-[25px] [&_button]:!min-h-[25px] [&_button]:!py-0 [&_button]:!px-2 [&_span]:!text-[10px] [&_span]:!font-semibold [&_svg]:!w-2.5 [&_svg]:!h-2.5"
+            className="!h-[25px] !min-h-[25px] border-slate-200 rounded-md bg-white [&_button]:!h-[25px] [&_button]:!min-h-[25px] [&_button]:!py-0 [&_button]:!px-2 [&_span]:!text-[10px] [&_span]:!font-semibold [&_svg]:!w-2.5 [&_svg]:!h-2.5 [&_ul]:!max-h-[180px] [&_ul]:!bottom-auto [&_ul]:!top-full [&_ul]:!mt-0.5 [&_ul]:!overflow-y-auto [&_ul]:!z-[9999] [&_ul]:!shadow-xl [&_li]:!py-1 [&_li]:!px-2.5 [&_li]:!text-[10px]"
           />
         </Field>
         <Field label={t("assetDetails.csnNo")} error={showError("surveyNumber") ? errors.surveyNumber : undefined}>

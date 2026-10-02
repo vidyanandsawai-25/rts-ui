@@ -2,7 +2,7 @@
 
 import React, { useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Input, AnimatedDigitInput, Label } from "@/components/common";
+import { Input, AnimatedDigitInput, Label, Select } from "@/components/common";
 import type { NAAssetProfileDimensionsProps } from "@/types/asset/municipal-Asset/new-add-new-asset";
 
 const Row = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -164,62 +164,24 @@ export function NAAssetProfileDimensions({
       {/* Row 7 — Asset Condition + Encroachment Status */}
       <Row>
         <Field label={t("assetDetails.condition")} error={showError("condition") ? errors.condition : undefined}>
-          <div className="relative w-full min-w-0">
-            <select
-              name="condition"
-              value={formData.condition || ""}
-              onChange={handleChange}
-              className="w-full min-w-0 truncate appearance-none px-2 py-0.5 pr-7 text-[10px] font-semibold border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer h-[25px] text-slate-900"
-            >
-              <option value="" className="text-slate-700">{t("assetDetails.selectCondition")}</option>
-              {conditionOptions.map((opt) => (
-                <option key={opt.value} value={opt.value} className="text-slate-900 font-semibold">{opt.label}</option>
-              ))}
-            </select>
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
-            </div>
-          </div>
+          <Select
+            name="condition"
+            value={formData.condition || ""}
+            onChange={handleChange}
+            placeholder={t("assetDetails.selectCondition")}
+            options={conditionOptions}
+            className="!h-[25px] !min-h-[25px] border-slate-200 rounded-md bg-white [&_button]:!h-[25px] [&_button]:!min-h-[25px] [&_button]:!py-0 [&_button]:!px-2 [&_span]:!text-[10px] [&_span]:!font-semibold [&_svg]:!w-2.5 [&_svg]:!h-2.5"
+          />
         </Field>
         <Field label={t("assetDetails.encroachmentStatus")} error={showError("encroachmentStatus") ? errors.encroachmentStatus : undefined}>
-          <div className="relative w-full min-w-0">
-            <select
-              name="encroachmentStatus"
-              value={formData.encroachmentStatus || ""}
-              onChange={handleChange}
-              className={`w-full min-w-0 truncate appearance-none px-2 py-0.5 pr-7 text-[10px] font-semibold border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer h-[25px] ${
-                formData.encroachmentStatus === "Clean"
-                  ? "!text-emerald-600 !font-bold"
-                  : formData.encroachmentStatus === "Partially Encroached"
-                  ? "!text-amber-600 !font-bold"
-                  : formData.encroachmentStatus === "Fully Encroached"
-                  ? "!text-red-600 !font-bold"
-                  : "text-slate-900"
-              }`}
-            >
-              <option value="" className="text-slate-700">{t("assetDetails.selectEncroachmentStatus")}</option>
-              {encroachmentStatusOptions.map((opt) => (
-                <option
-                  key={opt.value}
-                  value={opt.value}
-                  className={
-                    opt.value === "Clean"
-                      ? "text-emerald-600 font-bold"
-                      : opt.value === "Partially Encroached"
-                      ? "text-amber-600 font-bold"
-                      : opt.value === "Fully Encroached"
-                      ? "text-red-600 font-bold"
-                      : "text-slate-900 font-semibold"
-                  }
-                >
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
-            </div>
-          </div>
+          <Select
+            name="encroachmentStatus"
+            value={formData.encroachmentStatus || ""}
+            onChange={handleChange}
+            placeholder={t("assetDetails.selectEncroachmentStatus")}
+            options={encroachmentStatusOptions}
+            className="!h-[25px] !min-h-[25px] border-slate-200 rounded-md bg-white [&_button]:!h-[25px] [&_button]:!min-h-[25px] [&_button]:!py-0 [&_button]:!px-2 [&_span]:!text-[10px] [&_span]:!font-semibold [&_svg]:!w-2.5 [&_svg]:!h-2.5"
+          />
         </Field>
       </Row>
     </>

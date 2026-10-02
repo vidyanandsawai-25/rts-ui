@@ -22,11 +22,12 @@ export function DynamicFieldInput({
   isCompact = false,
 }: DynamicFieldInputProps & { isCompact?: boolean }) {
   const fieldCode = field.fieldCode;
-  const fieldName = field.fieldName || fieldCode || `dynamic_field_${field.id}`;
+  const fieldLabel = field.fieldLabel;
+  const fieldName = field.fieldName || fieldLabel || fieldCode || `dynamic_field_${field.id}`;
   const attributes = (formData.attributes || {}) as Record<string, unknown>;
   const fieldValue =
-    attributes[fieldName] ??
-    attributes[fieldName.toLowerCase()] ??
+    (fieldName ? attributes[fieldName] ?? attributes[fieldName.toLowerCase()] : undefined) ??
+    (fieldLabel ? attributes[fieldLabel] ?? attributes[fieldLabel.toLowerCase()] : undefined) ??
     (fieldCode ? attributes[fieldCode] ?? attributes[fieldCode.toLowerCase()] : undefined) ??
     (field.id ? attributes[`field_${field.id}`] ?? attributes[String(field.id)] : undefined);
 

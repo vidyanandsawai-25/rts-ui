@@ -66,17 +66,20 @@ export const NAPropertyInfo = React.memo(function NAPropertyInfo(props: NAProper
   );
 
   const deptOptions = React.useMemo(
-    () =>
-      departments.map((d) => ({
+    () => [
+      { label: "-- Select --", value: "" },
+      ...departments.map((d) => ({
         label: d.departmentName || d.owningDepartmentName || `Department ${d.id}`,
         value: String(d.id),
       })),
+    ],
     [departments]
   );
 
   const ownershipOptions = React.useMemo(
-    () =>
-      ownershipTypes.length > 0
+    () => [
+      { label: "-- Select --", value: "" },
+      ...(ownershipTypes.length > 0
         ? ownershipTypes.map((ot) => ({
             label: ot.ownershipTypeName || ot.name || ot.code || `Ownership ${ot.id}`,
             value: ot.ownershipTypeName || ot.name || String(ot.id),
@@ -84,22 +87,25 @@ export const NAPropertyInfo = React.memo(function NAPropertyInfo(props: NAProper
         : [
             { label: t("kycDetails.ownershipOptions.municipal"), value: "municipal" },
             { label: t("kycDetails.ownershipOptions.private"), value: "private" },
-          ],
+          ]),
+    ],
     [ownershipTypes, t]
   );
 
   const designationOptions = React.useMemo(
-    () =>
-      designations.map((d) => ({
+    () => [
+      { label: "-- Select --", value: "" },
+      ...designations.map((d) => ({
         label: d.designationName || d.name || `Designation ${d.id}`,
         value: String(d.id),
       })),
+    ],
     [designations]
   );
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-full max-h-[390px]">
-      <div className="px-3 py-1.5 border-b border-slate-100 flex items-center gap-2 bg-white shrink-0 h-[34px]">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-visible h-full max-h-[390px]">
+      <div className="px-3 py-1.5 border-b border-slate-100 flex items-center gap-2 bg-white shrink-0 h-[34px] rounded-t-xl">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>

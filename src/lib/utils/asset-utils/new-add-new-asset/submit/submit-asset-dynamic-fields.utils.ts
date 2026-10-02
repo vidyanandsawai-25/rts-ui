@@ -26,7 +26,8 @@ export const getDynamicUserId = (
 ): number => {
   const sessionValidId = sessionUserId && !isNaN(Number(sessionUserId)) && Number(sessionUserId) > 0 ? Number(sessionUserId) : null;
   if (sessionValidId) return sessionValidId;
-  const userId = Number(formData?.createdBy ?? formData?.userId ?? formData?.attributes?.userId);
+  const rawId = formData?.createdBy ?? formData?.userId ?? formData?.attributes?.createdBy ?? formData?.attributes?.userId;
+  const userId = Number(rawId);
   return !isNaN(userId) && userId > 0 ? userId : 1;
 };
 
