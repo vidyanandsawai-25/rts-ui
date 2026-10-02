@@ -1,4 +1,9 @@
 {
+  "yes": "Yes",
+  "no": "No",
+  "select": {
+    "placeholder": "Select..."
+  },
   "buttons": {
     "save": "Save",
     "update": "Update",

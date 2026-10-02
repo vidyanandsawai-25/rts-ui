@@ -1,4 +1,9 @@
 {
+  "yes": "हाँ",
+  "no": "नहीं",
+  "select": {
+    "placeholder": "चुनें..."
+  },
   "buttons": {
     "save": "सहेजें",
     "update": "अपडेट करें",

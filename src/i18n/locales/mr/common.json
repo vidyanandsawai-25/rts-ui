@@ -1,4 +1,9 @@
 {
+  "yes": "होय",
+  "no": "नाही",
+  "select": {
+    "placeholder": "निवडा..."
+  },
   "buttons": {
     "save": "जतन करा",
     "update": "अपडेट करा",

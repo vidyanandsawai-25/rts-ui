@@ -1,0 +1,59 @@
+import { setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { ChargeHeads } from '@/components/modules/water-bill/charge-heads';
+import type { EditChargeHeadPageProps } from '@/types/waterBill/chargeHeads.types';
+import {
+  fetchChargeHeadsServer,
+  fetchChargeHeadByIdServer,
+} from '@/lib/services/water-bill/chargeHeads.server';
+import { parsePagedSearchParams } from '@/lib/utils/search-params-helper';
+import {
+  createChargeHeadAction,
+  updateChargeHeadAction,
+  deleteChargeHeadAction,
+} from '../../actions';
+
+export default async function EditChargeHeadPage({ params, searchParams }: EditChargeHeadPageProps) {
+  const { id: idStr, locale } = await params;
+  setRequestLocale(locale);
+  const sParams = await searchParams;
+
+  const id = parseInt(idStr, 10);
+  if (isNaN(id) || id <= 0) {
+    notFound();
+  }
+
+  const { pageNumber, pageSize, searchTerm, sortBy, sortOrder } = parsePagedSearchParams(sParams);
+
+  const [pagedData, fetchedData] = await Promise.all([
+    fetchChargeHeadsServer({
+      pageNumber,
+      pageSize,
+      searchTerm,
+      sortBy,
+      sortOrder,
+    }),
+    fetchChargeHeadByIdServer(id),
+  ]);
+
+  const editingData = fetchedData && Number(fetchedData.id) === Number(id) ? fetchedData : null;
+
+  if (!editingData) {
+    notFound();
+  }
+
+  return (
+    <ChargeHeads
+      pagedData={pagedData}
+      locale={locale}
+      drawer="edit"
+      initialEditingData={editingData}
+      initialSortBy={sortBy}
+      initialSortOrder={sortOrder}
+      initialSearchTerm={searchTerm}
+      createAction={createChargeHeadAction}
+      updateAction={updateChargeHeadAction}
+      deleteAction={deleteChargeHeadAction}
+    />
+  );
+}

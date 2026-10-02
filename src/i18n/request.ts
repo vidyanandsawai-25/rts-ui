@@ -104,6 +104,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
     retrospectiveRuleLibraryMessages,
     taxZoningRangeMessages,
     aliasMasterMessages,
+    tariffWorkbenchMessages,
+    chargeHeadsMessages,
     assetGisMessages,
     connectionTypeMasterMessages,
     connectionCategoryMasterMessages,
@@ -270,6 +272,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
     import(`./locales/${validatedLocale}/retrospectiveRuleLibrary.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxZoningRange.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/aliasMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/tariffWorkbench.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/chargeHeads.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetGis.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/connectionTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/connectionCategoryMaster.json`).catch(() => ({})).then((m) => m.default || m),
@@ -384,6 +388,10 @@ export default getRequestConfig(async ({ requestLocale }) => {
       retrospectiveRuleLibrary: retrospectiveRuleLibraryMessages,
       taxZoningRange: taxZoningRangeMessages?.taxZoningRange || taxZoningRangeMessages,
       aliasMaster: aliasMasterMessages,
+      tariffWorkbench:
+        tariffWorkbenchMessages?.tariffWorkbench || tariffWorkbenchMessages,
+      chargeHeads:
+        chargeHeadsMessages?.chargeHeads || chargeHeadsMessages,
       assetGis: assetGisMessages?.assetGis || assetGisMessages,
       gis: assetGisMessages?.assetGis || assetGisMessages,
       connectionTypeMaster: connectionTypeMasterMessages?.connectionTypeMaster || connectionTypeMasterMessages,
