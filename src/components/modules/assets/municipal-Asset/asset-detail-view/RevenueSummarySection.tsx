@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import React from 'react';
 import { SectionCard } from './SectionCard';
 import { TrendingUp } from 'lucide-react';
-import { Badge } from '@/components/common';
+import { Badge, Tooltip } from '@/components/common';
 
 export async function RevenueSummarySection({ data, locale }: RevenueSummarySectionProps): Promise<React.ReactElement> {
   const t = await getTranslations({ locale, namespace: 'asset-detail' });
@@ -46,11 +46,12 @@ export async function RevenueSummarySection({ data, locale }: RevenueSummarySect
               const heightPct = Math.round((bar.value / bar.maxValue) * 100);
               return (
                 <div key={bar.month} className="flex flex-col items-center flex-1 h-full justify-end">
-                  <div
-                    className="w-full bg-blue-600 transition-all hover:bg-blue-500"
-                    style={{ height: `${heightPct}%` }}
-                    title={`${bar.month}: ${bar.value}`}
-                  />
+                  <Tooltip content={`${bar.month}: ${bar.value}`} placement="top">
+                    <div
+                      className="w-full bg-blue-600 transition-all hover:bg-blue-500"
+                      style={{ height: `${heightPct}%` }}
+                    />
+                  </Tooltip>
                 </div>
               );
             })}

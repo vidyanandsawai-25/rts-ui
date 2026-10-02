@@ -223,7 +223,7 @@ export function Drawer({
   return (
     <>
       <div
-        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] bg-black/50 "
         style={zIndex ? { zIndex: zIndex - 10 } : undefined}
         onClick={onClose}
         role="button"

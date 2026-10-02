@@ -2,13 +2,20 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { FileText, Image as ImageIcon, Download, Check, Eye } from 'lucide-react';
-import { cn } from '@/lib/utils/cn';
+import { FileText, Image as ImageIcon, Download, Eye, Folder } from 'lucide-react';
 import { getDownloadDocumentUrl } from '@/lib/utils/document-utils';
 import { Button } from '@/components/common';
 import { Drawer } from '@/components/common';
 
 export type DrawerItem = { id: string; name: string; url: string; type: string; isImage: boolean };
+
+export interface DocumentsDrawerProps {
+  drawerOpen: boolean;
+  setDrawerOpen: (open: boolean) => void;
+  totalFiles: number;
+  groups: Record<string, DrawerItem[]>;
+  setViewerState: (state: { open: boolean; url: string; name: string }) => void;
+}
 
 export function DocumentsDrawer({
   drawerOpen,
@@ -16,13 +23,7 @@ export function DocumentsDrawer({
   totalFiles,
   groups,
   setViewerState,
-}: {
-  drawerOpen: boolean;
-  setDrawerOpen: (open: boolean) => void;
-  totalFiles: number;
-  groups: Record<string, DrawerItem[]>;
-  setViewerState: (state: { open: boolean; url: string; name: string }) => void;
-}): React.ReactElement {
+}: DocumentsDrawerProps): React.ReactElement {
   const t = useTranslations('asset-detail');
 
   return (
@@ -32,7 +33,7 @@ export function DocumentsDrawer({
       width="md"
       title={
         <div className="flex items-center gap-2 text-[#0f3482]">
-          <FileText className="w-5 h-5 font-black" />
+          <Folder className="w-5 h-5 font-black" />
           <span className="text-[14px] font-black tracking-wide uppercase">{t('allDocuments')} ({totalFiles})</span>
         </div>
       }
@@ -42,33 +43,24 @@ export function DocumentsDrawer({
           {Object.entries(groups).map(([groupName, files]) => (
             <React.Fragment key={groupName}>
               {files.map((file) => (
-                <div key={file.id} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-start gap-4 flex-1 min-w-0 pr-4">
-                      <div className={cn("w-12 h-12 rounded flex flex-col items-center justify-center text-white shrink-0 shadow-sm", file.isImage ? "bg-[#ff5722]" : "bg-red-500")}>
-                        {file.isImage ? <ImageIcon className="w-5 h-5 mb-0.5" /> : <FileText className="w-5 h-5 mb-0.5" />}
-                        <span className="text-[9px] font-black">{file.type}</span>
-                      </div>
-                      <div className="flex flex-col gap-0.5 mt-0.5 flex-1 min-w-0">
-                        <span className="text-[14px] font-bold text-[#0f3482] truncate" title={file.name}>{file.name}</span>
-                        <div className="flex items-center gap-1.5 text-slate-400 mt-1">
-                          <FileText className="w-3.5 h-3.5 shrink-0" />
-                          <span className="text-[12px] truncate">{file.name}</span>
-                        </div>
-                      </div>
+                <div key={file.id} className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm flex flex-row flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-4 flex-1 min-w-[200px]">
+                    <div className="w-12 h-12 rounded border border-slate-200 bg-slate-50 flex flex-col items-center justify-center shrink-0 shadow-sm">
+                      {file.isImage ? <ImageIcon className="w-5 h-5 mb-0.5 text-blue-500" /> : <FileText className="w-5 h-5 mb-0.5 text-red-500" />}
+                      <span className="text-[9px] font-black text-slate-500 uppercase">{file.type}</span>
                     </div>
-                    <div className="w-6 h-6 rounded-full bg-[#00c853] text-white flex items-center justify-center shrink-0 shadow-sm">
-                      <Check className="w-4 h-4 stroke-[3]" />
+                    <div className="flex flex-col justify-center flex-1 min-w-0">
+                      <span className="text-[13px] font-bold text-[#0f3482] break-words line-clamp-2" title={file.name}>{file.name}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-4">
+                  <div className="flex items-center gap-2 shrink-0 ml-auto">
                     <Button
                       variant="primary"
                       icon={Eye}
                       iconPosition="left"
                       onClick={() => setViewerState({ open: true, url: file.url, name: file.name })}
                       disabled={!file.url}
-                      className="flex-1 py-2.5 rounded-md shadow-sm !h-auto text-[12px] font-black tracking-wide"
+                      className="px-4 py-1.5 rounded-md shadow-sm !h-auto text-[10px] font-bold tracking-wide"
                     >
                       VIEW
                     </Button>
@@ -86,7 +78,7 @@ export function DocumentsDrawer({
                         document.body.removeChild(a);
                       }}
                       disabled={!file.id}
-                      className="flex-1 py-2.5 rounded-md shadow-sm !h-auto text-[12px] font-black tracking-wide"
+                      className="px-4 py-1.5 rounded-md shadow-sm !h-auto text-[10px] font-bold tracking-wide"
                     >
                       DOWNLOAD
                     </Button>

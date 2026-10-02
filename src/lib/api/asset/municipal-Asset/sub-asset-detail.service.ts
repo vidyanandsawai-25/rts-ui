@@ -168,15 +168,13 @@ export const subAssetDetailNewService = {
           }
         }
         
-        let periodStr = String(item.financialYear || item.month || '-');
-        if (periodStr && periodStr.includes('-')) {
-          periodStr = periodStr.split('-')[0]; // Extract "2026" from "2026-27"
-        }
-
+        const periodStr = String(item.financialYear || item.month || '-');
+        
         return {
           month: periodStr,
           demand: item.totalDemand ?? item.currentDemand ?? item.demand ?? 0,
           collection: item.collection ?? 0,
+          adjustment: item.adjustmentAmount ?? 0,
           receiptNo: item.receiptNo || '-',
           transactionDate: dateStr,
           mode: item.paymentMode || item.mode || '-',

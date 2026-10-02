@@ -25,11 +25,7 @@ function ValuationCard({ valuation, label, change, rupeeSymbol }: { valuation: s
             <ArrowUp className="w-2.5 h-2.5" />
             {change.replace('+', '')}
           </span>
-        ) : (
-          <span className="text-[9px] font-bold mt-0.5 text-slate-500 bg-slate-100 px-1 rounded flex items-center gap-0.5">
-            -
-          </span>
-        )}
+        ) : null}
       </div>
     </div>
   );

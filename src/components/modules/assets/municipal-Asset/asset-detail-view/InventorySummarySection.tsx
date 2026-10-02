@@ -64,7 +64,7 @@ export function InventorySummarySection({ data }: InventorySummarySectionProps):
                   variant="ghost"
                   key={item.id}
                   className={cn(
-                    '!h-[115px] !w-[90px] !rounded-xl !p-2 !cursor-pointer hover:!opacity-80 transition-opacity snap-start flex-shrink-0 shadow-sm border border-slate-50/50',
+                    '!h-[115px] flex-1 min-w-[90px] max-w-[120px] !rounded-xl !p-2 !cursor-pointer hover:!opacity-80 transition-opacity snap-start flex-shrink-0 shadow-sm border border-slate-50/50',
                     style.bgColor,
                   )}
                   onClick={() => handleCardClick(item.label)}

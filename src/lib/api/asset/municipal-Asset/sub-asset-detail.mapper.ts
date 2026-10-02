@@ -127,6 +127,11 @@ export const mapSubAssetToUI = (apiData: SubAssetApiResponse): SubAssetDetailDat
   const capitalValue = parseNumberSafe(apiData?.calculatedCapitalValue ?? apiData?.capitalValue ?? apiData?.details?.capitalValue ?? apiData?.totalCapitalValue);
   const avgWeightedValue = parseNumberSafe(apiData?.avgWeightedValue ?? apiData?.details?.avgWeightedValue ?? apiData?.weightedValue ?? apiData?.details?.weightedValue ?? apiData?.totalWeightedValue);
 
+  let finalPenaltyStr = leaseData?.penaltyRuleName ?? '-';
+  if (finalPenaltyStr !== '-' && finalPenaltyStr !== 'NA' && parseNumberSafe(leaseData?.penaltyAmount) > 0) {
+    finalPenaltyStr += ` (₹ ${formatIndianNumber(parseNumberSafe(leaseData?.penaltyAmount))})`;
+  }
+
   const floorWiseRows: FloorWiseRow[] = floorDetails.map((floor, index: number) => ({
     sNo: index + 1,
     floor: floor?.floorName ?? floor?.names?.floorName ?? `FLOOR ${index + 1}`,
@@ -209,9 +214,9 @@ export const mapSubAssetToUI = (apiData: SubAssetApiResponse): SubAssetDetailDat
         ? 'Yes' 
         : '-' 
       : '-',
-    gstApplicable: leaseData?.gstNo ? 'Yes' : '-',
-    gstRate: '-',
-    otherCharges: '-',
+    gstApplicable: leaseData?.isGstApplicable ? 'Yes' : 'No',
+    gstRate: parseNumberSafe(leaseData?.gstRate) > 0 ? `${parseNumberSafe(leaseData?.gstRate)}% (₹ ${formatIndianNumber(parseNumberSafe(leaseData?.gstAmount))})` : '-',
+    otherCharges: (finalPenaltyStr && finalPenaltyStr !== '-') ? finalPenaltyStr : 'NA',
     billingCycle: leaseData?.paymentFrequency ?? '-',
 
     yearlyRent: calculateYearlyRentProjections(leaseData),

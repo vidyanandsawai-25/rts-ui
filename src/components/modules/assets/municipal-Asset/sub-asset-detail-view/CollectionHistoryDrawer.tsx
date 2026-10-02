@@ -20,19 +20,27 @@ export function CollectionHistoryDrawer({ open, onClose, data, totals, loading, 
 
   const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
 
+  const isYearly = rentFrequency?.toLowerCase() === 'yearly' || rentFrequency?.toLowerCase() === 'annual' || rentFrequency?.toLowerCase() === 'annually';
+  const currentYear = data?.[0]?.month ? ` ${data[0].month}` : '';
+  
+  const titleText = isYearly
+    ? `${t('collectionHistoryTitle') || 'Payment / Collection History - Financial Year'}${currentYear}`
+    : (t('collectionHistoryTitleMonthly') || 'Payment / Collection History (Last 12 Months)');
+
   const title = (
     <div className="flex items-center gap-2">
       <div className="bg-blue-600 rounded p-1.5 flex items-center justify-center">
         <History className="w-4 h-4 text-white" />
       </div>
-      <h2 className="text-[15px] font-bold text-blue-700">{t('collectionHistoryTitle') || 'Payment / Collection History (Last 12 Months)'}</h2>
+      <h2 className="text-[15px] font-bold text-blue-700">{titleText}</h2>
     </div>
   );
 
   const columns: Column<HistoryItem>[] = [
-    { key: 'month', label: t('colMonth') || 'MONTH' },
+    { key: 'month', label: isYearly ? (t('colFinancialYear') || 'FINANCIAL YEAR') : (t('colMonth') || 'MONTH') },
     { key: 'demand', label: t('colDemand') || 'DEMAND (₹)' },
     { key: 'collection', label: t('colCollection') || 'COLLECTION (₹)' },
+    { key: 'adjustment', label: t('colAdjustment') || 'ADJUSTMENT (₹)', render: (val) => (val !== undefined && val !== null) ? String(val) : '-' },
     { key: 'receiptNo', label: t('colReceiptNo') || 'RECEIPT NO.' },
     { key: 'transactionDate', label: t('colTransactionDate') || 'TRANSACTION DATE' },
     { key: 'mode', label: t('colMode') || 'MODE' },
@@ -80,8 +88,8 @@ export function CollectionHistoryDrawer({ open, onClose, data, totals, loading, 
             }}
             paginationConfig={{ enabled: true, showPageSizeSelector: true }}
             pageSizeOptions={[5, 10, 20]}
-            theadClassName="[&_th]:bg-[#002D62] [&_th]:!text-white [&_th]:!font-bold [&_th]:whitespace-nowrap [&_th]:!px-3 [&_th]:!py-2 [&_th]:!text-[10px]"
-            rowClassName={() => "[&_td]:!px-3 [&_td]:!py-2 [&_td]:!text-[11px]"}
+            theadClassName="[&_th]:bg-[#002D62] [&_th]:!text-white [&_th]:!font-bold [&_th]:whitespace-nowrap [&_th]:!px-3 [&_th]:!py-2 [&_th]:!text-[10px] [&_th]:!text-center"
+            rowClassName={() => "[&_td]:!px-3 [&_td]:!py-2 [&_td]:!text-[11px] [&_td]:!text-center"}
           />
         </div>
       </div>

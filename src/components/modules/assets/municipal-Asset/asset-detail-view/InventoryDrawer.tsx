@@ -88,6 +88,13 @@ export function InventoryDrawer({ open, onClose, items, kpiData = [], initialCat
             totalPages={totalPages}
             onPageChange={setCurrentPage}
             isPagination={true}
+            containerClassName="!gap-0"
+            tableClassName="!min-w-[1200px]"
+            theadClassName="!bg-none !bg-[#002D62] [&_th]:!text-white [&_th]:!text-center [&_th]:!font-bold [&_th]:!px-2 [&_th]:!py-3 [&_th]:!text-xs [&_th]:!border-r [&_th]:!border-[#004080] [&_th]:last:!border-r-0 [&_th]:!uppercase [&_th]:!tracking-normal"
+            rowClassName={() => "!bg-white !border-b !border-blue-100 hover:!bg-blue-50 !transition-colors [&_td]:!px-2 [&_td]:!py-2 [&_td]:!text-[11px] [&_td]:!leading-tight [&_td]:!text-center [&_td]:!border-r [&_td]:!border-blue-50 [&_td]:last:!border-r-0"}
+            footerClassName="!py-1.5 !px-3"
+            footerLeftClassName="[&_select]:!h-6 [&_select]:!text-[10px] [&_select]:!py-0 [&_span]:!text-[10px]"
+            footerRightClassName="[&_button]:!h-6 [&_button]:!min-w-[24px] [&_button]:!w-auto [&_button]:!px-1.5 [&_button]:!text-[10px] [&_button_svg]:!w-3.5 [&_button_svg]:!h-3.5 [&_span]:!text-[10px]"
 
             columns={[
               { key: 'srNo', label: t('sNo') },

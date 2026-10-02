@@ -5,6 +5,7 @@ export interface HistoryItem {
   month: string;
   demand: string;
   collection: string;
+  adjustmentAmount?: number;
   receiptNo: string;
   transactionDate: string;
   mode: string;
@@ -37,6 +38,11 @@ export interface SubAssetApiResponse {
     securityDeposit?: string | number;
     depositType?: string;
     gstNo?: string;
+    isGstApplicable?: boolean;
+    gstRate?: string | number;
+    gstAmount?: string | number;
+    penaltyRuleName?: string;
+    penaltyAmount?: string | number;
   }>;
   leaseRentDetails?: Array<{
     monthlyRent?: string | number;
@@ -63,6 +69,11 @@ export interface SubAssetApiResponse {
     securityDeposit?: string | number;
     depositType?: string;
     gstNo?: string;
+    isGstApplicable?: boolean;
+    gstRate?: string | number;
+    gstAmount?: string | number;
+    penaltyRuleName?: string;
+    penaltyAmount?: string | number;
   }>;
   paymentFrequency?: string;
   details?: {
