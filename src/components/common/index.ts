@@ -97,6 +97,8 @@ export type { IconOption } from './MultiSelectWithIcons';
 
 export { MasterTable } from './MasterTable';
 export type { Column, MasterTableProps } from './MasterTable';
+export { ExpandableMasterTable } from './ExpandableMasterTable';
+export type { ExpandableMasterTableProps } from './ExpandableMasterTable';
 
 export { PageContainer } from './PageContainer';
 
