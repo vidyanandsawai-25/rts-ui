@@ -13,6 +13,7 @@ import type {
 import {
   getFrequencyPeriodsPerYear,
   calculateBillingPeriodSequenceNo,
+  getFinancialYearDates,
 } from "@/lib/utils/water-bill/billing-configuration/billingPeriodCalculation.utils";
 import { BillingPeriodFormFields } from "./BillingPeriodFormFields";
 import { validateBillingPeriodFormData } from "./billingPeriodFormValidation";
@@ -38,6 +39,7 @@ export function BillingPeriodForm({
 
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [formData, setFormData] = useState<BillingPeriodInput>({
+    id: initialData?.id,
     billingPeriodCode: initialData?.billingPeriodCode ?? "",
     financialYearId:
       initialData?.financialYearId !== undefined && initialData?.financialYearId !== null
@@ -67,6 +69,11 @@ export function BillingPeriodForm({
   });
   const [touched, setTouched] = useState<Partial<Record<keyof BillingPeriodInput, boolean>>>({});
 
+  const selectedFyOption = financialYearOptions.find(
+    (o) => o.value === String(formData.financialYearId)
+  );
+  const { startDate: yearStartDate, endDate: yearEndDate } = getFinancialYearDates(selectedFyOption);
+
   // Slot calculation to check if all periods are already created
   const selectedBfOption = billingFrequencyOptions.find(
     (o) => o.value === String(formData.billingFrequencyId)
@@ -81,6 +88,21 @@ export function BillingPeriodForm({
   const existingCount = matchingPeriods.length;
   const isMaxLimitReached = !isEdit && periodsPerYear > 0 && existingCount >= periodsPerYear;
 
+  const currentSequenceNo = isEdit && (formData.sequenceNo ?? initialData?.sequenceNo)
+    ? Number(formData.sequenceNo ?? initialData?.sequenceNo)
+    : calculateBillingPeriodSequenceNo(
+        formData.periodFromDate,
+        periodsPerYear,
+        yearStartDate,
+        formData.sequenceNo ?? initialData?.sequenceNo,
+        existingPeriods,
+        formData.financialYearId,
+        formData.billingFrequencyId,
+        initialData?.id
+      );
+  const isFirstPeriod = currentSequenceNo === 1;
+  const isLastPeriod = periodsPerYear > 0 && currentSequenceNo === periodsPerYear;
+
   const [lastModifiedField, setLastModifiedField] = useState<keyof BillingPeriodInput | null>(null);
 
   const validate = useCallback(
@@ -88,33 +110,45 @@ export function BillingPeriodForm({
       validateBillingPeriodFormData(
         data,
         t,
-        fieldModified !== undefined ? fieldModified : lastModifiedField
+        fieldModified !== undefined ? fieldModified : lastModifiedField,
+        {
+          yearStartDate,
+          yearEndDate,
+          isFirstPeriod,
+          isLastPeriod,
+        }
       ),
-    [t, lastModifiedField]
+    [t, lastModifiedField, yearStartDate, yearEndDate, isFirstPeriod, isLastPeriod]
   );
 
   const errors = validate(formData);
+  const [focusedField, setFocusedField] = useState<keyof BillingPeriodInput | null>(null);
 
-  const showError = (field: keyof BillingPeriodInput) =>
-    Boolean(
-      (submittedOnce ||
-        touched[field] ||
-        lastModifiedField === field ||
-        (formData[field] !== undefined && formData[field] !== "" && formData[field] !== null)) &&
-        errors[field]
-    );
+  const showError = (field: keyof BillingPeriodInput) => {
+    if (!errors[field]) return false;
+    // Don't show "required" error while user is actively focused on the field
+    if (focusedField === field && errors[field]?.toLowerCase().includes("required")) {
+      return false;
+    }
+    const hasValue =
+      formData[field] !== undefined &&
+      formData[field] !== "" &&
+      formData[field] !== null;
+
+    return Boolean((submittedOnce || touched[field] || hasValue) && errors[field]);
+  };
 
   const handleUpdate = (updates: Partial<BillingPeriodInput>) => {
-    if ("currentPenaltyEndDate" in updates) {
+    if ("financialYearId" in updates) {
+      setLastModifiedField("financialYearId");
+    } else if ("billingFrequencyId" in updates) {
+      setLastModifiedField("billingFrequencyId");
+    } else if ("currentPenaltyEndDate" in updates) {
       setLastModifiedField("currentPenaltyEndDate");
     } else if ("dueDate" in updates) {
       setLastModifiedField("dueDate");
     } else if ("graceDays" in updates) {
       setLastModifiedField("graceDays");
-    } else if ("financialYearId" in updates) {
-      setLastModifiedField("financialYearId");
-    } else if ("billingFrequencyId" in updates) {
-      setLastModifiedField("billingFrequencyId");
     }
     setFormData((prev) => ({ ...prev, ...updates }));
   };
@@ -127,7 +161,12 @@ export function BillingPeriodForm({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleFocus = (field: keyof BillingPeriodInput) => {
+    setFocusedField(field);
+  };
+
   const handleBlur = (field: keyof BillingPeriodInput) => {
+    setFocusedField(null);
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
@@ -141,13 +180,7 @@ export function BillingPeriodForm({
     const toIsoOrNull = (dateStr?: string | null) =>
       dateStr && dateStr.trim() ? new Date(dateStr).toISOString() : null;
 
-    const selectedFyOption = financialYearOptions.find(
-      (o) => o.value === String(formData.financialYearId)
-    );
     const selectedFy = selectedFyOption?.label || "FY";
-    const yearStartDate = selectedFyOption?.data?.startDate
-      ? String(selectedFyOption.data.startDate).split("T")[0]
-      : undefined;
 
     const selectedBfOption = billingFrequencyOptions.find(
       (o) => o.value === String(formData.billingFrequencyId)
@@ -155,21 +188,29 @@ export function BillingPeriodForm({
     const bfCode = String(
       selectedBfOption?.data?.billingFrequencyCode ||
       selectedBfOption?.data?.code ||
+      selectedBfOption?.label ||
       "BP"
-    ).toUpperCase();
+    )
+      .toUpperCase()
+      .replace(/\s+/g, "");
     const periodsPerYear = Number(selectedBfOption?.data?.periodsPerYear) || 1;
 
-    // Dynamic prefix and sequenceNo directly according to Billing Period & Frequency
-    const prefix = bfCode.length <= 3 ? bfCode : bfCode.charAt(0);
-    const sequenceNo = calculateBillingPeriodSequenceNo(
-      formData.periodFromDate,
-      periodsPerYear,
-      yearStartDate,
-      formData.sequenceNo ?? initialData?.sequenceNo
-    );
+    // Format: FinancialYear-BillingFrequencyCode+Count (e.g. 2022-QUARTERLY1, 2022-QUARTERLY2)
+    const sequenceNo = isEdit && (initialData?.sequenceNo ?? formData.sequenceNo)
+      ? Number(initialData?.sequenceNo ?? formData.sequenceNo)
+      : calculateBillingPeriodSequenceNo(
+          formData.periodFromDate,
+          periodsPerYear,
+          yearStartDate,
+          initialData?.sequenceNo ?? formData.sequenceNo,
+          existingPeriods,
+          formData.financialYearId,
+          formData.billingFrequencyId,
+          initialData?.id
+        );
 
     const generatedCode =
-      initialData?.billingPeriodCode || `${selectedFy}-${prefix}${sequenceNo}`;
+      initialData?.billingPeriodCode || `${selectedFy}-${bfCode}${sequenceNo}`;
 
     const submissionData: CreateBillingPeriodDto = {
       billingPeriodCode: generatedCode,
@@ -227,7 +268,7 @@ export function BillingPeriodForm({
         </div>
       }
     >
-      <form id="billing-period-form" onSubmit={handleSubmit} className="p-6 space-y-5 bg-white">
+      <form id="billing-period-form" onSubmit={handleSubmit} noValidate className="p-6 space-y-5 bg-white">
         <BillingPeriodFormFields
           formData={formData}
           errors={errors}
@@ -235,6 +276,7 @@ export function BillingPeriodForm({
           handleChange={handleChange}
           handleUpdate={handleUpdate}
           handleBlur={handleBlur}
+          handleFocus={handleFocus}
           financialYearOptions={financialYearOptions}
           billingFrequencyOptions={billingFrequencyOptions}
           existingPeriods={existingPeriods}

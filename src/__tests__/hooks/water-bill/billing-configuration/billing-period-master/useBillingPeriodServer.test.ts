@@ -95,6 +95,36 @@ describe("useBillingPeriodServer - Unit Tests", () => {
       expect(result.errors.periodToDate).toContain("validation.periodToDateAfterFromDate");
     });
 
+    it("should fail validation when billGenerationDate is invalid", () => {
+      const input: BillingPeriodInput = {
+        financialYearId: 1,
+        billingFrequencyId: 1,
+        periodFromDate: "2026-04-01",
+        periodToDate: "2026-04-30",
+        dueDate: "2026-04-30",
+        billGenerationDate: "INVALID",
+      };
+
+      const result = validateBillingPeriodInput(input, mockT);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.billGenerationDate).toContain("validation.billGenerationDateInvalid");
+    });
+
+    it("should fail validation when billGenerationDate is before periodFromDate", () => {
+      const input: BillingPeriodInput = {
+        financialYearId: 1,
+        billingFrequencyId: 1,
+        periodFromDate: "2026-07-01",
+        periodToDate: "2026-07-31",
+        dueDate: "2026-07-31",
+        billGenerationDate: "2026-05-31",
+      };
+
+      const result = validateBillingPeriodInput(input, mockT);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.billGenerationDate).toContain("validation.billGenerationNotBeforePeriodFrom");
+    });
+
     it("should fail validation when pendingPenaltyEndDate is before pendingPenaltyStartDate", () => {
       const input: BillingPeriodInput = {
         financialYearId: 1,

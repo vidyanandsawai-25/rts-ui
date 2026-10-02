@@ -89,7 +89,8 @@ describe("useBillingPeriodFormFields", () => {
       periodFromDate: "2026-04-01",
       periodToDate: "",
       dueDate: "",
-      currentPenaltyStartDate: "",
+      currentPenaltyStartDate: "2026-04-01",
+      currentPenaltyEndDate: "",
     });
   });
 
@@ -131,10 +132,11 @@ describe("useBillingPeriodFormFields", () => {
       periodFromDate: "2026-05-01",
       periodToDate: "2026-05-31",
       sequenceNo: 2,
-      billGenerationDate: "2026-05-31",
       dueDate: "2026-05-31",
       graceDays: 0,
-      currentPenaltyStartDate: "2026-06-01",
+      currentPenaltyStartDate: "2026-05-01",
+      currentPenaltyEndDate: "2026-05-31",
+      pendingPenaltyStartDate: "2026-06-01",
     });
   });
 
@@ -176,14 +178,15 @@ describe("useBillingPeriodFormFields", () => {
       periodFromDate: "2026-04-01",
       periodToDate: "2026-06-30",
       sequenceNo: 1,
-      billGenerationDate: "2026-06-30",
       dueDate: "2026-06-30",
       graceDays: 0,
-      currentPenaltyStartDate: "2026-07-01",
+      currentPenaltyStartDate: "2026-04-01",
+      currentPenaltyEndDate: "2026-06-30",
+      pendingPenaltyStartDate: "2026-07-01",
     });
   });
 
-  it("updates Grace Days and Penalty Start Date when Due Date is changed", () => {
+  it("updates Grace Days when Due Date is changed without altering penalty start date", () => {
     let formData: BillingPeriodInput = {
       financialYearId: "1",
       billingFrequencyId: "10",
@@ -191,7 +194,7 @@ describe("useBillingPeriodFormFields", () => {
       periodToDate: "2026-04-30",
       dueDate: "2026-04-30",
       graceDays: 0,
-      currentPenaltyStartDate: "2026-05-01",
+      currentPenaltyStartDate: "2026-04-01",
       isActive: true,
     };
 
@@ -219,11 +222,10 @@ describe("useBillingPeriodFormFields", () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       dueDate: "2026-05-10",
       graceDays: 10,
-      currentPenaltyStartDate: "2026-05-11",
     });
   });
 
-  it("updates Due Date and Penalty Start Date when Grace Days is changed", () => {
+  it("updates Due Date when Grace Days is changed without altering penalty start date", () => {
     let formData: BillingPeriodInput = {
       financialYearId: "1",
       billingFrequencyId: "10",
@@ -231,7 +233,7 @@ describe("useBillingPeriodFormFields", () => {
       periodToDate: "2026-04-30",
       dueDate: "2026-04-30",
       graceDays: 0,
-      currentPenaltyStartDate: "2026-05-01",
+      currentPenaltyStartDate: "2026-04-01",
       isActive: true,
     };
 
@@ -259,7 +261,6 @@ describe("useBillingPeriodFormFields", () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       graceDays: 5,
       dueDate: "2026-05-05",
-      currentPenaltyStartDate: "2026-05-06",
     });
   });
 
@@ -271,7 +272,7 @@ describe("useBillingPeriodFormFields", () => {
       periodToDate: "2026-05-31",
       dueDate: "2026-06-10",
       graceDays: 10,
-      currentPenaltyStartDate: "2026-06-11",
+      currentPenaltyStartDate: "2026-05-01",
       isActive: true,
     };
 
@@ -298,7 +299,6 @@ describe("useBillingPeriodFormFields", () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       dueDate: "2026-05-31",
       graceDays: 0,
-      currentPenaltyStartDate: "2026-06-01",
     });
   });
 
@@ -310,7 +310,7 @@ describe("useBillingPeriodFormFields", () => {
       periodToDate: "2026-05-31",
       dueDate: "2026-05-31",
       graceDays: 0,
-      currentPenaltyStartDate: "2026-06-01",
+      currentPenaltyStartDate: "2026-05-01",
       isActive: true,
     };
 
@@ -337,7 +337,6 @@ describe("useBillingPeriodFormFields", () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       dueDate: "2026-07-01",
       graceDays: 31,
-      currentPenaltyStartDate: "2026-07-02",
     });
   });
 
@@ -403,15 +402,253 @@ describe("useBillingPeriodFormFields", () => {
       periodFromDate: "2026-06-01",
       periodToDate: "2026-06-30",
       sequenceNo: 3,
-      billGenerationDate: "2026-06-30",
       dueDate: "2026-06-30",
       graceDays: 0,
-      currentPenaltyStartDate: "2026-07-01",
+      currentPenaltyStartDate: "2026-06-01",
+      currentPenaltyEndDate: "2026-06-30",
+      pendingPenaltyStartDate: "2026-07-01",
     });
 
     // Verify existing codes are distinct
     expect(existingM1.billingPeriodCode).not.toBe(existingM2.billingPeriodCode);
     expect(existingM1.billingPeriodCode).toBe("BP-1-10-1");
     expect(existingM2.billingPeriodCode).toBe("BP-1-10-2");
+  });
+
+  it("updates periodFromDate and syncs currentPenaltyStartDate when handlePeriodFromChange is called", () => {
+    let formData: BillingPeriodInput = {
+      financialYearId: "1",
+      billingFrequencyId: "10",
+      periodFromDate: "2026-04-01",
+      periodToDate: "2026-04-30",
+      dueDate: "2026-04-30",
+      graceDays: 0,
+      currentPenaltyStartDate: "2026-04-01",
+      isActive: true,
+    };
+
+    const handleUpdate = vi.fn((updates) => {
+      formData = { ...formData, ...updates };
+    });
+    const handleChange = vi.fn();
+
+    const { result } = renderHook(() =>
+      useBillingPeriodFormFields({
+        formData,
+        financialYearOptions,
+        billingFrequencyOptions,
+        existingPeriods: [],
+        handleChange,
+        handleUpdate,
+      })
+    );
+
+    act(() => {
+      result.current.handlePeriodFromChange("2026-05-01");
+    });
+
+    expect(handleUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        periodFromDate: "2026-05-01",
+        currentPenaltyStartDate: "2026-05-01",
+        periodToDate: "2026-05-31",
+        currentPenaltyEndDate: "2026-05-31",
+        pendingPenaltyStartDate: "2026-06-01",
+      })
+    );
+  });
+
+  it("updates periodToDate and syncs currentPenaltyEndDate when handlePeriodToChange is called", () => {
+    let formData: BillingPeriodInput = {
+      financialYearId: "1",
+      billingFrequencyId: "10",
+      periodFromDate: "2026-04-01",
+      periodToDate: "2026-04-30",
+      dueDate: "2026-04-30",
+      graceDays: 0,
+      currentPenaltyStartDate: "2026-04-01",
+      currentPenaltyEndDate: "2026-04-30",
+      isActive: true,
+    };
+
+    const handleUpdate = vi.fn((updates) => {
+      formData = { ...formData, ...updates };
+    });
+    const handleChange = vi.fn();
+
+    const { result } = renderHook(() =>
+      useBillingPeriodFormFields({
+        formData,
+        financialYearOptions,
+        billingFrequencyOptions,
+        existingPeriods: [],
+        handleChange,
+        handleUpdate,
+      })
+    );
+
+    act(() => {
+      result.current.handlePeriodToChange("2026-05-15");
+    });
+
+    expect(handleUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        periodToDate: "2026-05-15",
+        currentPenaltyEndDate: "2026-05-15",
+        pendingPenaltyStartDate: "2026-05-16",
+        dueDate: "2026-05-15",
+        graceDays: 0,
+      })
+    );
+  });
+
+  it("sets INVALID state when handlePeriodToChange or handlePeriodFromChange receives INVALID", () => {
+    let formData: BillingPeriodInput = {
+      financialYearId: "1",
+      billingFrequencyId: "10",
+      periodFromDate: "2026-04-01",
+      periodToDate: "2026-04-30",
+    };
+
+    const handleUpdate = vi.fn((updates) => {
+      formData = { ...formData, ...updates };
+    });
+    const handleChange = vi.fn();
+
+    const { result } = renderHook(() =>
+      useBillingPeriodFormFields({
+        formData,
+        financialYearOptions,
+        billingFrequencyOptions,
+        existingPeriods: [],
+        handleChange,
+        handleUpdate,
+      })
+    );
+
+    act(() => {
+      result.current.handlePeriodToChange("INVALID");
+    });
+    expect(handleUpdate).toHaveBeenCalledWith({ periodToDate: "INVALID" });
+
+    act(() => {
+      result.current.handlePeriodFromChange("INVALID");
+    });
+    expect(handleUpdate).toHaveBeenCalledWith({ periodFromDate: "INVALID" });
+  });
+
+  it("does not auto-update or overwrite billGenerationDate when other fields change", () => {
+    let formData: BillingPeriodInput = {
+      financialYearId: "1",
+      billingFrequencyId: "10",
+      periodFromDate: "2026-04-01",
+      periodToDate: "2026-04-30",
+      billGenerationDate: "2026-04-20",
+    };
+
+    const handleUpdate = vi.fn((updates) => {
+      formData = { ...formData, ...updates };
+    });
+    const handleChange = vi.fn();
+
+    const { result } = renderHook(() =>
+      useBillingPeriodFormFields({
+        formData,
+        financialYearOptions,
+        billingFrequencyOptions,
+        existingPeriods: [],
+        handleChange,
+        handleUpdate,
+      })
+    );
+
+    act(() => {
+      result.current.handlePeriodToChange("2026-05-15");
+    });
+
+    // Should NOT have billGenerationDate in updates
+    expect(handleUpdate).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        billGenerationDate: expect.anything(),
+      })
+    );
+  });
+
+  it("sets periodToDate to financial year end date (2027-03-31) when creating the last quarterly period (Period 4)", () => {
+    const existingQuarterlyPeriods: BillingPeriodMaster[] = [
+      {
+        id: 1,
+        billingPeriodCode: "2026-Q1",
+        financialYearId: 1,
+        billingFrequencyId: 20,
+        sequenceNo: 1,
+        periodFromDate: "2026-04-01",
+        periodToDate: "2026-06-30",
+        graceDays: 0,
+        isActive: true,
+      },
+      {
+        id: 2,
+        billingPeriodCode: "2026-Q2",
+        financialYearId: 1,
+        billingFrequencyId: 20,
+        sequenceNo: 2,
+        periodFromDate: "2026-07-01",
+        periodToDate: "2026-08-30",
+        graceDays: 0,
+        isActive: true,
+      },
+      {
+        id: 3,
+        billingPeriodCode: "2026-Q3",
+        financialYearId: 1,
+        billingFrequencyId: 20,
+        sequenceNo: 3,
+        periodFromDate: "2026-08-31",
+        periodToDate: "2026-11-30",
+        graceDays: 0,
+        isActive: true,
+      },
+    ];
+
+    let formData: BillingPeriodInput = {
+      financialYearId: "1",
+      billingFrequencyId: "",
+      periodFromDate: "",
+      periodToDate: "",
+      dueDate: "",
+      graceDays: 0,
+    };
+
+    const handleUpdate = vi.fn((updates) => {
+      formData = { ...formData, ...updates };
+    });
+    const handleChange = vi.fn();
+
+    const { result } = renderHook(() =>
+      useBillingPeriodFormFields({
+        formData,
+        financialYearOptions,
+        billingFrequencyOptions,
+        existingPeriods: existingQuarterlyPeriods,
+        handleChange,
+        handleUpdate,
+      })
+    );
+
+    act(() => {
+      result.current.handleFrequencyChange("20"); // Select Quarterly
+    });
+
+    expect(handleUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        periodFromDate: "2026-12-01",
+        periodToDate: "2027-03-31", // Ends on FY end date, not 2027-02-28
+        sequenceNo: 4,
+        dueDate: "2027-03-31",
+        currentPenaltyEndDate: "2027-03-31",
+        pendingPenaltyStartDate: "2027-04-01",
+      })
+    );
   });
 });

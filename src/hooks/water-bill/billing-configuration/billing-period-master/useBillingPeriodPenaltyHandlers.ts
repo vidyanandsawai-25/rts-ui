@@ -26,6 +26,10 @@ export function useBillingPeriodPenaltyHandlers({
       handleUpdate({ currentPenaltyEndDate: "", pendingPenaltyStartDate: "" });
       return;
     }
+    if (val === "INVALID" || isNaN(new Date(val).getTime())) {
+      handleUpdate({ currentPenaltyEndDate: "INVALID" });
+      return;
+    }
     const cleanDate = val.split("T")[0];
     const pendingStart = addDays(cleanDate, 1);
     handleUpdate({

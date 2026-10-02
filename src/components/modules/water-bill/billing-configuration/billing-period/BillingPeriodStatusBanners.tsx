@@ -48,7 +48,7 @@ export function BillingPeriodStatusBanners({
         </div>
       )}
 
-      {!isMaxLimitReached && periodsPerYear > 0 && financialYearId && (
+      {!isEdit && !isMaxLimitReached && periodsPerYear > 0 && financialYearId && (
         <div className="flex items-center gap-2 p-2.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-800 text-xs font-medium">
           <CalendarCheck2 size={15} className="text-blue-600 shrink-0" />
           <span>

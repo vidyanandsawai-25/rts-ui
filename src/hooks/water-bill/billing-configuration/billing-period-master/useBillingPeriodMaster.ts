@@ -4,6 +4,10 @@ import { useTranslations } from "next-intl";
 import { useToast, useConfirm } from "@/components/common";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getBillingPeriodColumns } from "@/components/modules/water-bill/billing-configuration/billing-period/billingPeriodColumns";
+import {
+  filterBillingPeriodsForTable,
+  sortBillingPeriodsTable,
+} from "@/lib/utils/water-bill/billing-configuration/billingPeriodTable.utils";
 import type {
   BillingPeriodMaster as BillingPeriodMasterType,
   CreateBillingPeriodDto,
@@ -43,22 +47,8 @@ export function useBillingPeriodMaster({
 
   const records = useMemo(() => {
     const rawItems = pagedData?.items ?? initialData ?? [];
-    const items = [...rawItems];
-    if (sortBy) {
-      items.sort((a, b) => {
-        const valA = a[sortBy as keyof BillingPeriodMasterType];
-        const valB = b[sortBy as keyof BillingPeriodMasterType];
-        if (typeof valA === "number" && typeof valB === "number") {
-          return sortOrder === "desc" ? valB - valA : valA - valB;
-        }
-        return sortOrder === "desc"
-          ? String(valB ?? "").localeCompare(String(valA ?? ""), undefined, { numeric: true })
-          : String(valA ?? "").localeCompare(String(valB ?? ""), undefined, { numeric: true });
-      });
-    } else {
-      items.sort((a, b) => (a.sequenceNo ?? 0) - (b.sequenceNo ?? 0));
-    }
-    return items;
+    const filtered = filterBillingPeriodsForTable(rawItems);
+    return sortBillingPeriodsTable(filtered, sortBy, sortOrder);
   }, [pagedData, initialData, sortBy, sortOrder]);
   const pageNumber = pagedData?.pageNumber ?? 1;
   const pageSize = pagedData?.pageSize ?? 10;

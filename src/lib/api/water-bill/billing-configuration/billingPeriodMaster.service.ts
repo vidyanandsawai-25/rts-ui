@@ -51,6 +51,28 @@ export async function getBillingPeriodById(
 ): Promise<ApiResponse<BillingPeriodMaster>> {
   try {
     const t = await getTranslations("billingPeriodMaster");
+
+    // 1. Try direct REST endpoint: /BillingPeriod/{id}
+    const directResponse = await apiClient.get<BillingPeriodMaster | { data?: BillingPeriodMaster }>(
+      `${BASE_ENDPOINT}/${id}`
+    );
+    if (directResponse.success && directResponse.data) {
+      const item = (
+        'data' in directResponse.data && directResponse.data.data
+          ? directResponse.data.data
+          : directResponse.data
+      ) as BillingPeriodMaster;
+
+      if (item && (item.id === id || (item as Record<string, unknown>).Id === id)) {
+        return {
+          success: true,
+          data: item,
+          statusCode: directResponse.statusCode,
+        };
+      }
+    }
+
+    // 2. Query filter: /BillingPeriod?Id={id}
     const response = await apiClient.get<BillingPeriodPagedResponse>(`${BASE_ENDPOINT}?Id=${id}`);
     if (response.success && response.data?.items?.length) {
       const match = response.data.items.find((x) => x.id === id) ?? response.data.items[0];
@@ -61,8 +83,8 @@ export async function getBillingPeriodById(
       };
     }
 
-    // Fallback: fetch without query filter and locate record by id
-    const fallbackResponse = await apiClient.get<BillingPeriodPagedResponse>(BASE_ENDPOINT);
+    // 3. Fallback: fetch without query filter and locate record by id
+    const fallbackResponse = await apiClient.get<BillingPeriodPagedResponse>(`${BASE_ENDPOINT}?PageSize=100`);
     if (fallbackResponse.success && fallbackResponse.data?.items?.length) {
       const match = fallbackResponse.data.items.find((x) => x.id === id);
       if (match) {
@@ -76,8 +98,8 @@ export async function getBillingPeriodById(
 
     return {
       success: false,
-      error: response.error || t("errors.notFound"),
-      statusCode: response.statusCode || 404,
+      error: directResponse.error || response.error || t("errors.notFound"),
+      statusCode: directResponse.statusCode || response.statusCode || 404,
     };
   } catch (err: unknown) {
     const t = await getTranslations("billingPeriodMaster");

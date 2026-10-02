@@ -21,10 +21,12 @@ export default async function EditBillingPeriodPage({ params, searchParams }: Ed
   }
 
   // 1. Fetch data, specific editing record, and dropdown options in parallel
-  const [{ pagedData, financialYearOptions, billingFrequencyOptions, pageParams }, editingData] = await Promise.all([
+  const [{ pagedData, financialYearOptions, billingFrequencyOptions, pageParams }, editingDataResult] = await Promise.all([
     getBillingPeriodTableData(sParams),
     fetchBillingPeriodByIdAction(id),
   ]);
+
+  const editingData = editingDataResult ?? pagedData.items.find((item) => item.id === id) ?? null;
 
   if (!editingData) {
     notFound();

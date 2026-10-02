@@ -5,7 +5,6 @@ import type {
   BillingPeriodInput,
   BillingPeriodTranslator,
 } from "@/types/water-bill/billing-configuration/billingPeriodMaster.types";
-import { diffDays } from "@/lib/utils/water-bill/billing-configuration/billingPeriodCalculation.utils";
 
 export type { BillingPeriodValidationResult, BillingPeriodInput, BillingPeriodTranslator };
 
@@ -76,49 +75,48 @@ export function validateBillingPeriodInput(
       ? input.graceDays
       : parseInt(String(input.graceDays || "0"), 10);
 
-    if (input.dueDate) {
-      if (input.dueDate < input.periodToDate) {
+    if (input.dueDate && input.dueDate.trim()) {
+      if (input.dueDate === "INVALID" || isNaN(new Date(input.dueDate).getTime())) {
+        errors.dueDate = [t("validation.dueDateInvalid")];
+      } else if (input.dueDate < input.periodToDate) {
         errors.dueDate = [t("validation.dueDateAfterPeriodTo")];
-      }
-      const expectedGraceDays = diffDays(input.periodToDate, input.dueDate);
-      if (expectedGraceDays > 31) {
-        errors.dueDate = [t("validation.dueDateMaxOneMonth")];
-      }
-      if (graceDays !== expectedGraceDays && input.dueDate >= input.periodToDate) {
-        errors.graceDays = [t("validation.graceDaysMismatch")];
       }
     }
 
     if (graceDays < 0) {
       if (!errors.graceDays) errors.graceDays = [t("validation.graceDaysPositive")];
-    } else if (graceDays > 31) {
-      if (!errors.graceDays) errors.graceDays = [t("validation.graceDaysMax", { count: 31 })];
     }
   }
 
   // 7. Bill Generation Date Validation
   if (input.billGenerationDate && input.billGenerationDate.trim()) {
-    const genDate = input.billGenerationDate.split("T")[0];
-    if (input.periodToDate && input.periodToDate.trim()) {
-      const periodTo = input.periodToDate.split("T")[0];
-      if (genDate < periodTo) {
-        errors.billGenerationDate = [t("validation.billGenerationNotBeforePeriodTo")];
+    if (
+      input.billGenerationDate === "INVALID" ||
+      isNaN(new Date(input.billGenerationDate).getTime())
+    ) {
+      errors.billGenerationDate = [t("validation.billGenerationDateInvalid")];
+    } else {
+      const genDate = input.billGenerationDate.split("T")[0];
+      if (
+        input.periodFromDate &&
+        input.periodFromDate.trim() &&
+        !isNaN(new Date(input.periodFromDate).getTime())
+      ) {
+        const periodFrom = input.periodFromDate.split("T")[0];
+        if (genDate < periodFrom) {
+          errors.billGenerationDate = [t("validation.billGenerationNotBeforePeriodFrom")];
+        }
       }
-    }
-    if (input.dueDate && input.dueDate.trim()) {
-      const dueDate = input.dueDate.split("T")[0];
-      if (genDate > dueDate) {
-        errors.billGenerationDate = [t("validation.billGenerationNotAfterDueDate")];
+      if (
+        input.dueDate &&
+        input.dueDate.trim() &&
+        !isNaN(new Date(input.dueDate).getTime())
+      ) {
+        const dueDate = input.dueDate.split("T")[0];
+        if (genDate > dueDate) {
+          errors.billGenerationDate = [t("validation.billGenerationNotAfterDueDate")];
+        }
       }
-    }
-  }
-
-  // 8. Current Penalty Start Date must be after Due Date
-  if (input.currentPenaltyStartDate && input.dueDate) {
-    const penaltyStart = new Date(input.currentPenaltyStartDate);
-    const dueDate = new Date(input.dueDate);
-    if (!isNaN(penaltyStart.getTime()) && !isNaN(dueDate.getTime()) && penaltyStart < dueDate) {
-      errors.currentPenaltyStartDate = [t("validation.currentPenaltyStartAfterDueDate")];
     }
   }
 

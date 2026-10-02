@@ -199,3 +199,6 @@ export type { GisRealDocumentModalProps } from './GisRealDocumentModal';
 export { GisLegacyDocumentModal } from './GisLegacyDocumentModal';
 export type { GisLegacyDocumentModalProps } from './GisLegacyDocumentModal';
 
+export { DateInput } from './DateInput';
+export type { DateInputProps } from './DateInput';
+

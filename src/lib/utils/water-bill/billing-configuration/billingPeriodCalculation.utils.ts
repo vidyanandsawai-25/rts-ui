@@ -1,109 +1,51 @@
-import type {
-  BillingPeriodMaster,
-  DropdownOption,
-} from "@/types/water-bill/billing-configuration/billingPeriodMaster.types";
+import type { BillingPeriodMaster } from "@/types/water-bill/billing-configuration/billingPeriodMaster.types";
+import { addDays, parseDateComponents } from "./billingPeriodDate.utils";
 
-export const MAX_GRACE_DAYS = 31;
-
-/**
- * Robust date parser supporting YYYY-MM-DD, MM/DD/YYYY, and ISO date strings
- */
-export const parseDateComponents = (
-  dateStr?: string | null
-): { y: number; m: number; d: number } | null => {
-  if (!dateStr || typeof dateStr !== "string") return null;
-  const clean = dateStr.trim().split("T")[0];
-
-  // Format: YYYY-MM-DD or YYYY/MM/DD
-  const ymdMatch = clean.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
-  if (ymdMatch) {
-    return {
-      y: parseInt(ymdMatch[1], 10),
-      m: parseInt(ymdMatch[2], 10),
-      d: parseInt(ymdMatch[3], 10),
-    };
-  }
-
-  // Format: MM/DD/YYYY or DD/MM/YYYY
-  const slashMatch = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
-  if (slashMatch) {
-    const part1 = parseInt(slashMatch[1], 10);
-    const part2 = parseInt(slashMatch[2], 10);
-    const year = parseInt(slashMatch[3], 10);
-    if (part1 > 12) {
-      return { y: year, m: part2, d: part1 };
-    }
-    return { y: year, m: part1, d: part2 };
-  }
-
-  const parsed = new Date(dateStr);
-  if (!isNaN(parsed.getTime())) {
-    return {
-      y: parsed.getUTCFullYear(),
-      m: parsed.getUTCMonth() + 1,
-      d: parsed.getUTCDate(),
-    };
-  }
-
-  return null;
-};
+// Re-export date, formatting, and frequency helper utilities (<200 LOC)
+export {
+  MAX_GRACE_DAYS,
+  parseDateComponents,
+  addDays,
+  diffDays,
+  formatDateToDDMMYYYY,
+  getFrequencyPeriodsPerYear,
+  getFinancialYearDates,
+} from "./billingPeriodDate.utils";
 
 /**
- * Add N calendar days to a date string, returns YYYY-MM-DD
- */
-export const addDays = (dateStr: string, days: number): string => {
-  if (!dateStr) return "";
-  const comp = parseDateComponents(dateStr);
-  if (!comp) return "";
-  const d = new Date(Date.UTC(comp.y, comp.m - 1, comp.d + days));
-  if (isNaN(d.getTime())) return "";
-  return d.toISOString().split("T")[0];
-};
-
-/**
- * Count calendar days between two date strings (start to end)
- */
-export const diffDays = (startStr: string, endStr: string): number => {
-  if (!startStr || !endStr) return 0;
-  const start = parseDateComponents(startStr);
-  const end = parseDateComponents(endStr);
-  if (!start || !end) return 0;
-  const startUtc = Date.UTC(start.y, start.m - 1, start.d);
-  const endUtc = Date.UTC(end.y, end.m - 1, end.d);
-  return Math.max(0, Math.round((endUtc - startUtc) / (1000 * 60 * 60 * 24)));
-};
-
-/**
- * Get periods per year directly from Billing Frequency API data
- */
-export const getFrequencyPeriodsPerYear = (option?: DropdownOption): number => {
-  if (!option?.data) return 0;
-  const count = Number(option.data.periodsPerYear);
-  return !isNaN(count) && count > 0 ? count : 0;
-};
-
-/**
- * Calculate Period To Date based on Period From Date and Billing Frequency PeriodsPerYear
+ * Calculate Period To Date based on Period From Date, Billing Frequency PeriodsPerYear,
+ * and whether this is the final period of the financial year.
  */
 export const calculatePeriodToDate = (
   periodFromStr: string,
-  periodsPerYear: number
+  periodsPerYear: number,
+  isLastPeriod: boolean = false,
+  yearEndDate?: string | null
 ): string => {
   if (!periodFromStr || !periodsPerYear || periodsPerYear <= 0) return "";
+  if (isLastPeriod && yearEndDate) {
+    return yearEndDate;
+  }
   const comp = parseDateComponents(periodFromStr);
   if (!comp) return "";
   const { y, m, d } = comp;
 
   const months = Math.max(1, Math.round(12 / periodsPerYear));
 
+  let result = "";
   if (d === 1) {
     const targetDate = new Date(Date.UTC(y, m - 1 + months, 0));
-    return targetDate.toISOString().split("T")[0];
+    result = targetDate.toISOString().split("T")[0];
+  } else {
+    const nextTarget = new Date(Date.UTC(y, m - 1 + months, d));
+    nextTarget.setUTCDate(nextTarget.getUTCDate() - 1);
+    result = nextTarget.toISOString().split("T")[0];
   }
 
-  const nextTarget = new Date(Date.UTC(y, m - 1 + months, d));
-  nextTarget.setUTCDate(nextTarget.getUTCDate() - 1);
-  return nextTarget.toISOString().split("T")[0];
+  if (yearEndDate && result > yearEndDate) {
+    return yearEndDate;
+  }
+  return result;
 };
 
 /**
@@ -113,12 +55,14 @@ export const calculateNextPeriodFromDate = (
   yearStartDate: string,
   existingPeriods: BillingPeriodMaster[],
   financialYearId?: number | string,
-  billingFrequencyId?: number | string
+  billingFrequencyId?: number | string,
+  currentId?: number | string | null
 ): string => {
   if (!financialYearId || !billingFrequencyId) return yearStartDate || "";
 
   const matching = existingPeriods.filter(
     (p) =>
+      (!currentId || String(p.id) !== String(currentId)) &&
       String(p.financialYearId) === String(financialYearId) &&
       String(p.billingFrequencyId) === String(billingFrequencyId) &&
       p.periodToDate
@@ -143,16 +87,59 @@ export const calculateBillingPeriodSequenceNo = (
   periodFromDate?: string | null,
   periodsPerYear: number = 1,
   yearStartDate?: string | null,
-  existingSequenceNo?: number | string | null
+  existingSequenceNo?: number | string | null,
+  existingPeriods?: BillingPeriodMaster[],
+  financialYearId?: number | string,
+  billingFrequencyId?: number | string,
+  currentId?: number | string | null
 ): number => {
   const total = Number(periodsPerYear) || 1;
   if (total <= 1) return 1;
 
-  // If a valid existing sequence number is passed and falls within [1, total], preserve it
+  // In create mode or edit mode, if existingSequenceNo is already taken by another period, do not preserve it
   if (existingSequenceNo !== undefined && existingSequenceNo !== null && existingSequenceNo !== "") {
     const num = Number(existingSequenceNo);
-    if (!isNaN(num) && num >= 1 && num <= total) {
+    const isTakenByOther =
+      existingPeriods &&
+      financialYearId &&
+      billingFrequencyId &&
+      existingPeriods.some(
+        (p) =>
+          (!currentId || String(p.id) !== String(currentId)) &&
+          String(p.financialYearId) === String(financialYearId) &&
+          String(p.billingFrequencyId) === String(billingFrequencyId) &&
+          Number(p.sequenceNo) === num
+      );
+
+    if (!isNaN(num) && num >= 1 && num <= total && !isTakenByOther) {
       return num;
+    }
+  }
+
+  // If existingPeriods are available for this FY and frequency, determine next unused sequence
+  if (existingPeriods && financialYearId && billingFrequencyId) {
+    const matching = existingPeriods.filter(
+      (p) =>
+        (!currentId || String(p.id) !== String(currentId)) &&
+        String(p.financialYearId) === String(financialYearId) &&
+        String(p.billingFrequencyId) === String(billingFrequencyId)
+    );
+    if (matching.length > 0) {
+      const usedSeqNos = new Set<number>();
+      matching.forEach((p, idx) => {
+        const num = Number(p.sequenceNo);
+        if (!isNaN(num) && num > 0) {
+          usedSeqNos.add(num);
+        } else {
+          usedSeqNos.add(idx + 1);
+        }
+      });
+      for (let s = 1; s <= total; s++) {
+        if (!usedSeqNos.has(s)) {
+          return s;
+        }
+      }
+      return Math.min(total, matching.length + 1);
     }
   }
 

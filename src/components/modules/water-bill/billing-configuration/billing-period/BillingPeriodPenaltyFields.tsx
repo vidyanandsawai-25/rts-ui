@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { Input, ValidationMessage } from "@/components/common";
+import { DateInput, ValidationMessage } from "@/components/common";
 import type { BillingPeriodInput } from "@/types/water-bill/billing-configuration/billingPeriodMaster.types";
 
 interface BillingPeriodPenaltyFieldsProps {
@@ -30,88 +30,94 @@ export function BillingPeriodPenaltyFields({
   const t = useTranslations("billingPeriodMaster");
 
   return (
-    <>
-      {/* Current Penalty Start Date */}
-      <div className="space-y-1">
-        <Input
-          type="date"
-          label={t("table.currentPenaltyStartDate")}
-          value={formData.currentPenaltyStartDate ?? ""}
-          min="1900-01-01"
-          max="2099-12-31"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleCurrentPenaltyStartChange(e.target.value)
-          }
-          onBlur={() => handleBlur("currentPenaltyStartDate")}
-          className={err("currentPenaltyStartDate")}
-        />
-        <ValidationMessage
-          message={errors.currentPenaltyStartDate}
-          visible={showError("currentPenaltyStartDate")}
-        />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Current Penalty Card */}
+      <div className="rounded-xl border border-amber-200/80 bg-linear-to-b from-amber-50/50 via-white to-white p-4 shadow-2xs space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-amber-500 ring-2 ring-amber-100" />
+          <span className="text-xs font-semibold text-amber-900 uppercase tracking-wide">
+            {t("table.currentPenalty")}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+          <div className="space-y-1">
+            <DateInput
+              disableManualEntry
+              label={t("table.currentPenaltyStartDate")}
+              value={formData.currentPenaltyStartDate}
+              onValueChange={handleCurrentPenaltyStartChange}
+              onBlur={() => handleBlur("currentPenaltyStartDate")}
+              className={err("currentPenaltyStartDate")}
+            />
+            <ValidationMessage
+              message={errors.currentPenaltyStartDate}
+              visible={showError("currentPenaltyStartDate")}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <DateInput
+              disableManualEntry
+              label={t("table.currentPenaltyEndDate")}
+              value={formData.currentPenaltyEndDate}
+              onValueChange={handleCurrentPenaltyEndChange}
+              onBlur={() => handleBlur("currentPenaltyEndDate")}
+              className={err("currentPenaltyEndDate")}
+            />
+            <ValidationMessage
+              message={errors.currentPenaltyEndDate}
+              visible={showError("currentPenaltyEndDate")}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Current Penalty End Date */}
-      <div className="space-y-1">
-        <Input
-          type="date"
-          label={t("table.currentPenaltyEndDate")}
-          value={formData.currentPenaltyEndDate ?? ""}
-          min="1900-01-01"
-          max="2099-12-31"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleCurrentPenaltyEndChange(e.target.value)
-          }
-          onBlur={() => handleBlur("currentPenaltyEndDate")}
-          className={err("currentPenaltyEndDate")}
-        />
-        <ValidationMessage
-          message={errors.currentPenaltyEndDate}
-          visible={showError("currentPenaltyEndDate")}
-        />
-      </div>
+      {/* Pending Penalty Card */}
+      <div className="rounded-xl border border-purple-200/80 bg-linear-to-b from-purple-50/50 via-white to-white p-4 shadow-2xs space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-purple-500 ring-2 ring-purple-100" />
+          <span className="text-xs font-semibold text-purple-900 uppercase tracking-wide">
+            {t("table.pendingPenalty")}
+          </span>
+        </div>
 
-      {/* Pending Penalty Start Date */}
-      <div className="space-y-1">
-        <Input
-          type="date"
-          label={t("table.pendingPenaltyStartDate")}
-          value={formData.pendingPenaltyStartDate ?? ""}
-          min="1900-01-01"
-          max="2099-12-31"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handlePendingPenaltyStartChange(e.target.value)
-          }
-          onBlur={() => handleBlur("pendingPenaltyStartDate")}
-          className={err("pendingPenaltyStartDate")}
-        />
-        <ValidationMessage
-          message={errors.pendingPenaltyStartDate}
-          visible={showError("pendingPenaltyStartDate")}
-        />
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+          <div className="space-y-1">
+            <DateInput
+              disableManualEntry
+              label={t("table.pendingPenaltyStartDate")}
+              value={formData.pendingPenaltyStartDate}
+              onValueChange={handlePendingPenaltyStartChange}
+              onBlur={() => handleBlur("pendingPenaltyStartDate")}
+              className={err("pendingPenaltyStartDate")}
+            />
+            <ValidationMessage
+              message={errors.pendingPenaltyStartDate}
+              visible={showError("pendingPenaltyStartDate")}
+            />
+          </div>
 
-      {/* Pending Penalty End Date */}
-      <div className="space-y-1">
-        <Input
-          type="date"
-          label={t("table.pendingPenaltyEndDate")}
-          value={formData.pendingPenaltyEndDate ?? ""}
-          min="1900-01-01"
-          max="2099-12-31"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handlePendingPenaltyEndChange
-              ? handlePendingPenaltyEndChange(e.target.value)
-              : handleChange("pendingPenaltyEndDate", e.target.value)
-          }
-          onBlur={() => handleBlur("pendingPenaltyEndDate")}
-          className={err("pendingPenaltyEndDate")}
-        />
-        <ValidationMessage
-          message={errors.pendingPenaltyEndDate}
-          visible={showError("pendingPenaltyEndDate")}
-        />
+          <div className="space-y-1">
+            <DateInput
+              disableManualEntry
+              label={t("table.pendingPenaltyEndDate")}
+              value={formData.pendingPenaltyEndDate}
+              onValueChange={(val) =>
+                handlePendingPenaltyEndChange
+                  ? handlePendingPenaltyEndChange(val)
+                  : handleChange("pendingPenaltyEndDate", val)
+              }
+              onBlur={() => handleBlur("pendingPenaltyEndDate")}
+              className={err("pendingPenaltyEndDate")}
+            />
+            <ValidationMessage
+              message={errors.pendingPenaltyEndDate}
+              visible={showError("pendingPenaltyEndDate")}
+            />
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
