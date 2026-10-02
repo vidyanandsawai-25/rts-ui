@@ -421,7 +421,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
 
       {/* 2. Floor Details Section by Valuation Mode (Rateable, Capital, Dual Method) */}
       {activeSection === 'floor' && (
-        <>
+        <div className="pt-2">
           {isValuationLoading ? (
             <div className="p-8 flex flex-col items-center justify-center space-y-3 bg-white rounded-lg border border-slate-200 min-h-[220px]">
               <Loader2 className="w-8 h-8 text-[#0047cc] animate-spin" />
@@ -536,7 +536,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
           )}
             </>
           )}
-        </>
+        </div>
       )}
 
       {/* 3. Building Permission, Discount, or Old Details Tabs */}
@@ -551,7 +551,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
             </p>
           </div>
         ) : activeSection === 'discount' ? (
-          <div className="pt-1">
+          <div className="pt-2">
             <DiscountDataTab
               isExpanded={isExpanded}
               onToggleExpand={() => setIsExpanded((prev) => !prev)}
@@ -569,7 +569,7 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
             />
           </div>
         ) : activeTitle ? (
-          <div className="pt-1">
+          <div className="pt-2">
             <div
               className="flex items-center gap-1.5 cursor-pointer select-none group pb-2"
               onClick={() => setIsExpanded((prev) => !prev)}

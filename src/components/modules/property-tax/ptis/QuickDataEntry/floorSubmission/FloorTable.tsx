@@ -440,7 +440,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
           striped={true}
           hoverable={true}
           containerClassName="border border-blue-200 shadow-md rounded-xl"
-          heightRows={isBuildingPermissionView ? Math.min(Math.max(filteredFloors.length, 1), 3) : 4}
+          heightRows={3}
           theadClassName="bg-[#1e3a8a] text-white"
           rowClassName={(row) => {
             const isSelected = selectedFloor

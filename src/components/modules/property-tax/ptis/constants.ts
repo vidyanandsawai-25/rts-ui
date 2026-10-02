@@ -22,10 +22,10 @@ export const PTIS_UI_CLASSES = {
  */
 export const PTIS_TABLE_PRESETS = {
   // Common container for valuation tables
-  container: 'space-y-0.5 p-0.5',
+  container: 'space-y-0 p-0',
 
   // Header badge styles (Blue theme used across valuation modules)
-  headerBadge: 'text-[10px] h-8 bg-blue-800/40 border-blue-400/30',
+  headerBadge: 'text-[9.5px] h-6 bg-blue-800/40 border-blue-400/30 rounded px-1',
 
   // Standard cell text styles
   cellText: 'text-[11px] text-gray-700 font-medium',

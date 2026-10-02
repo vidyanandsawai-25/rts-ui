@@ -54,7 +54,7 @@ export const CapitalTaxTable: React.FC<Props> = ({ capitalData, searchParams, lo
         headerBadgeClassName={PTIS_TABLE_PRESETS.headerBadge}
         cellClassName={PTIS_TABLE_PRESETS.cellText}
         containerClassName="overflow-x-auto"
-        heightRows={6}
+        heightRows={3}
         renderExpanded={(row: CapitalRow) => <ShowTaxOnExpand locale={locale} taxes={row.taxes} />}
       />
     </div>

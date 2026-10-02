@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { cn } from '@/lib/utils/cn';
 import type {
   RateableValueDetail,
@@ -88,9 +89,9 @@ export function getRateableColumns(
         const isYes = val === 'Yes' || val === 'true';
         const isNo = val === 'No' || val === 'false';
         return (
-          <div className="flex items-center justify-center" title={val}>
-            {isYes && <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 shrink-0 inline-block shadow-sm" />}
-            {isNo && <span className="h-3.5 w-3.5 rounded-full bg-rose-500 shrink-0 inline-block shadow-sm" />}
+          <div className="flex items-center justify-center font-bold text-[11px]" title={val}>
+            {isYes && <span className="text-emerald-600 font-bold">Yes</span>}
+            {isNo && <span className="text-rose-600 font-bold">No</span>}
             {!isYes && !isNo && <span className="text-slate-400 font-bold">-</span>}
           </div>
         );

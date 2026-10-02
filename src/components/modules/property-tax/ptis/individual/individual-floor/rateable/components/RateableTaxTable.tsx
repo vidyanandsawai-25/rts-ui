@@ -56,7 +56,7 @@ export const RateableTaxTable: React.FC<RateableTaxTableProps> = ({ rateableData
         headerBadgeClassName={PTIS_TABLE_PRESETS.headerBadge}
         cellClassName={PTIS_TABLE_PRESETS.cellText}
         containerClassName="overflow-x-auto"
-        heightRows={6}
+        heightRows={3}
         renderExpanded={(row: RateableRow) => <ShowTaxOnExpand locale={locale} taxes={row.taxes} />}
       />
     </div>
