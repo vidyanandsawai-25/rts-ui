@@ -1,5 +1,7 @@
 'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { ImageWithFallback } from './ImageWithFallback';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
@@ -14,6 +16,7 @@ interface ImageHoverPreviewProps {
   afterLabel?: string;
   fallbackSrc?: string;
   fallbackSrc2?: string;
+  documentGuid?: string;
 }
 
 export function ImageHoverPreview({
@@ -27,7 +30,9 @@ export function ImageHoverPreview({
   afterLabel,
   fallbackSrc,
   fallbackSrc2,
+  documentGuid,
 }: ImageHoverPreviewProps): React.ReactElement | null {
+  const t = useTranslations('ptis');
   const [zoomScale, setZoomScale] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -35,8 +40,8 @@ export function ImageHoverPreview({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Reset zoom and pan during rendering when displayed images change
-  const [prevSrcKey, setPrevSrcKey] = useState(`${src}_${src2 || ''}`);
-  const currentSrcKey = `${src}_${src2 || ''}`;
+  const currentSrcKey = `${src || ''}_${src2 || ''}_${documentGuid || ''}_${fallbackSrc || ''}_${fallbackSrc2 || ''}_${title || ''}`;
+  const [prevSrcKey, setPrevSrcKey] = useState(currentSrcKey);
   if (prevSrcKey !== currentSrcKey) {
     setPrevSrcKey(currentSrcKey);
     setZoomScale(1);
@@ -44,73 +49,77 @@ export function ImageHoverPreview({
     setIsDragging(false);
   }
 
-  // Global mousemove and mouseup listeners while dragging
+  // Handle mouse up globally to prevent drag getting stuck if user releases mouse outside
   useEffect(() => {
     if (!isDragging) return;
-
-    const handleGlobalMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const contentWidth = rect.width;
-      const contentHeight = rect.height;
-
-      const dx = e.clientX - dragStartRef.current.x;
-      const dy = e.clientY - dragStartRef.current.y;
-
-      const maxOffsetPrevX = ((zoomScale - 1) * contentWidth) / 2;
-      const maxOffsetPrevY = ((zoomScale - 1) * contentHeight) / 2;
-
-      const constrainedX = Math.max(-maxOffsetPrevX, Math.min(maxOffsetPrevX, dx));
-      const constrainedY = Math.max(-maxOffsetPrevY, Math.min(maxOffsetPrevY, dy));
-
-      setPanOffset({ x: constrainedX, y: constrainedY });
-    };
 
     const handleGlobalMouseUp = () => {
       setIsDragging(false);
     };
 
-    window.addEventListener('mousemove', handleGlobalMouseMove);
     window.addEventListener('mouseup', handleGlobalMouseUp);
     return () => {
-      window.removeEventListener('mousemove', handleGlobalMouseMove);
       window.removeEventListener('mouseup', handleGlobalMouseUp);
     };
-  }, [isDragging, zoomScale]);
+  }, [isDragging]);
 
-  // Handle wheel events to allow zoom and prevent default page scroll
+  const applyZoomDelta = React.useCallback((deltaAmount: number, deltaMode = 0) => {
+    const normalizedDelta = deltaMode === 1 ? deltaAmount * 33 : deltaMode === 2 ? deltaAmount * 100 : deltaAmount;
+    const zoomStep = normalizedDelta * 0.0035;
+    if (Math.abs(zoomStep) < 0.001) return;
+
+    setZoomScale((prev) => {
+      let next = prev + zoomStep;
+      if (next < 1) next = 1;
+      if (next > 4) next = 4;
+      next = Math.round(next * 100) / 100;
+
+      if (next <= 1) {
+        setPanOffset({ x: 0, y: 0 });
+      } else if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const contentWidth = rect.width - 16;
+        const contentHeight = rect.height;
+        const maxOffsetX = ((next - 1) * contentWidth) / 2;
+        const maxOffsetY = ((next - 1) * contentHeight) / 2;
+        setPanOffset((prevPan) => ({
+          x: Math.max(-maxOffsetX, Math.min(maxOffsetX, prevPan.x)),
+          y: Math.max(-maxOffsetY, Math.min(maxOffsetY, prevPan.y)),
+        }));
+      }
+
+      return next;
+    });
+  }, []);
+
+  const hasValidImage = Boolean(src || documentGuid || fallbackSrc || src2 || fallbackSrc2);
+
+  // Handle wheel events: on preview container and across active media panel
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container || !visible) return;
+    if (!visible || !hasValidImage) return;
 
     const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
 
-      const minZoom = 1;
-      const maxZoom = 4;
-
-      setZoomScale((prev) => {
-        let newZoom = prev - e.deltaY * 0.0035;
-        if (newZoom < minZoom) newZoom = minZoom;
-        if (newZoom > maxZoom) newZoom = maxZoom;
-
-        // Reset pan offset if zoomed back to 1
-        if (newZoom === 1) {
-          setPanOffset({ x: 0, y: 0 });
-        }
-        return newZoom;
-      });
+      if (containerRef.current?.contains(target)) {
+        e.preventDefault();
+        e.stopPropagation();
+        applyZoomDelta(-e.deltaY, e.deltaMode);
+      }
     };
 
-    container.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
-      container.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('wheel', handleWheel);
     };
-  }, [visible]);
+  }, [visible, hasValidImage, applyZoomDelta]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (zoomScale <= 1) return;
+    if (zoomScale <= 1 || e.button !== 0) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('[role="button"]')) return;
+
     e.preventDefault();
     setIsDragging(true);
     dragStartRef.current = {
@@ -119,16 +128,52 @@ export function ImageHoverPreview({
     };
   };
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || zoomScale <= 1 || !containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const contentWidth = rect.width - 16;
+    const contentHeight = rect.height;
+
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+
+    // Constrain offset so the image doesn't pan past its borders
+    const maxOffsetPrevX = ((zoomScale - 1) * contentWidth) / 2;
+    const maxOffsetPrevY = ((zoomScale - 1) * contentHeight) / 2;
+
+    const constrainedX = Math.max(-maxOffsetPrevX, Math.min(maxOffsetPrevX, dx));
+    const constrainedY = Math.max(-maxOffsetPrevY, Math.min(maxOffsetPrevY, dy));
+
+    setPanOffset({ x: constrainedX, y: constrainedY });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   const handleZoomIn = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setZoomScale((prev) => Math.min(prev + 0.5, 4));
+    setZoomScale((prev) => Math.min(Math.round((prev + 0.5) * 10) / 10, 4));
   };
 
   const handleZoomOut = (e: React.MouseEvent) => {
     e.stopPropagation();
     setZoomScale((prev) => {
-      const next = Math.max(prev - 0.5, 1);
-      if (next === 1) setPanOffset({ x: 0, y: 0 });
+      const next = Math.max(Math.round((prev - 0.5) * 10) / 10, 1);
+      if (next === 1) {
+        setPanOffset({ x: 0, y: 0 });
+      } else if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const contentWidth = rect.width - 16;
+        const contentHeight = rect.height;
+        const maxOffsetX = ((next - 1) * contentWidth) / 2;
+        const maxOffsetY = ((next - 1) * contentHeight) / 2;
+        setPanOffset((prevPan) => ({
+          x: Math.max(-maxOffsetX, Math.min(maxOffsetX, prevPan.x)),
+          y: Math.max(-maxOffsetY, Math.min(maxOffsetY, prevPan.y)),
+        }));
+      }
       return next;
     });
   };
@@ -137,31 +182,38 @@ export function ImageHoverPreview({
     e.stopPropagation();
     setZoomScale(1);
     setPanOffset({ x: 0, y: 0 });
+    setIsDragging(false);
   };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) return;
+
     setZoomScale((prev) => {
       if (prev > 1) {
         setPanOffset({ x: 0, y: 0 });
+        setIsDragging(false);
         return 1;
       }
       return 2;
     });
   };
 
-  if (!visible || !src) return null;
+  if (!visible || !hasValidImage) return null;
 
   return (
     <div
       ref={containerRef}
       onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className="
         hidden lg:block
         absolute right-full top-0 bottom-0 pr-3 z-50
-        w-[496px] max-h-[calc(100vh-140px)] pointer-events-auto
+        w-[440px] xl:w-[480px] 2xl:w-[496px] max-w-[calc(100vw-350px)] max-h-[calc(100vh-140px)] pointer-events-auto
         animate-in fade-in slide-in-from-right-3 duration-200
       "
     >
@@ -169,35 +221,42 @@ export function ImageHoverPreview({
         {/* Floating Control Toolbar */}
         <div
           onMouseDown={(e) => e.stopPropagation()}
-          className="absolute top-3 right-3 z-20 flex items-center gap-1.5 bg-black/75 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/20 shadow-lg text-white"
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-black/75 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/20 shadow-lg text-white select-none"
         >
           <span className="text-[11px] font-bold text-slate-200 px-1 select-none">
             {Math.round(zoomScale * 100)}%
           </span>
           <button
             type="button"
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={handleZoomOut}
             disabled={zoomScale <= 1}
             className="p-1 hover:bg-white/20 rounded-full transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer text-white"
-            title="Zoom Out"
+            title={t('media.zoomOut') || 'Zoom Out'}
+            aria-label={t('media.zoomOut') || 'Zoom Out'}
           >
             <ZoomOut className="w-3.5 h-3.5" />
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={handleZoomIn}
             disabled={zoomScale >= 4}
             className="p-1 hover:bg-white/20 rounded-full transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer text-white"
-            title="Zoom In"
+            title={t('media.zoomIn') || 'Zoom In'}
+            aria-label={t('media.zoomIn') || 'Zoom In'}
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
           {zoomScale > 1 && (
             <button
               type="button"
+              onMouseDown={(e) => e.stopPropagation()}
               onClick={handleResetZoom}
               className="p-1 hover:bg-white/20 rounded-full transition-colors cursor-pointer text-white"
-              title="Reset Zoom"
+              title={t('media.resetZoom') || 'Reset Zoom'}
+              aria-label={t('media.resetZoom') || 'Reset Zoom'}
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
@@ -215,14 +274,15 @@ export function ImageHoverPreview({
             transition: isDragging ? 'none' : 'transform 0.15s ease-out',
           }}
         >
-          {src2 ? (
+          {(src2 || fallbackSrc2) ? (
             <div className="grid grid-cols-2 h-full w-full relative bg-slate-950">
               {/* Left Side: Before */}
               <div className="relative h-full w-full overflow-hidden border-r border-slate-800 bg-slate-950 flex items-center justify-center">
                 <ImageWithFallback
                   src={src}
+                  documentGuid={documentGuid}
                   fallbackSrc={fallbackSrc}
-                  alt={`${beforeLabel || 'Before'} Satellite View`}
+                  alt={`${beforeLabel || t('media.beforeYear') || 'Before (2015)'} ${t('media.satelliteView') || 'Satellite View'}`}
                   className="w-full h-full object-cover"
                   width={480}
                   height={1200}
@@ -230,16 +290,16 @@ export function ImageHoverPreview({
                 />
                 {/* Year Badge */}
                 <div className="absolute top-3 left-3 z-10 bg-black/80 text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-md backdrop-blur-xs border border-white/10">
-                  {beforeLabel || '2018'}
+                  {beforeLabel || t('media.beforeYear') || 'Before (2015)'}
                 </div>
               </div>
 
               {/* Right Side: After */}
               <div className="relative h-full w-full overflow-hidden bg-slate-950 flex items-center justify-center">
                 <ImageWithFallback
-                  src={src2}
+                  src={src2 || ''}
                   fallbackSrc={fallbackSrc2}
-                  alt={`${afterLabel || 'After'} Satellite View`}
+                  alt={`${afterLabel || t('media.afterYear') || 'After (2026)'} ${t('media.satelliteView') || 'Satellite View'}`}
                   className="w-full h-full object-cover"
                   width={480}
                   height={1200}
@@ -247,7 +307,7 @@ export function ImageHoverPreview({
                 />
                 {/* Year Badge */}
                 <div className="absolute top-3 left-3 z-10 bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-md border border-emerald-400/30">
-                  {afterLabel || '2026'}
+                  {afterLabel || t('media.afterYear') || 'After (2026)'}
                 </div>
               </div>
             </div>
@@ -255,6 +315,7 @@ export function ImageHoverPreview({
             <div className="w-full h-full relative bg-slate-950 flex items-center justify-center">
               <ImageWithFallback
                 src={src}
+                documentGuid={documentGuid}
                 fallbackSrc={fallbackSrc}
                 alt={title}
                 className="w-full h-full object-cover"
@@ -272,7 +333,9 @@ export function ImageHoverPreview({
             {title}
           </p>
           <span className="text-[10px] text-slate-300 font-medium bg-black/60 px-2 py-0.5 rounded border border-white/10 ml-2 shrink-0 backdrop-blur-xs">
-            {zoomScale > 1 ? 'Drag to Pan' : 'Scroll / Dbl-Click to Zoom'}
+            {zoomScale > 1
+              ? t('media.dragToPan') || 'Drag to Pan'
+              : t('media.zoomInstructions') || 'Scroll / Dbl-Click to Zoom'}
           </span>
         </div>
       </div>

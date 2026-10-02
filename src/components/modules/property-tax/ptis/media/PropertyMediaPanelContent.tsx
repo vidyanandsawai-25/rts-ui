@@ -25,7 +25,16 @@ interface PropertyMediaPanelContentProps {
     beforeLabel?: string,
     afterLabel?: string,
     fallbackSrc?: string,
-    fallbackSrc2?: string
+    fallbackSrc2?: string,
+    documentGuid?: string,
+    anchorRect?: {
+      top: number;
+      bottom: number;
+      left: number;
+      right: number;
+      width: number;
+      height: number;
+    }
   ) => void;
   handleImageLeave: () => void;
   cancelImageLeave: () => void;
@@ -95,18 +104,99 @@ export function PropertyMediaPanelContent({
   const wingRemainingImages = React.useMemo(() => wingPhotoCategory?.images.slice(1) || [], [wingPhotoCategory]);
   const propertyRemainingImages = React.useMemo(() => propertyPhotoCategory?.images.slice(1) || [], [propertyPhotoCategory]);
 
+  const handleCardHover = React.useCallback(
+    (
+      e: React.MouseEvent<HTMLDivElement>,
+      photo?: AdditionalImage,
+      fallbackTitle?: string,
+      customSrc2?: string,
+      beforeLabel?: string,
+      afterLabel?: string,
+      fallbackSrc?: string,
+      fallbackSrc2?: string
+    ) => {
+      const src = photo?.fullSrc || photo?.src || '';
+      const guid = photo?.documentGuid;
+      const title = photo?.title || fallbackTitle || '';
+      const hasActualPhoto = Boolean(src || guid || photo?.hasPhoto);
+
+      if (customSrc2 || fallbackSrc2) {
+        if (!src && !customSrc2 && !fallbackSrc && !fallbackSrc2) {
+          handleImageHover(src, title);
+          return;
+        }
+        const rect = e?.currentTarget?.getBoundingClientRect?.()
+          ? {
+              top: e.currentTarget.getBoundingClientRect().top,
+              bottom: e.currentTarget.getBoundingClientRect().bottom,
+              left: e.currentTarget.getBoundingClientRect().left,
+              right: e.currentTarget.getBoundingClientRect().right,
+              width: e.currentTarget.getBoundingClientRect().width,
+              height: e.currentTarget.getBoundingClientRect().height,
+            }
+          : undefined;
+        handleImageHover(
+          src,
+          title,
+          customSrc2 || '',
+          beforeLabel,
+          afterLabel,
+          fallbackSrc,
+          fallbackSrc2,
+          undefined,
+          rect
+        );
+        return;
+      }
+
+      if (!hasActualPhoto) {
+        handleImageHover(src, title);
+        return;
+      }
+
+      const rect = e?.currentTarget?.getBoundingClientRect?.()
+        ? {
+            top: e.currentTarget.getBoundingClientRect().top,
+            bottom: e.currentTarget.getBoundingClientRect().bottom,
+            left: e.currentTarget.getBoundingClientRect().left,
+            right: e.currentTarget.getBoundingClientRect().right,
+            width: e.currentTarget.getBoundingClientRect().width,
+            height: e.currentTarget.getBoundingClientRect().height,
+          }
+        : undefined;
+
+      handleImageHover(
+        src,
+        title,
+        undefined,
+        undefined,
+        undefined,
+        fallbackSrc,
+        undefined,
+        guid,
+        rect
+      );
+    },
+    [handleImageHover]
+  );
+
   if (isQuickDataEntry) {
     return (
       <>
         <ImageHoverPreview
-          key={hoverPreview?.src ?? 'empty'}
           src={hoverPreview?.src ?? ''}
+          src2={hoverPreview?.src2}
           title={hoverPreview?.title ?? ''}
+          beforeLabel={hoverPreview?.beforeLabel}
+          afterLabel={hoverPreview?.afterLabel}
+          fallbackSrc={hoverPreview?.fallbackSrc}
+          fallbackSrc2={hoverPreview?.fallbackSrc2}
+          documentGuid={hoverPreview?.documentGuid}
           visible={hoverPreview !== null}
           onMouseEnter={cancelImageLeave}
           onMouseLeave={handleImageLeave}
         />
-        <div className="flex-1 min-h-0 h-full overflow-y-auto p-2 flex flex-col gap-2 scrollbar-thin">
+        <div data-media-panel="true" className="flex-1 min-h-0 h-full overflow-y-auto overflow-x-hidden p-2 flex flex-col gap-2 scrollbar-thin">
           {categories.map((cat, idx) => {
             const latestImg = cat.images && cat.images.length > 0 ? cat.images[cat.images.length - 1] : cat.images[0];
             const latestImgIdx = cat.images && cat.images.length > 0 ? cat.images.length - 1 : 0;
@@ -122,9 +212,30 @@ export function PropertyMediaPanelContent({
                 onClick={() => {
                   openDrawer(idx, latestImgIdx);
                 }}
-                onMouseEnter={() =>
-                  handleImageHover(latestImg?.fullSrc || latestImg?.src || '', cat.photoTypeName)
-                }
+                onMouseEnter={(e) => {
+                  const src = latestImg?.fullSrc || latestImg?.src || '';
+                  const guid = latestImg?.documentGuid;
+                  if (!src && !guid) return;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  handleImageHover(
+                    src,
+                    cat.photoTypeName,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    guid,
+                    {
+                      top: rect.top,
+                      bottom: rect.bottom,
+                      left: rect.left,
+                      right: rect.right,
+                      width: rect.width,
+                      height: rect.height,
+                    }
+                  );
+                }}
                 onMouseLeave={handleImageLeave}
                 hasPhoto={latestImg?.hasPhoto}
               />
@@ -162,7 +273,6 @@ export function PropertyMediaPanelContent({
   return (
     <>
       <ImageHoverPreview
-        key={hoverPreview?.src ?? 'empty'}
         src={hoverPreview?.src ?? ''}
         src2={hoverPreview?.src2}
         title={hoverPreview?.title ?? ''}
@@ -170,12 +280,13 @@ export function PropertyMediaPanelContent({
         afterLabel={hoverPreview?.afterLabel}
         fallbackSrc={hoverPreview?.fallbackSrc}
         fallbackSrc2={hoverPreview?.fallbackSrc2}
+        documentGuid={hoverPreview?.documentGuid}
         visible={hoverPreview !== null}
         onMouseEnter={cancelImageLeave}
         onMouseLeave={handleImageLeave}
       />
 
-      <div className="flex-1 min-h-0 h-full overflow-y-auto p-2 flex flex-col sm:grid sm:grid-cols-3 lg:flex lg:flex-col gap-2 scrollbar-thin">
+      <div data-media-panel="true" className="flex-1 min-h-0 h-full overflow-y-auto overflow-x-hidden p-2 flex flex-col sm:grid sm:grid-cols-3 lg:flex lg:flex-col gap-2 scrollbar-thin">
         {isAmenityProperty ? (
           <>
             {/* Amenity Photo Card */}
@@ -187,7 +298,7 @@ export function PropertyMediaPanelContent({
               label={amenityPhoto?.title || t('media.amenityPhoto') || 'Amenity Photo'}
               hoverBorderColor="hover:border-emerald-500"
               onClick={() => openDrawer(amenityPhotoCategory ? categories.indexOf(amenityPhotoCategory) : 0, 0)}
-              onMouseEnter={() => handleImageHover(amenityPhoto?.fullSrc || amenityPhoto?.src || '', amenityPhoto?.title || t('media.amenityPhoto') || 'Amenity Photo')}
+              onMouseEnter={(e) => handleCardHover(e, amenityPhoto, t('media.amenityPhoto') || 'Amenity Photo')}
               onMouseLeave={handleImageLeave}
               hasPhoto={amenityPhoto?.hasPhoto}
             />
@@ -209,7 +320,7 @@ export function PropertyMediaPanelContent({
                       : undefined
                   }
                   onClick={() => openDrawer(societyPhotoCategory ? categories.indexOf(societyPhotoCategory) : 0, 0)}
-                  onMouseEnter={() => handleImageHover(societyPhoto?.fullSrc || societyPhoto?.src || '', societyPhoto?.title || (t('media.societyPhoto') || 'Society Photo'))}
+                  onMouseEnter={(e) => handleCardHover(e, societyPhoto, t('media.societyPhoto') || 'Society Photo')}
                   onMouseLeave={handleImageLeave}
                   hasPhoto={societyPhoto?.hasPhoto}
                 >
@@ -264,7 +375,7 @@ export function PropertyMediaPanelContent({
                   : undefined
               }
               onClick={() => openDrawer(societyPhotoCategory ? categories.indexOf(societyPhotoCategory) : 0, 0)}
-              onMouseEnter={() => handleImageHover(societyPhoto?.fullSrc || societyPhoto?.src || '', societyPhoto?.title || (t('media.societyPhoto') || 'Society Photo'))}
+              onMouseEnter={(e) => handleCardHover(e, societyPhoto, t('media.societyPhoto') || 'Society Photo')}
               onMouseLeave={handleImageLeave}
               hasPhoto={societyPhoto?.hasPhoto}
             >
@@ -317,7 +428,7 @@ export function PropertyMediaPanelContent({
                   : undefined
               }
               onClick={() => openDrawer(wingPhotoCategory ? categories.indexOf(wingPhotoCategory) : 0, 0)}
-              onMouseEnter={() => handleImageHover(wingPhoto?.fullSrc || wingPhoto?.src || '', effectiveWingPhotoTitle)}
+              onMouseEnter={(e) => handleCardHover(e, wingPhoto, effectiveWingPhotoTitle)}
               onMouseLeave={handleImageLeave}
               hasPhoto={wingPhoto?.hasPhoto}
             >
@@ -371,7 +482,7 @@ export function PropertyMediaPanelContent({
                       : undefined
                   }
                   onClick={() => openDrawer(propertyPhotoCategory ? categories.indexOf(propertyPhotoCategory) : 0, 0)}
-                  onMouseEnter={() => handleImageHover(propertyPhoto?.fullSrc || propertyPhoto?.src || '', propertyPhoto?.title || (t('media.propertyPhoto') || 'Property Photo'))}
+                  onMouseEnter={(e) => handleCardHover(e, propertyPhoto, t('media.propertyPhoto') || 'Property Photo')}
                   onMouseLeave={handleImageLeave}
                   hasPhoto={propertyPhoto?.hasPhoto}
                 >
@@ -426,7 +537,7 @@ export function PropertyMediaPanelContent({
                   : undefined
               }
               onClick={() => openDrawer(societyPhotoCategory ? categories.indexOf(societyPhotoCategory) : 0, 0)}
-              onMouseEnter={() => handleImageHover(societyPhoto?.fullSrc || societyPhoto?.src || '', societyPhoto?.title || (t('media.societyPhoto') || 'Society Photo'))}
+              onMouseEnter={(e) => handleCardHover(e, societyPhoto, t('media.societyPhoto') || 'Society Photo')}
               onMouseLeave={handleImageLeave}
               hasPhoto={societyPhoto?.hasPhoto}
             >
@@ -479,7 +590,7 @@ export function PropertyMediaPanelContent({
                   : undefined
               }
               onClick={() => openDrawer(wingPhotoCategory ? categories.indexOf(wingPhotoCategory) : 0, 0)}
-              onMouseEnter={() => handleImageHover(wingPhoto?.fullSrc || wingPhoto?.src || '', effectiveWingPhotoTitle)}
+              onMouseEnter={(e) => handleCardHover(e, wingPhoto, effectiveWingPhotoTitle)}
               onMouseLeave={handleImageLeave}
               hasPhoto={wingPhoto?.hasPhoto}
             >
@@ -533,7 +644,7 @@ export function PropertyMediaPanelContent({
                       : undefined
                   }
                   onClick={() => openDrawer(propertyPhotoCategory ? categories.indexOf(propertyPhotoCategory) : 0, 0)}
-                  onMouseEnter={() => handleImageHover(propertyPhoto?.fullSrc || propertyPhoto?.src || '', propertyPhoto?.title || (t('media.propertyPhoto') || 'Property Photo'))}
+                  onMouseEnter={(e) => handleCardHover(e, propertyPhoto, t('media.propertyPhoto') || 'Property Photo')}
                   onMouseLeave={handleImageLeave}
                   hasPhoto={propertyPhoto?.hasPhoto}
                 >
@@ -588,7 +699,7 @@ export function PropertyMediaPanelContent({
                   : undefined
               }
               onClick={() => openDrawer(propertyPhotoCategory ? categories.indexOf(propertyPhotoCategory) : 0, 0)}
-              onMouseEnter={() => handleImageHover(propertyPhoto?.fullSrc || propertyPhoto?.src || '', propertyPhoto?.title || mainCardLabel)}
+              onMouseEnter={(e) => handleCardHover(e, propertyPhoto, mainCardLabel)}
               onMouseLeave={handleImageLeave}
               hasPhoto={propertyPhoto?.hasPhoto}
             >
@@ -642,7 +753,7 @@ export function PropertyMediaPanelContent({
                 const imgIdx = photoPlanCategory?.images && photoPlanCategory.images.length > 0 ? photoPlanCategory.images.length - 1 : 0;
                 openDrawer(catIdx >= 0 ? catIdx : 0, imgIdx);
               }}
-              onMouseEnter={() => handleImageHover(photoPlanPhoto?.fullSrc || photoPlanPhoto?.src || '', photoPlanPhoto?.title || t('media.photoPlan'))}
+              onMouseEnter={(e) => handleCardHover(e, photoPlanPhoto, t('media.photoPlan') || 'Photo Plan')}
               onMouseLeave={handleImageLeave}
               hasPhoto={photoPlanPhoto?.hasPhoto}
             >
@@ -667,7 +778,7 @@ export function PropertyMediaPanelContent({
             const idx = cdCategory ? categories.indexOf(cdCategory) : -1;
             openDrawer(idx >= 0 ? idx : 0);
           }}
-          onMouseEnter={() => handleImageHover(gisPhoto?.fullSrc || gisPhoto?.src || '', gisPhoto?.title || t('media.satelliteView') || 'Satellite View')}
+          onMouseEnter={(e) => handleCardHover(e, gisPhoto, t('media.satelliteView') || 'Satellite View')}
           onMouseLeave={handleImageLeave}
         />
 
@@ -679,9 +790,24 @@ export function PropertyMediaPanelContent({
           afterLabel={cdAfterLabel}
           fallbackBeforeSrc={fallbackBeforeUrl}
           fallbackAfterSrc={fallbackAfterUrl}
-          onMouseEnter={() => {
-            handleImageHover(cdBeforeImg, t('media.changeDetection') || 'Change Detection', cdAfterImg, cdBeforeLabel, cdAfterLabel, fallbackBeforeUrl, fallbackAfterUrl);
-          }}
+          onMouseEnter={(e) =>
+            handleCardHover(
+              e,
+              {
+                src: cdBeforeImg,
+                fullSrc: cdBeforeImg,
+                alt: t('media.changeDetection') || 'Change Detection',
+                title: t('media.changeDetection') || 'Change Detection',
+                hasPhoto: Boolean(cdBeforeImg || fallbackBeforeUrl),
+              },
+              t('media.changeDetection') || 'Change Detection',
+              cdAfterImg,
+              cdBeforeLabel,
+              cdAfterLabel,
+              fallbackBeforeUrl,
+              fallbackAfterUrl
+            )
+          }
           onMouseLeave={handleImageLeave}
           onClick={() => {
             const changeDetectionIndex = cdCategory ? categories.indexOf(cdCategory) : -1;

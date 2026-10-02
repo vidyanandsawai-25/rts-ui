@@ -63,7 +63,7 @@ export function PhotoPlanViewer({
 
   return (
     <>
-      <div className="flex items-center gap-2 px-6 py-3 bg-white border-b border-slate-200 text-slate-800 z-10 flex-shrink-0 select-none">
+      <div className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-white border-b border-slate-200 text-slate-800 z-10 flex-shrink-0 select-none">
         <Button
           variant="ghost"
           size="sm"
@@ -78,7 +78,7 @@ export function PhotoPlanViewer({
         <span className="text-xs font-semibold text-slate-600">{categoryName}</span>
       </div>
 
-      <div className="flex-1 relative flex items-center justify-center p-2 sm:p-8 select-none">
+      <div className="flex-1 min-h-0 relative flex items-center justify-center p-1 sm:p-1.5 select-none">
         {images.length > 1 && (
           <>
             <Button
@@ -88,7 +88,7 @@ export function PhotoPlanViewer({
               icon={ChevronLeft}
               disabled={isMutating}
               aria-label="Previous image"
-              className="absolute left-2 sm:left-4 z-10 !h-9 !w-9 sm:!h-11 sm:!w-11 !p-1 sm:!p-2.5 rounded-full bg-white/80 hover:bg-white text-slate-700 border border-slate-200 shadow-lg hover:scale-105 transition-all opacity-100 sm:opacity-0 sm:group-hover/viewer:opacity-100 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
+              className="absolute left-2 sm:left-3 z-10 !h-9 !w-9 sm:!h-10 sm:!w-10 !p-1 sm:!p-2 rounded-full bg-white/80 hover:bg-white text-slate-700 border border-slate-200 shadow-md hover:scale-105 transition-all opacity-100 sm:opacity-0 sm:group-hover/viewer:opacity-100 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
             />
             <Button
               variant="ghost"
@@ -97,11 +97,11 @@ export function PhotoPlanViewer({
               icon={ChevronRight}
               disabled={isMutating}
               aria-label="Next image"
-              className="absolute right-2 sm:right-4 z-10 !h-9 !w-9 sm:!h-11 sm:!w-11 !p-1 sm:!p-2.5 rounded-full bg-white/80 hover:bg-white text-slate-700 border border-slate-200 shadow-lg hover:scale-105 transition-all opacity-100 sm:opacity-0 sm:group-hover/viewer:opacity-100 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
+              className="absolute right-2 sm:right-3 z-10 !h-9 !w-9 sm:!h-10 sm:!w-10 !p-1 sm:!p-2 rounded-full bg-white/80 hover:bg-white text-slate-700 border border-slate-200 shadow-md hover:scale-105 transition-all opacity-100 sm:opacity-0 sm:group-hover/viewer:opacity-100 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
             />
           </>
         )}
-        <div className="relative max-w-full max-h-full flex items-center justify-center overflow-hidden rounded-lg shadow-xl bg-slate-100 border border-slate-200 w-full h-full">
+        <div className="relative max-w-full max-h-full flex items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-slate-100/50 shadow-xs w-full h-full">
           {images.length === 0 ? (
             <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl bg-white p-12 transition-all duration-300 select-none group w-full h-full min-h-[300px]">
               <div className="p-4 bg-slate-50 rounded-full border border-slate-200 shadow-sm mb-4">
@@ -134,8 +134,8 @@ export function PhotoPlanViewer({
           ) : (
             <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
               <MainImageViewer
-                key={currentImage?.documentGuid || currentImage?.src || ''}
-                src={currentImage?.src || ''}
+                key={currentImage?.documentGuid || currentImage?.src || currentImage?.fullSrc || ''}
+                src={currentImage?.src || currentImage?.fullSrc || ''}
                 documentGuid={currentImage?.documentGuid}
                 alt={currentImage?.title || ''}
                 rotation={0}
@@ -157,10 +157,12 @@ export function PhotoPlanViewer({
       </div>
 
       <PhotoPlanToolbar
-        title={currentImage?.title || ''}
+        title={currentImage?.title || categoryName || ''}
         currentIndex={selectedImageIndex}
         totalCount={images.length}
-        hasImage={!!currentImage?.src}
+        hasImage={Boolean(
+          currentImage && (currentImage.src || currentImage.fullSrc || currentImage.documentGuid)
+        )}
         onDownload={onDownload}
         onUpload={onUpload}
         onReplace={() => onReplace(selectedImageIndex)}

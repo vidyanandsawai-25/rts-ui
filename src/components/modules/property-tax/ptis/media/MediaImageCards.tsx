@@ -37,7 +37,7 @@ interface MediaImageCardProps {
   badgeText?: string;
   hoverBorderColor?: string;
   onClick?: () => void;
-  onMouseEnter?: () => void;
+  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseLeave?: () => void;
   children?: React.ReactNode;
   priority?: boolean;
@@ -122,7 +122,7 @@ export function MediaImageCard({
         <Badge
           variant="default"
           size="sm"
-          className="absolute top-2 left-2 bg-blue-600 text-white font-semibold shadow-lg animate-pulse"
+          className="absolute top-2 left-2 bg-blue-600 text-white font-semibold shadow-lg animate-pulse pointer-events-none"
         >
           {badgeText}
         </Badge>
@@ -134,7 +134,24 @@ export function MediaImageCard({
 interface AdditionalImagesGridProps {
   images: AdditionalImage[];
   onImageClick?: (index: number) => void;
-  onImageHover?: (src: string, title: string) => void;
+  onImageHover?: (
+    src: string,
+    title: string,
+    src2?: string,
+    beforeLabel?: string,
+    afterLabel?: string,
+    fallbackSrc?: string,
+    fallbackSrc2?: string,
+    documentGuid?: string,
+    anchorRect?: {
+      top: number;
+      bottom: number;
+      left: number;
+      right: number;
+      width: number;
+      height: number;
+    }
+  ) => void;
   onImageLeave?: () => void;
   onClose?: () => void;
 }
@@ -170,7 +187,27 @@ export function AdditionalImagesGrid({
             className="relative group bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200 shadow-md hover:border-blue-400 transition-all cursor-pointer h-24 flex-shrink-0 animate-in fade-in slide-in-from-top-2 duration-300"
             style={{ animationDelay: `${index * 50}ms` }}
             onClick={() => onImageClick?.(index)}
-            onMouseEnter={() => onImageHover?.(image.fullSrc || image.src, image.title)}
+            onMouseEnter={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              onImageHover?.(
+                image.fullSrc || image.src,
+                image.title,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                image.documentGuid,
+                {
+                  top: rect.top,
+                  bottom: rect.bottom,
+                  left: rect.left,
+                  right: rect.right,
+                  width: rect.width,
+                  height: rect.height,
+                }
+              );
+            }}
             onMouseLeave={onImageLeave}
           >
             <ImageWithFallback

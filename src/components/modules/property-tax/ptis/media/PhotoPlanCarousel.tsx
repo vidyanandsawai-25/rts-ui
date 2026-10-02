@@ -167,7 +167,7 @@ export function PhotoPlanCarousel({
                 ? images.length === 1
                   ? (t('media.addNewPlanTitle') || 'Add New Plan?')
                   : (t('media.uploadPlan') || 'Upload Plan')
-                : (t('media.uploadImage') || 'Add Photo')
+                : (t('media.uploadImage') || 'Upload Image')
             }
           >
             <div className="p-1 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-1">
@@ -178,7 +178,7 @@ export function PhotoPlanCarousel({
                 ? images.length === 1
                   ? (t('media.addNewPlan') || 'Add New Plan')
                   : (t('media.uploadPlan') || t('media.uploadImage') || 'Upload Plan')
-                : (t('media.uploadImage') || 'Add Photo')}
+                : (t('media.uploadImage') || 'Upload Image')}
             </span>
           </div>
         )}

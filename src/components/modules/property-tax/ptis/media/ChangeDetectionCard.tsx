@@ -12,7 +12,7 @@ interface ChangeDetectionCardProps {
   fallbackBeforeSrc?: string;
   fallbackAfterSrc?: string;
   onClick?: () => void;
-  onMouseEnter?: () => void;
+  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseLeave?: () => void;
 }
 
@@ -55,7 +55,7 @@ export function ChangeDetectionCard({
             priority
           />
           {/* Year Badge */}
-          <div className="absolute top-2 left-2 z-10 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm backdrop-blur-[2px]">
+          <div className="absolute top-2 left-2 z-10 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm backdrop-blur-[2px] pointer-events-none">
             {beforeLabel}
           </div>
         </div>
@@ -72,7 +72,7 @@ export function ChangeDetectionCard({
             priority
           />
           {/* Year Badge (Emerald highlight to indicate new/updated) */}
-          <div className="absolute top-2 left-2 z-10 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">
+          <div className="absolute top-2 left-2 z-10 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm pointer-events-none">
             {afterLabel}
           </div>
         </div>

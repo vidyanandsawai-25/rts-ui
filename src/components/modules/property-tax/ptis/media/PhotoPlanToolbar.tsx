@@ -40,7 +40,7 @@ export function PhotoPlanToolbar({
   const isMutating = isAdding || isReplacing || isDeleting;
 
   return (
-    <div className="h-14 bg-white border-t border-slate-200 flex items-center justify-between px-4 sm:px-6 z-10 flex-shrink-0 gap-4">
+    <div className="h-11 sm:h-12 bg-white border-t border-slate-200 flex items-center justify-between px-3 sm:px-5 z-10 flex-shrink-0 gap-2 sm:gap-4">
       <div className="flex flex-col min-w-0 leading-tight">
         <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block truncate">
           {title}

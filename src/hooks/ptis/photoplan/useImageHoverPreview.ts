@@ -10,6 +10,7 @@ export interface HoverPreviewData {
   afterLabel?: string;
   fallbackSrc?: string;
   fallbackSrc2?: string;
+  documentGuid?: string;
 }
 
 export function useImageHoverPreview() {
@@ -24,13 +25,23 @@ export function useImageHoverPreview() {
       beforeLabel?: string,
       afterLabel?: string,
       fallbackSrc?: string,
-      fallbackSrc2?: string
+      fallbackSrc2?: string,
+      documentGuid?: string
     ) => {
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
         hoverTimeoutRef.current = null;
       }
-      setHoverPreview({ src, src2, title, beforeLabel, afterLabel, fallbackSrc, fallbackSrc2 });
+      setHoverPreview({
+        src,
+        src2,
+        title,
+        beforeLabel,
+        afterLabel,
+        fallbackSrc,
+        fallbackSrc2,
+        ...(documentGuid !== undefined ? { documentGuid } : {}),
+      });
     },
     []
   );

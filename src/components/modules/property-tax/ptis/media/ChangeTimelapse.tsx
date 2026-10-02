@@ -115,7 +115,7 @@ export function ChangeTimelapse({
   }
 
   return (
-    <div className="tl-wrap flex flex-col h-full bg-slate-900 border border-slate-800 overflow-hidden select-none">
+    <div className="tl-wrap flex flex-col h-full max-h-full flex-1 min-h-0 bg-slate-900 border border-slate-800 overflow-y-auto select-none">
       <TimelapseControls
         playing={playing}
         onPlayToggle={handlePlayToggle}
@@ -142,7 +142,7 @@ export function ChangeTimelapse({
       />
 
       {/* Map component */}
-      <div className="flex-1 relative min-h-[300px] flex flex-col">
+      <div className="flex-1 min-h-[200px] relative flex flex-col overflow-hidden">
         {!(loading && waybackReleases.length === 0) ? (
           <DynamicTimelapseMap
             lat={lat}

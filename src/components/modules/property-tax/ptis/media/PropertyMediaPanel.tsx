@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronRight, X, Image as ImageIcon } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useMediaDrawerState } from '@/hooks/ptis/photoplan/useMediaDrawerState';
 import { useSearchParams } from 'next/navigation';
 import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
@@ -940,23 +940,7 @@ function PropertyMediaPanel({
       {isPanelLoading ? (
         <PropertyMediaPanelSkeleton />
       ) : (
-        <div className="h-auto lg:h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 relative overflow-hidden">
-          {/* Panel Header with Title and Close Button */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/50 shrink-0 select-none">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-              <ImageIcon className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-              <span>{t('media.mediaGallery') || 'Photo Plan'}</span>
-            </div>
-            <button
-              type="button"
-              onClick={togglePanel}
-              className="p-1 rounded-md hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-              title="Close panel"
-              aria-label="Close photo plan panel"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="h-auto lg:h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 relative overflow-visible">
           <PropertyMediaPanelContent
             categories={categories}
             t={t}
@@ -992,12 +976,13 @@ function PropertyMediaPanel({
             isQuickDataEntry={isQuickDataEntry}
           />
 
-          <div className="absolute top-1/2 -translate-y-1/2 -left-5 z-50 sm:hidden lg:block">
+          <div className="absolute top-1/2 -translate-y-1/2 -left-5 z-50">
             <button
               type="button"
               onClick={togglePanel}
               className="w-10 h-24 flex items-center justify-center bg-transparent p-0 border-none outline-none focus:outline-none cursor-pointer hover:scale-110 active:scale-95 group transition-transform duration-200"
-              aria-label="Close panel"
+              aria-label={t('media.collapseMediaPanel') || 'Collapse panel'}
+              title={t('media.collapseMediaPanel') || 'Collapse panel'}
             >
               <ChevronRight
                 className="w-6 h-6 text-[#64748B] group-hover:text-[#2563EB] scale-y-[3.5] scale-x-[1.5] opacity-75 group-hover:opacity-100 animate-pulse group-hover:animate-none transition-all"

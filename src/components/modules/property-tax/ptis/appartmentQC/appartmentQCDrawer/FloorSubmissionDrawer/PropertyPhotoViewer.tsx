@@ -76,7 +76,6 @@ export function PropertyPhotoViewer({
     <div className={`relative h-auto min-h-[540px] lg:h-[calc(100vh-210px)] ${className || ''}`}>
       <div className="h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 relative">
         <ImageHoverPreview
-          key={hoverPreview?.src ?? 'empty'}
           src={hoverPreview?.src || ''}
           title={hoverPreview?.title || ''}
           visible={!!hoverPreview}

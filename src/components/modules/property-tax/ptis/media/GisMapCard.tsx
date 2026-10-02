@@ -9,7 +9,7 @@ interface GisMapCardProps {
   image?: AdditionalImage;
   hasCoords?: boolean;
   onClick: () => void;
-  onMouseEnter?: () => void;
+  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseLeave?: () => void;
 }
 

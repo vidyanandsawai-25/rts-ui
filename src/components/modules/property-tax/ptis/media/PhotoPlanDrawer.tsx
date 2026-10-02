@@ -96,7 +96,14 @@ export function PhotoPlanDrawer({
   );
 
   return createPortal(
-    <Drawer open={open} onClose={onClose} title={titleNode} width="xl" zIndex={zIndex}>
+    <Drawer
+      open={open}
+      onClose={onClose}
+      title={titleNode}
+      width="xl"
+      zIndex={zIndex}
+      bodyClassName="overflow-hidden flex flex-col flex-1 min-h-0 h-full"
+    >
       <PhotoPlanDrawerBody
         categories={categories}
         onCategoriesChange={onCategoriesChange}
