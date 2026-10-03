@@ -308,6 +308,7 @@ export const BuildingPermissionRecords: React.FC<BuildingPermissionRecordsProps>
       const targetPropId = propId ? String(propId) : '0';
 
       const q = new URLSearchParams();
+      if (propertyId) q.set('parentPropertyId', String(propertyId));
 
       // Wing Detail ID: Prefer record's wing, fallback to component prop
       const targetWingId = _record?.wingDetailId || wingDetailsId;

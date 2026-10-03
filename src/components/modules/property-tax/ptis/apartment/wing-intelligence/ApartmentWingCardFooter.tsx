@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from "react";
-import { ArrowUpRight, X } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatCompactCurrency, formatFullCurrency } from "@/lib/utils/format";
 import { ExemptionSummaryProps, OverallTaxSummaryProps, RevenueImpactSummaryProps, WingCardFooterProps } from "@/types/property-tax/apartment";
@@ -88,30 +88,48 @@ const RevenueImpactSummary: React.FC<RevenueImpactSummaryProps> = ({
   const diffValue = differenceRv ?? amount ?? 0;
   const unitsCount = affectedUnits ?? 0;
 
+  const isPos = isPositive ?? (typeof amount === 'number' ? amount >= 0 : !String(amount).startsWith('-'));
+  const cleanPct = typeof pct === 'number' ? Math.abs(pct) : typeof pct === 'string' ? Math.abs(parseFloat(pct) || 0) : 0;
+
   return (
     <div className="relative flex-1">
       <div
         onClick={(e) => { e.stopPropagation(); setIsOpen(true); }}
-        className="flex flex-col h-full border border-emerald-200 rounded-lg px-1.5 py-1 bg-[#f0fdf4] justify-between cursor-pointer hover:bg-[#dcfce7] transition-colors"
+        className={`flex flex-col h-full border rounded-lg px-1.5 py-1 justify-between cursor-pointer transition-colors ${
+          isPos
+            ? 'border-emerald-200 bg-[#f0fdf4] hover:bg-[#dcfce7]'
+            : 'border-rose-200 bg-[#fff1f2] hover:bg-[#ffe4e6]'
+        }`}
       >
-        <span className="text-[9px] font-bold text-teal-800 uppercase tracking-wider mb-0.5">{t('revenueImpact') || 'REVENUE IMPACT'}</span>
+        <span className={`text-[9px] font-bold uppercase tracking-wider mb-0.5 ${
+          isPos ? 'text-teal-800' : 'text-rose-800'
+        }`}>
+          {t('revenueImpact') || 'REVENUE IMPACT'}
+        </span>
         <div className="flex flex-col">
           <div className="flex items-center gap-0.5 mb-0.5">
-            <div className="text-sm font-black text-emerald-600 leading-none flex items-center gap-0.5 mt-[1px]">
-              {isPositive ? <ArrowUpRight size={14} strokeWidth={3} /> : null}
-              {!isPositive ? <ArrowUpRight size={14} strokeWidth={3} className="rotate-90" /> : null}
+            <div className={`text-sm font-black leading-none flex items-center gap-0.5 mt-[1px] ${
+              isPos ? 'text-emerald-600' : 'text-rose-600'
+            }`}>
+              {isPos ? (
+                <ArrowUpRight size={14} strokeWidth={3} />
+              ) : (
+                <ArrowDownRight size={14} strokeWidth={3} />
+              )}
               {formatCompactCurrency(typeof amount === 'number' ? Math.abs(amount) : amount)}
             </div>
           </div>
-          <div className="text-[9px] font-bold text-teal-700 leading-none">            
-            {isPositive ? (t('increase') || 'Increase') : (t('decrease') || 'Decrease')} {(pct)}% {t('vsOldTax') || 'vs old tax'}
+          <div className={`text-[9px] font-bold leading-none ${
+            isPos ? 'text-teal-700' : 'text-rose-700'
+          }`}>            
+            {isPos ? (t('increase') || 'Increase') : (t('decrease') || 'Decrease')} {cleanPct}% {t('vsOldTax') || 'vs old tax'}
           </div>
         </div>
       </div>
       <Popover isOpen={isOpen} onClose={() => setIsOpen(false)} title={`${t('revImpactDetails') || 'REV IMPACT DETAILS'} – ${wingName}`}>
         <RowItem label={t('previousRv') || 'PREVIOUS RV'} value={typeof prevValue === 'string' && prevValue ? (prevValue.startsWith('₹') ? prevValue : `₹${prevValue}`) : formatFullCurrency(prevValue)} />
         <RowItem label={t('revisedRv') || 'REVISED RV'} value={typeof revisedValue === 'string' && revisedValue ? (revisedValue.startsWith('₹') ? revisedValue : `₹${revisedValue}`) : formatFullCurrency(revisedValue)} valueClass="text-blue-800" />
-        <RowItem label={t('differenceRv') || 'DIFFERENCE RV'} value={typeof diffValue === 'string' && diffValue ? (diffValue.startsWith('₹') ? diffValue : `₹${diffValue}`) : formatFullCurrency(diffValue)} valueClass="text-emerald-600" />
+        <RowItem label={t('differenceRv') || 'DIFFERENCE RV'} value={typeof diffValue === 'string' && diffValue ? (diffValue.startsWith('₹') || diffValue.startsWith('-₹') ? diffValue : `₹${diffValue}`) : formatFullCurrency(diffValue)} valueClass={isPos ? "text-emerald-600" : "text-rose-600"} />
         <RowItem label={t('affectedUnits') || 'AFFECTED UNITS'} value={`${unitsCount} ${unitsCount === 1 ? (t('unit') || 'Unit') : (t('units') || 'Units')}`} isLast />
       </Popover>
     </div>

@@ -72,16 +72,16 @@ export function useFooterActionHandler(
       const locale = pathnameSegments[0] || 'en';
       const isApartment = pathname.includes('/property-tax/ptis/apartment') || pathname.includes('/apartment');
       const isIndividual = categoryId === 2 || (categoryId !== undefined && categoryId !== 1);
-      const isApartmentInner = !isIndividual && (isApartment || categoryId === 1) && Boolean(partitionNo && partitionNo !== '0');
 
       const societyIdParam = !isIndividual ? (searchParams.get('societyId') || undefined) : undefined;
-      const wingIdParam = isApartmentInner ? (searchParams.get('wingId') || undefined) : undefined;
-      const wingDetailIdParam = isApartmentInner ? (searchParams.get('wingDetailId') || searchParams.get('wingdetailid') || undefined) : undefined;
+      const wingIdParam = !isIndividual ? (searchParams.get('wingId') || undefined) : undefined;
+      const wingDetailIdParam = !isIndividual ? (searchParams.get('wingDetailId') || searchParams.get('wingdetailid') || undefined) : undefined;
+      const wingNameParam = !isIndividual ? (searchParams.get('wingName') || searchParams.get('wingname') || undefined) : undefined;
       const explicitSocDetailId = !isIndividual
         ? (searchParams.get('societyDetailId') || searchParams.get('societydetailid') || societyIdParam || (societyDetailId ? String(societyDetailId) : undefined))
         : undefined;
-      const explicitWingDetailId = isApartmentInner
-        ? (wingDetailIdParam || wingIdParam || (wingDetailId ? String(wingDetailId) : undefined))
+      const explicitWingDetailId = !isIndividual
+        ? (wingDetailIdParam || (wingDetailId ? String(wingDetailId) : undefined))
         : undefined;
 
       const rateableExpand = searchParams.getAll('rateableExpand');
@@ -109,11 +109,11 @@ export function useFooterActionHandler(
         dualExpand: dualExpandParam,
         categoryId,
         categoryName,
-        // societyDetailId: explicitSocDetailId ? Number(explicitSocDetailId) : societyDetailId,
         societyDetailId: explicitSocDetailId ? Number(explicitSocDetailId) : undefined,
         societyId: societyIdParam,
         wingDetailId: explicitWingDetailId,
         wingId: wingIdParam,
+        wingName: wingNameParam,
         isApartment,
       });
       if (result.success) {

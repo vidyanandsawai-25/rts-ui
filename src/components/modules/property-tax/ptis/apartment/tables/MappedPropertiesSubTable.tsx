@@ -61,6 +61,9 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
 
     const params = new URLSearchParams();
 
+    const parentPropId = searchParams.get('parentPropertyId') || searchParams.get('propertyId');
+    if (parentPropId) params.set('parentPropertyId', String(parentPropId));
+
     const wardNo = item.wardNo || searchParams.get('wardNo');
     if (wardNo) params.set('wardNo', String(wardNo));
 
@@ -95,6 +98,11 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
       params.set('wingdetailid', String(resolvedWingDetailId));
     }
 
+    const resolvedWingId = searchParams.get('wingId');
+    if (resolvedWingId) {
+      params.set('wingId', String(resolvedWingId));
+    }
+
     const resolvedWingName =
       (item as unknown as { wingName?: string })?.wingName ??
       (rawItem.wingName as string | undefined) ??
@@ -117,6 +125,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
     if (resolvedSocietyDetailId) {
       params.set('societydetailid', String(resolvedSocietyDetailId));
       params.set('societyDetailId', String(resolvedSocietyDetailId));
+      params.set('societyId', String(resolvedSocietyDetailId));
     }
 
     params.set('propertyId', String(propId));

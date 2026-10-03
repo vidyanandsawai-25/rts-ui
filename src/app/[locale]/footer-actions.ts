@@ -160,22 +160,20 @@ export async function handleFooterAction(
 
         const isIndividualProp = categoryId === 2 || (categoryId !== undefined && categoryId !== 1);
         const isApartmentProp = !isIndividualProp && (isApartment || categoryId === 1);
-        const isApartmentInnerProperty = isApartmentProp && Boolean(partitionNo && partitionNo !== '0' && partitionNo.trim() !== '');
 
         if (isApartmentProp) {
+          params.set('parentPropertyId', String(propertyId));
           const activeSocId = societyDetailId || societyId;
           if (activeSocId) {
             params.set('societyDetailId', String(activeSocId));
             params.set('societyId', String(activeSocId));
           }
-          if (isApartmentInnerProperty) {
-            const activeWingId = wingDetailId || wingId;
-            if (activeWingId) {
-              params.set('wingDetailId', String(activeWingId));
-              params.set('wingId', String(activeWingId));
-            }
-            if (wingName) params.set('wingName', String(wingName));
+          const activeWingId = wingDetailId || wingId;
+          if (activeWingId) {
+            params.set('wingDetailId', String(activeWingId));
+            params.set('wingId', String(activeWingId));
           }
+          if (wingName) params.set('wingName', String(wingName));
         }
 
         const handleExpand = (key: string, val: string | string[] | undefined) => {
@@ -202,6 +200,7 @@ export async function handleFooterAction(
 
         params.set('propertyId', String(propertyId));
         params.set('returnTab', isApartment ? 'apartment' : config.mainTabId);
+        params.set('from', isApartment ? 'apartment' : 'ptis');
         params.set('hideWing', 'true');
         params.set('hideSociety', 'true');
         params.set('fromFooterEdit', 'true');
