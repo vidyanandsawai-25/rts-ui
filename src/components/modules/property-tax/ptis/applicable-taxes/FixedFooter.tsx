@@ -22,15 +22,9 @@ export const FixedFooter = ({ onConfirm, totalAmount = 0 }: FixedFooterProps) =>
       
       <div className="flex items-center gap-3">
         <Button
-          onClick={() => window.print()}
-          className="font-bold border-slate-300 text-slate-700 hover:bg-blue-600"
-        >
-          {t('print')}
-        </Button>
-        <Button
           variant="primary"
           onClick={onConfirm}
-           className="font-bold border-slate-300 text-slate-700 hover:bg-blue-600"
+          className="font-bold border-slate-300 text-slate-700 hover:bg-blue-600"
         >
           {t('done')}
         </Button>

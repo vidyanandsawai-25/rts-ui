@@ -63,11 +63,8 @@ const RuleRateCell = ({ val, row, t }: { val: unknown; row: TaxCalculationItem; 
     return <span>{mainDisplay}</span>;
   }
 
-  const avgVal = val !== null && val !== undefined ? `${formatNumberTwoDecimals(val)}%` : mainDisplay;
-
   return (
     <div className="relative inline-flex items-center justify-center gap-1.5" ref={popoverRef}>
-      <span className="font-bold text-slate-800 text-xs">{mainDisplay}</span>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -86,14 +83,9 @@ const RuleRateCell = ({ val, row, t }: { val: unknown; row: TaxCalculationItem; 
         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white border border-slate-200/80 rounded-3xl shadow-[0_12px_30px_-5px_rgba(0,0,0,0.12)] p-4 z-50 text-left">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
-            <span className="font-extrabold text-xs text-slate-800 truncate max-w-[170px]" title={row.taxName}>
+            <span className="font-extrabold text-xs text-slate-800 truncate" title={row.taxName}>
               {row.taxName} {t('breakdown') || 'Breakdown'}
             </span>
-            {!hasSlabBreakdown && (
-              <span className="text-[11px] font-black text-blue-600 bg-blue-50/90 px-2.5 py-1 rounded-full border border-blue-100 shrink-0">
-                {t('avg') || 'Avg'}: {avgVal}
-              </span>
-            )}
           </div>
 
           {/* List of breakdown cards */}

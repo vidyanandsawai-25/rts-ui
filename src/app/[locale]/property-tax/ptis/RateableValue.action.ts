@@ -16,7 +16,8 @@ import { validatePropertyId } from "@/lib/utils/ptis-normalization";
  */
 export async function getRateableValue(
     propertyId: string | number,
-    financeYear?: number
+    financeYear?: number,
+    forceRecalculate: boolean = true
 ): Promise<ActionResult<RateableValueResponse>> {
     try {
         const propertyIdNum = validatePropertyId(propertyId);
@@ -24,7 +25,7 @@ export async function getRateableValue(
             return { success: false, error: 'Invalid property ID' };
         }
 
-        const result = await getRateableValueApi(propertyIdNum, financeYear);
+        const result = await getRateableValueApi(propertyIdNum, financeYear, forceRecalculate);
 
         if (!result.success) {
             return { success: false, error: result.error, message: result.message, statusCode: result.statusCode };

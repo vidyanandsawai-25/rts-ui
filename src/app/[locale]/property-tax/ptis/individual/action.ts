@@ -145,9 +145,10 @@ export async function getIndividualTaxDetailsAction(
  */
 export async function fetchIndividualRateableValueAction(
   propertyId: number | string,
-  financeYear?: number
+  financeYear?: number,
+  forceRecalculate: boolean = true
 ): Promise<ActionResult<RateableValueResponse>> {
-  return getRateableValueService(propertyId, financeYear);
+  return getRateableValueService(propertyId, financeYear, forceRecalculate);
 }
 
 /**
