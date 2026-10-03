@@ -48,3 +48,35 @@ export async function getRtsApplicationByNo(
 export async function getRtsApplicationById(id: number | string): Promise<CreateRtsApplicationResponseItem> {
   return getRtsApplicationByNo(String(id));
 }
+
+/** Notifies Aaple Sarkar that citizen has landed on form and documents are pending */
+export async function notifyAapleSarkarDocumentPending(tdToken: string): Promise<boolean> {
+  if (!tdToken?.trim()) return false;
+  try {
+    const response = await apiClient.post<{ success: boolean }>(
+      '/RTSApplication/aaple-sarkar-document-pending',
+      { tdToken: tdToken.trim() },
+      { cache: 'no-store' }
+    );
+    return Boolean(response.data?.success);
+  } catch {
+    return false;
+  }
+}
+
+/** Notifies Aaple Sarkar that citizen has moved to payment stage */
+export async function notifyAapleSarkarPaymentPending(tdToken: string, applicationNo?: string): Promise<boolean> {
+  if (!tdToken?.trim()) return false;
+  try {
+    const response = await apiClient.post<{ success: boolean }>(
+      '/RTSApplication/aaple-sarkar-payment-pending',
+      { tdToken: tdToken.trim(), applicationNo: applicationNo?.trim() },
+      { cache: 'no-store' }
+    );
+    return Boolean(response.data?.success);
+  } catch {
+    return false;
+  }
+}
+
+

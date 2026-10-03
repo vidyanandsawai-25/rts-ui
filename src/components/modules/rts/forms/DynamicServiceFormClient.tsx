@@ -49,7 +49,6 @@ import {
   extractRtsFieldDefinitionItems,
 } from "@/lib/utils/rts/rts-field-definition-mapper";
 import { resolveApplicantContact } from "@/lib/utils/rts/rts-application-payload";
-import type { CreateRtsApplicationResponse } from "@/types/rts/rts-application.types";
 import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
 import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
 import type { PaymentReceiptResult } from "@/lib/api/rts/rtspayment.service";
@@ -86,6 +85,7 @@ interface ServiceFormProps {
   officerRemark?: string | null;
   prefilledValues?: Record<string, any>;
   existingDocuments?: any[];
+  tokenTD?: string;
 }
 
 const iconMap: Record<string, LucideIcon> = {
@@ -155,6 +155,7 @@ export default function DynamicServiceFormClient({
   officerRemark,
   prefilledValues,
   existingDocuments,
+  tokenTD,
 }: ServiceFormProps) {
   const router = useRouter();
   const { language } = useLanguage();
@@ -1123,6 +1124,7 @@ export default function DynamicServiceFormClient({
         createdBy: 0,
         applicationStatus: "Submitted",
         fileFields,
+        tokenTD: tokenTD || undefined,
       })
     );
 

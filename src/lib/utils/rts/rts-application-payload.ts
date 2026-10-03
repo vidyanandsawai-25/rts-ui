@@ -12,6 +12,7 @@ export interface BuildRtsApplicationPayloadParams {
   applicationStatus?: string;
   documentGuidByFieldDefinitionId?: Record<string, string>;
   textValueByFieldDefinitionId?: Record<string, string>;
+  tdToken?: string | null;
 }
 
 export type ApplicantContactResolution = {
@@ -169,6 +170,7 @@ export function buildRtsApplicationPayload({
   applicationStatus = "pending",
   documentGuidByFieldDefinitionId = {},
   textValueByFieldDefinitionId = {},
+  tdToken,
 }: BuildRtsApplicationPayloadParams): CreateRtsApplicationPayload {
   const applicantContact = resolveApplicantContact(formData, steps);
   if (applicantContact.missing.length) {
@@ -252,5 +254,6 @@ export function buildRtsApplicationPayload({
     applicationStatus,
     remark: "",
     fieldValues,
+    tdToken,
   };
 }

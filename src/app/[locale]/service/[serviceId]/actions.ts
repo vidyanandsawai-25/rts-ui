@@ -28,6 +28,7 @@ interface SubmitRtsApplicationActionInput {
   createdBy?: number;
   applicationStatus?: string;
   fileFields?: SubmitRtsFileFieldMeta[];
+  tokenTD?: string | null;
 }
 
 function readCitizenOwnerIdFromCookieValue(profileCookie?: string): number | undefined {
@@ -99,6 +100,11 @@ export async function submitRtsApplicationAction(
     }
   }
 
+  const tdToken =
+    input.tokenTD?.trim() ||
+    cookieStore.get("rts_aaplesarkar_td")?.value?.trim() ||
+    undefined;
+
   const payload: CreateRtsApplicationPayload = buildRtsApplicationPayload({
     formData: input.formValues,
     steps: input.steps,
@@ -111,7 +117,18 @@ export async function submitRtsApplicationAction(
     applicationStatus: input.applicationStatus,
     documentGuidByFieldDefinitionId,
     textValueByFieldDefinitionId,
+    tdToken,
   });
 
-  return createRtsApplication(payload);
+  const result = await createRtsApplication(payload);
+
+  if (tdToken) {
+    try {
+      cookieStore.delete("rts_aaplesarkar_td");
+    } catch {
+      // ignore cookie delete failure
+    }
+  }
+
+  return result;
 }

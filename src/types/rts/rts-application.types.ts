@@ -116,6 +116,7 @@ export interface CreateRtsApplicationPayload {
   applicationStatus?: string | null;
   remark?: string | null;
   fieldValues: RtsApplicationFieldValuePayload[];
+  tdToken?: string | null;
 }
 
 export interface CreateRtsApplicationFieldValueResponse {
