@@ -303,5 +303,51 @@
       "selectUnit": "Select unit...",
       "specificRoom": "Specific Room / Chamber / Desk No."
     }
+  },
+  "compliance": {
+    "title": "Asset Documents",
+    "loadingRequirements": "Loading document requirements...",
+    "noRequirements": "No legal document requirements found.",
+    "apiError": "Failed to load requirements from server.",
+    "retry": "Retry",
+    "uploadedFile": "Uploaded File",
+    "uploading": "Uploading...",
+    "pendingUpload": "Pending Upload",
+    "view": "View",
+    "download": "Download",
+    "replace": "Replace",
+    "delete": "Delete",
+    "upload": "Upload",
+    "pageInfo": "Page {page} of {total}",
+    "table": {
+      "srNo": "Sr No.",
+      "docName": "Document Name",
+      "docType": "Document Type",
+      "file": "File",
+      "actions": "Actions"
+    },
+    "toasts": {
+      "assetNotSaved": "Asset must be saved first before uploading documents.",
+      "uploadSuccess": "Document uploaded successfully.",
+      "uploadFailed": "Failed to upload document.",
+      "deleteSuccess": "Document deleted successfully.",
+      "deleteFailed": "Failed to delete document.",
+      "downloadFailed": "Failed to download document.",
+      "previewFailed": "Failed to open local file preview."
+    }
+  },
+  "encumbrance": {
+    "type": "Encumbrance Type",
+    "details": "Details",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "status": "Status",
+    "action": "Action",
+    "noRecords": "No encumbrance records found.",
+    "addEncumbrance": "Add Encumbrance",
+    "active": "Active",
+    "pending": "Pending",
+    "edit": "Edit",
+    "delete": "Delete"
   }
 }

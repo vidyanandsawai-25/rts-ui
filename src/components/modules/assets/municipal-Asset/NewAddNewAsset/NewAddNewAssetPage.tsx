@@ -14,6 +14,7 @@ import { NABasicInfoStepContent } from "./components/NABasicInfoStepContent";
 import { useNAFormOrchestrator } from "@/hooks/asset/municipal-Asset/new-add-new-asset/useNAFormOrchestrator";
 import { useNAInitialDataLoaders } from "@/hooks/asset/municipal-Asset/new-add-new-asset/useNAInitialDataLoaders";
 import { useNAAssetForm } from "./NAAssetFormContext";
+import { LocationOwnershipContent } from "./ownership";
 import type {
   NewAddNewAssetPageProps,
   FloorCvRollup,
@@ -223,19 +224,24 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
 
         {activeStepKey === "basic-info" ? (
           <NABasicInfoStepContent {...props} orchestrator={orchestrator} currentStep={currentStep} cvRollup={cvRollup} />
+        ) : activeStepKey === "location" ? (
+          <div className="flex-1 overflow-y-auto bg-[#F8FAFC] p-6">
+            <LocationOwnershipContent
+              onPrevious={handlePrevious}
+              onSaveAsDraft={handleSaveAsDraft}
+              onSaveAndNext={handleSaveAndNext}
+            />
+          </div>
         ) : (
           <div className="flex-1 overflow-y-auto bg-[#F8FAFC] p-6 flex items-center justify-center">
             <div className="bg-white border border-slate-200 rounded-xl p-8 max-w-md text-center shadow-sm">
-              {activeStepKey === "location" && <MapPin className="w-12 h-12 text-slate-400 mx-auto mb-3" />}
               {activeStepKey === "inventory" && <Briefcase className="w-12 h-12 text-slate-400 mx-auto mb-3" />}
               {activeStepKey === "review" && <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />}
               <h3 className="text-lg font-semibold text-slate-800 mb-1">
-                {activeStepKey === "location" ? "Location & Ownership" : activeStepKey === "inventory" ? "Assets & Facilities" : "Review & Submit"}
+                {activeStepKey === "inventory" ? "Assets & Facilities" : "Review & Submit"}
               </h3>
               <p className="text-sm text-slate-500">
-                {activeStepKey === "location"
-                  ? "Location mapping and land ownership details will be enabled in the upcoming release."
-                  : activeStepKey === "inventory"
+                {activeStepKey === "inventory"
                   ? "Inventory and facility management details will be enabled in the upcoming release."
                   : "Final verification and submission workflow will be enabled in the upcoming release."}
               </p>
