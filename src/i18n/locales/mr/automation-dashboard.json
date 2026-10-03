@@ -53,7 +53,7 @@
     "noData": "डेटा नाही"
   },
   "geoSequencing": {
-    "searchPlaceholder": "मालमत्ता क्रमांक, मालकाचे नाव शोधा",
+    "searchPlaceholder": "प्रभाग क्र., मालमत्ता क्रमांक, मालकाचे नाव शोधा",
     "total": "एकूण",
     "wardWiseSummary": "प्रभाग-निहाय सारांश",
     "wardWiseTable": "प्रभाग-निहाय तक्ता",
@@ -217,7 +217,7 @@
   },
   "internalSurvey": {
     "total": "एकूण",
-    "searchPlaceholder": "मालमत्ता क्रमांक, मालकाचे नाव शोधा",
+    "searchPlaceholder": "प्रभाग क्र., मालमत्ता क्रमांक, मालकाचे नाव शोधा",
     "emptyMessage": "कोणताही अंतर्गत सर्वेक्षण डेटा उपलब्ध नाही",
     "buttons": {
       "search": "शोधा",
@@ -264,7 +264,7 @@
     }
   },
   "dataEntryQualityCheck": {
-    "searchPlaceholder": "मालमत्ता क्रमांक, मालकाचे नाव शोधा",
+    "searchPlaceholder": "प्रभाग क्र., मालमत्ता क्रमांक, मालकाचे नाव शोधा",
     "total": "एकूण",
     "wardWiseSummary": "प्रभाग निहाय सारांश",
     "stage": "टप्पा:",
@@ -480,7 +480,7 @@
     "submittedBy": "द्वारे सादर:"
   },
   "assessment": {
-    "searchPlaceholder": "मालमत्ता क्र., मालकाचे नाव शोधा",
+    "searchPlaceholder": "प्रभाग क्र., मालमत्ता क्रमांक, मालकाचे नाव शोधा",
     "summary": "सारांश",
     "sendToApprove": "मंजुरीसाठी पाठवा",
     "tabs": {

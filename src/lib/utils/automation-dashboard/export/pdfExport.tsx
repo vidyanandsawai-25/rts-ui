@@ -1,37 +1,44 @@
 import { pdf, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { toast } from 'sonner';
 import { ExportConfig, ExportHeaderCell } from '@/types/automation-dashboard/export.type';
 import { formatCellValue } from './helpers';
 
-// Register local Devanagari font (supports English, Hindi, and Marathi)
+const getFontPath = (fileName: string): string => `/fonts/${fileName}`;
+
+// Register local Noto Sans Devanagari font for supporting Hindi/Marathi (Devanagari) characters in PDF
 Font.register({
     family: 'NotoSansDevanagari',
     fonts: [
-        { src: '/fonts/NotoSansDevanagari-Regular.ttf' },
-        { src: '/fonts/NotoSansDevanagari-Bold.ttf', fontWeight: 'bold' },
-        { src: '/fonts/NotoSansDevanagari-Regular.ttf', fontStyle: 'italic' },
-        { src: '/fonts/NotoSansDevanagari-Bold.ttf', fontWeight: 'bold', fontStyle: 'italic' }
-    ]
+        {
+            src: getFontPath('NotoSansDevanagari-Regular.ttf'),
+            fontWeight: 'normal',
+        },
+        {
+            src: getFontPath('NotoSansDevanagari-Bold.ttf'),
+            fontWeight: 'bold',
+        },
+    ],
 });
 
 // Define styles for the PDF
 const styles = StyleSheet.create({
     page: {
-        padding: 30,
-        fontFamily: 'NotoSansDevanagari', // Use NotoSansDevanagari to support English, Hindi, and Marathi
-        fontSize: 8,
+        padding: 20,
+        fontFamily: 'NotoSansDevanagari',
+        fontSize: 7,
     },
     header: {
-        marginBottom: 20,
+        marginBottom: 15,
         textAlign: 'center',
     },
     title: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
-        marginBottom: 5,
-        fontFamily: 'NotoSansDevanagari', // Use Devanagari for title in case of Marathi/Hindi
+        marginBottom: 4,
+        fontFamily: 'NotoSansDevanagari',
     },
     subtitle: {
-        fontSize: 10,
+        fontSize: 9,
         color: '#4B5563',
         fontFamily: 'NotoSansDevanagari',
     },
@@ -39,35 +46,42 @@ const styles = StyleSheet.create({
         width: '100%',
         borderStyle: 'solid',
         borderWidth: 1,
-        borderColor: '#D1D5DB',
+        borderColor: '#94A3B8',
         borderRightWidth: 0,
         borderBottomWidth: 0,
     },
     tableRow: {
         flexDirection: 'row',
+        minHeight: 18,
+    },
+    totalRow: {
+        backgroundColor: '#F3E8FF',
+        fontWeight: 'bold',
     },
     tableCellHeader: {
         borderStyle: 'solid',
         borderWidth: 1,
-        borderColor: '#D1D5DB',
+        borderColor: '#94A3B8',
         borderLeftWidth: 0,
         borderTopWidth: 0,
-        padding: 4,
+        padding: 3,
         textAlign: 'center',
         justifyContent: 'center',
         fontWeight: 'bold',
         fontFamily: 'NotoSansDevanagari',
+        fontSize: 7,
     },
     tableCell: {
         borderStyle: 'solid',
         borderWidth: 1,
-        borderColor: '#D1D5DB',
+        borderColor: '#CBD5E1',
         borderLeftWidth: 0,
         borderTopWidth: 0,
-        padding: 4,
+        padding: 3,
         textAlign: 'center',
         justifyContent: 'center',
-        fontFamily: 'NotoSansDevanagari', // Use Devanagari font in cells to prevent garbled text
+        fontFamily: 'NotoSansDevanagari',
+        fontSize: 7,
     },
 });
 
@@ -169,12 +183,13 @@ const TableDocument = <T,>({ config }: { config: ExportConfig<T> }) => {
                                             styles.tableCellHeader,
                                             {
                                                 width: `${cell.calculatedWidthPct}%`,
-                                                backgroundColor: cell.backgroundColor || '#F3F4F6'
+                                                backgroundColor: cell.backgroundColor || '#F8FAFC',
+                                                ...(cell.isPlaceholder ? { borderTopWidth: 0, borderBottomWidth: 0 } : {})
                                             }
                                         ]}
                                     >
-                                        <Text style={{ color: cell.textColor || '#111827' }}>
-                                            {String(cell.title || '')}
+                                        <Text style={{ color: cell.textColor || '#0F172A' }}>
+                                            {cell.isPlaceholder ? '' : String(cell.title || '')}
                                         </Text>
                                     </View>
                                 ))}
@@ -200,20 +215,33 @@ const TableDocument = <T,>({ config }: { config: ExportConfig<T> }) => {
                     )}
 
                     {/* Render Data Rows */}
-                    {data.map((item, rowIndex) => (
-                        <View key={rowIndex} style={[styles.tableRow, rowIndex % 2 !== 0 ? { backgroundColor: '#F9FAFB' } : {}]}>
-                            {columns.map((col, colIndex) => {
-                                const widthPct = ((col.width || 100) / totalWidth) * 100;
-                                const val = formatCellValue(item, col, rowIndex);
-                                const textVal = val === null || val === undefined ? '' : String(val);
-                                return (
-                                    <View key={colIndex} style={[styles.tableCell, { width: `${widthPct}%` }]}>
-                                        <Text>{textVal}</Text>
-                                    </View>
-                                );
-                            })}
-                        </View>
-                    ))}
+                    {data.map((item, rowIndex) => {
+                        const isTotalRow = (item as Record<string, unknown>)?.isTotal === true;
+                        return (
+                            <View
+                                key={rowIndex}
+                                style={[
+                                    styles.tableRow,
+                                    isTotalRow
+                                        ? styles.totalRow
+                                        : rowIndex % 2 !== 0
+                                            ? { backgroundColor: '#F8FAFC' }
+                                            : {}
+                                ]}
+                            >
+                                {columns.map((col, colIndex) => {
+                                    const widthPct = ((col.width || 100) / totalWidth) * 100;
+                                    const val = formatCellValue(item, col, rowIndex);
+                                    const textVal = val === null || val === undefined ? '' : String(val);
+                                    return (
+                                        <View key={colIndex} style={[styles.tableCell, { width: `${widthPct}%` }]}>
+                                            <Text style={isTotalRow ? { fontWeight: 'bold' } : {}}>{textVal}</Text>
+                                        </View>
+                                    );
+                                })}
+                            </View>
+                        );
+                    })}
                 </View>
             </Page>
         </Document>
@@ -234,8 +262,10 @@ export async function exportToPdf<T>(config: ExportConfig<T>): Promise<void> {
         a.click();
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (error) {
+    } catch (error: unknown) {
         console.error("Error generating PDF with react-pdf:", error);
-        alert("There was an error generating the PDF.");
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        toast.error(`There was an error generating the PDF: ${errorMessage}`);
     }
 }
+

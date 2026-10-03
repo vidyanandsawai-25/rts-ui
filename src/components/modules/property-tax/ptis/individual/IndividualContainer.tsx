@@ -24,6 +24,7 @@ import type { PTISSearchSelectOption as SearchSelectOption } from '@/components/
 import type { PropertyComparisonResponse } from '@/types/propertyComparison.types';
 import { useIndividualPropertySearch } from '@/hooks/property-tax/individual';
 import { IndividualTaxDetailsSection } from './individual-tax-details';
+import { IndividualFloorSummaryCards } from './individual-floor/IndividualFloorSummaryCards';
 
 import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 
@@ -32,10 +33,10 @@ export interface IndividualContainerProps {
   initialWardId?: number | null;
   initialPropertyMasterData?: IndividualPropertyMasterData;
   initialQcTopSectionBelowFlex?:
-    | ApartmentQCTopSectionBelowFlexItemsDto
-    | ApartmentQCTopSectionBelowFlexResponseDto
-    | Record<string, unknown>
-    | null;
+  | ApartmentQCTopSectionBelowFlexItemsDto
+  | ApartmentQCTopSectionBelowFlexResponseDto
+  | Record<string, unknown>
+  | null;
   initialRateableData?: RateableValueResponse | null;
   initialCapitalData?: CapitalValueResponse | null;
   initialDualMethodData?: DualMethodResponse | null;
@@ -149,15 +150,15 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
   const resolvedEffectivePropertyId = draft.propertyId
     ? Number(draft.propertyId)
     : Number(
-        propertyId ||
-        (isDraftMatchingInitial ? (initialPropertyMasterData?.propertyId || initialData?.tabHeaderInfo?.propertyId || fallbackPropId) : null)
-      ) || null;
+      propertyId ||
+      (isDraftMatchingInitial ? (initialPropertyMasterData?.propertyId || initialData?.tabHeaderInfo?.propertyId || fallbackPropId) : null)
+    ) || null;
 
   const resolvedWardId = draft.wardId
     ? String(draft.wardId)
     : initialWardId
-    ? String(initialWardId)
-    : String(initialData?.wardOptions?.find((w: SearchSelectOption) => w.label === draft.wardNo)?.value || '') || null;
+      ? String(initialWardId)
+      : String(initialData?.wardOptions?.find((w: SearchSelectOption) => w.label === draft.wardNo)?.value || '') || null;
 
   const resolvedSocietyDetailId: string | number | null =
     propSocietyDetailId ??
@@ -292,8 +293,19 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
           hasAppliedRules={hasRules || (currentAppliedRules && currentAppliedRules.length > 0)}
         />
       </div>
+      {/* 5. SUMMARY CARDS SECTION */}
+      <div className="px-3 pt-2">
+        <IndividualFloorSummaryCards
+          rateableData={rateableDataState}
+          capitalData={capitalDataState}
+          dualMethodData={dualMethodDataState}
+          comparisonData={initialComparisonData}
+          oldDetailsData={initialData?.oldDetails ?? undefined}
+          taxMode={currentTaxMode}
+        />
+      </div>
 
-      {/* 5. TAX DETAILS TABLE (FROM APARTMENT TO INDIVIDUAL) */}
+      {/* 6. TAX DETAILS TABLE (FROM APARTMENT TO INDIVIDUAL) */}
       <div className="px-3 pt-2">
         <IndividualTaxDetailsSection
           propertyId={resolvedEffectivePropertyId}

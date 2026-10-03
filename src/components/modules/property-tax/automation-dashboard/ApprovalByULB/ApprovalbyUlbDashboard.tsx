@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { Button } from '@/components/common/ActionButton';
-import { ExportDropdown } from './ExportDropdown';
+import { ExportDropdown } from '../CommonFilterDashbaord/ExportDropdown';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 import { getUniqueRoles, getApprovalColumns, getApprovalHeaderRows } from './ApprovalbyUlbColumns';

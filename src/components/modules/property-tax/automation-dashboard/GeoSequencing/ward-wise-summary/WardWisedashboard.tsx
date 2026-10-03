@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft, MapPin } from 'lucide-react';
 import Link from 'next/link';
-import { ExportDropdown } from '../ExportDropdown';
+import { ExportDropdown } from '../../CommonFilterDashbaord/ExportDropdown';
 import { WardWiseSummaryCards } from './WardWiseSummaryCards';
 import {
     getGeoSequencingSharedColumns,
@@ -57,17 +57,17 @@ export function GeoSequencingWardWiseDashboard({ zoneId, summaryData, propertyDe
     const totalCount = summaryData?.totalCount ?? 0;
 
     const handlePageChange = (newPageNumber: number) => {
-        const currentParams = new URLSearchParams(window.location.search);
+        const currentParams = new URLSearchParams(searchParams.toString());
         currentParams.set('pageNumber', newPageNumber.toString());
         currentParams.set('pageSize', pageSize.toString());
-        router.push(`${window.location.pathname}?${currentParams.toString()}`);
+        router.push(`?${currentParams.toString()}`);
     };
 
     const handlePageSizeChange = (newSize: number) => {
-        const currentParams = new URLSearchParams(window.location.search);
+        const currentParams = new URLSearchParams(searchParams.toString());
         currentParams.set('pageNumber', '1');
         currentParams.set('pageSize', newSize.toString());
-        router.push(`${window.location.pathname}?${currentParams.toString()}`);
+        router.push(`?${currentParams.toString()}`);
     };
 
     const zoneNo = searchParams.get('zoneNo');

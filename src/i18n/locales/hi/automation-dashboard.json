@@ -53,7 +53,7 @@
     "noData": "कोई डेटा नहीं"
   },
   "geoSequencing": {
-    "searchPlaceholder": "संपत्ति संख्या, नोटिस संख्या, स्वामी का नाम खोजें",
+    "searchPlaceholder": "वार्ड सं., संपत्ति संख्या, स्वामी का नाम खोजें",
     "total": "कुल",
     "wardWiseSummary": "वार्ड-वार सारांश",
     "wardWiseTable": "वार्ड-वार तालिका",
@@ -217,7 +217,7 @@
   },
   "internalSurvey": {
     "total": "कुल",
-    "searchPlaceholder": "संपत्ति संख्या, नोटिस संख्या, स्वामी का नाम खोजें",
+    "searchPlaceholder": "वार्ड सं., संपत्ति संख्या, स्वामी का नाम खोजें",
     "emptyMessage": "कोई आंतरिक सर्वेक्षण डेटा उपलब्ध नहीं है",
     "buttons": {
       "search": "खोजें",
@@ -264,7 +264,7 @@
     }
   },
   "dataEntryQualityCheck": {
-    "searchPlaceholder": "संपत्ति संख्या, नोटिस संख्या, स्वामी का नाम खोजें",
+    "searchPlaceholder": "वार्ड सं., संपत्ति संख्या, स्वामी का नाम खोजें",
     "total": "कुल",
     "wardWiseSummary": "वार्ड-वार सारांश",
     "stage": "चरण:",
@@ -382,7 +382,7 @@
     "submittedBy": "द्वारा प्रस्तुत:"
   },
   "assessment": {
-    "searchPlaceholder": "प्रॉपर्टी नंबर, नोटिस नंबर, मालिक का नाम खोजें",
+    "searchPlaceholder": "वार्ड सं., संपत्ति संख्या, स्वामी का नाम खोजें",
     "summary": "सारांश",
     "sendToApprove": "मंजूरी के लिए भेजें",
     "tabs": {

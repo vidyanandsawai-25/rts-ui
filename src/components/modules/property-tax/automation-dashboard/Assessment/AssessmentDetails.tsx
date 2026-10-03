@@ -10,7 +10,7 @@ import { AutomationTable } from '@/components/common/AutomationTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { SearchButton } from '@/components/common/ActionButtons';
 import { Button } from '@/components/common/ActionButton';
-import { ExportDropdown } from './ExportDropdown';
+import { ExportDropdown } from '../CommonFilterDashbaord/ExportDropdown';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 import { Send, ChevronDown } from 'lucide-react';

@@ -67,7 +67,6 @@ function validatePropertyIdInput(
  * ```ts
  * const result = await getRateableTaxDetails(12345);
  * if (result.success) {
- *   console.log(result.data.policies);
  * }
  * ```
  */
@@ -104,7 +103,6 @@ export async function getRateableTaxDetails(
  * ```ts
  * const result = await getCapitalTaxDetails(12345);
  * if (result.success) {
- *   console.log(result.data.policies);
  * }
  * ```
  */

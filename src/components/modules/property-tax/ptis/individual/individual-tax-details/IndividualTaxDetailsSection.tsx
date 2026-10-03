@@ -12,7 +12,6 @@ import type { OldDetailsData } from '@/types/ptis.types';
 import type { PropertyComparisonResponse } from '@/types/propertyComparison.types';
 import { convertApartmentTaxDetailsToTaxDetailsData } from './individual-tax-details.utils';
 import TaxDetails from './TaxDetails/TaxDetails';
-import { IndividualFloorSummaryCards } from '../individual-floor/IndividualFloorSummaryCards';
 
 export interface IndividualTaxDetailsSectionProps {
   taxDetails?: ApartmentTaxDetailsItem | null;
@@ -34,11 +33,6 @@ export function IndividualTaxDetailsSection({
   taxDetails,
   rateableTaxDetails,
   capitalTaxDetails,
-  rateableData,
-  capitalData,
-  dualMethodData,
-  comparisonData,
-  oldDetailsData,
   taxMode = 'rateable',
   isLoading = false,
 }: IndividualTaxDetailsSectionProps) {
@@ -116,22 +110,11 @@ export function IndividualTaxDetailsSection({
               )}
             </button>
           </div>
-          <span className="text-[11px] font-bold px-2.5 py-1 bg-blue-50 text-[#0047cc] border border-blue-200 rounded-md shrink-0">
-            {modeBadgeText}
-          </span>
         </div>
 
-        {/* 5 Summary Cards Inline Right */}
-        <div className="flex-1 w-full min-w-0">
-          <IndividualFloorSummaryCards
-            rateableData={rateableData}
-            capitalData={capitalData}
-            dualMethodData={dualMethodData}
-            comparisonData={comparisonData}
-            oldDetailsData={oldDetailsData}
-            taxMode={taxMode}
-          />
-        </div>
+        <span className="text-[11px] font-bold px-2.5 py-1 bg-blue-50 text-[#0047cc] border border-blue-200 rounded-md shrink-0">
+          {modeBadgeText}
+        </span>
       </div>
 
       {/* Tax Table using TaxDetails Folder Component */}
