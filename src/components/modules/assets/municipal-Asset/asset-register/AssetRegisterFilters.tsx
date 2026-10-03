@@ -1,21 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Filter, Building, MapPin, Users, ChevronDown } from 'lucide-react';
-import {
-  SearchInput,
-  SearchSelect,
-  Select,
-  Button,
-} from '@/components/common';
-import { AssetTypeFilter } from './AssetTypeFilter';
+import { ChevronDown, Filter } from 'lucide-react';
+import { Badge, SearchInput, Button } from '@/components/common';
+import type { Option } from '@/components/common';
 import type { AssetRegisterFiltersProps } from '@/types/asset/asset-register/municipal-asset-register.types';
 import { useAssetRegisterFilters } from '@/hooks/asset/asset-register/useAssetRegisterFilters';
-import {
-  getMainSearchPlaceholder,
-  type AssetRegisterSearchField,
-} from '@/lib/utils/asset-utils/asset-register-filters';
-import { getSearchFieldOptions } from './AssetRegisterSearchFieldOptions';
+import { AssetRegisterFilterGrid } from './filters/AssetRegisterFilterGrid';
 
 export function AssetRegisterFilters({
   search,
@@ -25,28 +16,31 @@ export function AssetRegisterFilters({
   ZoneId,
   WardId,
   DepartmentId,
+  categoryId,
+  ownershipType,
+  encroachmentStatus,
+  categoryOptions,
   assetTypeOptions,
   zoneOptions,
   wardOptions,
   owningDepartmentOptions,
-  categoryId,
-  categoryOptions = [],
+  ownershipOptions,
   exportButton,
 }: AssetRegisterFiltersProps) {
   const t = useTranslations('assetRegister');
+
   const {
     searchValue,
-    assetNoSearch,
-    searchField,
     showFiltersPanel,
     handleSearchChange,
-    handleAssetNoSearchChange,
-    handleSearchFieldChange,
-    handleAssetTypeChange,
     handleZoneChange,
     handleWardChange,
     handleOwningDepartmentChange,
     handleAssetCategoryChange,
+    handleAssetTypeChange,
+    handleOwnershipTypeChange,
+    handleEncroachmentStatusChange,
+    handleResetFilters,
     handleFiltersPanelToggle,
   } = useAssetRegisterFilters({
     search,
@@ -54,155 +48,125 @@ export function AssetRegisterFilters({
     assetNo: AssetNo,
   });
 
-  const searchFieldOptions = getSearchFieldOptions(t);
+  const zoneSelectOptions: Option[] = [
+    { label: t('All_Zones'), value: 'all' },
+    ...(zoneOptions || []).filter((opt) => opt.value !== 'all'),
+  ];
+
+  const wardSelectOptions: Option[] = [
+    { label: t('All_Wards'), value: 'all' },
+    ...(wardOptions || []).filter((opt) => opt.value !== 'all'),
+  ];
+
+  const departmentSelectOptions: Option[] = [
+    { label: t('All_Departments'), value: 'all' },
+    ...(owningDepartmentOptions || []).filter((opt) => opt.value !== 'all'),
+  ];
+
+  const categorySelectOptions: Option[] = [
+    { label: t('All_Asset_Categories'), value: 'all' },
+    ...(categoryOptions || []).filter((opt) => opt.value !== 'all'),
+  ];
+
+  const assetTypeSelectOptions: Option[] = [
+    { label: t('All_Asset_Types'), value: 'all' },
+    ...(assetTypeOptions || []).filter((opt) => opt.value !== 'all'),
+  ];
+
+  const appliedFiltersCount = [
+    AssetTypeId && AssetTypeId !== 'all',
+    ZoneId && ZoneId !== 'all',
+    WardId && WardId !== 'all',
+    DepartmentId && DepartmentId !== 'all',
+    ownershipType && ownershipType !== 'all',
+    encroachmentStatus && encroachmentStatus !== 'all',
+    AssetNo,
+  ].filter(Boolean).length;
 
   return (
-    <div className="flex w-full flex-wrap items-center gap-2 overflow-visible [&_input]:!h-9 [&_input]:!py-1.5 [&_input]:!rounded-xl [&_input]:!border-slate-200 [&_input:hover]:!border-slate-300 [&_input]:!text-slate-700 [&_input]:!font-medium [&_button[role=combobox]]:!h-9 [&_button[role=combobox]]:!rounded-xl [&_button[role=combobox]]:!border-slate-200 [&_button[role=combobox]:hover]:!border-slate-300 [&_button[role=combobox]_span]:!text-sm [&_button[role=combobox]_span]:!text-slate-700 [&_button[role=combobox]_span]:!font-medium [&_button[role=combobox]_svg]:!w-4 [&_button[role=combobox]_svg]:!h-4 [&_button[role=combobox]_svg]:!text-slate-400">
-      {/* Left-aligned Filters (First group) */}
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Search Field Selector + SearchInput */}
-        <div className="flex items-center justify-between gap-1.5 w-full sm:w-[360px] flex-shrink-0">
-          {/* Search Field Selector */}
-          <Select
-            options={searchFieldOptions}
-            value={searchField}
-            onChange={(_, val) => {
-                handleSearchFieldChange(val as AssetRegisterSearchField);
-            }}
-            placeholder="Select search field"
-            selectSize="sm"
-            className="w-auto flex-shrink-0 [&>ul]:min-w-[180px] [&>ul]:!border-slate-200 [&>ul]:!rounded-xl [&>ul]:!shadow-xl [&>ul]:!py-1.5"
-          />
-
-          {/* Common SearchInput */}
-          <div className="flex-1 w-full sm:w-[180px]">
-            <SearchInput
-              value={searchValue}
-              onChange={handleSearchChange}
-              placeholder={getMainSearchPlaceholder(
-                searchField,
-                t('Search_assets') || 'Search assets ...',
-                t('Search_by_Asset_ID') || 'Search by Asset ID...',
-                t('Search_by_Asset_Name') || 'Search by Asset Name...',
-                t('Search_by_Address') || 'Search by Address...'
-              )}
-              className="mb-0 w-full"
-              showClear={false}
-            />
-          </div>
+    <div className="rounded-xl border border-slate-200/80 bg-white shadow-xs">
+      {/* Top Filter Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3">
+        {/* Left: Filter title badge */}
+        <div className="flex items-center gap-2">
+          <Badge
+            variant="outline"
+            size="sm"
+            icon={Filter}
+            className="flex h-auto gap-1.5 rounded-lg border-0 bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 [&_svg]:h-3.5 [&_svg]:w-3.5"
+          >
+            {t('Filters')}
+          </Badge>
         </div>
 
-        {categoryOptions.length > 0 && (
-          <div className="w-full sm:w-[190px] relative [&_ul]:!min-w-[275px]">
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-slate-400">
-              <Building className="w-4 h-4" />
-            </div>
-            <SearchSelect
-              name="assetCategory"
-              label=""
-              options={categoryOptions}
-              value={categoryId ? String(categoryId) : 'all'}
-              onChange={(_, value) => handleAssetCategoryChange(value)}
-              placeholder={t('All_Asset_Categories') || 'Asset Category'}
-              className="w-full !pl-9"
-            />
-          </div>
-        )}
-
-        <AssetTypeFilter
-          assetTypeId={AssetTypeId}
-          assetTypeOptions={assetTypeOptions}
-          handleAssetTypeChange={handleAssetTypeChange}
-          placeholder={t('All_Asset_Types') || 'All Asset Types'}
-        />
-
-        <div className="w-full sm:w-[190px] relative [&_ul]:!min-w-[275px]">
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-slate-400">
-            <Building className="w-4 h-4" />
-          </div>
-          <SearchSelect
-            name="owningDepartment"
-            label=""
-            options={owningDepartmentOptions}
-            value={DepartmentId}
-            onChange={(_, value) => handleOwningDepartmentChange(value)}
-            placeholder={t('All_Departments') || 'All Departments'}
-            className="w-full !pl-9"
+        {/* Center: Search input */}
+        <div className="w-full max-w-[340px] flex-1">
+          <SearchInput
+            value={searchValue ?? ''}
+            onChange={handleSearchChange}
+            placeholder={t('Search_assets_by_name_id')}
+            className="mb-0 w-full [&_input]:!h-8.5 [&_input]:!rounded-xl [&_input]:!border-slate-200 [&_input]:!text-xs [&_input]:placeholder:text-slate-400"
+            showClear={false}
           />
         </div>
-      </div>
 
-      {/* Right-aligned Filters + Buttons (Second group) */}
-      <div className="flex flex-wrap items-center gap-2 ml-auto">
-        {showFiltersPanel && (
-          <>
-            <div className="w-full sm:w-[186px] relative">
-              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-slate-400">
-                <MapPin className="w-4 h-4" />
-              </div>
-              <SearchSelect
-                key={ZoneId || 'all'}
-                name="zone"
-                label=""
-                options={zoneOptions}
-                value={ZoneId}
-                onChange={(_, value) => handleZoneChange(value)}
-                placeholder={t('All_Zones') || 'All Zones'}
-                className="w-full !pl-9"
-              />
-            </div>
+        {/* Right Action Buttons: badge, collapse/expand toggle, Reset All, Export */}
+        <div className="flex items-center gap-2">
+          {appliedFiltersCount > 0 && (
+            <Badge variant="outline" size="sm" className="inline-flex h-auto gap-0 rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-600 border border-blue-100">
+              {appliedFiltersCount} {t('Filters')}
+            </Badge>
+          )}
 
-            <div className="w-full sm:w-[186px] relative">
-              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-slate-400">
-                <Users className="w-4 h-4" />
-              </div>
-              <SearchSelect
-                key={WardId || 'all'}
-                name="ward"
-                label=""
-                options={wardOptions}
-                value={WardId}
-                onChange={(_, value) => handleWardChange(value)}
-                placeholder={t('All_Wards') || 'All Wards'}
-                className="w-full !pl-9"
-              />
-            </div>
-
-            <div className="w-full sm:w-[180px]">
-              <SearchInput
-                value={assetNoSearch}
-                onChange={handleAssetNoSearchChange}
-                placeholder="Asset No"
-                className="mb-0 w-full"
-                showClear={false}
-              />
-            </div>
-          </>
-        )}
-
-        <Button
-          onClick={handleFiltersPanelToggle}
-          variant="secondary"
-          size="sm"
-          icon={Filter}
-          className={`rounded-xl border text-xs font-semibold h-9 transition-all focus:outline-none ${showFiltersPanel
-            ? '!bg-blue-500 !border-blue-500 !text-white hover:!bg-blue-600'
-            : '!bg-white !border-slate-200 !text-black hover:!border-slate-300 hover:!bg-slate-50'
+          <Button
+            onClick={handleFiltersPanelToggle}
+            variant="secondary"
+            size="sm"
+            icon={ChevronDown}
+            aria-label={showFiltersPanel ? 'Collapse filters' : 'Expand filters'}
+            className={`!h-8.5 !w-8.5 !min-w-0 !rounded-lg !border-slate-200 !p-0 !text-slate-500 hover:!bg-slate-50 hover:!border-slate-300 [&_svg]:transition-transform ${
+              !showFiltersPanel ? '[&_svg]:rotate-180' : ''
             }`}
-        >
-          <span className="flex items-center gap-1.5">
-            <span>{t('Filters') || 'Filters'}</span>
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFiltersPanel ? 'rotate-180 text-white' : 'text-slate-500'}`} />
-          </span>
-        </Button>
+          />
 
-        {/* Export Excel Button */}
-        {exportButton && (
-          <div className="flex-shrink-0 ">
-            {exportButton}
-          </div>
-        )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleResetFilters}
+            className="!h-8.5 !rounded-lg border border-red-200 !bg-red-50/60 !px-3 !gap-0 !text-xs !font-bold !text-red-600 hover:!bg-red-100 hover:border-red-300 !whitespace-normal !transition-colors !duration-150 cursor-pointer focus:!ring-0 focus:!ring-offset-0 focus-visible:![outline-style:auto]"
+          >
+            {t('Reset_All')}
+          </Button>
+
+          {exportButton && <div className="flex-shrink-0">{exportButton}</div>}
+        </div>
       </div>
+
+      {/* Grid of Filters */}
+      {showFiltersPanel && (
+        <AssetRegisterFilterGrid
+          zoneSelectOptions={zoneSelectOptions}
+          wardSelectOptions={wardSelectOptions}
+          departmentSelectOptions={departmentSelectOptions}
+          categorySelectOptions={categorySelectOptions}
+          assetTypeSelectOptions={assetTypeSelectOptions}
+          ownershipOptions={ownershipOptions}
+          ZoneId={ZoneId}
+          WardId={WardId}
+          DepartmentId={DepartmentId}
+          categoryId={categoryId}
+          AssetTypeId={AssetTypeId}
+          ownershipType={ownershipType}
+          encroachmentStatus={encroachmentStatus}
+          handleZoneChange={handleZoneChange}
+          handleWardChange={handleWardChange}
+          handleOwningDepartmentChange={handleOwningDepartmentChange}
+          handleAssetCategoryChange={handleAssetCategoryChange}
+          handleAssetTypeChange={handleAssetTypeChange}
+          handleOwnershipTypeChange={handleOwnershipTypeChange}
+          handleEncroachmentStatusChange={handleEncroachmentStatusChange}
+        />
+      )}
     </div>
   );
 }

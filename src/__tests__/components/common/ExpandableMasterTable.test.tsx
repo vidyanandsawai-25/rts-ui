@@ -146,4 +146,34 @@ describe("ExpandableMasterTable", () => {
     expect(onPageSizeChange).toHaveBeenCalledWith(20);
     expect(screen.getAllByRole("option")).toHaveLength(3);
   });
+
+  it("renders multi-row custom expanded rows via renderCustomExpandedRows", () => {
+    setup({
+      renderCustomExpandedRows: (row) => (
+        <tr data-testid={`custom-subrow-${row.id}`}>
+          <td colSpan={4}>Subunits for {row.name}</td>
+        </tr>
+      ),
+    });
+
+    expect(screen.getByTestId("custom-subrow-1")).toBeInTheDocument();
+    expect(screen.getByText("Subunits for Alice")).toBeInTheDocument();
+    expect(screen.getByTestId("custom-subrow-2")).toBeInTheDocument();
+    expect(screen.getByText("Subunits for Bob")).toBeInTheDocument();
+  });
+
+  it("renders customThead when provided", () => {
+    setup({
+      customThead: (
+        <thead data-testid="custom-thead">
+          <tr>
+            <th>Custom Header</th>
+          </tr>
+        </thead>
+      ),
+    });
+
+    expect(screen.getByTestId("custom-thead")).toBeInTheDocument();
+    expect(screen.getByText("Custom Header")).toBeInTheDocument();
+  });
 });

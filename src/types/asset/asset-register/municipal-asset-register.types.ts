@@ -2,6 +2,7 @@ import type {
   AssetRegisterOption,
   AssetRegisterWardOption,
   AssetRegisterPageResult,
+  AssetRegisterSummary,
 } from "@/types/asset/asset-register/municipal-asset-service.types";
 
 export type AssetRegisterRow = {
@@ -49,6 +50,21 @@ export type AssetRegisterRow = {
   isSubUnit?: boolean;
   parentId?: number | null;
   totalSubUnits?: number;
+  annualRevenue?: string;
+  outstandingAmount?: string;
+  encroachmentStatus?: string;
+  photoCount?: string;
+  documentCount?: string;
+  activeLeaseCount?: number;
+  mpmsNo?: string;
+  constructionYear?: string;
+  constructionTypeName?: string;
+  typeOfUseName?: string;
+  totalFloors?: string;
+  hasPlanDocument?: boolean;
+  hasTitleDocument?: boolean;
+  hasSurveyDocument?: boolean;
+  expandControl?: string;
 };
 
 export interface AssetRegisterViewProps {
@@ -62,6 +78,8 @@ export interface AssetRegisterViewProps {
   ZoneId: string;
   WardId: string;
   DepartmentId: string;
+  ownershipType?: string;
+  encroachmentStatus?: string;
   safePageSize: number;
   finalPage: number;
   totalPages: number;
@@ -70,10 +88,15 @@ export interface AssetRegisterViewProps {
   zonesResult: AssetRegisterOption[];
   wardsResult: AssetRegisterWardOption[];
   departmentsResult: AssetRegisterOption[];
+  ownershipResult?: { id: number; label: string; value: string }[];
+  ownershipOptions?: { label: string; value: string }[];
   updatedDate: string;
   categoryOptions?: AssetRegisterOption[];
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  initialSubunitData?: {
+    parentId: number;
+    items: import('@/lib/api/asset/asset-register/municipal-asset-register.service').AssetRegisterSubUnitItem[];
+    meta: { totalCount: number; totalPages: number; pageNumber: number; pageSize: number };
+  } | null;
 }
 
 export interface AssetRegisterTableProps {
@@ -83,8 +106,11 @@ export interface AssetRegisterTableProps {
   pageSize: number;
   totalPages: number;
   controls?: React.ReactNode;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  initialSubunitData?: {
+    parentId: number;
+    items: import('@/lib/api/asset/asset-register/municipal-asset-register.service').AssetRegisterSubUnitItem[];
+    meta: { totalCount: number; totalPages: number; pageNumber: number; pageSize: number };
+  } | null;
 }
 
 export interface AssetRegisterFiltersProps {
@@ -95,10 +121,13 @@ export interface AssetRegisterFiltersProps {
   ZoneId: string;
   WardId: string;
   DepartmentId: string;
+  ownershipType?: string;
+  encroachmentStatus?: string;
   assetTypeOptions: { label: string; value: string }[];
   zoneOptions: { label: string; value: string }[];
   wardOptions: { label: string; value: string }[];
   owningDepartmentOptions: { label: string; value: string }[];
+  ownershipOptions?: { label: string; value: string }[];
   categoryId?: number;
   categoryOptions?: { label: string; value: string }[];
   exportButton?: React.ReactNode;
@@ -113,20 +142,12 @@ export interface AssetRegisterExportButtonProps {
   ZoneId: string;
   WardId: string;
   DepartmentId: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  ownershipType?: string;
+  encroachmentStatus?: string;
 }
 
 export interface AssetRegisterHeaderSummaryProps {
-  registerSubtitle: string;
-  updatedDate: string;
-  totalCount: number;
-  totalPurchaseValue: number;
-  totalMarketValue: number;
-  totalDepreciation: number;
-  netBookValue: number;
-  totalCapitalValue: number;
-  activeAssetsCount: number;
+  summary: AssetRegisterSummary;
   translate: (key: string) => string;
 }
 
@@ -140,13 +161,14 @@ export interface AssetRegisterControlsProps {
   ZoneId: string;
   WardId: string;
   DepartmentId: string;
+  ownershipType?: string;
+  encroachmentStatus?: string;
   assetTypeOptions: { label: string; value: string }[];
   zoneOptions: { label: string; value: string }[];
   wardOptions: { label: string; value: string }[];
   owningDepartmentOptions: { label: string; value: string }[];
+  ownershipOptions?: { label: string; value: string }[];
   categoryOptions?: { label: string; value: string }[];
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
 }
 
 export interface CenteredSummaryCardProps {

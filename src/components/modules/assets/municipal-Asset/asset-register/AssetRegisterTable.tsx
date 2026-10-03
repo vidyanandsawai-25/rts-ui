@@ -1,19 +1,22 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { MasterTable } from '@/components/common';
-import type { AssetRegisterRow, AssetRegisterTableProps } from '@/types/asset/asset-register/municipal-asset-register.types';
-import PropertyMediaPanel from './media/PropertyMediaPanel';
-import { useMediaPanelVisibility } from '@/hooks/asset/asset-register/useMediaPanelVisibility';
-import { useAssetRegisterQueryState, VIEW_IMAGE_QUERY_KEY, EXPAND_ASSET_QUERY_KEY } from '@/hooks/asset/asset-register/useAssetRegisterQueryState';
-import { useAssetPhotoPanel, useAssetSubunitExpansion } from '@/hooks/asset/asset-register/useAssetRegisterInteractions';
-import { getRegisterColumns } from './registerTableColumns';
+import type {
+  AssetRegisterRow,
+  AssetRegisterTableProps,
+} from '@/types/asset/asset-register/municipal-asset-register.types';
+import {
+  useAssetRegisterQueryState,
+  VIEW_IMAGE_QUERY_KEY,
+} from '@/hooks/asset/asset-register/useAssetRegisterQueryState';
 import { useQueryTransition } from '@/hooks/useQueryTransition';
-import { mapSubUnitToAssetRegisterRow } from './registerMappers';
-
-const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+import { AssetRegisterTableContent } from './table/AssetRegisterTableContent';
+import { AssetRegisterTablePagination } from './table/AssetRegisterTablePagination';
+import { useSubunitPaginationState } from './table/useSubunitPaginationState';
+import { AssetDocumentsModal, type AssetDocumentModalItem } from './media/AssetDocumentsModal';
+import { fetchAssetDocumentsAction } from '@/app/[locale]/assets/municipal-Asset/asset-register/actions';
 
 export function AssetRegisterTable({
   assets,
@@ -22,8 +25,7 @@ export function AssetRegisterTable({
   pageSize,
   totalPages,
   controls,
-  sortBy = '',
-  sortOrder = 'asc',
+  initialSubunitData,
 }: AssetRegisterTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -31,146 +33,342 @@ export function AssetRegisterTable({
   const t = useTranslations('assetRegister');
   const { updateQueries } = useQueryTransition();
 
-  const { isPanelVisible, togglePanel } = useMediaPanelVisibility(false);
-  const {
-    panelPhotos,
-    isPhotosLoading,
-    openImagePanelByAssetId,
-    handlePanelToggle: handlePanelVisibilityToggle,
-    closePanelFromQueryTransition,
-  } = useAssetPhotoPanel({
-    isPanelVisible,
-    togglePanel,
-  });
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+  const [selectedAssetForDocs, setSelectedAssetForDocs] = useState<AssetRegisterRow | null>(null);
+  const [modalDocumentItems, setModalDocumentItems] = useState<AssetDocumentModalItem[]>([]);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(false);
+  const [initialDocMediaType, setInitialDocMediaType] = useState<'photo' | 'document'>('photo');
+  const documentRequestIdRef = useRef(0);
 
-  const {
-    expandedAssets,
-    openSubunitRows,
-    loadingSubunits,
-    setOpenSubunitRows,
-    handleToggleExpand: handleSubunitToggle,
-  } = useAssetSubunitExpansion();
+  const activeViewImageAssetId = useMemo(() => {
+    const raw = searchParams.get(VIEW_IMAGE_QUERY_KEY);
+    if (!raw) return null;
+    const p = Number(raw);
+    return Number.isFinite(p) && p > 0 ? p : null;
+  }, [searchParams]);
+
+  const activeExpandAssetId = useMemo(() => {
+    const raw = searchParams.get('expandAssetId');
+    if (!raw) return null;
+    const p = Number(raw);
+    return Number.isFinite(p) && p > 0 ? p : null;
+  }, [searchParams]);
+
+  // Derive openSubunitRows directly from current URL query
+  const [openSubunitRows, setOpenSubunitRows] = useState<Record<number, boolean>>(() => {
+    return activeExpandAssetId ? { [activeExpandAssetId]: true } : {};
+  });
 
   const { updateActionQuery } = useAssetRegisterQueryState({
     searchParams,
     pathname,
-    isPanelVisible,
-    onClosePanelFromQuery: closePanelFromQueryTransition,
-    expandedAssets,
+    isPanelVisible: isDocModalOpen,
+    onClosePanelFromQuery: () => {
+      documentRequestIdRef.current += 1;
+      setIsDocModalOpen(false);
+      setSelectedAssetForDocs(null);
+      setModalDocumentItems([]);
+      setIsLoadingDocs(false);
+    },
     setOpenSubunitRows,
   });
 
-  const handlePanelToggle = useCallback(() => {
-    handlePanelVisibilityToggle(() => {
-      updateActionQuery(VIEW_IMAGE_QUERY_KEY, null);
-    });
-  }, [handlePanelVisibilityToggle, updateActionQuery]);
+  // Restore selected asset and documents modal when viewImageAssetId is present in the URL
+  useEffect(() => {
+    if (activeViewImageAssetId == null) return;
+    if (selectedAssetForDocs?.id === activeViewImageAssetId && isDocModalOpen) return;
 
-  const handlePageChange = useCallback((newPage: number) => {
-    updateQueries({ page: String(newPage) });
-  }, [updateQueries]);
+    const matchedAsset = assets.find((a) => a.id === activeViewImageAssetId);
+    const rowToUse: AssetRegisterRow = matchedAsset || { id: activeViewImageAssetId, assetCode: String(activeViewImageAssetId) } as AssetRegisterRow;
+
+    const requestId = ++documentRequestIdRef.current;
+    queueMicrotask(() => {
+      if (requestId === documentRequestIdRef.current) {
+        setSelectedAssetForDocs(rowToUse);
+        setIsDocModalOpen(true);
+        setModalDocumentItems([]);
+        setIsLoadingDocs(true);
+      }
+    });
+
+    fetchAssetDocumentsAction(rowToUse.id!, rowToUse.csn || rowToUse.assetCode)
+      .then((res) => {
+        if (requestId === documentRequestIdRef.current && res.success && Array.isArray(res.documents)) {
+          const mapped: AssetDocumentModalItem[] = res.documents.map((doc, index: number) => ({
+            id: String(doc.id || doc.documentGuid || index),
+            name: String(doc.fileName || doc.name || `Document ${index + 1}`),
+            groupName: String(doc.documentTypeName || doc.photoTypeName || doc.bindingPurpose || 'Document'),
+            fileName: doc.fileName ? String(doc.fileName) : undefined,
+            contentType: doc.contentType ? String(doc.contentType) : undefined,
+            isPdf: doc.contentType === 'application/pdf' || String(doc.fileName || '').toLowerCase().endsWith('.pdf'),
+            isImage: String(doc.contentType || '').toLowerCase().startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(String(doc.fileName || '')),
+            url: typeof doc.customUrl === 'string' ? doc.customUrl : undefined,
+          }));
+          setModalDocumentItems(mapped);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load asset documents for query asset ID:', err);
+      })
+      .finally(() => {
+        if (requestId === documentRequestIdRef.current) {
+          setIsLoadingDocs(false);
+        }
+      });
+  }, [activeViewImageAssetId, assets, isDocModalOpen, selectedAssetForDocs?.id]);
+
+  // Derive expanded sub-units from SSR props
+  const expandedAssets = useMemo(() => {
+    if (initialSubunitData && initialSubunitData.parentId === activeExpandAssetId) {
+      return { [initialSubunitData.parentId]: initialSubunitData.items };
+    }
+    return {};
+  }, [initialSubunitData, activeExpandAssetId]);
+
+  const subunitMeta = useMemo(() => {
+    if (initialSubunitData && initialSubunitData.parentId === activeExpandAssetId) {
+      return { [initialSubunitData.parentId]: initialSubunitData.meta };
+    }
+    return {};
+  }, [initialSubunitData, activeExpandAssetId]);
+
+  const {
+    subunitSearchMap,
+    subunitPageSizeMap,
+    subunitPageMap,
+    handleSubunitSearchChange,
+    handleSubunitPageSizeChange,
+    handleSubunitPageChange,
+  } = useSubunitPaginationState();
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      updateQueries({ page: String(newPage) });
+    },
+    [updateQueries]
+  );
 
   const handlePageSizeChange = (newSize: number) => {
     updateQueries({ pageSize: String(newSize), page: '1' });
   };
 
-  const handleViewImage = useCallback((row: AssetRegisterRow) => {
-    if (row.id == null) return;
-    updateActionQuery(VIEW_IMAGE_QUERY_KEY, String(row.id));
-    void openImagePanelByAssetId(row.id);
-  }, [updateActionQuery, openImagePanelByAssetId]);
+  const handleViewImage = useCallback(
+    async (row: AssetRegisterRow, mediaType: 'photo' | 'document' = 'photo') => {
+      if (row.id == null) return;
+      const requestId = ++documentRequestIdRef.current;
+      setSelectedAssetForDocs(row);
+      setInitialDocMediaType(mediaType);
+      setIsDocModalOpen(true);
+      setModalDocumentItems([]);
+      setIsLoadingDocs(true);
+      updateActionQuery(VIEW_IMAGE_QUERY_KEY, String(row.id));
 
-  const handleSort = useCallback((columnKey: keyof AssetRegisterRow) => {
-    const backendKeys: Record<string, string> = {
-      assetCode: 'AssetNo',
-      assetName: 'AssetName',
-      assetTypeName: 'AssetTypeId',
-      departmentName: 'DepartmentId',
-      ownershipType: 'OwnershipType',
-      capitalValue: 'CapitalValue',
-      lifeYears: 'AssetLife',
-    };
-    const mappedKey = backendKeys[columnKey];
-    if (!mappedKey) return;
-
-    let nextOrder: 'asc' | 'desc' = 'asc';
-    if (sortBy === mappedKey) {
-      nextOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-    }
-    updateQueries({ sortBy: mappedKey, sortOrder: nextOrder, page: '1' });
-  }, [sortBy, sortOrder, updateQueries]);
-
-  const handleToggleExpand = useCallback(async (parentRow: AssetRegisterRow) => {
-    await handleSubunitToggle(parentRow, (parentId) => {
-      updateActionQuery(EXPAND_ASSET_QUERY_KEY, parentId == null ? null : String(parentId));
-    });
-  }, [handleSubunitToggle, updateActionQuery]);
-
-  const columns = useMemo(
-    () => getRegisterColumns(pathname, router, t, handleViewImage, sortBy, sortOrder, handleSort, openSubunitRows, loadingSubunits, handleToggleExpand),
-    [pathname, router, t, handleViewImage, sortBy, sortOrder, handleSort, openSubunitRows, loadingSubunits, handleToggleExpand]
-  );
-
-  const tableData = useMemo(() => {
-    const result: AssetRegisterRow[] = [];
-    for (const asset of assets) {
-      result.push(asset);
-      const parentId = asset.id;
-      if (parentId != null && openSubunitRows[parentId] && expandedAssets[parentId]) {
-        for (const subUnit of expandedAssets[parentId]) {
-          result.push(mapSubUnitToAssetRegisterRow(subUnit, asset));
+      try {
+        const res = await fetchAssetDocumentsAction(row.id, row.csn || row.assetCode);
+        if (requestId === documentRequestIdRef.current && res.success && Array.isArray(res.documents)) {
+          const mapped: AssetDocumentModalItem[] = res.documents.map((doc, index: number) => ({
+            id: String(doc.id || doc.documentGuid || index),
+            name: String(doc.fileName || doc.name || `Document ${index + 1}`),
+            groupName: String(doc.documentTypeName || doc.photoTypeName || doc.bindingPurpose || 'Document'),
+            fileName: doc.fileName ? String(doc.fileName) : undefined,
+            contentType: doc.contentType ? String(doc.contentType) : undefined,
+            isPdf: doc.contentType === 'application/pdf' || String(doc.fileName || '').toLowerCase().endsWith('.pdf'),
+            isImage: String(doc.contentType || '').toLowerCase().startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(String(doc.fileName || '')),
+            url: typeof doc.customUrl === 'string' ? doc.customUrl : undefined,
+          }));
+          setModalDocumentItems(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to load asset documents:', err);
+      } finally {
+        if (requestId === documentRequestIdRef.current) {
+          setIsLoadingDocs(false);
         }
       }
-    }
-    return result;
-  }, [assets, expandedAssets, openSubunitRows]);
+    },
+    [updateActionQuery]
+  );
 
+  const handleCloseDocModal = useCallback(() => {
+    documentRequestIdRef.current += 1;
+    setIsDocModalOpen(false);
+    setSelectedAssetForDocs(null);
+    setModalDocumentItems([]);
+    setIsLoadingDocs(false);
+    updateActionQuery(VIEW_IMAGE_QUERY_KEY, null);
+  }, [updateActionQuery]);
+
+  const handleToggleExpand = useCallback(
+    (parentRow: AssetRegisterRow) => {
+      const parentId = parentRow.id;
+      if (parentId == null) return;
+
+      if (openSubunitRows[parentId]) {
+        setOpenSubunitRows((previous) => ({ ...previous, [parentId]: false }));
+      }
+
+      updateQueries({
+        expandAssetId: openSubunitRows[parentId] ? null : String(parentId),
+        subPage: null,
+        subPageSize: null,
+        subSearch: null,
+      });
+    },
+    [openSubunitRows, setOpenSubunitRows, updateQueries]
+  );
+
+  const activeSubSearch = searchParams.get('subSearch') || '';
+  const activeSubPageSize = Number(searchParams.get('subPageSize')) || 10;
+  const activeSubPage = Number(searchParams.get('subPage')) || 1;
+
+  const mergedSubunitSearchMap = useMemo(() => {
+    if (activeExpandAssetId != null) {
+      return { ...subunitSearchMap, [activeExpandAssetId]: activeSubSearch };
+    }
+    return subunitSearchMap;
+  }, [subunitSearchMap, activeExpandAssetId, activeSubSearch]);
+
+  const mergedSubunitPageSizeMap = useMemo(() => {
+    if (activeExpandAssetId != null) {
+      return { ...subunitPageSizeMap, [activeExpandAssetId]: activeSubPageSize };
+    }
+    return subunitPageSizeMap;
+  }, [subunitPageSizeMap, activeExpandAssetId, activeSubPageSize]);
+
+  const mergedSubunitPageMap = useMemo(() => {
+    if (activeExpandAssetId != null) {
+      return { ...subunitPageMap, [activeExpandAssetId]: activeSubPage };
+    }
+    return subunitPageMap;
+  }, [subunitPageMap, activeExpandAssetId, activeSubPage]);
+
+  const handleViewDetails = useCallback((row: AssetRegisterRow) => {
+    if (row.id != null) {
+      const segments = pathname.split('/').filter(Boolean);
+      const locale = segments[0] || 'en';
+      router.push(`/${locale}/assets/municipal-Asset/asset-detail-view/${row.id}`);
+    }
+  }, [pathname, router]);
+
+  const handleEdit = useCallback((row: AssetRegisterRow) => {
+    if (row.id != null) {
+      const segments = pathname.split('/').filter(Boolean);
+      const locale = segments[0] || 'en';
+      const params = new URLSearchParams();
+      params.set('mode', 'edit');
+      if (row.categoryName && row.categoryName !== '-') params.set('category', row.categoryName);
+      if (row.assetCategoryId != null) params.set('categoryId', String(row.assetCategoryId));
+      if (row.assetTypeName && row.assetTypeName !== '-') params.set('assetType', row.assetTypeName);
+      if (row.assetTypeId != null) params.set('typeId', String(row.assetTypeId));
+      params.set('assetId', String(row.id));
+
+      router.push(`/${locale}/assets/municipal-Asset/new-add-new-asset?${params.toString()}`);
+    }
+  }, [pathname, router]);
+
+  const handlePrint = useCallback((row: AssetRegisterRow) => {
+    if (row.id != null) {
+      const segments = pathname.split('/').filter(Boolean);
+      const locale = segments[0] || 'en';
+      router.push(`/${locale}/assets/municipal-Asset/asset-report/${row.id}`);
+    }
+  }, [pathname, router]);
+
+  const handleGisMap = useCallback((row: AssetRegisterRow) => {
+    if (row.id != null) {
+      const segments = pathname.split('/').filter(Boolean);
+      const locale = segments[0] || 'en';
+      const params = new URLSearchParams();
+      params.set('assetId', String(row.id));
+      if (row.mpmsNo && row.mpmsNo !== '-') {
+        params.set('mpmsNo', row.mpmsNo);
+      }
+      router.push(`/${locale}/assets/gismapviewer?${params.toString()}`);
+    }
+  }, [pathname, router]);
+
+  const pageNumbers = useMemo(() => {
+    const pages: number[] = [];
+    const maxVisible = 5;
+    let start = Math.max(1, pageNumber - Math.floor(maxVisible / 2));
+    const end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }, [pageNumber, totalPages]);
+
+  const handleSubunitSearch = useCallback((parentId: number, searchVal: string) => {
+    handleSubunitSearchChange(parentId, searchVal);
+    updateQueries({
+      subSearch: searchVal || null,
+      subPage: null,
+    });
+  }, [handleSubunitSearchChange, updateQueries]);
+
+  const handleSubunitPageSize = useCallback((parentId: number, size: number) => {
+    handleSubunitPageSizeChange(parentId, size);
+    updateQueries({
+      subPageSize: size === 10 ? null : String(size),
+      subPage: null,
+    });
+  }, [handleSubunitPageSizeChange, updateQueries]);
+
+  const handleSubunitPage = useCallback((parentId: number, page: number) => {
+    handleSubunitPageChange(parentId, page);
+    updateQueries({
+      subPage: page === 1 ? null : String(page),
+    });
+  }, [handleSubunitPageChange, updateQueries]);
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-3.5 w-full">
       {controls}
-      <div className="relative w-full">
-        <MasterTable<AssetRegisterRow>
-          columns={columns}
-          data={tableData}
-          loading={false}
-          emptyText={t('No_asset_records') || 'No asset records found for this category'}
-          pageNumber={pageNumber}
-          pageSize={pageSize}
-          totalCount={totalCount}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-          pageSizeOptions={PAGE_SIZE_OPTIONS}
-          paginationConfig={{ enabled: true, showPageSizeSelector: true }}
-          maxBodyHeightClassName="max-h-[calc(100vh-420px)] min-h-[300px]"
-          containerClassName="rounded-lg w-full overflow-x-auto"
-          tableClassName="table-fixed w-max min-w-full border-collapse border border-slate-200 [&_th]:border [&_th]:border-slate-200 [&_td]:border [&_td]:border-slate-200 [&_.sticky-col-1]:!sticky [&_.sticky-col-1]:!left-0 [&_.sticky-col-1]:!z-10 [&_.sticky-col-2]:!sticky [&_.sticky-col-2]:!left-[230px] [&_.sticky-col-2]:!z-10 [&_.sticky-col-right]:!sticky [&_.sticky-col-right]:!right-0 [&_.sticky-col-right]:!z-10 [&_.sticky-header-1]:!sticky [&_.sticky-header-1]:!left-0 [&_.sticky-header-1]:!z-30 [&_.sticky-header-2]:!sticky [&_.sticky-header-2]:!left-[230px] [&_.sticky-header-2]:!z-30 [&_.sticky-header-right]:!sticky [&_.sticky-header-right]:!right-0 [&_.sticky-header-right]:!z-30"
-          theadClassName="bg-none bg-[#0A2647] [&_th]:!text-white [&_th]:!font-bold [&_th]:!text-[12px] sm:[&_th]:!text-[13px]"
-          rowClassName={(row, index) => {
-            if (row.isSubUnit) {
-              return 'font-medium text-slate-800 [&>td]:!bg-[#e0f0ff] hover:[&>td]:!bg-[#d0e6ff]';
-            }
-            return index % 2 === 0 ? 'bg-white' : 'bg-slate-50';
-          }}
-          getRowKey={(row, index) => row.isSubUnit ? `sub-${row.parentId}-${row.id}-${index}` : (row.id ?? `${row.assetCode}-${index}`)}
+
+      {/* Main Table Card */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col flex-1">
+        <AssetRegisterTableContent
+          assets={assets}
+          openSubunitRows={openSubunitRows}
+          expandedAssets={expandedAssets}
+          subunitMeta={subunitMeta}
+          subunitSearchMap={mergedSubunitSearchMap}
+          subunitPageSizeMap={mergedSubunitPageSizeMap}
+          subunitPageMap={mergedSubunitPageMap}
+          noRecordsLabel={t('No_asset_records') || 'No asset records found for this category'}
+          handleToggleExpand={handleToggleExpand}
+          handleViewImage={handleViewImage}
+          handleViewDetails={handleViewDetails}
+          handleEdit={handleEdit}
+          handlePrint={handlePrint}
+          handleGisMap={handleGisMap}
+          handleSubunitSearchChange={handleSubunitSearch}
+          handleSubunitPageSizeChange={handleSubunitPageSize}
+          handleSubunitPageChange={handleSubunitPage}
         />
 
-        {/* Sidebar Container with smooth width & opacity transition */}
-        <div
-          className={`transition-all duration-500 ease-in-out z-30 lg:absolute lg:right-0 lg:top-0 lg:bg-white lg:rounded-l-xl ${isPanelVisible
-            ? 'w-full lg:w-[232px] opacity-100 translate-x-0 lg:p-3 lg:border lg:border-slate-200 lg:shadow-2xl'
-            : 'w-0 lg:w-0 opacity-0 lg:translate-x-full pointer-events-none overflow-hidden lg:p-0 lg:border-none lg:shadow-none'
-            }`}
-        >
-          <div className="w-full lg:w-[208px] lg:h-full">
-            <PropertyMediaPanel
-              initialPhotos={panelPhotos}
-              loading={isPhotosLoading}
-              togglePanel={handlePanelToggle}
-            />
-          </div>
-        </div>
+        <AssetRegisterTablePagination
+          totalCount={totalCount}
+          pageNumber={pageNumber}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          pageNumbers={pageNumbers}
+          handlePageChange={handlePageChange}
+          handlePageSizeChange={handlePageSizeChange}
+        />
+
+        {/* New Asset Documents Modal */}
+        <AssetDocumentsModal
+          isOpen={isDocModalOpen}
+          onClose={handleCloseDocModal}
+          assetTitle={selectedAssetForDocs?.assetName || selectedAssetForDocs?.assetCode || ''}
+          documents={modalDocumentItems}
+          isLoading={isLoadingDocs}
+          initialMediaType={initialDocMediaType}
+        />
       </div>
     </div>
   );

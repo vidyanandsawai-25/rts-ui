@@ -1,65 +1,81 @@
-import { Building2Icon, Coins, CheckCircle2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/common';
-import type { AssetRegisterHeaderSummaryProps, CenteredSummaryCardProps } from '@/types/asset/asset-register/municipal-asset-register.types';
-import { cn } from '@/lib/utils/cn';
+import {
+  AlertCircle,
+  BarChart3,
+  Landmark,
+  ShieldAlert,
+  TrendingUp,
+} from 'lucide-react';
+import { DashboardCard } from '@/components/common/DashboardCard';
+import type { AssetRegisterHeaderSummaryProps } from '@/types/asset/asset-register/municipal-asset-register.types';
 import { formatIndianCurrencyAbbreviated } from '@/lib/utils/asset-utils/currency-format';
 
-function CenteredSummaryCard({
-  label,
-  value,
-  icon,
-  iconBg = "bg-slate-100 text-slate-700",
-  valueColor = "text-slate-900",
-}: CenteredSummaryCardProps) {
-  return (
-    <Card className="relative flex items-center justify-center text-center rounded-md bg-white px-4 py-2.5 border border-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-      {/* Accent bar */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#1A86E8] rounded-l-md" />
+export function AssetRegisterHeaderSummary({ summary, translate }: AssetRegisterHeaderSummaryProps) {
+  const totalAssets = summary.totalParentAssets + summary.totalSubUnits;
 
-      {/* Row with Icon, Label, and Value */}
-      <div className="flex items-center justify-center gap-2 w-full flex-wrap">
-        {icon && (
-          <div className={cn("h-7 w-7 rounded flex items-center justify-center border border-slate-300 flex-shrink-0 [&_svg]:h-4 [&_svg]:w-4", iconBg)}>
-            {icon}
-          </div>
-        )}
-        <span className="text-sm font-semibold text-slate-600">{label}:</span>
-        <span className={cn("text-sm font-bold", valueColor)}>{value}</span>
-      </div>
-    </Card>
-  );
-}
+  const cards = [
+    {
+      label: translate('Total_Assets'),
+      value: totalAssets.toLocaleString('en-IN'),
+      subLabel: `${summary.totalParentAssets.toLocaleString('en-IN')} ${translate('Main_Assets')} · ${summary.totalSubUnits.toLocaleString('en-IN')} ${translate('Sub_Units')}`,
+      icon: <BarChart3 className="h-5 w-5" />,
+      iconBg: 'bg-blue-500 text-white border-blue-400',
+      className: 'border-blue-200 !bg-[#2458d7] text-white after:absolute after:-right-5 after:-bottom-8 after:h-20 after:w-20 after:rounded-full after:bg-white/10',
+      valueColor: 'text-white',
+    },
+    {
+      label: translate('Total_Capital_Value'),
+      value: formatIndianCurrencyAbbreviated(summary.totalCapitalValue),
+      subLabel: `${(summary.activeParentAssets + summary.activeSubUnits).toLocaleString('en-IN')} ${translate('Active_Assets')}`,
+      icon: <Landmark className="h-5 w-5" />,
+      iconBg: 'bg-emerald-500 text-white border-emerald-400',
+      className: 'border-emerald-200 !bg-[#09a477] text-white after:absolute after:-right-5 after:-bottom-8 after:h-20 after:w-20 after:rounded-full after:bg-white/10',
+      valueColor: 'text-white',
+    },
+    {
+      label: translate('Annual_Revenue'),
+      value: formatIndianCurrencyAbbreviated(summary.totalAnnualRevenue),
+      subLabel: translate('Current_Year'),
+      icon: <TrendingUp className="h-5 w-5" />,
+      iconBg: 'bg-violet-500 text-white border-violet-400',
+      className: 'border-violet-200 !bg-[#7745e5] text-white after:absolute after:-right-5 after:-bottom-8 after:h-20 after:w-20 after:rounded-full after:bg-white/10',
+      valueColor: 'text-white',
+    },
+    {
+      label: translate('Outstanding'),
+      value: formatIndianCurrencyAbbreviated(summary.totalOutstanding),
+      subLabel: translate('Total_Outstanding'),
+      icon: <AlertCircle className="h-5 w-5" />,
+      iconBg: 'bg-red-500 text-white border-red-400',
+      className: 'border-red-200 !bg-[#e72f34] text-white after:absolute after:-right-5 after:-bottom-8 after:h-20 after:w-20 after:rounded-full after:bg-white/10',
+      valueColor: 'text-white',
+    },
+    {
+      label: translate('Identified_Assets'),
+      value: summary.encroachedAssets.toLocaleString('en-IN'),
+      subLabel: translate('Encroachments'),
+      icon: <ShieldAlert className="h-5 w-5" />,
+      iconBg: 'bg-amber-500 text-white border-amber-400',
+      className: 'border-amber-200 !bg-[#e99000] text-white after:absolute after:-right-5 after:-bottom-8 after:h-20 after:w-20 after:rounded-full after:bg-white/10',
+      valueColor: 'text-white',
+    },
+  ];
 
-export function AssetRegisterHeaderSummary({
-  totalCount,
-  totalCapitalValue,
-  activeAssetsCount,
-  translate,
-}: AssetRegisterHeaderSummaryProps) {
   return (
-    <CardContent className="border-t border-slate-200 p-0 bg-slate-50/50">
-      <div className="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2 lg:grid-cols-3">
-        <CenteredSummaryCard
-          label={translate('Total_Assets') || 'Total Assets'}
-          value={totalCount}
-          icon={<Building2Icon className="h-5 w-5" />}
-          iconBg="bg-blue-50 text-blue-600 border-blue-100"
-        />
-        <CenteredSummaryCard
-          label={translate('Capital_Value') || 'Capital Value'}
-          value={formatIndianCurrencyAbbreviated(totalCapitalValue)}
-          valueColor="text-emerald-600"
-          icon={<Coins className="h-5 w-5" />}
-          iconBg="bg-emerald-50 text-emerald-600 border-emerald-100"
-        />
-        <CenteredSummaryCard
-          label={translate('Active_Assets') || 'Active Assets'}
-          value={activeAssetsCount}
-          valueColor="text-blue-600"
-          icon={<CheckCircle2 className="h-5 w-5" />}
-          iconBg="bg-sky-50 text-sky-600 border-sky-100"
-        />
+    <section aria-label={translate('Register_Summary')} className="w-full bg-[#f4f7fb] px-3 py-3">
+      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {cards.map((card) => (
+          <DashboardCard
+            key={card.label}
+            label={card.label}
+            value={card.value}
+            subLabel={card.subLabel}
+            icon={card.icon}
+            iconBg={card.iconBg}
+            className={`relative !h-[94px] !min-h-0 !overflow-hidden !rounded-[15px] !border-0 !px-3 !py-2 !shadow-none !gap-3 !flex-row-reverse ${card.className} [&_.text-slate-600]:!text-white/95 [&_.text-slate-500]:!text-white [&_.w-1]:!hidden [&>div:last-child]:!h-10 [&>div:last-child]:!w-10 [&>div:last-child]:!rounded-xl [&>div:last-child]:!border-white/25 [&>div:last-child]:!bg-white/15 [&>div:last-child]:!z-10 [&_.flex-1]:!z-10 [&_.flex-1]:!text-left [&_.flex-1_p:first-child]:!text-[11px] [&_.flex-1_p:first-child]:!font-extrabold [&_.flex-1_p:first-child]:!uppercase [&_.flex-1_p:first-child]:!tracking-wide [&_.flex-1_p:first-child]:!leading-3 [&_.flex-1_p:nth-child(2)]:!mt-0.5 [&_.flex-1_p:nth-child(2)]:!text-[23px] [&_.flex-1_p:nth-child(2)]:!font-extrabold [&_.flex-1_p:nth-child(2)]:!leading-6 [&_.flex-1_p:nth-child(2)]:!whitespace-nowrap [&_.flex-1_p:nth-child(3)]:!mt-1 [&_.flex-1_p:nth-child(3)]:!text-[9px] [&_.flex-1_p:nth-child(3)]:!font-semibold [&_.flex-1_p:nth-child(3)]:!leading-3`}
+            valueColor={card.valueColor}
+          />
+        ))}
       </div>
-    </CardContent>
+    </section>
   );
 }

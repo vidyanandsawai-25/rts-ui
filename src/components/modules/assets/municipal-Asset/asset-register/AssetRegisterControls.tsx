@@ -11,12 +11,13 @@ export function AssetRegisterControls({
   ZoneId,
   WardId,
   DepartmentId,
-  sortBy,
-  sortOrder,
+  ownershipType,
+  encroachmentStatus,
   assetTypeOptions,
   zoneOptions,
   wardOptions,
   owningDepartmentOptions,
+  ownershipOptions,
   categoryOptions,
 }: AssetRegisterControlsProps) {
   return (
@@ -29,10 +30,13 @@ export function AssetRegisterControls({
         ZoneId={ZoneId}
         WardId={WardId}
         DepartmentId={DepartmentId}
+        ownershipType={ownershipType}
+        encroachmentStatus={encroachmentStatus}
         assetTypeOptions={assetTypeOptions}
         zoneOptions={zoneOptions}
         wardOptions={wardOptions}
         owningDepartmentOptions={owningDepartmentOptions}
+        ownershipOptions={ownershipOptions}
         categoryId={categoryId}
         categoryOptions={categoryOptions}
         exportButton={
@@ -45,8 +49,8 @@ export function AssetRegisterControls({
             ZoneId={ZoneId}
             WardId={WardId}
             DepartmentId={DepartmentId}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
+            ownershipType={ownershipType}
+            encroachmentStatus={encroachmentStatus}
           />
         }
       />

@@ -1,4 +1,4 @@
-import { TEXT_SANITIZE } from '@/lib/utils/validation-rules';
+import { ASSET_MASTER_TEXT_SANITIZE } from '@/lib/utils/asset-validation-rules';
 
 export type AssetRegisterSearchField = 'all' | 'assetId' | 'assetName' | 'address';
 
@@ -14,7 +14,7 @@ export function sanitizeFilterInput(value: string): string {
   sanitized = sanitized.replace(/-\s+/g, '-');
   sanitized = sanitized.replace(/-+/g, '-');
   sanitized = sanitized.replace(/\s+/g, ' ');
-  return sanitized.replace(TEXT_SANITIZE, '');
+  return sanitized.replace(ASSET_MASTER_TEXT_SANITIZE, '');
 }
 
 export function getMainSearchPlaceholder(

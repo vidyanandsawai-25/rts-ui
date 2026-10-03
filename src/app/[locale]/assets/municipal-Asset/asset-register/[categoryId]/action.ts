@@ -17,8 +17,8 @@ export async function fetchAssetRegisterPage(
   assetNo: string = "",
   assetName: string = "",
   address: string = "",
-  sortBy?: string,
-  sortOrder?: string
+  ownershipType?: string,
+  encroachmentStatus?: string
 ): Promise<AssetRegisterPageResult> {
   const response = await municipalAssetRegisterServerService.getAssetRegisterPage({
     pageNumber: page,
@@ -28,12 +28,12 @@ export async function fetchAssetRegisterPage(
     zoneId: zoneId && zoneId !== "all" ? Number(zoneId) : null,
     wardId: wardId && wardId !== "all" ? Number(wardId) : null,
     owningDepartmentId: owningDepartmentId && owningDepartmentId !== "all" ? Number(owningDepartmentId) : null,
+    ownershipType: ownershipType && ownershipType !== "all" ? ownershipType : undefined,
+    encroachmentStatus: encroachmentStatus && encroachmentStatus !== "all" ? encroachmentStatus : undefined,
     searchTerm: search || undefined,
     assetNo: assetNo || undefined,
     assetName: assetName || undefined,
     address: address || undefined,
-    sortBy: sortBy || undefined,
-    sortOrder: sortOrder || undefined,
     isActive: true,
   });
 
@@ -43,6 +43,7 @@ export async function fetchAssetRegisterPage(
 
   const data = response.data;
   const items = Array.isArray(data) ? data : (data.items || []);
+  const summary = Array.isArray(data) ? undefined : data.summary;
 
   return {
     items,
@@ -51,8 +52,18 @@ export async function fetchAssetRegisterPage(
     totalMarketValue: data.totalMarketValue ?? 0,
     totalDepreciation: data.totalDepreciation ?? 0,
     netBookValue: data.netBookValue ?? 0,
-    totalCapitalValue: data.totalCapitalValue ?? 0,
-    activeAssetsCount: data.activeAssetsCount ?? 0,
+    totalCapitalValue: data.totalCapitalValue ?? summary?.totalCapitalValue ?? 0,
+    activeAssetsCount: data.activeAssetsCount ?? summary?.activeParentAssets ?? 0,
+    summary: {
+      totalParentAssets: summary?.totalParentAssets ?? (Array.isArray(data) ? items.length : data.totalCount ?? items.length),
+      activeParentAssets: summary?.activeParentAssets ?? (Array.isArray(data) ? 0 : data.activeAssetsCount ?? 0),
+      totalSubUnits: summary?.totalSubUnits ?? 0,
+      activeSubUnits: summary?.activeSubUnits ?? 0,
+      totalCapitalValue: summary?.totalCapitalValue ?? (Array.isArray(data) ? 0 : data.totalCapitalValue ?? 0),
+      totalAnnualRevenue: summary?.totalAnnualRevenue ?? 0,
+      totalOutstanding: summary?.totalOutstanding ?? 0,
+      encroachedAssets: summary?.encroachedAssets ?? 0,
+    },
     error: null,
   };
 }
@@ -136,6 +147,20 @@ export async function fetchCategories() {
     }));
 }
 
+export async function fetchOwnershipTypes() {
+  const response = await municipalAssetRegisterServerService.getOwnershipTypes();
+  if (!response.success) {
+    throw new Error(response.error || "Failed to fetch ownership types");
+  }
+  return (response.data || [])
+    .filter((item) => item && item.id != null)
+    .map((item) => ({
+      id: Number(item.id),
+      label: item.ownershipTypeName || "",
+      value: item.ownershipTypeName || "",
+    }));
+}
+
 export async function fetchGroupedAssetPhotosAction(assetId: number): Promise<ApiResponse<PropertyPhotoGalleryDto>> {
   const response = await municipalAssetRegisterServerService.getGroupedAssetPhotos(assetId);
   if (!response.success) {
@@ -144,15 +169,29 @@ export async function fetchGroupedAssetPhotosAction(assetId: number): Promise<Ap
   return response;
 }
 
-export async function fetchSubUnitsByAsset(assetId: number) {
-  const response = await municipalAssetRegisterServerService.getSubUnitsByAsset(assetId);
+export async function fetchSubUnitsByAsset(
+  assetId: number,
+  page: number = 1,
+  pageSize: number = 10,
+  search: string = ""
+) {
+  const response = await municipalAssetRegisterServerService.getSubUnitsByAsset(
+    assetId,
+    page,
+    pageSize,
+    search
+  );
   if (!response.success || !response.data) {
     throw new Error(response.error || 'Failed to fetch sub-units');
   }
 
   return {
     success: true,
-    items: response.data,
+    items: response.data.items,
+    totalCount: response.data.totalCount,
+    pageNumber: response.data.pageNumber,
+    pageSize: response.data.pageSize,
+    totalPages: response.data.totalPages,
     message: response.message || "",
   };
 }

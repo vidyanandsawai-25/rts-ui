@@ -3,6 +3,10 @@ import type {
   AssetRegisterApiRecord,
   AssetRegisterPageResult,
 } from "@/types/municipal-asset/register.types";
+import type {
+  ApiSubUnitFloorDetail,
+  AssetRegisterSummary,
+} from '@/types/asset/asset-register/municipal-asset-service.types';
 
 
 export interface AssetRegisterOption {
@@ -165,6 +169,9 @@ export interface GroupedAssetPhotos {
 export type PagedApiResponse<T> = {
   items?: T[];
   totalCount?: number;
+  pageNumber?: number;
+  pageSize?: number;
+  summary?: Partial<AssetRegisterSummary>;
   totalPurchaseValue?: number;
   totalMarketValue?: number;
   totalDepreciation?: number;
@@ -185,16 +192,38 @@ export interface AssetRegisterSubUnitItem {
   id: number;
   assetNo?: string;
   assetName?: string;
+  assetRegionalName?: string | null;
   status?: string;
   occupancy?: string;
+  occupancyStatus?: string | null;
   builtUpAreaSqMeter?: number | null;
   carpetAreaSqMeter?: number | null;
+  builtUpAreaSqFeet?: number | null;
+  carpetAreaSqFeet?: number | null;
   capitalValue?: number | null;
   lastCVDate?: string | null;
   assetLife?: number | null;
+  assetCategoryId?: number;
+  assetCategoryName?: string;
+  assetTypeId?: number;
+  assetTypeName?: string;
+  typeOfUseName?: string | null;
+  constructionTypeName?: string | null;
+  constructionYear?: string | number | null;
+  assessmentYear?: string | number | null;
+  noOfRooms?: number | null;
+  isRented?: boolean;
+  photoCount?: number;
+  documentCount?: number;
+  photos?: unknown[];
+  documents?: unknown[];
+  floorDetails?: ApiSubUnitFloorDetail[];
+  floorName?: string | null;
   names?: {
     category?: string | null;
     type?: string | null;
+    useType?: string | null;
+    subUseType?: string | null;
     mouja?: string | null;
     zone?: string | null;
     ward?: string | null;

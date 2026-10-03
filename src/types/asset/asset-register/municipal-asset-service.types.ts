@@ -9,6 +9,31 @@ export interface AssetRegisterWardOption extends AssetRegisterOption {
   zoneId: number | null;
 }
 
+export interface ApiOwnershipTypeItem {
+  id: number;
+  ownershipTypeName: string;
+  description?: string | null;
+  isActive?: boolean;
+  createdDate?: string | null;
+  updatedDate?: string | null;
+}
+
+export interface ApiTypeOfUseItem {
+  id: number;
+  assetCategoryId?: number | null;
+  assetTypeId?: number | null;
+  typeOfUseCode?: string | null;
+  description?: string | null;
+  type?: string | null;
+  typeOfUseGroupId?: number | null;
+  typeOfUseGroupName?: string | null;
+  searchSequence?: number | null;
+  isActive?: boolean;
+  markedForDeletion?: boolean;
+}
+
+export type EncroachmentStatusType = 'all' | 'Fully Encroached' | 'Partially Encroached' | 'Clean';
+
 export interface AssetType {
   id: number;
   typeCode?: string;
@@ -123,6 +148,7 @@ export interface AssetRegisterApiRecord {
   subTypeOfUseId?: number;
   builtUpAreaSqMeter?: number;
   carpetAreaSqMeter?: number;
+  plotAreaSqMeter?: number;
   landAreaSqMeter?: number;
   hasLift?: boolean;
   purchaseValue?: number;
@@ -159,12 +185,25 @@ export interface AssetRegisterApiRecord {
   assetDocumentId?: number | null;
   assetLife?: number | null;
   constructionYear?: number | null;
+  constructionTypeName?: string | null;
+  mpmsNo?: string | null;
+  totalFloors?: number | null;
   totalSubUnits?: number;
+  annualRevenue?: number;
+  outstandingAmount?: number;
+  encroachmentStatus?: string | null;
+  photoCount?: number;
+  documentCount?: number;
+  hasPlanDocument?: boolean;
+  hasTitleDocument?: boolean;
+  hasSurveyDocument?: boolean;
+  activeLeaseCount?: number;
 }
 
 export interface AssetRegisterPageResult {
   items: AssetRegisterApiRecord[];
   totalCount: number;
+  summary?: AssetRegisterSummary;
   totalPurchaseValue?: number;
   totalMarketValue?: number;
   totalDepreciation?: number;
@@ -172,4 +211,78 @@ export interface AssetRegisterPageResult {
   totalCapitalValue?: number;
   activeAssetsCount?: number;
   error?: string | null;
+}
+
+export interface AssetRegisterSummary {
+  totalParentAssets: number;
+  activeParentAssets: number;
+  totalSubUnits: number;
+  activeSubUnits: number;
+  totalCapitalValue: number;
+  totalAnnualRevenue: number;
+  totalOutstanding: number;
+  encroachedAssets: number;
+}
+
+export interface ApiSubUnitFloorDetail {
+  id: number;
+  assetId: number;
+  floorId: number;
+  subFloorId?: number | null;
+  constructionYear?: string | number | null;
+  assessmentYear?: string | number | null;
+  constructionTypeId?: number | null;
+  typeOfUseId?: number | null;
+  subTypeOfUseId?: number | null;
+  carpetAreaSqMeter?: number | null;
+  carpetAreaSqFeet?: number | null;
+  builtupAreaSqMeter?: number | null;
+  builtupAreaSqFeet?: number | null;
+  noOfRooms?: number | null;
+  baseValue?: number | null;
+  capitalValue?: number | null;
+  cvAgeFactor?: number | null;
+  cvFloorFactor?: number | null;
+  cvNatureFactor?: number | null;
+  cvUseFactor?: number | null;
+  cvBaseRate?: number | null;
+  isRented?: boolean;
+  isActive?: boolean;
+  floorName?: string | null;
+  subFloorName?: string | null;
+  constructionTypeName?: string | null;
+  typeOfUseName?: string | null;
+  subTypeOfUseName?: string | null;
+}
+
+export interface ApiSubUnitRecord {
+  assetId: number;
+  assetNo: string;
+  assetName: string;
+  assetRegionalName?: string | null;
+  assetCategoryId: number;
+  assetCategoryName: string;
+  assetTypeId: number;
+  assetTypeName: string;
+  occupancyStatus?: string | null;
+  isActive: boolean;
+  createdDate?: string | null;
+  floorDetails?: ApiSubUnitFloorDetail[];
+  photos?: unknown[];
+  documents?: unknown[];
+}
+
+export interface ParentAssetSubUnitApiResponse {
+  parentAssetId: number;
+  parentAssetNo?: string;
+  parentAssetName?: string;
+  parentIsActive?: boolean;
+  totalSubUnits: number;
+  items: ApiSubUnitRecord[];
+  totalCount?: number;
+  pageNumber?: number;
+  pageSize?: number;
+  totalPages?: number;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
 }

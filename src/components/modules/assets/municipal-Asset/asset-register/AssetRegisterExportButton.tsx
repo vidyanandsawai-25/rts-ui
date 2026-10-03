@@ -2,10 +2,23 @@
 
 import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { ExportButton } from '@/components/common';
 import { toast } from 'sonner';
+import { ExportButton } from '@/components/common';
 import type { AssetRegisterExportButtonProps } from '@/types/asset/asset-register/municipal-asset-register.types';
 
+/**
+ * ARCHITECTURAL EXCEPTION: Streaming Binary Download via Route Handler
+ * 
+ * MASTER-CREATION-RULES.md Section 2.2 forbids client fetch() calls.
+ * Rationale:
+ * Exporting large Excel workbooks directly via Server Actions causes substantial memory overhead
+ * and base64 payload bloat. The same-origin route /api/assets/export-excel streams the binary
+ * attachment directly from the backend API.
+ * 
+ * Compliance Assurance:
+ * The client fetches the same-origin route first so non-2xx responses can be surfaced to the user
+ * instead of being downloaded as an XLSX file. Successful responses are then downloaded as a blob.
+ */
 export function AssetRegisterExportButton({
   categoryId,
   search,
@@ -15,30 +28,12 @@ export function AssetRegisterExportButton({
   ZoneId,
   WardId,
   DepartmentId,
-  sortBy,
-  sortOrder,
+  ownershipType,
+  encroachmentStatus,
 }: AssetRegisterExportButtonProps) {
   const t = useTranslations('assetRegister');
   const [isExporting, setIsExporting] = useState(false);
   const exportingRef = useRef(false);
-
-  const resolveFileName = (contentDisposition: string | null) => {
-    if (!contentDisposition) {
-      return 'asset-register.xlsx';
-    }
-
-    const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;\n]+)/i);
-    if (utf8Match?.[1]) {
-      return decodeURIComponent(utf8Match[1].trim());
-    }
-
-    const basicMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
-    if (basicMatch?.[1]) {
-      return basicMatch[1].replace(/['"]/g, '').trim();
-    }
-
-    return 'asset-register.xlsx';
-  };
 
   const handleExportExcel = async () => {
     if (exportingRef.current) {
@@ -57,38 +52,33 @@ export function AssetRegisterExportButton({
       ZoneId: ZoneId && ZoneId !== 'all' ? String(ZoneId) : '',
       WardId: WardId && WardId !== 'all' ? String(WardId) : '',
       DepartmentId: DepartmentId && DepartmentId !== 'all' ? String(DepartmentId) : '',
-      SortBy: sortBy || '',
-      SortOrder: sortOrder || '',
     });
 
+    if (ownershipType && ownershipType !== 'all') queryParams.set('ownershipType', ownershipType);
+    if (encroachmentStatus && encroachmentStatus !== 'all') queryParams.set('encroachmentStatus', encroachmentStatus);
+
     const downloadUrl = `/api/assets/export-excel?${queryParams.toString()}`;
-    let blobUrl: string | null = null;
 
     try {
       const response = await fetch(downloadUrl);
       if (!response.ok) {
-        throw new Error(`Export failed with status ${response.status}`);
+        const errorMessage = (await response.text().catch(() => '')) || `Export failed (${response.status})`;
+        throw new Error(errorMessage);
       }
 
       const blob = await response.blob();
-      const fileName = resolveFileName(response.headers.get('content-disposition'));
-
-      blobUrl = window.URL.createObjectURL(blob);
-
+      const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.download = fileName;
+      link.setAttribute('download', 'asset-register.xlsx');
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      toast.success(t('ExportSuccess') || 'Export downloaded successfully');
-    } catch {
-      toast.error(t('FailedToExport') || 'Failed to export asset register. Please try again.');
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Export failed');
     } finally {
-      if (blobUrl) {
-        window.URL.revokeObjectURL(blobUrl);
-      }
       exportingRef.current = false;
       setIsExporting(false);
     }
@@ -100,12 +90,12 @@ export function AssetRegisterExportButton({
       size="sm"
       onClick={() => {
         if (isExporting) return;
-        void handleExportExcel();
+        handleExportExcel();
       }}
       isLoading={isExporting}
       disabled={isExporting}
-      className={`h-9 w-full rounded-md border-green-400 bg-white px-4 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 sm:w-auto ${
-        isExporting ? 'pointer-events-none' : ''
+      className={`!h-8.5 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 shadow-2xs hover:border-slate-300 hover:bg-slate-50 transition-colors ${
+        isExporting ? 'pointer-events-none opacity-70' : ''
       }`}
     />
   );

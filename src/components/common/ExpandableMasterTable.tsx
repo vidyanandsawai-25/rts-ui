@@ -44,6 +44,10 @@ export interface Column<T extends Record<string, unknown> = Record<string, unkno
   headerClassName?: string;
   cellClassName?: string;
   align?: 'left' | 'center' | 'right';
+  sticky?: 'left' | 'right';
+  stickyOffset?: string;
+  stickyZIndex?: number;
+  renderTh?: (col: Column<T>, index: number) => React.ReactNode;
 }
 
 export interface ExpandableMasterTableProps<T extends Record<string, unknown> = Record<string, unknown>> {
@@ -65,6 +69,8 @@ export interface ExpandableMasterTableProps<T extends Record<string, unknown> = 
   actionLabel?: string;
   actionHeaderAlign?: 'left' | 'center' | 'right';
   actionCellAlign?: 'left' | 'center' | 'right';
+  actionHeaderClassName?: string;
+  actionCellClassName?: string;
   getRowKey?: (row: T, index: number) => React.Key;
   maxBodyHeightClassName?: string;
   height?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
@@ -73,15 +79,24 @@ export interface ExpandableMasterTableProps<T extends Record<string, unknown> = 
   containerClassName?: string;
   tableClassName?: string;
   theadClassName?: string;
+  customThead?: React.ReactNode;
+  tbodyClassName?: string;
   rowClassName?: (row: T, index: number) => string;
+  /** When true, omits the outer card border/bg and renders table content directly */
+  bareCard?: boolean;
 
   /* ===== EXPANDABLE ROW REQUIREMENT ===== */
-  /** Render expanded row content beneath the target row */
+  /** Render expanded row content beneath the target row (wrapped in a single full-width td) */
   renderExpandedRow?: (row: T, index: number) => React.ReactNode;
+  /** Render custom expanded row(s) directly without td wrapper, allowing multiple <tr> elements */
+  renderCustomExpandedRows?: (row: T, index: number) => React.ReactNode;
   /** Custom class for expanded row <tr> */
   expandedRowClassName?: string;
   /** Custom class for expanded row <td> */
   expandedCellClassName?: string;
+
+  /** Custom renderer for entire primary row if needed */
+  renderRow?: (row: T, index: number, defaultRowNode: React.ReactNode) => React.ReactNode;
 
   /* ===== HEADER ===== */
   headerTitle?: string;
@@ -179,6 +194,8 @@ export function ExpandableMasterTable<T extends Record<string, unknown> = Record
   actionLabel,
   actionHeaderAlign = 'center',
   actionCellAlign = 'center',
+  actionHeaderClassName,
+  actionCellClassName,
   getRowKey,
   maxBodyHeightClassName,
   height,
@@ -187,10 +204,15 @@ export function ExpandableMasterTable<T extends Record<string, unknown> = Record
   containerClassName,
   tableClassName,
   theadClassName,
+  customThead,
+  tbodyClassName,
   rowClassName,
+  bareCard = false,
   renderExpandedRow,
+  renderCustomExpandedRows,
   expandedRowClassName,
   expandedCellClassName,
+  renderRow,
   headerTitle,
   headerSubtitle,
   headerExtra,
@@ -244,36 +266,55 @@ export function ExpandableMasterTable<T extends Record<string, unknown> = Record
   const TableContent = (
     <div ref={scrollContainerRef} onScroll={onScroll} className={cn('overflow-auto', bodyHeightClass)}>
       <table className={cn('w-full text-sm', tableClassName)}>
-        <thead
-          className={cn(
-            'sticky top-0 z-20',
-            'bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF]',
-            'border-b border-blue-200',
-            'transition-colors duration-200',
-            'hover:from-[#D6E8FF] hover:via-[#CFE3FF] hover:to-[#D6E8FF]',
-            theadClassName
-          )}
-        >
+        {customThead ? (
+          customThead
+        ) : (
+          <thead
+            className={cn(
+              'sticky top-0 z-20',
+              'bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF]',
+              'border-b border-blue-200',
+              'transition-colors duration-200',
+              'hover:from-[#D6E8FF] hover:via-[#CFE3FF] hover:to-[#D6E8FF]',
+              theadClassName
+            )}
+          >
           <tr>
-            {columns.map((col, index) => (
-              <th
-                key={String(col.key)}
-                style={{ width: col.width }}
-                className={cn(
-                  'px-2 py-3 text-sm font-semibold text-[#1E3A8A]',
-                  col.align === 'center'
-                    ? 'text-center'
-                    : col.align === 'right'
-                      ? 'text-right'
-                      : 'text-left',
-                  index === 0 && 'rounded-tl-lg',
-                  !hasActions && index === columns.length - 1 && 'rounded-tr-lg',
-                  col.headerClassName
-                )}
-              >
-                {col.label}
-              </th>
-            ))}
+            {columns.map((col, index) => {
+              const stickyStyle: React.CSSProperties = {
+                width: col.width,
+                ...(col.sticky === 'left' && typeof col.stickyOffset !== 'undefined'
+                  ? { left: col.stickyOffset }
+                  : {}),
+                ...(col.sticky === 'right' && typeof col.stickyOffset !== 'undefined'
+                  ? { right: col.stickyOffset }
+                  : {}),
+                ...(typeof col.stickyZIndex === 'number'
+                  ? { zIndex: col.stickyZIndex }
+                  : {}),
+              };
+
+              return (
+                <th
+                  key={String(col.key)}
+                  style={stickyStyle}
+                  className={cn(
+                    'px-2 py-3 text-sm font-semibold text-[#1E3A8A]',
+                    col.sticky && 'sticky',
+                    col.align === 'center'
+                      ? 'text-center'
+                      : col.align === 'right'
+                        ? 'text-right'
+                        : 'text-left',
+                    index === 0 && 'rounded-tl-lg',
+                    !hasActions && index === columns.length - 1 && 'rounded-tr-lg',
+                    col.headerClassName
+                  )}
+                >
+                  {col.renderTh ? col.renderTh(col, index) : col.label}
+                </th>
+              );
+            })}
 
             {hasActions && (
               <th
@@ -283,7 +324,8 @@ export function ExpandableMasterTable<T extends Record<string, unknown> = Record
                     ? 'text-left'
                     : actionHeaderAlign === 'right'
                       ? 'text-right'
-                      : 'text-center'
+                      : 'text-center',
+                  actionHeaderClassName
                 )}
               >
                 {actualActionLabel}
@@ -291,8 +333,9 @@ export function ExpandableMasterTable<T extends Record<string, unknown> = Record
             )}
           </tr>
         </thead>
+        )}
 
-        <tbody>
+        <tbody className={tbodyClassName}>
           {loading ? (
             <tr>
               <td
@@ -315,82 +358,101 @@ export function ExpandableMasterTable<T extends Record<string, unknown> = Record
             data.map((row, i) => {
               const rowKey = getRowKey ? getRowKey(row, i) : i;
               const expandedContent = renderExpandedRow ? renderExpandedRow(row, i) : null;
+              const customExpandedRows = renderCustomExpandedRows ? renderCustomExpandedRows(row, i) : null;
+
+              const defaultRowNode = (
+                <tr
+                  onClick={() => onRowClick?.(row, i)}
+                  className={cn(
+                    'border-b border-blue-100 hover:bg-blue-50/40',
+                    onRowClick ? 'cursor-pointer' : '',
+                    rowClassName?.(row, i)
+                  )}
+                >
+                  {columns.map((col) => {
+                    const value = row[col.key];
+                    const stickyStyle: React.CSSProperties = {
+                      ...(col.sticky === 'left' && typeof col.stickyOffset !== 'undefined'
+                        ? { left: col.stickyOffset }
+                        : {}),
+                      ...(col.sticky === 'right' && typeof col.stickyOffset !== 'undefined'
+                        ? { right: col.stickyOffset }
+                        : {}),
+                      ...(typeof col.stickyZIndex === 'number'
+                        ? { zIndex: col.stickyZIndex }
+                        : {}),
+                    };
+
+                    return (
+                      <td
+                        key={String(col.key)}
+                        style={stickyStyle}
+                        className={cn(
+                          'px-2 py-2 text-gray-700',
+                          col.sticky && 'sticky',
+                          col.align === 'center'
+                            ? 'text-center'
+                            : col.align === 'right'
+                              ? 'text-right'
+                              : 'text-left',
+                          col.cellClassName
+                        )}
+                      >
+                        {col.render ? (
+                          col.render(value, row, i)
+                        ) : col.isStatus ? (
+                          isPrimitive(value) ? (
+                            <StatusBadge value={value ?? null} variant="status" />
+                          ) : (
+                            <span className="font-medium">-</span>
+                          )
+                        ) : (
+                          <span className="font-medium">
+                            {value === null || typeof value === 'undefined'
+                              ? '-'
+                              : isPrimitive(value)
+                                ? String(value)
+                                : '-'}
+                          </span>
+                        )}
+                      </td>
+                    );
+                  })}
+
+                  {hasActions && (
+                    <td
+                      className={cn(
+                        'px-4 py-2',
+                        actionCellAlign === 'left'
+                          ? 'text-left'
+                          : actionCellAlign === 'right'
+                            ? 'text-right'
+                            : 'text-center',
+                        actionCellClassName
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'flex items-center gap-2',
+                          actionCellAlign === 'left'
+                            ? 'justify-start'
+                            : actionCellAlign === 'right'
+                              ? 'justify-end'
+                              : 'justify-center'
+                        )}
+                      >
+                        {renderActions?.(row)}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              );
 
               return (
                 <React.Fragment key={rowKey}>
-                  <tr
-                    onClick={() => onRowClick?.(row, i)}
-                    className={cn(
-                      'border-b border-blue-100 hover:bg-blue-50/40',
-                      onRowClick ? 'cursor-pointer' : '',
-                      rowClassName?.(row, i)
-                    )}
-                  >
-                    {columns.map((col) => {
-                      const value = row[col.key];
+                  {renderRow ? renderRow(row, i, defaultRowNode) : defaultRowNode}
 
-                      return (
-                        <td
-                          key={String(col.key)}
-                          className={cn(
-                            'px-2 py-2 text-gray-700',
-                            col.align === 'center'
-                              ? 'text-center'
-                              : col.align === 'right'
-                                ? 'text-right'
-                                : 'text-left',
-                            col.cellClassName
-                          )}
-                        >
-                          {col.render ? (
-                            col.render(value, row, i)
-                          ) : col.isStatus ? (
-                            isPrimitive(value) ? (
-                              <StatusBadge value={value ?? null} variant="status" />
-                            ) : (
-                              <span className="font-medium">-</span>
-                            )
-                          ) : (
-                            <span className="font-medium">
-                              {value === null || typeof value === 'undefined'
-                                ? '-'
-                                : isPrimitive(value)
-                                  ? String(value)
-                                  : '-'}
-                            </span>
-                          )}
-                        </td>
-                      );
-                    })}
-
-                    {hasActions && (
-                      <td
-                        className={cn(
-                          'px-4 py-2',
-                          actionCellAlign === 'left'
-                            ? 'text-left'
-                            : actionCellAlign === 'right'
-                              ? 'text-right'
-                              : 'text-center'
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            'flex items-center gap-2',
-                            actionCellAlign === 'left'
-                              ? 'justify-start'
-                              : actionCellAlign === 'right'
-                                ? 'justify-end'
-                                : 'justify-center'
-                          )}
-                        >
-                          {renderActions?.(row)}
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-
-                  {/* EXPANDED SUB-ROW */}
+                  {/* STANDARD EXPANDED SUB-ROW (Single TD colSpan) */}
                   {expandedContent && (
                     <tr className={cn('bg-slate-50/50', expandedRowClassName)}>
                       <td
@@ -401,6 +463,9 @@ export function ExpandableMasterTable<T extends Record<string, unknown> = Record
                       </td>
                     </tr>
                   )}
+
+                  {/* CUSTOM MULTI-ROW EXPANSION (Direct TRs) */}
+                  {customExpandedRows}
                 </React.Fragment>
               );
             })
@@ -409,6 +474,10 @@ export function ExpandableMasterTable<T extends Record<string, unknown> = Record
       </table>
     </div>
   );
+
+  if (bareCard) {
+    return TableContent;
+  }
 
   return (
     <div className={cn('flex flex-col gap-4', containerClassName)}>
