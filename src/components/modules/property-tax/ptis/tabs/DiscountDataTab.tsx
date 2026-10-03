@@ -284,21 +284,6 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({
     return null;
   };
 
-  const renderAmountDisplay = (item: PropertySocialDetailItem) => {
-    const hasAmount = item.amount !== null && item.amount !== undefined && Number(item.amount) > 0;
-    if (hasAmount) {
-      return <span className="font-bold text-slate-800">{String(item.amount)}</span>;
-    }
-    return <span className="text-slate-400">-</span>;
-  };
-
-  const renderPercentageDisplay = (item: PropertySocialDetailItem) => {
-    const hasPercentage = item.percentage !== null && item.percentage !== undefined && Number(item.percentage) > 0;
-    if (hasPercentage) {
-      return <span className="font-bold text-slate-800">{item.percentage}%</span>;
-    }
-    return <span className="text-slate-400">-</span>;
-  };
 
   const renderValueDisplay = (item: PropertySocialDetailItem) => {
     const hasInt = item.intValue !== null && item.intValue !== undefined;
@@ -542,16 +527,7 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({
                     <th className="py-2.5 px-3 font-bold text-xs text-slate-600 uppercase tracking-wider bg-slate-50">
                       {activeSubTab === 'social' ? (tTable('socialAttribute') || 'SOCIAL ATTRIBUTE') : (tTable('discountAttribute') || 'DISCOUNT ATTRIBUTE')}
                     </th>
-                    {activeSubTab === 'discount' && (
-                      <>
-                        <th className="py-2.5 px-3 font-bold text-xs text-slate-600 uppercase tracking-wider bg-slate-50">
-                          {tTable('amount') || 'AMOUNT'}
-                        </th>
-                        <th className="py-2.5 px-3 font-bold text-xs text-slate-600 uppercase tracking-wider bg-slate-50">
-                          {tTable('percentage') || 'PERCENTAGE'}
-                        </th>
-                      </>
-                    )}
+
                     <th className="py-2.5 px-3 font-bold text-xs text-slate-600 uppercase tracking-wider bg-slate-50">
                       {tTable('value') || 'VALUE'}
                     </th>
@@ -590,19 +566,7 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({
                           </div>
                         </td>
 
-                        {/* 2) Amount Column (only on Discount tab) */}
-                        {activeSubTab === 'discount' && (
-                          <td className="py-2 px-3 whitespace-nowrap">
-                            {renderAmountDisplay(item)}
-                          </td>
-                        )}
 
-                        {/* 3) Percentage Column (only on Discount tab) */}
-                        {activeSubTab === 'discount' && (
-                          <td className="py-2 px-3 whitespace-nowrap">
-                            {renderPercentageDisplay(item)}
-                          </td>
-                        )}
 
                         {/* 4) Value Column */}
                         <td className="py-2 px-3 whitespace-nowrap">

@@ -232,9 +232,6 @@ describe('DiscountDataTab', () => {
     // Verify display value (should be 3 instead of Yes)
     expect(screen.getByText('3')).toBeInTheDocument();
 
-    // Verify percentage and amount are displayed in their columns
-    expect(screen.getByText('10%')).toBeInTheDocument();
-    expect(screen.getByText('500')).toBeInTheDocument();
   });
 
   it('should display decimalValue when both bitValue and decimalValue are present', () => {
@@ -411,8 +408,7 @@ describe('DiscountDataTab', () => {
 
     // Verify table headers
     expect(screen.getByText('DISCOUNT ATTRIBUTE')).toBeInTheDocument();
-    expect(screen.getByText('AMOUNT')).toBeInTheDocument();
-    expect(screen.getByText('PERCENTAGE')).toBeInTheDocument();
+
     expect(screen.getByText('VALUE')).toBeInTheDocument();
     expect(screen.getByText('REMARK')).toBeInTheDocument();
     expect(screen.getByText('action')).toBeInTheDocument();
@@ -598,11 +594,7 @@ describe('DiscountDataTab', () => {
 
     // Check table headers order
     const headers = screen.getAllByRole('columnheader').map((th) => th.textContent?.trim());
-    expect(headers).toEqual(['DISCOUNT ATTRIBUTE', 'AMOUNT', 'PERCENTAGE', 'VALUE', 'REMARK', 'action']);
-
-    // Row 1 has amount and percentage
-    expect(screen.getByText('2500')).toBeInTheDocument();
-    expect(screen.getByText('50%')).toBeInTheDocument();
+    expect(headers).toEqual(['DISCOUNT ATTRIBUTE', 'VALUE', 'REMARK', 'action']);
 
     // Both rows display their values
     expect(screen.getByText('Senior Citizen Concession')).toBeInTheDocument();
