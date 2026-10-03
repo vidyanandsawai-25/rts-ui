@@ -178,7 +178,7 @@ export function ScopeSelectionPanel({
         setIsModalOpen={setIsModalOpen}
         currentScopeData={currentScopeData}
         eligibleCount={eligibleCount}
-        onStartExecution={(isScheduled, scheduledDateTime) => executeJob(isScheduled, scheduledDateTime, activeMasterDataScope)}
+        onStartExecution={(isScheduled, scheduledDateTime, forceRecalculate) => executeJob(isScheduled, scheduledDateTime, activeMasterDataScope, forceRecalculate)}
         onPreview={handlePreview}
         isPreviewLoading={isPreviewLoading}
         financeYear={financeYear}

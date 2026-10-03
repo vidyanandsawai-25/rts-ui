@@ -140,6 +140,7 @@ export interface OperationScope {
   wardNames?: string[];
   zoneNames?: string[];
   overrideAlreadyTaxed?: boolean;
+  forceRecalculate?: boolean;
 }
 
 export interface EligibleCountPayload {

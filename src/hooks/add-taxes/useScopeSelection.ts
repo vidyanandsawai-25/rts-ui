@@ -528,7 +528,7 @@ export function useScopeSelection(
     }
   };
 
-  const executeJob = async (isScheduled: boolean, scheduledDateTime?: string, overrideScope?: Scope | string) => {
+  const executeJob = async (isScheduled: boolean, scheduledDateTime?: string, overrideScope?: Scope | string, forceRecalculate?: boolean) => {
     const effectiveScope = (typeof overrideScope === 'string' && overrideScope ? overrideScope : selectedScope) as Scope;
     setIsCalculating(true);
     try {
@@ -609,6 +609,9 @@ export function useScopeSelection(
       }
       if (overrideAlreadyTaxed || effectiveScope === 'masterDataChange' || String(effectiveScope).toLowerCase() === 'masterdatachange') {
         scopeData.overrideAlreadyTaxed = true;
+      }
+      if (forceRecalculate) {
+        scopeData.forceRecalculate = true;
       }
 
       const currentFy = getFyFromParams();
