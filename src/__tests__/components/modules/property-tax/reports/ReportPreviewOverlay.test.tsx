@@ -118,6 +118,12 @@ describe('ReportPreviewOverlay', () => {
   it('constructs the PDF URL from the requestId', () => {
     const { container } = render(<ReportPreviewOverlay {...defaultProps} />);
     const obj = container.querySelector('object')!;
-    expect(obj.getAttribute('data')).toContain('/api/report-download/req-123');
+    expect(obj.getAttribute('data')).toContain('/api/designer-report-download/req-123');
+  });
+
+  it('uses the HTML designer download proxy', () => {
+    const { container } = render(<ReportPreviewOverlay {...defaultProps} />);
+    const obj = container.querySelector('object')!;
+    expect(obj.getAttribute('data')).toContain('/api/designer-report-download/req-123');
   });
 });

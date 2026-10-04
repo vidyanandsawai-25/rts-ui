@@ -1,3 +1,5 @@
+export type ReportJobType = 'Single' | 'Bulk';
+
 export interface ReportDefinition {
   id: number;
   reportCode: string;
@@ -8,6 +10,7 @@ export interface ReportDefinition {
   dataProviderCode: string;
   isActive: boolean;
   sortOrder: number;
+  defaultHtmlTemplateVersionId?: number | null;
   /** ID of the module/category this report belongs to (from backend) */
   moduleId?: number | null;
 }
@@ -98,7 +101,29 @@ export interface ReportJob extends Record<string, unknown> {
   completedDate: string | null;
   errorMessage: string | null;
   downloadAvailable: boolean;
+  totalRecords?: number;
+  processedRecords?: number;
+  totalChunks?: number;
+  completedChunks?: number;
+  currentChunk?: number;
+  progressPercentage?: number;
+  stage?: string;
 }
+
+export interface CreateReportRequestResult {
+  success: boolean;
+  data?: {
+    reportRequestId: string;
+    status: string;
+  };
+  error?: string;
+}
+
+export type CreateReportRequest = (
+  reportCode: string,
+  parameters: Record<string, string>,
+  jobType?: ReportJobType,
+) => Promise<CreateReportRequestResult>;
 
 export interface ReportJobsCopy {
   title: string;
@@ -256,12 +281,14 @@ export interface ReportGenerationFormProps {
   /** Called when the user wants to go back to the report selection grid. */
   onBack?: () => void;
   fetchReportParameters?: (reportDefinitionId: number) => Promise<{ data: ReportParameterDefinition[]; error: string | null }>;
-  createReportRequest?: (reportCode: string, parameters: Record<string, string>) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
+  createReportRequest?: CreateReportRequest;
 }
 
 import type { FinancialYear } from '@/types/financialYear.types';
 
 export interface ReportsWorkspaceProps {
+  locale?: string;
+  initialReportCode?: string;
   copy?: ReportFormCopy;
   jobsCopy: ReportJobsCopy;
   workspaceCopy?: ReportWorkspaceCopy;
@@ -277,7 +304,7 @@ export interface ReportsWorkspaceProps {
   initialJobs?: ReportJob[];
   fetchJobs?: (take?: number) => Promise<ReportJob[]>;
   fetchReportParameters?: (reportDefinitionId: number) => Promise<{ data: ReportParameterDefinition[]; error: string | null }>;
-  createReportRequest?: (reportCode: string, parameters: Record<string, string>) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
+  createReportRequest?: CreateReportRequest;
 }
 
 export interface ReportJobsListProps {

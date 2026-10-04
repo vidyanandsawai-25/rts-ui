@@ -84,6 +84,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     automationDashboardMessages,
     modulesMessages,
     reportMessages,
+    reportDesignerMessages,
     assetPhotoTypeMessages,
     assetRoomTypeMessages,
     designationMessages,
@@ -254,6 +255,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
     import(`./locales/${validatedLocale}/report.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/reportDesigner.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetPhotoType.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetRoomType.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/designation.json`).catch(() => ({})).then((m) => m.default || m),
@@ -372,6 +376,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
       automationDashboard: automationDashboardMessages,
       modules: modulesMessages,
       report: reportMessages,
+      reportDesigner: reportDesignerMessages,
       assetPhotoType: assetPhotoTypeMessages,
       assetRoomType: assetRoomTypeMessages,
       designation: designationMessages,

@@ -174,20 +174,21 @@ export function buildCanonicalSmartLayoutParameters({
   const selectedIds = selectedProperties.map((id) => id.trim()).filter(Boolean).join(',');
   const propertyIds = parsed.propertyId || selectedIds || ownerIdList;
 
-  return {
-    financeyear: financialYear,
-    zoneId,
-    wardId: wardId.join(','),
-    fromPropertyNo: selectionMode === 'range' ? fromProperty : '',
-    toPropertyNo: selectionMode === 'range' ? toProperty : '',
-    propertyNo: selectionMode === 'property' ? parsed.propertyNo : '',
-    propertyId: selectionMode === 'property' ? propertyIds : '',
-    ownerId: selectionMode === 'property' ? propertyIds : '',
-    partitionNo: selectionMode === 'property' ? partitionNo : '',
-    propertySelectionMode: selectionMode,
-    PropertyTypeId: propertyDescription.join(','),
-    AssessmentTypeId: assessmentStatus.join(','),
-  };
+return {
+  propertySelectionMode: selectionMode,
+  financeYear: financialYear,
+  zoneId,
+  wardId: wardId.join(','),
+  fromPropertyNo: selectionMode === 'range' ? fromProperty : '',
+  toPropertyNo: selectionMode === 'range' ? toProperty : '',
+  propertyNo: selectionMode === 'property' ? parsed.propertyNo : '',
+  propertyId: selectionMode === 'property' ? propertyIds : '',
+  ownerId: selectionMode === 'property' ? propertyIds : '',
+  partitionNo: selectionMode === 'property' ? partitionNo : '',
+  PropertyTypeId: propertyDescription.join(','),
+  AssessmentTypeId: assessmentStatus.join(','),
+  assessmentStatus: assessmentStatus.join(','),
+};
 }
 
 export function prepareReportSubmissionParameters(

@@ -4,7 +4,17 @@ import { getReportDefinitions, getReportParameters, getZones, getWardsByZone, ge
 import { getFinancialYearsPaged } from '@/lib/api/financial-year.service';
 import { getPropertyTypes } from '@/lib/api/property-type-crud.service';
 import { apiClient } from '@/services/api.service';
-import type { ReportDefinition, ReportParameterDefinition, ZoneSummary, WardSummary, PropertySummary, ReportJob } from '@/types/report.types';
+import type {
+  CreateReportRequestResult,
+  PropertySummary,
+  ReportDefinition,
+  ReportJob,
+  ReportJobStatus,
+  ReportJobType,
+  ReportParameterDefinition,
+  WardSummary,
+  ZoneSummary,
+} from '@/types/report.types';
 import type { FinancialYear } from '@/types/financialYear.types';
 import type { PropertyType } from '@/types/property-type.types';
 import { cookies } from 'next/headers';
@@ -291,18 +301,63 @@ export async function resolvePropertiesAction(
 
 export async function fetchReportJobs(take = 25): Promise<ReportJob[]> {
   try {
-    const result = await apiClient.get<ReportJob[]>(`/Report/requests?take=${encodeURIComponent(String(take))}`);
-    if (!result.success || !result.data || !Array.isArray(result.data)) return [];
-    return result.data;
+    const safeTake = Math.min(Math.max(take, 1), 100);
+    const htmlResult = await apiClient.get<Array<{
+        jobId: string;
+        reportCode: string;
+        status: string;
+        totalRecords?: number;
+        processedRecords?: number;
+        totalChunks?: number;
+        completedChunks?: number;
+        currentChunk?: number;
+        progressPercentage?: number;
+        stage?: string;
+        errorMessage?: string | null;
+        createdDate: string;
+        completedDate?: string | null;
+      }>>(`/designer-report-jobs?take=${encodeURIComponent(String(safeTake))}`);
+    const htmlJobs = htmlResult.success && Array.isArray(htmlResult.data)
+      ? htmlResult.data.map((job): ReportJob => ({
+          reportRequestId: job.jobId,
+          reportCode: job.reportCode,
+          status: normalizeHtmlJobStatus(job.status),
+          createdDate: job.createdDate,
+          completedDate: job.completedDate ?? null,
+          errorMessage: job.errorMessage ?? null,
+          downloadAvailable: job.status === 'Completed' || job.status === 'PartiallyCompleted',
+          totalRecords: job.totalRecords ?? 0,
+          processedRecords: job.processedRecords ?? 0,
+          totalChunks: job.totalChunks ?? 0,
+          completedChunks: job.completedChunks ?? 0,
+          currentChunk: job.currentChunk ?? 0,
+          progressPercentage: job.progressPercentage ?? 0,
+          stage: job.stage ?? job.status,
+        }))
+      : [];
+
+    return htmlJobs
+      .sort((left, right) => Date.parse(right.createdDate) - Date.parse(left.createdDate))
+      .slice(0, safeTake);
   } catch {
     return [];
   }
 }
 
+function normalizeHtmlJobStatus(status: string): ReportJobStatus {
+  if (status === 'Queued') return 'Pending';
+  if (status === 'PartiallyCompleted') return 'Completed';
+  if (status === 'Processing' || status === 'Completed' || status === 'Failed' || status === 'Cancelled' || status === 'Retrying') {
+    return status as ReportJobStatus;
+  }
+  return 'Pending';
+}
+
 export async function createReportRequestAction(
   reportCode: string,
   parameters: Record<string, string>,
-): Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }> {
+  jobType?: ReportJobType,
+): Promise<CreateReportRequestResult> {
   try {
     const cookieStore = await cookies();
     const userId = cookieStore.get('user_id')?.value;
@@ -321,20 +376,44 @@ export async function createReportRequestAction(
 
 
 
-    const result = await apiClient.post<{ reportRequestId: string; status: string }>('/Report/request', {
-      reportCode,
-      parameters: enrichedParameters,
-    });
+    const result = await apiClient.post<{ jobId: string; status: string }>(
+      '/designer-report-jobs',
+      {
+        reportCode,
+        parameters: enrichedParameters,
+        outputMode: 'merged',
+        jobType: jobType ?? inferHtmlJobType(enrichedParameters),
+      },
+    );
 
-    if (!result.success || !result.data) {
-      return { success: false, error: result.error || 'Failed to queue report' };
+    if (!result.success || !result.data?.jobId) {
+      return { success: false, error: result.error || 'Failed to queue HTML report' };
     }
 
-    return { success: true, data: result.data };
+    return {
+      success: true,
+      data: {
+        reportRequestId: result.data.jobId,
+        status: result.data.status,
+      },
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return { success: false, error: message };
   }
+}
+
+function inferHtmlJobType(parameters: Record<string, string>): ReportJobType {
+  const explicitIds = parameters.propertyId?.trim() || parameters.ownerId?.trim() || '';
+  const ids = explicitIds
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (ids.length > 1) return 'Bulk';
+  if (ids.length === 1) return 'Single';
+  if (parameters.fromPropertyNo?.trim() || parameters.toPropertyNo?.trim()) return 'Bulk';
+  if (parameters.zoneId?.trim() || parameters.wardId?.trim()) return 'Bulk';
+  return 'Single';
 }
 
 

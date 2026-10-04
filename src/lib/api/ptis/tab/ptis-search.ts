@@ -231,7 +231,8 @@ export const ptisSearchService = {
     propertyNo?: string,
     partitionNo?: string,
     pageNumber = 1,
-    pageSize = 100
+    pageSize = 100,
+    enrichSociety = false
   ): Promise<{
     success: boolean;
     data?: PagedResult<PropwiseSuggestionItem>;
@@ -309,12 +310,14 @@ export const ptisSearchService = {
       })
       .filter((item) => item.propertyId > 0 && item.propertyNo.trim() !== '');
 
-    const enrichedItems = await enrichSuggestionsWithSocietyDetails(mappedItems);
+    const items = enrichSociety
+      ? await enrichSuggestionsWithSocietyDetails(mappedItems)
+      : mappedItems;
 
     return {
       success: true,
       data: {
-        items: enrichedItems,
+        items,
         totalCount,
         pageNumber: responsePageNumber,
         pageSize: responsePageSize,

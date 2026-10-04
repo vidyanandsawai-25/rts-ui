@@ -5,6 +5,7 @@ import { Card, Tabs, TabList, Tab, Badge } from '@/components/common';
 import type { Category, ReportDefinition, ReportWorkspaceCopy } from '@/types/report.types';
 
 interface ReportTabsPanelProps {
+  locale?: string;
   activeCategoryDef: Category;
   activeReports: ReportDefinition[];
   selectedReport: ReportDefinition;

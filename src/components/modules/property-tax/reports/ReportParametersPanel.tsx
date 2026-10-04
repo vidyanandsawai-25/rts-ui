@@ -9,6 +9,7 @@ import type {
   ZoneSummary,
   WardSummary,
   PropertySummary,
+  CreateReportRequest,
 } from '@/types/report.types';
 import type { FinancialYear } from '@/types/financialYear.types';
 import { SmartLayoutFields } from './SmartLayoutFields';
@@ -27,10 +28,7 @@ interface ReportParametersPanelProps {
   fetchReportParameters?: (
     reportDefinitionId: number
   ) => Promise<{ data: ReportParameterDefinition[]; error: string | null }>;
-  createReportRequest?: (
-    reportCode: string,
-    parameters: Record<string, string>
-  ) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
+  createReportRequest?: CreateReportRequest;
 }
 
 export function ReportParametersPanel(props: ReportParametersPanelProps) {
@@ -41,6 +39,7 @@ export function ReportParametersPanel(props: ReportParametersPanelProps) {
     handleParamChange, handleSubmit, handleResetAll,
     selectionMode, financialYear, zoneId, wardId, fromProperty, toProperty,
     propertyNo, partitionNo, amountOperator, amountValue, propertyDescription, assessmentStatus,
+    isNotice119, noticeDateKey, objectionLastDateKey,
     isPropertyDrawerOpen, selectedProperties, propSearchQuery, hasViewedProperties,
     setSelectionMode, setFinancialYear, setZoneId, setWardId, setFromProperty, setToProperty,
     setPropertyNo, setPartitionNo, setAmountOperator, setAmountValue, setPropertyDescription, setAssessmentStatus,
@@ -79,7 +78,6 @@ export function ReportParametersPanel(props: ReportParametersPanelProps) {
       {/* ── Error state ── */}
       {parametersError && (
         <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl p-3">
-          {/* eslint-disable-next-line i18next/no-literal-string */}
           <p className="font-semibold">Failed to load parameters</p>
           <p className="mt-1">{parametersError}</p>
         </div>
@@ -113,6 +111,9 @@ export function ReportParametersPanel(props: ReportParametersPanelProps) {
           selectedProperties={selectedProperties}
           setIsPropertyDrawerOpen={setIsPropertyDrawerOpen}
           wardLoading={wardLoading}
+          isNotice119={isNotice119}
+          noticeDateKey={noticeDateKey}
+          objectionLastDateKey={objectionLastDateKey}
         />
       )}
 

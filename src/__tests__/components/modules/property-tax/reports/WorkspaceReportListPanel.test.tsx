@@ -98,7 +98,7 @@ describe('ReportListPanel', () => {
   });
 
   it('renders a button for each report', () => {
-    const reports = [makeReport(1, 'No Due Certificate'), makeReport(2, 'Karakarni')];
+    const reports = [makeReport(1, 'No Due Certificate'), makeReport(2, 'Transfer Certificate')];
     render(
       <ReportListPanel
         activeCategoryDef={activeCategoryDef}
@@ -108,7 +108,7 @@ describe('ReportListPanel', () => {
       />
     );
     expect(screen.getByText('No Due Certificate')).toBeInTheDocument();
-    expect(screen.getByText('Karakarni')).toBeInTheDocument();
+    expect(screen.getByText('Transfer Certificate')).toBeInTheDocument();
   });
 
   it('calls onSelectReport with the correct report when a card is clicked', () => {

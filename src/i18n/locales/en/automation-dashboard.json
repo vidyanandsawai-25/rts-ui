@@ -164,7 +164,6 @@
     "report": {
       "propertyDetails": "Property Details",
       "municipalCorporation": "Municipal Corporation",
-      "propertyAssessmentRecord": "PROPERTY ASSESSMENT RECORD (KARAKARNI)",
       "documentId": "DOCUMENT ID",
       "verified": "VERIFIED",
       "newPropertyNumber": "New Property Number",
@@ -204,7 +203,6 @@
       "noDocument": "No Document Available",
       "noDocumentText": "There is no electronic document mapped to this property yet. Please contact the administrator to upload the required files.",
       "documentViews": "DOCUMENT VIEWS",
-      "karakarni": "Karakarni",
       "additionalDocument": "Additional Document",
       "systemName": "Property Document Management System"
     },

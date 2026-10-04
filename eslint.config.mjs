@@ -137,6 +137,8 @@ const eslintConfig = defineConfig([
       "**/types/**/*.{ts,d.ts}",
       "**/services/**/*.{js,ts}",
       "**/app/**/actions.{js,ts}",
+      "**/components/modules/property-tax/report-designer/**/*.{js,ts,tsx}",
+      "**/components/modules/property-tax/reports/**/*.{js,ts,tsx}",
     ],
     rules: {
       "i18next/no-literal-string": "off",

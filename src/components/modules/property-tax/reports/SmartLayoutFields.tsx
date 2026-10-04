@@ -27,7 +27,7 @@ export function SmartLayoutFields({
   onPropertySearchChange,
   selectedProperties,
   setIsPropertyDrawerOpen,
-  wardLoading
+  wardLoading,
 }: any) {
   const t = useTranslations('report.params');
   const {
@@ -56,6 +56,7 @@ export function SmartLayoutFields({
 
   return (
     <>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 items-start">
         {/* 1. Select Criteria — dropdown */}
         <SearchSelect
@@ -70,6 +71,7 @@ export function SmartLayoutFields({
           ]}
           value={selectionMode}
           onChange={(_, v) => setSelectionMode(v as PropertySelectionMode)}
+          error={errors['propertySelectionMode']}
         />
 
         {/* 2. Financial Year */}
@@ -197,28 +199,26 @@ export function SmartLayoutFields({
       {selectionMode === 'range' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 items-start mt-4">
           <Input
-            type="number"
+            type="text"
             name="fromPropertyNo"
             label={t('fromProperty')}
             required
             fullWidth
             placeholder={t('eg1')}
             value={fromProperty}
-            onChange={(e) => { if (e.target.value.length <= 5) setFromProperty(e.target.value); }}
+            onChange={(e) => setFromProperty(e.target.value)}
             error={errors['fromPropertyNo']}
-            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
           <Input
-            type="number"
+            type="text"
             name="toPropertyNo"
             label={t('toProperty')}
             required
             fullWidth
             placeholder={t('eg10')}
             value={toProperty}
-            onChange={(e) => { if (e.target.value.length <= 5) setToProperty(e.target.value); }}
+            onChange={(e) => setToProperty(e.target.value)}
             error={errors['toPropertyNo']}
-            className=" [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
         </div>
       )}
@@ -283,21 +283,25 @@ export function SmartLayoutFields({
         </div>
       )}
 
-      {extraParams.map((param: any) => (
-        <ReportParamField
-          key={param.parameterKey}
-          param={param}
-          value={paramValues[param.parameterKey] ?? ''}
-          parentValue={param.cascadeFromKey ? (paramValues[param.cascadeFromKey] ?? '') : undefined}
-          onChange={handleParamChange}
-          onBlur={() => { }}
-          error={errors[param.parameterKey]}
-          copy={paramFieldCopy}
-          zones={zones}
-          financialYears={financialYears}
-          fetchWards={fetchWards}
-        />
-      ))}
+      {extraParams.length > 0 && (
+        <div className="mt-4 grid grid-cols-1 items-start gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          {extraParams.map((param: any) => (
+            <ReportParamField
+              key={param.parameterKey}
+              param={param}
+              value={paramValues[param.parameterKey] ?? ''}
+              parentValue={param.cascadeFromKey ? (paramValues[param.cascadeFromKey] ?? '') : undefined}
+              onChange={handleParamChange}
+              onBlur={() => { }}
+              error={errors[param.parameterKey]}
+              copy={paramFieldCopy}
+              zones={zones}
+              financialYears={financialYears}
+              fetchWards={fetchWards}
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 }
