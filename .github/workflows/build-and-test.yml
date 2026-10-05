@@ -41,7 +41,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit
+        run: npm install --prefer-offline --no-audit --no-fund
 
       - name: Security audit
         run: npm audit --audit-level=high
@@ -53,22 +53,21 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-      # Run normal tests on push/manual runs
-      # Change "npm test -- --run" if your package.json uses a different test command.
+      # Normal test run for push / manual execution
       - name: Run tests
         if: github.event_name != 'pull_request'
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
         run: npm test -- --run
 
-      # Full coverage only for Pull Requests
+      # Full coverage is needed only for Pull Requests
       - name: Run tests with coverage
         if: github.event_name == 'pull_request'
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
         run: npm run test:coverage
 
-      # Upload coverage only when coverage-report job will use it
+      # Upload coverage only for Pull Requests
       - name: Upload coverage to Azure Blob Storage
         if: github.event_name == 'pull_request'
         shell: pwsh
@@ -146,7 +145,6 @@ jobs:
             Write-Warning ".next/static directory not found."
           }
 
-
   coverage-report:
     needs: build-and-test
     runs-on: [self-hosted, Linux]
@@ -160,6 +158,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
 
       - name: Download coverage from Azure Blob Storage
         shell: pwsh
