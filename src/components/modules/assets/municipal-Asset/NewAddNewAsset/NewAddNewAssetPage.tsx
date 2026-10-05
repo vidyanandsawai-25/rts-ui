@@ -15,6 +15,7 @@ import { useNAFormOrchestrator } from "@/hooks/asset/municipal-Asset/new-add-new
 import { useNAInitialDataLoaders } from "@/hooks/asset/municipal-Asset/new-add-new-asset/useNAInitialDataLoaders";
 import { useNAAssetForm } from "./NAAssetFormContext";
 import { LocationOwnershipContent } from "./ownership";
+import { AssetsFacilitiesContent } from "./AssetsFacilities/AssetsFacilitiesContent";
 import type {
   NewAddNewAssetPageProps,
   FloorCvRollup,
@@ -232,18 +233,30 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
               onSaveAndNext={handleSaveAndNext}
             />
           </div>
+        ) : activeStepKey === "inventory" ? (
+          <div className="flex-1 overflow-y-auto bg-[#F8FAFC] p-6">
+            <AssetsFacilitiesContent
+              parentAssetId={props.parentAssetId ?? (resolvedAssetId > 0 ? resolvedAssetId : null)}
+              initialLookups={props.initialLookups}
+              initialBatches={props.initialBatches}
+              assetCategoryId={
+                props.initialWizardData?.categoryId
+                  ? Number(props.initialWizardData.categoryId)
+                  : orchestrator.formData.categoryId
+                  ? Number(orchestrator.formData.categoryId)
+                  : undefined
+              }
+            />
+          </div>
         ) : (
           <div className="flex-1 overflow-y-auto bg-[#F8FAFC] p-6 flex items-center justify-center">
             <div className="bg-white border border-slate-200 rounded-xl p-8 max-w-md text-center shadow-sm">
-              {activeStepKey === "inventory" && <Briefcase className="w-12 h-12 text-slate-400 mx-auto mb-3" />}
               {activeStepKey === "review" && <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />}
               <h3 className="text-lg font-semibold text-slate-800 mb-1">
-                {activeStepKey === "inventory" ? "Assets & Facilities" : "Review & Submit"}
+                {t("stepper.steps.review.title")}
               </h3>
               <p className="text-sm text-slate-500">
-                {activeStepKey === "inventory"
-                  ? "Inventory and facility management details will be enabled in the upcoming release."
-                  : "Final verification and submission workflow will be enabled in the upcoming release."}
+                {t("stepper.steps.review.subtitle") || "Final verification and submission workflow will be enabled in the upcoming release."}
               </p>
             </div>
           </div>

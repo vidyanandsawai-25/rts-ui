@@ -1,10 +1,4 @@
-export interface InventoryLookups {
-  categories: unknown[];
-  conditions: unknown[];
-  itemNames: unknown[];
-  itemModels: unknown[];
-  departments: { label: string; value: string; id: number }[];
-}
+import type { InventoryLookups } from "@/app/[locale]/assets/municipal-Asset/new-add-new-asset/action";
 import type { InventoryBatchListResponse } from "@/types/asset/municipal-Asset/new-add-new-asset/inventory-batch.types";
 import type React from "react";
 import type { LucideIcon } from "lucide-react";

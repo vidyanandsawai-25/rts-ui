@@ -1,4 +1,4 @@
-import type { InventoryLookups } from "./new-add-new-asset-page.types";
+import type { InventoryLookups } from "@/app/[locale]/assets/municipal-Asset/new-add-new-asset/action";
 import type { InventoryBatchListResponse } from "@/types/asset/municipal-Asset/new-add-new-asset/inventory-batch.types";
 import type React from "react";
 import type {

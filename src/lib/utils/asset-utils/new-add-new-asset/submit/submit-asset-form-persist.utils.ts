@@ -1,7 +1,8 @@
+ 
 import { assetFieldValueService } from "@/lib/api/asset/municipal-Asset/new-add-new-asset/asset-field-value.service";
 import { assetMasterService } from "@/lib/api/asset/municipal-Asset/new-add-new-asset/asset-master.service";
 import { basicInfoLookupService } from "@/lib/api/asset/municipal-Asset/new-add-new-asset/basic-info-lookup.service";
-import { getBuildingFieldDefinitionsQuery } from "@/lib/api/asset/municipal-Asset/new-add-new-asset/basic-info.server.service";
+import { getBuildingFieldDefinitionsQuery } from "@/lib/api/asset/municipal-Asset/new-add-new-asset/basic-info.service";
 import { AssetMasterRequest } from "@/types/asset/municipal-Asset/new-add-new-asset/asset-wizard.types";
 import { logger } from "@/lib/utils/logger";
 
