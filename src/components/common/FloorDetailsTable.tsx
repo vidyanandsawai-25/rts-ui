@@ -94,6 +94,7 @@ interface FloorDetailsTableProps<Row extends { id: number | string }> {
   data: Row[];
   columns: FloorDetailsTableColumn<Row>[];
   emptyMessage?: ReactNode;
+  emptyMessageClassName?: string;
 
   // Expansion Props
   showExpandColumn?: boolean;
@@ -197,6 +198,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
   data,
   columns,
   emptyMessage = 'No data found',
+  emptyMessageClassName,
   showExpandColumn = true,
   expandedLabel = 'Expand row',
   expandedRowIds = [],
@@ -494,7 +496,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                 className="px-6 py-10 text-center align-middle"
               >
                 <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
-                  <span className="text-sm font-medium italic opacity-80">{emptyMessage}</span>
+                  <span className={cn("text-sm font-medium italic opacity-80", emptyMessageClassName)}>{emptyMessage}</span>
                 </div>
               </td>
             </tr>

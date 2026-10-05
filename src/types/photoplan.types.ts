@@ -15,6 +15,7 @@ export interface PropertyPhotoDto {
   wingDetailId?: number;
   wingName?: string;
   societyDetailId?: number;
+  isVerified?: boolean;
 }
 
 export interface PropertyPhotoTypeWithStatusDto {

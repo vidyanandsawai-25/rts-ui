@@ -1,3 +1,11 @@
+export interface InventoryLookups {
+  categories: unknown[];
+  conditions: unknown[];
+  itemNames: unknown[];
+  itemModels: unknown[];
+  departments: { label: string; value: string; id: number }[];
+}
+import type { InventoryBatchListResponse } from "@/types/asset/municipal-Asset/new-add-new-asset/inventory-batch.types";
 import type React from "react";
 import type { LucideIcon } from "lucide-react";
 import type {
@@ -34,6 +42,8 @@ export interface NewAddNewAssetPageProps {
   initialWizardData?: Partial<AssetFormData> | null;
   prefetchedFields?: ProcessedField[];
   activeStepKey?: string;
+  initialLookups?: InventoryLookups;
+  initialBatches?: InventoryBatchListResponse | null;
 }
 
 export interface NAAssetMediaProps {
@@ -121,3 +131,61 @@ export type NewAddNewAssetErrorProps = AssetStepErrorProps;
 export type BasicInfoErrorProps = AssetStepErrorProps;
 export type PageProps = BaseAssetPageProps;
 export type LayoutProps = AssetLayoutProps;
+
+
+// Shifted from NewAddNewAsset/types.ts
+
+
+export interface FloorComponent {
+  id: number;
+  taxable: boolean;
+  unitNumber: string;
+  type: string;
+  floor: string;
+  subFloor: string;
+  conYr: string;
+  asstYr: string;
+  conType: string;
+  typeOfUse: string;
+  subTypeOfUse: string;
+  renter: boolean;
+  rooms: number;
+  carpet: string;
+  builtup: string;
+  sdrr: string;
+  baseValue: string;
+  floorFactor: string;
+  ageFactor: string;
+  ntbFactor: string;
+  useFactor: string;
+  capitalValue: string;
+}
+
+export interface DocumentInfo {
+  id: string;
+  name: string;
+  size: string;
+}
+
+export interface AssetData {
+  assetName: string;
+  assetCode: string;
+  assetCategory: string;
+  assetSubCategory: string;
+  operationalStatus: string;
+  operatingDepartment: string;
+  assetUsage: string;
+  ownershipType: string;
+  inChargeOfficer: string;
+  assetTagBarcode: string;
+  
+  propertyId: string;
+  surveyNo: string;
+  plotNo: string;
+  ctsNo: string;
+  ward: string;
+  pinCode: string;
+  address: string;
+  landUseType: string;
+  propertyStatus: string;
+}
