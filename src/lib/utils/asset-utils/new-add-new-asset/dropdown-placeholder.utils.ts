@@ -1,10 +1,12 @@
-import type { DropdownOption } from "@/types/asset/municipal-Asset/new-add-new-asset";
-
-export type { DropdownOption };
+ 
+export interface DropdownOption {
+  label: string;
+  value: string;
+}
 
 /**
  * Ensures that '--Select--' is the first option in the options collection.
- * Cleans up existing empty-string or duplicate placeholder entries.
+ * Cleans up any existing empty-string or duplicate placeholder entries.
  *
  * @param options - Array of options (objects with label/value or plain strings)
  * @param placeholderLabel - The placeholder label, defaults to '--Select--'
@@ -27,7 +29,7 @@ export function withSelectPlaceholder(
     return { label: lbl, value: val };
   });
 
-  // Filter out entries that have empty value or are already a select placeholder
+  // Filter out any entries that have empty value or are already a select placeholder
   const withoutPlaceholders = normalized.filter((opt) => {
     if (opt.value === '') return false;
     const lower = opt.label.trim().toLowerCase();

@@ -1,3 +1,4 @@
+ 
 import { getZones } from "@/lib/api/zone.services";
 import { getOwningDepartments } from "@/lib/api/asset-masters/designation-crud.service";
 import { getMoujasAllActive } from "@/lib/api/asset-masters/mouja-subzone.service";
@@ -11,7 +12,7 @@ import {
   getInitialWizardDataQuery,
   getAssetMasterByIdQuery,
   type InitialWizardData,
-} from "@/lib/api/asset/municipal-Asset/new-add-new-asset/basic-info.server.service";
+} from "@/lib/api/asset/municipal-Asset/new-add-new-asset/basic-info.service";
 import type {
   Zone,
   Ward,

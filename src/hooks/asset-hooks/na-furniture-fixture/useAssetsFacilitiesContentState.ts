@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common";
-import { type InventoryRow} from "@/types/asset/furniture-fixture.types";
+import { type InventoryRow } from "@/types/asset/furniture-fixture.types";
 import { type InventoryLookups } from "@/app/[locale]/assets/municipal-Asset/new-add-new-asset/action";
 import { type InventoryBatchListResponse } from '@/types/asset/municipal-Asset/new-add-new-asset/inventory-batch.types';
 import { convertBatchesToRows, } from "@/lib/utils/asset-utils/furnitureFixtureUtils";
@@ -21,7 +21,7 @@ import {
   getInventoryBatchesForNewAssetAction,
   updateInventoryBatchForNewAssetAction,
   fetchInventoryLookupsAction,
-  
+
 } from "@/app/[locale]/assets/municipal-Asset/new-add-new-asset/action";
 import { DESCRIPTION_REGEX } from "@/lib/utils/asset-validation-rules";
 
@@ -39,7 +39,7 @@ export function useAssetsFacilitiesContentState({
   const t = useTranslations("newAddNewAsset");
   const { confirm } = useConfirm();
 
-  const [lookups, setLookups] = useState<InventoryLookups>(initialLookups || {
+  const [lookups, setLookups] = useState<InventoryLookups>(() => initialLookups || {
     categories: [],
     conditions: [],
     itemNames: [],
@@ -47,10 +47,12 @@ export function useAssetsFacilitiesContentState({
     departments: [],
   });
 
+  const hasFetchedLookupsRef = useRef(false);
+
   useEffect(() => {
-    if (initialLookups && (initialLookups.categories?.length || initialLookups.departments?.length)) {
-      setTimeout(() => { setLookups(initialLookups); }, 0);
-    } else {
+    const hasInitial = Boolean(initialLookups && (initialLookups.categories?.length || initialLookups.departments?.length));
+    if (!hasInitial && !hasFetchedLookupsRef.current) {
+      hasFetchedLookupsRef.current = true;
       fetchInventoryLookupsAction().then((res) => {
         if (res.success) {
           setLookups({
@@ -71,20 +73,20 @@ export function useAssetsFacilitiesContentState({
     category: "",
     condition: "",
   });
-  const [rows, setRows] = useState<InventoryRow[]>([]);
+  const [rows, setRows] = useState<InventoryRow[]>(() => convertBatchesToRows(initialBatches?.batches || []));
 
   const filteredRows = rows.filter((r) => {
     const matchesCategory =
       !filters.category ||
       r.category.toLowerCase().replace(/\s+/g, "-") ===
-        filters.category.toLowerCase().replace(/\s+/g, "-");
+      filters.category.toLowerCase().replace(/\s+/g, "-");
     const matchesCondition =
       !filters.condition ||
       r.condition.toLowerCase().trim() === filters.condition.toLowerCase().trim();
     return matchesCategory && matchesCondition;
   });
 
-  const reloadRows = async () => {
+  const reloadRows = useCallback(async () => {
     if (!parentAssetId) return;
     try {
       const res = await getInventoryBatchesForNewAssetAction(parentAssetId);
@@ -95,15 +97,16 @@ export function useAssetsFacilitiesContentState({
     } catch (_e) {
       console.error("Failed to reload inventory batches:", _e);
     }
-  };
+  }, [parentAssetId]);
+
+  const hasLoadedBatchesRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (initialBatches) {
-      setTimeout(() => { setRows(convertBatchesToRows(initialBatches.batches || [])); }, 0);
-    } else if (parentAssetId) {
-      setTimeout(() => { reloadRows(); }, 0);
+    if (!initialBatches && parentAssetId && hasLoadedBatchesRef.current !== parentAssetId) {
+      hasLoadedBatchesRef.current = parentAssetId;
+      reloadRows();
     }
-  }, [initialBatches, parentAssetId]);
+  }, [initialBatches, parentAssetId, reloadRows]);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isInvoiceDrawerOpen, setIsInvoiceDrawerOpen] = useState(false);
@@ -509,14 +512,14 @@ export function useAssetsFacilitiesContentState({
         const targetPhotoFileName = photoReplaced
           ? form.photoFile!.name
           : photoDeleted
-          ? ""
-          : form.photoName || "";
+            ? ""
+            : form.photoName || "";
 
         const targetInvoiceFileName = invoiceReplaced
           ? invoiceForm.invoiceFile!.name
           : invoiceDeleted
-          ? ""
-          : invoiceForm.invoiceFileName || "";
+            ? ""
+            : invoiceForm.invoiceFileName || "";
 
         // ── Step 3: Build files and metadata for the batch update ────────
         const { documentFiles, documentMetadata } = buildInventoryDocumentFiles(

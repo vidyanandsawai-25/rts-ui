@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 
 import React, { useCallback } from "react";
 import { useParams } from "next/navigation";
@@ -81,13 +82,13 @@ export const NAPropertyInfo = React.memo(function NAPropertyInfo(props: NAProper
       { label: "-- Select --", value: "" },
       ...(ownershipTypes.length > 0
         ? ownershipTypes.map((ot) => ({
-            label: ot.ownershipTypeName || ot.name || ot.code || `Ownership ${ot.id}`,
-            value: ot.ownershipTypeName || ot.name || String(ot.id),
-          }))
+          label: ot.ownershipTypeName || ot.name || ot.code || `Ownership ${ot.id}`,
+          value: ot.ownershipTypeName || ot.name || String(ot.id),
+        }))
         : [
-            { label: t("kycDetails.ownershipOptions.municipal"), value: "municipal" },
-            { label: t("kycDetails.ownershipOptions.private"), value: "private" },
-          ]),
+          { label: t("kycDetails.ownershipOptions.municipal"), value: "municipal" },
+          { label: t("kycDetails.ownershipOptions.private"), value: "private" },
+        ]),
     ],
     [ownershipTypes, t]
   );

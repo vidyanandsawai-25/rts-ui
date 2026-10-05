@@ -15,19 +15,21 @@ import { useSearchParams } from 'next/navigation';
 
 
 
+const DEFAULT_EMPTY_INVENTORY_LOOKUPS: InventoryLookups = {
+  categories: [],
+  conditions: [],
+  itemNames: [],
+  itemModels: [],
+  departments: [],
+};
+
 export function AssetsFacilitiesContent({
   parentAssetId,
   initialLookups,
   initialBatches,
   assetCategoryId,
 }: AssetsFacilitiesContentProps) {
-  const safeLookups: InventoryLookups = initialLookups || {
-    categories: [],
-    conditions: [],
-    itemNames: [],
-    itemModels: [],
-    departments: [],
-  };
+  const safeLookups: InventoryLookups = initialLookups || DEFAULT_EMPTY_INVENTORY_LOOKUPS;
 
   const {
     t,
@@ -65,7 +67,7 @@ export function AssetsFacilitiesContent({
   const resolvedAssetCategoryId = assetCategoryId || (searchParams.get('categoryId') ? Number(searchParams.get('categoryId')) : undefined);
 
   const filteredCategories = React.useMemo(() => {
-    const apiCategories = (lookups?.categories && lookups.categories.length > 0 ? lookups.categories : safeLookups.categories) || [];
+    const apiCategories = lookups?.categories || [];
     if (!apiCategories.length) return [];
     const matched = resolvedAssetCategoryId && resolvedAssetCategoryId > 0
       ? apiCategories.filter((cat: InventoryItemCategory) => {
@@ -77,7 +79,7 @@ export function AssetsFacilitiesContent({
         })
       : apiCategories;
     return matched.length > 0 ? matched : apiCategories;
-  }, [lookups, safeLookups.categories, resolvedAssetCategoryId]);
+  }, [lookups?.categories, resolvedAssetCategoryId]);
 
   const hasAssetId = !!parentAssetId && parentAssetId > 0;
 
@@ -117,8 +119,8 @@ export function AssetsFacilitiesContent({
           <FiltersCard
             filters={filters}
             setFilters={setFilters}
-            apiCategories={safeLookups.categories as unknown as ApiCategory[]}
-            apiConditions={safeLookups.conditions}
+            apiCategories={(lookups?.categories || []) as unknown as ApiCategory[]}
+            apiConditions={lookups?.conditions || []}
             assetCategoryId={assetCategoryId}
           />
         </div>
@@ -152,11 +154,11 @@ export function AssetsFacilitiesContent({
         handlePhotoUpload={handlePhotoUpload}
         onSave={handleSaveFacility}
         onOpenInvoice={() => setIsInvoiceDrawerOpen(true)}
-        categories={safeLookups.categories}
-        conditions={safeLookups.conditions}
-        itemNames={safeLookups.itemNames}
-        itemModels={safeLookups.itemModels}
-        departments={safeLookups.departments}
+        categories={lookups?.categories || []}
+        conditions={lookups?.conditions || []}
+        itemNames={lookups?.itemNames || []}
+        itemModels={lookups?.itemModels || []}
+        departments={lookups?.departments || []}
         editingRow={editingRow}
         assetCategoryId={assetCategoryId}
         onPreview={(doc: unknown) => { const d = doc as { fileName?: string; documentGuid?: string }; setSelectedPreviewDoc({ name: d?.fileName || "Inventory Photo", fileName: d?.fileName, documentGuid: d?.documentGuid }); }}

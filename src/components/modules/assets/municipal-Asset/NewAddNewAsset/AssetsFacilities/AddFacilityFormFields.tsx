@@ -144,27 +144,36 @@ export function AddFacilityFormFields({
     const sourceConditions = apiConditions && apiConditions.length > 0 ? apiConditions : conditions;
 
     const list = sourceConditions.filter((c: ApiCondition & Record<string, unknown>) => {
-      const catId = c.inventoryItemCategoryId ?? c.categoryId ?? c.CategoryId;
-      const nameId = c.inventoryItemNameId ?? c.itemNameId ?? c.ItemNameId;
-      const modelId = c.inventoryItemModelId ?? c.modelId ?? c.ModelId;
+      const catId = c.inventoryItemCategoryId ?? c.categoryId ?? c.CategoryId ?? c.InventoryItemCategoryId;
+      const nameId = c.inventoryItemNameId ?? c.itemNameId ?? c.ItemNameId ?? c.InventoryItemNameId;
+      const modelId = c.inventoryItemModelId ?? c.modelId ?? c.ModelId ?? c.InventoryItemModelId;
 
       if (selectedModelId && modelId) {
-        return modelId === selectedModelId;
+        return Number(modelId) === Number(selectedModelId);
       }
       if (selectedNameId && nameId) {
-        return nameId === selectedNameId;
+        return Number(nameId) === Number(selectedNameId);
       }
       if (selectedCatId && catId) {
-        return catId === selectedCatId;
+        return Number(catId) === Number(selectedCatId);
       }
       return !selectedCatId;
     });
 
-    if (list.length === 0 && sourceConditions.length > 0) {
-      return sourceConditions;
+    const candidateList = list.length > 0 ? list : sourceConditions;
+
+    // Deduplicate so duplicate condition names don't repeat in the dropdown
+    const seen = new Set<string>();
+    const uniqueList: ApiCondition[] = [];
+    for (const c of candidateList) {
+      const name = (c.conditionName || "").trim();
+      if (name && !seen.has(name.toLowerCase())) {
+        seen.add(name.toLowerCase());
+        uniqueList.push(c);
+      }
     }
 
-    return list;
+    return uniqueList;
   }, [apiConditions, conditions, categories, itemNames, itemModels, form.category, form.itemName, form.modelName]);
 
   return (

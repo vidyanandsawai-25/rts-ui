@@ -59,7 +59,7 @@ export function FiltersCard({
     }));
   }, [apiCategories, resolvedAssetCategoryId]);
 
-  // Derive condition names from the API data, filtered by selected category if any
+  // Derive condition names from the API data, filtered by selected category if any, and deduplicated
   const conditionOptions = useMemo(() => {
     if (!apiConditions.length) return [];
 
@@ -67,17 +67,29 @@ export function FiltersCard({
     if (filters.category) {
       const selectedCat = categoryOptions.find(c => c.label === filters.category);
       if (selectedCat) {
-        filteredConditions = apiConditions.filter((c: ApiCondition) => {
-          const catId = c.categoryId ?? c.CategoryId;
-          return catId === selectedCat.id;
+        filteredConditions = apiConditions.filter((c: ApiCondition & Record<string, unknown>) => {
+          const catId = c.inventoryItemCategoryId ?? c.categoryId ?? c.CategoryId ?? c.InventoryItemCategoryId;
+          return catId !== undefined && catId !== null ? Number(catId) === Number(selectedCat.id) : true;
         });
       }
     }
 
-    return filteredConditions.map((c) => ({
-      id: c.id,
-      label: c.conditionName,
-    }));
+    // Deduplicate so identical condition names (e.g. Good, Fair, Poor) never repeat
+    const seen = new Set<string>();
+    const uniqueOptions: { id: number | string; label: string }[] = [];
+
+    for (const c of filteredConditions) {
+      const name = (c.conditionName || "").trim();
+      if (name && !seen.has(name.toLowerCase())) {
+        seen.add(name.toLowerCase());
+        uniqueOptions.push({
+          id: c.id,
+          label: name,
+        });
+      }
+    }
+
+    return uniqueOptions;
   }, [apiConditions, filters.category, categoryOptions]);
 
   const handleChange = (field: 'category' | 'condition') => (e: React.ChangeEvent<HTMLSelectElement>) => {

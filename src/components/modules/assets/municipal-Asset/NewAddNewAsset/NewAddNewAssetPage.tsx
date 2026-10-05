@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -47,15 +47,15 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
     orchestrator.formData.isMovableCategory !== undefined
       ? Boolean(orchestrator.formData.isMovableCategory)
       : props.initialWizardData?.isMovableCategory !== undefined
-      ? Boolean(props.initialWizardData.isMovableCategory)
-      : categoryKey === "MOVABLE";
+        ? Boolean(props.initialWizardData.isMovableCategory)
+        : categoryKey === "MOVABLE";
 
   const hasInventory =
     orchestrator.formData.hasInventory !== undefined
       ? Boolean(orchestrator.formData.hasInventory)
       : props.initialWizardData?.hasInventory !== undefined
-      ? Boolean(props.initialWizardData.hasInventory)
-      : false;
+        ? Boolean(props.initialWizardData.hasInventory)
+        : false;
 
   const stepsList = [
     { key: "basic-info", title: t("stepper.steps.basicInfo.title"), subtitle: t("stepper.steps.basicInfo.subtitle"), icon: ClipboardList },
@@ -82,13 +82,13 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
   const [currentStep, setCurrentStep] = useState(initialStepNumber);
   const resolvedAssetId = Number(
     orchestrator.assetId ||
-      orchestrator.formData.id ||
-      orchestrator.formData.assetId ||
-      props.initialWizardData?.id ||
-      props.initialWizardData?.assetId ||
-      searchParams.get("assetId") ||
-      searchParams.get("id") ||
-      0
+    orchestrator.formData.id ||
+    orchestrator.formData.assetId ||
+    props.initialWizardData?.id ||
+    props.initialWizardData?.assetId ||
+    searchParams.get("assetId") ||
+    searchParams.get("id") ||
+    0
   );
   const [completedSteps, setCompletedSteps] = useState<number[]>(() => (resolvedAssetId > 0 ? [1] : []));
 
@@ -243,8 +243,8 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
                 props.initialWizardData?.categoryId
                   ? Number(props.initialWizardData.categoryId)
                   : orchestrator.formData.categoryId
-                  ? Number(orchestrator.formData.categoryId)
-                  : undefined
+                    ? Number(orchestrator.formData.categoryId)
+                    : undefined
               }
             />
           </div>

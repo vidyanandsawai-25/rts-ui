@@ -1,3 +1,4 @@
+'use client';
 import React, { useContext } from 'react';
 import { Check } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -30,7 +31,7 @@ export function NAProgressSteps({ currentStep = 1, completedSteps = [], onStepCl
       {/* Steps row */}
       <div className="px-3 py-1.5 overflow-x-auto">
         <div className="flex items-stretch min-w-max">
-          {steps?.map((step, index: number) => {
+          {steps?.map((step, index) => {
             const isCurrent = step.id === currentStep;
             const isCompleted = completedSteps.includes(step.id);
             const StepIcon = step.icon;
