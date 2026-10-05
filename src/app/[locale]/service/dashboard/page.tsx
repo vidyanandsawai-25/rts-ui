@@ -40,8 +40,10 @@ export default async function ServiceDashboardPage({ params, searchParams }: Das
   const getQueryValue = (value: string | string[] | undefined) =>
     typeof value === 'string' ? value : undefined;
   const requestedPageNumber = Number.parseInt(getQueryValue(query.pageNumber) ?? '', 10);
+  const cuid = getQueryValue(query.CUID) || getQueryValue(query.cuid);
   const { departments, userApplications, upicId, pagination } = await getCitizenDashboardData(
-    requestedPageNumber
+    requestedPageNumber,
+    cuid
   );
   const routeState = await getCitizenDashboardRouteState(userApplications, {
     details: getQueryValue(query.details),

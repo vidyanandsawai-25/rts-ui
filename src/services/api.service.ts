@@ -60,6 +60,7 @@ class ApiClient {
     '/rts-certificate',
     '/rts-certificate-verification',
     '/rts-service-officers',
+    '/AapleSarkar',
   ];
 
   constructor() {
