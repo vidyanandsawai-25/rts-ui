@@ -23,8 +23,6 @@ const PALETTE = [
 ];
 
 export function ReportsWorkspace({
-  locale = 'mr',
-  initialReportCode,
   jobsCopy,
   workspaceCopy,
   paramsCopy,
@@ -45,25 +43,12 @@ export function ReportsWorkspace({
   const [activeView, setActiveView] = useState<'generate' | 'history'>('generate');
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedReport, setSelectedReport] = useState<ReportDefinition | null>(() => {
-    if (!initialReportCode) return null;
-    const clean = String(initialReportCode).replace(/[^a-z0-9]/gi, '').toUpperCase();
-    return reportDefinitions.find(r => {
-      const rCode = String(r.reportCode || '').replace(/[^a-z0-9]/gi, '').toUpperCase();
-      return r.reportCode === initialReportCode || (clean.length >= 4 && (rCode.includes(clean) || clean.includes(rCode)));
-    }) || null;
-  });
+  const [selectedReport, setSelectedReport] = useState<ReportDefinition | null>(null);
 
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
   const [queuedRequestId, setQueuedRequestId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(true);
-
-  useEffect(() => {
-    if (selectedReport && currentStep === 1) {
-      setCurrentStep(3);
-    }
-  }, [selectedReport, currentStep]);
 
   useEffect(() => {
     if (activeRequestId) setPdfLoading(true);
@@ -81,10 +66,25 @@ export function ReportsWorkspace({
     let timer: ReturnType<typeof setTimeout>;
     let isCancelled = false;
 
+    const handleStatusChange = (e: Event) => {
+      const { requestId, status } = (e as CustomEvent<{ requestId: string; status: string }>).detail;
+      if (requestId !== activeRequestId || isCancelled) return;
+      if (status === 'Completed') {
+        setIsGenerating(false);
+        toast.success(workspaceCopy?.toast.generatedSuccess ?? '');
+        refresh();
+      } else if (status === 'Failed' || status === 'Cancelled') {
+        setIsGenerating(false);
+        setActiveRequestId(null);
+        toast.error(workspaceCopy?.toast.generationFailed ?? '');
+      }
+    };
+
+    window.addEventListener('report-status-change', handleStatusChange);
+
     const checkStatus = async () => {
       try {
-        const statusUrl = `/api/designer-report-status/${encodeURIComponent(activeRequestId)}`;
-        const res = await fetch(statusUrl, { cache: 'no-store' });
+        const res = await fetch(`/api/report-status/${encodeURIComponent(activeRequestId)}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch status');
         const data = await res.json();
         if (isCancelled) return;
@@ -97,16 +97,17 @@ export function ReportsWorkspace({
           setActiveRequestId(null);
           toast.error(workspaceCopy?.toast.generationFailed ?? '');
         } else {
-          timer = setTimeout(checkStatus, 2000);
+          timer = setTimeout(checkStatus, 5000);
         }
       } catch {
-        if (!isCancelled) timer = setTimeout(checkStatus, 2000);
+        if (!isCancelled) timer = setTimeout(checkStatus, 5000);
       }
     };
 
-    timer = setTimeout(checkStatus, 500);
+    timer = setTimeout(checkStatus, 5000);
     return () => {
       isCancelled = true;
+      window.removeEventListener('report-status-change', handleStatusChange);
       if (timer) clearTimeout(timer);
     };
   }, [activeRequestId, isGenerating, refresh, workspaceCopy]);
@@ -195,7 +196,6 @@ export function ReportsWorkspace({
         {/* Active View */}
         <TabPanel value="generate" className="mt-4">
           <ReportGenerateView
-            locale={locale}
             currentStep={currentStep}
             selectedCategory={selectedCategory}
             selectedReport={selectedReport}

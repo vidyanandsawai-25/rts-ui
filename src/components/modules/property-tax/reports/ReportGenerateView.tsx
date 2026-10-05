@@ -14,11 +14,9 @@ import type {
   ZoneSummary,
   WardSummary,
   PropertySummary,
-  CreateReportRequest,
 } from '@/types/report.types';
 
 interface ReportGenerateViewProps {
-  locale?: string;
   currentStep: Step;
   selectedCategory: string | null;
   selectedReport: ReportDefinition | null;
@@ -34,11 +32,13 @@ interface ReportGenerateViewProps {
   onCategoryClick: (key: string) => void;
   onSelectReport: (report: ReportDefinition) => void;
   onQueued: (requestId: string) => void;
-  createReportRequest?: CreateReportRequest;
+  createReportRequest?: (
+    reportCode: string,
+    parameters: Record<string, string>,
+  ) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
 }
 
 export function ReportGenerateView({
-  locale = 'mr',
   currentStep,
   selectedCategory,
   selectedReport,
@@ -94,7 +94,6 @@ export function ReportGenerateView({
       {currentStep === 3 && activeCategoryDef && selectedReport && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
           <ReportTabsPanel
-            locale={locale}
             activeCategoryDef={activeCategoryDef}
             activeReports={activeReports}
             selectedReport={selectedReport}

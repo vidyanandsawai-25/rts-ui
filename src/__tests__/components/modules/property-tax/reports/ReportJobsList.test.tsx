@@ -216,26 +216,6 @@ describe('ReportJobsList', () => {
     expect(handlePreview).toHaveBeenCalledWith('req-001');
   });
 
-  it('uses HTML preview and download routes', () => {
-    const handlePreview = vi.fn();
-    render(
-      <ReportJobsList
-        jobs={[makeJob()]}
-        loading={false}
-        copy={jobsCopy}
-        reportDefinitions={reportDefinitions}
-        onPreview={handlePreview}
-      />
-    );
-
-    screen.getByText('Preview').click();
-    expect(handlePreview).toHaveBeenCalledWith('req-001');
-    expect(screen.getByText('Download').closest('a')).toHaveAttribute(
-      'href',
-      '/api/designer-report-download/req-001',
-    );
-  });
-
   it('formats dates for created and completed columns', () => {
     const job = makeJob({
       createdDate: '2026-07-20T10:00:00Z',

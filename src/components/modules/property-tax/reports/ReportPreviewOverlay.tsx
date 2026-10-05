@@ -21,7 +21,7 @@ export function ReportPreviewOverlay({
   onPdfLoad,
   onClose,
 }: ReportPreviewOverlayProps) {
-  const pdfUrl = `/api/designer-report-download/${encodeURIComponent(requestId)}`;
+  const pdfUrl = `/api/report-download/${encodeURIComponent(requestId)}`;
   const inlineUrl = `${pdfUrl}?inline=true&view=pdf#toolbar=0`;
 
   return (
@@ -71,14 +71,12 @@ export function ReportPreviewOverlay({
             data={inlineUrl}
             type="application/pdf"
             className="w-full h-full rounded-2xl border border-slate-200/80 shadow-md bg-white"
-            style={{ colorScheme: 'only light' }}
             onLoad={onPdfLoad}
           >
             <iframe
               src={inlineUrl}
               className="w-full h-full rounded-2xl border border-slate-200/80 shadow-md bg-white"
               title="Report Preview"
-              style={{ colorScheme: 'only light' }}
               onLoad={onPdfLoad}
             />
           </object>

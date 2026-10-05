@@ -100,18 +100,14 @@ export async function getReportLookup(key: string, parentValue?: string): Promis
 }
 
 function normalizeReportDefinition(raw: Record<string, unknown>): ReportDefinition {
-  const reportCode = String(raw.reportCode ?? '');
-  const reportName = String(raw.reportName ?? '');
   return {
     id: Number(raw.id ?? 0),
-    reportCode,
-    reportName,
+    reportCode: String(raw.reportCode),
+    reportName: String(raw.reportName),
     category: String(raw.category),
     description: String(raw.description),
     templateFile: String(raw.templateFile),
     dataProviderCode: String(raw.dataProviderCode),
-    defaultHtmlTemplateVersionId:
-      raw.defaultHtmlTemplateVersionId != null ? Number(raw.defaultHtmlTemplateVersionId) : null,
     isActive: Boolean(raw.isActive),
     sortOrder: Number(raw.sortOrder),
     moduleId: raw.moduleId != null ? Number(raw.moduleId) : null,

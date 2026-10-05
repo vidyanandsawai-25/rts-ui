@@ -1,3 +1,5 @@
+/* eslint-disable i18next/no-literal-string */
+
 import { Search, MapPin, CheckCircle2 } from 'lucide-react';
 import { Drawer, MasterTable, Checkbox, Badge, ClearButton, ApplyButton, Input } from '@/components/common';
 import type { Column } from '@/components/common';

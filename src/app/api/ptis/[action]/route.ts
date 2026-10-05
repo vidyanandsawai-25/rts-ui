@@ -36,14 +36,12 @@ export async function GET(
           ? Math.min(requestedPageSize, 100)
           : 100;
 
-        const enrichSocietyParam = searchParams.get('enrichSociety') === 'true';
         const result = await ptisSearchService.getPropertySuggestionsPage(
           resolvedWardId,
           propertyNo,
           partitionNo,
           pageNumber,
-          pageSize,
-          enrichSocietyParam
+          pageSize
         );
 
         if (result.success && result.data && Array.isArray(result.data.items)) {

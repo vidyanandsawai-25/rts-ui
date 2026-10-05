@@ -125,9 +125,11 @@ class ApiClient {
     skipAuth: boolean
 
   ): Promise<Record<string, string>> {
-    const carriesFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+
     const headers: Record<string, string> = {
-      ...(carriesFormData ? {} : { 'Content-Type': 'application/json; charset=utf-8' }),
+
+      'Content-Type': 'application/json; charset=utf-8',
+
       Accept: 'application/json, text/plain, */*',
 
       'Accept-Charset': 'utf-8',

@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { toast } from 'sonner';
-import type { CreateReportRequest, ReportDefinition, ReportParamValues } from '@/types/report.types';
+import type { ReportDefinition, ReportParamValues } from '@/types/report.types';
 
 
 interface UseReportFormSubmissionOptions {
@@ -13,7 +13,10 @@ interface UseReportFormSubmissionOptions {
   queuedMessage: string;
   errorMessage: string;
   onQueued?: () => void;
-  createReportRequest?: CreateReportRequest;
+  createReportRequest?: (
+    reportCode: string,
+    parameters: Record<string, string>,
+  ) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
 }
 
 export function useReportFormSubmission({
@@ -41,10 +44,7 @@ export function useReportFormSubmission({
         throw new Error('createReportRequest server action is not provided');
       }
 
-      const result = await createReportRequest(
-        reportCode,
-        parameters,
-      );
+      const result = await createReportRequest(reportCode, parameters);
 
       if (!result.success) {
         toast.error(errorMessage);

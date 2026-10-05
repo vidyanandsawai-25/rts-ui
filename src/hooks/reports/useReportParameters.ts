@@ -8,9 +8,7 @@ import type {
   ZoneSummary,
   WardSummary,
   PropertySummary,
-  CreateReportRequest,
   ReportDefinition,
-  ReportJobType,
   ReportParameterDefinition,
   ReportParamsPanelCopy,
 } from '@/types/report.types';
@@ -27,7 +25,10 @@ interface UseReportParametersOptions {
   fetchReportParameters?: (
     reportDefinitionId: number
   ) => Promise<{ data: ReportParameterDefinition[]; error: string | null }>;
-  createReportRequest?: CreateReportRequest;
+  createReportRequest?: (
+    reportCode: string,
+    parameters: Record<string, string>
+  ) => Promise<{ success: boolean; data?: { reportRequestId: string; status: string }; error?: string }>;
 }
 
 export function useReportParameters({
@@ -133,7 +134,7 @@ export function useReportParameters({
     setFieldErrors({});
   };
 
-  const handleSubmit = (overrideParams?: Record<string, string>, jobType?: ReportJobType) => {
+  const handleSubmit = (overrideParams?: Record<string, string>) => {
     if (!report) return;
 
     setSubmitStatus('idle');
@@ -168,7 +169,7 @@ export function useReportParameters({
           throw new Error('createReportRequest server action is not provided');
         }
 
-        const result = await createReportRequest(report.reportCode, currentParams, jobType);
+        const result = await createReportRequest(report.reportCode, currentParams);
 
         if (!result.success || !result.data || !result.data.reportRequestId) {
           setSubmitStatus('error');
@@ -187,15 +188,12 @@ export function useReportParameters({
           await new Promise((resolve) => setTimeout(resolve, 1000));
 
           try {
-            const statusPath = `/api/designer-report-status/${encodeURIComponent(reqId)}`;
-            const statusRes = await fetch(statusPath, { cache: 'no-store' });
+            const statusRes = await fetch(`/api/report-status/${encodeURIComponent(reqId)}`, { cache: 'no-store' });
             if (statusRes.ok) {
               const statusData = await statusRes.json();
 
-              const canDownload = statusData.status === 'Completed'
-                || (statusData.status === 'PartiallyCompleted' && Number(statusData.processedRecords) > 0);
-              if (canDownload) {
-                const downloadUrl = `/api/designer-report-download/${encodeURIComponent(reqId)}`;
+              if (statusData.status === 'Completed') {
+                const downloadUrl = `/api/report-download/${encodeURIComponent(reqId)}`;
                 const dlRes = await fetch(downloadUrl);
                 if (dlRes.ok) {
                   const blob = await dlRes.blob();

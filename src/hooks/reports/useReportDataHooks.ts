@@ -166,8 +166,6 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
   const suggestedPageRef = useRef(1);
   const searchQueryRef = useRef('');
   const requestContextRef = useRef('');
-  const wardInitialCacheRef = useRef<Map<number, { options: ReportPropertyOption[]; hasMore: boolean; page: number }>>(new Map());
-  const searchCacheRef = useRef<Map<string, { options: ReportPropertyOption[]; hasMore: boolean; page: number }>>(new Map());
   const selectedWardId = wardId[0] ?? '';
 
   useEffect(() => {
@@ -189,15 +187,6 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
       return;
     }
 
-    const cached = wardInitialCacheRef.current.get(numericWardId);
-    if (cached) {
-      setInitialProperties(cached.options);
-      initialPageRef.current = cached.page;
-      setHasMoreInitialProperties(cached.hasMore);
-      setIsLoadingInitialProperties(false);
-      return;
-    }
-
     let active = true;
     setIsLoadingInitialProperties(true);
     ptisSuggestionsClient.getSuggestionsPage({
@@ -210,18 +199,11 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
         const options = result.success && result.data
           ? mapPropertySuggestions(result.data)
           : [];
-        const hasMore = result.success && (result.pagination?.hasMore ?? options.length >= pageSize);
-        const page = result.pagination?.pageNumber ?? 1;
-
-        wardInitialCacheRef.current.set(numericWardId, {
-          options,
-          page,
-          hasMore,
-        });
-
         setInitialProperties(options);
-        initialPageRef.current = page;
-        setHasMoreInitialProperties(hasMore);
+        initialPageRef.current = result.pagination?.pageNumber ?? 1;
+        setHasMoreInitialProperties(
+          result.success && (result.pagination?.hasMore ?? options.length >= pageSize)
+        );
       })
       .catch(() => {
         if (active && requestContextRef.current === requestContext) {
@@ -254,16 +236,6 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
       return;
     }
 
-    const cacheKey = `${numericWardId}:${query}`;
-    const cachedSearch = searchCacheRef.current.get(cacheKey);
-    if (cachedSearch) {
-      setSuggestedProperties(cachedSearch.options);
-      suggestedPageRef.current = cachedSearch.page;
-      setHasMoreSuggestedProperties(cachedSearch.hasMore);
-      setIsSearchingProperties(false);
-      return;
-    }
-
     let active = true;
     const timer = setTimeout(() => {
       const searchFilters = parsePropertySearchQuery(query);
@@ -279,18 +251,11 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
           const options = result.success && result.data
             ? mapPropertySuggestions(result.data)
             : [];
-          const hasMore = result.success && (result.pagination?.hasMore ?? options.length >= pageSize);
-          const page = result.pagination?.pageNumber ?? 1;
-
-          searchCacheRef.current.set(cacheKey, {
-            options,
-            page,
-            hasMore,
-          });
-
           setSuggestedProperties(options);
-          suggestedPageRef.current = page;
-          setHasMoreSuggestedProperties(hasMore);
+          suggestedPageRef.current = result.pagination?.pageNumber ?? 1;
+          setHasMoreSuggestedProperties(
+            result.success && (result.pagination?.hasMore ?? options.length >= pageSize)
+          );
         })
         .catch(() => {
           if (active && searchQueryRef.current.trim() === query) {
@@ -301,7 +266,7 @@ export function usePaginatedProperties(wardId: string[], selectionMode: string) 
         .finally(() => {
           if (active) setIsSearchingProperties(false);
         });
-    }, 250);
+    }, 300);
 
     return () => {
       active = false;

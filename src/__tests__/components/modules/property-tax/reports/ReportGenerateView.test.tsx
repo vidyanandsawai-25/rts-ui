@@ -115,7 +115,7 @@ function makeReport(id: number, name: string): ReportDefinition {
   };
 }
 
-const reports = [makeReport(1, 'No Due Certificate'), makeReport(2, 'Transfer Certificate')];
+const reports = [makeReport(1, 'No Due Certificate'), makeReport(2, 'Karakarni')];
 
 const reportsByCategory = new Map<string, ReportDefinition[]>([
   ['assessment', reports],
@@ -187,7 +187,7 @@ describe('ReportGenerateView', () => {
         />
       );
       expect(screen.getByText('No Due Certificate')).toBeInTheDocument();
-      expect(screen.getByText('Transfer Certificate')).toBeInTheDocument();
+      expect(screen.getByText('Karakarni')).toBeInTheDocument();
     });
 
     it('does not show empty state on step 2', () => {
