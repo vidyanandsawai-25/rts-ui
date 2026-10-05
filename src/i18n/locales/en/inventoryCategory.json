@@ -136,5 +136,49 @@
     "inventory-model-master": "Inventory Model",
     "inventory-name-master": "Inventory Item Name",
     "inventory-condition-master": "Inventory Condition"
+  },
+  "pageTitle": "Inventory Category",
+  "pageSubtitle": "Manage and organize inventory categories",
+  "addInventoryCategory": "Add Inventory Category",
+  "stats": {
+    "totalCategory": "TOTAL INVENTORY CATEGORY",
+    "allCategorySubtext": "All inventory categories",
+    "totalAssetCategory": "TOTAL ASSET CATEGORY",
+    "assetCategoryLinked": "Asset categories linked",
+    "activeCategories": "ACTIVE CATEGORIES",
+    "currentlyActive": "Currently active",
+    "depreciationRate": "DEPRECIATION RATE",
+    "avgDepreciationRate": "Average depreciation rate"
+  },
+  "filters": {
+    "title": "Filters",
+    "inventoryCategoryAll": "Inventory Category: All",
+    "assetCategoryAll": "Asset Category: All",
+    "statusAll": "Status: All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "searchPlaceholder": "Search by code or name...",
+    "reset": "Reset",
+    "export": "Export"
+  },
+  "columns": {
+    "code": "Code",
+    "inventoryCategory": "Inventory Category",
+    "assetCategory": "Asset Category",
+    "depreciationRate": "Depreciation Rate",
+    "status": "Status"
+  },
+  "excel": {
+    "srNo": "Sr. No.",
+    "exportSuccess": "Inventory categories exported to Excel successfully!",
+    "exportError": "Failed to export inventory categories",
+    "noData": "No data to export",
+    "resetSuccess": "Filters reset"
+  },
+  "categories": {
+    "buildings": "Buildings",
+    "landAndPlots": "Land & Plots",
+    "movableAssets": "Movable Assets",
+    "infrastructure": "Infrastructure"
   }
 }

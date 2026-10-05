@@ -210,4 +210,3 @@ export interface AssetCounterPaymentSearchApiResponse {
   errors?: unknown;
   correlationId?: string | null;
 }
-

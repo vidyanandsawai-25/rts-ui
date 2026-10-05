@@ -122,5 +122,32 @@
     "inventory-model-master": "इन्वेंटरी मॉडल",
     "inventory-name-master": "इन्वेंटरी आइटम का नाम",
     "inventory-condition-master": "इन्वेंटरी स्थिति"
+  },
+  "pageTitle": "इन्वेंटरी मॉडल",
+  "pageSubtitle": "केंद्रीकृत मास्टर डेटा प्रबंधन प्रणाली",
+  "addInventoryModel": "नया इन्वेंटरी मॉडल जोड़ें",
+  "filters": {
+    "title": "फ़िल्टर",
+    "modelNameAll": "मॉडल का नाम: सभी",
+    "statusAll": "स्थिति: सभी",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "reset": "रीसेट करें",
+    "export": "निर्यात करें"
+  },
+  "columns": {
+    "name": "नाम",
+    "description": "विवरण",
+    "status": "स्थिति"
+  },
+  "excel": {
+    "srNo": "क्र.सं.",
+    "modelCode": "मॉडल कोड",
+    "modelName": "मॉडल नाम",
+    "description": "विवरण",
+    "status": "स्थिति",
+    "exportSuccess": "इन्वेंटरी मॉडल सफलतापूर्वक एक्सेल में निर्यात किए गए!",
+    "exportError": "इन्वेंटरी मॉडल निर्यात करने में विफल",
+    "noData": "निर्यात के लिए कोई रिकॉर्ड उपलब्ध नहीं है"
   }
 }

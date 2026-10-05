@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/services/api.service";
 import { ApiResponse } from "@/types/common.types";
 import type { Department, ApiDepartmentItem } from "@/types/municipal-asset-service.types";
@@ -12,7 +13,7 @@ export const departmentService = {
    * Get all active Departments
    */
   getDepartments: async (): Promise<ApiResponse<Department[]>> => {
-    const response = await apiClient.get<{ items?: ApiDepartmentItem[] } | ApiDepartmentItem[]>("/OwningDepartment?IsActive=true&PageSize=-1", { next: { revalidate: 300 } });
+    const response = await apiClient.get<{ items?: ApiDepartmentItem[] } | ApiDepartmentItem[]>("/OwningDepartment?IsActive=true&PageSize=-1", { cacheStrategy: 300  } as any);
     if (response.success && response.data) {
       const data = response.data;
       const items = Array.isArray(data)

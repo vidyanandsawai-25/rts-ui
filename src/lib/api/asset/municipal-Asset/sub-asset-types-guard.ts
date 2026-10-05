@@ -1,3 +1,4 @@
+ 
 /**
  * Validates that the payload is an object containing at least an id (assetId).
  */

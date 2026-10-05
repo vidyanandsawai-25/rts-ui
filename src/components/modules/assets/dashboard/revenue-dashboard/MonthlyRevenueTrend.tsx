@@ -108,7 +108,7 @@ const MonthlyRevenueTrendScreen: React.FC<MonthlyRevenueTrendProps> = ({
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: '#6b7280', fontSize: 12 }}
-                tickFormatter={(value) => formatIndianCurrencyAbbreviated(value, tWrapper)}
+                tickFormatter={(value: number | string) => formatIndianCurrencyAbbreviated(value, tWrapper)}
                 domain={[0, upperBound]}
                 ticks={ticks}
               />
@@ -119,7 +119,7 @@ const MonthlyRevenueTrendScreen: React.FC<MonthlyRevenueTrendProps> = ({
                 verticalAlign="bottom"
                 height={36}
                 iconType="circle"
-                formatter={(value) => (
+                formatter={(value: string) => (
                   <span className="text-sm font-medium text-gray-600 ml-2">{value}</span>
                 )}
               />
@@ -159,3 +159,4 @@ const MonthlyRevenueTrendScreen: React.FC<MonthlyRevenueTrendProps> = ({
 };
 
 export default MonthlyRevenueTrendScreen;
+

@@ -100,5 +100,40 @@
     "inventory-model-master": "Inventory Model",
     "inventory-name-master": "Inventory Item Name",
     "inventory-condition-master": "Inventory Condition"
+  },
+  "pageTitle": "Inventory Item Name",
+  "pageSubtitle": "Centralized Master Data Management System",
+  "addInventoryName": "Add New Inventory Item Name",
+  "filters": {
+    "title": "Filters",
+    "name": "Name",
+    "namePlaceholder": "Enter name",
+    "category": "Category",
+    "categoryAll": "All",
+    "status": "Status",
+    "statusAll": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "searchPlaceholder": "Search master records...",
+    "reset": "Reset",
+    "export": "Export"
+  },
+  "columns": {
+    "code": "Code",
+    "name": "Name",
+    "description": "Description",
+    "category": "Category",
+    "status": "Status"
+  },
+  "excel": {
+    "srNo": "Sr. No.",
+    "code": "Code",
+    "name": "Name",
+    "description": "Description",
+    "category": "Category",
+    "status": "Status",
+    "exportSuccess": "Inventory item names exported to Excel successfully!",
+    "exportError": "Failed to export inventory item names",
+    "noData": "No records available to export"
   }
 }

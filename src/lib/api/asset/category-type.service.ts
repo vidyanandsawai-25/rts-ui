@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/services/api.service";
 import { ApiResponse } from "@/types/common.types";
 import type { AssetCategory } from "@/types/asset-type/asset-category.types";
@@ -13,7 +14,7 @@ export const categoryTypeService = {
    * Get all active Asset Categories
    */
   getCategories: async (): Promise<ApiResponse<AssetCategory[]>> => {
-    const response = await apiClient.get<{ items?: ApiCategoryItem[] } | ApiCategoryItem[]>("/AssetCategory?IsActive=true&PageSize=-1", { next: { revalidate: 300 } });
+    const response = await apiClient.get<{ items?: ApiCategoryItem[] } | ApiCategoryItem[]>("/AssetCategory?IsActive=true&PageSize=-1", { cacheStrategy: 300  } as any);
     if (response.success && response.data) {
       const data = response.data;
       let items = Array.isArray(data) ? data : (data.items || []);
@@ -31,7 +32,7 @@ export const categoryTypeService = {
    * Get all active Asset Types
    */
   getAllTypes: async (): Promise<ApiResponse<AssetType[]>> => {
-    const response = await apiClient.get<{ items?: ApiTypeItem[] } | ApiTypeItem[]>("/AssetType?IsActive=true&PageSize=-1", { next: { revalidate: 300 } });
+    const response = await apiClient.get<{ items?: ApiTypeItem[] } | ApiTypeItem[]>("/AssetType?IsActive=true&PageSize=-1", { cacheStrategy: 300  } as any);
     if (response.success && response.data) {
       const data = response.data;
       let items = Array.isArray(data) ? data : (data.items || []);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/services/api.service";
 import { ApiResponse } from "@/types/common.types";
 import type { Zone } from "@/types/municipal-asset-service.types";
@@ -13,7 +14,7 @@ export const zoneService = {
    * Get all active Zones
    */
   getZones: async (): Promise<ApiResponse<Zone[]>> => {
-    const response = await apiClient.get<{ items?: Zone[] } | Zone[]>("/Zone?IsActive=true&PageSize=-1", { next: { revalidate: 300 } });
+    const response = await apiClient.get<{ items?: Zone[] } | Zone[]>("/Zone?IsActive=true&PageSize=-1", { cacheStrategy: 300  } as any);
     if (response.success && response.data) {
       const data = response.data;
       const items = Array.isArray(data)

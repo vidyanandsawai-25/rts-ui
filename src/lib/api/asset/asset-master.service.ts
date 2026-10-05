@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from '@/services/api.service';
 import {
   AssetMasterRequest,
@@ -41,7 +42,7 @@ export const assetMasterService = {
   createAsset: async (
     data: AssetMasterRequest | FormData
   ): Promise<ApiResponse<AssetMasterResponse>> => {
-    const isDataFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+    const isDataFormData = data !== null && typeof data === 'object' && typeof (data as any).append === 'function' && typeof (data as any).entries === 'function';
     if (isDataFormData) {
       const config = getAppConfig();
       const baseUrl = config.api.baseUrl?.trim();
@@ -56,7 +57,7 @@ export const assetMasterService = {
         if (typeof value === 'object' && value !== null && 'stream' in value) {
           try {
             const file = value as File;
-            const chunks: BlobPart[] = [];
+            const chunks: any[] = [];
             const reader = file.stream().getReader();
             while (true) {
               const { done, value: chunk } = await reader.read();
@@ -80,7 +81,7 @@ export const assetMasterService = {
       let text = '';
       try {
         text = await response.text();
-        let json: Record<string, unknown> | undefined = undefined;
+        let json: any = undefined;
         try {
           json = text ? JSON.parse(text) : undefined;
         } catch {
@@ -88,28 +89,26 @@ export const assetMasterService = {
         }
         if (!response.ok) {
           let errMessage =
-            (json?.message as string) ||
-            (json?.detail as string) ||
-            (json?.title as string) ||
-            (json?.error as string) ||
+            json?.message ||
+            json?.detail ||
+            json?.title ||
+            json?.error ||
             (typeof json === 'string' ? json : undefined) ||
             (text && text.trim() ? text.trim() : 'An error occurred');
 
           if (json?.errors && typeof json.errors === 'object') {
-            const errObj = json.errors as Record<string, unknown>;
-            const firstKey = Object.keys(errObj)[0];
+            const firstKey = Object.keys(json.errors)[0];
             if (firstKey) {
-              const firstErr = errObj[firstKey];
-              if (Array.isArray(firstErr) && firstErr.length > 0) errMessage = String(firstErr[0]);
+              const firstErr = json.errors[firstKey];
+              if (Array.isArray(firstErr) && firstErr.length > 0) errMessage = firstErr[0];
               else if (typeof firstErr === 'string') errMessage = firstErr;
             }
           }
           return { success: false, statusCode: response.status, error: errMessage };
         }
-        return { success: true, statusCode: response.status, data: json as unknown as AssetMasterResponse };
-      } catch (e: unknown) {
-        const errMsg = e instanceof Error ? e.message : 'Invalid server response';
-        return { success: false, statusCode: response.status, error: text || errMsg };
+        return { success: true, statusCode: response.status, data: json };
+      } catch (e: any) {
+        return { success: false, statusCode: response.status, error: text || e?.message || 'Invalid server response' };
       }
     }
     return apiClient.post<AssetMasterResponse>('/AssetMaster', data);
@@ -191,9 +190,8 @@ export const assetMasterService = {
    * Endpoint: GET /AssetMaster/dashboard-stats
    */
   getDashboardStats: async (): Promise<ApiResponse<AssetDashboardStatsDto>> => {
-    return apiClient.get<AssetDashboardStatsDto>('/AssetMaster/dashboard-stats', {
-      next: { revalidate: 300 },
-    });
+    return apiClient.get<AssetDashboardStatsDto>('/AssetMaster/dashboard-stats', { cacheStrategy: 300,
+     } as any);
   },
 
   /**
@@ -217,7 +215,7 @@ export const assetMasterService = {
     id: number,
     data: Partial<AssetMasterRequest> | FormData
   ): Promise<ApiResponse<AssetMasterResponse>> => {
-    const isDataFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+    const isDataFormData = data !== null && typeof data === 'object' && typeof (data as any).append === 'function' && typeof (data as any).entries === 'function';
     if (isDataFormData) {
       const config = getAppConfig();
       const baseUrl = config.api.baseUrl?.trim();
@@ -232,7 +230,7 @@ export const assetMasterService = {
         if (typeof value === 'object' && value !== null && 'stream' in value) {
           try {
             const file = value as File;
-            const chunks: BlobPart[] = [];
+            const chunks: any[] = [];
             const reader = file.stream().getReader();
             while (true) {
               const { done, value: chunk } = await reader.read();
@@ -256,7 +254,7 @@ export const assetMasterService = {
       let text = '';
       try {
         text = await response.text();
-        let json: Record<string, unknown> | undefined = undefined;
+        let json: any = undefined;
         try {
           json = text ? JSON.parse(text) : undefined;
         } catch {
@@ -264,28 +262,26 @@ export const assetMasterService = {
         }
         if (!response.ok) {
           let errMessage =
-            (json?.message as string) ||
-            (json?.detail as string) ||
-            (json?.title as string) ||
-            (json?.error as string) ||
+            json?.message ||
+            json?.detail ||
+            json?.title ||
+            json?.error ||
             (typeof json === 'string' ? json : undefined) ||
             (text && text.trim() ? text.trim() : 'An error occurred');
 
           if (json?.errors && typeof json.errors === 'object') {
-            const errObj = json.errors as Record<string, unknown>;
-            const firstKey = Object.keys(errObj)[0];
+            const firstKey = Object.keys(json.errors)[0];
             if (firstKey) {
-              const firstErr = errObj[firstKey];
-              if (Array.isArray(firstErr) && firstErr.length > 0) errMessage = String(firstErr[0]);
+              const firstErr = json.errors[firstKey];
+              if (Array.isArray(firstErr) && firstErr.length > 0) errMessage = firstErr[0];
               else if (typeof firstErr === 'string') errMessage = firstErr;
             }
           }
           return { success: false, statusCode: response.status, error: errMessage };
         }
-        return { success: true, statusCode: response.status, data: json as unknown as AssetMasterResponse };
-      } catch (e: unknown) {
-        const errMsg = e instanceof Error ? e.message : 'Invalid server response';
-        return { success: false, statusCode: response.status, error: text || errMsg };
+        return { success: true, statusCode: response.status, data: json };
+      } catch (e: any) {
+        return { success: false, statusCode: response.status, error: text || e?.message || 'Invalid server response' };
       }
     }
     return apiClient.put<AssetMasterResponse>(`/AssetMaster/${id}`, data);

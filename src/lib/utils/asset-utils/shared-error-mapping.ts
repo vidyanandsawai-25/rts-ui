@@ -1,3 +1,4 @@
+ 
 export type SharedErrorMapOptions = {
   message?: string;
   statusCode?: number;

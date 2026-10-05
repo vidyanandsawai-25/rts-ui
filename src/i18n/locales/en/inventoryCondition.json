@@ -114,5 +114,49 @@
     "inventory-model-master": "Inventory Model",
     "inventory-name-master": "Inventory Item Name",
     "inventory-condition-master": "Asset Condition Master"
+  },
+  "list": {
+    "title": "Inventory Condition",
+    "subtitle": "CardinalMind Master Data Management System",
+    "buttons": {
+      "add": "Add New Inventory Condition",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "filters": {
+      "show": "Show",
+      "search": "Search inventory condition...",
+      "label": "Filters",
+      "conditionCategoryAll": "Condition Category: All",
+      "categoryAll": "Category: All",
+      "statusAll": "Status: All",
+      "reset": "Reset",
+      "export": "Export",
+      "asset": "Asset",
+      "inventory": "Inventory"
+    },
+    "table": {
+      "conditionCategory": "Condition Category",
+      "name": "Name",
+      "description": "Description",
+      "conditionFactor": "Condition Factor",
+      "category": "Category",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  },
+  "stats": {
+    "totalConditions": "Total Conditions",
+    "totalConditionsSub": "All configured conditions",
+    "activeConditions": "Active Conditions",
+    "activeConditionsSub": "Currently active",
+    "avgConditionFactor": "Avg. Condition Factor",
+    "avgConditionFactorSub": "Across all conditions",
+    "categories": "Categories",
+    "categoriesSub": "Condition categories"
   }
 }

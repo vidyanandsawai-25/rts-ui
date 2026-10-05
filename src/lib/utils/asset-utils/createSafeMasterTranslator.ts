@@ -1,3 +1,4 @@
+ 
 export type SafeTranslatorFn = {
   (key: string, values?: Record<string, string | number | Date>): string;
   has?: (key: string) => boolean;

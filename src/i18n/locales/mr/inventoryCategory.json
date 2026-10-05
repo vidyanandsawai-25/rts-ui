@@ -136,5 +136,49 @@
     "inventory-model-master": "इन्व्हेंटरी मॉडेल",
     "inventory-name-master": "इन्व्हेंटरी आयटमचे नाव",
     "inventory-condition-master": "इन्व्हेंटरी स्थिती"
+  },
+  "pageTitle": "इन्व्हेंटरी श्रेणी",
+  "pageSubtitle": "इन्व्हेंटरी श्रेणींचे व्यवस्थापन आणि आयोजन करा",
+  "addInventoryCategory": "इन्व्हेंटरी श्रेणी जोडा",
+  "stats": {
+    "totalCategory": "एकूण इन्व्हेंटरी श्रेणी",
+    "allCategorySubtext": "सर्व इन्व्हेंटरी श्रेणी",
+    "totalAssetCategory": "एकूण मालमत्ता श्रेणी",
+    "assetCategoryLinked": "लिंक केलेल्या मालमत्ता श्रेणी",
+    "activeCategories": "सक्रिय श्रेणी",
+    "currentlyActive": "सध्या सक्रिय",
+    "depreciationRate": "घसारा दर",
+    "avgDepreciationRate": "सरासरी घसारा दर"
+  },
+  "filters": {
+    "title": "फिल्टर्स",
+    "inventoryCategoryAll": "इन्व्हेंटरी श्रेणी: सर्व",
+    "assetCategoryAll": "मालमत्ता श्रेणी: सर्व",
+    "statusAll": "स्थिती: सर्व",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "searchPlaceholder": "कोड किंवा नावाने शोधा...",
+    "reset": "रिसेट करा",
+    "export": "निर्यात करा"
+  },
+  "columns": {
+    "code": "कोड",
+    "inventoryCategory": "इन्व्हेंटरी श्रेणी",
+    "assetCategory": "मालमत्ता श्रेणी",
+    "depreciationRate": "घसारा दर",
+    "status": "स्थिती"
+  },
+  "excel": {
+    "srNo": "अ.क्र.",
+    "exportSuccess": "इन्व्हेंटरी श्रेणी यशस्वीरित्या एक्सेलमध्ये निर्यात केल्या!",
+    "exportError": "इन्व्हेंटरी श्रेणी निर्यात करण्यात अयशस्वी",
+    "noData": "निर्यात करण्यासाठी डेटा नाही",
+    "resetSuccess": "फिल्टर्स रिसेट केले"
+  },
+  "categories": {
+    "buildings": "इमारती",
+    "landAndPlots": "जमीन आणि भूखंड",
+    "movableAssets": "जंगम मालमत्ता",
+    "infrastructure": "पायाभूत सुविधा"
   }
 }

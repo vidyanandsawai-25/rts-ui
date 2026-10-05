@@ -1,3 +1,4 @@
+ 
 import { ApiAssetMasterResponse } from '@/types/asset/municipal-Asset/asset-detail-api.types';
 import { AssetDetailData } from '@/types/asset/municipal-Asset/asset-detail.types';
 import { formatIndianNumber } from '@/lib/utils/format';

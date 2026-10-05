@@ -121,5 +121,49 @@
     "inventory-model-master": "इन्व्हेंटरी मॉडेल",
     "inventory-name-master": "इन्व्हेंटरी आयटमचे नाव",
     "inventory-condition-master": "मालमत्ता स्थिती मास्टर"
+  },
+  "list": {
+    "title": "इन्व्हेंटरी स्थिती मास्टर",
+    "subtitle": "इन्व्हेंटरीसाठी स्थिती व्यवस्थापित करा",
+    "buttons": {
+      "add": "नवीन इन्व्हेंटरी स्थिती जोडा",
+      "edit": "संपादित करा",
+      "delete": "डिलीट"
+    },
+    "filters": {
+      "show": "दाखवा",
+      "search": "इन्व्हेंटरी स्थिती शोधा...",
+      "label": "फिल्टर्स",
+      "conditionCategoryAll": "स्थिती श्रेणी: सर्व",
+      "categoryAll": "श्रेणी: सर्व",
+      "statusAll": "स्थिती: सर्व",
+      "reset": "रीसेट करा",
+      "export": "निर्यात करा",
+      "asset": "मालमत्ता",
+      "inventory": "इन्व्हेंटरी"
+    },
+    "table": {
+      "conditionCategory": "स्थिती श्रेणी",
+      "name": "नाव",
+      "description": "वर्णन",
+      "conditionFactor": "स्थिती घटक",
+      "category": "श्रेणी",
+      "status": "स्थिती",
+      "actions": "कृती"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय"
+    }
+  },
+  "stats": {
+    "totalConditions": "एकूण स्थिती",
+    "totalConditionsSub": "सर्व कॉन्फिगर केलेल्या स्थिती",
+    "activeConditions": "सक्रिय स्थिती",
+    "activeConditionsSub": "सध्या सक्रिय",
+    "avgConditionFactor": "सरासरी स्थिती घटक",
+    "avgConditionFactorSub": "सर्व स्थितींमध्ये",
+    "categories": "श्रेण्या",
+    "categoriesSub": "स्थिती श्रेण्या"
   }
 }

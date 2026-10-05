@@ -12,3 +12,7 @@ export * from "./detail-tabs.types";
 export * from "./form-orchestrator.types";
 export * from "./master-data.types";
 export * from "./new-add-new-asset-page.types";
+
+export * from './file-upload-tile.types';
+export * from './common-ui.types';
+export * from './document-helpers.types';

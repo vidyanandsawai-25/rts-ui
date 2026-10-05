@@ -106,5 +106,40 @@
     "inventory-model-master": "इन्व्हेंटरी मॉडेल",
     "inventory-name-master": "इन्व्हेंटरी आयटमचे नाव",
     "inventory-condition-master": "इन्व्हेंटरी स्थिती"
+  },
+  "pageTitle": "इन्व्हेंटरी आयटमचे नाव",
+  "pageSubtitle": "केंद्रीकृत मास्टर डेटा व्यवस्थापन प्रणाली",
+  "addInventoryName": "नवीन इन्व्हेंटरी आयटमचे नाव जोडा",
+  "filters": {
+    "title": "फिल्टर्स",
+    "name": "नाव",
+    "namePlaceholder": "नाव प्रविष्ट करा",
+    "category": "श्रेणी",
+    "categoryAll": "सर्व",
+    "status": "स्थिती",
+    "statusAll": "सर्व",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "searchPlaceholder": "मास्टर रेकॉर्ड शोधा...",
+    "reset": "रीसेट",
+    "export": "निर्यात"
+  },
+  "columns": {
+    "code": "कोड",
+    "name": "नाव",
+    "description": "वर्णन",
+    "category": "श्रेणी",
+    "status": "स्थिती"
+  },
+  "excel": {
+    "srNo": "अ.क्र.",
+    "code": "कोड",
+    "name": "नाव",
+    "description": "वर्णन",
+    "category": "श्रेणी",
+    "status": "स्थिती",
+    "exportSuccess": "इन्व्हेंटरी आयटमची नावे एक्सेलमध्ये यशस्वीरित्या निर्यात केली गेली!",
+    "exportError": "इन्व्हेंटरी आयटमची नावे निर्यात करण्यात अयशस्वी",
+    "noData": "निर्यात करण्यासाठी कोणत्याही नोंदी उपलब्ध नाहीत"
   }
 }
