@@ -16,8 +16,6 @@ export interface Service {
 
 export interface RtsServiceApiItem {
   departmentId: number;
-  /** Government RTS portal service reference code (e.g., 7204 = Birth Certificate) */
-  govtServiceCode?: number;
   serviceName: string;
   serviceNameLocal?: string | null;
   // The RTSService list and get-by-id responses do not include this field.

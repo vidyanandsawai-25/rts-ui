@@ -82,7 +82,6 @@ export async function createRtsService(payload: {
   isCertificateRequired?: boolean;
   isSmsEnabled?: boolean;
   serviceCode?: string;
-  govtServiceCode?: number;
 }): Promise<RtsServiceApiItem> {
   const feesReq = payload.feesRequired ?? payload.isFeesRequired ?? false;
   const formattedPayload = {
@@ -119,7 +118,6 @@ export async function updateRtsService(
     isCertificateRequired?: boolean;
     isSmsEnabled?: boolean;
     serviceCode?: string;
-    govtServiceCode?: number;
   }
 ): Promise<RtsServiceApiItem> {
   const feesReq = payload.feesRequired ?? payload.isFeesRequired ?? false;
