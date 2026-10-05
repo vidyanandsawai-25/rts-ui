@@ -12,7 +12,7 @@ on:
       - main
       - dev
       - qa
-  
+
   workflow_dispatch:
 
 concurrency:
@@ -22,99 +22,212 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: [self-hosted, ci]
-    
+
     defaults:
       run:
         shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-      
+        with:
+          fetch-depth: 1
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24.x
-      
+          cache: npm
+          cache-dependency-path: package-lock.json
+
       - name: Install dependencies
-        run: npm install
-      
+        run: npm ci --prefer-offline --no-audit
+
       - name: Security audit
         run: npm audit --audit-level=high
         continue-on-error: true
-      
+
       - name: Type checking
         run: npm run type-check
-      
+
       - name: Run linter
         run: npm run lint
-      
+
+      # Run normal tests on push/manual runs
+      # Change "npm test -- --run" if your package.json uses a different test command.
+      - name: Run tests
+        if: github.event_name != 'pull_request'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+        run: npm test -- --run
+
+      # Full coverage only for Pull Requests
       - name: Run tests with coverage
+        if: github.event_name == 'pull_request'
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
         run: npm run test:coverage
-      
+
+      # Upload coverage only when coverage-report job will use it
       - name: Upload coverage to Azure Blob Storage
+        if: github.event_name == 'pull_request'
         shell: pwsh
         run: |
           $connectionString = "${{ secrets.PACKAGE_CONNECTION_STRING }}"
           $containerName = "${{ vars.COVERAGE_CONTAINER }}"
           $sha = "${{ github.sha }}"
           $uniquePrefix = "ui-coverage/$sha"
+
           $jsonSummary = "coverage/coverage-summary.json"
           $jsonFinal = "coverage/coverage-final.json"
 
-          # Create ui-coverage folder inside the container and upload files
-          az storage blob upload --connection-string $connectionString --container-name $containerName --file $jsonSummary --name "$uniquePrefix-coverage-summary.json" --overwrite
-          az storage blob upload --connection-string $connectionString --container-name $containerName --file $jsonFinal --name "$uniquePrefix-coverage-final.json" --overwrite
-      
+          if (-not (Test-Path $jsonSummary)) {
+            throw "Coverage summary file not found: $jsonSummary"
+          }
+
+          if (-not (Test-Path $jsonFinal)) {
+            throw "Coverage final file not found: $jsonFinal"
+          }
+
+          az storage blob upload `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --file $jsonSummary `
+            --name "$uniquePrefix-coverage-summary.json" `
+            --overwrite true
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to upload coverage-summary.json"
+          }
+
+          az storage blob upload `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --file $jsonFinal `
+            --name "$uniquePrefix-coverage-final.json" `
+            --overwrite true
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to upload coverage-final.json"
+          }
+
       - name: Build application
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: npm run build:production
-      
+
       - name: Analyze bundle size
         run: |
           Write-Host "Build output size:"
-          $nextSize = (Get-ChildItem -Path .next -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
-          Write-Host ("{0:N2} MB" -f $nextSize)
+
+          if (Test-Path ".next") {
+            $nextSize = (
+              Get-ChildItem -Path ".next" -Recurse -File |
+              Measure-Object -Property Length -Sum
+            ).Sum / 1MB
+
+            Write-Host ("{0:N2} MB" -f $nextSize)
+          }
+          else {
+            Write-Warning ".next directory not found."
+          }
+
           Write-Host "Static files size:"
-          $staticSize = (Get-ChildItem -Path .next/static -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
-          Write-Host ("{0:N2} MB" -f $staticSize)
+
+          if (Test-Path ".next/static") {
+            $staticSize = (
+              Get-ChildItem -Path ".next/static" -Recurse -File |
+              Measure-Object -Property Length -Sum
+            ).Sum / 1MB
+
+            Write-Host ("{0:N2} MB" -f $staticSize)
+          }
+          else {
+            Write-Warning ".next/static directory not found."
+          }
+
 
   coverage-report:
     needs: build-and-test
     runs-on: [self-hosted, Linux]
+
     if: github.event_name == 'pull_request'
+
     permissions:
       contents: read
       pull-requests: write
-    
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-       
-      - name: Download and Delete coverage from Azure Blob Storage
+        uses: actions/checkout@v5
+
+      - name: Download coverage from Azure Blob Storage
         shell: pwsh
         run: |
-          # Add ui-coverage directory
-          mkdir ui-coverage
+          New-Item `
+            -ItemType Directory `
+            -Force `
+            -Path "ui-coverage" | Out-Null
+
           $connectionString = "${{ secrets.PACKAGE_CONNECTION_STRING }}"
           $containerName = "${{ vars.COVERAGE_CONTAINER }}"
           $sha = "${{ github.sha }}"
           $uniquePrefix = "ui-coverage/$sha"
-          # Download coverage files
-          az storage blob download --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-summary.json" --file "ui-coverage/coverage-summary.json"
-          az storage blob download --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-final.json" --file "ui-coverage/coverage-final.json"
-          # Delete coverage files
-          az storage blob delete --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-summary.json"
-          az storage blob delete --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-final.json"
-      
+
+          az storage blob download `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --name "$uniquePrefix-coverage-summary.json" `
+            --file "ui-coverage/coverage-summary.json" `
+            --overwrite true
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to download coverage-summary.json"
+          }
+
+          az storage blob download `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --name "$uniquePrefix-coverage-final.json" `
+            --file "ui-coverage/coverage-final.json" `
+            --overwrite true
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to download coverage-final.json"
+          }
+
       - name: Coverage Report
         uses: davelosert/vitest-coverage-report-action@v1
         with:
           json-summary-path: ./ui-coverage/coverage-summary.json
           json-final-path: ./ui-coverage/coverage-final.json
 
-      - name: Remove ui-coverage directory
+      - name: Delete coverage from Azure Blob Storage
+        if: always()
         shell: pwsh
         run: |
-          Remove-Item -Recurse -Force ui-coverage
+          $connectionString = "${{ secrets.PACKAGE_CONNECTION_STRING }}"
+          $containerName = "${{ vars.COVERAGE_CONTAINER }}"
+          $sha = "${{ github.sha }}"
+          $uniquePrefix = "ui-coverage/$sha"
+
+          az storage blob delete `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --name "$uniquePrefix-coverage-summary.json"
+
+          az storage blob delete `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --name "$uniquePrefix-coverage-final.json"
+
+      - name: Remove ui-coverage directory
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path "ui-coverage") {
+            Remove-Item `
+              -Recurse `
+              -Force `
+              "ui-coverage"
+          }
