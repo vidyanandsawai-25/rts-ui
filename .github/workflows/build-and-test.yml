@@ -12,7 +12,7 @@ on:
       - main
       - dev
       - qa
-  
+
   workflow_dispatch:
 
 concurrency:
@@ -22,99 +22,364 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: [self-hosted, ci]
-    
+
     defaults:
       run:
         shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-      
+        with:
+          fetch-depth: 0
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24.x
-      
+          cache: npm
+          cache-dependency-path: package-lock.json
+
       - name: Install dependencies
-        run: npm install
-      
+        run: npm install --prefer-offline --no-audit --no-fund
+
       - name: Security audit
-        run: npm audit --audit-level=high
-        continue-on-error: true
-      
+        shell: pwsh
+        run: |
+          Write-Host "======================================"
+          Write-Host "NPM SECURITY AUDIT"
+          Write-Host "======================================"
+
+          npm audit --audit-level=high
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "High/Critical npm vulnerabilities were found."
+            Write-Warning "Please review the detailed npm audit output above."
+            Write-Host "CI will continue because security audit is currently non-blocking."
+            exit 0
+          }
+
+          Write-Host "No high/critical vulnerabilities detected."
+
       - name: Type checking
         run: npm run type-check
-      
+
       - name: Run linter
         run: npm run lint
-      
-      - name: Run tests with coverage
+
+      # ---------------------------------------------------------
+      # PR - FIND CHANGED SOURCE FILES
+      # ---------------------------------------------------------
+      - name: Detect changed source files
+        if: github.event_name == 'pull_request'
+        id: changed-files
+        shell: pwsh
+        run: |
+          Write-Host "Base branch: ${{ github.base_ref }}"
+          Write-Host "Head SHA: ${{ github.event.pull_request.head.sha }}"
+
+          git fetch origin "${{ github.base_ref }}" --depth=1
+
+          $changedFiles = git diff `
+            --name-only `
+            "origin/${{ github.base_ref }}...${{ github.event.pull_request.head.sha }}"
+
+          $sourceFiles = $changedFiles | Where-Object {
+            $_ -match '\.(ts|tsx|js|jsx)$'
+          }
+
+          Write-Host ""
+          Write-Host "Changed source files:"
+          Write-Host "--------------------------------------"
+
+          if ($sourceFiles) {
+            $sourceFiles | ForEach-Object {
+              Write-Host $_
+            }
+
+            $sourceFiles -join "`n" |
+              Out-File `
+                -FilePath "changed-source-files.txt" `
+                -Encoding utf8
+
+            "has_source_changes=true" |
+              Out-File `
+                -FilePath $env:GITHUB_OUTPUT `
+                -Append `
+                -Encoding utf8
+          }
+          else {
+            Write-Host "No JS/TS source files changed."
+
+            "has_source_changes=false" |
+              Out-File `
+                -FilePath $env:GITHUB_OUTPUT `
+                -Append `
+                -Encoding utf8
+          }
+
+      # ---------------------------------------------------------
+      # PR - RUN ONLY RELATED TESTS WITH COVERAGE
+      # ---------------------------------------------------------
+      - name: Run related tests with coverage
+        if: >
+          github.event_name == 'pull_request' &&
+          steps.changed-files.outputs.has_source_changes == 'true'
+        shell: pwsh
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
-        run: npm run test:coverage
-      
+        run: |
+          Write-Host "======================================"
+          Write-Host "RUNNING RELATED TESTS ONLY"
+          Write-Host "======================================"
+
+          $files = Get-Content "changed-source-files.txt"
+
+          Write-Host ""
+          Write-Host "Files passed to Vitest:"
+          $files | ForEach-Object {
+            Write-Host $_
+          }
+
+          Write-Host ""
+          Write-Host "Starting related tests..."
+
+          npx vitest related `
+            $files `
+            --run `
+            --coverage `
+            --reporter=verbose
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      # ---------------------------------------------------------
+      # PR - NO SOURCE CHANGES
+      # ---------------------------------------------------------
+      - name: Skip tests when no source changes
+        if: >
+          github.event_name == 'pull_request' &&
+          steps.changed-files.outputs.has_source_changes == 'false'
+        shell: pwsh
+        run: |
+          Write-Host "No JS/TS source files changed."
+          Write-Host "Related tests skipped."
+
+      # ---------------------------------------------------------
+      # PUSH / MANUAL - NORMAL TESTS
+      # ---------------------------------------------------------
+      - name: Run tests
+        if: github.event_name != 'pull_request'
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+        run: npm test -- --run
+
+      # ---------------------------------------------------------
+      # PR - UPLOAD COVERAGE
+      # ---------------------------------------------------------
       - name: Upload coverage to Azure Blob Storage
+        if: >
+          github.event_name == 'pull_request' &&
+          steps.changed-files.outputs.has_source_changes == 'true'
         shell: pwsh
         run: |
           $connectionString = "${{ secrets.PACKAGE_CONNECTION_STRING }}"
           $containerName = "${{ vars.COVERAGE_CONTAINER }}"
           $sha = "${{ github.sha }}"
           $uniquePrefix = "ui-coverage/$sha"
+
           $jsonSummary = "coverage/coverage-summary.json"
           $jsonFinal = "coverage/coverage-final.json"
 
-          # Create ui-coverage folder inside the container and upload files
-          az storage blob upload --connection-string $connectionString --container-name $containerName --file $jsonSummary --name "$uniquePrefix-coverage-summary.json" --overwrite
-          az storage blob upload --connection-string $connectionString --container-name $containerName --file $jsonFinal --name "$uniquePrefix-coverage-final.json" --overwrite
-      
+          if (-not (Test-Path $jsonSummary)) {
+            throw "Coverage summary file not found: $jsonSummary"
+          }
+
+          if (-not (Test-Path $jsonFinal)) {
+            throw "Coverage final file not found: $jsonFinal"
+          }
+
+          az storage blob upload `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --file $jsonSummary `
+            --name "$uniquePrefix-coverage-summary.json" `
+            --overwrite true
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to upload coverage-summary.json"
+          }
+
+          az storage blob upload `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --file $jsonFinal `
+            --name "$uniquePrefix-coverage-final.json" `
+            --overwrite true
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to upload coverage-final.json"
+          }
+
       - name: Build application
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: npm run build:production
-      
+
       - name: Analyze bundle size
         run: |
           Write-Host "Build output size:"
-          $nextSize = (Get-ChildItem -Path .next -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
-          Write-Host ("{0:N2} MB" -f $nextSize)
+
+          if (Test-Path ".next") {
+            $nextSize = (
+              Get-ChildItem -Path ".next" -Recurse -File |
+              Measure-Object -Property Length -Sum
+            ).Sum / 1MB
+
+            Write-Host ("{0:N2} MB" -f $nextSize)
+          }
+          else {
+            Write-Warning ".next directory not found."
+          }
+
           Write-Host "Static files size:"
-          $staticSize = (Get-ChildItem -Path .next/static -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
-          Write-Host ("{0:N2} MB" -f $staticSize)
+
+          if (Test-Path ".next/static") {
+            $staticSize = (
+              Get-ChildItem -Path ".next/static" -Recurse -File |
+              Measure-Object -Property Length -Sum
+            ).Sum / 1MB
+
+            Write-Host ("{0:N2} MB" -f $staticSize)
+          }
+          else {
+            Write-Warning ".next/static directory not found."
+          }
+
 
   coverage-report:
     needs: build-and-test
-    runs-on: [self-hosted, Linux]
+
     if: github.event_name == 'pull_request'
+
+    runs-on: [self-hosted, Linux]
+
     permissions:
       contents: read
       pull-requests: write
-    
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-       
-      - name: Download and Delete coverage from Azure Blob Storage
+        uses: actions/checkout@v5
+
+      - name: Check coverage availability
+        id: coverage-check
         shell: pwsh
         run: |
-          # Add ui-coverage directory
-          mkdir ui-coverage
+          $connectionString = "${{ secrets.PACKAGE_CONNECTION_STRING }}"
+          $containerName = "${{ vars.COVERAGE_CONTAINER }}"
+          $sha = "${{ github.sha }}"
+          $blobName = "ui-coverage/$sha-coverage-summary.json"
+
+          az storage blob exists `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --name $blobName `
+            --output tsv `
+            --query exists |
+            Out-File `
+              -FilePath "coverage-exists.txt" `
+              -Encoding utf8
+
+          $exists = (Get-Content "coverage-exists.txt").Trim()
+
+          Write-Host "Coverage exists: $exists"
+
+          "exists=$exists" |
+            Out-File `
+              -FilePath $env:GITHUB_OUTPUT `
+              -Append `
+              -Encoding utf8
+
+      - name: Download coverage from Azure Blob Storage
+        if: steps.coverage-check.outputs.exists == 'true'
+        shell: pwsh
+        run: |
+          New-Item `
+            -ItemType Directory `
+            -Force `
+            -Path "ui-coverage" | Out-Null
+
           $connectionString = "${{ secrets.PACKAGE_CONNECTION_STRING }}"
           $containerName = "${{ vars.COVERAGE_CONTAINER }}"
           $sha = "${{ github.sha }}"
           $uniquePrefix = "ui-coverage/$sha"
-          # Download coverage files
-          az storage blob download --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-summary.json" --file "ui-coverage/coverage-summary.json"
-          az storage blob download --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-final.json" --file "ui-coverage/coverage-final.json"
-          # Delete coverage files
-          az storage blob delete --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-summary.json"
-          az storage blob delete --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-final.json"
-      
+
+          az storage blob download `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --name "$uniquePrefix-coverage-summary.json" `
+            --file "ui-coverage/coverage-summary.json" `
+            --overwrite true
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to download coverage-summary.json"
+          }
+
+          az storage blob download `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --name "$uniquePrefix-coverage-final.json" `
+            --file "ui-coverage/coverage-final.json" `
+            --overwrite true
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to download coverage-final.json"
+          }
+
       - name: Coverage Report
+        if: steps.coverage-check.outputs.exists == 'true'
         uses: davelosert/vitest-coverage-report-action@v1
         with:
           json-summary-path: ./ui-coverage/coverage-summary.json
           json-final-path: ./ui-coverage/coverage-final.json
 
-      - name: Remove ui-coverage directory
+      - name: Skip coverage report
+        if: steps.coverage-check.outputs.exists != 'true'
         shell: pwsh
         run: |
-          Remove-Item -Recurse -Force ui-coverage
+          Write-Host "No coverage file was generated for this PR."
+          Write-Host "Coverage report skipped."
+
+      - name: Delete coverage from Azure Blob Storage
+        if: >
+          always() &&
+          steps.coverage-check.outputs.exists == 'true'
+        shell: pwsh
+        run: |
+          $connectionString = "${{ secrets.PACKAGE_CONNECTION_STRING }}"
+          $containerName = "${{ vars.COVERAGE_CONTAINER }}"
+          $sha = "${{ github.sha }}"
+          $uniquePrefix = "ui-coverage/$sha"
+
+          az storage blob delete `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --name "$uniquePrefix-coverage-summary.json"
+
+          az storage blob delete `
+            --connection-string $connectionString `
+            --container-name $containerName `
+            --name "$uniquePrefix-coverage-final.json"
+
+      - name: Remove ui-coverage directory
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path "ui-coverage") {
+            Remove-Item `
+              -Recurse `
+              -Force `
+              "ui-coverage"
+          }
