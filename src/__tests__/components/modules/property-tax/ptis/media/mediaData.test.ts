@@ -345,5 +345,205 @@ describe('mediaData - mapSlotsToCategories in QuickDataEntry mode', () => {
   });
 });
 
+describe('mediaData - Apartment Property Scope Filtering', () => {
+  const allMixedSlots = [
+    { photoTypeId: 1, photoTypeCode: 'PROPERTY_FRONT', photoTypeName: 'Property Front Photo', photoScope: 'PROPERTY', displayOrder: 1, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 2, photoTypeCode: 'PROPERTY_SIDE', photoTypeName: 'Property Side Photo', photoScope: 'PROPERTY', displayOrder: 2, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 3, photoTypeCode: 'PROPERTY_INSIDE', photoTypeName: 'Property Inside Photo', photoScope: 'PROPERTY', displayOrder: 3, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 4, photoTypeCode: 'PROPERTY_BOARD', photoTypeName: 'Property Board Photo', photoScope: 'PROPERTY', displayOrder: 4, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 5, photoTypeCode: 'SOCIETY_PLACE', photoTypeName: 'Society Place Photo', photoScope: 'SOCIETY', displayOrder: 10, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 6, photoTypeCode: 'SOCIETY_BOARD', photoTypeName: 'Society Board Photo', photoScope: 'SOCIETY', displayOrder: 11, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 7, photoTypeCode: 'SOCIETY_SIGN_BOARD', photoTypeName: 'Society Sign Board Photo', photoScope: 'SOCIETY', displayOrder: 12, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 8, photoTypeCode: 'WING_BUILDING', photoTypeName: 'Wing Building Photo', photoScope: 'WING', displayOrder: 20, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 9, photoTypeCode: 'WING_PLACE', photoTypeName: 'Wing Place Photo', photoScope: 'WING', displayOrder: 21, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 10, photoTypeCode: 'WING_BOARD', photoTypeName: 'Wing Board Photo', photoScope: 'WING', displayOrder: 22, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 11, photoTypeCode: 'WING_SIGN_BOARD', photoTypeName: 'Wing Sign Board Photo', photoScope: 'WING', displayOrder: 23, hasPhoto: false, photoCount: 0 },
+    { photoTypeId: 13, photoTypeCode: 'PROPERTY_PLAN', photoTypeName: 'Property Plan', photoScope: 'PROPERTY', displayOrder: 13, hasPhoto: false, photoCount: 0 },
+  ];
+
+  it('hides property scope slots when apartment property only has societyDetailId (no wingDetailId / main society property)', () => {
+    const categories = mapSlotsToCategories(
+      allMixedSlots,
+      [],
+      undefined,
+      undefined,
+      undefined,
+      null,   // selectedWingDetailId = null
+      true,   // isMainProperty = true
+      1,      // categoryId = 1 (Apartment)
+      null,
+      'S',
+      false,
+      undefined,
+      undefined,
+      false,  // isQuickDataEntry = false
+      '',
+      false,
+      5378    // societyDetailId = 5378
+    );
+
+    const codes = categories.map((c) => c.photoTypeCode);
+    // Property scope slots MUST NOT be shown
+    expect(codes).not.toContain('PROPERTY_FRONT');
+    expect(codes).not.toContain('PROPERTY_SIDE');
+    expect(codes).not.toContain('PROPERTY_INSIDE');
+    expect(codes).not.toContain('PROPERTY_BOARD');
+    expect(codes).not.toContain('PROPERTY_PLAN');
+    expect(codes).not.toContain('PHOTO_PLAN');
+
+    // Society & Wing slots MUST be shown
+    expect(codes).toContain('SOCIETY_PLACE');
+    expect(codes).toContain('SOCIETY_BOARD');
+    expect(codes).toContain('SOCIETY_SIGN_BOARD');
+    expect(codes).toContain('WING_BUILDING');
+    expect(codes).toContain('WING_PLACE');
+    expect(codes).toContain('WING_BOARD');
+    expect(codes).toContain('WING_SIGN_BOARD');
+  });
+
+  it('shows property scope slots and hides society slots when apartment property only has wingDetailId (missing societyDetailId)', () => {
+    const categories = mapSlotsToCategories(
+      allMixedSlots,
+      [],
+      undefined,
+      undefined,
+      'A Wing',
+      1530423, // selectedWingDetailId = 1530423
+      false,
+      1,       // categoryId = 1 (Apartment)
+      null,
+      'P',
+      false,
+      undefined,
+      undefined,
+      false,
+      'A-101',
+      true,
+      null     // societyDetailId = null
+    );
+
+    const codes = categories.map((c) => c.photoTypeCode);
+    expect(codes).toContain('PROPERTY_FRONT');
+    expect(codes).toContain('PROPERTY_SIDE');
+    expect(codes).toContain('PROPERTY_INSIDE');
+    expect(codes).toContain('PROPERTY_BOARD');
+    expect(codes).toContain('PROPERTY_PLAN');
+    expect(codes).not.toContain('SOCIETY_PLACE');
+    expect(codes).not.toContain('SOCIETY_BOARD');
+    expect(codes).not.toContain('SOCIETY_SIGN_BOARD');
+  });
+
+  it('shows property scope slots when apartment property has BOTH societyDetailId AND wingDetailId', () => {
+    const categories = mapSlotsToCategories(
+      allMixedSlots,
+      [],
+      undefined,
+      undefined,
+      'A Wing',
+      1530423, // selectedWingDetailId = 1530423
+      false,   // isMainProperty = false (unit level)
+      1,       // categoryId = 1 (Apartment)
+      null,
+      'P',
+      false,
+      undefined,
+      undefined,
+      false,
+      'A-101',
+      true,
+      5378     // societyDetailId = 5378
+    );
+
+    const codes = categories.map((c) => c.photoTypeCode);
+    // Property scope slots MUST be shown
+    expect(codes).toContain('PROPERTY_FRONT');
+    expect(codes).toContain('PROPERTY_SIDE');
+    expect(codes).toContain('PROPERTY_INSIDE');
+    expect(codes).toContain('PROPERTY_BOARD');
+    expect(codes).toContain('PROPERTY_PLAN');
+  });
+
+  it('shows property scope slots and hides society and wing slots when apartment property has NEITHER societyDetailId NOR wingDetailId', () => {
+    const categories = mapSlotsToCategories(
+      allMixedSlots,
+      [],
+      undefined,
+      undefined,
+      undefined,
+      null,    // selectedWingDetailId = null
+      false,   // isMainProperty = false
+      1,       // categoryId = 1 (Apartment)
+      null,
+      'P',     // entityType = 'P'
+      false,
+      undefined,
+      undefined,
+      false,   // isQuickDataEntry = false
+      '',
+      false,
+      null     // societyDetailId = null
+    );
+
+    const codes = categories.map((c) => c.photoTypeCode);
+    // Property scope slots MUST be shown
+    expect(codes).toContain('PROPERTY_FRONT');
+    expect(codes).toContain('PROPERTY_SIDE');
+    expect(codes).toContain('PROPERTY_INSIDE');
+    expect(codes).toContain('PROPERTY_BOARD');
+    expect(codes).toContain('PROPERTY_PLAN');
+
+    // Society & Wing slots MUST NOT be shown
+    expect(codes).not.toContain('SOCIETY_PLACE');
+    expect(codes).not.toContain('SOCIETY_BOARD');
+    expect(codes).not.toContain('SOCIETY_SIGN_BOARD');
+    expect(codes).not.toContain('WING_BUILDING');
+    expect(codes).not.toContain('WING_PLACE');
+    expect(codes).not.toContain('WING_BOARD');
+    expect(codes).not.toContain('WING_SIGN_BOARD');
+  });
+
+  it('shows property scope slots and hides society/wing slots on apartment screen even when isMainProperty is true if societyDetailId and wingDetailId are missing', () => {
+    // Only society/wing slots returned from backend
+    const societyAndWingOnlySlots = allMixedSlots.filter((s) => s.photoScope === 'SOCIETY' || s.photoScope === 'WING');
+
+    const categories = mapSlotsToCategories(
+      societyAndWingOnlySlots,
+      [],
+      undefined,
+      undefined,
+      undefined,
+      null,    // selectedWingDetailId = null
+      true,    // isMainProperty = true (evaluated from partitionNo = '-')
+      1,       // categoryId = 1 (Apartment)
+      null,
+      'P',     // entityType = 'P'
+      false,
+      undefined,
+      undefined,
+      false,   // isQuickDataEntry = false
+      '-',     // partitionNo = '-'
+      false,
+      null     // societyDetailId = null
+    );
+
+    const codes = categories.map((c) => c.photoTypeCode);
+    // Injected property scope slots MUST be shown
+    expect(codes).toContain('PROPERTY_FRONT');
+    expect(codes).toContain('PROPERTY_SIDE');
+    expect(codes).toContain('PROPERTY_INSIDE');
+    expect(codes).toContain('PROPERTY_BOARD');
+    expect(codes).toContain('PHOTO_PLAN');
+
+    // Society & Wing slots MUST NOT be shown
+    expect(codes).not.toContain('SOCIETY_PLACE');
+    expect(codes).not.toContain('SOCIETY_BOARD');
+    expect(codes).not.toContain('SOCIETY_SIGN_BOARD');
+    expect(codes).not.toContain('WING_BUILDING');
+    expect(codes).not.toContain('WING_PLACE');
+    expect(codes).not.toContain('WING_BOARD');
+    expect(codes).not.toContain('WING_SIGN_BOARD');
+  });
+});
+
 
 

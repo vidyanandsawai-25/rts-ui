@@ -44,6 +44,7 @@ export interface UsePropertyMediaProps {
   isAmenity?: boolean;
   wingName?: string;
   wingDetailId?: number | null;
+  societyDetailId?: number | null;
   societyPhotoFallbackGuid?: string;
   societyPhotoFallbackUrl?: string;
   societyLatitude?: number;
@@ -63,6 +64,7 @@ export function usePropertyMedia({
   wings: _wings,
   wingName: propWingName,
   wingDetailId: propWingDetailId,
+  societyDetailId: propSocietyDetailId,
   isMainProperty = false,
   categoryId = null,
   propertyTypeId = null,
@@ -251,6 +253,15 @@ export function usePropertyMedia({
     searchWingName
   );
 
+  const searchSocietyId = (searchParams?.get('societyDetailId') || searchParams?.get('societydetailid') || searchParams?.get('societyId') || searchParams?.get('societyid'))
+    ? Number(searchParams.get('societyDetailId') || searchParams.get('societydetailid') || searchParams.get('societyId') || searchParams.get('societyid'))
+    : null;
+  const resolvedSocietyDetailId =
+    propSocietyDetailId ??
+    activeWingParams?.societyId ??
+    searchSocietyId ??
+    null;
+
   const categories = useMemo(
     () =>
       mapSlotsToCategories(
@@ -269,7 +280,8 @@ export function usePropertyMedia({
         societyPhotoFallbackUrl,
         effectiveIsQuickDataEntry,
         partitionNo,
-        hasExplicitWing
+        hasExplicitWing,
+        resolvedSocietyDetailId
       ),
     [
       photoSlots,
@@ -289,6 +301,7 @@ export function usePropertyMedia({
       effectiveIsQuickDataEntry,
       partitionNo,
       hasExplicitWing,
+      resolvedSocietyDetailId,
     ]
   );
 

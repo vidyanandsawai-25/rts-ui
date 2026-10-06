@@ -150,7 +150,8 @@ export function mapSlotsToCategories(
   societyPhotoFallbackUrl?: string,
   isQuickDataEntry: boolean = false,
   partitionNo?: string | null,
-  _hasExplicitWing: boolean = false
+  _hasExplicitWing: boolean = false,
+  societyDetailId?: number | null
 ): PhotoCategory[] {
   const systemCodes = [
     'FRONT', 'FLOOR', 'GIS', 'BACK', 'LIVING', 'KITCHEN', 'BEDROOM', 'BATHROOM', 'BALCONY', 'TERRACE', 'PARKING', 'CHANGE_DETECTION',
@@ -206,33 +207,25 @@ export function mapSlotsToCategories(
     let viewUrl = s.viewUrl;
     let propertyPhotoId = s.propertyPhotoId;
 
-    const isAmenityCat = Boolean(
-      s.photoTypeCode?.toUpperCase().includes('AMENITY') ||
-      s.photoTypeName?.toLowerCase().includes('amenity')
-    );
-    const isWingCat = !isAmenityCat && Boolean(
-      s.photoTypeCode?.toUpperCase().includes('WING') ||
-      s.photoTypeName?.toLowerCase().includes('wing')
-    );
-    const isSocietyCat = !isAmenityCat && Boolean(
-      s.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-      s.photoTypeName?.toLowerCase().includes('society')
-    );
+    const slotScope = (s.photoScope || '').toUpperCase().trim();
+    const isAmenityCat = slotScope === 'AMENITY' || (!slotScope && Boolean(s.photoTypeCode?.toUpperCase().includes('AMENITY')));
+    const isWingCat = !isAmenityCat && (slotScope === 'WING' || (!slotScope && Boolean(s.photoTypeCode?.toUpperCase().includes('WING'))));
+    const isSocietyCat = !isAmenityCat && (slotScope === 'SOCIETY' || (!slotScope && Boolean(s.photoTypeCode?.toUpperCase().includes('SOCIETY'))));
 
-    const checkIsAmenityPhoto = (p: PropertyPhotoDto) => Boolean(
-      p.photoTypeCode?.toUpperCase().includes('AMENITY') ||
-      p.photoTypeName?.toLowerCase().includes('amenity')
-    );
+    const checkIsAmenityPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'AMENITY' || (!pScope && Boolean(p.photoTypeCode?.toUpperCase().includes('AMENITY')));
+    };
 
-    const checkIsWingPhoto = (p: PropertyPhotoDto) => !checkIsAmenityPhoto(p) && Boolean(
-      p.photoTypeCode?.toUpperCase().includes('WING') ||
-      p.photoTypeName?.toLowerCase().includes('wing')
-    );
+    const checkIsWingPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'WING' || (!pScope && !checkIsAmenityPhoto(p) && Boolean(p.photoTypeCode?.toUpperCase().includes('WING')));
+    };
 
-    const checkIsSocietyPhoto = (p: PropertyPhotoDto) => !checkIsAmenityPhoto(p) && Boolean(
-      p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-      p.photoTypeName?.toLowerCase().includes('society')
-    );
+    const checkIsSocietyPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'SOCIETY' || (!pScope && !checkIsAmenityPhoto(p) && Boolean(p.photoTypeCode?.toUpperCase().includes('SOCIETY')));
+    };
 
     let matchingPhoto: PropertyPhotoDto | undefined;
     if (isAmenityCat) {
@@ -346,10 +339,50 @@ export function mapSlotsToCategories(
     String(partitionNo).trim() === '' ||
     String(partitionNo).trim() === '-';
 
+  const hasSociety = Boolean(societyDetailId && Number(societyDetailId) > 0);
+  const hasWing = Boolean(selectedWingDetailId && Number(selectedWingDetailId) > 0);
+  const hasNeitherSocietyNorWing = !hasSociety && !hasWing;
+
+  const hasBothSocietyAndWing = Boolean(
+    hasSociety &&
+    hasWing &&
+    !isMainProperty
+  );
+
+  const isIndividual =
+    !isAmenity &&
+    !isMainProperty &&
+    categoryId !== 4 &&
+    entityType !== 'W' &&
+    (categoryId === 2 || (entityType === 'P' && categoryId !== 1 && categoryId !== 3 && !selectedWingDetailId && !societyDetailId));
+
+  const isSocietyMaster =
+    !isAmenity &&
+    !isIndividual &&
+    ((categoryId === 3 && isMainProperty) || (entityType === 'S' && isMainProperty) || (isMainProperty && hasSociety && !selectedWingDetailId && !wingName));
+
+  const isWingMaster =
+    !isAmenity &&
+    !isIndividual &&
+    ((categoryId === 4 && isMainProperty) || (entityType === 'W' && isMainProperty) || (isMainProperty && hasWing));
+
   const isSocietyMainProperty =
     !isAmenity &&
     (isMainProperty || isPartitionEmptyOrMain) &&
+    (hasSociety || entityType === 'S' || categoryId === 3) &&
     (categoryId === 1 || categoryId === 3 || entityType === 'S' || Boolean(societyPhotoFallbackGuid) || Boolean(societyPhotoFallbackUrl));
+
+  const isApartmentProp =
+    !isAmenity &&
+    !isSocietyMaster &&
+    !isWingMaster &&
+    entityType !== 'S' &&
+    entityType !== 'W' &&
+    categoryId !== 3 &&
+    (categoryId === 1 ||
+      categoryId === 4 ||
+      entityType === 'APARTMENT' ||
+      entityType === 'P');
 
   const isInnerSocietyWingProperty =
     !isAmenity &&
@@ -357,14 +390,7 @@ export function mapSlotsToCategories(
     !isMainProperty &&
     categoryId !== 4 &&
     entityType !== 'W' &&
-    (categoryId === 1 || Boolean(selectedWingDetailId) || Boolean(wingName));
-
-  const isIndividual =
-    !isAmenity &&
-    !isMainProperty &&
-    categoryId !== 4 &&
-    entityType !== 'W' &&
-    (categoryId === 2 || (entityType === 'P' && categoryId !== 1 && categoryId !== 3 && !selectedWingDetailId));
+    (hasBothSocietyAndWing || (categoryId === 1 && (Boolean(selectedWingDetailId) || Boolean(wingName))));
 
   const isUnitOrIndividual = isInnerSocietyWingProperty || isIndividual;
 
@@ -391,7 +417,61 @@ export function mapSlotsToCategories(
   }
 
   const hasPlan = baseCats.some(isPhotoPlanCat);
-  if (!hasPlan && (!isMainProperty || isIndividual || isAmenity || isQuickDataEntry)) {
+  const shouldInjectPlan =
+    !hasPlan &&
+    ((!isMainProperty && (isIndividual || isAmenity || isApartmentProp)) ||
+      (isApartmentProp && hasNeitherSocietyNorWing) ||
+      isQuickDataEntry);
+
+  const corePropertySlotTemplates = [
+    { photoTypeId: 1, photoTypeCode: 'PROPERTY_FRONT', defaultName: 'Property Front Photo', displayOrder: 1 },
+    { photoTypeId: 2, photoTypeCode: 'PROPERTY_SIDE', defaultName: 'Property Side Photo', displayOrder: 2 },
+    { photoTypeId: 3, photoTypeCode: 'PROPERTY_INSIDE', defaultName: 'Property Inside Photo', displayOrder: 3 },
+    { photoTypeId: 4, photoTypeCode: 'PROPERTY_BOARD', defaultName: 'Property Board Photo', displayOrder: 4 },
+  ];
+
+  const shouldInjectCorePropertySlots =
+    (isApartmentProp && (!isMainProperty || hasNeitherSocietyNorWing || hasBothSocietyAndWing)) ||
+    isIndividual;
+
+  if (shouldInjectCorePropertySlots) {
+    corePropertySlotTemplates.forEach((tpl) => {
+      const exists = baseCats.some(
+        (c) =>
+          c.photoTypeId === tpl.photoTypeId ||
+          c.photoTypeCode?.toUpperCase() === tpl.photoTypeCode
+      );
+      if (!exists) {
+        const localizedName = t
+          ? getLocalizedCategoryName(tpl.photoTypeCode, tpl.defaultName, t)
+          : tpl.defaultName;
+        const matchingPhoto = uploadedPhotos.find((p) =>
+          isPhotoMatch(tpl.photoTypeCode, tpl.photoTypeId, p.photoTypeCode, p.photoTypeId)
+        );
+        const hasPhoto = Boolean(matchingPhoto);
+        const documentGuid = matchingPhoto?.documentGuid;
+        const viewUrl = documentGuid
+          ? getViewDocumentUrl(documentGuid)
+          : matchingPhoto?.viewUrl;
+        const propertyPhotoId = matchingPhoto?.propertyPhotoId;
+
+        baseCats.push({
+          photoTypeId: tpl.photoTypeId,
+          photoTypeCode: tpl.photoTypeCode,
+          photoTypeName: localizedName,
+          photoScope: 'PROPERTY',
+          isCustom: false,
+          hasPhoto,
+          photoCount: hasPhoto ? 1 : 0,
+          propertyPhotoId,
+          documentGuid,
+          viewUrl,
+        });
+      }
+    });
+  }
+
+  if (shouldInjectPlan) {
     const planName = isQuickDataEntry
       ? (t ? (t.has?.('media.propertyPlan') ? t('media.propertyPlan') : 'Property Plan') : 'Property Plan')
       : (t ? (t.has?.('media.photoPlan') ? t('media.photoPlan') : 'Photo Plan') : 'Photo Plan');
@@ -432,15 +512,13 @@ export function mapSlotsToCategories(
     });
   }
 
-  const isWingMaster =
-    ((categoryId === 4 && isMainProperty) || (isMainProperty && Boolean(selectedWingDetailId)) || entityType === 'W') && !isAmenity && !isIndividual;
-  const isSocietyMaster =
-    ((categoryId === 3 && isMainProperty) || (isMainProperty && !selectedWingDetailId && !wingName) || entityType === 'S') && !isAmenity && !isIndividual;
-
   const filteredCats = baseCats.filter(c => {
     const code = c.photoTypeCode?.toUpperCase() || '';
     const isPlan = isPhotoPlanCat(c);
-    const isPropScope = !c.isCustom && (code.startsWith('PROPERTY_') || isPlan);
+    const scope = (c.photoScope || '').toUpperCase().trim();
+    const isPropScope = !c.isCustom && (scope === 'PROPERTY' || isPlan || (!scope && code.startsWith('PROPERTY_')));
+    const isSocietySlot = scope === 'SOCIETY' || (!scope && (code.startsWith('SOCIETY_') || c.photoTypeName?.toLowerCase().includes('society')));
+    const isWingSlot = scope === 'WING' || (!scope && (code.startsWith('WING_') || c.photoTypeName?.toLowerCase().includes('wing')));
 
     if (isQuickDataEntry) {
       // Always exclude GIS / Satellite View and Change Detection from QDE
@@ -456,7 +534,6 @@ export function mapSlotsToCategories(
 
       // 1. Inner property of society wings: only load property scope slots in QDE
       if (isInnerSocietyWingProperty || isUnitOrIndividual) {
-        const scope = c.photoScope?.toUpperCase();
         if (scope) {
           return scope === 'PROPERTY' || isPlan;
         }
@@ -465,7 +542,6 @@ export function mapSlotsToCategories(
 
       // 2. Society main property: only load society scope slots in QDE
       if (isSocietyMainProperty) {
-        const scope = c.photoScope?.toUpperCase();
         if (scope) {
           return scope === 'SOCIETY';
         }
@@ -476,13 +552,7 @@ export function mapSlotsToCategories(
     }
 
     if (isAmenity) {
-      const isAmenitySlot =
-        code.startsWith('AMENITY') ||
-        c.photoTypeName?.toLowerCase().includes('amenity');
-      const isSocietySlot =
-        c.photoScope?.toUpperCase() === 'SOCIETY' ||
-        code.startsWith('SOCIETY_') ||
-        c.photoTypeName?.toLowerCase().includes('society');
+      const isAmenitySlot = scope === 'AMENITY' || (!scope && (code.startsWith('AMENITY') || c.photoTypeName?.toLowerCase().includes('amenity')));
       const isCD = code === 'CHANGE_DETECTION';
       if (isAmenitySlot || isSocietySlot || isPlan || isCD || c.isCustom) return true;
       return false;
@@ -492,7 +562,6 @@ export function mapSlotsToCategories(
     if (isIndividual) {
       const isCD = code === 'CHANGE_DETECTION';
       const isGIS = code === 'GIS' || code.includes('SATELLITE') || c.photoTypeName?.toLowerCase().includes('satellite view');
-      const scope = c.photoScope?.toUpperCase();
       if (scope) {
         return scope === 'PROPERTY' || isPlan || isCD || isGIS;
       }
@@ -505,6 +574,45 @@ export function mapSlotsToCategories(
         code.startsWith('AMENITY') ||
         c.photoTypeName?.toLowerCase().includes('amenity');
       if (isSocietyOrWing || isAmenitySlot) return false;
+      return true;
+    }
+
+    // For Apartment properties:
+    if (isApartmentProp) {
+      if (hasNeitherSocietyNorWing) {
+        // If neither societyDetailId nor wingDetailId is available:
+        // Don't show society and wing slots; only property scope slots should be rendered
+        if (isSocietySlot || isWingSlot) return false;
+        if (isPropScope || isPlan || code === 'CHANGE_DETECTION' || code === 'GIS' || c.isCustom) return true;
+        return false;
+      }
+
+      // Any inner unit property (!isMainProperty) must show property-scope slots
+      if (!isMainProperty && isPropScope) {
+        return true;
+      }
+
+      if (hasBothSocietyAndWing) {
+        // Unit property with both society and wing: property-scope slots are rendered
+        if (isPropScope) return true;
+        return true;
+      }
+
+      // Society level (societyDetailId without wingDetailId)
+      if (hasSociety && !hasWing) {
+        if (isMainProperty && isPropScope) return false;
+        if (isSocietySlot) return true;
+        if (isWingSlot) return true;
+        return true;
+      }
+
+      // Wing level (wingDetailId without societyDetailId)
+      if (!hasSociety && hasWing) {
+        if (isSocietySlot) return false;
+        if (isMainProperty && isPropScope) return false;
+        return true;
+      }
+
       return true;
     }
 
@@ -522,33 +630,25 @@ export function mapSlotsToCategories(
   });
 
   return filteredCats.map(cat => {
-    const isAmenityCat = Boolean(
-      cat.photoTypeCode?.toUpperCase().includes('AMENITY') ||
-      cat.photoTypeName?.toLowerCase().includes('amenity')
-    );
-    const isWingCat = !isAmenityCat && Boolean(
-      cat.photoTypeCode?.toUpperCase().includes('WING') ||
-      cat.photoTypeName?.toLowerCase().includes('wing')
-    );
-    const isSocietyCat = !isAmenityCat && Boolean(
-      cat.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-      cat.photoTypeName?.toLowerCase().includes('society')
-    );
+    const catScope = (cat.photoScope || '').toUpperCase().trim();
+    const isAmenityCat = catScope === 'AMENITY' || (!catScope && Boolean(cat.photoTypeCode?.toUpperCase().includes('AMENITY')));
+    const isWingCat = !isAmenityCat && (catScope === 'WING' || (!catScope && Boolean(cat.photoTypeCode?.toUpperCase().includes('WING'))));
+    const isSocietyCat = !isAmenityCat && (catScope === 'SOCIETY' || (!catScope && Boolean(cat.photoTypeCode?.toUpperCase().includes('SOCIETY'))));
 
-    const checkIsAmenityPhoto = (p: PropertyPhotoDto) => Boolean(
-      p.photoTypeCode?.toUpperCase().includes('AMENITY') ||
-      p.photoTypeName?.toLowerCase().includes('amenity')
-    );
+    const checkIsAmenityPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'AMENITY' || (!pScope && Boolean(p.photoTypeCode?.toUpperCase().includes('AMENITY')));
+    };
 
-    const checkIsWingPhoto = (p: PropertyPhotoDto) => !checkIsAmenityPhoto(p) && Boolean(
-      p.photoTypeCode?.toUpperCase().includes('WING') ||
-      p.photoTypeName?.toLowerCase().includes('wing')
-    );
+    const checkIsWingPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'WING' || (!pScope && !checkIsAmenityPhoto(p) && Boolean(p.photoTypeCode?.toUpperCase().includes('WING')));
+    };
 
-    const checkIsSocietyPhoto = (p: PropertyPhotoDto) => !checkIsAmenityPhoto(p) && Boolean(
-      p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-      p.photoTypeName?.toLowerCase().includes('society')
-    );
+    const checkIsSocietyPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'SOCIETY' || (!pScope && !checkIsAmenityPhoto(p) && Boolean(p.photoTypeCode?.toUpperCase().includes('SOCIETY')));
+    };
 
     let catPhotos = uploadedPhotos
       .filter(p => {

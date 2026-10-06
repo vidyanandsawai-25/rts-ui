@@ -4,6 +4,7 @@ export interface PropertyPhotoDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   remarks?: string;
   documentBindingId?: number;
@@ -89,6 +90,7 @@ export interface SocietyPhotoDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   remarks?: string;
   documentBindingId?: number;
@@ -103,6 +105,7 @@ export interface SocietyPhotoTypeWithStatusDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   hasPhoto: boolean;
   photoCount?: number;
@@ -135,6 +138,7 @@ export interface SocietyPhotoTypeGroupDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   hasPhoto: boolean;
   photoCount: number;
@@ -157,6 +161,7 @@ export interface WingPhotoDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   remarks?: string;
   documentBindingId?: number;
@@ -171,6 +176,7 @@ export interface WingPhotoTypeWithStatusDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   hasPhoto: boolean;
   photoCount?: number;

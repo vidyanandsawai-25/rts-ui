@@ -137,7 +137,7 @@ function PropertyMediaPanel({
 
   const searchCategoryId = searchParams?.get('categoryId') ? Number(searchParams.get('categoryId')) : null;
   const isIndividualFromParams = (searchParams?.get('hideWing') === 'true' && searchParams?.get('hideSociety') === 'true');
-  const effectiveCategoryId = property?.categoryId ?? propCategoryId ?? searchCategoryId ?? (isIndividualFromParams ? 2 : 1);
+  const effectiveCategoryId = property?.categoryId ?? propCategoryId ?? searchCategoryId ?? (isIndividualFromParams ? 2 : undefined);
   const isApartment = effectiveCategoryId === 1;
   const isPartitionEmptyOrMain = !effectivePartitionNo || effectivePartitionNo === '0' || String(effectivePartitionNo).trim() === '' || String(effectivePartitionNo).trim() === '-';
   const effectiveIsMainProperty = isApartment ? (propIsMainProperty !== undefined ? propIsMainProperty : (property?.isMainProperty ?? isPartitionEmptyOrMain)) : false;
@@ -366,6 +366,7 @@ function PropertyMediaPanel({
     societyLatitude,
     societyLongitude,
     isQuickDataEntry,
+    societyDetailId: resolvedSocietyDetailId,
   });
 
   const getSelectPropertyErrorMsg = useCallback(() => {

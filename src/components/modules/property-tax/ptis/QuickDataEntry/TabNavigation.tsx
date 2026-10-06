@@ -25,12 +25,21 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
   const propertyNo = searchParams.get('propertyNo') || '';
   const partitionNo = searchParams.get('partitionNo') || '';
   const returnTab = searchParams.get('returnTab') || '';
+  const valuationTab = searchParams.get('valuationTab') || '';
+  const appartmentTab = searchParams.get('appartmentTab') || '';
+  const subTab = searchParams.get('subTab') || '';
+  const showDetails = searchParams.get('showDetails') || '';
+  const rateableExpands = searchParams.getAll('rateableExpand');
+  const capitalExpands = searchParams.getAll('capitalExpand');
+  const dualExpands = searchParams.getAll('dualExpand');
   const appartmentPartition = searchParams.get('appartmentPartition') || '';
   const parentPropertyId = searchParams.get('parentPropertyId') || '';
   const societyDetailId = searchParams.get('societyDetailId') || searchParams.get('societyId') || '';
   const societyId = searchParams.get('societyId') || '';
   const wingDetailId = searchParams.get('wingDetailId') || '';
   const wingId = searchParams.get('wingId') || '';
+  const isWingWise = searchParams.get('isWingWise') || '';
+  const isSocietyWise = searchParams.get('isSocietyWise') || '';
   const fromSocietyEdit = searchParams.get('fromSocietyEdit') === 'true';
   const fromWingEdit = searchParams.get('fromWingEdit') === 'true';
   const fromFooterEdit = searchParams.get('fromFooterEdit') === 'true';
@@ -45,34 +54,47 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
     ? 'Apartment/Individual'
     : rawCat;
 
-  const effectiveCategoryName = (rawCat || displayCategory).toLowerCase();
+  const effectiveCategoryName = displayCategory.toLowerCase();
   const isMainApartmentCategory = !hasPartition && (effectiveCategoryName.includes('apartment') || returnTab === 'apartment');
   const isIndividualProperty =
-    (returnTab === 'individual' || fromParam === 'individual' || (typeof window !== 'undefined' && sessionStorage.getItem('qde_is_individual') === 'true')) &&
-    !effectiveCategoryName.includes('apartment') &&
-    !societyDetailId;
+    returnTab === 'individual' ||
+    fromParam === 'individual' ||
+    (typeof window !== 'undefined' && sessionStorage.getItem('qde_is_individual') === 'true') ||
+    effectiveCategoryName.includes('apartment/individual') ||
+    effectiveCategoryName.includes('individual') ||
+    effectiveCategoryName === 'individual';
 
   // Check if we have search parameters that can resolve authoritative property ID
   const hasPropertyKeys = wardNo && propertyNo && partitionNo;
 
-  // Preserve all existing query parameters from the current URL
-  const params = new URLSearchParams(searchParams.toString());
+  const params = new URLSearchParams();
   if (propertyId) params.set('propertyId', propertyId);
   if (wardNo) params.set('wardNo', wardNo);
   if (wardId) params.set('wardId', wardId);
   if (propertyNo) params.set('propertyNo', propertyNo);
   if (partitionNo) params.set('partitionNo', partitionNo);
+  if (returnTab) params.set('returnTab', returnTab);
+  if (valuationTab) params.set('valuationTab', valuationTab);
+  if (appartmentTab) params.set('appartmentTab', appartmentTab);
+  if (subTab) params.set('subTab', subTab);
+  if (showDetails) params.set('showDetails', showDetails);
+  if (appartmentPartition) params.set('appartmentPartition', appartmentPartition);
+  if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
   if (societyDetailId) params.set('societyDetailId', societyDetailId);
   if (societyId) params.set('societyId', societyId);
   if (wingDetailId) params.set('wingDetailId', wingDetailId);
   if (wingId) params.set('wingId', wingId);
-  if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
-
-  // If level is in searchParams or sessionStorage, preserve it
-  const currentLevel = searchParams.get('level') || (typeof window !== 'undefined' ? sessionStorage.getItem('qde_building_level') : null);
-  if (currentLevel) {
-    params.set('level', currentLevel);
-  }
+  if (isWingWise) params.set('isWingWise', isWingWise);
+  if (isSocietyWise) params.set('isSocietyWise', isSocietyWise);
+  if (fromSocietyEdit) params.set('fromSocietyEdit', 'true');
+  if (fromWingEdit) params.set('fromWingEdit', 'true');
+  if (fromFooterEdit) params.set('fromFooterEdit', 'true');
+  if (fromParam) params.set('from', fromParam);
+  if (hideWing) params.set('hideWing', 'true');
+  if (hideSociety) params.set('hideSociety', 'true');
+  rateableExpands.forEach(v => params.append('rateableExpand', v));
+  capitalExpands.forEach(v => params.append('capitalExpand', v));
+  dualExpands.forEach(v => params.append('dualExpand', v));
 
   const queryString = params.toString();
 
@@ -198,24 +220,45 @@ export function TabNavigation({ categoryName, isMediaPanelOpen, onToggleMediaPan
                 ? 'individual'
                 : (RETURN_TAB_BY_QDE_HREF[tab.href] || returnTab);
 
-            // Generate tab query string preserving all search parameters
+            // For FloorSubmission tab: exclude propertyId if we have search params
+            // to let the page resolve authoritative ID from backend
             let tabQueryString = queryString;
-            const tabParams = new URLSearchParams(queryString);
-            if (tabReturnValue) {
-              tabParams.set('returnTab', tabReturnValue);
-            } else {
-              tabParams.delete('returnTab');
-            }
-            if (isIndividual) {
-              tabParams.set('from', 'individual');
-            }
-            if (tab.href === 'Building' && currentLevel) {
-              tabParams.set('level', currentLevel);
-            }
             if (tab.href === 'FloorSubmission' && hasPropertyKeys) {
-              tabParams.delete('propertyId');
+              const tabParams = new URLSearchParams();
+              if (wardNo) tabParams.set('wardNo', wardNo);
+              if (wardId) tabParams.set('wardId', wardId);
+              if (propertyNo) tabParams.set('propertyNo', propertyNo);
+              if (partitionNo) tabParams.set('partitionNo', partitionNo);
+              if (tabReturnValue) tabParams.set('returnTab', tabReturnValue);
+              if (fromParam) tabParams.set('from', fromParam);
+              if (isIndividual && !fromParam) tabParams.set('from', 'individual');
+              if (valuationTab) tabParams.set('valuationTab', valuationTab);
+              if (appartmentTab) tabParams.set('appartmentTab', appartmentTab);
+              if (subTab) tabParams.set('subTab', subTab);
+              if (showDetails) tabParams.set('showDetails', showDetails);
+              if (appartmentPartition) tabParams.set('appartmentPartition', appartmentPartition);
+              if (parentPropertyId) tabParams.set('parentPropertyId', parentPropertyId);
+              if (fromSocietyEdit) tabParams.set('fromSocietyEdit', 'true');
+              if (fromWingEdit) tabParams.set('fromWingEdit', 'true');
+              if (fromFooterEdit) tabParams.set('fromFooterEdit', 'true');
+              if (hideWing) tabParams.set('hideWing', 'true');
+              if (hideSociety) tabParams.set('hideSociety', 'true');
+              rateableExpands.forEach(v => tabParams.append('rateableExpand', v));
+              capitalExpands.forEach(v => tabParams.append('capitalExpand', v));
+              dualExpands.forEach(v => tabParams.append('dualExpand', v));
+              tabQueryString = tabParams.toString();
+            } else {
+              const tabParams = new URLSearchParams(queryString);
+              if (tabReturnValue) {
+                tabParams.set('returnTab', tabReturnValue);
+              } else {
+                tabParams.delete('returnTab');
+              }
+              if (isIndividual) {
+                tabParams.set('from', 'individual');
+              }
+              tabQueryString = tabParams.toString();
             }
-            tabQueryString = tabParams.toString();
 
             const tabHref = tabQueryString ? `${tabPath}?${tabQueryString}` : tabPath;
 

@@ -157,6 +157,8 @@
     "failedToReplace": "Failed to replace photo.",
     "fileRequired": "Photo file is required.",
     "propertyIdRequired": "Property ID is required.",
+    "societyIdRequired": "Society details are not available for this property to upload society photos.",
+    "wingDetailIdRequired": "Wing details are not available for this property to upload wing photos.",
     "failedToUpload": "Failed to upload photo.",
     "assignTypeSubtitle": "Configure floor plan association for this property",
     "assignTypeBanner": "This property does not have an assigned Plan Type. Select an existing building plan to automatically share its floor plan, or create a new custom plan.",

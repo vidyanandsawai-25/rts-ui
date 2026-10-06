@@ -94,6 +94,16 @@ export async function uploadPropertyPhotoAction(
 
     const displayOrder = Number(formData.get('DisplayOrder') || '1');
 
+    const isSocietyPhoto = Boolean(photoTypeCode?.toUpperCase().includes('SOCIETY'));
+    const isWingPhoto = Boolean(photoTypeCode?.toUpperCase().includes('WING'));
+
+    if (isSocietyPhoto && (!societyId || isNaN(societyId) || societyId <= 0)) {
+      return { success: false, error: t('media.societyIdRequired') || 'Society details are not available for this property to upload society photos.' };
+    }
+    if (isWingPhoto && (!wingDetailId || isNaN(wingDetailId) || wingDetailId <= 0)) {
+      return { success: false, error: t('media.wingDetailIdRequired') || 'Wing details are not available for this property to upload wing photos.' };
+    }
+
     if (!file || file.size === 0) {
       return { success: false, error: t('media.fileRequired') || 'File is required' };
     }
@@ -146,6 +156,16 @@ export async function replacePropertyPhotoAction(
     const wingDetailId = Number(formData.get('WingDetailId') || '0');
     const societyId = Number(formData.get('SocietyDetailId') || '0');
     const wingName = formData.get('WingName') as string | null;
+
+    const isSocietyPhoto = Boolean(photoTypeCode?.toUpperCase().includes('SOCIETY'));
+    const isWingPhoto = Boolean(photoTypeCode?.toUpperCase().includes('WING'));
+
+    if (isSocietyPhoto && (!societyId || isNaN(societyId) || societyId <= 0)) {
+      return { success: false, error: t('media.societyIdRequired') || 'Society details are not available for this property to upload society photos.' };
+    }
+    if (isWingPhoto && (!wingDetailId || isNaN(wingDetailId) || wingDetailId <= 0)) {
+      return { success: false, error: t('media.wingDetailIdRequired') || 'Wing details are not available for this property to upload wing photos.' };
+    }
 
     if (propertyPhotoId === undefined || propertyPhotoId === null || isNaN(propertyPhotoId) || propertyPhotoId < 0) {
       return { success: false, error: t('media.propertyPhotoIdRequired') || 'Valid PropertyPhotoId is required' };
