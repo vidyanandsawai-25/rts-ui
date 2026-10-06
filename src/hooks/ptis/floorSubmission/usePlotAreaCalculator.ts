@@ -242,8 +242,8 @@ export function usePlotAreaCalculator({
       const parts = cleaned.split('.');
 
       let beforeDecimal = parts[0] || '';
-      if (beforeDecimal.length > 4) {
-        beforeDecimal = beforeDecimal.slice(0, 4);
+      if (beforeDecimal.length > 6) {
+        beforeDecimal = beforeDecimal.slice(0, 6);
       }
 
       if (parts.length > 1) {
