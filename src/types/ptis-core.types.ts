@@ -84,6 +84,16 @@ export interface BuildingPermissionItem {
   documentViewUrl?: string | null;
   propertyDetailsId?: number | null;
   floorDescription?: string | null;
+  entityType?: string | null;
+  level?: string | null;
+  sourceLevel?: string | null;
+  wingDetailId?: number | null;
+  societyDetailId?: number | null;
+  wingName?: string | null;
+  unitNo?: string | null;
+  partitionNo?: string | null;
+  applicableToLabel?: string | null;
+  inheritedFrom?: string | null;
 }
 
 export interface BuildingPermissionData {

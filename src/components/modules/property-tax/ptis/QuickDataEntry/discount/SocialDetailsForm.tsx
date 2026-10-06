@@ -65,6 +65,18 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
     const isLoadingWing = isWingLoading || isWingPending;
     const societyDetailId = searchParams.get('societyDetailId') || (propSocietyDetailId ? String(propSocietyDetailId) : null);
     const wingDetailId = searchParams.get('wingDetailId');
+    const editingUnitId = React.useMemo(() => {
+        if (!levelState || levelState.level !== 'Unit') return null;
+        if (levelState.selectedUnitIds.size === 1) {
+            return Array.from(levelState.selectedUnitIds)[0];
+        }
+        const unitParam = searchParams.get('unitPropertyId');
+        if (unitParam && !isNaN(Number(unitParam))) {
+            return Number(unitParam);
+        }
+        return null;
+    }, [levelState, searchParams]);
+
     const {
         socialData,
         isSaving,
@@ -79,7 +91,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         handleDeleteSocialDetail,
         handleSave
     } = useSocialDetailsForm(initialSocialData, propertyId, socialMasterAttributes, {
-        level: levelState?.level,
+        level: (levelState?.level === 'Apartment' || levelState?.level === 'Wing' || levelState?.level === 'Unit') ? levelState.level : undefined,
         societyDetailId,
         wingDetailId: levelState && (levelState.level === 'Wing' || levelState.level === 'Unit')
             ? (levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : wingDetailId)
@@ -87,7 +99,9 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         propertyIds: levelState ? Array.from(levelState.selectedUnitIds).join(",") : undefined,
         isSociety,
         selectedUnitCount: levelState ? levelState.selectedUnitIds.size : undefined,
-        totalUnitCount: levelState ? levelState.filteredUnits.length : undefined
+        totalUnitCount: levelState ? levelState.filteredUnits.length : undefined,
+        savedPropertyDetails,
+        editingUnitId,
     });
 
     const [selectedId, setSelectedId] = React.useState<number | null>(() => {
@@ -253,7 +267,9 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
 
     const handleSaveClick = React.useCallback(async () => {
         const result = await handleSave();
-        if (result && !result.isValid && result.errors) {
+        if (result && result.success) {
+            router.refresh();
+        } else if (result && !result.isValid && result.errors) {
             const firstInvalidIdStr = Object.keys(result.errors)[0];
             if (firstInvalidIdStr) {
                 const firstInvalidId = Number(firstInvalidIdStr);
@@ -274,7 +290,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 });
             }
         }
-    }, [handleSave, socialData, handleSelectAttribute]);
+    }, [handleSave, socialData, handleSelectAttribute, router]);
 
     const activeIncompleteAttributes = React.useMemo(() => {
         return incompleteAttributes.filter(d => socialData[d.id]?.bitValue === true);

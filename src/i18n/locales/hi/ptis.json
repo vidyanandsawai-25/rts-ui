@@ -277,7 +277,19 @@
     "viewDocument": "दस्तावेज़ देखें",
     "editCertificate": "प्रमाणपत्र संपादित करें",
     "propertyScope": "संपत्ति स्तर",
-    "noCertificatesAttached": "इस संपत्ति के लिए कोई संलग्न प्रमाणपत्र उपलब्ध नहीं है।"
+    "apartmentLevel": "अपार्टमेंट स्तर",
+    "wingLevel": "विंग स्तर",
+    "unitLevel": "यूनिट स्तर",
+    "floorLevel": "फ्लोर स्तर",
+    "appliedDirectly": "सीधे लागू किया गया",
+    "notConfigured": "कॉन्फ़िगर नहीं किया गया",
+    "coveredByApartment": "अपार्टमेंट स्तर प्रमाणपत्र द्वारा कवर किया गया",
+    "coveredByWing": "विंग स्तर प्रमाणपत्र द्वारा कवर किया गया",
+    "entireProperty": "संपूर्ण संपत्ति",
+    "scopeProperty": "संपूर्ण संपत्ति",
+    "noCertificatesAttached": "इस संपत्ति के लिए कोई संलग्न प्रमाणपत्र उपलब्ध नहीं है।",
+    "loadingCertificates": "भवन अनुमति रिकॉर्ड लोड हो रहे हैं...",
+    "loadError": "भवन अनुमति रिकॉर्ड लोड करने में विफल।"
   },
   "tabs": {
     "propertyDetails": "संपत्ति विवरण",

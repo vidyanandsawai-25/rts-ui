@@ -6,7 +6,7 @@ import {
     upsertPropertySocialInfoAction,
     deletePropertySocialDetailsByHierarchyAction,
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions";
-import { PropertySocialInfoResponseDto, DeletePropertySocialDetailsByHierarchyParams } from "@/types/property-social-details.types";
+import { PropertySocialInfoResponseDto, DeletePropertySocialDetailsByHierarchyParams, PropertySocialDetailsDto, SocialAttributeHierarchyDto } from "@/types/property-social-details.types";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { useTranslations } from "next-intl";
 import {
@@ -34,6 +34,8 @@ export const useSocialDetailsForm = (
         isSociety?: boolean;
         selectedUnitCount?: number;
         totalUnitCount?: number;
+        savedPropertyDetails?: (PropertySocialDetailsDto | SocialAttributeHierarchyDto)[];
+        editingUnitId?: number | null;
     }
 ) => {
     const t = useTranslations("quickDataEntry");
@@ -46,7 +48,11 @@ export const useSocialDetailsForm = (
         socialData, validationErrors, setFormState,
         hasChanges, initialFlatData, handleInputChange, handleToggleEnabled,
         resetWithFreshData, clearPendingFiles
-    } = useSocialFormState(initialSocialData, masterAttributes);
+    } = useSocialFormState(initialSocialData, masterAttributes, {
+        level: options?.level,
+        savedPropertyDetails: options?.savedPropertyDetails,
+        editingUnitId: options?.editingUnitId,
+    });
 
     const { handlePhotoUpload, handlePhotoDelete } = useSocialPhotoUpload(
         socialData, setFormState,

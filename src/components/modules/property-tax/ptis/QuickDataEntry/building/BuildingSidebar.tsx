@@ -54,6 +54,30 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
             );
         }
 
+        if (cert.customStatusBadge) {
+            const { label, variant } = cert.customStatusBadge;
+            const badgeClass =
+                variant === 'success'
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : variant === 'purple'
+                    ? "bg-purple-50 text-purple-700 border-purple-200"
+                    : variant === 'info'
+                    ? "bg-sky-50 text-sky-700 border-sky-200"
+                    : variant === 'warning'
+                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                    : "bg-slate-50 text-slate-600 border-slate-200 font-medium";
+
+            return (
+                <Badge
+                    variant={variant === 'purple' ? 'info' : variant}
+                    size="sm"
+                    className={badgeClass}
+                >
+                    {label}
+                </Badge>
+            );
+        }
+
         const hasNumber = cert.number && cert.number.trim() !== "";
         const hasDate = cert.date && cert.date.trim() !== "";
         const hasDoc = !!cert.documentGuid;

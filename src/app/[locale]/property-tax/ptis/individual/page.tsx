@@ -23,6 +23,7 @@ import {
   fetchIndividualDualMethodAction,
   fetchIndividualRateableValueAction,
   fetchIndividualSocialAndDiscountDetailsAction,
+  getIndividualBuildingCertificatesAction,
   fetchPropertyRuleLogsAction,
 } from './action';
 import { fetchTaxDetailsByTab, type TaxDetailsResult } from './TaxDetails/fetchTaxDetails';
@@ -65,6 +66,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
   const rawTab = toSafeString(resolvedSearchParams?.tab).toLowerCase();
   const isOldDetailsTab = rawTab === 'olddetails' || rawTab === 'old';
   const isDiscountTab = rawTab === 'discount' || rawTab === 'discountdetails';
+  const isBuildingTab = rawTab === 'building' || rawTab === 'buildingpermission';
 
   const [
     pageData,
@@ -212,11 +214,23 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
     }
   }
 
+  let initialBuildingPermissionData = pageData.buildingPermission ?? undefined;
+  const hasBuildingItems = Boolean(
+    initialBuildingPermissionData?.items && initialBuildingPermissionData.items.length > 0
+  );
+
+  if (isBuildingTab && resolvedPropertyId && !hasBuildingItems) {
+    const buildingRes = await getIndividualBuildingCertificatesAction(resolvedPropertyId).catch(() => null);
+    if (buildingRes?.success && buildingRes.data) {
+      initialBuildingPermissionData = buildingRes.data;
+    }
+  }
+
   const initialData: PtisInitialData = {
     propertyDetails: pageData.propertyDetailsResult?.propertyDetails || undefined,
     kycDetails: pageData.kycDetails ?? undefined,
     societyDetails: pageData.societyDetails ?? undefined,
-    buildingPermission: pageData.buildingPermission ?? undefined,
+    buildingPermission: initialBuildingPermissionData,
     wardOptions: pageData.wardOptions,
     propertyOptions: pageData.propertyOptions,
     rawPropertyData: pageData.rawPropertyData,

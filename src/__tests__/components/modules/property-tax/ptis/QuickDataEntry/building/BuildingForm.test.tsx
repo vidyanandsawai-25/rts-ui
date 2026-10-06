@@ -66,7 +66,7 @@ describe('BuildingForm', () => {
   });
 
   it('renders correctly with initial data', () => {
-    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
+    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" categoryId={1} categoryName="Apartment" />);
     expect(screen.getByText('Building Permissions & Documents')).toBeInTheDocument();
     expect(screen.getByText('Apartment Level')).toBeInTheDocument();
     expect(screen.getByText('Wing Level')).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('BuildingForm', () => {
   });
 
   it('supports level selection switching to Wing Level and Unit Level', () => {
-    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
+    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" categoryId={1} categoryName="Apartment" />);
     
     const wingLevelBtn = screen.getByRole('button', { name: /Wing Level/i });
     fireEvent.click(wingLevelBtn);
@@ -85,7 +85,7 @@ describe('BuildingForm', () => {
 
   it('allows clicking Save Changes button', async () => {
     (saveCertificateAction as Mock).mockResolvedValue({ success: true, data: { propertyCertificateId: 100 } });
-    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
+    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" categoryId={1} categoryName="Apartment" />);
     
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
     expect(saveBtn).toBeInTheDocument();

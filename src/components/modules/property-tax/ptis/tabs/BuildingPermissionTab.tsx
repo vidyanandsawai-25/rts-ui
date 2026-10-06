@@ -18,9 +18,14 @@ export interface BuildingPermissionTabProps {
   wardId?: number | string | null;
   propertyNo?: string | null;
   partitionNo?: string | null;
+  societyDetailId?: number | string | null;
+  categoryId?: number | null;
   onFieldChange?: (field: string, value: string | boolean) => void;
   readOnly?: boolean;
   isExpanded?: boolean;
+  isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
@@ -30,6 +35,11 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
   wardId,
   propertyNo,
   partitionNo,
+  societyDetailId,
+  categoryId,
+  isLoading = false,
+  error = null,
+  onRetry,
 }) => {
   const t = useTranslations('ptis');
   const locale = useLocale();
@@ -129,12 +139,47 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
     if (item.certificateNo) {
       searchParams.set('certificateNumber', String(item.certificateNo));
     }
+    if (item.issueDate) {
+      searchParams.set('certificateDate', String(item.issueDate));
+    }
+    if (item.documentGuid) {
+      searchParams.set('documentGuid', String(item.documentGuid));
+    }
+    if (item.fileName) {
+      searchParams.set('fileName', String(item.fileName));
+    }
 
-    // Specify the floor scope if this certificate is floor-specific
-    if (item.propertyDetailsId) {
+    // Determine level and scope for edit navigation based on EntityType and hierarchy
+    const isApartmentContext = Boolean(
+      (partitionNo && partitionNo.trim() !== '' && partitionNo !== '0') ||
+      (societyDetailId && Number(societyDetailId) > 0) ||
+      (categoryId === 1)
+    );
+    const rawEntityType = item.entityType || (item as unknown as { EntityType?: string })?.EntityType;
+    const rawSourceLevel = item.sourceLevel || item.level;
+    const certNoLower = (item.certificateNo || '').toLowerCase();
+
+    if (rawEntityType === 'S' || rawSourceLevel === 'Apartment' || item.inheritedFrom === 'Apartment') {
+      searchParams.set('activeScope', 'Property');
+      searchParams.set('level', 'Apartment');
+    } else if (
+      rawEntityType === 'W' ||
+      rawSourceLevel === 'Wing' ||
+      item.inheritedFrom === 'Wing' ||
+      (!rawEntityType && (certNoLower.startsWith('wing-') || certNoLower.includes('wing-level')))
+    ) {
+      searchParams.set('activeScope', 'Property');
+      searchParams.set('level', 'Wing');
+      if (item.wingDetailId) searchParams.set('wingDetailId', String(item.wingDetailId));
+    } else if (rawEntityType === 'F' || rawSourceLevel === 'Floor' || item.propertyDetailsId) {
       searchParams.set('activeScope', 'Floor');
-      searchParams.set('selectedFloorId', String(item.propertyDetailsId));
-      searchParams.set('activeFloorId', String(item.propertyDetailsId));
+      if (item.propertyDetailsId) {
+        searchParams.set('selectedFloorId', String(item.propertyDetailsId));
+        searchParams.set('activeFloorId', String(item.propertyDetailsId));
+      }
+      searchParams.set('level', 'Unit');
+    } else if (rawEntityType === 'P' || rawSourceLevel === 'Unit' || isApartmentContext) {
+      searchParams.set('activeScope', 'Property');
       searchParams.set('level', 'Unit');
     } else {
       searchParams.set('activeScope', 'Property');
@@ -158,6 +203,37 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
     return dateStr;
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 space-y-3 bg-white rounded-lg border border-slate-200 min-h-[180px]">
+        <Loader2 className="w-7 h-7 text-[#0047cc] animate-spin" />
+        <p className="text-xs font-bold text-slate-600 tracking-wide uppercase">
+          {t('building.loadingCertificates') || 'Loading Building Permission Data...'}
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center p-6 text-center bg-red-50/60 rounded-xl border border-dashed border-red-200 gap-2">
+        <AlertCircle className="w-7 h-7 text-red-500" />
+        <p className="text-xs font-bold text-red-700">
+          {error || t('building.loadError') || 'Failed to load building permission records.'}
+        </p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-1 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+          >
+            {t('common.retry') || 'Retry'}
+          </button>
+        )}
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-slate-500 bg-slate-50 rounded-lg border border-dashed border-slate-300">
@@ -173,25 +249,24 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
 
   return (
     <>
-      <div className="w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-full text-xs table-fixed">
-            <thead>
-              <tr className="bg-[#1e3a8a] text-white border-b border-blue-700/60 font-bold uppercase tracking-wider text-[12px]">
-                <th className="py-2.5 px-4 whitespace-nowrap text-center w-[35%] min-w-[200px] border-r border-blue-700/60">
-                  {t('building.certificateName') || 'Certificate Name'}
-                </th>
-                <th className="py-2.5 px-4 whitespace-nowrap text-center w-[25%] min-w-[150px] border-r border-blue-700/60">
-                  {t('building.certificateNo') || 'Certificate No.'}
-                </th>
-                <th className="py-2.5 px-4 whitespace-nowrap text-center w-[23%] min-w-[130px] border-r border-blue-700/60">
-                  {t('building.certificateDate') || 'Certificate Date'}
-                </th>
-                <th className="py-2.5 px-4 whitespace-nowrap text-center w-[17%] min-w-[100px]">
-                  {t('building.action') || 'Action'}
-                </th>
-              </tr>
-            </thead>
+      <div className="w-full overflow-x-auto overflow-y-auto max-h-[178px] rounded-lg border border-slate-200 bg-white shadow-sm custom-scrollbar">
+        <table className="w-full text-left border-collapse min-w-full text-xs table-fixed">
+          <thead className="sticky top-0 z-10 bg-[#1e3a8a] shadow-xs">
+            <tr className="bg-[#1e3a8a] text-white border-b border-blue-700/60 font-bold uppercase tracking-wider text-[12px]">
+              <th className="py-2.5 px-4 whitespace-nowrap text-center w-[35%] min-w-[200px] border-r border-blue-700/60 bg-[#1e3a8a]">
+                {t('building.certificateName') || 'Certificate Name'}
+              </th>
+              <th className="py-2.5 px-4 whitespace-nowrap text-center w-[25%] min-w-[150px] border-r border-blue-700/60 bg-[#1e3a8a]">
+                {t('building.certificateNo') || 'Certificate No.'}
+              </th>
+              <th className="py-2.5 px-4 whitespace-nowrap text-center w-[23%] min-w-[130px] border-r border-blue-700/60 bg-[#1e3a8a]">
+                {t('building.certificateDate') || 'Certificate Date'}
+              </th>
+              <th className="py-2.5 px-4 whitespace-nowrap text-center w-[17%] min-w-[100px] bg-[#1e3a8a]">
+                {t('building.action') || 'Action'}
+              </th>
+            </tr>
+          </thead>
             <tbody className="divide-y divide-slate-200 text-slate-800">
               {items.map((item, index) => {
                 const scopeName = item.floorDescription
@@ -207,6 +282,54 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
                 const hasDoc = Boolean(item.documentGuid);
                 const isViewingThis = activeViewingKey === rowKey;
 
+                const rawEntityType = item.entityType || (item as unknown as { EntityType?: string })?.EntityType;
+                const rawSourceLevel = item.sourceLevel || item.level || (item as unknown as { SourceLevel?: string; Level?: string })?.SourceLevel || (item as unknown as { Level?: string })?.Level;
+                const isApartmentContext = Boolean(
+                  (partitionNo && partitionNo.trim() !== '' && partitionNo !== '0') ||
+                  (societyDetailId && Number(societyDetailId) > 0) ||
+                  (categoryId === 1)
+                );
+
+                const certNoLower = (item.certificateNo || '').toLowerCase();
+
+                let badgeLabel = t('building.propertyScope') || 'Property Level';
+                let badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+
+                if (rawEntityType === 'S' || rawSourceLevel === 'Apartment' || item.inheritedFrom === 'Apartment') {
+                  badgeLabel = t('building.apartmentLevel') || 'Apartment Level';
+                  badgeClass = 'bg-purple-50 text-purple-700 border-purple-200';
+                } else if (
+                  rawEntityType === 'W' ||
+                  rawSourceLevel === 'Wing' ||
+                  item.inheritedFrom === 'Wing' ||
+                  (!rawEntityType && (certNoLower.startsWith('wing-') || certNoLower.includes('wing-level')))
+                ) {
+                  badgeLabel = item.wingName ? `Wing Level (${item.wingName})` : (t('building.wingLevel') || 'Wing Level');
+                  badgeClass = 'bg-sky-50 text-sky-700 border-sky-200';
+                } else if (rawEntityType === 'F' || rawSourceLevel === 'Floor' || (!isApartmentContext && Boolean(item.propertyDetailsId))) {
+                  badgeLabel = scopeName ? `Floor Level (${scopeName})` : (t('building.floorLevel') || 'Floor Level');
+                  badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                } else if (rawEntityType === 'P' || rawSourceLevel === 'Unit' || (isApartmentContext && rawEntityType === 'U')) {
+                  badgeLabel = scopeName ? `Unit Level (${scopeName})` : (t('building.unitLevel') || 'Unit Level');
+                  badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                } else if (item.propertyDetailsId) {
+                  if (isApartmentContext) {
+                    badgeLabel = scopeName ? `Unit Level (${scopeName})` : (t('building.unitLevel') || 'Unit Level');
+                    badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                  } else {
+                    badgeLabel = scopeName ? `Floor Level (${scopeName})` : (t('building.floorLevel') || 'Floor Level');
+                    badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                  }
+                } else {
+                  if (isApartmentContext) {
+                    badgeLabel = t('building.unitLevel') || 'Unit Level';
+                    badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                  } else {
+                    badgeLabel = t('building.entireProperty') || t('building.scopeProperty') || 'Entire Property';
+                    badgeClass = 'bg-blue-50 text-blue-700 border-blue-200';
+                  }
+                }
+
                 return (
                   <tr
                     key={rowKey}
@@ -219,15 +342,9 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
                         <span className="font-semibold text-slate-900 text-xs">
                           {item.certificateTypeName}
                         </span>
-                        {scopeName ? (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800 shrink-0">
-                            {scopeName}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
-                            {t('building.propertyScope') || 'Property Level'}
-                          </span>
-                        )}
+                        <span className={cn("inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border shrink-0", badgeClass)}>
+                          {badgeLabel}
+                        </span>
                       </div>
                     </td>
 
@@ -287,7 +404,6 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({
             </tbody>
           </table>
         </div>
-      </div>
 
       {viewerData && (
         <DocumentViewerModal

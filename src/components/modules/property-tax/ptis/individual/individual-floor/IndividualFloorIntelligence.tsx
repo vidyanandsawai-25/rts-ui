@@ -182,6 +182,14 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   const [showFloorDetails, setShowFloorDetails] = useState(false);
   const [isFloorDetailsLoading, setIsFloorDetailsLoading] = useState(false);
 
+  const [fetchedBuilding, setFetchedBuilding] = useState<BuildingPermissionData | null>(null);
+  const [fetchedDiscount, setFetchedDiscount] = useState<DiscountData | null>(null);
+  const [fetchedSocial, setFetchedSocial] = useState<DiscountData | null>(null);
+  const [isLoadingBuilding, setIsLoadingBuilding] = useState(false);
+  const [buildingError, setBuildingError] = useState<string | null>(null);
+  const [isLoadingDiscount, setIsLoadingDiscount] = useState(false);
+  const [discountError, setDiscountError] = useState<string | null>(null);
+
   if (propertyId !== prevPropId) {
     setPrevPropId(propertyId);
     setFetchedRateable(null);
@@ -189,6 +197,11 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
     setFetchedDual(null);
     setFetchedComparison(null);
     setValuationError(null);
+    setFetchedBuilding(null);
+    setBuildingError(null);
+    setFetchedDiscount(null);
+    setFetchedSocial(null);
+    setDiscountError(null);
   }
 
   const rateableState = fetchedRateable ?? rateableData ?? null;
@@ -197,14 +210,21 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   const rateableTaxDetailsState = rateableTaxDetails ?? undefined;
   const capitalTaxDetailsState = capitalTaxDetails ?? undefined;
 
-  const [fetchedBuilding, setFetchedBuilding] = useState<BuildingPermissionData | null>(null);
-  const [fetchedDiscount, setFetchedDiscount] = useState<DiscountData | null>(null);
-  const [fetchedSocial, setFetchedSocial] = useState<DiscountData | null>(null);
-  const [isLoadingSection, setIsLoadingSection] = useState(false);
+  const hasLoadedBuilding = Boolean(
+    fetchedBuilding !== null ||
+    (buildingPermissionData?.items && buildingPermissionData.items.length > 0)
+  );
 
-  const buildingDataState = fetchedBuilding ?? buildingPermissionData ?? null;
-  const discountDataState = fetchedDiscount ?? discountData ?? null;
-  const socialDataState = fetchedSocial ?? socialData ?? null;
+  const hasLoadedDiscount = Boolean(
+    fetchedDiscount !== null ||
+    fetchedSocial !== null ||
+    (discountData?.items && discountData.items.length > 0) ||
+    (socialData?.items && socialData.items.length > 0)
+  );
+
+  const buildingDataState = fetchedBuilding ?? (hasLoadedBuilding ? buildingPermissionData : null);
+  const discountDataState = fetchedDiscount ?? (hasLoadedDiscount ? discountData : null);
+  const socialDataState = fetchedSocial ?? (hasLoadedDiscount ? socialData : null);
 
   const isFetchingRef = useRef(false);
 
@@ -351,6 +371,86 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
   const effectiveWingName = wingName ?? (searchParamsObj.wingName as string | null);
   const isApartmentScreen = propIsApartmentScreen ?? false;
 
+  // On-demand fetch for Building Permission certificates
+  const handleFetchBuildingData = useCallback(async () => {
+    if (!propertyId) return;
+    const numericId = Number(propertyId);
+    if (!numericId || isNaN(numericId) || numericId <= 0) return;
+
+    setIsLoadingBuilding(true);
+    setBuildingError(null);
+    try {
+      const res = await getIndividualBuildingCertificatesAction(numericId);
+      if (res.success && res.data) {
+        setFetchedBuilding(res.data);
+        setBuildingError(null);
+      } else {
+        const errorMsg = res.error || 'Failed to fetch building permission records';
+        setBuildingError(errorMsg);
+        toast.error(errorMsg);
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to fetch building permission records';
+      setBuildingError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setIsLoadingBuilding(false);
+    }
+  }, [propertyId]);
+
+  // On-demand fetch for Discount & Social data
+  const handleFetchDiscountData = useCallback(async () => {
+    if (!propertyId) return;
+    const numericId = Number(propertyId);
+    if (!numericId || isNaN(numericId) || numericId <= 0) return;
+
+    setIsLoadingDiscount(true);
+    setDiscountError(null);
+    try {
+      const res = await fetchIndividualSocialAndDiscountDetailsAction(
+        numericId,
+        effectiveSocietyDetailId ? Number(effectiveSocietyDetailId) : null,
+        effectiveWingDetailId ? Number(effectiveWingDetailId) : null
+      );
+      if (res.success) {
+        if (res.discountData) setFetchedDiscount(res.discountData);
+        if (res.socialData) setFetchedSocial(res.socialData);
+        setDiscountError(null);
+      } else {
+        const errorMsg = res.error || 'Failed to fetch discount and social data';
+        setDiscountError(errorMsg);
+        toast.error(errorMsg);
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to fetch discount and social data';
+      setDiscountError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setIsLoadingDiscount(false);
+    }
+  }, [propertyId, effectiveSocietyDetailId, effectiveWingDetailId]);
+
+  // Auto-fetch on-demand if the tab is selected on initial mount or URL change and data is not yet loaded
+  React.useEffect(() => {
+    if (activeSection === 'building' && propertyId && !hasLoadedBuilding && !isLoadingBuilding && !buildingError) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      handleFetchBuildingData();
+    }
+  }, [activeSection, propertyId, hasLoadedBuilding, isLoadingBuilding, buildingError, handleFetchBuildingData]);
+
+  React.useEffect(() => {
+    if (
+      activeSection === 'discount' &&
+      propertyId &&
+      !hasLoadedDiscount &&
+      !isLoadingDiscount &&
+      !discountError
+    ) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      handleFetchDiscountData();
+    }
+  }, [activeSection, propertyId, hasLoadedDiscount, isLoadingDiscount, discountError, handleFetchDiscountData]);
+
   if (isLoading) {
     return (
       <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-xs animate-pulse space-y-4">
@@ -388,33 +488,18 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
             router.replace(`${pathname}?${params.toString()}`, { scroll: false });
 
             // On-demand lazy load when user opens inactive tabs
-            if (section === 'building' && propertyId && !buildingDataState) {
-              setIsLoadingSection(true);
-              getIndividualBuildingCertificatesAction(propertyId)
-                .then((res) => {
-                  if (res.success && res.data) setFetchedBuilding(res.data);
-                })
-                .finally(() => setIsLoadingSection(false));
-            } else if (section === 'discount' && propertyId && !discountDataState && !socialDataState) {
-              setIsLoadingSection(true);
-              fetchIndividualSocialAndDiscountDetailsAction(
-                Number(propertyId),
-                effectiveSocietyDetailId ? Number(effectiveSocietyDetailId) : null,
-                effectiveWingDetailId ? Number(effectiveWingDetailId) : null
-              )
-                .then((res) => {
-                  if (res.success) {
-                    if (res.discountData) setFetchedDiscount(res.discountData);
-                    if (res.socialData) setFetchedSocial(res.socialData);
-                  }
-                })
-                .finally(() => setIsLoadingSection(false));
+            if (section === 'building' && propertyId && !hasLoadedBuilding) {
+              handleFetchBuildingData();
+            } else if (section === 'discount' && propertyId && !hasLoadedDiscount) {
+              handleFetchDiscountData();
             }
           }
         }}
         taxMode={currentTaxMode}
         onTaxModeChange={handleTaxModeChange}
         isLoadingValuation={isValuationLoading}
+        isLoadingBuilding={isLoadingBuilding}
+        isLoadingDiscount={isLoadingDiscount}
         onOpenAppliedRules={onOpenAppliedRules}
         hasAppliedRules={hasAppliedRules}
       />
@@ -541,33 +626,33 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
 
       {/* 3. Building Permission, Discount, or Old Details Tabs */}
       {activeSection && activeSection !== 'floor' && (
-        isLoadingSection ? (
-          <div className="p-8 flex flex-col items-center justify-center space-y-3 bg-white rounded-lg border border-slate-200 min-h-[180px]">
-            <Loader2 className="w-7 h-7 text-[#0047cc] animate-spin" />
-            <p className="text-xs font-bold text-slate-600 tracking-wide uppercase">
-              {activeSection === 'building'
-                ? (t('valuation.loadingBuildingPermission') || 'Loading Building Permission Data...')
-                : (t('valuation.loadingDiscount') || 'Loading Discount & Social Data...')}
-            </p>
-          </div>
-        ) : activeSection === 'discount' ? (
-          <div className="pt-2">
-            <DiscountDataTab
-              isExpanded={isExpanded}
-              onToggleExpand={() => setIsExpanded((prev) => !prev)}
-              propertyId={propertyId ? Number(propertyId) : undefined}
-              initialData={discountDataState ?? undefined}
-              initialSocialData={socialDataState ?? undefined}
-              wardId={wardId}
-              wardNo={wardNo}
-              propertyNo={propertyNo}
-              societyDetailId={effectiveSocietyDetailId ? Number(effectiveSocietyDetailId) : undefined}
-              wingDetailsId={effectiveWingDetailId ? Number(effectiveWingDetailId) : undefined}
-              wingName={effectiveWingName}
-              selectedFloor={selectedFloor}
-              isApartmentScreen={isApartmentScreen}
-            />
-          </div>
+        activeSection === 'discount' ? (
+          isLoadingDiscount ? (
+            <div className="p-8 flex flex-col items-center justify-center space-y-3 bg-white rounded-lg border border-slate-200 min-h-[180px]">
+              <Loader2 className="w-7 h-7 text-[#0047cc] animate-spin" />
+              <p className="text-xs font-bold text-slate-600 tracking-wide uppercase">
+                {t('valuation.loadingDiscount') || 'Loading Discount & Social Data...'}
+              </p>
+            </div>
+          ) : (
+            <div className="pt-2">
+              <DiscountDataTab
+                isExpanded={isExpanded}
+                onToggleExpand={() => setIsExpanded((prev) => !prev)}
+                propertyId={propertyId ? Number(propertyId) : undefined}
+                initialData={discountDataState ?? undefined}
+                initialSocialData={socialDataState ?? undefined}
+                wardId={wardId}
+                wardNo={wardNo}
+                propertyNo={propertyNo}
+                societyDetailId={effectiveSocietyDetailId ? Number(effectiveSocietyDetailId) : undefined}
+                wingDetailsId={effectiveWingDetailId ? Number(effectiveWingDetailId) : undefined}
+                wingName={effectiveWingName}
+                selectedFloor={selectedFloor}
+                isApartmentScreen={isApartmentScreen}
+              />
+            </div>
+          )
         ) : activeTitle ? (
           <div className="pt-2">
             <div
@@ -594,6 +679,10 @@ export const IndividualFloorIntelligence: React.FC<IndividualFloorIntelligencePr
                     wardId={wardId ? Number(wardId) : undefined}
                     propertyNo={propertyNo ?? undefined}
                     partitionNo={partitionNo ?? undefined}
+                    societyDetailId={societyDetailId ?? undefined}
+                    isLoading={isLoadingBuilding}
+                    error={buildingError}
+                    onRetry={handleFetchBuildingData}
                   />
                 )}
 

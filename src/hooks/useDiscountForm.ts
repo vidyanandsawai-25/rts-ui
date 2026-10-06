@@ -10,10 +10,15 @@ import {
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions";
 import { DiscountState, PropertyDiscountInfoResponseDto } from "@/types/discount.types";
 import { useTranslations } from "next-intl";
-import { mapApiToDiscountState, mapDiscountStateToApi, hasDiscountChangesComparedToInitial } from "@/lib/utils/discount-helpers";
+import { 
+    mapApiToDiscountState, 
+    mapDiscountStateToApi, 
+    hasDiscountChangesComparedToInitial,
+    buildUnitDiscountState 
+} from "@/lib/utils/discount-helpers";
 import { validateDiscountForm } from "@/lib/utils/validateDiscountForm";
 import { SocialAttribute } from "@/types/social-attribute.types";
-import { DeletePropertySocialDetailsByHierarchyParams } from "@/types/property-social-details.types";
+import { DeletePropertySocialDetailsByHierarchyParams, PropertySocialDetailsDto } from "@/types/property-social-details.types";
 
 export const useDiscountForm = (
     initialDiscountData: PropertyDiscountInfoResponseDto | null,
@@ -27,6 +32,8 @@ export const useDiscountForm = (
         isSociety?: boolean;
         selectedUnitCount?: number;
         totalUnitCount?: number;
+        savedPropertyDetails?: PropertySocialDetailsDto[];
+        editingUnitId?: number | null;
     }
 ) => {
     const t = useTranslations('quickDataEntry');
@@ -35,21 +42,37 @@ export const useDiscountForm = (
     const [incompleteDiscounts, setIncompleteDiscounts] = useState<{ id: number; name: string }[]>([]);
     const params = useParams();
     const locale = params.locale as string;
-    const [discountData, setDiscountData] = useState<DiscountState>(() => mapApiToDiscountState(initialDiscountData, masterAttributes, options?.level));
 
-    const initialMappedState = useMemo(() => mapApiToDiscountState(initialDiscountData, masterAttributes, options?.level), [initialDiscountData, masterAttributes, options?.level]);
+    const initialMappedState = useMemo(() => {
+        const base = mapApiToDiscountState(initialDiscountData, masterAttributes, options?.level);
+        return buildUnitDiscountState(
+            masterAttributes,
+            base,
+            options?.savedPropertyDetails,
+            options?.editingUnitId,
+            options?.level
+        );
+    }, [initialDiscountData, masterAttributes, options?.level, options?.savedPropertyDetails, options?.editingUnitId]);
+
+    const [discountData, setDiscountData] = useState<DiscountState>(() => initialMappedState);
 
     const hasChanges = useMemo(() => {
         return hasDiscountChangesComparedToInitial(discountData, initialMappedState);
     }, [discountData, initialMappedState]);
 
     const [prevInitialDiscountData, setPrevInitialDiscountData] = useState(initialDiscountData);
+    const [prevEditingUnitId, setPrevEditingUnitId] = useState(options?.editingUnitId);
+    const [prevLevel, setPrevLevel] = useState(options?.level);
 
-    if (initialDiscountData && initialDiscountData !== prevInitialDiscountData) {
+    if (
+        initialDiscountData !== prevInitialDiscountData ||
+        options?.editingUnitId !== prevEditingUnitId ||
+        options?.level !== prevLevel
+    ) {
         setPrevInitialDiscountData(initialDiscountData);
-        if (!hasChanges) {
-            setDiscountData(initialMappedState);
-        }
+        setPrevEditingUnitId(options?.editingUnitId);
+        setPrevLevel(options?.level);
+        setDiscountData(initialMappedState);
     }
 
     useEffect(() => {

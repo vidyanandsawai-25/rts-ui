@@ -97,8 +97,6 @@ export async function upsertPropertySocialInfoAction(
       propertyId: Number(propertyId),
     });
 
-    const targetEntityType = scope.entityType;
-    const payloadPropertyId = scope.propertyId;
     const payloadWingDetailId = scope.wingDetailId;
     const payloadSocietyDetailId = scope.societyDetailId;
     const BuildingPropertyId = Number(propertyId);
@@ -522,60 +520,109 @@ export async function upsertPropertySocialInfoAction(
     let freshSocialData: PropertySocialInfoResponseDto | undefined;
 
     if (isSociety === 'true') {
-      const freshItems = await getPropertySocialDetailsByFilters(
-        undefined,
-        payloadSocietyDetailId || undefined,
-        level === 'Apartment' ? undefined : payloadWingDetailId || undefined,
-        level === 'Unit' ? payloadPropertyId || undefined : undefined,
-        targetEntityType,
-        false
+      const socIdNum = payloadSocietyDetailId ? Number(payloadSocietyDetailId) : undefined;
+      const wingIdNum = payloadWingDetailId ? Number(payloadWingDetailId) : undefined;
+      const targetUnitPropId = (level === 'Unit' && unitIds.length === 1) ? unitIds[0] : undefined;
+
+      const [masterRes, apartmentDetailsRes, wingDetailsRes, unitDetailsRes] = await Promise.all([
+        getSocialAttributes(),
+        socIdNum
+          ? getPropertySocialDetailsByFilters(undefined, socIdNum)
+          : Promise.resolve([]),
+        (socIdNum && wingIdNum && (level === 'Wing' || level === 'Unit'))
+          ? getPropertySocialDetailsByFilters(undefined, socIdNum, wingIdNum)
+          : Promise.resolve([]),
+        (socIdNum && targetUnitPropId && level === 'Unit')
+          ? getPropertySocialDetailsByFilters(undefined, socIdNum, wingIdNum, targetUnitPropId)
+          : Promise.resolve([]),
+      ]);
+
+      const masterById = new Map((masterRes || []).map((a) => [a.id, a]));
+      const mergedDetailsMap = new Map<number, PropertySocialDetailsDto>();
+
+      const apartmentItems = (apartmentDetailsRes || []).filter(
+        (item) => item.entityType === 'S' || (!item.wingDetailId && !item.propertyId)
+      );
+      const wingItems = (wingDetailsRes || []).filter(
+        (item) => item.entityType === 'W' || (item.wingDetailId && !item.propertyId)
+      );
+      const unitItems = (unitDetailsRes || []).filter(
+        (item) => item.entityType === 'P' || (item.propertyId && item.propertyId > 0)
       );
 
-      const allMaster = await getSocialAttributes();
-      const masterById = new Map(allMaster.map((a) => [a.id, a]));
-
-      const mapped = (freshItems || [])
-        .filter((item) => {
-          const master = masterById.get(item.socialAttributeId);
-          return master && master.isDiscountApplicable === false;
-        })
-        .map((item) => {
-          const master = masterById.get(item.socialAttributeId);
-          return {
-            id: item.socialAttributeId,
-            socialAttributeCode: item.socialAttributeCode || master?.socialAttributeCode || '',
-            socialAttributeName: item.socialAttributeName || master?.socialAttributeName || '',
-            dataType: master?.dataType || 'BIT',
-            unit: master?.unit,
-            displayOrder: master?.displayOrder,
-            parentAttributeId: null,
-            isRequiredWhenParentTrue: false,
-            isDiscountApplicable: master?.isDiscountApplicable ?? false,
-            propertySocialDetailId: item.id,
-            bitValue: item.bitValue,
-            intValue: item.intValue,
-            decimalValue: item.decimalValue,
-            textValue: item.textValue,
-            dateValue: item.dateValue,
-            documentBindingId: item.documentBindingId,
-            documentGuid: item.documentGuid,
-            documentUrl:
-              item.documentUrl ||
-              (item.documentGuid ? `/api/documents/${item.documentGuid}/view` : undefined),
-            fileName: item.fileName,
-            photoBindingId: item.photoBindingId,
-            photoGuid: item.photoGuid,
-            remark: item.remark,
-            photoTypeId: null,
-            isPhotoRequired: master?.isPhotoRequired,
-            isDocumentRequired: master?.isDocumentRequired,
-            isActive: master?.isActive,
-            entityType: item.entityType,
-            inheritedFrom: item.inheritedFrom,
-            inheritanceLevel: item.inheritanceLevel,
-            children: [],
-          };
+      apartmentItems.forEach((item) => {
+        mergedDetailsMap.set(item.socialAttributeId, {
+          ...item,
+          entityType: item.entityType || 'S',
+          inheritanceLevel: level === 'Apartment' ? 'Self' : 'Apartment',
+          inheritedFrom: level === 'Apartment' ? null : 'Apartment',
         });
+      });
+
+      if (level === 'Wing' || level === 'Unit') {
+        wingItems.forEach((item) => {
+          mergedDetailsMap.set(item.socialAttributeId, {
+            ...item,
+            entityType: 'W',
+            inheritanceLevel: level === 'Wing' ? 'Self' : 'Wing',
+            inheritedFrom: level === 'Wing' ? null : 'Wing',
+          });
+        });
+      }
+
+      if (level === 'Unit' && targetUnitPropId) {
+        unitItems.forEach((item) => {
+          mergedDetailsMap.set(item.socialAttributeId, {
+            ...item,
+            entityType: 'P',
+            inheritanceLevel: 'Self',
+            inheritedFrom: null,
+          });
+        });
+      }
+
+      const socialSavedDetails = Array.from(mergedDetailsMap.values()).filter((item) => {
+        const master = masterById.get(item.socialAttributeId);
+        return master && master.isDiscountApplicable === false;
+      });
+
+      const mapped = socialSavedDetails.map((item) => {
+        const master = masterById.get(item.socialAttributeId);
+        return {
+          id: item.socialAttributeId,
+          socialAttributeCode: item.socialAttributeCode || master?.socialAttributeCode || '',
+          socialAttributeName: item.socialAttributeName || master?.socialAttributeName || '',
+          dataType: master?.dataType || 'BIT',
+          unit: master?.unit,
+          displayOrder: master?.displayOrder,
+          parentAttributeId: null,
+          isRequiredWhenParentTrue: false,
+          isDiscountApplicable: master?.isDiscountApplicable ?? false,
+          propertySocialDetailId: item.id,
+          bitValue: item.bitValue,
+          intValue: item.intValue,
+          decimalValue: item.decimalValue,
+          textValue: item.textValue,
+          dateValue: item.dateValue,
+          documentBindingId: item.documentBindingId,
+          documentGuid: item.documentGuid,
+          documentUrl:
+            item.documentUrl ||
+            (item.documentGuid ? `/api/documents/${item.documentGuid}/view` : undefined),
+          fileName: item.fileName,
+          photoBindingId: item.photoBindingId,
+          photoGuid: item.photoGuid,
+          remark: item.remark,
+          photoTypeId: null,
+          isPhotoRequired: master?.isPhotoRequired,
+          isDocumentRequired: master?.isDocumentRequired,
+          isActive: master?.isActive,
+          entityType: item.entityType,
+          inheritedFrom: item.inheritedFrom,
+          inheritanceLevel: item.inheritanceLevel,
+          children: [],
+        };
+      });
 
       freshSocialData = {
         propertyId: Number(propertyId),

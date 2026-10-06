@@ -14,6 +14,8 @@ export interface IndividualFloorTopNavProps {
   taxMode?: PtisTaxMode;
   onTaxModeChange?: (mode: PtisTaxMode) => void;
   isLoadingValuation?: boolean;
+  isLoadingBuilding?: boolean;
+  isLoadingDiscount?: boolean;
   onOpenAppliedRules?: () => void;
   hasAppliedRules?: boolean;
 }
@@ -24,6 +26,8 @@ export const IndividualFloorTopNav: React.FC<IndividualFloorTopNavProps> = ({
   taxMode = 'rateable',
   onTaxModeChange,
   isLoadingValuation = false,
+  isLoadingBuilding = false,
+  isLoadingDiscount = false,
   onOpenAppliedRules,
   hasAppliedRules = true,
 }) => {
@@ -72,7 +76,11 @@ export const IndividualFloorTopNav: React.FC<IndividualFloorTopNavProps> = ({
           onClick={() => onToggleSection('building')}
           className={getButtonStyle(activeSection === 'building')}
         >
-          <Building2 className={cn('w-3 h-3', activeSection === 'building' ? 'text-[#0047cc]' : 'text-white')} />
+          {isLoadingBuilding && activeSection === 'building' ? (
+            <Loader2 className={cn('w-3 h-3 animate-spin', activeSection === 'building' ? 'text-[#0047cc]' : 'text-white')} />
+          ) : (
+            <Building2 className={cn('w-3 h-3', activeSection === 'building' ? 'text-[#0047cc]' : 'text-white')} />
+          )}
           <span>{tQDE('tabs.BuildingPermission') || 'Building Permission'}</span>
         </button>
 
@@ -81,7 +89,11 @@ export const IndividualFloorTopNav: React.FC<IndividualFloorTopNavProps> = ({
           onClick={() => onToggleSection('discount')}
           className={getButtonStyle(activeSection === 'discount')}
         >
-          <Percent className={cn('w-3 h-3', activeSection === 'discount' ? 'text-[#0047cc]' : 'text-white')} />
+          {isLoadingDiscount && activeSection === 'discount' ? (
+            <Loader2 className={cn('w-3 h-3 animate-spin', activeSection === 'discount' ? 'text-[#0047cc]' : 'text-white')} />
+          ) : (
+            <Percent className={cn('w-3 h-3', activeSection === 'discount' ? 'text-[#0047cc]' : 'text-white')} />
+          )}
           <span>{tQDE('tabs.Discount') || 'Discount & Social Data'}</span>
         </button>
 

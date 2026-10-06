@@ -27,6 +27,8 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
     initialActiveFloorId,
     initialSelectedTypeId,
     propertyId,
+    categoryId,
+    categoryName,
     isSociety = true,
     societyDetailId,
     wingDetailId,
@@ -188,16 +190,20 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
     }, [initialFloors]);
 
     const unitOptions: UnitSelectionItem[] = useMemo(() => {
-        return (initialFloors || []).map((f) => {
-            const propertyDetailsId = f.id ?? (f as unknown as { propertyDetailsId?: number }).propertyDetailsId ?? 0;
+        return (initialFloors || []).map((f, idx) => {
+            const rawPropId = Number(f.propertyId || (f as unknown as { PropertyId?: number }).PropertyId || 0);
+            const rawDetailsId = Number(f.id || f.propertyDetailsId || (f as unknown as { PropertyDetailsId?: number }).PropertyDetailsId || 0);
+            const resolvedId = rawDetailsId > 0 ? rawDetailsId : (rawPropId > 0 ? rawPropId : idx + 1);
+            const resolvedPropId = rawPropId > 0 ? rawPropId : resolvedId;
             const rawWing = f.wing || (f as unknown as { wingName?: string }).wingName;
             const wingName = typeof rawWing === "string" ? rawWing : "A Wing";
             const wingDetailId = f.wingDetailId || 1;
             const floorName = typeof f.floor === "string" ? f.floor : String(f.floorDescription || "1st Floor");
             const useName = typeof f.use === "string" ? f.use : "Residential";
-            const unitNo = f.flatNo || f.flatNumber || f.unitNo || `Unit ${propertyDetailsId}`;
+            const unitNo = f.flatNo || f.flatNumber || f.unitNo || `Unit ${resolvedId}`;
             return {
-                propertyDetailsId: Number(propertyDetailsId),
+                propertyDetailsId: resolvedId,
+                propertyId: resolvedPropId,
                 unitNo: String(unitNo),
                 wingDetailId: Number(wingDetailId),
                 wingName,
@@ -268,9 +274,12 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         }
     }
 
+    const hasUnitParam = Boolean(searchParams.get('partitionNo') || searchParams.get('unitNo'));
     const effectiveLevel: ApplicationLevel =
         urlLevel === 'Apartment' || urlLevel === 'Wing' || urlLevel === 'Unit'
             ? urlLevel
+            : hasUnitParam
+            ? 'Unit'
             : activeScope === 'Floor'
             ? 'Unit'
             : 'Apartment';
@@ -281,6 +290,8 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                 {isSociety ? (
                     <BuildingPermissionSection
                         propertyId={propertyId}
+                        categoryId={categoryId}
+                        categoryName={categoryName}
                         societyId={societyDetailId ?? null}
                         wingDetailId={wingDetailId ?? null}
                         wings={initialWings.length > 0 ? initialWings : wingOptions}
@@ -362,10 +373,12 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
 
                                 if (effectiveSocietyDetailId && effectiveSocietyDetailId > 0) {
                                     // Society / Wing / Unit level save with background tax recalculation
+                                    const selectedUnitDetailsIds = (payload as unknown as { selectedUnitDetailsIds?: number[] }).selectedUnitDetailsIds;
                                     const payloadObj: Record<string, unknown> = {
                                         level: payload.level,
                                         selectedWingDetailId: effectiveWingDetailId,
                                         selectedUnitIds: finalUnitIds,
+                                        selectedUnitDetailsIds: selectedUnitDetailsIds && selectedUnitDetailsIds.length > 0 ? selectedUnitDetailsIds : finalUnitIds,
                                         isAllUnitsSelected: (payload as unknown as { isAllUnitsSelected?: boolean }).isAllUnitsSelected,
                                         certificateTypeId: payload.certificateTypeId,
                                         certificateDate: payload.certificateDate,

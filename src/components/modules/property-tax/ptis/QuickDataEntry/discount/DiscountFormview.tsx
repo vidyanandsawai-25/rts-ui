@@ -148,6 +148,17 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         }
     }, [currentLevel, showApartmentTab, showWingTab, handleLevelChange]);
 
+    const editingUnitId = useMemo(() => {
+        if (!levelState || levelState.level !== 'Unit') return null;
+        if (levelState.selectedUnitIds.size === 1) {
+            return Array.from(levelState.selectedUnitIds)[0];
+        }
+        if (initialUnitPropertyId && initialUnitPropertyId > 0) {
+            return initialUnitPropertyId;
+        }
+        return null;
+    }, [levelState, initialUnitPropertyId]);
+
     const {
         discountData,
         isSaving,
@@ -161,7 +172,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         handleDeleteDiscount,
         handleSave
     } = useDiscountForm(initialDiscountData, propertyId, discountMasterAttributes, {
-        level: levelState?.level,
+        level: (levelState?.level === 'Apartment' || levelState?.level === 'Wing' || levelState?.level === 'Unit') ? levelState.level : undefined,
         societyDetailId: societyDetailId || (propSocietyDetailId ? String(propSocietyDetailId) : null),
         wingDetailId: levelState && (levelState.level === 'Wing' || levelState.level === 'Unit')
             ? (levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : wingDetailId)
@@ -169,7 +180,9 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         propertyIds: levelState ? Array.from(levelState.selectedUnitIds).join(",") : undefined,
         isSociety: isSociety,
         selectedUnitCount: levelState ? levelState.selectedUnitIds.size : undefined,
-        totalUnitCount: levelState ? levelState.filteredUnits.length : undefined
+        totalUnitCount: levelState ? levelState.filteredUnits.length : undefined,
+        savedPropertyDetails,
+        editingUnitId,
     });
 
     const [selectedId, setSelectedId] = useState<number | null>(() => {
@@ -247,7 +260,9 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         }
 
         const result = await handleSave();
-        if (result && !result.isValid && result.incompleteDiscounts) {
+        if (result && result.success) {
+            router.refresh();
+        } else if (result && !result.isValid && result.incompleteDiscounts) {
             const activeIncomplete = result.incompleteDiscounts.filter(
                 (d) => {
                     const item = discountData[d.id];
@@ -265,7 +280,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                 });
             }
         }
-    }, [handleSave, discountData, handleSelectDiscount, isSociety, levelState, t]);
+    }, [handleSave, discountData, handleSelectDiscount, isSociety, levelState, router, t]);
 
     return (
         <>

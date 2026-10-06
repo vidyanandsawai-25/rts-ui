@@ -27,7 +27,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { validateDocumentNumber, validateDocumentDate, parseDateString } from '@/lib/validation/building/validation-rules';
 import { useCertificateModalState } from '@/hooks/useCertificateModalState';
-import { resolveUnitCertificateStatus, type UnitCertificateStatusType, type UnitStatusResolution } from '@/lib/utils/certificate-grid-mapper';
+import { resolveUnitCertificateStatus, type UnitCertificateStatusType, type UnitStatusResolution, type CertificateItem } from '@/lib/utils/certificate-grid-mapper';
 import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
 import type {
   ApplicationLevel,
@@ -56,6 +56,7 @@ const DEFAULT_UNIT_STATUS: UnitStatusResolution = { status: 'none', certificate:
 
 export interface BuildingPermissionSectionProps {
   propertyId: string;
+  categoryId?: number | null;
   categoryName?: string;
   societyId?: number | null;
   wingDetailId?: number | null;
@@ -103,6 +104,7 @@ export interface BuildingPermissionSectionProps {
 
 export function BuildingPermissionSection({
   propertyId,
+  categoryId,
   categoryName,
   societyId,
   wingDetailId: propWingDetailId,
@@ -143,12 +145,15 @@ export function BuildingPermissionSection({
     : rawCat;
 
   const effectiveCategoryName = (displayCategory || rawCat).toLowerCase();
-  const hasValidSociety = hasSocietyDetailId;
-  const isApartmentIndividual = !hasValidSociety && (
-    hasPartition ||
-    effectiveCategoryName.includes('apartment/individual') ||
-    effectiveCategoryName.includes('individual')
-  );
+  const isApartment = (
+    categoryId === 1 ||
+    effectiveCategoryName.includes('apartment') ||
+    hasSocietyDetailId ||
+    Boolean(searchParams?.get('parentPropertyId')) ||
+    wings.length > 0 ||
+    units.length > 0
+  ) && categoryId !== 2;
+  const isApartmentIndividual = !isApartment;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showActiveFirst, setShowActiveFirst] = useState(false);
@@ -160,7 +165,7 @@ export function BuildingPermissionSection({
   const isWingWise = searchParams?.get('isWingWise') === 'true';
   const showApartmentTab = !isWingWise;
   const showWingTab = !isWingWise;
-  const showLevelSelector = !isApartmentIndividual;
+  const showLevelSelector = isApartment;
 
   const urlLevel = searchParams?.get('level') as ApplicationLevel | null;
   const rawInitialLevel =
@@ -190,8 +195,11 @@ export function BuildingPermissionSection({
   }
 
   const urlCertNumber = searchParams?.get('certificateNumber') || searchParams?.get('permitNo');
+  const urlCertDate = searchParams?.get('certificateDate') || searchParams?.get('permitDate') || searchParams?.get('date');
+  const urlDocumentGuid = searchParams?.get('documentGuid');
+  const urlFileName = searchParams?.get('fileName');
   const urlPropertyCertId = searchParams?.get('propertyCertificateId');
-  const urlUnitNo = searchParams?.get('unitNo');
+  const urlUnitNo = searchParams?.get('unitNo') || searchParams?.get('partitionNo');
 
   const {
     level,
@@ -232,6 +240,7 @@ export function BuildingPermissionSection({
     gridRecords,
     isLoadingGridRecords,
     activeCertificate,
+    inheritedFrom,
     refetchGrid,
   } = useCertificateModalState({
     propertyId,
@@ -244,6 +253,9 @@ export function BuildingPermissionSection({
     initialWingDetailId,
     initialCertificateTypeId: resolvedCertTypeId,
     initialCertificateNumber: urlCertNumber || undefined,
+    initialCertificateDate: urlCertDate || undefined,
+    initialDocumentGuid: urlDocumentGuid || undefined,
+    initialFileName: urlFileName || undefined,
     initialPropertyCertificateId: urlPropertyCertId ? Number(urlPropertyCertId) : undefined,
     initialUnitNo: urlUnitNo || undefined,
     initialData,
@@ -560,21 +572,13 @@ export function BuildingPermissionSection({
       return;
     }
 
-    const resolvedSelectedPropertyIds = Array.from(selectedUnitIds).filter((id) => {
-      if (selectedUnitIds.size === 1) return true;
-      const stat = unitStatusMap.get(id);
-      return stat?.status !== 'direct' && !stat?.certificate?.propertyCertificateId;
-    }).map((id) => {
+    const resolvedSelectedPropertyIds = Array.from(selectedUnitIds).map((id) => {
       const matched = filteredUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id)
         || units.find((u) => u.propertyDetailsId === id || u.propertyId === id);
       return matched?.propertyId || id;
     });
 
-    const resolvedSelectedUnitDetailsIds = Array.from(selectedUnitIds).filter((id) => {
-      if (selectedUnitIds.size === 1) return true;
-      const stat = unitStatusMap.get(id);
-      return stat?.status !== 'direct' && !stat?.certificate?.propertyCertificateId;
-    });
+    const resolvedSelectedUnitDetailsIds = Array.from(selectedUnitIds);
 
     const isFileExplicitlyDeleted = removedAttachmentTypeIds.has(selectedTypeId);
     const isNewFileAttached = attachedFiles.length > 0;
@@ -588,9 +592,19 @@ export function BuildingPermissionSection({
       if (level === 'Unit' && selectedUnitIds.size === 1) {
         const unitId = Array.from(selectedUnitIds)[0];
         const unitStat = unitStatusMap.get(unitId);
-        resolvedDocGuid = existingDocumentGuid || unitStat?.certificate?.documentGuid || activeCertificate?.documentGuid || null;
-        resolvedFileName = existingFileName || unitStat?.certificate?.fileName || activeCertificate?.fileName || null;
-        resolvedCertId = existingPropertyCertificateId || unitStat?.certificate?.propertyCertificateId || activeCertificate?.propertyCertificateId || null;
+        if (unitStat?.status === 'direct' && unitStat.certificate) {
+          resolvedDocGuid = existingDocumentGuid || unitStat.certificate.documentGuid || null;
+          resolvedFileName = existingFileName || unitStat.certificate.fileName || null;
+          resolvedCertId = existingPropertyCertificateId || unitStat.certificate.propertyCertificateId || null;
+        } else {
+          resolvedDocGuid = existingDocumentGuid || null;
+          resolvedFileName = existingFileName || null;
+          resolvedCertId = existingPropertyCertificateId || null;
+        }
+      } else if (level === 'Unit' && selectedUnitIds.size > 1) {
+        resolvedDocGuid = existingDocumentGuid || activeCertificate?.documentGuid || activeUnitStat?.documentGuid || null;
+        resolvedFileName = existingFileName || activeCertificate?.fileName || activeUnitStat?.fileName || null;
+        resolvedCertId = existingPropertyCertificateId || null;
       } else {
         resolvedDocGuid = existingDocumentGuid || activeCertificate?.documentGuid || (level === 'Apartment' ? initialData?.documentGuid : null) || null;
         resolvedFileName = existingFileName || activeCertificate?.fileName || (level === 'Apartment' ? initialData?.fileName : null) || null;
@@ -771,21 +785,70 @@ export function BuildingPermissionSection({
         (r) => !selectedWingDetailId || r.wingDetailId === selectedWingDetailId
       );
     }
-    return gridItems.unitCertificates || [];
+    if (level === 'Unit') {
+      if (selectedUnitIds.size === 0) return [];
+      const selectedIdList = Array.from(selectedUnitIds);
+      return (gridItems.unitCertificates || []).filter((r) => {
+        const propId = r.propertyId;
+        const propDetailsId = r.propertyDetailsId;
+        const covered = r.coveredPropertyIds || [];
+        return (
+          (propId != null && selectedIdList.includes(propId)) ||
+          (propDetailsId != null && selectedIdList.includes(propDetailsId)) ||
+          covered.some((id) => selectedIdList.includes(id))
+        );
+      });
+    }
+    return [];
   })();
 
   const unitStatusMap = (() => {
     const map = new Map<number, ReturnType<typeof resolveUnitCertificateStatus>>();
-    filteredUnits.forEach((u) => {
+    const allUnits = units && units.length > 0 ? units : filteredUnits;
+    allUnits.forEach((u) => {
       const stat = resolveUnitCertificateStatus(gridItems, selectedTypeId, u, societyId ? Number(societyId) : undefined);
       map.set(u.propertyDetailsId, stat);
+      if (u.propertyId != null) {
+        map.set(u.propertyId, stat);
+      }
     });
     return map;
   })();
 
   const certificatesList: CertificateData[] = activeCertificateTypes.map((ct) => {
     const isSelected = selectedTypeId === ct.certificateTypeId;
-    const gridRecord = levelFilteredRecords.find((r) => r.certificateTypeId === ct.certificateTypeId);
+    let gridRecord: CertificateItem | undefined;
+    if (level === 'Apartment') {
+      gridRecord = (gridItems?.societyCertificates || []).find((r) => r.certificateTypeId === ct.certificateTypeId);
+    } else if (level === 'Wing') {
+      gridRecord = (gridItems?.wingCertificates || []).find(
+        (r) => (!selectedWingDetailId || r.wingDetailId === selectedWingDetailId) && r.certificateTypeId === ct.certificateTypeId
+      );
+    } else if (level === 'Unit') {
+      if (selectedUnitIds.size === 1) {
+        const selectedUnitId = Array.from(selectedUnitIds)[0];
+        const unitStat = unitStatusMap.get(selectedUnitId);
+        if (unitStat?.status === 'direct' && unitStat.certificate && unitStat.certificate.certificateTypeId === ct.certificateTypeId) {
+          gridRecord = unitStat.certificate;
+        } else if (unitStat?.status === 'wing') {
+          gridRecord = (gridItems?.wingCertificates || []).find(
+            (r) => (!selectedWingDetailId || r.wingDetailId === selectedWingDetailId) && r.certificateTypeId === ct.certificateTypeId
+          ) || (unitStat.certificate?.certificateTypeId === ct.certificateTypeId ? unitStat.certificate : undefined);
+        } else if (unitStat?.status === 'apartment') {
+          gridRecord = (gridItems?.societyCertificates || []).find(
+            (r) => r.certificateTypeId === ct.certificateTypeId
+          ) || (unitStat.certificate?.certificateTypeId === ct.certificateTypeId ? unitStat.certificate : undefined);
+        }
+      } else {
+        const wingRecord = (gridItems?.wingCertificates || []).find(
+          (r) => (!selectedWingDetailId || r.wingDetailId === selectedWingDetailId) && r.certificateTypeId === ct.certificateTypeId
+        );
+        const aptRecord = (gridItems?.societyCertificates || []).find(
+          (r) => r.certificateTypeId === ct.certificateTypeId
+        );
+        gridRecord = wingRecord || aptRecord;
+      }
+    }
     const isAttachmentRemoved = isSelected && removedAttachmentTypeIds.has(ct.certificateTypeId);
 
     // Check if this certificate actually has saved data or document at the CURRENT level
@@ -799,6 +862,7 @@ export function BuildingPermissionSection({
     const hasInitialData =
       isSelected &&
       level === 'Apartment' &&
+      (initialData?.certificateTypeId == null || initialData.certificateTypeId === ct.certificateTypeId) &&
       !!(
         (initialData?.documentGuid && initialData.documentGuid !== 'null' && initialData.documentGuid !== 'undefined') ||
         (initialData?.number && initialData.number.trim() !== '') ||
@@ -810,11 +874,11 @@ export function BuildingPermissionSection({
     const isEnabled = enabledStateMap[ct.certificateTypeId] ?? initialEnabled;
 
     const certNo = isSelected
-      ? (certificateNumber || gridRecord?.certificateNumber || (level === 'Apartment' ? initialData?.number : '') || '')
+      ? (certificateNumber || gridRecord?.certificateNumber || (level === 'Apartment' && (initialData?.certificateTypeId == null || initialData.certificateTypeId === ct.certificateTypeId) ? initialData?.number : '') || '')
       : (gridRecord?.certificateNumber || '');
 
     let rawDate = isSelected
-      ? (certificateDate || gridRecord?.certificateDate || (level === 'Apartment' ? initialData?.date : '') || '')
+      ? (certificateDate || gridRecord?.certificateDate || (level === 'Apartment' && (initialData?.certificateTypeId == null || initialData.certificateTypeId === ct.certificateTypeId) ? initialData?.date : '') || '')
       : (gridRecord?.certificateDate || '');
     if (rawDate.includes('T')) {
       rawDate = rawDate.split('T')[0];
@@ -823,7 +887,78 @@ export function BuildingPermissionSection({
     const hasDoc =
       (isSelected && attachedFiles.length > 0) ||
       (!isAttachmentRemoved &&
-        (gridRecord?.hasDocument || (isSelected && level === 'Apartment' && !!initialData?.documentGuid)));
+        (gridRecord?.hasDocument ||
+          (gridRecord?.documentGuid && gridRecord.documentGuid !== 'null' && gridRecord.documentGuid !== 'undefined') ||
+          (isSelected && (existingDocumentGuid || (level === 'Apartment' && (initialData?.certificateTypeId == null || initialData.certificateTypeId === ct.certificateTypeId) && initialData?.documentGuid)))));
+
+    const docGuid = hasDoc
+      ? (isSelected && existingDocumentGuid
+          ? existingDocumentGuid
+          : (level === 'Apartment' && (initialData?.certificateTypeId == null || initialData.certificateTypeId === ct.certificateTypeId) ? initialData?.documentGuid : undefined) || gridRecord?.documentGuid || 'temp-guid')
+      : undefined;
+
+    let customStatusBadge: CertificateData['customStatusBadge'];
+    let sourceLevel: CertificateData['sourceLevel'];
+
+    if (level === 'Apartment') {
+      if (hasRecordData || hasInitialData) {
+        customStatusBadge = { label: t('building.apartmentLevel') || 'Apartment Level', variant: 'purple' };
+        sourceLevel = 'Direct';
+      } else {
+        customStatusBadge = { label: t('building.notConfigured') || 'Not Configured', variant: 'secondary' };
+        sourceLevel = 'None';
+      }
+    } else if (level === 'Wing') {
+      const aptRecord = (gridItems?.societyCertificates || []).find((r) => r.certificateTypeId === ct.certificateTypeId);
+      const hasAptCovered = Boolean(
+        aptRecord && (aptRecord.hasDocument || aptRecord.documentGuid || aptRecord.certificateNumber || aptRecord.certificateDate)
+      );
+      if (hasRecordData) {
+        customStatusBadge = { label: t('building.wingLevel') || 'Wing Level', variant: 'success' };
+        sourceLevel = 'Direct';
+      } else if (hasAptCovered) {
+        customStatusBadge = { label: t('building.coveredByApartment') || 'Apartment Covered', variant: 'purple' };
+        sourceLevel = 'Apartment';
+      } else {
+        customStatusBadge = { label: t('building.notConfigured') || 'Not Configured', variant: 'secondary' };
+        sourceLevel = 'None';
+      }
+    } else if (level === 'Unit') {
+      if (selectedUnitIds.size === 1) {
+        const uStat = unitStatusMap.get(Array.from(selectedUnitIds)[0]);
+        if (uStat?.status === 'direct') {
+          customStatusBadge = { label: t('building.appliedDirectly') || 'Applied Separately', variant: 'success' };
+          sourceLevel = 'Direct';
+        } else if (uStat?.status === 'wing') {
+          customStatusBadge = { label: t('building.coveredByWing') || 'Wing Covered', variant: 'info' };
+          sourceLevel = 'Wing';
+        } else if (uStat?.status === 'apartment') {
+          customStatusBadge = { label: t('building.coveredByApartment') || 'Apartment Covered', variant: 'purple' };
+          sourceLevel = 'Apartment';
+        } else {
+          customStatusBadge = { label: t('building.notConfigured') || 'Not Configured', variant: 'secondary' };
+          sourceLevel = 'None';
+        }
+      } else if (selectedUnitIds.size > 1) {
+        customStatusBadge = { label: t('building.unitsSelectedCount', { count: selectedUnitIds.size }) || `${selectedUnitIds.size} Units Selected`, variant: 'info' };
+        sourceLevel = 'Partial';
+      } else {
+        const aptRecord = (gridItems?.societyCertificates || []).find((r) => r.certificateTypeId === ct.certificateTypeId);
+        const wingRecord = (gridItems?.wingCertificates || []).find(
+          (r) => (!selectedWingDetailId || r.wingDetailId === selectedWingDetailId) && r.certificateTypeId === ct.certificateTypeId
+        );
+        if (wingRecord && (wingRecord.hasDocument || wingRecord.documentGuid || wingRecord.certificateNumber)) {
+          customStatusBadge = { label: t('building.coveredByWing') || 'Wing Covered', variant: 'info' };
+          sourceLevel = 'Wing';
+        } else if (aptRecord && (aptRecord.hasDocument || aptRecord.documentGuid || aptRecord.certificateNumber)) {
+          customStatusBadge = { label: t('building.coveredByApartment') || 'Apartment Covered', variant: 'purple' };
+          sourceLevel = 'Apartment';
+        } else {
+          customStatusBadge = { label: t('building.notConfigured') || 'Not Configured', variant: 'secondary' };
+          sourceLevel = 'None';
+        }
+      }
+    }
 
     return {
       certificateTypeId: ct.certificateTypeId,
@@ -831,39 +966,60 @@ export function BuildingPermissionSection({
       enabled: isEnabled,
       number: certNo,
       date: rawDate,
-      documentGuid: hasDoc ? ((level === 'Apartment' ? initialData?.documentGuid : undefined) || gridRecord?.documentGuid || 'temp-guid') : undefined,
+      documentGuid: docGuid,
+      customStatusBadge,
+      sourceLevel,
     };
   });
 
+
+  const activeUnitStat = (() => {
+    if (selectedUnitIds.size === 1) {
+      return unitStatusMap.get(Array.from(selectedUnitIds)[0]);
+    }
+    if (selectedUnitIds.size > 1) {
+      const stats = Array.from(selectedUnitIds).map((id) => unitStatusMap.get(id)).filter(Boolean);
+      const wingStat = stats.find((s) => s?.status === 'wing');
+      if (wingStat) return wingStat;
+      const aptStat = stats.find((s) => s?.status === 'apartment');
+      if (aptStat) return aptStat;
+      return stats[0];
+    }
+    return undefined;
+  })();
+
   // Whether there's an existing saved certificate record for the selected type at the current level
   const hasExistingRecord = (() => {
-    // 1. Direct activeCertificate check (number, document, or ID)
-    if (activeCertificate) {
-      if (activeCertificate.propertyCertificateId && activeCertificate.propertyCertificateId > 0) return true;
-      if (activeCertificate.hasDocument || (activeCertificate.documentGuid && activeCertificate.documentGuid !== 'null')) return true;
-      if (activeCertificate.certificateNumber && activeCertificate.certificateNumber.trim() !== '') return true;
+    if (level === 'Apartment') {
+      if (activeCertificate && (activeCertificate.certificateTypeId === selectedTypeId || !activeCertificate.certificateTypeId)) {
+        if (activeCertificate.propertyCertificateId && activeCertificate.propertyCertificateId > 0) return true;
+        if (activeCertificate.hasDocument || (activeCertificate.documentGuid && activeCertificate.documentGuid !== 'null')) return true;
+        if (activeCertificate.certificateNumber && activeCertificate.certificateNumber.trim() !== '') return true;
+      }
+      const gridMatch = (gridItems?.societyCertificates || []).find((r) => r.certificateTypeId === selectedTypeId);
+      if (gridMatch && (gridMatch.propertyCertificateId || gridMatch.hasDocument || gridMatch.certificateNumber)) return true;
+      if (initialData?.certificateTypeId == null || initialData.certificateTypeId === selectedTypeId) {
+        if (initialData?.documentGuid || (initialData?.number && initialData.number.trim() !== '')) return true;
+      }
+      return false;
     }
 
-    // 2. Unit level: check if any of the currently selected units has an existing direct certificate
-    if (level === 'Unit' && selectedUnitIds.size > 0) {
-      const hasDirectUnit = Array.from(selectedUnitIds).some((id) => {
-        const stat = unitStatusMap.get(id);
-        return stat?.status === 'direct' && Boolean(stat.certificate || stat.hasDocument || stat.certificateNumber);
-      });
-      if (hasDirectUnit) return true;
+    if (level === 'Wing') {
+      const wingMatch = (gridItems?.wingCertificates || []).find(
+        (r) => (!selectedWingDetailId || r.wingDetailId === selectedWingDetailId) && r.certificateTypeId === selectedTypeId
+      );
+      if (wingMatch && (wingMatch.propertyCertificateId || wingMatch.hasDocument || wingMatch.certificateNumber)) return true;
+      return false;
     }
 
-    // 3. Current level filtered records match
-    const gridMatch = levelFilteredRecords.find((r) => r.certificateTypeId === selectedTypeId);
-    if (gridMatch) {
-      if (gridMatch.propertyCertificateId && gridMatch.propertyCertificateId > 0) return true;
-      if (gridMatch.hasDocument || (gridMatch.documentGuid && gridMatch.documentGuid !== 'null')) return true;
-      if (gridMatch.certificateNumber && gridMatch.certificateNumber.trim() !== '') return true;
-    }
-
-    // 4. Initial apartment SSR data
-    if (level === 'Apartment' && (initialData?.documentGuid || (initialData?.number && initialData.number.trim() !== ''))) {
-      return true;
+    if (level === 'Unit') {
+      if (selectedUnitIds.size > 0) {
+        return Array.from(selectedUnitIds).some((id) => {
+          const stat = unitStatusMap.get(id);
+          return stat?.status === 'direct' && Boolean(stat.certificate || stat.hasDocument || stat.certificateNumber);
+        });
+      }
+      return false;
     }
 
     return false;
@@ -919,9 +1075,11 @@ export function BuildingPermissionSection({
   const selectedUnitNamesSummary = (() => {
     if (selectedUnitIds.size === 0) return '';
     const names = filteredUnits
-      .filter((u) => selectedUnitIds.has(u.propertyDetailsId))
+      .filter((u) => selectedUnitIds.has(u.propertyDetailsId) || (u.propertyId != null && selectedUnitIds.has(u.propertyId)))
       .map((u) => u.unitNo)
       .filter(Boolean);
+    if (names.length === 0) return '';
+    if (names.length === 1) return names[0];
     if (names.length <= 3) return names.join(', ');
     return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`;
   })();
@@ -936,14 +1094,17 @@ export function BuildingPermissionSection({
   });
 
   const isAllSelectableUnitsSelected =
-    selectableUnits.length > 0 && selectableUnits.every((u) => selectedUnitIds.has(u.propertyDetailsId));
+    selectableUnits.length > 0 && selectableUnits.every((u) => selectedUnitIds.has(u.propertyDetailsId) || (u.propertyId != null && selectedUnitIds.has(u.propertyId)));
 
   const handleToggleAllUnits = (forceSelect?: boolean) => {
     const shouldSelect = typeof forceSelect === 'boolean' ? forceSelect : !isAllSelectableUnitsSelected;
     setSelectedUnitIds((prev) => {
       const next = new Set(prev);
       if (!shouldSelect) {
-        filteredUnits.forEach((u) => next.delete(u.propertyDetailsId));
+        filteredUnits.forEach((u) => {
+          next.delete(u.propertyDetailsId);
+          if (u.propertyId != null) next.delete(u.propertyId);
+        });
       } else {
         selectableUnits.forEach((u) => next.add(u.propertyDetailsId));
       }
@@ -976,6 +1137,7 @@ export function BuildingPermissionSection({
         align: 'center',
         render: (_, row) => {
           const isDirectApplied = row.certStatus === 'direct' || Boolean(row.propertyCertificateId);
+          const isSelected = selectedUnitIds.has(row.propertyDetailsId as number) || (row.propertyId != null && selectedUnitIds.has(row.propertyId as number));
           return (
             <label
               onClick={(e) => e.stopPropagation()}
@@ -991,7 +1153,7 @@ export function BuildingPermissionSection({
             >
               <Checkbox
                 disabled={isDirectApplied}
-                checked={isDirectApplied || selectedUnitIds.has(row.propertyDetailsId as number)}
+                checked={isDirectApplied || isSelected}
                 className={cn(isDirectApplied && "opacity-50 cursor-not-allowed")}
                 onCheckedChange={() => {
                   if (isDirectApplied) return;
@@ -1148,7 +1310,6 @@ export function BuildingPermissionSection({
       if (statusFilter === 'none') return row.certStatus === 'none';
       return true;
     });
-
 
   return (
     <div className="relative flex-1 flex flex-col min-h-0 h-full overflow-hidden p-2 sm:p-2.5 gap-2">
@@ -1411,6 +1572,11 @@ export function BuildingPermissionSection({
                     const matchedWing = activeWings.find((w) => String(w.wingDetailId) === val || w.wingName === val);
                     if (matchedWing) {
                       setSelectedWingDetailId(matchedWing.wingDetailId);
+                      if (typeof window !== 'undefined') {
+                        const params = new URLSearchParams(window.location.search);
+                        params.set("wingDetailId", String(matchedWing.wingDetailId));
+                        window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+                      }
                     }
                   }}
                   selectSize="sm"
@@ -1444,21 +1610,18 @@ export function BuildingPermissionSection({
                   }
                 }}
                 onRowClick={(row) => {
-                  if (row.certStatus === 'direct' || Boolean(row.propertyCertificateId)) {
-                    return;
-                  }
-                  handleToggleUnitSelection(row.propertyDetailsId as number);
+                  setSelectedUnitIds(new Set([row.propertyDetailsId as number]));
                   if (fieldErrors.unit) setFieldErrors((prev) => ({ ...prev, unit: undefined }));
                 }}
-                getRowKey={(row, i) => `${row.propertyDetailsId ?? ''}-${i}`}
+                getRowKey={(row, i) => `${row.propertyDetailsId ?? ''}-${row.propertyId ?? ''}-${i}`}
                 rowClassName={(row) => {
-                  const isSelected = selectedUnitIds.has(row.propertyDetailsId as number);
+                  const isSelected = selectedUnitIds.has(row.propertyDetailsId as number) || (row.propertyId != null && selectedUnitIds.has(row.propertyId as number));
                   const isDirectApplied = row.certStatus === 'direct' || Boolean(row.propertyCertificateId);
                   return cn(
-                    'select-none transition-colors',
+                    'select-none transition-colors cursor-pointer',
                     isDirectApplied
-                      ? 'cursor-not-allowed opacity-85 bg-emerald-50/20 border-l-4 border-l-emerald-500 hover:bg-emerald-50/30'
-                      : 'cursor-pointer hover:bg-slate-50/80',
+                      ? 'bg-emerald-50/20 border-l-4 border-l-emerald-500 hover:bg-emerald-50/40'
+                      : 'hover:bg-slate-50/80',
                     isSelected && 'bg-blue-100/90 font-semibold ring-2 ring-blue-500/60 border-l-4 border-l-blue-600 shadow-sm'
                   );
                 }}
@@ -1494,8 +1657,17 @@ export function BuildingPermissionSection({
                   </span>
                 </div>
                 {activeCertificate?.certificateNumber && (
-                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded text-[11px] font-semibold">
-                    {t('building.existingCertBadge', { number: activeCertificate.certificateNumber })}
+                  <span className={cn(
+                    "px-2 py-0.5 rounded text-[11px] font-semibold border",
+                    level === 'Unit' && activeUnitStat?.status === 'direct'
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                      : "bg-sky-100 text-sky-800 border-sky-200"
+                  )}>
+                    {level === 'Unit' && activeUnitStat?.status !== 'direct'
+                      ? (activeUnitStat?.status === 'wing' || inheritedFrom === 'Wing'
+                          ? (t('building.inheritedWingBadge', { number: activeCertificate.certificateNumber }) || `Wing Covered (#${activeCertificate.certificateNumber})`)
+                          : (t('building.inheritedApartmentBadge', { number: activeCertificate.certificateNumber }) || `Apartment Covered (#${activeCertificate.certificateNumber})`))
+                      : (t('building.existingCertBadge', { number: activeCertificate.certificateNumber }) || `Existing Cert: #${activeCertificate.certificateNumber}`)}
                   </span>
                 )}
               </div>
@@ -1522,16 +1694,21 @@ export function BuildingPermissionSection({
                   ? undefined
                   : removedAttachmentTypeIds.has(selectedTypeId)
                     ? undefined
-                    : (activeCertificate?.documentGuid || existingDocumentGuid || (initialData?.certificateTypeId === selectedTypeId ? initialData?.documentGuid : undefined))
+                    : (existingDocumentGuid ||
+                       activeCertificate?.documentGuid ||
+                       (level === 'Unit' && activeUnitStat?.documentGuid) ||
+                       (level === 'Apartment' && initialData?.certificateTypeId === selectedTypeId ? initialData?.documentGuid : undefined) ||
+                       undefined)
               }
               fileName={
                 (removedAttachmentTypeIds.has(selectedTypeId)
                   ? undefined
                   : (attachedFiles[0]?.name ||
-                     activeCertificate?.fileName ||
                      existingFileName ||
+                     activeCertificate?.fileName ||
+                     (level === 'Unit' && activeUnitStat?.fileName) ||
                      (selectedTypeId ? uploadedFileNamesMap[selectedTypeId] : undefined) ||
-                     (initialData?.certificateTypeId === selectedTypeId ? initialData?.fileName : undefined))) ||
+                     (level === 'Apartment' && initialData?.certificateTypeId === selectedTypeId ? initialData?.fileName : undefined))) ||
                 (activeCertificateType?.certificateTypeName
                   ? `${activeCertificateType.certificateTypeName} Attachment`
                   : 'Certificate Document')
@@ -1539,10 +1716,11 @@ export function BuildingPermissionSection({
               hasDocumentBinding={
                 !removedAttachmentTypeIds.has(selectedTypeId) &&
                 Boolean(
-                  activeCertificate?.hasDocument ||
-                  activeCertificate?.documentGuid ||
                   existingDocumentGuid ||
-                  (initialData?.certificateTypeId === selectedTypeId && initialData?.documentGuid)
+                  activeCertificate?.documentGuid ||
+                  activeCertificate?.hasDocument ||
+                  (level === 'Unit' && (activeUnitStat?.documentGuid || activeUnitStat?.hasDocument)) ||
+                  (level === 'Apartment' && initialData?.certificateTypeId === selectedTypeId && initialData?.documentGuid)
                 )
               }
               isDisabled={!isApartmentIndividual && level === 'Unit' && selectedUnitIds.size === 0}

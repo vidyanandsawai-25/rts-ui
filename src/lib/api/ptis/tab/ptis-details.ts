@@ -245,20 +245,26 @@ export const ptisDetailsService = {
       const floorMap = new Map<number, string>();
       const safeFloorObj = (floorData && typeof floorData === 'object') ? (floorData as Record<string, unknown>) : null;
       if (safeFloorObj) {
-        const sel = safeFloorObj.selectedFloor as Record<string, unknown> | null;
-        if (sel?.propertyDetailsId != null) {
-          const fId = Number(sel.propertyDetailsId);
+        const sel = (safeFloorObj.selectedFloor ?? safeFloorObj.SelectedFloor) as Record<string, unknown> | null;
+        const selPropDetailsId = sel?.propertyDetailsId ?? sel?.PropertyDetailsId;
+        if (selPropDetailsId != null) {
+          const fId = Number(selPropDetailsId);
           floorIds.push(fId);
-          if (sel.floorDescription) floorMap.set(fId, String(sel.floorDescription));
+          const selFloorDesc = sel?.floorDescription ?? sel?.FloorDescription;
+          if (selFloorDesc) floorMap.set(fId, String(selFloorDesc));
         }
 
-        const oth = Array.isArray(safeFloorObj.otherFloors) ? safeFloorObj.otherFloors : [];
+        const oth = Array.isArray(safeFloorObj.otherFloors ?? safeFloorObj.OtherFloors)
+          ? (safeFloorObj.otherFloors ?? safeFloorObj.OtherFloors) as unknown[]
+          : [];
         for (const f of oth) {
           const fObj = f as Record<string, unknown>;
-          if (fObj?.propertyDetailsId != null) {
-            const fId = Number(fObj.propertyDetailsId);
+          const fPropDetailsId = fObj?.propertyDetailsId ?? fObj?.PropertyDetailsId;
+          if (fPropDetailsId != null) {
+            const fId = Number(fPropDetailsId);
             if (!floorIds.includes(fId)) floorIds.push(fId);
-            if (fObj.floorDescription) floorMap.set(fId, String(fObj.floorDescription));
+            const fDesc = fObj?.floorDescription ?? fObj?.FloorDescription;
+            if (fDesc) floorMap.set(fId, String(fDesc));
           }
         }
       }
@@ -272,10 +278,10 @@ export const ptisDetailsService = {
           if (Array.isArray(ownerFloorsData)) {
             for (const f of ownerFloorsData) {
               const fObj = f as Record<string, unknown>;
-              const fId = Number(fObj?.id ?? fObj?.propertyDetailsId);
+              const fId = Number(fObj?.id ?? fObj?.Id ?? fObj?.propertyDetailsId ?? fObj?.PropertyDetailsId);
               if (fId && !floorIds.includes(fId)) {
                 floorIds.push(fId);
-                const desc = String(fObj?.floorDescription ?? fObj?.floor ?? '');
+                const desc = String(fObj?.floorDescription ?? fObj?.FloorDescription ?? fObj?.floor ?? fObj?.Floor ?? '');
                 if (desc) floorMap.set(fId, desc);
               }
             }

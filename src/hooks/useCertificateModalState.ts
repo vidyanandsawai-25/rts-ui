@@ -14,6 +14,7 @@ import {
   normalizeCertificateGridData,
   flattenCertificateRecords,
   getActiveCertificateForLevel,
+  resolveUnitCertificateStatus,
   findWingDetailId,
   type CertificateGridItems,
   type CertificateItem,
@@ -35,6 +36,9 @@ export interface UseCertificateModalStateProps {
   initialWingDetailId?: number | null;
   initialCertificateTypeId?: number;
   initialCertificateNumber?: string | null;
+  initialCertificateDate?: string | null;
+  initialDocumentGuid?: string | null;
+  initialFileName?: string | null;
   initialPropertyCertificateId?: number | null;
   initialUnitNo?: string | null;
   initialData?: CertificateData | null;
@@ -51,11 +55,30 @@ export function useCertificateModalState({
   initialWingDetailId = null,
   initialCertificateTypeId = 3,
   initialCertificateNumber = null,
+  initialCertificateDate = null,
+  initialDocumentGuid = null,
+  initialFileName = null,
   initialPropertyCertificateId = null,
   initialUnitNo = null,
   initialData = null,
 }: UseCertificateModalStateProps) {
-  const [level, setLevel] = useState<ApplicationLevel>(initialLevel);
+  const [level, setLevelRaw] = useState<ApplicationLevel>(() => {
+    if (initialLevel) return initialLevel;
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('qde_building_level');
+      if (saved && (saved === 'Apartment' || saved === 'Wing' || saved === 'Unit' || saved === 'Entire Property' || saved === 'Floor')) {
+        return saved as ApplicationLevel;
+      }
+    }
+    return 'Apartment';
+  });
+
+  const setLevel = useCallback((newLevel: ApplicationLevel) => {
+    setLevelRaw(newLevel);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('qde_building_level', newLevel);
+    }
+  }, []);
   const [dynamicWings] = useState<WingOption[]>(initialWings);
   const [dynamicUnits, setDynamicUnits] = useState<UnitSelectionItem[]>(initialUnits);
   const [dynamicTypes] = useState<CertificateTypeMasterOption[]>(initialTypes);
@@ -228,6 +251,7 @@ export function useCertificateModalState({
         }
         return selectedId;
       }
+      return null;
     }
     return propertyId ?? null;
   }, [level, selectedUnitIds, resolvedUnits, propertyId]);
@@ -305,17 +329,23 @@ export function useCertificateModalState({
   }, []);
 
   // Helper: map raw unit record from API to UnitSelectionItem
-  const mapRawUnitItem = (u: Record<string, unknown>, idx: number): UnitSelectionItem => ({
-    propertyDetailsId: Number(u.propertyDetailsId || u.PropertyDetailsId || u.id || u.Id || idx + 1),
-    propertyId: Number(u.propertyId || u.PropertyId || u.propertyDetailsId || u.PropertyDetailsId || 0),
-    unitNo: String(u.unitNo || u.UnitNo || u.partitionNo || u.PartitionNo || u.flatNo || u.FlatNo || `Unit ${idx + 1}`),
-    wingDetailId: Number(u.wingDetailId || u.WingDetailId || 0),
-    wingName: String(u.wingName || u.WingName || 'Wing'),
-    floorName: String(u.floorName || u.FloorName || u.floor || '1st Floor'),
-    useName: String(u.useName || u.UseName || u.use || 'Residential'),
-    constructionYear: String(u.constructionYear || u.ConstructionYear || u.conYr || '').trim() || undefined,
-    isSelected: false,
-  });
+  const mapRawUnitItem = (u: Record<string, unknown>, idx: number): UnitSelectionItem => {
+    const rawPropId = Number(u.propertyId ?? u.PropertyId ?? 0);
+    const rawDetailsId = Number(u.propertyDetailsId ?? u.PropertyDetailsId ?? u.id ?? u.Id ?? 0);
+    const resolvedId = rawDetailsId > 0 ? rawDetailsId : (rawPropId > 0 ? rawPropId : idx + 1);
+    const resolvedPropId = rawPropId > 0 ? rawPropId : resolvedId;
+    return {
+      propertyDetailsId: resolvedId,
+      propertyId: resolvedPropId,
+      unitNo: String(u.unitNo || u.UnitNo || u.partitionNo || u.PartitionNo || u.flatNo || u.FlatNo || `Unit ${idx + 1}`),
+      wingDetailId: Number(u.wingDetailId || u.WingDetailId || 0),
+      wingName: String(u.wingName || u.WingName || 'Wing'),
+      floorName: String(u.floorName || u.FloorName || u.floor || '1st Floor'),
+      useName: String(u.useName || u.UseName || u.use || 'Residential'),
+      constructionYear: String(u.constructionYear || u.ConstructionYear || u.conYr || '').trim() || undefined,
+      isSelected: false,
+    };
+  };
 
   // Helper: resolve wingDetailId from the current wingFilter value
   const getWingDetailIdFromFilter = useCallback((filterValue: string): number | null => {
@@ -371,6 +401,11 @@ export function useCertificateModalState({
     const wingDetailIdParam = findWingDetailId(value, resolvedWings, gridItems);
     if (wingDetailIdParam != null) {
       setSelectedWingDetailId(wingDetailIdParam);
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        params.set('wingDetailId', String(wingDetailIdParam));
+        window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+      }
     }
 
     const targetSocIdParam = societyId ? Number(societyId) : null;
@@ -408,22 +443,98 @@ export function useCertificateModalState({
 
 
 
+  const initialSelectedUnit = useMemo(() => {
+    return initialUnits.find((u) => {
+      if (u.isSelected) return true;
+      if (initialUnitNo) {
+        const tokens = initialUnitNo.split(/[,\s]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
+        return tokens.includes((u.unitNo || '').trim().toLowerCase());
+      }
+      return false;
+    });
+  }, [initialUnits, initialUnitNo]);
+
+  // 1. Initial certificate matching: resolve from initialCertificateGrid or fallback props
+  const initialResolvedMatch = useMemo(() => {
+    if (!initialCertificateGrid) return null;
+    const norm = normalizeCertificateGridData(initialCertificateGrid);
+    if (initialLevel === 'Unit' && initialSelectedUnit) {
+      const stat = resolveUnitCertificateStatus(norm, initialCertificateTypeId || 3, initialSelectedUnit, societyId ? Number(societyId) : undefined);
+      if (stat.status === 'direct') return { certificate: stat.certificate, inheritedFrom: 'Direct' as const };
+      if (stat.status === 'wing') return { certificate: stat.certificate, inheritedFrom: 'Wing' as const };
+      if (stat.status === 'apartment') return { certificate: stat.certificate, inheritedFrom: 'Apartment' as const };
+      return { certificate: null, inheritedFrom: null };
+    }
+    return getActiveCertificateForLevel(
+      norm,
+      initialLevel,
+      initialCertificateTypeId || 3,
+      initialWingDetailId,
+      initialSelectedUnit?.propertyId || null,
+      societyId
+    );
+  }, [initialCertificateGrid, initialLevel, initialCertificateTypeId, initialWingDetailId, societyId, initialSelectedUnit]);
+
+  const initialDirectCert = initialResolvedMatch?.certificate || null;
+  const isInitialMatchDirect = initialResolvedMatch?.inheritedFrom === 'Direct' || !initialResolvedMatch?.inheritedFrom;
+
+  const rawInitNum =
+    initialDirectCert?.certificateNumber ||
+    (initialData && (initialData.certificateTypeId === initialCertificateTypeId || !initialData.certificateTypeId) ? initialData.number : '') ||
+    initialCertificateNumber ||
+    '';
+
+  const rawInitDate =
+    initialDirectCert?.certificateDate ||
+    (initialData && (initialData.certificateTypeId === initialCertificateTypeId || !initialData.certificateTypeId) ? initialData.date : '') ||
+    initialCertificateDate ||
+    '';
+
+  const formattedInitDate = rawInitDate
+    ? rawInitDate.includes('T')
+      ? rawInitDate.split('T')[0]
+      : rawInitDate
+    : '';
+
+  const initDocGuid =
+    initialDirectCert?.documentGuid ||
+    (initialData && (initialData.certificateTypeId === initialCertificateTypeId || !initialData.certificateTypeId) ? initialData.documentGuid : null) ||
+    initialDocumentGuid ||
+    null;
+
+  const initFileName =
+    initialDirectCert?.fileName ||
+    (initialData && (initialData.certificateTypeId === initialCertificateTypeId || !initialData.certificateTypeId) ? initialData.fileName : null) ||
+    initialFileName ||
+    null;
+
+  const initPropCertId =
+    (isInitialMatchDirect ? initialDirectCert?.propertyCertificateId : null) ||
+    (initialData && (initialData.certificateTypeId === initialCertificateTypeId || !initialData.certificateTypeId) ? initialData.propertyCertificateId : null) ||
+    (initialPropertyCertificateId ? Number(initialPropertyCertificateId) : null);
+
   // Document form fields
-  const [certificateDate, setCertificateDate] = useState<string>(initialData?.date || '');
-  const [certificateNumber, setCertificateNumber] = useState<string>(initialData?.number || '');
+  const [certificateDate, setCertificateDate] = useState<string>(formattedInitDate);
+  const [certificateNumber, setCertificateNumber] = useState<string>(rawInitNum);
   const [status, setStatus] = useState<CertificateStatus>('Active');
   const [remarks, setRemarks] = useState<string>('');
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
-  const [existingDocumentGuid, setExistingDocumentGuid] = useState<string | null>(initialData?.documentGuid || null);
-  const [existingFileName, setExistingFileName] = useState<string | null>(initialData?.fileName || null);
-  const [existingPropertyCertificateId, setExistingPropertyCertificateId] = useState<number | null>(initialData?.propertyCertificateId || null);
-  const [hasExistingDocument, setHasExistingDocument] = useState<boolean>(Boolean(initialData?.documentGuid));
+  const [existingDocumentGuid, setExistingDocumentGuid] = useState<string | null>(initDocGuid);
+  const [existingFileName, setExistingFileName] = useState<string | null>(initFileName);
+  const [existingPropertyCertificateId, setExistingPropertyCertificateId] = useState<number | null>(initPropCertId);
+  const [hasExistingDocument, setHasExistingDocument] = useState<boolean>(Boolean(initDocGuid));
 
   const selectedUnitPropertyIds = useMemo(() => {
-    return Array.from(selectedUnitIds).map((id) => {
+    const ids: number[] = [];
+    selectedUnitIds.forEach((id) => {
+      ids.push(id);
       const matched = resolvedUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id);
-      return matched?.propertyId || matched?.propertyDetailsId || id;
+      if (matched) {
+        if (matched.propertyId != null && !ids.includes(matched.propertyId)) ids.push(matched.propertyId);
+        if (matched.propertyDetailsId != null && !ids.includes(matched.propertyDetailsId)) ids.push(matched.propertyDetailsId);
+      }
     });
+    return ids;
   }, [selectedUnitIds, resolvedUnits]);
 
   const selectedUnitNumbers = useMemo(() => {
@@ -436,6 +547,67 @@ export function useCertificateModalState({
   // Derived active certificate and inheritedFrom based on current level & selection
   const { certificate: activeCertificate, inheritedFrom } = useMemo(() => {
     if (!gridItems) return { certificate: null, inheritedFrom: null };
+    if (level === 'Unit') {
+      if (selectedUnitIds.size === 1) {
+        const singleId = Array.from(selectedUnitIds)[0];
+        const matchedUnit = resolvedUnits.find((u) => u.propertyDetailsId === singleId || u.propertyId === singleId);
+        if (matchedUnit) {
+          const stat = resolveUnitCertificateStatus(gridItems, selectedTypeId, matchedUnit, societyId ? Number(societyId) : undefined);
+          if (stat.status === 'direct') {
+            return { certificate: stat.certificate, inheritedFrom: 'Direct' };
+          }
+          if (stat.status === 'wing') {
+            return { certificate: stat.certificate, inheritedFrom: 'Wing' };
+          }
+          if (stat.status === 'apartment') {
+            return { certificate: stat.certificate, inheritedFrom: 'Apartment' };
+          }
+          return { certificate: null, inheritedFrom: null };
+        }
+      } else if (selectedUnitIds.size > 1) {
+        // Multi-select batch mode: resolve inherited certificate for selected units
+        const selectedList = resolvedUnits.filter(
+          (u) => selectedUnitIds.has(u.propertyDetailsId) || (u.propertyId != null && selectedUnitIds.has(u.propertyId))
+        );
+        const statuses = selectedList.map((u) =>
+          resolveUnitCertificateStatus(gridItems, selectedTypeId, u, societyId ? Number(societyId) : undefined)
+        );
+
+        const wingMatch = statuses.find((s) => s.status === 'wing')?.certificate;
+        if (wingMatch) {
+          return { certificate: wingMatch, inheritedFrom: 'Wing' };
+        }
+
+        const aptMatch = statuses.find((s) => s.status === 'apartment')?.certificate;
+        if (aptMatch) {
+          return { certificate: aptMatch, inheritedFrom: 'Apartment' };
+        }
+
+        const firstDirect = statuses.find((s) => s.status === 'direct')?.certificate;
+        const allSameDirect = firstDirect && statuses.every((s) => s.certificate?.propertyCertificateId === firstDirect.propertyCertificateId);
+        if (allSameDirect) {
+          return { certificate: firstDirect, inheritedFrom: 'Direct' };
+        }
+
+        return { certificate: null, inheritedFrom: null };
+      } else {
+        const wingId = targetWingDetailId ?? selectedWingDetailId;
+        const wingMatch = (gridItems.wingCertificates || []).find(
+          (r) => (!wingId || r.wingDetailId === wingId) && r.certificateTypeId === selectedTypeId
+        );
+        if (wingMatch && (wingMatch.hasDocument || wingMatch.documentGuid || wingMatch.certificateNumber)) {
+          return { certificate: wingMatch, inheritedFrom: 'Wing' };
+        }
+        const aptMatch = (gridItems.societyCertificates || []).find(
+          (r) => r.certificateTypeId === selectedTypeId
+        );
+        if (aptMatch && (aptMatch.hasDocument || aptMatch.documentGuid || aptMatch.certificateNumber)) {
+          return { certificate: aptMatch, inheritedFrom: 'Apartment' };
+        }
+        return { certificate: null, inheritedFrom: null };
+      }
+      return { certificate: null, inheritedFrom: null };
+    }
     return getActiveCertificateForLevel(
       gridItems,
       level,
@@ -454,18 +626,24 @@ export function useCertificateModalState({
     selectedWingDetailId,
     targetUnitPropertyId,
     societyId,
+    selectedUnitIds,
+    resolvedUnits,
     selectedUnitPropertyIds,
     selectedUnitNumbers,
   ]);
 
   // Automatically update input fields when active certificate / selection targets change
   const selectedIdsKey = selectedUnitPropertyIds.join(',');
-  const fieldSyncKey = `${level}_${selectedTypeId}_${targetWingDetailId ?? selectedWingDetailId}_${targetUnitPropertyId}_${societyId}_${selectedIdsKey}_${gridItems ? 'loaded' : 'none'}_${activeCertificate?.propertyCertificateId || activeCertificate?.certificateNumber || 'none'}`;
+  const fieldSyncKey = `${level}_${selectedTypeId}_${targetWingDetailId ?? selectedWingDetailId}_${targetUnitPropertyId}_${societyId}_${selectedIdsKey}_${gridItems ? 'loaded' : 'none'}_${activeCertificate?.propertyCertificateId || activeCertificate?.certificateNumber || 'none'}_${activeCertificate?.documentGuid || 'none'}_${inheritedFrom || 'none'}`;
 
-  const [prevFieldSyncKey, setPrevFieldSyncKey] = useState<string>(fieldSyncKey);
-  if (fieldSyncKey !== prevFieldSyncKey) {
-    setPrevFieldSyncKey(fieldSyncKey);
+  /* eslint-disable react-hooks/set-state-in-effect -- Intentional prop/selection-to-state sync when active certificate or targets change */
+  useEffect(() => {
     if (activeCertificate) {
+      const isDirectRecord =
+        level === 'Apartment' ||
+        (level === 'Wing' && (inheritedFrom === 'Direct' || !inheritedFrom)) ||
+        (level === 'Unit' && inheritedFrom === 'Direct');
+
       setCertificateNumber(activeCertificate.certificateNumber || '');
       const formattedDate = activeCertificate.certificateDate
         ? activeCertificate.certificateDate.includes('T')
@@ -476,22 +654,32 @@ export function useCertificateModalState({
       setStatus((activeCertificate.status as CertificateStatus) || 'Active');
       setExistingDocumentGuid(activeCertificate.documentGuid || null);
       setExistingFileName(activeCertificate.fileName || null);
-      setExistingPropertyCertificateId(activeCertificate.propertyCertificateId || null);
+      setExistingPropertyCertificateId(isDirectRecord ? (activeCertificate.propertyCertificateId || null) : null);
       setHasExistingDocument(Boolean(activeCertificate.hasDocument || activeCertificate.documentGuid));
       setAttachedFiles([]);
-    } else if (initialData && (initialData.certificateTypeId === selectedTypeId || !initialData.certificateTypeId)) {
-      setCertificateNumber(initialData.number || '');
-      const formattedDate = initialData.date
-        ? initialData.date.includes('T')
-          ? initialData.date.split('T')[0]
-          : initialData.date
+    } else if (
+      !gridItems &&
+      level === 'Apartment' &&
+      ((initialData && (initialData.certificateTypeId === selectedTypeId || !initialData.certificateTypeId)) ||
+      ((initialCertificateNumber || initialCertificateDate || initialPropertyCertificateId) && (initialCertificateTypeId === selectedTypeId || !initialCertificateTypeId)))
+    ) {
+      const targetNum = initialData?.number || initialCertificateNumber || '';
+      const rawDate = initialData?.date || initialCertificateDate || '';
+      const formattedDate = rawDate
+        ? rawDate.includes('T')
+          ? rawDate.split('T')[0]
+          : rawDate
         : '';
+      setCertificateNumber(targetNum);
       setCertificateDate(formattedDate);
       setStatus('Active');
-      setExistingDocumentGuid(initialData.documentGuid || null);
-      setExistingFileName(initialData.fileName || null);
-      setExistingPropertyCertificateId(initialData.propertyCertificateId || null);
-      setHasExistingDocument(Boolean(initialData.documentGuid));
+      const docGuid = initialData?.documentGuid || initialDocumentGuid || null;
+      const fName = initialData?.fileName || initialFileName || null;
+      const propCertId = initialData?.propertyCertificateId || (initialPropertyCertificateId ? Number(initialPropertyCertificateId) : null);
+      setExistingDocumentGuid(docGuid);
+      setExistingFileName(fName);
+      setExistingPropertyCertificateId(propCertId);
+      setHasExistingDocument(Boolean(docGuid));
       setAttachedFiles([]);
     } else {
       setCertificateNumber('');
@@ -503,7 +691,8 @@ export function useCertificateModalState({
       setHasExistingDocument(false);
       setAttachedFiles([]);
     }
-  }
+  }, [fieldSyncKey, activeCertificate, level, inheritedFrom, selectedTypeId, gridItems, initialData, initialCertificateNumber, initialCertificateDate, initialPropertyCertificateId, initialCertificateTypeId, initialDocumentGuid, initialFileName]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const refetchGrid = useCallback(async () => {
     let targetPropId: string | number | null = null;
@@ -533,7 +722,7 @@ export function useCertificateModalState({
       if (res.success && res.data) {
         const normalized = normalizeCertificateGridData(res.data);
         setGridItems(normalized);
-        const { certificate: match } = getActiveCertificateForLevel(
+        const { certificate: match, inheritedFrom: refetchInheritedFrom } = getActiveCertificateForLevel(
           normalized,
           level,
           selectedTypeId,
@@ -543,7 +732,12 @@ export function useCertificateModalState({
           selectedUnitPropertyIds,
           selectedUnitNumbers
         );
-        if (match) {
+        const isDirect =
+          level === 'Apartment' ||
+          (level === 'Wing' && (refetchInheritedFrom === 'Direct' || !refetchInheritedFrom)) ||
+          (level === 'Unit' && refetchInheritedFrom === 'Direct');
+
+        if (match && isDirect) {
           setCertificateNumber(match.certificateNumber || '');
           const formattedDate = match.certificateDate
             ? match.certificateDate.includes('T')
@@ -556,6 +750,15 @@ export function useCertificateModalState({
           setExistingFileName(match.fileName || null);
           setExistingPropertyCertificateId(match.propertyCertificateId || null);
           setHasExistingDocument(Boolean(match.hasDocument || match.documentGuid));
+        } else {
+          setCertificateNumber('');
+          setCertificateDate('');
+          setStatus('Active');
+          setExistingDocumentGuid(null);
+          setExistingFileName(null);
+          setExistingPropertyCertificateId(null);
+          setHasExistingDocument(false);
+          setAttachedFiles([]);
         }
         return normalized;
       }

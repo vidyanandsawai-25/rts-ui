@@ -443,6 +443,7 @@ export async function postApartmentQcCertificateRecordAction(
       level: "Apartment" | "Wing" | "Unit";
       selectedWingDetailId: number | null;
       selectedUnitIds: number[];
+      selectedUnitDetailsIds?: number[];
       isAllUnitsSelected?: boolean;
       certificateTypeId: number;
       certificateDate: string;
@@ -491,6 +492,7 @@ export async function postApartmentQcCertificateRecordAction(
       certificateTypeId: payload.certificateTypeId,
       certificateNo: certNo,
       certificateIssueDate: issueDate,
+      issueDate: issueDate,
       status,
       ...(validSocietyDetailId ? { societyId: validSocietyDetailId, societyDetailId: validSocietyDetailId } : {}),
       ...(resolvedDocGuid ? { documentGuid: resolvedDocGuid, existingDocumentGuid: resolvedDocGuid } : {}),
@@ -500,6 +502,11 @@ export async function postApartmentQcCertificateRecordAction(
       hasDocument: !isFileModified && Boolean(resolvedDocGuid),
     };
 
+    const selectedIds = payload.selectedUnitIds && payload.selectedUnitIds.length > 0 ? payload.selectedUnitIds : [];
+    const selectedDetailIds = payload.selectedUnitDetailsIds && payload.selectedUnitDetailsIds.length > 0
+      ? payload.selectedUnitDetailsIds
+      : selectedIds;
+
     let res: ApiResponse<CreateCertificateRecordResponseDto>;
 
     if (payload.level === "Apartment") {
@@ -508,8 +515,8 @@ export async function postApartmentQcCertificateRecordAction(
         ...baseRecordPayload,
         level: 0,
       });
-    } else if (payload.level === "Wing" || (payload.level === "Unit" && payload.isAllUnitsSelected)) {
-      // Wing (or Unit-level-all-selected) → level 1
+    } else if (payload.level === "Wing") {
+      // Wing → level 1
       res = await postApartmentQcCertificateRecord({
         ...baseRecordPayload,
         level: 1,
@@ -517,12 +524,15 @@ export async function postApartmentQcCertificateRecordAction(
       });
     } else {
       // Unit level → level 2 with unitPropertyIds array
-      const selectedIds = payload.selectedUnitIds.length > 0 ? payload.selectedUnitIds : [];
       res = await postApartmentQcCertificateRecord({
         ...baseRecordPayload,
         level: 2,
+        entityScope: 'Property',
         wingDetailId: validWingDetailId,
         unitPropertyIds: selectedIds,
+        propertyDetailsIds: selectedDetailIds,
+        ...(selectedDetailIds.length === 1 ? { propertyDetailsId: selectedDetailIds[0] } : {}),
+        ...(selectedIds.length === 1 ? { propertyId: selectedIds[0] } : {}),
       });
     }
 
@@ -561,13 +571,42 @@ export async function postApartmentQcCertificateRecordAction(
               createdCertIds = [match.propertyCertificateId];
             }
           }
-        } else if (payload.level === 'Unit' && payload.selectedUnitIds.length > 0) {
-          for (const uPropId of payload.selectedUnitIds) {
+        } else if (payload.level === 'Unit' && (payload.selectedUnitIds?.length > 0 || selectedDetailIds?.length > 0)) {
+          const allTargetIds = Array.from(new Set([...(payload.selectedUnitIds || []), ...(selectedDetailIds || [])]));
+          for (const uPropId of allTargetIds) {
             const unitCertsRes = await getBuildingPermissionsAction(String(uPropId));
             if (unitCertsRes.success && unitCertsRes.data) {
               const match = unitCertsRes.data.find((c) => c.certificateTypeId === payload.certificateTypeId);
               if (match?.propertyCertificateId && match.propertyCertificateId > 0 && !createdCertIds.includes(match.propertyCertificateId)) {
                 createdCertIds.push(match.propertyCertificateId);
+              }
+            }
+          }
+
+          if (createdCertIds.length === 0) {
+            const gridRes = await fetchApartmentQcCertificateGrid({
+              wingDetailsId: validWingDetailId ?? payload.selectedWingDetailId,
+              societyId: validSocietyDetailId ?? payload.societyDetailId,
+            });
+            if (gridRes.success && gridRes.data) {
+              const rawGrid = gridRes.data as Record<string, unknown>;
+              const uCerts = (rawGrid.unitCertificates || rawGrid.UnitCertificates || []) as Record<string, unknown>[];
+              for (const c of uCerts) {
+                const typeId = Number(c.certificateTypeId ?? c.CertificateTypeId);
+                const propId = Number(c.propertyId ?? c.PropertyId ?? 0);
+                const propDetailsId = Number(c.propertyDetailsId ?? c.PropertyDetailsId ?? 0);
+                const rawCovered = (c.coveredPropertyIds || c.CoveredPropertyIds || []) as number[];
+                const isMatched = typeId === payload.certificateTypeId && (
+                  allTargetIds.includes(propId) ||
+                  allTargetIds.includes(propDetailsId) ||
+                  allTargetIds.some((id) => rawCovered.includes(id))
+                );
+                if (isMatched) {
+                  const matchedId = Number(c.propertyCertificateId ?? c.PropertyCertificateId ?? 0);
+                  if (matchedId > 0 && !createdCertIds.includes(matchedId)) {
+                    createdCertIds.push(matchedId);
+                  }
+                }
               }
             }
           }
@@ -624,9 +663,11 @@ export interface DeletePropertyCertificateRecordParams {
   documentGuid?: string | null;
   documentId?: number | null;
   propertyCertificateId?: number | null;
-  level?: "Apartment" | "Wing" | "Unit" | string;
+  level?: "Apartment" | "Wing" | "Unit" | "Floor" | "Property" | string;
   selectedWingDetailId?: number | null;
   selectedUnitIds?: number[];
+  selectedFloorIds?: number[];
+  propertyDetailsId?: number | null;
   societyDetailId?: number | null;
 }
 
@@ -742,8 +783,12 @@ export async function deletePropertyCertificateRecordAction(
         await Promise.all(
           params.selectedUnitIds.map((uId) => deletePropertyCertificate(uId, params.certificateTypeId, null))
         );
+      } else if (params.level === "Floor" && params.selectedFloorIds && params.selectedFloorIds.length > 0) {
+        await Promise.all(
+          params.selectedFloorIds.map((fId) => deletePropertyCertificate(propIdNum, params.certificateTypeId, fId))
+        );
       } else {
-        await deletePropertyCertificate(propIdNum, params.certificateTypeId, null);
+        await deletePropertyCertificate(propIdNum, params.certificateTypeId, params.propertyDetailsId ?? null);
       }
     }
 

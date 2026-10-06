@@ -277,7 +277,19 @@
     "viewDocument": "दस्तऐवज पहा",
     "editCertificate": "प्रमाणपत्र संपादित करा",
     "propertyScope": "मालमत्ता स्तर",
-    "noCertificatesAttached": "या मालमत्तेसाठी कोणतीही जोडलेली प्रमाणपत्रे उपलब्ध नाहीत."
+    "apartmentLevel": "अपार्टमेंट स्तर",
+    "wingLevel": "विंग स्तर",
+    "unitLevel": "युनिट स्तर",
+    "floorLevel": "मजला स्तर",
+    "appliedDirectly": "थेट लागू केले",
+    "notConfigured": "कॉन्फिगर केलेले नाही",
+    "coveredByApartment": "अपार्टमेंट स्तर प्रमाणपत्राद्वारे समाविष्ट",
+    "coveredByWing": "विंग स्तर प्रमाणपत्राद्वारे समाविष्ट",
+    "entireProperty": "संपूर्ण मालमत्ता",
+    "scopeProperty": "संपूर्ण मालमत्ता",
+    "noCertificatesAttached": "या मालमत्तेसाठी कोणतीही जोडलेली प्रमाणपत्रे उपलब्ध नाहीत.",
+    "loadingCertificates": "इमारत परवानगी नोंदी लोड होत आहेत...",
+    "loadError": "इमारत परवानगी नोंदी लोड करण्यात अयशस्वी."
   },
   "tabs": {
     "propertyDetails": "मालमत्ता तपशील",

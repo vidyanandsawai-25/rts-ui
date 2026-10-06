@@ -369,9 +369,28 @@ export const BuildingPermissionRecords: React.FC<BuildingPermissionRecordsProps>
         q.set('certificateNumber', _record.permitNo);
       }
 
+      // Certificate Date / Sanction Date
+      if (_record?.sanctionDate) {
+        q.set('certificateDate', _record.sanctionDate);
+      }
+
+      // Document details
+      if (_record?.documentGuid) {
+        q.set('documentGuid', _record.documentGuid);
+      }
+      if (_record?.fileName) {
+        q.set('fileName', _record.fileName);
+      }
+
       // Property Certificate ID
       if (_record?.propertyCertificateId) {
         q.set('propertyCertificateId', String(_record.propertyCertificateId));
+      }
+
+      // Wing detail ID if available
+      const resolvedWingDetailId = _record?.wingDetailId || wingDetailsId;
+      if (resolvedWingDetailId) {
+        q.set('wingDetailId', String(resolvedWingDetailId));
       }
 
       // Unit numbers if unit level

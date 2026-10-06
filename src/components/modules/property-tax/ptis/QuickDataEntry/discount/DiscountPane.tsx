@@ -168,7 +168,7 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                             }
                         }}
                         validationErrors={validationErrors}
-                        level={levelState?.level}
+                        level={(levelState?.level === 'Apartment' || levelState?.level === 'Wing' || levelState?.level === 'Unit') ? levelState.level : undefined}
                         t={t}
                     />
                 </div>

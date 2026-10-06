@@ -277,7 +277,19 @@
     "viewDocument": "View Document",
     "editCertificate": "Edit Certificate",
     "propertyScope": "Property Level",
-    "noCertificatesAttached": "No attached certificates available for this property."
+    "apartmentLevel": "Apartment Level",
+    "wingLevel": "Wing Level",
+    "unitLevel": "Unit Level",
+    "floorLevel": "Floor Level",
+    "appliedDirectly": "Applied Directly",
+    "notConfigured": "Not Configured",
+    "coveredByApartment": "Covered by Apartment Level Certificate",
+    "coveredByWing": "Covered by Wing Level Certificate",
+    "entireProperty": "Entire Property",
+    "scopeProperty": "Entire Property",
+    "noCertificatesAttached": "No attached certificates available for this property.",
+    "loadingCertificates": "Loading building permission records...",
+    "loadError": "Failed to load building permission records."
   },
   "tabs": {
     "propertyDetails": "Property Details",

@@ -5,6 +5,7 @@ import {
 } from "@/types/discount.types";
 import { getLocalizedName } from "@/lib/utils/social-details";
 import { SocialAttribute } from "@/types/social-attribute.types";
+import { PropertySocialDetailsDto } from "@/types/property-social-details.types";
 
 /**
  * Maps the API response DTO to the dynamic local form state.
@@ -145,8 +146,10 @@ export const mapDiscountStateToApi = (state: DiscountState): DiscountAttributeIt
             const textValue = enabled ? (item.textValue || null) : null;
             const dateValue = enabled ? (item.dateValue ? new Date(item.dateValue).toISOString() : null) : null;
 
-            // When creating an override for an inherited attribute, never pass the parent's database ID!
-            const targetDetailId = (item.isInherited || item.isOverridden) ? null : (item.propertySocialDetailId ?? null);
+            // When updating a direct record, preserve its ID. When overriding an inherited attribute, pass null to create a new direct record.
+            const targetDetailId = (!item.isInherited && item.propertySocialDetailId && Number(item.propertySocialDetailId) > 0)
+                ? Number(item.propertySocialDetailId)
+                : null;
 
             discountAttributes.push({
                 propertySocialDetailId: targetDetailId,
@@ -245,6 +248,143 @@ export const hasDiscountChangesComparedToInitial = (
     }
 
     return false;
+};
+
+/**
+ * Hydrates discount state with direct unit-level details from savedPropertyDetails when editing a specific unit.
+ */
+export const buildUnitDiscountState = (
+    masterAttributes: SocialAttribute[] | undefined,
+    baseState: DiscountState,
+    savedPropertyDetails: PropertySocialDetailsDto[] | undefined,
+    editingUnitId: number | null | undefined,
+    level: 'Apartment' | 'Wing' | 'Unit' | undefined
+): DiscountState => {
+    if (level !== 'Unit' || !editingUnitId) {
+        return baseState;
+    }
+
+    const result: DiscountState = {};
+    const attrs = masterAttributes && masterAttributes.length > 0
+        ? masterAttributes
+        : Object.values(baseState);
+
+    attrs.forEach((attr) => {
+        const base = baseState[attr.id];
+        // Find direct unit record in savedPropertyDetails
+        const directRecord = (savedPropertyDetails || []).find((item) => {
+            const attrId = item.socialAttributeId ?? item.id;
+            const itemPropId = item.propertyId;
+            return (
+                attrId === attr.id &&
+                itemPropId === editingUnitId &&
+                (item.entityType === 'P' || (item.propertyId && item.propertyId > 0)) &&
+                item.isActive !== false
+            );
+        });
+
+        if (directRecord) {
+            const isBitType = (attr.dataType || base?.dataType || 'BIT').toUpperCase() === 'BIT';
+            result[attr.id] = {
+                id: attr.id,
+                socialAttributeCode: attr.socialAttributeCode || base?.socialAttributeCode || '',
+                socialAttributeName: attr.socialAttributeName || base?.socialAttributeName || '',
+                dataType: attr.dataType || base?.dataType || 'BIT',
+                unit: attr.unit ?? base?.unit,
+                displayOrder: attr.displayOrder ?? base?.displayOrder,
+                isPhotoRequired: attr.isPhotoRequired ?? base?.isPhotoRequired,
+                isDocumentRequired: attr.isDocumentRequired ?? base?.isDocumentRequired,
+                isDiscountApplicable: attr.isDiscountApplicable ?? base?.isDiscountApplicable ?? true,
+                propertySocialDetailId: directRecord.id,
+                bitValue: directRecord.bitValue ?? (isBitType ? true : false),
+                enabled: directRecord.bitValue !== false,
+                intValue: directRecord.intValue != null ? String(directRecord.intValue) : null,
+                decimalValue: directRecord.decimalValue != null ? String(directRecord.decimalValue) : null,
+                textValue: directRecord.textValue || null,
+                dateValue: directRecord.dateValue ? String(directRecord.dateValue).split("T")[0] : null,
+                documentBindingId: directRecord.documentBindingId || null,
+                documentGuid: directRecord.documentGuid || null,
+                fileName: directRecord.fileName || undefined,
+                documentUrl: directRecord.documentUrl || (directRecord.documentGuid ? `/api/documents/${directRecord.documentGuid}/view` : undefined),
+                remark: directRecord.remark || '',
+                isInherited: false,
+                inheritanceLevel: 'Self',
+                inheritedFrom: null,
+                isOverridden: false,
+                pendingFile: undefined,
+            };
+        } else {
+            // Find wing record in savedPropertyDetails if available
+            const wingRecord = (savedPropertyDetails || []).find((item) => {
+                const attrId = item.socialAttributeId ?? item.id;
+                return (
+                    attrId === attr.id &&
+                    (item.entityType === 'W' || (item.wingDetailId && item.wingDetailId > 0 && (!item.propertyId || item.propertyId === 0))) &&
+                    item.isActive !== false
+                );
+            });
+
+            // Find apartment record in savedPropertyDetails if available
+            const apartmentRecord = (savedPropertyDetails || []).find((item) => {
+                const attrId = item.socialAttributeId ?? item.id;
+                return (
+                    attrId === attr.id &&
+                    (item.entityType === 'S' || (!item.wingDetailId && !item.propertyId)) &&
+                    item.isActive !== false
+                );
+            });
+
+            const inheritedDocGuid = base?.documentGuid || wingRecord?.documentGuid || apartmentRecord?.documentGuid || null;
+            const inheritedFileName = base?.fileName || wingRecord?.fileName || apartmentRecord?.fileName || undefined;
+            const inheritedDocUrl = base?.documentUrl || wingRecord?.documentUrl || (inheritedDocGuid ? `/api/documents/${inheritedDocGuid}/view` : undefined);
+            const inheritedRemark = base?.remark || wingRecord?.remark || apartmentRecord?.remark || '';
+            const inheritedDocBindingId = base?.documentBindingId || wingRecord?.documentBindingId || apartmentRecord?.documentBindingId || null;
+            const inheritedIntValue = base?.intValue ?? (wingRecord?.intValue != null ? String(wingRecord.intValue) : (apartmentRecord?.intValue != null ? String(apartmentRecord.intValue) : null));
+            const inheritedDecimalValue = base?.decimalValue ?? (wingRecord?.decimalValue != null ? String(wingRecord.decimalValue) : (apartmentRecord?.decimalValue != null ? String(apartmentRecord.decimalValue) : null));
+            const inheritedTextValue = base?.textValue ?? (wingRecord?.textValue || apartmentRecord?.textValue || null);
+            const inheritedDateValue = base?.dateValue ?? (wingRecord?.dateValue ? String(wingRecord.dateValue).split("T")[0] : (apartmentRecord?.dateValue ? String(apartmentRecord.dateValue).split("T")[0] : null));
+
+            const isInheritedFromWing = Boolean(wingRecord || (base?.isInherited && base?.inheritanceLevel === 'Wing'));
+            const isInheritedFromApt = Boolean(apartmentRecord || (base?.isInherited && base?.inheritanceLevel === 'Apartment'));
+            const isInherited = isInheritedFromWing || isInheritedFromApt || (base?.isInherited ?? false);
+            const resolvedInheritanceLevel = isInheritedFromWing ? 'Wing' : (isInheritedFromApt ? 'Apartment' : (base?.inheritanceLevel || 'Self'));
+            const resolvedInheritedFrom = isInherited ? resolvedInheritanceLevel : null;
+            const isEnabled = Boolean(base?.enabled || (wingRecord && wingRecord.bitValue !== false) || (apartmentRecord && apartmentRecord.bitValue !== false));
+            const bitValue = Boolean(base?.bitValue || (wingRecord && wingRecord.bitValue !== false) || (apartmentRecord && apartmentRecord.bitValue !== false));
+
+            result[attr.id] = {
+                ...base,
+                id: attr.id,
+                socialAttributeCode: attr.socialAttributeCode || base?.socialAttributeCode || '',
+                socialAttributeName: attr.socialAttributeName || base?.socialAttributeName || '',
+                dataType: attr.dataType || base?.dataType || 'BIT',
+                unit: attr.unit ?? base?.unit,
+                displayOrder: attr.displayOrder ?? base?.displayOrder,
+                isPhotoRequired: attr.isPhotoRequired ?? base?.isPhotoRequired,
+                isDocumentRequired: attr.isDocumentRequired ?? base?.isDocumentRequired,
+                isDiscountApplicable: attr.isDiscountApplicable ?? base?.isDiscountApplicable ?? true,
+                propertySocialDetailId: null,
+                bitValue,
+                enabled: isEnabled,
+                intValue: inheritedIntValue,
+                decimalValue: inheritedDecimalValue,
+                textValue: inheritedTextValue,
+                dateValue: inheritedDateValue,
+                documentBindingId: inheritedDocBindingId,
+                documentGuid: inheritedDocGuid,
+                fileName: inheritedFileName,
+                documentUrl: inheritedDocUrl,
+                remark: inheritedRemark,
+                isInherited,
+                inheritanceLevel: resolvedInheritanceLevel,
+                inheritedFrom: resolvedInheritedFrom,
+                isOverridden: false,
+                pendingFile: undefined,
+            };
+        }
+    });
+
+    return result;
 };
 
 

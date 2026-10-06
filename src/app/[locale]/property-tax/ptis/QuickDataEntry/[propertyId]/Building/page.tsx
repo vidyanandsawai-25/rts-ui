@@ -67,7 +67,7 @@ async function BuildingFormDataLoader({
     searchSocietyId,
     searchWingDetailId,
     isWingWise,
-    levelParam,
+    levelParam: _levelParam,
     rawSearchParams,
     locale,
 }: {
@@ -84,7 +84,7 @@ async function BuildingFormDataLoader({
     locale?: string,
 }) {
     const targetPropId = null;
-    const targetWingId = (levelParam === 'Wing' || levelParam === 'Unit') && searchWingDetailId ? Number(searchWingDetailId) : null;
+    const targetWingId = searchWingDetailId ? Number(searchWingDetailId) : null;
     const targetSocId = searchSocietyId ? Number(searchSocietyId) : null;
 
     // Fetch essential initial building permission, basic details, wings, units, floors, and core lookup data concurrently
@@ -103,10 +103,10 @@ async function BuildingFormDataLoader({
         floorSubmissionsResult,
         floorCertificatesResult,
     ] = await Promise.all([
-        (isWingWise === 'true' && searchWingDetailId)
-            ? getSocietyWingTypesWithStatusAction(null, Number(searchWingDetailId))
+        (searchWingDetailId && (isWingWise === 'true' || _levelParam === 'Wing' || !searchSocietyId))
+            ? getSocietyWingTypesWithStatusAction(searchSocietyId ? Number(searchSocietyId) : null, Number(searchWingDetailId))
             : (searchSocietyId)
-                ? getSocietyWingTypesWithStatusAction(Number(searchSocietyId), null)
+                ? getSocietyWingTypesWithStatusAction(Number(searchSocietyId), searchWingDetailId ? Number(searchWingDetailId) : null)
                 : getBuildingPermissionsAction(propertyId),
         selectedFloorIdNum
             ? getBuildingPermissionsAction(propertyId, selectedFloorIdNum)
@@ -164,17 +164,23 @@ async function BuildingFormDataLoader({
 
     // Process Units SSR Data
     const rawUnits = (unitsResult?.success && Array.isArray(unitsResult.data)) ? unitsResult.data as Record<string, unknown>[] : [];
-    const initialUnits = rawUnits.map((u, idx) => ({
-        propertyDetailsId: Number(u.propertyDetailsId || u.PropertyDetailsId || u.id || u.Id || idx + 1),
-        propertyId: Number(u.propertyId || u.PropertyId || u.propertyDetailsId || u.PropertyDetailsId || 0),
-        unitNo: String(u.unitNo || u.UnitNo || u.partitionNo || u.PartitionNo || u.flatNo || u.FlatNo || `Unit ${idx + 1}`),
-        wingDetailId: Number(u.wingDetailId || u.WingDetailId || 0),
-        wingName: String(u.wingName || u.WingName || 'Wing'),
-        floorName: String(u.floorName || u.FloorName || u.floor || '1st Floor'),
-        useName: String(u.useName || u.UseName || u.use || 'Residential'),
-        constructionYear: String(u.constructionYear || u.ConstructionYear || u.conYr || '').trim() || undefined,
-        isSelected: false,
-    })).sort((a, b) => (a.unitNo || '').localeCompare(b.unitNo || '', undefined, { numeric: true, sensitivity: 'base' }));
+    const initialUnits = rawUnits.map((u, idx) => {
+        const rawPropId = Number(u.propertyId || u.PropertyId || 0);
+        const rawDetailsId = Number(u.propertyDetailsId || u.PropertyDetailsId || u.id || u.Id || 0);
+        const resolvedId = rawDetailsId > 0 ? rawDetailsId : (rawPropId > 0 ? rawPropId : idx + 1);
+        const resolvedPropId = rawPropId > 0 ? rawPropId : resolvedId;
+        return {
+            propertyDetailsId: resolvedId,
+            propertyId: resolvedPropId,
+            unitNo: String(u.unitNo || u.UnitNo || u.partitionNo || u.PartitionNo || u.flatNo || u.FlatNo || `Unit ${idx + 1}`),
+            wingDetailId: Number(u.wingDetailId || u.WingDetailId || 0),
+            wingName: String(u.wingName || u.WingName || 'Wing'),
+            floorName: String(u.floorName || u.FloorName || u.floor || '1st Floor'),
+            useName: String(u.useName || u.UseName || u.use || 'Residential'),
+            constructionYear: String(u.constructionYear || u.ConstructionYear || u.conYr || '').trim() || undefined,
+            isSelected: false,
+        };
+    }).sort((a, b) => (a.unitNo || '').localeCompare(b.unitNo || '', undefined, { numeric: true, sensitivity: 'base' }));
 
     // Process Certificate Types Master SSR Data
     const rawTypes = (certificateTypesResult?.success && Array.isArray(certificateTypesResult.data)) ? certificateTypesResult.data as Record<string, unknown>[] : [];
@@ -194,43 +200,29 @@ async function BuildingFormDataLoader({
 
     const sCat = (searchCategory || '').toLowerCase();
     const pb = (propertyBasicDetails || {}) as Record<string, unknown>;
-    const bCat = String(pb.categoryName || pb.propertyCategoryName || '').toLowerCase();
+    const bCat = (sCat || String(pb.categoryName || pb.propertyCategoryName || '')).toLowerCase();
     const categoryId = Number(pb.categoryId ?? pb.CategoryId);
 
-    // 1. Explicit Individual check
-    const isExplicitIndividual =
-        sCat.includes('individual') ||
-        bCat.includes('individual') ||
-        categoryId === 2 ||
-        categoryId === 3 ||
-        categoryId === 4;
-
-    // 2. Explicit Apartment / Society check
-    const isExplicitApartment =
-        categoryId === 1 ||
-        sCat.includes('apartment') ||
-        sCat.includes('society') ||
-        sCat.includes('flat') ||
-        sCat.includes('complex') ||
-        bCat.includes('apartment') ||
-        bCat.includes('society') ||
-        bCat.includes('flat') ||
-        bCat.includes('complex');
+    const hasParentPropertyId = Boolean(rawSearchParams?.parentPropertyId);
 
     const wingSocietyItem = rawWings.find(w => Number(w.societyDetailId || w.SocietyDetailId || w.societyId || w.SocietyId) > 0);
     const resolvedWingSocietyDetailId = wingSocietyItem
         ? Number(wingSocietyItem.societyDetailId || wingSocietyItem.SocietyDetailId || wingSocietyItem.societyId || wingSocietyItem.SocietyId)
         : null;
 
-    // 3. Query params / Society ID check
+    // Check if society or apartment hierarchy exists
     const hasSocietyId = Boolean(
         (searchSocietyId && String(searchSocietyId) !== '0') ||
         (pb.societyDetailId && Number(pb.societyDetailId) > 0) ||
         (pb.societyId && Number(pb.societyId) > 0) ||
-        (resolvedWingSocietyDetailId && resolvedWingSocietyDetailId > 0)
+        (resolvedWingSocietyDetailId && resolvedWingSocietyDetailId > 0) ||
+        hasParentPropertyId
     );
 
-    const isSociety = !isExplicitIndividual && (isExplicitApartment || hasSocietyId);
+    // Rule: CategoryId === 1 (Apartment) OR societyDetailId / parentPropertyId present -> Apartment (3-level switcher)
+    // CategoryId === 2 (Individual) -> Individual (2-level switcher)
+    const isApartment = (categoryId === 1 || bCat.includes('apartment') || hasSocietyId) && categoryId !== 2;
+    const isSociety = isApartment;
 
     const resolvedSocietyDetailId = isSociety
         ? (searchSocietyId
@@ -241,42 +233,23 @@ async function BuildingFormDataLoader({
     const resolvedWingDetailId = isSociety
         ? (searchWingDetailId
             ? Number(searchWingDetailId)
-            : (pb.wingDetailId ? Number(pb.wingDetailId) : (pb.wingId ? Number(pb.wingId) : (initialWings[0]?.wingDetailId ?? null))))
+            : (initialWings[0]?.wingDetailId ?? (pb.wingDetailId ? Number(pb.wingDetailId) : (pb.wingId ? Number(pb.wingId) : null))))
         : null;
 
-    // Redirect to include societyDetailId / wingDetailId in searchParams if missing, or strip if not society
-    const hasSpuriousSocietyOrWing = !isSociety && Boolean(
-        searchSocietyId ||
-        searchWingDetailId ||
-        rawSearchParams?.societyDetailId ||
-        rawSearchParams?.wingDetailId ||
-        rawSearchParams?.societyId ||
-        rawSearchParams?.wingId
-    );
+    // Ensure societyDetailId / wingDetailId are present in URL params for society if available
     const needsSocietyRedirect = Boolean(isSociety && resolvedSocietyDetailId && !searchSocietyId);
     const needsWingRedirect = Boolean(isSociety && resolvedWingDetailId && !searchWingDetailId);
 
-    if ((needsSocietyRedirect || needsWingRedirect || hasSpuriousSocietyOrWing) && rawSearchParams && locale) {
+    if ((needsSocietyRedirect || needsWingRedirect) && rawSearchParams && locale) {
         const params = new URLSearchParams();
         Object.entries(rawSearchParams).forEach(([k, v]) => {
             if (typeof v === 'string') params.set(k, v);
         });
-        if (!isSociety) {
-            params.delete('societyDetailId');
-            params.delete('societydetailid');
-            params.delete('societyId');
-            params.delete('societyid');
-            params.delete('wingDetailId');
-            params.delete('wingdetailid');
-            params.delete('wingId');
-            params.delete('wingid');
-        } else {
-            if (resolvedSocietyDetailId && !params.has('societyDetailId')) {
-                params.set('societyDetailId', String(resolvedSocietyDetailId));
-            }
-            if (resolvedWingDetailId && !params.has('wingDetailId')) {
-                params.set('wingDetailId', String(resolvedWingDetailId));
-            }
+        if (resolvedSocietyDetailId && !params.has('societyDetailId')) {
+            params.set('societyDetailId', String(resolvedSocietyDetailId));
+        }
+        if (resolvedWingDetailId && !params.has('wingDetailId')) {
+            params.set('wingDetailId', String(resolvedWingDetailId));
         }
         redirect(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building?${params.toString()}`);
     }
@@ -296,6 +269,8 @@ async function BuildingFormDataLoader({
             initialActiveFloorId={selectedFloorIdNum ?? null}
             initialSelectedTypeId={initialSelectedTypeId && !isNaN(initialSelectedTypeId) ? initialSelectedTypeId : null}
             propertyId={propertyId}
+            categoryId={categoryId || (isApartment ? 1 : 2)}
+            categoryName={String(pb.categoryName || pb.propertyCategoryName || (isApartment ? 'Apartment' : 'Individual'))}
             isSociety={isSociety}
             societyDetailId={resolvedSocietyDetailId}
             wingDetailId={resolvedWingDetailId}

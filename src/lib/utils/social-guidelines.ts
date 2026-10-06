@@ -166,7 +166,9 @@ export function mapSocialStateToApi(
             (typeof attr.id === "number" && attr.id > 0) ||
             (typeof init?.id === "number" && init.id > 0)
         );
-        const existingId = (attr.isInherited || attr.isOverridden) ? null : (attr.id ?? init?.id ?? null);
+        const existingId = (!attr.isInherited && attr.id && Number(attr.id) > 0)
+            ? Number(attr.id)
+            : (!attr.isInherited && init?.id && Number(init.id) > 0 ? Number(init.id) : null);
         const isBitType = attr.dataType.toUpperCase() === "BIT";
         const isRootAttr = attr.parentAttributeId === null || attr.parentAttributeId === undefined;
 

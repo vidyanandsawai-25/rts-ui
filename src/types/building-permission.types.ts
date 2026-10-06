@@ -15,6 +15,11 @@ export type CertificateData = {
     certificateTypeCode?: string;
     displayOrder?: number;
     pendingFile?: File;
+    customStatusBadge?: {
+        label: string;
+        variant: 'success' | 'info' | 'warning' | 'secondary' | 'purple';
+    };
+    sourceLevel?: 'Direct' | 'Apartment' | 'Wing' | 'Property' | 'Floor' | 'Partial' | 'None';
 };
 
 export type BuildingPermissionState = Record<number, CertificateData>;
@@ -51,7 +56,7 @@ export interface BuildingPermissionApiResponse {
     items: BuildingPermissionItems;
 }
 
-export type ApplicationLevel = 'Apartment' | 'Wing' | 'Unit';
+export type ApplicationLevel = 'Apartment' | 'Wing' | 'Unit' | 'Entire Property' | 'Floor';
 export type CertificateStatus = 'Active' | 'Pending' | 'Expired';
 
 export interface WingOption {
@@ -232,6 +237,8 @@ export interface BuildingFormProps {
     initialActiveFloorId?: number | null;
     initialSelectedTypeId?: number | null;
     propertyId: string;
+    categoryId?: number | null;
+    categoryName?: string;
     isSociety?: boolean;
     societyDetailId?: number | null;
     wingDetailId?: number | null;

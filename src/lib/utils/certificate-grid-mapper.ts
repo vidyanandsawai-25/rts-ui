@@ -18,6 +18,7 @@ export interface CertificateItem {
   certificateDate?: string | null;
   certificateNumber?: string;
   status?: string;
+  entityType?: string;
   propertyCertificateId?: number | null;
   hasDocument?: boolean;
   documentGuid?: string | null;
@@ -54,21 +55,53 @@ export interface CertificateGridApiResponseData {
 function mapRawCertificateItem(item: unknown): CertificateItem {
   if (!item || typeof item !== 'object') return item as CertificateItem;
   const raw = item as Record<string, unknown>;
-  const certNo = String(raw.certificateNumber || raw.certificateNo || raw.CertificateNo || raw.CertificateNumber || '');
-  const certDate = (raw.certificateDate || raw.CertificateDate || raw.issueDate || raw.IssueDate || raw.date || raw.Date) as string | null | undefined;
+  const certNo = String(
+    raw.certificateNumber || raw.CertificateNumber ||
+    raw.certificateNo || raw.CertificateNo ||
+    raw.permitNo || raw.PermitNo ||
+    raw.number || raw.Number || ''
+  );
+  const certDate = (
+    raw.certificateDate || raw.CertificateDate ||
+    raw.certificateIssueDate || raw.CertificateIssueDate ||
+    raw.issueDate || raw.IssueDate ||
+    raw.date || raw.Date
+  ) as string | null | undefined;
   const certTypeId = Number(raw.certificateTypeId || raw.CertificateTypeId || raw.typeId || raw.TypeId || 0);
-  const docGuid = (raw.documentGuid || raw.DocumentGuid || raw.guid || raw.Guid || raw.documentId || raw.DocumentId) as string | null | undefined;
+  const docGuid = (raw.documentGuid || raw.DocumentGuid || raw.guid || raw.Guid || raw.documentId || raw.DocumentId || raw.documentBindingId || raw.DocumentBindingId) as string | null | undefined;
   const hasDoc = Boolean(raw.hasDocument || raw.HasDocument || raw.hasDocumentBinding || raw.HasDocumentBinding || (docGuid && String(docGuid).trim().length > 0 && String(docGuid).toLowerCase() !== 'null'));
   const docName = (raw.fileName || raw.FileName || raw.documentName || raw.DocumentName || raw.name || raw.Name) as string | null | undefined;
-  const level = String(raw.level || raw.Level || 'Apartment');
-  const rawUnitNos = raw.coveredUnitNumbers || raw.CoveredUnitNumbers;
-  const coveredUnitNos = Array.isArray(rawUnitNos) ? (rawUnitNos as string[]) : [];
-  const rawPropIds = raw.coveredPropertyIds || raw.CoveredPropertyIds;
-  const coveredPropIds = Array.isArray(rawPropIds) ? (rawPropIds as number[]) : [];
+  const rawEntity = String(raw.entityType || raw.EntityType || '').toUpperCase();
+  const level = String(
+    raw.level || raw.Level ||
+    (rawEntity === 'S' ? 'Apartment' : rawEntity === 'W' ? 'Wing' : rawEntity === 'P' ? 'Unit' : rawEntity === 'F' ? 'Floor' : 'Apartment')
+  );
+  const rawUnitNos = raw.coveredUnitNumbers || raw.CoveredUnitNumbers || raw.unitNumbers || raw.UnitNumbers || raw.applicableToSubLabel || raw.ApplicableToSubLabel;
+  const coveredUnitNos: string[] = Array.isArray(rawUnitNos)
+    ? (rawUnitNos as unknown[]).map(String)
+    : typeof rawUnitNos === 'string'
+      ? rawUnitNos.split(',').map((s) => s.trim()).filter(Boolean)
+      : [];
+  if (raw.unitNo && !coveredUnitNos.includes(String(raw.unitNo))) coveredUnitNos.push(String(raw.unitNo));
+  if (raw.UnitNo && !coveredUnitNos.includes(String(raw.UnitNo))) coveredUnitNos.push(String(raw.UnitNo));
+  if (raw.partitionNo && !coveredUnitNos.includes(String(raw.partitionNo))) coveredUnitNos.push(String(raw.partitionNo));
+  if (raw.PartitionNo && !coveredUnitNos.includes(String(raw.PartitionNo))) coveredUnitNos.push(String(raw.PartitionNo));
+
+  const rawPropIds = raw.coveredPropertyIds || raw.CoveredPropertyIds || raw.propertyIds || raw.PropertyIds;
+  const coveredPropIds: number[] = Array.isArray(rawPropIds)
+    ? (rawPropIds as unknown[]).map(Number).filter((n) => !isNaN(n))
+    : typeof rawPropIds === 'string'
+      ? rawPropIds.split(',').map(Number).filter((n) => !isNaN(n))
+      : [];
+  if (raw.propertyId && !coveredPropIds.includes(Number(raw.propertyId))) coveredPropIds.push(Number(raw.propertyId));
+  if (raw.PropertyId && !coveredPropIds.includes(Number(raw.PropertyId))) coveredPropIds.push(Number(raw.PropertyId));
+  if (raw.propertyDetailsId && !coveredPropIds.includes(Number(raw.propertyDetailsId))) coveredPropIds.push(Number(raw.propertyDetailsId));
+  if (raw.PropertyDetailsId && !coveredPropIds.includes(Number(raw.PropertyDetailsId))) coveredPropIds.push(Number(raw.PropertyDetailsId));
 
   return {
     ...(raw as unknown as CertificateItem),
     level: level as CertificateItem['level'],
+    entityType: rawEntity || (raw.entityType as string | undefined),
     certificateTypeId: certTypeId || (raw.certificateTypeId as number),
     certificateNumber: certNo,
     certificateDate: certDate ? String(certDate) : (raw.certificateDate as string | null | undefined),
@@ -104,41 +137,43 @@ export function normalizeCertificateGridData(data: unknown): CertificateGridItem
   }
 
   const raw = data as Record<string, unknown>;
+  const rawTarget = (raw.items || raw.Items || raw.data || raw.Data || raw) as Record<string, unknown>;
 
-  // Case 1: Response has `items` object
-  if (raw.items && typeof raw.items === 'object' && !Array.isArray(raw.items)) {
-    const items = raw.items as Record<string, unknown>;
-    return {
-      wingCount: Number(items.wingCount || raw.wingCount || 0),
-      unitCount: Number(items.unitCount || raw.unitCount || 0),
-      societyCertificates: Array.isArray(items.societyCertificates) ? (items.societyCertificates as unknown[]).map(mapRawCertificateItem) : [],
-      wingCertificates: Array.isArray(items.wingCertificates) ? (items.wingCertificates as unknown[]).map(mapRawCertificateItem) : [],
-      unitCertificates: Array.isArray(items.unitCertificates) ? (items.unitCertificates as unknown[]).map(mapRawCertificateItem) : [],
-      floorCertificates: Array.isArray(items.floorCertificates) ? (items.floorCertificates as unknown[]).map(mapRawCertificateItem) : [],
-    };
-  }
+  const societyList = (rawTarget.societyCertificates || rawTarget.SocietyCertificates || raw.societyCertificates || raw.SocietyCertificates) as unknown[];
+  const wingList = (rawTarget.wingCertificates || rawTarget.WingCertificates || raw.wingCertificates || raw.WingCertificates) as unknown[];
+  const unitList = (rawTarget.unitCertificates || rawTarget.UnitCertificates || raw.unitCertificates || raw.UnitCertificates) as unknown[];
+  const floorList = (rawTarget.floorCertificates || rawTarget.FloorCertificates || raw.floorCertificates || raw.FloorCertificates) as unknown[];
 
-  // Case 2: Response directly has top-level `societyCertificates`, `wingCertificates`, etc.
-  if (Array.isArray(raw.societyCertificates) || Array.isArray(raw.wingCertificates) || Array.isArray(raw.unitCertificates)) {
+  if (Array.isArray(societyList) || Array.isArray(wingList) || Array.isArray(unitList)) {
     return {
-      wingCount: Number(raw.wingCount || 0),
-      unitCount: Number(raw.unitCount || 0),
-      societyCertificates: Array.isArray(raw.societyCertificates) ? (raw.societyCertificates as unknown[]).map(mapRawCertificateItem) : [],
-      wingCertificates: Array.isArray(raw.wingCertificates) ? (raw.wingCertificates as unknown[]).map(mapRawCertificateItem) : [],
-      unitCertificates: Array.isArray(raw.unitCertificates) ? (raw.unitCertificates as unknown[]).map(mapRawCertificateItem) : [],
-      floorCertificates: Array.isArray(raw.floorCertificates) ? (raw.floorCertificates as unknown[]).map(mapRawCertificateItem) : [],
+      wingCount: Number(rawTarget.wingCount || raw.wingCount || 0),
+      unitCount: Number(rawTarget.unitCount || raw.unitCount || 0),
+      societyCertificates: Array.isArray(societyList) ? societyList.map(mapRawCertificateItem) : [],
+      wingCertificates: Array.isArray(wingList) ? wingList.map(mapRawCertificateItem) : [],
+      unitCertificates: Array.isArray(unitList) ? unitList.map(mapRawCertificateItem) : [],
+      floorCertificates: Array.isArray(floorList) ? floorList.map(mapRawCertificateItem) : [],
     };
   }
 
   // Case 3: Response has a flat `records` or `items` array
-  const rawArray = Array.isArray(raw.records) ? raw.records : Array.isArray(raw.items) ? raw.items : Array.isArray(data) ? data : [];
+  const rawArray = Array.isArray(raw.records)
+    ? raw.records
+    : Array.isArray(raw.Records)
+    ? raw.Records
+    : Array.isArray(raw.items)
+    ? raw.items
+    : Array.isArray(raw.Items)
+    ? raw.Items
+    : Array.isArray(data)
+    ? data
+    : [];
   if (Array.isArray(rawArray) && rawArray.length > 0) {
     const itemsList = (rawArray as unknown[]).map(mapRawCertificateItem);
     return {
-      societyCertificates: itemsList.filter((c) => c.level === 'Apartment'),
-      wingCertificates: itemsList.filter((c) => c.level === 'Wing'),
-      unitCertificates: itemsList.filter((c) => c.level === 'Unit'),
-      floorCertificates: itemsList.filter((c) => c.level === 'Floor'),
+      societyCertificates: itemsList.filter((c) => c.level === 'Apartment' || (c as unknown as { entityType?: string }).entityType === 'S'),
+      wingCertificates: itemsList.filter((c) => c.level === 'Wing' || (c as unknown as { entityType?: string }).entityType === 'W'),
+      unitCertificates: itemsList.filter((c) => c.level === 'Unit' || (c as unknown as { entityType?: string }).entityType === 'P'),
+      floorCertificates: itemsList.filter((c) => c.level === 'Floor' || (c as unknown as { entityType?: string }).entityType === 'F'),
     };
   }
 
@@ -270,11 +305,15 @@ export function resolveUnitCertificateStatus(
   // 2. Wing Inherited Match
   const wingMatch = wingCertificates.find((c) => {
     if (c.certificateTypeId !== certificateTypeId) return false;
-    if (wingId != null && (c.wingDetailId === wingId || c.wingDetailId == null)) return true;
+    if (wingId != null && c.wingDetailId === wingId) return true;
     return false;
   });
 
-  if (wingMatch && (wingMatch.certificateNumber || wingMatch.hasDocument || wingMatch.status === 'Active')) {
+  const hasWingContent = Boolean(
+    wingMatch && (wingMatch.certificateNumber?.trim() || wingMatch.hasDocument || wingMatch.documentGuid || wingMatch.status === 'Active')
+  );
+
+  if (wingMatch && hasWingContent) {
     return {
       status: 'wing',
       certificate: wingMatch,
@@ -293,7 +332,11 @@ export function resolveUnitCertificateStatus(
     return true;
   });
 
-  if (societyMatch && (societyMatch.certificateNumber || societyMatch.hasDocument || societyMatch.status === 'Active')) {
+  const hasSocContent = Boolean(
+    societyMatch && (societyMatch.certificateNumber?.trim() || societyMatch.hasDocument || societyMatch.documentGuid || societyMatch.status === 'Active')
+  );
+
+  if (societyMatch && hasSocContent) {
     return {
       status: 'apartment',
       certificate: societyMatch,
@@ -308,31 +351,143 @@ export function resolveUnitCertificateStatus(
   return { status: 'none', certificate: null };
 }
 
+export type FloorCertificateStatusType = 'direct' | 'property' | 'none';
+
+export interface FloorStatusResolution {
+  status: FloorCertificateStatusType;
+  certificate: CertificateItem | null;
+  certificateNumber?: string;
+  certificateDate?: string | null;
+  hasDocument?: boolean;
+  documentGuid?: string | null;
+  fileName?: string | null;
+}
+
+/**
+ * Resolves the certificate status for a floor in an Individual property.
+ */
+export function resolveFloorCertificateStatus(
+  floorCertificates: CertificateItem[] | null | undefined,
+  propertyCertificate: CertificateItem | null | undefined,
+  certificateTypeId: number,
+  floorDetailsId: number
+): FloorStatusResolution {
+  // 1. Check direct floor certificate
+  if (Array.isArray(floorCertificates)) {
+    const directMatch = floorCertificates.find((c) => {
+      if (c.certificateTypeId !== certificateTypeId) return false;
+      const cFloorId = c.propertyDetailsId != null ? Number(c.propertyDetailsId) : null;
+      return cFloorId === Number(floorDetailsId);
+    });
+
+    const hasDirectContent = Boolean(
+      directMatch && (directMatch.certificateNumber?.trim() || directMatch.hasDocument || directMatch.documentGuid)
+    );
+
+    if (directMatch && hasDirectContent) {
+      return {
+        status: 'direct',
+        certificate: directMatch,
+        certificateNumber: directMatch.certificateNumber,
+        certificateDate: directMatch.certificateDate,
+        hasDocument: directMatch.hasDocument,
+        documentGuid: directMatch.documentGuid,
+        fileName: directMatch.fileName,
+      };
+    }
+  }
+
+  // 2. Check property-wide inherited certificate
+  const hasPropContent = Boolean(
+    propertyCertificate &&
+    propertyCertificate.certificateTypeId === certificateTypeId &&
+    (propertyCertificate.certificateNumber?.trim() || propertyCertificate.hasDocument || propertyCertificate.documentGuid)
+  );
+
+  if (propertyCertificate && hasPropContent) {
+    return {
+      status: 'property',
+      certificate: propertyCertificate,
+      certificateNumber: propertyCertificate.certificateNumber,
+      certificateDate: propertyCertificate.certificateDate,
+      hasDocument: propertyCertificate.hasDocument,
+      documentGuid: propertyCertificate.documentGuid,
+      fileName: propertyCertificate.fileName,
+    };
+  }
+
+  return { status: 'none', certificate: null };
+}
+
 /**
  * Retrieves the matching certificate for the given UI level, certificateTypeId, wingDetailId, propertyId, and societyId.
  * Hierarchical mapping:
- * - Unit level: strict propertyId/selectedPropertyIds match -> wingDetailId match -> societyDetailId match
- * - Wing level: wingDetailId match -> societyDetailId match
- * - Apartment level: societyDetailId match
+ * - Apartment level: ONLY societyDetailId match. Strict: Never Wing or Unit.
+ * - Wing level: wingDetailId match -> falls back to Apartment inherited banner. Strict: Never Unit.
+ * - Unit level: strict unit propertyId/detailsId match -> wingDetailId match -> societyDetailId match.
+ * - Entire Property level: ONLY property-level match. Strict: Never Floor-level.
+ * - Floor level: floorDetailsId match -> property-level match fallback.
  */
 export function getActiveCertificateForLevel(
   gridItems: CertificateGridItems | null | undefined,
-  selectedLevel: 'Apartment' | 'Wing' | 'Unit' | string,
+  selectedLevel: 'Apartment' | 'Wing' | 'Unit' | 'Entire Property' | 'Property' | 'Floor' | string,
   selectedTypeId: number,
   selectedWingDetailId?: number | null,
   selectedPropertyId?: number | string | null,
   selectedSocietyId?: number | string | null,
   selectedPropertyIds?: (number | string)[] | null,
-  selectedUnitNumbers?: string[] | null
+  selectedUnitNumbers?: string[] | null,
+  selectedFloorDetailsId?: number | null
 ): MatchedCertificateResult {
   if (!gridItems) return { certificate: null, inheritedFrom: null };
 
-  const { societyCertificates = [], wingCertificates = [], unitCertificates = [] } = gridItems;
+  const { societyCertificates = [], wingCertificates = [], unitCertificates = [], floorCertificates = [] } = gridItems;
   const numericPropId = selectedPropertyId != null && String(selectedPropertyId).trim() !== '' ? Number(selectedPropertyId) : null;
   const numericWingId = selectedWingDetailId != null ? Number(selectedWingDetailId) : null;
   const numericSocietyId = selectedSocietyId != null ? Number(selectedSocietyId) : null;
 
-  // PRIORITY 1: Direct Unit Level Match (highest priority when at Unit level)
+  // CASE 1: Apartment Level - Must ONLY display certificates explicitly saved at Apartment/Society level
+  if (selectedLevel === 'Apartment') {
+    const societyMatch = societyCertificates.find(
+      (c) => c.certificateTypeId === selectedTypeId && (numericSocietyId != null ? c.societyDetailId === numericSocietyId || c.societyDetailId == null : true)
+    );
+    const hasSocContent = Boolean(
+      societyMatch && (societyMatch.certificateNumber?.trim() || societyMatch.hasDocument || societyMatch.documentGuid || societyMatch.status === 'Active')
+    );
+    if (societyMatch && hasSocContent) {
+      return { certificate: societyMatch, inheritedFrom: 'Direct' };
+    }
+    return { certificate: null, inheritedFrom: null };
+  }
+
+  // CASE 2: Wing Level - Must ONLY display certificates for selected Wing (or fallback to Apartment inherited)
+  // STRICT RULE: Never display Unit-level certificates inside Wing Level
+  if (selectedLevel === 'Wing') {
+    const wingMatch = wingCertificates.find(
+      (c) => c.certificateTypeId === selectedTypeId && (numericWingId != null ? c.wingDetailId === numericWingId : true)
+    );
+    const hasWingContent = Boolean(
+      wingMatch && (wingMatch.certificateNumber?.trim() || wingMatch.hasDocument || wingMatch.documentGuid || wingMatch.status === 'Active')
+    );
+    if (wingMatch && hasWingContent) {
+      return { certificate: wingMatch, inheritedFrom: 'Direct' };
+    }
+
+    // Inherited from Apartment Level
+    const societyMatch = societyCertificates.find(
+      (c) => c.certificateTypeId === selectedTypeId && (numericSocietyId != null ? c.societyDetailId === numericSocietyId || c.societyDetailId == null : true)
+    );
+    const hasSocContent = Boolean(
+      societyMatch && (societyMatch.certificateNumber?.trim() || societyMatch.hasDocument || societyMatch.documentGuid || societyMatch.status === 'Active')
+    );
+    if (societyMatch && hasSocContent) {
+      return { certificate: societyMatch, inheritedFrom: 'Apartment' };
+    }
+
+    return { certificate: null, inheritedFrom: null };
+  }
+
+  // CASE 3: Unit Level
   if (selectedLevel === 'Unit') {
     const propIdList: number[] = [];
     if (numericPropId != null) propIdList.push(numericPropId);
@@ -347,6 +502,7 @@ export function getActiveCertificateForLevel(
 
     const unitNumberList = (selectedUnitNumbers || []).map((n) => String(n).trim().toLowerCase());
 
+    // Priority 1: Direct Unit Match
     if (propIdList.length > 0 || unitNumberList.length > 0) {
       const unitMatch = unitCertificates.find((c) => {
         if (c.certificateTypeId !== selectedTypeId) return false;
@@ -356,63 +512,83 @@ export function getActiveCertificateForLevel(
         if (c.coveredUnitNumbers && c.coveredUnitNumbers.some((num) => unitNumberList.includes(String(num).trim().toLowerCase()))) return true;
         return false;
       });
-      if (unitMatch) return { certificate: unitMatch, inheritedFrom: 'Direct' };
-
-      const wingUnitMatch = wingCertificates.find((c) => {
-        if (c.certificateTypeId !== selectedTypeId) return false;
-        if (c.propertyId != null && propIdList.includes(c.propertyId)) return true;
-        if (c.propertyDetailsId != null && propIdList.includes(c.propertyDetailsId)) return true;
-        if (c.coveredPropertyIds && c.coveredPropertyIds.some((id) => propIdList.includes(id))) return true;
-        return false;
-      });
-      if (wingUnitMatch) return { certificate: wingUnitMatch, inheritedFrom: 'Direct' };
-
-      const socUnitMatch = societyCertificates.find((c) => {
-        if (c.certificateTypeId !== selectedTypeId) return false;
-        if (c.propertyId != null && propIdList.includes(c.propertyId)) return true;
-        if (c.propertyDetailsId != null && propIdList.includes(c.propertyDetailsId)) return true;
-        if (c.coveredPropertyIds && c.coveredPropertyIds.some((id) => propIdList.includes(id))) return true;
-        return false;
-      });
-      if (socUnitMatch) return { certificate: socUnitMatch, inheritedFrom: 'Direct' };
+      const hasUnitContent = Boolean(
+        unitMatch && (unitMatch.certificateNumber?.trim() || unitMatch.hasDocument || unitMatch.documentGuid)
+      );
+      if (unitMatch && hasUnitContent) return { certificate: unitMatch, inheritedFrom: 'Direct' };
     }
-  }
 
-  // PRIORITY 2: Wing Level Match (second priority)
-  if (selectedLevel === 'Wing' || selectedLevel === 'Unit') {
+    // Priority 2: Wing Level Match
     const wingMatch = wingCertificates.find(
-      (c) => c.certificateTypeId === selectedTypeId && (numericWingId != null ? c.wingDetailId === numericWingId || c.wingDetailId == null : true)
+      (c) => c.certificateTypeId === selectedTypeId && (numericWingId != null ? c.wingDetailId === numericWingId : true)
     );
-    if (wingMatch) {
-      return {
-        certificate: wingMatch,
-        inheritedFrom: selectedLevel === 'Unit' ? 'Wing' : 'Direct',
-      };
+    const hasWingContent = Boolean(
+      wingMatch && (wingMatch.certificateNumber?.trim() || wingMatch.hasDocument || wingMatch.documentGuid || wingMatch.status === 'Active')
+    );
+    if (wingMatch && hasWingContent) {
+      return { certificate: wingMatch, inheritedFrom: 'Wing' };
     }
 
-    const wingUnitMatch = unitCertificates.find(
-      (c) =>
-        c.certificateTypeId === selectedTypeId &&
-        (numericWingId != null ? c.wingDetailId === numericWingId || c.wingDetailId == null : true) &&
-        c.propertyId == null
+    // Priority 3: Apartment Level Match
+    const societyMatch = societyCertificates.find(
+      (c) => c.certificateTypeId === selectedTypeId && (numericSocietyId != null ? c.societyDetailId === numericSocietyId || c.societyDetailId == null : true)
     );
-    if (wingUnitMatch) {
-      return {
-        certificate: wingUnitMatch,
-        inheritedFrom: selectedLevel === 'Unit' ? 'Wing' : 'Direct',
-      };
+    const hasSocContent = Boolean(
+      societyMatch && (societyMatch.certificateNumber?.trim() || societyMatch.hasDocument || societyMatch.documentGuid || societyMatch.status === 'Active')
+    );
+    if (societyMatch && hasSocContent) {
+      return { certificate: societyMatch, inheritedFrom: 'Apartment' };
     }
+
+    return { certificate: null, inheritedFrom: null };
   }
 
-  // PRIORITY 3: Apartment / Society Level Match (lowest priority fallback)
-  const societyMatch = societyCertificates.find(
-    (c) => c.certificateTypeId === selectedTypeId && (numericSocietyId != null ? c.societyDetailId === numericSocietyId || c.societyDetailId == null : true)
-  );
-  if (societyMatch) {
-    return {
-      certificate: societyMatch,
-      inheritedFrom: selectedLevel === 'Apartment' ? 'Direct' : 'Apartment',
-    };
+  // CASE 4: Entire Property Level (Individual properties)
+  // STRICT RULE: Never display a Floor-level certificate inside Entire Property Level
+  if (selectedLevel === 'Entire Property' || selectedLevel === 'Property') {
+    const propMatch = (floorCertificates || []).find(
+      (c) => c.certificateTypeId === selectedTypeId && (c.propertyDetailsId == null || c.propertyDetailsId === 0)
+    ) || (societyCertificates || []).find(
+      (c) => c.certificateTypeId === selectedTypeId
+    );
+    const hasPropContent = Boolean(
+      propMatch && (propMatch.certificateNumber?.trim() || propMatch.hasDocument || propMatch.documentGuid || propMatch.status === 'Active')
+    );
+    if (propMatch && hasPropContent) {
+      return { certificate: propMatch, inheritedFrom: 'Direct' };
+    }
+    return { certificate: null, inheritedFrom: null };
+  }
+
+  // CASE 5: Floor Level (Individual properties)
+  if (selectedLevel === 'Floor') {
+    // Priority 1: Direct Floor Match
+    if (selectedFloorDetailsId != null) {
+      const floorMatch = (floorCertificates || []).find(
+        (c) => c.certificateTypeId === selectedTypeId && Number(c.propertyDetailsId) === Number(selectedFloorDetailsId)
+      );
+      const hasFloorContent = Boolean(
+        floorMatch && (floorMatch.certificateNumber?.trim() || floorMatch.hasDocument || floorMatch.documentGuid)
+      );
+      if (floorMatch && hasFloorContent) {
+        return { certificate: floorMatch, inheritedFrom: 'Direct' };
+      }
+    }
+
+    // Priority 2: Entire Property Match
+    const propMatch = (floorCertificates || []).find(
+      (c) => c.certificateTypeId === selectedTypeId && (c.propertyDetailsId == null || c.propertyDetailsId === 0)
+    ) || (societyCertificates || []).find(
+      (c) => c.certificateTypeId === selectedTypeId
+    );
+    const hasPropContent = Boolean(
+      propMatch && (propMatch.certificateNumber?.trim() || propMatch.hasDocument || propMatch.documentGuid || propMatch.status === 'Active')
+    );
+    if (propMatch && hasPropContent) {
+      return { certificate: propMatch, inheritedFrom: 'Property' as unknown as 'Apartment' };
+    }
+
+    return { certificate: null, inheritedFrom: null };
   }
 
   return { certificate: null, inheritedFrom: null };
