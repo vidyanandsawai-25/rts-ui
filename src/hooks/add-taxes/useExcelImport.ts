@@ -1,32 +1,17 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { logger } from '@/lib/utils/logger';
-import { ScopeOptionItem } from '@/types/addTaxes.types';
-import type {
-  ImportTemplateResponse,
-  EligibleCountPayload,
-  ExecuteOperationPayload,
-  OperationPreviewPayload,
-  OperationPreviewResponse,
-} from '@/types/addTaxes.types';
+import type { ScopeOptionItem, ImportTemplateResponse } from '@/types/addTaxes.types';
 import type { WardItem } from '@/types/wardMaster.types';
 import { useExcelImportState } from './useExcelImportState';
 import { useExcelImportActions } from './useExcelImportActions';
-
-interface ExcelImportActionResponses {
-  fetchAllWardsAction: () => Promise<{ data?: WardItem[] } | null>;
-  getImportTemplateAction: () => Promise<ImportTemplateResponse | null>;
-  getEligibleCountAction: (payload: EligibleCountPayload) => Promise<{ eligible?: number; total?: number; skipped?: number; error?: string } | null>;
-  executeOperationAction: (payload: ExecuteOperationPayload) => Promise<{ items?: { jobId: string; summary: { total: number } }; error?: string } | null>;
-  previewOperationAction: (payload: OperationPreviewPayload) => Promise<(OperationPreviewResponse & { error?: string }) | { error: string } | null>;
-}
 
 interface UseExcelImportProps {
   onStartExecution: (jobId: string, totalCount: number, scheduledTime?: string) => void;
   financeYearId: string;
   zoneOptions: { value: string; label: string }[];
   scopeOptions: ScopeOptionItem[];
-  actions: ExcelImportActionResponses;
+  initialWards?: WardItem[];
+  initialImportTemplate?: ImportTemplateResponse | null;
 }
 
 export function useExcelImport({
@@ -34,20 +19,21 @@ export function useExcelImport({
   financeYearId,
   zoneOptions,
   scopeOptions,
-  actions
+  initialWards = [],
+  initialImportTemplate = null
 }: UseExcelImportProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const state = useExcelImportState();
+  const { setTemplateConfig, setFetchedWards } = state;
   const excelActions = useExcelImportActions({
     state,
     onStartExecution,
     financeYearId,
     zoneOptions,
-    scopeOptions,
-    actions
+    scopeOptions
   });
 
   const setPageNumber = (page: number) => {
@@ -63,20 +49,15 @@ export function useExcelImport({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
+  // Seed state from SSR prefetched props
   useEffect(() => {
-    const initData = async () => {
-      try {
-        const template = await actions.getImportTemplateAction();
-        if (template) state.setTemplateConfig(template);
-        const wardsRes = await actions.fetchAllWardsAction();
-        if (wardsRes?.data) state.setFetchedWards(wardsRes.data);
-      } catch (err) {
-        logger.error('Failed to initialize Excel import tab configurations', { error: err as Error });
-      }
-    };
-    initData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [actions]);
+    if (initialImportTemplate && !state.templateConfig) {
+      setTemplateConfig(initialImportTemplate);
+    }
+    if (initialWards && initialWards.length > 0 && state.fetchedWards.length === 0) {
+      setFetchedWards(initialWards);
+    }
+  }, [initialImportTemplate, initialWards, state.templateConfig, state.fetchedWards.length, setTemplateConfig, setFetchedWards]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();

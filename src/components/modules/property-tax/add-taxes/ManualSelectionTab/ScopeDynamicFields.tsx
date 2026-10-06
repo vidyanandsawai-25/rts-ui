@@ -7,7 +7,7 @@ import { SearchSelectPaginated } from '@/components/common/SearchSelectPaginated
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/ActionButton';
 import { Info, Calculator } from 'lucide-react';
-import { getFieldConfig, getHeaderTitle } from './ScopeSelectionUtils';
+import { getFieldConfig, getHeaderTitle } from './utils/ScopeSelectionUtils';
 import { Scope, ScopeOptionItem } from '@/types/addTaxes.types';
 
 interface ScopeDynamicFieldsProps {

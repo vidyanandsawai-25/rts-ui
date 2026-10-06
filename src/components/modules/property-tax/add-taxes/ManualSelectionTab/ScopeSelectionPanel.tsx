@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useTranslations } from 'next-intl';
 import { Card } from '@/components/common/Card';
-import { ScopeSelectionPanelProps } from './ScopeSelectionUtils';
+import { ScopeSelectionPanelProps } from './utils/ScopeSelectionUtils';
 import { ExecutionReviewModal } from './ExecutionReviewModal';
 import { ScopeDynamicFields } from './ScopeDynamicFields';
 import { ScopeValidation } from './ScopeValidation';
@@ -25,9 +25,12 @@ export function ScopeSelectionPanel({
   isInitialized,
   financeYear,
   financeYearId,
-  actions,
   onProceedDisabledChange,
-  onBindMasterDataRecalc
+  onBindMasterDataRecalc,
+  initialZones = [],
+  initialPropertyTypes = [],
+  initialAssessmentStatuses = [],
+  initialWards = []
 }: ScopeSelectionPanelProps) {
   const t = useTranslations('addTaxes');
 
@@ -52,15 +55,11 @@ export function ScopeSelectionPanel({
     handlePreview,
     previewPage,
     previewPageSize,
-    fetchedAssessmentStatuses,
-    fetchAssessmentStatuses,
     isExportingPreview,
     handleDownloadPreviewExport,
-    fetchedZones, fetchZones,
-    fetchedPropertyTypes, fetchPropertyTypes,
     isProceedDisabled,
     activeMasterDataScope
-  } = useScopeSelection(selectedScope, selectionData, currentScopeData, [], isInitialized, onStartExecution, actions, financeYearId);
+  } = useScopeSelection(selectedScope, selectionData, currentScopeData, isInitialized, onStartExecution, financeYearId, initialZones, initialWards);
 
   useEffect(() => {
     onProceedDisabledChange?.(isProceedDisabled);
@@ -141,12 +140,10 @@ export function ScopeSelectionPanel({
         optionsToRender={optionsToRender}
         selectionData={selectionData}
         handleSelectionChange={handleSelectionChange}
-        zoneOptions={fetchedZones}
-        fetchZones={fetchZones}
+        zoneOptions={initialZones}
         fetchedWards={fetchedWards}
         fetchWards={fetchWards}
-        propertyTypeOptions={fetchedPropertyTypes}
-        fetchPropertyTypes={fetchPropertyTypes}
+        propertyTypeOptions={initialPropertyTypes}
         fetchedBuildings={fetchedBuildings}
         fetchBuildings={fetchBuildings}
         hasMoreBuildings={hasMoreBuildings}
@@ -162,8 +159,7 @@ export function ScopeSelectionPanel({
         isValidated={isValidated}
         eligibleCount={eligibleCount}
         handleCalculateEligible={handleCalculateEligible}
-        assessmentStatusOptions={fetchedAssessmentStatuses}
-        fetchAssessmentStatuses={fetchAssessmentStatuses}
+        assessmentStatusOptions={initialAssessmentStatuses}
         fetchToBuildings={fetchToBuildings}
       />
 

@@ -12,21 +12,10 @@ import { ExcelPreviewTable } from './ExcelPreviewTable';
 import { ExcelPreviewModal } from './ExcelPreviewModal';
 import { useState, useEffect } from 'react';
 import { logger } from '@/lib/utils/logger';
+import { fetchZoneOptionsClient } from '@/lib/api/add-taxes/operations.client';
 
-interface ZoneOptionResponseItem {
-  id: string | number;
-  description?: string;
-  zoneNo?: string;
-}
-
-interface ExcelTabActions {
-  fetchAllZonesAction: () => Promise<{ items?: ZoneOptionResponseItem[] } | null>;
-  fetchAllWardsAction: () => Promise<{ data?: import('@/types/wardMaster.types').WardItem[] } | null>;
-  getImportTemplateAction: () => Promise<import('@/types/addTaxes.types').ImportTemplateResponse | null>;
-  getEligibleCountAction: (payload: import('@/types/addTaxes.types').EligibleCountPayload) => Promise<{ eligible?: number; total?: number; skipped?: number; error?: string } | null>;
-  executeOperationAction: (payload: import('@/types/addTaxes.types').ExecuteOperationPayload) => Promise<{ items?: { jobId: string; summary: { total: number } }; error?: string } | null>;
-  previewOperationAction: (payload: import('@/types/addTaxes.types').OperationPreviewPayload) => Promise<(import('@/types/addTaxes.types').OperationPreviewResponse & { error?: string }) | { error: string } | null>;
-}
+import type { WardItem } from '@/types/wardMaster.types';
+import type { ImportTemplateResponse } from '@/types/addTaxes.types';
 
 interface ExcelImportTabProps {
   onStartExecution: (jobId: string, totalCount: number, scheduledTime?: string) => void;
@@ -34,7 +23,8 @@ interface ExcelImportTabProps {
   zoneOptions?: { value: string; label: string }[];
   scopeOptions: ScopeOptionItem[];
   financeYear?: string;
-  actions: ExcelTabActions;
+  initialWards?: WardItem[];
+  initialImportTemplate?: ImportTemplateResponse | null;
 }
 
 export default function ExcelImportTab({
@@ -43,7 +33,8 @@ export default function ExcelImportTab({
   zoneOptions = [],
   scopeOptions = [],
   financeYear,
-  actions
+  initialWards = [],
+  initialImportTemplate = null
 }: ExcelImportTabProps) {
   const t = useTranslations('addTaxes');
   const tCommon = useTranslations('common');
@@ -53,20 +44,14 @@ export default function ExcelImportTab({
   useEffect(() => {
     const loadZones = async () => {
       try {
-        const res = await actions.fetchAllZonesAction();
-        const zoneOpts = res?.items
-          ? res.items.map((z: ZoneOptionResponseItem) => ({
-            value: String(z.id),
-            label: z.description && z.zoneNo ? `${z.zoneNo} — ${z.description}` : (z.description || z.zoneNo || ''),
-          }))
-          : [];
+        const zoneOpts = await fetchZoneOptionsClient();
         setLocalZoneOptions(zoneOpts);
       } catch (err) {
         logger.error("Failed to load zone options inside ExcelImportTab", { error: err as Error });
       }
     };
     loadZones();
-  }, [actions]);
+  }, []);
 
   const {
     file,
@@ -107,7 +92,8 @@ export default function ExcelImportTab({
     financeYearId,
     zoneOptions: localZoneOptions.length > 0 ? localZoneOptions : zoneOptions,
     scopeOptions,
-    actions
+    initialWards,
+    initialImportTemplate
   });
 
   return (

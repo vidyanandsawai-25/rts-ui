@@ -1,20 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { InitOperationsResponse, ScopeOptionItem } from '@/types/addTaxes.types';
 import { Tabs } from '@/components/common/Tabs';
-import { Button } from '@/components/common/ActionButton';
-import { Select } from '@/components/common/select';
-import { DashboardCard } from '@/components/common/DashboardCard';
-import { CheckCircle, FileText, BookOpen, AlertTriangle, Download, Play } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { logger } from '@/lib/utils/logger';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useAddTaxesState } from '@/hooks/add-taxes/useAddTaxesState';
+import { useActiveJobMonitor } from '@/hooks/add-taxes/useActiveJobMonitor';
+import { useAddTaxesExports } from '@/hooks/add-taxes/useAddTaxesExports';
+import { useMasterDataChangeActions } from '@/hooks/add-taxes/useMasterDataChangeActions';
 import { ScopeSelectionPanel } from './ManualSelectionTab/ScopeSelectionPanel';
 import { ValidateEligibilityPanel } from './ManualSelectionTab/ValidateEligibilityPanel';
 import { ExecutionProgressPanel } from './ManualSelectionTab/ExecutionProgressPanel';
@@ -22,70 +19,41 @@ import { AuditMonitorTab } from './auditMonitorTab/AuditMonitorTab';
 import { GuidelinesModal } from './GuidelinesModal';
 import { UserManualModal } from './UserManualModal';
 import ExcelImportTab from './excelImportTab/ExcelImportTab';
+import { AddTaxesStatsRow } from './AddTaxesStatsRow';
+import { MasterDataChangeBanner } from './MasterDataChangeBanner';
+import { DEFAULT_SCOPE_OPTIONS } from './addTaxesConsole.constants';
 
-export function AddTaxesActions() {
-  const t = useTranslations('addTaxes');
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+export { AddTaxesActions } from './AddTaxesHeaderActions';
 
-  const openModal = (param: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(param, 'true');
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
-  return (
-    <div className="flex gap-2">
-      <Button variant="secondary" size='sm' icon={FileText} onClick={() => openModal('showGuidelines')}>
-        {t('buttons.guidelines')}
-      </Button>
-      <Button variant="secondary" size='sm' icon={BookOpen} onClick={() => openModal('showUserManual')}>
-        {t('buttons.userManual')}
-      </Button>
-    </div>
-  );
-}
-
-const DEFAULT_SCOPE_OPTIONS: ScopeOptionItem[] = [
-  { id: 1, name: 'ZoneNode', displayName: 'Zone / Node', description: 'Zone-wise selection', scopeType: 'zone', options: ['Zone', 'Property Type', 'Assessment Status'] },
-  { id: 2, name: 'WardSector', displayName: 'Ward / Sector', description: 'Multi ward selection', scopeType: 'ward', options: ['Zone', 'Ward', 'Property Type', 'Assessment Status'] },
-  { id: 3, name: 'BuildingWise', displayName: 'Building Wise', description: 'Building level', scopeType: 'building', options: ['Zone', 'Ward', 'Property No'] },
-  { id: 4, name: 'PropertyWise', displayName: 'Property Wise', description: 'Property level', scopeType: 'property', options: ['UPIC Id', 'Mobile No'] },
-  { id: 5, name: 'PropertyRange', displayName: 'Property Range', description: 'From-to property range', scopeType: 'range', options: ['Ward', 'Property Type', 'Assessment Status', 'From Property', 'To Property'] }
-];
+import type { WardItem } from '@/types/wardMaster.types';
+import type { ImportTemplateResponse } from '@/types/addTaxes.types';
 
 export interface AddTaxesActionsProps {
   initOperationsAction: (financeYearId?: string | number) => Promise<any>;
-  getScopeOptionsAction: () => Promise<any>;
-  fetchAllZonesAction: () => Promise<any>;
-  fetchAllWardsAction: () => Promise<any>;
-  fetchAllPropertyTypesAction: () => Promise<any>;
-  searchPropertiesAction: (zoneId: string | number | null, wardId: string | number) => Promise<any>;
-  searchPropertiesByCategoryAction: (searchCategory?: number, wardId?: string | number, pageNumber?: number, pageSize?: number, propertyFrom?: string, propertyTo?: string, zoneId?: string | number) => Promise<any>;
-  getEligibleCountAction: (payload: any) => Promise<any>;
-  executeOperationAction: (payload: any) => Promise<any>;
-  previewOperationAction: (payload: any) => Promise<any>;
-  fetchAssessmentStatusesAction: () => Promise<any>;
-  getAuditListAction: (payload: any) => Promise<any>;
-  getAuditDetailAction: (jobId: string) => Promise<any>;
-  getJobPropertiesAction: (jobId: string, pageNumber: number, pageSize: number, status?: string) => Promise<any>;
-  getImportTemplateAction: () => Promise<any>;
-  getServerTimeAction: () => Promise<any>;
-  getMasterDataChangeSummaryAction?: (financeYearId: string | number) => Promise<any>;
-  exportMasterDataChangesCsvAction?: (financeYearId: string | number) => Promise<any>;
 }
 
 interface AddTaxesConsoleProps {
   initData: InitOperationsResponse | null;
   scopeOptions?: ScopeOptionItem[];
   actions: AddTaxesActionsProps;
+  // Server-prefetched (page.tsx) — Zone/Property Type/Assessment Status/Wards/Import Template don't
+  // depend on any other selection, so they are prefetched via SSR to avoid client-side lazy fetch delay.
+  initialZones?: { value: string; label: string }[];
+  initialPropertyTypes?: { value: string; label: string }[];
+  initialAssessmentStatuses?: { value: string; label: string }[];
+  initialWards?: WardItem[];
+  initialImportTemplate?: ImportTemplateResponse | null;
 }
 
 export default function AddTaxesConsole({
   initData,
   scopeOptions = [],
   actions: actionsProp,
+  initialZones = [],
+  initialPropertyTypes = [],
+  initialAssessmentStatuses = [],
+  initialWards = [],
+  initialImportTemplate = null,
 }: AddTaxesConsoleProps) {
   const rawScopeOptions = (scopeOptions && scopeOptions.length > 0) ? scopeOptions : DEFAULT_SCOPE_OPTIONS;
   const effectiveScopeOptions = rawScopeOptions.map(s => {
@@ -121,20 +89,19 @@ export default function AddTaxesConsole({
     isFinanceYearActive,
     refreshStats,
     clearSelectionData,
-    masterDataChangeSummary,
   } = useAddTaxesState(initData, effectiveScopeOptions, actionsProp);
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [activeJob, setActiveJob] = useState<{ jobId: string; total: number; scheduledTime?: string } | null>(null);
-  const [runningJobsCount, setRunningJobsCount] = useState<number | null>(null);
-  const [showProgress, setShowProgress] = useState(false);
-  const [auditRefreshKey, setAuditRefreshKey] = useState(0);
-
-  const triggerAuditRefresh = useCallback(() => {
-    setAuditRefreshKey((prev) => prev + 1);
-  }, []);
+  const {
+    activeJob,
+    setActiveJob,
+    runningJobsCount,
+    showProgress,
+    auditRefreshKey,
+    triggerAuditRefresh,
+  } = useActiveJobMonitor({ financeYearId, refreshStats });
 
   const [currentTab, setCurrentTab] = useState(searchParams.get('tab') || 'manual');
 
@@ -174,100 +141,6 @@ export default function AddTaxesConsole({
   };
 
   useEffect(() => {
-    const fetchSkew = async () => {
-      try {
-        const clientRequestTime = Date.now();
-        const serverTimeStr = await actionsProp.getServerTimeAction();
-        if (serverTimeStr) {
-          const oneWayLatency = (Date.now() - clientRequestTime) / 2;
-          const serverTime = new Date(new Date(serverTimeStr).getTime() + oneWayLatency);
-          const clientTime = new Date();
-          const skewMs = clientTime.getTime() - serverTime.getTime();
-          window.sessionStorage.setItem('ntis_clock_skew_ms', String(skewMs));
-        }
-      } catch (err) {
-        logger.error('Failed to fetch initial clock skew', { error: err as Error });
-      }
-    };
-    void fetchSkew();
-  }, [actionsProp]);
-
-  useEffect(() => {
-    const checkActiveJobs = async () => {
-      try {
-        const query: Record<string, string | number> = { PageSize: 100 };
-        if (financeYearId) query.FinanceYearId = financeYearId;
-        const res = await actionsProp.getAuditListAction(query);
-        if (res?.items) {
-          const activeJobs = res.items.filter((j: any) =>
-            ['inprogress', 'running', 'pending', 'started', 'scheduled'].includes(j.status?.toLowerCase())
-          );
-          setRunningJobsCount(activeJobs.length);
-
-          const inProgressJob = activeJobs.find((j: any) =>
-            ['inprogress', 'running', 'pending', 'started'].includes(j.status?.toLowerCase())
-          );
-          if (inProgressJob) {
-            const parts = inProgressJob.records?.split('/') || [];
-            const total = parts[1] ? Number(parts[1].trim()) : 0;
-            setActiveJob({ jobId: inProgressJob.jobId, total });
-            setShowProgress(true);
-          } else {
-            setActiveJob((prevActive) => {
-              if (prevActive) {
-                triggerAuditRefresh();
-              }
-              return null;
-            });
-          }
-          refreshStats();
-        } else {
-          setActiveJob(null);
-          setRunningJobsCount(0);
-        }
-      } catch (err) {
-        logger.error('Failed to check active jobs', { error: err as Error });
-      }
-    };
-
-    checkActiveJobs();
-    const interval = setInterval(checkActiveJobs, 10000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [actionsProp, financeYearId, auditRefreshKey]);
-
-  useEffect(() => {
-    if (!activeJob) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShowProgress(false);
-      return;
-    }
-    if (!activeJob.scheduledTime) {
-      setShowProgress(true);
-      return;
-    }
-    const scheduledDate = new Date(activeJob.scheduledTime);
-    setShowProgress(scheduledDate.getTime() <= Date.now());
-  }, [activeJob]);
-
-  useEffect(() => {
-    if (!activeJob || !activeJob.scheduledTime) return;
-
-    const scheduledDate = new Date(activeJob.scheduledTime);
-    const now = new Date();
-    const delay = scheduledDate.getTime() - now.getTime();
-
-    if (delay <= 0) return;
-
-    const timer = setTimeout(() => {
-      setShowProgress(true);
-      toast.info(t('messages.scheduledJobStarted', { jobId: activeJob.jobId }));
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, [activeJob, t]);
-
-  useEffect(() => {
     if (!isFinanceYearActive && currentTab !== 'audit') {
       const timer = setTimeout(() => {
         handleTabChange('audit');
@@ -277,240 +150,65 @@ export default function AddTaxesConsole({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFinanceYearActive, currentTab]);
 
-  const [exportingStatus, setExportingStatus] = useState<string | null>(null);
+  const { exportingStatus, handleExportProperties } = useAddTaxesExports({ financeYearId, pathname, t });
 
-  const handleExportProperties = async (status: string) => {
-    if (exportingStatus) return;
-
-    if (!financeYearId) {
-      toast.error(
-        t('messages.financeYearRequiredForExport', { fallback: 'Please select a finance year before exporting.' })
-      );
-      return;
-    }
-
-    setExportingStatus(status);
-
-    const toastId = toast.loading(
-      t('messages.exportingDownloading', { fallback: 'Export downloading, please wait...' })
-    );
-
-    try {
-      const downloadUrl = `${pathname}/export-excel?status=${encodeURIComponent(status)}&financeYearId=${encodeURIComponent(financeYearId)}`;
-      const response = await fetch(downloadUrl);
-
-      if (!response.ok) {
-        throw new Error(`Export failed with status ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      const contentDisposition = response.headers.get('content-disposition');
-      let fileName = `property_tax_properties_${status.toLowerCase()}.csv`;
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        if (match && match[1]) {
-          fileName = match[1].replace(/['"]/g, '');
-        }
-      }
-
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
-
-      toast.success(
-        t('messages.exportCompleted', { fallback: 'Export download completed' }),
-        { id: toastId }
-      );
-    } catch (_error) {
-      toast.error(
-        t('messages.exportFailed', { fallback: 'Failed to export properties' }),
-        { id: toastId }
-      );
-    } finally {
-      setExportingStatus(null);
-    }
-  };
-
-  const [isExportingMasterDataCsv, setIsExportingMasterDataCsv] = useState(false);
-  const [isProceedingMasterData, setIsProceedingMasterData] = useState(false);
   const [isManualScopeBusy, setIsManualScopeBusy] = useState(false);
-  const masterDataRecalcHandlerRef = useRef<((scope?: string) => void) | null>(null);
 
-  const handleProceedMasterDataExecution = async () => {
-    setIsProceedingMasterData(true);
-    try {
-      if (masterDataRecalcHandlerRef.current) {
-        await masterDataRecalcHandlerRef.current('masterDataChange');
-      }
-    } finally {
-      setIsProceedingMasterData(false);
-    }
-  };
-
-  const handleExportMasterDataCsv = async () => {
-    if (isExportingMasterDataCsv) return;
-    if (!financeYearId) {
-      toast.error(t('masterDataChange.selectFinanceYearExportError'));
-      return;
-    }
-    if (!actionsProp.exportMasterDataChangesCsvAction) {
-      toast.error(t('masterDataChange.exportActionUnavailable'));
-      return;
-    }
-
-    setIsExportingMasterDataCsv(true);
-    const toastId = toast.loading(t('masterDataChange.exportingCsvToast'));
-
-    try {
-      const res = await actionsProp.exportMasterDataChangesCsvAction(financeYearId);
-      if (!res.success || !res.data) {
-        throw new Error(res.error || t('masterDataChange.exportFailedToast'));
-      }
-
-      const { base64, fileName } = res.data;
-      const byteCharacters = atob(base64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'text/csv;charset=utf-8;' });
-
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.setAttribute('download', fileName || `master_data_affected_properties_FY${financeYearId}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
-
-      toast.success(t('masterDataChange.exportSuccessToast'), { id: toastId });
-    } catch (error) {
-      toast.error((error as Error).message || t('masterDataChange.exportFailedToast'), { id: toastId });
-    } finally {
-      setIsExportingMasterDataCsv(false);
-    }
-  };
+  const {
+    isExportingMasterDataCsv,
+    isProceedingMasterData,
+    masterDataRecalcHandlerRef,
+    handleProceedMasterDataExecution,
+    handleExportMasterDataCsv,
+    masterDataChangeSummary,
+  } = useMasterDataChangeActions({ financeYearId, pathname, t });
 
   const mappedFinanceYearOptions = financeYearOptions.map(opt => ({
     value: String(opt.value),
     label: opt.label
   }));
 
+  // Shared by both Manual Selection and Excel Import's onStartExecution — identical in both places
+  // before this split, deduped here rather than copy-pasted twice.
+  const handleJobStarted = (jobId: string, total: number, scheduledTime?: string) => {
+    setActiveJob({ jobId, total, scheduledTime });
+    refreshStats();
+    triggerAuditRefresh();
+    setTimeout(() => {
+      refreshStats();
+      triggerAuditRefresh();
+    }, 1000);
+    clearSelectionData();
+  };
+
   return (
     <div className={cn("relative w-full", !isFinanceYearActive && "min-h-[450px]")}>
       <div className="flex flex-col gap-4">
         {/* Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-          {/* Finance Year */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <Select
-              label={t('stats.financeYear')}
-              required
-              options={mappedFinanceYearOptions}
-              value={financeYearId}
-              onChange={(e) => handleFinanceYearChange(e.target.value)}
-              selectSize="sm"
-            />
-          </div>
-
-          {/* Stats */}
-          <DashboardCard
-            label={t('stats.totalProperties')}
-            value={stats.totalProperties}
-            valueColor="text-gray-900"
-            onExportExcel={() => handleExportProperties('all')}
-            isExporting={exportingStatus === 'all'}
-          />
-          <DashboardCard
-            label={t('stats.transmastProperties')}
-            value={stats.transmastProperties}
-            valueColor="text-purple-600"
-            onExportExcel={() => handleExportProperties('Transmast')}
-            isExporting={exportingStatus === 'Transmast'}
-          />
-          <DashboardCard
-            label={t('stats.eligibleRecords')}
-            value={stats.eligibleRecords}
-            valueColor="text-blue-600"
-            onExportExcel={() => handleExportProperties('Eligible')}
-            isExporting={exportingStatus === 'Eligible'}
-          />
-          <DashboardCard
-            label={t('stats.skippedLocked')}
-            value={stats.skippedRecords}
-            valueColor="text-orange-500"
-            onExportExcel={() => handleExportProperties('Skipped')}
-            isExporting={exportingStatus === 'Skipped'}
-          />
-          {isFinanceYearActive && (
-            <DashboardCard
-              label={t('stats.runningJobs')}
-              value={runningJobsCount !== null ? runningJobsCount : Math.max(stats.runningJobs || 0, activeJob && showProgress ? 1 : 0)}
-              valueColor="text-green-600"
-            />
-          )}
-
-          {/* User Permission */}
-          <div className="bg-green-50 rounded-lg border border-green-200 p-4">
-            <div className="flex items-center gap-2 mb-1 text-green-700 font-medium text-sm">
-              <CheckCircle className="h-4 w-4" />
-              {t('permissions.title')}
-            </div>
-            <div className="text-xs text-green-600 leading-tight">
-              {t('permissions.allowedMessage')}
-            </div>
-          </div>
-        </div>
+        <AddTaxesStatsRow
+          t={t}
+          mappedFinanceYearOptions={mappedFinanceYearOptions}
+          financeYearId={financeYearId}
+          handleFinanceYearChange={handleFinanceYearChange}
+          stats={stats}
+          handleExportProperties={handleExportProperties}
+          exportingStatus={exportingStatus}
+          isFinanceYearActive={isFinanceYearActive}
+          runningJobsCount={runningJobsCount}
+          activeJob={activeJob}
+          showProgress={showProgress}
+        />
 
         {/* Master Data Change Alert Banner */}
-        {masterDataChangeSummary && (masterDataChangeSummary.affectedCount ?? 0) > 0 && (
-          <div className="bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-all duration-200">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-sm font-semibold text-amber-900">
-                  {t('masterDataChange.alertTitle')}
-                </h4>
-                <p className="text-xs text-amber-800 mt-0.5">
-                  <span className="font-bold text-amber-950">
-                    {t('masterDataChange.alertDescription', { count: (masterDataChangeSummary.affectedCount ?? 0).toLocaleString() })}
-                  </span>
-                  {masterDataChangeSummary.remarkSummary ? ` (${masterDataChangeSummary.remarkSummary})` : ''}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Button
-                variant="primary"
-                size="sm"
-                icon={Play}
-                onClick={handleProceedMasterDataExecution}
-                isLoading={isProceedingMasterData}
-                disabled={isProceedingMasterData || isManualScopeBusy || Boolean(masterDataChangeSummary?.activeJobCode)}
-                className="bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-xs border border-amber-700"
-              >
-                {masterDataChangeSummary?.activeJobCode ? t('masterDataChange.scheduled') : t('masterDataChange.proceedExecution')}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={Download}
-                onClick={handleExportMasterDataCsv}
-                disabled={isExportingMasterDataCsv}
-                className="bg-white border-amber-300 text-amber-900 hover:bg-amber-100 hover:border-amber-400 font-medium shadow-xs"
-              >
-                {isExportingMasterDataCsv ? t('masterDataChange.exporting') : t('masterDataChange.exportAffectedProperties')}
-              </Button>
-            </div>
-          </div>
-        )}
+        <MasterDataChangeBanner
+          summary={masterDataChangeSummary}
+          t={t}
+          isProceedingMasterData={isProceedingMasterData}
+          isManualScopeBusy={isManualScopeBusy}
+          onProceed={handleProceedMasterDataExecution}
+          isExportingMasterDataCsv={isExportingMasterDataCsv}
+          onExport={handleExportMasterDataCsv}
+        />
 
         {/* Processing Job */}
         {isFinanceYearActive && activeJob && showProgress && (
@@ -557,19 +255,14 @@ export default function AddTaxesConsole({
                   handleSelectionChange={handleSelectionChange}
                   scopeOptions={effectiveScopeOptions}
                   onBindMasterDataRecalc={(fn: (scope?: string) => void) => { masterDataRecalcHandlerRef.current = fn; }}
-                  onStartExecution={(jobId, total, scheduledTime) => {
-                    setActiveJob({ jobId, total, scheduledTime });
-                    refreshStats();
-                    triggerAuditRefresh();
-                    setTimeout(() => {
-                      refreshStats();
-                      triggerAuditRefresh();
-                    }, 1000);
-                    clearSelectionData();
-                  }}
+                  onStartExecution={handleJobStarted}
                   isInitialized={isInitialized}
                   financeYear={financeYearOptions.find(opt => String(opt.value) === String(financeYearId))?.label}
-                  actions={actionsProp}
+                  financeYearId={financeYearId}
+                  initialZones={initialZones}
+                  initialPropertyTypes={initialPropertyTypes}
+                  initialAssessmentStatuses={initialAssessmentStatuses}
+                  initialWards={initialWards}
                 />
 
                 {/* Right Panel - Validate Eligibility */}
@@ -585,26 +278,18 @@ export default function AddTaxesConsole({
           {isFinanceYearActive && (
             <Tabs.TabPanel value="excel">
               <ExcelImportTab
-                onStartExecution={(jobId, total, scheduledTime) => {
-                  setActiveJob({ jobId, total, scheduledTime });
-                  refreshStats();
-                  triggerAuditRefresh();
-                  setTimeout(() => {
-                    refreshStats();
-                    triggerAuditRefresh();
-                  }, 1000);
-                  clearSelectionData();
-                }}
+                onStartExecution={handleJobStarted}
                 financeYearId={financeYearId}
                 scopeOptions={scopeOptions}
                 financeYear={financeYearOptions.find(opt => String(opt.value) === String(financeYearId))?.label}
-                actions={actionsProp}
+                initialWards={initialWards}
+                initialImportTemplate={initialImportTemplate}
               />
             </Tabs.TabPanel>
           )}
 
           <Tabs.TabPanel value="audit">
-            <AuditMonitorTab financeYearId={financeYearId} refreshKey={auditRefreshKey} actions={actionsProp} />
+            <AuditMonitorTab financeYearId={financeYearId} refreshKey={auditRefreshKey} />
           </Tabs.TabPanel>
         </Tabs>
       </div>

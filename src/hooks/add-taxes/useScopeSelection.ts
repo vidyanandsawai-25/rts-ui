@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { logger } from '@/lib/utils/logger';
 import { Scope, OperationScope, ExecuteOperationPayload, OperationPreviewPayload, OperationPreviewResponse } from '@/types/addTaxes.types';
-import type { ScopeOptionItem, EligibleCountPayload, SearchPropertyItem, SearchPropertiesResponse } from '@/types/addTaxes.types';
-import type { PropertyAssessmentStatus } from '@/types/property-assessment-status.types';
+import type { ScopeOptionItem, EligibleCountPayload, SearchPropertyItem } from '@/types/addTaxes.types';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { useConfirm } from '@/components/common/ConfirmProvider';
+import { fetchEligibleCountClient, executeOperationClient, fetchServerTimeClient, fetchWardsClient, searchPropertiesClient, searchPropertiesByCategoryClient, previewOperationClient } from '@/lib/api/add-taxes/operations.client';
+
+import type { WardItem } from '@/types/wardMaster.types';
 
 interface WardOption {
   value: string;
@@ -21,31 +23,10 @@ interface BuildingOption {
   partitionNo?: string;
 }
 
-interface ZoneResponseItem {
-  id: string | number;
-  description?: string;
-  zoneNo?: string;
-}
-
-interface PropertyTypeResponseItem {
-  id: string | number;
-  propertyDescription?: string;
-}
-
 interface SearchByCategoryItem {
   propertyId: string | number;
   propertyNo: string;
   partitionNo?: string | null;
-}
-
-interface SearchByCategoryItemsPayload {
-  items: SearchByCategoryItem[];
-  totalPages?: number;
-  totalCount?: number;
-}
-
-interface SearchByCategoryResponse {
-  items?: SearchByCategoryItemsPayload;
 }
 
 interface SkipReasonSummary {
@@ -70,24 +51,6 @@ interface ExecuteOperationActionResponse {
     };
   };
   error?: string;
-}
-
-type PreviewOperationActionResponse = (OperationPreviewResponse & { error?: string }) | { error: string };
-
-interface WardsActionResponse {
-  data?: Array<{ id: number; wardNo?: string; zoneId?: number }>;
-}
-
-interface ZonesActionResponse {
-  items?: ZoneResponseItem[];
-}
-
-interface PropertyTypesActionResponse {
-  items?: PropertyTypeResponseItem[];
-}
-
-interface AssessmentStatusesActionResponse {
-  data?: PropertyAssessmentStatus[];
 }
 
 function resolveBuildingScope(
@@ -144,27 +107,16 @@ function resolveBuildingScope(
     building: buildingsList.length > 0 ? buildingsList : undefined
   };
 }
-
 export function useScopeSelection(
   selectedScope: Scope,
   selectionData: Record<string, string[]>,
   _currentScopeData: ScopeOptionItem | undefined,
-  _propertyTypeOptions: { value: string; label: string }[],
   _isInitialized: boolean,
   onStartExecution: ((jobId: string, totalCount: number, scheduledTime?: string) => void) | undefined,
-  actions: {
-    fetchAllWardsAction: () => Promise<WardsActionResponse | null>;
-    searchPropertiesAction: (zoneId: string | number | null, wardId: string | number) => Promise<SearchPropertiesResponse | null>;
-    searchPropertiesByCategoryAction: (searchCategory?: number, wardId?: string | number, pageNumber?: number, pageSize?: number, propertyFrom?: string, propertyTo?: string, zoneId?: string | number) => Promise<SearchByCategoryResponse | null>;
-    getEligibleCountAction: (payload: EligibleCountPayload) => Promise<EligibleCountActionResponse | null>;
-    executeOperationAction: (payload: ExecuteOperationPayload) => Promise<ExecuteOperationActionResponse | null>;
-    previewOperationAction: (payload: OperationPreviewPayload) => Promise<PreviewOperationActionResponse | null>;
-    fetchAssessmentStatusesAction: () => Promise<AssessmentStatusesActionResponse>;
-    fetchAllZonesAction: () => Promise<ZonesActionResponse | null>;
-    fetchAllPropertyTypesAction: () => Promise<PropertyTypesActionResponse | null>;
-    getServerTimeAction: () => Promise<string | null>;
-  },
-  selectedFinanceYearId?: string | number
+  selectedFinanceYearId?: string | number,
+  // Server-prefetched (page.tsx) — Zone & Wards don't depend on any other selection.
+  zoneOptions: { value: string; label: string }[] = [],
+  initialWards: WardItem[] = []
 ) {
   const searchParams = useSearchParams();
   const t = useTranslations('addTaxes');
@@ -231,8 +183,28 @@ export function useScopeSelection(
   const [previewPage, setPreviewPage] = useState(1);
   const [previewPageSize, setPreviewPageSize] = useState(5);
 
-  const [fetchedWards, setFetchedWards] = useState<WardOption[]>([]);
+  const [fetchedWards, setFetchedWards] = useState<WardOption[]>(() =>
+    (initialWards || []).map(w => ({
+      value: String(w.id),
+      label: w.wardNo || '',
+      zoneId: String(w.zoneId ?? '')
+    }))
+  );
   const [isFetchingWards, setIsFetchingWards] = useState(false);
+
+  const [prevInitialWards, setPrevInitialWards] = useState(initialWards);
+  if (initialWards !== prevInitialWards) {
+    setPrevInitialWards(initialWards);
+    if (initialWards.length > 0 && fetchedWards.length === 0) {
+      setFetchedWards(
+        initialWards.map(w => ({
+          value: String(w.id),
+          label: w.wardNo || '',
+          zoneId: String(w.zoneId ?? '')
+        }))
+      );
+    }
+  }
 
   const [fetchedBuildings, setFetchedBuildings] = useState<BuildingOption[]>([]);
   const [isFetchingBuildings, setIsFetchingBuildings] = useState(false);
@@ -266,53 +238,6 @@ export function useScopeSelection(
 
     return () => clearTimeout(timer);
   }, [selectionData, selectedScope]);
-
-  const [fetchedAssessmentStatuses, setFetchedAssessmentStatuses] = useState<{ value: string; label: string }[]>([]);
-  const [isFetchingAssessmentStatuses, setIsFetchingAssessmentStatuses] = useState(false);
-
-  const [fetchedZones, setFetchedZones] = useState<{ value: string; label: string }[]>([]);
-  const [isFetchingZones, setIsFetchingZones] = useState(false);
-
-  const [fetchedPropertyTypes, setFetchedPropertyTypes] = useState<{ value: string; label: string }[]>([]);
-  const [isFetchingPropertyTypes, setIsFetchingPropertyTypes] = useState(false);
-
-  const fetchZones = async () => {
-    if (fetchedZones.length > 0 || isFetchingZones) return;
-    setIsFetchingZones(true);
-    try {
-      const res = await actions.fetchAllZonesAction();
-      const zoneOpts = res?.items
-        ? res.items.map((z: ZoneResponseItem) => ({
-          value: String(z.id),
-          label: z.description && z.zoneNo ? `${z.zoneNo} — ${z.description}` : (z.description || z.zoneNo || ''),
-        }))
-        : [];
-      setFetchedZones(zoneOpts);
-    } catch (err) {
-      logger.error('Failed to fetch zones on demand', { error: err as Error });
-    } finally {
-      setIsFetchingZones(false);
-    }
-  };
-
-  const fetchPropertyTypes = async () => {
-    if (fetchedPropertyTypes.length > 0 || isFetchingPropertyTypes) return;
-    setIsFetchingPropertyTypes(true);
-    try {
-      const res = await actions.fetchAllPropertyTypesAction();
-      const typeOpts = res?.items
-        ? res.items.map((pt: PropertyTypeResponseItem) => ({
-          value: String(pt.id),
-          label: pt.propertyDescription || '',
-        }))
-        : [];
-      setFetchedPropertyTypes(typeOpts);
-    } catch (err) {
-      logger.error('Failed to fetch property types on demand', { error: err as Error });
-    } finally {
-      setIsFetchingPropertyTypes(false);
-    }
-  };
 
   const handleCalculateEligible = async (overrideScope?: Scope | string) => {
     if (overrideScope === 'masterDataChange' || String(overrideScope).toLowerCase() === 'masterdatachange') {
@@ -382,7 +307,7 @@ export function useScopeSelection(
         const parsedZoneIds = zoneIds.split(',').map(id => {
           const num = Number(id);
           if (Number.isFinite(num) && num > 0) return num;
-          const zObj = fetchedZones.find(z => z.value === id || z.label === id);
+          const zObj = zoneOptions.find(z => z.value === id || z.label === id);
           return zObj ? Number(zObj.value) : NaN;
         }).filter(n => Number.isFinite(n) && n > 0);
         if (parsedZoneIds.length > 0) scopeData.zoneIds = parsedZoneIds;
@@ -478,7 +403,7 @@ export function useScopeSelection(
         return dedupedByCode.map(([label, count]) => `${label} (${count})`).join(', ');
       };
 
-      const response = await actions.getEligibleCountAction(payload);
+      const response: EligibleCountActionResponse | null = await fetchEligibleCountClient(payload);
       if (response) {
         setEligibleCount(response.eligible ?? 0);
         if (response.skipped !== undefined && response.skipped > 0) {
@@ -493,7 +418,7 @@ export function useScopeSelection(
             confirmText: t('confirmations.overrideAlreadyTaxed.confirmText'),
             onConfirm: async () => {
               try {
-                const overrideResponse = await actions.getEligibleCountAction({
+                const overrideResponse: EligibleCountActionResponse | null = await fetchEligibleCountClient({
                   ...payload,
                   scope: { ...payload.scope, overrideAlreadyTaxed: true },
                 });
@@ -623,7 +548,7 @@ export function useScopeSelection(
       let adjustedScheduledDateTime = scheduledDateTime;
       if (isScheduled && scheduledDateTime) {
         const clientRequestTime = Date.now();
-        const serverTimeStr = await actions.getServerTimeAction();
+        const serverTimeStr = await fetchServerTimeClient();
         if (serverTimeStr) {
           const oneWayLatency = (Date.now() - clientRequestTime) / 2;
           const serverTime = new Date(new Date(serverTimeStr).getTime() + oneWayLatency);
@@ -651,7 +576,7 @@ export function useScopeSelection(
         }
       };
 
-      const response = await actions.executeOperationAction(payload);
+      const response: ExecuteOperationActionResponse | null = await executeOperationClient(payload);
       if (response && response.items && response.items.jobId) {
         setIsModalOpen(false);
         setIsValidated(false);
@@ -779,7 +704,7 @@ export function useScopeSelection(
         operation: 'addTax'
       };
 
-      const result = await actions.previewOperationAction(payload);
+      const result = await previewOperationClient(payload);
       if (result && 'records' in result) {
         setPreviewData(result);
         setIsPreviewModalOpen(true);
@@ -953,7 +878,7 @@ export function useScopeSelection(
     setIsFetchingBuildings(true);
     try {
       if (effectiveScope === 'range') {
-        const res = await actions.searchPropertiesByCategoryAction(2, wardIds[0], 1, 100);
+        const res = await searchPropertiesByCategoryClient(2, wardIds[0], 1, 100);
         if (res?.items?.items) {
           const buildings: BuildingOption[] = res.items.items.map(toBuildingOption);
           setFetchedBuildings(buildings);
@@ -966,7 +891,7 @@ export function useScopeSelection(
         }
       } else if (effectiveScope === 'building') {
         const zId = zoneIds && zoneIds.length > 0 ? zoneIds[0] : null;
-        const res = await actions.searchPropertiesByCategoryAction(2, wardIds[0], 1, 100, undefined, undefined, zId || undefined);
+        const res = await searchPropertiesByCategoryClient(2, wardIds[0], 1, 100, undefined, undefined, zId || undefined);
         if (res?.items?.items) {
           const buildings: BuildingOption[] = res.items.items.map(toBuildingOption);
           setFetchedBuildings(buildings);
@@ -979,7 +904,7 @@ export function useScopeSelection(
         }
       } else {
         const zId = zoneIds && zoneIds.length > 0 ? zoneIds[0] : null;
-        const res = await actions.searchPropertiesAction(zId, wardIds[0]);
+        const res = await searchPropertiesClient(zId, wardIds[0]);
         if (res?.items?.items) {
           const buildings: BuildingOption[] = res.items.items.map((b: SearchPropertyItem) => {
             const part = b.partitionNo?.trim();
@@ -1012,7 +937,7 @@ export function useScopeSelection(
       const nextPage = buildingPage + 1;
       const category = 2;
       const zoneId = searchParams.get('zoneid') || (selectionData['Zone / Node'] || selectionData['Zone'])?.[0];
-      const res = await actions.searchPropertiesByCategoryAction(category, wardId, nextPage, 100, undefined, undefined, selectedScope === 'building' && zoneId ? zoneId : undefined);
+      const res = await searchPropertiesByCategoryClient(category, wardId, nextPage, 100, undefined, undefined, selectedScope === 'building' && zoneId ? zoneId : undefined);
       if (res?.items?.items) {
         const newBuildings: BuildingOption[] = res.items.items.map(toBuildingOption);
         setFetchedBuildings(prev => {
@@ -1037,7 +962,7 @@ export function useScopeSelection(
     if (fetchedWards.length > 0 || isFetchingWards) return;
     setIsFetchingWards(true);
     try {
-      const res = await actions.fetchAllWardsAction();
+      const res = await fetchWardsClient();
       if (res?.data) {
         const wards: WardOption[] = (res.data as Array<{ id: number; description?: string; wardNo?: string; zoneId?: number }>).map((w) => ({
           value: w.id.toString(),
@@ -1053,31 +978,12 @@ export function useScopeSelection(
     }
   };
 
-  const fetchAssessmentStatuses = async () => {
-    if (fetchedAssessmentStatuses.length > 0 || isFetchingAssessmentStatuses) return;
-    setIsFetchingAssessmentStatuses(true);
-    try {
-      const res = await actions.fetchAssessmentStatusesAction();
-      if (res?.data) {
-        const statuses = res.data.map((item: PropertyAssessmentStatus) => ({
-          value: item.id.toString(),
-          label: item.statusName
-        }));
-        setFetchedAssessmentStatuses(statuses);
-      }
-    } catch (e) {
-      logger.error('Failed to fetch assessment statuses', { error: e as Error });
-    } finally {
-      setIsFetchingAssessmentStatuses(false);
-    }
-  };
-
   const fetchToBuildings = async (wardId: string, propertyFrom: string) => {
     if (!wardId || !propertyFrom || isFetchingToBuildings) return;
     setIsFetchingToBuildings(true);
     setCurrentPropertyFrom(propertyFrom);
     try {
-      const res = await actions.searchPropertiesByCategoryAction(4, wardId, 1, 100, propertyFrom);
+      const res = await searchPropertiesByCategoryClient(4, wardId, 1, 100, propertyFrom);
       if (res?.items?.items) {
         const buildings: BuildingOption[] = res.items.items.map(toBuildingOption);
         setFetchedToBuildings(buildings);
@@ -1103,7 +1009,7 @@ export function useScopeSelection(
     setIsLoadingMoreToBuildings(true);
     try {
       const nextPage = toBuildingPage + 1;
-      const res = await actions.searchPropertiesByCategoryAction(4, wardId, nextPage, 100, currentPropertyFrom);
+      const res = await searchPropertiesByCategoryClient(4, wardId, nextPage, 100, currentPropertyFrom);
       if (res?.items?.items) {
         const newBuildings: BuildingOption[] = res.items.items.map(toBuildingOption);
         setFetchedToBuildings(prev => {
@@ -1128,27 +1034,14 @@ export function useScopeSelection(
 
 
   useEffect(() => {
-    // Eagerly fetch options for pre-selected values from URL
-    const hasZones = Object.keys(selectionData).some(k => k.toLowerCase().includes('zone') && selectionData[k]?.length > 0);
+    // Eagerly fetch options for pre-selected values from URL. Zone/Property Type/Assessment
+    // Status are server-prefetched (page.tsx) now, so only Ward/Building/To-Building still need
+    // this on-demand resolution for a pre-selected URL value.
     const timer = setTimeout(() => {
-      const hasPropertyTypes = Object.keys(selectionData).some(k => k.toLowerCase().includes('property type') && selectionData[k]?.length > 0);
-      const hasAssessmentStatus = Object.keys(selectionData).some(k => k.toLowerCase().includes('assessment status') && selectionData[k]?.length > 0);
       const hasWards = Object.keys(selectionData).some(k => k.toLowerCase().includes('ward') && selectionData[k]?.length > 0);
       const hasBuildings = Object.keys(selectionData).some(k => k.toLowerCase().includes('building') && selectionData[k]?.length > 0);
       const hasFrom = Object.keys(selectionData).some(k => k.toLowerCase().includes('from') && selectionData[k]?.length > 0);
       const hasTo = Object.keys(selectionData).some(k => k.toLowerCase().includes('to') && selectionData[k]?.length > 0);
-
-      if (hasZones && fetchedZones.length === 0 && !isFetchingZones) {
-        void fetchZones();
-      }
-
-      if (hasPropertyTypes && fetchedPropertyTypes.length === 0 && !isFetchingPropertyTypes) {
-        void fetchPropertyTypes();
-      }
-
-      if (hasAssessmentStatus && fetchedAssessmentStatuses.length === 0 && !isFetchingAssessmentStatuses) {
-        void fetchAssessmentStatuses();
-      }
 
       if (hasWards && fetchedWards.length === 0 && !isFetchingWards) {
         void fetchWards();
@@ -1176,7 +1069,7 @@ export function useScopeSelection(
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectionData, fetchedZones.length, isFetchingZones, fetchedPropertyTypes.length, isFetchingPropertyTypes, fetchedAssessmentStatuses.length, isFetchingAssessmentStatuses, fetchedWards.length, isFetchingWards, fetchedBuildings.length, isFetchingBuildings, fetchedToBuildings.length, isFetchingToBuildings]);
+  }, [selectionData, fetchedWards.length, isFetchingWards, fetchedBuildings.length, isFetchingBuildings, fetchedToBuildings.length, isFetchingToBuildings]);
 
   return {
     isValidated, setIsValidated,
@@ -1187,7 +1080,6 @@ export function useScopeSelection(
     fetchedBuildings, fetchBuildings,
     hasMoreBuildings, loadMoreBuildings, isLoadingMoreBuildings, isFetchingBuildings,
     fetchedToBuildings, hasMoreToBuildings, loadMoreToBuildings, isLoadingMoreToBuildings, isFetchingToBuildings, fetchToBuildings,
-    fetchedAssessmentStatuses, fetchAssessmentStatuses,
     handleCalculateEligible,
     executeJob,
     isPreviewModalOpen, setIsPreviewModalOpen,
@@ -1197,8 +1089,6 @@ export function useScopeSelection(
     previewPage, setPreviewPage,
     previewPageSize, setPreviewPageSize,
     isExportingPreview, handleDownloadPreviewExport,
-    fetchedZones, fetchZones,
-    fetchedPropertyTypes, fetchPropertyTypes,
     isProceedDisabled,
     activeMasterDataScope
   };

@@ -7,13 +7,7 @@ import { autoDetectScopeType, mapExcelDataToPayload, getNormalizedHeaders, getRo
 import { ExcelImportState } from './useExcelImportState';
 import { logger } from '@/lib/utils/logger';
 import { useTranslations } from 'next-intl';
-import type {
-  ImportTemplateResponse,
-  EligibleCountPayload,
-  ExecuteOperationPayload,
-  OperationPreviewPayload,
-  OperationPreviewResponse,
-} from '@/types/addTaxes.types';
+import { fetchEligibleCountClient, executeOperationClient, getImportTemplateClient, previewOperationClient } from '@/lib/api/add-taxes/operations.client';
 
 interface EligibleCountResult {
   eligible?: number;
@@ -32,20 +26,12 @@ interface ExecuteResult {
   error?: string;
 }
 
-type PreviewResult = (OperationPreviewResponse & { error?: string }) | { error: string };
-
 interface UseExcelImportActionsProps {
   state: ExcelImportState;
   onStartExecution: (jobId: string, totalCount: number, scheduledTime?: string) => void;
   financeYearId: string;
   zoneOptions: { value: string; label: string }[];
   scopeOptions: ScopeOptionItem[];
-  actions: {
-    getImportTemplateAction: () => Promise<ImportTemplateResponse | null>;
-    getEligibleCountAction: (payload: EligibleCountPayload) => Promise<EligibleCountResult | null>;
-    executeOperationAction: (payload: ExecuteOperationPayload) => Promise<ExecuteResult | null>;
-    previewOperationAction: (payload: OperationPreviewPayload) => Promise<PreviewResult | null>;
-  };
 }
 
 export function useExcelImportActions({
@@ -53,8 +39,7 @@ export function useExcelImportActions({
   onStartExecution,
   financeYearId,
   zoneOptions,
-  scopeOptions,
-  actions
+  scopeOptions
 }: UseExcelImportActionsProps) {
   const searchParams = useSearchParams();
   const t = useTranslations('addTaxes');
@@ -67,7 +52,7 @@ export function useExcelImportActions({
   const handleDownloadTemplate = async () => {
     state.setIsDownloading(true);
     try {
-      const data = state.templateConfig || await actions.getImportTemplateAction();
+      const data = state.templateConfig || await getImportTemplateClient();
       const columns = data?.columns || [
         { key: "Zone", header: "Zone", dataType: "string", required: false },
         { key: "Ward", header: "Ward", dataType: "string", required: false },
@@ -171,7 +156,7 @@ export function useExcelImportActions({
         scope: scopeData,
         operation: 'addTax'
       };
-      const result = await actions.getEligibleCountAction(payload);
+      const result: EligibleCountResult | null = await fetchEligibleCountClient(payload);
       if (result && !result.error) {
         state.setCalculatedStats({
           eligible: result.eligible ?? 0,
@@ -209,7 +194,7 @@ export function useExcelImportActions({
           ...(scheduledDateTime ? { scheduledDateTime } : {})
         }
       };
-      const response = await actions.executeOperationAction(payload);
+      const response: ExecuteResult | null = await executeOperationClient(payload);
       if (response && response.items && response.items.jobId) {
         state.setIsReviewModalOpen(false);
         state.setFile(null);
@@ -254,7 +239,7 @@ export function useExcelImportActions({
         scope: scopeData,
         operation: 'addTax'
       };
-      const result = await actions.previewOperationAction(payload);
+      const result = await previewOperationClient(payload);
       if (result && 'records' in result) {
         state.setPreviewData(result);
         state.setIsPreviewModalOpen(true);

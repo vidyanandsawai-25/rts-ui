@@ -1,63 +1,79 @@
 "use client";
 
-import React from "react";
-import { RefreshCw, ChevronRight } from "lucide-react";
+import { AlertTriangle, Download, Play } from "lucide-react";
+import { Button } from "@/components/common/ActionButton";
 import type { MasterDataChangeSummary } from "@/types/addTaxes.types";
 
 interface MasterDataChangeBannerProps {
   summary: MasterDataChangeSummary | null;
-  onViewProperties: () => void;
   t: (key: string, values?: Record<string, string | number>) => string;
+  isProceedingMasterData: boolean;
+  isManualScopeBusy: boolean;
+  onProceed: () => void;
+  isExportingMasterDataCsv: boolean;
+  onExport: () => void;
 }
 
 /**
- * Banner shown on the Add Taxes screen when the SQL Server CDC pipeline has
- * flagged already-taxed properties as potentially needing recalculation
- * because a related master data record (e.g. Rate Master) changed.
+ * Banner shown on the Add Taxes screen when the SQL Server CDC pipeline has flagged already-taxed
+ * properties as potentially needing recalculation because a related master data record (e.g. Rate
+ * Master) changed. Renders nothing when there is no summary or nothing is flagged.
  *
- * Renders nothing when there is no summary or nothing is flagged.
+ * Moved out of AddTaxesConsole.tsx verbatim (pure relocation, no logic change) as part of splitting
+ * that file down in size — this replaces this file's own previous, simpler, unused content.
  */
-export const MasterDataChangeBanner: React.FC<MasterDataChangeBannerProps> = ({
+export function MasterDataChangeBanner({
   summary,
-  onViewProperties,
   t,
-}) => {
-  if (!summary || !summary.affectedCount || summary.affectedCount <= 0) return null;
-
-  const remarkSummary = summary.remarkSummary || t("masterDataChange.defaultRemark");
+  isProceedingMasterData,
+  isManualScopeBusy,
+  onProceed,
+  isExportingMasterDataCsv,
+  onExport,
+}: MasterDataChangeBannerProps) {
+  if (!summary || (summary.affectedCount ?? 0) <= 0) return null;
 
   return (
-    <div
-      className="rounded-lg border border-blue-300 bg-blue-50 px-3 py-2.5 animate-in fade-in slide-in-from-top-2 duration-300"
-      role="alert"
-      aria-live="assertive"
-    >
-      <div className="flex items-start gap-2">
-        <RefreshCw size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
-        <div className="flex-1 min-w-0 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-bold text-blue-900">
-            {t("masterDataChange.banner", {
-              remarkSummary,
-              count: summary.affectedCount,
-            })}
+    <div className="bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-all duration-200">
+      <div className="flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+        <div>
+          <h4 className="text-sm font-semibold text-amber-900">
+            {t('masterDataChange.alertTitle')}
+          </h4>
+          <p className="text-xs text-amber-800 mt-0.5">
+            <span className="font-bold text-amber-950">
+              {t('masterDataChange.alertDescription', { count: (summary.affectedCount ?? 0).toLocaleString() })}
+            </span>
+            {summary.remarkSummary ? ` (${summary.remarkSummary})` : ''}
           </p>
-          <button
-            type="button"
-            onClick={onViewProperties}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold
-                        bg-blue-100 text-blue-800 border border-blue-300
-                        hover:bg-blue-200 hover:border-blue-400 hover:text-blue-900
-                        active:bg-blue-300
-                        cursor-pointer transition-all duration-150
-                        focus:outline-none focus:ring-2 focus:ring-blue-500/40 flex-shrink-0"
-          >
-            {t("masterDataChange.viewProperties")}
-            <ChevronRight size={10} className="opacity-60 ml-0.5" />
-          </button>
         </div>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <Button
+          variant="primary"
+          size="sm"
+          icon={Play}
+          onClick={onProceed}
+          isLoading={isProceedingMasterData}
+          disabled={isProceedingMasterData || isManualScopeBusy || Boolean(summary?.activeJobCode)}
+          className="bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-xs border border-amber-700"
+        >
+          {summary?.activeJobCode ? t('masterDataChange.scheduled') : t('masterDataChange.proceedExecution')}
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={Download}
+          onClick={onExport}
+          disabled={isExportingMasterDataCsv}
+          className="bg-white border-amber-300 text-amber-900 hover:bg-amber-100 hover:border-amber-400 font-medium shadow-xs"
+        >
+          {isExportingMasterDataCsv ? t('masterDataChange.exporting') : t('masterDataChange.exportAffectedProperties')}
+        </Button>
       </div>
     </div>
   );
-};
+}
 
 export default MasterDataChangeBanner;

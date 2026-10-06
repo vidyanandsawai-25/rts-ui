@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Scope, ScopeOptionItem, ScopeItem } from '@/types/addTaxes.types';
-import type { AddTaxesActionsProps } from '../AddTaxesConsole';
+import type { WardItem } from '@/types/wardMaster.types';
 
 export interface ScopeSelectionPanelProps {
   scopes: ScopeItem[];
@@ -11,14 +11,18 @@ export interface ScopeSelectionPanelProps {
   scopeOptions: ScopeOptionItem[];
   zoneOptions?: { value: string; label: string }[];
   propertyTypeOptions?: { value: string; label: string }[];
+  // Server-prefetched (page.tsx) — Zone/Property Type/Assessment Status/Wards don't depend on any other selection.
+  initialZones?: { value: string; label: string }[];
+  initialPropertyTypes?: { value: string; label: string }[];
+  initialAssessmentStatuses?: { value: string; label: string }[];
+  initialWards?: WardItem[];
   onStartExecution?: (jobId: string, totalCount: number, scheduledTime?: string) => void;
   isInitialized: boolean;
   onPreview?: () => Promise<void>;
   isPreviewLoading?: boolean;
   financeYear?: string;
   financeYearId?: string | number;
-  actions: AddTaxesActionsProps;
-    onBindMasterDataRecalc?: (fn: (scope?: Scope | string) => Promise<void> | void) => void;
+  onBindMasterDataRecalc?: (fn: (scope?: Scope | string) => Promise<void> | void) => void;
   onProceedDisabledChange?: (disabled: boolean) => void;
 }
 

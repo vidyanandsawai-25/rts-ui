@@ -23,8 +23,31 @@ import {
   isEligibleCountResponseShape,
   normalizeEligibleCountResponse,
 } from "./add-taxes-types-guard";
+import type { WardItem } from "@/types/wardMaster.types";
 
 const logger = createLogger("AddTaxesService");
+
+/**
+ * Fetch ALL wards (PageSize=-1) for this screen's Ward dropdown. Mirrors
+ * `getAllWardsForLinkAction` (zone-master module) but kept local to this service so the Add Taxes
+ * Route Handler doesn't need to reach into an unrelated module's Server Action file.
+ */
+export async function getAllWardsForOperations(searchTerm?: string): Promise<{ data: WardItem[]; totalCount: number }> {
+  try {
+    const params = new URLSearchParams();
+    params.set("PageSize", "-1");
+    if (searchTerm) params.set("SearchTerm", searchTerm);
+    const response = await apiClient.get<{ items?: WardItem[]; totalCount?: number }>(`/Ward?${params.toString()}`);
+    if (!response.success || !response.data) {
+      throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch wards", "Get wards failed");
+    }
+    const items = response.data.items || [];
+    return { data: items, totalCount: response.data.totalCount || items.length };
+  } catch (error) {
+    logger.error("Error fetching wards", undefined, error);
+    throw error;
+  }
+}
 
 interface SearchByCategoryItem {
   propertyId: number;
@@ -572,6 +595,27 @@ export async function exportMasterDataChangesCsv(
   } catch (error) {
     logger.error("Error exporting master data changes CSV", undefined, error);
     throw error;
+  }
+}
+
+/**
+ * Fetch zone options mapped to {value, label} for Add Taxes operations.
+ * Service-layer helper so route.ts does not couple to localized page actions.ts.
+ */
+export async function fetchZoneOptionsService(): Promise<{ value: string; label: string }[]> {
+  try {
+    const { fetchZonesAction } = await import("@/app/[locale]/property-tax/zone-master/actions");
+    const res = await fetchZonesAction(1, -1);
+    const items = (res as { items?: { id: string | number; description?: string; zoneNo?: string }[] } | null)?.items;
+    return items
+      ? items.map((z) => ({
+          value: String(z.id),
+          label: z.description && z.zoneNo ? `${z.zoneNo} — ${z.description}` : (z.description || z.zoneNo || ""),
+        }))
+      : [];
+  } catch (error) {
+    logger.error("Error fetching zone options service", undefined, error);
+    return [];
   }
 }
 
