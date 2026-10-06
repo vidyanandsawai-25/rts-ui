@@ -13,7 +13,7 @@ interface UseBuildingGenerationProps {
   wardId?: number;
   propertyTypeId?: number;
   categoryId?: number;
-  societyDetailId?: number;
+  wingDetailId?: number;
   onGenerateSuccess?: () => void;
   t: (key: string, values?: Record<string, unknown>) => string;
 }
@@ -25,7 +25,7 @@ export function useBuildingGeneration({
   wardId,
   propertyTypeId,
   categoryId,
-  societyDetailId,
+  wingDetailId,
   onGenerateSuccess,
   t,
 }: UseBuildingGenerationProps) {
@@ -34,7 +34,7 @@ export function useBuildingGeneration({
 
   const handleGenerate = async () => {
     // Validate required configuration
-    if (!taxZoneId || !wardId || !societyDetailId) {
+    if (!taxZoneId || !wardId || !wingDetailId) {
       toast.error(t("partitionForm.wing.generate.errors.genericError"));
       return;
     }
@@ -63,7 +63,7 @@ export function useBuildingGeneration({
       addressEnglish: null,
       location: null,
       locationEnglish: null,
-      societyDetailId,
+      wingDetailId,
       propertyFloorId: item.propertyFloorId,
       createdBy: 0,
       createdDate: new Date().toISOString(),
@@ -111,7 +111,7 @@ export function useBuildingGeneration({
   const canGenerate = !!(
     taxZoneId &&
     wardId &&
-    societyDetailId &&
+    wingDetailId &&
     propertyTypeId &&
     categoryId &&
     buildingData.length > 0

@@ -6,13 +6,18 @@ import { PenLine, Building2 } from "lucide-react";
 import { IconOnlyActionButton } from "@/components/common/ActionButtons";
 
 export interface WingSummary {
+  /** WingDetailsMast.wingName - the wing's short label (e.g. "A") */
   wingName: string;
   count: number;
-  wingId: number;
+  /** WingItem.id (Wing master) referenced by this WingDetailsMast row */
+  wingMasterId: number;
   wingNo?: string;
-  societyDetailId: number;
+  /** WingDetailsMast.id - the FK required as wingDetailId in Property/Bulk */
+  wingDetailId: number;
   aminityCount?: number; // Amenity count from society wing details API
   propertyCount?: number; // Property count from society wing details API
+  /** True for the synthetic "Main Society" row - no wing, no action buttons */
+  isMainSociety?: boolean;
   [key: string]: unknown;
 }
 
@@ -72,10 +77,13 @@ export function getWingColumns({
     },
     {
       label: t("partitionForm.wing.table.actions"),
-      key: "wingId",
+      key: "wingDetailId",
       align: "center",
       render: (_value, row) => {
-        const isWingIdMissing = row.wingId == null;
+        if (row.isMainSociety) {
+          return <div className="flex items-center justify-center gap-1" />;
+        }
+        const isWingIdMissing = row.wingDetailId == null;
         return (
           <div className="flex items-center justify-center gap-1">
             {/* Edit Wing Name Button */}

@@ -159,6 +159,38 @@ describe("useCreatePropertyForm", () => {
     expect(result.current.formData.ownerName).toBe("John Doe");
   });
 
+  it("should clear society name when a non-apartment category is selected", () => {
+    const { result } = renderHook(() =>
+      useCreatePropertyForm({
+        isOpen: false,
+        nextPropertyNumber: "P001",
+        propertyTypes: mockPropertyTypes,
+        propertyCategories: [
+          ...mockPropertyCategories,
+          {
+            id: 2,
+            propertyCategoryName: "Commercial",
+            isActive: true,
+            createdDate: "2024-01-01",
+            updatedDate: null,
+          },
+        ],
+        taxZones: mockTaxZones,
+      })
+    );
+
+    act(() => {
+      result.current.setFormData((current) => ({
+        ...current,
+        categoryId: "1",
+        societyName: "Sunrise Society",
+      }));
+      result.current.handleFieldChange("categoryId", "2");
+    });
+
+    expect(result.current.formData.societyName).toBe("");
+  });
+
   it("should toggle bulk create mode", () => {
     const { result } = renderHook(() =>
       useCreatePropertyForm({

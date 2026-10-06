@@ -1016,6 +1016,17 @@ import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-maste
 import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
 import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
 import { createBulkBuildingProperties, getBuildingListByWard, getSocietyWingDetails } from "@/lib/api/zone-property.service";
+import {
+  getWingDetailsMastBySocietyDetailsMastId,
+  createWingDetailsMast,
+  updateWingDetailsMast,
+} from "@/lib/api/wingDetailsMast.services";
+import {
+  WingDetailsMastListResponse,
+  WingDetailsMastItem,
+  CreateWingDetailsMastPayload,
+  UpdateWingDetailsMastPayload,
+} from "@/types/zone-master/properties/wingDetailsMast.types";
 
 /**
  * Fetches all properties for a specific ward.
@@ -1361,6 +1372,132 @@ export async function updateSocietyDetailAction(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to update society detail" };
+  }
+}
+
+/**
+ * Fetches WingDetailsMast (wing) records for a SocietyDetailsMast record.
+ */
+export async function getWingDetailsMastBySocietyDetailsMastIdAction(societyDetailsMastId: number): Promise<{
+  success: boolean;
+  data?: WingDetailsMastListResponse;
+  error?: string;
+}> {
+  try {
+    if (!societyDetailsMastId || societyDetailsMastId <= 0) {
+      return { success: false, error: "Invalid society details ID" };
+    }
+
+    const result = await getWingDetailsMastBySocietyDetailsMastId(societyDetailsMastId);
+    return { success: true, data: result };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[getWingDetailsMastBySocietyDetailsMastIdAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[getWingDetailsMastBySocietyDetailsMastIdAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch wing details" };
+  }
+}
+
+/**
+ * Creates a new WingDetailsMast (wing) record, linked to an existing
+ * SocietyDetails record and a Wing master entry.
+ */
+export async function createWingDetailsMastAction(payload: CreateWingDetailsMastPayload): Promise<{
+  success: boolean;
+  data?: WingDetailsMastItem;
+  error?: string;
+}> {
+  try {
+    const userId = await getCurrentUserId();
+    const fullPayload: CreateWingDetailsMastPayload = {
+      ...payload,
+      createdBy: userId,
+      societyWingDetails: {
+        ...payload.societyWingDetails,
+        createdBy: userId,
+      },
+    };
+
+    const result = await createWingDetailsMast(fullPayload);
+
+    if (!result.success) {
+      return { success: false, error: result.message || "Failed to create wing detail" };
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+    return { success: true, data: result.items || undefined };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[createWingDetailsMastAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[createWingDetailsMastAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to create wing detail" };
+  }
+}
+
+/**
+ * Updates an existing WingDetailsMast (wing) record.
+ */
+export async function updateWingDetailsMastAction(
+  id: number,
+  payload: UpdateWingDetailsMastPayload
+): Promise<{
+  success: boolean;
+  data?: WingDetailsMastItem;
+  error?: string;
+}> {
+  try {
+    const userId = await getCurrentUserId();
+    const fullPayload: UpdateWingDetailsMastPayload = {
+      ...payload,
+      updatedBy: userId,
+    };
+
+    const result = await updateWingDetailsMast(id, fullPayload);
+
+    if (!result.success) {
+      return { success: false, error: result.message || "Failed to update wing detail" };
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+    return { success: true, data: result.items || undefined };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[updateWingDetailsMastAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[updateWingDetailsMastAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update wing detail" };
   }
 }
 

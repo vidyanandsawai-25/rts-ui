@@ -4,6 +4,7 @@ import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.ty
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
 import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { WingDetailsMastItem } from "@/types/zone-master/properties/wingDetailsMast.types";
 import { BuildingStructureItem } from "@/types/zone-master/properties/building-structure.types";
 
 const INITIAL: PartitionFormState = {
@@ -68,11 +69,18 @@ export function usePartitionFormState({
   const [floors] = useState<Floor[]>(ssrFloors);
   const [loadingFloors] = useState(false);
 
-  // Society details from SSR - with state for client-side updates after mutations
+  // Society details from SSR - with state for client-side updates after mutations.
+  // At most one row per property (society-level info only, wing identity now
+  // lives on WingDetailsMast).
   const [societyDetails, setSocietyDetails] = useState<SocietyDetailItem[]>(ssrSocietyDetails);
-  
+
   // Track previous ssrSocietyDetails to avoid unnecessary updates
   const prevSsrSocietyDetailsRef = useRef<SocietyDetailItem[]>(ssrSocietyDetails);
+
+  // WingDetailsMast records - the actual per-wing list for this property's
+  // society record. Fetched client-side (see useWingDetailsMastList) once the
+  // society record's id is known; not seeded from SSR.
+  const [wingDetailsMast, setWingDetailsMast] = useState<WingDetailsMastItem[]>([]);
 
   // State for building preview modal
   const [showPreview, setShowPreview] = useState(false);
@@ -112,14 +120,17 @@ export function usePartitionFormState({
     return ssrProperties.find(p => p.id === selectedPropertyId) || null;
   }, [selectedPropertyId, ssrProperties]);
 
-  // Get societyDetailId for the selected wing
-  const selectedSocietyDetailId = useMemo(() => {
+  // Resolve the WingDetailsMast.id (wingDetailId) for the currently selected
+  // wing letter. form.wingLetter holds the Wing master's wingNo; we cross
+  // reference the Wing master list to get its id (wingMasterId), then find
+  // the matching WingDetailsMast row for this property's society record.
+  const selectedWingDetailId = useMemo(() => {
     if (!form.wingLetter) return undefined;
-    const wing = wings.find(w => w.wingNo === form.wingLetter);
-    if (!wing) return undefined;
-    const societyDetail = societyDetails.find(sd => sd.wingId === wing.id);
-    return societyDetail?.id;
-  }, [form.wingLetter, wings, societyDetails]);
+    const wingMaster = wings.find(w => w.wingNo === form.wingLetter);
+    if (!wingMaster) return undefined;
+    const wingDetail = wingDetailsMast.find(w => w.wingMasterId === wingMaster.id && !w.markedForDeletion);
+    return wingDetail?.id;
+  }, [form.wingLetter, wings, wingDetailsMast]);
 
   return {
     form,
@@ -136,6 +147,8 @@ export function usePartitionFormState({
     loadingFloors,
     societyDetails,
     setSocietyDetails,
+    wingDetailsMast,
+    setWingDetailsMast,
     showPreview,
     setShowPreview,
     previewData,
@@ -143,7 +156,7 @@ export function usePartitionFormState({
     loadingPreview,
     setLoadingPreview,
     selectedProperty,
-    selectedSocietyDetailId,
+    selectedWingDetailId,
     INITIAL,
   };
 }

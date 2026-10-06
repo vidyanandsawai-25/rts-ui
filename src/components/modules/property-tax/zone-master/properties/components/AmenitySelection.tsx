@@ -4,6 +4,7 @@ import { useMemo, useEffect } from "react";
 import { Input, Select, ValidationMessage } from "@/components/common";
 import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
+import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
 import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
 
 interface AmenitySelectionProps {
@@ -12,6 +13,8 @@ interface AmenitySelectionProps {
   errors: PartitionFormErrors;
   setErrors: React.Dispatch<React.SetStateAction<PartitionFormErrors>>;
   wingDetails: SocietyWingDetailItem[];
+  /** The property's single SocietyDetailsMast row (0 or 1 item), from GET /SocietyDetails */
+  societyDetails: SocietyDetailItem[];
   calculateMaxAmenity: (wingName?: string | null) => number;
   t: (key: string, values?: Record<string, string | number | Date>) => string;
 }
@@ -22,24 +25,31 @@ export function AmenitySelection({
   errors,
   setErrors,
   wingDetails,
+  societyDetails,
   calculateMaxAmenity,
   t,
 }: AmenitySelectionProps) {
   const wingAlias = useAliasLabel("Wing", t("defaults.wing"));
 
-  // Wing options from society wing details
+  // "Main Society" (property-level, no wing) option first, then real wings
+  // from society wing details. The Main Society option's value stays "" -
+  // this is the existing "no wing selected" sentinel used everywhere else
+  // (usePartitionSubmit, usePartitionFormValidation, calculateMaxAmenity).
   const wingOptions = useMemo(() => {
-    const options: { value: string; label: string }[] = [];
-    
-    wingDetails.forEach((detail) => {
-      options.push({
+    const mainSocietyLabel = societyDetails[0]?.societyName?.trim() || t("partitionForm.amenity.mainSociety");
+    const mainSocietyOption = [
+      { value: "", label: mainSocietyLabel },
+    ];
+
+    const actualWingOptions = wingDetails
+      .filter((detail) => typeof detail.wingNo === "string" && detail.wingNo.trim() !== "")
+      .map((detail) => ({
         value: detail.wingNo,
-        label: `${detail.wingName}`
-      });
-    });
-    
-    return options;
-  }, [wingDetails]);
+        label: detail.wingName?.trim() || detail.wingNo,
+      }));
+
+    return [...mainSocietyOption, ...actualWingOptions];
+  }, [wingDetails, societyDetails, t]);
 
   // Calculate max amenity based on selected wing
   const maxAmenity = useMemo(() => {

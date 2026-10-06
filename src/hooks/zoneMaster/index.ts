@@ -13,6 +13,7 @@ export { useBuildingPreview } from "./useBuildingPreview";
 export { usePartitionSubmit } from "./usePartitionSubmit";
 export { useBuildingList } from "./useBuildingList";
 export { useSocietyWingDetails } from "./useSocietyWingDetails";
+export { useWingDetailsMastList } from "./useWingDetailsMastList";
 
 // Create Property Drawer Hooks
 export { useCreatePropertyForm } from "./useCreatePropertyForm";

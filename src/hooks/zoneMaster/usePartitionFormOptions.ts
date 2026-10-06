@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
-import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { WingDetailsMastItem } from "@/types/zone-master/properties/wingDetailsMast.types";
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
 import { PartitionFormState } from "@/types/zone-master/properties/partition-form.types";
@@ -8,7 +8,7 @@ import { BuildingListItem } from "@/types/zone-master/properties/building-list.t
 
 interface UsePartitionFormOptionsProps {
   allProperties: ZonePropertyItem[];
-  societyDetails: SocietyDetailItem[];
+  wingDetailsMast: WingDetailsMastItem[];
   wings: WingItem[];
   floors: Floor[];
   form: PartitionFormState;
@@ -19,7 +19,7 @@ interface UsePartitionFormOptionsProps {
 
 export function usePartitionFormOptions({
   allProperties,
-  societyDetails,
+  wingDetailsMast,
   wings,
   floors,
   form,
@@ -56,29 +56,26 @@ export function usePartitionFormOptions({
       });
   }, [allProperties, categoryMap, buildingList]);
 
-  // Wing options for Select dropdown
+  // Wing options for Select dropdown - built from this property's
+  // WingDetailsMast records (one per existing wing), cross-referenced with
+  // the Wing master list for the short wingNo code used as the option value.
   const wingOptions = useMemo(() => {
-    const uniqueWings = new Map<number, { wingNo: string; wingName: string }>();
-    
-    societyDetails.forEach((item) => {
-      if (!uniqueWings.has(item.wingId)) {
-        const wing = wings.find(w => w.id === item.wingId);
-        if (wing) {
-          uniqueWings.set(item.wingId, {
-            wingNo: wing.wingNo,
-            wingName: item.wingName
-          });
-        }
-      }
-    });
-    
-    return Array.from(uniqueWings.values())
+    return wingDetailsMast
+      .filter(w => !w.markedForDeletion)
+      .map((wingDetail) => {
+        const wingMaster = wings.find(w => w.id === wingDetail.wingMasterId);
+        return {
+          wingNo: wingMaster?.wingNo ?? "",
+          wingName: wingDetail.wingName ?? wingMaster?.wingNo ?? "",
+        };
+      })
+      .filter(w => w.wingNo)
       .map((wing) => ({
         value: wing.wingNo,
         label: `${wing.wingNo} - ${wing.wingName}`,
       }))
       .sort((a, b) => a.value.localeCompare(b.value));
-  }, [wings, societyDetails]);
+  }, [wings, wingDetailsMast]);
 
   // Generation Type static options
   const generationTypeOptions = [

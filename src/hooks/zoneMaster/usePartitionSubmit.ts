@@ -8,6 +8,8 @@ import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
 import { BulkPropertyItem } from "@/types/zone-master/properties/property-bulk.types";
 import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
+import { WingDetailsMastItem } from "@/types/zone-master/properties/wingDetailsMast.types";
+import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
 import { generateBuildingStructureAction, createBulkBuildingPropertiesAction } from "@/app/[locale]/property-tax/zone-master/actions";
 import { parseBulkPropertyErrors } from "@/lib/utils/bulk-property-errors";
 import { useAliasLabel } from "@/lib/providers/AliasLabelsProvider";
@@ -19,6 +21,11 @@ interface UsePartitionSubmitProps {
   selectedProperty: ZonePropertyItem | null;
   wings: WingItem[];
   wingDetails: SocietyWingDetailItem[];
+  wingDetailsMast: WingDetailsMastItem[];
+  setWingDetailsMast?: React.Dispatch<React.SetStateAction<WingDetailsMastItem[]>>;
+  societyDetails?: SocietyDetailItem[];
+  setSocietyDetails?: React.Dispatch<React.SetStateAction<SocietyDetailItem[]>>;
+  selectedPropertyId: number | null;
   floors: Floor[];
   validate: (data: PartitionFormState) => { valid: boolean; errors: PartitionFormErrors };
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -38,7 +45,8 @@ export function usePartitionSubmit({
   selectedWard,
   selectedProperty,
   wings,
-  wingDetails,
+  wingDetailsMast,
+  selectedPropertyId,
   floors,
   validate,
   setLoading,
@@ -163,20 +171,25 @@ export function usePartitionSubmit({
           return;
         }
 
-        // Determine the prefix and societyDetailId based on selected wing
+        if (!selectedPropertyId) {
+          toast.error("Property is required");
+          setLoading(false);
+          return;
+        }
+
+        // Determine the prefix and wingDetailId based on selected wing.
+        // "Main Society" (no wing selected) amenities are created the same
+        // way as BuildingPreviewModal's "Generate Properties" bulk call -
+        // just without a wingDetailId, using plain "AM" prefix.
         let amenityPrefix = "AM";
-        let societyDetailId: number | undefined;
-        
+        let wingDetailId: number | undefined;
+
         if (form.selectedWingForAmenity) {
-          // If a wing is selected, use wingNo-AM format and get societyDetailId
           amenityPrefix = `${form.selectedWingForAmenity}-AM`;
-          const selectedWingDetail = wingDetails.find(
-            detail => detail.wingNo === form.selectedWingForAmenity
-          );
-          societyDetailId = selectedWingDetail?.societyDetailId;
-        } else {
-          // Use main property's societyDetailId for amenities without wing
-          societyDetailId = selectedProperty.societyDetailId ?? undefined;
+          const wingMaster = wings.find(w => w.wingNo === form.selectedWingForAmenity);
+          wingDetailId = wingMaster
+            ? wingDetailsMast.find(w => w.wingMasterId === wingMaster.id && !w.markedForDeletion)?.id
+            : undefined;
         }
 
         const currentDate = new Date().toISOString();
@@ -196,14 +209,14 @@ export function usePartitionSubmit({
             addressEnglish: selectedProperty.addressEnglish || "",
             location: selectedProperty.location || "",
             locationEnglish: selectedProperty.locationEnglish || "",
-            societyDetailId,
+            wingDetailId,
             createdBy: 0, // Will be set by server action from authenticated user
             createdDate: currentDate,
           });
         }
 
         const result = await createBulkBuildingPropertiesAction(bulkPayload);
-        
+
         if (result.data) {
           if (result.data.allSucceeded) {
             toast.success(t("partitionMessages.amenityCreateSuccess", { count: result.data.successCount }));
@@ -242,7 +255,7 @@ export function usePartitionSubmit({
                 locationEnglish: item.locationEnglish,
                 mobileNo: null,
                 emailId: null,
-                societyDetailId: item.societyDetailId ?? null,
+                societyDetailId: null,
                 markedForDeletion: false,
                 propertySeqNo: null,
                 displayProperty: null,
@@ -358,7 +371,7 @@ export function usePartitionSubmit({
     } finally {
       setLoading(false);
     }
-  }, [form, setForm, selectedWard, selectedProperty, wings, wingDetails, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, refetchWingDetails, setAllProperties, t, wingAlias]);
+  }, [form, setForm, selectedWard, selectedProperty, selectedPropertyId, wings, wingDetailsMast, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, refetchWingDetails, setAllProperties, t, wingAlias]);
 
   return {
     handleSubmit,

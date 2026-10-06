@@ -41,6 +41,7 @@ export function useCreatePropertyForm({
     taxZoneId: "",
     propertyNo: "",
     ownerName: "",
+    societyName: "",
     isBulkCreate: false,
     fromPropertyNo: "",
     toPropertyNo: "",
@@ -94,12 +95,24 @@ export function useCreatePropertyForm({
 
   // Form field handlers
   const handleFieldChange = useCallback((field: keyof CreatePropertyFormData, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const isApartmentCategory =
+      field !== "categoryId" ||
+      (typeof value === "string" &&
+        propertyCategories.some(
+          (category) =>
+            String(category.id) === value &&
+            category.propertyCategoryName.trim().toLowerCase() === "apartment"
+        ));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "categoryId" && !isApartmentCategory ? { societyName: "" } : {}),
+    }));
     // Clear error when field is changed
     if (typeof value === "string" && errors[field as keyof CreatePropertyFormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
-  }, [errors]);
+  }, [errors, propertyCategories]);
 
   const handleBulkToggle = useCallback((checked: boolean) => {
     setFormData((prev) => ({
@@ -182,6 +195,7 @@ export function useCreatePropertyForm({
       taxZoneId: "",
       propertyNo: "",
       ownerName: "",
+      societyName: "",
       isBulkCreate: false,
       fromPropertyNo: "",
       toPropertyNo: "",

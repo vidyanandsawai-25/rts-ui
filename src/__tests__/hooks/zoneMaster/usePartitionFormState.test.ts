@@ -200,7 +200,7 @@ describe("usePartitionFormState", () => {
     expect(result.current.selectedProperty).toBeNull();
   });
 
-  it("should derive selectedSocietyDetailId when wing is selected", () => {
+  it("should derive selectedWingDetailId when wing is selected", () => {
     const { result } = renderHook(() =>
       usePartitionFormState({
         selectedPropertyId: 1,
@@ -213,7 +213,7 @@ describe("usePartitionFormState", () => {
     );
 
     // Initially no wing selected
-    expect(result.current.selectedSocietyDetailId).toBeUndefined();
+    expect(result.current.selectedWingDetailId).toBeUndefined();
   });
 
   it("should provide setters for state management", () => {

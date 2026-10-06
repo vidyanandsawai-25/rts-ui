@@ -2,7 +2,7 @@ import { renderHook } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { usePartitionFormOptions } from "@/hooks/zoneMaster/usePartitionFormOptions";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
-import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { WingDetailsMastItem } from "@/types/zone-master/properties/wingDetailsMast.types";
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
 import { PartitionFormState } from "@/types/zone-master/properties/partition-form.types";
@@ -91,60 +91,54 @@ describe("usePartitionFormOptions", () => {
     },
   ];
 
-  const mockSocietyDetails: SocietyDetailItem[] = [
+  const mockWingDetailsMast: WingDetailsMastItem[] = [
     {
-      id: 1,
-      propertyId: 1,
-      wingId: 1,
-      wingName: "Wing A",
-      societyName: "",
-      societyAddress: "",
-      secretaryName: "",
-      managerName: "",
-      landOwnerName: "",
-      builderName: "",
-      secretaryNameEnglish: "",
-      societyNameEnglish: "",
-      societyAddressEnglish: "",
-      managerNameEnglish: "",
-      landOwnerNameEnglish: "",
-      builderNameEnglish: "",
-      managerMobileNo: "",
-      secretaryMobileNo: "",
-      societyEmailId: "",
-      secretaryEmailId: "",
-      managerEmailId: "",
-      markedForDeletion: false,
+      id: 101,
       isActive: true,
+      createdBy: 1,
       createdDate: "2024-01-01",
+      updatedBy: null,
       updatedDate: null,
+      societyDetailsMastId: 1,
+      wingMasterId: 1,
+      wingName: "Wing A",
+      secretaryName: null,
+      managerName: null,
+      secretaryNameEnglish: null,
+      managerNameEnglish: null,
+      managerMobileNo: null,
+      managerMobileNoRemarkId: null,
+      secretaryMobileNo: null,
+      secretaryMobileNoRemarkId: null,
+      secretaryEmailId: null,
+      managerEmailId: null,
+      markedForDeletion: false,
+      markedForDeletionDate: null,
+      societyWingDetails: null,
     },
     {
-      id: 2,
-      propertyId: 1,
-      wingId: 2,
-      wingName: "Wing B",
-      societyName: "",
-      societyAddress: "",
-      secretaryName: "",
-      managerName: "",
-      landOwnerName: "",
-      builderName: "",
-      secretaryNameEnglish: "",
-      societyNameEnglish: "",
-      societyAddressEnglish: "",
-      managerNameEnglish: "",
-      landOwnerNameEnglish: "",
-      builderNameEnglish: "",
-      managerMobileNo: "",
-      secretaryMobileNo: "",
-      societyEmailId: "",
-      secretaryEmailId: "",
-      managerEmailId: "",
-      markedForDeletion: false,
+      id: 102,
       isActive: true,
+      createdBy: 1,
       createdDate: "2024-01-01",
+      updatedBy: null,
       updatedDate: null,
+      societyDetailsMastId: 1,
+      wingMasterId: 2,
+      wingName: "Wing B",
+      secretaryName: null,
+      managerName: null,
+      secretaryNameEnglish: null,
+      managerNameEnglish: null,
+      managerMobileNo: null,
+      managerMobileNoRemarkId: null,
+      secretaryMobileNo: null,
+      secretaryMobileNoRemarkId: null,
+      secretaryEmailId: null,
+      managerEmailId: null,
+      markedForDeletion: false,
+      markedForDeletionDate: null,
+      societyWingDetails: null,
     },
   ];
 
@@ -202,7 +196,7 @@ describe("usePartitionFormOptions", () => {
     const { result } = renderHook(() =>
       usePartitionFormOptions({
         allProperties: mockProperties,
-        societyDetails: mockSocietyDetails,
+        wingDetailsMast: mockWingDetailsMast,
         wings: mockWings,
         floors: mockFloors,
         form: initialForm,
@@ -223,7 +217,7 @@ describe("usePartitionFormOptions", () => {
     const { result } = renderHook(() =>
       usePartitionFormOptions({
         allProperties: mockProperties,
-        societyDetails: mockSocietyDetails,
+        wingDetailsMast: mockWingDetailsMast,
         wings: mockWings,
         floors: mockFloors,
         form: initialForm,
@@ -237,11 +231,11 @@ describe("usePartitionFormOptions", () => {
     });
   });
 
-  it("should generate wing options from society details", () => {
+  it("should generate wing options from wing details mast", () => {
     const { result } = renderHook(() =>
       usePartitionFormOptions({
         allProperties: mockProperties,
-        societyDetails: mockSocietyDetails,
+        wingDetailsMast: mockWingDetailsMast,
         wings: mockWings,
         floors: mockFloors,
         form: initialForm,
@@ -263,7 +257,7 @@ describe("usePartitionFormOptions", () => {
     const { result } = renderHook(() =>
       usePartitionFormOptions({
         allProperties: mockProperties,
-        societyDetails: mockSocietyDetails,
+        wingDetailsMast: mockWingDetailsMast,
         wings: mockWings,
         floors: mockFloors,
         form: initialForm,
@@ -285,7 +279,7 @@ describe("usePartitionFormOptions", () => {
     const { result } = renderHook(() =>
       usePartitionFormOptions({
         allProperties: mockProperties,
-        societyDetails: mockSocietyDetails,
+        wingDetailsMast: mockWingDetailsMast,
         wings: mockWings,
         floors: mockFloors,
         form: initialForm,
@@ -312,7 +306,7 @@ describe("usePartitionFormOptions", () => {
     const { result } = renderHook(() =>
       usePartitionFormOptions({
         allProperties: mockProperties,
-        societyDetails: mockSocietyDetails,
+        wingDetailsMast: mockWingDetailsMast,
         wings: mockWings,
         floors: mockFloors,
         form: formWithFromFloor,
@@ -335,7 +329,7 @@ describe("usePartitionFormOptions", () => {
     const { result } = renderHook(() =>
       usePartitionFormOptions({
         allProperties: mockProperties,
-        societyDetails: mockSocietyDetails,
+        wingDetailsMast: mockWingDetailsMast,
         wings: mockWings,
         floors: mockFloors,
         form: initialForm,
@@ -354,7 +348,7 @@ describe("usePartitionFormOptions", () => {
     const { result } = renderHook(() =>
       usePartitionFormOptions({
         allProperties: mockProperties,
-        societyDetails: mockSocietyDetails,
+        wingDetailsMast: mockWingDetailsMast,
         wings: mockWings,
         floors: mockFloors,
         form: formWithInvalidFromFloor,

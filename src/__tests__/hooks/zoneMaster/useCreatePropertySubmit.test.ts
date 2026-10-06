@@ -57,6 +57,7 @@ describe("useCreatePropertySubmit", () => {
     taxZoneId: "1",
     propertyNo: "P001",
     ownerName: "John Doe",
+    societyName: "",
     isBulkCreate: false,
     fromPropertyNo: "",
     toPropertyNo: "",
@@ -208,6 +209,45 @@ describe("useCreatePropertySubmit", () => {
     });
 
     expect(toast.success).toHaveBeenCalled();
+  });
+
+  it("should include a provided society name in the range API payload", async () => {
+    mockValidateForm.mockReturnValueOnce(true);
+    vi.mocked(createPropertyRangeAction).mockResolvedValueOnce({
+      success: true,
+      data: { successCount: 1, failedCount: 0, results: [] },
+    });
+
+    const { result } = renderHook(() =>
+      useCreatePropertySubmit({
+        formData: { ...mockFormData, societyName: "  Sunrise Society  " },
+        selectedWard: mockWard,
+        validateForm: mockValidateForm,
+        resetForm: mockResetForm,
+        onSuccess: mockOnSuccess,
+        onClose: mockOnClose,
+        startTransition: mockStartTransition,
+        t: mockT,
+      })
+    );
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(createPropertyRangeAction).toHaveBeenCalledWith("en", {
+      rangeFrom: "P001",
+      rangeTo: "P001",
+      template: {
+        propertyTypeId: 1,
+        categoryId: 1,
+        taxZoneId: 1,
+        wardId: 1,
+        ownerName: "John Doe",
+        societyName: "Sunrise Society",
+      },
+      startSequenceNo: 0,
+    });
   });
 
   it("should handle API error", async () => {
