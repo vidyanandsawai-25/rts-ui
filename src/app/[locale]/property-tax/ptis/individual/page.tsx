@@ -23,6 +23,7 @@ import {
   fetchIndividualDualMethodAction,
   fetchIndividualRateableValueAction,
   fetchIndividualSocialAndDiscountDetailsAction,
+  fetchPropertyRuleLogsAction,
 } from './action';
 import { fetchTaxDetailsByTab, type TaxDetailsResult } from './TaxDetails/fetchTaxDetails';
 import { buildInitialIndividualMasterData } from './individual-property.builder';
@@ -75,6 +76,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
     oldFloorRes,
     oldTaxesRes,
     mappedPropsRes,
+    ruleLogsRes,
   ] = await Promise.all([
     fetchPtisPageData(resolvedSearchParams, locale),
     propertyWorkflowStageService.getWorkflowStages().catch(() => null),
@@ -92,6 +94,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
     isPropIdValid && isOldDetailsTab ? getIndividualOldFloorDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
     isPropIdValid && isOldDetailsTab ? getIndividualOldTaxesDetailsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
     isPropIdValid && isOldDetailsTab ? getIndividualMappedPropertiesAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
+    isPropIdValid ? fetchPropertyRuleLogsAction(propertyIdRaw).catch(() => null) : Promise.resolve(null),
   ]);
 
   const resolvedPropertyId = isPropIdValid ? propertyIdRaw : (pageData?.resolvedPropertyId ?? undefined);
@@ -124,14 +127,16 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
   let finalOldFloorRes = oldFloorRes;
   let finalOldTaxesRes = oldTaxesRes;
   let finalMappedPropsRes = mappedPropsRes;
+  let finalRuleLogsRes = ruleLogsRes;
 
   // Complete SSR: if property was resolved (e.g. from pageData or query), ensure details are fetched server-side
   const needsTopSection = !finalTopSectionRes?.success;
   const needsWorkflow = !finalCurrentWorkflow?.success;
   const needsBelowFlex = !finalBelowFlexRes?.success;
   const needsOldDetails = isOldDetailsTab && (!finalOldDetailsRes?.success || !finalOldDetailsRes?.data);
+  const needsRuleLogs = !finalRuleLogsRes?.success;
 
-  if (resolvedPropertyId && (needsTopSection || needsWorkflow || needsBelowFlex || needsOldDetails)) {
+  if (resolvedPropertyId && (needsTopSection || needsWorkflow || needsBelowFlex || needsOldDetails || needsRuleLogs)) {
     const [
       lateTopSection,
       lateWorkflow,
@@ -140,6 +145,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
       lateOldFloor,
       lateOldTaxes,
       lateMappedProps,
+      lateRuleLogs,
     ] = await Promise.all([
       needsTopSection ? getIndividualQcTopSectionAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
       needsWorkflow ? propertyWorkflowStageService.getCurrentWorkflowDetail(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
@@ -155,6 +161,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
       (isOldDetailsTab && !finalOldFloorRes?.success) ? getIndividualOldFloorDetailsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
       (isOldDetailsTab && !finalOldTaxesRes?.success) ? getIndividualOldTaxesDetailsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
       (isOldDetailsTab && !finalMappedPropsRes?.success) ? getIndividualMappedPropertiesAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
+      needsRuleLogs ? fetchPropertyRuleLogsAction(resolvedPropertyId).catch(() => null) : Promise.resolve(null),
     ]);
     if (lateTopSection) finalTopSectionRes = lateTopSection;
     if (lateWorkflow) finalCurrentWorkflow = lateWorkflow;
@@ -163,6 +170,7 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
     if (lateOldFloor) finalOldFloorRes = lateOldFloor;
     if (lateOldTaxes) finalOldTaxesRes = lateOldTaxes;
     if (lateMappedProps) finalMappedPropsRes = lateMappedProps;
+    if (lateRuleLogs) finalRuleLogsRes = lateRuleLogs;
   }
 
   const initialQcTopSectionBelowFlex = (finalBelowFlexRes?.success && (finalBelowFlexRes.items || finalBelowFlexRes.data))
@@ -341,8 +349,16 @@ export default async function PtisIndividualPage({ params, searchParams }: PageP
             societyDetailId={resolvedSocietyDetailId}
             wingDetailId={resolvedWingDetailId}
             wingName={resolvedWingName}
-            hasAppliedRules={pageData.hasAppliedRules}
-            appliedRules={pageData.appliedRulesList}
+            hasAppliedRules={
+              (finalRuleLogsRes?.success && finalRuleLogsRes.data?.items && finalRuleLogsRes.data.items.length > 0)
+                ? true
+                : (pageData.hasAppliedRules || false)
+            }
+            appliedRules={
+              (finalRuleLogsRes?.success && finalRuleLogsRes.data?.items)
+                ? finalRuleLogsRes.data.items
+                : (pageData.appliedRulesList || [])
+            }
             locale={locale}
           />
         </PtisLayoutWrapper>

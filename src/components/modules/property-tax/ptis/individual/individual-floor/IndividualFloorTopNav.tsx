@@ -25,7 +25,7 @@ export const IndividualFloorTopNav: React.FC<IndividualFloorTopNavProps> = ({
   onTaxModeChange,
   isLoadingValuation = false,
   onOpenAppliedRules,
-  hasAppliedRules,
+  hasAppliedRules = true,
 }) => {
   const valuationView: 'rv' | 'cvm' | 'dual' =
     taxMode === 'capital' ? 'cvm' : taxMode === 'dual' ? 'dual' : 'rv';
@@ -134,25 +134,24 @@ export const IndividualFloorTopNav: React.FC<IndividualFloorTopNavProps> = ({
           <span>{tWing('valuation.dual', { defaultValue: 'Dual Method View (RV + CVM)' })}</span>
         </button>
 
-        <button
-          type="button"
-          id="applied-rules-tab-btn"
-          onClick={() => {
-            if (onOpenAppliedRules) {
-              onOpenAppliedRules();
-            } else if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('ptis:open-applied-rules'));
-            }
-          }}
-          className="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs select-none whitespace-nowrap bg-gradient-to-r from-indigo-50 via-white to-blue-50 border-2 border-indigo-200 text-indigo-700 hover:from-indigo-100 hover:to-blue-100 hover:text-indigo-900 active:scale-95"
-          title={tPtis('appliedRules.buttonLabel')}
-        >
-          <GitMerge className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-          <span>{tPtis('appliedRules.buttonLabel')}</span>
-          {hasAppliedRules && (
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse shrink-0" />
-          )}
-        </button>
+        {hasAppliedRules && (
+          <button
+            type="button"
+            id="applied-rules-tab-btn"
+            onClick={() => {
+              if (onOpenAppliedRules) {
+                onOpenAppliedRules();
+              } else if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('ptis:open-applied-rules'));
+              }
+            }}
+            className="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs select-none whitespace-nowrap bg-gradient-to-r from-indigo-50 via-white to-blue-50 border border-indigo-200 text-indigo-700 hover:from-indigo-100 hover:to-blue-100 hover:text-indigo-900 transition-all duration-300 font-bold active:scale-95"
+            title={tPtis('appliedRules.buttonLabel')}
+          >
+            <GitMerge className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+            <span>{tPtis('appliedRules.buttonLabel')}</span>
+          </button>
+        )}
       </div>
     </div>
   );

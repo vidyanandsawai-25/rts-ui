@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { PropertySearchBar } from '@/components/modules/property-tax/ptis/tabs/components/PropertySearchBar';
 import { IndividualPropertyMasterCard } from './individual-tabSection/IndividualPropertyMasterCard';
 import { PtisStatusMetricsHeader } from '@/components/modules/property-tax/ptis/apartment/WorkFlow/PtisStatusMetricsHeader';
 import { IndividualFloorIntelligence } from './individual-floor/IndividualFloorIntelligence';
 import { AppliedRulesDrawer } from '@/components/modules/property-tax/ptis/AppliedRulesDrawer';
-import { fetchPropertyRuleLogsAction } from '@/app/[locale]/property-tax/ptis/individual/action';
 import type { PropertyRuleLogItem } from '@/types/rule-engine';
 import type { IndividualPropertyMasterData } from '@/types/property-tax/individual';
 import type { RateableValueResponse } from '@/types/rateableValue.types';
@@ -109,10 +108,6 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
   }
 
   const [isAppliedRulesDrawerOpen, setIsAppliedRulesDrawerOpen] = useState(false);
-  const [fetchedRules, setFetchedRules] = useState<PropertyRuleLogItem[] | null>(null);
-
-  const currentAppliedRules = fetchedRules ?? appliedRules;
-  const hasRules = (hasAppliedRules !== undefined ? hasAppliedRules : false) || currentAppliedRules.length > 0;
 
   const handleTaxModeChange = (mode: PtisTaxMode) => {
     setCurrentTaxMode(mode);
@@ -129,6 +124,26 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
   );
   const { draft, isSearching, propertyId } = search;
 
+  const fallbackPropId = (initialData?.propertyDetails as { propertyId?: number | string })?.propertyId;
+  const isDraftMatchingInitial = !draft.propertyNo || draft.propertyNo === initialPropertyMasterData?.propertyNo || draft.propertyNo === initialData?.propertyDetails?.propertyNo;
+
+  const resolvedEffectivePropertyId = draft.propertyId
+    ? Number(draft.propertyId)
+    : Number(
+      propertyId ||
+      (isDraftMatchingInitial ? (initialPropertyMasterData?.propertyId || initialData?.tabHeaderInfo?.propertyId || fallbackPropId) : null)
+    ) || null;
+
+  const currentAppliedRules = useMemo(() => {
+    return isDraftMatchingInitial ? appliedRules : [];
+  }, [isDraftMatchingInitial, appliedRules]);
+
+  const hasRules = Boolean(
+    resolvedEffectivePropertyId &&
+    isDraftMatchingInitial &&
+    (hasAppliedRules || currentAppliedRules.length > 0)
+  );
+
   const resolvedUpicId =
     (initialPropertyMasterData?.upic && initialPropertyMasterData.upic !== '-')
       ? initialPropertyMasterData.upic
@@ -143,16 +158,6 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
     (initialPropertyMasterData?.propertyDescription && initialPropertyMasterData.propertyDescription !== '-')
       ? initialPropertyMasterData.propertyDescription
       : initialData?.propertyDetails?.propertyDescription || initialData?.tabHeaderInfo?.description || '';
-
-  const fallbackPropId = (initialData?.propertyDetails as { propertyId?: number | string })?.propertyId;
-  const isDraftMatchingInitial = !draft.propertyNo || draft.propertyNo === initialPropertyMasterData?.propertyNo || draft.propertyNo === initialData?.propertyDetails?.propertyNo;
-
-  const resolvedEffectivePropertyId = draft.propertyId
-    ? Number(draft.propertyId)
-    : Number(
-      propertyId ||
-      (isDraftMatchingInitial ? (initialPropertyMasterData?.propertyId || initialData?.tabHeaderInfo?.propertyId || fallbackPropId) : null)
-    ) || null;
 
   const resolvedWardId = draft.wardId
     ? String(draft.wardId)
@@ -176,19 +181,9 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
     searchParams?.get('wingName') ??
     null;
 
-  const handleOpenAppliedRules = useCallback(async () => {
+  const handleOpenAppliedRules = useCallback(() => {
     setIsAppliedRulesDrawerOpen(true);
-    if (resolvedEffectivePropertyId && (!currentAppliedRules || currentAppliedRules.length === 0)) {
-      try {
-        const res = await fetchPropertyRuleLogsAction(Number(resolvedEffectivePropertyId));
-        if (res.success && res.data?.items) {
-          setFetchedRules(res.data.items);
-        }
-      } catch (err) {
-        console.error('Failed to fetch applied rules for individual property:', err);
-      }
-    }
-  }, [resolvedEffectivePropertyId, currentAppliedRules]);
+  }, []);
 
   useEffect(() => {
     const handleCustomOpen = () => {
@@ -290,7 +285,7 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
           isLoading={isSearching || isLoading}
           locale={locale}
           onOpenAppliedRules={handleOpenAppliedRules}
-          hasAppliedRules={hasRules || (currentAppliedRules && currentAppliedRules.length > 0)}
+          hasAppliedRules={hasRules}
         />
       </div>
       {/* 5. SUMMARY CARDS SECTION */}
