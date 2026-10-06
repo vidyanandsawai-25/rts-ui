@@ -9,7 +9,11 @@ import type { PropertyComparisonResponse } from '@/types/propertyComparison.type
 import type { OldDetailsData } from '@/types/ptis.types';
 
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string, opts?: { count?: number }) => {
+  useTranslations: (namespace?: string) => (key: string, opts?: { count?: number }) => {
+    if (namespace === 'common' || key === 'yes' || key === 'no') {
+      if (key === 'yes') return 'Yes';
+      if (key === 'no') return 'No';
+    }
     const map: Record<string, string> = {
       alv: 'ALV',
       area: 'AREA',
@@ -28,6 +32,8 @@ vi.mock('next-intl', () => ({
       taxRetained: 'TAX (RETAINED)',
       changed: 'Changed',
       cvm: 'CVM',
+      yes: 'Yes',
+      no: 'No',
     };
     if (key === 'updated') return `${opts?.count ?? 0} Updated`;
     return map[key] || key;
@@ -134,7 +140,7 @@ describe('IndividualFloorSummaryCards', () => {
     expect(screen.getByText('₹20,50,000')).toBeInTheDocument();
     expect(screen.getByText('₹16,20,000')).toBeInTheDocument();
     expect(screen.getByText('₹18,45,000')).toBeInTheDocument();
-    expect(screen.getByText('2 Updated')).toBeInTheDocument();
+    expect(screen.getByText('Yes')).toBeInTheDocument();
   });
 
   it('hides ALV card when taxMode is capital valuation mode', () => {
@@ -186,7 +192,32 @@ describe('IndividualFloorSummaryCards', () => {
 
     expect(screen.getByText('100.00')).toBeInTheDocument();
     expect(screen.getByText('120.00')).toBeInTheDocument();
-    expect(screen.getByText('↑ +20.00 sq.ft')).toBeInTheDocument();
-    expect(screen.getByText('Changed')).toBeInTheDocument();
+    expect(screen.getByText('+20.00')).toBeInTheDocument();
+    expect(screen.getByText('(sq.ft)')).toBeInTheDocument();
+    expect(screen.getByText('Yes')).toBeInTheDocument();
+  });
+
+  it('renders skeleton cards when isLoading is true', () => {
+    const { container } = render(
+      <IndividualFloorSummaryCards
+        isLoading={true}
+        taxMode="rateable"
+      />
+    );
+
+    const pulseElements = container.querySelectorAll('.animate-pulse');
+    expect(pulseElements.length).toBe(5);
+  });
+
+  it('renders 4 skeleton cards when isLoading is true in capital tax mode', () => {
+    const { container } = render(
+      <IndividualFloorSummaryCards
+        isLoading={true}
+        taxMode="capital"
+      />
+    );
+
+    const pulseElements = container.querySelectorAll('.animate-pulse');
+    expect(pulseElements.length).toBe(4);
   });
 });

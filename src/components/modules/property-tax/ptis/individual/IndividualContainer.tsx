@@ -297,6 +297,7 @@ export const IndividualContainer: React.FC<IndividualContainerProps> = ({
           comparisonData={initialComparisonData}
           oldDetailsData={initialData?.oldDetails ?? undefined}
           taxMode={currentTaxMode}
+          isLoading={isSearching || isLoading}
         />
       </div>
 
