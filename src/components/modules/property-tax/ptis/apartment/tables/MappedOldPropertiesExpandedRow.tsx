@@ -118,7 +118,7 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
             <tr className="h-8">
               <th className="px-2 py-1 text-center w-12 min-w-[48px] sticky left-0 bg-emerald-50 z-30">#</th>
               <th className="px-2.5 py-1 whitespace-nowrap sticky left-12 bg-emerald-50 z-30 border-r border-emerald-200 w-28 min-w-[100px] max-w-[125px]">{t('oldPropertyNo') || 'Old Property No'}</th>
-              <th className="px-2.5 py-1 whitespace-nowrap">{t('wingFlr') || 'Wing / Flr'}</th>
+              <th className="px-2.5 py-1 whitespace-nowrap">{t('wingFlr') || 'Floor'}</th>
               <th className="px-2.5 py-1 whitespace-nowrap">{t('use') || 'Use'}</th>
               <th className="px-2.5 py-1 whitespace-nowrap">{t('constType') || 'Const Type'}</th>
               <th className="px-2.5 py-1 text-center whitespace-nowrap">{t('year') || 'Year'}</th>
@@ -178,9 +178,14 @@ export const MappedOldPropertiesExpandedRow: React.FC<MappedOldPropertiesExpande
                     >
                       {propertyLabel}
                     </td>
-                    <td className="px-2.5 py-1 text-emerald-700 font-semibold whitespace-nowrap align-middle">{[m.wing, m.floor].filter(Boolean).join(' / ') || '-'}</td>
-                    <td className="px-2.5 py-1 whitespace-nowrap align-middle">{m.typeOfUse || '-'}</td>
-                    <td className="px-2.5 py-1 whitespace-nowrap align-middle">{m.constructionType || '-'}</td>
+                    <td
+                      className="px-2.5 py-1 text-emerald-700 font-semibold whitespace-nowrap align-middle"
+                      title={m.floor || undefined}
+                    >
+                      {m.floorCode || m.floor || '-'}
+                    </td>
+                    <td className="px-2.5 py-1 whitespace-nowrap align-middle" title={m.typeOfUse || undefined}>{m.typeOfUseCode || m.typeOfUse || '-'}</td>
+                    <td className="px-2.5 py-1 whitespace-nowrap align-middle" title={m.constructionType || undefined}>{m.constructionCode || m.constructionType || '-'}</td>
                     <td className="px-2.5 py-1 text-center whitespace-nowrap align-middle">{m.constructionYear || m.oldAssessmentYear || '-'}</td>
                     <td className="px-2.5 py-1 text-right font-mono whitespace-nowrap align-middle">{m.builtupASqFt ?? m.constructionArea ?? m.carpetASqFt ?? '-'}</td>
                     <td className="px-2.5 py-1 text-right font-mono font-bold text-emerald-800 whitespace-nowrap align-middle">{m.rateableValue != null ? `₹${Number(m.rateableValue).toLocaleString()}` : '-'}</td>

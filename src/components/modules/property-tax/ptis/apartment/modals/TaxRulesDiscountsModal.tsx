@@ -55,7 +55,7 @@ export const TaxRulesDiscountsModal: React.FC<TaxRulesDiscountsModalProps> = ({
   } = useTaxRulesModalData({ open, unit, appliedRules });
 
   const resolvedApartment = apartmentName || unit?.owner || 'Property Details';
-  const resolvedWing = unit?.wgFl || wingName || unit?.rawSurvey?.wing || '-';
+  const resolvedWing = wingName || unit?.rawSurvey?.wing || '-';
   const resolvedUnitNo = unit?.prop || unit?.rawSurvey?.flatOrShopNo || '-';
   const resolvedUse = unit?.use || unit?.rawSurvey?.typeOfUse || '-';
   const resolvedOwner = unit?.owner || unit?.rawSurvey?.ownerName || '-';

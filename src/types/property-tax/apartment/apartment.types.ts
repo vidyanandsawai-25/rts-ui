@@ -48,6 +48,7 @@ export interface SurveyDetailDto {
   renterName?: string | null;
   renterNameEnglish?: string | null;
   typeOfUse?: string | null;
+  typeOfUseCode?: string | null;
   type?: string | null;
   apartmentType?: string | null;
   partType?: string | null;
@@ -56,11 +57,13 @@ export interface SurveyDetailDto {
   wingDetailId?: number | null;
   noOfRooms?: number | null;
   floor?: string | null;
+  floorCode?: string | null;
   subFloor?: string | null;
   subTypeOfUse?: string | null;
   constructionYear?: string | null;
   assessmentYear?: string | null;
   constructionType?: string | null;
+  constructionCode?: string | null;
   constructionArea?: number | null;
   oldConstructionArea?: number | null;
   oldConstructionYear?: string | null;

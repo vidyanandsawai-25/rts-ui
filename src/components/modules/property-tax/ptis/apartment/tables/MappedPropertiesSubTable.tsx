@@ -163,7 +163,7 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
             >
               {t('propNo') || 'Prop No'}
             </th>
-            <th className="px-2.5 py-1 whitespace-nowrap">{t('wingFlr') || 'Wing / Flr'}</th>
+            <th className="px-2.5 py-1 whitespace-nowrap">{t('wingFlr') || 'Floor'}</th>
             <th className="px-2.5 py-1 whitespace-nowrap">{t('type') || 'Type'}</th>
             <th className="px-2.5 py-1 whitespace-nowrap">{t('use') || 'Use'}</th>
             <th className="px-2.5 py-1 whitespace-nowrap">{t('constType') || 'Const Type'}</th>
@@ -272,12 +272,15 @@ export const MappedPropertiesSubTable: React.FC<MappedPropertiesSubTableProps> =
                   >
                     {propLabel}
                   </td>
-                  <td className={cn('px-2.5 py-1 font-semibold whitespace-nowrap align-middle', isExisting ? 'text-emerald-700' : 'text-blue-700')}>
-                    {[m.wing, m.floor].filter(Boolean).join(' / ') || '-'}
+                  <td
+                    className={cn('px-2.5 py-1 font-semibold whitespace-nowrap align-middle', isExisting ? 'text-emerald-700' : 'text-blue-700')}
+                    title={m.floor || undefined}
+                  >
+                    {m.floorCode || m.floor || '-'}
                   </td>
                   <td className="px-2.5 py-1 whitespace-nowrap align-middle">{m.apartmentType || m.propertyTypeName || m.type || '-'}</td>
-                  <td className="px-2.5 py-1 whitespace-nowrap align-middle">{m.typeOfUse || m.subTypeOfUse || '-'}</td>
-                  <td className="px-2.5 py-1 whitespace-nowrap align-middle">{m.constructionType || '-'}</td>
+                  <td className="px-2.5 py-1 whitespace-nowrap align-middle" title={m.typeOfUse || undefined}>{m.typeOfUseCode || m.typeOfUse || m.subTypeOfUse || '-'}</td>
+                  <td className="px-2.5 py-1 whitespace-nowrap align-middle" title={m.constructionType || undefined}>{m.constructionCode || m.constructionType || '-'}</td>
                   <td className="px-2.5 py-1 text-center whitespace-nowrap align-middle">{m.constructionYear || m.assessmentYear || '-'}</td>
                   <td className="px-2.5 py-1 text-right font-mono whitespace-nowrap align-middle">{m.carpetASqFt ?? m.carpetASqMtr ?? '-'}</td>
                   <td className="px-2.5 py-1 text-right font-mono whitespace-nowrap align-middle">{m.builtupASqFt ?? m.builtupASqMtr ?? '-'}</td>

@@ -18,7 +18,7 @@ interface ColumnDef {
 const EXISTING_ASSESSMENT_COLUMNS: ColumnDef[] = [
   { key: 'index', labelKey: 'srNo', titleKey: 'srNoTitle', defaultLabel: '#', defaultTitle: 'Serial Number / Row Index', className: 'px-1 py-1 text-center w-12 sticky left-0 bg-emerald-100/90 text-emerald-950 z-30 border-r border-emerald-200 shadow-2xs' },
   { key: 'prop', labelKey: 'propNo', titleKey: 'propNoTitle', defaultLabel: 'PROP NO', defaultTitle: 'Property Number / Partition Number / Flat Number', className: 'px-2.5 py-2 text-left w-28 min-w-[100px] max-w-[125px]' },
-  { key: 'wgFl', labelKey: 'wingFloor', titleKey: 'wingFloorTitle', defaultLabel: 'WING / FLOOR', defaultTitle: 'Wing Name and Floor Number', className: 'px-3 py-2 text-left min-w-[120px]' },
+  { key: 'wgFl', labelKey: 'wingFloor', titleKey: 'wingFloorTitle', defaultLabel: 'FLOOR', defaultTitle: 'Floor Code (G, 1, 2 ...)', className: 'px-3 py-2 text-left min-w-[120px]' },
   { key: 'type', labelKey: 'type', titleKey: 'typeTitle', defaultLabel: 'TYPE', defaultTitle: 'Apartment Type / Property Category', className: 'px-3 py-2 text-left min-w-[80px]' },
   { key: 'cty', labelKey: 'constType', titleKey: 'constTypeTitle', defaultLabel: 'CONST TYPE', defaultTitle: 'Construction Type', className: 'px-3 py-2 text-left min-w-[120px]' },
   { key: 'ayr', labelKey: 'asmtYear', titleKey: 'asmtYearTitle', defaultLabel: 'ASMT YEAR', defaultTitle: 'Assessment Year', className: 'px-3 py-2 text-center min-w-[85px]' },

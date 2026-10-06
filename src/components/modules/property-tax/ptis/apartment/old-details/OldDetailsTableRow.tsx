@@ -82,7 +82,7 @@ export const OldDetailsTableRow: React.FC<OldDetailsTableRowProps> = ({ item, id
       case 'oldWardZone':
         return item.oldWardNo && item.oldZoneNo ? `${item.oldWardNo} / ${item.oldZoneNo}` : (item.oldWardNo || item.oldZoneNo || '—');
       case 'oldWingFloor':
-        return item.oldWing && item.oldFloor ? `${item.oldWing} / ${item.oldFloor}` : (item.oldWing || item.oldFloor || '—');
+        return item.oldFloor || '—';
       case 'oldEgovNo':
         return item.oldEgovNo || '—';
       case 'oldCsnPlot':

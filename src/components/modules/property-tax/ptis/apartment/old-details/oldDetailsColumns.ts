@@ -19,7 +19,7 @@ export const OLD_DETAILS_COLUMNS: OldDetailsColDef[] = [
   // 2. Old Historical Record Details
   { key: 'oldPropFlat', label: 'OLD PROP / FLAT', minWidth: 'min-w-[130px]', align: 'text-left' },
   { key: 'oldWardZone', label: 'OLD WARD / ZONE', minWidth: 'min-w-[120px]', align: 'text-left' },
-  { key: 'oldWingFloor', label: 'OLD WING / FLOOR', minWidth: 'min-w-[120px]', align: 'text-left' },
+  { key: 'oldWingFloor', label: 'OLD FLOOR', minWidth: 'min-w-[120px]', align: 'text-left' },
   { key: 'oldEgovNo', label: 'OLD E-GOV NO', minWidth: 'min-w-[120px]', align: 'text-left' },
   { key: 'oldCsnPlot', label: 'OLD CSN / PLOT', minWidth: 'min-w-[110px]', align: 'text-left' },
   { key: 'oldUseType', label: 'OLD USE TYPE', minWidth: 'min-w-[120px]', align: 'text-left' },

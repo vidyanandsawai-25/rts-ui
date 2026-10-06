@@ -467,6 +467,7 @@ export interface MappedNewPropertyItem {
   renterName?: string | null;
   renterNameEnglish?: string | null;
   typeOfUse?: string | null;
+  typeOfUseCode?: string | null;
   type?: string | null;
   apartmentType?: string | null;
   partType?: string | null;
@@ -475,11 +476,13 @@ export interface MappedNewPropertyItem {
   wingDetailId?: number | null;
   noOfRooms?: number | null;
   floor?: string | null;
+  floorCode?: string | null;
   subFloor?: string | null;
   subTypeOfUse?: string | null;
   constructionYear?: string | null;
   assessmentYear?: string | null;
   constructionType?: string | null;
+  constructionCode?: string | null;
   calculationValue?: number | null;
   capitalValue?: number | null;
   rateableValue?: number | null;
@@ -556,11 +559,14 @@ export interface MappedOldPropertyItem {
   occupierName?: string | null;
   occupierNameEnglish?: string | null;
   floor?: string | null;
+  floorCode?: string | null;
   wing?: string | null;
   noOfRooms?: number | null;
   constructionYear?: string | null;
   typeOfUse?: string | null;
+  typeOfUseCode?: string | null;
   constructionType?: string | null;
+  constructionCode?: string | null;
   rateableValue?: number | null;
   capitalValue?: number | null;
   totalTax?: number | null;

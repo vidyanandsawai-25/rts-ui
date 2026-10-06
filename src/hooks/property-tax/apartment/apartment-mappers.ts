@@ -93,12 +93,9 @@ export function mapSurveyDetailToUnit(
   if (flatNo && flatNo !== '-' && flatNo !== partitionNo && flatNo !== propNo) parts.push(flatNo);
   const prop = parts.length > 0 ? parts.join(' - ') : '-';
 
-  const wing = (detail.wing || '').trim();
   const floorStr = (detail.floor || '').trim();
-  let wgFl = '-';
-  if (wing && floorStr) wgFl = `${wing} / ${floorStr}`;
-  else if (wing) wgFl = wing;
-  else if (floorStr) wgFl = floorStr;
+  // The table column shows only the short floor code (G, 1, 2 ...), no wing; the full description stays in `flr` for filters.
+  const wgFl = (detail.floorCode || '').trim() || floorStr || '-';
 
   const aptType = (detail.apartmentType || '').trim();
   const propTypeName = (detail.propertyTypeName || '').trim();
@@ -114,10 +111,10 @@ export function mapSurveyDetailToUnit(
     type = fallbackType;
   }
 
-  const cty = (detail.constructionType || detail.oldConstructionType || '').trim() || '-';
+  const cty = (detail.constructionCode || detail.constructionType || detail.oldConstructionType || '').trim() || '-';
   const ayr = (detail.assessmentYear || detail.oldAssessmentYear || '').trim() || '-';
   const cyr = (detail.constructionYear || detail.oldConstructionYear || '').trim() || '-';
-  const use = (detail.typeOfUse || detail.subTypeOfUse || detail.oldUseType || '').trim() || '-';
+  const use = (detail.typeOfUseCode || detail.typeOfUse || detail.subTypeOfUse || detail.oldUseType || '').trim() || '-';
 
   const cptFt = detail.carpetASqFt ?? (detail.constructionArea ?? detail.oldConstructionArea ?? null);
   const cptMtr = detail.carpetASqMtr ?? null;
