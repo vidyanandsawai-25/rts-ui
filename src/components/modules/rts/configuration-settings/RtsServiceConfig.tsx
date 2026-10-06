@@ -38,7 +38,6 @@ export interface Service {
   name: string;
   departmentId: string;
   localName: string | null;
-  govtServiceCode?: number | null;
   serviceCode?: string | null;
   description?: string | null;
   serviceUrl: string | null;
@@ -57,7 +56,6 @@ export interface SaveServicePayload {
   name: string;
   departmentId: string;
   localName?: string | null;
-  govtServiceCode?: number | null;
   serviceCode?: string | null;
   description?: string | null;
   serviceUrl?: string | null;
@@ -117,7 +115,6 @@ type ServiceRow = Record<string, unknown> & {
   name: string;
   departmentName: string;
   localName: string | null;
-  govtServiceCode?: number | null;
   serviceCode?: string | null;
   serviceUrl: string | null;
   sla: string | number | null;
@@ -177,7 +174,6 @@ export default function RtsServiceConfig({
   const [departmentId, setDepartmentId] = useState("");
   const [serviceName, setServiceName] = useState("");
   const [localName, setLocalName] = useState("");
-  const [govtServiceCode, setGovtServiceCode] = useState<string>("");
   const [serviceCode, setServiceCode] = useState("");
   const [sla, setSla] = useState<string>("");
   const [fees, setFees] = useState<string>("");
@@ -211,7 +207,6 @@ export default function RtsServiceConfig({
     setDepartmentId(departments[0]?.id ?? "");
     setServiceName("");
     setLocalName("");
-    setGovtServiceCode("");
     setServiceCode("");
     setSla("15");
     setFees("0");
@@ -234,7 +229,6 @@ export default function RtsServiceConfig({
     setDepartmentId(service.departmentId);
     setServiceName(service.name);
     setLocalName(service.localName ?? "");
-    setGovtServiceCode(service.govtServiceCode != null ? String(service.govtServiceCode) : "");
     setServiceCode(service.serviceCode ?? "");
     setSla(service.sla != null ? String(service.sla) : "");
     setFees(service.fees != null ? String(service.fees) : "0");
@@ -267,7 +261,6 @@ export default function RtsServiceConfig({
       departmentId,
       name: serviceName.trim(),
       localName: localName.trim() || null,
-      govtServiceCode: govtServiceCode.trim() ? Number(govtServiceCode.trim()) : null,
       serviceCode: serviceCode.trim() || null,
       description: description.trim() || null,
       serviceUrl: serviceUrl.trim() || null,
@@ -363,8 +356,7 @@ export default function RtsServiceConfig({
       const matchesSearch =
         service.name.toLowerCase().includes(query) ||
         (service.localName && service.localName.toLowerCase().includes(query)) ||
-        (service.serviceCode && service.serviceCode.toLowerCase().includes(query)) ||
-        (service.govtServiceCode && String(service.govtServiceCode).includes(query));
+        (service.serviceCode && service.serviceCode.toLowerCase().includes(query));
 
       const matchesDepartment =
         !selectedDepartmentId || service.departmentId === selectedDepartmentId;
@@ -385,7 +377,6 @@ export default function RtsServiceConfig({
     srNo: (page - 1) * 12 + index + 1,
     name: service.name,
     localName: service.localName,
-    govtServiceCode: service.govtServiceCode,
     serviceCode: service.serviceCode,
     serviceUrl: service.serviceUrl,
     sla: service.sla,
@@ -429,11 +420,6 @@ export default function RtsServiceConfig({
             {row.serviceCode && (
               <span className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[10px] text-slate-600">
                 {String(row.serviceCode)}
-              </span>
-            )}
-            {row.govtServiceCode && (
-              <span className="rounded bg-blue-50 px-1 py-0.5 font-mono text-[10px] text-blue-700">
-                Govt: {String(row.govtServiceCode)}
               </span>
             )}
             {row.serviceUrl && (
@@ -743,18 +729,6 @@ export default function RtsServiceConfig({
               />
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-slate-500">
-                {tRts("masters.govtServiceCode")}
-              </Label>
-              <Input
-                type="number"
-                value={govtServiceCode}
-                placeholder={tRts("masters.govtServiceCodePlaceholder")}
-                onChange={(e) => setGovtServiceCode(e.target.value)}
-                fullWidth
-              />
-            </div>
 
             {/* SLA & Fees */}
             <div className="space-y-1">

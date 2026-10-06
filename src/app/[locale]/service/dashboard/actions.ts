@@ -343,9 +343,10 @@ export async function resolveExternalServiceNavigationAction(
   return result;
 }
 
-/** Loads all citizen dashboard data from the active server-side profile session. */
+/** Loads all citizen dashboard data from the active server-side profile session or Aaple Sarkar CUID. */
 export async function getCitizenDashboardData(
-  requestedPageNumber?: number
+  requestedPageNumber?: number,
+  cuidParam?: string
 ): Promise<CitizenDashboardData> {
   const pageNumber = normalizeCitizenDashboardPageNumber(requestedPageNumber);
   const emptyPagination = createCitizenDashboardPagination(pageNumber, 0);
@@ -356,8 +357,72 @@ export async function getCitizenDashboardData(
     console.error("Failed to fetch dashboard departments:", err);
   }
 
+  const cookieStore = await cookies();
+  const profileCookie = cookieStore.get("rts_citizen_profile")?.value;
+  const cuidCookie = cuidParam?.trim() || cookieStore.get("CUID")?.value?.trim();
+
+  // 1. If citizen accessed via Aaple Sarkar (CUID / Track ID present)
+  if (cuidCookie) {
+    try {
+      const asResponse = await apiClient.post<{
+        status: boolean;
+        message: string;
+        totalCount: number;
+        data: Array<{
+          applicationNo: string;
+          aapleSarkarTrackId: string;
+          rtsServiceId: number;
+          mahaITServiceId: number;
+          serviceName: string;
+          serviceNameMr: string;
+          applicationStatus: string;
+          status: string;
+          createdDate?: string;
+          issuedCertificateGuid?: string;
+          certificateUrl?: string;
+          trackingUrl?: string;
+        }>;
+      }>('/AapleSarkar/GetAapleSarkarApplications', {
+        CitizenUserId: cuidCookie,
+        PageNumber: pageNumber,
+        PageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
+      });
+
+      const asPayload = asResponse.data;
+      if (asResponse.success && asPayload?.status && Array.isArray(asPayload.data)) {
+        const userApplications: RtsMisDashboardUserApplicationItem[] = asPayload.data.map(
+          (item) => ({
+            serviceName: item.serviceName || "Service",
+            serviceNameLocal: item.serviceNameMr || item.serviceName || "सेवा",
+            applicationNo: item.applicationNo || item.aapleSarkarTrackId,
+            propertyNo: null,
+            upicId: cuidCookie,
+            sla: 15,
+            submittedDate: item.createdDate || "",
+            status: item.status || "Pending",
+            remark: item.applicationStatus,
+          })
+        );
+
+        return {
+          departments,
+          upicId: cuidCookie,
+          userApplications,
+          pagination: {
+            pageNumber,
+            pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
+            hasPreviousPage: pageNumber > 1,
+            hasNextPage: (asPayload.totalCount ?? 0) > pageNumber * CITIZEN_DASHBOARD_PAGE_SIZE,
+          },
+        };
+      }
+    } catch (asErr) {
+      console.error("Failed to load Aaple Sarkar citizen applications:", asErr);
+    }
+  }
+
+  // 2. Standard RTS citizen profile flow
   try {
-    const profileCookie = (await cookies()).get("rts_citizen_profile")?.value;
     if (!profileCookie) {
       return { departments, userApplications: [], pagination: emptyPagination };
     }
@@ -387,10 +452,38 @@ export async function getCitizenDashboardData(
   }
 }
 
-/** Loads the logged-in citizen's MIS applications from the server-only profile cookie. */
-export async function getCitizenMisApplications(): Promise<RtsMisDashboardUserApplicationItem[]> {
+/** Loads the logged-in citizen's MIS applications from the server-only profile cookie or Aaple Sarkar CUID. */
+export async function getCitizenMisApplications(cuidParam?: string): Promise<RtsMisDashboardUserApplicationItem[]> {
   try {
-    const profileCookie = (await cookies()).get("rts_citizen_profile")?.value;
+    const cookieStore = await cookies();
+    const profileCookie = cookieStore.get("rts_citizen_profile")?.value;
+    const cuidCookie = cuidParam?.trim() || cookieStore.get("CUID")?.value?.trim();
+
+    if (cuidCookie) {
+      const asResponse = await apiClient.post<{
+        status: boolean;
+        data: Array<any>;
+      }>('/AapleSarkar/GetAapleSarkarApplications', {
+        CitizenUserId: cuidCookie,
+        PageNumber: 1,
+        PageSize: 100,
+      }).catch(() => null);
+
+      if (asResponse?.success && asResponse.data?.status && Array.isArray(asResponse.data.data)) {
+        return asResponse.data.data.map((item) => ({
+          serviceName: item.serviceName || "Service",
+          serviceNameLocal: item.serviceNameMr || item.serviceName || "सेवा",
+          applicationNo: item.applicationNo || item.aapleSarkarTrackId,
+          propertyNo: null,
+          upicId: cuidCookie,
+          sla: 15,
+          submittedDate: item.createdDate || "",
+          status: item.status || "Pending",
+          remark: item.applicationStatus,
+        }));
+      }
+    }
+
     if (!profileCookie) return [];
 
     const profile = JSON.parse(profileCookie) as CitizenProfileCookie;

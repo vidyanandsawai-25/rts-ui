@@ -23,7 +23,6 @@ export type ConfigService = {
   name: string;
   departmentId: string;
   localName: string | null;
-  govtServiceCode: number | null;
   serviceCode: string | null;
   description: string | null;
   serviceUrl: string | null;
@@ -42,7 +41,6 @@ export type SaveServiceInput = {
   name: string;
   departmentId: string;
   localName?: string | null;
-  govtServiceCode?: number | null;
   serviceCode?: string | null;
   description?: string | null;
   serviceUrl?: string | null;
@@ -95,7 +93,6 @@ function toConfigService(service: {
     name: service.serviceName,
     departmentId: String(service.departmentId),
     localName: service.serviceNameLocal ?? null,
-    govtServiceCode: service.govtServiceCode ?? null,
     serviceCode: service.serviceCode ?? null,
     description: service.description ?? null,
     serviceUrl: service.serviceUrl ?? null,
@@ -154,15 +151,10 @@ export async function saveRtsServiceConfigAction(
 
     const certificateType = Number(input.certificateType ?? 0);
     const fees = input.fees !== undefined && input.fees !== null && !isNaN(Number(input.fees)) ? Number(input.fees) : undefined;
-    const govtCode = input.govtServiceCode !== undefined && input.govtServiceCode !== null && !isNaN(Number(input.govtServiceCode))
-      ? Number(input.govtServiceCode)
-      : undefined;
-
     const service = await createRtsService({
       departmentId: parsedDepartmentId,
       serviceName: input.name,
       serviceNameLocal: input.localName ?? undefined,
-      govtServiceCode: govtCode,
       serviceCode: input.serviceCode ?? undefined,
       description: input.description ?? undefined,
       serviceUrl: input.serviceUrl ?? undefined,
@@ -217,16 +209,11 @@ export async function updateRtsServiceConfigAction(
 
     const certificateType = Number(input.certificateType ?? 0);
     const fees = input.fees !== undefined && input.fees !== null && !isNaN(Number(input.fees)) ? Number(input.fees) : undefined;
-    const govtCode = input.govtServiceCode !== undefined && input.govtServiceCode !== null && !isNaN(Number(input.govtServiceCode))
-      ? Number(input.govtServiceCode)
-      : undefined;
-
     const service = await updateRtsService(serviceId, {
       id: serviceId,
       departmentId: parsedDepartmentId,
       serviceName: input.name,
       serviceNameLocal: input.localName ?? undefined,
-      govtServiceCode: govtCode,
       serviceCode: input.serviceCode ?? undefined,
       description: input.description ?? undefined,
       serviceUrl: input.serviceUrl ?? undefined,

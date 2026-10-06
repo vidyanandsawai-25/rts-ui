@@ -10,6 +10,7 @@ import { getRtsFieldDefinitionsByServiceId } from "@/lib/api/rts/rtsfielddefinit
 import { getAllRtsDepartments } from "@/lib/api/rts/rtsdepartment.service";
 import { isServiceUrlStruck } from "@/lib/utils/rts/service-navigation";
 import { parseFileLatLogCaptureMetadata } from "@/lib/utils/rts/file-lat-log-value";
+import { notifyAapleSarkarDocumentPending } from "@/lib/api/rts/rtsapplication.service";
 import { getRtsServiceByIdSSR, submitRtsApplicationAction } from "./actions";
 
 interface ServicePageProps {
@@ -24,6 +25,7 @@ interface ServicePageProps {
     applicationId?: string;
     status?: string;
     mode?: string;
+    TD?: string;
   }>;
 }
 
@@ -73,6 +75,18 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
   const { locale, serviceId } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   setRequestLocale(locale);
+
+  const cookieStore = await cookies();
+  const tokenTD =
+    resolvedSearchParams?.TD?.trim() ||
+    cookieStore.get("rts_aaplesarkar_td")?.value?.trim() ||
+    "";
+
+  if (resolvedSearchParams?.TD?.trim()) {
+    notifyAapleSarkarDocumentPending(resolvedSearchParams.TD.trim()).catch((err) => {
+      console.warn("Aaple Sarkar DocumentPending notification failed:", err);
+    });
+  }
 
   const routeServiceId = pickNumber(serviceId);
 
@@ -231,6 +245,7 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
           officerRemark={officerRemark}
           prefilledValues={prefilledValues}
           existingDocuments={existingDocuments}
+          tokenTD={tokenTD}
         />
       ) : (
         <div className="mx-auto flex w-full max-w-[960px] flex-1 items-center justify-center px-4 py-10">
