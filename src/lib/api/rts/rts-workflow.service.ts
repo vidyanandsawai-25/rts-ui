@@ -1,7 +1,7 @@
-import "server-only";
+import 'server-only';
 
-import { apiClient } from "@/services/api.service";
-import type { PagedResponse } from "@/types/common.types";
+import { apiClient } from '@/services/api.service';
+import type { PagedResponse } from '@/types/common.types';
 import type {
   ApplicationWorkflowState,
   RtsApprovalFlowApiItem,
@@ -9,20 +9,19 @@ import type {
   RtsApprovalFlowStagesByServiceApiResponse,
   RtsApprovalFlowStagesByServiceItem,
   SubmitWorkflowActionPayload,
-} from "@/types/rts/workflow.types";
+} from '@/types/rts/workflow.types';
 
 /**
- * Approval-flow configuration (one flow per RTS service, per ApprovalFlowMaster).
+ * Approval-flow configuration (one flow per RTS service, per RTSApprovalFlowMaster).
  * These endpoints are real and confirmed live against the backend swagger spec
  * (https://localhost:7293/swagger/v1/swagger.json) — note the controllers are
- * named `ApprovalFlowMaster`/`ApprovalFlowStageMaster`/`EmployeeType`, with no
- * "RTS" prefix, even though they back RTS.ApprovalFlowMaster etc.
+ * named `RTSApprovalFlowMaster`/`RTSApprovalFlowStageMaster`/`EmployeeType`.
  */
 
 export async function getAllApprovalFlows(): Promise<RtsApprovalFlowApiItem[]> {
   const response = await apiClient.get<PagedResponse<RtsApprovalFlowApiItem>>(
-    `/ApprovalFlowMaster?PageNumber=1&PageSize=-1`,
-    { cache: "no-store" },
+    `/RTSApprovalFlowMaster?PageNumber=1&PageSize=-1`,
+    { cache: 'no-store' },
     false
   );
 
@@ -37,13 +36,13 @@ export async function getApprovalFlowByServiceId(
   serviceId: number
 ): Promise<RtsApprovalFlowApiItem | null> {
   const response = await apiClient.get<PagedResponse<RtsApprovalFlowApiItem>>(
-    `/ApprovalFlowMaster?ServiceId=${serviceId}&PageNumber=1&PageSize=-1`,
-    { cache: "no-store" },
+    `/RTSApprovalFlowMaster?ServiceId=${serviceId}&PageNumber=1&PageSize=-1`,
+    { cache: 'no-store' },
     false
   );
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to fetch approval flow");
+    throw new Error(response.error || 'Failed to fetch approval flow');
   }
 
   return response.data.items[0] ?? null;
@@ -53,13 +52,13 @@ export async function getApprovalFlowStages(
   approvalFlowId: number
 ): Promise<RtsApprovalFlowStageApiItem[]> {
   const response = await apiClient.get<PagedResponse<RtsApprovalFlowStageApiItem>>(
-    `/ApprovalFlowStageMaster?ApprovalFlowId=${approvalFlowId}&PageNumber=1&PageSize=-1`,
-    { cache: "no-store" },
+    `/RTSApprovalFlowStageMaster?ApprovalFlowId=${approvalFlowId}&PageNumber=1&PageSize=-1`,
+    { cache: 'no-store' },
     false
   );
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to fetch approval flow stages");
+    throw new Error(response.error || 'Failed to fetch approval flow stages');
   }
 
   return [...response.data.items].sort((a, b) => a.stageOrder - b.stageOrder);
@@ -83,14 +82,14 @@ export async function saveApprovalFlow(
   serviceId: number,
   approvalFlowName: string
 ): Promise<RtsApprovalFlowApiItem> {
-  const response = await apiClient.post<RtsApprovalFlowApiItem>("/ApprovalFlowMaster", {
+  const response = await apiClient.post<RtsApprovalFlowApiItem>('/RTSApprovalFlowMaster', {
     isActive: true,
     serviceId,
     approvalFlowName,
   });
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to create approval flow");
+    throw new Error(response.error || 'Failed to create approval flow');
   }
 
   return response.data;
@@ -100,12 +99,12 @@ export async function saveApprovalFlowStage(
   payload: SaveApprovalFlowStagePayload
 ): Promise<RtsApprovalFlowStageApiItem> {
   const response = await apiClient.post<RtsApprovalFlowStageApiItem>(
-    "/ApprovalFlowStageMaster",
+    '/RTSApprovalFlowStageMaster',
     { isActive: true, ...payload }
   );
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to create approval flow stage");
+    throw new Error(response.error || 'Failed to create approval flow stage');
   }
 
   return response.data;
@@ -116,30 +115,30 @@ export async function updateApprovalFlowStage(
   payload: SaveApprovalFlowStagePayload
 ): Promise<RtsApprovalFlowStageApiItem> {
   const response = await apiClient.put<RtsApprovalFlowStageApiItem>(
-    `/ApprovalFlowStageMaster/${id}`,
+    `/RTSApprovalFlowStageMaster/${id}`,
     { id, isActive: true, ...payload }
   );
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to update approval flow stage");
+    throw new Error(response.error || 'Failed to update approval flow stage');
   }
 
   return response.data;
 }
 
 export async function deleteApprovalFlowStage(id: number): Promise<void> {
-  const response = await apiClient.delete<unknown>(`/ApprovalFlowStageMaster/${id}`);
+  const response = await apiClient.delete<unknown>(`/RTSApprovalFlowStageMaster/${id}`);
 
   if (!response.success) {
-    throw new Error(response.error || "Failed to delete approval flow stage");
+    throw new Error(response.error || 'Failed to delete approval flow stage');
   }
 }
 
 export async function deleteApprovalFlow(id: number): Promise<void> {
-  const response = await apiClient.delete<unknown>(`/ApprovalFlowMaster/${id}`);
+  const response = await apiClient.delete<unknown>(`/RTSApprovalFlowMaster/${id}`);
 
   if (!response.success) {
-    throw new Error(response.error || "Failed to delete approval flow");
+    throw new Error(response.error || 'Failed to delete approval flow');
   }
 }
 
@@ -157,14 +156,14 @@ export async function getApplicationWorkflow(
 ): Promise<ApplicationWorkflowState> {
   const response = await apiClient.get<ApplicationWorkflowState>(
     `/RTSApplication/${encodeURIComponent(applicationNo)}/workflow`,
-    { cache: "no-store" }
+    { cache: 'no-store' }
   );
 
   if (response.success && response.data) {
     return response.data;
   }
 
-  throw new Error(response.error || "Failed to fetch application workflow state");
+  throw new Error(response.error || 'Failed to fetch application workflow state');
 }
 
 export async function submitApplicationWorkflowAction(
@@ -174,14 +173,14 @@ export async function submitApplicationWorkflowAction(
   const response = await apiClient.post<ApplicationWorkflowState>(
     `/RTSApplication/${encodeURIComponent(applicationNo)}/actions`,
     payload,
-    { cache: "no-store" }
+    { cache: 'no-store' }
   );
 
   if (response.success && response.data) {
     return response.data;
   }
 
-  throw new Error(response.error || "Failed to submit workflow action");
+  throw new Error(response.error || 'Failed to submit workflow action');
 }
 
 /** Retrieves a service workflow with its assigned officer details for each stage. */
@@ -189,14 +188,14 @@ export async function getApprovalFlowStagesByServiceId(
   serviceId: number
 ): Promise<RtsApprovalFlowStagesByServiceItem | null> {
   const response = await apiClient.get<RtsApprovalFlowStagesByServiceApiResponse>(
-    `/ApprovalFlowMaster/stages/${encodeURIComponent(String(serviceId))}`,
-    { cache: "no-store" },
+    `/RTSApprovalFlowMaster/stages/${encodeURIComponent(String(serviceId))}`,
+    { cache: 'no-store' },
     false
   );
 
   const payload = response.data?.data;
   if (!response.success || !payload) {
-    throw new Error(response.error || "Failed to fetch approval flow stages for service");
+    throw new Error(response.error || 'Failed to fetch approval flow stages for service');
   }
 
   return {

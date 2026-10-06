@@ -33,7 +33,7 @@ export interface RtsApprovalFlowStageApiItem {
   officerName?: string | null;
 }
 
-/** GET /ApprovalFlowMaster/stages/{serviceId} response payload. */
+/** GET /RTSApprovalFlowMaster/stages/{serviceId} response payload. */
 export interface RtsApprovalFlowStagesByServiceItem {
   flowId: number;
   serviceId: number;
@@ -46,20 +46,15 @@ export interface RtsApprovalFlowStagesByServiceApiResponse {
   data?: RtsApprovalFlowStagesByServiceItem;
 }
 
-export type WorkflowActionType =
-  | "verifyDocument"
-  | "approve"
-  | "reject"
-  | "return"
-  | "pay";
+export type WorkflowActionType = 'verifyDocument' | 'approve' | 'reject' | 'return' | 'pay';
 
 export type TrackHistoryActionType =
-  | "Submitted"
-  | "VerifyDocument"
-  | "Approve"
-  | "Reject"
-  | "Return"
-  | "PaymentRecorded";
+  | 'Submitted'
+  | 'VerifyDocument'
+  | 'Approve'
+  | 'Reject'
+  | 'Return'
+  | 'PaymentRecorded';
 
 export interface TrackHistoryEntry {
   id: number;
@@ -75,13 +70,9 @@ export interface TrackHistoryEntry {
   actionDate: string;
 }
 
-export type RtsApplicationPaymentStatus = "NotRequired" | "Pending" | "Paid";
+export type RtsApplicationPaymentStatus = 'NotRequired' | 'Pending' | 'Paid';
 
-export type RtsApplicationOverallStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "returned";
+export type RtsApplicationOverallStatus = 'pending' | 'approved' | 'rejected' | 'returned';
 
 /**
  * Resolved workflow state for a single application, as returned by

@@ -49,7 +49,7 @@ class ApiClient {
     '/Auth/refresh',
     '/Auth/validate-reset-token',
     '/UlbConfig',
-    '/ApprovalFlowMaster',
+    '/RTSApprovalFlowMaster',
     '/RTSDepartment',
     '/RTSService',
     '/RTSPayment',
