@@ -186,12 +186,9 @@ export function mapIndividualPropertyDtoToMasterData(
 
   const effectiveOwnerEnglish =
     dto.ownerNameEnglish ||
-    (!isDevanagari(dto.ownerName) ? dto.ownerName : '') ||
-    (!isDevanagari(dto.owner) ? dto.owner : '') ||
-    (!isDevanagari(dto.propertyHolder) ? dto.propertyHolder : '') ||
-    dto.ownerName ||
-    dto.owner ||
-    dto.propertyHolder ||
+    (!isDevanagari(dto.ownerName) && dto.ownerName !== '-' ? dto.ownerName : '') ||
+    (!isDevanagari(dto.owner) && dto.owner !== '-' ? dto.owner : '') ||
+    (!isDevanagari(dto.propertyHolder) && dto.propertyHolder !== '-' ? dto.propertyHolder : '') ||
     '-';
 
   const effectiveHolderRegional =
@@ -205,8 +202,18 @@ export function mapIndividualPropertyDtoToMasterData(
   // For the tab section "Owner" field: show regional owner name if available, else English
   const effectiveOwner =
     effectiveHolderRegional !== '-' ? effectiveHolderRegional : effectiveOwnerEnglish;
+
+  const effectiveOccupierEnglish =
+    (dto.occupierNameEnglish && dto.occupierNameEnglish !== '-')
+      ? dto.occupierNameEnglish
+      : (!isDevanagari(dto.occupierName) && dto.occupierName !== '-' ? dto.occupierName : '') ||
+        '-';
+
   const effectiveOccupierRegional =
-    dto.occupierNameRegional || dto.occupierRegional || '-';
+    dto.occupierNameRegional ||
+    dto.occupierRegional ||
+    (isDevanagari(dto.occupierName) && dto.occupierName !== '-' ? dto.occupierName : '') ||
+    '-';
 
   // Tax Zone & Rate Section synthesis
   const zoneParts = [
@@ -229,12 +236,12 @@ export function mapIndividualPropertyDtoToMasterData(
     ownerNameEnglish: effectiveOwnerEnglish !== '-' ? effectiveOwnerEnglish : undefined,
     ownerNameRegional: effectiveHolderRegional !== '-' ? effectiveHolderRegional : undefined,
     owner: effectiveOwner,
-    propertyHolder: dto.propertyHolder || effectiveOwnerEnglish,
+    propertyHolder: dto.propertyHolder || (effectiveOwnerEnglish !== '-' ? effectiveOwnerEnglish : undefined),
     holderRegional: effectiveHolderRegional,
-    occupierName: dto.occupierName || '-',
-    occupierNameEnglish: dto.occupierName || '-',
+    occupierName: effectiveOccupierEnglish !== '-' ? effectiveOccupierEnglish : '-',
+    occupierNameEnglish: effectiveOccupierEnglish !== '-' ? effectiveOccupierEnglish : undefined,
     occupierRegional: effectiveOccupierRegional,
-    occupierNameRegional: dto.occupierNameRegional || dto.occupierRegional || undefined,
+    occupierNameRegional: effectiveOccupierRegional !== '-' ? effectiveOccupierRegional : undefined,
     ownerCategory: dto.ownerCategory || '-',
     division: dto.division || '-',
     moujaName: dto.moujaName || '-',
@@ -243,7 +250,7 @@ export function mapIndividualPropertyDtoToMasterData(
     taxZoneNo: dto.taxZoneNo || undefined,
     subZoneNo: dto.subZoneNo || dto.subZone || undefined,
     subZone: dto.subZoneNo || dto.subZone || undefined,
-    rateSectionName: dto.rateSectionName || undefined,
+    rateSectionName: dto.rateSectionName || dto.rateSection || undefined,
     taxZoneAndName: synthesizedTaxZone,
     subZoneCsnNo: dto.surveyNo || '-',
     plotNo: dto.plotNo || '-',

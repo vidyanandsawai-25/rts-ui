@@ -9,6 +9,40 @@ import { useDigitInputs } from '@/hooks/useDigitInputs';
 import { extractCountryCode } from '@/lib/utils/kyc-validation/country-code.utils';
 
 
+const cleanString = (val?: string | null): string => {
+  if (!val || val === '.' || val === '-') return '';
+  return val;
+};
+
+const isAsciiText = (val?: string | null): boolean => {
+  if (!val) return false;
+  return /^[\x00-\x7F]+$/.test(val.trim());
+};
+
+const createInitialKycFormData = (data?: KycDetails | null): KycFormData => {
+  const mobile = extractCountryCode(data?.mobileNo);
+  const altMobile = extractCountryCode(data?.alternateMobileNo);
+  return {
+    ownerTypeId: data?.ownerTypeId != null && data?.ownerTypeId !== undefined
+      ? data.ownerTypeId
+      : null,
+    ownerTitle: data?.ownerTitle ?? '',
+    ownerName: cleanString(data?.ownerName),
+    ownerNameEnglish: cleanString(data?.ownerNameEnglish) || (isAsciiText(data?.ownerName) ? cleanString(data?.ownerName) : ''),
+    occupierName: cleanString(data?.occupierName),
+    occupierNameEnglish: cleanString(data?.occupierNameEnglish),
+    flatOrShopName: cleanString(data?.flatOrShopName),
+    flatOrShopNameEnglish: cleanString(data?.flatOrShopNameEnglish),
+    emailId: cleanString(data?.emailId),
+    address: cleanString(data?.address),
+    addressEnglish: cleanString(data?.addressEnglish),
+    location: cleanString(data?.location),
+    pinCode: cleanString(data?.pinCode),
+    mobileCountryCode: mobile.countryCode,
+    alternateMobileCountryCode: altMobile.countryCode,
+  };
+};
+
 /**
  * Hook for managing KYC form state
  * 
@@ -30,35 +64,7 @@ export const useKycFormState = (
   const parsedMobile = extractCountryCode(KycDetailsData?.mobileNo);
   const parsedAlternateMobile = extractCountryCode(KycDetailsData?.alternateMobileNo);
 
-  const [formData, setFormData] = useState<KycFormData>({
-    ownerTypeId: KycDetailsData?.ownerTypeId != null && KycDetailsData?.ownerTypeId !== undefined
-      ? KycDetailsData.ownerTypeId
-      : null,
-    ownerTitle: KycDetailsData?.ownerTitle ?? '',
-    ownerName: KycDetailsData?.ownerName ?? '',
-    ownerNameEnglish: KycDetailsData?.ownerNameEnglish && KycDetailsData.ownerNameEnglish.trim() !== ''
-      ? KycDetailsData.ownerNameEnglish
-      : (KycDetailsData?.ownerName ?? ''),
-    occupierName: KycDetailsData?.occupierName ?? '',
-    occupierNameEnglish: KycDetailsData?.occupierNameEnglish && KycDetailsData.occupierNameEnglish.trim() !== ''
-      ? KycDetailsData.occupierNameEnglish
-      : (KycDetailsData?.occupierName ?? ''),
-    flatOrShopName: (KycDetailsData?.flatOrShopName === '.' || KycDetailsData?.flatOrShopName === '-') ? '' : (KycDetailsData?.flatOrShopName ?? ''),
-    flatOrShopNameEnglish: (KycDetailsData?.flatOrShopNameEnglish === '.' || KycDetailsData?.flatOrShopNameEnglish === '-')
-      ? ''
-      : (KycDetailsData?.flatOrShopNameEnglish && KycDetailsData.flatOrShopNameEnglish.trim() !== ''
-        ? KycDetailsData.flatOrShopNameEnglish
-        : ((KycDetailsData?.flatOrShopName === '.' || KycDetailsData?.flatOrShopName === '-') ? '' : (KycDetailsData?.flatOrShopName ?? ''))),
-    emailId: KycDetailsData?.emailId ?? '',
-    address: KycDetailsData?.address ?? '',
-    addressEnglish: KycDetailsData?.addressEnglish && KycDetailsData.addressEnglish.trim() !== ''
-      ? KycDetailsData.addressEnglish
-      : (KycDetailsData?.address ?? ''),
-    location: KycDetailsData?.location ?? '',
-    pinCode: KycDetailsData?.pinCode ?? '',
-    mobileCountryCode: parsedMobile.countryCode,
-    alternateMobileCountryCode: parsedAlternateMobile.countryCode,
-  });
+  const [formData, setFormData] = useState<KycFormData>(() => createInitialKycFormData(KycDetailsData));
 
   // Digit inputs for mobile and Aadhar card numbers
   const mobileInput = useDigitInputs(

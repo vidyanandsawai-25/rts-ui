@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo, useMemo } from 'react';
-import { MapPin, Compass, Landmark, Crosshair, FileSpreadsheet, Grid } from 'lucide-react';
+import { MapPin, Compass, Landmark, Crosshair, FileSpreadsheet, Grid, Layers } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { IndividualPropertyMasterData } from '@/types/property-tax/individual';
 import { PropertyMasterInfoRow } from '@/components/modules/property-tax/ptis/apartment/apartment-tabSection/components/PropertyMasterInfoRow';
@@ -59,6 +59,12 @@ export const IndividualMasterPropertyColumn: React.FC<IndividualMasterPropertyCo
           icon={Landmark}
           label={t('grid.moujaName') || 'Mouja Name'}
           value={data?.moujaName || '-'}
+          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
+        />
+        <PropertyMasterInfoRow
+          icon={Layers}
+          label={t('grid.rateSectionName') || 'Rate Section Name'}
+          value={data?.rateSectionName || '-'}
           minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
         />
         <PropertyMasterInfoRow

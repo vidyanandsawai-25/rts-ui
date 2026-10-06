@@ -35,6 +35,7 @@ export interface IndividualPropertyDto {
   propertyHolder?: string | null;
   holderRegional?: string | null;
   occupierName?: string | null;
+  occupierNameEnglish?: string | null;
   occupierNameRegional?: string | null;
   occupierRegional?: string | null;
   ownerCategory?: string | null;
@@ -60,6 +61,7 @@ export interface IndividualPropertyDto {
   subZoneNo?: string | null;
   subZone?: string | null;
   rateSectionName?: string | null;
+  rateSection?: string | null;
   plotNo?: string | null;
   flatOrShopNo?: string | null;
   flatOrShopName?: string | null;

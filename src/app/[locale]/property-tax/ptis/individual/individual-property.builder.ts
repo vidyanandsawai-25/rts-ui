@@ -196,6 +196,17 @@ export function buildInitialIndividualMasterData(
       ? baseData.moujaName
       : getSafeString(propDetails, 'moujaName') || getSafeString(tabHeaderInfo, 'moujaName') || '-';
 
+  const effectiveRateSectionName =
+    baseData?.rateSectionName && baseData.rateSectionName !== '-'
+      ? baseData.rateSectionName
+      : getSafeString(propDetails, 'rateSectionName') ||
+        getSafeString(propDetails, 'rateSection') ||
+        getSafeString(rawPropertyData?.[0], 'rateSectionName') ||
+        getSafeString(rawPropertyData?.[0], 'rateSection') ||
+        getSafeString(tabHeaderInfo, 'rateSectionName') ||
+        getSafeString(tabHeaderInfo, 'rateSection') ||
+        '-';
+
   const rawTaxZone = getSafeString(propDetails, 'taxZone');
   const rawTaxZoneName = getSafeString(propDetails, 'taxZoneName');
   const effectiveTaxZoneAndName =
@@ -304,6 +315,7 @@ export function buildInitialIndividualMasterData(
     ownerCategory: effectiveOwnerCategory,
     division: effectiveDivision,
     moujaName: effectiveMoujaName,
+    rateSectionName: effectiveRateSectionName,
     wardNo: effectiveWardNo,
     category: effectiveCategory,
     taxZoneAndName: effectiveTaxZoneAndName,
