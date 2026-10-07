@@ -29,6 +29,7 @@ import {
   PropertyDiscountInfoResponseDto,
   DiscountDocumentUploadResponseDto,
   DiscountAttributeItemDto,
+  DiscountAttributeDto,
 } from '@/types/discount.types';
 import { WingOption, UnitSelectionItem } from '@/types/building-permission.types';
 import { ApiResponse } from '@/types/common.types';
@@ -40,7 +41,12 @@ import {
   DeletePropertySocialDetailsByHierarchyParams,
 } from '@/types/property-social-details.types';
 import { cleanCommonApiError, handleActionError } from '@/lib/utils/action-error-helpers';
-import { resolveScope } from '@/lib/utils/ptis/social-details';
+import {
+  resolveScope,
+  filterActiveAttributes,
+  dedupeByAttributeAndScope,
+  resolveDocumentGuid,
+} from '@/lib/utils/ptis/social-details';
 
 export async function getDiscountDetailsAction(
   propertyId: string
@@ -53,6 +59,8 @@ export async function getDiscountDetailsAction(
   }
 }
 
+import { parseJsonArray } from '@/lib/utils/validate-form-payload';
+
 export async function updateDiscountDetailsAction(
   locale: string,
   propertyId: string,
@@ -63,8 +71,26 @@ export async function updateDiscountDetailsAction(
     const userId = getUserIdFromCookies(await cookies());
     if (!userId) return { success: false, error: 'Unauthorized: Please log in.' };
 
-    const attributesStr = formData.get('discountAttributes') as string;
-    const discountAttributes = JSON.parse(attributesStr) as DiscountAttributeItemDto[];
+    const discountAttributes = parseJsonArray<DiscountAttributeItemDto>(
+      formData.get('discountAttributes'),
+      'discountAttributes'
+    );
+
+    const validationErrors: string[] = [];
+    for (const attr of discountAttributes) {
+      if (!attr.socialAttributeId || Number(attr.socialAttributeId) <= 0) {
+        validationErrors.push(`Invalid attribute ID: ${attr.socialAttributeId}`);
+      }
+      if (attr.documentBindingId && Number(attr.documentBindingId) <= 0) {
+        validationErrors.push(`Invalid document binding ID: ${attr.documentBindingId}`);
+      }
+    }
+    if (validationErrors.length > 0) {
+      return {
+        success: false,
+        error: `Validation failed: ${validationErrors.join(', ')}`,
+      };
+    }
 
     const level = (formData.get('level') as string | null) || 'Apartment';
     const societyDetailId = formData.get('societyDetailId')
@@ -103,16 +129,38 @@ export async function updateDiscountDetailsAction(
     const payloadSocietyDetailId = scope.societyDetailId;
     const BuildingPropertyId = Number(propertyId);
 
-    const initialResponse = await getDiscountDetails(propertyId);
-    const initialAttributes =
-      initialResponse.success && initialResponse.data?.discountAttributes
-        ? initialResponse.data.discountAttributes
-        : [];
+    const socIdNum = payloadSocietyDetailId ? Number(payloadSocietyDetailId) : undefined;
+    const wingIdNum = payloadWingDetailId ? Number(payloadWingDetailId) : undefined;
+    const targetPropId = isSociety === 'true' ? (unitIds.length === 1 ? unitIds[0] : undefined) : BuildingPropertyId;
+
+    const initialExistingDetails = await getPropertySocialDetailsByFilters(
+      undefined,
+      socIdNum,
+      wingIdNum,
+      targetPropId
+    );
+
+    const dedupedExisting = dedupeByAttributeAndScope(initialExistingDetails || []);
+    const initialFlatData: Record<number, { id?: number | null; documentGuid?: string | null }> = {};
+    dedupedExisting.forEach((item) => {
+      const matchesScope =
+        (isSociety !== 'true' && (item.entityType === 'P' || !item.entityType)) ||
+        (level === 'Apartment' && (item.entityType === 'S' || (!item.wingDetailId && !item.propertyId))) ||
+        (level === 'Wing' && (item.entityType === 'W' || (item.wingDetailId === wingIdNum && !item.propertyId))) ||
+        (level === 'Unit' && (item.entityType === 'P' || item.propertyId === targetPropId));
+
+      if (matchesScope) {
+        initialFlatData[item.socialAttributeId] = {
+          id: item.id,
+          documentGuid: resolveDocumentGuid(item),
+        };
+      }
+    });
 
     // 1. Process files first (upload, replace, or delete)
     for (const attr of discountAttributes) {
       const file = formData.get(`file_${attr.socialAttributeId}`) as File | null;
-      const initialAttr = initialAttributes.find((a) => a.id === attr.socialAttributeId);
+      const initialAttr = initialFlatData[attr.socialAttributeId];
       const oldGuid = initialAttr?.documentGuid;
       const isInherited =
         (level === 'Wing' &&
@@ -141,8 +189,12 @@ export async function updateDiscountDetailsAction(
               )
             : await uploadDiscountDocViaGlobalApi(file, propIdNum, attrId, detailId, guidReference);
 
-        if (uploadResult.success && uploadResult.data?.documentBindingId) {
+        if (uploadResult.success && (uploadResult.data?.documentBindingId || uploadResult.data?.documentGuid)) {
           attr.documentBindingId = uploadResult.data.documentBindingId;
+          attr.documentGuid = uploadResult.data.documentGuid;
+          attr.photoBindingId = uploadResult.data.documentBindingId;
+          attr.photoGuid = uploadResult.data.documentGuid;
+          attr.fileName = uploadResult.data.fileName || file.name;
         } else {
           throw new Error(uploadResult.error || 'Failed to upload document');
         }
@@ -280,12 +332,12 @@ export async function updateDiscountDetailsAction(
             attr.inheritanceLevel === 'Apartment' ||
             attr.inheritanceLevel === 'Wing'));
 
-      const initialAttr = initialAttributes.find((a) => a.id === attr.socialAttributeId);
+      const initialAttr = initialFlatData[attr.socialAttributeId];
       const existingRecordId =
-        (attr.propertySocialDetailId && Number(attr.propertySocialDetailId) > 0 && !isInherited)
+        attr.propertySocialDetailId && Number(attr.propertySocialDetailId) > 0 && !isInherited
           ? Number(attr.propertySocialDetailId)
-          : (initialAttr?.propertySocialDetailId && Number(initialAttr.propertySocialDetailId) > 0 && !isInherited)
-            ? Number(initialAttr.propertySocialDetailId)
+          : initialAttr?.id && Number(initialAttr.id) > 0 && !isInherited
+            ? Number(initialAttr.id)
             : null;
 
       if (isSociety === 'true') {
@@ -310,6 +362,7 @@ export async function updateDiscountDetailsAction(
               textValue: sanitizedTextValue,
               dateValue: sanitizedDateValue,
               documentBindingId: attr.documentBindingId || null,
+              photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
               remark: sanitizedRemark,
               updatedBy: Number(userId),
               isActive: true,
@@ -338,6 +391,7 @@ export async function updateDiscountDetailsAction(
               textValue: sanitizedTextValue,
               dateValue: sanitizedDateValue,
               documentBindingId: attr.documentBindingId || null,
+              photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
               remark: sanitizedRemark,
               createdBy: Number(userId),
               isActive: true,
@@ -370,6 +424,7 @@ export async function updateDiscountDetailsAction(
               textValue: sanitizedTextValue,
               dateValue: sanitizedDateValue,
               documentBindingId: attr.documentBindingId || null,
+              photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
               remark: sanitizedRemark,
               updatedBy: Number(userId),
               isActive: true,
@@ -398,6 +453,7 @@ export async function updateDiscountDetailsAction(
               textValue: sanitizedTextValue,
               dateValue: sanitizedDateValue,
               documentBindingId: attr.documentBindingId || null,
+              photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
               remark: sanitizedRemark,
               createdBy: Number(userId),
               isActive: true,
@@ -430,6 +486,7 @@ export async function updateDiscountDetailsAction(
                 textValue: sanitizedTextValue,
                 dateValue: sanitizedDateValue,
                 documentBindingId: attr.documentBindingId || null,
+                photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
                 remark: sanitizedRemark,
                 updatedBy: Number(userId),
                 isActive: true,
@@ -458,6 +515,7 @@ export async function updateDiscountDetailsAction(
                 textValue: sanitizedTextValue,
                 dateValue: sanitizedDateValue,
                 documentBindingId: attr.documentBindingId || null,
+                photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
                 remark: sanitizedRemark,
                 createdBy: Number(userId),
                 isActive: true,
@@ -487,6 +545,7 @@ export async function updateDiscountDetailsAction(
               textValue: sanitizedTextValue,
               dateValue: sanitizedDateValue,
               documentBindingId: attr.documentBindingId || null,
+              photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
               remark: sanitizedRemark,
               createdBy: Number(userId),
               isActive: true,
@@ -517,6 +576,7 @@ export async function updateDiscountDetailsAction(
             textValue: sanitizedTextValue,
             dateValue: sanitizedDateValue,
             documentBindingId: attr.documentBindingId || null,
+            photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
             remark: sanitizedRemark,
             updatedBy: Number(userId),
             isActive: true,
@@ -545,6 +605,7 @@ export async function updateDiscountDetailsAction(
             textValue: sanitizedTextValue,
             dateValue: sanitizedDateValue,
             documentBindingId: attr.documentBindingId || null,
+            photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
             remark: sanitizedRemark,
             createdBy: Number(userId),
             isActive: true,
@@ -585,6 +646,7 @@ export async function updateDiscountDetailsAction(
       ]);
 
       const masterById = new Map((masterRes || []).map((a) => [a.id, a]));
+      const activeMasterById = new Map(filterActiveAttributes(masterRes || []).map((a) => [a.id, a]));
       const mergedDetailsMap = new Map<number, PropertySocialDetailsDto>();
 
       const apartmentItems = (apartmentDetailsRes || []).filter(
@@ -629,12 +691,13 @@ export async function updateDiscountDetailsAction(
       }
 
       const discountSavedDetails = Array.from(mergedDetailsMap.values()).filter((item) => {
-        const master = masterById.get(item.socialAttributeId);
+        const master = activeMasterById.get(item.socialAttributeId);
         return master?.isDiscountApplicable === true;
       });
 
-      const mapped = discountSavedDetails.map((item) => {
-        const master = masterById.get(item.socialAttributeId);
+      const mapped: DiscountAttributeDto[] = discountSavedDetails.map((item) => {
+        const master = activeMasterById.get(item.socialAttributeId) || masterById.get(item.socialAttributeId);
+        const docGuid = resolveDocumentGuid(item);
         return {
           id: item.socialAttributeId,
           socialAttributeCode: item.socialAttributeCode || master?.socialAttributeCode || '',
@@ -650,10 +713,10 @@ export async function updateDiscountDetailsAction(
           textValue: item.textValue,
           dateValue: item.dateValue,
           documentBindingId: item.documentBindingId,
-          documentGuid: item.documentGuid,
+          documentGuid: docGuid,
           documentUrl:
             item.documentUrl ||
-            (item.documentGuid ? `/api/documents/${item.documentGuid}/view` : undefined),
+            (docGuid ? `/api/documents/${encodeURIComponent(docGuid)}/view` : undefined),
           fileName: item.fileName,
           remark: item.remark,
           isPhotoRequired: master?.isPhotoRequired,
@@ -665,15 +728,148 @@ export async function updateDiscountDetailsAction(
         };
       });
 
+      const societyMappedIds = new Set(mapped.map((m) => m.id));
+      for (const attr of discountAttributes) {
+        if (!societyMappedIds.has(attr.socialAttributeId)) {
+          const master = activeMasterById.get(attr.socialAttributeId);
+          if (master && master.isDiscountApplicable === true) {
+            const docGuid = attr.documentGuid || null;
+            const docBindingId = attr.documentBindingId || null;
+            mapped.push({
+              id: attr.socialAttributeId,
+              socialAttributeCode: master.socialAttributeCode || '',
+              socialAttributeName: master.socialAttributeName || '',
+              dataType: master.dataType || 'BIT',
+              unit: master.unit,
+              displayOrder: master.displayOrder,
+              isDiscountApplicable: true,
+              propertySocialDetailId: attr.propertySocialDetailId || null,
+              bitValue: attr.bitValue ?? null,
+              intValue: attr.intValue ?? null,
+              decimalValue: attr.decimalValue ?? null,
+              textValue: attr.textValue ?? null,
+              dateValue: attr.dateValue ?? null,
+              documentBindingId: docBindingId,
+              documentGuid: docGuid,
+              documentUrl: docGuid ? `/api/documents/${encodeURIComponent(docGuid)}/view` : undefined,
+              fileName: attr.fileName || null,
+              remark: attr.remark ?? null,
+              isPhotoRequired: master.isPhotoRequired,
+              isDocumentRequired: master.isDocumentRequired,
+              isActive: master.isActive,
+              entityType: level === 'Apartment' ? 'S' : level === 'Wing' ? 'W' : 'P',
+              inheritedFrom: null,
+              inheritanceLevel: 'Self',
+            });
+          }
+        }
+      }
+
       freshDiscountData = {
         propertyId: Number(propertyId),
         discountAttributes: mapped,
       };
     } else {
-      const detailsRes = await getDiscountDetails(propertyId);
-      if (detailsRes.success && detailsRes.data) {
-        freshDiscountData = detailsRes.data;
+      const [individualDetailsRes, masterRes] = await Promise.all([
+        getPropertySocialDetailsByFilters(undefined, undefined, undefined, Number(propertyId)),
+        getSocialAttributes(),
+      ]);
+
+      const masterById = new Map((masterRes || []).map((a) => [a.id, a]));
+      const activeMasterById = new Map(filterActiveAttributes(masterRes || []).map((a) => [a.id, a]));
+      const individualItems = individualDetailsRes || [];
+      const dedupedDetails = dedupeByAttributeAndScope(individualItems, {
+        propertyId: Number(propertyId),
+        entityType: 'P',
+      });
+
+      const discountSavedDetails = dedupedDetails.filter((item) => {
+        const master = activeMasterById.get(item.socialAttributeId);
+        return master?.isDiscountApplicable === true;
+      });
+
+      const uploadedAttrMap = new Map(
+        discountAttributes.map((a) => [a.socialAttributeId, a])
+      );
+
+      const mapped: DiscountAttributeDto[] = discountSavedDetails.map((item) => {
+        const master = activeMasterById.get(item.socialAttributeId) || masterById.get(item.socialAttributeId);
+        const uploadedAttr = uploadedAttrMap.get(item.socialAttributeId);
+        const docGuid = resolveDocumentGuid(item) || uploadedAttr?.documentGuid || null;
+        const docBindingId = item.documentBindingId || uploadedAttr?.documentBindingId || null;
+        const fileName = item.fileName || uploadedAttr?.fileName || null;
+
+        return {
+          id: item.socialAttributeId,
+          socialAttributeCode: item.socialAttributeCode || master?.socialAttributeCode || '',
+          socialAttributeName: item.socialAttributeName || master?.socialAttributeName || '',
+          dataType: master?.dataType || 'BIT',
+          unit: master?.unit,
+          displayOrder: master?.displayOrder,
+          isDiscountApplicable: master?.isDiscountApplicable ?? true,
+          propertySocialDetailId: item.id || uploadedAttr?.propertySocialDetailId || undefined,
+          bitValue: item.bitValue ?? uploadedAttr?.bitValue ?? null,
+          intValue: item.intValue ?? uploadedAttr?.intValue ?? null,
+          decimalValue: item.decimalValue ?? uploadedAttr?.decimalValue ?? null,
+          textValue: item.textValue ?? uploadedAttr?.textValue ?? null,
+          dateValue: item.dateValue ?? uploadedAttr?.dateValue ?? null,
+          documentBindingId: docBindingId,
+          documentGuid: docGuid,
+          documentUrl:
+            item.documentUrl ||
+            (docGuid ? `/api/documents/${encodeURIComponent(docGuid)}/view` : undefined),
+          fileName: fileName,
+          remark: item.remark ?? uploadedAttr?.remark ?? null,
+          isPhotoRequired: master?.isPhotoRequired,
+          isDocumentRequired: master?.isDocumentRequired,
+          isActive: master?.isActive,
+          entityType: 'P',
+          inheritedFrom: null,
+          inheritanceLevel: 'Self',
+        };
+      });
+
+      const individualMappedIds = new Set(mapped.map((m) => m.id));
+      for (const attr of discountAttributes) {
+        if (!individualMappedIds.has(attr.socialAttributeId)) {
+          const master = activeMasterById.get(attr.socialAttributeId);
+          if (master && master.isDiscountApplicable === true) {
+            const docGuid = attr.documentGuid || null;
+            const docBindingId = attr.documentBindingId || null;
+            mapped.push({
+              id: attr.socialAttributeId,
+              socialAttributeCode: master.socialAttributeCode || '',
+              socialAttributeName: master.socialAttributeName || '',
+              dataType: master.dataType || 'BIT',
+              unit: master.unit,
+              displayOrder: master.displayOrder,
+              isDiscountApplicable: true,
+              propertySocialDetailId: attr.propertySocialDetailId || undefined,
+              bitValue: attr.bitValue ?? null,
+              intValue: attr.intValue ?? null,
+              decimalValue: attr.decimalValue ?? null,
+              textValue: attr.textValue ?? null,
+              dateValue: attr.dateValue ?? null,
+              documentBindingId: docBindingId,
+              documentGuid: docGuid,
+              documentUrl: docGuid ? `/api/documents/${encodeURIComponent(docGuid)}/view` : undefined,
+              fileName: attr.fileName || null,
+              remark: attr.remark ?? null,
+              isPhotoRequired: master.isPhotoRequired,
+              isDocumentRequired: master.isDocumentRequired,
+              isActive: master.isActive,
+              entityType: 'P',
+              inheritedFrom: null,
+              inheritanceLevel: 'Self',
+            });
+          }
+        }
       }
+
+      freshDiscountData = {
+        propertyId: Number(propertyId),
+        discountAttributes: mapped,
+      };
     }
 
     for (const l of ['en', 'hi', 'mr']) {
@@ -778,7 +974,9 @@ export async function deletePropertySocialDetailAction(
   try {
     const response = await deletePropertySocialDetail(propertyId, socialAttributeId);
     if (response.success) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
+      for (const l of ['en', 'hi', 'mr']) {
+        revalidatePath(`/${l}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
+      }
     }
     return response;
   } catch (error: unknown) {

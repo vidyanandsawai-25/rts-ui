@@ -7,7 +7,6 @@ import { downloadDocumentClient } from '@/lib/utils/document-client-utils';
 import { usePhotoPlanMutations } from './usePhotoPlanMutations';
 import { useMediaDrawerState } from './useMediaDrawerState';
 import type { PropertyPhotoDto } from '@/types/photoplan.types';
-import { propertyMediaCache, isCacheValid, evictOldestCacheEntry } from './usePropertyPhotosQuery';
 import { getPhotosByPropertyAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
 import { getPhotosByWingAction } from '@/app/[locale]/property-tax/ptis/WingPhoto.action';
 import { getPhotosBySocietyAction } from '@/app/[locale]/property-tax/ptis/SocietyPhoto.action';
@@ -88,26 +87,26 @@ export function usePhotoPlanDrawerState({
     categoriesRef.current = categories;
   }, [categories]);
 
-function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId: number): PropertyPhotoDto {
-  return {
-    propertyPhotoId: Number(item.propertyPhotoId || item.societyPhotoId || item.wingPhotoId || 0),
-    propertyId: Number(item.propertyId || fallbackPropId || 0),
-    photoTypeId: Number(item.photoTypeId || 0),
-    photoTypeCode: String(item.photoTypeCode || ''),
-    photoTypeName: String(item.photoTypeName || ''),
-    displayOrder: Number(item.displayOrder || 1),
-    remarks: item.remarks ? String(item.remarks) : undefined,
-    documentBindingId: item.documentBindingId ? Number(item.documentBindingId) : undefined,
-    documentGuid: item.documentGuid ? String(item.documentGuid) : undefined,
-    fileName: item.fileName ? String(item.fileName) : undefined,
-    mimeType: item.mimeType ? String(item.mimeType) : undefined,
-    viewUrl: item.viewUrl ? String(item.viewUrl) : undefined,
-    downloadUrl: item.downloadUrl ? String(item.downloadUrl) : undefined,
-    wingDetailId: item.wingDetailId ? Number(item.wingDetailId) : undefined,
-    wingName: item.wingName ? String(item.wingName) : undefined,
-    societyDetailId: item.societyDetailId ? Number(item.societyDetailId) : undefined,
-  };
-}
+  function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId: number): PropertyPhotoDto {
+    return {
+      propertyPhotoId: Number(item.propertyPhotoId || item.societyPhotoId || item.wingPhotoId || 0),
+      propertyId: Number(item.propertyId || fallbackPropId || 0),
+      photoTypeId: Number(item.photoTypeId || 0),
+      photoTypeCode: String(item.photoTypeCode || ''),
+      photoTypeName: String(item.photoTypeName || ''),
+      displayOrder: Number(item.displayOrder || 1),
+      remarks: item.remarks ? String(item.remarks) : undefined,
+      documentBindingId: item.documentBindingId ? Number(item.documentBindingId) : undefined,
+      documentGuid: item.documentGuid ? String(item.documentGuid) : undefined,
+      fileName: item.fileName ? String(item.fileName) : undefined,
+      mimeType: item.mimeType ? String(item.mimeType) : undefined,
+      viewUrl: item.viewUrl ? String(item.viewUrl) : undefined,
+      downloadUrl: item.downloadUrl ? String(item.downloadUrl) : undefined,
+      wingDetailId: item.wingDetailId ? Number(item.wingDetailId) : undefined,
+      wingName: item.wingName ? String(item.wingName) : undefined,
+      societyDetailId: item.societyDetailId ? Number(item.societyDetailId) : undefined,
+    };
+  }
 
   const loadPhotos = useCallback(async () => {
     if (!propertyId) return;
@@ -146,14 +145,6 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
 
       const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
       onFullyLoadedIdsChange?.(allCatIds);
-
-      const cached = propertyMediaCache.get(propertyId);
-      propertyMediaCache.set(propertyId, {
-        photoSlots: cached?.photoSlots || [],
-        photos: fetchedPhotos,
-        timestamp: Date.now(),
-      });
-      evictOldestCacheEntry();
     } catch (err) {
       setFetchError(err instanceof Error ? err.message : 'Failed to load photos');
     } finally {
@@ -166,31 +157,6 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
     let isSubscribed = true;
 
     if (fullyLoadedIds.size === 0) {
-      if (propertyMediaCache.has(propertyId) && isCacheValid(propertyId)) {
-        const cached = propertyMediaCache.get(propertyId);
-        const hasSocietyReq = Boolean(societyId && societyId > 0);
-        const cachedHasSoc = cached?.photos?.some((p) => p.photoTypeCode?.toUpperCase().includes('SOCIETY'));
-        if (cached && cached.photos && (!hasSocietyReq || cachedHasSoc)) {
-          onPhotosChange?.(cached.photos);
-          const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
-          onFullyLoadedIdsChange?.(allCatIds);
-          setIsLoadingPhotos(false);
-          return;
-        }
-      }
-
-      if (categoriesRef.current.length > 0) {
-        const hasLoadedContent = categoriesRef.current.some((c) =>
-          c.photoTypeCode !== 'CHANGE_DETECTION' && c.images && c.images.some((img) => img.hasPhoto && !!img.src)
-        );
-        if (hasLoadedContent) {
-          const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
-          onFullyLoadedIdsChange?.(allCatIds);
-          setIsLoadingPhotos(false);
-          return;
-        }
-      }
-
       setIsLoadingPhotos(true);
       setFetchError(null);
       Promise.all([
@@ -227,14 +193,6 @@ function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId:
 
           const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
           onFullyLoadedIdsChange?.(allCatIds);
-
-          const cachedEntry = propertyMediaCache.get(propertyId);
-          propertyMediaCache.set(propertyId, {
-            photoSlots: cachedEntry?.photoSlots || [],
-            photos: fetchedPhotos,
-            timestamp: Date.now(),
-          });
-          evictOldestCacheEntry();
         })
         .catch((err) => {
           if (isSubscribed) {

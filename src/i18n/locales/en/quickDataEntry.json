@@ -76,7 +76,8 @@
     "update": "Update",
     "UpdateChanges": "Update Changes",
     "clear": "Clear",
-    "actions": "Actions"
+    "actions": "Actions",
+    "deleting": "Deleting..."
   },
   "search": {
     "loading": "Loading...",

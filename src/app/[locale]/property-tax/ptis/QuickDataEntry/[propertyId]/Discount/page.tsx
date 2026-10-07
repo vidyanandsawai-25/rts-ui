@@ -7,6 +7,7 @@ import {
 } from './discount-actions';
 import { getPropertySocialInfoAction } from './social-actions';
 import { getPropertyBasicDetailsAction } from '../FloorSubmission/actions';
+import { getDocumentViewUrl } from "@/lib/utils/document-utils";
 import type { WingOption, UnitSelectionItem } from "@/types/building-permission.types";
 import type { PropertySocialDetailsDto } from "@/types/property-social-details.types";
 
@@ -179,20 +180,23 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
 
         // dataType and the document/photo flags only exist on the master list.
         const masterById = new Map((masterRes.data || []).map(a => [a.id, a]));
+        const activeMasterById = new Map((masterRes.data || []).filter(a => a.isActive !== false).map(a => [a.id, a]));
 
-        // Filter saved details so discount tab strictly gets discount attributes and social tab strictly gets social attributes
+        // Filter saved details so discount tab strictly gets active discount attributes and social tab strictly gets active social attributes
         const discountSavedDetails = savedDetails.filter(item => {
-            const master = masterById.get(item.socialAttributeId);
+            const master = activeMasterById.get(item.socialAttributeId);
             return master?.isDiscountApplicable === true;
         });
 
         const socialSavedDetails = savedDetails.filter(item => {
-            const master = masterById.get(item.socialAttributeId);
+            const master = activeMasterById.get(item.socialAttributeId);
             return master && master.isDiscountApplicable === false;
         });
 
         const mapToItem = (item: PropertySocialDetailsDto, isDiscount: boolean) => {
             const master = masterById.get(item.socialAttributeId);
+            const docGuid = item.documentGuid || item.photoGuid || null;
+            const docBindingId = item.documentBindingId || item.photoBindingId || null;
             return {
                 id: item.socialAttributeId,
                 socialAttributeCode: item.socialAttributeCode || master?.socialAttributeCode || '',
@@ -210,12 +214,12 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
                 decimalValue: item.decimalValue,
                 textValue: item.textValue,
                 dateValue: item.dateValue,
-                documentBindingId: item.documentBindingId,
-                documentGuid: item.documentGuid,
-                documentUrl: item.documentUrl || (item.documentGuid ? `/api/documents/${item.documentGuid}/view` : undefined),
+                documentBindingId: docBindingId,
+                documentGuid: docGuid,
+                documentUrl: item.documentUrl || getDocumentViewUrl(docGuid) || undefined,
                 fileName: item.fileName,
-                photoGuid: item.photoGuid,
-                photoBindingId: item.photoBindingId,
+                photoGuid: docGuid,
+                photoBindingId: docBindingId,
                 remark: item.remark,
                 entityType: item.entityType,
                 inheritedFrom: item.inheritedFrom,
@@ -251,22 +255,112 @@ export default async function DiscountFormPage({ params, searchParams }: PagePro
             }
         };
     } else {
-        // For individuals, fetch details and master attributes in parallel
-        const [discountRes, socialRes, masterRes] = await Promise.all([
-            getDiscountDetailsAction(propertyId),
-            getPropertySocialInfoAction(propertyId),
+        // For individuals, fetch dynamic social & discount details and master attributes in parallel
+        const [individualDetailsRes, masterRes] = await Promise.all([
+            getPropertySocialDetailsByFiltersAction(undefined, undefined, undefined, Number(propertyId)),
             getSocialAttributeMasterAction()
         ]);
-        discountResponse = discountRes as unknown as typeof discountResponse;
-        socialResponse = socialRes as unknown as typeof socialResponse;
+
         socialAttributeMaster = masterRes;
+        const individualItems = (individualDetailsRes?.success && Array.isArray(individualDetailsRes.data)) ? individualDetailsRes.data : [];
+
+        const dedupedDetailsMap = new Map<number, PropertySocialDetailsDto>();
+        individualItems.forEach(item => {
+            const existing = dedupedDetailsMap.get(item.socialAttributeId);
+            if (!existing || (item.id && (!existing.id || item.id > existing.id))) {
+                dedupedDetailsMap.set(item.socialAttributeId, item);
+            }
+        });
+
+        savedDetails = Array.from(dedupedDetailsMap.values()).map(item => ({
+            ...item,
+            entityType: 'P',
+            inheritanceLevel: 'Self',
+            inheritedFrom: null,
+        }));
+        allAppliedDetails = savedDetails;
+
+        const masterById = new Map((masterRes.data || []).map(a => [a.id, a]));
+        const activeMasterById = new Map((masterRes.data || []).filter(a => a.isActive !== false).map(a => [a.id, a]));
+
+        const discountSavedDetails = savedDetails.filter(item => {
+            const master = activeMasterById.get(item.socialAttributeId);
+            return master?.isDiscountApplicable === true;
+        });
+
+        const socialSavedDetails = savedDetails.filter(item => {
+            const master = activeMasterById.get(item.socialAttributeId);
+            return master && master.isDiscountApplicable === false;
+        });
+
+        const mapToItem = (item: PropertySocialDetailsDto, isDiscount: boolean) => {
+            const master = masterById.get(item.socialAttributeId);
+            const docGuid = item.documentGuid || item.photoGuid || null;
+            const docBindingId = item.documentBindingId || item.photoBindingId || null;
+            return {
+                id: item.socialAttributeId,
+                socialAttributeCode: item.socialAttributeCode || master?.socialAttributeCode || '',
+                socialAttributeName: item.socialAttributeName || master?.socialAttributeName || (item.socialAttributeCode ? item.socialAttributeCode : `Attribute #${item.socialAttributeId}`),
+                dataType: master?.dataType || 'BIT',
+                unit: master?.unit,
+                displayOrder: master?.displayOrder,
+                isPhotoRequired: master?.isPhotoRequired,
+                isDocumentRequired: master?.isDocumentRequired,
+                isActive: master?.isActive,
+                isDiscountApplicable: master?.isDiscountApplicable ?? isDiscount,
+                propertySocialDetailId: item.id,
+                bitValue: item.bitValue,
+                intValue: item.intValue,
+                decimalValue: item.decimalValue,
+                textValue: item.textValue,
+                dateValue: item.dateValue,
+                documentBindingId: docBindingId,
+                documentGuid: docGuid,
+                documentUrl: item.documentUrl || getDocumentViewUrl(docGuid) || undefined,
+                fileName: item.fileName,
+                photoGuid: docGuid,
+                photoBindingId: docBindingId,
+                remark: item.remark,
+                entityType: item.entityType || 'P',
+                inheritedFrom: null,
+                inheritanceLevel: 'Self',
+            };
+        };
+
+        discountResponse = {
+            success: true,
+            data: {
+                propertyId: Number(propertyId),
+                discountAttributes: discountSavedDetails.map(item => mapToItem(item, true))
+            }
+        };
+
+        socialResponse = {
+            success: true,
+            data: {
+                success: true,
+                message: "Success",
+                items: {
+                    propertyId: Number(propertyId),
+                    societyDetailId: undefined,
+                    wingDetailId: undefined,
+                    socialAttributes: socialSavedDetails.map(item => ({
+                        ...mapToItem(item, false),
+                        parentAttributeId: masterById.get(item.socialAttributeId)?.parentAttributeId ?? null,
+                        isRequiredWhenParentTrue: masterById.get(item.socialAttributeId)?.isRequiredWhenParentTrue ?? false,
+                        photoTypeId: null,
+                        children: []
+                    }))
+                }
+            }
+        };
     }
 
     const initialDiscountData = discountResponse.data ?? null;
     const initialSocialData = socialResponse.data?.items ?? null;
 
-    // Separate master attributes based on isDiscountApplicable
-    const masterAttributes = socialAttributeMaster.data || [];
+    // Separate master attributes based on isDiscountApplicable and only include active master attributes
+    const masterAttributes = (socialAttributeMaster.data || []).filter(a => a.isActive !== false);
     const discountMasterAttributes = masterAttributes.filter(a => a.isDiscountApplicable === true);
     const socialMasterAttributes = masterAttributes.filter(a => a.isDiscountApplicable === false);
 

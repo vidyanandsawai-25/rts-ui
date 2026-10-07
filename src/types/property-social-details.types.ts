@@ -21,6 +21,8 @@ export interface SocialAttributeHierarchyDto {
     isDocumentRequired?: boolean;
     isActive?: boolean;
     documentGuid?: string | null;
+    fileName?: string | null;
+    documentUrl?: string | null;
     photoBindingId?: number | null;
     photoGuid?: string | null;
     entityType?: string | null;
@@ -78,6 +80,7 @@ export interface PropertySocialInfoItemDto {
     textValue?: string | null;
     dateValue?: string | null;
     documentBindingId?: number | null;
+    fileName?: string | null;
     remark?: string | null;
     isActive?: boolean;
     documentGuid?: string | null;
@@ -106,6 +109,7 @@ export interface CreatePropertySocialDetailDto {
     textValue?: string | null;
     dateValue?: string | null;
     documentBindingId?: number | null;
+    photoBindingId?: number | null;
     remark?: string | null;
 }
 
@@ -124,6 +128,7 @@ export interface UpdatePropertySocialDetailDto {
     textValue?: string | null;
     dateValue?: string | null;
     documentBindingId?: number | null;
+    photoBindingId?: number | null;
     remark?: string | null;
 }
 
@@ -141,6 +146,7 @@ export interface CreateBulkPropertySocialDetailDto {
     textValue?: string | null;
     dateValue?: string | null;
     documentBindingId?: number | null;
+    photoBindingId?: number | null;
     remark?: string | null;
 }
 

@@ -26,7 +26,6 @@ import {
   PropertySocialInfoApiResponse,
   PropertySocialInfoResponseDto,
   PropertySocialInfoItemDto,
-  SocialAttributeHierarchyDto,
   DeletePropertySocialDetailsByHierarchyParams,
   UpsertPropertySocialInfoBulkDto,
   PropertySocialDetailsDto,
@@ -48,6 +47,8 @@ export async function getPropertySocialInfoAction(
   }
 }
 
+import { parseJsonArray } from '@/lib/utils/validate-form-payload';
+
 export async function upsertPropertySocialInfoAction(
   locale: string,
   propertyId: string,
@@ -58,11 +59,30 @@ export async function upsertPropertySocialInfoAction(
     const userId = getUserIdFromCookies(await cookies());
     if (!userId) return { success: false, error: 'Unauthorized: Please log in.' };
 
-    const socialAttributesStr = formData.get('socialAttributes') as string;
-    const socialAttributeIdsToRemoveStr = formData.get('socialAttributeIdsToRemove') as string;
+    const socialAttributes = parseJsonArray<PropertySocialInfoItemDto>(
+      formData.get('socialAttributes'),
+      'socialAttributes'
+    );
+    const socialAttributeIdsToRemove = parseJsonArray<number>(
+      formData.get('socialAttributeIdsToRemove'),
+      'socialAttributeIdsToRemove'
+    );
 
-    const socialAttributes = JSON.parse(socialAttributesStr) as PropertySocialInfoItemDto[];
-    const socialAttributeIdsToRemove = JSON.parse(socialAttributeIdsToRemoveStr) as number[];
+    const validationErrors: string[] = [];
+    for (const attr of socialAttributes) {
+      if (!attr.socialAttributeId || Number(attr.socialAttributeId) <= 0) {
+        validationErrors.push(`Invalid attribute ID: ${attr.socialAttributeId}`);
+      }
+      if (attr.documentBindingId && Number(attr.documentBindingId) <= 0) {
+        validationErrors.push(`Invalid document binding ID: ${attr.documentBindingId}`);
+      }
+    }
+    if (validationErrors.length > 0) {
+      return {
+        success: false,
+        error: `Validation failed: ${validationErrors.join(', ')}`,
+      };
+    }
 
     const level = formData.get('level') as string | null;
     const societyDetailId = formData.get('societyDetailId')
@@ -101,21 +121,27 @@ export async function upsertPropertySocialInfoAction(
     const payloadSocietyDetailId = scope.societyDetailId;
     const BuildingPropertyId = Number(propertyId);
 
-    const initialResponse = await getPropertySocialInfo(propertyId);
-    const initialFlatData: Record<number, { id?: number | null; documentGuid?: string | null }> =
-      {};
-    const traverse = (attrs: SocialAttributeHierarchyDto[]) => {
-      for (const a of attrs) {
-        initialFlatData[a.id] = {
-          id: a.propertySocialDetailId,
-          documentGuid: a.documentGuid || a.photoGuid || null,
+    const socIdNum = payloadSocietyDetailId ? Number(payloadSocietyDetailId) : undefined;
+    const wingIdNum = payloadWingDetailId ? Number(payloadWingDetailId) : undefined;
+    const targetPropId = isSociety === 'true' ? (unitIds.length === 1 ? unitIds[0] : undefined) : BuildingPropertyId;
+
+    const initialExistingDetails = await getPropertySocialDetailsByFilters(
+      undefined,
+      socIdNum,
+      wingIdNum,
+      targetPropId
+    );
+
+    const initialFlatData: Record<number, { id?: number | null; documentGuid?: string | null }> = {};
+    (initialExistingDetails || []).forEach((item) => {
+      const existing = initialFlatData[item.socialAttributeId];
+      if (!existing || (item.id && (!existing.id || item.id > existing.id))) {
+        initialFlatData[item.socialAttributeId] = {
+          id: item.id,
+          documentGuid: item.documentGuid || item.photoGuid || null,
         };
-        if (a.children) traverse(a.children);
       }
-    };
-    if (initialResponse.success && initialResponse.data?.items?.socialAttributes) {
-      traverse(initialResponse.data.items.socialAttributes);
-    }
+    });
 
     // Process any deleted documents from removed attributes
     for (const removeId of socialAttributeIdsToRemove) {
@@ -157,9 +183,12 @@ export async function upsertPropertySocialInfoAction(
               )
             : await uploadSocialPhotoViaGlobalApi(file, propIdNum, attrId, detailId, guidReference);
 
-        if (uploadResult.success && uploadResult.data?.documentBindingId) {
+        if (uploadResult.success && (uploadResult.data?.documentBindingId || uploadResult.data?.documentGuid)) {
           attr.documentBindingId = uploadResult.data.documentBindingId;
           attr.documentGuid = uploadResult.data.documentGuid;
+          attr.photoBindingId = uploadResult.data.documentBindingId;
+          attr.photoGuid = uploadResult.data.documentGuid;
+          attr.fileName = uploadResult.data.fileName || file.name;
         } else {
           throw new Error(uploadResult.error || 'Failed to upload photo');
         }
@@ -261,6 +290,7 @@ export async function upsertPropertySocialInfoAction(
               textValue: sanitizedTextValue,
               dateValue: sanitizedDateValue,
               documentBindingId: attr.documentBindingId || null,
+              photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
               remark: sanitizedRemark,
               updatedBy: Number(userId),
               isActive: true,
@@ -289,6 +319,7 @@ export async function upsertPropertySocialInfoAction(
               textValue: sanitizedTextValue,
               dateValue: sanitizedDateValue,
               documentBindingId: attr.documentBindingId || null,
+              photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
               remark: sanitizedRemark,
               createdBy: Number(userId),
               isActive: true,
@@ -321,6 +352,7 @@ export async function upsertPropertySocialInfoAction(
               textValue: sanitizedTextValue,
               dateValue: sanitizedDateValue,
               documentBindingId: attr.documentBindingId || null,
+              photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
               remark: sanitizedRemark,
               updatedBy: Number(userId),
               isActive: true,
@@ -349,6 +381,7 @@ export async function upsertPropertySocialInfoAction(
               textValue: sanitizedTextValue,
               dateValue: sanitizedDateValue,
               documentBindingId: attr.documentBindingId || null,
+              photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
               remark: sanitizedRemark,
               createdBy: Number(userId),
               isActive: true,
@@ -382,6 +415,7 @@ export async function upsertPropertySocialInfoAction(
                 textValue: sanitizedTextValue,
                 dateValue: sanitizedDateValue,
                 documentBindingId: attr.documentBindingId || null,
+                photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
                 remark: sanitizedRemark,
                 updatedBy: Number(userId),
                 isActive: true,
@@ -410,6 +444,7 @@ export async function upsertPropertySocialInfoAction(
                 textValue: sanitizedTextValue,
                 dateValue: sanitizedDateValue,
                 documentBindingId: attr.documentBindingId || null,
+                photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
                 remark: sanitizedRemark,
                 createdBy: Number(userId),
                 isActive: true,
@@ -440,6 +475,7 @@ export async function upsertPropertySocialInfoAction(
               textValue: sanitizedTextValue,
               dateValue: sanitizedDateValue,
               documentBindingId: attr.documentBindingId || null,
+              photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
               remark: sanitizedRemark,
               createdBy: Number(userId),
               isActive: true,
@@ -470,6 +506,7 @@ export async function upsertPropertySocialInfoAction(
             textValue: sanitizedTextValue,
             dateValue: sanitizedDateValue,
             documentBindingId: attr.documentBindingId || null,
+            photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
             remark: sanitizedRemark,
             updatedBy: Number(userId),
             isActive: true,
@@ -482,6 +519,7 @@ export async function upsertPropertySocialInfoAction(
               statusCode: res.statusCode,
             };
           }
+          attr.id = existingRecordId;
           if (attr.documentBindingId && existingRecordId) {
             await updateBindingReference(attr.documentBindingId, existingRecordId);
           }
@@ -498,6 +536,7 @@ export async function upsertPropertySocialInfoAction(
             textValue: sanitizedTextValue,
             dateValue: sanitizedDateValue,
             documentBindingId: attr.documentBindingId || null,
+            photoBindingId: attr.photoBindingId || attr.documentBindingId || null,
             remark: sanitizedRemark,
             createdBy: Number(userId),
             isActive: true,
@@ -509,6 +548,9 @@ export async function upsertPropertySocialInfoAction(
               error: await cleanCommonApiError(res.error, locale),
               statusCode: res.statusCode,
             };
+          }
+          if (res.data?.id) {
+            attr.id = res.data.id;
           }
           if (attr.documentBindingId && res.data?.id) {
             await updateBindingReference(attr.documentBindingId, res.data.id);
@@ -583,11 +625,20 @@ export async function upsertPropertySocialInfoAction(
 
       const socialSavedDetails = Array.from(mergedDetailsMap.values()).filter((item) => {
         const master = masterById.get(item.socialAttributeId);
-        return master && master.isDiscountApplicable === false;
+        return master && master.isDiscountApplicable === false && master.isActive !== false;
       });
+
+      const uploadedAttrMap = new Map(
+        socialAttributes.map((a) => [a.socialAttributeId, a])
+      );
 
       const mapped = socialSavedDetails.map((item) => {
         const master = masterById.get(item.socialAttributeId);
+        const uploadedAttr = uploadedAttrMap.get(item.socialAttributeId);
+        const docGuid = item.documentGuid || uploadedAttr?.documentGuid || item.photoGuid || uploadedAttr?.photoGuid || null;
+        const docBindingId = item.documentBindingId || uploadedAttr?.documentBindingId || item.photoBindingId || uploadedAttr?.photoBindingId || null;
+        const fileName = item.fileName || uploadedAttr?.fileName || null;
+
         return {
           id: item.socialAttributeId,
           socialAttributeCode: item.socialAttributeCode || master?.socialAttributeCode || '',
@@ -595,24 +646,24 @@ export async function upsertPropertySocialInfoAction(
           dataType: master?.dataType || 'BIT',
           unit: master?.unit,
           displayOrder: master?.displayOrder,
-          parentAttributeId: null,
-          isRequiredWhenParentTrue: false,
+          parentAttributeId: masterById.get(item.socialAttributeId)?.parentAttributeId ?? null,
+          isRequiredWhenParentTrue: masterById.get(item.socialAttributeId)?.isRequiredWhenParentTrue ?? false,
           isDiscountApplicable: master?.isDiscountApplicable ?? false,
-          propertySocialDetailId: item.id,
-          bitValue: item.bitValue,
-          intValue: item.intValue,
-          decimalValue: item.decimalValue,
-          textValue: item.textValue,
-          dateValue: item.dateValue,
-          documentBindingId: item.documentBindingId,
-          documentGuid: item.documentGuid,
+          propertySocialDetailId: item.id || uploadedAttr?.id || undefined,
+          bitValue: item.bitValue ?? uploadedAttr?.bitValue ?? null,
+          intValue: item.intValue ?? uploadedAttr?.intValue ?? null,
+          decimalValue: item.decimalValue ?? uploadedAttr?.decimalValue ?? null,
+          textValue: item.textValue ?? uploadedAttr?.textValue ?? null,
+          dateValue: item.dateValue ?? uploadedAttr?.dateValue ?? null,
+          documentBindingId: docBindingId,
+          documentGuid: docGuid,
           documentUrl:
             item.documentUrl ||
-            (item.documentGuid ? `/api/documents/${item.documentGuid}/view` : undefined),
-          fileName: item.fileName,
-          photoBindingId: item.photoBindingId,
-          photoGuid: item.photoGuid,
-          remark: item.remark,
+            (docGuid ? `/api/documents/${encodeURIComponent(docGuid)}/view` : undefined),
+          fileName: fileName,
+          photoBindingId: docBindingId,
+          photoGuid: docGuid,
+          remark: item.remark ?? uploadedAttr?.remark ?? null,
           photoTypeId: null,
           isPhotoRequired: master?.isPhotoRequired,
           isDocumentRequired: master?.isDocumentRequired,
@@ -624,6 +675,49 @@ export async function upsertPropertySocialInfoAction(
         };
       });
 
+      const societyMappedIds = new Set(mapped.map((m) => m.id));
+      for (const attr of socialAttributes) {
+        if (!societyMappedIds.has(attr.socialAttributeId)) {
+          const master = masterById.get(attr.socialAttributeId);
+          if (master && master.isDiscountApplicable === false) {
+            const docGuid = attr.documentGuid || attr.photoGuid || null;
+            const docBindingId = attr.documentBindingId || attr.photoBindingId || null;
+            mapped.push({
+              id: attr.socialAttributeId,
+              socialAttributeCode: master.socialAttributeCode || '',
+              socialAttributeName: master.socialAttributeName || '',
+              dataType: master.dataType || 'BIT',
+              unit: master.unit,
+              displayOrder: master.displayOrder,
+              parentAttributeId: master.parentAttributeId ?? null,
+              isRequiredWhenParentTrue: master.isRequiredWhenParentTrue ?? false,
+              isDiscountApplicable: false,
+              propertySocialDetailId: attr.id || undefined,
+              bitValue: attr.bitValue ?? null,
+              intValue: attr.intValue ?? null,
+              decimalValue: attr.decimalValue ?? null,
+              textValue: attr.textValue ?? null,
+              dateValue: attr.dateValue ?? null,
+              documentBindingId: docBindingId,
+              documentGuid: docGuid,
+              documentUrl: docGuid ? `/api/documents/${encodeURIComponent(docGuid)}/view` : undefined,
+              fileName: attr.fileName || null,
+              photoBindingId: docBindingId,
+              photoGuid: docGuid,
+              remark: attr.remark ?? null,
+              photoTypeId: null,
+              isPhotoRequired: master.isPhotoRequired,
+              isDocumentRequired: master.isDocumentRequired,
+              isActive: master.isActive,
+              entityType: level === 'Apartment' ? 'S' : level === 'Wing' ? 'W' : 'P',
+              inheritedFrom: null,
+              inheritanceLevel: 'Self',
+              children: [],
+            });
+          }
+        }
+      }
+
       freshSocialData = {
         propertyId: Number(propertyId),
         societyDetailId: payloadSocietyDetailId,
@@ -631,8 +725,122 @@ export async function upsertPropertySocialInfoAction(
         socialAttributes: mapped,
       };
     } else {
-      const freshSocial = await getPropertySocialInfo(propertyId);
-      freshSocialData = freshSocial.data?.items || undefined;
+      const [individualDetailsRes, masterRes] = await Promise.all([
+        getPropertySocialDetailsByFilters(undefined, undefined, undefined, Number(propertyId)),
+        getSocialAttributes(),
+      ]);
+
+      const masterById = new Map((masterRes || []).map((a) => [a.id, a]));
+      const individualItems = individualDetailsRes || [];
+      const dedupedDetailsMap = new Map<number, PropertySocialDetailsDto>();
+      individualItems.forEach((item) => {
+        const existing = dedupedDetailsMap.get(item.socialAttributeId);
+        if (!existing || (item.id && (!existing.id || item.id > existing.id))) {
+          dedupedDetailsMap.set(item.socialAttributeId, item);
+        }
+      });
+
+      const socialSavedDetails = Array.from(dedupedDetailsMap.values()).filter((item) => {
+        const master = masterById.get(item.socialAttributeId);
+        return master && master.isDiscountApplicable === false && master.isActive !== false;
+      });
+
+      const uploadedAttrMap = new Map(
+        socialAttributes.map((a) => [a.socialAttributeId, a])
+      );
+
+      const mapped = socialSavedDetails.map((item) => {
+        const master = masterById.get(item.socialAttributeId);
+        const uploadedAttr = uploadedAttrMap.get(item.socialAttributeId);
+        const docGuid = item.documentGuid || uploadedAttr?.documentGuid || item.photoGuid || uploadedAttr?.photoGuid || null;
+        const docBindingId = item.documentBindingId || uploadedAttr?.documentBindingId || item.photoBindingId || uploadedAttr?.photoBindingId || null;
+        const fileName = item.fileName || uploadedAttr?.fileName || null;
+
+        return {
+          id: item.socialAttributeId,
+          socialAttributeCode: item.socialAttributeCode || master?.socialAttributeCode || '',
+          socialAttributeName: item.socialAttributeName || master?.socialAttributeName || '',
+          dataType: master?.dataType || 'BIT',
+          unit: master?.unit,
+          displayOrder: master?.displayOrder,
+          parentAttributeId: masterById.get(item.socialAttributeId)?.parentAttributeId ?? null,
+          isRequiredWhenParentTrue: masterById.get(item.socialAttributeId)?.isRequiredWhenParentTrue ?? false,
+          isDiscountApplicable: master?.isDiscountApplicable ?? false,
+          propertySocialDetailId: item.id || uploadedAttr?.id || undefined,
+          bitValue: item.bitValue ?? uploadedAttr?.bitValue ?? null,
+          intValue: item.intValue ?? uploadedAttr?.intValue ?? null,
+          decimalValue: item.decimalValue ?? uploadedAttr?.decimalValue ?? null,
+          textValue: item.textValue ?? uploadedAttr?.textValue ?? null,
+          dateValue: item.dateValue ?? uploadedAttr?.dateValue ?? null,
+          documentBindingId: docBindingId,
+          documentGuid: docGuid,
+          documentUrl:
+            item.documentUrl ||
+            (docGuid ? `/api/documents/${encodeURIComponent(docGuid)}/view` : undefined),
+          fileName: fileName,
+          photoBindingId: docBindingId,
+          photoGuid: docGuid,
+          remark: item.remark ?? uploadedAttr?.remark ?? null,
+          photoTypeId: null,
+          isPhotoRequired: master?.isPhotoRequired,
+          isDocumentRequired: master?.isDocumentRequired,
+          isActive: master?.isActive,
+          entityType: 'P',
+          inheritedFrom: null,
+          inheritanceLevel: 'Self',
+          children: [],
+        };
+      });
+
+      const individualMappedIds = new Set(mapped.map((m) => m.id));
+      for (const attr of socialAttributes) {
+        if (!individualMappedIds.has(attr.socialAttributeId)) {
+          const master = masterById.get(attr.socialAttributeId);
+          if (master && master.isDiscountApplicable === false) {
+            const docGuid = attr.documentGuid || attr.photoGuid || null;
+            const docBindingId = attr.documentBindingId || attr.photoBindingId || null;
+            mapped.push({
+              id: attr.socialAttributeId,
+              socialAttributeCode: master.socialAttributeCode || '',
+              socialAttributeName: master.socialAttributeName || '',
+              dataType: master.dataType || 'BIT',
+              unit: master.unit,
+              displayOrder: master.displayOrder,
+              parentAttributeId: master.parentAttributeId ?? null,
+              isRequiredWhenParentTrue: master.isRequiredWhenParentTrue ?? false,
+              isDiscountApplicable: false,
+              propertySocialDetailId: attr.id || undefined,
+              bitValue: attr.bitValue ?? null,
+              intValue: attr.intValue ?? null,
+              decimalValue: attr.decimalValue ?? null,
+              textValue: attr.textValue ?? null,
+              dateValue: attr.dateValue ?? null,
+              documentBindingId: docBindingId,
+              documentGuid: docGuid,
+              documentUrl: docGuid ? `/api/documents/${encodeURIComponent(docGuid)}/view` : undefined,
+              fileName: attr.fileName || null,
+              photoBindingId: docBindingId,
+              photoGuid: docGuid,
+              remark: attr.remark ?? null,
+              photoTypeId: null,
+              isPhotoRequired: master.isPhotoRequired,
+              isDocumentRequired: master.isDocumentRequired,
+              isActive: master.isActive,
+              entityType: 'P',
+              inheritedFrom: null,
+              inheritanceLevel: 'Self',
+              children: [],
+            });
+          }
+        }
+      }
+
+      freshSocialData = {
+        propertyId: Number(propertyId),
+        societyDetailId: null,
+        wingDetailId: null,
+        socialAttributes: mapped,
+      };
     }
 
     for (const l of ['en', 'hi', 'mr']) {

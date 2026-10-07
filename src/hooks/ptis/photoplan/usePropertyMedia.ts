@@ -11,10 +11,8 @@ import {
   findCategory,
 } from '@/components/modules/property-tax/ptis/media/mediaData';
 import {
-  propertyMediaCache,
   areSlotsEqual,
   arePhotosEqual,
-  evictOldestCacheEntry,
 } from './usePropertyPhotosQuery';
 import { useImageHoverPreview } from './useImageHoverPreview';
 import { type WaybackRelease, DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
@@ -80,7 +78,7 @@ export function usePropertyMedia({
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
   const pathname = usePathname();
-  const isQdeRoute = typeof pathname === 'string' && pathname.toLowerCase().includes('quickdataentry');
+  const isQdeRoute = Boolean(pathname && typeof pathname === 'string' && pathname.toLowerCase().includes('quickdataentry'));
   const effectiveIsQuickDataEntry = propIsQuickDataEntry !== undefined ? propIsQuickDataEntry : isQdeRoute;
   const [showMoreImages, setShowMoreImages] = useState(false);
   const { hoverPreview, handleImageHover, handleImageLeave, cancelImageLeave, resetHoverPreview } =
@@ -168,23 +166,12 @@ export function usePropertyMedia({
       prevPropertyIdRef.current = propertyId;
       resetHoverPreview();
       setFullyLoadedIds(new Set());
-      const cacheKey = propertyId ? `${propertyId}_${resolvedWingDetailId || 0}` : '';
-      if (cacheKey && propertyMediaCache.has(cacheKey)) {
-        const cached = propertyMediaCache.get(cacheKey)!;
-        setPhotos(cached.photos);
-        setPhotoSlots(cached.photoSlots);
-      } else if (propertyId && propertyMediaCache.has(propertyId)) {
-        const cached = propertyMediaCache.get(propertyId)!;
-        setPhotos(cached.photos);
-        setPhotoSlots(cached.photoSlots);
-      } else {
-        setPhotos(initialPhotos);
-        setPhotoSlots(initialPhotoSlots);
-      }
+      setPhotos(initialPhotos);
+      setPhotoSlots(initialPhotoSlots);
       prevPhotosRef.current = initialPhotos;
       prevSlotsRef.current = initialPhotoSlots;
     }
-  }, [propertyId, resolvedWingDetailId, initialPhotos, initialPhotoSlots, resetHoverPreview]);
+  }, [propertyId, initialPhotos, initialPhotoSlots, resetHoverPreview]);
 
   useEffect(() => {
     if (!arePhotosEqual(initialPhotos, prevPhotosRef.current)) {
@@ -228,6 +215,12 @@ export function usePropertyMedia({
       // Ignore on-demand loading errors
     }
   }, [photoSlots.length]);
+
+  useEffect(() => {
+    if (propertyId && photoSlots.length === 0 && initialPhotoSlots.length === 0) {
+      void loadPhotoSlotsOnDemand();
+    }
+  }, [propertyId, photoSlots.length, initialPhotoSlots.length, loadPhotoSlotsOnDemand]);
 
   const isAmenityDetected =
     Boolean(isAmenity) ||
@@ -355,25 +348,8 @@ export function usePropertyMedia({
 
       onPhotosChange?.(updated);
       onPhotoSlotsChange?.(updatedSlots);
-
-      // Update client cache to avoid stale values if drawer is closed/reopened
-      if (propertyId) {
-        propertyMediaCache.set(propertyId, {
-          photoSlots: updatedSlots,
-          photos: updated,
-          timestamp: Date.now(),
-        });
-        if (resolvedWingDetailId) {
-          propertyMediaCache.set(`${propertyId}_${resolvedWingDetailId}`, {
-            photoSlots: updatedSlots,
-            photos: updated,
-            timestamp: Date.now(),
-          });
-        }
-        evictOldestCacheEntry();
-      }
     },
-    [propertyId, photoSlots, initialPhotoSlots, resolvedWingDetailId, onPhotosChange, onPhotoSlotsChange, resetHoverPreview]
+    [propertyId, photoSlots, initialPhotoSlots, onPhotosChange, onPhotoSlotsChange, resetHoverPreview]
   );
 
   const isAmenityProperty = useMemo(() => {

@@ -80,6 +80,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
     const {
         socialData,
         isSaving,
+        isDeleting,
         hasChanges,
         validationErrors,
         incompleteAttributes,
@@ -166,12 +167,12 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
     // List of root attributes
     const rootAttributes = React.useMemo(() => {
         const sourceData = socialMasterAttributes.length > 0
-            ? socialMasterAttributes
-            : (initialSocialData?.socialAttributes || []);
+            ? socialMasterAttributes.filter(attr => attr.isActive !== false)
+            : (initialSocialData?.socialAttributes || []).filter(attr => attr.isActive !== false);
 
         return sourceData
             .map((attr) => socialData[attr.id])
-            .filter(attr => attr && !attr.parentAttributeId);
+            .filter(attr => Boolean(attr && !attr.parentAttributeId));
     }, [initialSocialData, socialMasterAttributes, socialData]);
 
     const filteredAttributes = React.useMemo(() => {
@@ -267,9 +268,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
 
     const handleSaveClick = React.useCallback(async () => {
         const result = await handleSave();
-        if (result && result.success) {
-            router.refresh();
-        } else if (result && !result.isValid && result.errors) {
+        if (result && !result.isValid && result.errors) {
             const firstInvalidIdStr = Object.keys(result.errors)[0];
             if (firstInvalidIdStr) {
                 const firstInvalidId = Number(firstInvalidIdStr);
@@ -290,7 +289,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                 });
             }
         }
-    }, [handleSave, socialData, handleSelectAttribute, router]);
+    }, [handleSave, socialData, handleSelectAttribute]);
 
     const activeIncompleteAttributes = React.useMemo(() => {
         return incompleteAttributes.filter(d => socialData[d.id]?.bitValue === true);
@@ -438,6 +437,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                             }
                         }}
                         isSaving={isSaving}
+                        isDeleting={isDeleting}
                         hasChanges={hasChanges}
                         onSave={handleSaveClick}
                         validationErrors={validationErrors}

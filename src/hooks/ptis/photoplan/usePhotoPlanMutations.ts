@@ -9,7 +9,6 @@ import {
 import { usePhotoPlanDelete } from './usePhotoPlanDelete';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 import { clearDocumentCacheEntry, documentCache } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
-import { propertyMediaCache } from './usePropertyPhotosQuery';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
 import type { AdditionalImage } from '@/components/modules/property-tax/ptis/media/MediaImageCards';
 import {
@@ -68,7 +67,6 @@ export function usePhotoPlanMutations({
       newPrimaryPhotoUrl?: string
     ) => {
       if (typeof window === 'undefined') return;
-      propertyMediaCache.invalidateProperty(propertyId, societyId);
       window.dispatchEvent(
         new CustomEvent('ptis:media-updated', {
           detail: {

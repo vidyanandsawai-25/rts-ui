@@ -1,4 +1,13 @@
 import { SocialAttributeHierarchyDto } from "@/types/property-social-details.types";
+export {
+    filterActiveAttributes,
+    dedupeByAttributeAndScope,
+    normalizeUploadResponse,
+    resolveDocumentGuid,
+    resolveBindingId,
+    type ScopeIdentifier,
+} from "@/lib/utils/ptis/social-details/social-details-utils";
+import { resolveDocumentGuid, resolveBindingId } from "@/lib/utils/ptis/social-details/social-details-utils";
 
 export interface FlatSocialAttributeState {
     id: number | null; // Database propertySocialDetailId
@@ -14,6 +23,7 @@ export interface FlatSocialAttributeState {
     textValue: string | null;
     dateValue: string | null;
     documentBindingId: number | null;
+    fileName?: string | null;
     uploadedGuid?: string;
     remark: string | null;
     isUploading: boolean;
@@ -32,9 +42,6 @@ export interface FlatSocialAttributeState {
     isOverridden?: boolean;
 }
 
-const normalizePositiveId = (value: number | null | undefined): number | null => {
-    return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null;
-};
 
 /**
  * Flattens the nested social attributes tree into a flat map keyed by socialAttributeId.
@@ -45,17 +52,35 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
         for (const attr of attrs) {
             const isBitType = attr.dataType.toUpperCase() === "BIT";
             const isRootAttr = attr.parentAttributeId === null || attr.parentAttributeId === undefined || !parentId;
-            let initialBitValue = attr.bitValue ?? null;
 
-            if (isBitType || isRootAttr) {
-                initialBitValue = attr.bitValue ?? false;
+            const checkHasAnyDescendantValue = (item: SocialAttributeHierarchyDto): boolean => {
+                if (
+                    item.bitValue === true ||
+                    (item.intValue !== null && item.intValue !== undefined) ||
+                    (item.decimalValue !== null && item.decimalValue !== undefined) ||
+                    (item.textValue !== null && item.textValue !== undefined && String(item.textValue).trim() !== "") ||
+                    (Boolean(item.propertySocialDetailId && Number(item.propertySocialDetailId) > 0)) ||
+                    Boolean(item.documentGuid || item.photoGuid || item.documentBindingId)
+                ) {
+                    return true;
+                }
+                if (item.children && item.children.length > 0) {
+                    return item.children.some(checkHasAnyDescendantValue);
+                }
+                return false;
+            };
+
+            const hasAnySavedValue = checkHasAnyDescendantValue(attr);
+
+            let initialBitValue = attr.bitValue ?? null;
+            if (attr.bitValue !== null && attr.bitValue !== undefined) {
+                initialBitValue = attr.bitValue;
+            } else if (hasAnySavedValue) {
+                initialBitValue = true;
+            } else if (isBitType || isRootAttr) {
+                initialBitValue = false;
             } else {
-                const hasValue = 
-                    (attr.intValue !== null && attr.intValue !== undefined) || 
-                    (attr.decimalValue !== null && attr.decimalValue !== undefined) || 
-                    (attr.textValue !== null && attr.textValue !== undefined && String(attr.textValue).trim() !== "") || 
-                    (attr.bitValue === true);
-                initialBitValue = hasValue;
+                initialBitValue = null;
             }
 
             const isInherited = Boolean(
@@ -80,15 +105,16 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
                 decimalValue: attr.decimalValue ?? null,
                 textValue: attr.textValue ?? null,
                 dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
-                documentBindingId: normalizePositiveId(attr.documentBindingId ?? attr.photoBindingId),
+                documentBindingId: resolveBindingId(attr),
+                fileName: attr.fileName ?? null,
                 remark: attr.remark ?? null,
                 isUploading: false,
                 isPhotoRequired: attr.isPhotoRequired,
                 isDocumentRequired: attr.isDocumentRequired,
-                documentGuid: attr.documentGuid ?? attr.photoGuid ?? null,
-                documentUrl: (attr.documentGuid ?? attr.photoGuid) ? `/api/documents/${encodeURIComponent(attr.documentGuid ?? attr.photoGuid ?? "")}/view` : null,
-                photoBindingId: normalizePositiveId(attr.photoBindingId),
-                photoGuid: attr.photoGuid ?? null,
+                documentGuid: resolveDocumentGuid(attr),
+                documentUrl: resolveDocumentGuid(attr) ? `/api/documents/${encodeURIComponent(resolveDocumentGuid(attr)!)}/view` : null,
+                photoBindingId: resolveBindingId(attr),
+                photoGuid: resolveDocumentGuid(attr),
                 entityType: attr.entityType ?? null,
                 inheritedFrom: resolvedInheritedFrom ?? null,
                 inheritanceLevel: resolvedInheritanceLevel ?? null,

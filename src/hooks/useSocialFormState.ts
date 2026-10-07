@@ -1,6 +1,7 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { FlatSocialAttributeState, flattenAttributes } from "@/lib/utils/social-details";
 import { hasSocialChangesComparedToInitial } from "@/lib/utils/social-changes";
+import { getDocumentViewUrl } from "@/lib/utils/document-utils";
 import { PropertySocialInfoResponseDto, PropertySocialDetailsDto, SocialAttributeHierarchyDto } from "@/types/property-social-details.types";
 import { SocialAttribute } from "@/types/social-attribute.types";
 
@@ -83,7 +84,7 @@ export function buildUnitSocialState(
             const isBitType = (master?.dataType || base?.dataType || '').toUpperCase() === 'BIT';
             const docUrl = ('documentUrl' in directRecord && directRecord.documentUrl)
                 ? (directRecord.documentUrl as string)
-                : (directRecord.documentGuid ? `/api/documents/${directRecord.documentGuid}/view` : null);
+                : getDocumentViewUrl(directRecord.documentGuid);
 
             result[attrId] = {
                 id: recId > 0 ? recId : null,
@@ -155,7 +156,7 @@ export function buildUnitSocialState(
             const aRec = apartmentRecord ? (apartmentRecord as unknown as Record<string, unknown>) : null;
 
             const inheritedDocGuid = base?.documentGuid || (wRec?.documentGuid as string | undefined) || (aRec?.documentGuid as string | undefined) || null;
-            const inheritedDocUrl = base?.documentUrl || (wRec?.documentUrl as string | undefined) || (inheritedDocGuid ? `/api/documents/${inheritedDocGuid}/view` : null);
+            const inheritedDocUrl = base?.documentUrl || (wRec?.documentUrl as string | undefined) || getDocumentViewUrl(inheritedDocGuid);
             const inheritedPhotoGuid = base?.photoGuid || (wRec?.photoGuid as string | undefined) || (aRec?.photoGuid as string | undefined) || null;
             const inheritedPhotoBindingId = base?.photoBindingId || (wRec?.photoBindingId as number | undefined) || (aRec?.photoBindingId as number | undefined) || null;
             const inheritedDocBindingId = base?.documentBindingId || (wRec?.documentBindingId as number | undefined) || (aRec?.documentBindingId as number | undefined) || null;
@@ -230,66 +231,65 @@ export const useSocialFormState = (
         return hasSocialChangesComparedToInitial(formState.data, savedFlatData);
     }, [formState.data, savedFlatData]);
 
-    const [prevInitialSocialData, setPrevInitialSocialData] = useState(initialSocialData);
-    const [prevEditingUnitId, setPrevEditingUnitId] = useState(options?.editingUnitId);
-    const [prevLevel, setPrevLevel] = useState(options?.level);
+    const editingUnitIdRef = useRef(options?.editingUnitId);
+    const levelRef = useRef(options?.level);
 
-    if (
-        initialSocialData !== prevInitialSocialData ||
-        options?.editingUnitId !== prevEditingUnitId ||
-        options?.level !== prevLevel
-    ) {
-        setPrevInitialSocialData(initialSocialData);
-        setPrevEditingUnitId(options?.editingUnitId);
-        setPrevLevel(options?.level);
-        const nextInitial = buildInitialData();
-        setSavedFlatData(nextInitial);
-        setFormState({
-            data: nextInitial,
-            errors: {}
-        });
-    }
-
-    const resetWithFreshData = useCallback((freshData: PropertySocialInfoResponseDto) => {
-        const flatData = flattenAttributes(freshData?.socialAttributes || []);
-        if (masterAttributes && masterAttributes.length > 0) {
-            masterAttributes.forEach(attr => {
-                if (!flatData[attr.id]) {
-                    const isBitType = attr.dataType.toUpperCase() === "BIT";
-                    const isRootAttr = attr.parentAttributeId === null || attr.parentAttributeId === undefined;
-                    flatData[attr.id] = {
-                        id: null,
-                        socialAttributeId: attr.id,
-                        socialAttributeCode: attr.socialAttributeCode,
-                        socialAttributeName: attr.socialAttributeName,
-                        dataType: attr.dataType,
-                        parentAttributeId: attr.parentAttributeId,
-                        isRequiredWhenParentTrue: attr.isRequiredWhenParentTrue,
-                        bitValue: (isBitType || isRootAttr) ? false : null,
-                        intValue: null,
-                        decimalValue: null,
-                        textValue: null,
-                        dateValue: null,
-                        documentBindingId: null,
-                        remark: null,
-                        isUploading: false,
-                        isPhotoRequired: attr.isPhotoRequired,
-                        isDocumentRequired: attr.isDocumentRequired,
-                        documentGuid: null,
-                        documentUrl: null,
-                        photoBindingId: null,
-                        photoGuid: null
-                    };
-                }
+    useEffect(() => {
+        if (
+            options?.editingUnitId !== editingUnitIdRef.current ||
+            options?.level !== levelRef.current
+        ) {
+            editingUnitIdRef.current = options?.editingUnitId;
+            levelRef.current = options?.level;
+            const nextInitial = buildInitialData();
+            setSavedFlatData(nextInitial);
+            setFormState({
+                data: nextInitial,
+                errors: {}
             });
         }
-        setSavedFlatData(flatData);
-        setFormState({
-            data: flatData,
-            errors: {}
+    }, [options?.editingUnitId, options?.level, buildInitialData]);
+
+    const resetWithFreshData = useCallback((freshData?: PropertySocialInfoResponseDto | null) => {
+        setFormState((prev) => {
+            const nextData = { ...prev.data };
+            const freshMap = freshData?.socialAttributes && freshData.socialAttributes.length > 0
+                ? flattenAttributes(freshData.socialAttributes)
+                : {};
+
+            Object.keys(nextData).forEach((k) => {
+                const id = Number(k);
+                const currentItem = nextData[id];
+                if (!currentItem) return;
+                const freshItem = freshMap[id];
+
+                nextData[id] = {
+                    ...currentItem,
+                    id: freshItem?.id ?? currentItem.id,
+                    bitValue: freshItem ? (freshItem.bitValue ?? currentItem.bitValue) : currentItem.bitValue,
+                    intValue: freshItem ? (freshItem.intValue ?? currentItem.intValue) : currentItem.intValue,
+                    decimalValue: freshItem ? (freshItem.decimalValue ?? currentItem.decimalValue) : currentItem.decimalValue,
+                    textValue: freshItem ? (freshItem.textValue ?? currentItem.textValue) : currentItem.textValue,
+                    dateValue: freshItem ? (freshItem.dateValue ?? currentItem.dateValue) : currentItem.dateValue,
+                    remark: freshItem ? (freshItem.remark ?? currentItem.remark) : currentItem.remark,
+                    documentBindingId: freshItem?.documentBindingId || currentItem.documentBindingId || null,
+                    documentGuid: freshItem?.documentGuid || (currentItem.documentGuid === "pending" ? null : currentItem.documentGuid),
+                    documentUrl: freshItem?.documentUrl || currentItem.documentUrl || (freshItem?.documentGuid ? `/api/documents/${encodeURIComponent(freshItem.documentGuid)}/view` : null),
+                    photoBindingId: freshItem?.photoBindingId || currentItem.photoBindingId || null,
+                    photoGuid: freshItem?.photoGuid || (currentItem.photoGuid === "pending" ? null : currentItem.photoGuid),
+                    fileName: freshItem?.fileName || currentItem.fileName || null,
+                    pendingFile: undefined,
+                    isOverridden: false,
+                };
+            });
+
+            setSavedFlatData(nextData);
+            return {
+                data: nextData,
+                errors: {}
+            };
         });
-        setPrevInitialSocialData(freshData);
-    }, [masterAttributes]);
+    }, []);
 
     const clearPendingFiles = useCallback(() => {
         setFormState((prev) => {
@@ -302,12 +302,14 @@ export const useSocialFormState = (
                         ...item,
                         pendingFile: undefined,
                         documentGuid: item.documentGuid === "pending" ? null : item.documentGuid,
+                        isOverridden: false,
                     };
                 }
             });
+            setSavedFlatData(nextData);
             return {
-                ...prev,
-                data: nextData
+                data: nextData,
+                errors: {}
             };
         });
     }, []);
@@ -324,6 +326,30 @@ export const useSocialFormState = (
 
             const isOverridden = currentAttr.isInherited ? true : currentAttr.isOverridden;
             nextData[attributeId] = { ...currentAttr, [field]: value, isOverridden };
+
+            // When user enters data on an attribute or child, automatically activate bitValue: true
+            const findAndEnableRoot = (item: FlatSocialAttributeState) => {
+                if (item.parentAttributeId && nextData[item.parentAttributeId]) {
+                    const parent = nextData[item.parentAttributeId]!;
+                    if (parent.bitValue !== true) {
+                        nextData[parent.socialAttributeId] = {
+                            ...parent,
+                            bitValue: true,
+                            isOverridden: parent.isInherited ? true : parent.isOverridden
+                        };
+                    }
+                    findAndEnableRoot(parent);
+                } else if (!item.parentAttributeId && (item.dataType || '').toUpperCase() === 'BIT' && field !== 'bitValue') {
+                    if (item.bitValue !== true && value !== null && value !== undefined && String(value).trim() !== '') {
+                        nextData[item.socialAttributeId] = {
+                            ...item,
+                            bitValue: true,
+                            isOverridden: item.isInherited ? true : item.isOverridden
+                        };
+                    }
+                }
+            };
+            findAndEnableRoot(currentAttr);
             
             const nextErrors = { ...prev.errors };
             delete nextErrors[attributeId];
@@ -368,6 +394,7 @@ export const useSocialFormState = (
         setFormState,
         hasChanges,
         initialFlatData: savedFlatData,
+        setSavedFlatData,
         handleInputChange,
         handleToggleEnabled,
         resetWithFreshData,

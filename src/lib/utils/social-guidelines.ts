@@ -182,7 +182,9 @@ export function mapSocialStateToApi(
             return;
         }
 
-        const apiBitValue = (isBitType || isRootAttr) ? true : null;
+        const apiBitValue = attr.bitValue !== null && attr.bitValue !== undefined 
+            ? Boolean(attr.bitValue) 
+            : ((isBitType || isRootAttr) ? true : null);
 
         const apiIntValue = attr.intValue !== null && attr.intValue !== undefined && String(attr.intValue) !== "" 
             ? Number(attr.intValue) 

@@ -185,9 +185,9 @@ export const getFilteredDiscounts = (
         has?: (key: string) => boolean;
     }
 ) => {
-    let list = Object.values(discountData).sort(
-        (a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)
-    );
+    let list = Object.values(discountData)
+        .filter((discount) => discount.isActive !== false)
+        .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
     if (searchTerm) {
         const term = searchTerm.toLowerCase();
         list = list.filter((discount) => {

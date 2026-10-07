@@ -25,9 +25,6 @@ import { getWingWiseDetailsAction } from '@/app/[locale]/property-tax/ptis/apart
 import { fetchWardIdAction } from '@/app/[locale]/property-tax/ptis/actions';
 import type { WingWiseWingDetails } from '@/types/property-tax/apartment';
 
-const wingWiseDetailsCache = new Map<string, WingWiseWingDetails[]>();
-const wardIdCache = new Map<string, number>();
-
 export interface PropertyItem {
   id?: number;
   isMainProperty?: boolean;
@@ -195,29 +192,15 @@ function PropertyMediaPanel({
         try {
           let targetWardId = searchWardId;
           if (!targetWardId && effectiveWardNo) {
-            if (wardIdCache.has(effectiveWardNo)) {
-              targetWardId = String(wardIdCache.get(effectiveWardNo)!);
-            } else {
-              const wardRes = await fetchWardIdAction(effectiveWardNo);
-              if (wardRes.success && wardRes.data?.wardId) {
-                targetWardId = String(wardRes.data.wardId);
-                wardIdCache.set(effectiveWardNo, wardRes.data.wardId);
-              }
+            const wardRes = await fetchWardIdAction(effectiveWardNo);
+            if (wardRes.success && wardRes.data?.wardId) {
+              targetWardId = String(wardRes.data.wardId);
             }
           }
           if (targetWardId) {
-            const cacheKey = `${targetWardId}_${queryPropNo}`;
-            if (wingWiseDetailsCache.has(cacheKey)) {
-              const cached = wingWiseDetailsCache.get(cacheKey)!;
-              if (isSubscribed && cached.length > 0) {
-                setFetchedWings(cached);
-                return;
-              }
-            }
             const res = await getWingWiseDetailsAction(targetWardId, queryPropNo);
             if (isSubscribed && res.success && res.data?.wings && res.data.wings.length > 0) {
               setFetchedWings(res.data.wings);
-              wingWiseDetailsCache.set(cacheKey, res.data.wings);
             }
           }
         } catch {

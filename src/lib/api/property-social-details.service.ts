@@ -19,6 +19,7 @@ import { DiscountDocumentUploadResponseDto } from "@/types/discount.types";
 import { uploadDocument, deleteDocument } from "./document.service";
 import { DocumentUploadParams } from "@/types/document.types";
 import { DEPARTMENT_ID, MODULE_ID, REFERENCE_TABLE, BINDING_PURPOSE, DOCUMENT_TYPE } from "../constants/document.constants";
+import { normalizeUploadResponse } from "@/lib/utils/ptis/social-details/social-details-utils";
 
 /**
  * Get social information for a given property
@@ -434,9 +435,7 @@ export async function uploadSocialPhotoViaGlobalApi(
         }
 
         const uploadResponse = await uploadDocument(file, uploadParams);
-        const documentBindingId = typeof uploadResponse.documentBindingId === "number" && uploadResponse.documentBindingId > 0
-            ? uploadResponse.documentBindingId
-            : null;
+        const { documentBindingId, documentGuid, fileName } = normalizeUploadResponse(uploadResponse, file);
 
         return {
             success: true,
@@ -445,9 +444,9 @@ export async function uploadSocialPhotoViaGlobalApi(
                 propertyId: propertyId,
                 socialAttributeId: socialAttributeId,
                 documentBindingId,
-                documentGuid: uploadResponse.documentGuid,
-                documentUrl: `/api/documents/${uploadResponse.documentGuid}/view`,
-                fileName: file.name,
+                documentGuid,
+                documentUrl: documentGuid ? `/api/documents/${encodeURIComponent(documentGuid)}/view` : undefined,
+                fileName,
                 remark: remark || null
             }
         };

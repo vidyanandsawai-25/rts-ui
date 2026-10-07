@@ -75,7 +75,8 @@
     "update": "अद्यतनित करा",
     "UpdateChanges": "बदल अद्यतनित करा",
     "clear": "साफ करा",
-    "actions": "कृती"
+    "actions": "कृती",
+    "deleting": "हटवले जात आहे..."
   },
   "search": {
     "loading": "लोड होत आहे...",

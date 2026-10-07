@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Trash2, Info } from "lucide-react";
+import { Trash2, Info, Loader2 } from "lucide-react";
 import { Label, TextArea, SaveButton } from "@/components/common";
 import { FlatSocialAttributeState, getLocalizedName } from "@/lib/utils/social-details";
 import { SocialAttributeHierarchyDto } from "@/types/property-social-details.types";
@@ -9,11 +9,7 @@ import { DocumentAttachment } from "../building/DocumentAttachment";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { AttributeControl } from "./AttributeControl";
 import { NestedAttributes } from "./NestedAttributes";
-import { 
-    SocialSelectPrompt, 
-    SocialDisabledPrompt, 
-    DisabledBanner 
-} from "./SocialPanePlaceholders";
+import { SocialSelectPrompt } from "./SocialPanePlaceholders";
 
 interface SocialDetailPaneProps {
     data: FlatSocialAttributeState | null | undefined;
@@ -30,6 +26,7 @@ interface SocialDetailPaneProps {
     };
     onDeleteSocialDetail?: () => void;
     isSaving?: boolean;
+    isDeleting?: boolean;
     hasChanges?: boolean;
     onSave?: () => void;
     isDeleteDisabled?: boolean;
@@ -47,6 +44,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     t,
     onDeleteSocialDetail,
     isSaving = false,
+    isDeleting = false,
     hasChanges = false,
     onSave,
     isDeleteDisabled = false,
@@ -124,22 +122,6 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
         }
     };
 
-    const isEnabled = isAttributeEnabled(data);
-    const hasAnyData = !!(
-        data.intValue !== null ||
-        data.decimalValue !== null ||
-        data.textValue?.trim() ||
-        data.dateValue?.trim() ||
-        data.documentGuid?.trim() ||
-        data.documentBindingId ||
-        data.remark?.trim()
-    );
-
-    if (!isEnabled && !hasAnyData) {
-        return <SocialDisabledPrompt displayName={displayName} t={t as (key: string) => string} />;
-    }
-
-    const isDisabled = !isEnabled;
     const isPhotoRequired = data.isPhotoRequired === true;
 
     const errorMsg = validationErrors?.[data.socialAttributeId];
@@ -187,14 +169,8 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     const isValueRequired = data.isRequiredWhenParentTrue || (isSpecialToggle && data.bitValue === true);
 
     return (
-        <div
-            className={`flex flex-col flex-1 h-full min-h-0 border rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative ${
-                isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
-            }`}
-        >
+        <div className="flex flex-col flex-1 h-full min-h-0 border border-blue-100 rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative bg-white">
             <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1">
-                {isDisabled && <DisabledBanner t={t as (key: string) => string} />}
-
                 {data.isInherited && (
                     <div className={`flex items-center gap-2 px-3 py-2 mb-2 rounded-lg border ${
                         data.isOverridden
@@ -229,7 +205,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                         <AttributeControl
                             attr={hierarchyData}
                             state={data}
-                            isEnabled={!isDisabled}
+                            isEnabled={true}
                             hasError={isValueInvalid}
                             handleValueChange={onInputChange}
                         />
@@ -263,10 +239,11 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     </Label>
                     <DocumentAttachment
                         documentGuid={data.documentGuid || undefined}
+                        fileName={data.fileName || undefined}
                         hasDocumentBinding={!!data.documentBindingId}
                         isUploading={data.isUploading}
                         isDeleting={data.isDeleting}
-                        isDisabled={isDisabled}
+                        isDisabled={false}
                         isDocumentInvalid={isPhotoInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
                         onFileDelete={handlePhotoDeleteWithConfirm}
@@ -291,7 +268,6 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                             <button
                                 type="button"
                                 onClick={() => onInputChange(data.socialAttributeId, "remark", "")}
-                                disabled={isDisabled}
                                 className="px-2.5 py-0.5 text-[10px] md:text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-red-400 active:bg-red-200 shadow-sm"
                             >
                                 {t("commonbuttonmessages.clear") || "Clear"}
@@ -305,7 +281,6 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                             onInputChange(data.socialAttributeId, "remark", val);
                         }}
                         placeholder={t("discount.remarkPlaceholder") || "Enter remark..."}
-                        disabled={isDisabled}
                         rows={2}
                         maxLength={500}
                         showCharCount
@@ -326,21 +301,30 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDisabled && !isDeleteDisabled && (
+                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDeleteDisabled && (
                         <button
                             type="button"
-                            disabled={isDisabled || isSaving || isDeleteDisabled}
+                            disabled={isSaving || isDeleting || isDeleteDisabled}
                             onClick={handleDeleteSocialDetailWithConfirm}
-                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            {t("discount.deleteSocialDetail") || "Delete Detail & Data"}
+                            {isDeleting ? (
+                                <>
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-red-600" />
+                                    <span>{t("commonbuttonmessages.deleting") || "Deleting..."}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>{t("discount.deleteSocialDetail") || "Delete Detail & Data"}</span>
+                                </>
+                            )}
                         </button>
                     )}
                     {onSave && (
                         <SaveButton
                             onClick={onSave}
-                            disabled={!hasChanges || isSaving}
+                            disabled={!hasChanges || isSaving || isDeleting}
                             isLoading={isSaving}
                             label={t("common.saveChanges") || "Save Changes"}
                         />

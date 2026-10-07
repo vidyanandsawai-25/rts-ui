@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AlertCircle, Trash2, Info } from "lucide-react";
+import { AlertCircle, Trash2, Info, Loader2 } from "lucide-react";
 import { Label, TextArea, SaveButton } from "@/components/common";
 import { DiscountAttributeState } from "@/types/discount.types";
 import { DocumentAttachment } from "../building/DocumentAttachment";
@@ -17,6 +17,7 @@ interface DiscountDetailPaneProps {
     onDeleteDiscount?: () => void;
     validationError?: string;
     isSaving?: boolean;
+    isDeleting?: boolean;
     hasChanges?: boolean;
     onSave?: () => void;
     isDeleteDisabled?: boolean;
@@ -34,6 +35,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     onDeleteDiscount,
     validationError,
     isSaving = false,
+    isDeleting = false,
     hasChanges = false,
     onSave,
     isDeleteDisabled = false,
@@ -167,28 +169,14 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
 
     const inputClassName = `h-10 text-sm placeholder:text-gray-400 focus:ring-1 shadow-sm transition-colors font-semibold ${
-        isDisabled
-            ? "bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed"
-            : isValueInvalid
-                ? "bg-white text-gray-800 border-red-500 focus:border-red-500 focus:ring-red-500"
-                : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300"
+        isValueInvalid
+            ? "bg-white text-gray-800 border-red-500 focus:border-red-500 focus:ring-red-500"
+            : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300"
     }`;
 
     return (
-        <div
-            className={`flex flex-col flex-1 h-full min-h-0 border rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative ${
-                isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
-            }`}
-        >
+        <div className="flex flex-col flex-1 h-full min-h-0 border border-blue-100 rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative bg-white">
             <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1">
-                {isDisabled && (
-                    <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-amber-50 border border-amber-200 rounded-lg">
-                        <AlertCircle size={16} className="text-amber-600 flex-shrink-0" />
-                        <span className="text-xs font-semibold text-amber-800">
-                            {t("discount.disabledWithDataNote") || "This discount is currently disabled. Toggle it active to edit details."}
-                        </span>
-                    </div>
-                )}
                 {data.isInherited && (
                     <div className={`flex items-center gap-2 px-3 py-2 mb-2 rounded-lg border ${
                         data.isOverridden
@@ -215,7 +203,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                 {showValueInput && (
                     <DiscountValueInput
                         data={data}
-                        isDisabled={isDisabled}
+                        isDisabled={false}
                         inputClassName={inputClassName}
                         onInputChange={onInputChange}
                         isValueInvalid={isValueInvalid}
@@ -236,7 +224,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         hasDocumentBinding={!!data.documentBindingId}
                         isUploading={data.isUploading}
                         isDeleting={data.isDeleting}
-                        isDisabled={isDisabled}
+                        isDisabled={false}
                         isDocumentInvalid={isDocumentInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
                         onFileDelete={handleFileDeleteWithConfirm}
@@ -255,7 +243,6 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                             <button
                                 type="button"
                                 onClick={() => onInputChange("remark", "")}
-                                disabled={isDisabled}
                                 className="px-2.5 py-0.5 text-[10px] md:text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-red-400 active:bg-red-200 shadow-sm"
                             >
                                 {t("commonbuttonmessages.clear") || "Clear"}
@@ -269,7 +256,6 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                             onInputChange("remark", val);
                         }}
                         placeholder={hasRemarkPlaceholder ? t("discount.remarkPlaceholder") : "Enter remark..."}
-                        disabled={isDisabled}
                         rows={2}
                         maxLength={500}
                         showCharCount
@@ -295,18 +281,27 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     {onDeleteDiscount && isDiscountFilled && isUpdateCase && !isDisabled && !isDeleteDisabled && (
                         <button
                             type="button"
-                            disabled={isDisabled || isSaving || isDeleteDisabled}
+                            disabled={isDisabled || isSaving || isDeleting || isDeleteDisabled}
                             onClick={handleDeleteDiscountWithConfirm}
-                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            {t("discount.deleteDiscount") || "Delete Discount & Data"}
+                            {isDeleting ? (
+                                <>
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-red-600" />
+                                    <span>{t("commonbuttonmessages.deleting") || "Deleting..."}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>{t("discount.deleteDiscount") || "Delete Discount & Data"}</span>
+                                </>
+                            )}
                         </button>
                     )}
                     {onSave && (
                         <SaveButton
                             onClick={onSave}
-                            disabled={!hasChanges || isSaving}
+                            disabled={!hasChanges || isSaving || isDeleting}
                             isLoading={isSaving}
                             label={t("common.saveChanges") || "Save Changes"}
                         />

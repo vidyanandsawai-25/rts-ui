@@ -75,7 +75,8 @@
     "update": "अपडेट",
     "UpdateChanges": "अपडेट करें",
     "clear": "साफ़ करें",
-    "actions": "कार्रवाई"
+    "actions": "कार्रवाई",
+    "deleting": "हटाया जा रहा है..."
   },
   "search": {
     "loading": "लोड हो रहा है...",

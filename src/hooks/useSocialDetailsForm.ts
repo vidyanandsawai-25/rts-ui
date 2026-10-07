@@ -39,14 +39,15 @@ export const useSocialDetailsForm = (
     }
 ) => {
     const t = useTranslations("quickDataEntry");
-    const { isLoading: isSaving, startLoading, stopLoading } = useLoading(false);
+    const { isLoading: isSaving, startLoading: startSaveLoading, stopLoading: stopSaveLoading } = useLoading(false);
+    const { isLoading: isDeleting, startLoading: startDeleteLoading, stopLoading: stopDeleteLoading } = useLoading(false);
     const params = useParams();
     const locale = params.locale as string;
     const { confirm } = useConfirm();
 
     const {
         socialData, validationErrors, setFormState,
-        hasChanges, initialFlatData, handleInputChange, handleToggleEnabled,
+        hasChanges, initialFlatData, setSavedFlatData, handleInputChange, handleToggleEnabled,
         resetWithFreshData, clearPendingFiles
     } = useSocialFormState(initialSocialData, masterAttributes, {
         level: options?.level,
@@ -94,6 +95,7 @@ export const useSocialDetailsForm = (
     }, [validationErrors, socialData, t]);
 
     const handleSave = async () => {
+        if (isSaving || isDeleting) return { success: false, isValid: true };
         const valErrors = validateSocialDetails(socialData, t);
         if (Object.keys(valErrors).length > 0) {
             setFormState((prev) => ({ ...prev, errors: valErrors }));
@@ -110,7 +112,7 @@ export const useSocialDetailsForm = (
                 confirmText: t("discount.socialConfirm.confirmText") || "Yes, Save",
                 cancelText: t("discount.socialConfirm.cancelText") || "No, Cancel",
                 onConfirm: async () => {
-                    startLoading();
+                    startSaveLoading();
                     try {
                         const { socialAttributes, socialAttributeIdsToRemove } = mapSocialStateToApi(socialData, initialFlatData);
                         const hasPendingFiles = Object.values(socialData).some(item => isAttributeEnabled(item, socialData) && !!item.pendingFile);
@@ -156,7 +158,7 @@ export const useSocialDetailsForm = (
                     } catch (error: unknown) {
                         toast.error(error instanceof Error ? error.message : String(error));
                         resolve({ success: false, isValid: true });
-                    } finally { stopLoading(); }
+                    } finally { stopSaveLoading(); }
                 },
                 onCancel: () => resolve({ success: false, isValid: true })
             });
@@ -164,12 +166,13 @@ export const useSocialDetailsForm = (
     };
 
     const handleDeleteSocialDetail = useCallback(async (id: number) => {
+        if (isSaving || isDeleting) return;
         const activeItem = socialData[id];
         if (!activeItem) return;
 
         const isSavedOnBackend = typeof activeItem.id === "number" && activeItem.id > 0;
 
-        startLoading();
+        startDeleteLoading();
         try {
             if (isSavedOnBackend) {
                 const isSocietyMode = options?.isSociety === true && !!options?.societyDetailId;
@@ -281,6 +284,7 @@ export const useSocialDetailsForm = (
                 };
 
                 clearAttributeAndChildren(nextData, id);
+                setSavedFlatData(nextData);
 
                 return {
                     data: nextData,
@@ -292,9 +296,27 @@ export const useSocialDetailsForm = (
         } catch (_error) {
             toast.error("An error occurred while deleting the social details");
         } finally {
-            stopLoading();
+            stopDeleteLoading();
         }
-    }, [socialData, propertyId, locale, options, setFormState, startLoading, stopLoading, t]);
+    }, [
+        socialData,
+        isSaving,
+        isDeleting,
+        propertyId,
+        locale,
+        options?.isSociety,
+        options?.societyDetailId,
+        options?.wingDetailId,
+        options?.propertyIds,
+        options?.selectedUnitCount,
+        options?.totalUnitCount,
+        options?.level,
+        setFormState,
+        setSavedFlatData,
+        startDeleteLoading,
+        stopDeleteLoading,
+        t
+    ]);
 
     const revertSocialAttribute = useCallback((id: number) => {
         setFormState((prev) => {
@@ -315,7 +337,7 @@ export const useSocialDetailsForm = (
     }, [initialFlatData, setFormState]);
 
     return {
-        socialData, isSaving, hasChanges, validationErrors, incompleteAttributes,
+        socialData, isSaving, isDeleting, hasChanges, validationErrors, incompleteAttributes,
         isAttributeEnabled: (attr: FlatSocialAttributeState) => isAttributeEnabled(attr, socialData),
         handleInputChange, handleToggleEnabled, handlePhotoUpload, handlePhotoDelete, handleDeleteSocialDetail, handleSave, revertSocialAttribute
     };

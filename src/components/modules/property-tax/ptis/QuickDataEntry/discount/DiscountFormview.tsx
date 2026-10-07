@@ -162,6 +162,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     const {
         discountData,
         isSaving,
+        isDeleting,
         hasChanges,
         validationErrors,
         incompleteDiscounts,
@@ -260,9 +261,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         }
 
         const result = await handleSave();
-        if (result && result.success) {
-            router.refresh();
-        } else if (result && !result.isValid && result.incompleteDiscounts) {
+        if (result && !result.isValid && result.incompleteDiscounts) {
             const activeIncomplete = result.incompleteDiscounts.filter(
                 (d) => {
                     const item = discountData[d.id];
@@ -280,7 +279,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                 });
             }
         }
-    }, [handleSave, discountData, handleSelectDiscount, isSociety, levelState, router, t]);
+    }, [handleSave, discountData, handleSelectDiscount, isSociety, levelState, t]);
 
     return (
         <>
@@ -368,6 +367,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                         handleFileDelete={handleFileDelete}
                         handleDeleteDiscount={handleDeleteDiscount}
                         isSaving={isSaving}
+                        isDeleting={isDeleting}
                         hasChanges={hasChanges}
                         onSave={handleSaveClick}
                         t={t}

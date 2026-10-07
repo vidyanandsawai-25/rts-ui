@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
@@ -37,7 +37,8 @@ export const useDiscountForm = (
     }
 ) => {
     const t = useTranslations('quickDataEntry');
-    const { isLoading: isSaving, startLoading, stopLoading } = useLoading(false);
+    const { isLoading: isSaving, startLoading: startSaveLoading, stopLoading: stopSaveLoading } = useLoading(false);
+    const { isLoading: isDeleting, startLoading: startDeleteLoading, stopLoading: stopDeleteLoading } = useLoading(false);
     const [validationErrors, setValidationErrors] = useState<Record<number, string>>({});
     const [incompleteDiscounts, setIncompleteDiscounts] = useState<{ id: number; name: string }[]>([]);
     const params = useParams();
@@ -54,26 +55,27 @@ export const useDiscountForm = (
         );
     }, [initialDiscountData, masterAttributes, options?.level, options?.savedPropertyDetails, options?.editingUnitId]);
 
+    const [savedDiscountState, setSavedDiscountState] = useState<DiscountState>(() => initialMappedState);
     const [discountData, setDiscountData] = useState<DiscountState>(() => initialMappedState);
 
     const hasChanges = useMemo(() => {
-        return hasDiscountChangesComparedToInitial(discountData, initialMappedState);
-    }, [discountData, initialMappedState]);
+        return hasDiscountChangesComparedToInitial(discountData, savedDiscountState);
+    }, [discountData, savedDiscountState]);
 
-    const [prevInitialDiscountData, setPrevInitialDiscountData] = useState(initialDiscountData);
-    const [prevEditingUnitId, setPrevEditingUnitId] = useState(options?.editingUnitId);
-    const [prevLevel, setPrevLevel] = useState(options?.level);
+    const editingUnitIdRef = useRef(options?.editingUnitId);
+    const levelRef = useRef(options?.level);
 
-    if (
-        initialDiscountData !== prevInitialDiscountData ||
-        options?.editingUnitId !== prevEditingUnitId ||
-        options?.level !== prevLevel
-    ) {
-        setPrevInitialDiscountData(initialDiscountData);
-        setPrevEditingUnitId(options?.editingUnitId);
-        setPrevLevel(options?.level);
-        setDiscountData(initialMappedState);
-    }
+    useEffect(() => {
+        if (
+            options?.editingUnitId !== editingUnitIdRef.current ||
+            options?.level !== levelRef.current
+        ) {
+            editingUnitIdRef.current = options?.editingUnitId;
+            levelRef.current = options?.level;
+            setSavedDiscountState(initialMappedState);
+            setDiscountData(initialMappedState);
+        }
+    }, [options?.editingUnitId, options?.level, initialMappedState]);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -174,12 +176,13 @@ export const useDiscountForm = (
     }, [clearError, t]);
 
     const handleDeleteDiscount = useCallback(async (id: number) => {
+        if (isSaving || isDeleting) return;
         const activeItem = discountData[id];
         if (!activeItem) return;
 
         const isSavedOnBackend = typeof activeItem.propertySocialDetailId === "number" && activeItem.propertySocialDetailId > 0;
 
-        startLoading();
+        startDeleteLoading();
         try {
             if (isSavedOnBackend) {
                 const isSocietyMode = options?.isSociety === true && !!options?.societyDetailId;
@@ -261,25 +264,29 @@ export const useDiscountForm = (
             setDiscountData(prev => {
                 const item = prev[id];
                 if (!item) return prev;
-                return {
-                    ...prev,
-                    [id]: {
-                        ...item,
-                        pendingFile: undefined,
-                        documentGuid: null,
-                        documentBindingId: null,
-                        documentUrl: null,
-                        fileName: undefined,
-                        intValue: null,
-                        decimalValue: null,
-                        textValue: null,
-                        dateValue: null,
-                        remark: "",
-                        enabled: false,
-                        bitValue: false,
-                        propertySocialDetailId: null // Reset backend ID
-                    }
+                const nextItem = {
+                    ...item,
+                    pendingFile: undefined,
+                    documentGuid: null,
+                    documentBindingId: null,
+                    documentUrl: null,
+                    fileName: undefined,
+                    intValue: null,
+                    decimalValue: null,
+                    textValue: null,
+                    dateValue: null,
+                    remark: "",
+                    enabled: false,
+                    bitValue: false,
+                    propertySocialDetailId: null, // Reset backend ID
+                    isOverridden: false
                 };
+                const next = {
+                    ...prev,
+                    [id]: nextItem
+                };
+                setSavedDiscountState(next);
+                return next;
             });
             clearError(id);
 
@@ -287,12 +294,29 @@ export const useDiscountForm = (
         } catch (_error) {
             toast.error("An error occurred while deleting the discount details");
         } finally {
-            stopLoading();
+            stopDeleteLoading();
         }
-    }, [discountData, propertyId, locale, options, clearError, startLoading, stopLoading, t]);
+    }, [
+        discountData,
+        isSaving,
+        isDeleting,
+        propertyId,
+        locale,
+        options?.isSociety,
+        options?.societyDetailId,
+        options?.wingDetailId,
+        options?.propertyIds,
+        options?.selectedUnitCount,
+        options?.totalUnitCount,
+        options?.level,
+        clearError,
+        startDeleteLoading,
+        stopDeleteLoading,
+        t
+    ]);
 
     const handleSave = async () => {
-        if (isSaving) return { success: false, isValid: true };
+        if (isSaving || isDeleting) return { success: false, isValid: true };
         const { isValid, errors, incompleteDiscounts: invalidDiscounts } = validateDiscountForm(discountData, (key, params) => t(key, params));
         if (!isValid) {
             setValidationErrors(errors);
@@ -301,7 +325,7 @@ export const useDiscountForm = (
         }
         setValidationErrors({});
         setIncompleteDiscounts([]);
-        startLoading();
+        startSaveLoading();
 
         try {
             const formData = new FormData();
@@ -325,27 +349,31 @@ export const useDiscountForm = (
 
             const response = await updateDiscountDetailsAction(locale, propertyId, formData);
             if (response.success) {
-                if (response.data) {
-                    const freshMapped = mapApiToDiscountState(response.data, masterAttributes, options?.level);
-                    setDiscountData(freshMapped);
-                    setPrevInitialDiscountData(response.data);
-                } else {
-                    // Fallback: clear pendingFile on all attributes and reset temporary 'pending' documentGuid
-                    setDiscountData(prev => {
-                        const next = { ...prev };
-                        Object.keys(next).forEach(k => {
-                            const id = Number(k);
-                            if (next[id]) {
-                                next[id] = {
-                                    ...next[id],
-                                    pendingFile: undefined,
-                                    documentGuid: next[id].documentGuid === "pending" ? null : next[id].documentGuid,
-                                };
-                            }
-                        });
-                        return next;
+                setDiscountData(prev => {
+                    const next = { ...prev };
+                    const freshMap = new Map((response.data?.discountAttributes || []).map(a => [a.id, a]));
+
+                    Object.keys(next).forEach(k => {
+                        const id = Number(k);
+                        const item = next[id];
+                        if (!item) return;
+                        const fresh = freshMap.get(id);
+
+                        next[id] = {
+                            ...item,
+                            propertySocialDetailId: fresh?.propertySocialDetailId || item.propertySocialDetailId,
+                            documentBindingId: fresh?.documentBindingId || item.documentBindingId || null,
+                            documentGuid: fresh?.documentGuid || (item.documentGuid === "pending" ? null : item.documentGuid),
+                            documentUrl: fresh?.documentUrl || item.documentUrl || (fresh?.documentGuid ? `/api/documents/${encodeURIComponent(fresh.documentGuid)}/view` : null),
+                            fileName: fresh?.fileName || item.fileName,
+                            pendingFile: undefined,
+                            isOverridden: false
+                        };
                     });
-                }
+
+                    setSavedDiscountState(next);
+                    return next;
+                });
 
                 toast.success(t("discount.saveSuccess") || "Discount details saved successfully!");
                 return { success: true, isValid: true };
@@ -355,12 +383,12 @@ export const useDiscountForm = (
         } catch (error: unknown) {
             toast.error(error instanceof Error ? error.message : String(error));
             return { success: false, isValid: true };
-        } finally { stopLoading(); }
+        } finally { stopSaveLoading(); }
     };
 
     const revertDiscount = useCallback((id: number) => {
         setDiscountData((prev) => {
-            const initialItem = initialMappedState[id];
+            const initialItem = savedDiscountState[id];
             if (!initialItem) return prev;
             const hasDbValues = typeof initialItem.propertySocialDetailId === "number" && initialItem.propertySocialDetailId > 0;
             if (!hasDbValues) return prev;
@@ -371,7 +399,7 @@ export const useDiscountForm = (
         });
         setValidationErrors((prev) => { const next = { ...prev }; delete next[id]; return next; });
         setIncompleteDiscounts((prev) => prev.filter((d) => d.id !== id));
-    }, [initialMappedState]);
+    }, [savedDiscountState]);
 
-    return { discountData, isSaving, hasChanges, validationErrors, incompleteDiscounts, handleToggleEnabled, handleInputChange, handleFileUpload, handleFileDelete, handleDeleteDiscount, handleSave, revertDiscount, t };
+    return { discountData, isSaving, isDeleting, hasChanges, validationErrors, incompleteDiscounts, handleToggleEnabled, handleInputChange, handleFileUpload, handleFileDelete, handleDeleteDiscount, handleSave, revertDiscount, t };
 };

@@ -11,6 +11,7 @@ import { uploadDocument, deleteDocument } from "./document.service";
 import { DocumentUploadParams } from "@/types/document.types";
 import { DEPARTMENT_ID, MODULE_ID, REFERENCE_TABLE, BINDING_PURPOSE, DOCUMENT_TYPE } from "../constants/document.constants";
 import { WingOption, UnitSelectionItem } from "@/types/building-permission.types";
+import { normalizeUploadResponse } from "@/lib/utils/ptis/social-details/social-details-utils";
 
 interface BackendApiResponseWrapper<T> {
     success: boolean;
@@ -89,9 +90,7 @@ export async function uploadDiscountDocViaGlobalApi(
         }
 
         const uploadResponse = await uploadDocument(file, uploadParams);
-        const documentBindingId = typeof uploadResponse.documentBindingId === "number" && uploadResponse.documentBindingId > 0
-            ? uploadResponse.documentBindingId
-            : null;
+        const { documentBindingId, documentGuid, fileName } = normalizeUploadResponse(uploadResponse, file);
 
         return {
             success: true,
@@ -100,9 +99,9 @@ export async function uploadDiscountDocViaGlobalApi(
                 propertyId: propertyId,
                 socialAttributeId: socialAttributeId,
                 documentBindingId,
-                documentGuid: uploadResponse.documentGuid,
-                documentUrl: `/api/documents/${uploadResponse.documentGuid}/view`,
-                fileName: file.name,
+                documentGuid,
+                documentUrl: documentGuid ? `/api/documents/${encodeURIComponent(documentGuid)}/view` : undefined,
+                fileName,
                 remark: remark || null
             }
         };

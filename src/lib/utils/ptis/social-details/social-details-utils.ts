@@ -7,6 +7,108 @@ import type {
 import type { PropertySocialDetailItem } from '@/types/ptis-core.types';
 import type { SocialAttribute } from '@/types/social-attribute.types';
 
+export interface ScopeIdentifier {
+  propertyId?: number | null;
+  societyDetailId?: number | null;
+  societyDetailsId?: number | null;
+  wingDetailId?: number | null;
+  entityType?: string | null;
+}
+
+export const filterActiveAttributes = <T extends { isActive?: boolean }>(items: T[]): T[] =>
+  items.filter((item) => item.isActive !== false);
+
+export const buildScopeKey = (
+  item: ScopeIdentifier & { socialAttributeId: number }
+): string => {
+  const entityType = item.entityType || 'P';
+  const socId = item.societyDetailId ?? item.societyDetailsId ?? 0;
+  const wingId = item.wingDetailId ?? 0;
+  const propId = item.propertyId ?? 0;
+  return `${entityType}:${socId}:${wingId}:${propId}:${item.socialAttributeId}`;
+};
+
+export function dedupeByAttributeAndScope<
+  T extends { socialAttributeId?: number; id?: number | null } & ScopeIdentifier
+>(items: T[], scopeFilter?: ScopeIdentifier): T[] {
+  const map = new Map<string, T>();
+  for (const item of items) {
+    const attrId = item.socialAttributeId ?? (item.id as number);
+    if (!attrId) continue;
+    if (scopeFilter) {
+      if (scopeFilter.entityType && item.entityType && item.entityType !== scopeFilter.entityType) continue;
+      if (scopeFilter.societyDetailId && item.societyDetailId && item.societyDetailId !== scopeFilter.societyDetailId) continue;
+      if (scopeFilter.wingDetailId && item.wingDetailId && item.wingDetailId !== scopeFilter.wingDetailId) continue;
+      if (scopeFilter.propertyId && item.propertyId && item.propertyId !== scopeFilter.propertyId) continue;
+    }
+    const key = buildScopeKey({ ...item, socialAttributeId: attrId });
+    const existing = map.get(key);
+    if (!existing || (item.id && (!existing.id || item.id > existing.id))) {
+      map.set(key, item);
+    }
+  }
+  return Array.from(map.values());
+}
+
+export function normalizeUploadResponse(
+  uploadResponse: unknown,
+  fallbackFile: File
+): {
+  documentBindingId: number | null;
+  documentGuid: string;
+  fileName: string;
+} {
+  const raw =
+    uploadResponse && typeof uploadResponse === 'object'
+      ? (uploadResponse as Record<string, unknown>)
+      : {};
+
+  let documentBindingId: number | null = null;
+  if (typeof raw.documentBindingId === 'number' && raw.documentBindingId > 0) {
+    documentBindingId = raw.documentBindingId;
+  } else if (typeof raw.DocumentBindingId === 'number' && raw.DocumentBindingId > 0) {
+    documentBindingId = raw.DocumentBindingId;
+  } else if (typeof raw.bindingId === 'number' && raw.bindingId > 0) {
+    documentBindingId = raw.bindingId;
+  } else if (typeof raw.BindingId === 'number' && raw.BindingId > 0) {
+    documentBindingId = raw.BindingId;
+  }
+
+  const rawGuid =
+    raw.documentGuid ??
+    raw.DocumentGuid ??
+    raw.guid ??
+    raw.Guid ??
+    raw.photoGuid ??
+    raw.PhotoGuid;
+  const documentGuid =
+    typeof rawGuid === 'string' && rawGuid.trim() !== '' ? rawGuid.trim() : '';
+
+  const rawFileName = raw.fileName ?? raw.FileName ?? raw.name ?? raw.Name;
+  const fileName =
+    typeof rawFileName === 'string' && rawFileName.trim() !== ''
+      ? rawFileName.trim()
+      : fallbackFile.name;
+
+  return { documentBindingId, documentGuid, fileName };
+}
+
+export function resolveDocumentGuid(
+  item?: { documentGuid?: string | null; photoGuid?: string | null } | null
+): string | null {
+  if (!item) return null;
+  const guid = item.documentGuid || item.photoGuid;
+  return typeof guid === 'string' && guid.trim() !== '' ? guid.trim() : null;
+}
+
+export function resolveBindingId(
+  item?: { documentBindingId?: number | null; photoBindingId?: number | null } | null
+): number | null {
+  if (!item) return null;
+  const id = item.documentBindingId ?? item.photoBindingId;
+  return typeof id === 'number' && Number.isFinite(id) && id > 0 ? id : null;
+}
+
 export const ENTITY_TYPE = {
   SOCIETY: 'S',
   WING: 'W',

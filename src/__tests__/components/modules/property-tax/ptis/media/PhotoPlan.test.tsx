@@ -160,14 +160,12 @@ import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { MainImageViewer } from '@/components/modules/property-tax/ptis/media/MainImageViewer';
 
-import { propertyMediaCache } from '@/hooks/ptis/photoplan/usePropertyPhotosQuery';
 import { documentCache } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 
 describe('PhotoPlan Section - Complete Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSearchParamsGet.mockReturnValue(null);
-    propertyMediaCache.clear();
     documentCache.clear();
     if (typeof window !== 'undefined') {
       try {

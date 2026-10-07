@@ -30,6 +30,8 @@ export interface DiscountAttributeDto {
     documentBindingId?: number | null;
     documentGuid?: string | null;
     documentUrl?: string | null;
+    photoBindingId?: number | null;
+    photoGuid?: string | null;
     fileName?: string | null;
     remark?: string | null;
     isPhotoRequired?: boolean;
@@ -51,7 +53,7 @@ export interface DiscountDocumentUploadResponseDto {
     socialAttributeId: number;
     documentBindingId: number | null;
     documentGuid: string;
-    documentUrl: string;
+    documentUrl?: string | null;
     fileName: string;
     remark?: string | null;
 }
@@ -66,6 +68,10 @@ export interface DiscountAttributeItemDto {
     textValue?: string | null;
     dateValue?: string | null;
     documentBindingId?: number | null;
+    documentGuid?: string | null;
+    photoBindingId?: number | null;
+    photoGuid?: string | null;
+    fileName?: string | null;
     remark?: string | null;
     isActive?: boolean;
     entityType?: string | null;
