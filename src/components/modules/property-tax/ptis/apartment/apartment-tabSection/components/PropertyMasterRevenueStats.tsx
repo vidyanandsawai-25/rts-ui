@@ -15,14 +15,14 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
   const t = useTranslations('appartmentQC');
 
   return (
-    <div className="grid grid-cols-3 gap-1 xl:gap-1.5">
+    <div className="grid grid-cols-3 gap-0.5 xl:gap-1 2xl:gap-1.5">
       {/* 1. Current Tax */}
-      <div className="relative group p-1 xl:p-1.5 rounded-md border border-[#93c5fd] bg-[#eff6ff] hover:bg-blue-100/70 hover:border-blue-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
-        <div className="flex items-center gap-1 text-blue-600">
-          <FileText className="w-2.5 h-2.5 xl:w-3 xl:h-3 shrink-0" />
-          <span className="text-[9px] xl:text-[10px] font-bold leading-none truncate">{t('stats.currentTax') || 'Current Tax'}</span>
+      <div className="relative group p-0.5 xl:p-1 2xl:p-1.5 rounded-md border border-[#93c5fd] bg-[#eff6ff] hover:bg-blue-100/70 hover:border-blue-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
+        <div className="flex items-center gap-0.5 xl:gap-1 text-blue-600">
+          <FileText className="w-2 h-2 xl:w-2.5 xl:h-2.5 2xl:w-3 2xl:h-3 shrink-0" />
+          <span className="text-[7.5px] xl:text-[8.5px] 2xl:text-[10px] font-bold leading-none truncate">{t('stats.currentTax') || 'Current Tax'}</span>
         </div>
-        <span className="text-[11px] xl:text-xs font-black text-slate-900 leading-tight mt-0.5 truncate">
+        <span className="text-[9.5px] xl:text-[10.5px] 2xl:text-xs font-black text-slate-900 leading-tight mt-0.5 truncate">
           {performance?.currentTax || '-'}
         </span>
 
@@ -40,12 +40,12 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
       </div>
 
       {/* 2. Retro Tax */}
-      <div className="relative group p-1 xl:p-1.5 rounded-md border border-[#93c5fd] bg-[#eff6ff] hover:bg-blue-100/70 hover:border-blue-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
-        <div className="flex items-center gap-1 text-blue-600">
-          <FileText className="w-2.5 h-2.5 xl:w-3 xl:h-3 shrink-0" />
-          <span className="text-[9px] xl:text-[10px] font-bold leading-none truncate">{t('stats.retroTax') || 'Retro Tax'}</span>
+      <div className="relative group p-0.5 xl:p-1 2xl:p-1.5 rounded-md border border-[#93c5fd] bg-[#eff6ff] hover:bg-blue-100/70 hover:border-blue-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
+        <div className="flex items-center gap-0.5 xl:gap-1 text-blue-600">
+          <FileText className="w-2 h-2 xl:w-2.5 xl:h-2.5 2xl:w-3 2xl:h-3 shrink-0" />
+          <span className="text-[7.5px] xl:text-[8.5px] 2xl:text-[10px] font-bold leading-none truncate">{t('stats.retroTax') || 'Retro Tax'}</span>
         </div>
-        <span className="text-[11px] xl:text-xs font-black text-slate-900 leading-tight mt-0.5 truncate">
+        <span className="text-[9.5px] xl:text-[10.5px] 2xl:text-xs font-black text-slate-900 leading-tight mt-0.5 truncate">
           {performance?.retroTax || '-'}
         </span>
 
@@ -63,12 +63,12 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
       </div>
 
       {/* 3. Total Tax */}
-      <div className="relative group p-1 xl:p-1.5 rounded-md border border-[#93c5fd] bg-[#eff6ff] hover:bg-blue-100/70 hover:border-blue-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
-        <div className="flex items-center gap-1 text-blue-600">
-          <FileText className="w-2.5 h-2.5 xl:w-3 xl:h-3 shrink-0" />
-          <span className="text-[9px] xl:text-[10px] font-bold leading-none truncate">{t('stats.totalTax') || 'Total Tax'}</span>
+      <div className="relative group p-0.5 xl:p-1 2xl:p-1.5 rounded-md border border-[#93c5fd] bg-[#eff6ff] hover:bg-blue-100/70 hover:border-blue-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
+        <div className="flex items-center gap-0.5 xl:gap-1 text-blue-600">
+          <FileText className="w-2 h-2 xl:w-2.5 xl:h-2.5 2xl:w-3 2xl:h-3 shrink-0" />
+          <span className="text-[7.5px] xl:text-[8.5px] 2xl:text-[10px] font-bold leading-none truncate">{t('stats.totalTax') || 'Total Tax'}</span>
         </div>
-        <span className="text-[11px] xl:text-xs font-black text-slate-900 leading-tight mt-0.5 truncate">
+        <span className="text-[9.5px] xl:text-[10.5px] 2xl:text-xs font-black text-slate-900 leading-tight mt-0.5 truncate">
           {performance?.totalTax || '-'}
         </span>
 
@@ -86,15 +86,15 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
       </div>
 
       {/* 4. Demand: Total Demand with Current & Pending Branches */}
-      <div className="relative group p-1 xl:p-1.5 rounded-md border border-[#fde047] bg-[#fffbeb] hover:bg-amber-100/70 hover:border-amber-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
+      <div className="relative group p-0.5 xl:p-1 2xl:p-1.5 rounded-md border border-[#fde047] bg-[#fffbeb] hover:bg-amber-100/70 hover:border-amber-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
         {/* Top: Total Demand Header */}
         <div className="flex items-center justify-between gap-0.5 text-amber-700 pb-0.5 border-b border-amber-200/80">
           <div className="flex items-center gap-0.5 xl:gap-1 min-w-0">
-            <Clock className="w-2.5 h-2.5 shrink-0 text-amber-600" />
-            <span className="text-[8px] xl:text-[9px] font-bold leading-none truncate">{t('stats.totalDemand') || 'Total Demand'}</span>
+            <Clock className="w-2 h-2 xl:w-2.5 xl:h-2.5 shrink-0 text-amber-600" />
+            <span className="text-[7px] xl:text-[8px] 2xl:text-[9px] font-bold leading-none truncate">{t('stats.totalDemand') || 'Total Demand'}</span>
           </div>
           <span
-            className="text-[9px] xl:text-[10px] font-black text-slate-900 leading-none shrink-0"
+            className="text-[7.5px] xl:text-[8.5px] 2xl:text-[10px] font-black text-slate-900 leading-none shrink-0"
             title={performance?.totalDemand || performance?.totalTax || '-'}
           >
             {performance?.totalDemand || performance?.totalTax || '-'}
@@ -105,9 +105,9 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
         <div className="grid grid-cols-2 divide-x divide-amber-300/80 pt-0.5">
           {/* Current (Left branch) */}
           <div className="flex flex-col justify-between pr-0.5 xl:pr-1 min-w-0 hover:bg-amber-200/30 rounded-xs px-0.5 transition-colors duration-150">
-            <span className="text-[7.5px] xl:text-[8px] font-bold text-amber-800/90 leading-tight">{t('stats.current') || 'Current'}</span>
+            <span className="text-[6.5px] xl:text-[7px] 2xl:text-[8px] font-bold text-amber-800/90 leading-tight truncate">{t('stats.current') || 'Current'}</span>
             <span
-              className="text-[8.5px] xl:text-[9.5px] font-black text-slate-900 leading-tight tracking-tight truncate"
+              className="text-[7px] xl:text-[8px] 2xl:text-[9.5px] font-black text-slate-900 leading-tight tracking-tight truncate"
               title={performance?.currentDemand || performance?.currentTax || '-'}
             >
               {performance?.currentDemand || performance?.currentTax || '-'}
@@ -116,9 +116,9 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
 
           {/* Pending (Right branch) */}
           <div className="flex flex-col justify-between pl-0.5 xl:pl-1 min-w-0 hover:bg-amber-200/30 rounded-xs px-0.5 transition-colors duration-150">
-            <span className="text-[7.5px] xl:text-[8px] font-bold text-amber-800/90 leading-tight">{t('stats.pending') || 'Pending'}</span>
+            <span className="text-[6.5px] xl:text-[7px] 2xl:text-[8px] font-bold text-amber-800/90 leading-tight truncate">{t('stats.pending') || 'Pending'}</span>
             <span
-              className="text-[8.5px] xl:text-[9.5px] font-black text-slate-900 leading-tight tracking-tight truncate"
+              className="text-[7px] xl:text-[8px] 2xl:text-[9.5px] font-black text-slate-900 leading-tight tracking-tight truncate"
               title={performance?.pendingDemand || performance?.retroTax || '-'}
             >
               {performance?.pendingDemand || performance?.retroTax || '-'}
@@ -159,14 +159,14 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
       </div>
 
       {/* 5. Collection */}
-      <div className="relative group p-1 xl:p-1.5 rounded-md border border-[#86efac] bg-[#f0fdf4] hover:bg-emerald-100/70 hover:border-emerald-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
+      <div className="relative group p-0.5 xl:p-1 2xl:p-1.5 rounded-md border border-[#86efac] bg-[#f0fdf4] hover:bg-emerald-100/70 hover:border-emerald-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
         <div className="flex items-center justify-between gap-0.5 text-emerald-700">
-          <div className="flex items-center gap-1 min-w-0 overflow-hidden">
-            <CreditCard className="w-2.5 h-2.5 xl:w-3 xl:h-3 shrink-0" />
-            <span className="text-[9px] xl:text-[10px] font-bold leading-none truncate">{t('stats.collection') || 'Collection'}</span>
+          <div className="flex items-center gap-0.5 xl:gap-1 min-w-0 overflow-hidden">
+            <CreditCard className="w-2 h-2 xl:w-2.5 xl:h-2.5 2xl:w-3 2xl:h-3 shrink-0" />
+            <span className="text-[7.5px] xl:text-[8.5px] 2xl:text-[10px] font-bold leading-none truncate">{t('stats.collection') || 'Collection'}</span>
           </div>
         </div>
-        <span className="text-[11px] xl:text-xs font-black text-slate-900 leading-tight mt-0.5 truncate">
+        <span className="text-[9.5px] xl:text-[10.5px] 2xl:text-xs font-black text-slate-900 leading-tight mt-0.5 truncate">
           {performance?.collectionAmount || '-'}
         </span>
 
@@ -186,12 +186,12 @@ export const PropertyMasterRevenueStats: React.FC<PropertyMasterRevenueStatsProp
       </div>
 
       {/* 6. Total Balance */}
-      <div className="relative group p-1 xl:p-1.5 rounded-md border border-[#fda4af] bg-[#fff1f2] hover:bg-rose-100/70 hover:border-rose-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
-        <div className="flex items-center gap-1 text-rose-600">
-          <AlertCircle className="w-2.5 h-2.5 xl:w-3 xl:h-3 shrink-0" />
-          <span className="text-[9px] xl:text-[10px] font-bold leading-none truncate">{t('stats.totalBalance') || 'Total Balance'}</span>
+      <div className="relative group p-0.5 xl:p-1 2xl:p-1.5 rounded-md border border-[#fda4af] bg-[#fff1f2] hover:bg-rose-100/70 hover:border-rose-400 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between">
+        <div className="flex items-center gap-0.5 xl:gap-1 text-rose-600">
+          <AlertCircle className="w-2 h-2 xl:w-2.5 xl:h-2.5 2xl:w-3 2xl:h-3 shrink-0" />
+          <span className="text-[7.5px] xl:text-[8.5px] 2xl:text-[10px] font-bold leading-none truncate">{t('stats.totalBalance') || 'Total Balance'}</span>
         </div>
-        <span className="text-[11px] xl:text-xs font-black text-rose-600 leading-tight mt-0.5 truncate">
+        <span className="text-[9.5px] xl:text-[10.5px] 2xl:text-xs font-black text-rose-600 leading-tight mt-0.5 truncate">
           {performance?.totalBalance || '-'}
         </span>
 

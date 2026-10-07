@@ -58,7 +58,7 @@ export const PropertyMasterDetailsGrid: React.FC<PropertyMasterDetailsGridProps>
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[1fr_1.1fr_1.45fr] lg:grid-cols-[0.95fr_1.15fr_1.55fr] xl:grid-cols-[0.9fr_1.2fr_1.7fr] gap-x-2.5 lg:gap-x-3.5 xl:gap-x-4.5 h-full flex-1 text-[11px] sm:text-[11.5px] xl:text-[12px] pt-0.5 xl:pt-1 min-w-0">
+    <div className="grid grid-cols-1 md:grid-cols-[1.05fr_1.12fr_1.3fr] lg:grid-cols-[1.05fr_1.12fr_1.28fr] xl:grid-cols-[1.08fr_1.1fr_1.32fr] 2xl:grid-cols-[1.08fr_1.08fr_1.44fr] gap-x-2.5 lg:gap-x-3.5 xl:gap-x-4.5 h-full flex-1 text-[11px] sm:text-[11.5px] xl:text-[12px] pt-0.5 xl:pt-1 min-w-0">
       {/* SECTION 1: General & Location Info */}
       <div className="flex flex-col justify-between md:border-r md:border-slate-100 md:pr-2.5 lg:md:pr-3 min-w-0 overflow-hidden gap-y-1 xl:gap-y-1.5">
         <PropertyMasterInfoRow icon={MapPin} label={t('grid.division') || 'Division:'} value={data?.division} minWidth="min-w-[90px] lg:min-w-[100px] xl:min-w-[115px]" />

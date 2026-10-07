@@ -86,7 +86,7 @@ export function ImagePlaceholder({
     >
       <div className="flex flex-col items-center justify-center gap-0.5 p-1 text-center">
         <svg
-          className={`${isSmall ? 'w-5 h-5' : 'w-8 h-8'} text-slate-400 opacity-70`}
+          className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5 xl:w-6 xl:h-6 2xl:w-7 2xl:h-7'} text-slate-400 opacity-70 shrink-0`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -98,7 +98,11 @@ export function ImagePlaceholder({
             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
           />
         </svg>
-        {!isSmall && <span className="text-xs font-medium opacity-70 text-center leading-tight">{label}</span>}
+        {!isSmall && (
+          <span className="text-[8.5px] sm:text-[9px] xl:text-[9.5px] 2xl:text-xs font-medium opacity-70 text-center leading-tight break-words px-0.5">
+            {label}
+          </span>
+        )}
       </div>
     </div>
   );

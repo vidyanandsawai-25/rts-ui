@@ -87,44 +87,44 @@ export const IndividualMasterContactColumn: React.FC<IndividualMasterContactColu
           icon={Phone}
           label={t('grid.mobileNo') || 'Mobile No.'}
           value={data?.mobileNo || '-'}
-          minWidth="min-w-[85px] lg:min-w-[95px] xl:min-w-[110px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[80px] 2xl:min-w-[105px]"
         />
         <PropertyMasterInfoRow
           icon={Phone}
           label={t('grid.altMobileNo') || 'Alt Mobile No.'}
           value={altMobileDisplay}
-          minWidth="min-w-[85px] lg:min-w-[95px] xl:min-w-[110px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[80px] 2xl:min-w-[105px]"
         />
         <PropertyMasterInfoRow
           icon={AtSign}
           label={t('grid.emailId') || 'Email ID'}
           value={data?.emailId || '-'}
-          minWidth="min-w-[85px] lg:min-w-[95px] xl:min-w-[110px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[80px] 2xl:min-w-[105px]"
         />
         <PropertyMasterInfoRow
           icon={Home}
           label={t('grid.address') || 'Address'}
           value={addressNode}
-          minWidth="min-w-[85px] lg:min-w-[95px] xl:min-w-[110px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[80px] 2xl:min-w-[105px]"
           isMultiline
         />
         <PropertyMasterInfoRow
           icon={Paperclip}
           label={t('grid.plotAreaFtMtr') || 'Plot Area (sqft/sq mtr)'}
           value={sanitizeAreaString(data?.plotAreaFtMtr)}
-          minWidth="min-w-[110px] lg:min-w-[125px] xl:min-w-[145px]"
+          minWidth="min-w-[85px] lg:min-w-[95px] xl:min-w-[110px] 2xl:min-w-[140px]"
         />
         <PropertyMasterInfoRow
           icon={Maximize2}
           label={t('grid.carpetAreaFtMtr') || 'Carpet Area (sqft/sq mtr)'}
           value={carpetAreaNode}
-          minWidth="min-w-[110px] lg:min-w-[125px] xl:min-w-[145px]"
+          minWidth="min-w-[85px] lg:min-w-[95px] xl:min-w-[110px] 2xl:min-w-[140px]"
         />
         <PropertyMasterInfoRow
           icon={Layers}
           label={t('grid.builtUpAreaFtMtr') || 'Built-Up Area (sqft/sq mtr)'}
           value={builtUpAreaNode}
-          minWidth="min-w-[110px] lg:min-w-[125px] xl:min-w-[145px]"
+          minWidth="min-w-[85px] lg:min-w-[95px] xl:min-w-[110px] 2xl:min-w-[140px]"
         />
       </div>
     );

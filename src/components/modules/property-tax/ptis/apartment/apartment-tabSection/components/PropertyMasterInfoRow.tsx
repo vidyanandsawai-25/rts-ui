@@ -62,7 +62,7 @@ export const PropertyMasterInfoRow: React.FC<PropertyMasterInfoRowProps> = ({
     <div className="flex items-center gap-1 xl:gap-1.5 min-w-0">
       <div className={`flex items-center gap-1 text-slate-600 font-semibold shrink-0 ${minWidth}`}>
         <Icon className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-blue-600 shrink-0" />
-        <div className="flex flex-col leading-[15px] xl:leading-[17px] text-left min-w-0 pt-[0.5px]">{label}</div>
+        <div className="flex flex-col leading-[15px] xl:leading-[17px] text-left min-w-0 pt-[0.5px] whitespace-nowrap">{label}</div>
       </div>
       <div className="flex-1 min-w-0">
         {hasLongText ? (

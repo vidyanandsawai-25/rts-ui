@@ -182,10 +182,10 @@ export const IndividualPropertyMasterCard: React.FC<IndividualPropertyMasterCard
   return (
     <div className="flex flex-col lg:flex-row items-stretch gap-2 font-sans text-slate-800">
       {/* 1. LEFT / CENTER: MAIN PROPERTY MASTER CARD */}
-      <div className="flex-1 bg-white rounded-xl border border-slate-200/90 shadow-2xs px-2 pt-1.5 pb-2 flex flex-col sm:flex-row items-stretch gap-2 min-w-0">
+      <div className="flex-1 bg-white rounded-xl border border-slate-200/90 shadow-2xs px-1.5 xl:px-2 pt-1 pb-1.5 xl:pt-1.5 xl:pb-2 flex flex-col sm:flex-row items-stretch gap-1.5 xl:gap-2 min-w-0">
         {/* Building/Property Photo Thumbnail with Document overlay icon */}
         <div
-          className={`relative w-full sm:w-[105px] lg:w-[110px] xl:w-[125px] h-[155px] sm:h-auto rounded-lg overflow-hidden border border-slate-200/80 bg-slate-100 shrink-0 flex items-center justify-center group ${
+          className={`relative w-full sm:w-[70px] md:w-[75px] lg:w-[70px] xl:w-[80px] 2xl:w-[115px] h-[135px] sm:h-auto rounded-lg overflow-hidden border border-slate-200/80 bg-slate-100 shrink-0 flex items-center justify-center group ${
             photoUrl || photoGuid ? 'cursor-pointer hover:border-blue-400' : ''
           }`}
           onClick={() => {
@@ -203,9 +203,9 @@ export const IndividualPropertyMasterCard: React.FC<IndividualPropertyMasterCard
               className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-400 p-2 text-center bg-slate-50">
-              <Building2 className="w-8 h-8 text-slate-300" />
-              <span className="text-[10px] font-medium text-slate-400 leading-tight">{t('photo.noPhoto') || 'No Photo'}</span>
+            <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-400 p-1 text-center bg-slate-50">
+              <Building2 className="w-6 h-6 xl:w-7 xl:h-7 text-slate-300" />
+              <span className="text-[9px] xl:text-[10px] font-medium text-slate-400 leading-tight">{t('photo.noPhoto') || 'No Photo'}</span>
             </div>
           )}
         </div>

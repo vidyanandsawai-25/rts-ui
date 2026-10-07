@@ -47,43 +47,43 @@ export const IndividualMasterPropertyColumn: React.FC<IndividualMasterPropertyCo
           icon={MapPin}
           label={t('grid.division') || 'Division'}
           value={data?.division || '-'}
-          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[78px] 2xl:min-w-[95px]"
         />
         <PropertyMasterInfoRow
           icon={Compass}
           label={t('grid.subZoneNo') || 'Sub Zone No.'}
           value={subZoneDisplay}
-          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[78px] 2xl:min-w-[95px]"
         />
         <PropertyMasterInfoRow
           icon={Landmark}
           label={t('grid.moujaName') || 'Mouja Name'}
           value={data?.moujaName || '-'}
-          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[78px] 2xl:min-w-[95px]"
         />
         <PropertyMasterInfoRow
           icon={Layers}
           label={t('grid.rateSectionName') || 'Rate Section Name'}
           value={data?.rateSectionName || '-'}
-          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[78px] 2xl:min-w-[95px]"
         />
         <PropertyMasterInfoRow
           icon={Crosshair}
           label={t('grid.surveyNo') || 'Survey No.'}
           value={data?.surveyNo || '-'}
-          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[78px] 2xl:min-w-[95px]"
         />
         <PropertyMasterInfoRow
           icon={FileSpreadsheet}
           label={t('grid.taxZoneNo') || t('grid.taxZone') || 'Tax Zone No.'}
           value={taxZoneDisplay}
-          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[78px] 2xl:min-w-[95px]"
         />
         <PropertyMasterInfoRow
           icon={Grid}
           label={t('grid.plotNo') || 'Plot No.'}
           value={plotOrUnitDisplay}
-          minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
+          minWidth="min-w-[65px] lg:min-w-[70px] xl:min-w-[78px] 2xl:min-w-[95px]"
         />
       </div>
     );
