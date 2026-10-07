@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import { PropertyTypeMaster } from "@/components/modules/property-tax/property-type-master/PropertyTypeMaster";
 import type { PropertyType } from "@/types/property-type.types";
-import { toast } from "sonner";
 import { deletePropertyTypeAction } from "@/app/[locale]/property-tax/propertytype/action";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { usePropertyTypeSearch } from "@/hooks/usePropertyTypeSearch";
@@ -214,39 +213,14 @@ describe("PropertyTypeMaster", () => {
     expect(mockRouterPush).toHaveBeenCalledWith("/en/property-tax/propertytype/edit/1");
   });
 
-  it("opens confirm dialog on delete button click and calls delete action on confirm", async () => {
-    vi.mocked(deletePropertyTypeAction).mockResolvedValue({ success: true } as any);
-    
-    // Auto-confirm the dialog
-    mockConfirm.mockImplementation((options) => options.onConfirm());
-
+  it("does not render a delete button on this screen", () => {
     setup();
-    
+
     const actions1 = screen.getByTestId("actions-1");
     const deleteBtn = actions1.querySelector('[aria-label="Delete"]');
-    fireEvent.click(deleteBtn!);
 
-    expect(mockConfirm).toHaveBeenCalled();
-
-    await waitFor(() => {
-      expect(deletePropertyTypeAction).toHaveBeenCalled();
-      expect(toast.success).toHaveBeenCalled();
-      expect(mockRouterRefresh).toHaveBeenCalled();
-    });
-  });
-
-  it("handles delete failure gracefully", async () => {
-    vi.mocked(deletePropertyTypeAction).mockResolvedValue({ success: false, statusCode: 409 } as any);
-    mockConfirm.mockImplementation((options) => options.onConfirm());
-
-    setup();
-    
-    const actions1 = screen.getByTestId("actions-1");
-    const deleteBtn = actions1.querySelector('[aria-label="Delete"]');
-    fireEvent.click(deleteBtn!);
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalled();
-    });
+    expect(deleteBtn).not.toBeInTheDocument();
+    expect(mockConfirm).not.toHaveBeenCalled();
+    expect(deletePropertyTypeAction).not.toHaveBeenCalled();
   });
 });
