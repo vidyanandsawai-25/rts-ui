@@ -55,9 +55,9 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
             {t('revenueCard.addRevenue') || 'ADD. REVENUE'}
           </span>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <span className="text-[9px] xl:text-[10px] font-bold text-slate-600 tracking-tight">{t('revenueCard.desc') || 'DESC:'}</span>
-          <span className="inline-flex items-center justify-center px-1.5 xl:px-2 py-0.5 rounded border border-red-500 bg-red-50/40 text-red-600 font-bold text-[10px] xl:text-[11px] leading-normal tracking-tight whitespace-nowrap">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[10px] xl:text-[11px] font-black text-slate-800 tracking-tight">{t('revenueCard.desc') || 'DESC:'}</span>
+          <span className="inline-flex items-center justify-center px-2 xl:px-2.5 py-0.5 rounded-md border-2 border-red-500 bg-red-100 text-red-700 font-black text-[11px] xl:text-[12px] leading-normal tracking-tight whitespace-nowrap shadow-xs">
             {descriptionRegional || '-'}
           </span>
         </div>

@@ -78,7 +78,7 @@ export const IndividualMasterOwnerColumn: React.FC<IndividualMasterOwnerColumnPr
       />
       <PropertyMasterInfoRow
         icon={Hash}
-        label={t('grid.aadhar') || t('grid.aadharTitle') || 'Aadhar'}
+        label={t('grid.aadharNo') || t('grid.aadhar') || t('grid.aadharTitle') || 'Aadhar No.'}
         value={aadharValue}
         minWidth="min-w-[95px] lg:min-w-[105px] xl:min-w-[120px]"
       />

@@ -75,7 +75,7 @@ export const IndividualMasterPropertyColumn: React.FC<IndividualMasterPropertyCo
         />
         <PropertyMasterInfoRow
           icon={FileSpreadsheet}
-          label={t('grid.taxZone') || 'Tax Zone'}
+          label={t('grid.taxZoneNo') || t('grid.taxZone') || 'Tax Zone No.'}
           value={taxZoneDisplay}
           minWidth="min-w-[75px] lg:min-w-[85px] xl:min-w-[100px]"
         />
