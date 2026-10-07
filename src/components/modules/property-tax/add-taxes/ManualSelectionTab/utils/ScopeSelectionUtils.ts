@@ -56,7 +56,9 @@ export const getFieldConfig = (
   fetchedToBuildings?: { value: string; label: string }[],
   fetchZones?: () => void,
   fetchPropertyTypes?: () => void,
-  fetchToBuildings?: (wardId: string, propertyFrom: string) => void
+  fetchToBuildings?: (wardId: string, propertyFrom: string) => void,
+  onBuildingSearch?: (text: string) => void,
+  onToBuildingSearch?: (text: string) => void
 ) => {
   const opt = option.toLowerCase();
   if (opt.includes('assessment status')) {
@@ -154,7 +156,8 @@ export const getFieldConfig = (
         hasMore: disabled ? false : buildingPagination?.hasMore,
         onLoadMore: disabled ? undefined : buildingPagination?.onLoadMore,
         isLoadingMore: disabled ? false : buildingPagination?.isLoadingMore,
-        isLoading: disabled ? false : buildingPagination?.isFetching
+        isLoading: disabled ? false : buildingPagination?.isFetching,
+        onSearchChange: disabled ? undefined : onBuildingSearch
       };
     }
 
@@ -181,6 +184,7 @@ export const getFieldConfig = (
     const disabled = selectedWardIds.length === 0;
     const optionsToUse = isTo && fetchedToBuildings && fetchedToBuildings.length > 0 ? fetchedToBuildings : fetchedBuildings;
     const paginationToUse = isTo && toBuildingPagination ? toBuildingPagination : buildingPagination;
+    const onSearchChangeToUse = isTo ? onToBuildingSearch : onBuildingSearch;
 
     return {
       label: isTo ? t('dynamicFields.labels.toPropertyNo') : t('dynamicFields.labels.fromPropertyNo'),
@@ -209,7 +213,8 @@ export const getFieldConfig = (
       hasMore: disabled ? false : paginationToUse?.hasMore,
       onLoadMore: disabled ? undefined : paginationToUse?.onLoadMore,
       isLoadingMore: disabled ? false : paginationToUse?.isLoadingMore,
-      isLoading: disabled ? false : paginationToUse?.isFetching
+      isLoading: disabled ? false : paginationToUse?.isFetching,
+      onSearchChange: disabled ? undefined : onSearchChangeToUse
     };
   }
   const fallbackLabelKey = `dynamicFields.labels.${opt}`;

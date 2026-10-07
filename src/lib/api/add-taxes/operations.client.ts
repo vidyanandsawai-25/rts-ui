@@ -154,7 +154,8 @@ export async function searchPropertiesByCategoryClient(
   pageSize: number = 100,
   propertyFrom?: string,
   propertyTo?: string,
-  zoneId?: string | number
+  zoneId?: string | number,
+  searchTerm?: string
 ): Promise<any> {
   try {
     const params = new URLSearchParams();
@@ -163,6 +164,7 @@ export async function searchPropertiesByCategoryClient(
     if (zoneId !== undefined && zoneId !== null && zoneId !== '') params.set('zoneId', String(zoneId));
     if (propertyFrom) params.set('propertyFrom', propertyFrom);
     if (propertyTo) params.set('propertyTo', propertyTo);
+    if (searchTerm) params.set('searchTerm', searchTerm.trim());
     params.set('pageNumber', String(pageNumber));
     params.set('pageSize', String(pageSize));
     const res = await fetch(`/api/property-tax/operations/search-properties-by-category?${params.toString()}`);

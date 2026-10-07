@@ -214,7 +214,8 @@ export async function searchPropertiesByCategory(
   pageSize: number = 100,
   propertyFrom?: string,
   propertyTo?: string,
-  zoneId?: string | number
+  zoneId?: string | number,
+  searchTerm?: string
 ): Promise<SearchByCategoryResponse> {
   try {
     const queryParams = new URLSearchParams();
@@ -230,6 +231,9 @@ export async function searchPropertiesByCategory(
     }
     if (propertyTo) {
       queryParams.append("PropertyTo", propertyTo);
+    }
+    if (searchTerm) {
+      queryParams.append("SearchTerm", searchTerm.trim());
     }
     queryParams.append("PageNumber", String(pageNumber));
     queryParams.append("PageSize", String(pageSize));

@@ -97,7 +97,8 @@ export async function GET(
         const propertyFrom = sp.get('propertyFrom') || undefined;
         const propertyTo = sp.get('propertyTo') || undefined;
         const zoneId = sp.get('zoneId') || undefined;
-        const result = await searchPropertiesByCategory(searchCategory, wardId, pageNumber, pageSize, propertyFrom, propertyTo, zoneId);
+        const searchTerm = sp.get('searchTerm') || sp.get('SearchTerm') || undefined;
+        const result = await searchPropertiesByCategory(searchCategory, wardId, pageNumber, pageSize, propertyFrom, propertyTo, zoneId, searchTerm);
         return NextResponse.json(result);
       }
       case 'import-template': {

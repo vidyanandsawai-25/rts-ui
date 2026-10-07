@@ -40,6 +40,8 @@ interface ScopeDynamicFieldsProps {
   fetchZones?: () => void;
   fetchPropertyTypes?: () => void;
   fetchToBuildings?: (wardId: string, propertyFrom: string) => void;
+  onBuildingSearch?: (text: string) => void;
+  onToBuildingSearch?: (text: string) => void;
 }
 
 export function ScopeDynamicFields({
@@ -71,7 +73,9 @@ export function ScopeDynamicFields({
   fetchAssessmentStatuses,
   fetchZones,
   fetchPropertyTypes,
-  fetchToBuildings
+  fetchToBuildings,
+  onBuildingSearch,
+  onToBuildingSearch
 }: ScopeDynamicFieldsProps) {
   const t = useTranslations('addTaxes');
   const [isToFieldBlurred, setIsToFieldBlurred] = useState(false);
@@ -163,7 +167,9 @@ export function ScopeDynamicFields({
             fetchedToBuildings,
             fetchZones,
             fetchPropertyTypes,
-            fetchToBuildings
+            fetchToBuildings,
+            onBuildingSearch,
+            onToBuildingSearch
           );
 
           const isDisabled = config.disabled || isAnyPreviousFieldEmpty;
@@ -219,6 +225,7 @@ export function ScopeDynamicFields({
                   placeholder={config.placeholder}
                   disabled={isDisabled}
                   onInputFocus={config.onOpen}
+                  onSearchChange={config.onSearchChange}
                   error={option.toLowerCase().includes('to') ? (rangeError || undefined) : undefined}
                   onBlur={() => {
                     if (option.toLowerCase().includes('to')) {
@@ -229,8 +236,7 @@ export function ScopeDynamicFields({
                   onLoadMore={config.onLoadMore}
                   isLoadingMore={config.isLoadingMore}
                   isLoading={config.isLoading}
-                  forceSearchText={selectionData[option]?.[0] ? (config.fallbackOptions?.find(o => String(o.value) === String(selectionData[option]?.[0]))?.label || selectionData[option]?.[0] || '') : undefined}
-                  key={`${option}-${selectionData[option]?.[0] || ''}`}
+                  key={option}
                 />
               ) : config.inputType === 'searchselect' ? (
                 <>

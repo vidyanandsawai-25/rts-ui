@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { logger } from '@/lib/utils/logger';
 import { Scope, OperationScope, ExecuteOperationPayload, OperationPreviewPayload, OperationPreviewResponse } from '@/types/addTaxes.types';
@@ -21,6 +21,7 @@ interface BuildingOption {
   label: string;
   propertyNo: string;
   partitionNo?: string;
+  propertyId?: number | string;
 }
 
 interface SearchByCategoryItem {
@@ -62,14 +63,9 @@ function resolveBuildingScope(
   const buildingsList: string[] = [];
 
   const rawTokens: string[] = [];
-  if (propertyIdsStr) {
-    propertyIdsStr.split(',').forEach(s => {
-      const trimmed = s.trim();
-      if (trimmed && !rawTokens.includes(trimmed)) rawTokens.push(trimmed);
-    });
-  }
-  if (propertyNoStr) {
-    propertyNoStr.split(',').forEach(s => {
+  const valStr = propertyIdsStr || propertyNoStr;
+  if (valStr) {
+    valStr.split(',').forEach(s => {
       const trimmed = s.trim();
       if (trimmed && !rawTokens.includes(trimmed)) rawTokens.push(trimmed);
     });
@@ -79,25 +75,19 @@ function resolveBuildingScope(
     const bObj = fetchedBuildings.find(b => b.value === token || b.label === token || b.propertyNo === token);
 
     if (bObj) {
-      const idVal = Number(bObj.value);
+      const idVal = Number(bObj.propertyId);
       if (Number.isFinite(idVal) && idVal > 0 && !propertyIdsList.includes(idVal)) {
         propertyIdsList.push(idVal);
       }
 
-      const bName = bObj.label || bObj.propertyNo;
+      const bName = bObj.label || bObj.value || bObj.propertyNo;
       if (bName && !buildingsList.includes(bName)) {
         buildingsList.push(bName);
       }
     } else {
-      const idVal = Number(token);
-      if (Number.isFinite(idVal) && idVal > 0) {
-        if (!propertyIdsList.includes(idVal)) {
-          propertyIdsList.push(idVal);
-        }
-      } else {
-        if (!buildingsList.includes(token)) {
-          buildingsList.push(token);
-        }
+      // In Building-wise mode, any token entered or selected is a building / property number
+      if (!buildingsList.includes(token)) {
+        buildingsList.push(token);
       }
     }
   }
@@ -228,6 +218,17 @@ export function useScopeSelection(
   const [isLoadingMoreToBuildings, setIsLoadingMoreToBuildings] = useState(false);
   const [isFetchingToBuildings, setIsFetchingToBuildings] = useState(false);
   const [currentPropertyFrom, setCurrentPropertyFrom] = useState<string>('');
+  const buildingSearchRef = useRef<string>('');
+  const toBuildingSearchRef = useRef<string>('');
+  const buildingSearchTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const toBuildingSearchTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (buildingSearchTimerRef.current) clearTimeout(buildingSearchTimerRef.current);
+      if (toBuildingSearchTimerRef.current) clearTimeout(toBuildingSearchTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -864,23 +865,79 @@ export function useScopeSelection(
   const toBuildingOption = (b: SearchByCategoryItem): BuildingOption => {
     const part = b.partitionNo?.trim();
     const hasPart = part && part !== '0' && part !== '';
+    const label = hasPart ? `${b.propertyNo}-${part}` : b.propertyNo;
     return {
-      value: String(b.propertyId),
-      label: hasPart ? `${b.propertyNo}-${part}` : b.propertyNo,
+      value: label,
+      label: label,
       propertyNo: b.propertyNo,
-      partitionNo: part || ''
+      partitionNo: part || '',
+      propertyId: b.propertyId
     };
   };
 
-  const fetchBuildings = async (zoneIds: string[] | null, wardIds: string[], overrideScope?: Scope | string) => {
+  const mapToDistinctBuildingOptions = (
+    items: SearchByCategoryItem[],
+    isBuildingScope: boolean
+  ): BuildingOption[] => {
+    const options: BuildingOption[] = [];
+    const seenValues = new Set<string>();
+
+    for (const b of items) {
+      if (isBuildingScope) {
+        const basePropNo = b.propertyNo?.trim();
+        if (basePropNo && !seenValues.has(basePropNo)) {
+          seenValues.add(basePropNo);
+          options.push({
+            value: basePropNo,
+            label: basePropNo,
+            propertyNo: basePropNo,
+            partitionNo: '',
+            propertyId: b.propertyId
+          });
+        }
+
+        const part = b.partitionNo?.trim();
+        const hasPart = part && part !== '0' && part !== '';
+        if (hasPart) {
+          const fullLabel = `${b.propertyNo}-${part}`;
+          if (!seenValues.has(fullLabel)) {
+            seenValues.add(fullLabel);
+            options.push({
+              value: fullLabel,
+              label: fullLabel,
+              propertyNo: b.propertyNo,
+              partitionNo: part,
+              propertyId: b.propertyId
+            });
+          }
+        }
+      } else {
+        const opt = toBuildingOption(b);
+        if (!seenValues.has(opt.value)) {
+          seenValues.add(opt.value);
+          options.push(opt);
+        }
+      }
+    }
+
+    return options;
+  };
+
+  const fetchBuildings = async (
+    zoneIds: string[] | null,
+    wardIds: string[],
+    overrideScope?: Scope | string,
+    searchTerm?: string
+  ) => {
     const effectiveScope = (typeof overrideScope === 'string' && overrideScope ? overrideScope : selectedScope) as Scope;
     if (wardIds.length === 0 || isFetchingBuildings) return;
     setIsFetchingBuildings(true);
+    buildingSearchRef.current = searchTerm || '';
     try {
       if (effectiveScope === 'range') {
-        const res = await searchPropertiesByCategoryClient(2, wardIds[0], 1, 100);
+        const res = await searchPropertiesByCategoryClient(2, wardIds[0], 1, 100, undefined, undefined, undefined, searchTerm);
         if (res?.items?.items) {
-          const buildings: BuildingOption[] = res.items.items.map(toBuildingOption);
+          const buildings = mapToDistinctBuildingOptions(res.items.items, false);
           setFetchedBuildings(buildings);
           setBuildingPage(1);
           const totalPages = res.items.totalPages || Math.ceil((res.items.totalCount || 0) / 100);
@@ -891,9 +948,9 @@ export function useScopeSelection(
         }
       } else if (effectiveScope === 'building') {
         const zId = zoneIds && zoneIds.length > 0 ? zoneIds[0] : null;
-        const res = await searchPropertiesByCategoryClient(2, wardIds[0], 1, 100, undefined, undefined, zId || undefined);
+        const res = await searchPropertiesByCategoryClient(2, wardIds[0], 1, 100, undefined, undefined, zId || undefined, searchTerm);
         if (res?.items?.items) {
-          const buildings: BuildingOption[] = res.items.items.map(toBuildingOption);
+          const buildings = mapToDistinctBuildingOptions(res.items.items, true);
           setFetchedBuildings(buildings);
           setBuildingPage(1);
           const totalPages = res.items.totalPages || Math.ceil((res.items.totalCount || 0) / 100);
@@ -909,11 +966,13 @@ export function useScopeSelection(
           const buildings: BuildingOption[] = res.items.items.map((b: SearchPropertyItem) => {
             const part = b.partitionNo?.trim();
             const hasPart = part && part !== '0' && part !== '';
+            const label = hasPart ? `${b.propertyNo}-${part}` : b.propertyNo;
             return {
-              value: b.propertyId.toString(),
-              label: hasPart ? `${b.propertyNo}-${part}` : b.propertyNo,
+              value: label,
+              label: label,
               propertyNo: b.propertyNo,
-              partitionNo: part || ''
+              partitionNo: part || '',
+              propertyId: b.propertyId
             };
           });
           setFetchedBuildings(buildings);
@@ -927,7 +986,22 @@ export function useScopeSelection(
     }
   };
 
-  const loadMoreBuildings = async () => {
+  const loadMoreBuildings = async (activeQuery?: string) => {
+    // When SearchSelectPaginated triggers onLoadMore with a search query (user is typing and
+    // no local matches found), do a fresh page-1 server search instead of blindly paginating.
+    // This naturally stops the auto-fetch loop: once results come back the matched option is
+    // found locally and filteredOptions.length > 0.
+    if (activeQuery && activeQuery.trim()) {
+      if (buildingSearchTimerRef.current) clearTimeout(buildingSearchTimerRef.current);
+      const zoneIds = getSelectedValues('zone');
+      const wardIds = getSelectedValues('ward');
+      if (wardIds.length > 0) {
+        void fetchBuildings(zoneIds.length > 0 ? zoneIds : null, wardIds, undefined, activeQuery.trim());
+      }
+      return;
+    }
+
+    // Normal "load next page" pagination (user scrolled down, no search term)
     if (!hasMoreBuildings || isLoadingMoreBuildings || isFetchingBuildings) return;
     const wardId = searchParams.get('wardid') || (selectionData['Ward / Sector'] || selectionData['Ward'])?.[0];
     if (!wardId) return;
@@ -937,12 +1011,22 @@ export function useScopeSelection(
       const nextPage = buildingPage + 1;
       const category = 2;
       const zoneId = searchParams.get('zoneid') || (selectionData['Zone / Node'] || selectionData['Zone'])?.[0];
-      const res = await searchPropertiesByCategoryClient(category, wardId, nextPage, 100, undefined, undefined, selectedScope === 'building' && zoneId ? zoneId : undefined);
+      const res = await searchPropertiesByCategoryClient(
+        category,
+        wardId,
+        nextPage,
+        100,
+        undefined,
+        undefined,
+        selectedScope === 'building' && zoneId ? zoneId : undefined,
+        buildingSearchRef.current || undefined
+      );
       if (res?.items?.items) {
-        const newBuildings: BuildingOption[] = res.items.items.map(toBuildingOption);
+        const isBuilding = selectedScope === 'building';
+        const newBuildings = mapToDistinctBuildingOptions(res.items.items, isBuilding);
         setFetchedBuildings(prev => {
-          const existingIds = new Set(prev.map(item => item.value));
-          const filtered = newBuildings.filter(item => !existingIds.has(item.value));
+          const existingValues = new Set(prev.map(item => item.value));
+          const filtered = newBuildings.filter(item => !existingValues.has(item.value));
           return [...prev, ...filtered];
         });
         setBuildingPage(nextPage);
@@ -978,14 +1062,15 @@ export function useScopeSelection(
     }
   };
 
-  const fetchToBuildings = async (wardId: string, propertyFrom: string) => {
+  const fetchToBuildings = async (wardId: string, propertyFrom: string, searchTerm?: string) => {
     if (!wardId || !propertyFrom || isFetchingToBuildings) return;
     setIsFetchingToBuildings(true);
     setCurrentPropertyFrom(propertyFrom);
+    toBuildingSearchRef.current = searchTerm || '';
     try {
-      const res = await searchPropertiesByCategoryClient(4, wardId, 1, 100, propertyFrom);
+      const res = await searchPropertiesByCategoryClient(4, wardId, 1, 100, propertyFrom, undefined, undefined, searchTerm);
       if (res?.items?.items) {
-        const buildings: BuildingOption[] = res.items.items.map(toBuildingOption);
+        const buildings = mapToDistinctBuildingOptions(res.items.items, false);
         setFetchedToBuildings(buildings);
         setToBuildingPage(1);
         const totalPages = res.items.totalPages || Math.ceil((res.items.totalCount || 0) / 100);
@@ -1001,7 +1086,23 @@ export function useScopeSelection(
     }
   };
 
-  const loadMoreToBuildings = async () => {
+  const loadMoreToBuildings = async (activeQuery?: string) => {
+    // Same pattern as loadMoreBuildings: when called with a search query, do a fresh page-1
+    // server search so the matched option appears in the list and the auto-fetch loop stops.
+    if (activeQuery && activeQuery.trim()) {
+      if (toBuildingSearchTimerRef.current) clearTimeout(toBuildingSearchTimerRef.current);
+      const wardIds = getSelectedValues('ward');
+      const fromKey = Object.keys(selectionData).find(k => k.toLowerCase().includes('from'));
+      const fromVal = fromKey ? selectionData[fromKey]?.[0] : undefined;
+      if (wardIds.length > 0 && fromVal) {
+        const fromObj = fetchedBuildings.find(b => b.value === fromVal);
+        const fromLabel = fromObj ? fromObj.label : fromVal;
+        void fetchToBuildings(wardIds[0], fromLabel, activeQuery.trim());
+      }
+      return;
+    }
+
+    // Normal "load next page" pagination
     if (!hasMoreToBuildings || isLoadingMoreToBuildings || isFetchingToBuildings) return;
     const wardId = searchParams.get('wardid') || (selectionData['Ward / Sector'] || selectionData['Ward'])?.[0];
     if (!wardId || !currentPropertyFrom) return;
@@ -1009,12 +1110,21 @@ export function useScopeSelection(
     setIsLoadingMoreToBuildings(true);
     try {
       const nextPage = toBuildingPage + 1;
-      const res = await searchPropertiesByCategoryClient(4, wardId, nextPage, 100, currentPropertyFrom);
+      const res = await searchPropertiesByCategoryClient(
+        4,
+        wardId,
+        nextPage,
+        100,
+        currentPropertyFrom,
+        undefined,
+        undefined,
+        toBuildingSearchRef.current || undefined
+      );
       if (res?.items?.items) {
-        const newBuildings: BuildingOption[] = res.items.items.map(toBuildingOption);
+        const newBuildings = mapToDistinctBuildingOptions(res.items.items, false);
         setFetchedToBuildings(prev => {
-          const existingIds = new Set(prev.map(item => item.value));
-          const filtered = newBuildings.filter(item => !existingIds.has(item.value));
+          const existingValues = new Set(prev.map(item => item.value));
+          const filtered = newBuildings.filter(item => !existingValues.has(item.value));
           return [...prev, ...filtered];
         });
         setToBuildingPage(nextPage);
@@ -1030,8 +1140,34 @@ export function useScopeSelection(
     }
   };
 
+  const handleBuildingSearch = (text: string) => {
+    if (buildingSearchTimerRef.current) {
+      clearTimeout(buildingSearchTimerRef.current);
+    }
+    buildingSearchTimerRef.current = setTimeout(() => {
+      const zoneIds = getSelectedValues('zone');
+      const wardIds = getSelectedValues('ward');
+      if (wardIds.length > 0) {
+        void fetchBuildings(zoneIds.length > 0 ? zoneIds : null, wardIds, undefined, text.trim());
+      }
+    }, 300);
+  };
 
-
+  const handleToBuildingSearch = (text: string) => {
+    if (toBuildingSearchTimerRef.current) {
+      clearTimeout(toBuildingSearchTimerRef.current);
+    }
+    toBuildingSearchTimerRef.current = setTimeout(() => {
+      const wardIds = getSelectedValues('ward');
+      const fromKey = Object.keys(selectionData).find(k => k.toLowerCase().includes('from'));
+      const fromVal = fromKey ? selectionData[fromKey]?.[0] : undefined;
+      if (wardIds.length > 0 && fromVal) {
+        const fromObj = fetchedBuildings.find(b => b.value === fromVal);
+        const fromLabel = fromObj ? fromObj.label : fromVal;
+        void fetchToBuildings(wardIds[0], fromLabel, text.trim());
+      }
+    }, 300);
+  };
 
   useEffect(() => {
     // Eagerly fetch options for pre-selected values from URL. Zone/Property Type/Assessment
@@ -1080,6 +1216,7 @@ export function useScopeSelection(
     fetchedBuildings, fetchBuildings,
     hasMoreBuildings, loadMoreBuildings, isLoadingMoreBuildings, isFetchingBuildings,
     fetchedToBuildings, hasMoreToBuildings, loadMoreToBuildings, isLoadingMoreToBuildings, isFetchingToBuildings, fetchToBuildings,
+    handleBuildingSearch, handleToBuildingSearch,
     handleCalculateEligible,
     executeJob,
     isPreviewModalOpen, setIsPreviewModalOpen,

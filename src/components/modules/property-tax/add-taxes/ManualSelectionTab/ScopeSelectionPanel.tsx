@@ -58,7 +58,9 @@ export function ScopeSelectionPanel({
     isExportingPreview,
     handleDownloadPreviewExport,
     isProceedDisabled,
-    activeMasterDataScope
+    activeMasterDataScope,
+    handleBuildingSearch,
+    handleToBuildingSearch
   } = useScopeSelection(selectedScope, selectionData, currentScopeData, isInitialized, onStartExecution, financeYearId, initialZones, initialWards);
 
   useEffect(() => {
@@ -161,6 +163,8 @@ export function ScopeSelectionPanel({
         handleCalculateEligible={handleCalculateEligible}
         assessmentStatusOptions={initialAssessmentStatuses}
         fetchToBuildings={fetchToBuildings}
+        onBuildingSearch={handleBuildingSearch}
+        onToBuildingSearch={handleToBuildingSearch}
       />
 
       <ScopeValidation
