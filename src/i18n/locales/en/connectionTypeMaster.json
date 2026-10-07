@@ -53,8 +53,9 @@
       "connectionTypeLength": "Connection Type cannot exceed 50 characters",
       "descriptionRequired": "Description is required",
       "descriptionLength": "Description cannot exceed 300 characters",
+      "descriptionFormat": "Only letters, numbers, spaces, and basic punctuation allowed (,./-()).",
       "codeFormat": "Use only English letters, numbers, and underscores (_). The code cannot start or end with an underscore.",
-      "connectionTypeFormat": "Only letters and spaces are allowed.",
+      "connectionTypeFormat": "Only letters and a single space between words are allowed.",
       "codeNumbersOnlyNotAllowed": "Please enter a valid code containing at least one alphabet.",
       "connectionTypeNumbersOnlyNotAllowed": "Please enter a valid connection type containing at least one alphabet."
     },

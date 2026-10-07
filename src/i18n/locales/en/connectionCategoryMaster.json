@@ -88,7 +88,7 @@
       "descriptionLength": "Description cannot exceed 300 characters",
       "descriptionFormat": "Only letters, numbers, spaces, and basic punctuation allowed (,./-()).",
       "codeFormat": "Use only English letters, numbers, and underscores (_). The code cannot start or end with an underscore.",
-      "connectionCategoryFormat": "Only letters and spaces are allowed.",
+      "connectionCategoryFormat": "Only letters and a single space between words are allowed.",
       "codeNumbersOnlyNotAllowed": "Please enter a valid code containing at least one alphabet.",
       "connectionCategoryNumbersOnlyNotAllowed": "Please enter a valid connection category containing at least one alphabet."
     },

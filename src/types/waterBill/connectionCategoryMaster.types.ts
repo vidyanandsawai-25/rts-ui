@@ -1,6 +1,9 @@
 import type { PagedResponse } from "../common.types";
 export type { PagedResponse };
 
+export const METERED_BILLING_METHODS = ["Metered", "Slab", "Telescopic", "Hybrid"] as const;
+export const NON_METERED_BILLING_METHODS = ["Flat", "Fixed", "Annual"] as const;
+
 export interface ConnectionCategory {
   [key: string]: unknown;
   id: number;

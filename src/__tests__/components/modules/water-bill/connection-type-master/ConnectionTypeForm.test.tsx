@@ -101,6 +101,10 @@ const mockMessages = {
     errors: {
       generic: "An error occurred",
     },
+    status: {
+      active: "Active",
+      inactive: "Inactive",
+    },
   },
 };
 

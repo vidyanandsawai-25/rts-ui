@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  validateConnectionCategoryForm,
-  METERED_BILLING_METHODS,
-  NON_METERED_BILLING_METHODS,
-} from "@/hooks/water-bill/connection-category-master/connectionCategoryForm.validation";
+import { validateConnectionCategoryForm } from "@/lib/validations/water-bill/connectionCategoryForm.validation";
+import { METERED_BILLING_METHODS, NON_METERED_BILLING_METHODS } from "@/types/waterBill/connectionCategoryMaster.types";
 import type { ConnectionCategoryFormModel } from "@/types/waterBill/connectionCategoryMaster.types";
 
 const mockT = (key: string) => key;

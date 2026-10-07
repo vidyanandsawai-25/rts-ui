@@ -3,13 +3,14 @@ import { useRouter, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { ConnectionTypeFormModel, ConnectionType } from "@/types/waterBill/connectionTypeMaster.types";
-import { ALPHANUMERIC_WITH_SPACES_SANITIZE, CODE_REGEX, DESCRIPTION_REGEX, NAME_ONLY_SANITIZE, NAME_ONLY_STRICT_REGEX } from "@/lib/utils/validation-rules";
+import { ALPHANUMERIC_WITH_SPACES_SANITIZE, NAME_ONLY_SANITIZE } from "@/lib/utils/validation-rules";
 import { CODE_SANITIZE, DESCRIPTION_SANITIZE, HAS_LETTER_REGEX } from "@/lib/utils/validation";
 import {
   createConnectionTypeAction,
   updateConnectionTypeAction,
   getConnectionTypePagedAction
 } from "@/app/[locale]/water-bill/connection-type-master/actions";
+import { validateConnectionTypeForm } from "@/lib/validations/water-bill/connectionTypeForm.validation";
 
 export function useConnectionTypeForm(id: number | null, initialData?: ConnectionType) {
   const router = useRouter();
@@ -37,32 +38,7 @@ export function useConnectionTypeForm(id: number | null, initialData?: Connectio
   const [touched, setTouched] = useState<Partial<Record<keyof ConnectionTypeFormModel, boolean>>>({});
 
   const validate = useCallback(
-    (data: ConnectionTypeFormModel) => {
-      const errs: Partial<Record<keyof ConnectionTypeFormModel, string>> = {};
-      if (!data.connectionTypeCode?.trim()) {
-        errs.connectionTypeCode = t("validation.connectionTypeCodeRequired") || "Connection Type Code is required";
-      } else if (data.connectionTypeCode.trim().length > 20) {
-        errs.connectionTypeCode = t("validation.connectionTypeCodeLength") || "Code cannot exceed 20 characters";
-      } else if (!CODE_REGEX.test(data.connectionTypeCode)) {
-        errs.connectionTypeCode = t("validation.codeFormat") || "Use only English letters, numbers, and underscores (_). The code cannot start or end with an underscore.";
-      }
-
-      if (!data.connectionType?.trim()) {
-        errs.connectionType = t("validation.connectionTypeRequired");
-      } else if (data.connectionType.length > 50) {
-        errs.connectionType = t("validation.connectionTypeLength") || "Connection Type cannot exceed 50 characters";
-      } else if (!NAME_ONLY_STRICT_REGEX.test(data.connectionType)) {
-        errs.connectionType = t("validation.connectionTypeFormat") || "Only letters and spaces are allowed.";
-      }
-      if (data.description.trim()) {
-        if (data.description.length > 300) {
-          errs.description = t("validation.descriptionLength") || "Description cannot exceed 300 characters";
-        } else if (!DESCRIPTION_REGEX.test(data.description)) {
-          errs.description = t("validation.descriptionFormat") || "Only letters, numbers, spaces, and basic punctuation allowed (,./-()).";
-        }
-      }
-      return errs;
-    },
+    (data: ConnectionTypeFormModel) => validateConnectionTypeForm(data, (k) => t(k as Parameters<typeof t>[0])),
     [t]
   );
 
@@ -124,7 +100,7 @@ export function useConnectionTypeForm(id: number | null, initialData?: Connectio
 
     setIsSubmitting(true);
     try {
-      const code = (formData.connectionTypeCode || "").trim().toUpperCase().slice(0, 30);
+      const code = (formData.connectionTypeCode || "").trim().toUpperCase().slice(0, 20);
       const typeName = formData.connectionType.trim();
 
       const allRecords = await getConnectionTypePagedAction(1, 10000);

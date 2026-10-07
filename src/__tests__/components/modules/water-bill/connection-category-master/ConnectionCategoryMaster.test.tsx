@@ -77,6 +77,10 @@ const mockMessages = {
     },
     messages: { noData: "No data available" },
     actions: { loading: "Loading..." },
+    status: {
+      active: "Active",
+      inactive: "Inactive",
+    },
   },
 };
 

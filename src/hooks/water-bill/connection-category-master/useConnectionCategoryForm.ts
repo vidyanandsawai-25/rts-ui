@@ -17,8 +17,8 @@ import {
 import {
   METERED_BILLING_METHODS,
   NON_METERED_BILLING_METHODS,
-  validateConnectionCategoryForm,
-} from "./connectionCategoryForm.validation";
+} from "@/types/waterBill/connectionCategoryMaster.types";
+import { validateConnectionCategoryForm } from "@/lib/validations/water-bill/connectionCategoryForm.validation";
 
 export { METERED_BILLING_METHODS, NON_METERED_BILLING_METHODS };
 
@@ -131,7 +131,7 @@ export function useConnectionCategoryForm(
 
     setIsSubmitting(true);
     try {
-      const code = (formData.connectionCategoryCode || "").trim().toUpperCase().slice(0, 30);
+      const code = (formData.connectionCategoryCode || "").trim().toUpperCase().slice(0, 20);
       const categoryName = formData.connectionCategory.trim();
 
       const allRecords = await getConnectionCategoryPagedAction(1, 10000);

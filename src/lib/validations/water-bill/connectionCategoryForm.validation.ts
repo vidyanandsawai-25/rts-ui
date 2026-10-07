@@ -1,8 +1,6 @@
 import type { ConnectionCategoryFormModel } from "@/types/waterBill/connectionCategoryMaster.types";
 import { CODE_REGEX, DESCRIPTION_REGEX, NAME_ONLY_STRICT_REGEX } from "@/lib/utils/validation-rules";
-
-export const METERED_BILLING_METHODS = ["Metered", "Slab", "Telescopic", "Hybrid"] as const;
-export const NON_METERED_BILLING_METHODS = ["Flat", "Fixed", "Annual"] as const;
+import { METERED_BILLING_METHODS, NON_METERED_BILLING_METHODS } from "@/types/waterBill/connectionCategoryMaster.types";
 
 export function validateConnectionCategoryForm(
   data: ConnectionCategoryFormModel,
@@ -23,7 +21,7 @@ export function validateConnectionCategoryForm(
   } else if (data.connectionCategory.length > 50) {
     errs.connectionCategory = t("validation.connectionCategoryLength") || "Category name cannot exceed 50 characters";
   } else if (!NAME_ONLY_STRICT_REGEX.test(data.connectionCategory)) {
-    errs.connectionCategory = t("validation.connectionCategoryFormat") || "Only letters and spaces are allowed.";
+    errs.connectionCategory = t("validation.connectionCategoryFormat") || "Only letters and a single space between words are allowed.";
   }
 
   if (data.billingFrequencyId === null || data.billingFrequencyId === undefined) {
