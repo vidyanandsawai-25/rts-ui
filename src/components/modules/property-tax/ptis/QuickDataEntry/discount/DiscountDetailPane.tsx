@@ -8,6 +8,7 @@ import { DocumentAttachment } from "../building/DocumentAttachment";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { DiscountValueInput } from "./DiscountValueInput";
 import { getLocalizedName } from "@/lib/utils/social-details";
+import { isAttributeActive } from "@/lib/utils/discount-helpers";
 
 interface DiscountDetailPaneProps {
     data: DiscountAttributeState | null | undefined;
@@ -19,6 +20,7 @@ interface DiscountDetailPaneProps {
     isSaving?: boolean;
     isDeleting?: boolean;
     hasChanges?: boolean;
+    isFormValid?: boolean;
     onSave?: () => void;
     isDeleteDisabled?: boolean;
     t: {
@@ -37,13 +39,12 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     isSaving = false,
     isDeleting = false,
     hasChanges = false,
+    isFormValid,
     onSave,
     isDeleteDisabled = false,
     t,
 }) => {
     const { confirm } = useConfirm();
-    const isActiveDiscount = (item: DiscountAttributeState) =>
-        item.dataType.toUpperCase() === "BIT" ? item.bitValue === true : item.enabled;
 
     const displayName = data
         ? getLocalizedName(
@@ -133,8 +134,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     const hasRemark = typeof tWithHas.has === "function" && tWithHas.has("discount.remark");
     const hasRemarkPlaceholder = typeof tWithHas.has === "function" && tWithHas.has("discount.remarkPlaceholder");
 
-
-    const isDisabled = !isActiveDiscount(data);
+    const isDisabled = !isAttributeActive(data);
     const docRequiredMsg = t("common.validation.documentRequired") || "Document is required.";
     const isDocumentInvalid = !!validationError && validationError === docRequiredMsg;
 
@@ -193,6 +193,17 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         </span>
                     </div>
                 )}
+
+                {isDisabled && (
+                    <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-lg flex items-center gap-2 text-amber-800 text-xs font-semibold mb-2">
+                        <Info size={16} className="text-amber-600 shrink-0" />
+                        <span>
+                            {t("discount.enableDiscountPrompt") ||
+                                "This discount type is currently disabled. Toggle it active in the sidebar list to edit details and attach documents."}
+                        </span>
+                    </div>
+                )}
+
                 <div className="pb-2 border-b border-blue-50">
                     <span className="text-[11px] font-bold tracking-wider text-blue-500 uppercase block mb-0.5">
                         {t("discount.editingDiscount") || "Discount Details"}
@@ -203,7 +214,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                 {showValueInput && (
                     <DiscountValueInput
                         data={data}
-                        isDisabled={false}
+                        isDisabled={isDisabled}
                         inputClassName={inputClassName}
                         onInputChange={onInputChange}
                         isValueInvalid={isValueInvalid}
@@ -224,7 +235,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         hasDocumentBinding={!!data.documentBindingId}
                         isUploading={data.isUploading}
                         isDeleting={data.isDeleting}
-                        isDisabled={false}
+                        isDisabled={isDisabled}
                         isDocumentInvalid={isDocumentInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
                         onFileDelete={handleFileDeleteWithConfirm}
@@ -239,7 +250,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         <Label className="text-sm font-bold text-blue-800">
                             {hasRemark ? t("discount.remark") : "Remark"}
                         </Label>
-                        {(data.remark || "").trim() !== "" && (
+                        {(data.remark || "").trim() !== "" && !isDisabled && (
                             <button
                                 type="button"
                                 onClick={() => onInputChange("remark", "")}
@@ -251,6 +262,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     </div>
                     <TextArea
                         value={data.remark || ""}
+                        disabled={isDisabled}
                         onChange={(e) => {
                             const val = e.target.value.replace(/[<>]/g, "");
                             onInputChange("remark", val);
@@ -272,7 +284,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
 
             <div className="pt-2 border-t border-blue-100 mt-1 flex items-center justify-between gap-2 shrink-0 bg-white z-10">
                 <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" aria-hidden="true" role="presentation" />
                     <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
                         {t("discount.verifyDetailsNote") || "Verify details & file attachment before saving changes."}
                     </span>
@@ -301,7 +313,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     {onSave && (
                         <SaveButton
                             onClick={onSave}
-                            disabled={!hasChanges || isSaving || isDeleting}
+                            disabled={!hasChanges || (isFormValid !== undefined && !isFormValid) || isSaving || isDeleting}
                             isLoading={isSaving}
                             label={t("common.saveChanges") || "Save Changes"}
                         />

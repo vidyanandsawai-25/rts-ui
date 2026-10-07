@@ -336,8 +336,21 @@ export const useSocialDetailsForm = (
         });
     }, [initialFlatData, setFormState]);
 
+    const translateCallback = useCallback((key: string, params?: Record<string, string | number | Date>) => {
+        return t(key, params);
+    }, [t]);
+
+    const isFormValid = useMemo(() => {
+        try {
+            const errs = validateSocialDetails(socialData, translateCallback);
+            return Object.keys(errs).length === 0;
+        } catch (_error) {
+            return false;
+        }
+    }, [socialData, translateCallback]);
+
     return {
-        socialData, isSaving, isDeleting, hasChanges, validationErrors, incompleteAttributes,
+        socialData, isSaving, isDeleting, hasChanges, isFormValid, validationErrors, incompleteAttributes,
         isAttributeEnabled: (attr: FlatSocialAttributeState) => isAttributeEnabled(attr, socialData),
         handleInputChange, handleToggleEnabled, handlePhotoUpload, handlePhotoDelete, handleDeleteSocialDetail, handleSave, revertSocialAttribute
     };

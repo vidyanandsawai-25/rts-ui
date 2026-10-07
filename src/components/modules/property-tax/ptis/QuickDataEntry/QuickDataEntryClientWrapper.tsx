@@ -246,21 +246,18 @@ function QuickDataEntryContent({
                 sessionStorage.removeItem('qde_is_individual');
             }
 
-            const wingName = searchParams.get('wingName') || searchParams.get('wingname');
-            const wingDetailId = searchParams.get('wingDetailId') || searchParams.get('wingdetailid');
-            const societyDetailId = searchParams.get('societyDetailId') || searchParams.get('societydetailid') || searchParams.get('societyId');
-
             if (isApartment) {
-                const societyId = searchParams.get('societyId') || societyDetailId;
+                const societyId = searchParams.get('societyId') || searchParams.get('societyDetailId') || societyDetailId;
                 const wingId = searchParams.get('wingId');
                 const resolvedParentPropId =
                     parentPropertyId ||
                     searchParams.get('parentPropertyId') ||
-                    searchParams.get('parentpropertyid') ||
-                    societyId;
+                    searchParams.get('parentpropertyid');
 
                 if (resolvedParentPropId) {
                     params.set('propertyId', String(resolvedParentPropId));
+                } else if (propertyId) {
+                    params.set('propertyId', String(propertyId));
                 }
                 params.delete('partitionNo');
                 if (societyId) params.set('societyId', String(societyId));
@@ -270,6 +267,8 @@ function QuickDataEntryContent({
 
                 // Clean up QDE internal params
                 params.delete('fromFooterEdit');
+                params.delete('fromSocietyEdit');
+                params.delete('fromWingEdit');
                 params.delete('hideWing');
                 params.delete('hideSociety');
                 params.delete('from');
@@ -302,9 +301,9 @@ function QuickDataEntryContent({
                 if (subTab) params.set('subTab', subTab);
                 if (showDetails) params.set('showDetails', showDetails);
                 if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
-                if (wingDetailId) params.set('wingDetailId', wingDetailId);
+                if (wingDetailId) params.set('wingDetailId', String(wingDetailId));
                 if (wingName) params.set('wingName', wingName);
-                if (societyDetailId) params.set('societyDetailId', societyDetailId);
+                if (societyDetailId) params.set('societyDetailId', String(societyDetailId));
                 rateableExpands.forEach(v => params.append('rateableExpand', v));
                 capitalExpands.forEach(v => params.append('capitalExpand', v));
                 dualExpands.forEach(v => params.append('dualExpand', v));

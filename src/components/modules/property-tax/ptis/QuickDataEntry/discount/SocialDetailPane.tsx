@@ -28,6 +28,7 @@ interface SocialDetailPaneProps {
     isSaving?: boolean;
     isDeleting?: boolean;
     hasChanges?: boolean;
+    isFormValid?: boolean;
     onSave?: () => void;
     isDeleteDisabled?: boolean;
 }
@@ -46,6 +47,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     isSaving = false,
     isDeleting = false,
     hasChanges = false,
+    isFormValid,
     onSave,
     isDeleteDisabled = false,
 }) => {
@@ -70,6 +72,19 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
         if (!data) return false;
         return typeof data.id === "number" && data.id > 0;
     }, [data]);
+
+    const isSpecialToggle = React.useMemo(() => {
+        if (!data) return false;
+        const code = (data.socialAttributeCode || "").toUpperCase();
+        return code === "ROAD_WIDTH" || 
+               code.includes("WATER_CONN") || 
+               code.includes("TREE");
+    }, [data]);
+
+    const isValueRequired = React.useMemo(() => {
+        if (!data) return false;
+        return Boolean(data.isRequiredWhenParentTrue || (isSpecialToggle && data.bitValue === true));
+    }, [data, isSpecialToggle]);
 
     if (!data || !hierarchyData) {
         return <SocialSelectPrompt t={t as (key: string) => string} />;
@@ -160,13 +175,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
         }
     }
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
-
-    const isSpecialToggle = 
-        data.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
-        data.socialAttributeCode.toUpperCase().includes("WATER_CONN") || 
-        data.socialAttributeCode.toUpperCase().includes("TREE");
-
-    const isValueRequired = data.isRequiredWhenParentTrue || (isSpecialToggle && data.bitValue === true);
+    const isDisabled = !isAttributeEnabled(data);
 
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 border border-blue-100 rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative bg-white">
@@ -188,6 +197,16 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     </div>
                 )}
 
+                {isDisabled && (
+                    <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-lg flex items-center gap-2 text-amber-800 text-xs font-semibold mb-2">
+                        <Info size={16} className="text-amber-600 shrink-0" />
+                        <span>
+                            {t("discount.enableDiscountPrompt") ||
+                                "This social attribute is currently disabled. Toggle it active in the sidebar list to edit details and attach documents."}
+                        </span>
+                    </div>
+                )}
+
                 <div className="pb-2 border-b border-blue-50">
                     <span className="text-[11px] font-bold tracking-wider text-blue-500 uppercase block mb-0.5">
                         {t("discount.editingDiscount") || "Social Attribute Details"}
@@ -205,7 +224,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                         <AttributeControl
                             attr={hierarchyData}
                             state={data}
-                            isEnabled={true}
+                            isEnabled={!isDisabled}
                             hasError={isValueInvalid}
                             handleValueChange={onInputChange}
                         />
@@ -243,7 +262,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                         hasDocumentBinding={!!data.documentBindingId}
                         isUploading={data.isUploading}
                         isDeleting={data.isDeleting}
-                        isDisabled={false}
+                        isDisabled={isDisabled}
                         isDocumentInvalid={isPhotoInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
                         onFileDelete={handlePhotoDeleteWithConfirm}
@@ -264,7 +283,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                         <Label className="text-sm font-bold text-blue-800">
                             {t("discount.remark") || "Remark"}
                         </Label>
-                        {(data.remark || "").trim() !== "" && (
+                        {(data.remark || "").trim() !== "" && !isDisabled && (
                             <button
                                 type="button"
                                 onClick={() => onInputChange(data.socialAttributeId, "remark", "")}
@@ -276,6 +295,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     </div>
                     <TextArea
                         value={data.remark || ""}
+                        disabled={isDisabled}
                         onChange={(e) => {
                             const val = e.target.value.replace(/[<>]/g, "");
                             onInputChange(data.socialAttributeId, "remark", val);
@@ -295,7 +315,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
 
             <div className="pt-2 border-t border-blue-100 mt-1 flex items-center justify-between gap-2 shrink-0 bg-white z-10">
                 <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" aria-hidden="true" role="presentation" />
                     <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
                         {t("discount.verifyDetailsNote") || "Verify details & photo attachment before saving changes."}
                     </span>
@@ -304,7 +324,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDeleteDisabled && (
                         <button
                             type="button"
-                            disabled={isSaving || isDeleting || isDeleteDisabled}
+                            disabled={isDisabled || isSaving || isDeleting || isDeleteDisabled}
                             onClick={handleDeleteSocialDetailWithConfirm}
                             className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -324,7 +344,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     {onSave && (
                         <SaveButton
                             onClick={onSave}
-                            disabled={!hasChanges || isSaving || isDeleting}
+                            disabled={!hasChanges || (isFormValid !== undefined && !isFormValid) || isSaving || isDeleting}
                             isLoading={isSaving}
                             label={t("common.saveChanges") || "Save Changes"}
                         />

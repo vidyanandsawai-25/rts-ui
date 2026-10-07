@@ -1538,6 +1538,9 @@
     "remarkPlaceholder": "Enter remark...",
     "editingDiscount": "Discount Details",
     "searchPlaceholder": "Search discount attributes...",
+    "validation": {
+      "incomplete": "Please complete: {name}"
+    },
     "disabledWithDataNote": "This discount is currently disabled. Toggle it active to edit details.",
     "enableDiscountPrompt": "This discount type is currently disabled. Toggle it active in the sidebar list to edit details and attach documents.",
     "selectDiscountPrompt": "Select a discount attribute from the sidebar to edit details",
@@ -1723,6 +1726,8 @@
       "maxWaterConnStatus": "Water Connection Status cannot exceed 30 characters.",
       "minTextLength": "Value must be at least 2 characters long.",
       "maxTextLength": "Value cannot exceed 100 characters.",
+      "documentRequired": "Document is required.",
+      "photoRequired": "Photo is required.",
       "correctErrors": "Please correct the validation errors before saving."
     },
     "socialConfirm": {

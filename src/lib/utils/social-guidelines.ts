@@ -108,8 +108,21 @@ export const checkCompleteness = (
         }
     }
 
-    if (item.isPhotoRequired) {
-        const hasPhoto = (item.documentGuid && item.documentGuid.trim() !== "") || !!item.documentBindingId;
+    const EMPTY_GUID = "00000000-0000-0000-0000-000000000000";
+    const isValidGuid = (guid?: string | null): boolean => {
+        if (!guid || typeof guid !== "string") return false;
+        const trimmed = guid.trim();
+        return trimmed !== "" && trimmed !== EMPTY_GUID && trimmed !== "pending" && trimmed !== "null" && trimmed !== "undefined";
+    };
+
+    if (item.isPhotoRequired || item.isDocumentRequired) {
+        const hasPhoto = Boolean(
+            (item.pendingFile && !item.isUploading) ||
+            isValidGuid(item.uploadedGuid) ||
+            isValidGuid(item.photoGuid) ||
+            isValidGuid(item.documentGuid) ||
+            (Boolean(item.fileName?.trim()) && Boolean((item.documentBindingId && item.documentBindingId > 0) || (item.photoBindingId && item.photoBindingId > 0)))
+        );
         if (!hasPhoto) return false;
     }
 

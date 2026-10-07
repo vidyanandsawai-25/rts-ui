@@ -82,6 +82,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         isSaving,
         isDeleting,
         hasChanges,
+        isFormValid,
         validationErrors,
         incompleteAttributes,
         isAttributeEnabled,
@@ -439,6 +440,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
                         isSaving={isSaving}
                         isDeleting={isDeleting}
                         hasChanges={hasChanges}
+                        isFormValid={isFormValid}
                         onSave={handleSaveClick}
                         validationErrors={validationErrors}
                         isAttributeEnabled={isAttributeEnabled}

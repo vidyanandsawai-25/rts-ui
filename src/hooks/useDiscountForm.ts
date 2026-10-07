@@ -99,6 +99,29 @@ export const useDiscountForm = (
             if (!item) return prev;
             const isBitType = item.dataType?.toUpperCase() === "BIT";
             const isOverridden = item.isInherited ? true : item.isOverridden;
+
+            if (!checked) {
+                return {
+                    ...prev,
+                    [id]: {
+                        ...item,
+                        enabled: false,
+                        bitValue: isBitType ? false : item.bitValue,
+                        pendingFile: undefined,
+                        documentGuid: null,
+                        documentBindingId: null,
+                        documentUrl: null,
+                        fileName: undefined,
+                        intValue: null,
+                        decimalValue: null,
+                        textValue: null,
+                        dateValue: null,
+                        remark: "",
+                        isOverridden: false
+                    }
+                };
+            }
+
             return {
                 ...prev,
                 [id]: {
@@ -116,6 +139,9 @@ export const useDiscountForm = (
         setDiscountData((prev) => {
             const item = prev[id];
             if (!item) return prev;
+            const isBitType = item.dataType.toUpperCase() === "BIT";
+            const isActive = isBitType ? item.bitValue === true : item.enabled;
+            if (!isActive) return prev;
             const isOverridden = item.isInherited ? true : item.isOverridden;
             return {
                 ...prev,
@@ -137,6 +163,9 @@ export const useDiscountForm = (
         setDiscountData(prev => {
             const item = prev[id];
             if (!item) return prev;
+            const isBitType = item.dataType.toUpperCase() === "BIT";
+            const isActive = isBitType ? item.bitValue === true : item.enabled;
+            if (!isActive) return prev;
             const isOverridden = item.isInherited ? true : item.isOverridden;
             return {
                 ...prev,
@@ -317,11 +346,24 @@ export const useDiscountForm = (
 
     const handleSave = async () => {
         if (isSaving || isDeleting) return { success: false, isValid: true };
-        const { isValid, errors, incompleteDiscounts: invalidDiscounts } = validateDiscountForm(discountData, (key, params) => t(key, params));
-        if (!isValid) {
-            setValidationErrors(errors);
-            setIncompleteDiscounts(invalidDiscounts);
-            return { success: false, isValid: false, incompleteDiscounts: invalidDiscounts };
+        try {
+            const { isValid, errors, incompleteDiscounts: invalidDiscounts } = validateDiscountForm(discountData, translateCallback);
+            if (!isValid) {
+                setValidationErrors(errors);
+                setIncompleteDiscounts(invalidDiscounts);
+                const firstIncomplete = invalidDiscounts[0];
+                if (firstIncomplete) {
+                    toast.error(t("discount.validation.incomplete", { name: firstIncomplete.name }) || `Please complete: ${firstIncomplete.name}`);
+                }
+                return { success: false, isValid: false, incompleteDiscounts: invalidDiscounts };
+            }
+        } catch (validationError: unknown) {
+            console.error("Validation error:", validationError);
+            const errorMsg = validationError instanceof Error 
+                ? validationError.message 
+                : "Validation failed. Please refresh and try again.";
+            toast.error(t("discount.socialValidation.correctErrors") || errorMsg);
+            return { success: false, isValid: false };
         }
         setValidationErrors({});
         setIncompleteDiscounts([]);
@@ -401,5 +443,18 @@ export const useDiscountForm = (
         setIncompleteDiscounts((prev) => prev.filter((d) => d.id !== id));
     }, [savedDiscountState]);
 
-    return { discountData, isSaving, isDeleting, hasChanges, validationErrors, incompleteDiscounts, handleToggleEnabled, handleInputChange, handleFileUpload, handleFileDelete, handleDeleteDiscount, handleSave, revertDiscount, t };
+    const translateCallback = useCallback((key: string, params?: Record<string, string | number>) => {
+        return t(key, params);
+    }, [t]);
+
+    const isFormValid = useMemo(() => {
+        try {
+            const { isValid } = validateDiscountForm(discountData, translateCallback);
+            return isValid;
+        } catch (_error) {
+            return false;
+        }
+    }, [discountData, translateCallback]);
+
+    return { discountData, isSaving, isDeleting, hasChanges, isFormValid, validationErrors, incompleteDiscounts, handleToggleEnabled, handleInputChange, handleFileUpload, handleFileDelete, handleDeleteDiscount, handleSave, revertDiscount, t };
 };

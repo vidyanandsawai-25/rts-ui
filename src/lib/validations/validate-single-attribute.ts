@@ -76,13 +76,30 @@ export function validateSingleSocialAttribute(
     }
   }
 
+  const EMPTY_GUID = "00000000-0000-0000-0000-000000000000";
+  const isValidGuid = (guid?: string | null): boolean => {
+    if (!guid || typeof guid !== "string") return false;
+    const trimmed = guid.trim();
+    return trimmed !== "" && trimmed !== EMPTY_GUID && trimmed !== "pending" && trimmed !== "null" && trimmed !== "undefined";
+  };
+
+  const hasPhotoAttachment = Boolean(
+    (attr.pendingFile && !attr.isUploading) ||
+    isValidGuid(attr.uploadedGuid) ||
+    isValidGuid(attr.photoGuid) ||
+    isValidGuid(attr.documentGuid) ||
+    (Boolean(attr.fileName?.trim()) && Boolean((attr.documentBindingId && attr.documentBindingId > 0) || (attr.photoBindingId && attr.photoBindingId > 0)))
+  );
+
   if (attr.isPhotoRequired && !ignorePhotoRequirement) {
-    const hasPhoto =
-      (attr.uploadedGuid && attr.uploadedGuid.trim() !== '') ||
-      (attr.documentGuid && attr.documentGuid.trim() !== '') ||
-      !!attr.documentBindingId;
-    if (!hasPhoto) {
+    if (!hasPhotoAttachment) {
       return getErr('photoRequired', 'Photo is required.');
+    }
+  }
+
+  if (attr.isDocumentRequired) {
+    if (!hasPhotoAttachment) {
+      return getErr('documentRequired', 'Document is required.');
     }
   }
 

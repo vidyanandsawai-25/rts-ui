@@ -164,6 +164,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         isSaving,
         isDeleting,
         hasChanges,
+        isFormValid,
         validationErrors,
         incompleteDiscounts,
         handleToggleEnabled,
@@ -369,6 +370,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                         isSaving={isSaving}
                         isDeleting={isDeleting}
                         hasChanges={hasChanges}
+                        isFormValid={isFormValid}
                         onSave={handleSaveClick}
                         t={t}
                         levelState={levelState}

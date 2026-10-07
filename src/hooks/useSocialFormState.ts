@@ -368,17 +368,46 @@ export const useSocialFormState = (
             if (!currentAttr) return prev;
 
             const isOverridden = currentAttr.isInherited ? true : currentAttr.isOverridden;
-            nextData[attributeId] = { ...currentAttr, bitValue: checked, isOverridden };
-            
             const nextErrors = { ...prev.errors };
             delete nextErrors[attributeId];
 
             if (!checked) {
-                Object.values(nextData).forEach((attr) => {
-                    if (attr.parentAttributeId === attributeId) {
-                        delete nextErrors[attr.socialAttributeId];
-                    }
+                const resetAttributeData = (attr: FlatSocialAttributeState): FlatSocialAttributeState => ({
+                    ...attr,
+                    bitValue: false,
+                    intValue: null,
+                    decimalValue: null,
+                    textValue: null,
+                    dateValue: null,
+                    documentBindingId: null,
+                    documentGuid: null,
+                    documentUrl: null,
+                    photoBindingId: null,
+                    photoGuid: null,
+                    uploadedGuid: undefined,
+                    fileName: null,
+                    pendingFile: undefined,
+                    remark: null,
+                    isOverridden: false
                 });
+
+                nextData[attributeId] = resetAttributeData(currentAttr);
+
+                const resetChildren = (parentId: number, visited = new Set<number>()) => {
+                    if (visited.has(parentId)) return;
+                    visited.add(parentId);
+
+                    Object.values(nextData).forEach((attr) => {
+                        if (attr.parentAttributeId === parentId) {
+                            delete nextErrors[attr.socialAttributeId];
+                            nextData[attr.socialAttributeId] = resetAttributeData(attr);
+                            resetChildren(attr.socialAttributeId, visited);
+                        }
+                    });
+                };
+                resetChildren(attributeId);
+            } else {
+                nextData[attributeId] = { ...currentAttr, bitValue: checked, isOverridden };
             }
 
             return {

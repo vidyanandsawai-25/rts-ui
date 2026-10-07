@@ -51,7 +51,9 @@
     "nameAllZeros": "नाम शून्य नहीं हो सकता",
     "nameFormat": "नाम के लिए अमान्य प्रारूप",
     "descriptionAllZeros": "विवरण शून्य नहीं हो सकता",
-    "descriptionFormat": "विवरण के लिए अमान्य प्रारूप"
+    "descriptionFormat": "विवरण के लिए अमान्य प्रारूप",
+    "documentRequired": "दस्तावेज़ आवश्यक है।",
+    "photoRequired": "फ़ोटो आवश्यक है।"
   },
   "form": {
     "validation": {

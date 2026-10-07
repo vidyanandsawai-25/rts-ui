@@ -54,7 +54,9 @@
     "nameAllZeros": "Name cannot be all zeros",
     "nameFormat": "Invalid format for name",
     "descriptionAllZeros": "Description cannot be all zeros",
-    "descriptionFormat": "Invalid format for description"
+    "descriptionFormat": "Invalid format for description",
+    "documentRequired": "Document is required.",
+    "photoRequired": "Photo is required."
   },
   "form": {
     "validation": {

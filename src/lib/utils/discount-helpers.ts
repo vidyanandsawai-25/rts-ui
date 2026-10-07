@@ -1,9 +1,10 @@
 import { 
     DiscountState, 
     PropertyDiscountInfoResponseDto,
-    DiscountAttributeItemDto
+    DiscountAttributeItemDto,
+    DiscountAttributeState
 } from "@/types/discount.types";
-import { getLocalizedName } from "@/lib/utils/social-details";
+import { getLocalizedName, FlatSocialAttributeState } from "@/lib/utils/social-details";
 import { SocialAttribute } from "@/types/social-attribute.types";
 import { PropertySocialDetailsDto } from "@/types/property-social-details.types";
 
@@ -385,6 +386,29 @@ export const buildUnitDiscountState = (
     });
 
     return result;
+};
+
+export type AttributeWithState = DiscountAttributeState | FlatSocialAttributeState;
+
+function isDiscountAttributeState(attr: AttributeWithState): attr is DiscountAttributeState {
+    return "enabled" in attr && typeof (attr as DiscountAttributeState).enabled === "boolean";
+}
+
+export const isAttributeActive = (
+    attr: AttributeWithState | null | undefined
+): boolean => {
+    if (!attr) return false;
+    const isBitType = (attr.dataType || "").toUpperCase() === "BIT";
+    
+    if (isBitType) {
+        return attr.bitValue === true;
+    }
+    
+    if (isDiscountAttributeState(attr)) {
+        return attr.enabled;
+    }
+    
+    return attr.bitValue === true;
 };
 
 

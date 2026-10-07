@@ -51,7 +51,9 @@
     "nameAllZeros": "नाव शून्य असू शकत नाही",
     "nameFormat": "नावासाठी अवैध स्वरूप",
     "descriptionAllZeros": "वर्णन शून्य असू शकत नाही",
-    "descriptionFormat": "वर्णनासाठी अवैध स्वरूप"
+    "descriptionFormat": "वर्णनासाठी अवैध स्वरूप",
+    "documentRequired": "दस्तऐवज आवश्यक आहे.",
+    "photoRequired": "फोटो आवश्यक आहे."
   },
   "form": {
     "validation": {

@@ -34,6 +34,7 @@ interface DiscountPaneProps {
     isSaving: boolean;
     isDeleting?: boolean;
     hasChanges?: boolean;
+    isFormValid?: boolean;
     onSave?: () => void;
 
     t: {
@@ -78,6 +79,7 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
     isSaving,
     isDeleting = false,
     hasChanges,
+    isFormValid,
     onSave,
 
     savedPropertyDetails = [],
@@ -278,6 +280,7 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                         isSaving={isSaving}
                         isDeleting={isDeleting}
                         hasChanges={hasChanges}
+                        isFormValid={isFormValid}
                         onSave={onSave}
                         validationError={activeSelectedId !== null ? validationErrors[activeSelectedId] : undefined}
                         t={t}

@@ -46,18 +46,23 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
   }, [performance]);
 
   return (
-    <div className="w-full lg:w-[215px] xl:w-[240px] 2xl:w-[315px] bg-white rounded-xl border border-slate-200/90 px-1.5 xl:px-2 pt-1.5 pb-2 shadow-2xs shrink-0 flex flex-col justify-between gap-1 xl:gap-1.5 min-w-0">
+    <div className="w-full lg:w-[215px] xl:w-[240px] 2xl:w-[315px] bg-white rounded-xl border border-slate-200/90 px-1.5 xl:px-2 pt-1.5 pb-2 shadow-2xs shrink-0 flex flex-col justify-between gap-1 xl:gap-1.5 min-w-0 overflow-hidden">
       {/* Top: Header Row with DESC */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-1 gap-1">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-1 gap-1 min-w-0">
         <div className="flex items-center gap-1 xl:gap-1.5 shrink-0">
-          <TrendingUp className="w-3.5 h-3.5 xl:w-4 xl:h-4 2xl:w-5 2xl:h-5 text-slate-900" />
+          <TrendingUp className="w-3.5 h-3.5 xl:w-4 xl:h-4 2xl:w-5 2xl:h-5 text-slate-900 shrink-0" />
           <span className="text-[11px] xl:text-[12.5px] 2xl:text-[15px] font-black text-slate-900 tracking-tight whitespace-nowrap">
             {t('revenueCard.addRevenue') || 'ADD. REVENUE'}
           </span>
         </div>
-        <div className="flex items-center gap-1 xl:gap-1.5 shrink-0">
-          <span className="text-[9px] xl:text-[10px] 2xl:text-[11px] font-black text-slate-800 tracking-tight">{t('revenueCard.desc') || 'DESC:'}</span>
-          <span className="inline-flex items-center justify-center px-1.5 xl:px-2 2xl:px-2.5 py-0.5 rounded-md border-2 border-red-500 bg-red-100 text-red-700 font-black text-[10px] xl:text-[11px] 2xl:text-[12px] leading-normal tracking-tight whitespace-nowrap shadow-xs">
+        <div className="flex items-center gap-1 xl:gap-1.5 min-w-0 flex-1 justify-end">
+          <span className="text-[9px] xl:text-[10px] 2xl:text-[11px] font-black text-slate-800 tracking-tight shrink-0">
+            {t('revenueCard.desc') || 'DESC:'}
+          </span>
+          <span
+            title={descriptionRegional || '-'}
+            className="inline-flex items-center justify-center px-1.5 xl:px-2 py-0.5 rounded-md border-2 border-red-500 bg-red-100 text-red-700 font-black text-[10px] xl:text-[11px] 2xl:text-[12px] leading-normal tracking-tight truncate max-w-[85px] xl:max-w-[105px] 2xl:max-w-[145px] shadow-xs"
+          >
             {descriptionRegional || '-'}
           </span>
         </div>

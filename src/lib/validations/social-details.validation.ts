@@ -10,7 +10,7 @@ export function validateSocialDetails(
     data: Record<number, FlatSocialAttributeState>,
     t?: {
         (key: string, values?: Record<string, string | number | Date>): string;
-        has: (key: string) => boolean;
+        has?: (key: string) => boolean;
     }
 ): Record<number, string> {
     const errors: Record<number, string> = {};
