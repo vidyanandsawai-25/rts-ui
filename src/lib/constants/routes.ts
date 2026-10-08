@@ -19,4 +19,8 @@ export const ROUTES = {
   PROFILE: '/profile',
   SETTINGS: '/settings',
   SCREEN_ACCESS: '/configuration-settings/screenAccess',
+  WATER_BILL: {
+    PENALTY_RULE_MASTER: '/water-bill/penalty-rule-master',
+    GEOGRAPHY_UNIT_MASTER: '/water-bill/geography-unit-master',
+  },
 } as const;

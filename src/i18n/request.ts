@@ -128,6 +128,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     subAssetDetailMessages,
     extendedAreaAssessmentMessages,
     propertyMediaMessages,
+    waterPenaltyRuleMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -298,6 +299,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     import(`./locales/${validatedLocale}/subAssetDetail.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/extendedAreaAssessment.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/propertyMedia.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/waterPenaltyRule.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -424,6 +426,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
       subAssetDetail: subAssetDetailMessages,
       extendedAreaAssessment: extendedAreaAssessmentMessages,
       propertyMedia: propertyMediaMessages?.propertyMedia || propertyMediaMessages,
+      waterPenaltyRule: waterPenaltyRuleMessages?.waterPenaltyRule || waterPenaltyRuleMessages,
     },
   };
 });
