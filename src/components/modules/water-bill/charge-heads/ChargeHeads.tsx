@@ -63,8 +63,8 @@ export function ChargeHeads(props: ChargeHeadsProps) {
               row?.id !== undefined && row?.id !== null && String(row.id) !== "undefined"
                 ? `${row.id}-${row.code || idx}`
                 : row?.code
-                ? `${row.code}-${idx}`
-                : `charge-head-${idx}`
+                  ? `${row.code}-${idx}`
+                  : `charge-head-${idx}`
             }
             pageNumber={pageNumber}
             pageSize={pageSize}

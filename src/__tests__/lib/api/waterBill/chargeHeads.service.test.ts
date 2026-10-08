@@ -6,7 +6,7 @@ import {
   updateChargeHead,
   deleteChargeHead,
   purgeChargeHead,
-} from "@/lib/api/waterBill/chargeHeads.service";
+} from "@/lib/api/water-bill/chargeHeads.service";
 import { apiClient } from "@/services/api.service";
 
 vi.mock("next-intl/server", () => ({

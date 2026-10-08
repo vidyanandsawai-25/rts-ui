@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { createChargeHeadSchema } from "@/lib/validations/water-bill/chargeHeads.schema";
-import { createTariffWorkbenchSchema } from "@/lib/validations/water-bill/tariffWorkbench.schema";
-import { parseApiBoolean, getTariffWorkbenchById } from "@/lib/api/waterBill/tariffWorkbench.service";
-import { parseApiBoolean as parseApiBooleanCH } from "@/lib/api/waterBill/chargeHeads.service";
+import { createChargeHeadSchema } from "@/lib/api/water-bill/chargeHeads.schema";
+import { createTariffWorkbenchSchema } from "@/lib/api/water-bill/tariff-workbench/tariffWorkbench.schema";
+import { parseApiBoolean, getTariffWorkbenchById } from "@/lib/api/water-bill/tariff-workbench/tariffWorkbench.service";
+import { parseApiBoolean as parseApiBooleanCH } from "@/lib/api/water-bill/chargeHeads.service";
 import { verifyServerActionAccess } from "@/lib/utils/server-access-guard";
 import { apiClient } from "@/services/api.service";
-import type { TariffWorkbench } from "@/types/waterBill/tariffWorkbench.types";
+import type { TariffWorkbench } from "@/types/water-bill/tariff-workbench/tariffWorkbench.types";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: vi.fn().mockResolvedValue((key: string) => key),
@@ -32,7 +32,7 @@ describe("Reviewer Findings Fixes Verification", () => {
   describe("Finding 1: Whitespace-only identifiers in Charge Head schema", () => {
     it("rejects empty string and whitespace-only code and name", () => {
       const schema = createChargeHeadSchema(mockT);
-      
+
       const emptyResult = schema.safeParse({
         code: "",
         name: "",
@@ -139,6 +139,39 @@ describe("Reviewer Findings Fixes Verification", () => {
         expect(res.data.billingMethod).toBe("Metered");
       }
     });
+
+    it("rejects invalid billingMethod values not in the whitelist", () => {
+      const schema = createTariffWorkbenchSchema(mockT);
+
+      const res = schema.safeParse({
+        tariffCode: "RES-001",
+        tariffName: "Residential Tariff",
+        financialYearId: 1,
+        billingMethod: "ArbitraryFreeText",
+        effectiveFrom: "2026-01-01",
+      });
+      expect(res.success).toBe(false);
+      if (!res.success) {
+        const fieldErrors = res.error.flatten().fieldErrors;
+        expect(fieldErrors.billingMethod).toBeDefined();
+      }
+    });
+
+    it("accepts all whitelisted billingMethod options", () => {
+      const schema = createTariffWorkbenchSchema(mockT);
+      const allowedMethods = ["Metered", "Flat Rate", "Slab Metered", "Flat", "Slab", "Annual"];
+
+      for (const method of allowedMethods) {
+        const res = schema.safeParse({
+          tariffCode: "RES-001",
+          tariffName: "Residential Tariff",
+          financialYearId: 1,
+          billingMethod: method,
+          effectiveFrom: "2026-01-01",
+        });
+        expect(res.success).toBe(true);
+      }
+    });
   });
 
   describe("Finding 9: Global test authorization bypass removal", () => {
@@ -202,7 +235,7 @@ describe("Reviewer Findings Fixes Verification", () => {
     });
 
     it("strictly rejects non-YYYY-MM-DD formats, timestamps, and slash dates", async () => {
-      const { isValidCalendarDate } = await import("@/lib/validations/water-bill/tariffWorkbench.schema");
+      const { isValidCalendarDate } = await import("@/lib/api/water-bill/tariff-workbench/tariffWorkbench.schema");
 
       expect(isValidCalendarDate("2026-04-01")).toBe(true);
       expect(isValidCalendarDate("2026-02-30")).toBe(false);
@@ -215,7 +248,7 @@ describe("Reviewer Findings Fixes Verification", () => {
 
   describe("Finding 1: Master lookup failure behavior", () => {
     it("throws server-side exception on lookup failures instead of empty arrays", async () => {
-      const { getTariffFormLookups } = await import("@/lib/services/water-bill/tariffWorkbench.server");
+      const { getTariffFormLookups } = await import("@/lib/api/water-bill/tariff-workbench/tariffLookups.service");
 
       vi.mocked(apiClient.get).mockRejectedValueOnce(new Error("Database connection lost"));
 
@@ -223,7 +256,7 @@ describe("Reviewer Findings Fixes Verification", () => {
     });
 
     it("returns empty options when master API calls succeed with zero records", async () => {
-      const { getTariffFormLookups } = await import("@/lib/services/water-bill/tariffWorkbench.server");
+      const { getTariffFormLookups } = await import("@/lib/api/water-bill/tariff-workbench/tariffLookups.service");
 
       vi.mocked(apiClient.get).mockResolvedValue({
         success: true,
@@ -242,7 +275,7 @@ describe("Reviewer Findings Fixes Verification", () => {
     it("does not fabricate FY-{id} and uses '-' when financialYearCode is missing", async () => {
       const { getTariffColumns } = await import("@/components/modules/water-bill/tariff-workbench/tariffColumns");
       const columns = getTariffColumns(mockT, mockT);
-      const fyCol = columns.find((c) => c.key === "financialYearCode");
+      const fyCol = columns.find((c) => c.key === "financialYearCode" || c.key === "year");
 
       const rowWithoutCode = { id: 1, financialYearId: 42 } as unknown as TariffWorkbench;
       expect(fyCol?.render?.(undefined, rowWithoutCode, 0)).toEqual(expect.anything());

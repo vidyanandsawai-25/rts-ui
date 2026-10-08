@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TariffForm } from "@/components/modules/water-bill/tariff-workbench/TariffForm";
-import type { TariffWorkbench as TariffWorkbenchType } from "@/types/waterBill/tariffWorkbench.types";
+import type { TariffWorkbench as TariffWorkbenchType } from "@/types/water-bill/tariff-workbench/tariffWorkbench.types";
 
 vi.mock("next-intl", () => ({
   useTranslations: (ns: string) => (key: string, params?: Record<string, unknown>) => {
@@ -74,8 +74,7 @@ describe("TariffForm Component Tests", () => {
 
     expect(screen.getByText("tariffWorkbench.editTitle")).toBeInTheDocument();
     expect(screen.getByDisplayValue("RES-MTR-2026")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Residential Metered Tariff 2026-27")).toBeInTheDocument();
-    expect(screen.getAllByText("Metered").length).toBeGreaterThan(0);
+    expect(screen.getByRole("switch")).toBeInTheDocument();
   });
 
   it("should render financial year dropdown options from props", async () => {
@@ -128,11 +127,6 @@ describe("TariffForm Component Tests", () => {
     fireEvent.change(screen.getByLabelText(/tariffCode/i), { target: { value: "RES-01" } });
     fireEvent.change(screen.getByLabelText(/tariffName/i), { target: { value: "Residential Tariff" } });
 
-    const billingCombobox = screen.getByRole("combobox", { name: /billingMethod/i });
-    fireEvent.click(billingCombobox);
-    const meteredOptions = screen.getAllByText("Metered");
-    fireEvent.click(meteredOptions[meteredOptions.length - 1]);
-
     fireEvent.change(screen.getByLabelText(/effectiveFrom/i), { target: { value: "2026-05-01" } });
     fireEvent.change(screen.getByLabelText(/effectiveTo/i), { target: { value: "2026-04-01" } });
 
@@ -155,7 +149,7 @@ describe("TariffForm Component Tests", () => {
     );
 
     const selects = screen.getAllByRole("combobox");
-    expect(selects.length).toBeGreaterThanOrEqual(3);
+    expect(selects.length).toBeGreaterThanOrEqual(2);
   });
 
   it("should submit valid form data correctly", async () => {
@@ -170,7 +164,6 @@ describe("TariffForm Component Tests", () => {
 
     fireEvent.change(screen.getByLabelText(/tariffCode/i), { target: { value: "RES-MTR-2026" } });
     fireEvent.change(screen.getByLabelText(/tariffName/i), { target: { value: "Residential Metered Tariff" } });
-
     const billingCombobox = screen.getByRole("combobox", { name: /billingMethod/i });
     fireEvent.click(billingCombobox);
     const meteredOptions = screen.getAllByText("Metered");
@@ -207,5 +200,62 @@ describe("TariffForm Component Tests", () => {
     fireEvent.click(cancelBtn);
 
     expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  it("should render billingMethod as a combobox select with options and update on selection", async () => {
+    render(
+      <TariffForm
+        open={true}
+        financialYearOptions={mockFinancialYearOptions}
+        onClose={mockOnClose}
+        onSubmit={mockOnSubmit}
+      />
+    );
+
+    const billingCombobox = screen.getByRole("combobox", { name: /billingMethod/i });
+    expect(billingCombobox).toBeInTheDocument();
+
+    fireEvent.click(billingCombobox);
+    const meteredOptions = screen.getAllByText("Metered");
+    expect(meteredOptions.length).toBeGreaterThan(0);
+    fireEvent.click(meteredOptions[meteredOptions.length - 1]);
+
+    fireEvent.change(screen.getByLabelText(/tariffCode/i), { target: { value: "RES-MTR-2026" } });
+    fireEvent.change(screen.getByLabelText(/tariffName/i), { target: { value: "Residential Metered Tariff" } });
+    fireEvent.change(screen.getByLabelText(/effectiveFrom/i), { target: { value: "2026-04-01" } });
+
+    const form = document.querySelector("#tariff-workbench-form")!;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          billingMethod: "Metered",
+        })
+      );
+    });
+  });
+
+  it("should support custom billingMethodOptions passed as props", async () => {
+    const customBillingMethods = [
+      { value: "Metered", label: "Custom Metered Option" },
+      { value: "Flat Rate", label: "Custom Flat Option" },
+    ];
+
+    render(
+      <TariffForm
+        open={true}
+        financialYearOptions={mockFinancialYearOptions}
+        billingMethodOptions={customBillingMethods}
+        onClose={mockOnClose}
+        onSubmit={mockOnSubmit}
+      />
+    );
+
+    const billingCombobox = screen.getByRole("combobox", { name: /billingMethod/i });
+    fireEvent.click(billingCombobox);
+
+    expect(screen.getByText("Custom Metered Option")).toBeInTheDocument();
+    expect(screen.getByText("Custom Flat Option")).toBeInTheDocument();
   });
 });

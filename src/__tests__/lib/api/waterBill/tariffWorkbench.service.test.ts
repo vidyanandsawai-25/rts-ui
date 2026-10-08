@@ -5,12 +5,12 @@ import {
   createTariffWorkbench,
   updateTariffWorkbench,
   purgeTariffWorkbench,
-} from "@/lib/api/waterBill/tariffWorkbench.service";
+} from "@/lib/api/water-bill/tariff-workbench/tariffWorkbench.service";
 import { apiClient } from "@/services/api.service";
 import type {
   CreateTariffWorkbenchDto,
   UpdateTariffWorkbenchDto,
-} from "@/types/waterBill/tariffWorkbench.types";
+} from "@/types/water-bill/tariff-workbench/tariffWorkbench.types";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: () => Promise.resolve((key: string) => `tariffWorkbench.${key}`),

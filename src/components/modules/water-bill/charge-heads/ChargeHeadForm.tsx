@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Drawer, CancelButton, SaveButton, Input, Select, Label, ToggleSwitch } from "@/components/common";
-import { createChargeHeadSchema } from "@/lib/validations/water-bill/chargeHeads.schema";
+import { createChargeHeadSchema } from "@/lib/api/water-bill/chargeHeads.schema";
 import { WATER_BILL_ENUMS } from "@/constants/waterBill.constants";
 import type { ChargeHead, CreateChargeHeadDto } from "@/types/waterBill/chargeHeads.types";
 

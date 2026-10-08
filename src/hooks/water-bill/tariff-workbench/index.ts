@@ -1,1 +1,4 @@
-export * from "./useTariffWorkbench";
+export {
+  useTariffWorkbenchMaster,
+  useTariffWorkbenchMaster as useTariffWorkbench,
+} from "./useTariffWorkbenchMaster";

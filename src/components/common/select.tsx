@@ -230,6 +230,10 @@ export function Select({
         )}
         onClick={toggleOpen}
         onKeyDown={handleKeyDown}
+        onChange={(e) => {
+          const val = (e.target as unknown as { value?: string })?.value ?? '';
+          handleSelect(val);
+        }}
         onBlur={(e) => {
           const nextTarget = e.relatedTarget;
 

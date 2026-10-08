@@ -5,6 +5,10 @@
     "subtitle": "वित्तीय वर्ष, कनेक्शन प्रकार, श्रेणी और बिलिंग विधि द्वारा वर्जन्ड टैरिफ हेडर।",
     "searchPlaceholder": "रिकॉर्ड खोजें...",
     "addTitle": "टैरिफ जोड़ें",
+    "addSlabTitle": "स्लैब विवरण जोड़ें",
+    "editSlabTitle": "स्लैब विवरण संपादित करें",
+    "addChargeDetailTitle": "शुल्क विवरण जोड़ें",
+    "editChargeDetailTitle": "शुल्क विवरण संपादित करें",
     "editTitle": "टैरिफ संपादित करें",
     "addSubtitle": "नया जल टैरिफ कॉन्फ़िगरेशन बनाएं",
     "editSubtitle": "टैरिफ कॉन्फ़िगरेशन विवरण अपडेट करें",
@@ -19,6 +23,11 @@
       "designSub": "ऑडिट-अनुकूल नगरपालिका सेटअप",
       "versionedRates": "वर्जन्ड दरें"
     },
+    "tabs": {
+      "master": "टैरिफ मास्टर",
+      "slabs": "टैरिफ स्लैब विवरण",
+      "chargeDetails": "टैरिफ शुल्क विवरण"
+    },
     "note": "प्रकाशन के बाद टैरिफ हेडर अपरिवर्तनीय होने चाहिए। मांग निर्माण में उपयोग किए गए टैरिफ को संपादित करने के बजाय एक नया संस्करण/प्रभावी अवधि बनाएं।",
     "table": {
       "tariffCode": "टैरिफ कोड",
@@ -26,26 +35,50 @@
       "financialYear": "वित्तीय वर्ष",
       "connectionType": "कनेक्शन प्रकार",
       "connectionCategory": "कनेक्शन श्रेणी",
+      "tapSize": "नल आकार",
       "billingMethod": "बिलिंग विधि",
+      "description": "विवरण",
       "effectiveFrom": "प्रभावी तिथि से",
       "effectiveTo": "प्रभावी तिथि तक",
       "versionNo": "संस्करण संख्या",
       "statusHeader": "स्थिति",
       "status": "स्थिति",
-      "isActive": "सक्रिय",
+      "isActive": "स्थिति",
+      "rateSlabs": "दर स्लैब",
+      "view": "देखें",
       "yes": "हाँ",
-      "no": "नहीं"
+      "no": "नहीं",
+      "geographyUnit": "भौगोलिक इकाई",
+      "fromUnit": "प्रारंभिक इकाई",
+      "toUnit": "अंतिम इकाई",
+      "unitRate": "यूनिट दर",
+      "fixedCharge": "निश्चित शुल्क",
+      "minimumCharge": "न्यूनतम शुल्क",
+      "maximumCharge": "अधिकतम शुल्क",
+      "perConnectionAmount": "प्रति कनेक्शन राशि",
+      "formulaCode": "सूत्र कोड",
+      "chargeHeadName": "शुल्क शीर्षक",
+      "amount": "राशि",
+      "isDynamic": "गतिशील",
+      "isMandatory": "अनिवार्य",
+      "sequenceNo": "क्रम"
     },
     "filters": {
       "all": "सभी रिकॉर्ड",
       "active": "केवल सक्रिय",
-      "inactive": "केवल निष्क्रिय"
+      "inactive": "केवल निष्क्रिय",
+      "tariffId": "टैरिफ आईडी"
     },
     "form": {
-      "categoryTag": "WATERBILL.TARIFFMASTER",
       "enabled": "सक्षम",
       "disabled": "अक्षम",
       "saveRecord": "रिकॉर्ड सहेजें",
+      "formulaCodes": {
+        "unitRate": "यूनिट दर",
+        "flatRate": "फ्लैट दर",
+        "slabRate": "स्लैब दर",
+        "perConnection": "प्रति कनेक्शन"
+      },
       "tariffCode": {
         "label": "टैरिफ कोड",
         "placeholder": "उदा., RES-MTR-2026"
@@ -74,6 +107,10 @@
         "annual": "वार्षिक",
         "flatRate": "फ्लैट दर",
         "slabMetered": "स्लैब मीटरीकृत"
+      },
+      "tapSize": {
+        "label": "टैप साइज़",
+        "placeholder": "टैप साइज़ चुनें"
       },
       "billingMethod": {
         "label": "बिलिंग विधि",
@@ -118,6 +155,7 @@
       "tariffNameLength": "टैरिफ का नाम {count} वर्णों से अधिक नहीं हो सकता",
       "financialYearIdRequired": "वित्तीय वर्ष आवश्यक है",
       "billingMethodRequired": "बिलिंग विधि आवश्यक है",
+      "billingMethodInvalid": "चयनित बिलिंग विधि अमान्य है",
       "effectiveFromRequired": "प्रभावी प्रारंभ तिथि आवश्यक है",
       "effectiveFromInvalid": "प्रभावी प्रारंभ तिथि मान्य नहीं है",
       "effectiveToInvalid": "प्रभावी समाप्ति तिथि मान्य नहीं है",
@@ -127,6 +165,15 @@
     "errors": {
       "noMutationAction": "कोई म्यूटेशन क्रिया उपलब्ध नहीं है",
       "noDeleteAction": "हटाने की क्रिया उपलब्ध नहीं है",
+      "tariffNameRequired": "टैरिफ नाम आवश्यक है",
+      "chargeHeadRequired": "शुल्क मद आवश्यक है",
+      "fromUnitInvalid": "प्रारंभिक इकाई 0 से अधिक या बराबर होनी चाहिए",
+      "toUnitInvalid": "अंतिम इकाई 0 से अधिक होनी चाहिए",
+      "toUnitGtFromUnit": "अंतिम इकाई प्रारंभिक इकाई से अधिक होनी चाहिए",
+      "unitRateInvalid": "यूनिट दर 0 से अधिक या बराबर होना चाहिए",
+      "formulaCodeRequired": "सूत्र कोड आवश्यक है",
+      "amountInvalid": "राशि 0 से अधिक या बराबर होनी चाहिए",
+      "sequenceNoInvalid": "अनुक्रमांक 1 से अधिक या बराबर होना चाहिए",
       "forbidden": "पहुंच अस्वीकृत: आपके पास यह कार्रवाई करने की अनुमति नहीं है",
       "unexpectedError": "एक अप्रत्याशित त्रुटि उत्पन्न हुई",
       "fetchListFailed": "टैरिफ प्राप्त करने में विफल",
@@ -143,9 +190,17 @@
       "goHome": "होम पर जाएं",
       "errorId": "त्रुटि आई डी: {id}"
     },
+    "loading": {
+      "message": "टैरिफ वर्कबेंच लोड हो रहा है...",
+      "description": "कृपया प्रतीक्षा करें जब तक हम टैरिफ वर्कबेंच डेटा प्राप्त कर रहे हैं"
+    },
     "confirm": {
       "deleteTitle": "टैरिफ हटाएं",
-      "deleteDescription": "क्या आप वाकई इस टैरिफ को स्थायी रूप से हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
+      "deleteDescription": "क्या आप वाकई इस टैरिफ को स्थायी रूप से हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+      "deleteSlabTitle": "स्लैब विवरण हटाएं",
+      "deleteSlabDescription": "क्या आप वाकई इस स्लैब विवरण को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+      "deleteChargeDetailTitle": "चार्ज विवरण हटाएं",
+      "deleteChargeDetailDescription": "क्या आप वाकई इस चार्ज विवरण को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
     },
     "messages": {
       "createSuccess": "टैरिफ सफलतापूर्वक बनाया गया",
@@ -171,6 +226,20 @@
       "point3Desc": " – ड्राफ्ट या प्रकाशित स्थिति को ट्रैक करता है। सक्रिय बिलिंग मांग निर्माण में उपयोग किए जाने वाले प्रकाशित टैरिफ बिलिंग अखंडता सुनिश्चित करने के लिए विनाशकारी संपादन से सुरक्षित हैं।",
       "noteTitle": "हमेशा एक नया संस्करण या प्रभावी अवधि बनाएं",
       "noteDesc": ", फिर उनका संदर्भ देने वाले मापदंडों को अपडेट करें — यदि मांग निर्माण में उपयोग किया जाता है तो प्रकाशित टैरिफ को सीधे संपादित नहीं किया जा सकता है।"
+    },
+    "rateSlabsView": {
+      "backToMaster": "टैरिफ मास्टर पर वापस जाएं",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "editTariff": "टैरिफ संपादित करें",
+      "overviewTitle": "टैरिफ कॉन्फ़िगरेशन अवलोकन",
+      "category": "श्रेणी",
+      "tapSizeArea": "टैप साइज़ / क्षेत्र",
+      "from": "से",
+      "to": "तक",
+      "minimum": "न्यूनतम",
+      "formula": "सूत्र",
+      "standard": "मानक"
     },
     "detailView": {
       "publishedTariffConfig": "प्रकाशित टैरिफ कॉन्फ़िगरेशन",

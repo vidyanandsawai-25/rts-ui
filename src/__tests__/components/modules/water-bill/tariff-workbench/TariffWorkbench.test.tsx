@@ -4,7 +4,7 @@ import { TariffWorkbench } from "@/components/modules/water-bill/tariff-workbenc
 import type {
   TariffWorkbench as TariffWorkbenchType,
   TariffWorkbenchPagedResponse,
-} from "@/types/waterBill/tariffWorkbench.types";
+} from "@/types/water-bill/tariff-workbench/tariffWorkbench.types";
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
@@ -107,14 +107,14 @@ describe("TariffWorkbench Component Tests", () => {
     expect(screen.getByRole("button", { name: /tariffWorkbench.addTitle/i })).toBeInTheDocument();
   });
 
-  it("should load list/table records correctly with tariff code and billing method", () => {
+  it("should load list/table records correctly with tariff code and connection names", () => {
     render(<TariffWorkbench locale="en" pagedData={samplePagedData} />);
 
     expect(screen.getAllByText("RES-MTR-2026").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Residential Metered 2026-27").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Residential Metered/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("COM-ANN-2026").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Commercial Annual 2026-27").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Metered").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Commercial Annual/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Residential").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Annual").length).toBeGreaterThan(0);
   });
 
@@ -150,7 +150,7 @@ describe("TariffWorkbench Component Tests", () => {
     const addBtn = screen.getByRole("button", { name: /tariffWorkbench.addTitle/i });
     fireEvent.click(addBtn);
 
-    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/add");
+    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/master/add");
   });
 
   it("should navigate to edit tariff page when edit action button is clicked", () => {
@@ -159,7 +159,16 @@ describe("TariffWorkbench Component Tests", () => {
     const editBtns = screen.getAllByRole("button", { name: "common.table.actions.edit" });
     fireEvent.click(editBtns[0]);
 
-    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/edit/1");
+    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/master/edit/1");
+  });
+
+  it("should navigate to slabs page with tariffId filter when View Rate Slabs button is clicked", () => {
+    render(<TariffWorkbench locale="en" pagedData={samplePagedData} />);
+
+    const viewSlabsBtns = screen.getAllByRole("button", { name: /tariffWorkbench.table.view/i });
+    fireEvent.click(viewSlabsBtns[0]);
+
+    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/slabs?tariffId=1");
   });
 
   it("should trigger confirmation dialog when delete action button is clicked", () => {
@@ -185,26 +194,10 @@ describe("TariffWorkbench Component Tests", () => {
   });
 
   it("should open form drawer with prefilled values when drawer prop is 'edit'", () => {
-    render(
-      <TariffWorkbench
-        locale="en"
-        pagedData={samplePagedData}
-        drawer="edit"
-        initialEditingData={sampleRecords[0]}
-      />
-    );
+    render(<TariffWorkbench locale="en" pagedData={samplePagedData} drawer="edit" initialEditingData={sampleRecords[0]} />);
 
     expect(screen.getByText("tariffWorkbench.editTitle")).toBeInTheDocument();
     expect(screen.getByDisplayValue("RES-MTR-2026")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Residential Metered 2026-27")).toBeInTheDocument();
-  });
-
-  it("should open user manual modal when user manual button is clicked", () => {
-    render(<TariffWorkbench locale="en" pagedData={samplePagedData} />);
-
-    const userManualBtn = screen.getByRole("button", { name: /User Manual|userManual/i });
-    fireEvent.click(userManualBtn);
-
-    expect(screen.getAllByText(/How It Works|userManual/i).length).toBeGreaterThan(0);
   });
 });

@@ -1,11 +1,9 @@
 import { setRequestLocale } from 'next-intl/server';
 import { ChargeHeads } from '@/components/modules/water-bill/charge-heads';
 import type { ChargeHeadsPageProps } from '@/types/waterBill/chargeHeads.types';
-import {
-  fetchChargeHeadsServer,
-} from '@/lib/services/water-bill/chargeHeads.server';
 import { parsePagedSearchParams } from '@/lib/utils/search-params-helper';
 import {
+  fetchChargeHeadsServer,
   createChargeHeadAction,
   updateChargeHeadAction,
   deleteChargeHeadAction,

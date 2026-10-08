@@ -69,6 +69,7 @@ export function extractRawItems(rawData: Record<string, unknown> | unknown[] | u
   if (!rawData || typeof rawData !== "object") return [];
   if (Array.isArray(rawData.items)) return rawData.items;
   if (Array.isArray(rawData.Items)) return rawData.Items;
+  if (Array.isArray(rawData.data)) return rawData.data;
   const nestedData = rawData.data as Record<string, unknown> | undefined;
   if (Array.isArray(nestedData?.items)) return nestedData.items;
   return [];

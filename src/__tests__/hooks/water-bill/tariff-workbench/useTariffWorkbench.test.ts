@@ -5,7 +5,7 @@ import type {
   TariffWorkbench as TariffWorkbenchType,
   TariffWorkbenchPagedResponse,
   CreateTariffWorkbenchDto,
-} from "@/types/waterBill/tariffWorkbench.types";
+} from "@/types/water-bill/tariff-workbench/tariffWorkbench.types";
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
@@ -127,17 +127,36 @@ describe("useTariffWorkbench Hook Tests", () => {
     act(() => {
       result.current.handleAdd();
     });
-    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/add");
+    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/master/add");
 
     act(() => {
       result.current.handleEdit(sampleRecords[0]);
     });
-    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/edit/1");
+    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/master/edit/1");
 
     act(() => {
       result.current.handleFormClose();
     });
-    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench");
+    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/master");
+  });
+
+  it("should handle navigation routes for view rate slabs with and without id", () => {
+    const { result } = renderHook(() =>
+      useTariffWorkbench({
+        locale: "en",
+        pagedData: samplePagedData,
+      })
+    );
+
+    act(() => {
+      result.current.handleViewRateSlabs(sampleRecords[0]);
+    });
+    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/slabs?tariffId=1");
+
+    act(() => {
+      result.current.handleViewRateSlabs({ ...sampleRecords[0], id: 0 });
+    });
+    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/slabs");
   });
 
   it("should handle search change and manual search submit", () => {
@@ -224,7 +243,7 @@ describe("useTariffWorkbench Hook Tests", () => {
 
     expect(createActionMock).toHaveBeenCalledWith({ success: false }, formData);
     expect(mockToastSuccess).toHaveBeenCalledWith("tariffWorkbench.messages.createSuccess");
-    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench");
+    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/master");
     expect(mockRefresh).toHaveBeenCalled();
   });
 
@@ -291,7 +310,7 @@ describe("useTariffWorkbench Hook Tests", () => {
 
     expect(updateActionMock).toHaveBeenCalledWith(1, { success: false }, formData);
     expect(mockToastSuccess).toHaveBeenCalledWith("tariffWorkbench.messages.updateSuccess");
-    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench");
+    expect(mockPush).toHaveBeenCalledWith("/en/water-bill/tariff-workbench/master");
   });
 
   it("should handle delete flow with confirmation modal and execution", async () => {

@@ -1,28 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import { PageContainer } from "@/components/common/PageContainer";
-import { MasterTable } from "@/components/common/MasterTable";
-import { SearchInput } from "@/components/common/SearchInput";
-import { DeleteButton, EditButton } from "@/components/common/ActionButtons";
+import { TariffHeader } from "./TariffHeader";
+import { TariffMasterTable } from "./TariffMasterTable";
 import { TariffForm } from "./TariffForm";
-import { TariffWorkbenchHeader } from "./TariffWorkbenchHeader";
-import { TariffWorkbenchDetailView } from "./TariffWorkbenchDetailView";
-import { TariffWorkbenchUserManualModal } from "./TariffWorkbenchUserManualModal";
-import { useTariffWorkbench } from "@/hooks/water-bill/tariff-workbench";
-import type {
-  TariffWorkbench,
-  TariffWorkbenchProps,
-} from "@/types/waterBill/tariffWorkbench.types";
+import { useTariffWorkbenchMaster } from "@/hooks/water-bill/tariff-workbench";
+import type { TariffWorkbenchProps } from "@/types/water-bill/tariff-workbench/tariffWorkbench.types";
 
 export type { TariffWorkbenchProps };
 
 export function TariffWorkbench(props: TariffWorkbenchProps) {
-  const [isUserManualOpen, setIsUserManualOpen] = useState(false);
-
   const {
     drawer = null,
     initialEditingData = null,
+    financialYearOptions = [],
+    connectionTypeOptions = [],
+    connectionCategoryOptions = [],
+    tapSizeOptions = [],
+    billingMethodOptions = [],
   } = props;
 
   const {
@@ -46,85 +41,44 @@ export function TariffWorkbench(props: TariffWorkbenchProps) {
     handleDelete,
     handleFormClose,
     handleFormSubmit,
-  } = useTariffWorkbench(props);
+  } = useTariffWorkbenchMaster(props);
 
   return (
     <PageContainer>
-      <div className="space-y-4">
-        {/* Top Title & Action Buttons Header */}
-        <TariffWorkbenchHeader
-          t={t}
-          onAdd={handleAdd}
-          onOpenUserManual={() => setIsUserManualOpen(true)}
-        />
-
-        {/* Top Tariff Workbench Detail View */}
-        {records.length > 0 && (
-          <TariffWorkbenchDetailView
-            records={records}
-          />
-        )}
-
-        {/* Master Table with Search & Action Buttons */}
-        <div className="pt-1 space-y-3">
-          <MasterTable<TariffWorkbench>
-            columns={columns}
-            data={records}
+      <TariffHeader />
+      <TariffMasterTable
+        records={records}
+        columns={columns}
             loading={isPending}
-            maxBodyHeightClassName="max-h-[450px]"
-            getRowKey={(row) => String(row.id)}
+            search={search}
+            searchPlaceholder={t("searchPlaceholder")}
+            addLabel={t("addTitle")}
+            actionsLabel={tCommon("table.columns.actions")}
+            editAriaLabel={tCommon("table.actions.edit")}
+            deleteAriaLabel={tCommon("table.actions.delete")}
             pageNumber={pageNumber}
             pageSize={pageSize}
             totalCount={totalCount}
             totalPages={totalPages}
+            onSearchChange={handleSearchChange}
+            onSearchSubmit={handleSearchSubmit}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
-            paginationConfig={{ enabled: true, showPageSizeSelector: true }}
-            pageSizeOptions={[5, 10, 20, 50]}
-            headerExtra={
-              <div className="flex w-full flex-wrap items-center justify-between gap-3">
-                <SearchInput
-                  value={search}
-                  onChange={handleSearchChange}
-                  onEnter={handleSearchSubmit}
-                  placeholder={t("searchPlaceholder")}
-                  className="mb-0 w-80 text-gray-900"
-                />
-              </div>
-            }
-            renderActions={(row) => (
-              <div className="flex items-center gap-1 justify-center">
-                <EditButton
-                  aria-label={tCommon("table.actions.edit")}
-                  onClick={() => handleEdit(row)}
-                />
-                <DeleteButton
-                  aria-label={tCommon("table.actions.delete")}
-                  onClick={() => handleDelete(row)}
-                />
-              </div>
-            )}
-            actionLabel={tCommon("table.columns.actions")}
+            onAdd={handleAdd}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
           />
-        </div>
-      </div>
-
-      {/* Add / Edit Form Drawer */}
       <TariffForm
         open={drawer !== null}
         initialData={initialEditingData}
         isSubmitting={isSubmitting}
-        financialYearOptions={props.financialYearOptions}
-        connectionTypeOptions={props.connectionTypeOptions}
-        connectionCategoryOptions={props.connectionCategoryOptions}
+        financialYearOptions={financialYearOptions}
+        connectionTypeOptions={connectionTypeOptions}
+        connectionCategoryOptions={connectionCategoryOptions}
+        tapSizeOptions={tapSizeOptions}
+        billingMethodOptions={billingMethodOptions}
         onClose={handleFormClose}
         onSubmit={handleFormSubmit}
-      />
-
-      {/* User Manual Modal */}
-      <TariffWorkbenchUserManualModal
-        open={isUserManualOpen}
-        onClose={() => setIsUserManualOpen(false)}
       />
     </PageContainer>
   );

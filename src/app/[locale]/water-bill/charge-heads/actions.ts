@@ -2,21 +2,52 @@
 
 import { getTranslations } from 'next-intl/server';
 import {
+  getChargeHeadsPaged,
+  getChargeHeadById,
   createChargeHead,
   updateChargeHead,
   deleteChargeHead,
   normalizeChargeHead,
-} from '@/lib/api/waterBill/chargeHeads.service';
-import { validateChargeHeadInput } from '@/lib/services/water-bill/chargeHeadsMapper';
+} from '@/lib/api/water-bill/chargeHeads.service';
+import { validateChargeHeadInput } from '@/lib/api/water-bill/chargeHeads.schema';
 import { logger } from '@/lib/utils/server-logger';
 import { verifyServerActionAccess } from '@/lib/utils/server-access-guard';
 import { revalidateModulePaths } from '@/lib/server/revalidation-helper';
 import type {
+  ChargeHead,
   CreateChargeHeadDto,
   ChargeHeadFormState,
+  ChargeHeadsPagedResponse,
+  ChargeHeadsQueryParameters,
 } from '@/types/waterBill/chargeHeads.types';
 
 const BASE_PATH = '/[locale]/water-bill/charge-heads';
+
+export async function fetchChargeHeadsServer(
+  params?: ChargeHeadsQueryParameters
+): Promise<ChargeHeadsPagedResponse> {
+  const response = await getChargeHeadsPaged(params);
+  if (response.success && response.data) {
+    return response.data;
+  }
+  return {
+    items: [],
+    totalCount: 0,
+    pageNumber: params?.pageNumber ?? 1,
+    pageSize: params?.pageSize ?? 10,
+    totalPages: 0,
+    hasPreviousPage: false,
+    hasNextPage: false,
+  };
+}
+
+export async function fetchChargeHeadByIdServer(id: number): Promise<ChargeHead | null> {
+  const response = await getChargeHeadById(id);
+  if (response.success && response.data) {
+    return response.data;
+  }
+  return null;
+}
 
 function getSafeActionError(
   t: (key: string) => string,
@@ -46,7 +77,10 @@ export async function createChargeHeadAction(
     };
   }
 
-  const validation = validateChargeHeadInput(input, (key, values) => t(key, values));
+  const validation = validateChargeHeadInput(
+    input,
+    (key: string, values?: Record<string, string | number>) => t(key, values)
+  );
   if (!validation.isValid || !validation.data) {
     return {
       success: false,
@@ -100,7 +134,10 @@ export async function updateChargeHeadAction(
     };
   }
 
-  const validation = validateChargeHeadInput(input, (key, values) => t(key, values));
+  const validation = validateChargeHeadInput(
+    input,
+    (key: string, values?: Record<string, string | number>) => t(key, values)
+  );
   if (!validation.isValid || !validation.data) {
     return {
       success: false,

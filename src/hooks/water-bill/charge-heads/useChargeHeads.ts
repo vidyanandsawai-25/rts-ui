@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { useToast, useConfirm } from "@/components/common";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getChargeHeadColumns } from "@/components/modules/water-bill/charge-heads/chargeHeadColumns";
-import { getChargeHeadsUrl } from "@/constants/waterBillRoutes";
 import type {
   ChargeHead,
   CreateChargeHeadDto,
@@ -94,7 +93,7 @@ export function useChargeHeads({
       if (activeSortOrder) params.set("sortOrder", activeSortOrder);
 
       startTransition(() => {
-        router.push(getChargeHeadsUrl(locale, `?${params.toString()}`));
+        router.push(`/${locale}/water-bill/charge-heads?${params.toString()}`);
       });
     },
     [locale, router, sortBy, sortOrder]
@@ -162,7 +161,7 @@ export function useChargeHeads({
     setEditingData(null);
 
     startTransition(() => {
-      router.push(getChargeHeadsUrl(locale, "/add"));
+      router.push(`/${locale}/water-bill/charge-heads/add`);
     });
   };
 
@@ -171,7 +170,7 @@ export function useChargeHeads({
     setEditingData(row);
 
     startTransition(() => {
-      router.push(getChargeHeadsUrl(locale, `/edit/${row.id}`));
+      router.push(`/${locale}/water-bill/charge-heads/edit/${row.id}`);
     });
   };
 
@@ -180,7 +179,7 @@ export function useChargeHeads({
     setEditingData(null);
 
     startTransition(() => {
-      router.push(getChargeHeadsUrl(locale));
+      router.push(`/${locale}/water-bill/charge-heads`);
     });
   };
 
@@ -220,7 +219,7 @@ export function useChargeHeads({
         setEditingData(null);
 
         startTransition(() => {
-          router.push(getChargeHeadsUrl(locale));
+          router.push(`/${locale}/water-bill/charge-heads`);
           router.refresh();
         });
       } else {
