@@ -55,22 +55,28 @@ export function RolePermissionManager({
   const departmentLabel = useAliasLabel('Department', t('aliasFallback.department'));
   const roleLabel = useAliasLabel('Role', t('aliasFallback.role'));
 
+  const activeDepartments = useMemo(() => {
+    return departments.filter((d) => (d as { isActive?: boolean }).isActive !== false);
+  }, [departments]);
+
   const deptIdFromQuery = searchParams.get('deptId');
   const selectedDept = useMemo(() => {
     if (
       deptIdFromQuery &&
-      departments.some((d) => String(d.departmentMasterId ?? d.departmentId) === deptIdFromQuery)
+      activeDepartments.some(
+        (d) => String(d.departmentMasterId ?? d.departmentId) === deptIdFromQuery
+      )
     ) {
       return deptIdFromQuery;
     }
-    return departments.length > 0
-      ? String(departments[0].departmentMasterId ?? departments[0].departmentId)
+    return activeDepartments.length > 0
+      ? String(activeDepartments[0].departmentMasterId ?? activeDepartments[0].departmentId)
       : '';
-  }, [deptIdFromQuery, departments]);
+  }, [deptIdFromQuery, activeDepartments]);
 
   const filteredRoles = useMemo(() => {
     if (!selectedDept) return [];
-    return roles.filter((r) => String(r.departmentId) === selectedDept);
+    return roles.filter((r) => String(r.departmentId) === selectedDept && r.isActive !== false);
   }, [roles, selectedDept]);
 
   const roleIdFromQuery = searchParams.get('roleId');
@@ -97,7 +103,15 @@ export function RolePermissionManager({
       .map((dept) => {
         const filteredDomains = dept.domains
           .map((dom) => {
-            const matchedScreens = dom.screens.filter((s) => s.name.toLowerCase().includes(term));
+            const domainNameMatches = dom.name.toLowerCase().includes(term);
+            const matchedScreens = dom.screens.filter(
+              (s) =>
+                domainNameMatches ||
+                s.name.toLowerCase().includes(term) ||
+                (s.screenCode && s.screenCode.toLowerCase().includes(term)) ||
+                (s.routePath && s.routePath.toLowerCase().includes(term)) ||
+                (s.screenGroupName && s.screenGroupName.toLowerCase().includes(term))
+            );
             return { ...dom, screens: matchedScreens };
           })
           .filter((dom) => dom.screens.length > 0);

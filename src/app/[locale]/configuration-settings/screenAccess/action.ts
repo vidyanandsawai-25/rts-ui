@@ -3,6 +3,7 @@
 import { ScreenMasterData } from '@/types/screen-access.types';
 import {
   getScreens,
+  getAllScreens,
   getScreenById,
 } from '@/lib/api/configuration-settings/screenAccess/screen-master.services';
 import {
@@ -40,11 +41,7 @@ export const getScreensAction = async (
 
 export const getAllScreensAction = async () =>
   performAction(async () => {
-    const response = await getScreens({
-      pageNumber: 1,
-      pageSize: 2000,
-    });
-    return response.items;
+    return getAllScreens();
   }, false);
 
 export const getScreenGroupsAction = async (

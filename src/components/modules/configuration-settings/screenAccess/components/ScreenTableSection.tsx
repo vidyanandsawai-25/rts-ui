@@ -132,13 +132,15 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
           onChange: onFilterGroupChange,
           options: [
             { value: 'all', label: t('filters.allGroups', { screenGroup: screenGroupLabel }) },
-            ...groups.map((g) => ({
-              value: String(g.screenGroupId),
-              label:
-                g.screenGroupName && !/\?{2,}/.test(g.screenGroupName)
-                  ? g.screenGroupName
-                  : g.screenGroupLocalName || g.screenGroupName,
-            })),
+            ...groups
+              .filter((g) => g.isActive !== false)
+              .map((g) => ({
+                value: String(g.screenGroupId),
+                label:
+                  g.screenGroupName && !/\?{2,}/.test(g.screenGroupName)
+                    ? g.screenGroupName
+                    : g.screenGroupLocalName || g.screenGroupName,
+              })),
           ],
           className: 'w-48',
         },

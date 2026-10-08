@@ -3,6 +3,7 @@ import type { ScreenGroupMasterData } from '@/types/screen-access.types';
 import type { PagedResponse } from '@/types/common.types';
 import { ApiError } from '@/lib/utils/api';
 import { DEFAULT_GROUP_ICON } from '@/lib/constants/screen-access.constants';
+import { parseBoolean } from '@/lib/utils/type-guards';
 
 export function normalizeScreenGroup(data: Record<string, unknown>): ScreenGroupMasterData {
   const id = Number(
@@ -48,8 +49,8 @@ export function normalizeScreenGroup(data: Record<string, unknown>): ScreenGroup
     screenGroupCode: String(data.screenGroupCode ?? data.groupCode ?? data.code ?? ''),
     screenGroupIcon: String(data.screenGroupIcon ?? data.icon ?? ''),
     displayOrder: Number(data.displayOrder ?? data.DisplayOrder ?? 0),
-    isActive: Boolean(data.isActive),
-    description: String(data.description ?? ''),
+    isActive: parseBoolean(data.isActive ?? data.IsActive ?? true),
+    description: String(data.description ?? data.Description ?? ''),
     createdDate: data.createdDate != null ? String(data.createdDate) : null,
     updatedDate: data.updatedDate != null ? String(data.updatedDate) : null,
     createdBy: data.createdBy != null ? Number(data.createdBy) : null,

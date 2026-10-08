@@ -176,7 +176,7 @@ export function ScreenForm({
                   handleBlur('screenGroupId');
                 }}
                 options={groups
-                  .filter((g) => g.isActive)
+                  .filter((g) => g.isActive !== false)
                   .map((g) => ({
                     value: String(g.screenGroupId),
                     label:
@@ -212,10 +212,12 @@ export function ScreenForm({
                     }
                     handleBlur('departmentMasterId');
                   }}
-                  options={departments.map((d) => ({
-                    value: String(d.departmentMasterId ?? d.departmentId),
-                    label: d.departmentName + (d.departmentCode ? ` (${d.departmentCode})` : ''),
-                  }))}
+                  options={departments
+                    .filter((d) => (d as { isActive?: boolean }).isActive !== false)
+                    .map((d) => ({
+                      value: String(d.departmentMasterId ?? d.departmentId),
+                      label: d.departmentName + (d.departmentCode ? ` (${d.departmentCode})` : ''),
+                    }))}
                   placeholder={t('screenManagement.screens.form.selectDepartment', {
                     department: departmentLabel,
                     defaultValue: 'Select Department',
@@ -250,17 +252,12 @@ export function ScreenForm({
                       const modDeptId = m.departmentMasterId ?? m.departmentId;
                       const matchesDept =
                         !formData.departmentMasterId || modDeptId === formData.departmentMasterId;
-                      const isActiveOrSelected =
-                        m.isActive !== false || String(m.moduleId) === String(formData.moduleId);
-                      return matchesDept && isActiveOrSelected;
+                      const isActive = m.isActive !== false;
+                      return matchesDept && isActive;
                     })
                     .map((m) => ({
                       value: String(m.moduleId),
-                      label:
-                        m.moduleName +
-                        (m.isActive === false
-                          ? ` (${t('filters.inactive', { defaultValue: 'Inactive' })})`
-                          : ''),
+                      label: m.moduleName,
                     }))}
                   placeholder={
                     !formData.departmentMasterId

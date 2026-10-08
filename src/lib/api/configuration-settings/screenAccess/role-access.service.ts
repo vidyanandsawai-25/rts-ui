@@ -4,9 +4,10 @@ import type {
   ScreenAccessPermissionData,
   ScreenMasterData,
 } from '@/types/screen-access.types';
-import type { PagedResponse } from '@/types/common.types';
 import { ApiError } from '@/lib/utils/api';
 import { getMasterDataPageSize } from './screen-access.services'; // still used by getPermissionsByRole
+import { parseBoolean } from '@/lib/utils/type-guards';
+import { logError } from '@/lib/utils/logger';
 
 function normalizePermission(item: Record<string, unknown>): ScreenAccessPermissionData {
   let accessLevel: 'no-access' | 'view' | 'edit' | 'delete' | 'full' = 'no-access';
@@ -36,12 +37,34 @@ function normalizePermission(item: Record<string, unknown>): ScreenAccessPermiss
   };
 }
 
+function extractArrayFromResponse(raw: unknown): Record<string, unknown>[] {
+  if (Array.isArray(raw)) {
+    return raw as Record<string, unknown>[];
+  }
+  if (raw && typeof raw === 'object') {
+    const r = raw as Record<string, unknown>;
+    const candidate =
+      r.items ?? r.Items ?? r.data ?? r.Data ?? r.result ?? r.Result ?? r.value ?? r.Value;
+    if (Array.isArray(candidate)) {
+      return candidate as Record<string, unknown>[];
+    }
+    if (candidate && typeof candidate === 'object') {
+      const c = candidate as Record<string, unknown>;
+      const nested = c.items ?? c.Items ?? c.data ?? c.Data;
+      if (Array.isArray(nested)) {
+        return nested as Record<string, unknown>[];
+      }
+    }
+  }
+  return [];
+}
+
 export async function getRoles(): Promise<RoleMasterData[]> {
   // Fetch from /UserRole which contains userRoleName (e.g. "Admin", "sudo").
   // /RoleWiseScreenAccessMaster only has userRoleId with no name field,
   // causing the dropdown to show "Role 1" instead of the actual role name.
   const url = `/UserRole?PageSize=1000&IsActive=true`;
-  const response = await apiClient.get<PagedResponse<unknown>>(url);
+  const response = await apiClient.get<unknown>(url);
 
   if (!response.success) {
     throw new ApiError(
@@ -51,17 +74,13 @@ export async function getRoles(): Promise<RoleMasterData[]> {
     );
   }
 
-  const items = (response.data?.items ?? []) as Record<string, unknown>[];
+  const items = extractArrayFromResponse(response.data);
 
   return items
     .filter((item) => {
-      const isActive =
-        item.isActive !== undefined
-          ? Boolean(item.isActive)
-          : item.IsActive !== undefined
-            ? Boolean(item.IsActive)
-            : true;
-      return isActive;
+      const activeVal = item.isActive ?? item.IsActive ?? item.status ?? item.Status ?? true;
+      if (typeof activeVal === 'string' && activeVal.toLowerCase() === 'inactive') return false;
+      return parseBoolean(activeVal);
     })
     .map((item) => {
       const id = Number(item.id ?? item.Id ?? item.userRoleId ?? item.UserRoleId);
@@ -73,6 +92,8 @@ export async function getRoles(): Promise<RoleMasterData[]> {
           item.DepartmentId ??
           item.departmentMasterId ??
           item.DepartmentMasterId ??
+          item.deptId ??
+          item.DeptId ??
           0
       );
       return {
@@ -88,7 +109,7 @@ export async function getRoles(): Promise<RoleMasterData[]> {
 
 export async function getPermissionsByRole(roleId: number): Promise<ScreenAccessPermissionData[]> {
   const url = `/RoleWiseScreenAccessMaster?UserRoleId=${roleId}&PageSize=${getMasterDataPageSize()}`;
-  const response = await apiClient.get<PagedResponse<unknown>>(url);
+  const response = await apiClient.get<unknown>(url);
 
   if (!response.success) {
     throw new ApiError(
@@ -98,7 +119,7 @@ export async function getPermissionsByRole(roleId: number): Promise<ScreenAccess
     );
   }
 
-  const items = (response.data?.items ?? []) as Record<string, unknown>[];
+  const items = extractArrayFromResponse(response.data);
   return items.map(normalizePermission);
 }
 
@@ -135,36 +156,137 @@ export async function updateScreenAccess(
   const CHUNK_SIZE = 10;
 
   try {
+    // 1. Group requests by roleId to check existing permissions from backend
+    const roleIds = Array.from(new Set(data.map((d) => d.roleId).filter(Boolean)));
+    const existingPermsMap = new Map<string, ScreenAccessPermissionData>();
+
+    await Promise.all(
+      roleIds.map(async (rId) => {
+        try {
+          const perms = await getPermissionsByRole(rId);
+          perms.forEach((p) => {
+            if (p.screenId) {
+              existingPermsMap.set(`${rId}_${p.screenId}`, p);
+            }
+          });
+        } catch (e) {
+          logError(`Could not pre-fetch permissions for role ${rId}:`, {
+            error: e instanceof Error ? e : undefined,
+          });
+        }
+      })
+    );
+
+    // 2. Process changes in chunks
     for (let i = 0; i < data.length; i += CHUNK_SIZE) {
       const chunk = data.slice(i, i + CHUNK_SIZE);
 
       await Promise.all(
         chunk.map(async (item) => {
-          const { accessLevel } = item;
+          const { accessLevel, roleId, screenId } = item;
+          const existing = existingPermsMap.get(`${roleId}_${screenId}`);
+          const recordId =
+            existing?.id && existing.id > 0
+              ? existing.id
+              : typeof item.id === 'number' && item.id > 0
+                ? item.id
+                : undefined;
+
           const payload: Record<string, unknown> = {
-            userRoleId: item.roleId,
-            screenId: item.screenId,
+            userRoleId: roleId,
+            UserRoleId: roleId,
+            roleId: roleId,
+            RoleId: roleId,
+            screenId: screenId,
+            ScreenId: screenId,
             canView: ['view', 'edit', 'delete', 'full'].includes(accessLevel),
+            CanView: ['view', 'edit', 'delete', 'full'].includes(accessLevel),
             canEdit: ['edit', 'delete', 'full'].includes(accessLevel),
+            CanEdit: ['edit', 'delete', 'full'].includes(accessLevel),
             canDelete: ['delete', 'full'].includes(accessLevel),
+            CanDelete: ['delete', 'full'].includes(accessLevel),
             haveFullAccess: accessLevel === 'full',
+            HaveFullAccess: accessLevel === 'full',
             haveNoAccess: accessLevel === 'no-access',
+            HaveNoAccess: accessLevel === 'no-access',
             isActive: true,
+            IsActive: true,
           };
 
-          if (typeof item.id === 'number' && item.id > 0) {
-            payload.roleWiseScreenAccessId = item.id;
-            if (item.createdBy !== undefined && item.createdBy !== null)
-              payload.createdBy = item.createdBy;
-            if (updatedBy !== undefined && updatedBy !== null) payload.updatedBy = updatedBy;
+          if (recordId) {
+            payload.roleWiseScreenAccessId = recordId;
+            payload.RoleWiseScreenAccessId = recordId;
+            payload.id = recordId;
+            payload.Id = recordId;
 
-            const url = `${baseUrl}/${item.id}`;
-            const res = await apiClient.put(url, payload);
-            if (!res.success) throw new Error('accessControl.messages.updateError');
+            const effectiveCreatedBy = existing?.createdBy ?? item.createdBy;
+            if (effectiveCreatedBy !== undefined && effectiveCreatedBy !== null) {
+              payload.createdBy = effectiveCreatedBy;
+              payload.CreatedBy = effectiveCreatedBy;
+            }
+            if (updatedBy !== undefined && updatedBy !== null) {
+              payload.updatedBy = updatedBy;
+              payload.UpdatedBy = updatedBy;
+            }
+
+            const url = `${baseUrl}/${recordId}`;
+            let res = await apiClient.put(url, payload);
+            if (!res.success) {
+              logError(`PUT to ${url} failed, attempting POST fallback:`, {
+                error: res.error ? new Error(res.error) : undefined,
+                message: res.message,
+              });
+              if (updatedBy !== undefined && updatedBy !== null) {
+                payload.createdBy = updatedBy;
+                payload.CreatedBy = updatedBy;
+              }
+              res = await apiClient.post(baseUrl, payload);
+            }
+
+            if (!res.success) {
+              logError('Failed to update screen access record:', {
+                error: res.error ? new Error(res.error) : undefined,
+                message: res.message,
+                payload,
+              });
+              throw new Error(res.error || res.message || 'accessControl.messages.updateError');
+            }
           } else {
-            if (updatedBy !== undefined && updatedBy !== null) payload.createdBy = updatedBy;
-            const res = await apiClient.post(baseUrl, payload);
-            if (!res.success) throw new Error('accessControl.messages.updateError');
+            if (updatedBy !== undefined && updatedBy !== null) {
+              payload.createdBy = updatedBy;
+              payload.CreatedBy = updatedBy;
+            }
+            let res = await apiClient.post(baseUrl, payload);
+            if (!res.success) {
+              logError(`POST to ${baseUrl} failed, checking for existing record:`, {
+                error: res.error ? new Error(res.error) : undefined,
+                message: res.message,
+              });
+              try {
+                const refreshedPerms = await getPermissionsByRole(roleId);
+                const match = refreshedPerms.find((p) => p.screenId === screenId);
+                if (match?.id) {
+                  payload.roleWiseScreenAccessId = match.id;
+                  payload.RoleWiseScreenAccessId = match.id;
+                  payload.id = match.id;
+                  payload.Id = match.id;
+                  res = await apiClient.put(`${baseUrl}/${match.id}`, payload);
+                }
+              } catch (fetchErr) {
+                logError('Error checking existing permissions during fallback:', {
+                  error: fetchErr instanceof Error ? fetchErr : undefined,
+                });
+              }
+            }
+
+            if (!res.success) {
+              logError('Failed to create screen access record:', {
+                error: res.error ? new Error(res.error) : undefined,
+                message: res.message,
+                payload,
+              });
+              throw new Error(res.error || res.message || 'accessControl.messages.updateError');
+            }
           }
         })
       );

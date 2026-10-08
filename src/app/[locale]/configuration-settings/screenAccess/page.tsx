@@ -28,6 +28,7 @@ interface ScreenAccessPageProps {
     tab?: string;
     subTab?: string;
     roleId?: string;
+    deptId?: string;
     sgroup?: string;
   }>;
 }
@@ -46,6 +47,9 @@ export default async function ScreenAccessPage({ searchParams }: ScreenAccessPag
 
   const parsedGroup = sp?.sgroup && sp.sgroup !== 'all' ? parseInt(sp.sgroup, 10) : undefined;
   const groupFilter = !Number.isNaN(parsedGroup) ? parsedGroup : undefined;
+
+  const parsedDeptId = sp?.deptId ? parseInt(sp.deptId, 10) : undefined;
+  const deptIdFromUrl = !Number.isNaN(parsedDeptId) ? parsedDeptId : undefined;
 
   const parsedRoleId = sp?.roleId ? parseInt(sp.roleId, 10) : undefined;
   const roleIdFromUrl = !Number.isNaN(parsedRoleId) ? parsedRoleId : undefined;
@@ -147,9 +151,31 @@ export default async function ScreenAccessPage({ searchParams }: ScreenAccessPag
   let dataRoleId: number | undefined = undefined;
 
   if (isAccessControl && roles.length > 0) {
-    dataRoleId = roleIdFromUrl
-      ? (roles.find((r) => r.roleMasterId === roleIdFromUrl)?.roleMasterId ?? roles[0].roleMasterId)
-      : roles[0].roleMasterId;
+    const activeDepartments = departments.filter(
+      (d) => (d as { isActive?: boolean }).isActive !== false
+    );
+    const selectedDeptId =
+      deptIdFromUrl &&
+      activeDepartments.some(
+        (d) => (d.departmentMasterId ?? d.departmentId) === deptIdFromUrl
+      )
+        ? deptIdFromUrl
+        : (activeDepartments[0]?.departmentMasterId ?? activeDepartments[0]?.departmentId);
+
+    const filteredRoles = selectedDeptId
+      ? roles.filter((r) => r.departmentId === selectedDeptId && r.isActive !== false)
+      : roles.filter((r) => r.isActive !== false);
+
+    const defaultRoleId =
+      filteredRoles.length > 0
+        ? filteredRoles[0].roleMasterId
+        : (roles.find((r) => r.isActive !== false)?.roleMasterId ?? roles[0].roleMasterId);
+
+    dataRoleId =
+      roleIdFromUrl && roles.some((r) => r.roleMasterId === roleIdFromUrl)
+        ? roleIdFromUrl
+        : defaultRoleId;
+
     if (dataRoleId) {
       const screenAccessRes = await getScreenAccessWithAllScreensAction(dataRoleId, allScreens);
       if (!screenAccessRes.success) {

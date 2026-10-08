@@ -9,63 +9,13 @@ import {
   ScreenGroupMasterData,
 } from '@/types/screen-access.types';
 
-interface HierarchyContext {
-  moduleLookup: Map<number, ModuleMasterData>;
-  modulesByDept: Map<number, ModuleMasterData[]>;
-  screensByModule: Map<number, ScreenMasterData[]>;
-  screensByDeptGeneral: Map<number, ScreenMasterData[]>;
-}
-
-const prepareLookupMaps = (
-  modules: ModuleMasterData[],
-  screens: ScreenMasterData[]
-): HierarchyContext => {
-  const moduleLookup = new Map<number, ModuleMasterData>();
-  const modulesByDept = new Map<number, ModuleMasterData[]>();
-  const screensByModule = new Map<number, ScreenMasterData[]>();
-  const screensByDeptGeneral = new Map<number, ScreenMasterData[]>();
-
-  modules.forEach((mod) => {
-    const canonicalModId =
-      mod.moduleMasterId && mod.moduleMasterId > 0 ? mod.moduleMasterId : mod.moduleId;
-    if (canonicalModId) moduleLookup.set(canonicalModId, mod);
-
-    const canonicalDeptId =
-      mod.departmentMasterId && mod.departmentMasterId > 0
-        ? mod.departmentMasterId
-        : mod.departmentId;
-    if (canonicalDeptId) {
-      const current = modulesByDept.get(canonicalDeptId) || [];
-      current.push(mod);
-      modulesByDept.set(canonicalDeptId, current);
-    }
-  });
-
-  screens.forEach((screen) => {
-    const parentModule = screen.moduleId ? moduleLookup.get(screen.moduleId) : null;
-    if (parentModule) {
-      const canonicalModId =
-        parentModule.moduleMasterId && parentModule.moduleMasterId > 0
-          ? parentModule.moduleMasterId
-          : screen.moduleId!;
-      const current = screensByModule.get(canonicalModId) || [];
-      current.push(screen);
-      screensByModule.set(canonicalModId, current);
-    } else if (screen.departmentMasterId) {
-      const current = screensByDeptGeneral.get(screen.departmentMasterId) || [];
-      current.push(screen);
-      screensByDeptGeneral.set(screen.departmentMasterId, current);
-    }
-  });
-
-  return { moduleLookup, modulesByDept, screensByModule, screensByDeptGeneral };
-};
-
 export interface DisplayScreen {
   id: string;
   name: string;
   screenGroupId?: number;
   screenGroupName?: string;
+  screenCode?: string;
+  routePath?: string;
 }
 
 export interface DisplayDomain {
@@ -98,13 +48,8 @@ export function usePermissionHierarchy({
   t,
 }: UsePermissionHierarchyProps) {
   const hierarchy: DisplayDepartment[] = useMemo(() => {
-    const validScreens = screens.filter((s) => s.screenMasterId);
+    const validScreens = screens.filter((s) => s.screenMasterId && Number(s.screenMasterId) > 0);
     const assignedScreenIds = new Set<string>();
-
-    const { modulesByDept, screensByModule, screensByDeptGeneral } = prepareLookupMaps(
-      modules,
-      validScreens
-    );
 
     // Build a map of screenGroupId to screenGroupName
     const groupNameMap = new Map<number, string>();
@@ -114,91 +59,214 @@ export function usePermissionHierarchy({
       }
     });
 
-    const deptHierarchy = departments
-      .map((dept) => {
+    // Build module lookup map
+    const moduleLookup = new Map<number, ModuleMasterData>();
+    modules.forEach((mod) => {
+      if (mod.moduleMasterId && mod.moduleMasterId > 0) {
+        moduleLookup.set(mod.moduleMasterId, mod);
+      }
+      if (mod.moduleId && mod.moduleId > 0) {
+        moduleLookup.set(mod.moduleId, mod);
+      }
+    });
+
+    const activeDepartments = departments.filter(
+      (d) => (d as { isActive?: boolean }).isActive !== false
+    );
+
+    const deptHierarchy: DisplayDepartment[] = activeDepartments
+      .map((dept): DisplayDepartment | null => {
         const canonicalDeptId =
           dept.departmentMasterId && dept.departmentMasterId > 0
             ? dept.departmentMasterId
             : dept.departmentId;
         if (!canonicalDeptId) return null;
 
-        const deptModules = modulesByDept.get(canonicalDeptId) || [];
-        const domains: DisplayDomain[] = deptModules
-          .map((mod): DisplayDomain | null => {
-            const canonicalModId =
-              mod.moduleMasterId && mod.moduleMasterId > 0 ? mod.moduleMasterId : mod.moduleId;
-            if (!canonicalModId) return null;
+        const deptNameNorm = (dept.departmentName || '').trim().toLowerCase();
+        const deptCodeNorm = (dept.departmentCode || '').trim().toLowerCase();
 
-            const modScreens = screensByModule.get(canonicalModId) || [];
-            modScreens.forEach((s) => assignedScreenIds.add(String(s.screenMasterId)));
+        // Identify all screens belonging to this department
+        const deptScreens = validScreens.filter((s) => {
+          const sDeptId =
+            s.departmentMasterId && s.departmentMasterId > 0
+              ? s.departmentMasterId
+              : (s as { departmentId?: number }).departmentId;
 
-            return {
-              id: String(canonicalModId),
-              name: mod.moduleName,
-              isModuleActive: mod.isActive !== false,
-              screens: modScreens.map((s) => ({
-                id: String(s.screenMasterId),
-                name: s.screenName,
-                screenGroupId: s.screenGroupId,
-                screenGroupName: s.screenGroupName || (s.screenGroupId ? groupNameMap.get(s.screenGroupId) : undefined) || undefined,
-              })),
-            };
+          // 1. Direct department match on screen
+          if (sDeptId && sDeptId === canonicalDeptId) return true;
+
+          // 2. Department match via screen's module
+          const parentMod = s.moduleId ? moduleLookup.get(s.moduleId) : null;
+          const modDeptId =
+            parentMod?.departmentMasterId && parentMod.departmentMasterId > 0
+              ? parentMod.departmentMasterId
+              : parentMod?.departmentId;
+
+          if (modDeptId && modDeptId === canonicalDeptId) {
+            // If screen has a different explicit department, don't claim it here
+            return !sDeptId || sDeptId === canonicalDeptId;
+          }
+
+          // 3. Match via moduleName / route when no explicit department ID is set
+          if (!sDeptId && (!parentMod || (!parentMod.departmentMasterId && !parentMod.departmentId))) {
+            const sModName = (s.moduleName || parentMod?.moduleName || '').trim().toLowerCase();
+            const sRoute = (s.routePath || '').toLowerCase();
+
+            if (sModName && (sModName === deptNameNorm || deptNameNorm.includes(sModName) || sModName.includes(deptNameNorm))) {
+              return true;
+            }
+            if (deptNameNorm && sRoute.startsWith(`/${deptNameNorm}`)) {
+              return true;
+            }
+            if (deptCodeNorm && (sRoute.startsWith(`/${deptCodeNorm}`) || sRoute.includes(`/${deptCodeNorm}/`))) {
+              return true;
+            }
+          }
+
+          return false;
+        });
+
+        // Group screens by module / domain
+        const domainMap = new Map<
+          string,
+          { id: string; name: string; isModuleActive: boolean; screens: DisplayScreen[] }
+        >();
+
+        // Pre-populate active modules belonging to this department
+        modules
+          .filter((m) => {
+            const mDept =
+              m.departmentMasterId && m.departmentMasterId > 0 ? m.departmentMasterId : m.departmentId;
+            return mDept === canonicalDeptId && m.isActive !== false;
           })
-          .filter((d): d is DisplayDomain => d !== null);
+          .forEach((m) => {
+            const modId = String(m.moduleMasterId || m.moduleId);
+            if (!domainMap.has(modId)) {
+              domainMap.set(modId, {
+                id: modId,
+                name: m.moduleName,
+                isModuleActive: m.isActive !== false,
+                screens: [],
+              });
+            }
+          });
 
-        const directScreens = screensByDeptGeneral.get(canonicalDeptId) || [];
-        directScreens.forEach((s) => assignedScreenIds.add(String(s.screenMasterId)));
+        deptScreens.forEach((s) => {
+          const sId = String(s.screenMasterId);
+          assignedScreenIds.add(sId);
 
-        if (directScreens.length > 0) {
-          const directDomainItem: DisplayDomain = {
-            id: `dept-${canonicalDeptId}-general`,
-            name: t('accessControl.domains.general'),
-            isModuleActive: true,
-            screens: directScreens.map((s) => ({
-              id: String(s.screenMasterId),
-              name: s.screenName,
-              screenGroupId: s.screenGroupId,
-              screenGroupName: s.screenGroupName || (s.screenGroupId ? groupNameMap.get(s.screenGroupId) : undefined) || undefined,
-            })),
+          const screenDisplay: DisplayScreen = {
+            id: sId,
+            name: s.screenName,
+            screenGroupId: s.screenGroupId,
+            screenGroupName:
+              s.screenGroupName ||
+              (s.screenGroupId ? groupNameMap.get(s.screenGroupId) : undefined) ||
+              undefined,
+            screenCode: s.screenCode,
+            routePath: s.routePath,
           };
-          domains.push(directDomainItem);
-        }
+
+          if (s.moduleId) {
+            const parentMod = moduleLookup.get(s.moduleId);
+            const modKey = String(parentMod?.moduleMasterId || parentMod?.moduleId || s.moduleId);
+            const modName = parentMod?.moduleName || s.moduleName || `Module ${s.moduleId}`;
+            const isModActive = parentMod ? parentMod.isActive !== false : true;
+
+            if (domainMap.has(modKey)) {
+              domainMap.get(modKey)!.screens.push(screenDisplay);
+            } else {
+              domainMap.set(modKey, {
+                id: modKey,
+                name: modName,
+                isModuleActive: isModActive,
+                screens: [screenDisplay],
+              });
+            }
+          } else if (s.moduleName && s.moduleName.trim()) {
+            const modKey = `mod-name-${s.moduleName.trim().toLowerCase()}`;
+            if (domainMap.has(modKey)) {
+              domainMap.get(modKey)!.screens.push(screenDisplay);
+            } else {
+              domainMap.set(modKey, {
+                id: modKey,
+                name: s.moduleName,
+                isModuleActive: true,
+                screens: [screenDisplay],
+              });
+            }
+          } else {
+            const genKey = `dept-${canonicalDeptId}-general`;
+            if (!domainMap.has(genKey)) {
+              domainMap.set(genKey, {
+                id: genKey,
+                name: t('accessControl.domains.general'),
+                isModuleActive: true,
+                screens: [],
+              });
+            }
+            domainMap.get(genKey)!.screens.push(screenDisplay);
+          }
+        });
+
+        const domains: DisplayDomain[] = Array.from(domainMap.values()).filter(
+          (d) => d.screens.length > 0
+        );
 
         return {
           id: String(canonicalDeptId),
           name: dept.departmentName,
           icon: Database,
-          domains: domains.filter((d) => d.screens.length > 0),
+          domains,
         };
       })
-      .filter((d): d is DisplayDepartment => d !== null);
+      .filter((d): d is DisplayDepartment => d !== null && d.domains.length > 0);
 
-    // Identify Orphans
+    // Identify Orphans (screens not assigned to any active department)
     const orphanedScreens = validScreens.filter(
       (s) => !assignedScreenIds.has(String(s.screenMasterId))
     );
 
     if (orphanedScreens.length > 0) {
-      const orphanedDomainItem: DisplayDomain = {
-        id: 'system-general',
-        name: t('accessControl.domains.general'),
-        isModuleActive: true,
-        screens: orphanedScreens.map((s) => ({
+      const orphanDomainMap = new Map<string, DisplayScreen[]>();
+
+      orphanedScreens.forEach((s) => {
+        const parentMod = s.moduleId ? moduleLookup.get(s.moduleId) : null;
+        const groupKey = parentMod?.moduleName || s.moduleName || t('accessControl.domains.general');
+        if (!orphanDomainMap.has(groupKey)) {
+          orphanDomainMap.set(groupKey, []);
+        }
+        orphanDomainMap.get(groupKey)!.push({
           id: String(s.screenMasterId),
           name: s.screenName,
           screenGroupId: s.screenGroupId,
-          screenGroupName: s.screenGroupName || (s.screenGroupId ? groupNameMap.get(s.screenGroupId) : undefined) || undefined,
-        })),
-      };
+          screenGroupName:
+            s.screenGroupName ||
+            (s.screenGroupId ? groupNameMap.get(s.screenGroupId) : undefined) ||
+            undefined,
+          screenCode: s.screenCode,
+          routePath: s.routePath,
+        });
+      });
+
+      const orphanedDomains: DisplayDomain[] = Array.from(orphanDomainMap.entries()).map(
+        ([name, domScreens], idx) => ({
+          id: `orphan-${idx}`,
+          name,
+          isModuleActive: true,
+          screens: domScreens,
+        })
+      );
+
       deptHierarchy.push({
         id: 'system-unassigned',
         name: t('accessControl.filters.systemDepartment'),
         icon: Database,
-        domains: [orphanedDomainItem],
+        domains: orphanedDomains,
       });
     }
 
-    return deptHierarchy.filter((d) => d.domains.length > 0);
+    return deptHierarchy;
   }, [departments, modules, screens, groups, t]);
 
   return { hierarchy };
