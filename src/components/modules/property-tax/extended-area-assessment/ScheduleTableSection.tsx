@@ -22,7 +22,7 @@ export function ScheduleTableSection({ t, result, isTaxTotal, onExportCsv, onPri
         columns={columns}
         data={result.rows as ScheduleTableRow[]}
         getRowKey={(row) => row.srNo}
-        height="lg"
+        height="sm"
         tableClassName="text-xs"
         theadClassName="text-[10px] font-extrabold uppercase tracking-widest"
         rowClassName={(row) => (row.status === "Current" ? "bg-emerald-50" : "")}

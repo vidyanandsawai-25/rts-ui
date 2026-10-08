@@ -1,12 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Loader2 } from "lucide-react";
 import { useSingleAssessment } from "@/hooks/extendedAreaAssessment/useSingleAssessment";
 import { useCascadingPropertyFilters } from "@/hooks/extendedAreaAssessment/useCascadingPropertyFilters";
+import { useMatchHeight } from "@/hooks/extendedAreaAssessment/useMatchHeight";
 import type {
   Section129ActionResult,
   WardDropdownOption,
-  ApartmentQcSearchSuggestionDto,
+  WardPropertyOptionDto,
 } from "@/app/[locale]/property-tax/extended-area-assesment/single-assessment/action";
 import type { SelectOption } from "@/types/extended-area-assessment.types";
 import { SidebarForm } from "./SidebarForm";
@@ -19,8 +21,8 @@ interface SingleAssessmentScreenProps {
   initialUpic?: string;
   initialOldGpNo?: string;
   initialWardId?: string;
-  initialPropertyNo?: string;
-  initialPartitionNo?: string;
+  /** The resolved property's id (as a string) — binds the combined Property No dropdown. */
+  initialPropertyId?: string;
   initialSearchResult?: Section129ActionResult | null;
   /** SSR-fetched current finance year (CORE.YearMaster.IsActive=1) — a ULB-wide constant, shown before any property is searched. */
   initialCurrentFinancialYear?: string | null;
@@ -28,24 +30,20 @@ interface SingleAssessmentScreenProps {
   usageTypeOptions?: SelectOption[];
   /** SSR-fetched Ward options from /api/Ward. */
   initialWards?: WardDropdownOption[];
-  /** SSR-fetched Property options for initial Ward. */
-  initialProperties?: string[];
-  /** SSR-fetched Partition options for initial Property. */
-  initialPartitions?: ApartmentQcSearchSuggestionDto[];
+  /** SSR-fetched property + partition options for the initial Ward (combined "Property No" dropdown). */
+  initialWardProperties?: WardPropertyOptionDto[];
 }
 
 export function SingleAssessmentScreen({
   initialUpic = "",
   initialOldGpNo = "",
   initialWardId = "",
-  initialPropertyNo = "",
-  initialPartitionNo = "",
+  initialPropertyId = "",
   initialSearchResult = null,
   initialCurrentFinancialYear = null,
   usageTypeOptions = [],
   initialWards = [],
-  initialProperties = [],
-  initialPartitions = [],
+  initialWardProperties = [],
 }: SingleAssessmentScreenProps) {
   const t = useTranslations("extendedAreaAssessment.single");
 
@@ -55,23 +53,43 @@ export function SingleAssessmentScreen({
     initialSearchResult,
     initialCurrentFinancialYear,
   });
-  const { form, result, setField, handleExportCsv, handlePrint, pdfPreviewUrl, closePdfPreview } = assessment;
+  const { form, result, setField, handleExportCsv, handlePrint, pdfPreviewUrl, closePdfPreview, isSearching, isSaving } = assessment;
 
   const filters = useCascadingPropertyFilters({
     t,
     initialWardId,
-    initialPropertyNo,
-    initialPartitionNo,
+    initialPropertyId,
     initialWards,
-    initialProperties,
-    initialPartitions,
-    onPartitionResolved: (upicOrPropNo) => setField("upic", upicOrPropNo),
+    initialWardProperties,
+    onPropertyResolved: (upic) => setField("upic", upic),
   });
 
-  const isTaxTotal = result.baseTaxCode === "Tax Total";
+  // Tolerant of spacing/case so a config-saved "TaxTotal" (no space) still matches "Tax Total" —
+  // the backend now normalizes this before sending it, but comparing loosely here too means the
+  // KPI/label split can't silently regress to General Tax mode again from a future spelling drift.
+  const isTaxTotal = result.baseTaxCode?.replace(/\s+/g, "").toLowerCase() === "taxtotal";
+
+  // Measures the right column's actual rendered height (KPI cards + timeline + schedule table)
+  // so the left form panel can be capped to exactly that height and scroll internally, instead of
+  // stretching taller than the table side — CSS-only intrinsic-sizing tricks (grid items-stretch)
+  // don't reliably match a sibling that has its own internal overflow:auto scroll region.
+  const { ref: rightColumnRef, height: rightColumnHeight } = useMatchHeight<HTMLDivElement>();
 
   return (
-    <div className="space-y-4">
+    <div className="relative space-y-3">
+
+        {/* Shown while the UPIC/Old GP Number search or an Apply/Recalculate request is in flight —
+            `fixed inset-0` (not `absolute`) and a z-index above the shared app header's z-[100] so
+            it covers the whole viewport, including the "Section 129A Assessment" title/tabs that
+            live in this route's layout.tsx above this component, not just this screen's own content. */}
+        {(isSearching || isSaving) && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-white/70 print:hidden">
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <p className="text-sm font-semibold text-[#0b2545]">{t("loading.message")}</p>
+            </div>
+          </div>
+        )}
 
         {/* Print-only header — mirrors the property identity normally shown in the sidebar form,
             which is hidden on print (see below) so only the KPI cards, timeline, and schedule table print. */}
@@ -82,17 +100,18 @@ export function SingleAssessmentScreen({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[380px_1fr] lg:items-start print:!grid-cols-1">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[380px_1fr] lg:items-start print:!grid-cols-1">
           <SidebarForm
             t={t}
             assessment={assessment}
             filters={filters}
             usageTypeOptions={usageTypeOptions}
             isTaxTotal={isTaxTotal}
+            matchHeight={rightColumnHeight}
           />
 
           {/* ================= Right: stat cards, timeline, schedule ================= */}
-          <div className="flex flex-col gap-4">
+          <div ref={rightColumnRef} className="flex flex-col gap-3">
             <KpiCards t={t} result={result} isTaxTotal={isTaxTotal} />
             <StageTimeline t={t} result={result} />
             <ScheduleTableSection

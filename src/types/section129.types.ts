@@ -30,6 +30,9 @@ export interface Section129StageApi {
 
 export interface Section129ScheduleApi {
   propertyId: number;
+  /** The property's ward id (PTIS.WardMaster.Id) — lets the caller pre-select the Ward/Property No
+   *  dropdowns to match this property regardless of which search path resolved it. */
+  wardId: number;
   baseTaxCode?: string;
   /** The base tax code the EXISTING schedule was actually built under — may differ from baseTaxCode
    *  when SECTION129_STAGE_BASE_TAXCODE was changed after this property was applied. Null when no

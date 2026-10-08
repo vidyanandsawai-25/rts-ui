@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Calculator, ListChecks } from "lucide-react";
+import { toast } from "sonner";
 import { Tabs, TableHeader, type TabItem } from "@/components/common";
 
 interface ExtendedAreaAssessmentHeaderProps {
@@ -45,7 +46,10 @@ export function ExtendedAreaAssessmentHeader({ locale }: ExtendedAreaAssessmentH
             if (v === "single") {
               router.push(`${base}/single-assessment`);
             } else {
-              router.push(`${base}/bulk-update`);
+              // Bulk Update is not finished yet — warn and stay put instead of navigating there.
+              toast.warning(
+                tLanding("bulkUnderDevelopment") ?? "This screen is not completed yet — it is under development."
+              );
             }
           }}
         />

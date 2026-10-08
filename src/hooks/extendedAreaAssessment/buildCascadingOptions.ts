@@ -1,5 +1,5 @@
 import type { useTranslations } from "next-intl";
-import type { WardDropdownOption, ApartmentQcSearchSuggestionDto } from "@/app/[locale]/property-tax/extended-area-assesment/single-assessment/action";
+import type { WardDropdownOption, WardPropertyOptionDto } from "@/app/[locale]/property-tax/extended-area-assesment/single-assessment/action";
 import type { SelectOption } from "@/types/extended-area-assessment.types";
 
 type Translator = ReturnType<typeof useTranslations>;
@@ -14,8 +14,11 @@ export function buildWardOptions(wards: WardDropdownOption[], isLoadingWards: bo
   ];
 }
 
-export function buildPropertyNoOptions(
-  propertyNoList: string[],
+/** Builds the combined "Property No" dropdown — one option per property/partition row, bound by
+ *  `propertyId`, labeled "10" for a plain property or "10-A6" for one of its partitions — so
+ *  there's no separate Partition No dropdown to pick afterward. */
+export function buildWardPropertyOptions(
+  items: WardPropertyOptionDto[],
   selectedWardId: string,
   isLoadingProperties: boolean,
   t: Translator
@@ -29,34 +32,9 @@ export function buildPropertyNoOptions(
         : t("dropdowns.selectPropertyNo"),
       value: "",
     },
-    ...propertyNoList.map((p) => ({
-      label: p,
-      value: p,
+    ...items.map((item) => ({
+      label: item.partitionNo ? `${item.propertyNo}-${item.partitionNo}` : item.propertyNo,
+      value: String(item.propertyId),
     })),
-  ];
-}
-
-export function buildPartitionOptions(
-  partitionSuggestions: ApartmentQcSearchSuggestionDto[],
-  selectedPropertyNo: string,
-  isLoadingPartitions: boolean,
-  t: Translator
-): SelectOption[] {
-  return [
-    {
-      label: !selectedPropertyNo
-        ? t("dropdowns.selectPropertyNoFirst")
-        : isLoadingPartitions
-        ? t("dropdowns.loadingPartitions")
-        : t("dropdowns.selectPartitionNo"),
-      value: "",
-    },
-    ...partitionSuggestions.map((s) => {
-      const val = s.partitionNo ?? s.upicId ?? String(s.propertyId);
-      const label = s.partitionNo
-        ? `${t("dropdowns.partitionLabel", { partitionNo: s.partitionNo })}${s.displayLabel ? ` (${s.displayLabel})` : ""}`
-        : s.displayLabel || s.upicId || t("dropdowns.mainProperty");
-      return { label, value: val };
-    }),
   ];
 }

@@ -54,6 +54,7 @@ vi.mock('@/hooks/extendedAreaAssessment/useSection129SearchActions', () => ({
 function buildApiFixture(overrides: Partial<Section129ScheduleApi> = {}): Section129ScheduleApi {
   return {
     propertyId: 549439,
+    wardId: 1,
     baseTaxCode: 'General Tax',
     currentFinancialYear: '2026-27',
     upic: 'MM1100150000',

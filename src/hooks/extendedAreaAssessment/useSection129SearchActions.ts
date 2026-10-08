@@ -12,6 +12,12 @@ export interface UseSection129SearchActionsOptions {
   setPropertyId: (id: number | null) => void;
   setForm: (form: SingleAssessmentForm) => void;
   setResult: (result: SingleAssessmentResult) => void;
+  /** Which of UPIC/Old GP Number the user last actually typed into — NOT just whichever is
+   *  non-empty, since a successful search of either one auto-fills the OTHER field too (the
+   *  resolved property's own UPIC/Old GP Number, for display). `handleSearchAny` needs this to
+   *  know which field the user means to search by now, instead of always re-searching whichever
+   *  field happens to still hold a value from the previous result. */
+  lastEditedField: "upic" | "oldGpNo" | null;
 }
 
 /** The single-assessment screen's UPIC/Old GP Number search + Reset actions — both drive Next.js
@@ -23,6 +29,7 @@ export function useSection129SearchActions({
   setPropertyId,
   setForm,
   setResult,
+  lastEditedField,
 }: UseSection129SearchActionsOptions) {
   const router = useRouter();
   const pathname = usePathname();
@@ -48,22 +55,37 @@ export function useSection129SearchActions({
         params.set("upic", targetQuery);
         params.delete("oldGpNo");
       }
+      // A UPIC/Old GP Number search is a different lookup path than the Ward/Property No
+      // cascading dropdown — clear any leftover selection from that path, or else page.tsx only
+      // re-resolves the dropdown from THIS search's result when those params are absent,
+      // otherwise it keeps showing the stale ward/property from whatever was selected (or
+      // resolved) before this search.
+      params.delete("wardId");
+      params.delete("propertyId");
       router.push(`${pathname}?${params.toString()}`);
     });
   };
 
-  /** Used by the shared search button next to Old GP Number: searches by whichever of the two fields has a value. */
+  /** Used by the shared search button next to Old GP Number: searches by whichever of the two
+   *  fields the user actually last edited, falling back to UPIC (then Old GP Number) when neither
+   *  has been touched yet — NOT just "whichever currently has a value", since a prior successful
+   *  search auto-fills both fields (the resolved property's own UPIC + Old GP Number), so that
+   *  alone can't tell which one the user means to search by now. */
   const handleSearchAny = () => {
-    if (!form.upic.trim() && !form.oldGpNo.trim()) {
+    const upicVal = form.upic.trim();
+    const oldGpVal = form.oldGpNo.trim();
+    if (!upicVal && !oldGpVal) {
       toast.error(
         t("messages.enterUpicOrOldGpNo") ?? "Enter a UPIC Number or Old Gram Panchayat Number to search."
       );
       return;
     }
-    if (form.oldGpNo.trim()) {
-      handleSearch(form.oldGpNo, "oldGpNo");
+    if (lastEditedField === "oldGpNo" && oldGpVal) {
+      handleSearch(oldGpVal, "oldGpNo");
+    } else if (upicVal) {
+      handleSearch(upicVal, "upic");
     } else {
-      handleSearch(form.upic, "upic");
+      handleSearch(oldGpVal, "oldGpNo");
     }
   };
 
@@ -73,8 +95,7 @@ export function useSection129SearchActions({
       params.delete("upic");
       params.delete("oldGpNo");
       params.delete("wardId");
-      params.delete("propertyNo");
-      params.delete("partitionNo");
+      params.delete("propertyId");
       const query = params.toString();
       router.push(query ? `${pathname}?${query}` : pathname);
     });

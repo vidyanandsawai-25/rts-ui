@@ -1,66 +1,56 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import type { useTranslations } from "next-intl";
 import {
   getWardsDropdownAction,
-  getApartmentQCSuggestionsAction,
+  getPropertyOptionsByWardAction,
   type WardDropdownOption,
-  type ApartmentQcSearchSuggestionDto,
+  type WardPropertyOptionDto,
 } from "@/app/[locale]/property-tax/extended-area-assesment/single-assessment/action";
-import { buildWardOptions, buildPropertyNoOptions, buildPartitionOptions } from "./buildCascadingOptions";
+import { buildWardOptions, buildWardPropertyOptions } from "./buildCascadingOptions";
 
 export interface UseCascadingPropertyFiltersOptions {
   t: ReturnType<typeof useTranslations>;
   initialWardId?: string;
-  initialPropertyNo?: string;
-  initialPartitionNo?: string;
+  /** The resolved property's id (as a string) — binds the combined Property No dropdown, which
+   *  covers both plain properties and their partitions in one list (see `buildWardPropertyOptions`). */
+  initialPropertyId?: string;
   initialWards?: WardDropdownOption[];
-  initialProperties?: string[];
-  initialPartitions?: ApartmentQcSearchSuggestionDto[];
-  /** Called with the resolved UPIC/property-no once a partition is picked, so the caller can trigger its own search. */
-  onPartitionResolved: (upicOrPropertyNo: string) => void;
+  initialWardProperties?: WardPropertyOptionDto[];
+  /** Called with the resolved UPIC once a property/partition is picked, so the caller can trigger its own search. */
+  onPropertyResolved: (upic: string) => void;
 }
 
-/** Owns the Ward -> Property No -> Partition No cascading dropdown state (URL-synced), used by
- *  the single-assessment screen's property-identification section. */
+/** Owns the Ward -> Property No (combined property + partition) cascading dropdown state
+ *  (URL-synced), used by the single-assessment screen's property-identification section. */
 export function useCascadingPropertyFilters({
   t,
   initialWardId = "",
-  initialPropertyNo = "",
-  initialPartitionNo = "",
+  initialPropertyId = "",
   initialWards = [],
-  initialProperties = [],
-  initialPartitions = [],
-  onPartitionResolved,
+  initialWardProperties = [],
+  onPropertyResolved,
 }: UseCascadingPropertyFiltersOptions) {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [wards, setWards] = useState<WardDropdownOption[]>(initialWards);
   const [selectedWardId, setSelectedWardId] = useState<string>(initialWardId || searchParams.get("wardId") || "");
   const [isLoadingWards, setIsLoadingWards] = useState<boolean>(false);
 
-  const [propertyNoList, setPropertyNoList] = useState<string[]>(initialProperties);
-  const [selectedPropertyNo, setSelectedPropertyNo] = useState<string>(initialPropertyNo || searchParams.get("propertyNo") || "");
+  const [wardProperties, setWardProperties] = useState<WardPropertyOptionDto[]>(initialWardProperties);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string>(initialPropertyId || searchParams.get("propertyId") || "");
   const [isLoadingProperties, setIsLoadingProperties] = useState<boolean>(false);
-
-  const [partitionSuggestions, setPartitionSuggestions] = useState<ApartmentQcSearchSuggestionDto[]>(initialPartitions);
-  const [selectedPartitionNo, setSelectedPartitionNo] = useState<string>(initialPartitionNo || searchParams.get("partitionNo") || "");
-  const [isLoadingPartitions, setIsLoadingPartitions] = useState<boolean>(false);
 
   // Sync props from server navigation / searchParams updates
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (initialWards && initialWards.length > 0) setWards(initialWards);
     if (initialWardId) setSelectedWardId(initialWardId);
-    if (initialPropertyNo) setSelectedPropertyNo(initialPropertyNo);
-    if (initialPartitionNo) setSelectedPartitionNo(initialPartitionNo);
-    if (initialProperties && initialProperties.length > 0) setPropertyNoList(initialProperties);
-    if (initialPartitions && initialPartitions.length > 0) setPartitionSuggestions(initialPartitions);
-  }, [initialWards, initialWardId, initialPropertyNo, initialPartitionNo, initialProperties, initialPartitions]);
+    if (initialPropertyId) setSelectedPropertyId(initialPropertyId);
+    if (initialWardProperties && initialWardProperties.length > 0) setWardProperties(initialWardProperties);
+  }, [initialWards, initialWardId, initialPropertyId, initialWardProperties]);
 
   // Fallback Wards fetch if initialWards was empty
   useEffect(() => {
@@ -83,25 +73,40 @@ export function useCascadingPropertyFilters({
     }
   }, [wards.length]);
 
-  /** Applies `updates` (null deletes the param) to the current query string and navigates to it. */
-  const pushQueryParams = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    for (const [key, value] of Object.entries(updates)) {
-      if (value) params.set(key, value);
-      else params.delete(key);
+  // Fallback properties fetch if a ward is already selected (e.g. from a URL/search-resolved
+  // initial state) but initialWardProperties wasn't provided/was empty.
+  useEffect(() => {
+    if (selectedWardId && wardProperties.length === 0) {
+      const wardIdNum = Number(selectedWardId);
+      if (!wardIdNum) return;
+      let isMounted = true;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsLoadingProperties(true);
+      getPropertyOptionsByWardAction(wardIdNum)
+        .then((res) => {
+          if (isMounted && res.success && res.data) {
+            setWardProperties(res.data);
+          }
+        })
+        .finally(() => {
+          if (isMounted) setIsLoadingProperties(false);
+        });
+      return () => {
+        isMounted = false;
+      };
     }
-    const query = params.toString();
-    router.push(query ? `${pathname}?${query}` : pathname);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWardId]);
 
+  // Ward/Property No selection only updates local state (and, for Property No, the resolved UPIC
+  // used for display) — it must NOT navigate/push query params or trigger a schedule fetch by
+  // itself. Changing the dropdowns is just "picking a value"; the actual search only happens when
+  // the officer clicks the "Search property" button (see PropertyIdentificationSection's
+  // `onSearchAny`, which searches using whatever UPIC/Old GP Number is currently in the form).
   const handleWardChange = async (wardIdStr: string) => {
     setSelectedWardId(wardIdStr);
-    setSelectedPropertyNo("");
-    setPropertyNoList([]);
-    setSelectedPartitionNo("");
-    setPartitionSuggestions([]);
-
-    pushQueryParams({ wardId: wardIdStr || null, propertyNo: null, partitionNo: null, upic: null });
+    setSelectedPropertyId("");
+    setWardProperties([]);
 
     if (!wardIdStr) return;
     const wardIdNum = Number(wardIdStr);
@@ -109,81 +114,48 @@ export function useCascadingPropertyFilters({
 
     setIsLoadingProperties(true);
     try {
-      const res = await getApartmentQCSuggestionsAction(wardIdNum);
+      const res = await getPropertyOptionsByWardAction(wardIdNum);
       if (res.success && res.data) {
-        const uniquePropNos = Array.from(
-          new Set(
-            res.data
-              .map((item) => item.propertyNo?.trim())
-              .filter((p): p is string => Boolean(p))
-          )
-        );
-        setPropertyNoList(uniquePropNos);
+        setWardProperties(res.data);
       }
     } finally {
       setIsLoadingProperties(false);
     }
   };
 
-  const handlePropertyNoChange = async (propNo: string) => {
-    setSelectedPropertyNo(propNo);
-    setSelectedPartitionNo("");
-    setPartitionSuggestions([]);
+  const handlePropertyChange = (propertyIdStr: string) => {
+    setSelectedPropertyId(propertyIdStr);
 
-    pushQueryParams({ propertyNo: propNo || null, partitionNo: null, upic: null });
+    const matched = wardProperties.find((item) => String(item.propertyId) === propertyIdStr);
+    const resolvedUpic = matched?.upicId || "";
 
-    if (!selectedWardId || !propNo) return;
-    const wardIdNum = Number(selectedWardId);
-
-    setIsLoadingPartitions(true);
-    try {
-      const res = await getApartmentQCSuggestionsAction(wardIdNum, propNo);
-      if (res.success && res.data) {
-        setPartitionSuggestions(res.data);
-      }
-    } finally {
-      setIsLoadingPartitions(false);
+    if (resolvedUpic) {
+      onPropertyResolved(resolvedUpic);
     }
   };
 
-  const handlePartitionChange = (val: string) => {
-    setSelectedPartitionNo(val);
-
-    const matched = partitionSuggestions.find(
-      (s) =>
-        s.partitionNo === val ||
-        s.upicId === val ||
-        s.displayLabel === val ||
-        String(s.propertyId) === val
-    );
-
-    const targetUpicOrPropNo = matched?.upicId || matched?.propertyNo || matched?.displayLabel || val;
-
-    // upic is only ever SET here, never deleted — omitted from the update when there's nothing to set.
-    pushQueryParams({ partitionNo: val || null, ...(targetUpicOrPropNo ? { upic: targetUpicOrPropNo } : {}) });
-
-    if (targetUpicOrPropNo) {
-      onPartitionResolved(targetUpicOrPropNo);
-    }
+  /** Clears the Ward/Property No selections and their fetched option lists — local state only;
+   *  the caller is responsible for also clearing the matching URL params (e.g. the search Reset
+   *  flow already does this via `handleReset`). */
+  const resetFilters = () => {
+    setSelectedWardId("");
+    setWardProperties([]);
+    setSelectedPropertyId("");
   };
 
   const wardOptions = buildWardOptions(wards, isLoadingWards, t);
-  const propertyNoOptions = buildPropertyNoOptions(propertyNoList, selectedWardId, isLoadingProperties, t);
-  const partitionOptions = buildPartitionOptions(partitionSuggestions, selectedPropertyNo, isLoadingPartitions, t);
+  const propertyOptions = buildWardPropertyOptions(wardProperties, selectedWardId, isLoadingProperties, t);
 
   return {
     selectedWardId,
     isLoadingWards,
-    selectedPropertyNo,
+    selectedPropertyId,
     isLoadingProperties,
-    selectedPartitionNo,
-    isLoadingPartitions,
     wardOptions,
-    propertyNoOptions,
-    partitionOptions,
+    propertyOptions,
     handleWardChange,
-    handlePropertyNoChange,
-    handlePartitionChange,
+    handlePropertyChange,
+    resetFilters,
   };
 }
 

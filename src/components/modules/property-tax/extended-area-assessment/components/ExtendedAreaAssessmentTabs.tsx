@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { Calculator, ListChecks } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
 
 interface ExtendedAreaAssessmentTabsProps {
@@ -29,6 +30,11 @@ export function ExtendedAreaAssessmentTabs({ activeTab }: ExtendedAreaAssessment
       </Link>
       <Link
         href={`/${locale}/property-tax/extended-area-assesment/bulk-update`}
+        onClick={() =>
+          toast.warning(
+            tLanding("bulkUnderDevelopment") ?? "This screen is not completed yet — it is under development."
+          )
+        }
         className={cn(
           "flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-200 select-none",
           activeTab === "bulk"

@@ -1,6 +1,6 @@
-import { Search } from "lucide-react";
+import { Search, RotateCcw } from "lucide-react";
 import type { useTranslations } from "next-intl";
-import { Input, Select, SearchSelect, IconButton, Tooltip } from "@/components/common";
+import { Input, Select, SearchSelect, IconButton, Button, Tooltip } from "@/components/common";
 import type { SingleAssessmentForm, SelectOption } from "@/types/extended-area-assessment.types";
 import type { UseCascadingPropertyFilters } from "@/hooks/extendedAreaAssessment/useCascadingPropertyFilters";
 
@@ -14,9 +14,12 @@ interface PropertyIdentificationSectionProps {
   onSearchAny: () => void;
   filters: UseCascadingPropertyFilters;
   /** True once a property has been resolved via the UPIC/Old GP Number search — the Ward/Property
-   *  No/Partition No cascading dropdowns are an alternate lookup path and are disabled while that
-   *  result is in effect, to avoid the two search paths fighting over which property is "selected". */
+   *  No cascading dropdowns are an alternate lookup path and are disabled while that result is in
+   *  effect, to avoid the two search paths fighting over which property is "selected". */
   searchLocked: boolean;
+  /** Clears the search fields, cascading dropdown selections, and the resolved result — same
+   *  action as the "Reset" button at the bottom of the form, offered here too for convenience. */
+  onReset: () => void;
 }
 
 /** "Property Identification" — UPIC/Old GP search, Ward/Property/Partition cascading dropdowns,
@@ -31,12 +34,21 @@ export function PropertyIdentificationSection({
   onSearchAny,
   filters,
   searchLocked,
+  onReset,
 }: PropertyIdentificationSectionProps) {
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="border-b border-dashed border-slate-200 pb-1.5 text-[11px] font-extrabold uppercase tracking-wide text-blue-700">
-        {t("section.propertyIdentification")}
-      </h3>
+      <div className="flex items-center justify-between gap-2 border-b border-dashed border-slate-200 pb-1.5">
+        <h3 className="text-[11px] font-extrabold uppercase tracking-wide text-blue-700">
+          {t("section.propertyIdentification")}
+        </h3>
+        <IconButton
+          icon={RotateCcw}
+          type="button"
+          title={t("actions.reset")}
+          onClick={onReset}
+        />
+      </div>
       <div className="grid grid-cols-2 items-end gap-2.5">
         <Input
           label={t("fields.upic")}
@@ -50,31 +62,20 @@ export function PropertyIdentificationSection({
             }
           }}
         />
-        <div className="flex items-end gap-1.5">
-          <div className="flex-1">
-            <Tooltip content={form.oldGpNo}>
-              <Input
-                label={t("fields.oldGpNo")}
-                fullWidth
-                value={form.oldGpNo}
-                onChange={(e) => setField("oldGpNo", e.target.value.replace(/[^a-zA-Z0-9,]/g, ""))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    onSearch(form.oldGpNo, "oldGpNo");
-                  }
-                }}
-              />
-            </Tooltip>
-          </div>
-          <IconButton
-            icon={Search}
-            type="button"
-            title={t("actions.searchProperty")}
-            disabled={isSearching}
-            onClick={onSearchAny}
+        <Tooltip content={form.oldGpNo}>
+          <Input
+            label={t("fields.oldGpNo")}
+            fullWidth
+            value={form.oldGpNo}
+            onChange={(e) => setField("oldGpNo", e.target.value.replace(/[^a-zA-Z0-9,/]/g, ""))}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                onSearch(form.oldGpNo, "oldGpNo");
+              }
+            }}
           />
-        </div>
+        </Tooltip>
 
         <div className="col-span-2 sm:col-span-1">
           <SearchSelect
@@ -90,24 +91,27 @@ export function PropertyIdentificationSection({
         <div className="col-span-2 sm:col-span-1">
           <SearchSelect
             label={t("fields.propertyNo")}
-            options={filters.propertyNoOptions.filter((o) => o.value !== "")}
-            placeholder={filters.propertyNoOptions[0]?.label}
-            value={filters.selectedPropertyNo}
+            options={filters.propertyOptions.filter((o) => o.value !== "")}
+            placeholder={filters.propertyOptions[0]?.label}
+            value={filters.selectedPropertyId}
             disabled={searchLocked || !filters.selectedWardId}
             isLoading={filters.isLoadingProperties}
-            onChange={(_name, v) => void filters.handlePropertyNoChange(v)}
+            onChange={(_name, v) => filters.handlePropertyChange(v)}
           />
         </div>
+
         <div className="col-span-2">
-          <SearchSelect
-            label={t("fields.partitionNo")}
-            options={filters.partitionOptions.filter((o) => o.value !== "")}
-            placeholder={filters.partitionOptions[0]?.label}
-            value={filters.selectedPartitionNo}
-            disabled={searchLocked || !filters.selectedPropertyNo}
-            isLoading={filters.isLoadingPartitions}
-            onChange={(_name, v) => filters.handlePartitionChange(v)}
-          />
+          <Button
+            type="button"
+            variant="primary"
+            icon={Search}
+            iconPosition="left"
+            disabled={isSearching}
+            onClick={onSearchAny}
+            className="w-full justify-center"
+          >
+            {t("actions.searchProperty")}
+          </Button>
         </div>
 
         <div className="col-span-2">

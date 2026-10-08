@@ -11,7 +11,7 @@ export default async function Layout({ children, params }: LayoutProps) {
   const { locale } = await params;
 
   return (
-    <PageContainer className="p-4 sm:p-6 space-y-4">
+    <PageContainer className="p-3 sm:p-4 space-y-3">
       <div className="print:hidden">
         <ExtendedAreaAssessmentHeader locale={locale} />
       </div>

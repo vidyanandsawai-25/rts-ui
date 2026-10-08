@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildWardOptions,
-  buildPropertyNoOptions,
-  buildPartitionOptions,
+  buildWardPropertyOptions,
 } from '@/hooks/extendedAreaAssessment/buildCascadingOptions';
-import type { WardDropdownOption, ApartmentQcSearchSuggestionDto } from '@/app/[locale]/property-tax/extended-area-assesment/single-assessment/action';
+import type { WardDropdownOption, WardPropertyOptionDto } from '@/app/[locale]/property-tax/extended-area-assesment/single-assessment/action';
 
 const DROPDOWN_STRINGS: Record<string, string> = {
   'dropdowns.loadingWards': 'Loading Wards...',
@@ -13,15 +12,9 @@ const DROPDOWN_STRINGS: Record<string, string> = {
   'dropdowns.loadingProperties': 'Loading Properties...',
   'dropdowns.selectPropertyNo': 'Select Property No...',
   'dropdowns.selectPropertyNoFirst': 'Select Property No first',
-  'dropdowns.loadingPartitions': 'Loading Partitions...',
-  'dropdowns.selectPartitionNo': 'Select Partition No...',
-  'dropdowns.mainProperty': 'Main Property',
 };
 
-const t = ((key: string, values?: Record<string, string>) =>
-  key === 'dropdowns.partitionLabel' ? `Partition ${values?.partitionNo}` : DROPDOWN_STRINGS[key] ?? key) as unknown as Parameters<
-  typeof buildWardOptions
->[2];
+const t = ((key: string) => DROPDOWN_STRINGS[key] ?? key) as unknown as Parameters<typeof buildWardOptions>[2];
 
 describe('buildWardOptions', () => {
   it('prepends a "Select Ward..." placeholder and maps wards by wardNo', () => {
@@ -48,64 +41,43 @@ describe('buildWardOptions', () => {
   });
 });
 
-describe('buildPropertyNoOptions', () => {
-  it('prompts to select a ward first when none is selected', () => {
-    const options = buildPropertyNoOptions([], '', false, t);
-    expect(options[0].label).toBe('Select Ward first');
-  });
-
-  it('shows a loading placeholder while properties are loading', () => {
-    const options = buildPropertyNoOptions([], '1', true, t);
-    expect(options[0].label).toBe('Loading Properties...');
-  });
-
-  it('lists each property number once a ward is selected and loaded', () => {
-    const options = buildPropertyNoOptions(['P1', 'P2'], '1', false, t);
-    expect(options[0].label).toBe('Select Property No...');
-    expect(options.slice(1)).toEqual([
-      { label: 'P1', value: 'P1' },
-      { label: 'P2', value: 'P2' },
-    ]);
-  });
-});
-
-function buildSuggestion(overrides: Partial<ApartmentQcSearchSuggestionDto> = {}): ApartmentQcSearchSuggestionDto {
+function buildItem(overrides: Partial<WardPropertyOptionDto> = {}): WardPropertyOptionDto {
   return {
     propertyId: 1,
-    zoneId: 1,
-    wardId: 1,
-    category: 1,
-    categoryLabel: 'Residential',
-    displayLabel: '',
+    propertyNo: 'P1',
+    partitionNo: null,
+    upicId: 'U1',
     ...overrides,
   };
 }
 
-describe('buildPartitionOptions', () => {
-  it('prompts to select a property first when none is selected', () => {
-    const options = buildPartitionOptions([], '', false, t);
-    expect(options[0].label).toBe('Select Property No first');
+describe('buildWardPropertyOptions', () => {
+  it('prompts to select a ward first when none is selected', () => {
+    const options = buildWardPropertyOptions([], '', false, t);
+    expect(options[0].label).toBe('Select Ward first');
   });
 
-  it('shows a loading placeholder while partitions are loading', () => {
-    const options = buildPartitionOptions([], 'P1', true, t);
-    expect(options[0].label).toBe('Loading Partitions...');
+  it('shows a loading placeholder while properties are loading', () => {
+    const options = buildWardPropertyOptions([], '1', true, t);
+    expect(options[0].label).toBe('Loading Properties...');
   });
 
-  it('labels a real partition as "Partition <no> (<label>)"', () => {
-    const suggestions = [buildSuggestion({ partitionNo: 'A1', upicId: 'U1', propertyNo: 'P1', displayLabel: 'Flat 101' })];
-    const options = buildPartitionOptions(suggestions, 'P1', false, t);
-    expect(options[1]).toEqual({ label: 'Partition A1 (Flat 101)', value: 'A1' });
+  it('labels a plain (non-partitioned) property by its propertyNo alone, bound by propertyId', () => {
+    const items = [buildItem({ propertyId: 10, propertyNo: '1', partitionNo: null })];
+    const options = buildWardPropertyOptions(items, '1', false, t);
+    expect(options[0].label).toBe('Select Property No...');
+    expect(options[1]).toEqual({ label: '1', value: '10' });
   });
 
-  it('labels a non-partitioned suggestion by its display label, falling back to upicId then "Main Property"', () => {
-    const withDisplayLabel = [buildSuggestion({ upicId: 'U1', propertyNo: 'P1', displayLabel: 'Main Bldg' })];
-    expect(buildPartitionOptions(withDisplayLabel, 'P1', false, t)[1]).toEqual({ label: 'Main Bldg', value: 'U1' });
-
-    const withUpicOnly = [buildSuggestion({ propertyId: 2, upicId: 'U2', propertyNo: 'P2', displayLabel: '' })];
-    expect(buildPartitionOptions(withUpicOnly, 'P2', false, t)[1]).toEqual({ label: 'U2', value: 'U2' });
-
-    const withNeither = [buildSuggestion({ propertyId: 3, propertyNo: 'P3', displayLabel: '' })];
-    expect(buildPartitionOptions(withNeither, 'P3', false, t)[1]).toEqual({ label: 'Main Property', value: '3' });
+  it('labels a partitioned property as "<propertyNo>-<partitionNo>", bound by its own propertyId', () => {
+    const items = [
+      buildItem({ propertyId: 21, propertyNo: '1', partitionNo: 'A' }),
+      buildItem({ propertyId: 22, propertyNo: '1', partitionNo: 'A1' }),
+    ];
+    const options = buildWardPropertyOptions(items, '1', false, t);
+    expect(options.slice(1)).toEqual([
+      { label: '1-A', value: '21' },
+      { label: '1-A1', value: '22' },
+    ]);
   });
 });

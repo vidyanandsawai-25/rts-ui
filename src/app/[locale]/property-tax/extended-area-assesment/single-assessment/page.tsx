@@ -6,10 +6,10 @@ import {
   searchSection129PropertyByUpicAction,
   searchSection129PropertyByOldGpNoAction,
   getWardsDropdownAction,
-  getApartmentQCSuggestionsAction,
+  getPropertyOptionsByWardAction,
   type Section129ActionResult,
   type WardDropdownOption,
-  type ApartmentQcSearchSuggestionDto,
+  type WardPropertyOptionDto,
 } from "./action";
 import type { SelectOption } from "@/types/extended-area-assessment.types";
 
@@ -23,7 +23,7 @@ interface SingleAssessmentPageProps {
  * Section 129A single-property assessment — search a property by UPIC, then view/apply
  * its year-wise schedule via the real API (see `useSingleAssessment` / `action.ts`).
  *
- * Search input values (e.g. `?upic=...`, `?wardId=...`, `?propertyNo=...`, `?partitionNo=...`)
+ * Search input values (e.g. `?upic=...`, `?wardId=...`, `?propertyId=...`)
  * are passed via URL query parameters, driving Next.js server-side data fetching.
  */
 export default async function Page({ searchParams }: SingleAssessmentPageProps): Promise<React.ReactElement> {
@@ -39,19 +39,15 @@ export default async function Page({ searchParams }: SingleAssessmentPageProps):
   const upic = getParam("upic");
   const oldGpNo = getParam("oldGpNo");
   const wardId = getParam("wardId");
-  const propertyNo = getParam("propertyNo");
-  const partitionNo = getParam("partitionNo");
+  const propertyId = getParam("propertyId");
 
-  const wardIdNum = Number(wardId);
-  const searchTarget = upic || propertyNo;
+  const searchTarget = upic;
 
   const [
     initialCurrentFinancialYear,
     usageTypeOptions,
     initialSearchResult,
     wardRes,
-    initialPropertiesRes,
-    initialPartitionsRes,
   ] = await Promise.all([
     getFinancialYearsPaged(1, -1)
       .then((res) => res.items?.find((y) => y.isActive) ?? null)
@@ -66,42 +62,46 @@ export default async function Page({ searchParams }: SingleAssessmentPageProps):
         ? searchSection129PropertyByOldGpNoAction(oldGpNo)
         : Promise.resolve<Section129ActionResult | null>(null),
     getWardsDropdownAction().catch(() => ({ success: false, data: [] as WardDropdownOption[] })),
-    wardIdNum
-      ? getApartmentQCSuggestionsAction(wardIdNum).catch(() => ({ success: false, data: [] as ApartmentQcSearchSuggestionDto[] }))
-      : Promise.resolve({ success: false, data: [] as ApartmentQcSearchSuggestionDto[] }),
-    wardIdNum && propertyNo
-      ? getApartmentQCSuggestionsAction(wardIdNum, propertyNo).catch(() => ({ success: false, data: [] as ApartmentQcSearchSuggestionDto[] }))
-      : Promise.resolve({ success: false, data: [] as ApartmentQcSearchSuggestionDto[] }),
   ]);
 
   const initialWards = wardRes?.success ? wardRes.data : [];
-  const initialProperties = initialPropertiesRes?.success && initialPropertiesRes.data
-    ? Array.from(
-      new Set(
-        initialPropertiesRes.data
-          .map((item) => item.propertyNo?.trim())
-          .filter((p): p is string => Boolean(p))
-      )
-    )
-    : [];
-  const initialPartitions = initialPartitionsRes?.success && initialPartitionsRes.data ? initialPartitionsRes.data : [];
+
+  // The Ward/Property No cascading dropdowns are normally seeded from their own URL params (the
+  // dropdown-driven search path) — but a UPIC/Old GP Number search resolves a property without
+  // ever touching those params, which left the dropdowns blank even though a property was found.
+  // Fall back to the schedule's own `wardId`/`propertyId` (present regardless of which search path
+  // resolved it) so the dropdown reflects the same property the read-only fields already show —
+  // this is more reliable than re-deriving the ward from the formatted `zone` display string,
+  // which only the UPIC path ever attempted anyway (Old GP Number search left it unresolved).
+  let effectiveWardId = wardId;
+  if (!effectiveWardId && initialSearchResult?.success && initialSearchResult.data) {
+    effectiveWardId = String(initialSearchResult.data.wardId);
+  }
+  let effectivePropertyId = propertyId;
+  if (!effectivePropertyId && initialSearchResult?.success && initialSearchResult.data) {
+    effectivePropertyId = String(initialSearchResult.data.propertyId);
+  }
+
+  const effectiveWardIdNum = Number(effectiveWardId);
+
+  const wardPropertiesRes = effectiveWardIdNum
+    ? await getPropertyOptionsByWardAction(effectiveWardIdNum).catch(() => ({ success: false, data: [] as WardPropertyOptionDto[] }))
+    : { success: false, data: [] as WardPropertyOptionDto[] };
+
+  const initialWardProperties = wardPropertiesRes?.success && wardPropertiesRes.data ? wardPropertiesRes.data : [];
 
   return (
     <SingleAssessmentScreen
       initialUpic={upic}
       initialOldGpNo={oldGpNo}
-      initialWardId={wardId}
-      initialPropertyNo={propertyNo}
-      initialPartitionNo={partitionNo}
+      initialWardId={effectiveWardId}
+      initialPropertyId={effectivePropertyId}
       initialWards={initialWards}
-      initialProperties={initialProperties}
-      initialPartitions={initialPartitions}
+      initialWardProperties={initialWardProperties}
       initialSearchResult={initialSearchResult}
       initialCurrentFinancialYear={initialCurrentFinancialYear}
       usageTypeOptions={usageTypeOptions}
     />
   );
 }
-
-
 

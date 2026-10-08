@@ -34,7 +34,10 @@ describe('useSection129SearchActions', () => {
     vi.mocked(useSearchParams).mockReturnValue(new URLSearchParams('wardId=1') as never);
   });
 
-  function setup(formOverrides: Partial<ReturnType<typeof emptyForm>> = {}) {
+  function setup(
+    formOverrides: Partial<ReturnType<typeof emptyForm>> = {},
+    lastEditedField: 'upic' | 'oldGpNo' | null = null
+  ) {
     return renderHook(() =>
       useSection129SearchActions({
         form: { ...emptyForm(), ...formOverrides },
@@ -43,6 +46,7 @@ describe('useSection129SearchActions', () => {
         setPropertyId,
         setForm,
         setResult,
+        lastEditedField,
       })
     );
   }
@@ -64,7 +68,17 @@ describe('useSection129SearchActions', () => {
     it('navigates with upic set and oldGpNo removed when searching by UPIC', () => {
       const { result } = setup();
       act(() => result.current.handleSearch('MM1100150000', 'upic'));
-      expect(push).toHaveBeenCalledWith('/en/property-tax/extended-area-assesment/single-assessment?wardId=1&upic=MM1100150000');
+      expect(push).toHaveBeenCalledWith('/en/property-tax/extended-area-assesment/single-assessment?upic=MM1100150000');
+    });
+
+    it('also clears any leftover ward/property dropdown selection, so page.tsx re-resolves them fresh from this search instead of keeping a stale selection', () => {
+      vi.mocked(useSearchParams).mockReturnValue(new URLSearchParams('wardId=1&propertyId=10&other=keep') as never);
+      const { result } = setup();
+      act(() => result.current.handleSearch('MM1100150000', 'upic'));
+      const url = push.mock.calls[0][0] as string;
+      expect(url).toContain('other=keep');
+      expect(url).not.toContain('wardId=');
+      expect(url).not.toContain('propertyId=');
     });
 
     it('navigates with oldGpNo set and upic removed when searching by Old GP Number', () => {
@@ -91,10 +105,13 @@ describe('useSection129SearchActions', () => {
       expect(push).not.toHaveBeenCalled();
     });
 
-    it('prefers Old GP Number when both fields have a value', () => {
+    it('prefers UPIC when both fields have a value and neither was explicitly last-edited', () => {
+      // Both fields can be non-empty simply because a prior successful search auto-filled the
+      // other field (the resolved property's own UPIC/Old GP Number) — UPIC is the sensible
+      // default in that case, not whichever field happens to still hold a value.
       const { result } = setup({ upic: 'U1', oldGpNo: 'G1' });
       act(() => result.current.handleSearchAny());
-      expect(push).toHaveBeenCalledWith(expect.stringContaining('oldGpNo=G1'));
+      expect(push).toHaveBeenCalledWith(expect.stringContaining('upic=U1'));
     });
 
     it('searches by UPIC when only UPIC has a value', () => {
@@ -102,12 +119,24 @@ describe('useSection129SearchActions', () => {
       act(() => result.current.handleSearchAny());
       expect(push).toHaveBeenCalledWith(expect.stringContaining('upic=U1'));
     });
+
+    it('searches by Old GP Number when both have a value but Old GP Number was explicitly last-edited', () => {
+      const { result } = setup({ upic: 'U1', oldGpNo: 'G1' }, 'oldGpNo');
+      act(() => result.current.handleSearchAny());
+      expect(push).toHaveBeenCalledWith(expect.stringContaining('oldGpNo=G1'));
+    });
+
+    it('searches by Old GP Number when only Old GP Number has a value, regardless of lastEditedField', () => {
+      const { result } = setup({ upic: '', oldGpNo: 'G1' }, 'upic');
+      act(() => result.current.handleSearchAny());
+      expect(push).toHaveBeenCalledWith(expect.stringContaining('oldGpNo=G1'));
+    });
   });
 
   describe('handleReset', () => {
     it('clears every search-related query param and resets local state', () => {
       vi.mocked(useSearchParams).mockReturnValue(
-        new URLSearchParams('upic=U1&oldGpNo=G1&wardId=1&propertyNo=P1&partitionNo=A1&other=keep') as never
+        new URLSearchParams('upic=U1&oldGpNo=G1&wardId=1&propertyId=10&other=keep') as never
       );
       const { result } = setup();
       act(() => result.current.handleReset());

@@ -6,6 +6,7 @@
     "singleDescription": "Calculate the Section 129A year-wise General Tax schedule for one property.",
     "bulkTitle": "Bulk Update",
     "bulkDescription": "Import, batch-update and calculate Section 129A assessments for many properties at once.",
+    "bulkUnderDevelopment": "This screen is not completed yet — it is under development.",
     "open": "Open"
   },
   "error": {

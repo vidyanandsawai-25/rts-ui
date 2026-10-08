@@ -172,18 +172,11 @@ export interface WardDropdownOption {
   description: string | null;
 }
 
-export interface ApartmentQcSearchSuggestionDto {
+export interface WardPropertyOptionDto {
   propertyId: number;
-  zoneId: number;
-  zoneNo?: string;
-  wardId: number;
-  wardNo?: string;
-  propertyNo?: string;
-  partitionNo?: string;
-  upicId?: string;
-  displayLabel: string;
-  category: number;
-  categoryLabel: string;
+  propertyNo: string;
+  partitionNo: string | null;
+  upicId: string | null;
 }
 
 export async function getWardsDropdownAction(): Promise<{ success: boolean; data: WardDropdownOption[]; error?: string }> {
@@ -205,43 +198,52 @@ export async function getWardsDropdownAction(): Promise<{ success: boolean; data
   }
 }
 
-export async function getApartmentQCSuggestionsAction(
-  wardId: number,
-  propertyNo?: string,
-  partitionNo?: string
-): Promise<{ success: boolean; data: ApartmentQcSearchSuggestionDto[]; error?: string }> {
+interface WardPropertyOptionRaw {
+  propertyId: number;
+  propertyNo: string;
+  partitionNo: string | null;
+  upic: string | null;
+}
+
+interface WardPropertiesResponseRaw {
+  success?: boolean;
+  items?: WardPropertyOptionRaw[];
+}
+
+/** Fetches every property + partition row for a ward via `/Property/section129a-ward-properties` —
+ *  queried directly from PropertyMast on the backend, NOT a search/assessment-grid endpoint, so a
+ *  property that hasn't been assessed yet (no PropertyDetails row — common for Section 129A's
+ *  newly-included/extended municipal area properties) still appears. Used to build the single
+ *  "Property No" dropdown that shows both plain properties ("10") and their partitions ("10-A6"),
+ *  bound by `propertyId`. */
+export async function getPropertyOptionsByWardAction(
+  wardId: number
+): Promise<{ success: boolean; data: WardPropertyOptionDto[]; error?: string }> {
   if (!wardId || wardId <= 0) {
     return { success: false, data: [], error: "WardId is required" };
   }
 
   try {
     const { apiClient } = await import("@/services/api.service");
-    const params = new URLSearchParams();
-    params.set("WardId", wardId.toString());
-    if (propertyNo) params.set("PropertyNo", propertyNo);
-    if (partitionNo) params.set("PartitionNo", partitionNo);
-    params.set("MaxResults", "100");
-
-    const response = await apiClient.get<ApartmentQcSearchSuggestionDto[] | { items: ApartmentQcSearchSuggestionDto[] }>(
-      `/ApartmentQC/search/suggestions?${params.toString()}`
+    const response = await apiClient.get<WardPropertiesResponseRaw>(
+      `/Property/section129a-ward-properties?wardId=${wardId}`
     );
 
-    if (!response.success || !response.data) {
-      return { success: false, data: [], error: response.error || "No suggestions found" };
+    if (!response.success || !response.data?.success) {
+      return { success: false, data: [], error: response.error || "Failed to fetch properties" };
     }
 
-    const raw = response.data;
-    let items: ApartmentQcSearchSuggestionDto[] = [];
-    if (Array.isArray(raw)) {
-      items = raw;
-    } else if (raw && typeof raw === "object" && Array.isArray((raw as { items?: ApartmentQcSearchSuggestionDto[] }).items)) {
-      items = (raw as { items: ApartmentQcSearchSuggestionDto[] }).items;
-    }
+    const items = (response.data.items ?? []).map((it) => ({
+      propertyId: it.propertyId,
+      propertyNo: it.propertyNo,
+      partitionNo: it.partitionNo || null,
+      upicId: it.upic || null,
+    }));
 
     return { success: true, data: items };
   } catch (err) {
-    logger.error("Failed to fetch property suggestions", { error: err as Error });
-    return { success: false, data: [], error: "Failed to fetch suggestions" };
+    logger.error("Failed to fetch ward property options", { error: err as Error });
+    return { success: false, data: [], error: "Failed to fetch properties" };
   }
 }
 

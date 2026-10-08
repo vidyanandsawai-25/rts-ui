@@ -82,7 +82,15 @@ export function useSingleAssessment(options: UseSingleAssessmentOptions = {}) {
 
   const changed = form.areaChanged === "yes" || form.useChanged === "yes" || form.otherChanged === "yes";
 
+  // Tracks which of UPIC/Old GP Number the user actually typed into most recently — NOT updated by
+  // the auto-fill sync effect above, only by real edits via `setField`, so `handleSearchAny` can
+  // tell which field the user means to search by even after both get cross-populated from a result.
+  const [lastEditedField, setLastEditedField] = useState<"upic" | "oldGpNo" | null>(null);
+
   const setField = <K extends keyof SingleAssessmentForm>(key: K, value: SingleAssessmentForm[K]) => {
+    if (key === "upic" || key === "oldGpNo") {
+      setLastEditedField(key);
+    }
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -109,6 +117,7 @@ export function useSingleAssessment(options: UseSingleAssessmentOptions = {}) {
     setPropertyId,
     setForm,
     setResult,
+    lastEditedField,
   });
   const { isSearching } = searchActions;
 
@@ -123,6 +132,7 @@ export function useSingleAssessment(options: UseSingleAssessmentOptions = {}) {
   };
   const handleReset: typeof searchActions.handleReset = () => {
     setJustAppliedPropertyId(null);
+    setLastEditedField(null);
     return searchActions.handleReset();
   };
 
