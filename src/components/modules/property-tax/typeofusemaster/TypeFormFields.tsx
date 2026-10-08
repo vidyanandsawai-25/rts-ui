@@ -275,7 +275,7 @@ export function CategorySelector({
 
   return (
     <div className="flex flex-col">
-      <Label htmlFor="category-select" required>
+      <Label htmlFor="category-select">
         {t('category.fields.categoryName', { category: categoryLabel })}
       </Label>
       <SearchSelect
@@ -285,10 +285,13 @@ export function CategorySelector({
           onChange(val ? Number(val) : null);
         }}
         placeholder={t('type.selectCategory', { category: categoryLabel })}
-        options={allCategories.filter((c) => c.isActive === true).map((c) => ({
-          value: String(c.id),
-          label: `${c.typeOfUseCategoryCode} - ${c.typeOfUseCategoryName}`,
-        }))}
+        options={[
+          { value: "", label: t('type.selectCategory', { category: categoryLabel }) },
+          ...allCategories.filter((c) => c.isActive === true).map((c) => ({
+            value: String(c.id),
+            label: `${c.typeOfUseCategoryCode} - ${c.typeOfUseCategoryName}`,
+          })),
+        ]}
       />
       <ValidationMessage message={error} visible={showError ?? false} />
     </div>

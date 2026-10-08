@@ -442,6 +442,53 @@ describe("UseTypeForm", () => {
       });
     });
 
+    it("should create type successfully without category (optional field)", async () => {
+      mockCreateUseType.mockResolvedValue({ success: true });
+
+      const { container } = renderWithIntl(
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} allCategories={allCategories} />
+      );
+
+      // Select group
+      const groupSelect = screen.getByRole("combobox", { name: /use type group/i });
+      fireEvent.change(groupSelect, { target: { value: "Residential" } }); fireEvent.keyDown(groupSelect, { key: "Enter", code: "Enter" });
+
+      // Fill in type code
+      const codeInput = screen.getByPlaceholderText("e.g., RES, COM01, IND");
+      fireEvent.change(codeInput, { target: { value: "IND02" } });
+
+      // Fill in description
+      const descInput = screen.getByPlaceholderText("Enter description");
+      fireEvent.change(descInput, { target: { value: "Industrial Building No Category" } });
+
+      // Select type
+      const typeSelect = screen.getByRole("combobox", { name: /^type\s+required$/i });
+      fireEvent.change(typeSelect, { target: { value: "Industrial" } }); fireEvent.keyDown(typeSelect, { key: "Enter", code: "Enter" });
+
+      // Leave category unselected
+
+      // Fill in sequence
+      const seqInput = screen.getByPlaceholderText("0");
+      fireEvent.change(seqInput, { target: { value: "2" } });
+
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(mockCreateUseType).toHaveBeenCalledWith({
+          groupId: 1,
+          code: "IND02",
+          description: "Industrial Building No Category",
+          type: "I",
+          searchSequence: 2,
+          status: "Active",
+          typeOfUseCategoryId: null,
+        });
+        expect(toast.success).toHaveBeenCalledWith("Type Created");
+        expect(mockRouterBack).toHaveBeenCalled();
+      });
+    });
+
     it("should handle create error", async () => {
       mockCreateUseType.mockResolvedValue({ success: false, message: "Create failed" });
 
